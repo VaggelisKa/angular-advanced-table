@@ -29,7 +29,7 @@ import {
   type SimulationRow,
   type SimulationStatus,
   type SimulationStatusCounts,
-} from '../../pages/table-showcase-page/table-simulation';
+} from '../../simulation/table-simulation';
 
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {

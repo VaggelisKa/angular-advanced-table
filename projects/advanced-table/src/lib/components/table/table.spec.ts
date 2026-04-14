@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TableSimulation } from '../../pages/table-showcase-page/table-simulation';
+import { TableSimulation } from '../../simulation/table-simulation';
 import { Table } from './table';
 
 @Component({
