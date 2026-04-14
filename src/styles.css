@@ -1,1 +1,29 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 255, 0.22), transparent 26%),
+    radial-gradient(circle at top right, rgba(255, 209, 102, 0.14), transparent 20%),
+    linear-gradient(180deg, #08131d 0%, #031018 58%, #020b12 100%);
+  color: #ecf5fb;
+}
+
+button,
+input {
+  font: inherit;
+}
