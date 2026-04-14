@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
+import { Table } from 'advanced-table';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,
   SIMULATION_PROFILES,
-  Table,
   TableSimulation,
   type SimulationProfile,
-} from 'advanced-table';
+} from './table-simulation';
 
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {

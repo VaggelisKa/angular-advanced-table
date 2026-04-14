@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TableShowcasePage } from './table-showcase-page';
-import { TableSimulation } from 'advanced-table';
+import { TableSimulation } from './table-simulation';
 
 describe('TableShowcasePage', () => {
   let component: TableShowcasePage;

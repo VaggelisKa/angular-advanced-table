@@ -23,13 +23,25 @@ import {
   type Updater,
 } from '@tanstack/angular-table';
 
-import {
-  PAGE_SIZE_OPTIONS,
-  SIMULATION_STATUSES,
-  type SimulationRow,
-  type SimulationStatus,
-  type SimulationStatusCounts,
-} from '../../simulation/table-simulation';
+type SimulationStatus = 'Healthy' | 'Pending' | 'Alert' | 'Offline';
+
+interface SimulationRow {
+  id: string;
+  workload: string;
+  region: string;
+  owner: string;
+  status: SimulationStatus;
+  latencyMs: number;
+  throughput: number;
+  errorRate: number;
+  saturation: number;
+  updatedAt: number;
+}
+
+type SimulationStatusCounts = Record<SimulationStatus, number>;
+
+const TABLE_STATUSES = ['Healthy', 'Pending', 'Alert', 'Offline'] as const satisfies readonly SimulationStatus[];
+const DEFAULT_PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
 
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {
@@ -106,9 +118,9 @@ export class Table {
   readonly statusCounts = input<SimulationStatusCounts>(emptyStatusCounts);
   readonly lastCycleDurationMs = input(0);
   readonly lastTickAt = input(Date.now());
-  readonly pageSizeOptions = input<readonly number[]>(PAGE_SIZE_OPTIONS);
+  readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
 
-  protected readonly statuses = SIMULATION_STATUSES;
+  protected readonly statuses = TABLE_STATUSES;
   protected readonly sorting = signal<SortingState>([{ id: 'throughput', desc: true }]);
   protected readonly globalFilter = signal('');
   protected readonly columnFilters = signal<ColumnFiltersState>([]);
