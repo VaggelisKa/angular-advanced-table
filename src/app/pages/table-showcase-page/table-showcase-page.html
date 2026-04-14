@@ -26,63 +26,35 @@
     </div>
   </section>
 
-  <section class="stats-grid" aria-label="Table telemetry">
+  <section class="stats-grid" aria-label="Simulation telemetry">
     <article class="stat-card card">
       <span class="stat-label">Rows in memory</span>
       <strong class="stat-value">{{ formatInteger(simulation.datasetSize()) }}</strong>
-      <span class="stat-footnote">Rendered page size: {{ pagination().pageSize }}</span>
-    </article>
-    <article class="stat-card card">
-      <span class="stat-label">Visible after filters</span>
-      <strong class="stat-value">{{ formatInteger(filteredRowCount()) }}</strong>
-      <span class="stat-footnote">{{ pageLabel() }}</span>
+      <span class="stat-footnote">Active profile: {{ simulation.profilePreset().label }}</span>
     </article>
     <article class="stat-card card">
       <span class="stat-label">Mutation cadence</span>
       <strong class="stat-value">
-        {{ simulation.profilePreset().mutationBatchSize }} rows / {{ simulation.profilePreset().tickIntervalMs }} ms
+        {{ formatInteger(simulation.profilePreset().mutationBatchSize) }} rows /
+        {{ simulation.profilePreset().tickIntervalMs }} ms
       </strong>
-      <span class="stat-footnote">Last batch: {{ simulation.lastMutationSize() }} rows</span>
+      <span class="stat-footnote">Last batch: {{ formatInteger(simulation.lastMutationSize()) }} rows</span>
     </article>
     <article class="stat-card card">
       <span class="stat-label">Fleet health</span>
       <strong class="stat-value">{{ simulation.fleetHealth() }}%</strong>
-      <span class="stat-footnote">Sort: {{ activeSortLabel() }}</span>
+      <span class="stat-footnote">Weighted across healthy, pending, alert, and offline services</span>
+    </article>
+    <article class="stat-card card">
+      <span class="stat-label">Total simulated mutations</span>
+      <strong class="stat-value">{{ formatInteger(simulation.totalMutations()) }}</strong>
+      <span class="stat-footnote">
+        {{ simulation.isRunning() ? 'Live updates enabled' : 'Live updates paused' }}
+      </span>
     </article>
   </section>
 
-  <section class="controls card">
-    <div class="control-block">
-      <label class="control-label" for="table-search">Search workload, owner, region, or id</label>
-      <input
-        id="table-search"
-        type="search"
-        class="search-input"
-        [value]="globalFilter()"
-        placeholder="Try checkout, eu-west, identity, svc-00042..."
-        (input)="setGlobalFilter($any($event.target).value)"
-      />
-    </div>
-
-    <div class="control-block">
-      <span class="control-label">Status filter</span>
-      <div class="chip-row" role="group" aria-label="Status filter">
-        @for (status of statuses; track status) {
-          <button
-            type="button"
-            class="chip"
-            [class.is-active]="isStatusActive(status)"
-            [attr.data-status]="status"
-            [attr.aria-pressed]="isStatusActive(status)"
-            (click)="toggleStatus(status)"
-          >
-            <span>{{ status }}</span>
-            <span class="chip-count">{{ formatInteger(statusCounts()[status]) }}</span>
-          </button>
-        }
-      </div>
-    </div>
-
+  <section class="controls card" aria-label="Dataset controls">
     <div class="control-block">
       <span class="control-label">Dataset size</span>
       <div class="chip-row" role="group" aria-label="Dataset size">
@@ -117,136 +89,13 @@
         }
       </div>
     </div>
-
-    <button type="button" class="clear-button" (click)="clearFilters()">
-      Reset filters
-    </button>
   </section>
 
-  <section class="table-card card">
-    <div class="table-toolbar">
-      <div>
-        <p class="table-title">Operational workload table</p>
-        <p class="table-meta">
-          {{ pageLabel() }} • Last mutation cycle: {{ formatDecimal(simulation.lastCycleDurationMs()) }} ms • Last tick:
-          {{ formatTime(simulation.lastTickAt()) }}
-        </p>
-      </div>
-
-      <div class="table-actions">
-        <div class="chip-row compact" role="group" aria-label="Page size">
-          @for (size of pageSizeOptions; track size) {
-            <button
-              type="button"
-              class="chip"
-              [class.is-active]="pagination().pageSize === size"
-              [attr.aria-pressed]="pagination().pageSize === size"
-              (click)="setPageSize(size)"
-            >
-              {{ size }} / page
-            </button>
-          }
-        </div>
-
-        <div class="pager" role="group" aria-label="Pagination">
-          <button
-            type="button"
-            class="pager-button"
-            [disabled]="!table.getCanPreviousPage()"
-            (click)="table.previousPage()"
-          >
-            Previous
-          </button>
-          <span class="pager-label">
-            Page {{ table.getState().pagination.pageIndex + 1 }} / {{ table.getPageCount() || 1 }}
-          </span>
-          <button
-            type="button"
-            class="pager-button"
-            [disabled]="!table.getCanNextPage()"
-            (click)="table.nextPage()"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="table-region">
-      <table ngGrid class="workload-table" aria-label="Live workload table">
-        <thead>
-          @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
-            <tr ngGridRow>
-              @for (header of headerGroup.headers; track header.id) {
-                <th
-                  ngGridCell
-                  role="columnheader"
-                  class="header-cell"
-                  [attr.aria-sort]="getAriaSort(header.column)"
-                >
-                  @if (!header.isPlaceholder) {
-                    <button
-                      type="button"
-                      ngGridCellWidget
-                      class="sort-button"
-                      [class.is-sorted]="!!header.column.getIsSorted()"
-                      [disabled]="!header.column.getCanSort()"
-                      [attr.aria-label]="header.column.getCanSort() ? 'Toggle sort for ' + header.column.id : null"
-                      (click)="header.column.toggleSorting()"
-                    >
-                      <ng-container
-                        *flexRender="
-                          header.column.columnDef.header;
-                          props: header.getContext();
-                          let rendered
-                        "
-                      >
-                        {{ rendered }}
-                      </ng-container>
-                      <span class="sort-icon" aria-hidden="true">
-                        {{ getSortIcon(header.column) }}
-                      </span>
-                    </button>
-                  }
-                </th>
-              }
-            </tr>
-          }
-        </thead>
-        <tbody>
-          @if (table.getRowModel().rows.length) {
-            @for (row of table.getRowModel().rows; track row.id) {
-              <tr ngGridRow class="data-row" [attr.data-status]="row.original.status">
-                @for (cell of row.getVisibleCells(); track cell.id) {
-                  <td
-                    ngGridCell
-                    class="data-cell"
-                    [class.metric-cell]="isMetricColumn(cell.column.id)"
-                    [class.status-cell]="cell.column.id === 'status'"
-                    [attr.data-status]="cell.column.id === 'status' ? cell.getValue() : null"
-                  >
-                    <ng-container
-                      *flexRender="
-                        cell.column.columnDef.cell;
-                        props: cell.getContext();
-                        let rendered
-                      "
-                    >
-                      {{ rendered }}
-                    </ng-container>
-                  </td>
-                }
-              </tr>
-            }
-          } @else {
-            <tr ngGridRow>
-              <td ngGridCell class="empty-state" [colSpan]="columns.length">
-                No rows match the current filters. Reset the chips or search query to repopulate the view.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </section>
+  <app-table
+    [rows]="simulation.rows()"
+    [statusCounts]="simulation.statusCounts()"
+    [pageSizeOptions]="pageSizeOptions"
+    [lastCycleDurationMs]="simulation.lastCycleDurationMs()"
+    [lastTickAt]="simulation.lastTickAt()"
+  />
 </main>

@@ -32,8 +32,7 @@
 }
 
 .hero,
-.controls,
-.table-card {
+.controls {
   padding: 28px;
 }
 
@@ -77,10 +76,7 @@
 }
 
 .action-button,
-.pager-button,
-.clear-button,
-.chip,
-.sort-button {
+.chip {
   border: 1px solid transparent;
   color: inherit;
   cursor: pointer;
@@ -91,9 +87,7 @@
     color 140ms ease;
 }
 
-.action-button,
-.pager-button,
-.clear-button {
+.action-button {
   min-height: 44px;
   padding: 0 18px;
   border-radius: 999px;
@@ -104,10 +98,7 @@
 }
 
 .action-button:hover,
-.pager-button:hover,
-.clear-button:hover,
-.chip:hover,
-.sort-button:hover {
+.chip:hover {
   transform: translateY(-1px);
 }
 
@@ -152,6 +143,7 @@
   margin-top: 10px;
   color: var(--text-soft);
   font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .controls {
@@ -170,21 +162,6 @@
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.search-input {
-  min-height: 54px;
-  width: 100%;
-  padding: 0 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(168, 216, 255, 0.2);
-  background: rgba(6, 15, 24, 0.72);
-  color: var(--text);
-  outline: none;
-}
-
-.search-input::placeholder {
-  color: rgba(168, 195, 215, 0.72);
 }
 
 .chip-row {
@@ -209,20 +186,6 @@
   border-color: rgba(87, 209, 255, 0.35);
 }
 
-.chip[data-status='Healthy'].is-active {
-  color: var(--success);
-}
-
-.chip[data-status='Pending'].is-active {
-  color: var(--warning);
-}
-
-.chip[data-status='Alert'].is-active,
-.chip[data-status='Offline'].is-active {
-  color: var(--danger);
-}
-
-.chip-count,
 .chip-detail {
   color: var(--text-soft);
   font-size: 0.82rem;
@@ -232,177 +195,8 @@
   min-height: 48px;
 }
 
-.compact .chip {
-  min-height: 36px;
-  padding-inline: 12px;
-  font-size: 0.92rem;
-}
-
-.clear-button {
-  justify-self: start;
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.14);
-}
-
-.table-card {
-  margin-top: 18px;
-}
-
-.table-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 18px;
-}
-
-.table-title {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.table-meta {
-  margin: 8px 0 0;
-  color: var(--text-soft);
-  line-height: 1.6;
-}
-
-.table-actions {
-  display: grid;
-  gap: 12px;
-  justify-items: end;
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pager-button[disabled] {
-  cursor: not-allowed;
-  opacity: 0.45;
-  transform: none;
-}
-
-.pager-label {
-  color: var(--text-soft);
-  font-size: 0.92rem;
-}
-
-.table-region {
-  overflow: auto;
-  border-radius: 24px;
-  border: 1px solid rgba(168, 216, 255, 0.12);
-  background: rgba(4, 14, 22, 0.9);
-}
-
-.workload-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  min-width: 1040px;
-}
-
-.header-cell,
-.data-cell {
-  padding: 15px 16px;
-  border-bottom: 1px solid rgba(168, 216, 255, 0.08);
-  white-space: nowrap;
-}
-
-.header-cell {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: rgba(5, 20, 31, 0.96);
-  color: var(--text-soft);
-  font-size: 0.84rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-.sort-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 0;
-  background: none;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  text-transform: inherit;
-  letter-spacing: inherit;
-}
-
-.sort-button:disabled {
-  cursor: default;
-  transform: none;
-}
-
-.sort-button.is-sorted {
-  color: var(--text);
-}
-
-.sort-icon {
-  display: inline-flex;
-  min-width: 1rem;
-  justify-content: center;
-  color: var(--accent);
-}
-
-.data-row {
-  transition: background-color 120ms ease;
-}
-
-.data-row:hover {
-  background: rgba(87, 209, 255, 0.05);
-}
-
-.data-row[data-status='Alert'] {
-  background: linear-gradient(90deg, rgba(255, 141, 127, 0.06), transparent 18%);
-}
-
-.data-row[data-status='Offline'] {
-  background: linear-gradient(90deg, rgba(255, 107, 94, 0.09), transparent 24%);
-}
-
-.metric-cell {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.status-cell[data-status='Healthy'] {
-  color: var(--success);
-}
-
-.status-cell[data-status='Pending'] {
-  color: var(--warning);
-}
-
-.status-cell[data-status='Alert'] {
-  color: var(--danger);
-}
-
-.status-cell[data-status='Offline'] {
-  color: var(--danger-strong);
-}
-
-.empty-state {
-  padding: 28px;
-  text-align: center;
-  color: var(--text-soft);
-}
-
-[ngGridCell]:focus-visible,
-.search-input:focus-visible,
 .action-button:focus-visible,
-.pager-button:focus-visible,
-.clear-button:focus-visible,
-.chip:focus-visible,
-.sort-button:focus-visible {
+.chip:focus-visible {
   outline: 2px solid rgba(87, 209, 255, 0.95);
   outline-offset: -2px;
 }
@@ -412,16 +206,13 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .hero,
-  .table-toolbar {
-    grid-template-columns: 1fr;
+  .hero {
     display: grid;
+    grid-template-columns: 1fr;
   }
 
-  .hero-actions,
-  .table-actions {
+  .hero-actions {
     justify-content: start;
-    justify-items: start;
   }
 }
 
@@ -432,8 +223,7 @@
   }
 
   .hero,
-  .controls,
-  .table-card {
+  .controls {
     padding: 20px;
     border-radius: 22px;
   }

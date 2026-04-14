@@ -16,6 +16,8 @@ export interface SimulationRow {
   updatedAt: number;
 }
 
+export type SimulationStatusCounts = Record<SimulationStatus, number>;
+
 interface SimulationProfilePreset {
   label: string;
   description: string;
@@ -95,8 +97,8 @@ export class TableSimulation {
   readonly lastTickAt = this._lastTickAt.asReadonly();
   readonly totalMutations = this._totalMutations.asReadonly();
   readonly profilePreset = computed(() => SIMULATION_PROFILES[this._profile()]);
-  readonly statusCounts = computed(() => {
-    const counts: Record<SimulationStatus, number> = {
+  readonly statusCounts = computed<SimulationStatusCounts>(() => {
+    const counts: SimulationStatusCounts = {
       Healthy: 0,
       Pending: 0,
       Alert: 0,
