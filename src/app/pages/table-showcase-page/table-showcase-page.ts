@@ -1,10 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
-import {
-  AdvancedTableComponent,
-  type AdvancedTableState,
-} from 'advanced-table';
+import { AdvancedTableComponent, type AdvancedTableState } from 'advanced-table';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,
@@ -45,7 +42,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'workload',
     header: 'Workload',
-    size: 320,
+    size: 200,
+    minSize: 140,
     meta: {
       label: 'Workload',
     },
@@ -55,7 +53,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'region',
     header: 'Region',
-    size: 220,
+    size: 130,
+    minSize: 100,
     meta: {
       label: 'Region',
     },
@@ -65,7 +64,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'owner',
     header: 'Owner',
-    size: 260,
+    size: 160,
+    minSize: 120,
     meta: {
       label: 'Owner',
     },
@@ -75,7 +75,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    size: 160,
+    size: 110,
+    minSize: 90,
     meta: {
       label: 'Status',
     },
@@ -86,7 +87,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'latencyMs',
     header: 'Latency',
-    size: 160,
+    size: 110,
+    minSize: 90,
     meta: {
       label: 'Latency',
       align: 'end',
@@ -97,7 +99,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'throughput',
     header: 'Throughput',
-    size: 180,
+    size: 130,
+    minSize: 100,
     meta: {
       label: 'Throughput',
       align: 'end',
@@ -108,7 +111,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'errorRate',
     header: 'Error Rate',
-    size: 160,
+    size: 120,
+    minSize: 90,
     meta: {
       label: 'Error Rate',
       align: 'end',
@@ -119,7 +123,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'saturation',
     header: 'Saturation',
-    size: 160,
+    size: 110,
+    minSize: 90,
     meta: {
       label: 'Saturation',
       align: 'end',
@@ -130,7 +135,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'updatedAt',
     header: 'Updated',
-    size: 180,
+    size: 130,
+    minSize: 100,
     meta: {
       label: 'Updated',
       align: 'end',
@@ -170,20 +176,16 @@ export class TableShowcasePage {
     columnFilters: [],
   });
   protected readonly selectedStatuses = computed(() => {
-    const activeFilter = this.tableState()
-      .columnFilters
-      ?.find((entry) => entry.id === STATUS_FILTER_ID);
+    const activeFilter = this.tableState().columnFilters?.find(
+      (entry) => entry.id === STATUS_FILTER_ID,
+    );
 
-    return Array.isArray(activeFilter?.value)
-      ? (activeFilter.value as SimulationStatus[])
-      : [];
+    return Array.isArray(activeFilter?.value) ? (activeFilter.value as SimulationStatus[]) : [];
   });
-  protected readonly profiles = Object.entries(SIMULATION_PROFILES).map(
-    ([value, config]) => ({
-      value: value as SimulationProfile,
-      ...config,
-    }),
-  );
+  protected readonly profiles = Object.entries(SIMULATION_PROFILES).map(([value, config]) => ({
+    value: value as SimulationProfile,
+    ...config,
+  }));
 
   protected setDatasetSize(size: number): void {
     this.simulation.setDatasetSize(size);

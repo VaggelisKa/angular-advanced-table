@@ -130,7 +130,7 @@
     </div>
   }
 
-  <div class="table-region">
+  <div class="table-region" #tableRegion>
     <table
       ngGrid
       class="data-table"
@@ -190,7 +190,9 @@
                         class="pin-button"
                         [class.is-pinned]="!!header.column.getIsPinned()"
                         [attr.aria-pressed]="!!header.column.getIsPinned()"
-                        [attr.aria-label]="getPinLabel(header.column) + ' ' + getColumnLabel(header.column)"
+                        [attr.aria-label]="
+                          getPinLabel(header.column) + ' ' + getColumnLabel(header.column)
+                        "
                         (click)="toggleColumnPin(header.column)"
                       >
                         {{ header.column.getIsPinned() ? 'Unpin' : 'Pin' }}
@@ -234,11 +236,7 @@
                   "
                 >
                   <ng-container
-                    *flexRender="
-                      cell.column.columnDef.cell;
-                      props: cell.getContext();
-                      let rendered
-                    "
+                    *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"
                   >
                     {{ rendered }}
                   </ng-container>

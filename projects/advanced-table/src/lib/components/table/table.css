@@ -310,8 +310,7 @@
 }
 
 .data-table {
-  width: max-content;
-  min-width: 1040px;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -322,6 +321,8 @@
   padding: 15px 16px;
   border-bottom: 1px solid rgba(168, 216, 255, 0.08);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-cell {
