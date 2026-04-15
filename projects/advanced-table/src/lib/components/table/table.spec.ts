@@ -143,6 +143,23 @@ describe('Table', () => {
     expect(workloadToggle.disabled).toBe(true);
     expect(fixture.nativeElement.querySelectorAll('thead th').length).toBe(1);
   });
+
+  it('should surface a row render healthcheck KPI', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const kpi = fixture.nativeElement.querySelector('.render-kpi') as HTMLElement;
+    const kpiValue = fixture.nativeElement.querySelector('.render-kpi-value') as HTMLElement;
+    const kpiFootnote = fixture.nativeElement.querySelector(
+      '.render-kpi-footnote',
+    ) as HTMLElement;
+
+    expect(kpi.getAttribute('aria-label')).toBe('Row render healthcheck');
+    expect(kpiValue.textContent).toContain('ms');
+    expect(kpiFootnote.textContent).toContain('24 visible rows');
+    expect(kpiFootnote.textContent).toContain('9 columns');
+  });
 });
 
 function buildRows(size: number): Row[] {

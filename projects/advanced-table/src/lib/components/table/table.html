@@ -61,7 +61,7 @@
 
 <section class="table-card card">
   <div class="table-toolbar">
-    <div>
+    <div class="table-heading">
       <p class="table-title">Operational table</p>
       <p class="table-meta">
         {{ pageLabel() }} • Sort: {{ activeSortLabel() }} • Last mutation cycle:
@@ -69,6 +69,23 @@
         {{ formatTime(lastTickAt()) }}
       </p>
     </div>
+
+    <article
+      class="render-kpi"
+      [attr.data-health]="rowRenderHealth().tone"
+      aria-label="Row render healthcheck"
+    >
+      <span class="render-kpi-label">Row render healthcheck</span>
+      <div class="render-kpi-value-row">
+        <strong class="render-kpi-value">
+          {{ formatDecimal(lastRowRenderDurationMs()) }} ms
+        </strong>
+        <span class="render-kpi-badge">{{ rowRenderHealth().label }}</span>
+      </div>
+      <span class="render-kpi-footnote">
+        {{ rowRenderSummary() }}
+      </span>
+    </article>
 
     <div class="table-actions">
       <div class="chip-row compact" role="group" aria-label="Page size">
