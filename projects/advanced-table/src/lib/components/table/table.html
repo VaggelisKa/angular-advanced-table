@@ -41,47 +41,92 @@
         </div>
       </div>
     }
+
+    @if (showRenderMetricControls()) {
+      <div class="control-block">
+        <div class="control-heading">
+          <span class="control-label">Render speed</span>
+          <span class="control-caption">{{ renderFilterCaption() }}</span>
+        </div>
+        <div class="chip-row" role="group" aria-label="Row render speed">
+          @for (option of renderFilterOptions; track option.value) {
+            <button
+              type="button"
+              class="chip render-chip"
+              [class.is-active]="selectedRenderMetricFilter() === option.value"
+              [attr.aria-pressed]="selectedRenderMetricFilter() === option.value"
+              [attr.data-render-filter]="option.value"
+              (click)="setRenderMetricFilter(option.value)"
+            >
+              <span>{{ option.label }}</span>
+              <span class="chip-count">{{ option.description }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
   </section>
 }
 
 <section class="table-card card">
-  @if (showPagination()) {
+  @if (showTableToolbar()) {
     <div class="table-toolbar">
-      <div class="chip-row compact" role="group" aria-label="Page size">
-        @for (size of sanitizedPageSizeOptions(); track size) {
-          <button
-            type="button"
-            class="chip"
-            [class.is-active]="mergedState().pagination.pageSize === size"
-            [attr.aria-pressed]="mergedState().pagination.pageSize === size"
-            (click)="setPageSize(size)"
-          >
-            {{ size }} / page
-          </button>
-        }
-      </div>
+      @if (enableRenderMetrics()) {
+        <article
+          class="render-kpi"
+          [attr.data-health]="rowRenderHealth().tone"
+          aria-label="Row render sample"
+        >
+          <span class="render-kpi-label">Row render sample</span>
+          <div class="render-kpi-value-row">
+            <strong class="render-kpi-value">
+              {{ formatDecimal(renderMeasurement().durationMs) }} ms
+            </strong>
+            <span class="render-kpi-badge">{{ rowRenderHealth().label }}</span>
+          </div>
+          <span class="render-kpi-footnote">{{ rowRenderSummary() }}</span>
+        </article>
+      }
 
-      <div class="pager" role="group" aria-label="Pagination">
-        <button
-          type="button"
-          class="pager-button"
-          [disabled]="!table.getCanPreviousPage()"
-          (click)="table.previousPage()"
-        >
-          Previous
-        </button>
-        <span class="pager-label">
-          Page {{ table.getState().pagination.pageIndex + 1 }} / {{ table.getPageCount() || 1 }}
-        </span>
-        <button
-          type="button"
-          class="pager-button"
-          [disabled]="!table.getCanNextPage()"
-          (click)="table.nextPage()"
-        >
-          Next
-        </button>
-      </div>
+      @if (showPagination()) {
+        <div class="table-actions">
+          <div class="chip-row compact" role="group" aria-label="Page size">
+            @for (size of sanitizedPageSizeOptions(); track size) {
+              <button
+                type="button"
+                class="chip"
+                [class.is-active]="mergedState().pagination.pageSize === size"
+                [attr.aria-pressed]="mergedState().pagination.pageSize === size"
+                (click)="setPageSize(size)"
+              >
+                {{ size }} / page
+              </button>
+            }
+          </div>
+
+          <div class="pager" role="group" aria-label="Pagination">
+            <button
+              type="button"
+              class="pager-button"
+              [disabled]="!table.getCanPreviousPage()"
+              (click)="table.previousPage()"
+            >
+              Previous
+            </button>
+            <span class="pager-label">
+              Page {{ table.getState().pagination.pageIndex + 1 }} / {{ table.getPageCount() || 1 }}
+            </span>
+            <button
+              type="button"
+              class="pager-button"
+              [disabled]="!table.getCanNextPage()"
+              (click)="table.nextPage()"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      }
     </div>
   }
 
@@ -161,12 +206,21 @@
       <tbody>
         @if (table.getRowModel().rows.length) {
           @for (row of table.getRowModel().rows; track row.id) {
-            <tr ngGridRow class="data-row">
+            <tr
+              ngGridRow
+              class="data-row"
+              [advancedTableRowMeter]="row.id"
+              [advancedTableRowRenderEnabled]="enableRenderMetrics()"
+              [advancedTableRowRenderToken]="renderMeasurementToken()"
+              [advancedTableRowRenderStartedAt]="renderMeasurementStartedAt()"
+              (advancedTableRowRendered)="recordRowRender($event)"
+            >
               @for (cell of row.getVisibleCells(); track cell.id) {
                 <td
                   ngGridCell
                   class="data-cell"
                   [class.is-align-end]="isColumnAlignedEnd(cell.column)"
+                  [class.is-render-metric]="isRenderMetricColumn(cell.column)"
                   [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
                   [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
                   [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
@@ -175,6 +229,9 @@
                   [style.right.px]="getPinnedRight(cell.column)"
                   [style.width.px]="getColumnWidth(cell.column)"
                   [attr.data-column-id]="cell.column.id"
+                  [attr.data-render-tone]="
+                    isRenderMetricColumn(cell.column) ? getRowRenderTone(row.id) : null
+                  "
                 >
                   <ng-container
                     *flexRender="
