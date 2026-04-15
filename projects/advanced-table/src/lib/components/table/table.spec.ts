@@ -1,27 +1,45 @@
-import { Component, inject } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TableSimulation } from '../../pages/table-showcase-page/table-simulation';
 import { Table } from './table';
+
+interface Row {
+  id: string;
+  workload: string;
+  region: string;
+  owner: string;
+  status: 'Healthy' | 'Pending' | 'Alert' | 'Offline';
+  latencyMs: number;
+  throughput: number;
+  errorRate: number;
+  saturation: number;
+  updatedAt: number;
+}
 
 @Component({
   imports: [Table],
   template: `
     <app-table
-      [rows]="simulation.rows()"
-      [statusCounts]="simulation.statusCounts()"
-      [lastCycleDurationMs]="simulation.lastCycleDurationMs()"
-      [lastTickAt]="simulation.lastTickAt()"
+      [rows]="rows()"
+      [statusCounts]="statusCounts"
+      [lastCycleDurationMs]="12.4"
+      [lastTickAt]="lastTickAt"
     />
   `,
 })
 class TableHost {
-  protected readonly simulation = inject(TableSimulation);
+  protected readonly rows = signal<Row[]>(buildRows(36));
+  protected readonly statusCounts = {
+    Healthy: 9,
+    Pending: 9,
+    Alert: 9,
+    Offline: 9,
+  };
+  protected readonly lastTickAt = Date.now();
 }
 
 describe('Table', () => {
   let fixture: ComponentFixture<TableHost>;
-  let simulation: TableSimulation;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -29,8 +47,6 @@ describe('Table', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableHost);
-    simulation = TestBed.inject(TableSimulation);
-    simulation.pause();
     await fixture.whenStable();
   });
 
@@ -56,3 +72,20 @@ describe('Table', () => {
     expect(firstRow.textContent).toContain('Checkout 1');
   });
 });
+
+function buildRows(size: number): Row[] {
+  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert', 'Offline'];
+
+  return Array.from({ length: size }, (_, index) => ({
+    id: `svc-${String(index + 1).padStart(5, '0')}`,
+    workload: `Checkout ${index + 1}`,
+    region: 'us-east-1',
+    owner: 'Core Platform',
+    status: statuses[index % statuses.length],
+    latencyMs: 50 + index,
+    throughput: 1000 + index,
+    errorRate: 0.01,
+    saturation: 40,
+    updatedAt: Date.now(),
+  }));
+}

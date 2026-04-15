@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
-import { Table } from '../../components/table/table';
+import { Table } from 'advanced-table';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,

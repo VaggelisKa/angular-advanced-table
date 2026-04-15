@@ -36,6 +36,19 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+
+## Library build
+
+The table implementation now lives in a separate Angular library project (`projects/advanced-table`) so it can be packaged for npm distribution.
+
+Build the library with:
+
+```bash
+ng build advanced-table
+```
+
+The package output is written to `dist/advanced-table`.
+
 ## Running unit tests
 
 To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:

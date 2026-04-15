@@ -3,6 +3,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "advanced-table": ["./projects/advanced-table/src/public-api.ts", "./dist/advanced-table"]
+    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -28,6 +31,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/advanced-table/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/advanced-table/tsconfig.spec.json"
     }
   ]
 }

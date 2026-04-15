@@ -67,6 +67,32 @@
           "builder": "@angular/build:unit-test"
         }
       }
+    },
+    "advanced-table": {
+      "projectType": "library",
+      "root": "projects/advanced-table",
+      "sourceRoot": "projects/advanced-table/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/advanced-table/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/advanced-table/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/advanced-table/tsconfig.spec.json"
+          }
+        }
+      }
     }
   }
 }
