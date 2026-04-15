@@ -72,21 +72,26 @@ describe('Table', () => {
     expect(firstRow.textContent).toContain('Checkout 1');
   });
 
-  it('should filter rows by a column filter', () => {
+  it('should hide and show columns from the visibility controls', () => {
     fixture.detectChanges();
 
-    const workloadFilter = fixture.nativeElement.querySelector(
-      '#column-filter-workload',
-    ) as HTMLInputElement;
-    workloadFilter.value = 'Search';
-    workloadFilter.dispatchEvent(new Event('input'));
+    const regionToggle = fixture.nativeElement.querySelector(
+      '.column-chip[data-column-id="region"]',
+    ) as HTMLButtonElement;
+
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Region');
+
+    regionToggle.click();
     fixture.detectChanges();
 
-    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    const firstRow = rows[0] as HTMLTableRowElement;
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
+    expect(fixture.nativeElement.querySelector('tbody')?.textContent).not.toContain('us-east-1');
 
-    expect(rows.length).toBeGreaterThan(0);
-    expect(firstRow.textContent).toContain('Search');
+    regionToggle.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Region');
+    expect(fixture.nativeElement.querySelector('tbody')?.textContent).toContain('us-east-1');
   });
 
   it('should allow pinning and unpinning columns', () => {
@@ -106,6 +111,37 @@ describe('Table', () => {
     fixture.detectChanges();
 
     expect(regionPinButton.textContent?.trim()).toBe('Pin');
+  });
+
+  it('should keep at least one column visible', () => {
+    fixture.detectChanges();
+
+    const columnIds = [
+      'region',
+      'owner',
+      'status',
+      'latencyMs',
+      'throughput',
+      'errorRate',
+      'saturation',
+      'updatedAt',
+    ];
+
+    for (const columnId of columnIds) {
+      const columnToggle = fixture.nativeElement.querySelector(
+        `.column-chip[data-column-id="${columnId}"]`,
+      ) as HTMLButtonElement;
+
+      columnToggle.click();
+      fixture.detectChanges();
+    }
+
+    const workloadToggle = fixture.nativeElement.querySelector(
+      '.column-chip[data-column-id="workload"]',
+    ) as HTMLButtonElement;
+
+    expect(workloadToggle.disabled).toBe(true);
+    expect(fixture.nativeElement.querySelectorAll('thead th').length).toBe(1);
   });
 });
 

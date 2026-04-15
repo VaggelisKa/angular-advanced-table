@@ -12,20 +12,25 @@
   </div>
 
   <div class="control-block">
-    <span class="control-label">Column filters</span>
-    <div class="column-filter-grid">
-      @for (column of textFilterColumns(); track column.id) {
-        <label class="filter-field" [attr.for]="'column-filter-' + column.id">
-          <span>{{ column.columnDef.header }}</span>
-          <input
-            [id]="'column-filter-' + column.id"
-            type="search"
-            class="search-input compact-input"
-            [value]="getColumnFilterValue(column.id)"
-            [placeholder]="'Filter ' + column.columnDef.header"
-            (input)="onColumnTextFilterInput(column.id, $event)"
-          />
-        </label>
+    <div class="control-heading">
+      <span class="control-label">Columns</span>
+      <span class="control-caption">{{ visibleColumnCount() }} / {{ columns.length }} visible</span>
+    </div>
+    <div class="chip-row" role="group" aria-label="Column visibility">
+      @for (column of columnVisibilityOptions(); track column.id) {
+        <button
+          type="button"
+          class="chip column-chip"
+          [class.is-active]="column.getIsVisible()"
+          [disabled]="!canToggleColumnVisibility(column)"
+          [attr.aria-pressed]="column.getIsVisible()"
+          [attr.aria-label]="getColumnVisibilityAction(column)"
+          [attr.data-column-id]="column.id"
+          (click)="toggleColumnVisibility(column)"
+        >
+          <span>{{ getColumnLabel(column.id) }}</span>
+          <span class="chip-count">{{ column.getIsVisible() ? 'Shown' : 'Hidden' }}</span>
+        </button>
       }
     </div>
   </div>
@@ -49,8 +54,8 @@
     </div>
   </div>
 
-  <button type="button" class="clear-button" (click)="clearFilters()">
-    Reset filters
+  <button type="button" class="clear-button" (click)="resetView()">
+    Reset view
   </button>
 </section>
 
@@ -114,6 +119,7 @@
                 ngGridCell
                 role="columnheader"
                 class="header-cell"
+                [class.metric-header]="isMetricColumn(header.column.id)"
                 [class.is-pinned-left]="header.column.getIsPinned() === 'left'"
                 [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
                 [style.left.px]="getPinnedLeft(header.column)"
@@ -192,7 +198,7 @@
           }
         } @else {
           <tr ngGridRow>
-            <td ngGridCell class="empty-state" [colSpan]="columns.length">
+            <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
               No rows match the current filters. Reset the chips or search query to repopulate the
               view.
             </td>

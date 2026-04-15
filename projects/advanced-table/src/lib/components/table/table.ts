@@ -22,6 +22,7 @@ import {
   type PaginationState,
   type SortingState,
   type Updater,
+  type VisibilityState,
 } from '@tanstack/angular-table';
 
 type SimulationStatus = 'Healthy' | 'Pending' | 'Alert' | 'Offline';
@@ -74,7 +75,7 @@ const columnLabels: Record<string, string> = {
   saturation: 'Saturation',
   updatedAt: 'Updated',
 };
-const textFilterColumnIds = ['workload', 'region', 'owner'] as const;
+const tableColumnIds = Object.keys(columnLabels);
 const emptyStatusCounts: SimulationStatusCounts = {
   Healthy: 0,
   Pending: 0,
@@ -126,6 +127,7 @@ export class Table {
   protected readonly sorting = signal<SortingState>([{ id: 'throughput', desc: true }]);
   protected readonly globalFilter = signal('');
   protected readonly columnFilters = signal<ColumnFiltersState>([]);
+  protected readonly columnVisibility = signal<VisibilityState>({});
   protected readonly columnPinning = signal<ColumnPinningState>({
     left: ['workload'],
     right: [],
@@ -205,6 +207,7 @@ export class Table {
       sorting: this.sorting(),
       globalFilter: this.globalFilter(),
       columnFilters: this.columnFilters(),
+      columnVisibility: this.columnVisibility(),
       columnPinning: this.columnPinning(),
       pagination: this.pagination(),
     },
@@ -220,14 +223,25 @@ export class Table {
     onSortingChange: (updater) => this.applyUpdater(this.sorting, updater),
     onGlobalFilterChange: (updater) => this.applyUpdater(this.globalFilter, updater),
     onColumnFiltersChange: (updater) => this.applyUpdater(this.columnFilters, updater),
+    onColumnVisibilityChange: (updater) => this.applyUpdater(this.columnVisibility, updater),
     onColumnPinningChange: (updater) => this.applyUpdater(this.columnPinning, updater),
     onPaginationChange: (updater) => this.applyUpdater(this.pagination, updater),
   }));
-  protected readonly textFilterColumns = computed(() =>
-    textFilterColumnIds
-      .map((columnId) => this.table.getColumn(columnId))
-      .filter((column): column is Column<SimulationRow, unknown> => Boolean(column)),
+  protected readonly columnVisibilityOptions = computed(() =>
+    this.table
+      .getAllLeafColumns()
+      .filter((column) => column.getCanHide()),
   );
+  protected readonly visibleColumnCount = computed(() => {
+    const columnVisibility = this.columnVisibility();
+
+    return tableColumnIds.filter((columnId) => columnVisibility[columnId] !== false).length;
+  });
+  protected readonly emptyStateColSpan = computed(() => {
+    const visibleColumnCount = this.visibleColumnCount();
+
+    return visibleColumnCount > 0 ? visibleColumnCount : 1;
+  });
   protected readonly selectedStatuses = computed(() => {
     const activeFilter = this.columnFilters().find((entry) => entry.id === 'status');
 
@@ -272,24 +286,15 @@ export class Table {
     this.setGlobalFilter(target.value);
   }
 
-  protected onColumnTextFilterInput(columnId: string, event: Event): void {
-    const target = event.target;
-
-    if (!(target instanceof HTMLInputElement)) {
-      return;
-    }
-
-    this.setColumnTextFilter(columnId, target.value);
-  }
-
   protected setGlobalFilter(value: string): void {
     this.globalFilter.set(value);
     this.resetToFirstPage();
   }
 
-  protected clearFilters(): void {
+  protected resetView(): void {
     this.globalFilter.set('');
     this.columnFilters.set([]);
+    this.columnVisibility.set({});
     this.resetToFirstPage();
   }
 
@@ -339,10 +344,20 @@ export class Table {
     return column.getIsPinned() ? 'Unpin column' : 'Pin column';
   }
 
-  protected getColumnFilterValue(columnId: string): string {
-    const filterValue = this.columnFilters().find((entry) => entry.id === columnId)?.value;
+  protected toggleColumnVisibility(column: Column<SimulationRow, unknown>): void {
+    if (column.getIsVisible() && this.visibleColumnCount() === 1) {
+      return;
+    }
 
-    return typeof filterValue === 'string' ? filterValue : '';
+    column.toggleVisibility(!column.getIsVisible());
+  }
+
+  protected canToggleColumnVisibility(column: Column<SimulationRow, unknown>): boolean {
+    return !column.getIsVisible() || this.visibleColumnCount() > 1;
+  }
+
+  protected getColumnVisibilityAction(column: Column<SimulationRow, unknown>): string {
+    return `${column.getIsVisible() ? 'Hide' : 'Show'} ${this.getColumnLabel(column.id)} column`;
   }
 
   protected getPinnedLeft(column: Column<SimulationRow, unknown>): number | null {
@@ -393,20 +408,6 @@ export class Table {
     return timeFormatter.format(value);
   }
 
-  private setColumnTextFilter(columnId: string, value: string): void {
-    this.columnFilters.update((filters) => {
-      const nextFilters = filters.filter((filter) => filter.id !== columnId);
-
-      if (!value.trim()) {
-        return nextFilters;
-      }
-
-      return [...nextFilters, { id: columnId, value }];
-    });
-
-    this.resetToFirstPage();
-  }
-
   private setStatusFilter(statuses: SimulationStatus[]): void {
     this.columnFilters.update((filters) => {
       const nextFilters = filters.filter((filter) => filter.id !== 'status');
@@ -434,7 +435,7 @@ export class Table {
     );
   }
 
-  private getColumnLabel(columnId: string): string {
+  protected getColumnLabel(columnId: string): string {
     return columnLabels[columnId] ?? columnId;
   }
 }
