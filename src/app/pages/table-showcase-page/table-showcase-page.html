@@ -4,10 +4,9 @@
       <p class="eyebrow">Angular 21 • Signals • Angular Aria Grid • TanStack Angular Table</p>
       <h1>Single-route data grid with live mock traffic</h1>
       <p class="hero-text">
-        The table uses TanStack as the state engine for sorting, filtering,
-        column visibility, and pagination, while Angular Aria provides the
-        keyboard-friendly grid interaction model. The dataset is intentionally
-        large, but the UI only renders the current page.
+        The table shell now stays generic while this page owns the simulation-specific columns,
+        status filtering, and telemetry. The dataset is intentionally large, but the UI only
+        renders the current page.
       </p>
     </div>
 
@@ -89,13 +88,37 @@
         }
       </div>
     </div>
+
+    <div class="control-block">
+      <span class="control-label">Status filter</span>
+      <div class="chip-row" role="group" aria-label="Status filter">
+        @for (status of statuses; track status) {
+          <button
+            type="button"
+            class="chip status-chip"
+            [class.is-active]="isStatusActive(status)"
+            [attr.data-status]="status"
+            [attr.aria-pressed]="isStatusActive(status)"
+            (click)="toggleStatus(status)"
+          >
+            <span>{{ status }}</span>
+            <span class="chip-detail">{{ formatInteger(simulation.statusCounts()[status]) }}</span>
+          </button>
+        }
+      </div>
+    </div>
   </section>
 
-  <app-table
-    [rows]="simulation.rows()"
-    [statusCounts]="simulation.statusCounts()"
+  <advanced-table
+    [data]="simulation.rows()"
+    [columns]="columns"
+    [state]="tableState()"
+    [initialState]="initialTableState"
     [pageSizeOptions]="pageSizeOptions"
-    [lastCycleDurationMs]="simulation.lastCycleDurationMs()"
-    [lastTickAt]="simulation.lastTickAt()"
+    ariaLabel="Live simulation data table"
+    searchLabel="Search workload, owner, region, or id"
+    searchPlaceholder="Try checkout, eu-west, identity, svc-00042..."
+    emptyStateLabel="No rows match the current filters. Clear the search query or status chips to repopulate the view."
+    (stateChange)="onTableStateChange($event)"
   />
 </main>

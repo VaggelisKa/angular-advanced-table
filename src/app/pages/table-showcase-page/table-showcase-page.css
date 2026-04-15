@@ -186,6 +186,19 @@
   border-color: rgba(87, 209, 255, 0.35);
 }
 
+.status-chip[data-status='Healthy'].is-active {
+  color: var(--success);
+}
+
+.status-chip[data-status='Pending'].is-active {
+  color: var(--warning);
+}
+
+.status-chip[data-status='Alert'].is-active,
+.status-chip[data-status='Offline'].is-active {
+  color: var(--danger);
+}
+
 .chip-detail {
   color: var(--text-soft);
   font-size: 0.82rem;

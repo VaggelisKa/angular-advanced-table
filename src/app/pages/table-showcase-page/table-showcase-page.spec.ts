@@ -24,25 +24,69 @@ describe('TableShowcasePage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should render the default page of rows', () => {
+  it('should keep the default sort, pinning, and page size', () => {
     fixture.detectChanges();
+
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+    const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
+    const headers = Array.from(
+      fixture.nativeElement.querySelectorAll('thead th'),
+    ) as HTMLElement[];
+    const throughputHeader = headers.find((header) =>
+      header.textContent?.includes('Throughput'),
+    ) as HTMLElement;
 
     expect(rows.length).toBe(24);
+    expect(firstPinButton.textContent?.trim()).toBe('Unpin');
+    expect(throughputHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
   });
 
-  it('should render header and cell text content', () => {
+  it('should update the status filter through controlled table state', () => {
     fixture.detectChanges();
-    const nativeElement = fixture.nativeElement as HTMLElement;
-    const headerLabels = Array.from(nativeElement.querySelectorAll('thead th')).map((header) =>
-      header.textContent?.replaceAll(/\s+/g, ' ').trim(),
-    );
-    const firstRowCells = Array.from(
-      nativeElement.querySelectorAll('tbody tr:first-child td'),
-    ).map((cell) => cell.textContent?.replaceAll(/\s+/g, ' ').trim());
 
-    expect(headerLabels[0]).toContain('Workload');
-    expect(firstRowCells[0]).toBeTruthy();
-    expect(firstRowCells[1]).toBeTruthy();
+    const alertChip = fixture.nativeElement.querySelector(
+      '.status-chip[data-status="Alert"]',
+    ) as HTMLButtonElement;
+
+    alertChip.click();
+    fixture.detectChanges();
+
+    expect((component as never as { tableState: () => { columnFilters: unknown[] } }).tableState().columnFilters).toEqual([
+      {
+        id: 'status',
+        value: ['Alert'],
+      },
+    ]);
+  });
+
+  it('should render only the health status in the status cell', () => {
+    fixture.detectChanges();
+
+    const statusCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="status"]',
+    ) as HTMLTableCellElement;
+
+    expect(statusCell.textContent).toMatch(/Healthy|Pending|Alert|Offline/);
+    expect(statusCell.textContent).not.toContain('ms');
+  });
+
+  it('should keep search and column visibility working end to end', () => {
+    fixture.detectChanges();
+
+    const searchInput = fixture.nativeElement.querySelector('#table-search') as HTMLInputElement;
+    const regionToggle = fixture.nativeElement.querySelector(
+      '.column-chip[data-column-id="region"]',
+    ) as HTMLButtonElement;
+
+    searchInput.value = 'svc-00001';
+    searchInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+
+    regionToggle.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
   });
 });

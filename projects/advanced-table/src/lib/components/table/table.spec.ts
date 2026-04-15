@@ -1,45 +1,110 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
-import { Table } from './table';
+import { AdvancedTableComponent } from './table';
+import type { AdvancedTableState } from './table.types';
 
 interface Row {
   id: string;
-  workload: string;
+  name: string;
   region: string;
-  owner: string;
-  status: 'Healthy' | 'Pending' | 'Alert' | 'Offline';
-  latencyMs: number;
+  status: 'Healthy' | 'Pending' | 'Alert';
   throughput: number;
-  errorRate: number;
-  saturation: number;
-  updatedAt: number;
 }
 
+const statusFilter: FilterFn<Row> = (row, columnId, filterValue) => {
+  const selectedStatuses = (filterValue ?? []) as Row['status'][];
+
+  if (!selectedStatuses.length) {
+    return true;
+  }
+
+  return selectedStatuses.includes(row.getValue(columnId) as Row['status']);
+};
+
+const columns: ColumnDef<Row, unknown>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Service',
+    meta: {
+      label: 'Service',
+    },
+    enablePinning: true,
+    cell: (info) => info.getValue<string>(),
+  },
+  {
+    accessorKey: 'region',
+    header: 'Region',
+    meta: {
+      label: 'Region',
+    },
+    cell: (info) => info.getValue<string>(),
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    meta: {
+      label: 'Status',
+    },
+    filterFn: statusFilter,
+    cell: (info) => info.getValue<string>(),
+  },
+  {
+    accessorKey: 'throughput',
+    header: 'Throughput',
+    meta: {
+      label: 'Throughput',
+      align: 'end',
+    },
+    cell: (info) => String(info.getValue<number>()),
+  },
+];
+
 @Component({
-  imports: [Table],
+  imports: [AdvancedTableComponent],
   template: `
-    <app-table
-      [rows]="rows()"
-      [statusCounts]="statusCounts"
-      [lastCycleDurationMs]="12.4"
-      [lastTickAt]="lastTickAt"
+    <advanced-table
+      [data]="rows()"
+      [columns]="columns"
+      ariaLabel="Operations table"
+      [initialState]="initialState"
+      [state]="state()"
+      [enableGlobalFilter]="enableGlobalFilter"
+      [showColumnVisibility]="showColumnVisibility"
+      [showPagination]="showPagination"
+      (stateChange)="onStateChange($event)"
     />
   `,
 })
 class TableHost {
-  protected readonly rows = signal<Row[]>(buildRows(36));
-  protected readonly statusCounts = {
-    Healthy: 9,
-    Pending: 9,
-    Alert: 9,
-    Offline: 9,
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly state = signal<Partial<AdvancedTableState>>({});
+  readonly columns = columns;
+  initialState: Partial<AdvancedTableState> = {
+    sorting: [{ id: 'throughput', desc: true }],
+    columnPinning: {
+      left: ['name'],
+      right: [],
+    },
+    pagination: {
+      pageIndex: 0,
+      pageSize: 2,
+    },
   };
-  protected readonly lastTickAt = Date.now();
+  enableGlobalFilter = true;
+  showColumnVisibility = true;
+  showPagination = true;
+  readonly stateEvents: AdvancedTableState[] = [];
+
+  onStateChange(state: AdvancedTableState): void {
+    this.stateEvents.push(state);
+  }
 }
 
-describe('Table', () => {
+describe('AdvancedTableComponent', () => {
   let fixture: ComponentFixture<TableHost>;
+  let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -47,107 +112,93 @@ describe('Table', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableHost);
+    host = fixture.componentInstance;
     await fixture.whenStable();
   });
 
-  it('should render the default page size', () => {
+  it('renders caller-provided columns and rows using the initial state', () => {
     fixture.detectChanges();
-    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
 
-    expect(rows.length).toBe(24);
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+    const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
+    const headerLabels = headers.map((header) =>
+      header.textContent?.replaceAll(/\s+/g, ' ').trim(),
+    );
+    const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
+
+    expect(rows.length).toBe(2);
+    expect(headerLabels[0]).toContain('Service');
+    expect(headerLabels[1]).toContain('Region');
+    expect(firstPinButton.textContent?.trim()).toBe('Unpin');
+    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
   });
 
-  it('should filter rows by the search query', () => {
+  it('emits state changes for search, sort, visibility, pinning, and pagination', () => {
     fixture.detectChanges();
 
     const searchInput = fixture.nativeElement.querySelector('#table-search') as HTMLInputElement;
-    searchInput.value = 'svc-00001';
+    const sortButtons = fixture.nativeElement.querySelectorAll('.sort-button');
+    const regionToggle = fixture.nativeElement.querySelector(
+      '.column-chip[data-column-id="region"]',
+    ) as HTMLButtonElement;
+    const pinButtons = fixture.nativeElement.querySelectorAll('.pin-button');
+    const nextButton = fixture.nativeElement.querySelector(
+      '.pager-button:last-child',
+    ) as HTMLButtonElement;
+
+    searchInput.value = 'svc';
     searchInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    const firstRow = rows[0] as HTMLTableRowElement;
+    sortButtons[1].click();
+    fixture.detectChanges();
 
-    expect(rows.length).toBe(1);
-    expect(firstRow.textContent).toContain('Checkout 1');
+    regionToggle.click();
+    fixture.detectChanges();
+
+    pinButtons[0].click();
+    fixture.detectChanges();
+
+    nextButton.click();
+    fixture.detectChanges();
+
+    expect(host.stateEvents[0]?.globalFilter).toBe('svc');
+    expect(host.stateEvents[0]?.pagination.pageIndex).toBe(0);
+    expect(host.stateEvents.some((state) => state.sorting[0]?.id === 'region')).toBe(true);
+    expect(
+      host.stateEvents.some((state) => state.columnVisibility['region'] === false),
+    ).toBe(true);
+    expect(
+      host.stateEvents.some((state) => (state.columnPinning.left?.length ?? 0) === 0),
+    ).toBe(true);
+    expect(host.stateEvents.at(-1)?.pagination.pageIndex).toBe(1);
   });
 
-  it('should hide and show columns from the visibility controls', () => {
+  it('respects controlled state slices without mutating the rendered table', () => {
+    host.state.set({
+      columnVisibility: {
+        region: false,
+      },
+    });
     fixture.detectChanges();
 
     const regionToggle = fixture.nativeElement.querySelector(
       '.column-chip[data-column-id="region"]',
     ) as HTMLButtonElement;
 
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Region');
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
 
     regionToggle.click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
-    expect(fixture.nativeElement.querySelector('tbody')?.textContent).not.toContain('us-east-1');
-
-    regionToggle.click();
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Region');
-    expect(fixture.nativeElement.querySelector('tbody')?.textContent).toContain('us-east-1');
+    expect(host.stateEvents.length).toBeGreaterThan(0);
   });
 
-  it('should allow pinning and unpinning columns', () => {
+  it('keeps at least one column visible', () => {
     fixture.detectChanges();
 
-    const pinButtons = fixture.nativeElement.querySelectorAll('.pin-button');
-    const regionPinButton = pinButtons[1] as HTMLButtonElement;
-
-    expect(regionPinButton.textContent?.trim()).toBe('Pin');
-
-    regionPinButton.click();
-    fixture.detectChanges();
-
-    expect(regionPinButton.textContent?.trim()).toBe('Unpin');
-
-    regionPinButton.click();
-    fixture.detectChanges();
-
-    expect(regionPinButton.textContent?.trim()).toBe('Pin');
-  });
-
-  it('should keep pinned offsets aligned with the configured column widths', () => {
-    fixture.detectChanges();
-
-    const pinButtons = fixture.nativeElement.querySelectorAll('.pin-button');
-    const regionPinButton = pinButtons[1] as HTMLButtonElement;
-
-    regionPinButton.click();
-    fixture.detectChanges();
-
-    const workloadHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="workload"]',
-    ) as HTMLTableCellElement;
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
-
-    expect(workloadHeader.style.width).toBe('220px');
-    expect(workloadHeader.style.left).toBe('0px');
-    expect(regionHeader.style.width).toBe('160px');
-    expect(regionHeader.style.left).toBe('220px');
-  });
-
-  it('should keep at least one column visible', () => {
-    fixture.detectChanges();
-
-    const columnIds = [
-      'region',
-      'owner',
-      'status',
-      'latencyMs',
-      'throughput',
-      'errorRate',
-      'saturation',
-      'updatedAt',
-    ];
+    const columnIds = ['region', 'status', 'throughput'];
 
     for (const columnId of columnIds) {
       const columnToggle = fixture.nativeElement.querySelector(
@@ -158,45 +209,38 @@ describe('Table', () => {
       fixture.detectChanges();
     }
 
-    const workloadToggle = fixture.nativeElement.querySelector(
-      '.column-chip[data-column-id="workload"]',
+    const serviceToggle = fixture.nativeElement.querySelector(
+      '.column-chip[data-column-id="name"]',
     ) as HTMLButtonElement;
 
-    expect(workloadToggle.disabled).toBe(true);
+    expect(serviceToggle.disabled).toBe(true);
     expect(fixture.nativeElement.querySelectorAll('thead th').length).toBe(1);
   });
 
-  it('should surface a row render healthcheck KPI', async () => {
-    fixture.detectChanges();
-    await fixture.whenStable();
+  it('hides disabled toolbar sections and renders all rows when pagination is off', () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(TableHost);
+    host = fixture.componentInstance;
+    host.enableGlobalFilter = false;
+    host.showColumnVisibility = false;
+    host.showPagination = false;
     fixture.detectChanges();
 
-    const kpi = fixture.nativeElement.querySelector('.render-kpi') as HTMLElement;
-    const kpiValue = fixture.nativeElement.querySelector('.render-kpi-value') as HTMLElement;
-    const kpiFootnote = fixture.nativeElement.querySelector(
-      '.render-kpi-footnote',
-    ) as HTMLElement;
-
-    expect(kpi.getAttribute('aria-label')).toBe('Row render healthcheck');
-    expect(kpiValue.textContent).toContain('ms');
-    expect(kpiFootnote.textContent).toContain('24 visible rows');
-    expect(kpiFootnote.textContent).toContain('9 columns');
+    expect(fixture.nativeElement.querySelector('#table-search')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.column-chip')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.pager')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
   });
 });
 
 function buildRows(size: number): Row[] {
-  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert', 'Offline'];
+  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
 
   return Array.from({ length: size }, (_, index) => ({
     id: `svc-${String(index + 1).padStart(5, '0')}`,
-    workload: `Checkout ${index + 1}`,
-    region: 'us-east-1',
-    owner: 'Core Platform',
+    name: ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'][index] ?? `Service ${index + 1}`,
+    region: ['us-east-1', 'eu-west-3'][index % 2],
     status: statuses[index % statuses.length],
-    latencyMs: 50 + index,
-    throughput: 1000 + index,
-    errorRate: 0.01,
-    saturation: 40,
-    updatedAt: Date.now(),
+    throughput: 1000 + index * 1000,
   }));
 }

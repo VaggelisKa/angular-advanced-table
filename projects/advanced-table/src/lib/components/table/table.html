@@ -1,100 +1,59 @@
-<section class="controls card">
-  <div class="control-block">
-    <label class="control-label" for="table-search">Search workload, owner, region, or id</label>
-    <input
-      id="table-search"
-      type="search"
-      class="search-input"
-      [value]="globalFilter()"
-      placeholder="Try checkout, eu-west, identity, svc-00042..."
-      (input)="onSearchInput($event)"
-    />
-  </div>
+@if (showTopControls()) {
+  <section class="controls card">
+    @if (showSearch()) {
+      <div class="control-block">
+        <label class="control-label" for="table-search">{{ searchLabel() }}</label>
+        <input
+          id="table-search"
+          type="search"
+          class="search-input"
+          [value]="mergedState().globalFilter"
+          [placeholder]="searchPlaceholder()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
+    }
 
-  <div class="control-block">
-    <div class="control-heading">
-      <span class="control-label">Columns</span>
-      <span class="control-caption">{{ visibleColumnCount() }} / {{ columns.length }} visible</span>
-    </div>
-    <div class="chip-row" role="group" aria-label="Column visibility">
-      @for (column of columnVisibilityOptions(); track column.id) {
-        <button
-          type="button"
-          class="chip column-chip"
-          [class.is-active]="column.getIsVisible()"
-          [disabled]="!canToggleColumnVisibility(column)"
-          [attr.aria-pressed]="column.getIsVisible()"
-          [attr.aria-label]="getColumnVisibilityAction(column)"
-          [attr.data-column-id]="column.id"
-          (click)="toggleColumnVisibility(column)"
-        >
-          <span>{{ getColumnLabel(column.id) }}</span>
-          <span class="chip-count">{{ column.getIsVisible() ? 'Shown' : 'Hidden' }}</span>
-        </button>
-      }
-    </div>
-  </div>
-
-  <div class="control-block">
-    <span class="control-label">Status filter</span>
-    <div class="chip-row" role="group" aria-label="Status filter">
-      @for (status of statuses; track status) {
-        <button
-          type="button"
-          class="chip"
-          [class.is-active]="isStatusActive(status)"
-          [attr.data-status]="status"
-          [attr.aria-pressed]="isStatusActive(status)"
-          (click)="toggleStatus(status)"
-        >
-          <span>{{ status }}</span>
-          <span class="chip-count">{{ formatInteger(statusCounts()[status]) }}</span>
-        </button>
-      }
-    </div>
-  </div>
-
-  <button type="button" class="clear-button" (click)="resetView()">
-    Reset view
-  </button>
-</section>
+    @if (showVisibilityControls()) {
+      <div class="control-block">
+        <div class="control-heading">
+          <span class="control-label">Columns</span>
+          <span class="control-caption">
+            {{ visibleColumnCount() }} / {{ table.getAllLeafColumns().length }} visible
+          </span>
+        </div>
+        <div class="chip-row" role="group" aria-label="Column visibility">
+          @for (column of columnVisibilityOptions(); track column.id) {
+            <button
+              type="button"
+              class="chip column-chip"
+              [class.is-active]="column.getIsVisible()"
+              [disabled]="!canToggleColumnVisibility(column)"
+              [attr.aria-pressed]="column.getIsVisible()"
+              [attr.aria-label]="getColumnVisibilityAction(column)"
+              [attr.data-column-id]="column.id"
+              (click)="toggleColumnVisibility(column)"
+            >
+              <span>{{ getColumnLabel(column) }}</span>
+              <span class="chip-count">{{ column.getIsVisible() ? 'Shown' : 'Hidden' }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </section>
+}
 
 <section class="table-card card">
-  <div class="table-toolbar">
-    <div class="table-heading">
-      <p class="table-title">Operational table</p>
-      <p class="table-meta">
-        {{ pageLabel() }} • Sort: {{ activeSortLabel() }} • Last mutation cycle:
-        {{ formatDecimal(lastCycleDurationMs()) }} ms • Last tick:
-        {{ formatTime(lastTickAt()) }}
-      </p>
-    </div>
-
-    <article
-      class="render-kpi"
-      [attr.data-health]="rowRenderHealth().tone"
-      aria-label="Row render healthcheck"
-    >
-      <span class="render-kpi-label">Row render healthcheck</span>
-      <div class="render-kpi-value-row">
-        <strong class="render-kpi-value">
-          {{ formatDecimal(lastRowRenderDurationMs()) }} ms
-        </strong>
-        <span class="render-kpi-badge">{{ rowRenderHealth().label }}</span>
-      </div>
-      <span class="render-kpi-footnote">
-        {{ rowRenderSummary() }}
-      </span>
-    </article>
-
-    <div class="table-actions">
+  @if (showPagination()) {
+    <div class="table-toolbar">
       <div class="chip-row compact" role="group" aria-label="Page size">
-        @for (size of pageSizeOptions(); track size) {
+        @for (size of sanitizedPageSizeOptions(); track size) {
           <button
             type="button"
             class="chip"
-            [class.is-active]="pagination().pageSize === size"
-            [attr.aria-pressed]="pagination().pageSize === size"
+            [class.is-active]="mergedState().pagination.pageSize === size"
+            [attr.aria-pressed]="mergedState().pagination.pageSize === size"
             (click)="setPageSize(size)"
           >
             {{ size }} / page
@@ -124,15 +83,10 @@
         </button>
       </div>
     </div>
-  </div>
+  }
 
   <div class="table-region">
-    <table
-      ngGrid
-      class="data-table"
-      aria-label="Live data table"
-      [style.width.px]="getTableWidth()"
-    >
+    <table ngGrid class="data-table" [attr.aria-label]="ariaLabel()">
       <thead>
         @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
           <tr ngGridRow>
@@ -141,14 +95,11 @@
                 ngGridCell
                 role="columnheader"
                 class="header-cell"
-                [attr.data-column-id]="header.column.id"
-                [class.metric-header]="isMetricColumn(header.column.id)"
+                [class.is-align-end]="isColumnAlignedEnd(header.column)"
                 [class.is-pinned-left]="header.column.getIsPinned() === 'left'"
                 [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
                 [style.left.px]="getPinnedLeft(header.column)"
                 [style.right.px]="getPinnedRight(header.column)"
-                [style.width.px]="getColumnWidth(header.column)"
-                [style.min-width.px]="getColumnWidth(header.column)"
                 [attr.aria-sort]="getAriaSort(header.column)"
               >
                 @if (!header.isPlaceholder) {
@@ -159,7 +110,11 @@
                       class="sort-button"
                       [class.is-sorted]="!!header.column.getIsSorted()"
                       [disabled]="!header.column.getCanSort()"
-                      [attr.aria-label]="header.column.getCanSort() ? 'Toggle sort for ' + header.column.id : null"
+                      [attr.aria-label]="
+                        header.column.getCanSort()
+                          ? 'Toggle sort for ' + getColumnLabel(header.column)
+                          : null
+                      "
                       (click)="header.column.toggleSorting()"
                     >
                       <ng-container
@@ -175,16 +130,19 @@
                         {{ getSortIcon(header.column) }}
                       </span>
                     </button>
-                    <button
-                      type="button"
-                      class="pin-button"
-                      [class.is-pinned]="!!header.column.getIsPinned()"
-                      [attr.aria-pressed]="!!header.column.getIsPinned()"
-                      [attr.aria-label]="getPinLabel(header.column) + ' ' + header.column.id"
-                      (click)="toggleColumnPin(header.column)"
-                    >
-                      {{ header.column.getIsPinned() ? 'Unpin' : 'Pin' }}
-                    </button>
+
+                    @if (canPinColumn(header.column)) {
+                      <button
+                        type="button"
+                        class="pin-button"
+                        [class.is-pinned]="!!header.column.getIsPinned()"
+                        [attr.aria-pressed]="!!header.column.getIsPinned()"
+                        [attr.aria-label]="getPinLabel(header.column) + ' ' + getColumnLabel(header.column)"
+                        (click)="toggleColumnPin(header.column)"
+                      >
+                        {{ header.column.getIsPinned() ? 'Unpin' : 'Pin' }}
+                      </button>
+                    }
                   </div>
                 }
               </th>
@@ -195,20 +153,17 @@
       <tbody>
         @if (table.getRowModel().rows.length) {
           @for (row of table.getRowModel().rows; track row.id) {
-            <tr ngGridRow class="data-row" [attr.data-status]="row.original.status">
+            <tr ngGridRow class="data-row">
               @for (cell of row.getVisibleCells(); track cell.id) {
                 <td
                   ngGridCell
                   class="data-cell"
-                  [class.metric-cell]="isMetricColumn(cell.column.id)"
-                  [class.status-cell]="cell.column.id === 'status'"
+                  [class.is-align-end]="isColumnAlignedEnd(cell.column)"
                   [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
                   [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
                   [style.left.px]="getPinnedLeft(cell.column)"
                   [style.right.px]="getPinnedRight(cell.column)"
-                  [style.width.px]="getColumnWidth(cell.column)"
-                  [style.min-width.px]="getColumnWidth(cell.column)"
-                  [attr.data-status]="cell.column.id === 'status' ? cell.getValue() : null"
+                  [attr.data-column-id]="cell.column.id"
                 >
                   <ng-container
                     *flexRender="
@@ -226,8 +181,7 @@
         } @else {
           <tr ngGridRow>
             <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
-              No rows match the current filters. Reset the chips or search query to repopulate the
-              view.
+              {{ emptyStateLabel() }}
             </td>
           </tr>
         }
