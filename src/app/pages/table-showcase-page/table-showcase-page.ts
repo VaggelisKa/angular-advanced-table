@@ -16,6 +16,7 @@ import {
   type SimulationStatus,
 } from './table-simulation';
 
+const STATUS_FILTER_ID = 'status';
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {
   notation: 'compact',
@@ -163,6 +164,7 @@ export class TableShowcasePage {
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
   protected readonly columns = simulationColumns;
+  protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
   protected readonly tableState = signal<Partial<AdvancedTableState>>({
     columnFilters: [],
@@ -170,7 +172,7 @@ export class TableShowcasePage {
   protected readonly selectedStatuses = computed(() => {
     const activeFilter = this.tableState()
       .columnFilters
-      ?.find((entry) => entry.id === 'status');
+      ?.find((entry) => entry.id === STATUS_FILTER_ID);
 
     return Array.isArray(activeFilter?.value)
       ? (activeFilter.value as SimulationStatus[])
@@ -210,17 +212,10 @@ export class TableShowcasePage {
 
     const nextStatuses = this.statuses.filter((value) => currentStatuses.has(value));
 
-    this.tableState.set({
-      columnFilters:
-        nextStatuses.length === this.statuses.length
-          ? []
-          : [
-              {
-                id: 'status',
-                value: [...nextStatuses],
-              },
-            ],
-    });
+    this.updateColumnFilter(
+      STATUS_FILTER_ID,
+      nextStatuses.length === this.statuses.length ? null : [...nextStatuses],
+    );
   }
 
   protected isStatusActive(status: SimulationStatus): boolean {
@@ -242,4 +237,24 @@ export class TableShowcasePage {
   protected formatCompact(value: number): string {
     return compactFormatter.format(value);
   }
+
+  private updateColumnFilter(columnId: string, value: unknown | null): void {
+    this.tableState.update((currentState) => ({
+      columnFilters: upsertColumnFilter(currentState.columnFilters ?? [], columnId, value),
+    }));
+  }
+}
+
+function upsertColumnFilter(
+  currentFilters: NonNullable<Partial<AdvancedTableState>['columnFilters']>,
+  columnId: string,
+  value: unknown | null,
+) {
+  const nextFilters = currentFilters.filter((filter) => filter.id !== columnId);
+
+  if (value === null) {
+    return nextFilters;
+  }
+
+  return [...nextFilters, { id: columnId, value }];
 }

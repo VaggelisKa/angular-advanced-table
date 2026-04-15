@@ -74,6 +74,8 @@ const columns: ColumnDef<Row, unknown>[] = [
       [enableGlobalFilter]="enableGlobalFilter"
       [showColumnVisibility]="showColumnVisibility"
       [showPagination]="showPagination"
+      [enableRenderMetrics]="enableRenderMetrics"
+      [getRowId]="getRowId"
       (stateChange)="onStateChange($event)"
     />
   `,
@@ -82,6 +84,7 @@ class TableHost {
   readonly rows = signal<Row[]>(buildRows(6));
   readonly state = signal<Partial<AdvancedTableState>>({});
   readonly columns = columns;
+  readonly getRowId = (row: Row) => row.id;
   initialState: Partial<AdvancedTableState> = {
     sorting: [{ id: 'throughput', desc: true }],
     columnPinning: {
@@ -96,6 +99,7 @@ class TableHost {
   enableGlobalFilter = true;
   showColumnVisibility = true;
   showPagination = true;
+  enableRenderMetrics = false;
   readonly stateEvents: AdvancedTableState[] = [];
 
   onStateChange(state: AdvancedTableState): void {
@@ -249,6 +253,34 @@ describe('AdvancedTableComponent', () => {
     expect(fixture.nativeElement.querySelector('.column-chip')).toBeNull();
     expect(fixture.nativeElement.querySelector('.pager')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
+  });
+
+  it('shows render metrics UI and emits the built-in render filter when enabled', async () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(TableHost);
+    host = fixture.componentInstance;
+    host.enableRenderMetrics = true;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const renderHeader = (
+      Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[]
+    ).find((header) => header.textContent?.includes('Render'));
+    const slowFilter = fixture.nativeElement.querySelector(
+      '.render-chip[data-render-filter="slow"]',
+    ) as HTMLButtonElement;
+
+    expect(renderHeader).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.render-kpi')).toBeTruthy();
+
+    slowFilter.click();
+    fixture.detectChanges();
+
+    expect(host.stateEvents.at(-1)?.columnFilters).toContainEqual({
+      id: '__rowRenderMetric',
+      value: 'slow',
+    });
   });
 });
 

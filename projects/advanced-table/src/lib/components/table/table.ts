@@ -1,8 +1,10 @@
 import {
+  afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  Directive,
   effect,
   input,
   output,
@@ -32,6 +34,42 @@ import {
 
 import type { AdvancedTableState } from './table.types';
 
+type RenderHealthTone = 'idle' | 'fast' | 'watch' | 'slow';
+type RowRenderTone = Exclude<RenderHealthTone, 'idle'>;
+type RowRenderFilterValue = RowRenderTone | 'all';
+type TableRowIdGetter<TData> = (row: TData, index: number) => string;
+
+interface RowRenderMetric {
+  durationMs: number;
+  measuredAt: number;
+  tone: RowRenderTone;
+}
+
+interface RenderFilterOption {
+  value: RowRenderFilterValue;
+  label: string;
+  description: string;
+}
+
+interface RenderHealthState {
+  label: string;
+  tone: RenderHealthTone;
+}
+
+interface RenderMeasurement {
+  durationMs: number;
+  averageRowDurationMs: number;
+  rowCount: number;
+  visibleColumnCount: number;
+  rowsPerSecond: number;
+}
+
+interface RowRenderMeasurementEvent {
+  rowId: string;
+  renderToken: number;
+  durationMs: number;
+}
+
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 const EMPTY_COLUMN_PINNING: ColumnPinningState = {
   left: [],
@@ -49,6 +87,41 @@ const DEFAULT_TABLE_STATE: AdvancedTableState = {
   columnPinning: EMPTY_COLUMN_PINNING,
   pagination: DEFAULT_PAGINATION,
 };
+const DEFAULT_RENDER_MEASUREMENT: RenderMeasurement = {
+  durationMs: 0,
+  averageRowDurationMs: 0,
+  rowCount: 0,
+  visibleColumnCount: 0,
+  rowsPerSecond: 0,
+};
+const RENDER_METRIC_COLUMN_ID = '__rowRenderMetric';
+const RENDER_FILTER_OPTIONS: readonly RenderFilterOption[] = [
+  {
+    value: 'all',
+    label: 'All rows',
+    description: 'Latest sample',
+  },
+  {
+    value: 'fast',
+    label: 'Fast',
+    description: 'Under 4 ms',
+  },
+  {
+    value: 'watch',
+    label: 'Watch',
+    description: '4 to 8 ms',
+  },
+  {
+    value: 'slow',
+    label: 'Slow',
+    description: 'Over 8 ms',
+  },
+] as const;
+const decimalFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+const integerFormatter = new Intl.NumberFormat('en-US');
 const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => {
   const query = String(filterValue ?? '').trim().toLowerCase();
 
@@ -61,10 +134,66 @@ const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => 
   );
 };
 
+@Directive({
+  selector: 'tr[advancedTableRowMeter]',
+})
+export class AdvancedTableRowMeterDirective {
+  readonly rowId = input.required<string>({
+    alias: 'advancedTableRowMeter',
+  });
+  readonly renderToken = input.required<number>({
+    alias: 'advancedTableRowRenderToken',
+  });
+  readonly renderStartedAt = input.required<number>({
+    alias: 'advancedTableRowRenderStartedAt',
+  });
+  readonly enabled = input(false, {
+    alias: 'advancedTableRowRenderEnabled',
+    transform: booleanAttribute,
+  });
+
+  readonly advancedTableRowRendered = output<RowRenderMeasurementEvent>();
+
+  private lastEmissionKey = '';
+
+  constructor() {
+    afterRenderEffect({
+      read: () => {
+        if (!this.enabled()) {
+          return;
+        }
+
+        const rowId = this.rowId();
+        const renderToken = this.renderToken();
+        const renderStartedAt = this.renderStartedAt();
+
+        if (renderToken <= 0 || renderStartedAt <= 0) {
+          return;
+        }
+
+        const emissionKey = `${renderToken}:${rowId}`;
+
+        if (this.lastEmissionKey === emissionKey) {
+          return;
+        }
+
+        this.lastEmissionKey = emissionKey;
+        this.advancedTableRowRendered.emit({
+          rowId,
+          renderToken,
+          durationMs: roundToSingleDecimal(
+            Math.max(performance.now() - renderStartedAt, 0.1),
+          ),
+        });
+      },
+    });
+  }
+}
+
 @Component({
   selector: 'advanced-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Grid, GridCell, GridCellWidget, GridRow, FlexRender],
+  imports: [Grid, GridCell, GridCellWidget, GridRow, FlexRender, AdvancedTableRowMeterDirective],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -84,6 +213,8 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
   readonly globalFilterFn = input<FilterFn<TData> | undefined>(undefined);
   readonly initialState = input<Partial<AdvancedTableState>>({});
   readonly state = input<Partial<AdvancedTableState>>({});
+  readonly enableRenderMetrics = input(false, { transform: booleanAttribute });
+  readonly getRowId = input<TableRowIdGetter<TData> | undefined>(undefined);
 
   readonly stateChange = output<AdvancedTableState>();
 
@@ -100,7 +231,16 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
   );
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   private readonly hasSeededInitialState = signal(false);
+  private readonly rowRenderMetrics = signal<Record<string, RowRenderMetric>>({});
+  protected readonly renderMeasurement = signal<RenderMeasurement>(DEFAULT_RENDER_MEASUREMENT);
+  protected readonly renderMeasurementToken = signal(0);
+  protected readonly renderMeasurementStartedAt = signal(0);
+  private readonly renderMetricFilterRevision = signal(0);
+  private expectedMeasuredRowCount = 0;
+  private measuredRowIds = new Set<string>();
+  private shouldRefreshRenderMetricFilter = false;
 
+  protected readonly renderFilterOptions = RENDER_FILTER_OPTIONS;
   protected readonly sanitizedPageSizeOptions = computed(() => {
     const options = this.pageSizeOptions()
       .map((value) => Math.trunc(value))
@@ -109,40 +249,154 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
     return options.length ? options : [...DEFAULT_PAGE_SIZE_OPTIONS];
   });
   private readonly defaultPageSize = computed(() => this.sanitizedPageSizeOptions()[0]);
-
+  private readonly resolvedColumnFilters = computed(() =>
+    this.sanitizeColumnFilters(
+      this.state().columnFilters ?? this.internalColumnFilters(),
+    ),
+  );
   protected readonly mergedState = computed<AdvancedTableState>(() => ({
     sorting: this.state().sorting ?? this.internalSorting(),
     globalFilter: this.enableGlobalFilter()
       ? (this.state().globalFilter ?? this.internalGlobalFilter())
       : '',
-    columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),
+    columnFilters: this.resolvedColumnFilters(),
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnPinning: this.allowColumnPinning()
       ? (this.state().columnPinning ?? this.internalColumnPinning())
       : EMPTY_COLUMN_PINNING,
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
-  protected readonly table: Table<TData> = createAngularTable<TData>(() => ({
-    data: this.readRequiredInput(this.data, []) as TData[],
-    columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
-    state: this.mergedState(),
-    enableMultiSort: false,
-    enableColumnPinning: this.allowColumnPinning(),
-    autoResetPageIndex: false,
-    globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: this.showPagination() ? getPaginationRowModel() : undefined,
-    onSortingChange: (updater) => this.updateState({ sorting: updater }),
-    onGlobalFilterChange: (updater) =>
-      this.updateState({ globalFilter: updater, pagination: this.firstPageUpdater }),
-    onColumnFiltersChange: (updater) =>
-      this.updateState({ columnFilters: updater, pagination: this.firstPageUpdater }),
-    onColumnVisibilityChange: (updater) => this.updateState({ columnVisibility: updater }),
-    onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
-    onPaginationChange: (updater) => this.updateState({ pagination: updater }),
-  })) as Table<TData>;
+  private readonly renderMetricColumn: ColumnDef<TData, unknown> = {
+    id: RENDER_METRIC_COLUMN_ID,
+    header: 'Render',
+    size: 150,
+    meta: {
+      label: 'Render',
+      align: 'end',
+    },
+    enableGlobalFilter: false,
+    enableHiding: false,
+    enablePinning: false,
+    enableSorting: false,
+    filterFn: (row, _columnId, filterValue) => {
+      const activeFilter = isRenderMetricFilterValue(filterValue) ? filterValue : 'all';
+
+      if (!this.enableRenderMetrics() || activeFilter === 'all') {
+        return true;
+      }
+
+      const metric = this.rowRenderMetrics()[row.id];
+
+      if (!metric) {
+        return true;
+      }
+
+      return metric.tone === activeFilter;
+    },
+    cell: (info) => this.getRowRenderMetricLabel(info.row.id),
+  };
+  private readonly resolvedColumns = computed<readonly ColumnDef<TData, unknown>[]>(() => {
+    const columns = this.readRequiredInput(this.columns, []);
+
+    if (!this.enableRenderMetrics()) {
+      return columns;
+    }
+
+    return [...columns, this.renderMetricColumn];
+  });
+  protected readonly selectedRenderMetricFilter = computed<RowRenderFilterValue>(() => {
+    if (!this.enableRenderMetrics()) {
+      return 'all';
+    }
+
+    const activeFilter = this.mergedState().columnFilters.find(
+      (entry) => entry.id === RENDER_METRIC_COLUMN_ID,
+    );
+
+    return isRenderMetricFilterValue(activeFilter?.value) ? activeFilter.value : 'all';
+  });
+  protected readonly showSearch = computed(() => this.enableGlobalFilter());
+  protected readonly showVisibilityControls = computed(
+    () => this.showColumnVisibility() && this.columnVisibilityOptions().length > 0,
+  );
+  protected readonly showRenderMetricControls = computed(() => this.enableRenderMetrics());
+  protected readonly showTopControls = computed(
+    () =>
+      this.showSearch() ||
+      this.showVisibilityControls() ||
+      this.showRenderMetricControls(),
+  );
+  protected readonly showTableToolbar = computed(
+    () => this.showPagination() || this.enableRenderMetrics(),
+  );
+  protected readonly rowRenderHealth = computed<RenderHealthState>(() => {
+    const measurement = this.renderMeasurement();
+
+    if (!measurement.rowCount) {
+      return {
+        label: 'Idle',
+        tone: 'idle',
+      };
+    }
+
+    const tone = getRowRenderTone(measurement.durationMs);
+
+    return {
+      label: getRenderToneLabel(tone),
+      tone,
+    };
+  });
+  protected readonly renderFilterCaption = computed(() => {
+    const measurement = this.renderMeasurement();
+
+    if (!measurement.rowCount) {
+      return 'Captures the latest row paint time for the current page.';
+    }
+
+    const rowLabel = measurement.rowCount === 1 ? 'row' : 'rows';
+
+    return `${integerFormatter.format(measurement.rowCount)} visible ${rowLabel} sampled`;
+  });
+  protected readonly rowRenderSummary = computed(() => {
+    const measurement = this.renderMeasurement();
+
+    if (!measurement.rowCount) {
+      return 'No visible rows in the current view.';
+    }
+
+    const rowLabel = measurement.rowCount === 1 ? 'row' : 'rows';
+    const columnLabel = measurement.visibleColumnCount === 1 ? 'column' : 'columns';
+
+    return `${integerFormatter.format(measurement.rowCount)} ${rowLabel} x ${integerFormatter.format(measurement.visibleColumnCount)} ${columnLabel} / ${decimalFormatter.format(measurement.averageRowDurationMs)} ms avg row / ${integerFormatter.format(measurement.rowsPerSecond)} rows/s`;
+  });
+  protected readonly table: Table<TData> = createAngularTable<TData>(() => {
+    if (this.selectedRenderMetricFilter() !== 'all') {
+      this.renderMetricFilterRevision();
+    }
+
+    return {
+      data: this.readRequiredInput(this.data, []) as TData[],
+      columns: this.resolvedColumns() as ColumnDef<TData, unknown>[],
+      state: this.mergedState(),
+      enableMultiSort: false,
+      enableColumnPinning: this.allowColumnPinning(),
+      autoResetPageIndex: false,
+      globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
+      getRowId: (row, index) => this.resolveRowId(row, index),
+      getCoreRowModel: getCoreRowModel(),
+      getFilteredRowModel: getFilteredRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      getPaginationRowModel: this.showPagination() ? getPaginationRowModel() : undefined,
+      onSortingChange: (updater) => this.updateState({ sorting: updater }),
+      onGlobalFilterChange: (updater) =>
+        this.updateState({ globalFilter: updater, pagination: this.firstPageUpdater }),
+      onColumnFiltersChange: (updater) =>
+        this.updateState({ columnFilters: updater, pagination: this.firstPageUpdater }),
+      onColumnVisibilityChange: (updater) => this.updateState({ columnVisibility: updater }),
+      onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
+      onPaginationChange: (updater) => this.updateState({ pagination: updater }),
+    };
+  }) as Table<TData>;
   protected readonly columnVisibilityOptions = computed(() =>
     this.table
       .getAllLeafColumns()
@@ -151,13 +405,6 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
   protected readonly totalTableWidth = computed(() => this.table.getTotalSize());
   protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
-  protected readonly showSearch = computed(() => this.enableGlobalFilter());
-  protected readonly showVisibilityControls = computed(
-    () => this.showColumnVisibility() && this.columnVisibilityOptions().length > 0,
-  );
-  protected readonly showTopControls = computed(
-    () => this.showSearch() || this.showVisibilityControls(),
-  );
 
   constructor() {
     effect(() => {
@@ -174,7 +421,9 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
           : '',
       );
       this.internalColumnFilters.set(
-        initialState.columnFilters ?? DEFAULT_TABLE_STATE.columnFilters,
+        this.sanitizeColumnFilters(
+          initialState.columnFilters ?? DEFAULT_TABLE_STATE.columnFilters,
+        ),
       );
       this.internalColumnVisibility.set(
         initialState.columnVisibility ?? DEFAULT_TABLE_STATE.columnVisibility,
@@ -189,6 +438,36 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
         pageSize: initialState.pagination?.pageSize ?? this.defaultPageSize(),
       });
       this.hasSeededInitialState.set(true);
+    });
+
+    effect(() => {
+      if (!this.enableRenderMetrics()) {
+        this.renderMeasurement.set(DEFAULT_RENDER_MEASUREMENT);
+        this.expectedMeasuredRowCount = 0;
+        this.measuredRowIds = new Set<string>();
+        this.shouldRefreshRenderMetricFilter = false;
+        this.renderMeasurementToken.set(0);
+        this.renderMeasurementStartedAt.set(0);
+        return;
+      }
+
+      this.readRequiredInput(this.data, []);
+
+      const visibleRows = this.table.getRowModel().rows;
+      const visibleColumnCount = this.visibleColumnCount();
+
+      this.expectedMeasuredRowCount = visibleRows.length;
+      this.measuredRowIds = new Set<string>();
+      this.shouldRefreshRenderMetricFilter = false;
+      this.renderMeasurementStartedAt.set(performance.now());
+      this.renderMeasurementToken.update((token) => token + 1);
+
+      if (!visibleRows.length) {
+        this.renderMeasurement.set({
+          ...DEFAULT_RENDER_MEASUREMENT,
+          visibleColumnCount,
+        });
+      }
     });
   }
 
@@ -207,10 +486,22 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
 
   protected setPageSize(pageSize: number): void {
     this.updateState({
-      pagination: (currentPagination) => ({
+      pagination: () => ({
         pageIndex: 0,
         pageSize,
       }),
+    });
+  }
+
+  protected setRenderMetricFilter(filterValue: RowRenderFilterValue): void {
+    this.updateState({
+      columnFilters: (currentFilters) =>
+        upsertColumnFilter(
+          currentFilters,
+          RENDER_METRIC_COLUMN_ID,
+          filterValue === 'all' ? null : filterValue,
+        ),
+      pagination: this.firstPageUpdater,
     });
   }
 
@@ -299,6 +590,55 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
     return column.columnDef.meta?.align === 'end';
   }
 
+  protected isRenderMetricColumn(column: Column<TData, unknown>): boolean {
+    return column.id === RENDER_METRIC_COLUMN_ID;
+  }
+
+  protected getRowRenderTone(rowId: string): RowRenderTone | 'pending' {
+    return this.rowRenderMetrics()[rowId]?.tone ?? 'pending';
+  }
+
+  protected formatDecimal(value: number): string {
+    return decimalFormatter.format(value);
+  }
+
+  protected recordRowRender(event: RowRenderMeasurementEvent): void {
+    if (!this.enableRenderMetrics()) {
+      return;
+    }
+
+    if (event.renderToken !== this.renderMeasurementToken()) {
+      return;
+    }
+
+    if (this.measuredRowIds.has(event.rowId)) {
+      return;
+    }
+
+    this.measuredRowIds.add(event.rowId);
+
+    const previousMetric = this.rowRenderMetrics()[event.rowId];
+    const nextMetric: RowRenderMetric = {
+      durationMs: event.durationMs,
+      measuredAt: Date.now(),
+      tone: getRowRenderTone(event.durationMs),
+    };
+
+    this.rowRenderMetrics.update((currentMetrics) => ({
+      ...currentMetrics,
+      [event.rowId]: nextMetric,
+    }));
+
+    this.shouldRefreshRenderMetricFilter =
+      this.shouldRefreshRenderMetricFilter ||
+      previousMetric === undefined ||
+      previousMetric.tone !== nextMetric.tone;
+
+    if (this.measuredRowIds.size === this.expectedMeasuredRowCount) {
+      this.finalizeRenderMeasurement();
+    }
+  }
+
   protected getColumnLabel(column: Column<TData, unknown>): string {
     const metaLabel = column.columnDef.meta?.label;
 
@@ -327,7 +667,9 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
     const nextState: AdvancedTableState = {
       sorting: this.resolveUpdater(currentState.sorting, updaters.sorting),
       globalFilter: this.resolveUpdater(currentState.globalFilter, updaters.globalFilter),
-      columnFilters: this.resolveUpdater(currentState.columnFilters, updaters.columnFilters),
+      columnFilters: this.sanitizeColumnFilters(
+        this.resolveUpdater(currentState.columnFilters, updaters.columnFilters),
+      ),
       columnVisibility: this.resolveUpdater(
         currentState.columnVisibility,
         updaters.columnVisibility,
@@ -364,6 +706,62 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
     if (this.state().pagination === undefined) {
       this.internalPagination.set(nextState.pagination);
     }
+  }
+
+  private finalizeRenderMeasurement(): void {
+    const currentMetrics = this.rowRenderMetrics();
+    const durations = [...this.measuredRowIds]
+      .map((rowId) => currentMetrics[rowId]?.durationMs ?? 0)
+      .filter((durationMs) => durationMs > 0);
+    const totalDurationMs = durations.length ? Math.max(...durations) : 0;
+    const averageRowDurationMs = durations.length
+      ? roundToSingleDecimal(
+          durations.reduce((total, durationMs) => total + durationMs, 0) /
+            durations.length,
+        )
+      : 0;
+
+    this.renderMeasurement.set({
+      durationMs: roundToSingleDecimal(totalDurationMs),
+      averageRowDurationMs,
+      rowCount: this.expectedMeasuredRowCount,
+      visibleColumnCount: this.visibleColumnCount(),
+      rowsPerSecond:
+        totalDurationMs > 0
+          ? Math.round((this.expectedMeasuredRowCount * 1000) / totalDurationMs)
+          : 0,
+    });
+
+    if (
+      this.selectedRenderMetricFilter() !== 'all' &&
+      this.shouldRefreshRenderMetricFilter
+    ) {
+      this.renderMetricFilterRevision.update((revision) => revision + 1);
+    }
+  }
+
+  private sanitizeColumnFilters(columnFilters: ColumnFiltersState): ColumnFiltersState {
+    if (this.enableRenderMetrics()) {
+      return columnFilters;
+    }
+
+    return columnFilters.filter((filter) => filter.id !== RENDER_METRIC_COLUMN_ID);
+  }
+
+  private getRowRenderMetricLabel(rowId: string): string {
+    const metric = this.rowRenderMetrics()[rowId];
+
+    if (!metric) {
+      return 'Pending';
+    }
+
+    return `${decimalFormatter.format(metric.durationMs)} ms`;
+  }
+
+  private resolveRowId(row: TData, index: number): string {
+    const getRowId = this.getRowId();
+
+    return getRowId ? getRowId(row, index) : String(index);
   }
 
   private resolveUpdater<T>(currentValue: T, updater: Updater<T> | undefined): T {
@@ -410,6 +808,53 @@ function matchesFilterQuery(value: unknown, query: string): boolean {
   }
 
   return false;
+}
+
+function getRenderToneLabel(tone: RenderHealthTone): string {
+  switch (tone) {
+    case 'fast':
+      return 'Fast';
+    case 'watch':
+      return 'Watch';
+    case 'slow':
+      return 'Slow';
+    case 'idle':
+      return 'Idle';
+  }
+}
+
+function getRowRenderTone(durationMs: number): RowRenderTone {
+  if (durationMs < 4) {
+    return 'fast';
+  }
+
+  if (durationMs <= 8) {
+    return 'watch';
+  }
+
+  return 'slow';
+}
+
+function upsertColumnFilter(
+  currentFilters: ColumnFiltersState,
+  columnId: string,
+  value: unknown | null,
+): ColumnFiltersState {
+  const nextFilters = currentFilters.filter((filter) => filter.id !== columnId);
+
+  if (value === null) {
+    return nextFilters;
+  }
+
+  return [...nextFilters, { id: columnId, value }];
+}
+
+function roundToSingleDecimal(value: number): number {
+  return Number(value.toFixed(1));
+}
+
+function isRenderMetricFilterValue(value: unknown): value is RowRenderFilterValue {
+  return value === 'all' || value === 'fast' || value === 'watch' || value === 'slow';
 }
 
 function isUnavailableRequiredInputError(

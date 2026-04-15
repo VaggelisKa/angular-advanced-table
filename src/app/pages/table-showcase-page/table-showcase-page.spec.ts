@@ -89,4 +89,40 @@ describe('TableShowcasePage', () => {
 
     expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
   });
+
+  it('should preserve the table render filter when toggling statuses', () => {
+    fixture.detectChanges();
+
+    const slowRenderChip = fixture.nativeElement.querySelector(
+      '.render-chip[data-render-filter="slow"]',
+    ) as HTMLButtonElement;
+    const alertChip = fixture.nativeElement.querySelector(
+      '.status-chip[data-status="Alert"]',
+    ) as HTMLButtonElement;
+
+    slowRenderChip.click();
+    fixture.detectChanges();
+
+    alertChip.click();
+    fixture.detectChanges();
+
+    expect(
+      (
+        component as never as {
+          tableState: () => { columnFilters: { id: string; value: unknown }[] };
+        }
+      ).tableState().columnFilters,
+    ).toEqual(
+      expect.arrayContaining([
+        {
+          id: '__rowRenderMetric',
+          value: 'slow',
+        },
+        {
+          id: 'status',
+          value: ['Alert'],
+        },
+      ]),
+    );
+  });
 });
