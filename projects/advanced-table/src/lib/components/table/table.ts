@@ -82,6 +82,17 @@ const emptyStatusCounts: SimulationStatusCounts = {
   Alert: 0,
   Offline: 0,
 };
+const tableColumnSizes = {
+  workload: 220,
+  region: 160,
+  owner: 180,
+  status: 140,
+  latencyMs: 140,
+  throughput: 150,
+  errorRate: 140,
+  saturation: 140,
+  updatedAt: 150,
+} as const satisfies Record<Exclude<keyof SimulationRow, 'id'>, number>;
 
 const globalSearchFilter: FilterFn<SimulationRow> = (row, _columnId, filterValue) => {
   const query = String(filterValue ?? '').trim().toLowerCase();
@@ -149,18 +160,21 @@ export class Table {
       header: 'Workload',
       cell: (info) => info.getValue<string>(),
       enablePinning: true,
+      size: tableColumnSizes.workload,
     },
     {
       accessorKey: 'region',
       header: 'Region',
       cell: (info) => info.getValue<string>(),
       enablePinning: true,
+      size: tableColumnSizes.region,
     },
     {
       accessorKey: 'owner',
       header: 'Owner',
       cell: (info) => info.getValue<string>(),
       enablePinning: true,
+      size: tableColumnSizes.owner,
     },
     {
       accessorKey: 'status',
@@ -168,36 +182,42 @@ export class Table {
       filterFn: statusFilter,
       cell: (info) => info.getValue<string>(),
       enablePinning: true,
+      size: tableColumnSizes.status,
     },
     {
       accessorKey: 'latencyMs',
       header: 'Latency',
       cell: (info) => `${integerFormatter.format(info.getValue<number>())} ms`,
       enablePinning: true,
+      size: tableColumnSizes.latencyMs,
     },
     {
       accessorKey: 'throughput',
       header: 'Throughput',
       cell: (info) => `${compactFormatter.format(info.getValue<number>())} req/s`,
       enablePinning: true,
+      size: tableColumnSizes.throughput,
     },
     {
       accessorKey: 'errorRate',
       header: 'Error Rate',
       cell: (info) => percentFormatter.format(info.getValue<number>()),
       enablePinning: true,
+      size: tableColumnSizes.errorRate,
     },
     {
       accessorKey: 'saturation',
       header: 'Saturation',
       cell: (info) => `${integerFormatter.format(info.getValue<number>())}%`,
       enablePinning: true,
+      size: tableColumnSizes.saturation,
     },
     {
       accessorKey: 'updatedAt',
       header: 'Updated',
       cell: (info) => timeFormatter.format(info.getValue<number>()),
       enablePinning: true,
+      size: tableColumnSizes.updatedAt,
     },
   ];
   protected readonly table = createAngularTable<SimulationRow>(() => ({
@@ -366,6 +386,14 @@ export class Table {
 
   protected getPinnedRight(column: Column<SimulationRow, unknown>): number | null {
     return column.getIsPinned() === 'right' ? column.getAfter('right') : null;
+  }
+
+  protected getColumnWidth(column: Column<SimulationRow, unknown>): number {
+    return column.getSize();
+  }
+
+  protected getTableWidth(): number {
+    return this.table.getTotalSize();
   }
 
   protected getSortIcon(column: Column<SimulationRow, unknown>): string {

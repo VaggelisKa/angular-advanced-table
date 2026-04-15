@@ -110,7 +110,12 @@
   </div>
 
   <div class="table-region">
-    <table ngGrid class="data-table" aria-label="Live data table">
+    <table
+      ngGrid
+      class="data-table"
+      aria-label="Live data table"
+      [style.width.px]="getTableWidth()"
+    >
       <thead>
         @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
           <tr ngGridRow>
@@ -119,11 +124,14 @@
                 ngGridCell
                 role="columnheader"
                 class="header-cell"
+                [attr.data-column-id]="header.column.id"
                 [class.metric-header]="isMetricColumn(header.column.id)"
                 [class.is-pinned-left]="header.column.getIsPinned() === 'left'"
                 [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
                 [style.left.px]="getPinnedLeft(header.column)"
                 [style.right.px]="getPinnedRight(header.column)"
+                [style.width.px]="getColumnWidth(header.column)"
+                [style.min-width.px]="getColumnWidth(header.column)"
                 [attr.aria-sort]="getAriaSort(header.column)"
               >
                 @if (!header.isPlaceholder) {
@@ -181,6 +189,8 @@
                   [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
                   [style.left.px]="getPinnedLeft(cell.column)"
                   [style.right.px]="getPinnedRight(cell.column)"
+                  [style.width.px]="getColumnWidth(cell.column)"
+                  [style.min-width.px]="getColumnWidth(cell.column)"
                   [attr.data-status]="cell.column.id === 'status' ? cell.getValue() : null"
                 >
                   <ng-container
