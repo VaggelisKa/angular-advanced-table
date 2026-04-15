@@ -113,6 +113,28 @@ describe('Table', () => {
     expect(regionPinButton.textContent?.trim()).toBe('Pin');
   });
 
+  it('should keep pinned offsets aligned with the configured column widths', () => {
+    fixture.detectChanges();
+
+    const pinButtons = fixture.nativeElement.querySelectorAll('.pin-button');
+    const regionPinButton = pinButtons[1] as HTMLButtonElement;
+
+    regionPinButton.click();
+    fixture.detectChanges();
+
+    const workloadHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="workload"]',
+    ) as HTMLTableCellElement;
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+
+    expect(workloadHeader.style.width).toBe('220px');
+    expect(workloadHeader.style.left).toBe('0px');
+    expect(regionHeader.style.width).toBe('160px');
+    expect(regionHeader.style.left).toBe('220px');
+  });
+
   it('should keep at least one column visible', () => {
     fixture.detectChanges();
 
