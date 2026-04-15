@@ -71,6 +71,42 @@ describe('Table', () => {
     expect(rows.length).toBe(1);
     expect(firstRow.textContent).toContain('Checkout 1');
   });
+
+  it('should filter rows by a column filter', () => {
+    fixture.detectChanges();
+
+    const workloadFilter = fixture.nativeElement.querySelector(
+      '#column-filter-workload',
+    ) as HTMLInputElement;
+    workloadFilter.value = 'Search';
+    workloadFilter.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+    const firstRow = rows[0] as HTMLTableRowElement;
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(firstRow.textContent).toContain('Search');
+  });
+
+  it('should allow pinning and unpinning columns', () => {
+    fixture.detectChanges();
+
+    const pinButtons = fixture.nativeElement.querySelectorAll('.pin-button');
+    const regionPinButton = pinButtons[1] as HTMLButtonElement;
+
+    expect(regionPinButton.textContent?.trim()).toBe('Pin');
+
+    regionPinButton.click();
+    fixture.detectChanges();
+
+    expect(regionPinButton.textContent?.trim()).toBe('Unpin');
+
+    regionPinButton.click();
+    fixture.detectChanges();
+
+    expect(regionPinButton.textContent?.trim()).toBe('Pin');
+  });
 });
 
 function buildRows(size: number): Row[] {

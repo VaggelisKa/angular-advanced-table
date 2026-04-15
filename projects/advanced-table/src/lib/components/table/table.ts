@@ -17,6 +17,7 @@ import {
   type Column,
   type ColumnDef,
   type ColumnFiltersState,
+  type ColumnPinningState,
   type FilterFn,
   type PaginationState,
   type SortingState,
@@ -73,6 +74,7 @@ const columnLabels: Record<string, string> = {
   saturation: 'Saturation',
   updatedAt: 'Updated',
 };
+const textFilterColumnIds = ['workload', 'region', 'owner'] as const;
 const emptyStatusCounts: SimulationStatusCounts = {
   Healthy: 0,
   Pending: 0,
@@ -124,6 +126,10 @@ export class Table {
   protected readonly sorting = signal<SortingState>([{ id: 'throughput', desc: true }]);
   protected readonly globalFilter = signal('');
   protected readonly columnFilters = signal<ColumnFiltersState>([]);
+  protected readonly columnPinning = signal<ColumnPinningState>({
+    left: ['workload'],
+    right: [],
+  });
   protected readonly pagination = signal<PaginationState>({
     pageIndex: 0,
     pageSize: 24,
@@ -140,47 +146,56 @@ export class Table {
       accessorKey: 'workload',
       header: 'Workload',
       cell: (info) => info.getValue<string>(),
+      enablePinning: true,
     },
     {
       accessorKey: 'region',
       header: 'Region',
       cell: (info) => info.getValue<string>(),
+      enablePinning: true,
     },
     {
       accessorKey: 'owner',
       header: 'Owner',
       cell: (info) => info.getValue<string>(),
+      enablePinning: true,
     },
     {
       accessorKey: 'status',
       header: 'Status',
       filterFn: statusFilter,
       cell: (info) => info.getValue<string>(),
+      enablePinning: true,
     },
     {
       accessorKey: 'latencyMs',
       header: 'Latency',
       cell: (info) => `${integerFormatter.format(info.getValue<number>())} ms`,
+      enablePinning: true,
     },
     {
       accessorKey: 'throughput',
       header: 'Throughput',
       cell: (info) => `${compactFormatter.format(info.getValue<number>())} req/s`,
+      enablePinning: true,
     },
     {
       accessorKey: 'errorRate',
       header: 'Error Rate',
       cell: (info) => percentFormatter.format(info.getValue<number>()),
+      enablePinning: true,
     },
     {
       accessorKey: 'saturation',
       header: 'Saturation',
       cell: (info) => `${integerFormatter.format(info.getValue<number>())}%`,
+      enablePinning: true,
     },
     {
       accessorKey: 'updatedAt',
       header: 'Updated',
       cell: (info) => timeFormatter.format(info.getValue<number>()),
+      enablePinning: true,
     },
   ];
   protected readonly table = createAngularTable<SimulationRow>(() => ({
@@ -190,9 +205,11 @@ export class Table {
       sorting: this.sorting(),
       globalFilter: this.globalFilter(),
       columnFilters: this.columnFilters(),
+      columnPinning: this.columnPinning(),
       pagination: this.pagination(),
     },
     enableMultiSort: false,
+    enableColumnPinning: true,
     autoResetPageIndex: false,
     globalFilterFn: globalSearchFilter,
     getRowId: (row) => row.id,
@@ -203,8 +220,14 @@ export class Table {
     onSortingChange: (updater) => this.applyUpdater(this.sorting, updater),
     onGlobalFilterChange: (updater) => this.applyUpdater(this.globalFilter, updater),
     onColumnFiltersChange: (updater) => this.applyUpdater(this.columnFilters, updater),
+    onColumnPinningChange: (updater) => this.applyUpdater(this.columnPinning, updater),
     onPaginationChange: (updater) => this.applyUpdater(this.pagination, updater),
   }));
+  protected readonly textFilterColumns = computed(() =>
+    textFilterColumnIds
+      .map((columnId) => this.table.getColumn(columnId))
+      .filter((column): column is Column<SimulationRow, unknown> => Boolean(column)),
+  );
   protected readonly selectedStatuses = computed(() => {
     const activeFilter = this.columnFilters().find((entry) => entry.id === 'status');
 
@@ -247,6 +270,16 @@ export class Table {
     }
 
     this.setGlobalFilter(target.value);
+  }
+
+  protected onColumnTextFilterInput(columnId: string, event: Event): void {
+    const target = event.target;
+
+    if (!(target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    this.setColumnTextFilter(columnId, target.value);
   }
 
   protected setGlobalFilter(value: string): void {
@@ -293,6 +326,33 @@ export class Table {
     return this.metricColumnIds.has(columnId);
   }
 
+  protected toggleColumnPin(column: Column<SimulationRow, unknown>): void {
+    if (column.getIsPinned()) {
+      column.pin(false);
+      return;
+    }
+
+    column.pin('left');
+  }
+
+  protected getPinLabel(column: Column<SimulationRow, unknown>): string {
+    return column.getIsPinned() ? 'Unpin column' : 'Pin column';
+  }
+
+  protected getColumnFilterValue(columnId: string): string {
+    const filterValue = this.columnFilters().find((entry) => entry.id === columnId)?.value;
+
+    return typeof filterValue === 'string' ? filterValue : '';
+  }
+
+  protected getPinnedLeft(column: Column<SimulationRow, unknown>): number | null {
+    return column.getIsPinned() === 'left' ? column.getStart('left') : null;
+  }
+
+  protected getPinnedRight(column: Column<SimulationRow, unknown>): number | null {
+    return column.getIsPinned() === 'right' ? column.getAfter('right') : null;
+  }
+
   protected getSortIcon(column: Column<SimulationRow, unknown>): string {
     const sortState = column.getIsSorted();
 
@@ -331,6 +391,20 @@ export class Table {
 
   protected formatTime(value: number): string {
     return timeFormatter.format(value);
+  }
+
+  private setColumnTextFilter(columnId: string, value: string): void {
+    this.columnFilters.update((filters) => {
+      const nextFilters = filters.filter((filter) => filter.id !== columnId);
+
+      if (!value.trim()) {
+        return nextFilters;
+      }
+
+      return [...nextFilters, { id: columnId, value }];
+    });
+
+    this.resetToFirstPage();
   }
 
   private setStatusFilter(statuses: SimulationStatus[]): void {

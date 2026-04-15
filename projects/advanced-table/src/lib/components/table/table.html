@@ -12,6 +12,25 @@
   </div>
 
   <div class="control-block">
+    <span class="control-label">Column filters</span>
+    <div class="column-filter-grid">
+      @for (column of textFilterColumns(); track column.id) {
+        <label class="filter-field" [attr.for]="'column-filter-' + column.id">
+          <span>{{ column.columnDef.header }}</span>
+          <input
+            [id]="'column-filter-' + column.id"
+            type="search"
+            class="search-input compact-input"
+            [value]="getColumnFilterValue(column.id)"
+            [placeholder]="'Filter ' + column.columnDef.header"
+            (input)="onColumnTextFilterInput(column.id, $event)"
+          />
+        </label>
+      }
+    </div>
+  </div>
+
+  <div class="control-block">
     <span class="control-label">Status filter</span>
     <div class="chip-row" role="group" aria-label="Status filter">
       @for (status of statuses; track status) {
@@ -95,31 +114,47 @@
                 ngGridCell
                 role="columnheader"
                 class="header-cell"
+                [class.is-pinned-left]="header.column.getIsPinned() === 'left'"
+                [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
+                [style.left.px]="getPinnedLeft(header.column)"
+                [style.right.px]="getPinnedRight(header.column)"
                 [attr.aria-sort]="getAriaSort(header.column)"
               >
                 @if (!header.isPlaceholder) {
-                  <button
-                    type="button"
-                    ngGridCellWidget
-                    class="sort-button"
-                    [class.is-sorted]="!!header.column.getIsSorted()"
-                    [disabled]="!header.column.getCanSort()"
-                    [attr.aria-label]="header.column.getCanSort() ? 'Toggle sort for ' + header.column.id : null"
-                    (click)="header.column.toggleSorting()"
-                  >
-                    <ng-container
-                      *flexRender="
-                        header.column.columnDef.header;
-                        props: header.getContext();
-                        let rendered
-                      "
+                  <div class="header-content">
+                    <button
+                      type="button"
+                      ngGridCellWidget
+                      class="sort-button"
+                      [class.is-sorted]="!!header.column.getIsSorted()"
+                      [disabled]="!header.column.getCanSort()"
+                      [attr.aria-label]="header.column.getCanSort() ? 'Toggle sort for ' + header.column.id : null"
+                      (click)="header.column.toggleSorting()"
                     >
-                      {{ rendered }}
-                    </ng-container>
-                    <span class="sort-icon" aria-hidden="true">
-                      {{ getSortIcon(header.column) }}
-                    </span>
-                  </button>
+                      <ng-container
+                        *flexRender="
+                          header.column.columnDef.header;
+                          props: header.getContext();
+                          let rendered
+                        "
+                      >
+                        {{ rendered }}
+                      </ng-container>
+                      <span class="sort-icon" aria-hidden="true">
+                        {{ getSortIcon(header.column) }}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      class="pin-button"
+                      [class.is-pinned]="!!header.column.getIsPinned()"
+                      [attr.aria-pressed]="!!header.column.getIsPinned()"
+                      [attr.aria-label]="getPinLabel(header.column) + ' ' + header.column.id"
+                      (click)="toggleColumnPin(header.column)"
+                    >
+                      {{ header.column.getIsPinned() ? 'Unpin' : 'Pin' }}
+                    </button>
+                  </div>
                 }
               </th>
             }
@@ -136,6 +171,10 @@
                   class="data-cell"
                   [class.metric-cell]="isMetricColumn(cell.column.id)"
                   [class.status-cell]="cell.column.id === 'status'"
+                  [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
+                  [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
+                  [style.left.px]="getPinnedLeft(cell.column)"
+                  [style.right.px]="getPinnedRight(cell.column)"
                   [attr.data-status]="cell.column.id === 'status' ? cell.getValue() : null"
                 >
                   <ng-container
