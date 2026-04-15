@@ -148,6 +148,7 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
       .getAllLeafColumns()
       .filter((column) => column.getCanHide()),
   );
+  protected readonly totalTableWidth = computed(() => this.table.getTotalSize());
   protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
   protected readonly showSearch = computed(() => this.enableGlobalFilter());
@@ -252,6 +253,18 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
 
   protected getPinnedRight(column: Column<TData, unknown>): number | null {
     return column.getIsPinned() === 'right' ? column.getAfter('right') : null;
+  }
+
+  protected getColumnWidth(column: Column<TData, unknown>): number {
+    return column.getSize();
+  }
+
+  protected isLastLeftPinnedColumn(column: Column<TData, unknown>): boolean {
+    return column.getIsPinned() === 'left' && column.getIsLastColumn('left');
+  }
+
+  protected isFirstRightPinnedColumn(column: Column<TData, unknown>): boolean {
+    return column.getIsPinned() === 'right' && column.getIsFirstColumn('right');
   }
 
   protected getSortIcon(column: Column<TData, unknown>): string {

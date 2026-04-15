@@ -39,6 +39,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     meta: {
       label: 'Region',
     },
+    enablePinning: true,
     cell: (info) => info.getValue<string>(),
   },
   {
@@ -172,6 +173,24 @@ describe('AdvancedTableComponent', () => {
       host.stateEvents.some((state) => (state.columnPinning.left?.length ?? 0) === 0),
     ).toBe(true);
     expect(host.stateEvents.at(-1)?.pagination.pageIndex).toBe(1);
+  });
+
+  it('only renders the pinned divider on the outer edge of the pinned group', () => {
+    fixture.detectChanges();
+
+    let headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
+    const pinButtons = fixture.nativeElement.querySelectorAll('.pin-button') as NodeListOf<HTMLButtonElement>;
+
+    expect(headers[0]?.classList.contains('has-pinned-edge-left')).toBe(true);
+    expect(headers[1]?.classList.contains('has-pinned-edge-left')).toBe(false);
+
+    pinButtons[1]?.click();
+    fixture.detectChanges();
+
+    headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
+
+    expect(headers[0]?.classList.contains('has-pinned-edge-left')).toBe(false);
+    expect(headers[1]?.classList.contains('has-pinned-edge-left')).toBe(true);
   });
 
   it('respects controlled state slices without mutating the rendered table', () => {

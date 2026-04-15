@@ -44,6 +44,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'workload',
     header: 'Workload',
+    size: 320,
     meta: {
       label: 'Workload',
     },
@@ -53,6 +54,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'region',
     header: 'Region',
+    size: 220,
     meta: {
       label: 'Region',
     },
@@ -62,6 +64,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'owner',
     header: 'Owner',
+    size: 260,
     meta: {
       label: 'Owner',
     },
@@ -71,6 +74,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
+    size: 160,
     meta: {
       label: 'Status',
     },
@@ -81,6 +85,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'latencyMs',
     header: 'Latency',
+    size: 160,
     meta: {
       label: 'Latency',
       align: 'end',
@@ -91,6 +96,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'throughput',
     header: 'Throughput',
+    size: 180,
     meta: {
       label: 'Throughput',
       align: 'end',
@@ -101,6 +107,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'errorRate',
     header: 'Error Rate',
+    size: 160,
     meta: {
       label: 'Error Rate',
       align: 'end',
@@ -111,6 +118,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'saturation',
     header: 'Saturation',
+    size: 160,
     meta: {
       label: 'Saturation',
       align: 'end',
@@ -121,6 +129,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'updatedAt',
     header: 'Updated',
+    size: 180,
     meta: {
       label: 'Updated',
       align: 'end',

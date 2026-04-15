@@ -86,7 +86,12 @@
   }
 
   <div class="table-region">
-    <table ngGrid class="data-table" [attr.aria-label]="ariaLabel()">
+    <table
+      ngGrid
+      class="data-table"
+      [attr.aria-label]="ariaLabel()"
+      [style.width.px]="totalTableWidth()"
+    >
       <thead>
         @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
           <tr ngGridRow>
@@ -98,8 +103,11 @@
                 [class.is-align-end]="isColumnAlignedEnd(header.column)"
                 [class.is-pinned-left]="header.column.getIsPinned() === 'left'"
                 [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
+                [class.has-pinned-edge-left]="isLastLeftPinnedColumn(header.column)"
+                [class.has-pinned-edge-right]="isFirstRightPinnedColumn(header.column)"
                 [style.left.px]="getPinnedLeft(header.column)"
                 [style.right.px]="getPinnedRight(header.column)"
+                [style.width.px]="getColumnWidth(header.column)"
                 [attr.aria-sort]="getAriaSort(header.column)"
               >
                 @if (!header.isPlaceholder) {
@@ -161,8 +169,11 @@
                   [class.is-align-end]="isColumnAlignedEnd(cell.column)"
                   [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
                   [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
+                  [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
+                  [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
                   [style.left.px]="getPinnedLeft(cell.column)"
                   [style.right.px]="getPinnedRight(cell.column)"
+                  [style.width.px]="getColumnWidth(cell.column)"
                   [attr.data-column-id]="cell.column.id"
                 >
                   <ng-container

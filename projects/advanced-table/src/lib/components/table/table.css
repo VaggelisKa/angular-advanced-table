@@ -170,7 +170,7 @@
 }
 
 .data-table {
-  width: 100%;
+  width: max-content;
   min-width: 1040px;
   border-collapse: separate;
   border-spacing: 0;
@@ -178,6 +178,7 @@
 
 .header-cell,
 .data-cell {
+  box-sizing: border-box;
   padding: 15px 16px;
   border-bottom: 1px solid rgba(168, 216, 255, 0.08);
   white-space: nowrap;
@@ -263,12 +264,23 @@
 
 .is-pinned-left {
   z-index: 5;
-  box-shadow: 1px 0 0 rgba(168, 216, 255, 0.22);
 }
 
 .is-pinned-right {
   z-index: 5;
-  box-shadow: -1px 0 0 rgba(168, 216, 255, 0.22);
+}
+
+.header-cell.is-pinned-left,
+.header-cell.is-pinned-right {
+  z-index: 6;
+}
+
+.has-pinned-edge-left {
+  box-shadow: inset -1px 0 0 rgba(168, 216, 255, 0.22);
+}
+
+.has-pinned-edge-right {
+  box-shadow: inset 1px 0 0 rgba(168, 216, 255, 0.22);
 }
 
 .data-row {
