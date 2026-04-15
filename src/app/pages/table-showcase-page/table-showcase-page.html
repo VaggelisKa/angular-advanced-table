@@ -5,8 +5,8 @@
       <h1>Single-route data grid with live mock traffic</h1>
       <p class="hero-text">
         The table shell now stays generic while this page owns the simulation-specific columns,
-        status filtering, and telemetry. The dataset is intentionally large, but the UI only
-        renders the current page.
+        status filtering, and telemetry. The dataset is intentionally large, but the UI only renders
+        the current page.
       </p>
     </div>
 
@@ -26,28 +26,35 @@
   </section>
 
   <section class="stats-grid" aria-label="Simulation telemetry">
-    <article class="stat-card card">
+    <article class="stat-card card" data-accent="default">
       <span class="stat-label">Rows in memory</span>
       <strong class="stat-value">{{ formatInteger(simulation.datasetSize()) }}</strong>
       <span class="stat-footnote">Active profile: {{ simulation.profilePreset().label }}</span>
     </article>
-    <article class="stat-card card">
+    <article class="stat-card card" data-accent="default">
       <span class="stat-label">Mutation cadence</span>
       <strong class="stat-value">
         {{ formatInteger(simulation.profilePreset().mutationBatchSize) }} rows /
         {{ simulation.profilePreset().tickIntervalMs }} ms
       </strong>
-      <span class="stat-footnote">Last batch: {{ formatInteger(simulation.lastMutationSize()) }} rows</span>
+      <span class="stat-footnote"
+        >Last batch: {{ formatInteger(simulation.lastMutationSize()) }} rows</span
+      >
     </article>
-    <article class="stat-card card">
+    <article class="stat-card card" data-accent="health">
       <span class="stat-label">Fleet health</span>
-      <strong class="stat-value">{{ simulation.fleetHealth() }}%</strong>
-      <span class="stat-footnote">Weighted across healthy, pending, alert, and offline services</span>
+      <strong class="stat-value stat-value-lg"
+        >{{ simulation.fleetHealth() }}<span class="stat-unit">%</span></strong
+      >
+      <span class="stat-footnote"
+        >Weighted across healthy, pending, alert, and offline services</span
+      >
     </article>
-    <article class="stat-card card">
+    <article class="stat-card card" data-accent="mutations">
       <span class="stat-label">Total simulated mutations</span>
       <strong class="stat-value">{{ formatInteger(simulation.totalMutations()) }}</strong>
       <span class="stat-footnote">
+        <span class="live-indicator" [class.is-active]="simulation.isRunning()"></span>
         {{ simulation.isRunning() ? 'Live updates enabled' : 'Live updates paused' }}
       </span>
     </article>

@@ -16,14 +16,47 @@ body {
 body {
   margin: 0;
   font-family: 'Avenir Next', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background:
-    radial-gradient(circle at top left, rgba(20, 184, 255, 0.22), transparent 26%),
-    radial-gradient(circle at top right, rgba(255, 209, 102, 0.14), transparent 20%),
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(20, 184, 255, 0.18), transparent),
+    radial-gradient(ellipse 60% 40% at 85% 5%, rgba(255, 209, 102, 0.1), transparent),
+    radial-gradient(ellipse 50% 60% at 50% 100%, rgba(87, 50, 168, 0.08), transparent),
     linear-gradient(180deg, #08131d 0%, #031018 58%, #020b12 100%);
   color: #ecf5fb;
+}
+
+::selection {
+  background: rgba(87, 209, 255, 0.3);
+  color: #fff;
 }
 
 button,
 input {
   font: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 216, 255, 0.15);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 216, 255, 0.28);
+}
+
+@supports (scrollbar-color: auto) {
+  * {
+    scrollbar-color: rgba(168, 216, 255, 0.15) transparent;
+    scrollbar-width: thin;
+  }
 }
