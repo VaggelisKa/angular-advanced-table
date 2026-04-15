@@ -1,7 +1,9 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   input,
   signal,
   type WritableSignal,
@@ -26,6 +28,7 @@ import {
 } from '@tanstack/angular-table';
 
 type SimulationStatus = 'Healthy' | 'Pending' | 'Alert' | 'Offline';
+type RenderHealthTone = 'idle' | 'healthy' | 'watch' | 'slow';
 
 interface SimulationRow {
   id: string;
@@ -41,6 +44,18 @@ interface SimulationRow {
 }
 
 type SimulationStatusCounts = Record<SimulationStatus, number>;
+
+interface RenderMeasurement {
+  durationMs: number;
+  rowCount: number;
+  visibleColumnCount: number;
+  rowsPerSecond: number;
+}
+
+interface RenderHealthState {
+  label: string;
+  tone: RenderHealthTone;
+}
 
 const TABLE_STATUSES = ['Healthy', 'Pending', 'Alert', 'Offline'] as const satisfies readonly SimulationStatus[];
 const DEFAULT_PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
@@ -147,6 +162,12 @@ export class Table {
     pageIndex: 0,
     pageSize: 24,
   });
+  private readonly renderMeasurement = signal<RenderMeasurement>({
+    durationMs: 0,
+    rowCount: 0,
+    visibleColumnCount: tableColumnIds.length,
+    rowsPerSecond: 0,
+  });
   private readonly metricColumnIds = new Set([
     'latencyMs',
     'throughput',
@@ -247,6 +268,10 @@ export class Table {
     onColumnPinningChange: (updater) => this.applyUpdater(this.columnPinning, updater),
     onPaginationChange: (updater) => this.applyUpdater(this.pagination, updater),
   }));
+  protected readonly lastRowRenderDurationMs = computed(
+    () => this.renderMeasurement().durationMs,
+  );
+  protected readonly lastRowRenderCount = computed(() => this.renderMeasurement().rowCount);
   protected readonly columnVisibilityOptions = computed(() =>
     this.table
       .getAllLeafColumns()
@@ -295,6 +320,101 @@ export class Table {
 
     return `${this.getColumnLabel(currentSort.id)} ${currentSort.desc ? 'descending' : 'ascending'}`;
   });
+  protected readonly rowRenderHealth = computed<RenderHealthState>(() => {
+    const durationMs = this.lastRowRenderDurationMs();
+    const rowCount = this.lastRowRenderCount();
+
+    if (!rowCount) {
+      return {
+        label: 'Idle',
+        tone: 'idle',
+      };
+    }
+
+    if (durationMs <= 8) {
+      return {
+        label: 'Healthy',
+        tone: 'healthy',
+      };
+    }
+
+    if (durationMs <= 16) {
+      return {
+        label: 'Watch',
+        tone: 'watch',
+      };
+    }
+
+    return {
+      label: 'Slow',
+      tone: 'slow',
+    };
+  });
+  protected readonly rowRenderSummary = computed(() => {
+    const measurement = this.renderMeasurement();
+
+    if (!measurement.rowCount) {
+      return 'No visible rows in the current view.';
+    }
+
+    const rowLabel = measurement.rowCount === 1 ? 'row' : 'rows';
+    const columnLabel = measurement.visibleColumnCount === 1 ? 'column' : 'columns';
+
+    return `${integerFormatter.format(measurement.rowCount)} visible ${rowLabel} × ${integerFormatter.format(measurement.visibleColumnCount)} ${columnLabel} • ${compactFormatter.format(measurement.rowsPerSecond)} rows/s`;
+  });
+  private readonly renderBenchmarkSignature = computed(() => {
+    const rowSignature = this.table
+      .getRowModel()
+      .rows.map((row) => `${row.id}:${row.original.updatedAt}`)
+      .join('|');
+    const visibleColumns = this.table
+      .getVisibleLeafColumns()
+      .map((column) => column.id)
+      .join('|');
+    const { left = [], right = [] } = this.columnPinning();
+    const pinnedColumns = `${left.join('|')}::${right.join('|')}`;
+
+    return `${visibleColumns}::${pinnedColumns}::${rowSignature}`;
+  });
+  private pendingRenderToken = 0;
+  private completedRenderToken = 0;
+  private pendingRenderStartedAt = 0;
+
+  constructor() {
+    effect(() => {
+      this.renderBenchmarkSignature();
+      this.pendingRenderStartedAt = performance.now();
+      this.pendingRenderToken += 1;
+    });
+
+    afterRenderEffect({
+      read: () => {
+        this.renderBenchmarkSignature();
+
+        if (this.completedRenderToken === this.pendingRenderToken) {
+          return;
+        }
+
+        this.completedRenderToken = this.pendingRenderToken;
+
+        const rawDurationMs = Math.max(
+          performance.now() - this.pendingRenderStartedAt,
+          0.1,
+        );
+        const rowCount = this.renderedRowCount();
+        const visibleColumnCount = this.visibleColumnCount();
+
+        this.renderMeasurement.set({
+          durationMs: rowCount ? roundToSingleDecimal(rawDurationMs) : 0,
+          rowCount,
+          visibleColumnCount,
+          rowsPerSecond: rowCount
+            ? Math.round((rowCount * 1000) / rawDurationMs)
+            : 0,
+        });
+      },
+    });
+  }
 
   protected onSearchInput(event: Event): void {
     const target = event.target;
@@ -466,4 +586,8 @@ export class Table {
   protected getColumnLabel(columnId: string): string {
     return columnLabels[columnId] ?? columnId;
   }
+}
+
+function roundToSingleDecimal(value: number): number {
+  return Number(value.toFixed(1));
 }
