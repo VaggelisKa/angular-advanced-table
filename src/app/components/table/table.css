@@ -35,6 +35,21 @@
   text-transform: uppercase;
 }
 
+.column-filter-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.filter-field {
+  display: grid;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .search-input {
   min-height: 54px;
   width: 100%;
@@ -44,6 +59,11 @@
   background: rgba(6, 15, 24, 0.72);
   color: var(--text);
   outline: none;
+}
+
+.compact-input {
+  min-height: 44px;
+  font-size: 0.95rem;
 }
 
 .search-input::placeholder {
@@ -59,7 +79,8 @@
 .chip,
 .pager-button,
 .clear-button,
-.sort-button {
+.sort-button,
+.pin-button {
   border: 1px solid transparent;
   color: inherit;
   cursor: pointer;
@@ -84,7 +105,8 @@
 .chip:hover,
 .pager-button:hover,
 .clear-button:hover,
-.sort-button:hover {
+.sort-button:hover,
+.pin-button:hover {
   transform: translateY(-1px);
 }
 
@@ -204,12 +226,18 @@
 .header-cell {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 4;
   background: rgba(5, 20, 31, 0.96);
   color: var(--text-soft);
   font-size: 0.84rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .sort-button {
@@ -226,6 +254,21 @@
   letter-spacing: inherit;
 }
 
+.pin-button {
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(168, 216, 255, 0.24);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.pin-button.is-pinned {
+  color: var(--accent);
+  border-color: rgba(87, 209, 255, 0.45);
+}
+
 .sort-button:disabled {
   cursor: default;
   transform: none;
@@ -240,6 +283,22 @@
   min-width: 1rem;
   justify-content: center;
   color: var(--accent);
+}
+
+.is-pinned-left,
+.is-pinned-right {
+  position: sticky;
+  background: rgba(5, 20, 31, 0.98);
+}
+
+.is-pinned-left {
+  z-index: 5;
+  box-shadow: 1px 0 0 rgba(168, 216, 255, 0.22);
+}
+
+.is-pinned-right {
+  z-index: 5;
+  box-shadow: -1px 0 0 rgba(168, 216, 255, 0.22);
 }
 
 .data-row {
@@ -290,7 +349,8 @@
 .pager-button:focus-visible,
 .clear-button:focus-visible,
 .chip:focus-visible,
-.sort-button:focus-visible {
+.sort-button:focus-visible,
+.pin-button:focus-visible {
   outline: 2px solid rgba(87, 209, 255, 0.95);
   outline-offset: -2px;
 }
