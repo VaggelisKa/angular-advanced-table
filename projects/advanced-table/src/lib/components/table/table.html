@@ -72,20 +72,19 @@
   @if (showTableToolbar()) {
     <div class="table-toolbar">
       @if (enableRenderMetrics()) {
-        <article
+        <div
           class="render-kpi"
           [attr.data-health]="rowRenderHealth().tone"
           aria-label="Row render sample"
         >
-          <span class="render-kpi-label">Row render sample</span>
-          <div class="render-kpi-value-row">
-            <strong class="render-kpi-value">
-              {{ formatDecimal(renderMeasurement().durationMs) }} ms
-            </strong>
-            <span class="render-kpi-badge">{{ rowRenderHealth().label }}</span>
-          </div>
-          <span class="render-kpi-footnote">{{ rowRenderSummary() }}</span>
-        </article>
+          <span class="render-kpi-dot" aria-hidden="true"></span>
+          <span class="render-kpi-text">
+            <strong>{{ formatDecimal(renderMeasurement().durationMs) }} ms</strong>
+            <span class="render-kpi-detail"
+              >{{ rowRenderHealth().label }} · {{ rowRenderCompactSummary() }}</span
+            >
+          </span>
+        </div>
       }
 
       @if (showPagination()) {
@@ -130,12 +129,12 @@
     </div>
   }
 
-  <div class="table-region">
+  <div class="table-region" #tableRegion>
     <table
       ngGrid
       class="data-table"
       [attr.aria-label]="ariaLabel()"
-      [style.width.px]="totalTableWidth()"
+      [style.min-width.px]="totalTableWidth()"
     >
       <thead>
         @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
@@ -152,7 +151,7 @@
                 [class.has-pinned-edge-right]="isFirstRightPinnedColumn(header.column)"
                 [style.left.px]="getPinnedLeft(header.column)"
                 [style.right.px]="getPinnedRight(header.column)"
-                [style.width.px]="getColumnWidth(header.column)"
+                [style.min-width.px]="getColumnWidth(header.column)"
                 [attr.aria-sort]="getAriaSort(header.column)"
               >
                 @if (!header.isPlaceholder) {
@@ -190,7 +189,9 @@
                         class="pin-button"
                         [class.is-pinned]="!!header.column.getIsPinned()"
                         [attr.aria-pressed]="!!header.column.getIsPinned()"
-                        [attr.aria-label]="getPinLabel(header.column) + ' ' + getColumnLabel(header.column)"
+                        [attr.aria-label]="
+                          getPinLabel(header.column) + ' ' + getColumnLabel(header.column)
+                        "
                         (click)="toggleColumnPin(header.column)"
                       >
                         {{ header.column.getIsPinned() ? 'Unpin' : 'Pin' }}
@@ -227,18 +228,14 @@
                   [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
                   [style.left.px]="getPinnedLeft(cell.column)"
                   [style.right.px]="getPinnedRight(cell.column)"
-                  [style.width.px]="getColumnWidth(cell.column)"
+                  [style.min-width.px]="getColumnWidth(cell.column)"
                   [attr.data-column-id]="cell.column.id"
                   [attr.data-render-tone]="
                     isRenderMetricColumn(cell.column) ? getRowRenderTone(row.id) : null
                   "
                 >
                   <ng-container
-                    *flexRender="
-                      cell.column.columnDef.cell;
-                      props: cell.getContext();
-                      let rendered
-                    "
+                    *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"
                   >
                     {{ rendered }}
                   </ng-container>

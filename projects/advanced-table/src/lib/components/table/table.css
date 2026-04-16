@@ -4,13 +4,16 @@
 }
 
 .card {
-  background:
-    linear-gradient(180deg, rgba(115, 186, 230, 0.09), transparent 24%),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(115, 186, 230, 0.09), transparent 24%), var(--surface);
   border: 1px solid var(--border);
   border-radius: 28px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(20px);
+  transition: border-color 200ms ease;
+}
+
+.card:hover {
+  border-color: rgba(168, 216, 255, 0.24);
 }
 
 .controls,
@@ -30,6 +33,11 @@
 .control-block {
   display: grid;
   gap: 10px;
+}
+
+.control-block + .control-block {
+  padding-top: 18px;
+  border-top: 1px solid rgba(168, 216, 255, 0.07);
 }
 
 .control-heading {
@@ -61,10 +69,24 @@
   background: rgba(6, 15, 24, 0.72);
   color: var(--text);
   outline: none;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
 }
 
 .search-input::placeholder {
   color: rgba(168, 195, 215, 0.72);
+}
+
+.search-input:hover {
+  border-color: rgba(168, 216, 255, 0.32);
+}
+
+.search-input:focus {
+  border-color: rgba(87, 209, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(87, 209, 255, 0.1);
+  background: rgba(6, 15, 24, 0.85);
 }
 
 .chip-row {
@@ -81,10 +103,11 @@
   color: inherit;
   cursor: pointer;
   transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    transform 140ms ease,
-    color 140ms ease;
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    color 180ms ease;
 }
 
 .chip {
@@ -105,9 +128,15 @@
   transform: translateY(-1px);
 }
 
+.chip:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
 .chip.is-active {
   background: rgba(87, 209, 255, 0.16);
   border-color: rgba(87, 209, 255, 0.35);
+  box-shadow: 0 0 16px rgba(87, 209, 255, 0.08);
 }
 
 .chip-count {
@@ -141,6 +170,11 @@
   border-color: rgba(87, 209, 255, 0.28);
 }
 
+.pager-button:hover:not([disabled]) {
+  box-shadow: 0 4px 16px rgba(87, 209, 255, 0.12);
+  background: rgba(87, 209, 255, 0.2);
+}
+
 .table-toolbar {
   display: flex;
   align-items: flex-start;
@@ -159,90 +193,56 @@
 }
 
 .render-kpi {
-  min-width: min(100%, 320px);
-  max-width: 380px;
-  padding: 16px 18px;
-  border-radius: 22px;
-  border: 1px solid rgba(87, 209, 255, 0.18);
-  background:
-    linear-gradient(180deg, rgba(87, 209, 255, 0.14), rgba(87, 209, 255, 0.04)),
-    rgba(5, 20, 31, 0.88);
-}
-
-.render-kpi[data-health='fast'] {
-  border-color: rgba(93, 230, 166, 0.32);
-  background:
-    linear-gradient(180deg, rgba(93, 230, 166, 0.16), rgba(93, 230, 166, 0.04)),
-    rgba(5, 20, 31, 0.88);
-}
-
-.render-kpi[data-health='watch'] {
-  border-color: rgba(255, 209, 102, 0.36);
-  background:
-    linear-gradient(180deg, rgba(255, 209, 102, 0.18), rgba(255, 209, 102, 0.05)),
-    rgba(5, 20, 31, 0.88);
-}
-
-.render-kpi[data-health='slow'] {
-  border-color: rgba(255, 107, 94, 0.38);
-  background:
-    linear-gradient(180deg, rgba(255, 107, 94, 0.2), rgba(255, 107, 94, 0.05)),
-    rgba(5, 20, 31, 0.88);
-}
-
-.render-kpi-label {
-  display: block;
-  color: var(--text-soft);
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.render-kpi-value-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.render-kpi-value {
-  font-size: clamp(1.3rem, 2vw, 2rem);
-  letter-spacing: -0.04em;
-}
-
-.render-kpi-badge {
   display: inline-flex;
-  min-height: 28px;
   align-items: center;
-  padding: 0 10px;
+  gap: 8px;
+  padding: 6px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.render-kpi[data-health='fast'] .render-kpi-badge {
-  color: var(--success, #5de6a6);
-}
-
-.render-kpi[data-health='watch'] .render-kpi-badge {
-  color: var(--warning, #ffd166);
-}
-
-.render-kpi[data-health='slow'] .render-kpi-badge {
-  color: var(--danger, #ff8d7f);
-}
-
-.render-kpi-footnote {
-  display: block;
-  margin-top: 10px;
+  border: 1px solid rgba(168, 216, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.85rem;
   color: var(--text-soft);
-  font-size: 0.88rem;
-  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.render-kpi strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.render-kpi-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-soft);
+  flex-shrink: 0;
+}
+
+.render-kpi[data-health='fast'] .render-kpi-dot {
+  background: var(--success, #5de6a6);
+  box-shadow: 0 0 6px rgba(93, 230, 166, 0.4);
+}
+
+.render-kpi[data-health='watch'] .render-kpi-dot {
+  background: var(--warning, #ffd166);
+  box-shadow: 0 0 6px rgba(255, 209, 102, 0.4);
+}
+
+.render-kpi[data-health='slow'] .render-kpi-dot {
+  background: var(--danger, #ff8d7f);
+  box-shadow: 0 0 6px rgba(255, 107, 94, 0.4);
+}
+
+.render-kpi-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.render-kpi-detail {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  opacity: 0.7;
 }
 
 .pager {
@@ -265,6 +265,7 @@
 .pager-label {
   color: var(--text-soft);
   font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .table-region {
@@ -275,8 +276,6 @@
 }
 
 .data-table {
-  width: max-content;
-  min-width: 1040px;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -298,6 +297,7 @@
   font-size: 0.84rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  border-bottom: 1px solid rgba(87, 209, 255, 0.12);
 }
 
 .header-content {
@@ -343,6 +343,7 @@
 .pin-button.is-pinned {
   color: var(--accent);
   border-color: rgba(87, 209, 255, 0.45);
+  box-shadow: 0 0 12px rgba(87, 209, 255, 0.08);
 }
 
 .sort-button:disabled {
@@ -392,8 +393,21 @@
   transition: background-color 120ms ease;
 }
 
+.data-row:nth-child(even) {
+  background: rgba(168, 216, 255, 0.02);
+}
+
 .data-row:hover {
-  background: rgba(87, 209, 255, 0.05);
+  background: rgba(87, 209, 255, 0.06);
+}
+
+.data-row:hover .is-pinned-left,
+.data-row:hover .is-pinned-right {
+  background: rgba(5, 20, 31, 0.95);
+}
+
+.data-cell {
+  transition: background-color 120ms ease;
 }
 
 .data-cell.is-align-end {
@@ -422,9 +436,11 @@
 }
 
 .empty-state {
-  padding: 28px;
+  padding: 48px 28px;
   text-align: center;
   color: var(--text-soft);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 [ngGridCell]:focus-visible,

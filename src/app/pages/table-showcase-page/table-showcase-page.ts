@@ -1,10 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
-import {
-  AdvancedTableComponent,
-  type AdvancedTableState,
-} from 'advanced-table';
+import { AdvancedTableComponent, type AdvancedTableState } from 'advanced-table';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,
@@ -80,7 +77,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
-    size: 160,
+    size: 110,
+    minSize: 90,
     meta: {
       label: 'Status',
     },
@@ -135,7 +133,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'updatedAt',
     header: 'Updated',
-    size: 180,
+    size: 130,
+    minSize: 100,
     meta: {
       label: 'Updated',
       align: 'end',
@@ -175,20 +174,16 @@ export class TableShowcasePage {
     columnFilters: [],
   });
   protected readonly selectedStatuses = computed(() => {
-    const activeFilter = this.tableState()
-      .columnFilters
-      ?.find((entry) => entry.id === STATUS_FILTER_ID);
+    const activeFilter = this.tableState().columnFilters?.find(
+      (entry) => entry.id === STATUS_FILTER_ID,
+    );
 
-    return Array.isArray(activeFilter?.value)
-      ? (activeFilter.value as SimulationStatus[])
-      : [];
+    return Array.isArray(activeFilter?.value) ? (activeFilter.value as SimulationStatus[]) : [];
   });
-  protected readonly profiles = Object.entries(SIMULATION_PROFILES).map(
-    ([value, config]) => ({
-      value: value as SimulationProfile,
-      ...config,
-    }),
-  );
+  protected readonly profiles = Object.entries(SIMULATION_PROFILES).map(([value, config]) => ({
+    value: value as SimulationProfile,
+    ...config,
+  }));
 
   protected setDatasetSize(size: number): void {
     this.simulation.setDatasetSize(size);
