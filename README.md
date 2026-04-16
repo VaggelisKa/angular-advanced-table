@@ -76,7 +76,7 @@ The workflow:
 - commits the consumed changesets, version bumps, and changelog updates back to the branch
 - tags published versions as `ng-advanced-table@x.y.z` and `ng-advanced-table-utils@x.y.z`
 
-Before using it, add an `NPM_TOKEN` repository secret with publish access for both packages.
+Before using it, add an `NPM_TOKEN` repository secret that contains an npm access token with write access for both packages.
 
 ## Local publishing fallback
 

@@ -90,6 +90,18 @@ jobs:
       - name: Verify workspace
         run: npm run verify
 
+      - name: Ensure npm token is configured
+        if: steps.release_set.outputs.publish_core == 'true' || steps.release_set.outputs.publish_utils == 'true'
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "${NPM_TOKEN}" ]; then
+            echo "Missing NPM_TOKEN GitHub Actions secret."
+            echo "Create an npm access token with write access, then add it as the NPM_TOKEN repository secret."
+            exit 1
+          fi
+
       - name: Publish ng-advanced-table
         if: steps.release_set.outputs.publish_core == 'true'
         env:
