@@ -2,11 +2,11 @@
   <section class="hero card">
     <div class="hero-copy">
       <p class="eyebrow">Angular 21 • Signals • Angular Aria Grid • TanStack Angular Table</p>
-      <h1>Single-route data grid with financial document KPIs</h1>
+      <h1>Single-route data grid with live mock traffic</h1>
       <p class="hero-text">
-        The table shell stays generic while this page owns financial reporting columns, status
-        filtering, and KPI telemetry. The dataset is intentionally large, but the UI only renders
-        the current page.
+        The table shell now stays generic while this page owns the simulation-specific columns,
+        status filtering, and telemetry. The dataset is intentionally large, but the UI only
+        renders the current page.
       </p>
     </div>
 
@@ -40,11 +40,9 @@
       <span class="stat-footnote">Last batch: {{ formatInteger(simulation.lastMutationSize()) }} rows</span>
     </article>
     <article class="stat-card card">
-      <span class="stat-label">Portfolio health</span>
+      <span class="stat-label">Fleet health</span>
       <strong class="stat-value">{{ simulation.fleetHealth() }}%</strong>
-      <span class="stat-footnote">
-        Weighted across healthy, pending, alert, and offline document pipelines
-      </span>
+      <span class="stat-footnote">Weighted across healthy, pending, alert, and offline services</span>
     </article>
     <article class="stat-card card">
       <span class="stat-label">Total simulated mutations</span>
