@@ -1,7 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
-import { AdvancedTableComponent, type AdvancedTableState } from 'advanced-table';
+import {
+  NatTable,
+  type NatTableRowRenderedEvent,
+  type NatTableState,
+} from 'ng-advanced-table';
+import {
+  NatRenderMetricsFilter,
+  NatRenderMetricsPanel,
+  NatTableRenderMetricsStore,
+  withRenderMetricsColumn,
+} from 'ng-advanced-table-utils';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,
@@ -192,7 +202,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   },
 ];
 
-const defaultTableState: Partial<AdvancedTableState> = {
+const defaultTableState: Partial<NatTableState> = {
   sorting: [{ id: 'changePercent', desc: true }],
   columnPinning: {
     left: [],
@@ -207,7 +217,7 @@ const defaultTableState: Partial<AdvancedTableState> = {
 @Component({
   selector: 'app-table-showcase-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdvancedTableComponent],
+  imports: [NatTable, NatRenderMetricsFilter, NatRenderMetricsPanel],
   templateUrl: './table-showcase-page.html',
   styleUrl: './table-showcase-page.css',
 })
@@ -216,10 +226,11 @@ export class TableShowcasePage {
   protected readonly datasetOptions = DATASET_OPTIONS;
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
-  protected readonly columns = simulationColumns;
+  protected readonly metricsStore = new NatTableRenderMetricsStore();
+  protected readonly columns = withRenderMetricsColumn(simulationColumns, this.metricsStore);
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
-  protected readonly tableState = signal<Partial<AdvancedTableState>>({
+  protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],
   });
   protected readonly selectedStatuses = computed(() => {
@@ -273,10 +284,14 @@ export class TableShowcasePage {
     return selectedStatuses.length === 0 || selectedStatuses.includes(status);
   }
 
-  protected onTableStateChange(state: AdvancedTableState): void {
+  protected onTableStateChange(state: NatTableState): void {
     this.tableState.set({
       columnFilters: state.columnFilters,
     });
+  }
+
+  protected onRowRendered(event: NatTableRowRenderedEvent): void {
+    this.metricsStore.record(event);
   }
 
   protected formatInteger(value: number): string {
@@ -295,7 +310,7 @@ export class TableShowcasePage {
 }
 
 function upsertColumnFilter(
-  currentFilters: NonNullable<Partial<AdvancedTableState>['columnFilters']>,
+  currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
   columnId: string,
   value: unknown | null,
 ) {

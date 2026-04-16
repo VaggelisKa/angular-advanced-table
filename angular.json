@@ -68,20 +68,20 @@
         }
       }
     },
-    "advanced-table": {
+    "ng-advanced-table": {
       "projectType": "library",
-      "root": "projects/advanced-table",
-      "sourceRoot": "projects/advanced-table/src",
-      "prefix": "lib",
+      "root": "projects/ng-advanced-table",
+      "sourceRoot": "projects/ng-advanced-table/src",
+      "prefix": "nat",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/advanced-table/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ng-advanced-table/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/advanced-table/tsconfig.lib.json"
+              "tsConfig": "projects/ng-advanced-table/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -89,7 +89,33 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/advanced-table/tsconfig.spec.json"
+            "tsConfig": "projects/ng-advanced-table/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "ng-advanced-table-utils": {
+      "projectType": "library",
+      "root": "projects/ng-advanced-table-utils",
+      "sourceRoot": "projects/ng-advanced-table-utils/src",
+      "prefix": "nat",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ng-advanced-table-utils/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ng-advanced-table-utils/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/ng-advanced-table-utils/tsconfig.spec.json"
           }
         }
       }

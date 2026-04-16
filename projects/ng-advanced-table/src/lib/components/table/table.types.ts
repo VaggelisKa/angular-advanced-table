@@ -8,7 +8,7 @@ import type {
   VisibilityState,
 } from '@tanstack/angular-table';
 
-export interface AdvancedTableState {
+export interface NatTableState {
   sorting: SortingState;
   globalFilter: string;
   columnFilters: ColumnFiltersState;
@@ -17,18 +17,18 @@ export interface AdvancedTableState {
   pagination: PaginationState;
 }
 
-export type AdvancedTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
+export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
 
-export interface AdvancedTableColumnMeta<
+export interface NatTableColumnMeta<
   TData extends RowData = RowData,
   TValue = unknown,
 > {
   label?: string;
   align?: 'start' | 'end';
-  cellTone?: (context: CellContext<TData, TValue>) => AdvancedTableCellTone | null;
+  cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
 }
 
 declare module '@tanstack/table-core' {
   interface ColumnMeta<TData extends import('@tanstack/angular-table').RowData, TValue>
-    extends AdvancedTableColumnMeta<TData, TValue> {}
+    extends NatTableColumnMeta<TData, TValue> {}
 }

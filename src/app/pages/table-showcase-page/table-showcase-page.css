@@ -222,6 +222,19 @@
   gap: 10px;
 }
 
+.render-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.render-heading nat-render-metrics-filter {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .control-block + .control-block {
   padding-top: 18px;
   border-top: 1px solid rgba(168, 216, 255, 0.07);

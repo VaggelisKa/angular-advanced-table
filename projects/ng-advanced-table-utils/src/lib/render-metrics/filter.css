@@ -1,0 +1,81 @@
+:host {
+  display: block;
+}
+
+.control-block {
+  display: grid;
+  gap: 10px;
+}
+
+.control-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control-label {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.control-caption {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.chip-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  border: 1px solid transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    color 180ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.chip.is-active {
+  background: rgba(87, 209, 255, 0.16);
+  border-color: rgba(87, 209, 255, 0.35);
+  box-shadow: 0 0 16px rgba(87, 209, 255, 0.08);
+}
+
+.chip-count {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.render-chip {
+  min-width: 140px;
+  justify-content: space-between;
+}
+
+.chip:focus-visible {
+  outline: 2px solid rgba(87, 209, 255, 0.95);
+  outline-offset: -2px;
+}
