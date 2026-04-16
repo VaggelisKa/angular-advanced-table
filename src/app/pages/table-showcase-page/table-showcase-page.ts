@@ -19,6 +19,11 @@ const compactFormatter = new Intl.NumberFormat('en-US', {
   notation: 'compact',
   maximumFractionDigits: 1,
 });
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+});
 const percentFormatter = new Intl.NumberFormat('en-US', {
   style: 'percent',
   minimumFractionDigits: 1,
@@ -40,34 +45,31 @@ const statusFilter: FilterFn<SimulationRow> = (row, columnId, filterValue) => {
 };
 const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
-    accessorKey: 'workload',
-    header: 'Workload',
-    size: 200,
-    minSize: 140,
+    accessorKey: 'documentName',
+    header: 'Document',
+    size: 320,
     meta: {
-      label: 'Workload',
+      label: 'Document',
     },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
   },
   {
-    accessorKey: 'region',
-    header: 'Region',
-    size: 130,
-    minSize: 100,
+    accessorKey: 'reportingPeriod',
+    header: 'Period',
+    size: 220,
     meta: {
-      label: 'Region',
+      label: 'Period',
     },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
   },
   {
-    accessorKey: 'owner',
-    header: 'Owner',
-    size: 160,
-    minSize: 120,
+    accessorKey: 'businessUnit',
+    header: 'Business Unit',
+    size: 260,
     meta: {
-      label: 'Owner',
+      label: 'Business Unit',
     },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
@@ -85,52 +87,48 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     cell: (info) => info.getValue<string>(),
   },
   {
-    accessorKey: 'latencyMs',
-    header: 'Latency',
-    size: 110,
-    minSize: 90,
+    accessorKey: 'totalAssetsBillion',
+    header: 'Total Assets',
+    size: 190,
     meta: {
-      label: 'Latency',
+      label: 'Total Assets',
       align: 'end',
     },
     enablePinning: true,
-    cell: (info) => `${integerFormatter.format(info.getValue<number>())} ms`,
+    cell: (info) => `$${compactFormatter.format(info.getValue<number>())}B`,
   },
   {
-    accessorKey: 'throughput',
-    header: 'Throughput',
-    size: 130,
-    minSize: 100,
+    accessorKey: 'netIncomeMillion',
+    header: 'Net Income',
+    size: 180,
     meta: {
-      label: 'Throughput',
+      label: 'Net Income',
       align: 'end',
     },
     enablePinning: true,
-    cell: (info) => `${compactFormatter.format(info.getValue<number>())} req/s`,
+    cell: (info) => `${currencyFormatter.format(info.getValue<number>() * 1_000_000)}`,
   },
   {
-    accessorKey: 'errorRate',
-    header: 'Error Rate',
-    size: 120,
-    minSize: 90,
+    accessorKey: 'tier1CapitalRatio',
+    header: 'Tier 1 Capital',
+    size: 160,
     meta: {
-      label: 'Error Rate',
+      label: 'Tier 1 Capital',
       align: 'end',
     },
     enablePinning: true,
     cell: (info) => percentFormatter.format(info.getValue<number>()),
   },
   {
-    accessorKey: 'saturation',
-    header: 'Saturation',
-    size: 110,
-    minSize: 90,
+    accessorKey: 'efficiencyRatio',
+    header: 'Efficiency',
+    size: 160,
     meta: {
-      label: 'Saturation',
+      label: 'Efficiency',
       align: 'end',
     },
     enablePinning: true,
-    cell: (info) => `${integerFormatter.format(info.getValue<number>())}%`,
+    cell: (info) => percentFormatter.format(info.getValue<number>()),
   },
   {
     accessorKey: 'updatedAt',
@@ -146,9 +144,9 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   },
 ];
 const defaultTableState: Partial<AdvancedTableState> = {
-  sorting: [{ id: 'throughput', desc: true }],
+  sorting: [{ id: 'netIncomeMillion', desc: true }],
   columnPinning: {
-    left: ['workload'],
+    left: ['documentName'],
     right: [],
   },
   pagination: {
