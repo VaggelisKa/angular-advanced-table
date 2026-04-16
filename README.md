@@ -17,8 +17,7 @@ Open your browser at `http://localhost:4200/`.
 ## Library builds
 
 ```bash
-ng build ng-advanced-table
-ng build ng-advanced-table-utils
+npm run build:packages
 ```
 
 The packages are written to `dist/ng-advanced-table` and `dist/ng-advanced-table-utils`.
@@ -26,7 +25,72 @@ The packages are written to `dist/ng-advanced-table` and `dist/ng-advanced-table
 ## Running unit tests
 
 ```bash
-ng test                          # the showcase application
-ng test ng-advanced-table        # the core library
-ng test ng-advanced-table-utils  # the companion helpers
+npm test                         # the showcase application
+npm run test:packages           # both publishable libraries
+ng test ng-advanced-table       # the core library only
+ng test ng-advanced-table-utils # the companion helpers only
+```
+
+## Versioning and release prep
+
+This repo uses [Changesets](https://github.com/changesets/changesets) to track package releases for:
+
+- `ng-advanced-table`
+- `ng-advanced-table-utils`
+
+Create a changeset in feature branches when package-facing work lands:
+
+```bash
+npm run changeset
+```
+
+Validate that the branch has the release metadata expected by CI:
+
+```bash
+npm run changeset:status
+```
+
+When preparing a release, apply the pending version bumps and changelog updates from the repo root:
+
+```bash
+npm run version:packages
+```
+
+Run the full validation pipeline locally before publishing:
+
+```bash
+npm run verify
+```
+
+## On-demand releases
+
+Releases are intended to be run manually from GitHub Actions through the `Release` workflow on `main`.
+
+The workflow:
+
+- requires pending changesets
+- applies `changeset version`
+- refreshes `package-lock.json`
+- runs the full verification pipeline on Node 22
+- publishes only the packages whose versions changed
+- commits the consumed changesets, version bumps, and changelog updates back to the branch
+- tags published versions as `ng-advanced-table@x.y.z` and `ng-advanced-table-utils@x.y.z`
+
+Before using it, add an `NPM_TOKEN` repository secret with publish access for both packages.
+
+## Local publishing fallback
+
+If you need to publish outside GitHub Actions, apply version updates first:
+
+```bash
+npm run version:packages
+npm install --package-lock-only
+npm run verify
+```
+
+Then publish changed packages from `dist/`, publishing `ng-advanced-table` before `ng-advanced-table-utils` when both are included in the same release:
+
+```bash
+npm publish ./dist/ng-advanced-table
+npm publish ./dist/ng-advanced-table-utils
 ```

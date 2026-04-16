@@ -1,0 +1,162 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure releases run from main
+        if: github.ref_name != 'main'
+        run: |
+          echo "The Release workflow must be run from the main branch."
+          exit 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure pending changesets exist
+        shell: bash
+        run: |
+          shopt -s nullglob
+          pending_changesets=()
+
+          for file in .changeset/*.md; do
+            if [ "$(basename "$file")" != "README.md" ]; then
+              pending_changesets+=("$file")
+            fi
+          done
+
+          if [ "${#pending_changesets[@]}" -eq 0 ]; then
+            echo "No pending changesets found. Add a changeset before running the release workflow."
+            exit 1
+          fi
+
+      - name: Apply version updates
+        run: |
+          npm run version:packages
+          npm install --package-lock-only
+
+      - name: Determine packages to release
+        id: release_set
+        shell: bash
+        run: |
+          core_version=$(node -p "require('./projects/ng-advanced-table/package.json').version")
+          utils_version=$(node -p "require('./projects/ng-advanced-table-utils/package.json').version")
+          publish_core=false
+          publish_utils=false
+
+          if ! git diff --quiet -- projects/ng-advanced-table/package.json; then
+            publish_core=true
+            echo "core_version=$core_version" >> "$GITHUB_OUTPUT"
+            echo "core_tag=ng-advanced-table@$core_version" >> "$GITHUB_OUTPUT"
+          fi
+
+          if ! git diff --quiet -- projects/ng-advanced-table-utils/package.json; then
+            publish_utils=true
+            echo "utils_version=$utils_version" >> "$GITHUB_OUTPUT"
+            echo "utils_tag=ng-advanced-table-utils@$utils_version" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "publish_core=$publish_core" >> "$GITHUB_OUTPUT"
+          echo "publish_utils=$publish_utils" >> "$GITHUB_OUTPUT"
+
+          if [ "$publish_core" = "false" ] && [ "$publish_utils" = "false" ]; then
+            echo "Changesets did not produce any package version updates."
+            exit 1
+          fi
+
+      - name: Verify workspace
+        run: npm run verify
+
+      - name: Publish ng-advanced-table
+        if: steps.release_set.outputs.publish_core == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          if npm view "ng-advanced-table@${{ steps.release_set.outputs.core_version }}" version >/dev/null 2>&1; then
+            echo "ng-advanced-table@${{ steps.release_set.outputs.core_version }} is already published. Skipping."
+            exit 0
+          fi
+
+          npm publish ./dist/ng-advanced-table
+
+      - name: Publish ng-advanced-table-utils
+        if: steps.release_set.outputs.publish_utils == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          if npm view "ng-advanced-table-utils@${{ steps.release_set.outputs.utils_version }}" version >/dev/null 2>&1; then
+            echo "ng-advanced-table-utils@${{ steps.release_set.outputs.utils_version }} is already published. Skipping."
+            exit 0
+          fi
+
+          npm publish ./dist/ng-advanced-table-utils
+
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit release artifacts
+        shell: bash
+        run: |
+          git add .changeset package-lock.json projects/ng-advanced-table/package.json projects/ng-advanced-table-utils/package.json
+
+          if [ -f projects/ng-advanced-table/CHANGELOG.md ]; then
+            git add projects/ng-advanced-table/CHANGELOG.md
+          fi
+
+          if [ -f projects/ng-advanced-table-utils/CHANGELOG.md ]; then
+            git add projects/ng-advanced-table-utils/CHANGELOG.md
+          fi
+
+          if git diff --cached --quiet; then
+            echo "No release artifacts to commit."
+            exit 1
+          fi
+
+          git commit -m "Release packages"
+          git push origin HEAD:${GITHUB_REF_NAME}
+
+      - name: Tag released packages
+        shell: bash
+        run: |
+          tags=()
+
+          if [ "${{ steps.release_set.outputs.publish_core }}" = "true" ]; then
+            git tag "${{ steps.release_set.outputs.core_tag }}"
+            tags+=("${{ steps.release_set.outputs.core_tag }}")
+          fi
+
+          if [ "${{ steps.release_set.outputs.publish_utils }}" = "true" ]; then
+            git tag "${{ steps.release_set.outputs.utils_tag }}"
+            tags+=("${{ steps.release_set.outputs.utils_tag }}")
+          fi
+
+          if [ "${#tags[@]}" -gt 0 ]; then
+            git push origin "${tags[@]}"
+          fi

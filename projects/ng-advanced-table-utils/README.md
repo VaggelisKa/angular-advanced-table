@@ -9,7 +9,7 @@ Currently bundled:
 ## Building
 
 ```bash
-ng build ng-advanced-table-utils
+npm run build:packages
 ```
 
 Output is written to `dist/ng-advanced-table-utils`.
@@ -17,5 +17,44 @@ Output is written to `dist/ng-advanced-table-utils`.
 ## Running unit tests
 
 ```bash
+npm run test:packages
+```
+
+To run only this package's tests:
+
+```bash
 ng test ng-advanced-table-utils
+```
+
+## Versioning
+
+Track publishable changes from the repo root with Changesets:
+
+```bash
+npm run changeset
+```
+
+Apply pending version bumps and changelog updates before a release:
+
+```bash
+npm run version:packages
+```
+
+## Publishing
+
+The preferred release path is the repo-level GitHub Actions `Release` workflow.
+
+For a local fallback, prepare and validate the release from the workspace root:
+
+```bash
+npm run version:packages
+npm install --package-lock-only
+npm run verify
+```
+
+Then publish this package after `ng-advanced-table` when both ship together:
+
+```bash
+npm run pack:dry-run
+npm publish ./dist/ng-advanced-table-utils
 ```
