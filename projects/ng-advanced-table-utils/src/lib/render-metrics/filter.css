@@ -49,20 +49,20 @@
   min-height: 42px;
   padding: 0 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
+  border-color: color-mix(in srgb, var(--text, #ecf5fb) 14%, transparent);
 }
 
 .chip:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: color-mix(in srgb, var(--text, #ecf5fb) 8%, transparent);
+  border-color: color-mix(in srgb, var(--text, #ecf5fb) 20%, transparent);
   transform: translateY(-1px);
 }
 
 .chip.is-active {
-  background: rgba(87, 209, 255, 0.16);
-  border-color: rgba(87, 209, 255, 0.35);
-  box-shadow: 0 0 16px rgba(87, 209, 255, 0.08);
+  background: color-mix(in srgb, var(--accent, #57d1ff) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent, #57d1ff) 34%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent, #57d1ff) 14%, transparent);
 }
 
 .chip-count {
@@ -76,6 +76,6 @@
 }
 
 .chip:focus-visible {
-  outline: 2px solid rgba(87, 209, 255, 0.95);
-  outline-offset: -2px;
+  outline: 2px solid var(--accent, #57d1ff);
+  outline-offset: 2px;
 }

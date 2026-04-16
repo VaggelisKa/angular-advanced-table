@@ -100,6 +100,26 @@ describe('TableShowcasePage', () => {
     expect(changePercentCell.getAttribute('data-tone')).toBe('positive');
   });
 
+  it('should switch the showcase theme without affecting table state controls', () => {
+    fixture.detectChanges();
+
+    const demoSurface = fixture.nativeElement.querySelector('.demo-surface') as HTMLDivElement;
+    const terminalThemeChip = fixture.nativeElement.querySelector(
+      '.theme-chip[data-theme="terminal-mint"]',
+    ) as HTMLButtonElement;
+    const previewTitle = fixture.nativeElement.querySelector(
+      '.theme-preview strong',
+    ) as HTMLElement;
+
+    expect(demoSurface.getAttribute('data-theme')).toBe('market-tape');
+
+    terminalThemeChip.click();
+    fixture.detectChanges();
+
+    expect(demoSurface.getAttribute('data-theme')).toBe('terminal-mint');
+    expect(previewTitle.textContent?.trim()).toBe('Terminal Mint');
+  });
+
   it('should preserve the table render filter when toggling statuses', () => {
     fixture.detectChanges();
 
