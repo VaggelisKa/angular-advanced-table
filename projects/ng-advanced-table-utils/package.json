@@ -1,6 +1,6 @@
 {
   "name": "ng-advanced-table-utils",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Optional companion helpers for ng-advanced-table, including render metrics tooling.",
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
   "peerDependencies": {
     "@angular/core": "^21.2.0",
     "@tanstack/angular-table": "^8.21.4",
-    "ng-advanced-table": "^0.0.1"
+    "ng-advanced-table": "^0.0.2"
   },
   "dependencies": {
     "tslib": "^2.3.0"
