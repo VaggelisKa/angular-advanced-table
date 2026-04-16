@@ -32,13 +32,13 @@ describe('TableShowcasePage', () => {
     const headers = Array.from(
       fixture.nativeElement.querySelectorAll('thead th'),
     ) as HTMLElement[];
-    const throughputHeader = headers.find((header) =>
-      header.textContent?.includes('Throughput'),
+    const netIncomeHeader = headers.find((header) =>
+      header.textContent?.includes('Net Income'),
     ) as HTMLElement;
 
     expect(rows.length).toBe(24);
     expect(firstPinButton.textContent?.trim()).toBe('Unpin');
-    expect(throughputHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
+    expect(netIncomeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
   });
 
   it('should update the status filter through controlled table state', () => {
@@ -67,27 +67,27 @@ describe('TableShowcasePage', () => {
     ) as HTMLTableCellElement;
 
     expect(statusCell.textContent).toMatch(/Healthy|Pending|Alert|Offline/);
-    expect(statusCell.textContent).not.toContain('ms');
+    expect(statusCell.textContent).not.toContain('%');
   });
 
   it('should keep search and column visibility working end to end', () => {
     fixture.detectChanges();
 
     const searchInput = fixture.nativeElement.querySelector('#table-search') as HTMLInputElement;
-    const regionToggle = fixture.nativeElement.querySelector(
-      '.column-chip[data-column-id="region"]',
+    const periodToggle = fixture.nativeElement.querySelector(
+      '.column-chip[data-column-id="reportingPeriod"]',
     ) as HTMLButtonElement;
 
-    searchInput.value = 'svc-00001';
+    searchInput.value = 'doc-00001';
     searchInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
 
-    regionToggle.click();
+    periodToggle.click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Period');
   });
 
   it('should preserve the table render filter when toggling statuses', () => {

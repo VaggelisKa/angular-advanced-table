@@ -5,14 +5,14 @@ export type SimulationProfile = 'steady' | 'balanced' | 'burst';
 
 export interface SimulationRow {
   id: string;
-  workload: string;
-  region: string;
-  owner: string;
+  documentName: string;
+  reportingPeriod: string;
+  businessUnit: string;
   status: SimulationStatus;
-  latencyMs: number;
-  throughput: number;
-  errorRate: number;
-  saturation: number;
+  totalAssetsBillion: number;
+  netIncomeMillion: number;
+  tier1CapitalRatio: number;
+  efficiencyRatio: number;
   updatedAt: number;
 }
 
@@ -56,23 +56,23 @@ export const SIMULATION_PROFILES = {
 export const DATASET_OPTIONS = [2000, 12000, 25000] as const;
 export const PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
 
-const REGIONS = ['eu-north-1', 'eu-west-3', 'us-east-1', 'ap-south-1'] as const;
-const OWNERS = [
-  'Core Platform',
-  'Growth Systems',
-  'Storefront',
-  'Identity',
-  'Data Ops',
+const REPORTING_PERIODS = ['FY 2025', 'Q4 2025', 'Q1 2026', 'Q2 2026'] as const;
+const BUSINESS_UNITS = [
+  'Retail Banking',
+  'Commercial Banking',
+  'Treasury',
+  'Mortgage',
+  'Wealth Management',
 ] as const;
-const WORKLOADS = [
-  'Checkout',
-  'Catalog',
-  'Fulfillment',
-  'Recommendations',
-  'Billing',
-  'Search',
-  'Analytics',
-  'Notifications',
+const DOCUMENT_NAMES = [
+  'Balance Sheet',
+  'Income Statement',
+  'Cash Flow Statement',
+  'Liquidity Coverage Report',
+  'Credit Risk Dashboard',
+  'Basel III Capital Report',
+  'Loan Performance Summary',
+  'Deposit Mix Analysis',
 ] as const;
 
 @Injectable({
@@ -190,21 +190,21 @@ function buildDataset(size: number): SimulationRow[] {
   const baseTimestamp = Date.now();
 
   return Array.from({ length: size }, (_, index) => {
-    const workload = WORKLOADS[index % WORKLOADS.length];
-    const region = REGIONS[index % REGIONS.length];
-    const owner = OWNERS[index % OWNERS.length];
+    const documentName = DOCUMENT_NAMES[index % DOCUMENT_NAMES.length];
+    const reportingPeriod = REPORTING_PERIODS[index % REPORTING_PERIODS.length];
+    const businessUnit = BUSINESS_UNITS[index % BUSINESS_UNITS.length];
     const status = SIMULATION_STATUSES[index % SIMULATION_STATUSES.length];
 
     return {
-      id: `svc-${String(index + 1).padStart(5, '0')}`,
-      workload: `${workload} ${Math.floor(index / WORKLOADS.length) + 1}`,
-      region,
-      owner,
+      id: `doc-${String(index + 1).padStart(5, '0')}`,
+      documentName: `${documentName} ${Math.floor(index / DOCUMENT_NAMES.length) + 1}`,
+      reportingPeriod,
+      businessUnit,
       status,
-      latencyMs: 35 + ((index * 17) % 210),
-      throughput: 900 + ((index * 91) % 8200),
-      errorRate: Number((((index * 13) % 32) / 1000).toFixed(3)),
-      saturation: 28 + ((index * 19) % 58),
+      totalAssetsBillion: 120 + ((index * 37) % 980),
+      netIncomeMillion: 40 + ((index * 53) % 920),
+      tier1CapitalRatio: Number((0.095 + ((index * 7) % 80) / 1000).toFixed(3)),
+      efficiencyRatio: Number((0.41 + ((index * 11) % 280) / 1000).toFixed(3)),
       updatedAt: baseTimestamp - (index % 180) * 1000,
     };
   });
@@ -233,10 +233,18 @@ function mutateRow(row: SimulationRow, now: number): SimulationRow {
   return {
     ...row,
     status: nextStatus(row.status),
-    latencyMs: clamp(Math.round(row.latencyMs + jitter(32)), 14, 480),
-    throughput: clamp(Math.round(row.throughput + jitter(1100)), 120, 12000),
-    errorRate: roundToThousandths(clamp(row.errorRate + jitter(0.014), 0, 0.18)),
-    saturation: clamp(Math.round(row.saturation + jitter(14)), 10, 99),
+    totalAssetsBillion: clamp(
+      Math.round(row.totalAssetsBillion + jitter(22)),
+      80,
+      1400,
+    ),
+    netIncomeMillion: clamp(Math.round(row.netIncomeMillion + jitter(65)), -120, 1600),
+    tier1CapitalRatio: roundToThousandths(
+      clamp(row.tier1CapitalRatio + jitter(0.008), 0.07, 0.24),
+    ),
+    efficiencyRatio: roundToThousandths(
+      clamp(row.efficiencyRatio + jitter(0.02), 0.32, 0.9),
+    ),
     updatedAt: now,
   };
 }
