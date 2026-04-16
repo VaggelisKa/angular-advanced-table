@@ -41,6 +41,13 @@ import type { NatTableCellTone, NatTableState } from './table.types';
 
 type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 
+interface ColumnLayout {
+  widths: Record<string, number>;
+  leftOffsets: Record<string, number>;
+  rightOffsets: Record<string, number>;
+  totalWidth: number;
+}
+
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 const EMPTY_COLUMN_PINNING: ColumnPinningState = {
   left: [],
@@ -182,23 +189,41 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly columnVisibilityOptions = computed(() =>
     this.table.getAllLeafColumns().filter((column) => column.getCanHide()),
   );
-  private readonly nominalTableWidth = computed(() => this.table.getTotalSize());
-  protected readonly totalTableWidth = computed(() => {
-    const container = this.containerWidth();
-    const nominal = this.nominalTableWidth();
+  private readonly columnLayout = computed<ColumnLayout>(() => {
+    const visibleColumns = this.table.getVisibleLeafColumns();
+    const baseWidths = visibleColumns.map((column) => Math.max(Math.round(column.getSize()), 1));
+    const nominalWidth = baseWidths.reduce((total, width) => total + width, 0);
+    const targetWidth =
+      this.containerWidth() > nominalWidth ? this.containerWidth() : nominalWidth;
+    const widths = distributeWidths(baseWidths, targetWidth);
+    const widthMap = visibleColumns.reduce<Record<string, number>>((result, column, index) => {
+      result[column.id] = widths[index] ?? 0;
+      return result;
+    }, {});
+    const leftOffsets: Record<string, number> = {};
+    const rightOffsets: Record<string, number> = {};
+    let leftOffset = 0;
 
-    return container > 0 ? Math.max(nominal, container) : nominal;
-  });
-  private readonly scaleFactor = computed(() => {
-    const container = this.containerWidth();
-    const nominal = this.nominalTableWidth();
-
-    if (container <= 0 || nominal <= 0 || container <= nominal) {
-      return 1;
+    for (const column of this.table.getLeftVisibleLeafColumns()) {
+      leftOffsets[column.id] = leftOffset;
+      leftOffset += widthMap[column.id] ?? 0;
     }
 
-    return container / nominal;
+    let rightOffset = 0;
+
+    for (const column of [...this.table.getRightVisibleLeafColumns()].reverse()) {
+      rightOffsets[column.id] = rightOffset;
+      rightOffset += widthMap[column.id] ?? 0;
+    }
+
+    return {
+      widths: widthMap,
+      leftOffsets,
+      rightOffsets,
+      totalWidth: widths.reduce((total, width) => total + width, 0),
+    };
   });
+  protected readonly totalTableWidth = computed(() => this.columnLayout().totalWidth);
   protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
 
@@ -324,15 +349,19 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected getPinnedLeft(column: Column<TData, unknown>): number | null {
-    return column.getIsPinned() === 'left' ? column.getStart('left') : null;
+    return column.getIsPinned() === 'left'
+      ? (this.columnLayout().leftOffsets[column.id] ?? 0)
+      : null;
   }
 
   protected getPinnedRight(column: Column<TData, unknown>): number | null {
-    return column.getIsPinned() === 'right' ? column.getAfter('right') : null;
+    return column.getIsPinned() === 'right'
+      ? (this.columnLayout().rightOffsets[column.id] ?? 0)
+      : null;
   }
 
   protected getColumnWidth(column: Column<TData, unknown>): number {
-    return Math.round(column.getSize() * this.scaleFactor());
+    return this.columnLayout().widths[column.id] ?? Math.max(Math.round(column.getSize()), 1);
   }
 
   protected isLastLeftPinnedColumn(column: Column<TData, unknown>): boolean {
@@ -453,7 +482,7 @@ export class NatTable<TData extends RowData = RowData> {
   private observeContainerWidth(): void {
     const element = this.tableRegionRef()?.nativeElement;
 
-    if (!element) {
+    if (!element || typeof ResizeObserver === 'undefined') {
       return;
     }
 
@@ -529,4 +558,39 @@ function matchesFilterQuery(value: unknown, query: string): boolean {
 
 function isUnavailableRequiredInputError(error: unknown): error is Error & { code?: number } {
   return error instanceof Error && Math.abs((error as { code?: number }).code ?? 0) === 950;
+}
+
+function distributeWidths(baseWidths: readonly number[], targetTotalWidth: number): number[] {
+  if (!baseWidths.length) {
+    return [];
+  }
+
+  const nominalWidth = baseWidths.reduce((total, width) => total + width, 0);
+
+  if (targetTotalWidth <= nominalWidth) {
+    return [...baseWidths];
+  }
+
+  const scaleFactor = targetTotalWidth / nominalWidth;
+  const scaledWidths = baseWidths.map((width) => width * scaleFactor);
+  const roundedWidths = scaledWidths.map((width) => Math.floor(width));
+  let remainingPixels = targetTotalWidth - roundedWidths.reduce((total, width) => total + width, 0);
+
+  const widthRemainders = scaledWidths
+    .map((width, index) => ({
+      index,
+      remainder: width - Math.floor(width),
+    }))
+    .sort((left, right) => right.remainder - left.remainder);
+
+  for (const entry of widthRemainders) {
+    if (remainingPixels <= 0) {
+      break;
+    }
+
+    roundedWidths[entry.index] = (roundedWidths[entry.index] ?? 0) + 1;
+    remainingPixels -= 1;
+  }
+
+  return roundedWidths;
 }

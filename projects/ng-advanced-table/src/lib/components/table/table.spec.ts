@@ -27,6 +27,7 @@ const columns: ColumnDef<Row, unknown>[] = [
   {
     accessorKey: 'name',
     header: 'Service',
+    size: 180,
     meta: {
       label: 'Service',
     },
@@ -36,6 +37,7 @@ const columns: ColumnDef<Row, unknown>[] = [
   {
     accessorKey: 'region',
     header: 'Region',
+    size: 140,
     meta: {
       label: 'Region',
     },
@@ -45,6 +47,7 @@ const columns: ColumnDef<Row, unknown>[] = [
   {
     accessorKey: 'status',
     header: 'Status',
+    size: 120,
     meta: {
       label: 'Status',
     },
@@ -54,6 +57,7 @@ const columns: ColumnDef<Row, unknown>[] = [
   {
     accessorKey: 'throughput',
     header: 'Throughput',
+    size: 160,
     meta: {
       label: 'Throughput',
       align: 'end',
@@ -206,6 +210,34 @@ describe('NatTable', () => {
 
     expect(headers[0]?.classList.contains('has-pinned-edge-left')).toBe(false);
     expect(headers[1]?.classList.contains('has-pinned-edge-left')).toBe(true);
+  });
+
+  it('uses the same explicit width model for rendered columns and pinned offsets', () => {
+    host.state.set({
+      columnPinning: {
+        left: ['name', 'region'],
+        right: [],
+      },
+    });
+    fixture.detectChanges();
+
+    const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
+    const bodyCells = Array.from(
+      fixture.nativeElement.querySelectorAll('tbody tr:first-child td'),
+    ) as HTMLElement[];
+    const colElements = Array.from(
+      fixture.nativeElement.querySelectorAll('colgroup col'),
+    ) as HTMLTableColElement[];
+
+    expect(colElements[0]?.style.width).toBe('180px');
+    expect(colElements[1]?.style.width).toBe('140px');
+    expect(headers[0]?.style.width).toBe('180px');
+    expect(headers[1]?.style.width).toBe('140px');
+    expect(headers[0]?.style.left).toBe('0px');
+    expect(headers[1]?.style.left).toBe('180px');
+    expect(bodyCells[0]?.style.width).toBe('180px');
+    expect(bodyCells[1]?.style.width).toBe('140px');
+    expect(bodyCells[1]?.style.left).toBe('180px');
   });
 
   it('respects controlled state slices without mutating the rendered table', () => {
