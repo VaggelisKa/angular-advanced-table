@@ -4,6 +4,9 @@ import type { NatTableRenderMetricsStore } from './store';
 import { isRenderFilterValue } from './tone';
 import { RENDER_METRIC_COLUMN_ID } from './types';
 
+/**
+ * Configuration for {@link withRenderMetricsColumn}.
+ */
 export interface WithRenderMetricsColumnOptions {
   /** Column identifier. Defaults to `__rowRenderMetric`. */
   columnId?: string;
@@ -28,6 +31,11 @@ const decimalFormatter = new Intl.NumberFormat('en-US', {
  * Returns a new column definition array with a synthetic "render" column
  * appended. The column renders the latest per-row render time from the given
  * store and installs a filter function driven by row-render tone.
+ *
+ * @param columns Existing table columns.
+ * @param store Shared metrics store populated from `<nat-table (rowRendered)>`.
+ * @param options Optional labels, sizing, and identifier overrides.
+ * @returns A shallow copy of `columns` with the metrics column appended.
  */
 export function withRenderMetricsColumn<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],

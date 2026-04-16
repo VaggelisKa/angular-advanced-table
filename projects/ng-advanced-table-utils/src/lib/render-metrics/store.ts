@@ -25,10 +25,15 @@ const INITIAL_STATE: StoreState = {
 export class NatTableRenderMetricsStore {
   private readonly state = signal<StoreState>(INITIAL_STATE);
 
+  /** Latest known metric for each row keyed by row id. */
   readonly rowMetrics: Signal<Record<string, RowRenderMetric>> = computed(
     () => this.state().rowMetrics,
   );
 
+  /**
+   * Aggregate measurement for the latest completed render cycle on the current
+   * page, or `null` when no samples have been recorded yet.
+   */
   readonly measurement: Signal<RowRenderMeasurement | null> = computed(() => {
     const cycleMetrics = this.state().cycleMetrics;
     const durations = Object.values(cycleMetrics)
@@ -54,6 +59,11 @@ export class NatTableRenderMetricsStore {
     };
   });
 
+  /**
+   * Records a row render timing emitted by `<nat-table>`.
+   *
+   * @param event Row-level render event payload from the table.
+   */
   record(event: NatTableRowRenderedEvent): void {
     const metric: RowRenderMetric = {
       durationMs: event.durationMs,
@@ -83,10 +93,16 @@ export class NatTableRenderMetricsStore {
     });
   }
 
+  /**
+   * Returns the latest metric captured for a specific row.
+   *
+   * @param rowId Stable row identifier.
+   */
   rowMetric(rowId: string): RowRenderMetric | undefined {
     return this.state().rowMetrics[rowId];
   }
 
+  /** Clears all recorded row and cycle measurements. */
   reset(): void {
     this.state.set(INITIAL_STATE);
   }

@@ -79,6 +79,14 @@ const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => 
   );
 };
 
+/**
+ * Signals-first data table wrapper around TanStack Table with built-in global
+ * search, column visibility controls, pagination, and sticky column pinning.
+ *
+ * Consumers configure the table by passing TanStack column definitions and
+ * row data, then optionally control individual state slices through `state`
+ * and `stateChange`.
+ */
 @Component({
   selector: 'nat-table',
   exportAs: 'natTable',
@@ -88,21 +96,41 @@ const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => 
   styleUrl: './table.css',
 })
 export class NatTable<TData extends RowData = RowData> {
+  /** Row data rendered by the table. */
   readonly data = input.required<readonly TData[]>();
+  /** TanStack column definitions for the current row type. */
   readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
+  /** Accessible name announced for the table region. */
   readonly ariaLabel = input.required<string>();
 
+  /** Allowed page sizes. Invalid entries are ignored and defaults are restored when empty. */
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
+  /** Enables the built-in global search field and filter pipeline. */
   readonly enableGlobalFilter = input(true, { transform: booleanAttribute });
+  /** Accessible label for the global search input. */
   readonly searchLabel = input('Search rows');
+  /** Placeholder text shown in the global search input. */
   readonly searchPlaceholder = input('Search rows');
+  /** Shows the built-in column visibility menu when hideable columns exist. */
   readonly showColumnVisibility = input(true, { transform: booleanAttribute });
+  /** Enables client-side pagination controls and paginated row models. */
   readonly showPagination = input(true, { transform: booleanAttribute });
+  /** Enables sticky left/right column pinning controls. */
   readonly allowColumnPinning = input(true, { transform: booleanAttribute });
+  /** Message rendered when the current view contains no rows. */
   readonly emptyStateLabel = input('No rows match the current view.');
+  /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData> | undefined>(undefined);
+  /** Initial uncontrolled state applied once during the first render. */
   readonly initialState = input<Partial<NatTableState>>({});
+  /**
+   * Controlled state slices supplied by the consumer.
+   *
+   * Any property omitted from this object remains unmanaged and is updated
+   * internally by the table.
+   */
   readonly state = input<Partial<NatTableState>>({});
+  /** Optional stable row id resolver used for selection, pinning, and events. */
   readonly getRowId = input<TableRowIdGetter<TData> | undefined>(undefined);
   /**
    * When `true`, emits one `rowRendered` event per body row per render cycle.
@@ -110,7 +138,9 @@ export class NatTable<TData extends RowData = RowData> {
    */
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
 
+  /** Emits the full next state whenever the table updates any state slice. */
   readonly stateChange = output<NatTableState>();
+  /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
   readonly rowRendered = output<NatTableRowRenderedEvent>();
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
@@ -158,7 +188,12 @@ export class NatTable<TData extends RowData = RowData> {
     () => this.showSearch() || this.showVisibilityControls(),
   );
   protected readonly showTableToolbar = computed(() => this.showPagination());
-  /** Raw TanStack `Table<TData>` instance — exposed so companion controls can read derived state. */
+  /**
+   * Raw TanStack `Table<TData>` instance.
+   *
+   * Exposed so companion controls and advanced consumers can read derived
+   * state and invoke TanStack APIs directly.
+   */
   readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.readRequiredInput(this.data, []) as TData[],
     columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
