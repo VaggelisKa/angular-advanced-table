@@ -361,14 +361,6 @@
   transition: background-color 120ms ease;
 }
 
-.data-row:nth-child(even) {
-  background: color-mix(
-    in srgb,
-    var(--surface-contrast, rgba(5, 20, 31, 0.96)) 86%,
-    var(--text, #ecf5fb) 14%
-  );
-}
-
 .data-row:hover {
   background: color-mix(
     in srgb,
