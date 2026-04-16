@@ -278,6 +278,7 @@
 .data-table {
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
 }
 
 .header-cell,
