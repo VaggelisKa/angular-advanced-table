@@ -220,7 +220,17 @@
 .data-table {
   border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
+  /*
+   * Intrinsic sizing: columns size themselves to their widest cell (header or
+   * body). `white-space: nowrap` on each cell keeps content on a single line,
+   * and `min-width: 100%` lets the table stretch to fill the container when
+   * the combined intrinsic widths fall short. Pin offsets are computed from
+   * the resulting real widths (see `ResizeObserver` in table.ts), so we never
+   * have to reconcile a synthetic width model with what the browser actually
+   * laid out.
+   */
+  table-layout: auto;
+  min-width: 100%;
 }
 
 .header-cell,

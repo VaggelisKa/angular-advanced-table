@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -41,11 +42,9 @@ import type { NatTableCellTone, NatTableState } from './table.types';
 
 type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 
-interface ColumnLayout {
-  widths: Record<string, number>;
-  leftOffsets: Record<string, number>;
-  rightOffsets: Record<string, number>;
-  totalWidth: number;
+interface PinOffsets {
+  left: Record<string, number>;
+  right: Record<string, number>;
 }
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
@@ -183,47 +182,66 @@ export class NatTable<TData extends RowData = RowData> {
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
   })) as Table<TData>;
   private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
-  private readonly containerWidth = signal(0);
+  private readonly measuredHeaderWidths = signal<Record<string, number>>({});
   private readonly destroyRef = inject(DestroyRef);
+  private headerResizeObserver: ResizeObserver | null = null;
 
   protected readonly columnVisibilityOptions = computed(() =>
     this.table.getAllLeafColumns().filter((column) => column.getCanHide()),
   );
-  private readonly columnLayout = computed<ColumnLayout>(() => {
-    const visibleColumns = this.table.getVisibleLeafColumns();
-    const baseWidths = visibleColumns.map((column) => Math.max(Math.round(column.getSize()), 1));
-    const nominalWidth = baseWidths.reduce((total, width) => total + width, 0);
-    const targetWidth =
-      this.containerWidth() > nominalWidth ? this.containerWidth() : nominalWidth;
-    const widths = distributeWidths(baseWidths, targetWidth);
-    const widthMap = visibleColumns.reduce<Record<string, number>>((result, column, index) => {
-      result[column.id] = widths[index] ?? 0;
-      return result;
-    }, {});
-    const leftOffsets: Record<string, number> = {};
-    const rightOffsets: Record<string, number> = {};
+  /**
+   * Intrinsic floor per column. `table-layout: auto` uses these as a lower
+   * bound so columns never collapse below what the consumer considers
+   * readable, while still letting content drive the actual width.
+   */
+  protected readonly columnMinWidths = computed<Record<string, number>>(() => {
+    const result: Record<string, number> = {};
+
+    for (const column of this.table.getVisibleLeafColumns()) {
+      result[column.id] = Math.max(Math.round(column.getSize()), 1);
+    }
+
+    return result;
+  });
+  /**
+   * Width per column used to compute pinned sticky offsets. Prefers the real
+   * post-layout width reported by `ResizeObserver`; falls back to the TanStack
+   * size hint when no measurement exists yet (initial paint, SSR, jsdom).
+   */
+  private readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
+    const measured = this.measuredHeaderWidths();
+    const result: Record<string, number> = {};
+
+    for (const column of this.table.getVisibleLeafColumns()) {
+      const measuredWidth = measured[column.id];
+      result[column.id] =
+        measuredWidth !== undefined && measuredWidth > 0
+          ? measuredWidth
+          : Math.max(Math.round(column.getSize()), 1);
+    }
+
+    return result;
+  });
+  private readonly pinOffsets = computed<PinOffsets>(() => {
+    const widths = this.resolvedColumnWidths();
+    const left: Record<string, number> = {};
+    const right: Record<string, number> = {};
     let leftOffset = 0;
 
     for (const column of this.table.getLeftVisibleLeafColumns()) {
-      leftOffsets[column.id] = leftOffset;
-      leftOffset += widthMap[column.id] ?? 0;
+      left[column.id] = leftOffset;
+      leftOffset += widths[column.id] ?? 0;
     }
 
     let rightOffset = 0;
 
     for (const column of [...this.table.getRightVisibleLeafColumns()].reverse()) {
-      rightOffsets[column.id] = rightOffset;
-      rightOffset += widthMap[column.id] ?? 0;
+      right[column.id] = rightOffset;
+      rightOffset += widths[column.id] ?? 0;
     }
 
-    return {
-      widths: widthMap,
-      leftOffsets,
-      rightOffsets,
-      totalWidth: widths.reduce((total, width) => total + width, 0),
-    };
+    return { left, right };
   });
-  protected readonly totalTableWidth = computed(() => this.columnLayout().totalWidth);
   protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
 
@@ -277,7 +295,21 @@ export class NatTable<TData extends RowData = RowData> {
       this.renderCycleToken.update((token) => token + 1);
     });
 
-    afterNextRender(() => this.observeContainerWidth());
+    afterNextRender(() => this.initializeHeaderObservation());
+    // Re-attach the ResizeObserver to the current set of header cells after
+    // every render. Column visibility, pinning, and visible-leaf changes swap
+    // out the <th> nodes we need to observe; doing this inside a render
+    // effect keeps it coupled to the DOM's actual shape rather than to a
+    // synthetic "layout" signal.
+    afterRenderEffect(() => {
+      // Subscribe to leaf-column identity so the effect re-runs when the
+      // visible set changes, not merely when unrelated state updates.
+      this.columnVisibilityOptions();
+      this.visibleColumnCount();
+      this.reattachHeaderObservers();
+    });
+
+    this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
   }
 
   /**
@@ -349,19 +381,15 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected getPinnedLeft(column: Column<TData, unknown>): number | null {
-    return column.getIsPinned() === 'left'
-      ? (this.columnLayout().leftOffsets[column.id] ?? 0)
-      : null;
+    return column.getIsPinned() === 'left' ? (this.pinOffsets().left[column.id] ?? 0) : null;
   }
 
   protected getPinnedRight(column: Column<TData, unknown>): number | null {
-    return column.getIsPinned() === 'right'
-      ? (this.columnLayout().rightOffsets[column.id] ?? 0)
-      : null;
+    return column.getIsPinned() === 'right' ? (this.pinOffsets().right[column.id] ?? 0) : null;
   }
 
-  protected getColumnWidth(column: Column<TData, unknown>): number {
-    return this.columnLayout().widths[column.id] ?? Math.max(Math.round(column.getSize()), 1);
+  protected getColumnMinWidth(column: Column<TData, unknown>): number {
+    return this.columnMinWidths()[column.id] ?? Math.max(Math.round(column.getSize()), 1);
   }
 
   protected isLastLeftPinnedColumn(column: Column<TData, unknown>): boolean {
@@ -479,29 +507,59 @@ export class NatTable<TData extends RowData = RowData> {
     }
   }
 
-  private observeContainerWidth(): void {
-    const element = this.tableRegionRef()?.nativeElement;
-
-    if (!element || typeof ResizeObserver === 'undefined') {
+  private initializeHeaderObservation(): void {
+    if (typeof ResizeObserver === 'undefined' || this.headerResizeObserver) {
       return;
     }
 
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
+    this.headerResizeObserver = new ResizeObserver(() => this.measureHeaderWidths());
+    this.reattachHeaderObservers();
+  }
 
-      if (!entry) {
-        return;
+  private reattachHeaderObservers(): void {
+    const observer = this.headerResizeObserver;
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (!observer || !region) {
+      return;
+    }
+
+    observer.disconnect();
+
+    const headerCells = region.querySelectorAll<HTMLTableCellElement>('thead th[data-column-id]');
+
+    for (const cell of headerCells) {
+      observer.observe(cell);
+    }
+
+    this.measureHeaderWidths();
+  }
+
+  private measureHeaderWidths(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (!region) {
+      return;
+    }
+
+    const headerCells = region.querySelectorAll<HTMLTableCellElement>('thead th[data-column-id]');
+    const next: Record<string, number> = {};
+
+    for (const cell of headerCells) {
+      const columnId = cell.dataset['columnId'];
+
+      if (!columnId) {
+        continue;
       }
 
-      const width = Math.floor(entry.contentBoxSize?.[0]?.inlineSize ?? entry.contentRect.width);
+      next[columnId] = cell.getBoundingClientRect().width;
+    }
 
-      if (width !== this.containerWidth()) {
-        this.containerWidth.set(width);
-      }
-    });
+    if (hasSameWidths(this.measuredHeaderWidths(), next)) {
+      return;
+    }
 
-    observer.observe(element);
-    this.destroyRef.onDestroy(() => observer.disconnect());
+    this.measuredHeaderWidths.set(next);
   }
 
   private resolveRowId(row: TData, index: number): string {
@@ -560,37 +618,19 @@ function isUnavailableRequiredInputError(error: unknown): error is Error & { cod
   return error instanceof Error && Math.abs((error as { code?: number }).code ?? 0) === 950;
 }
 
-function distributeWidths(baseWidths: readonly number[], targetTotalWidth: number): number[] {
-  if (!baseWidths.length) {
-    return [];
+function hasSameWidths(left: Record<string, number>, right: Record<string, number>): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
   }
 
-  const nominalWidth = baseWidths.reduce((total, width) => total + width, 0);
-
-  if (targetTotalWidth <= nominalWidth) {
-    return [...baseWidths];
-  }
-
-  const scaleFactor = targetTotalWidth / nominalWidth;
-  const scaledWidths = baseWidths.map((width) => width * scaleFactor);
-  const roundedWidths = scaledWidths.map((width) => Math.floor(width));
-  let remainingPixels = targetTotalWidth - roundedWidths.reduce((total, width) => total + width, 0);
-
-  const widthRemainders = scaledWidths
-    .map((width, index) => ({
-      index,
-      remainder: width - Math.floor(width),
-    }))
-    .sort((left, right) => right.remainder - left.remainder);
-
-  for (const entry of widthRemainders) {
-    if (remainingPixels <= 0) {
-      break;
+  for (const key of leftKeys) {
+    if (left[key] !== right[key]) {
+      return false;
     }
-
-    roundedWidths[entry.index] = (roundedWidths[entry.index] ?? 0) + 1;
-    remainingPixels -= 1;
   }
 
-  return roundedWidths;
+  return true;
 }

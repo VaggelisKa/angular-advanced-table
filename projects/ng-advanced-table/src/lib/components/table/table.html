@@ -90,22 +90,7 @@
   }
 
   <div class="table-region" #tableRegion>
-    <table
-      ngGrid
-      class="data-table"
-      [attr.aria-label]="ariaLabel()"
-      [style.width.px]="totalTableWidth()"
-      [style.min-width.px]="totalTableWidth()"
-    >
-      <colgroup>
-        @for (column of table.getVisibleLeafColumns(); track column.id) {
-          <col
-            [style.width.px]="getColumnWidth(column)"
-            [style.min-width.px]="getColumnWidth(column)"
-            [style.max-width.px]="getColumnWidth(column)"
-          />
-        }
-      </colgroup>
+    <table ngGrid class="data-table" [attr.aria-label]="ariaLabel()">
       <thead>
         @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
           <tr ngGridRow>
@@ -121,9 +106,8 @@
                 [class.has-pinned-edge-right]="isFirstRightPinnedColumn(header.column)"
                 [style.left.px]="getPinnedLeft(header.column)"
                 [style.right.px]="getPinnedRight(header.column)"
-                [style.width.px]="getColumnWidth(header.column)"
-                [style.min-width.px]="getColumnWidth(header.column)"
-                [style.max-width.px]="getColumnWidth(header.column)"
+                [style.min-width.px]="getColumnMinWidth(header.column)"
+                [attr.data-column-id]="header.column.id"
                 [attr.aria-sort]="getAriaSort(header.column)"
               >
                 @if (!header.isPlaceholder) {
@@ -199,9 +183,7 @@
                   [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
                   [style.left.px]="getPinnedLeft(cell.column)"
                   [style.right.px]="getPinnedRight(cell.column)"
-                  [style.width.px]="getColumnWidth(cell.column)"
-                  [style.min-width.px]="getColumnWidth(cell.column)"
-                  [style.max-width.px]="getColumnWidth(cell.column)"
+                  [style.min-width.px]="getColumnMinWidth(cell.column)"
                   [attr.data-column-id]="cell.column.id"
                   [attr.data-tone]="getCellTone(cell)"
                 >
