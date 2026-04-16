@@ -1,8 +1,24 @@
 {
   "name": "ng-advanced-table-utils",
   "version": "0.0.1",
+  "description": "Optional companion helpers for ng-advanced-table, including render metrics tooling.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VaggelisKa/angular-advanced-table.git",
+    "directory": "projects/ng-advanced-table-utils"
+  },
+  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/projects/ng-advanced-table-utils#readme",
+  "bugs": {
+    "url": "https://github.com/VaggelisKa/angular-advanced-table/issues"
+  },
+  "keywords": [
+    "angular",
+    "table",
+    "render-metrics",
+    "performance",
+    "tanstack-table"
+  ],
   "peerDependencies": {
-    "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0",
     "@tanstack/angular-table": "^8.21.4",
     "ng-advanced-table": "^0.0.1"

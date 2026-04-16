@@ -1,9 +1,27 @@
 {
   "name": "ng-advanced-table",
   "version": "0.0.1",
+  "description": "Signals-first Angular data table primitives built on TanStack Table.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VaggelisKa/angular-advanced-table.git",
+    "directory": "projects/ng-advanced-table"
+  },
+  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/projects/ng-advanced-table#readme",
+  "bugs": {
+    "url": "https://github.com/VaggelisKa/angular-advanced-table/issues"
+  },
+  "keywords": [
+    "angular",
+    "signals",
+    "table",
+    "data-table",
+    "tanstack-table"
+  ],
   "peerDependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0"
+    "@angular/aria": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@tanstack/angular-table": "^8.21.4"
   },
   "dependencies": {
     "tslib": "^2.3.0"
