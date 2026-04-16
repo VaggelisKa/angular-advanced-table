@@ -212,7 +212,7 @@ describe('NatTable', () => {
     expect(headers[1]?.classList.contains('has-pinned-edge-left')).toBe(true);
   });
 
-  it('uses the same explicit width model for rendered columns and pinned offsets', () => {
+  it('lets the browser size columns intrinsically while driving pin offsets from column sizes', () => {
     host.state.set({
       columnPinning: {
         left: ['name', 'region'],
@@ -225,19 +225,26 @@ describe('NatTable', () => {
     const bodyCells = Array.from(
       fixture.nativeElement.querySelectorAll('tbody tr:first-child td'),
     ) as HTMLElement[];
-    const colElements = Array.from(
-      fixture.nativeElement.querySelectorAll('colgroup col'),
-    ) as HTMLTableColElement[];
 
-    expect(colElements[0]?.style.width).toBe('180px');
-    expect(colElements[1]?.style.width).toBe('140px');
-    expect(headers[0]?.style.width).toBe('180px');
-    expect(headers[1]?.style.width).toBe('140px');
+    // Columns no longer ship a <colgroup> or explicit `width`/`max-width`
+    // bindings. The browser sizes each column to its widest cell and we only
+    // publish `min-width` as an intrinsic floor derived from `column.size`.
+    expect(fixture.nativeElement.querySelector('colgroup')).toBeNull();
+    expect(headers[0]?.style.width).toBe('');
+    expect(headers[0]?.style.maxWidth).toBe('');
+    expect(headers[0]?.style.minWidth).toBe('180px');
+    expect(headers[1]?.style.minWidth).toBe('140px');
+    expect(bodyCells[0]?.style.width).toBe('');
+    expect(bodyCells[0]?.style.minWidth).toBe('180px');
+
+    // Pin offsets fall back to the column sizes when no ResizeObserver
+    // measurement is available yet (which is the case in jsdom). The sticky
+    // contract is preserved: each pinned column is offset by the cumulative
+    // width of every pinned column before it.
     expect(headers[0]?.style.left).toBe('0px');
     expect(headers[1]?.style.left).toBe('180px');
-    expect(bodyCells[0]?.style.width).toBe('180px');
-    expect(bodyCells[1]?.style.width).toBe('140px');
     expect(bodyCells[1]?.style.left).toBe('180px');
+    expect(headers[0]?.dataset['columnId']).toBe('name');
   });
 
   it('respects controlled state slices without mutating the rendered table', () => {
