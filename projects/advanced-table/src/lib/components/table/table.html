@@ -72,20 +72,19 @@
   @if (showTableToolbar()) {
     <div class="table-toolbar">
       @if (enableRenderMetrics()) {
-        <article
+        <div
           class="render-kpi"
           [attr.data-health]="rowRenderHealth().tone"
           aria-label="Row render sample"
         >
-          <span class="render-kpi-label">Row render sample</span>
-          <div class="render-kpi-value-row">
-            <strong class="render-kpi-value">
-              {{ formatDecimal(renderMeasurement().durationMs) }} ms
-            </strong>
-            <span class="render-kpi-badge">{{ rowRenderHealth().label }}</span>
-          </div>
-          <span class="render-kpi-footnote">{{ rowRenderSummary() }}</span>
-        </article>
+          <span class="render-kpi-dot" aria-hidden="true"></span>
+          <span class="render-kpi-text">
+            <strong>{{ formatDecimal(renderMeasurement().durationMs) }} ms</strong>
+            <span class="render-kpi-detail"
+              >{{ rowRenderHealth().label }} · {{ rowRenderCompactSummary() }}</span
+            >
+          </span>
+        </div>
       }
 
       @if (showPagination()) {

@@ -370,6 +370,17 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
 
     return `${integerFormatter.format(measurement.rowCount)} ${rowLabel} x ${integerFormatter.format(measurement.visibleColumnCount)} ${columnLabel} / ${decimalFormatter.format(measurement.averageRowDurationMs)} ms avg row / ${integerFormatter.format(measurement.rowsPerSecond)} rows/s`;
   });
+  protected readonly rowRenderCompactSummary = computed(() => {
+    const measurement = this.renderMeasurement();
+
+    if (!measurement.rowCount) {
+      return 'idle';
+    }
+
+    const rowLabel = measurement.rowCount === 1 ? 'row' : 'rows';
+
+    return `${integerFormatter.format(measurement.rowCount)} ${rowLabel} sampled`;
+  });
   protected readonly table: Table<TData> = createAngularTable<TData>(() => {
     if (this.selectedRenderMetricFilter() !== 'all') {
       this.renderMetricFilterRevision();
