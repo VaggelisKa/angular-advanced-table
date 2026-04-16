@@ -9,6 +9,7 @@
   --text: #ecf5fb;
   --text-soft: #a8c3d7;
   --accent: #57d1ff;
+  --accent-glow: rgba(87, 209, 255, 0.12);
   --success: #5de6a6;
   --warning: #ffd166;
   --danger: #ff8d7f;
@@ -22,13 +23,16 @@
 }
 
 .card {
-  background:
-    linear-gradient(180deg, rgba(115, 186, 230, 0.09), transparent 24%),
-    var(--surface);
+  background: linear-gradient(180deg, rgba(115, 186, 230, 0.09), transparent 24%), var(--surface);
   border: 1px solid var(--border);
   border-radius: 28px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(20px);
+  transition: border-color 200ms ease;
+}
+
+.card:hover {
+  border-color: rgba(168, 216, 255, 0.24);
 }
 
 .hero,
@@ -41,6 +45,19 @@
   gap: 24px;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(87, 209, 255, 0.06), transparent 70%);
+  pointer-events: none;
 }
 
 .hero-copy h1 {
@@ -49,6 +66,10 @@
   line-height: 0.96;
   letter-spacing: -0.06em;
   font-family: 'Avenir Next Condensed', 'Arial Narrow', 'Avenir Next', sans-serif;
+  background: linear-gradient(135deg, #ecf5fb 40%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .eyebrow {
@@ -81,10 +102,11 @@
   color: inherit;
   cursor: pointer;
   transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    transform 140ms ease,
-    color 140ms ease;
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    color 180ms ease;
 }
 
 .action-button {
@@ -102,14 +124,25 @@
   transform: translateY(-1px);
 }
 
+.action-button:hover {
+  box-shadow: 0 4px 20px rgba(87, 209, 255, 0.15);
+}
+
 .action-button.is-active {
   background: linear-gradient(135deg, rgba(87, 209, 255, 0.32), rgba(20, 184, 255, 0.22));
   border-color: rgba(87, 209, 255, 0.4);
+  box-shadow: 0 0 24px rgba(87, 209, 255, 0.12);
 }
 
 .action-button.secondary {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.12);
+}
+
+.action-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.05);
 }
 
 .stats-grid {
@@ -121,6 +154,27 @@
 
 .stat-card {
   padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+}
+
+.stat-card[data-accent='health'] .stat-value {
+  color: var(--success);
+}
+
+.stat-card[data-accent='mutations'] .stat-value {
+  color: var(--accent);
 }
 
 .stat-label {
@@ -136,6 +190,17 @@
   margin-top: 14px;
   font-size: clamp(1.4rem, 2vw, 2.2rem);
   letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-value-lg {
+  font-size: clamp(1.8rem, 2.4vw, 2.6rem);
+}
+
+.stat-unit {
+  font-size: 0.65em;
+  color: var(--text-soft);
+  margin-left: 2px;
 }
 
 .stat-footnote {
@@ -155,6 +220,11 @@
 .control-block {
   display: grid;
   gap: 10px;
+}
+
+.control-block + .control-block {
+  padding-top: 18px;
+  border-top: 1px solid rgba(168, 216, 255, 0.07);
 }
 
 .control-label {
@@ -181,22 +251,34 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+.chip:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
 .chip.is-active {
   background: rgba(87, 209, 255, 0.16);
   border-color: rgba(87, 209, 255, 0.35);
+  box-shadow: 0 0 16px rgba(87, 209, 255, 0.08);
 }
 
 .status-chip[data-status='Healthy'].is-active {
   color: var(--success);
+  border-color: rgba(93, 230, 166, 0.35);
+  box-shadow: 0 0 16px rgba(93, 230, 166, 0.08);
 }
 
 .status-chip[data-status='Pending'].is-active {
   color: var(--warning);
+  border-color: rgba(255, 209, 102, 0.35);
+  box-shadow: 0 0 16px rgba(255, 209, 102, 0.08);
 }
 
 .status-chip[data-status='Alert'].is-active,
 .status-chip[data-status='Offline'].is-active {
   color: var(--danger);
+  border-color: rgba(255, 141, 127, 0.35);
+  box-shadow: 0 0 16px rgba(255, 141, 127, 0.08);
 }
 
 .chip-detail {
@@ -206,6 +288,35 @@
 
 .profile-chip {
   min-height: 48px;
+}
+
+.live-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-soft);
+  vertical-align: middle;
+  margin-right: 6px;
+  transition: background-color 300ms ease;
+}
+
+.live-indicator.is-active {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(93, 230, 166, 0.5);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(93, 230, 166, 0.5);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 16px rgba(93, 230, 166, 0.3);
+  }
 }
 
 .action-button:focus-visible,
