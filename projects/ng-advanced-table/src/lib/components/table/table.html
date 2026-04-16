@@ -41,52 +41,12 @@
         </div>
       </div>
     }
-
-    @if (showRenderMetricControls()) {
-      <div class="control-block">
-        <div class="control-heading">
-          <span class="control-label">Render speed</span>
-          <span class="control-caption">{{ renderFilterCaption() }}</span>
-        </div>
-        <div class="chip-row" role="group" aria-label="Row render speed">
-          @for (option of renderFilterOptions; track option.value) {
-            <button
-              type="button"
-              class="chip render-chip"
-              [class.is-active]="selectedRenderMetricFilter() === option.value"
-              [attr.aria-pressed]="selectedRenderMetricFilter() === option.value"
-              [attr.data-render-filter]="option.value"
-              (click)="setRenderMetricFilter(option.value)"
-            >
-              <span>{{ option.label }}</span>
-              <span class="chip-count">{{ option.description }}</span>
-            </button>
-          }
-        </div>
-      </div>
-    }
   </section>
 }
 
 <section class="table-card card">
   @if (showTableToolbar()) {
     <div class="table-toolbar">
-      @if (enableRenderMetrics()) {
-        <div
-          class="render-kpi"
-          [attr.data-health]="rowRenderHealth().tone"
-          aria-label="Row render sample"
-        >
-          <span class="render-kpi-dot" aria-hidden="true"></span>
-          <span class="render-kpi-text">
-            <strong>{{ formatDecimal(renderMeasurement().durationMs) }} ms</strong>
-            <span class="render-kpi-detail"
-              >{{ rowRenderHealth().label }} · {{ rowRenderCompactSummary() }}</span
-            >
-          </span>
-        </div>
-      }
-
       @if (showPagination()) {
         <div class="table-actions">
           <div class="chip-row compact" role="group" aria-label="Page size">
@@ -222,18 +182,17 @@
             <tr
               ngGridRow
               class="data-row"
-              [advancedTableRowMeter]="row.id"
-              [advancedTableRowRenderEnabled]="enableRenderMetrics()"
-              [advancedTableRowRenderToken]="renderMeasurementToken()"
-              [advancedTableRowRenderStartedAt]="renderMeasurementStartedAt()"
-              (advancedTableRowRendered)="recordRowRender($event)"
+              [natTableRowRenderEmitter]="row.id"
+              [natTableRowRenderEnabled]="emitRowRenderEvents()"
+              [natTableRowRenderToken]="renderCycleToken()"
+              [natTableRowRenderStartedAt]="renderCycleStartedAt()"
+              (natTableRowRendered)="onRowRendered($event)"
             >
               @for (cell of row.getVisibleCells(); track cell.id) {
                 <td
                   ngGridCell
                   class="data-cell"
                   [class.is-align-end]="isColumnAlignedEnd(cell.column)"
-                  [class.is-render-metric]="isRenderMetricColumn(cell.column)"
                   [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
                   [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
                   [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
@@ -245,9 +204,6 @@
                   [style.max-width.px]="getColumnWidth(cell.column)"
                   [attr.data-column-id]="cell.column.id"
                   [attr.data-tone]="getCellTone(cell)"
-                  [attr.data-render-tone]="
-                    isRenderMetricColumn(cell.column) ? getRowRenderTone(row.id) : null
-                  "
                 >
                   <ng-container
                     *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"

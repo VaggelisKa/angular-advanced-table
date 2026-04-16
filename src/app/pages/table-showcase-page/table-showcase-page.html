@@ -115,20 +115,29 @@
         }
       </div>
     </div>
+
+    <div class="control-block">
+      <div class="render-heading">
+        <nat-render-metrics-filter [for]="grid" [store]="metricsStore" />
+        <nat-render-metrics-panel [store]="metricsStore" />
+      </div>
+    </div>
   </section>
 
-  <advanced-table
+  <nat-table
+    #grid="natTable"
     [data]="simulation.rows()"
     [columns]="columns"
     [state]="tableState()"
     [initialState]="initialTableState"
     [pageSizeOptions]="pageSizeOptions"
-    [enableRenderMetrics]="true"
+    [emitRowRenderEvents]="true"
     [getRowId]="getRowId"
     ariaLabel="Live market movers table"
     searchLabel="Search symbol, company, exchange, desk, or id"
     searchPlaceholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
     emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
     (stateChange)="onTableStateChange($event)"
+    (rowRendered)="onRowRendered($event)"
   />
 </main>
