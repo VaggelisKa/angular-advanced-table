@@ -8,8 +8,8 @@
   gap: 8px;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(168, 216, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid color-mix(in srgb, var(--text, #ecf5fb) 12%, transparent);
+  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
   font-size: 0.85rem;
   color: var(--text-soft);
   white-space: nowrap;
@@ -30,17 +30,17 @@
 
 .render-kpi[data-health='fast'] .render-kpi-dot {
   background: var(--success, #5de6a6);
-  box-shadow: 0 0 6px rgba(93, 230, 166, 0.4);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--success, #5de6a6) 40%, transparent);
 }
 
 .render-kpi[data-health='watch'] .render-kpi-dot {
   background: var(--warning, #ffd166);
-  box-shadow: 0 0 6px rgba(255, 209, 102, 0.4);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--warning, #ffd166) 40%, transparent);
 }
 
 .render-kpi[data-health='slow'] .render-kpi-dot {
   background: var(--danger, #ff8d7f);
-  box-shadow: 0 0 6px rgba(255, 107, 94, 0.4);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--danger, #ff8d7f) 40%, transparent);
 }
 
 .render-kpi-text {

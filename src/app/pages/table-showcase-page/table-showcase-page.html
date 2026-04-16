@@ -1,143 +1,177 @@
-<main class="page-shell">
-  <section class="hero card">
-    <div class="hero-copy">
-      <p class="eyebrow">Angular 21 • Signals • TanStack Angular Table • Market Tape</p>
-      <h1>Trading-style data grid with live movers</h1>
-      <p class="hero-text">
-        The mock feed now behaves like a trading table, with price, turnover, and 24-hour move
-        columns. Positive and negative moves are color-coded so gainers and decliners stand out at
-        a glance while sorting, filtering, and paging stay responsive.
-      </p>
-    </div>
-
-    <div class="hero-actions" role="group" aria-label="Simulation controls">
-      <button
-        type="button"
-        class="action-button"
-        [class.is-active]="simulation.isRunning()"
-        (click)="toggleSimulation()"
-      >
-        {{ simulation.isRunning() ? 'Pause market feed' : 'Resume market feed' }}
-      </button>
-      <button type="button" class="action-button secondary" (click)="runManualPulse()">
-        Trigger one tick
-      </button>
-    </div>
-  </section>
-
-  <section class="stats-grid" aria-label="Market telemetry">
-    <article class="stat-card card" data-accent="default">
-      <span class="stat-label">Instruments in memory</span>
-      <strong class="stat-value">{{ formatInteger(simulation.datasetSize()) }}</strong>
-      <span class="stat-footnote">Active tempo: {{ simulation.profilePreset().label }}</span>
-    </article>
-    <article class="stat-card card" data-accent="default">
-      <span class="stat-label">Tick cadence</span>
-      <strong class="stat-value">
-        {{ formatInteger(simulation.profilePreset().mutationBatchSize) }} rows /
-        {{ simulation.profilePreset().tickIntervalMs }} ms
-      </strong>
-      <span class="stat-footnote"
-        >Last tick: {{ formatInteger(simulation.lastMutationSize()) }} rows</span
-      >
-    </article>
-    <article class="stat-card card" data-accent="health">
-      <span class="stat-label">Market breadth</span>
-      <strong class="stat-value stat-value-lg"
-        >{{ simulation.marketBreadth() }}<span class="stat-unit">%</span></strong
-      >
-      <span class="stat-footnote">
-        {{ formatInteger(simulation.positiveMoverCount()) }} positive movers ·
-        {{ formatInteger(simulation.statusCounts().Halted) }} halted names
-      </span>
-    </article>
-    <article class="stat-card card" data-accent="mutations">
-      <span class="stat-label">Total simulated ticks</span>
-      <strong class="stat-value">{{ formatInteger(simulation.totalMutations()) }}</strong>
-      <span class="stat-footnote">
-        <span class="live-indicator" [class.is-active]="simulation.isRunning()"></span>
-        {{ simulation.isRunning() ? 'Live ticks enabled' : 'Feed paused' }}
-      </span>
-    </article>
-  </section>
-
-  <section class="controls card" aria-label="Dataset controls">
-    <div class="control-block">
-      <span class="control-label">Dataset size</span>
-      <div class="chip-row" role="group" aria-label="Dataset size">
-        @for (size of datasetOptions; track size) {
-          <button
-            type="button"
-            class="chip"
-            [class.is-active]="simulation.datasetSize() === size"
-            [attr.aria-pressed]="simulation.datasetSize() === size"
-            (click)="setDatasetSize(size)"
-          >
-            {{ formatCompact(size) }} rows
-          </button>
-        }
+<div class="demo-surface" [attr.data-theme]="activeTheme().value">
+  <main class="page-shell">
+    <section class="hero card">
+      <div class="hero-copy">
+        <p class="eyebrow">Angular 21 • Signals • TanStack Angular Table • Live Styling Presets</p>
+        <h1>Trading-style data grid with live movers</h1>
+        <p class="hero-text">
+          The mock feed behaves like a trading table, with price, turnover, and 24-hour move
+          columns. Theme presets let the same data grid swap from newsroom to terminal to dusk tape
+          without changing any table behavior.
+        </p>
+        <p class="theme-preview" aria-live="polite">
+          <span class="theme-preview-label">Preview</span>
+          <strong>{{ activeTheme().label }}</strong>
+          <span>{{ activeTheme().description }}</span>
+        </p>
       </div>
-    </div>
 
-    <div class="control-block">
-      <span class="control-label">Feed tempo</span>
-      <div class="chip-row" role="group" aria-label="Simulation profile">
-        @for (profile of profiles; track profile.value) {
-          <button
-            type="button"
-            class="chip profile-chip"
-            [class.is-active]="simulation.profile() === profile.value"
-            [attr.aria-pressed]="simulation.profile() === profile.value"
-            (click)="setProfile(profile.value)"
-          >
-            <span>{{ profile.label }}</span>
-            <span class="chip-detail">{{ profile.description }}</span>
-          </button>
-        }
+      <div class="hero-actions" role="group" aria-label="Simulation controls">
+        <button
+          type="button"
+          class="action-button"
+          [class.is-active]="simulation.isRunning()"
+          (click)="toggleSimulation()"
+        >
+          {{ simulation.isRunning() ? 'Pause market feed' : 'Resume market feed' }}
+        </button>
+        <button type="button" class="action-button secondary" (click)="runManualPulse()">
+          Trigger one tick
+        </button>
       </div>
-    </div>
+    </section>
 
-    <div class="control-block">
-      <span class="control-label">Signal filter</span>
-      <div class="chip-row" role="group" aria-label="Signal filter">
-        @for (status of statuses; track status) {
-          <button
-            type="button"
-            class="chip status-chip"
-            [class.is-active]="isStatusActive(status)"
-            [attr.data-status]="status"
-            [attr.aria-pressed]="isStatusActive(status)"
-            (click)="toggleStatus(status)"
-          >
-            <span>{{ status }}</span>
-            <span class="chip-detail">{{ formatInteger(simulation.statusCounts()[status]) }}</span>
-          </button>
-        }
+    <section class="stats-grid" aria-label="Market telemetry">
+      <article class="stat-card card" data-accent="default">
+        <span class="stat-label">Instruments in memory</span>
+        <strong class="stat-value">{{ formatInteger(simulation.datasetSize()) }}</strong>
+        <span class="stat-footnote">Active tempo: {{ simulation.profilePreset().label }}</span>
+      </article>
+      <article class="stat-card card" data-accent="default">
+        <span class="stat-label">Tick cadence</span>
+        <strong class="stat-value">
+          {{ formatInteger(simulation.profilePreset().mutationBatchSize) }} rows /
+          {{ simulation.profilePreset().tickIntervalMs }} ms
+        </strong>
+        <span class="stat-footnote"
+          >Last tick: {{ formatInteger(simulation.lastMutationSize()) }} rows</span
+        >
+      </article>
+      <article class="stat-card card" data-accent="health">
+        <span class="stat-label">Market breadth</span>
+        <strong class="stat-value stat-value-lg"
+          >{{ simulation.marketBreadth() }}<span class="stat-unit">%</span></strong
+        >
+        <span class="stat-footnote">
+          {{ formatInteger(simulation.positiveMoverCount()) }} positive movers ·
+          {{ formatInteger(simulation.statusCounts().Halted) }} halted names
+        </span>
+      </article>
+      <article class="stat-card card" data-accent="mutations">
+        <span class="stat-label">Total simulated ticks</span>
+        <strong class="stat-value">{{ formatInteger(simulation.totalMutations()) }}</strong>
+        <span class="stat-footnote">
+          <span class="live-indicator" [class.is-active]="simulation.isRunning()"></span>
+          {{ simulation.isRunning() ? 'Live ticks enabled' : 'Feed paused' }}
+        </span>
+      </article>
+    </section>
+
+    <section class="controls card" aria-label="Dataset controls">
+      <div class="control-block">
+        <div class="control-heading">
+          <span class="control-label">Table theme</span>
+          <span class="control-caption">
+            Switch the palette and surface treatment while the same grid interactions stay intact.
+          </span>
+        </div>
+        <div class="chip-row" role="group" aria-label="Table theme">
+          @for (theme of themes; track theme.value) {
+            <button
+              type="button"
+              class="chip theme-chip"
+              [class.is-active]="selectedTheme() === theme.value"
+              [attr.aria-pressed]="selectedTheme() === theme.value"
+              [attr.data-theme]="theme.value"
+              (click)="setTheme(theme.value)"
+            >
+              <span class="theme-swatch" aria-hidden="true"></span>
+              <span class="theme-chip-copy">
+                <span class="theme-chip-label">{{ theme.label }}</span>
+                <span class="chip-detail">{{ theme.description }}</span>
+              </span>
+            </button>
+          }
+        </div>
       </div>
-    </div>
 
-    <div class="control-block">
-      <div class="render-heading">
-        <nat-render-metrics-filter [for]="grid" [store]="metricsStore" />
-        <nat-render-metrics-panel [store]="metricsStore" />
+      <div class="control-block">
+        <span class="control-label">Dataset size</span>
+        <div class="chip-row" role="group" aria-label="Dataset size">
+          @for (size of datasetOptions; track size) {
+            <button
+              type="button"
+              class="chip"
+              [class.is-active]="simulation.datasetSize() === size"
+              [attr.aria-pressed]="simulation.datasetSize() === size"
+              (click)="setDatasetSize(size)"
+            >
+              {{ formatCompact(size) }} rows
+            </button>
+          }
+        </div>
       </div>
-    </div>
-  </section>
 
-  <nat-table
-    #grid="natTable"
-    [data]="simulation.rows()"
-    [columns]="columns"
-    [state]="tableState()"
-    [initialState]="initialTableState"
-    [pageSizeOptions]="pageSizeOptions"
-    [emitRowRenderEvents]="true"
-    [getRowId]="getRowId"
-    ariaLabel="Live market movers table"
-    searchLabel="Search symbol, company, exchange, desk, or id"
-    searchPlaceholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
-    emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
-    (stateChange)="onTableStateChange($event)"
-    (rowRendered)="onRowRendered($event)"
-  />
-</main>
+      <div class="control-block">
+        <span class="control-label">Feed tempo</span>
+        <div class="chip-row" role="group" aria-label="Simulation profile">
+          @for (profile of profiles; track profile.value) {
+            <button
+              type="button"
+              class="chip profile-chip"
+              [class.is-active]="simulation.profile() === profile.value"
+              [attr.aria-pressed]="simulation.profile() === profile.value"
+              (click)="setProfile(profile.value)"
+            >
+              <span>{{ profile.label }}</span>
+              <span class="chip-detail">{{ profile.description }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="control-block">
+        <span class="control-label">Signal filter</span>
+        <div class="chip-row" role="group" aria-label="Signal filter">
+          @for (status of statuses; track status) {
+            <button
+              type="button"
+              class="chip status-chip"
+              [class.is-active]="isStatusActive(status)"
+              [attr.data-status]="status"
+              [attr.aria-pressed]="isStatusActive(status)"
+              (click)="toggleStatus(status)"
+            >
+              <span>{{ status }}</span>
+              <span class="chip-detail">{{ formatInteger(simulation.statusCounts()[status]) }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="control-block">
+        <div class="render-heading">
+          <nat-render-metrics-filter [for]="grid" [store]="metricsStore" />
+          <nat-render-metrics-panel [store]="metricsStore" />
+        </div>
+      </div>
+    </section>
+
+    <nat-table
+      #grid="natTable"
+      [data]="simulation.rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      [initialState]="initialTableState"
+      [pageSizeOptions]="pageSizeOptions"
+      [emitRowRenderEvents]="true"
+      [getRowId]="getRowId"
+      ariaLabel="Live market movers table"
+      searchLabel="Search symbol, company, exchange, desk, or id"
+      searchPlaceholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
+      emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
+      (stateChange)="onTableStateChange($event)"
+      (rowRendered)="onRowRendered($event)"
+    />
+  </main>
+</div>

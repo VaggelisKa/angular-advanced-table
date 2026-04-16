@@ -214,6 +214,41 @@ const defaultTableState: Partial<NatTableState> = {
   },
 };
 
+type ShowcaseTheme =
+  | 'market-tape'
+  | 'sandstone-ledger'
+  | 'terminal-mint'
+  | 'sunset-signal';
+
+interface ShowcaseThemeOption {
+  readonly value: ShowcaseTheme;
+  readonly label: string;
+  readonly description: string;
+}
+
+const SHOWCASE_THEMES = [
+  {
+    value: 'market-tape',
+    label: 'Market Tape',
+    description: 'Glassmorphism blues with strong gain/loss contrast.',
+  },
+  {
+    value: 'sandstone-ledger',
+    label: 'Sandstone Ledger',
+    description: 'A warm editorial look with lighter cards and softer separators.',
+  },
+  {
+    value: 'terminal-mint',
+    label: 'Terminal Mint',
+    description: 'Monospace trading-console styling with neon green accents.',
+  },
+  {
+    value: 'sunset-signal',
+    label: 'Sunset Signal',
+    description: 'Warm dusk gradients with punchier accent and warning tones.',
+  },
+] as const satisfies readonly ShowcaseThemeOption[];
+
 @Component({
   selector: 'app-table-showcase-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -226,13 +261,19 @@ export class TableShowcasePage {
   protected readonly datasetOptions = DATASET_OPTIONS;
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
+  protected readonly themes = SHOWCASE_THEMES;
   protected readonly metricsStore = new NatTableRenderMetricsStore();
   protected readonly columns = withRenderMetricsColumn(simulationColumns, this.metricsStore);
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
+  protected readonly selectedTheme = signal<ShowcaseTheme>(SHOWCASE_THEMES[0].value);
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],
   });
+  protected readonly activeTheme = computed(
+    () =>
+      SHOWCASE_THEMES.find((theme) => theme.value === this.selectedTheme()) ?? SHOWCASE_THEMES[0],
+  );
   protected readonly selectedStatuses = computed(() => {
     const activeFilter = this.tableState().columnFilters?.find(
       (entry) => entry.id === STATUS_FILTER_ID,
@@ -251,6 +292,10 @@ export class TableShowcasePage {
 
   protected setProfile(profile: SimulationProfile): void {
     this.simulation.setProfile(profile);
+  }
+
+  protected setTheme(theme: ShowcaseTheme): void {
+    this.selectedTheme.set(theme);
   }
 
   protected toggleSimulation(): void {
