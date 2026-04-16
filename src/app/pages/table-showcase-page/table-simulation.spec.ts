@@ -19,6 +19,14 @@ describe('TableSimulation', () => {
     expect(service.rows().length).toBe(service.datasetSize());
   });
 
+  it('should seed rows with trading metrics', () => {
+    const firstRow = service.rows()[0];
+
+    expect(firstRow.price).toBeGreaterThan(0);
+    expect(firstRow.volume).toBeGreaterThan(0);
+    expect(firstRow.symbol).toMatch(/[A-Z0-9]+/);
+  });
+
   it('should mutate rows when a pulse runs', () => {
     service.pulse();
 

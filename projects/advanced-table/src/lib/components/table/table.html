@@ -230,6 +230,7 @@
                   [style.right.px]="getPinnedRight(cell.column)"
                   [style.min-width.px]="getColumnWidth(cell.column)"
                   [attr.data-column-id]="cell.column.id"
+                  [attr.data-tone]="getCellTone(cell)"
                   [attr.data-render-tone]="
                     isRenderMetricColumn(cell.column) ? getRowRenderTone(row.id) : null
                   "

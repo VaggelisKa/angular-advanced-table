@@ -57,6 +57,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     meta: {
       label: 'Throughput',
       align: 'end',
+      cellTone: (context) => (context.getValue<number>() >= 4000 ? 'positive' : 'negative'),
     },
     cell: (info) => String(info.getValue<number>()),
   },
@@ -136,6 +137,16 @@ describe('AdvancedTableComponent', () => {
     expect(headerLabels[1]).toContain('Region');
     expect(firstPinButton.textContent?.trim()).toBe('Unpin');
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
+  });
+
+  it('applies semantic tone attributes from column metadata', () => {
+    fixture.detectChanges();
+
+    const throughputCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="throughput"]',
+    ) as HTMLTableCellElement;
+
+    expect(throughputCell.getAttribute('data-tone')).toBe('positive');
   });
 
   it('emits state changes for search, sort, visibility, pinning, and pagination', () => {

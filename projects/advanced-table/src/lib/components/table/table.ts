@@ -24,6 +24,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type Cell,
   type Column,
   type ColumnDef,
   type ColumnFiltersState,
@@ -37,7 +38,7 @@ import {
   type VisibilityState,
 } from '@tanstack/angular-table';
 
-import type { AdvancedTableState } from './table.types';
+import type { AdvancedTableCellTone, AdvancedTableState } from './table.types';
 
 type RenderHealthTone = 'idle' | 'fast' | 'watch' | 'slow';
 type RowRenderTone = Exclude<RenderHealthTone, 'idle'>;
@@ -622,6 +623,10 @@ export class AdvancedTableComponent<TData extends RowData = RowData> {
 
   protected isRenderMetricColumn(column: Column<TData, unknown>): boolean {
     return column.id === RENDER_METRIC_COLUMN_ID;
+  }
+
+  protected getCellTone(cell: Cell<TData, unknown>): AdvancedTableCellTone | null {
+    return cell.column.columnDef.meta?.cellTone?.(cell.getContext()) ?? null;
   }
 
   protected getRowRenderTone(rowId: string): RowRenderTone | 'pending' {

@@ -24,7 +24,7 @@ describe('TableShowcasePage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should keep the default sort, pinning, and page size', () => {
+  it('should keep the default sort, no pinning, and page size', () => {
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
@@ -32,62 +32,72 @@ describe('TableShowcasePage', () => {
     const headers = Array.from(
       fixture.nativeElement.querySelectorAll('thead th'),
     ) as HTMLElement[];
-    const netIncomeHeader = headers.find((header) =>
-      header.textContent?.includes('Net Income'),
+    const changeHeader = headers.find((header) =>
+      header.textContent?.includes('24h %'),
     ) as HTMLElement;
 
     expect(rows.length).toBe(24);
-    expect(firstPinButton.textContent?.trim()).toBe('Unpin');
-    expect(netIncomeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
+    expect(firstPinButton.textContent?.trim()).toBe('Pin');
+    expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
   });
 
   it('should update the status filter through controlled table state', () => {
     fixture.detectChanges();
 
-    const alertChip = fixture.nativeElement.querySelector(
-      '.status-chip[data-status="Alert"]',
+    const decliningChip = fixture.nativeElement.querySelector(
+      '.status-chip[data-status="Declining"]',
     ) as HTMLButtonElement;
 
-    alertChip.click();
+    decliningChip.click();
     fixture.detectChanges();
 
     expect((component as never as { tableState: () => { columnFilters: unknown[] } }).tableState().columnFilters).toEqual([
       {
         id: 'status',
-        value: ['Alert'],
+        value: ['Declining'],
       },
     ]);
   });
 
-  it('should render only the health status in the status cell', () => {
+  it('should render only the trading signal in the signal cell', () => {
     fixture.detectChanges();
 
     const statusCell = fixture.nativeElement.querySelector(
       'tbody tr:first-child td[data-column-id="status"]',
     ) as HTMLTableCellElement;
 
-    expect(statusCell.textContent).toMatch(/Healthy|Pending|Alert|Offline/);
-    expect(statusCell.textContent).not.toContain('%');
+    expect(statusCell.textContent).toMatch(/Advancing|Watching|Declining|Halted/);
+    expect(statusCell.textContent).not.toContain('$');
   });
 
   it('should keep search and column visibility working end to end', () => {
     fixture.detectChanges();
 
     const searchInput = fixture.nativeElement.querySelector('#table-search') as HTMLInputElement;
-    const periodToggle = fixture.nativeElement.querySelector(
-      '.column-chip[data-column-id="reportingPeriod"]',
+    const exchangeToggle = fixture.nativeElement.querySelector(
+      '.column-chip[data-column-id="exchange"]',
     ) as HTMLButtonElement;
 
-    searchInput.value = 'doc-00001';
+    searchInput.value = 'eqt-00001';
     searchInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
 
-    periodToggle.click();
+    exchangeToggle.click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Period');
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Exchange');
+  });
+
+  it('should apply positive and negative tones to move cells', () => {
+    fixture.detectChanges();
+
+    const changePercentCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="changePercent"]',
+    ) as HTMLTableCellElement;
+
+    expect(changePercentCell.getAttribute('data-tone')).toBe('positive');
   });
 
   it('should preserve the table render filter when toggling statuses', () => {
@@ -96,14 +106,14 @@ describe('TableShowcasePage', () => {
     const slowRenderChip = fixture.nativeElement.querySelector(
       '.render-chip[data-render-filter="slow"]',
     ) as HTMLButtonElement;
-    const alertChip = fixture.nativeElement.querySelector(
-      '.status-chip[data-status="Alert"]',
+    const decliningChip = fixture.nativeElement.querySelector(
+      '.status-chip[data-status="Declining"]',
     ) as HTMLButtonElement;
 
     slowRenderChip.click();
     fixture.detectChanges();
 
-    alertChip.click();
+    decliningChip.click();
     fixture.detectChanges();
 
     expect(
@@ -120,7 +130,7 @@ describe('TableShowcasePage', () => {
         },
         {
           id: 'status',
-          value: ['Alert'],
+          value: ['Declining'],
         },
       ]),
     );

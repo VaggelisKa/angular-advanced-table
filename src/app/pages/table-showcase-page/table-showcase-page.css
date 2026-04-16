@@ -262,23 +262,28 @@
   box-shadow: 0 0 16px rgba(87, 209, 255, 0.08);
 }
 
-.status-chip[data-status='Healthy'].is-active {
+.status-chip[data-status='Advancing'].is-active {
   color: var(--success);
   border-color: rgba(93, 230, 166, 0.35);
   box-shadow: 0 0 16px rgba(93, 230, 166, 0.08);
 }
 
-.status-chip[data-status='Pending'].is-active {
+.status-chip[data-status='Watching'].is-active {
   color: var(--warning);
   border-color: rgba(255, 209, 102, 0.35);
   box-shadow: 0 0 16px rgba(255, 209, 102, 0.08);
 }
 
-.status-chip[data-status='Alert'].is-active,
-.status-chip[data-status='Offline'].is-active {
+.status-chip[data-status='Declining'].is-active {
   color: var(--danger);
   border-color: rgba(255, 141, 127, 0.35);
   box-shadow: 0 0 16px rgba(255, 141, 127, 0.08);
+}
+
+.status-chip[data-status='Halted'].is-active {
+  color: #ffde8f;
+  border-color: rgba(255, 222, 143, 0.35);
+  box-shadow: 0 0 16px rgba(255, 222, 143, 0.08);
 }
 
 .chip-detail {

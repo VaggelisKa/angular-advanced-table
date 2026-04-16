@@ -1,12 +1,12 @@
 <main class="page-shell">
   <section class="hero card">
     <div class="hero-copy">
-      <p class="eyebrow">Angular 21 • Signals • Angular Aria Grid • TanStack Angular Table</p>
-      <h1>Single-route data grid with live mock traffic</h1>
+      <p class="eyebrow">Angular 21 • Signals • TanStack Angular Table • Market Tape</p>
+      <h1>Trading-style data grid with live movers</h1>
       <p class="hero-text">
-        The table shell now stays generic while this page owns the simulation-specific columns,
-        status filtering, and telemetry. The dataset is intentionally large, but the UI only renders
-        the current page.
+        The mock feed now behaves like a trading table, with price, turnover, and 24-hour move
+        columns. Positive and negative moves are color-coded so gainers and decliners stand out at
+        a glance while sorting, filtering, and paging stay responsive.
       </p>
     </div>
 
@@ -17,45 +17,46 @@
         [class.is-active]="simulation.isRunning()"
         (click)="toggleSimulation()"
       >
-        {{ simulation.isRunning() ? 'Pause simulation' : 'Resume simulation' }}
+        {{ simulation.isRunning() ? 'Pause market feed' : 'Resume market feed' }}
       </button>
       <button type="button" class="action-button secondary" (click)="runManualPulse()">
-        Trigger one batch
+        Trigger one tick
       </button>
     </div>
   </section>
 
-  <section class="stats-grid" aria-label="Simulation telemetry">
+  <section class="stats-grid" aria-label="Market telemetry">
     <article class="stat-card card" data-accent="default">
-      <span class="stat-label">Rows in memory</span>
+      <span class="stat-label">Instruments in memory</span>
       <strong class="stat-value">{{ formatInteger(simulation.datasetSize()) }}</strong>
-      <span class="stat-footnote">Active profile: {{ simulation.profilePreset().label }}</span>
+      <span class="stat-footnote">Active tempo: {{ simulation.profilePreset().label }}</span>
     </article>
     <article class="stat-card card" data-accent="default">
-      <span class="stat-label">Mutation cadence</span>
+      <span class="stat-label">Tick cadence</span>
       <strong class="stat-value">
         {{ formatInteger(simulation.profilePreset().mutationBatchSize) }} rows /
         {{ simulation.profilePreset().tickIntervalMs }} ms
       </strong>
       <span class="stat-footnote"
-        >Last batch: {{ formatInteger(simulation.lastMutationSize()) }} rows</span
+        >Last tick: {{ formatInteger(simulation.lastMutationSize()) }} rows</span
       >
     </article>
     <article class="stat-card card" data-accent="health">
-      <span class="stat-label">Fleet health</span>
+      <span class="stat-label">Market breadth</span>
       <strong class="stat-value stat-value-lg"
-        >{{ simulation.fleetHealth() }}<span class="stat-unit">%</span></strong
+        >{{ simulation.marketBreadth() }}<span class="stat-unit">%</span></strong
       >
-      <span class="stat-footnote"
-        >Weighted across healthy, pending, alert, and offline services</span
-      >
+      <span class="stat-footnote">
+        {{ formatInteger(simulation.positiveMoverCount()) }} positive movers ·
+        {{ formatInteger(simulation.statusCounts().Halted) }} halted names
+      </span>
     </article>
     <article class="stat-card card" data-accent="mutations">
-      <span class="stat-label">Total simulated mutations</span>
+      <span class="stat-label">Total simulated ticks</span>
       <strong class="stat-value">{{ formatInteger(simulation.totalMutations()) }}</strong>
       <span class="stat-footnote">
         <span class="live-indicator" [class.is-active]="simulation.isRunning()"></span>
-        {{ simulation.isRunning() ? 'Live updates enabled' : 'Live updates paused' }}
+        {{ simulation.isRunning() ? 'Live ticks enabled' : 'Feed paused' }}
       </span>
     </article>
   </section>
@@ -79,7 +80,7 @@
     </div>
 
     <div class="control-block">
-      <span class="control-label">Simulation profile</span>
+      <span class="control-label">Feed tempo</span>
       <div class="chip-row" role="group" aria-label="Simulation profile">
         @for (profile of profiles; track profile.value) {
           <button
@@ -97,8 +98,8 @@
     </div>
 
     <div class="control-block">
-      <span class="control-label">Status filter</span>
-      <div class="chip-row" role="group" aria-label="Status filter">
+      <span class="control-label">Signal filter</span>
+      <div class="chip-row" role="group" aria-label="Signal filter">
         @for (status of statuses; track status) {
           <button
             type="button"
@@ -124,10 +125,10 @@
     [pageSizeOptions]="pageSizeOptions"
     [enableRenderMetrics]="true"
     [getRowId]="getRowId"
-    ariaLabel="Financial document KPI table"
-    searchLabel="Search document, business unit, period, or id"
-    searchPlaceholder="Try balance sheet, treasury, Q1 2026, doc-00042..."
-    emptyStateLabel="No rows match the current filters. Clear the search query or status chips to repopulate the view."
+    ariaLabel="Live market movers table"
+    searchLabel="Search symbol, company, exchange, desk, or id"
+    searchPlaceholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
+    emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
     (stateChange)="onTableStateChange($event)"
   />
 </main>

@@ -22,18 +22,27 @@ const compactFormatter = new Intl.NumberFormat('en-US', {
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
-const percentFormatter = new Intl.NumberFormat('en-US', {
-  style: 'percent',
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
+const signedCurrencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  signDisplay: 'exceptZero',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const signedPercentFormatter = new Intl.NumberFormat('en-US', {
+  signDisplay: 'exceptZero',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
 const timeFormatter = new Intl.DateTimeFormat('en-US', {
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
 });
+
 const statusFilter: FilterFn<SimulationRow> = (row, columnId, filterValue) => {
   const selectedStatuses = (filterValue ?? []) as SimulationStatus[];
 
@@ -43,92 +52,131 @@ const statusFilter: FilterFn<SimulationRow> = (row, columnId, filterValue) => {
 
   return selectedStatuses.includes(row.getValue(columnId) as SimulationStatus);
 };
+
 const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
-    accessorKey: 'documentName',
-    header: 'Document',
-    size: 320,
+    accessorKey: 'symbol',
+    header: 'Symbol',
+    size: 120,
+    minSize: 100,
     meta: {
-      label: 'Document',
+      label: 'Symbol',
     },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
   },
   {
-    accessorKey: 'reportingPeriod',
-    header: 'Period',
+    accessorKey: 'company',
+    header: 'Company',
     size: 220,
+    minSize: 180,
     meta: {
-      label: 'Period',
+      label: 'Company',
     },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
   },
   {
-    accessorKey: 'businessUnit',
-    header: 'Business Unit',
-    size: 260,
+    accessorKey: 'exchange',
+    header: 'Exchange',
+    size: 120,
+    minSize: 100,
     meta: {
-      label: 'Business Unit',
+      label: 'Exchange',
     },
     enablePinning: true,
+    cell: (info) => info.getValue<string>(),
+  },
+  {
+    accessorKey: 'desk',
+    header: 'Desk',
+    size: 130,
+    minSize: 100,
+    meta: {
+      label: 'Desk',
+    },
     cell: (info) => info.getValue<string>(),
   },
   {
     accessorKey: 'status',
-    header: 'Status',
-    size: 110,
-    minSize: 90,
+    header: 'Signal',
+    size: 120,
+    minSize: 100,
     meta: {
-      label: 'Status',
+      label: 'Signal',
+      cellTone: (context) => statusTone(context.getValue<SimulationStatus>()),
     },
     enablePinning: true,
     filterFn: statusFilter,
     cell: (info) => info.getValue<string>(),
   },
   {
-    accessorKey: 'totalAssetsBillion',
-    header: 'Total Assets',
-    size: 190,
+    accessorKey: 'price',
+    header: 'Last',
+    size: 110,
+    minSize: 90,
     meta: {
-      label: 'Total Assets',
+      label: 'Last',
       align: 'end',
+      cellTone: (context) => numberTone(context.row.original.changePercent),
     },
     enablePinning: true,
-    cell: (info) => `$${compactFormatter.format(info.getValue<number>())}B`,
+    cell: (info) => currencyFormatter.format(info.getValue<number>()),
   },
   {
-    accessorKey: 'netIncomeMillion',
-    header: 'Net Income',
-    size: 180,
+    accessorKey: 'change',
+    header: '24h $',
+    size: 110,
+    minSize: 90,
     meta: {
-      label: 'Net Income',
+      label: '24h $',
       align: 'end',
+      cellTone: (context) =>
+        context.row.original.status === 'Halted'
+          ? 'warning'
+          : numberTone(context.getValue<number>()),
     },
     enablePinning: true,
-    cell: (info) => `${currencyFormatter.format(info.getValue<number>() * 1_000_000)}`,
+    cell: (info) => signedCurrencyFormatter.format(info.getValue<number>()),
   },
   {
-    accessorKey: 'tier1CapitalRatio',
-    header: 'Tier 1 Capital',
-    size: 160,
+    accessorKey: 'changePercent',
+    header: '24h %',
+    size: 110,
+    minSize: 90,
     meta: {
-      label: 'Tier 1 Capital',
+      label: '24h %',
       align: 'end',
+      cellTone: (context) =>
+        context.row.original.status === 'Halted'
+          ? 'warning'
+          : numberTone(context.getValue<number>()),
     },
     enablePinning: true,
-    cell: (info) => percentFormatter.format(info.getValue<number>()),
+    cell: (info) => `${signedPercentFormatter.format(info.getValue<number>())}%`,
   },
   {
-    accessorKey: 'efficiencyRatio',
-    header: 'Efficiency',
-    size: 160,
+    accessorKey: 'volume',
+    header: 'Volume',
+    size: 130,
+    minSize: 100,
     meta: {
-      label: 'Efficiency',
+      label: 'Volume',
       align: 'end',
     },
     enablePinning: true,
-    cell: (info) => percentFormatter.format(info.getValue<number>()),
+    cell: (info) => compactFormatter.format(info.getValue<number>()),
+  },
+  {
+    accessorKey: 'turnoverMillions',
+    header: 'Turnover',
+    size: 130,
+    minSize: 100,
+    meta: {
+      label: 'Turnover',
+      align: 'end',
+    },
+    cell: (info) => `${currencyFormatter.format(info.getValue<number>())}M`,
   },
   {
     accessorKey: 'updatedAt',
@@ -143,10 +191,11 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     cell: (info) => timeFormatter.format(info.getValue<number>()),
   },
 ];
+
 const defaultTableState: Partial<AdvancedTableState> = {
-  sorting: [{ id: 'netIncomeMillion', desc: true }],
+  sorting: [{ id: 'changePercent', desc: true }],
   columnPinning: {
-    left: ['documentName'],
+    left: [],
     right: [],
   },
   pagination: {
@@ -256,5 +305,38 @@ function upsertColumnFilter(
     return nextFilters;
   }
 
-  return [...nextFilters, { id: columnId, value }];
+  return [
+    ...nextFilters,
+    {
+      id: columnId,
+      value,
+    },
+  ];
+}
+
+function numberTone(value: number): 'positive' | 'negative' | 'neutral' {
+  if (value > 0) {
+    return 'positive';
+  }
+
+  if (value < 0) {
+    return 'negative';
+  }
+
+  return 'neutral';
+}
+
+function statusTone(
+  status: SimulationStatus,
+): 'positive' | 'negative' | 'neutral' | 'warning' {
+  switch (status) {
+    case 'Advancing':
+      return 'positive';
+    case 'Declining':
+      return 'negative';
+    case 'Halted':
+      return 'warning';
+    case 'Watching':
+      return 'neutral';
+  }
 }
