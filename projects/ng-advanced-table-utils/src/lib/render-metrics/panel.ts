@@ -10,6 +10,10 @@ interface RenderHealthState {
   tone: RenderHealthTone;
 }
 
+/**
+ * Compact KPI panel that summarizes the latest render measurement collected by
+ * {@link NatTableRenderMetricsStore}.
+ */
 @Component({
   selector: 'nat-render-metrics-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,

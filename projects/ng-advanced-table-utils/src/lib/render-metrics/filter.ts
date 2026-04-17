@@ -10,6 +10,10 @@ import {
   type RowRenderFilterValue,
 } from './types';
 
+/**
+ * Filter chip group that drives the synthetic render-metrics column created by
+ * {@link withRenderMetricsColumn}.
+ */
 @Component({
   selector: 'nat-render-metrics-filter',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +25,7 @@ export class NatRenderMetricsFilter<TData = unknown> {
   readonly for = input.required<NatTable<TData>>();
   /** Shared store — used only so the panel/filter can react to measurement changes. */
   readonly store = input.required<NatTableRenderMetricsStore>();
+  /** Column id to target when the metrics column uses a custom identifier. */
   readonly columnId = input(RENDER_METRIC_COLUMN_ID);
 
   protected readonly options = RENDER_FILTER_OPTIONS;
