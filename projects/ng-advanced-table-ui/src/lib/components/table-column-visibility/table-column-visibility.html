@@ -1,0 +1,27 @@
+@if (columns().length) {
+  <div class="control-block">
+    <div class="control-heading">
+      <span class="control-label">{{ label() }}</span>
+      <span class="control-caption">
+        {{ visibleColumnCount() }} / {{ totalColumnCount() }} visible
+      </span>
+    </div>
+    <div class="chip-row" role="group" [attr.aria-label]="ariaLabel()">
+      @for (column of columns(); track column.id) {
+        <button
+          type="button"
+          class="chip column-chip"
+          [class.is-active]="column.getIsVisible()"
+          [disabled]="!canToggleColumnVisibility(column)"
+          [attr.aria-pressed]="column.getIsVisible()"
+          [attr.aria-label]="getColumnVisibilityAction(column)"
+          [attr.data-column-id]="column.id"
+          (click)="toggleColumnVisibility(column)"
+        >
+          <span>{{ getColumnLabel(column) }}</span>
+          <span class="chip-count">{{ column.getIsVisible() ? 'Shown' : 'Hidden' }}</span>
+        </button>
+      }
+    </div>
+  </div>
+}

@@ -143,7 +143,9 @@
               (click)="toggleStatus(status)"
             >
               <span>{{ status }}</span>
-              <span class="chip-detail">{{ formatInteger(simulation.statusCounts()[status]) }}</span>
+              <span class="chip-detail">{{
+                formatInteger(simulation.statusCounts()[status])
+              }}</span>
             </button>
           }
         </div>
@@ -157,21 +159,39 @@
       </div>
     </section>
 
-    <nat-table
-      #grid="natTable"
-      [data]="simulation.rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [initialState]="initialTableState"
-      [pageSizeOptions]="pageSizeOptions"
-      [emitRowRenderEvents]="true"
-      [getRowId]="getRowId"
-      ariaLabel="Live market movers table"
-      searchLabel="Search symbol, company, exchange, desk, or id"
-      searchPlaceholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
-      emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
-      (stateChange)="onTableStateChange($event)"
-      (rowRendered)="onRowRendered($event)"
-    />
+    <nat-table-surface class="table-controls-surface">
+      <div class="table-controls-grid">
+        <nat-table-search
+          [for]="grid"
+          label="Search symbol, company, exchange, desk, or id"
+          placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
+        />
+        <nat-table-column-visibility [for]="grid" />
+      </div>
+    </nat-table-surface>
+
+    <nat-table-surface class="table-shell">
+      <div class="table-toolbar">
+        <div class="table-actions">
+          <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
+          <nat-table-pager [for]="grid" />
+        </div>
+      </div>
+
+      <nat-table
+        #grid="natTable"
+        [data]="simulation.rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [initialState]="initialTableState"
+        [enablePagination]="true"
+        [emitRowRenderEvents]="true"
+        [getRowId]="getRowId"
+        ariaLabel="Live market movers table"
+        emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
+        (stateChange)="onTableStateChange($event)"
+        (rowRendered)="onRowRendered($event)"
+      />
+    </nat-table-surface>
   </main>
 </div>

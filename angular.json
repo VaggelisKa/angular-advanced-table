@@ -119,6 +119,32 @@
           }
         }
       }
+    },
+    "ng-advanced-table-ui": {
+      "projectType": "library",
+      "root": "projects/ng-advanced-table-ui",
+      "sourceRoot": "projects/ng-advanced-table-ui/src",
+      "prefix": "nat",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ng-advanced-table-ui/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ng-advanced-table-ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/ng-advanced-table-ui/tsconfig.spec.json"
+          }
+        }
+      }
     }
   }
 }

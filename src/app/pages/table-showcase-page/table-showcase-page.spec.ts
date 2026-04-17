@@ -29,9 +29,7 @@ describe('TableShowcasePage', () => {
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
     const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
-    const headers = Array.from(
-      fixture.nativeElement.querySelectorAll('thead th'),
-    ) as HTMLElement[];
+    const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
     const changeHeader = headers.find((header) =>
       header.textContent?.includes('24h %'),
     ) as HTMLElement;
@@ -51,7 +49,10 @@ describe('TableShowcasePage', () => {
     decliningChip.click();
     fixture.detectChanges();
 
-    expect((component as never as { tableState: () => { columnFilters: unknown[] } }).tableState().columnFilters).toEqual([
+    expect(
+      (component as never as { tableState: () => { columnFilters: unknown[] } }).tableState()
+        .columnFilters,
+    ).toEqual([
       {
         id: 'status',
         value: ['Declining'],
@@ -73,7 +74,7 @@ describe('TableShowcasePage', () => {
   it('should keep search and column visibility working end to end', () => {
     fixture.detectChanges();
 
-    const searchInput = fixture.nativeElement.querySelector('#table-search') as HTMLInputElement;
+    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
     const exchangeToggle = fixture.nativeElement.querySelector(
       '.column-chip[data-column-id="exchange"]',
     ) as HTMLButtonElement;

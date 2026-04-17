@@ -1,0 +1,248 @@
+:host {
+  --nat-table-color-text: var(--text, #ecf5fb);
+  --nat-table-color-text-muted: var(--text-soft, #a8c3d7);
+  --nat-table-color-accent: var(--accent, #57d1ff);
+  --nat-table-color-success: var(--success, #5de6a6);
+  --nat-table-color-warning: var(--warning, #ffd166);
+  --nat-table-color-danger: var(--danger, #ff8d7f);
+  --nat-table-color-surface: var(--surface, rgba(7, 23, 35, 0.72));
+  --nat-table-color-surface-elevated: var(--surface-elevated, rgba(4, 14, 22, 0.92));
+  --nat-table-color-surface-sticky: var(--surface-contrast, rgba(5, 20, 31, 0.96));
+  --nat-table-color-border: color-mix(in srgb, var(--nat-table-color-text) 12%, transparent);
+  --nat-table-color-divider: color-mix(in srgb, var(--nat-table-color-text) 8%, transparent);
+  --nat-table-color-divider-subtle: color-mix(in srgb, var(--nat-table-color-text) 6%, transparent);
+
+  --nat-table-font-family: inherit;
+  --nat-table-font-size-header: 0.84rem;
+  --nat-table-font-size-label: 0.85rem;
+  --nat-table-font-size-caption: 0.82rem;
+  --nat-table-font-size-chip-meta: 0.82rem;
+  --nat-table-font-size-chip-compact: 0.92rem;
+  --nat-table-font-size-pager-label: 0.92rem;
+  --nat-table-font-size-pin-button: 0.72rem;
+  --nat-table-font-size-empty-state: 1rem;
+  --nat-table-font-weight-pager: 700;
+  --nat-table-letter-spacing-header: 0.12em;
+  --nat-table-letter-spacing-label: 0.08em;
+  --nat-table-letter-spacing-pin-button: 0.03em;
+  --nat-table-letter-spacing-pager: 0.01em;
+  --nat-table-text-transform-header: uppercase;
+  --nat-table-text-transform-label: uppercase;
+  --nat-table-line-height-empty-state: 1.6;
+
+  --nat-table-space-card: 28px;
+  --nat-table-space-card-compact: 20px;
+  --nat-table-space-controls-gap: 18px;
+  --nat-table-space-control-block-gap: 10px;
+  --nat-table-space-toolbar-gap: 18px;
+  --nat-table-space-table-actions-gap: 18px;
+  --nat-table-space-pager-gap: 10px;
+  --nat-table-space-chip-row-gap: 10px;
+  --nat-table-space-header-content-gap: 8px;
+  --nat-table-space-cell-y: 15px;
+  --nat-table-space-cell-x: 16px;
+  --nat-table-space-empty-state: 48px 28px;
+
+  --nat-table-radius-card: 28px;
+  --nat-table-radius-card-compact: 22px;
+  --nat-table-radius-region: 24px;
+  --nat-table-radius-input: 18px;
+  --nat-table-radius-chip: 999px;
+
+  --nat-table-search-min-height: 54px;
+  --nat-table-chip-min-height: 42px;
+  --nat-table-chip-min-height-compact: 36px;
+  --nat-table-chip-padding-x: 14px;
+  --nat-table-chip-padding-x-compact: 12px;
+  --nat-table-chip-min-width-column: 150px;
+  --nat-table-pager-min-height: 44px;
+  --nat-table-pager-padding-x: 18px;
+  --nat-table-pin-min-height: 28px;
+  --nat-table-pin-padding-x: 10px;
+  --nat-table-search-padding-x: 18px;
+  --nat-table-sort-icon-min-width: 1rem;
+
+  --nat-table-transition-fast: 120ms ease;
+  --nat-table-transition-medium: 180ms ease;
+  --nat-table-transition-slow: 200ms ease;
+  --nat-table-hover-lift: translateY(-1px);
+
+  --nat-table-focus-ring-color: var(--nat-table-color-accent);
+  --nat-table-focus-ring-width: 2px;
+  --nat-table-focus-ring-offset: 2px;
+
+  --nat-table-disabled-opacity: 0.45;
+
+  --nat-table-card-background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--nat-table-color-accent) 11%, transparent),
+      transparent 24%
+    ),
+    var(--nat-table-color-surface);
+  --nat-table-card-border-color: var(--nat-table-color-border);
+  --nat-table-card-border-color-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 20%,
+    color-mix(in srgb, var(--nat-table-color-text) 10%, transparent)
+  );
+  --nat-table-card-border-width: 1px;
+  --nat-table-card-shadow: var(--shadow, 0 28px 60px rgba(1, 10, 18, 0.45));
+  --nat-table-card-backdrop-filter: blur(20px);
+  --nat-table-card-divider-color: var(--nat-table-color-divider-subtle);
+
+  --nat-table-search-background: color-mix(
+    in srgb,
+    var(--nat-table-color-surface-elevated) 84%,
+    var(--nat-table-color-surface-sticky) 16%
+  );
+  --nat-table-search-background-focus: color-mix(
+    in srgb,
+    var(--nat-table-color-surface-elevated) 74%,
+    var(--nat-table-color-accent) 8%
+  );
+  --nat-table-search-color: var(--nat-table-color-text);
+  --nat-table-search-placeholder-color: color-mix(
+    in srgb,
+    var(--nat-table-color-text-muted) 78%,
+    transparent
+  );
+  --nat-table-search-border-color: color-mix(in srgb, var(--nat-table-color-text) 14%, transparent);
+  --nat-table-search-border-color-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 22%,
+    transparent
+  );
+  --nat-table-search-border-color-focus: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 44%,
+    transparent
+  );
+  --nat-table-search-focus-ring: 0 0 0 3px
+    color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
+
+  --nat-table-chip-color: inherit;
+  --nat-table-chip-background: color-mix(in srgb, var(--nat-table-color-text) 5%, transparent);
+  --nat-table-chip-background-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 8%,
+    transparent
+  );
+  --nat-table-chip-background-active: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 18%,
+    transparent
+  );
+  --nat-table-chip-border-color: color-mix(in srgb, var(--nat-table-color-text) 14%, transparent);
+  --nat-table-chip-border-color-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 20%,
+    transparent
+  );
+  --nat-table-chip-border-color-active: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 34%,
+    transparent
+  );
+  --nat-table-chip-shadow-active: 0 0 16px
+    color-mix(in srgb, var(--nat-table-color-accent) 14%, transparent);
+  --nat-table-chip-count-color: var(--nat-table-color-text-muted);
+
+  --nat-table-pager-color: inherit;
+  --nat-table-pager-background: color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
+  --nat-table-pager-background-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 22%,
+    transparent
+  );
+  --nat-table-pager-border-color: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 28%,
+    transparent
+  );
+  --nat-table-pager-shadow-hover: 0 4px 16px
+    color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
+  --nat-table-pager-label-color: var(--nat-table-color-text-muted);
+  --nat-table-pager-disabled-opacity: var(--nat-table-disabled-opacity);
+
+  --nat-table-region-background: var(--nat-table-color-surface-elevated);
+  --nat-table-region-border-color: color-mix(in srgb, var(--nat-table-color-text) 10%, transparent);
+  --nat-table-region-border-width: 1px;
+
+  --nat-table-header-background: var(--nat-table-color-surface-sticky);
+  --nat-table-header-color: var(--nat-table-color-text-muted);
+  --nat-table-header-border-color: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 16%,
+    transparent
+  );
+  --nat-table-header-border-width: 1px;
+
+  --nat-table-sort-icon-color: var(--nat-table-color-accent);
+  --nat-table-sort-button-color-sorted: var(--nat-table-color-text);
+
+  --nat-table-pin-background: color-mix(in srgb, var(--nat-table-color-text) 6%, transparent);
+  --nat-table-pin-border-color: color-mix(in srgb, var(--nat-table-color-text) 18%, transparent);
+  --nat-table-pin-color: inherit;
+  --nat-table-pin-color-pinned: var(--nat-table-color-accent);
+  --nat-table-pin-border-color-pinned: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 42%,
+    transparent
+  );
+  --nat-table-pin-shadow-pinned: 0 0 12px
+    color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
+
+  --nat-table-row-background: transparent;
+  --nat-table-row-background-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-surface-sticky) 78%,
+    var(--nat-table-color-accent) 22%
+  );
+  --nat-table-row-background-hover-pinned: color-mix(
+    in srgb,
+    var(--nat-table-color-surface-sticky) 84%,
+    var(--nat-table-color-accent) 16%
+  );
+  --nat-table-cell-border-color: var(--nat-table-color-divider);
+  --nat-table-cell-color-positive: var(--nat-table-color-success);
+  --nat-table-cell-color-negative: var(--nat-table-color-danger);
+  --nat-table-cell-color-warning: var(--nat-table-color-warning);
+  --nat-table-cell-color-neutral: var(--nat-table-color-text-muted);
+
+  --nat-table-pinned-background: var(--nat-table-color-surface-sticky);
+  --nat-table-pinned-divider-color: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 18%,
+    transparent
+  );
+
+  --nat-table-empty-state-color: var(--nat-table-color-text-muted);
+
+  display: block;
+  color: var(--nat-table-color-text);
+  font-family: var(--nat-table-font-family);
+}
+
+.surface {
+  padding: var(--nat-table-space-card);
+  background: var(--nat-table-card-background);
+  border: var(--nat-table-card-border-width) solid var(--nat-table-card-border-color);
+  border-radius: var(--nat-table-radius-card);
+  box-shadow: var(--nat-table-card-shadow);
+  backdrop-filter: var(--nat-table-card-backdrop-filter);
+  transition:
+    border-color var(--nat-table-transition-slow),
+    background-color var(--nat-table-transition-slow);
+}
+
+.surface:hover {
+  border-color: var(--nat-table-card-border-color-hover);
+}
+
+@media (max-width: 720px) {
+  .surface {
+    padding: var(--nat-table-space-card-compact);
+    border-radius: var(--nat-table-radius-card-compact);
+  }
+}

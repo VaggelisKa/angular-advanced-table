@@ -32,13 +32,10 @@ export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
 
 /**
  * Extra metadata understood by `<nat-table>` when attached to a TanStack
- * column definition.
+ * column definition or optional companion UI.
  */
-export interface NatTableColumnMeta<
-  TData extends RowData = RowData,
-  TValue = unknown,
-> {
-  /** Accessible label used by column controls when the header is not a string. */
+export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
+  /** Accessible label used by companion controls when the header is not a string. */
   label?: string;
   /** Horizontal alignment for header and body cells in the column. */
   align?: 'start' | 'end';
@@ -47,6 +44,8 @@ export interface NatTableColumnMeta<
 }
 
 declare module '@tanstack/table-core' {
-  interface ColumnMeta<TData extends import('@tanstack/angular-table').RowData, TValue>
-    extends NatTableColumnMeta<TData, TValue> {}
+  interface ColumnMeta<
+    TData extends import('@tanstack/angular-table').RowData,
+    TValue,
+  > extends NatTableColumnMeta<TData, TValue> {}
 }
