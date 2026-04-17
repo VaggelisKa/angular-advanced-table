@@ -1,0 +1,46 @@
+:host {
+  display: block;
+}
+
+.chip-row {
+  display: flex;
+  gap: var(--nat-table-space-chip-row-gap, 10px);
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--nat-table-chip-min-height-compact, 36px);
+  padding: 0 var(--nat-table-chip-padding-x-compact, 12px);
+  border-radius: var(--nat-table-radius-chip, 999px);
+  border: 1px solid var(--nat-table-chip-border-color, transparent);
+  color: var(--nat-table-chip-color, inherit);
+  background: var(--nat-table-chip-background, transparent);
+  font-size: var(--nat-table-font-size-chip-compact, 0.92rem);
+  cursor: pointer;
+  transition:
+    background-color var(--nat-table-transition-medium, 180ms ease),
+    border-color var(--nat-table-transition-medium, 180ms ease),
+    box-shadow var(--nat-table-transition-medium, 180ms ease),
+    transform var(--nat-table-transition-medium, 180ms ease),
+    color var(--nat-table-transition-medium, 180ms ease);
+}
+
+.chip:hover {
+  background: var(--nat-table-chip-background-hover, transparent);
+  border-color: var(--nat-table-chip-border-color-hover, currentColor);
+  transform: var(--nat-table-hover-lift, translateY(-1px));
+}
+
+.chip.is-active {
+  background: var(--nat-table-chip-background-active, transparent);
+  border-color: var(--nat-table-chip-border-color-active, currentColor);
+  box-shadow: var(--nat-table-chip-shadow-active, none);
+}
+
+.chip:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
