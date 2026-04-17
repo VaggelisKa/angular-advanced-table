@@ -73,6 +73,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       label: 'Symbol',
     },
     enablePinning: true,
+    sortingFn: (left, right) =>
+      compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
     cell: (info) => info.getValue<string>(),
   },
   {
@@ -84,6 +86,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       label: 'Company',
     },
     enablePinning: true,
+    sortingFn: (left, right) =>
+      compareSortKeys(left.original.companySortKey, right.original.companySortKey),
     cell: (info) => info.getValue<string>(),
   },
   {
@@ -281,6 +285,7 @@ export class TableShowcasePage {
 
     return Array.isArray(activeFilter?.value) ? (activeFilter.value as SimulationStatus[]) : [];
   });
+  protected readonly activeStatuses = computed(() => new Set(this.selectedStatuses()));
   protected readonly profiles = Object.entries(SIMULATION_PROFILES).map(([value, config]) => ({
     value: value as SimulationProfile,
     ...config,
@@ -324,14 +329,23 @@ export class TableShowcasePage {
   }
 
   protected isStatusActive(status: SimulationStatus): boolean {
-    const selectedStatuses = this.selectedStatuses();
+    const selectedStatuses = this.activeStatuses();
 
-    return selectedStatuses.length === 0 || selectedStatuses.includes(status);
+    return selectedStatuses.size === 0 || selectedStatuses.has(status);
   }
 
   protected onTableStateChange(state: NatTableState): void {
-    this.tableState.set({
-      columnFilters: state.columnFilters,
+    this.tableState.update((currentState) => {
+      const currentFilters = currentState.columnFilters ?? [];
+      const nextFilters = state.columnFilters ?? [];
+
+      if (areColumnFiltersEqual(currentFilters, nextFilters)) {
+        return currentState;
+      }
+
+      return {
+        columnFilters: nextFilters,
+      };
     });
   }
 
@@ -372,6 +386,56 @@ function upsertColumnFilter(
       value,
     },
   ];
+}
+
+function areColumnFiltersEqual(
+  currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
+  nextFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
+): boolean {
+  if (currentFilters.length !== nextFilters.length) {
+    return false;
+  }
+
+  for (let index = 0; index < currentFilters.length; index += 1) {
+    const currentFilter = currentFilters[index];
+    const nextFilter = nextFilters[index];
+
+    if (currentFilter.id !== nextFilter.id) {
+      return false;
+    }
+
+    if (!areFilterValuesEqual(currentFilter.value, nextFilter.value)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function areFilterValuesEqual(currentValue: unknown, nextValue: unknown): boolean {
+  if (Array.isArray(currentValue) && Array.isArray(nextValue)) {
+    if (currentValue.length !== nextValue.length) {
+      return false;
+    }
+
+    for (let index = 0; index < currentValue.length; index += 1) {
+      if (!Object.is(currentValue[index], nextValue[index])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  return Object.is(currentValue, nextValue);
+}
+
+function compareSortKeys(left: string, right: string): number {
+  if (left === right) {
+    return 0;
+  }
+
+  return left < right ? -1 : 1;
 }
 
 function numberTone(value: number): 'positive' | 'negative' | 'neutral' {

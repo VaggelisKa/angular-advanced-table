@@ -6,7 +6,9 @@ export type SimulationProfile = 'steady' | 'balanced' | 'burst';
 export interface SimulationRow {
   id: string;
   symbol: string;
+  symbolSortKey: string;
   company: string;
+  companySortKey: string;
   exchange: string;
   desk: string;
   status: SimulationStatus;
@@ -99,30 +101,36 @@ export class TableSimulation {
   readonly lastTickAt = this._lastTickAt.asReadonly();
   readonly totalMutations = this._totalMutations.asReadonly();
   readonly profilePreset = computed(() => SIMULATION_PROFILES[this._profile()]);
-  readonly statusCounts = computed<SimulationStatusCounts>(() => {
+  private readonly marketSnapshot = computed(() => {
     const counts: SimulationStatusCounts = {
       Advancing: 0,
       Watching: 0,
       Declining: 0,
       Halted: 0,
     };
+    let positiveMoverCount = 0;
+    const rows = this._rows();
 
-    for (const row of this._rows()) {
+    for (const row of rows) {
       counts[row.status] += 1;
+      if (row.changePercent > 0) {
+        positiveMoverCount += 1;
+      }
     }
 
-    return counts;
-  });
-  readonly marketBreadth = computed(() => {
-    const counts = this.statusCounts();
-    const total = this._rows().length || 1;
+    const total = rows.length || 1;
     const weightedPositive = counts.Advancing + counts.Watching * 0.5;
+    const marketBreadth = Math.round((weightedPositive / total) * 100);
 
-    return Math.round((weightedPositive / total) * 100);
+    return {
+      counts,
+      positiveMoverCount,
+      marketBreadth,
+    };
   });
-  readonly positiveMoverCount = computed(
-    () => this._rows().filter((row) => row.changePercent > 0).length,
-  );
+  readonly statusCounts = computed<SimulationStatusCounts>(() => this.marketSnapshot().counts);
+  readonly marketBreadth = computed(() => this.marketSnapshot().marketBreadth);
+  readonly positiveMoverCount = computed(() => this.marketSnapshot().positiveMoverCount);
 
   constructor() {
     effect((onCleanup) => {
@@ -206,7 +214,9 @@ function buildDataset(size: number): SimulationRow[] {
     return {
       id: `eqt-${String(index + 1).padStart(5, '0')}`,
       symbol: `${instrument.symbol}${String(seriesNumber).padStart(2, '0')}`,
+      symbolSortKey: `${instrument.symbol}${String(seriesNumber).padStart(6, '0')}`,
       company: `${instrument.company} ${seriesNumber}`,
+      companySortKey: `${instrument.company} ${String(seriesNumber).padStart(6, '0')}`,
       exchange: EXCHANGES[index % EXCHANGES.length],
       desk: DESKS[index % DESKS.length],
       status: statusFromChangePercent(changePercent, index % 43 === 0),
