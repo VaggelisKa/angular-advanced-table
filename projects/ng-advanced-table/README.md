@@ -132,6 +132,94 @@ Attach optional metadata through `columnDef.meta`:
 - `align`: `'start' | 'end'`
 - `cellTone`: returns `'positive' | 'negative' | 'neutral' | 'warning' | null`
 
+## Building Custom UI Around `NatTable`
+
+`NatTable` is designed so consumers can replace any optional UI with their own components.
+
+The key integration points are:
+
+- `#grid="natTable"`: get the component instance in the template
+- `grid.table`: read the raw TanStack table state and derived helpers
+- `grid.patchState(...)`: update table state from your own UI while respecting controlled slices
+- `(stateChange)`: keep external state in sync if you use controlled state
+
+For read-only UI, prefer `grid.table`:
+
+- `grid.table.getState().pagination`
+- `grid.table.getCanNextPage()`
+- `grid.table.getVisibleLeafColumns()`
+- `grid.table.getAllLeafColumns()`
+
+For write UI, prefer `grid.patchState(...)` when you want to update state slices directly, or call TanStack instance methods when the behavior already exists there:
+
+- `grid.patchState({ globalFilter: 'abc' })`
+- `grid.patchState({ pagination: (current) => ({ ...current, pageIndex: 0 }) })`
+- `grid.table.nextPage()`
+- `grid.table.previousPage()`
+- `column.toggleVisibility(...)`
+- `column.toggleSorting()`
+- `column.pin('left')`
+
+### Custom Pagination Example
+
+```ts
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { NatTable } from 'ng-advanced-table';
+
+@Component({
+  selector: 'app-custom-pagination',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <nav class="pagination" aria-label="Table pagination">
+      <button type="button" [disabled]="!for().table.getCanPreviousPage()" (click)="previous()">
+        Back
+      </button>
+
+      <span> {{ pageIndex() + 1 }} / {{ pageCount() }} </span>
+
+      <button type="button" [disabled]="!for().table.getCanNextPage()" (click)="next()">
+        Forward
+      </button>
+    </nav>
+  `,
+})
+export class CustomPaginationComponent<TData = unknown> {
+  readonly for = input.required<NatTable<TData>>();
+
+  protected pageIndex(): number {
+    return this.for().table.getState().pagination.pageIndex;
+  }
+
+  protected pageCount(): number {
+    return this.for().table.getPageCount() || 1;
+  }
+
+  protected previous(): void {
+    this.for().table.previousPage();
+  }
+
+  protected next(): void {
+    this.for().table.nextPage();
+  }
+}
+```
+
+```html
+<nat-table
+  #grid="natTable"
+  [data]="rows()"
+  [columns]="columns"
+  [state]="tableState()"
+  [enablePagination]="true"
+  ariaLabel="Orders"
+  (stateChange)="tableState.set($event)"
+/>
+
+<app-custom-pagination [for]="grid" />
+```
+
+The same pattern works for custom search, custom page-size pickers, custom “show/hide columns” menus, and custom table toolbars.
+
 ## Migration Notes
 
 If you are upgrading from the previous all-in-one `NatTable`:
