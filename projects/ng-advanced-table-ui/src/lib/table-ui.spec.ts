@@ -214,16 +214,23 @@ describe('ng-advanced-table-ui', () => {
     const sortButton = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
+    const sortIcon = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-icon',
+    ) as HTMLElement;
     const pinButton = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .pin-button',
     ) as HTMLButtonElement;
 
     expect(headerLabel.textContent?.trim()).toBe('Service');
+    expect(sortIcon.textContent?.trim()).toBe('↕');
+    expect(pinButton.textContent?.trim()).toBe('Pin');
 
     sortButton.click();
     fixture.detectChanges();
 
     expect(host.tableState().sorting).toEqual([{ id: 'name', desc: false }]);
+    expect(sortButton.classList.contains('is-sorted')).toBe(true);
+    expect(sortIcon.textContent?.trim()).toBe('↑');
 
     pinButton.click();
     fixture.detectChanges();
@@ -232,6 +239,9 @@ describe('ng-advanced-table-ui', () => {
       left: ['name'],
       right: [],
     });
+    expect(pinButton.classList.contains('is-pinned')).toBe(true);
+    expect(pinButton.textContent?.trim()).toBe('Unpin');
+    expect(pinButton.getAttribute('aria-pressed')).toBe('true');
     expect(headerLabel.textContent?.trim()).toBe('Service');
   });
 });

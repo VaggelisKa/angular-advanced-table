@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import {
   FlexRender,
   type FlexRenderContent,
@@ -25,12 +25,23 @@ export class NatTableHeaderActions {
   readonly content = input.required<NatTableHeaderRenderContent>();
   readonly label = input.required<string>();
 
-  protected readonly column = computed(() => this.context().column);
-  protected readonly canSort = computed(() => this.column().getCanSort());
-  protected readonly canPin = computed(() => this.column().getCanPin());
-  protected readonly isPinned = computed(() => !!this.column().getIsPinned());
-  protected readonly isAlignedEnd = computed(() => this.column().columnDef.meta?.align === 'end');
-  protected readonly sortIcon = computed(() => {
+  protected canSort(): boolean {
+    return this.column().getCanSort();
+  }
+
+  protected canPin(): boolean {
+    return this.column().getCanPin();
+  }
+
+  protected isPinned(): boolean {
+    return !!this.column().getIsPinned();
+  }
+
+  protected isAlignedEnd(): boolean {
+    return this.column().columnDef.meta?.align === 'end';
+  }
+
+  protected sortIcon(): string {
     const sortState = this.column().getIsSorted();
 
     if (sortState === 'asc') {
@@ -42,7 +53,7 @@ export class NatTableHeaderActions {
     }
 
     return '↕';
-  });
+  }
 
   protected toggleSort(): void {
     this.column().toggleSorting();
@@ -59,5 +70,9 @@ export class NatTableHeaderActions {
 
   protected getPinLabel(): string {
     return `${this.isPinned() ? 'Unpin' : 'Pin'} ${this.label()} column`;
+  }
+
+  protected column() {
+    return this.context().column;
   }
 }
