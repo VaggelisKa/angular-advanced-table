@@ -226,5 +226,5 @@ If you are upgrading from the previous all-in-one `NatTable`:
 
 - replace `showPagination` with `enablePagination`
 - remove `pageSizeOptions`, `searchLabel`, `searchPlaceholder`, and `showColumnVisibility` from `NatTable`
-- wrap headers with `withNatTableHeaderActions(...)` if you still want built-in sort/pin buttons
+- wrap headers with `withNatTableHeaderActions(...)` if you still want built-in sort/pin buttons or custom sort indicators
 - compose search, pager, and visibility with `ng-advanced-table-ui`

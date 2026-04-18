@@ -6,16 +6,22 @@ import {
 } from '@tanstack/angular-table';
 
 import { resolveNatTableColumnLabel } from '../../shared/table-ui.helpers';
-import { NatTableHeaderActions, type NatTableHeaderRenderContent } from './table-header-actions';
+import {
+  NatTableHeaderActions,
+  type NatTableHeaderActionsOptions,
+  type NatTableHeaderRenderContent,
+} from './table-header-actions';
 
 export function withNatTableHeaderActions<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
+  options: NatTableHeaderActionsOptions = {},
 ): ColumnDef<TData, unknown>[] {
-  return columns.map((column) => wrapColumnHeader(column));
+  return columns.map((column) => wrapColumnHeader(column, options));
 }
 
 function wrapColumnHeader<TData extends RowData>(
   column: ColumnDef<TData, unknown>,
+  options: NatTableHeaderActionsOptions,
 ): ColumnDef<TData, unknown> {
   const nextColumn = {
     ...column,
@@ -25,7 +31,7 @@ function wrapColumnHeader<TData extends RowData>(
 
   if (nextColumn.columns) {
     nextColumn.columns = nextColumn.columns.map((child: ColumnDef<TData, unknown>) =>
-      wrapColumnHeader(child),
+      wrapColumnHeader(child, options),
     );
   }
 
@@ -40,6 +46,7 @@ function wrapColumnHeader<TData extends RowData>(
           context: context as HeaderContext<RowData, unknown>,
           content: originalHeader as NatTableHeaderRenderContent,
           label,
+          sortIndicator: options.sortIndicator,
         },
       }),
   } as ColumnDef<TData, unknown>;

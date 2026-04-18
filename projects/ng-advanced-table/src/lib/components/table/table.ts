@@ -348,7 +348,7 @@ export class NatTable<TData extends RowData = RowData> {
     return column.getIsPinned() === 'right' && column.getIsFirstColumn('right');
   }
 
-  protected getAriaSort(column: Column<TData, unknown>): string {
+  protected getAriaSort(column: Column<TData, unknown>): 'ascending' | 'descending' | 'none' {
     const sortState = column.getIsSorted();
 
     if (sortState === 'asc') {

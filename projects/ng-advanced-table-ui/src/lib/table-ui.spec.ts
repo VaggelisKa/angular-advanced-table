@@ -120,13 +120,38 @@ class TableUiHost {
   }
 }
 
+@Component({
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      ariaLabel="Operations table"
+      (stateChange)="onTableStateChange($event)"
+    />
+  `,
+})
+class CustomSortIndicatorHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = withNatTableHeaderActions(baseColumns, {
+    sortIndicator: ({ sortState }) =>
+      sortState === 'asc' ? 'A' : sortState === 'desc' ? 'D' : '-',
+  });
+  readonly tableState = signal<Partial<NatTableState>>({});
+
+  onTableStateChange(state: NatTableState): void {
+    this.tableState.set(state);
+  }
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost],
+      imports: [TableUiHost, CustomSortIndicatorHost],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableUiHost);
@@ -243,6 +268,31 @@ describe('ng-advanced-table-ui', () => {
     expect(pinButton.textContent?.trim()).toBe('Unpin');
     expect(pinButton.getAttribute('aria-pressed')).toBe('true');
     expect(headerLabel.textContent?.trim()).toBe('Service');
+  });
+
+  it('renders caller-provided sort indicator content through header actions', () => {
+    const customFixture = TestBed.createComponent(CustomSortIndicatorHost);
+
+    customFixture.detectChanges();
+
+    let sortIcon = customFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-icon',
+    ) as HTMLElement;
+    const sortButton = customFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-button',
+    ) as HTMLButtonElement;
+
+    expect(sortIcon.textContent?.trim()).toBe('-');
+
+    sortButton.click();
+    customFixture.detectChanges();
+
+    sortIcon = customFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-icon',
+    ) as HTMLElement;
+
+    expect(sortIcon.textContent?.trim()).toBe('A');
+    expect(sortIcon.textContent).not.toContain('↕');
   });
 });
 

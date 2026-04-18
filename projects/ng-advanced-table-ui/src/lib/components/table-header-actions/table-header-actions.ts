@@ -5,6 +5,10 @@ import {
   type HeaderContext,
   type RowData,
 } from '@tanstack/angular-table';
+import type {
+  NatTableSortDirection,
+  NatTableSortIndicatorContext,
+} from 'ng-advanced-table';
 
 export type NatTableHeaderRenderContent =
   | string
@@ -12,6 +16,19 @@ export type NatTableHeaderRenderContent =
   | ((props: HeaderContext<RowData, unknown>) => FlexRenderContent<HeaderContext<RowData, unknown>>)
   | null
   | undefined;
+
+export type NatTableSortIndicatorContent =
+  | string
+  | number
+  | ((
+      props: NatTableSortIndicatorContext<RowData>,
+    ) => FlexRenderContent<NatTableSortIndicatorContext<RowData>>)
+  | null
+  | undefined;
+
+export interface NatTableHeaderActionsOptions {
+  sortIndicator?: NatTableSortIndicatorContent;
+}
 
 @Component({
   selector: 'nat-table-header-actions',
@@ -24,6 +41,7 @@ export class NatTableHeaderActions {
   readonly context = input.required<HeaderContext<RowData, unknown>>();
   readonly content = input.required<NatTableHeaderRenderContent>();
   readonly label = input.required<string>();
+  readonly sortIndicator = input<NatTableSortIndicatorContent>(undefined);
 
   protected canSort(): boolean {
     return this.column().getCanSort();
@@ -41,8 +59,18 @@ export class NatTableHeaderActions {
     return this.column().columnDef.meta?.align === 'end';
   }
 
+  protected hasCustomSortIndicator(): boolean {
+    const indicator = this.sortIndicator();
+
+    return indicator !== undefined && indicator !== null;
+  }
+
+  protected sortState(): NatTableSortDirection {
+    return this.column().getIsSorted();
+  }
+
   protected sortIcon(): string {
-    const sortState = this.column().getIsSorted();
+    const sortState = this.sortState();
 
     if (sortState === 'asc') {
       return '↑';
@@ -53,6 +81,32 @@ export class NatTableHeaderActions {
     }
 
     return '↕';
+  }
+
+  protected ariaSort(): 'ascending' | 'descending' | 'none' {
+    const sortState = this.sortState();
+
+    if (sortState === 'asc') {
+      return 'ascending';
+    }
+
+    if (sortState === 'desc') {
+      return 'descending';
+    }
+
+    return 'none';
+  }
+
+  protected sortIndicatorContext(): NatTableSortIndicatorContext<RowData> {
+    const sortState = this.sortState();
+
+    return {
+      $implicit: sortState,
+      sortState,
+      ariaSort: this.ariaSort(),
+      column: this.column(),
+      label: this.label(),
+    };
   }
 
   protected toggleSort(): void {

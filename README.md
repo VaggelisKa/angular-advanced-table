@@ -29,7 +29,7 @@ Ships opt-in presentation and control primitives:
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
-- `withNatTableHeaderActions(...)`
+- `withNatTableHeaderActions(...)`, including custom sort-indicator content
 
 Use only the pieces you need.
 

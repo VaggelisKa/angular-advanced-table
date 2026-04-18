@@ -11,7 +11,7 @@ This package keeps the table core composable: you import only the controls and v
 - `NatTableColumnVisibility`: column toggle chip group
 - `NatTablePageSize`: page-size chip group
 - `NatTablePager`: previous/next pager
-- `withNatTableHeaderActions(...)`: wraps column headers with optional sort/pin buttons
+- `withNatTableHeaderActions(...)`: wraps column headers with optional sort/pin buttons and custom sort-indicator content
 
 ## Installation
 
@@ -112,6 +112,26 @@ export class OrdersTableComponent {
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` all take `for: NatTable<TData>`.
 - `NatTableSurface` owns the default `--nat-table-*` variables that used to live in core.
 - `withNatTableHeaderActions(...)` is additive: it preserves the original header content and only adds controls when the underlying column can sort or pin.
+
+## Custom Sort Indicator
+
+Pass `sortIndicator` as the second argument to `withNatTableHeaderActions(...)` when you want to replace the built-in `↑`, `↓`, and `↕` glyphs.
+
+```ts
+const columns = withNatTableHeaderActions<OrderRow>(baseColumns, {
+  sortIndicator: ({ sortState }) =>
+    sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇',
+});
+```
+
+The callback receives:
+
+- `sortState`: `'asc' | 'desc' | false`
+- `ariaSort`: `'ascending' | 'descending' | 'none'`
+- `column`: the TanStack column instance
+- `label`: the resolved column label
+
+For richer UI, return `flexRenderComponent(...)` instead of a string so the indicator can be a standalone Angular component.
 
 ## Replacing Built-In UI With Your Own
 
