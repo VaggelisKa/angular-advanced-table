@@ -70,70 +70,83 @@
   align-items: center;
   justify-content: center;
   line-height: 0;
+  padding: var(--nat-table-sort-icon-chip-padding, 2px 3px);
+  border-radius: var(--nat-table-sort-icon-chip-radius, 6px);
+  background: var(--nat-table-sort-icon-chip-background, transparent);
+  transition:
+    background-color var(--nat-table-transition-fast, 120ms ease),
+    box-shadow var(--nat-table-transition-fast, 120ms ease);
+}
+
+.sort-button:hover:not([disabled]) .nat-default-sort {
+  background: var(
+    --nat-table-sort-icon-chip-background-hover,
+    color-mix(in srgb, currentColor 8%, transparent)
+  );
+}
+
+.nat-default-sort[data-sort-state='asc'],
+.nat-default-sort[data-sort-state='desc'] {
+  background: var(
+    --nat-table-sort-icon-chip-background-active,
+    color-mix(in srgb, var(--nat-table-sort-icon-color, currentColor) 14%, transparent)
+  );
 }
 
 .nat-default-sort__svg {
   display: block;
   overflow: visible;
   flex-shrink: 0;
-  width: var(--nat-table-sort-icon-svg-width, clamp(15px, 1.12em, 20px));
-  height: var(--nat-table-sort-icon-svg-height, clamp(24px, 1.75em, 32px));
+  width: var(--nat-table-sort-icon-svg-width, 10px);
+  height: var(--nat-table-sort-icon-svg-height, 12px);
 }
 
-/* Unsorted: outlined chevrons read clearly against light/dark headers. */
+/* Solid chevrons read with stronger contrast than thin outlines. */
 .nat-default-sort__up,
 .nat-default-sort__down {
-  fill: none;
-  stroke: var(
+  fill: var(
     --nat-table-sort-icon-color-idle,
-    color-mix(in srgb, currentColor 78%, transparent)
+    color-mix(in srgb, currentColor 45%, transparent)
   );
-  stroke-width: 1.65;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+  stroke: none;
   transform-origin: center;
   transition:
     fill var(--nat-table-transition-fast, 120ms ease),
-    stroke var(--nat-table-transition-fast, 120ms ease),
+    opacity var(--nat-table-transition-fast, 120ms ease),
     transform var(--nat-table-transition-fast, 120ms ease);
 }
 
 .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
 .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__down {
-  stroke: var(
+  fill: var(
     --nat-table-sort-icon-color-hover,
-    color-mix(in srgb, currentColor 100%, transparent)
+    color-mix(in srgb, currentColor 78%, transparent)
   );
 }
 
-/* Sorted: active direction is filled accent; the other stays a faint outline. */
+/* Sorted: active direction is the accent color; inactive direction fades back. */
 .nat-default-sort[data-sort-state='asc'] .nat-default-sort__up,
 .nat-default-sort[data-sort-state='desc'] .nat-default-sort__down {
-  fill: var(--nat-table-sort-icon-color, currentColor);
-  stroke: var(--nat-table-sort-icon-color, currentColor);
-  stroke-width: 1.55;
-  transform: scale(1.12);
+  fill: var(--nat-table-sort-icon-color-active, var(--nat-table-sort-icon-color, currentColor));
+  transform: scale(1.05);
 }
 
 .nat-default-sort[data-sort-state='asc'] .nat-default-sort__down,
 .nat-default-sort[data-sort-state='desc'] .nat-default-sort__up {
-  fill: none;
-  stroke: var(
+  fill: var(
     --nat-table-sort-icon-color-muted,
-    color-mix(in srgb, currentColor 32%, transparent)
+    color-mix(in srgb, currentColor 22%, transparent)
   );
-  stroke-width: 1.55;
-  transform: none;
+  opacity: var(--nat-table-sort-icon-muted-opacity, 0.75);
 }
 
 .sort-button[disabled] .nat-default-sort__up,
 .sort-button[disabled] .nat-default-sort__down {
-  fill: none;
-  stroke: var(
+  fill: var(
     --nat-table-sort-icon-color-disabled,
     color-mix(in srgb, currentColor 22%, transparent)
   );
+  opacity: 1;
   transform: none;
 }
 

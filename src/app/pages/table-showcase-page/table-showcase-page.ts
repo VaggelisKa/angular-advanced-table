@@ -256,71 +256,82 @@ type ShowcaseTheme = 'light' | 'dark';
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: color-mix(in srgb, currentColor 20%, transparent);
+      --msi-accent: var(--accent, currentColor);
+      --msi-idle: color-mix(in srgb, currentColor 55%, transparent);
+      --msi-muted: color-mix(in srgb, currentColor 22%, transparent);
+      --msi-hover: color-mix(in srgb, currentColor 85%, transparent);
+      --msi-rail-bg: transparent;
+      --msi-rail-bg-hover: color-mix(in srgb, currentColor 10%, transparent);
+      --msi-rail-bg-active: color-mix(in srgb, var(--msi-accent) 16%, transparent);
+      --msi-rail-ring-active: color-mix(in srgb, var(--msi-accent) 34%, transparent);
     }
 
     .market-sort-indicator {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      inline-size: 1.1rem;
+      block-size: 1.1rem;
+      padding: 2px;
+      border-radius: 6px;
+      background: var(--msi-rail-bg);
+      transition:
+        background-color 140ms ease,
+        box-shadow 140ms ease;
     }
 
-    .sort-arrow-rail {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      inline-size: 1rem;
-      block-size: 1rem;
-      border-radius: 999px;
-      background: color-mix(in srgb, currentColor 10%, transparent);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 10%, transparent);
-    }
-
-    .sort-arrow {
+    .sort-stack {
       display: block;
-      inline-size: 0.72rem;
-      block-size: 0.72rem;
-      opacity: 0.48;
+      inline-size: 0.65rem;
+      block-size: 0.85rem;
+      overflow: visible;
+    }
+
+    .sort-chevron {
       transform-origin: center;
       transition:
+        fill 140ms ease,
         opacity 140ms ease,
-        background-color 140ms ease,
-        color 140ms ease,
-        transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+        transform 160ms ease;
     }
 
-    .market-sort-indicator[data-sort-state='none'] .sort-arrow {
-      transform: translateY(0);
+    .sort-chevron--up,
+    .sort-chevron--down {
+      fill: var(--msi-idle);
     }
 
-    .market-sort-indicator[data-sort-state='asc'] .sort-arrow {
-      opacity: 1;
-      color: currentColor;
-      transform: translateY(-0.12rem);
+    :host-context(.sort-button:hover) .market-sort-indicator {
+      background: var(--msi-rail-bg-hover);
     }
 
-    .market-sort-indicator[data-sort-state='desc'] .sort-arrow {
-      opacity: 1;
-      color: currentColor;
-      transform: translateY(0.12rem) rotate(180deg);
+    :host-context(.sort-button:hover) .market-sort-indicator[data-sort-state='none'] .sort-chevron {
+      fill: var(--msi-hover);
     }
 
-    .market-sort-indicator[data-sort-state='asc'] .sort-arrow-rail,
-    .market-sort-indicator[data-sort-state='desc'] .sort-arrow-rail {
-      background: color-mix(in srgb, currentColor 16%, transparent);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+    .market-sort-indicator[data-sort-state='asc'],
+    .market-sort-indicator[data-sort-state='desc'] {
+      background: var(--msi-rail-bg-active);
+      box-shadow: inset 0 0 0 1px var(--msi-rail-ring-active);
+    }
+
+    .market-sort-indicator[data-sort-state='asc'] .sort-chevron--up,
+    .market-sort-indicator[data-sort-state='desc'] .sort-chevron--down {
+      fill: var(--msi-accent);
+      transform: scale(1.08);
+    }
+
+    .market-sort-indicator[data-sort-state='asc'] .sort-chevron--down,
+    .market-sort-indicator[data-sort-state='desc'] .sort-chevron--up {
+      fill: var(--msi-muted);
+      opacity: 0.65;
     }
   `,
   template: `
     <span class="market-sort-indicator" [attr.data-sort-state]="context().sortState || 'none'">
-      <span class="sort-arrow-rail" aria-hidden="true">
-        <svg class="sort-arrow" viewBox="0 0 16 16" aria-hidden="true">
-          <path
-            d="M8 2.5 12.5 7H9.5v6.5h-3V7h-3L8 2.5Z"
-            fill="currentColor"
-          />
-        </svg>
-      </span>
+      <svg class="sort-stack" viewBox="0 0 12 16" aria-hidden="true">
+        <path class="sort-chevron sort-chevron--up" d="M6 2 10 6 H2z" />
+        <path class="sort-chevron sort-chevron--down" d="M6 14 2 10 H10z" />
+      </svg>
     </span>
   `,
 })
