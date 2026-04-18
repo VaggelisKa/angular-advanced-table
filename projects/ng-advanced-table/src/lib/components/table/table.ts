@@ -435,18 +435,14 @@ export class NatTable<TData extends RowData = RowData> {
     return column.getIsPinned() === 'right' && column.getIsFirstColumn('right');
   }
 
-  protected getSortIcon(column: Column<TData, unknown>): string {
+  protected getSortVisualState(column: Column<TData, unknown>): 'asc' | 'desc' | 'none' {
     const sortState = column.getIsSorted();
 
-    if (sortState === 'asc') {
-      return '↑';
+    if (sortState === 'asc' || sortState === 'desc') {
+      return sortState;
     }
 
-    if (sortState === 'desc') {
-      return '↓';
-    }
-
-    return '↕';
+    return 'none';
   }
 
   protected getAriaSort(column: Column<TData, unknown>): string {

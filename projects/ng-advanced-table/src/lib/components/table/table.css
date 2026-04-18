@@ -80,7 +80,7 @@
   --nat-table-pin-min-height: 28px;
   --nat-table-pin-padding-x: 10px;
   --nat-table-search-padding-x: 18px;
-  --nat-table-sort-icon-min-width: 1rem;
+  --nat-table-sort-icon-min-width: 0.75rem;
 
   /* ---------- Transitions ---------- */
   --nat-table-transition-fast: 120ms ease;
@@ -209,6 +209,26 @@
 
   /* ---------- Sort button ---------- */
   --nat-table-sort-icon-color: var(--nat-table-color-accent);
+  --nat-table-sort-icon-color-idle: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 38%,
+    transparent
+  );
+  --nat-table-sort-icon-color-muted: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 16%,
+    transparent
+  );
+  --nat-table-sort-icon-color-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 58%,
+    transparent
+  );
+  --nat-table-sort-icon-color-disabled: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 12%,
+    transparent
+  );
   --nat-table-sort-button-color-sorted: var(--nat-table-color-text);
 
   /* ---------- Pin button ---------- */
@@ -575,8 +595,45 @@
 .sort-icon {
   display: inline-flex;
   min-width: var(--nat-table-sort-icon-min-width);
+  align-items: center;
   justify-content: center;
-  color: var(--nat-table-sort-icon-color);
+  line-height: 0;
+}
+
+.sort-icon__svg {
+  display: block;
+  overflow: visible;
+}
+
+.sort-icon__up,
+.sort-icon__down {
+  fill: var(--nat-table-sort-icon-color-idle);
+  transform-origin: center;
+  transition:
+    fill var(--nat-table-transition-fast),
+    transform var(--nat-table-transition-fast);
+}
+
+.sort-button:hover:not(:disabled) .sort-icon[data-sort='none'] .sort-icon__up,
+.sort-button:hover:not(:disabled) .sort-icon[data-sort='none'] .sort-icon__down {
+  fill: var(--nat-table-sort-icon-color-hover);
+}
+
+.sort-icon[data-sort='asc'] .sort-icon__up,
+.sort-icon[data-sort='desc'] .sort-icon__down {
+  fill: var(--nat-table-sort-icon-color);
+  transform: scale(1.1);
+}
+
+.sort-icon[data-sort='asc'] .sort-icon__down,
+.sort-icon[data-sort='desc'] .sort-icon__up {
+  fill: var(--nat-table-sort-icon-color-muted);
+}
+
+.sort-button:disabled .sort-icon__up,
+.sort-button:disabled .sort-icon__down {
+  fill: var(--nat-table-sort-icon-color-disabled);
+  transform: none;
 }
 
 .is-pinned-left,

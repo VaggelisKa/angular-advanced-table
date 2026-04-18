@@ -134,8 +134,21 @@
                       >
                         {{ rendered }}
                       </ng-container>
-                      <span class="sort-icon" aria-hidden="true">
-                        {{ getSortIcon(header.column) }}
+                      <span
+                        class="sort-icon"
+                        [attr.data-sort]="getSortVisualState(header.column)"
+                        aria-hidden="true"
+                      >
+                        <svg
+                          class="sort-icon__svg"
+                          viewBox="0 0 10 14"
+                          width="10"
+                          height="14"
+                          focusable="false"
+                        >
+                          <path class="sort-icon__up" d="M5 1 9 6 1 6z" />
+                          <path class="sort-icon__down" d="M5 13 1 8 9 8z" />
+                        </svg>
                       </span>
                     </button>
 
