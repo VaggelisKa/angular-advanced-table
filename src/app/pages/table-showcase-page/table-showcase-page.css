@@ -725,15 +725,15 @@
   --nat-table-letter-spacing-pin-button: 0.04em;
   --nat-table-letter-spacing-pager: 0;
 
-  --nat-table-space-card: 14px 20px;
-  --nat-table-space-card-compact: 12px 14px;
-  --nat-table-space-controls-gap: 0;
-  --nat-table-space-control-block-gap: 8px;
-  --nat-table-space-toolbar-gap: 12px;
-  --nat-table-space-toolbar-margin-bottom: 0;
-  --nat-table-space-table-actions-gap: 12px;
-  --nat-table-space-pager-gap: 8px;
-  --nat-table-space-chip-row-gap: 6px;
+  --nat-table-space-card: 18px 22px;
+  --nat-table-space-card-compact: 14px 16px;
+  --nat-table-space-controls-gap: 16px;
+  --nat-table-space-control-block-gap: 12px;
+  --nat-table-space-toolbar-gap: 14px;
+  --nat-table-space-toolbar-margin-bottom: 16px;
+  --nat-table-space-table-actions-gap: 14px;
+  --nat-table-space-pager-gap: 10px;
+  --nat-table-space-chip-row-gap: 10px;
   --nat-table-space-header-content-gap: 6px;
   --nat-table-space-cell-y: 10px;
   --nat-table-space-cell-x: 14px;
