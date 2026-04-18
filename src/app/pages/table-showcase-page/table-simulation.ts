@@ -2,6 +2,7 @@ import { computed, effect, Injectable, signal } from '@angular/core';
 
 export type SimulationStatus = 'Advancing' | 'Watching' | 'Declining' | 'Halted';
 export type SimulationProfile = 'steady' | 'balanced' | 'burst';
+export type SparkTrend = 'up' | 'down' | 'flat';
 
 export interface SimulationRow {
   id: string;
@@ -19,7 +20,11 @@ export interface SimulationRow {
   volume: number;
   turnoverMillions: number;
   updatedAt: number;
+  priceHistory: readonly number[];
+  sparkTrend: SparkTrend;
 }
+
+export const SPARK_HISTORY_LENGTH = 24;
 
 export type SimulationStatusCounts = Record<SimulationStatus, number>;
 
@@ -210,6 +215,7 @@ function buildDataset(size: number): SimulationRow[] {
     const price = roundToCents(previousClose * (1 + changePercent / 100));
     const change = roundToCents(price - previousClose);
     const volume = 150_000 + ((index * 91_713) % 22_000_000);
+    const priceHistory = seedPriceHistory(index, previousClose, price);
 
     return {
       id: `eqt-${String(index + 1).padStart(5, '0')}`,
@@ -227,8 +233,51 @@ function buildDataset(size: number): SimulationRow[] {
       volume,
       turnoverMillions: roundToSingleDecimal((price * volume) / 1_000_000),
       updatedAt: baseTimestamp - (index % 180) * 1000,
+      priceHistory,
+      sparkTrend: computeSparkTrend(priceHistory),
     };
   });
+}
+
+function seedPriceHistory(
+  index: number,
+  previousClose: number,
+  currentPrice: number,
+): number[] {
+  const amplitude = Math.max(previousClose * 0.025, 0.3);
+  const phase = (index % 11) * 0.41;
+  const drift = (currentPrice - previousClose) / Math.max(SPARK_HISTORY_LENGTH - 1, 1);
+  const history: number[] = [];
+
+  for (let step = 0; step < SPARK_HISTORY_LENGTH; step += 1) {
+    const wave = Math.sin(phase + step * 0.55) * amplitude * 0.6;
+    const micro = Math.sin(phase * 2 + step * 1.3) * amplitude * 0.2;
+    const value = previousClose + drift * step + wave + micro;
+    history.push(roundToCents(Math.max(value, previousClose * 0.75)));
+  }
+
+  history[history.length - 1] = currentPrice;
+  return history;
+}
+
+function computeSparkTrend(history: readonly number[]): SparkTrend {
+  if (history.length < 2) {
+    return 'flat';
+  }
+
+  const first = history[0];
+  const last = history[history.length - 1];
+  const threshold = Math.max(first * 0.001, 0.01);
+
+  if (last - first > threshold) {
+    return 'up';
+  }
+
+  if (first - last > threshold) {
+    return 'down';
+  }
+
+  return 'flat';
 }
 
 function mutateRows(
@@ -266,6 +315,7 @@ function mutateRow(row: SimulationRow, now: number): SimulationRow {
     40_000,
     32_000_000,
   );
+  const priceHistory = pushPriceHistory(row.priceHistory, price);
 
   return {
     ...row,
@@ -276,7 +326,21 @@ function mutateRow(row: SimulationRow, now: number): SimulationRow {
     volume,
     turnoverMillions: roundToSingleDecimal((price * volume) / 1_000_000),
     updatedAt: now,
+    priceHistory,
+    sparkTrend: computeSparkTrend(priceHistory),
   };
+}
+
+function pushPriceHistory(history: readonly number[], nextPrice: number): number[] {
+  const next: number[] = [];
+  const start = Math.max(history.length - (SPARK_HISTORY_LENGTH - 1), 0);
+
+  for (let index = start; index < history.length; index += 1) {
+    next.push(history[index]);
+  }
+
+  next.push(nextPrice);
+  return next;
 }
 
 function statusFromChangePercent(

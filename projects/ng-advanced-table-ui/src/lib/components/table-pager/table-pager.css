@@ -10,7 +10,11 @@
 }
 
 .pager-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--nat-table-pager-min-height, 44px);
+  min-width: var(--nat-table-pager-min-height, 44px);
   padding: 0 var(--nat-table-pager-padding-x, 18px);
   border-radius: var(--nat-table-radius-chip, 999px);
   border: 1px solid var(--nat-table-pager-border-color, transparent);
@@ -49,4 +53,10 @@
   color: var(--nat-table-pager-label-color, currentColor);
   font-size: var(--nat-table-font-size-pager-label, 0.92rem);
   font-variant-numeric: tabular-nums;
+}
+
+.pager-icon {
+  display: block;
+  width: 1rem;
+  height: 1rem;
 }

@@ -69,20 +69,6 @@ export class NatTableHeaderActions {
     return this.column().getIsSorted();
   }
 
-  protected sortIcon(): string {
-    const sortState = this.sortState();
-
-    if (sortState === 'asc') {
-      return '↑';
-    }
-
-    if (sortState === 'desc') {
-      return '↓';
-    }
-
-    return '↕';
-  }
-
   protected ariaSort(): 'ascending' | 'descending' | 'none' {
     const sortState = this.sortState();
 
