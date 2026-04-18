@@ -1,5 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  flexRenderComponent,
+  type ColumnDef,
+  type FilterFn,
+} from '@tanstack/angular-table';
 
 import {
   NatTable,
@@ -12,6 +22,8 @@ import {
   NatTableRenderMetricsStore,
   withRenderMetricsColumn,
 } from 'ng-advanced-table-utils';
+
+import { NatSparkline } from './nat-sparkline';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,
@@ -24,6 +36,8 @@ import {
 } from './table-simulation';
 
 const STATUS_FILTER_ID = 'status';
+const THEME_STORAGE_KEY = 'nat-showcase-theme';
+
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {
   notation: 'compact',
@@ -69,9 +83,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     header: 'Symbol',
     size: 120,
     minSize: 100,
-    meta: {
-      label: 'Symbol',
-    },
+    meta: { label: 'Symbol' },
     enablePinning: true,
     sortingFn: (left, right) =>
       compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
@@ -82,9 +94,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     header: 'Company',
     size: 220,
     minSize: 180,
-    meta: {
-      label: 'Company',
-    },
+    meta: { label: 'Company' },
     enablePinning: true,
     sortingFn: (left, right) =>
       compareSortKeys(left.original.companySortKey, right.original.companySortKey),
@@ -95,9 +105,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     header: 'Exchange',
     size: 120,
     minSize: 100,
-    meta: {
-      label: 'Exchange',
-    },
+    meta: { label: 'Exchange' },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
   },
@@ -106,9 +114,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     header: 'Desk',
     size: 130,
     minSize: 100,
-    meta: {
-      label: 'Desk',
-    },
+    meta: { label: 'Desk' },
     cell: (info) => info.getValue<string>(),
   },
   {
@@ -170,14 +176,28 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     cell: (info) => `${signedPercentFormatter.format(info.getValue<number>())}%`,
   },
   {
+    id: 'spark',
+    header: 'Trend',
+    size: 104,
+    minSize: 90,
+    meta: { label: 'Trend' },
+    enableSorting: false,
+    enableGlobalFilter: false,
+    enablePinning: false,
+    cell: (info) =>
+      flexRenderComponent(NatSparkline, {
+        inputs: {
+          points: info.row.original.priceHistory,
+          trend: info.row.original.sparkTrend,
+        },
+      }),
+  },
+  {
     accessorKey: 'volume',
     header: 'Volume',
     size: 130,
     minSize: 100,
-    meta: {
-      label: 'Volume',
-      align: 'end',
-    },
+    meta: { label: 'Volume', align: 'end' },
     enablePinning: true,
     cell: (info) => compactFormatter.format(info.getValue<number>()),
   },
@@ -186,10 +206,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     header: 'Turnover',
     size: 130,
     minSize: 100,
-    meta: {
-      label: 'Turnover',
-      align: 'end',
-    },
+    meta: { label: 'Turnover', align: 'end' },
     cell: (info) => `${currencyFormatter.format(info.getValue<number>())}M`,
   },
   {
@@ -197,10 +214,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     header: 'Updated',
     size: 130,
     minSize: 100,
-    meta: {
-      label: 'Updated',
-      align: 'end',
-    },
+    meta: { label: 'Updated', align: 'end' },
     enablePinning: true,
     cell: (info) => timeFormatter.format(info.getValue<number>()),
   },
@@ -218,40 +232,7 @@ const defaultTableState: Partial<NatTableState> = {
   },
 };
 
-type ShowcaseTheme =
-  | 'market-tape'
-  | 'sandstone-ledger'
-  | 'terminal-mint'
-  | 'sunset-signal';
-
-interface ShowcaseThemeOption {
-  readonly value: ShowcaseTheme;
-  readonly label: string;
-  readonly description: string;
-}
-
-const SHOWCASE_THEMES = [
-  {
-    value: 'market-tape',
-    label: 'Market Tape',
-    description: 'Glassmorphism blues with strong gain/loss contrast.',
-  },
-  {
-    value: 'sandstone-ledger',
-    label: 'Sandstone Ledger',
-    description: 'A warm editorial look with lighter cards and softer separators.',
-  },
-  {
-    value: 'terminal-mint',
-    label: 'Terminal Mint',
-    description: 'Monospace trading-console styling with neon green accents.',
-  },
-  {
-    value: 'sunset-signal',
-    label: 'Sunset Signal',
-    description: 'Warm dusk gradients with punchier accent and warning tones.',
-  },
-] as const satisfies readonly ShowcaseThemeOption[];
+type ShowcaseTheme = 'light' | 'dark';
 
 @Component({
   selector: 'app-table-showcase-page',
@@ -265,19 +246,14 @@ export class TableShowcasePage {
   protected readonly datasetOptions = DATASET_OPTIONS;
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
-  protected readonly themes = SHOWCASE_THEMES;
   protected readonly metricsStore = new NatTableRenderMetricsStore();
   protected readonly columns = withRenderMetricsColumn(simulationColumns, this.metricsStore);
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
-  protected readonly selectedTheme = signal<ShowcaseTheme>(SHOWCASE_THEMES[0].value);
+  protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],
   });
-  protected readonly activeTheme = computed(
-    () =>
-      SHOWCASE_THEMES.find((theme) => theme.value === this.selectedTheme()) ?? SHOWCASE_THEMES[0],
-  );
   protected readonly selectedStatuses = computed(() => {
     const activeFilter = this.tableState().columnFilters?.find(
       (entry) => entry.id === STATUS_FILTER_ID,
@@ -290,6 +266,9 @@ export class TableShowcasePage {
     value: value as SimulationProfile,
     ...config,
   }));
+  protected readonly lastTickLabel = computed(() =>
+    timeFormatter.format(this.simulation.lastTickAt()),
+  );
 
   protected setDatasetSize(size: number): void {
     this.simulation.setDatasetSize(size);
@@ -300,7 +279,8 @@ export class TableShowcasePage {
   }
 
   protected setTheme(theme: ShowcaseTheme): void {
-    this.selectedTheme.set(theme);
+    this.theme.set(theme);
+    persistTheme(theme);
   }
 
   protected toggleSimulation(): void {
@@ -365,6 +345,28 @@ export class TableShowcasePage {
     this.tableState.update((currentState) => ({
       columnFilters: upsertColumnFilter(currentState.columnFilters ?? [], columnId, value),
     }));
+  }
+}
+
+function readInitialTheme(): ShowcaseTheme {
+  try {
+    const stored = globalThis.localStorage?.getItem(THEME_STORAGE_KEY);
+    if (stored === 'light' || stored === 'dark') {
+      return stored;
+    }
+  } catch {
+    // Storage access can throw in private/sandboxed contexts; fall through to the media query.
+  }
+
+  const media = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
+  return media?.matches ? 'dark' : 'light';
+}
+
+function persistTheme(theme: ShowcaseTheme): void {
+  try {
+    globalThis.localStorage?.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Ignore quota / privacy-mode failures.
   }
 }
 
