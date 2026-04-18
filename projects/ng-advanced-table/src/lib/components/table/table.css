@@ -1,517 +1,20 @@
-/*
- * `<nat-table>` theming API.
- *
- * Every themed value in the component is resolved from a `--nat-table-*`
- * custom property. The defaults below derive from a small set of semantic
- * color tokens (`--nat-table-color-*`) that consumers typically override on
- * a parent element or on the component host. Legacy shorthand variables
- * like `--accent`, `--surface`, or `--text` are honoured as fallbacks so
- * existing theme surfaces keep working without modification.
- *
- * Naming convention: `--nat-table-<component>-<property>[-<state>]`.
- */
 :host {
-  /* ---------- Semantic palette ---------- */
-  --nat-table-color-text: var(--text, #ecf5fb);
-  --nat-table-color-text-muted: var(--text-soft, #a8c3d7);
-  --nat-table-color-accent: var(--accent, #57d1ff);
-  --nat-table-color-success: var(--success, #5de6a6);
-  --nat-table-color-warning: var(--warning, #ffd166);
-  --nat-table-color-danger: var(--danger, #ff8d7f);
-  --nat-table-color-surface: var(--surface, rgba(7, 23, 35, 0.72));
-  --nat-table-color-surface-elevated: var(--surface-elevated, rgba(4, 14, 22, 0.92));
-  --nat-table-color-surface-sticky: var(--surface-contrast, rgba(5, 20, 31, 0.96));
-  --nat-table-color-border: color-mix(in srgb, var(--nat-table-color-text) 12%, transparent);
-  --nat-table-color-border-strong: color-mix(in srgb, var(--nat-table-color-text) 18%, transparent);
-  --nat-table-color-divider: color-mix(in srgb, var(--nat-table-color-text) 8%, transparent);
-  --nat-table-color-divider-subtle: color-mix(in srgb, var(--nat-table-color-text) 6%, transparent);
-
-  /* ---------- Typography ---------- */
-  --nat-table-font-family: inherit;
-  --nat-table-font-size-header: 0.84rem;
-  --nat-table-font-size-label: 0.85rem;
-  --nat-table-font-size-caption: 0.82rem;
-  --nat-table-font-size-chip-meta: 0.82rem;
-  --nat-table-font-size-chip-compact: 0.92rem;
-  --nat-table-font-size-pager-label: 0.92rem;
-  --nat-table-font-size-pin-button: 0.72rem;
-  --nat-table-font-size-empty-state: 1rem;
-  --nat-table-font-weight-pager: 700;
-  --nat-table-letter-spacing-header: 0.12em;
-  --nat-table-letter-spacing-label: 0.08em;
-  --nat-table-letter-spacing-pin-button: 0.03em;
-  --nat-table-letter-spacing-pager: 0.01em;
-  --nat-table-text-transform-header: uppercase;
-  --nat-table-text-transform-label: uppercase;
-  --nat-table-line-height-empty-state: 1.6;
-
-  /* ---------- Spacing ---------- */
-  --nat-table-space-card: 28px;
-  --nat-table-space-card-compact: 20px;
-  --nat-table-space-controls-gap: 18px;
-  --nat-table-space-control-block-gap: 10px;
-  --nat-table-space-toolbar-gap: 18px;
-  --nat-table-space-toolbar-margin-bottom: 18px;
-  --nat-table-space-table-actions-gap: 18px;
-  --nat-table-space-pager-gap: 10px;
-  --nat-table-space-chip-row-gap: 10px;
-  --nat-table-space-header-content-gap: 8px;
-  --nat-table-space-cell-y: 15px;
-  --nat-table-space-cell-x: 16px;
-  --nat-table-space-empty-state: 48px 28px;
-  --nat-table-space-host-top: 18px;
-
-  /* ---------- Radii ---------- */
-  --nat-table-radius-card: 28px;
-  --nat-table-radius-card-compact: 22px;
-  --nat-table-radius-region: 24px;
-  --nat-table-radius-input: 18px;
-  --nat-table-radius-chip: 999px;
-
-  /* ---------- Sizing ---------- */
-  --nat-table-search-min-height: 54px;
-  --nat-table-chip-min-height: 42px;
-  --nat-table-chip-min-height-compact: 36px;
-  --nat-table-chip-padding-x: 14px;
-  --nat-table-chip-padding-x-compact: 12px;
-  --nat-table-chip-min-width-column: 150px;
-  --nat-table-pager-min-height: 44px;
-  --nat-table-pager-padding-x: 18px;
-  --nat-table-pin-min-height: 28px;
-  --nat-table-pin-padding-x: 10px;
-  --nat-table-search-padding-x: 18px;
-  --nat-table-sort-icon-min-width: 0.75rem;
-
-  /* ---------- Transitions ---------- */
-  --nat-table-transition-fast: 120ms ease;
-  --nat-table-transition-medium: 180ms ease;
-  --nat-table-transition-slow: 200ms ease;
-  --nat-table-hover-lift: translateY(-1px);
-
-  /* ---------- Focus ring ---------- */
-  --nat-table-focus-ring-color: var(--nat-table-color-accent);
-  --nat-table-focus-ring-width: 2px;
-  --nat-table-focus-ring-offset: 2px;
-
-  /* ---------- Disabled ---------- */
-  --nat-table-disabled-opacity: 0.45;
-
-  /* ---------- Card ---------- */
-  --nat-table-card-background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--nat-table-color-accent) 11%, transparent),
-      transparent 24%
-    ),
-    var(--nat-table-color-surface);
-  --nat-table-card-border-color: var(--nat-table-color-border);
-  --nat-table-card-border-color-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 20%,
-    color-mix(in srgb, var(--nat-table-color-text) 10%, transparent)
-  );
-  --nat-table-card-border-width: 1px;
-  --nat-table-card-shadow: var(--shadow, 0 28px 60px rgba(1, 10, 18, 0.45));
-  --nat-table-card-backdrop-filter: blur(20px);
-  --nat-table-card-divider-color: var(--nat-table-color-divider-subtle);
-
-  /* ---------- Search input ---------- */
-  --nat-table-search-background: color-mix(
-    in srgb,
-    var(--nat-table-color-surface-elevated) 84%,
-    var(--nat-table-color-surface-sticky) 16%
-  );
-  --nat-table-search-background-focus: color-mix(
-    in srgb,
-    var(--nat-table-color-surface-elevated) 74%,
-    var(--nat-table-color-accent) 8%
-  );
-  --nat-table-search-color: var(--nat-table-color-text);
-  --nat-table-search-placeholder-color: color-mix(
-    in srgb,
-    var(--nat-table-color-text-muted) 78%,
-    transparent
-  );
-  --nat-table-search-border-color: color-mix(in srgb, var(--nat-table-color-text) 14%, transparent);
-  --nat-table-search-border-color-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 22%,
-    transparent
-  );
-  --nat-table-search-border-color-focus: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 44%,
-    transparent
-  );
-  --nat-table-search-focus-ring: 0 0 0 3px
-    color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
-
-  /* ---------- Chips ---------- */
-  --nat-table-chip-color: inherit;
-  --nat-table-chip-background: color-mix(in srgb, var(--nat-table-color-text) 5%, transparent);
-  --nat-table-chip-background-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 8%,
-    transparent
-  );
-  --nat-table-chip-background-active: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 18%,
-    transparent
-  );
-  --nat-table-chip-border-color: color-mix(in srgb, var(--nat-table-color-text) 14%, transparent);
-  --nat-table-chip-border-color-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 20%,
-    transparent
-  );
-  --nat-table-chip-border-color-active: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 34%,
-    transparent
-  );
-  --nat-table-chip-shadow-active: 0 0 16px
-    color-mix(in srgb, var(--nat-table-color-accent) 14%, transparent);
-  --nat-table-chip-count-color: var(--nat-table-color-text-muted);
-
-  /* ---------- Pager button ---------- */
-  --nat-table-pager-color: inherit;
-  --nat-table-pager-background: color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
-  --nat-table-pager-background-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 22%,
-    transparent
-  );
-  --nat-table-pager-border-color: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 28%,
-    transparent
-  );
-  --nat-table-pager-shadow-hover: 0 4px 16px
-    color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
-  --nat-table-pager-label-color: var(--nat-table-color-text-muted);
-  --nat-table-pager-disabled-opacity: var(--nat-table-disabled-opacity);
-
-  /* ---------- Table region ---------- */
-  --nat-table-region-background: var(--nat-table-color-surface-elevated);
-  --nat-table-region-border-color: color-mix(in srgb, var(--nat-table-color-text) 10%, transparent);
-  --nat-table-region-border-width: 1px;
-
-  /* ---------- Header cells ---------- */
-  --nat-table-header-background: var(--nat-table-color-surface-sticky);
-  --nat-table-header-color: var(--nat-table-color-text-muted);
-  --nat-table-header-border-color: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 16%,
-    transparent
-  );
-  --nat-table-header-border-width: 1px;
-
-  /* ---------- Sort button ---------- */
-  --nat-table-sort-icon-color: var(--nat-table-color-accent);
-  --nat-table-sort-icon-color-idle: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 38%,
-    transparent
-  );
-  --nat-table-sort-icon-color-muted: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 16%,
-    transparent
-  );
-  --nat-table-sort-icon-color-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 58%,
-    transparent
-  );
-  --nat-table-sort-icon-color-disabled: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 12%,
-    transparent
-  );
-  --nat-table-sort-button-color-sorted: var(--nat-table-color-text);
-
-  /* ---------- Pin button ---------- */
-  --nat-table-pin-background: color-mix(in srgb, var(--nat-table-color-text) 6%, transparent);
-  --nat-table-pin-border-color: color-mix(in srgb, var(--nat-table-color-text) 18%, transparent);
-  --nat-table-pin-color: inherit;
-  --nat-table-pin-color-pinned: var(--nat-table-color-accent);
-  --nat-table-pin-border-color-pinned: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 42%,
-    transparent
-  );
-  --nat-table-pin-shadow-pinned: 0 0 12px
-    color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
-
-  /* ---------- Rows & cells ---------- */
-  --nat-table-row-background: transparent;
-  --nat-table-row-background-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-surface-sticky) 78%,
-    var(--nat-table-color-accent) 22%
-  );
-  --nat-table-row-background-hover-pinned: color-mix(
-    in srgb,
-    var(--nat-table-color-surface-sticky) 84%,
-    var(--nat-table-color-accent) 16%
-  );
-  --nat-table-cell-border-color: var(--nat-table-color-divider);
-  --nat-table-cell-border-width: 1px;
-  --nat-table-cell-color-positive: var(--nat-table-color-success);
-  --nat-table-cell-color-negative: var(--nat-table-color-danger);
-  --nat-table-cell-color-warning: var(--nat-table-color-warning);
-  --nat-table-cell-color-neutral: var(--nat-table-color-text-muted);
-
-  /* ---------- Pinned column ---------- */
-  --nat-table-pinned-background: var(--nat-table-color-surface-sticky);
-  --nat-table-pinned-divider-color: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 18%,
-    transparent
-  );
-
-  /* ---------- Empty state ---------- */
-  --nat-table-empty-state-color: var(--nat-table-color-text-muted);
-
-  /* ---------- Breakpoints are not themeable through CSS variables ---------- */
-
   display: block;
-  margin-top: var(--nat-table-space-host-top);
-  font-family: var(--nat-table-font-family);
-  color: var(--nat-table-color-text);
-}
-
-.card {
-  background: var(--nat-table-card-background);
-  border: var(--nat-table-card-border-width) solid var(--nat-table-card-border-color);
-  border-radius: var(--nat-table-radius-card);
-  box-shadow: var(--nat-table-card-shadow);
-  backdrop-filter: var(--nat-table-card-backdrop-filter);
-  transition:
-    border-color var(--nat-table-transition-slow),
-    background-color var(--nat-table-transition-slow);
-}
-
-.card:hover {
-  border-color: var(--nat-table-card-border-color-hover);
-}
-
-.controls,
-.table-card {
-  padding: var(--nat-table-space-card);
-}
-
-.controls + .table-card {
-  margin-top: var(--nat-table-space-controls-gap);
-}
-
-.controls {
-  display: grid;
-  gap: var(--nat-table-space-controls-gap);
-}
-
-.control-block {
-  display: grid;
-  gap: var(--nat-table-space-control-block-gap);
-}
-
-.control-block + .control-block {
-  padding-top: var(--nat-table-space-controls-gap);
-  border-top: 1px solid var(--nat-table-card-divider-color);
-}
-
-.control-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.control-label {
-  color: var(--nat-table-color-text-muted);
-  font-size: var(--nat-table-font-size-label);
-  letter-spacing: var(--nat-table-letter-spacing-label);
-  text-transform: var(--nat-table-text-transform-label);
-}
-
-.control-caption {
-  color: var(--nat-table-color-text-muted);
-  font-size: var(--nat-table-font-size-caption);
-}
-
-.search-input {
-  width: 100%;
-  min-height: var(--nat-table-search-min-height);
-  padding: 0 var(--nat-table-search-padding-x);
-  border-radius: var(--nat-table-radius-input);
-  border: 1px solid var(--nat-table-search-border-color);
-  background: var(--nat-table-search-background);
-  color: var(--nat-table-search-color);
-  outline: none;
-  transition:
-    border-color var(--nat-table-transition-slow),
-    box-shadow var(--nat-table-transition-slow),
-    background-color var(--nat-table-transition-slow);
-}
-
-.search-input::placeholder {
-  color: var(--nat-table-search-placeholder-color);
-}
-
-.search-input:hover {
-  border-color: var(--nat-table-search-border-color-hover);
-}
-
-.search-input:focus {
-  border-color: var(--nat-table-search-border-color-focus);
-  box-shadow: var(--nat-table-search-focus-ring);
-  background: var(--nat-table-search-background-focus);
-}
-
-.chip-row {
-  display: flex;
-  gap: var(--nat-table-space-chip-row-gap);
-  flex-wrap: wrap;
-}
-
-.chip,
-.pager-button,
-.sort-button,
-.pin-button {
-  border: 1px solid transparent;
-  color: inherit;
-  cursor: pointer;
-  transition:
-    background-color var(--nat-table-transition-medium),
-    border-color var(--nat-table-transition-medium),
-    box-shadow var(--nat-table-transition-medium),
-    transform var(--nat-table-transition-medium),
-    color var(--nat-table-transition-medium);
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--nat-table-space-chip-row-gap);
-  min-height: var(--nat-table-chip-min-height);
-  padding: 0 var(--nat-table-chip-padding-x);
-  border-radius: var(--nat-table-radius-chip);
-  color: var(--nat-table-chip-color);
-  background: var(--nat-table-chip-background);
-  border-color: var(--nat-table-chip-border-color);
-}
-
-.chip:hover,
-.pager-button:hover,
-.sort-button:hover,
-.pin-button:hover {
-  transform: var(--nat-table-hover-lift);
-}
-
-.chip:hover {
-  background: var(--nat-table-chip-background-hover);
-  border-color: var(--nat-table-chip-border-color-hover);
-}
-
-.chip.is-active {
-  background: var(--nat-table-chip-background-active);
-  border-color: var(--nat-table-chip-border-color-active);
-  box-shadow: var(--nat-table-chip-shadow-active);
-}
-
-.chip-count {
-  color: var(--nat-table-chip-count-color);
-  font-size: var(--nat-table-font-size-chip-meta);
-}
-
-.column-chip {
-  min-width: var(--nat-table-chip-min-width-column);
-  justify-content: space-between;
-}
-
-.compact .chip {
-  min-height: var(--nat-table-chip-min-height-compact);
-  padding-inline: var(--nat-table-chip-padding-x-compact);
-  font-size: var(--nat-table-font-size-chip-compact);
-}
-
-.pager-button {
-  min-height: var(--nat-table-pager-min-height);
-  padding: 0 var(--nat-table-pager-padding-x);
-  border-radius: var(--nat-table-radius-chip);
-  font-weight: var(--nat-table-font-weight-pager);
-  letter-spacing: var(--nat-table-letter-spacing-pager);
-  color: var(--nat-table-pager-color);
-  background: var(--nat-table-pager-background);
-  border-color: var(--nat-table-pager-border-color);
-}
-
-.pager-button:hover:not([disabled]) {
-  box-shadow: var(--nat-table-pager-shadow-hover);
-  background: var(--nat-table-pager-background-hover);
-}
-
-.table-toolbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--nat-table-space-toolbar-gap);
-  margin-bottom: var(--nat-table-space-toolbar-margin-bottom);
-}
-
-.table-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--nat-table-space-table-actions-gap);
-  flex-wrap: wrap;
-  margin-left: auto;
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  gap: var(--nat-table-space-pager-gap);
-}
-
-.pager-button[disabled] {
-  cursor: not-allowed;
-  opacity: var(--nat-table-pager-disabled-opacity);
-  transform: none;
-}
-
-.chip:disabled {
-  cursor: not-allowed;
-  transform: none;
-}
-
-.pager-label {
-  color: var(--nat-table-pager-label-color);
-  font-size: var(--nat-table-font-size-pager-label);
-  font-variant-numeric: tabular-nums;
+  color: var(--nat-table-color-text, inherit);
+  font-family: var(--nat-table-font-family, inherit);
 }
 
 .table-region {
   overflow: auto;
-  border-radius: var(--nat-table-radius-region);
-  border: var(--nat-table-region-border-width) solid var(--nat-table-region-border-color);
-  background: var(--nat-table-region-background);
+  border: 1px solid
+    var(--nat-table-region-border-color, color-mix(in srgb, currentColor 12%, transparent));
+  border-radius: var(--nat-table-radius-region, 16px);
+  background: var(--nat-table-region-background, transparent);
 }
 
 .data-table {
   border-collapse: separate;
   border-spacing: 0;
-  /*
-   * Intrinsic sizing: columns size themselves to their widest cell (header or
-   * body). `white-space: nowrap` on each cell keeps content on a single line,
-   * and `min-width: 100%` lets the table stretch to fill the container when
-   * the combined intrinsic widths fall short. Pin offsets are computed from
-   * the resulting real widths (see `ResizeObserver` in table.ts), so we never
-   * have to reconcile a synthetic width model with what the browser actually
-   * laid out.
-   */
   table-layout: auto;
   min-width: 100%;
 }
@@ -519,8 +22,9 @@
 .header-cell,
 .data-cell {
   box-sizing: border-box;
-  padding: var(--nat-table-space-cell-y) var(--nat-table-space-cell-x);
-  border-bottom: var(--nat-table-cell-border-width) solid var(--nat-table-cell-border-color);
+  padding: var(--nat-table-space-cell-y, 12px) var(--nat-table-space-cell-x, 16px);
+  border-bottom: 1px solid
+    var(--nat-table-cell-border-color, color-mix(in srgb, currentColor 12%, transparent));
   white-space: nowrap;
 }
 
@@ -528,123 +32,54 @@
   position: sticky;
   top: 0;
   z-index: 4;
-  background: var(--nat-table-header-background);
-  color: var(--nat-table-header-color);
-  font-size: var(--nat-table-font-size-header);
-  text-transform: var(--nat-table-text-transform-header);
-  letter-spacing: var(--nat-table-letter-spacing-header);
-  border-bottom: var(--nat-table-header-border-width) solid var(--nat-table-header-border-color);
+  background: var(
+    --nat-table-header-background,
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+  );
+  color: var(--nat-table-header-color, inherit);
+  font-size: var(--nat-table-font-size-header, 0.84rem);
+  font-weight: 600;
+  letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
+  text-transform: var(--nat-table-text-transform-header, uppercase);
+  border-bottom: 1px solid
+    var(--nat-table-header-border-color, color-mix(in srgb, currentColor 16%, transparent));
 }
 
-.header-content {
-  display: grid;
-  gap: var(--nat-table-space-header-content-gap);
-  justify-items: start;
-  align-content: start;
+.data-row {
+  background: var(--nat-table-row-background, transparent);
+  transition: background-color 120ms ease;
 }
 
-.header-cell.is-align-end .header-content {
-  justify-items: end;
+.data-row:hover {
+  background: var(
+    --nat-table-row-background-hover,
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+  );
 }
 
-.sort-button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--nat-table-space-chip-row-gap);
-  max-width: 100%;
-  padding: 0;
-  background: none;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  text-transform: inherit;
-  letter-spacing: inherit;
+.data-row:hover .is-pinned-left,
+.data-row:hover .is-pinned-right {
+  background: var(
+    --nat-table-row-background-hover-pinned,
+    color-mix(in srgb, var(--nat-table-pinned-background, canvas) 88%, currentColor 12%)
+  );
 }
 
-.pin-button {
-  min-height: var(--nat-table-pin-min-height);
-  justify-self: start;
-  padding: 0 var(--nat-table-pin-padding-x);
-  border-radius: var(--nat-table-radius-chip);
-  color: var(--nat-table-pin-color);
-  background: var(--nat-table-pin-background);
-  border-color: var(--nat-table-pin-border-color);
-  font-size: var(--nat-table-font-size-pin-button);
-  letter-spacing: var(--nat-table-letter-spacing-pin-button);
-}
-
-.header-cell.is-align-end .pin-button {
-  justify-self: end;
-}
-
-.pin-button.is-pinned {
-  color: var(--nat-table-pin-color-pinned);
-  border-color: var(--nat-table-pin-border-color-pinned);
-  box-shadow: var(--nat-table-pin-shadow-pinned);
-}
-
-.sort-button:disabled {
-  cursor: default;
-  transform: none;
-}
-
-.sort-button.is-sorted {
-  color: var(--nat-table-sort-button-color-sorted);
-}
-
-.sort-icon {
-  display: inline-flex;
-  min-width: var(--nat-table-sort-icon-min-width);
-  align-items: center;
-  justify-content: center;
-  line-height: 0;
-}
-
-.sort-icon__svg {
-  display: block;
-  overflow: visible;
-}
-
-.sort-icon__up,
-.sort-icon__down {
-  fill: var(--nat-table-sort-icon-color-idle);
-  transform-origin: center;
-  transition:
-    fill var(--nat-table-transition-fast),
-    transform var(--nat-table-transition-fast);
-}
-
-.sort-button:hover:not(:disabled) .sort-icon[data-sort='none'] .sort-icon__up,
-.sort-button:hover:not(:disabled) .sort-icon[data-sort='none'] .sort-icon__down {
-  fill: var(--nat-table-sort-icon-color-hover);
-}
-
-.sort-icon[data-sort='asc'] .sort-icon__up,
-.sort-icon[data-sort='desc'] .sort-icon__down {
-  fill: var(--nat-table-sort-icon-color);
-  transform: scale(1.1);
-}
-
-.sort-icon[data-sort='asc'] .sort-icon__down,
-.sort-icon[data-sort='desc'] .sort-icon__up {
-  fill: var(--nat-table-sort-icon-color-muted);
-}
-
-.sort-button:disabled .sort-icon__up,
-.sort-button:disabled .sort-icon__down {
-  fill: var(--nat-table-sort-icon-color-disabled);
-  transform: none;
+.data-cell {
+  transition: background-color 120ms ease;
 }
 
 .is-pinned-left,
 .is-pinned-right {
   position: sticky;
-  background: var(--nat-table-pinned-background);
-}
-
-.is-pinned-left,
-.is-pinned-right {
   z-index: 5;
+  background: var(
+    --nat-table-pinned-background,
+    var(
+      --nat-table-header-background,
+      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+    )
+  );
 }
 
 .header-cell.is-pinned-left,
@@ -653,90 +88,50 @@
 }
 
 .has-pinned-edge-left {
-  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color);
+  box-shadow: inset -1px 0 0
+    var(--nat-table-pinned-divider-color, color-mix(in srgb, currentColor 18%, transparent));
 }
 
 .has-pinned-edge-right {
-  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color);
+  box-shadow: inset 1px 0 0
+    var(--nat-table-pinned-divider-color, color-mix(in srgb, currentColor 18%, transparent));
 }
 
-.data-row {
-  background: var(--nat-table-row-background);
-  transition: background-color var(--nat-table-transition-fast);
-}
-
-.data-row:hover {
-  background: var(--nat-table-row-background-hover);
-}
-
-.data-row:hover .is-pinned-left,
-.data-row:hover .is-pinned-right {
-  background: var(--nat-table-row-background-hover-pinned);
-}
-
-.data-cell {
-  transition: background-color var(--nat-table-transition-fast);
+.header-cell.is-align-end,
+.data-cell.is-align-end {
+  text-align: right;
 }
 
 .data-cell.is-align-end {
-  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
 .data-cell[data-tone='positive'] {
-  color: var(--nat-table-cell-color-positive);
+  color: var(--nat-table-cell-color-positive, #1a7f37);
 }
 
 .data-cell[data-tone='negative'] {
-  color: var(--nat-table-cell-color-negative);
+  color: var(--nat-table-cell-color-negative, #d1242f);
 }
 
 .data-cell[data-tone='warning'] {
-  color: var(--nat-table-cell-color-warning);
+  color: var(--nat-table-cell-color-warning, #9a6700);
 }
 
 .data-cell[data-tone='neutral'] {
-  color: var(--nat-table-cell-color-neutral);
+  color: var(--nat-table-cell-color-neutral, color-mix(in srgb, currentColor 72%, transparent));
 }
 
 .empty-state {
-  padding: var(--nat-table-space-empty-state);
+  padding: var(--nat-table-space-empty-state, 40px 24px);
   text-align: center;
-  color: var(--nat-table-empty-state-color);
-  font-size: var(--nat-table-font-size-empty-state);
-  line-height: var(--nat-table-line-height-empty-state);
+  color: var(--nat-table-empty-state-color, color-mix(in srgb, currentColor 72%, transparent));
+  font-size: var(--nat-table-font-size-empty-state, 1rem);
+  line-height: var(--nat-table-line-height-empty-state, 1.6);
 }
 
-[ngGridCell]:focus-visible,
-.search-input:focus-visible,
-.pager-button:focus-visible,
-.chip:focus-visible,
-.sort-button:focus-visible,
-.pin-button:focus-visible {
-  outline: var(--nat-table-focus-ring-width) solid var(--nat-table-focus-ring-color);
-  outline-offset: var(--nat-table-focus-ring-offset);
-}
-
-@media (max-width: 1100px) {
-  .table-toolbar {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .table-actions {
-    margin-left: 0;
-  }
-
-  .pager {
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 720px) {
-  .controls,
-  .table-card {
-    padding: var(--nat-table-space-card-compact);
-    border-radius: var(--nat-table-radius-card-compact);
-  }
+[ngGridCell]:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }

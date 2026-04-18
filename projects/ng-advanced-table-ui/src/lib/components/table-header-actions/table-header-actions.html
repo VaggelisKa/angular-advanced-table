@@ -1,0 +1,62 @@
+<div class="header-content" [class.is-align-end]="isAlignedEnd()">
+  @if (canSort()) {
+    <button
+      type="button"
+      class="sort-button"
+      [class.is-sorted]="!!column().getIsSorted()"
+      [attr.aria-label]="getSortLabel()"
+      (click)="toggleSort()"
+    >
+      <span class="header-label">
+        <ng-container *flexRender="content(); props: context(); let rendered">
+          {{ rendered }}
+        </ng-container>
+      </span>
+      <span class="sort-icon" aria-hidden="true">
+        @if (hasCustomSortIndicator()) {
+          <ng-container
+            *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"
+          >
+            {{ rendered }}
+          </ng-container>
+        } @else {
+          <span
+            class="nat-default-sort"
+            [attr.data-sort-state]="sortState() === false ? 'none' : sortState()"
+          >
+            <svg
+              class="nat-default-sort__svg"
+              viewBox="0 0 10 14"
+              width="10"
+              height="14"
+              focusable="false"
+              aria-hidden="true"
+            >
+              <path class="nat-default-sort__up" d="M5 1 9 6 1 6z" />
+              <path class="nat-default-sort__down" d="M5 13 1 8 9 8z" />
+            </svg>
+          </span>
+        }
+      </span>
+    </button>
+  } @else {
+    <span class="header-label">
+      <ng-container *flexRender="content(); props: context(); let rendered">
+        {{ rendered }}
+      </ng-container>
+    </span>
+  }
+
+  @if (canPin()) {
+    <button
+      type="button"
+      class="pin-button"
+      [class.is-pinned]="isPinned()"
+      [attr.aria-pressed]="isPinned()"
+      [attr.aria-label]="getPinLabel()"
+      (click)="togglePin()"
+    >
+      {{ isPinned() ? 'Unpin' : 'Pin' }}
+    </button>
+  }
+</div>

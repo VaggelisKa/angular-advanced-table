@@ -1,0 +1,15 @@
+@if (for().enablePagination()) {
+  <div class="chip-row compact" role="group" [attr.aria-label]="ariaLabel()">
+    @for (size of sanitizedPageSizeOptions(); track size) {
+      <button
+        type="button"
+        class="chip"
+        [class.is-active]="for().table.getState().pagination.pageSize === size"
+        [attr.aria-pressed]="for().table.getState().pagination.pageSize === size"
+        (click)="setPageSize(size)"
+      >
+        {{ size }} / page
+      </button>
+    }
+  </div>
+}

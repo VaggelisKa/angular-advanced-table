@@ -1,0 +1,13 @@
+@if (for().enableGlobalFilter()) {
+  <div class="control-block">
+    <label class="control-label" [attr.for]="inputId">{{ label() }}</label>
+    <input
+      [id]="inputId"
+      type="search"
+      class="search-input"
+      [value]="for().table.getState().globalFilter ?? ''"
+      [placeholder]="placeholder()"
+      (input)="onInput($event)"
+    />
+  </div>
+}

@@ -9,6 +9,12 @@ describe('TableShowcasePage', () => {
   let simulation: TableSimulation;
 
   beforeEach(async () => {
+    try {
+      globalThis.localStorage?.removeItem('nat-showcase-theme');
+    } catch {
+      // ignore
+    }
+
     await TestBed.configureTestingModule({
       imports: [TableShowcasePage],
     }).compileComponents();
@@ -29,9 +35,7 @@ describe('TableShowcasePage', () => {
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
     const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
-    const headers = Array.from(
-      fixture.nativeElement.querySelectorAll('thead th'),
-    ) as HTMLElement[];
+    const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
     const changeHeader = headers.find((header) =>
       header.textContent?.includes('24h %'),
     ) as HTMLElement;
@@ -39,19 +43,23 @@ describe('TableShowcasePage', () => {
     expect(rows.length).toBe(24);
     expect(firstPinButton.textContent?.trim()).toBe('Pin');
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
+    expect(changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]')).toBeTruthy();
   });
 
   it('should update the status filter through controlled table state', () => {
     fixture.detectChanges();
 
     const decliningChip = fixture.nativeElement.querySelector(
-      '.status-chip[data-status="Declining"]',
+      '.filter-pill[data-status="Declining"]',
     ) as HTMLButtonElement;
 
     decliningChip.click();
     fixture.detectChanges();
 
-    expect((component as never as { tableState: () => { columnFilters: unknown[] } }).tableState().columnFilters).toEqual([
+    expect(
+      (component as never as { tableState: () => { columnFilters: unknown[] } }).tableState()
+        .columnFilters,
+    ).toEqual([
       {
         id: 'status',
         value: ['Declining'],
@@ -73,7 +81,7 @@ describe('TableShowcasePage', () => {
   it('should keep search and column visibility working end to end', () => {
     fixture.detectChanges();
 
-    const searchInput = fixture.nativeElement.querySelector('#table-search') as HTMLInputElement;
+    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
     const exchangeToggle = fixture.nativeElement.querySelector(
       '.column-chip[data-column-id="exchange"]',
     ) as HTMLButtonElement;
@@ -100,24 +108,50 @@ describe('TableShowcasePage', () => {
     expect(changePercentCell.getAttribute('data-tone')).toBe('positive');
   });
 
-  it('should switch the showcase theme without affecting table state controls', () => {
+  it('should toggle between light and dark themes', () => {
     fixture.detectChanges();
 
     const demoSurface = fixture.nativeElement.querySelector('.demo-surface') as HTMLDivElement;
-    const terminalThemeChip = fixture.nativeElement.querySelector(
-      '.theme-chip[data-theme="terminal-mint"]',
-    ) as HTMLButtonElement;
-    const previewTitle = fixture.nativeElement.querySelector(
-      '.theme-preview strong',
-    ) as HTMLElement;
+    const darkOption = fixture.nativeElement.querySelectorAll(
+      '.theme-option',
+    )[1] as HTMLButtonElement;
+    const lightOption = fixture.nativeElement.querySelectorAll(
+      '.theme-option',
+    )[0] as HTMLButtonElement;
 
-    expect(demoSurface.getAttribute('data-theme')).toBe('market-tape');
+    expect(demoSurface.getAttribute('data-theme')).toMatch(/^(light|dark)$/);
 
-    terminalThemeChip.click();
+    darkOption.click();
     fixture.detectChanges();
 
-    expect(demoSurface.getAttribute('data-theme')).toBe('terminal-mint');
-    expect(previewTitle.textContent?.trim()).toBe('Terminal Mint');
+    expect(demoSurface.getAttribute('data-theme')).toBe('dark');
+    expect(darkOption.getAttribute('aria-pressed')).toBe('true');
+
+    lightOption.click();
+    fixture.detectChanges();
+
+    expect(demoSurface.getAttribute('data-theme')).toBe('light');
+    expect(lightOption.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('should render a sparkline svg for each visible row', () => {
+    fixture.detectChanges();
+
+    const sparkCells = fixture.nativeElement.querySelectorAll(
+      'tbody td[data-column-id="spark"] nat-sparkline svg',
+    );
+
+    expect(sparkCells.length).toBe(24);
+  });
+
+  it('should render ticker marks in the symbol column', () => {
+    fixture.detectChanges();
+
+    const marks = fixture.nativeElement.querySelectorAll(
+      'tbody td[data-column-id="symbol"] nat-ticker-mark',
+    );
+
+    expect(marks.length).toBe(24);
   });
 
   it('should preserve the table render filter when toggling statuses', () => {
@@ -127,7 +161,7 @@ describe('TableShowcasePage', () => {
       '.render-chip[data-render-filter="slow"]',
     ) as HTMLButtonElement;
     const decliningChip = fixture.nativeElement.querySelector(
-      '.status-chip[data-status="Declining"]',
+      '.filter-pill[data-status="Declining"]',
     ) as HTMLButtonElement;
 
     slowRenderChip.click();
