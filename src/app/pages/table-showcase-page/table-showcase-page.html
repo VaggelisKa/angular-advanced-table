@@ -157,6 +157,15 @@
       </div>
     </section>
 
+    <ng-template #marketSortIndicator let-sortState="sortState" let-column="column">
+      @if (column.getCanSort()) {
+        <span class="market-sort-indicator" [attr.data-sort-state]="sortState || 'none'">
+          <span class="sort-glyph asc">▲</span>
+          <span class="sort-glyph desc">▼</span>
+        </span>
+      }
+    </ng-template>
+
     <nat-table
       #grid="natTable"
       [data]="simulation.rows()"
@@ -166,6 +175,7 @@
       [pageSizeOptions]="pageSizeOptions"
       [emitRowRenderEvents]="true"
       [getRowId]="getRowId"
+      [sortIndicatorTemplate]="marketSortIndicator"
       ariaLabel="Live market movers table"
       searchLabel="Search symbol, company, exchange, desk, or id"
       searchPlaceholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."

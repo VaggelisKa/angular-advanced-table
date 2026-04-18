@@ -158,6 +158,36 @@ Column behavior still comes from TanStack:
 - Set `enableHiding: false` on columns that must always stay visible.
 - Use TanStack `filterFn`, `sortingFn`, accessors, and custom cell renderers as usual.
 
+## Custom Sort Indicator
+
+Use `sortIndicatorTemplate` when the built-in `↑`, `↓`, and `↕` glyphs are not enough. The template is rendered inside the table's existing sort button, so sorting behavior and ARIA wiring stay intact.
+
+```html
+<ng-template #sortIndicator let-sortState="sortState" let-column="column">
+  @if (column.getCanSort()) {
+    <span class="sort-pill" [attr.data-sort-state]="sortState || 'none'">
+      {{ sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇' }}
+    </span>
+  }
+</ng-template>
+
+<nat-table
+  [data]="rows()"
+  [columns]="columns"
+  [sortIndicatorTemplate]="sortIndicator"
+  ariaLabel="Orders"
+/>
+```
+
+The template context exposes:
+
+- `$implicit` / `sortState`: `'asc' | 'desc' | false`
+- `ariaSort`: `'ascending' | 'descending' | 'none'`
+- `column`: the TanStack `Column<TData, unknown>`
+- `label`: the resolved column label used by the table
+
+Keep the custom indicator non-interactive, since it is rendered inside the table's built-in sort button and marked `aria-hidden`.
+
 ## State Model
 
 The table supports both uncontrolled and partially controlled usage:
@@ -210,6 +240,7 @@ onTableStateChange(state: NatTableState): void {
 | `allowColumnPinning`   | No       | `boolean`                               | `true`                              | Enables sticky pinning where the column allows it.                          |
 | `emptyStateLabel`      | No       | `string`                                | `'No rows match the current view.'` | Empty-state message.                                                        |
 | `globalFilterFn`       | No       | `FilterFn<TData>`                       | built-in generic filter             | Override the default case-insensitive `Object.values(row.original)` search. |
+| `sortIndicatorTemplate` | No      | `TemplateRef<NatTableSortIndicatorContext<TData>>` | built-in sort glyphs | Replaces the sort indicator slot while preserving the table's built-in sort button and ARIA behavior. |
 | `initialState`         | No       | `Partial<NatTableState>`                | `{}`                                | Seed state applied once.                                                    |
 | `state`                | No       | `Partial<NatTableState>`                | `{}`                                | Controlled slices of table state.                                           |
 | `getRowId`             | No       | `(row: TData, index: number) => string` | index-based fallback                | Strongly recommended when your rows have stable ids.                        |
@@ -250,6 +281,16 @@ interface NatTableState {
 }
 
 type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
+
+type NatTableSortDirection = 'asc' | 'desc' | false;
+
+interface NatTableSortIndicatorContext<TData> {
+  $implicit: NatTableSortDirection;
+  sortState: NatTableSortDirection;
+  ariaSort: 'ascending' | 'descending' | 'none';
+  column: Column<TData, unknown>;
+  label: string;
+}
 
 interface NatTableColumnMeta<TData, TValue> {
   label?: string;

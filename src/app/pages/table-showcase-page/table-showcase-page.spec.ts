@@ -39,6 +39,7 @@ describe('TableShowcasePage', () => {
     expect(rows.length).toBe(24);
     expect(firstPinButton.textContent?.trim()).toBe('Pin');
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
+    expect(changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]')).toBeTruthy();
   });
 
   it('should update the status filter through controlled table state', () => {

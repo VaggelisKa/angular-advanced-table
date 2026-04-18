@@ -110,13 +110,39 @@ class TableHost {
   }
 }
 
+@Component({
+  imports: [NatTable],
+  template: `
+    <ng-template #sortIndicator let-sortState="sortState" let-column="column">
+      <span
+        class="custom-sort-indicator"
+        [attr.data-sort-state]="sortState || 'none'"
+        [attr.data-column-id]="column.id"
+      >
+        {{ sortState === 'asc' ? 'A' : sortState === 'desc' ? 'D' : '-' }}
+      </span>
+    </ng-template>
+
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      ariaLabel="Operations table"
+      [sortIndicatorTemplate]="sortIndicator"
+    />
+  `,
+})
+class CustomSortIndicatorHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = columns;
+}
+
 describe('NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost],
+      imports: [TableHost, CustomSortIndicatorHost],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableHost);
@@ -303,6 +329,33 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('.column-chip')).toBeNull();
     expect(fixture.nativeElement.querySelector('.pager')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
+  });
+
+  it('renders a caller-provided sort indicator template', () => {
+    fixture.destroy();
+    const customFixture = TestBed.createComponent(CustomSortIndicatorHost);
+
+    customFixture.detectChanges();
+
+    let customIndicator = customFixture.nativeElement.querySelector(
+      '.custom-sort-indicator[data-column-id="name"]',
+    ) as HTMLSpanElement;
+    const sortButton = customFixture.nativeElement.querySelector(
+      '.sort-button',
+    ) as HTMLButtonElement;
+
+    expect(customIndicator.textContent?.trim()).toBe('-');
+
+    sortButton.click();
+    customFixture.detectChanges();
+
+    customIndicator = customFixture.nativeElement.querySelector(
+      '.custom-sort-indicator[data-column-id="name"]',
+    ) as HTMLSpanElement;
+
+    expect(customIndicator.getAttribute('data-sort-state')).toBe('asc');
+    expect(customIndicator.textContent?.trim()).toBe('A');
+    expect(customFixture.nativeElement.querySelector('.sort-icon')?.textContent).not.toContain('↕');
   });
 });
 

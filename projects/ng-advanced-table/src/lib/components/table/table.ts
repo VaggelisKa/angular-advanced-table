@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -14,6 +15,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import type { TemplateRef } from '@angular/core';
 import { Grid, GridCell, GridCellWidget, GridRow } from '@angular/aria/grid';
 import {
   FlexRender,
@@ -38,7 +40,11 @@ import {
 
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
-import type { NatTableCellTone, NatTableState } from './table.types';
+import type {
+  NatTableCellTone,
+  NatTableSortIndicatorContext,
+  NatTableState,
+} from './table.types';
 
 type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 
@@ -91,7 +97,15 @@ const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => 
   selector: 'nat-table',
   exportAs: 'natTable',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Grid, GridCell, GridCellWidget, GridRow, FlexRender, NatTableRowRenderEmitter],
+  imports: [
+    Grid,
+    GridCell,
+    GridCellWidget,
+    GridRow,
+    FlexRender,
+    NatTableRowRenderEmitter,
+    NgTemplateOutlet,
+  ],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -121,6 +135,10 @@ export class NatTable<TData extends RowData = RowData> {
   readonly emptyStateLabel = input('No rows match the current view.');
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData> | undefined>(undefined);
+  /** Optional template used to render the sort indicator inside the header button. */
+  readonly sortIndicatorTemplate = input<
+    TemplateRef<NatTableSortIndicatorContext<TData>> | undefined
+  >(undefined);
   /** Initial uncontrolled state applied once during the first render. */
   readonly initialState = input<Partial<NatTableState>>({});
   /**
@@ -449,7 +467,7 @@ export class NatTable<TData extends RowData = RowData> {
     return '↕';
   }
 
-  protected getAriaSort(column: Column<TData, unknown>): string {
+  protected getAriaSort(column: Column<TData, unknown>): 'ascending' | 'descending' | 'none' {
     const sortState = column.getIsSorted();
 
     if (sortState === 'asc') {
@@ -461,6 +479,20 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     return 'none';
+  }
+
+  protected getSortIndicatorContext(
+    column: Column<TData, unknown>,
+  ): NatTableSortIndicatorContext<TData> {
+    const sortState = column.getIsSorted();
+
+    return {
+      $implicit: sortState,
+      sortState,
+      ariaSort: this.getAriaSort(column),
+      column,
+      label: this.getColumnLabel(column),
+    };
   }
 
   protected isColumnAlignedEnd(column: Column<TData, unknown>): boolean {

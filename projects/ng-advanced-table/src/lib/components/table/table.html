@@ -135,7 +135,14 @@
                         {{ rendered }}
                       </ng-container>
                       <span class="sort-icon" aria-hidden="true">
-                        {{ getSortIcon(header.column) }}
+                        @if (sortIndicatorTemplate(); as customSortIndicatorTemplate) {
+                          <ng-container
+                            [ngTemplateOutlet]="customSortIndicatorTemplate"
+                            [ngTemplateOutletContext]="getSortIndicatorContext(header.column)"
+                          />
+                        } @else {
+                          {{ getSortIcon(header.column) }}
+                        }
                       </span>
                     </button>
 
