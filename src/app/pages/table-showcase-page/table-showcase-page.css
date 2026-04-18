@@ -93,23 +93,7 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   min-width: 0;
-}
-
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: #ffffff;
-  font-family: var(--mono-font);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
 }
 
 .brand-copy {
@@ -804,6 +788,10 @@
   --nat-table-pin-padding-x: 8px;
   --nat-table-search-padding-x: 12px;
   --nat-table-sort-icon-min-width: 0.8rem;
+  --nat-table-sort-icon-svg-width: 10px;
+  --nat-table-sort-icon-svg-height: 12px;
+  --nat-table-sort-icon-chip-radius: var(--radius-xs);
+  --nat-table-sort-icon-chip-padding: 2px 3px;
 
   --nat-table-transition-fast: 120ms ease;
   --nat-table-transition-medium: 140ms ease;
@@ -861,7 +849,16 @@
   --nat-table-header-border-color: var(--border);
   --nat-table-header-border-width: 1px;
 
-  --nat-table-sort-icon-color: var(--text-muted);
+  --nat-table-sort-icon-color: var(--accent);
+  --nat-table-sort-icon-color-active: var(--accent);
+  --nat-table-sort-icon-color-idle: var(--text-soft);
+  --nat-table-sort-icon-color-hover: var(--text);
+  --nat-table-sort-icon-color-muted: color-mix(in srgb, var(--text-muted) 60%, transparent);
+  --nat-table-sort-icon-color-disabled: color-mix(in srgb, var(--text-muted) 45%, transparent);
+  --nat-table-sort-icon-chip-background: transparent;
+  --nat-table-sort-icon-chip-background-hover: var(--surface-hover);
+  --nat-table-sort-icon-chip-background-active: var(--accent-soft);
+  --nat-table-sort-icon-muted-opacity: 0.6;
   --nat-table-sort-button-color-sorted: var(--text);
 
   --nat-table-pin-background: transparent;

@@ -60,9 +60,11 @@
   --nat-table-pin-min-height: 28px;
   --nat-table-pin-padding-x: 10px;
   --nat-table-search-padding-x: 18px;
-  --nat-table-sort-icon-min-width: 1.05rem;
-  --nat-table-sort-icon-svg-width: clamp(15px, 1.12em, 20px);
-  --nat-table-sort-icon-svg-height: clamp(24px, 1.75em, 32px);
+  --nat-table-sort-icon-min-width: 0.9rem;
+  --nat-table-sort-icon-svg-width: clamp(10px, 0.75em, 14px);
+  --nat-table-sort-icon-svg-height: clamp(12px, 0.9em, 16px);
+  --nat-table-sort-icon-chip-radius: 6px;
+  --nat-table-sort-icon-chip-padding: 2px 3px;
 
   --nat-table-transition-fast: 120ms ease;
   --nat-table-transition-medium: 180ms ease;
@@ -181,30 +183,43 @@
   --nat-table-header-border-width: 1px;
 
   --nat-table-sort-icon-color: var(--nat-table-color-accent);
+  --nat-table-sort-icon-color-active: var(--nat-table-color-accent);
   /*
    * Blend primary text into the sticky header fill so chevrons stay readable
    * in both light (pale header) and dark (near-black header) themes.
    */
   --nat-table-sort-icon-color-idle: color-mix(
     in srgb,
-    var(--nat-table-color-text) 54%,
-    var(--nat-table-header-background) 46%
+    var(--nat-table-color-text) 58%,
+    var(--nat-table-header-background) 42%
   );
   --nat-table-sort-icon-color-muted: color-mix(
     in srgb,
-    var(--nat-table-color-text) 36%,
-    var(--nat-table-header-background) 64%
+    var(--nat-table-color-text) 28%,
+    var(--nat-table-header-background) 72%
   );
   --nat-table-sort-icon-color-hover: color-mix(
     in srgb,
-    var(--nat-table-color-text) 72%,
-    var(--nat-table-header-background) 28%
+    var(--nat-table-color-text) 88%,
+    var(--nat-table-header-background) 12%
   );
   --nat-table-sort-icon-color-disabled: color-mix(
     in srgb,
     var(--nat-table-color-text-muted) 40%,
     var(--nat-table-header-background) 60%
   );
+  --nat-table-sort-icon-chip-background: transparent;
+  --nat-table-sort-icon-chip-background-hover: color-mix(
+    in srgb,
+    var(--nat-table-color-text) 10%,
+    transparent
+  );
+  --nat-table-sort-icon-chip-background-active: color-mix(
+    in srgb,
+    var(--nat-table-color-accent) 16%,
+    transparent
+  );
+  --nat-table-sort-icon-muted-opacity: 0.7;
   --nat-table-sort-button-color-sorted: var(--nat-table-color-text);
 
   --nat-table-pin-background: color-mix(in srgb, var(--nat-table-color-text) 6%, transparent);
