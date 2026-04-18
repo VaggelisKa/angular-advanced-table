@@ -144,6 +144,16 @@ describe('TableShowcasePage', () => {
     expect(sparkCells.length).toBe(24);
   });
 
+  it('should render ticker marks in the symbol column', () => {
+    fixture.detectChanges();
+
+    const marks = fixture.nativeElement.querySelectorAll(
+      'tbody td[data-column-id="symbol"] nat-ticker-mark',
+    );
+
+    expect(marks.length).toBe(24);
+  });
+
   it('should preserve the table render filter when toggling statuses', () => {
     fixture.detectChanges();
 

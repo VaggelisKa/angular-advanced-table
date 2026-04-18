@@ -247,7 +247,10 @@ describe('ng-advanced-table-ui', () => {
     ) as HTMLButtonElement;
 
     expect(headerLabel.textContent?.trim()).toBe('Service');
-    expect(sortIcon.textContent?.trim()).toBe('↕');
+    expect(
+      sortIcon.querySelector('.nat-default-sort')?.getAttribute('data-sort-state'),
+    ).toBe('none');
+    expect(sortIcon.querySelector('.nat-default-sort-arrow')).toBeTruthy();
     expect(pinButton.textContent?.trim()).toBe('Pin');
 
     sortButton.click();
@@ -255,7 +258,11 @@ describe('ng-advanced-table-ui', () => {
 
     expect(host.tableState().sorting).toEqual([{ id: 'name', desc: false }]);
     expect(sortButton.classList.contains('is-sorted')).toBe(true);
-    expect(sortIcon.textContent?.trim()).toBe('↑');
+    expect(
+      fixture.nativeElement
+        .querySelector('thead th[data-column-id="name"] .nat-default-sort')
+        ?.getAttribute('data-sort-state'),
+    ).toBe('asc');
 
     pinButton.click();
     fixture.detectChanges();

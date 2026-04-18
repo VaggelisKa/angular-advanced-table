@@ -34,6 +34,7 @@ import {
 } from 'ng-advanced-table-utils';
 
 import { NatSparkline } from './nat-sparkline';
+import { NatTickerMark } from './nat-ticker-mark';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,
@@ -97,7 +98,10 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     enablePinning: true,
     sortingFn: (left, right) =>
       compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
-    cell: (info) => info.getValue<string>(),
+    cell: (info) =>
+      flexRenderComponent(NatTickerMark, {
+        inputs: { symbol: info.getValue<string>() },
+      }),
   },
   {
     accessorKey: 'company',
