@@ -59,62 +59,82 @@
 
 .sort-icon {
   display: inline-flex;
-  min-width: var(--nat-table-sort-icon-min-width, 1rem);
+  align-items: center;
+  min-width: var(--nat-table-sort-icon-min-width, 1.05rem);
   justify-content: center;
-  color: var(--nat-table-sort-icon-color, currentColor);
+  line-height: 0;
 }
 
 .nat-default-sort {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: color-mix(in srgb, currentColor 20%, transparent);
+  line-height: 0;
 }
 
-.nat-default-sort-rail {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 1rem;
-  block-size: 1rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 10%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 10%, transparent);
-}
-
-.nat-default-sort-arrow {
+.nat-default-sort__svg {
   display: block;
-  inline-size: 0.72rem;
-  block-size: 0.72rem;
-  opacity: 0.48;
+  overflow: visible;
+  flex-shrink: 0;
+  width: var(--nat-table-sort-icon-svg-width, clamp(15px, 1.12em, 20px));
+  height: var(--nat-table-sort-icon-svg-height, clamp(24px, 1.75em, 32px));
+}
+
+/* Unsorted: outlined chevrons read clearly against light/dark headers. */
+.nat-default-sort__up,
+.nat-default-sort__down {
+  fill: none;
+  stroke: var(
+    --nat-table-sort-icon-color-idle,
+    color-mix(in srgb, currentColor 78%, transparent)
+  );
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
   transform-origin: center;
   transition:
-    opacity 140ms ease,
-    background-color 140ms ease,
-    color 140ms ease,
-    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    fill var(--nat-table-transition-fast, 120ms ease),
+    stroke var(--nat-table-transition-fast, 120ms ease),
+    transform var(--nat-table-transition-fast, 120ms ease);
 }
 
-.nat-default-sort[data-sort-state='none'] .nat-default-sort-arrow {
-  transform: translateY(0);
+.sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
+.sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__down {
+  stroke: var(
+    --nat-table-sort-icon-color-hover,
+    color-mix(in srgb, currentColor 100%, transparent)
+  );
 }
 
-.nat-default-sort[data-sort-state='asc'] .nat-default-sort-arrow {
-  opacity: 1;
-  color: currentColor;
-  transform: translateY(-0.12rem);
+/* Sorted: active direction is filled accent; the other stays a faint outline. */
+.nat-default-sort[data-sort-state='asc'] .nat-default-sort__up,
+.nat-default-sort[data-sort-state='desc'] .nat-default-sort__down {
+  fill: var(--nat-table-sort-icon-color, currentColor);
+  stroke: var(--nat-table-sort-icon-color, currentColor);
+  stroke-width: 1.55;
+  transform: scale(1.12);
 }
 
-.nat-default-sort[data-sort-state='desc'] .nat-default-sort-arrow {
-  opacity: 1;
-  color: currentColor;
-  transform: translateY(0.12rem) rotate(180deg);
+.nat-default-sort[data-sort-state='asc'] .nat-default-sort__down,
+.nat-default-sort[data-sort-state='desc'] .nat-default-sort__up {
+  fill: none;
+  stroke: var(
+    --nat-table-sort-icon-color-muted,
+    color-mix(in srgb, currentColor 32%, transparent)
+  );
+  stroke-width: 1.55;
+  transform: none;
 }
 
-.nat-default-sort[data-sort-state='asc'] .nat-default-sort-rail,
-.nat-default-sort[data-sort-state='desc'] .nat-default-sort-rail {
-  background: color-mix(in srgb, currentColor 16%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+.sort-button[disabled] .nat-default-sort__up,
+.sort-button[disabled] .nat-default-sort__down {
+  fill: none;
+  stroke: var(
+    --nat-table-sort-icon-color-disabled,
+    color-mix(in srgb, currentColor 22%, transparent)
+  );
+  transform: none;
 }
 
 .pin-button {

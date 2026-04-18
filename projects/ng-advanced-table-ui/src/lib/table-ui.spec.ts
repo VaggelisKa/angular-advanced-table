@@ -250,7 +250,7 @@ describe('ng-advanced-table-ui', () => {
     expect(
       sortIcon.querySelector('.nat-default-sort')?.getAttribute('data-sort-state'),
     ).toBe('none');
-    expect(sortIcon.querySelector('.nat-default-sort-arrow')).toBeTruthy();
+    expect(sortIcon.querySelector('.nat-default-sort__svg')).toBeTruthy();
     expect(pinButton.textContent?.trim()).toBe('Pin');
 
     sortButton.click();

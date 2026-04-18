@@ -24,11 +24,15 @@
             class="nat-default-sort"
             [attr.data-sort-state]="sortState() === false ? 'none' : sortState()"
           >
-            <span class="nat-default-sort-rail" aria-hidden="true">
-              <svg class="nat-default-sort-arrow" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path d="M8 2.5 12.5 7H9.5v6.5h-3V7h-3L8 2.5Z" fill="currentColor" />
-              </svg>
-            </span>
+            <svg
+              class="nat-default-sort__svg"
+              viewBox="0 0 16 28"
+              focusable="false"
+              aria-hidden="true"
+            >
+              <path class="nat-default-sort__up" d="M8 3 13 11H3z" />
+              <path class="nat-default-sort__down" d="M8 25 3 17h10z" />
+            </svg>
           </span>
         }
       </span>
