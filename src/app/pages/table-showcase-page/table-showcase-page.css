@@ -102,30 +102,6 @@
   font-family: var(--body-font);
 }
 
-.market-sort-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.1rem;
-  color: color-mix(in srgb, currentColor 28%, transparent);
-}
-
-.market-sort-indicator .sort-glyph {
-  font-size: 0.72rem;
-  line-height: 1;
-  opacity: 0.45;
-  transition:
-    opacity 140ms ease,
-    color 140ms ease,
-    transform 140ms ease;
-}
-
-.market-sort-indicator[data-sort-state='asc'] .asc,
-.market-sort-indicator[data-sort-state='desc'] .desc {
-  opacity: 1;
-  color: currentColor;
-  transform: translateY(-0.02em);
-}
-
 .card {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--accent) 11%, transparent), transparent 24%),
