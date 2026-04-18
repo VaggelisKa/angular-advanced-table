@@ -7,20 +7,21 @@
     "start": "ng serve",
     "build": "ng build angular-advanced-table",
     "build:showcase": "ng build angular-advanced-table",
-    "build:packages": "ng build ng-advanced-table && ng build ng-advanced-table-utils",
+    "build:packages": "ng build ng-advanced-table && ng build ng-advanced-table-ui && ng build ng-advanced-table-utils",
     "watch": "ng build angular-advanced-table --watch --configuration development",
     "test": "ng test angular-advanced-table --watch=false",
-    "test:packages": "ng test ng-advanced-table --watch=false && ng test ng-advanced-table-utils --watch=false",
+    "test:packages": "ng test ng-advanced-table --watch=false && ng test ng-advanced-table-ui --watch=false && ng test ng-advanced-table-utils --watch=false",
     "changeset": "changeset",
     "changeset:status": "changeset status --since=origin/main",
     "version:packages": "changeset version",
-    "pack:dry-run": "npm pack --dry-run ./dist/ng-advanced-table && npm pack --dry-run ./dist/ng-advanced-table-utils",
+    "pack:dry-run": "npm pack --dry-run ./dist/ng-advanced-table && npm pack --dry-run ./dist/ng-advanced-table-ui && npm pack --dry-run ./dist/ng-advanced-table-utils",
     "verify": "npm run test:packages && npm run build:packages && npm run build:showcase && npm run pack:dry-run"
   },
   "private": true,
   "packageManager": "npm@11.11.0",
   "workspaces": [
     "projects/ng-advanced-table",
+    "projects/ng-advanced-table-ui",
     "projects/ng-advanced-table-utils"
   ],
   "dependencies": {

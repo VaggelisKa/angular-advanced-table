@@ -1,0 +1,21 @@
+@if (for().enablePagination()) {
+  <div class="pager" role="group" [attr.aria-label]="ariaLabel()">
+    <button
+      type="button"
+      class="pager-button"
+      [disabled]="!for().table.getCanPreviousPage()"
+      (click)="for().table.previousPage()"
+    >
+      Previous
+    </button>
+    <span class="pager-label">Page {{ pageIndex() + 1 }} / {{ pageCount() }}</span>
+    <button
+      type="button"
+      class="pager-button"
+      [disabled]="!for().table.getCanNextPage()"
+      (click)="for().table.nextPage()"
+    >
+      Next
+    </button>
+  </div>
+}

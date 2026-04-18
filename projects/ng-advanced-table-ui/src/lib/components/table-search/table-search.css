@@ -1,0 +1,50 @@
+:host {
+  display: block;
+}
+
+.control-block {
+  display: grid;
+  gap: var(--nat-table-space-control-block-gap, 10px);
+}
+
+.control-label {
+  color: var(--nat-table-color-text-muted, inherit);
+  font-size: var(--nat-table-font-size-label, 0.85rem);
+  letter-spacing: var(--nat-table-letter-spacing-label, 0.08em);
+  text-transform: var(--nat-table-text-transform-label, uppercase);
+}
+
+.search-input {
+  width: 100%;
+  min-height: var(--nat-table-search-min-height, 54px);
+  padding: 0 var(--nat-table-search-padding-x, 18px);
+  border-radius: var(--nat-table-radius-input, 18px);
+  border: 1px solid var(--nat-table-search-border-color, transparent);
+  background: var(--nat-table-search-background, transparent);
+  color: var(--nat-table-search-color, inherit);
+  outline: none;
+  transition:
+    border-color var(--nat-table-transition-slow, 200ms ease),
+    box-shadow var(--nat-table-transition-slow, 200ms ease),
+    background-color var(--nat-table-transition-slow, 200ms ease);
+}
+
+.search-input::placeholder {
+  color: var(--nat-table-search-placeholder-color, currentColor);
+}
+
+.search-input:hover {
+  border-color: var(--nat-table-search-border-color-hover, currentColor);
+}
+
+.search-input:focus {
+  border-color: var(--nat-table-search-border-color-focus, currentColor);
+  box-shadow: var(--nat-table-search-focus-ring, none);
+  background: var(--nat-table-search-background-focus, var(--nat-table-search-background));
+}
+
+.search-input:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}

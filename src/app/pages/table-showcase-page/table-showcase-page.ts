@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import {
@@ -14,8 +15,17 @@ import {
 import {
   NatTable,
   type NatTableRowRenderedEvent,
+  type NatTableSortIndicatorContext,
   type NatTableState,
 } from 'ng-advanced-table';
+import {
+  NatTableColumnVisibility,
+  NatTablePageSize,
+  NatTablePager,
+  NatTableSearch,
+  NatTableSurface,
+  withNatTableHeaderActions,
+} from 'ng-advanced-table-ui';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
@@ -235,9 +245,98 @@ const defaultTableState: Partial<NatTableState> = {
 type ShowcaseTheme = 'light' | 'dark';
 
 @Component({
+  selector: 'app-market-sort-indicator',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: `
+    :host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: color-mix(in srgb, currentColor 20%, transparent);
+    }
+
+    .market-sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sort-arrow-rail {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      inline-size: 1rem;
+      block-size: 1rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, currentColor 10%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 10%, transparent);
+    }
+
+    .sort-arrow {
+      display: block;
+      inline-size: 0.72rem;
+      block-size: 0.72rem;
+      opacity: 0.48;
+      transform-origin: center;
+      transition:
+        opacity 140ms ease,
+        background-color 140ms ease,
+        color 140ms ease,
+        transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .market-sort-indicator[data-sort-state='none'] .sort-arrow {
+      transform: translateY(0);
+    }
+
+    .market-sort-indicator[data-sort-state='asc'] .sort-arrow {
+      opacity: 1;
+      color: currentColor;
+      transform: translateY(-0.12rem);
+    }
+
+    .market-sort-indicator[data-sort-state='desc'] .sort-arrow {
+      opacity: 1;
+      color: currentColor;
+      transform: translateY(0.12rem) rotate(180deg);
+    }
+
+    .market-sort-indicator[data-sort-state='asc'] .sort-arrow-rail,
+    .market-sort-indicator[data-sort-state='desc'] .sort-arrow-rail {
+      background: color-mix(in srgb, currentColor 16%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+    }
+  `,
+  template: `
+    <span class="market-sort-indicator" [attr.data-sort-state]="context().sortState || 'none'">
+      <span class="sort-arrow-rail" aria-hidden="true">
+        <svg class="sort-arrow" viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            d="M8 2.5 12.5 7H9.5v6.5h-3V7h-3L8 2.5Z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+    </span>
+  `,
+})
+class MarketSortIndicator {
+  readonly context = input.required<NatTableSortIndicatorContext>();
+}
+
+@Component({
   selector: 'app-table-showcase-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatRenderMetricsFilter, NatRenderMetricsPanel],
+  imports: [
+    NatTable,
+    NatTableColumnVisibility,
+    NatTablePageSize,
+    NatTablePager,
+    NatTableSearch,
+    NatTableSurface,
+    NatRenderMetricsFilter,
+    NatRenderMetricsPanel,
+  ],
   templateUrl: './table-showcase-page.html',
   styleUrl: './table-showcase-page.css',
 })
@@ -247,7 +346,15 @@ export class TableShowcasePage {
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
   protected readonly metricsStore = new NatTableRenderMetricsStore();
-  protected readonly columns = withRenderMetricsColumn(simulationColumns, this.metricsStore);
+  protected readonly columns = withNatTableHeaderActions(
+    withRenderMetricsColumn(simulationColumns, this.metricsStore),
+    {
+      sortIndicator: (context) =>
+        flexRenderComponent(MarketSortIndicator, {
+          inputs: { context },
+        }),
+    },
+  );
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
   protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
@@ -452,9 +559,7 @@ function numberTone(value: number): 'positive' | 'negative' | 'neutral' {
   return 'neutral';
 }
 
-function statusTone(
-  status: SimulationStatus,
-): 'positive' | 'negative' | 'neutral' | 'warning' {
+function statusTone(status: SimulationStatus): 'positive' | 'negative' | 'neutral' | 'warning' {
   switch (status) {
     case 'Advancing':
       return 'positive';
