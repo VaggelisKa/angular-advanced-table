@@ -9,6 +9,10 @@
         "./dist/ng-advanced-table",
         "./projects/ng-advanced-table/src/public-api.ts"
       ],
+      "ng-advanced-table-ui": [
+        "./dist/ng-advanced-table-ui",
+        "./projects/ng-advanced-table-ui/src/public-api.ts"
+      ],
       "ng-advanced-table-utils": [
         "./dist/ng-advanced-table-utils",
         "./projects/ng-advanced-table-utils/src/public-api.ts"
@@ -51,6 +55,12 @@
     },
     {
       "path": "./projects/ng-advanced-table-utils/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ng-advanced-table-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ng-advanced-table-ui/tsconfig.spec.json"
     }
   ]
 }

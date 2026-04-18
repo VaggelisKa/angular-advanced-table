@@ -1,11 +1,27 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import {
   NatTable,
   type NatTableRowRenderedEvent,
+  type NatTableSortIndicatorContext,
   type NatTableState,
 } from 'ng-advanced-table';
+import {
+  NatTableColumnVisibility,
+  NatTablePageSize,
+  NatTablePager,
+  NatTableSearch,
+  NatTableSurface,
+  withNatTableHeaderActions,
+} from 'ng-advanced-table-ui';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
@@ -218,11 +234,7 @@ const defaultTableState: Partial<NatTableState> = {
   },
 };
 
-type ShowcaseTheme =
-  | 'market-tape'
-  | 'sandstone-ledger'
-  | 'terminal-mint'
-  | 'sunset-signal';
+type ShowcaseTheme = 'market-tape' | 'sandstone-ledger' | 'terminal-mint' | 'sunset-signal';
 
 interface ShowcaseThemeOption {
   readonly value: ShowcaseTheme;
@@ -254,9 +266,32 @@ const SHOWCASE_THEMES = [
 ] as const satisfies readonly ShowcaseThemeOption[];
 
 @Component({
+  selector: 'app-market-sort-indicator',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <span class="market-sort-indicator" [attr.data-sort-state]="context().sortState || 'none'">
+      <span class="sort-glyph asc">▲</span>
+      <span class="sort-glyph desc">▼</span>
+    </span>
+  `,
+})
+class MarketSortIndicator {
+  readonly context = input.required<NatTableSortIndicatorContext>();
+}
+
+@Component({
   selector: 'app-table-showcase-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatRenderMetricsFilter, NatRenderMetricsPanel],
+  imports: [
+    NatTable,
+    NatTableColumnVisibility,
+    NatTablePageSize,
+    NatTablePager,
+    NatTableSearch,
+    NatTableSurface,
+    NatRenderMetricsFilter,
+    NatRenderMetricsPanel,
+  ],
   templateUrl: './table-showcase-page.html',
   styleUrl: './table-showcase-page.css',
 })
@@ -267,7 +302,15 @@ export class TableShowcasePage {
   protected readonly statuses = SIMULATION_STATUSES;
   protected readonly themes = SHOWCASE_THEMES;
   protected readonly metricsStore = new NatTableRenderMetricsStore();
-  protected readonly columns = withRenderMetricsColumn(simulationColumns, this.metricsStore);
+  protected readonly columns = withNatTableHeaderActions(
+    withRenderMetricsColumn(simulationColumns, this.metricsStore),
+    {
+      sortIndicator: (context) =>
+        flexRenderComponent(MarketSortIndicator, {
+          inputs: { context },
+        }),
+    },
+  );
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
   protected readonly selectedTheme = signal<ShowcaseTheme>(SHOWCASE_THEMES[0].value);
@@ -450,9 +493,7 @@ function numberTone(value: number): 'positive' | 'negative' | 'neutral' {
   return 'neutral';
 }
 
-function statusTone(
-  status: SimulationStatus,
-): 'positive' | 'negative' | 'neutral' | 'warning' {
+function statusTone(status: SimulationStatus): 'positive' | 'negative' | 'neutral' | 'warning' {
   switch (status) {
     case 'Advancing':
       return 'positive';

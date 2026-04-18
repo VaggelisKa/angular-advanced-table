@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
@@ -76,9 +77,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       ariaLabel="Operations table"
       [initialState]="initialState"
       [state]="state()"
-      [enableGlobalFilter]="enableGlobalFilter"
-      [showColumnVisibility]="showColumnVisibility"
-      [showPagination]="showPagination"
+      [enablePagination]="enablePagination"
       [getRowId]="getRowId"
       (stateChange)="onStateChange($event)"
     />
@@ -100,40 +99,12 @@ class TableHost {
       pageSize: 2,
     },
   };
-  enableGlobalFilter = true;
-  showColumnVisibility = true;
-  showPagination = true;
+  enablePagination = false;
   readonly stateEvents: NatTableState[] = [];
 
   onStateChange(state: NatTableState): void {
     this.stateEvents.push(state);
   }
-}
-
-@Component({
-  imports: [NatTable],
-  template: `
-    <ng-template #sortIndicator let-sortState="sortState" let-column="column">
-      <span
-        class="custom-sort-indicator"
-        [attr.data-sort-state]="sortState || 'none'"
-        [attr.data-column-id]="column.id"
-      >
-        {{ sortState === 'asc' ? 'A' : sortState === 'desc' ? 'D' : '-' }}
-      </span>
-    </ng-template>
-
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      ariaLabel="Operations table"
-      [sortIndicatorTemplate]="sortIndicator"
-    />
-  `,
-})
-class CustomSortIndicatorHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = columns;
 }
 
 describe('NatTable', () => {
@@ -142,7 +113,7 @@ describe('NatTable', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost, CustomSortIndicatorHost],
+      imports: [TableHost],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableHost);
@@ -150,7 +121,7 @@ describe('NatTable', () => {
     await fixture.whenStable();
   });
 
-  it('renders caller-provided columns and rows using the initial state', () => {
+  it('renders a bare table surface with no built-in controls', () => {
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
@@ -158,13 +129,15 @@ describe('NatTable', () => {
     const headerLabels = headers.map((header) =>
       header.textContent?.replaceAll(/\s+/g, ' ').trim(),
     );
-    const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
 
-    expect(rows.length).toBe(2);
-    expect(headerLabels[0]).toContain('Service');
-    expect(headerLabels[1]).toContain('Region');
-    expect(firstPinButton.textContent?.trim()).toBe('Unpin');
+    expect(rows.length).toBe(6);
+    expect(headerLabels).toEqual(['Service', 'Region', 'Status', 'Throughput']);
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
+    expect(fixture.nativeElement.querySelector('#table-search')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.column-chip')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.pager')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.sort-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.pin-button')).toBeNull();
   });
 
   it('applies semantic tone attributes from column metadata', () => {
@@ -177,65 +150,63 @@ describe('NatTable', () => {
     expect(throughputCell.getAttribute('data-tone')).toBe('positive');
   });
 
-  it('emits state changes for search, sort, visibility, pinning, and pagination', () => {
+  it('only paginates when enablePagination is true', () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(TableHost);
+    host = fixture.componentInstance;
+    host.enablePagination = true;
     fixture.detectChanges();
 
-    const searchInput = fixture.nativeElement.querySelector('#table-search') as HTMLInputElement;
-    const sortButtons = fixture.nativeElement.querySelectorAll('.sort-button');
-    const regionToggle = fixture.nativeElement.querySelector(
-      '.column-chip[data-column-id="region"]',
-    ) as HTMLButtonElement;
-    const pinButtons = fixture.nativeElement.querySelectorAll('.pin-button');
-    const nextButton = fixture.nativeElement.querySelector(
-      '.pager-button:last-child',
-    ) as HTMLButtonElement;
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
 
-    searchInput.value = 'svc';
-    searchInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-
-    sortButtons[1].click();
-    fixture.detectChanges();
-
-    regionToggle.click();
-    fixture.detectChanges();
-
-    pinButtons[0].click();
-    fixture.detectChanges();
-
-    nextButton.click();
-    fixture.detectChanges();
-
-    expect(host.stateEvents[0]?.globalFilter).toBe('svc');
-    expect(host.stateEvents[0]?.pagination.pageIndex).toBe(0);
-    expect(host.stateEvents.some((state) => state.sorting[0]?.id === 'region')).toBe(true);
-    expect(
-      host.stateEvents.some((state) => state.columnVisibility['region'] === false),
-    ).toBe(true);
-    expect(
-      host.stateEvents.some((state) => (state.columnPinning.left?.length ?? 0) === 0),
-    ).toBe(true);
-    expect(host.stateEvents.at(-1)?.pagination.pageIndex).toBe(1);
+    expect(rows.length).toBe(2);
+    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
   });
 
-  it('only renders the pinned divider on the outer edge of the pinned group', () => {
+  it('lets callers patch state and emits the next state', () => {
     fixture.detectChanges();
 
-    let headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
-    const pinButtons = fixture.nativeElement.querySelectorAll(
-      '.pin-button',
-    ) as NodeListOf<HTMLButtonElement>;
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
 
-    expect(headers[0]?.classList.contains('has-pinned-edge-left')).toBe(true);
-    expect(headers[1]?.classList.contains('has-pinned-edge-left')).toBe(false);
-
-    pinButtons[1]?.click();
+    table.patchState({
+      globalFilter: 'gamma',
+      pagination: (currentPagination) => ({
+        ...currentPagination,
+        pageIndex: 0,
+      }),
+    });
     fixture.detectChanges();
 
-    headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
+    expect(host.stateEvents.at(-1)?.globalFilter).toBe('gamma');
+    expect(host.stateEvents.at(-1)?.pagination.pageIndex).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
+  });
 
-    expect(headers[0]?.classList.contains('has-pinned-edge-left')).toBe(false);
-    expect(headers[1]?.classList.contains('has-pinned-edge-left')).toBe(true);
+  it('respects controlled state slices without mutating the rendered table', () => {
+    host.state.set({
+      columnVisibility: {
+        region: false,
+      },
+    });
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
+
+    table.patchState({
+      columnVisibility: (currentVisibility) => ({
+        ...currentVisibility,
+        region: true,
+      }),
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
+    expect(host.stateEvents.length).toBeGreaterThan(0);
   });
 
   it('lets the browser size columns intrinsically while driving pin offsets from column sizes', () => {
@@ -252,9 +223,6 @@ describe('NatTable', () => {
       fixture.nativeElement.querySelectorAll('tbody tr:first-child td'),
     ) as HTMLElement[];
 
-    // Columns no longer ship a <colgroup> or explicit `width`/`max-width`
-    // bindings. The browser sizes each column to its widest cell and we only
-    // publish `min-width` as an intrinsic floor derived from `column.size`.
     expect(fixture.nativeElement.querySelector('colgroup')).toBeNull();
     expect(headers[0]?.style.width).toBe('');
     expect(headers[0]?.style.maxWidth).toBe('');
@@ -262,100 +230,10 @@ describe('NatTable', () => {
     expect(headers[1]?.style.minWidth).toBe('140px');
     expect(bodyCells[0]?.style.width).toBe('');
     expect(bodyCells[0]?.style.minWidth).toBe('180px');
-
-    // Pin offsets fall back to the column sizes when no ResizeObserver
-    // measurement is available yet (which is the case in jsdom). The sticky
-    // contract is preserved: each pinned column is offset by the cumulative
-    // width of every pinned column before it.
     expect(headers[0]?.style.left).toBe('0px');
     expect(headers[1]?.style.left).toBe('180px');
     expect(bodyCells[1]?.style.left).toBe('180px');
     expect(headers[0]?.dataset['columnId']).toBe('name');
-  });
-
-  it('respects controlled state slices without mutating the rendered table', () => {
-    host.state.set({
-      columnVisibility: {
-        region: false,
-      },
-    });
-    fixture.detectChanges();
-
-    const regionToggle = fixture.nativeElement.querySelector(
-      '.column-chip[data-column-id="region"]',
-    ) as HTMLButtonElement;
-
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
-
-    regionToggle.click();
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
-    expect(host.stateEvents.length).toBeGreaterThan(0);
-  });
-
-  it('keeps at least one column visible', () => {
-    fixture.detectChanges();
-
-    const columnIds = ['region', 'status', 'throughput'];
-
-    for (const columnId of columnIds) {
-      const columnToggle = fixture.nativeElement.querySelector(
-        `.column-chip[data-column-id="${columnId}"]`,
-      ) as HTMLButtonElement;
-
-      columnToggle.click();
-      fixture.detectChanges();
-    }
-
-    const serviceToggle = fixture.nativeElement.querySelector(
-      '.column-chip[data-column-id="name"]',
-    ) as HTMLButtonElement;
-
-    expect(serviceToggle.disabled).toBe(true);
-    expect(fixture.nativeElement.querySelectorAll('thead th').length).toBe(1);
-  });
-
-  it('hides disabled toolbar sections and renders all rows when pagination is off', () => {
-    fixture.destroy();
-    fixture = TestBed.createComponent(TableHost);
-    host = fixture.componentInstance;
-    host.enableGlobalFilter = false;
-    host.showColumnVisibility = false;
-    host.showPagination = false;
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('#table-search')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.column-chip')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.pager')).toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
-  });
-
-  it('renders a caller-provided sort indicator template', () => {
-    fixture.destroy();
-    const customFixture = TestBed.createComponent(CustomSortIndicatorHost);
-
-    customFixture.detectChanges();
-
-    let customIndicator = customFixture.nativeElement.querySelector(
-      '.custom-sort-indicator[data-column-id="name"]',
-    ) as HTMLSpanElement;
-    const sortButton = customFixture.nativeElement.querySelector(
-      '.sort-button',
-    ) as HTMLButtonElement;
-
-    expect(customIndicator.textContent?.trim()).toBe('-');
-
-    sortButton.click();
-    customFixture.detectChanges();
-
-    customIndicator = customFixture.nativeElement.querySelector(
-      '.custom-sort-indicator[data-column-id="name"]',
-    ) as HTMLSpanElement;
-
-    expect(customIndicator.getAttribute('data-sort-state')).toBe('asc');
-    expect(customIndicator.textContent?.trim()).toBe('A');
-    expect(customFixture.nativeElement.querySelector('.sort-icon')?.textContent).not.toContain('↕');
   });
 });
 

@@ -1,216 +1,83 @@
-@if (showTopControls()) {
-  <section class="controls card">
-    @if (showSearch()) {
-      <div class="control-block">
-        <label class="control-label" for="table-search">{{ searchLabel() }}</label>
-        <input
-          id="table-search"
-          type="search"
-          class="search-input"
-          [value]="mergedState().globalFilter"
-          [placeholder]="searchPlaceholder()"
-          (input)="onSearchInput($event)"
-        />
-      </div>
-    }
-
-    @if (showVisibilityControls()) {
-      <div class="control-block">
-        <div class="control-heading">
-          <span class="control-label">Columns</span>
-          <span class="control-caption">
-            {{ visibleColumnCount() }} / {{ table.getAllLeafColumns().length }} visible
-          </span>
-        </div>
-        <div class="chip-row" role="group" aria-label="Column visibility">
-          @for (column of columnVisibilityOptions(); track column.id) {
-            <button
-              type="button"
-              class="chip column-chip"
-              [class.is-active]="column.getIsVisible()"
-              [disabled]="!canToggleColumnVisibility(column)"
-              [attr.aria-pressed]="column.getIsVisible()"
-              [attr.aria-label]="getColumnVisibilityAction(column)"
-              [attr.data-column-id]="column.id"
-              (click)="toggleColumnVisibility(column)"
+<div class="table-region" #tableRegion>
+  <table ngGrid class="data-table" [attr.aria-label]="ariaLabel()">
+    <thead>
+      @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
+        <tr ngGridRow>
+          @for (header of headerGroup.headers; track header.id) {
+            <th
+              ngGridCell
+              role="columnheader"
+              class="header-cell"
+              [class.is-align-end]="isColumnAlignedEnd(header.column)"
+              [class.is-pinned-left]="header.column.getIsPinned() === 'left'"
+              [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
+              [class.has-pinned-edge-left]="isLastLeftPinnedColumn(header.column)"
+              [class.has-pinned-edge-right]="isFirstRightPinnedColumn(header.column)"
+              [style.left.px]="getPinnedLeft(header.column)"
+              [style.right.px]="getPinnedRight(header.column)"
+              [style.min-width.px]="getColumnMinWidth(header.column)"
+              [attr.data-column-id]="header.column.id"
+              [attr.aria-sort]="getAriaSort(header.column)"
             >
-              <span>{{ getColumnLabel(column) }}</span>
-              <span class="chip-count">{{ column.getIsVisible() ? 'Shown' : 'Hidden' }}</span>
-            </button>
-          }
-        </div>
-      </div>
-    }
-  </section>
-}
-
-<section class="table-card card">
-  @if (showTableToolbar()) {
-    <div class="table-toolbar">
-      @if (showPagination()) {
-        <div class="table-actions">
-          <div class="chip-row compact" role="group" aria-label="Page size">
-            @for (size of sanitizedPageSizeOptions(); track size) {
-              <button
-                type="button"
-                class="chip"
-                [class.is-active]="mergedState().pagination.pageSize === size"
-                [attr.aria-pressed]="mergedState().pagination.pageSize === size"
-                (click)="setPageSize(size)"
-              >
-                {{ size }} / page
-              </button>
-            }
-          </div>
-
-          <div class="pager" role="group" aria-label="Pagination">
-            <button
-              type="button"
-              class="pager-button"
-              [disabled]="!table.getCanPreviousPage()"
-              (click)="table.previousPage()"
-            >
-              Previous
-            </button>
-            <span class="pager-label">
-              Page {{ table.getState().pagination.pageIndex + 1 }} / {{ table.getPageCount() || 1 }}
-            </span>
-            <button
-              type="button"
-              class="pager-button"
-              [disabled]="!table.getCanNextPage()"
-              (click)="table.nextPage()"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      }
-    </div>
-  }
-
-  <div class="table-region" #tableRegion>
-    <table ngGrid class="data-table" [attr.aria-label]="ariaLabel()">
-      <thead>
-        @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
-          <tr ngGridRow>
-            @for (header of headerGroup.headers; track header.id) {
-              <th
-                ngGridCell
-                role="columnheader"
-                class="header-cell"
-                [class.is-align-end]="isColumnAlignedEnd(header.column)"
-                [class.is-pinned-left]="header.column.getIsPinned() === 'left'"
-                [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
-                [class.has-pinned-edge-left]="isLastLeftPinnedColumn(header.column)"
-                [class.has-pinned-edge-right]="isFirstRightPinnedColumn(header.column)"
-                [style.left.px]="getPinnedLeft(header.column)"
-                [style.right.px]="getPinnedRight(header.column)"
-                [style.min-width.px]="getColumnMinWidth(header.column)"
-                [attr.data-column-id]="header.column.id"
-                [attr.aria-sort]="getAriaSort(header.column)"
-              >
-                @if (!header.isPlaceholder) {
-                  <div class="header-content">
-                    <button
-                      type="button"
-                      ngGridCellWidget
-                      class="sort-button"
-                      [class.is-sorted]="!!header.column.getIsSorted()"
-                      [disabled]="!header.column.getCanSort()"
-                      [attr.aria-label]="
-                        header.column.getCanSort()
-                          ? 'Toggle sort for ' + getColumnLabel(header.column)
-                          : null
-                      "
-                      (click)="header.column.toggleSorting()"
-                    >
-                      <ng-container
-                        *flexRender="
-                          header.column.columnDef.header;
-                          props: header.getContext();
-                          let rendered
-                        "
-                      >
-                        {{ rendered }}
-                      </ng-container>
-                      <span class="sort-icon" aria-hidden="true">
-                        @if (sortIndicatorTemplate(); as customSortIndicatorTemplate) {
-                          <ng-container
-                            [ngTemplateOutlet]="customSortIndicatorTemplate"
-                            [ngTemplateOutletContext]="getSortIndicatorContext(header.column)"
-                          />
-                        } @else {
-                          {{ getSortIcon(header.column) }}
-                        }
-                      </span>
-                    </button>
-
-                    @if (canPinColumn(header.column)) {
-                      <button
-                        type="button"
-                        class="pin-button"
-                        [class.is-pinned]="!!header.column.getIsPinned()"
-                        [attr.aria-pressed]="!!header.column.getIsPinned()"
-                        [attr.aria-label]="
-                          getPinLabel(header.column) + ' ' + getColumnLabel(header.column)
-                        "
-                        (click)="toggleColumnPin(header.column)"
-                      >
-                        {{ header.column.getIsPinned() ? 'Unpin' : 'Pin' }}
-                      </button>
-                    }
-                  </div>
-                }
-              </th>
-            }
-          </tr>
-        }
-      </thead>
-      <tbody>
-        @if (table.getRowModel().rows.length) {
-          @for (row of table.getRowModel().rows; track row.id) {
-            <tr
-              ngGridRow
-              class="data-row"
-              [natTableRowRenderEmitter]="row.id"
-              [natTableRowRenderEnabled]="emitRowRenderEvents()"
-              [natTableRowRenderToken]="renderCycleToken()"
-              [natTableRowRenderStartedAt]="renderCycleStartedAt()"
-              (natTableRowRendered)="onRowRendered($event)"
-            >
-              @for (cell of row.getVisibleCells(); track cell.id) {
-                <td
-                  ngGridCell
-                  class="data-cell"
-                  [class.is-align-end]="isColumnAlignedEnd(cell.column)"
-                  [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
-                  [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
-                  [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
-                  [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
-                  [style.left.px]="getPinnedLeft(cell.column)"
-                  [style.right.px]="getPinnedRight(cell.column)"
-                  [style.min-width.px]="getColumnMinWidth(cell.column)"
-                  [attr.data-column-id]="cell.column.id"
-                  [attr.data-tone]="getCellTone(cell)"
+              @if (!header.isPlaceholder) {
+                <ng-container
+                  *flexRender="
+                    header.column.columnDef.header;
+                    props: header.getContext();
+                    let rendered
+                  "
                 >
-                  <ng-container
-                    *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"
-                  >
-                    {{ rendered }}
-                  </ng-container>
-                </td>
+                  {{ rendered }}
+                </ng-container>
               }
-            </tr>
+            </th>
           }
-        } @else {
-          <tr ngGridRow>
-            <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
-              {{ emptyStateLabel() }}
-            </td>
+        </tr>
+      }
+    </thead>
+    <tbody>
+      @if (table.getRowModel().rows.length) {
+        @for (row of table.getRowModel().rows; track row.id) {
+          <tr
+            ngGridRow
+            class="data-row"
+            [natTableRowRenderEmitter]="row.id"
+            [natTableRowRenderEnabled]="emitRowRenderEvents()"
+            [natTableRowRenderToken]="renderCycleToken()"
+            [natTableRowRenderStartedAt]="renderCycleStartedAt()"
+            (natTableRowRendered)="onRowRendered($event)"
+          >
+            @for (cell of row.getVisibleCells(); track cell.id) {
+              <td
+                ngGridCell
+                class="data-cell"
+                [class.is-align-end]="isColumnAlignedEnd(cell.column)"
+                [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
+                [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
+                [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
+                [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
+                [style.left.px]="getPinnedLeft(cell.column)"
+                [style.right.px]="getPinnedRight(cell.column)"
+                [style.min-width.px]="getColumnMinWidth(cell.column)"
+                [attr.data-column-id]="cell.column.id"
+                [attr.data-tone]="getCellTone(cell)"
+              >
+                <ng-container
+                  *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"
+                >
+                  {{ rendered }}
+                </ng-container>
+              </td>
+            }
           </tr>
         }
-      </tbody>
-    </table>
-  </div>
-</section>
+      } @else {
+        <tr ngGridRow>
+          <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
+            {{ emptyStateLabel() }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

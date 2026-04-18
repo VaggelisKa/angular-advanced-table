@@ -34,7 +34,7 @@ export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
 /** Current sort direction for a header cell. */
 export type NatTableSortDirection = 'asc' | 'desc' | false;
 
-/** Context passed to a custom sort-indicator template. */
+/** Context passed to companion sort-indicator renderers. */
 export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
   /** Alias for `sortState`, useful for `let-state` style template bindings. */
   $implicit: NatTableSortDirection;
@@ -50,13 +50,10 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
 
 /**
  * Extra metadata understood by `<nat-table>` when attached to a TanStack
- * column definition.
+ * column definition or optional companion UI.
  */
-export interface NatTableColumnMeta<
-  TData extends RowData = RowData,
-  TValue = unknown,
-> {
-  /** Accessible label used by column controls when the header is not a string. */
+export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
+  /** Accessible label used by companion controls when the header is not a string. */
   label?: string;
   /** Horizontal alignment for header and body cells in the column. */
   align?: 'start' | 'end';
@@ -65,6 +62,8 @@ export interface NatTableColumnMeta<
 }
 
 declare module '@tanstack/table-core' {
-  interface ColumnMeta<TData extends import('@tanstack/angular-table').RowData, TValue>
-    extends NatTableColumnMeta<TData, TValue> {}
+  interface ColumnMeta<
+    TData extends import('@tanstack/angular-table').RowData,
+    TValue,
+  > extends NatTableColumnMeta<TData, TValue> {}
 }

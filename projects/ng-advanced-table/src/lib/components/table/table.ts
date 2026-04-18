@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -15,8 +14,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import type { TemplateRef } from '@angular/core';
-import { Grid, GridCell, GridCellWidget, GridRow } from '@angular/aria/grid';
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import {
   FlexRender,
   createAngularTable,
@@ -26,9 +24,9 @@ import {
   getSortedRowModel,
   type Cell,
   type Column,
-  type ColumnDef,
   type ColumnFiltersState,
   type ColumnPinningState,
+  type ColumnDef,
   type FilterFn,
   type PaginationState,
   type RowData,
@@ -40,11 +38,7 @@ import {
 
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
-import type {
-  NatTableCellTone,
-  NatTableSortIndicatorContext,
-  NatTableState,
-} from './table.types';
+import type { NatTableCellTone, NatTableState } from './table.types';
 
 type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 
@@ -53,14 +47,13 @@ interface PinOffsets {
   right: Record<string, number>;
 }
 
-const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 const EMPTY_COLUMN_PINNING: ColumnPinningState = {
   left: [],
   right: [],
 };
 const DEFAULT_PAGINATION: PaginationState = {
   pageIndex: 0,
-  pageSize: DEFAULT_PAGE_SIZE_OPTIONS[0],
+  pageSize: 10,
 };
 const DEFAULT_TABLE_STATE: NatTableState = {
   sorting: [],
@@ -86,26 +79,16 @@ const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => 
 };
 
 /**
- * Signals-first data table wrapper around TanStack Table with built-in global
- * search, column visibility controls, pagination, and sticky column pinning.
+ * Signals-first Angular table primitive built on TanStack Table.
  *
- * Consumers configure the table by passing TanStack column definitions and
- * row data, then optionally control individual state slices through `state`
- * and `stateChange`.
+ * The core component renders the table structure only. Optional controls,
+ * header actions, and themed surfaces live in companion packages.
  */
 @Component({
   selector: 'nat-table',
   exportAs: 'natTable',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    Grid,
-    GridCell,
-    GridCellWidget,
-    GridRow,
-    FlexRender,
-    NatTableRowRenderEmitter,
-    NgTemplateOutlet,
-  ],
+  imports: [Grid, GridCell, GridRow, FlexRender, NatTableRowRenderEmitter],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -117,28 +100,16 @@ export class NatTable<TData extends RowData = RowData> {
   /** Accessible name announced for the table region. */
   readonly ariaLabel = input.required<string>();
 
-  /** Allowed page sizes. Invalid entries are ignored and defaults are restored when empty. */
-  readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
-  /** Enables the built-in global search field and filter pipeline. */
+  /** Enables the global filter pipeline for companion search controls. */
   readonly enableGlobalFilter = input(true, { transform: booleanAttribute });
-  /** Accessible label for the global search input. */
-  readonly searchLabel = input('Search rows');
-  /** Placeholder text shown in the global search input. */
-  readonly searchPlaceholder = input('Search rows');
-  /** Shows the built-in column visibility menu when hideable columns exist. */
-  readonly showColumnVisibility = input(true, { transform: booleanAttribute });
-  /** Enables client-side pagination controls and paginated row models. */
-  readonly showPagination = input(true, { transform: booleanAttribute });
-  /** Enables sticky left/right column pinning controls. */
+  /** Enables sticky column pinning where the column allows it. */
   readonly allowColumnPinning = input(true, { transform: booleanAttribute });
+  /** Enables client-side pagination row models when external UI drives pagination state. */
+  readonly enablePagination = input(false, { transform: booleanAttribute });
   /** Message rendered when the current view contains no rows. */
   readonly emptyStateLabel = input('No rows match the current view.');
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData> | undefined>(undefined);
-  /** Optional template used to render the sort indicator inside the header button. */
-  readonly sortIndicatorTemplate = input<
-    TemplateRef<NatTableSortIndicatorContext<TData>> | undefined
-  >(undefined);
   /** Initial uncontrolled state applied once during the first render. */
   readonly initialState = input<Partial<NatTableState>>({});
   /**
@@ -178,14 +149,6 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly renderCycleToken = signal(0);
   protected readonly renderCycleStartedAt = signal(0);
 
-  protected readonly sanitizedPageSizeOptions = computed(() => {
-    const options = this.pageSizeOptions()
-      .map((value) => Math.trunc(value))
-      .filter((value) => value > 0);
-
-    return options.length ? options : [...DEFAULT_PAGE_SIZE_OPTIONS];
-  });
-  private readonly defaultPageSize = computed(() => this.sanitizedPageSizeOptions()[0]);
   protected readonly mergedState = computed<NatTableState>(() => ({
     sorting: this.state().sorting ?? this.internalSorting(),
     globalFilter: this.enableGlobalFilter()
@@ -198,14 +161,14 @@ export class NatTable<TData extends RowData = RowData> {
       : EMPTY_COLUMN_PINNING,
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
-  protected readonly showSearch = computed(() => this.enableGlobalFilter());
-  protected readonly showVisibilityControls = computed(
-    () => this.showColumnVisibility() && this.columnVisibilityOptions().length > 0,
+  protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
+  protected readonly visibleColumnIds = computed(() =>
+    this.table
+      .getVisibleLeafColumns()
+      .map((column) => column.id)
+      .join('|'),
   );
-  protected readonly showTopControls = computed(
-    () => this.showSearch() || this.showVisibilityControls(),
-  );
-  protected readonly showTableToolbar = computed(() => this.showPagination());
+  protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
   /**
    * Raw TanStack `Table<TData>` instance.
    *
@@ -224,7 +187,7 @@ export class NatTable<TData extends RowData = RowData> {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: this.showPagination() ? getPaginationRowModel() : undefined,
+    getPaginationRowModel: this.enablePagination() ? getPaginationRowModel() : undefined,
     onSortingChange: (updater) => this.updateState({ sorting: updater }),
     onGlobalFilterChange: (updater) =>
       this.updateState({ globalFilter: updater, pagination: this.firstPageUpdater }),
@@ -239,9 +202,6 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly destroyRef = inject(DestroyRef);
   private headerResizeObserver: ResizeObserver | null = null;
 
-  protected readonly columnVisibilityOptions = computed(() =>
-    this.table.getAllLeafColumns().filter((column) => column.getCanHide()),
-  );
   /**
    * Intrinsic floor per column. `table-layout: auto` uses these as a lower
    * bound so columns never collapse below what the consumer considers
@@ -295,8 +255,6 @@ export class NatTable<TData extends RowData = RowData> {
 
     return { left, right };
   });
-  protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
-  protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
 
   constructor() {
     effect(() => {
@@ -325,7 +283,7 @@ export class NatTable<TData extends RowData = RowData> {
       );
       this.internalPagination.set({
         pageIndex: initialState.pagination?.pageIndex ?? DEFAULT_PAGINATION.pageIndex,
-        pageSize: initialState.pagination?.pageSize ?? this.defaultPageSize(),
+        pageSize: initialState.pagination?.pageSize ?? DEFAULT_PAGINATION.pageSize,
       });
       this.hasSeededInitialState.set(true);
     });
@@ -349,16 +307,8 @@ export class NatTable<TData extends RowData = RowData> {
     });
 
     afterNextRender(() => this.initializeHeaderObservation());
-    // Re-attach the ResizeObserver to the current set of header cells after
-    // every render. Column visibility, pinning, and visible-leaf changes swap
-    // out the <th> nodes we need to observe; doing this inside a render
-    // effect keeps it coupled to the DOM's actual shape rather than to a
-    // synthetic "layout" signal.
     afterRenderEffect(() => {
-      // Subscribe to leaf-column identity so the effect re-runs when the
-      // visible set changes, not merely when unrelated state updates.
-      this.columnVisibilityOptions();
-      this.visibleColumnCount();
+      this.visibleColumnIds();
       this.reattachHeaderObservers();
     });
 
@@ -368,7 +318,7 @@ export class NatTable<TData extends RowData = RowData> {
   /**
    * Merge the given state patch into the table, honouring both controlled and
    * uncontrolled slices. Companion controls use this to drive the table from
-   * the outside (e.g. a filter chip mutating `columnFilters`).
+   * the outside (e.g. search, pager, or synthetic filters).
    */
   patchState(
     updaters: Partial<{
@@ -376,61 +326,6 @@ export class NatTable<TData extends RowData = RowData> {
     }>,
   ): void {
     this.updateState(updaters);
-  }
-
-  protected onSearchInput(event: Event): void {
-    const target = event.target;
-
-    if (!(target instanceof HTMLInputElement)) {
-      return;
-    }
-
-    this.updateState({
-      globalFilter: target.value,
-      pagination: this.firstPageUpdater,
-    });
-  }
-
-  protected setPageSize(pageSize: number): void {
-    this.updateState({
-      pagination: () => ({
-        pageIndex: 0,
-        pageSize,
-      }),
-    });
-  }
-
-  protected toggleColumnPin(column: Column<TData, unknown>): void {
-    if (column.getIsPinned()) {
-      column.pin(false);
-      return;
-    }
-
-    column.pin('left');
-  }
-
-  protected getPinLabel(column: Column<TData, unknown>): string {
-    return column.getIsPinned() ? 'Unpin column' : 'Pin column';
-  }
-
-  protected canPinColumn(column: Column<TData, unknown>): boolean {
-    return this.allowColumnPinning() && column.getCanPin();
-  }
-
-  protected toggleColumnVisibility(column: Column<TData, unknown>): void {
-    if (column.getIsVisible() && this.visibleColumnCount() === 1) {
-      return;
-    }
-
-    column.toggleVisibility(!column.getIsVisible());
-  }
-
-  protected canToggleColumnVisibility(column: Column<TData, unknown>): boolean {
-    return !column.getIsVisible() || this.visibleColumnCount() > 1;
-  }
-
-  protected getColumnVisibilityAction(column: Column<TData, unknown>): string {
-    return `${column.getIsVisible() ? 'Hide' : 'Show'} ${this.getColumnLabel(column)} column`;
   }
 
   protected getPinnedLeft(column: Column<TData, unknown>): number | null {
@@ -453,20 +348,6 @@ export class NatTable<TData extends RowData = RowData> {
     return column.getIsPinned() === 'right' && column.getIsFirstColumn('right');
   }
 
-  protected getSortIcon(column: Column<TData, unknown>): string {
-    const sortState = column.getIsSorted();
-
-    if (sortState === 'asc') {
-      return '↑';
-    }
-
-    if (sortState === 'desc') {
-      return '↓';
-    }
-
-    return '↕';
-  }
-
   protected getAriaSort(column: Column<TData, unknown>): 'ascending' | 'descending' | 'none' {
     const sortState = column.getIsSorted();
 
@@ -481,40 +362,12 @@ export class NatTable<TData extends RowData = RowData> {
     return 'none';
   }
 
-  protected getSortIndicatorContext(
-    column: Column<TData, unknown>,
-  ): NatTableSortIndicatorContext<TData> {
-    const sortState = column.getIsSorted();
-
-    return {
-      $implicit: sortState,
-      sortState,
-      ariaSort: this.getAriaSort(column),
-      column,
-      label: this.getColumnLabel(column),
-    };
-  }
-
   protected isColumnAlignedEnd(column: Column<TData, unknown>): boolean {
     return column.columnDef.meta?.align === 'end';
   }
 
   protected getCellTone(cell: Cell<TData, unknown>): NatTableCellTone | null {
     return cell.column.columnDef.meta?.cellTone?.(cell.getContext()) ?? null;
-  }
-
-  protected getColumnLabel(column: Column<TData, unknown>): string {
-    const metaLabel = column.columnDef.meta?.label;
-
-    if (metaLabel) {
-      return metaLabel;
-    }
-
-    if (typeof column.columnDef.header === 'string') {
-      return column.columnDef.header;
-    }
-
-    return column.id;
   }
 
   protected onRowRendered(event: NatTableRowRenderedEvent): void {
