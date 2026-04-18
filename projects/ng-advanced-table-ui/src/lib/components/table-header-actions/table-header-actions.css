@@ -60,7 +60,7 @@
 .sort-icon {
   display: inline-flex;
   align-items: center;
-  min-width: var(--nat-table-sort-icon-min-width, 0.85rem);
+  min-width: var(--nat-table-sort-icon-min-width, 1.05rem);
   justify-content: center;
   line-height: 0;
 }
@@ -76,6 +76,8 @@
   display: block;
   overflow: visible;
   flex-shrink: 0;
+  width: var(--nat-table-sort-icon-svg-width, clamp(15px, 1.12em, 20px));
+  height: var(--nat-table-sort-icon-svg-height, clamp(24px, 1.75em, 32px));
 }
 
 /* Unsorted: outlined chevrons read clearly against light/dark headers. */
@@ -86,7 +88,7 @@
     --nat-table-sort-icon-color-idle,
     color-mix(in srgb, currentColor 78%, transparent)
   );
-  stroke-width: 1.5;
+  stroke-width: 1.65;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -110,7 +112,7 @@
 .nat-default-sort[data-sort-state='desc'] .nat-default-sort__down {
   fill: var(--nat-table-sort-icon-color, currentColor);
   stroke: var(--nat-table-sort-icon-color, currentColor);
-  stroke-width: 1.35;
+  stroke-width: 1.55;
   transform: scale(1.12);
 }
 
@@ -121,7 +123,7 @@
     --nat-table-sort-icon-color-muted,
     color-mix(in srgb, currentColor 32%, transparent)
   );
-  stroke-width: 1.35;
+  stroke-width: 1.55;
   transform: none;
 }
 
