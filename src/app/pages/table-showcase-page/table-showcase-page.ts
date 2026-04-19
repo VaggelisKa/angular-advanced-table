@@ -148,11 +148,11 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   },
   {
     accessorKey: 'change',
-    header: '24h $',
+    header: 'Chg $',
     size: 110,
     minSize: 90,
     meta: {
-      label: '24h $',
+      label: 'Chg $',
       align: 'end',
       cellTone: (context) =>
         context.row.original.status === 'Halted'
@@ -164,11 +164,11 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   },
   {
     accessorKey: 'changePercent',
-    header: '24h %',
+    header: 'Chg %',
     size: 110,
     minSize: 90,
     meta: {
-      label: '24h %',
+      label: 'Chg %',
       align: 'end',
       cellTone: (context) =>
         context.row.original.status === 'Halted'
