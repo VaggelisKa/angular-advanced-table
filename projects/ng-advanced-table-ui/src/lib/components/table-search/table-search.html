@@ -5,6 +5,7 @@
       [id]="inputId"
       type="search"
       class="search-input"
+      [attr.aria-controls]="for().tableElementId()"
       [value]="for().table.getState().globalFilter ?? ''"
       [placeholder]="placeholder()"
       (input)="onInput($event)"

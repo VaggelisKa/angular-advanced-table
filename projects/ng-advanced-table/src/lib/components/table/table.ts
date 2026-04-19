@@ -47,6 +47,23 @@ interface PinOffsets {
   right: Record<string, number>;
 }
 
+interface TableColumnAccessibilityState {
+  id: string;
+  label: string;
+  visible: boolean;
+}
+
+interface TableAccessibilitySnapshot {
+  sortingKey: string;
+  globalFilter: string;
+  columnFiltersKey: string;
+  pagination: PaginationState;
+  pageCount: number;
+  visibleRows: number;
+  totalRows: number;
+  columns: TableColumnAccessibilityState[];
+}
+
 const EMPTY_COLUMN_PINNING: ColumnPinningState = {
   left: [],
   right: [],
@@ -63,6 +80,7 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnPinning: EMPTY_COLUMN_PINNING,
   pagination: DEFAULT_PAGINATION,
 };
+let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => {
   const query = String(filterValue ?? '')
@@ -99,6 +117,12 @@ export class NatTable<TData extends RowData = RowData> {
   readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
   /** Accessible name announced for the table region. */
   readonly ariaLabel = input.required<string>();
+  /** Optional supplemental description announced when the grid receives focus. */
+  readonly ariaDescription = input('');
+  /** Instructions announced to screen readers for grid navigation. */
+  readonly keyboardInstructions = input(
+    'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
+  );
 
   /** Enables the global filter pipeline for companion search controls. */
   readonly enableGlobalFilter = input(true, { transform: booleanAttribute });
@@ -126,6 +150,8 @@ export class NatTable<TData extends RowData = RowData> {
    * Kept off by default since it installs an `afterRenderEffect` per row.
    */
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
+  /** Enables polite live announcements for sort/filter/pagination changes. */
+  readonly enableAnnouncements = input(true, { transform: booleanAttribute });
 
   /** Emits the full next state whenever the table updates any state slice. */
   readonly stateChange = output<NatTableState>();
@@ -145,6 +171,12 @@ export class NatTable<TData extends RowData = RowData> {
   );
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   private readonly hasSeededInitialState = signal(false);
+  protected readonly liveMessage = signal('');
+  protected readonly generatedTableId = `nat-table-${nextTableId++}`;
+  protected readonly tableSummaryId = `${this.generatedTableId}-summary`;
+  protected readonly tableDescriptionId = `${this.generatedTableId}-description`;
+  protected readonly tableKeyboardInstructionsId = `${this.generatedTableId}-instructions`;
+  private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
 
   protected readonly renderCycleToken = signal(0);
   protected readonly renderCycleStartedAt = signal(0);
@@ -162,6 +194,11 @@ export class NatTable<TData extends RowData = RowData> {
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
   protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
+  protected readonly visibleRowCount = computed(() => this.table.getRowModel().rows.length);
+  protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
+  protected readonly pageCount = computed(() =>
+    this.enablePagination() ? Math.max(this.table.getPageCount(), 1) : 1,
+  );
   protected readonly visibleColumnIds = computed(() =>
     this.table
       .getVisibleLeafColumns()
@@ -169,6 +206,20 @@ export class NatTable<TData extends RowData = RowData> {
       .join('|'),
   );
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
+  protected readonly tableSummary = computed(() => this.buildTableSummary());
+  protected readonly ariaDescribedBy = computed(() => {
+    const ids: string[] = [this.tableSummaryId];
+
+    if (this.ariaDescription().trim()) {
+      ids.push(this.tableDescriptionId);
+    }
+
+    if (this.keyboardInstructions().trim()) {
+      ids.push(this.tableKeyboardInstructionsId);
+    }
+
+    return ids.join(' ');
+  });
   /**
    * Raw TanStack `Table<TData>` instance.
    *
@@ -306,6 +357,27 @@ export class NatTable<TData extends RowData = RowData> {
       this.renderCycleToken.update((token) => token + 1);
     });
 
+    effect(() => {
+      if (!this.hasSeededInitialState()) {
+        return;
+      }
+
+      const snapshot = this.captureAccessibilitySnapshot();
+      const previousSnapshot = this.lastAccessibilitySnapshot;
+
+      this.lastAccessibilitySnapshot = snapshot;
+
+      if (!previousSnapshot || !this.enableAnnouncements()) {
+        return;
+      }
+
+      const message = this.describeAccessibilityChange(previousSnapshot, snapshot);
+
+      if (message) {
+        this.announce(message);
+      }
+    });
+
     afterNextRender(() => this.initializeHeaderObservation());
     afterRenderEffect(() => {
       this.visibleColumnIds();
@@ -328,6 +400,10 @@ export class NatTable<TData extends RowData = RowData> {
     this.updateState(updaters);
   }
 
+  tableElementId(): string {
+    return this.generatedTableId;
+  }
+
   protected getPinnedLeft(column: Column<TData, unknown>): number | null {
     return column.getIsPinned() === 'left' ? (this.pinOffsets().left[column.id] ?? 0) : null;
   }
@@ -348,7 +424,7 @@ export class NatTable<TData extends RowData = RowData> {
     return column.getIsPinned() === 'right' && column.getIsFirstColumn('right');
   }
 
-  protected getAriaSort(column: Column<TData, unknown>): 'ascending' | 'descending' | 'none' {
+  protected getAriaSort(column: Column<TData, unknown>): 'ascending' | 'descending' | null {
     const sortState = column.getIsSorted();
 
     if (sortState === 'asc') {
@@ -359,11 +435,15 @@ export class NatTable<TData extends RowData = RowData> {
       return 'descending';
     }
 
-    return 'none';
+    return null;
   }
 
   protected isColumnAlignedEnd(column: Column<TData, unknown>): boolean {
     return column.columnDef.meta?.align === 'end';
+  }
+
+  protected isRowHeaderCell(cell: Cell<TData, unknown>): boolean {
+    return !!cell.column.columnDef.meta?.rowHeader;
   }
 
   protected getCellTone(cell: Cell<TData, unknown>): NatTableCellTone | null {
@@ -482,6 +562,135 @@ export class NatTable<TData extends RowData = RowData> {
     this.measuredHeaderWidths.set(next);
   }
 
+  private buildTableSummary(): string {
+    const visibleRows = this.visibleRowCount();
+    const totalRows = this.totalRowCount();
+    const visibleColumns = this.visibleColumnCount();
+    const pageCount = this.pageCount();
+    const currentPage = this.mergedState().pagination.pageIndex + 1;
+    const hasFilters =
+      !!this.mergedState().globalFilter.trim() || this.mergedState().columnFilters.length > 0;
+
+    let summary =
+      visibleRows === 0
+        ? `No rows are currently shown. ${visibleColumns} visible ${pluralize('column', visibleColumns)}.`
+        : hasFilters && totalRows !== visibleRows
+          ? `Showing ${visibleRows} of ${totalRows} ${pluralize('row', totalRows)} across ${visibleColumns} visible ${pluralize('column', visibleColumns)}.`
+          : `Showing ${visibleRows} ${pluralize('row', visibleRows)} across ${visibleColumns} visible ${pluralize('column', visibleColumns)}.`;
+
+    if (this.enablePagination()) {
+      summary += ` Page ${currentPage} of ${pageCount}.`;
+    }
+
+    return summary;
+  }
+
+  private captureAccessibilitySnapshot(): TableAccessibilitySnapshot {
+    const state = this.mergedState();
+
+    return {
+      sortingKey: serializeSorting(state.sorting),
+      globalFilter: state.globalFilter.trim(),
+      columnFiltersKey: serializeColumnFilters(state.columnFilters),
+      pagination: state.pagination,
+      pageCount: this.pageCount(),
+      visibleRows: this.visibleRowCount(),
+      totalRows: this.totalRowCount(),
+      columns: this.table.getAllLeafColumns().map((column) => ({
+        id: column.id,
+        label: resolveColumnLabel(column),
+        visible: column.getIsVisible(),
+      })),
+    };
+  }
+
+  private describeAccessibilityChange(
+    previous: TableAccessibilitySnapshot,
+    next: TableAccessibilitySnapshot,
+  ): string | null {
+    if (previous.sortingKey !== next.sortingKey) {
+      return this.describeSortingChange(next);
+    }
+
+    if (
+      previous.globalFilter !== next.globalFilter ||
+      previous.columnFiltersKey !== next.columnFiltersKey
+    ) {
+      return this.describeFilteringChange(next);
+    }
+
+    if (!hasSameColumnVisibility(previous.columns, next.columns)) {
+      return this.describeColumnVisibilityChange(previous.columns, next.columns);
+    }
+
+    if (previous.pagination.pageSize !== next.pagination.pageSize) {
+      return `Showing ${next.pagination.pageSize} ${pluralize('row', next.pagination.pageSize)} per page. Page ${next.pagination.pageIndex + 1} of ${next.pageCount}.`;
+    }
+
+    if (previous.pagination.pageIndex !== next.pagination.pageIndex) {
+      return `Page ${next.pagination.pageIndex + 1} of ${next.pageCount}. ${next.visibleRows} ${pluralize('row', next.visibleRows)} shown.`;
+    }
+
+    return null;
+  }
+
+  private describeSortingChange(snapshot: TableAccessibilitySnapshot): string {
+    const sorting = this.mergedState().sorting[0];
+
+    if (!sorting) {
+      return 'Sorting cleared.';
+    }
+
+    const label =
+      snapshot.columns.find((column) => column.id === sorting.id)?.label ?? 'current column';
+    const direction = sorting.desc ? 'descending' : 'ascending';
+
+    return `Sorted by ${label} ${direction}.`;
+  }
+
+  private describeFilteringChange(snapshot: TableAccessibilitySnapshot): string {
+    const query = snapshot.globalFilter;
+
+    if (snapshot.visibleRows === 0) {
+      return query ? `No rows match "${query}".` : 'No rows match the current filters.';
+    }
+
+    if (query) {
+      return `Showing ${snapshot.visibleRows} matching ${pluralize('row', snapshot.visibleRows)} for "${query}".`;
+    }
+
+    if (snapshot.columnFiltersKey) {
+      return `Showing ${snapshot.visibleRows} filtered ${pluralize('row', snapshot.visibleRows)}.`;
+    }
+
+    return `Showing all ${snapshot.visibleRows} ${pluralize('row', snapshot.visibleRows)}.`;
+  }
+
+  private describeColumnVisibilityChange(
+    previous: readonly TableColumnAccessibilityState[],
+    next: readonly TableColumnAccessibilityState[],
+  ): string {
+    const changedColumns = next.filter((column) => {
+      const previousColumn = previous.find((candidate) => candidate.id === column.id);
+
+      return previousColumn && previousColumn.visible !== column.visible;
+    });
+    const visibleCount = next.filter((column) => column.visible).length;
+
+    if (changedColumns.length === 1) {
+      const [column] = changedColumns;
+
+      return `${column.label} column ${column.visible ? 'shown' : 'hidden'}. ${visibleCount} visible ${pluralize('column', visibleCount)}.`;
+    }
+
+    return `${visibleCount} visible ${pluralize('column', visibleCount)}.`;
+  }
+
+  private announce(message: string): void {
+    this.liveMessage.set('');
+    queueMicrotask(() => this.liveMessage.set(message));
+  }
+
   private resolveRowId(row: TData, index: number): string {
     const getRowId = this.getRowId();
 
@@ -553,4 +762,48 @@ function hasSameWidths(left: Record<string, number>, right: Record<string, numbe
   }
 
   return true;
+}
+
+function resolveColumnLabel<TData extends RowData>(column: Column<TData, unknown>): string {
+  const metaLabel = column.columnDef.meta?.label;
+
+  if (metaLabel) {
+    return metaLabel;
+  }
+
+  if (typeof column.columnDef.header === 'string') {
+    return column.columnDef.header;
+  }
+
+  const accessorKey = (column.columnDef as { accessorKey?: unknown }).accessorKey;
+
+  return typeof accessorKey === 'string' ? accessorKey : column.id || 'Column';
+}
+
+function serializeSorting(sorting: SortingState): string {
+  return sorting.map((entry) => `${entry.id}:${entry.desc ? 'desc' : 'asc'}`).join('|');
+}
+
+function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
+  return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
+}
+
+function hasSameColumnVisibility(
+  current: readonly TableColumnAccessibilityState[],
+  next: readonly TableColumnAccessibilityState[],
+): boolean {
+  if (current.length !== next.length) {
+    return false;
+  }
+
+  return current.every(
+    (column, index) =>
+      column.id === next[index]?.id &&
+      column.label === next[index]?.label &&
+      column.visible === next[index]?.visible,
+  );
+}
+
+function pluralize(noun: string, count: number): string {
+  return count === 1 ? noun : `${noun}s`;
 }

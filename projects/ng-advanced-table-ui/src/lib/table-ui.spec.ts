@@ -36,6 +36,7 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
     size: 180,
     meta: {
       label: 'Service',
+      rowHeader: true,
     },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
@@ -181,6 +182,25 @@ describe('ng-advanced-table-ui', () => {
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
   });
 
+  it('associates companion controls with the table element', () => {
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('nat-table table') as HTMLTableElement;
+    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
+    const columnChip = fixture.nativeElement.querySelector('.column-chip') as HTMLButtonElement;
+    const pageSizeButton = fixture.nativeElement.querySelector(
+      'nat-table-page-size .chip',
+    ) as HTMLButtonElement;
+    const pagerButton = fixture.nativeElement.querySelector(
+      'nat-table-pager .pager-button',
+    ) as HTMLButtonElement;
+
+    expect(searchInput.getAttribute('aria-controls')).toBe(table.id);
+    expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
+    expect(pageSizeButton.getAttribute('aria-controls')).toBe(table.id);
+    expect(pagerButton.getAttribute('aria-controls')).toBe(table.id);
+  });
+
   it('toggles column visibility and keeps the last visible column enabled', () => {
     fixture.detectChanges();
 
@@ -248,8 +268,13 @@ describe('ng-advanced-table-ui', () => {
 
     expect(headerLabel.textContent?.trim()).toBe('Service');
     expect(
-      sortIcon.querySelector('.nat-default-sort')?.getAttribute('data-sort-state'),
-    ).toBe('none');
+      fixture.nativeElement
+        .querySelector('thead th[data-column-id="name"]')
+        ?.getAttribute('aria-sort'),
+    ).toBeNull();
+    expect(sortIcon.querySelector('.nat-default-sort')?.getAttribute('data-sort-state')).toBe(
+      'none',
+    );
     expect(sortIcon.querySelector('.nat-default-sort__svg')).toBeTruthy();
     expect(pinButton.textContent?.trim()).toBe('Pin');
 
@@ -258,6 +283,11 @@ describe('ng-advanced-table-ui', () => {
 
     expect(host.tableState().sorting).toEqual([{ id: 'name', desc: false }]);
     expect(sortButton.classList.contains('is-sorted')).toBe(true);
+    expect(
+      fixture.nativeElement
+        .querySelector('thead th[data-column-id="name"]')
+        ?.getAttribute('aria-sort'),
+    ).toBe('ascending');
     expect(
       fixture.nativeElement
         .querySelector('thead th[data-column-id="name"] .nat-default-sort')
@@ -275,6 +305,33 @@ describe('ng-advanced-table-ui', () => {
     expect(pinButton.textContent?.trim()).toBe('Unpin');
     expect(pinButton.getAttribute('aria-pressed')).toBe('true');
     expect(headerLabel.textContent?.trim()).toBe('Service');
+  });
+
+  it('announces sort and filter updates through the table live region', async () => {
+    fixture.detectChanges();
+
+    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
+    const sortButton = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-button',
+    ) as HTMLButtonElement;
+    const liveRegion = fixture.nativeElement.querySelector(
+      'nat-table p[aria-live="polite"]',
+    ) as HTMLElement;
+
+    searchInput.value = 'gamma';
+    searchInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(liveRegion.textContent?.trim()).toBe('Showing 1 matching row for "gamma".');
+
+    sortButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
   });
 
   it('renders caller-provided sort indicator content through header actions', () => {

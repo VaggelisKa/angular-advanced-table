@@ -31,6 +31,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     size: 180,
     meta: {
       label: 'Service',
+      rowHeader: true,
     },
     enablePinning: true,
     cell: (info) => info.getValue<string>(),
@@ -150,6 +151,38 @@ describe('NatTable', () => {
     expect(throughputCell.getAttribute('data-tone')).toBe('positive');
   });
 
+  it('describes the current view and exposes the row header column to assistive technology', () => {
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const describedBy = table.getAttribute('aria-describedby');
+    const summary = fixture.nativeElement.querySelector(
+      `#${describedBy?.split(' ').at(0) ?? ''}`,
+    ) as HTMLElement;
+    const rowHeaderCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child th[scope="row"]',
+    ) as HTMLTableCellElement;
+
+    expect(describedBy).toContain('nat-table-');
+    expect(summary.textContent).toContain('Showing 6 rows across 4 visible columns.');
+    expect(rowHeaderCell.getAttribute('role')).toBe('rowheader');
+    expect(rowHeaderCell.getAttribute('data-column-id')).toBe('name');
+  });
+
+  it('only applies aria-sort to the actively sorted header', () => {
+    fixture.detectChanges();
+
+    const sortedHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="throughput"]',
+    ) as HTMLTableCellElement;
+    const unsortedHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLTableCellElement;
+
+    expect(sortedHeader.getAttribute('aria-sort')).toBe('descending');
+    expect(unsortedHeader.getAttribute('aria-sort')).toBeNull();
+  });
+
   it('only paginates when enablePagination is true', () => {
     fixture.destroy();
     fixture = TestBed.createComponent(TableHost);
@@ -220,7 +253,7 @@ describe('NatTable', () => {
 
     const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
     const bodyCells = Array.from(
-      fixture.nativeElement.querySelectorAll('tbody tr:first-child td'),
+      fixture.nativeElement.querySelectorAll('tbody tr:first-child th, tbody tr:first-child td'),
     ) as HTMLElement[];
 
     expect(fixture.nativeElement.querySelector('colgroup')).toBeNull();
@@ -234,6 +267,28 @@ describe('NatTable', () => {
     expect(headers[1]?.style.left).toBe('180px');
     expect(bodyCells[1]?.style.left).toBe('180px');
     expect(headers[0]?.dataset['columnId']).toBe('name');
+  });
+
+  it('moves focus with arrow keys and stops at the grid edge', () => {
+    fixture.detectChanges();
+
+    const firstRowCells = Array.from(
+      fixture.nativeElement.querySelectorAll('tbody tr:first-child th, tbody tr:first-child td'),
+    ) as HTMLElement[];
+    const [firstCell, secondCell] = firstRowCells;
+    const lastCell = firstRowCells.at(-1) as HTMLElement;
+
+    firstCell.focus();
+    firstCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(secondCell);
+
+    lastCell.focus();
+    lastCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(lastCell);
   });
 });
 

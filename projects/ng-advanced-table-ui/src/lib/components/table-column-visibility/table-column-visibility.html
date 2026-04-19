@@ -13,6 +13,7 @@
           class="chip column-chip"
           [class.is-active]="column.getIsVisible()"
           [disabled]="!canToggleColumnVisibility(column)"
+          [attr.aria-controls]="for().tableElementId()"
           [attr.aria-pressed]="column.getIsVisible()"
           [attr.aria-label]="getColumnVisibilityAction(column)"
           [attr.data-column-id]="column.id"

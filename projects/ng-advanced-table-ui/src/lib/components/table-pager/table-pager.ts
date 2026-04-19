@@ -11,7 +11,7 @@ import { NatTable } from 'ng-advanced-table';
 })
 export class NatTablePager<TData extends RowData = RowData> {
   readonly for = input.required<NatTable<TData>>();
-  readonly ariaLabel = input('Pagination');
+  readonly ariaLabel = input('Table pagination');
 
   protected readonly pageIndex = computed(() => this.for().table.getState().pagination.pageIndex);
   protected readonly pageCount = computed(() => this.for().table.getPageCount() || 1);
