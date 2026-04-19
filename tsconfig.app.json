@@ -4,7 +4,21 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": []
+    "types": [],
+    "paths": {
+      "ng-advanced-table": [
+        "./projects/ng-advanced-table/src/public-api.ts",
+        "./dist/ng-advanced-table"
+      ],
+      "ng-advanced-table-ui": [
+        "./projects/ng-advanced-table-ui/src/public-api.ts",
+        "./dist/ng-advanced-table-ui"
+      ],
+      "ng-advanced-table-utils": [
+        "./projects/ng-advanced-table-utils/src/public-api.ts",
+        "./dist/ng-advanced-table-utils"
+      ]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.spec.ts"]

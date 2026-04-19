@@ -6,16 +6,16 @@
     "baseUrl": "./",
     "paths": {
       "ng-advanced-table": [
-        "./projects/ng-advanced-table/src/public-api.ts",
-        "./dist/ng-advanced-table"
+        "./dist/ng-advanced-table",
+        "./projects/ng-advanced-table/src/public-api.ts"
       ],
       "ng-advanced-table-ui": [
-        "./projects/ng-advanced-table-ui/src/public-api.ts",
-        "./dist/ng-advanced-table-ui"
+        "./dist/ng-advanced-table-ui",
+        "./projects/ng-advanced-table-ui/src/public-api.ts"
       ],
       "ng-advanced-table-utils": [
-        "./projects/ng-advanced-table-utils/src/public-api.ts",
-        "./dist/ng-advanced-table-utils"
+        "./dist/ng-advanced-table-utils",
+        "./projects/ng-advanced-table-utils/src/public-api.ts"
       ]
     },
     "strict": true,
