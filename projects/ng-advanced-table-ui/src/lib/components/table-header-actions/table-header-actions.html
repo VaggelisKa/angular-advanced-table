@@ -6,6 +6,7 @@
       class="sort-button"
       [class.is-sorted]="!!column().getIsSorted()"
       [attr.aria-label]="getSortLabel()"
+      (pointerdown)="$event.stopPropagation()"
       (click)="toggleSort()"
     >
       <span class="header-label">
@@ -54,6 +55,7 @@
       [class.is-pinned]="isPinned()"
       [attr.aria-pressed]="isPinned()"
       [attr.aria-label]="getPinLabel()"
+      (pointerdown)="$event.stopPropagation()"
       (click)="togglePin()"
     >
       {{ isPinned() ? 'Unpin' : 'Pin' }}

@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
@@ -78,6 +79,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       ariaLabel="Operations table"
       [initialState]="initialState"
       [state]="state()"
+      [allowColumnReorder]="allowColumnReorder"
       [enablePagination]="enablePagination"
       [getRowId]="getRowId"
       (stateChange)="onStateChange($event)"
@@ -101,6 +103,7 @@ class TableHost {
     },
   };
   enablePagination = false;
+  allowColumnReorder = false;
   readonly stateEvents: NatTableState[] = [];
 
   onStateChange(state: NatTableState): void {
@@ -121,6 +124,28 @@ describe('NatTable', () => {
     host = fixture.componentInstance;
     await fixture.whenStable();
   });
+
+  async function recreateHost(
+    options: {
+      allowColumnReorder?: boolean;
+      enablePagination?: boolean;
+      initialState?: Partial<NatTableState>;
+      state?: Partial<NatTableState>;
+    } = {},
+  ): Promise<void> {
+    fixture.destroy();
+    fixture = TestBed.createComponent(TableHost);
+    host = fixture.componentInstance;
+    host.allowColumnReorder = options.allowColumnReorder ?? host.allowColumnReorder;
+    host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.initialState = options.initialState ?? host.initialState;
+
+    if (options.state) {
+      host.state.set(options.state);
+    }
+
+    await fixture.whenStable();
+  }
 
   it('renders a bare table surface with no built-in controls', () => {
     fixture.detectChanges();
@@ -183,17 +208,25 @@ describe('NatTable', () => {
     expect(unsortedHeader.getAttribute('aria-sort')).toBeNull();
   });
 
-  it('only paginates when enablePagination is true', () => {
-    fixture.destroy();
-    fixture = TestBed.createComponent(TableHost);
-    host = fixture.componentInstance;
-    host.enablePagination = true;
+  it('only paginates when enablePagination is true', async () => {
+    await recreateHost({ enablePagination: true });
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
 
     expect(rows.length).toBe(2);
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
+  });
+
+  it('only renders reorder handles when allowColumnReorder is enabled', async () => {
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.header-cell.is-reorderable')).toBeNull();
+
+    await recreateHost({ allowColumnReorder: true });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.header-cell.is-reorderable').length).toBe(3);
   });
 
   it('lets callers patch state and emits the next state', () => {
@@ -215,6 +248,22 @@ describe('NatTable', () => {
     expect(host.stateEvents.at(-1)?.pagination.pageIndex).toBe(0);
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
+  });
+
+  it('reorders visible center columns and emits the next column order when uncontrolled', async () => {
+    await recreateHost({ allowColumnReorder: true });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+    const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
+
+    expect(leafHeaderGroup).toBeTruthy();
+
+    table.onHeaderDrop(createDropEvent('region', 1, 2), leafHeaderGroup!);
+    fixture.detectChanges();
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'status', 'region', 'throughput']);
   });
 
   it('matches the stable row id during global filtering without requiring an id column', () => {
@@ -261,6 +310,115 @@ describe('NatTable', () => {
     expect(host.stateEvents.length).toBeGreaterThan(0);
   });
 
+  it('keeps controlled columnOrder external while still emitting the requested next state', async () => {
+    await recreateHost({
+      allowColumnReorder: true,
+      state: {
+        columnOrder: ['throughput', 'name', 'region', 'status'],
+      },
+    });
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'region', 'status']);
+
+    table.patchState({
+      columnOrder: ['name', 'region', 'status', 'throughput'],
+    });
+    fixture.detectChanges();
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'region', 'status']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'region', 'status', 'throughput']);
+  });
+
+  it('keeps hidden columns in their stored order when they are shown again', async () => {
+    await recreateHost({ allowColumnReorder: true });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    table.patchState({
+      columnVisibility: {
+        status: false,
+      },
+    });
+    fixture.detectChanges();
+
+    const updatedLeafHeaderGroup = table.table.getHeaderGroups().at(-1);
+
+    expect(updatedLeafHeaderGroup).toBeTruthy();
+
+    table.onHeaderDrop(createDropEvent('throughput', 2, 1), updatedLeafHeaderGroup!);
+    fixture.detectChanges();
+
+    table.patchState({
+      columnVisibility: {
+        status: true,
+      },
+    });
+    fixture.detectChanges();
+
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'throughput', 'status', 'region']);
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'status', 'region']);
+  });
+
+  it('reorders pinned left and right columns within their own zones', async () => {
+    await recreateHost({
+      allowColumnReorder: true,
+      initialState: {
+        ...host.initialState,
+        columnPinning: {
+          left: ['name', 'region'],
+          right: ['status', 'throughput'],
+        },
+      },
+    });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+    const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
+
+    expect(leafHeaderGroup).toBeTruthy();
+
+    table.onHeaderDrop(createDropEvent('name', 0, 1), leafHeaderGroup!);
+    fixture.detectChanges();
+    table.onHeaderDrop(createDropEvent('status', 2, 3), leafHeaderGroup!);
+    fixture.detectChanges();
+
+    expect(host.stateEvents.at(-1)?.columnPinning).toEqual({
+      left: ['region', 'name'],
+      right: ['throughput', 'status'],
+    });
+    expect(getHeaderColumnIds(fixture)).toEqual(['region', 'name', 'throughput', 'status']);
+  });
+
+  it('ignores attempted cross-zone drops', async () => {
+    await recreateHost({
+      allowColumnReorder: true,
+      initialState: {
+        ...host.initialState,
+        columnPinning: {
+          left: ['name'],
+          right: [],
+        },
+      },
+    });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+    const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
+
+    expect(leafHeaderGroup).toBeTruthy();
+
+    table.onHeaderDrop(createDropEvent('region', 1, 0), leafHeaderGroup!);
+    fixture.detectChanges();
+
+    expect(host.stateEvents.length).toBe(0);
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'region', 'status', 'throughput']);
+  });
+
   it('lets the browser size columns intrinsically while driving pin offsets from column sizes', () => {
     host.state.set({
       columnPinning: {
@@ -286,6 +444,34 @@ describe('NatTable', () => {
     expect(headers[1]?.style.left).toBe('180px');
     expect(bodyCells[1]?.style.left).toBe('180px');
     expect(headers[0]?.dataset['columnId']).toBe('name');
+  });
+
+  it('reorders columns from the keyboard and announces the move', async () => {
+    await recreateHost({ allowColumnReorder: true });
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        altKey: true,
+        shiftKey: true,
+        bubbles: true,
+      }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(liveRegion.textContent?.trim()).toBe(
+      'Moved Region column to position 2 of 3 in the unpinned region.',
+    );
   });
 
   it('uses the explicit pin order when computing sticky left offsets', () => {
@@ -338,6 +524,32 @@ describe('NatTable', () => {
     expect(document.activeElement).toBe(lastCell);
   });
 });
+
+type NatTableInternals = NatTable<Row> & {
+  onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number]): void;
+};
+
+function getInternalTable(fixture: ComponentFixture<TableHost>): NatTableInternals {
+  return fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTableInternals;
+}
+
+function createDropEvent(
+  columnId: string,
+  previousIndex: number,
+  currentIndex: number,
+): CdkDragDrop<string[]> {
+  return {
+    previousIndex,
+    currentIndex,
+    item: { data: columnId },
+  } as unknown as CdkDragDrop<string[]>;
+}
+
+function getHeaderColumnIds(fixture: ComponentFixture<TableHost>): string[] {
+  return Array.from(fixture.nativeElement.querySelectorAll('thead th[data-column-id]')).map(
+    (header) => (header as HTMLElement).dataset['columnId'] ?? '',
+  );
+}
 
 function buildRows(size: number): Row[] {
   const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];

@@ -35,6 +35,9 @@ describe('TableShowcasePage', () => {
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
     const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
+    const firstReorderableHeader = fixture.nativeElement.querySelector(
+      'thead th.is-reorderable',
+    ) as HTMLTableCellElement;
     const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
     const changeHeader = headers.find((header) =>
       header.textContent?.includes('Chg %'),
@@ -42,6 +45,7 @@ describe('TableShowcasePage', () => {
 
     expect(rows.length).toBe(24);
     expect(firstPinButton.textContent?.trim()).toBe('Pin');
+    expect(firstReorderableHeader).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
     expect(changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]')).toBeTruthy();
   });
@@ -148,7 +152,7 @@ describe('TableShowcasePage', () => {
     fixture.detectChanges();
 
     const marks = fixture.nativeElement.querySelectorAll(
-      'tbody td[data-column-id="symbol"] nat-ticker-mark',
+      'tbody th[data-column-id="symbol"] nat-ticker-mark',
     );
 
     expect(marks.length).toBe(24);

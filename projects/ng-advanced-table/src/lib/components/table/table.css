@@ -49,6 +49,71 @@
     var(--nat-table-header-border-color, color-mix(in srgb, currentColor 16%, transparent));
 }
 
+.header-cell-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--nat-table-space-header-content-gap, 8px);
+  min-width: 100%;
+}
+
+.header-cell-primary {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.header-cell.is-reorderable {
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.header-cell.is-reorderable:active {
+  cursor: grabbing;
+}
+
+.header-cell.cdk-drag-preview {
+  display: table-cell;
+  z-index: 12;
+  background: var(
+    --nat-table-header-background,
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+  );
+  color: var(--nat-table-header-color, inherit);
+  border-bottom-color: var(
+    --nat-table-header-border-color,
+    color-mix(in srgb, currentColor 16%, transparent)
+  );
+  opacity: 0.98;
+  box-shadow:
+    0 14px 30px color-mix(in srgb, currentColor 16%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.header-cell.is-pinned-left.cdk-drag-preview,
+.header-cell.is-pinned-right.cdk-drag-preview {
+  background: var(
+    --nat-table-pinned-background,
+    var(
+      --nat-table-header-background,
+      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+    )
+  );
+}
+
+.header-cell.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+.cdk-drop-list-dragging .header-cell.is-reorderable:not(.cdk-drag-placeholder) {
+  transition: transform 180ms ease;
+}
+
+.header-cell.cdk-drag-animating {
+  transition: transform 180ms ease;
+}
+
 .data-row {
   background: var(--nat-table-row-background, transparent);
   transition: background-color 120ms ease;

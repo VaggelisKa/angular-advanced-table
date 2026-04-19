@@ -89,6 +89,7 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       [columns]="columns"
       [state]="tableState()"
       [initialState]="initialState"
+      [allowColumnReorder]="allowColumnReorder"
       [enablePagination]="true"
       [getRowId]="getRowId"
       ariaLabel="Operations table"
@@ -108,6 +109,7 @@ class TableUiHost {
   readonly columns = withNatTableHeaderActions(baseColumns);
   readonly getRowId = (row: Row) => row.id;
   readonly pageSizeOptions = [2, 3, 5] as const;
+  allowColumnReorder = false;
   readonly tableState = signal<Partial<NatTableState>>({});
   readonly initialState: Partial<NatTableState> = {
     pagination: {
@@ -159,6 +161,18 @@ describe('ng-advanced-table-ui', () => {
     host = fixture.componentInstance;
     await fixture.whenStable();
   });
+
+  async function recreateHost(
+    options: {
+      allowColumnReorder?: boolean;
+    } = {},
+  ): Promise<void> {
+    fixture.destroy();
+    fixture = TestBed.createComponent(TableUiHost);
+    host = fixture.componentInstance;
+    host.allowColumnReorder = options.allowColumnReorder ?? host.allowColumnReorder;
+    await fixture.whenStable();
+  }
 
   it('renders projected controls inside the themed surface', () => {
     fixture.detectChanges();
@@ -250,7 +264,8 @@ describe('ng-advanced-table-ui', () => {
     });
   });
 
-  it('wraps headers with sort and pin actions without losing the original label', () => {
+  it('wraps headers with sort and pin actions without losing the original label', async () => {
+    await recreateHost({ allowColumnReorder: true });
     fixture.detectChanges();
 
     const headerLabel = fixture.nativeElement.querySelector(
@@ -265,8 +280,16 @@ describe('ng-advanced-table-ui', () => {
     const pinButton = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .pin-button',
     ) as HTMLButtonElement;
+    const reorderableHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLTableCellElement;
 
     expect(headerLabel.textContent?.trim()).toBe('Service');
+    expect(reorderableHeader.classList.contains('is-reorderable')).toBe(true);
+    expect(reorderableHeader.classList.contains('cdk-drag')).toBe(true);
+    expect(reorderableHeader.querySelector('.column-reorder-handle')).toBeNull();
+    expect(sortButton.classList.contains('cdk-drag-handle')).toBe(false);
+    expect(pinButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(
       fixture.nativeElement
         .querySelector('thead th[data-column-id="name"]')

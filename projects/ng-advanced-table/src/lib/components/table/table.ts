@@ -16,6 +16,11 @@ import {
 } from '@angular/core';
 import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDropList,
+} from '@angular/cdk/drag-drop';
+import {
   FlexRender,
   createAngularTable,
   getCoreRowModel,
@@ -25,9 +30,12 @@ import {
   type CellContext,
   type Column,
   type ColumnFiltersState,
+  type ColumnOrderState,
   type ColumnPinningState,
   type ColumnDef,
   type FilterFn,
+  type Header,
+  type HeaderGroup,
   type PaginationState,
   type RowData,
   type SortingState,
@@ -42,6 +50,7 @@ import type { NatTableCellTone, NatTableState } from './table.types';
 
 type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 
+type ColumnReorderZone = 'left' | 'center' | 'right';
 interface TableColumnAccessibilityState {
   id: string;
   label: string;
@@ -80,14 +89,18 @@ const DEFAULT_PAGINATION: PaginationState = {
   pageIndex: 0,
   pageSize: 10,
 };
+const DEFAULT_COLUMN_ORDER: ColumnOrderState = [];
 const DEFAULT_TABLE_STATE: NatTableState = {
   sorting: [],
   globalFilter: '',
   columnFilters: [],
   columnVisibility: {},
+  columnOrder: DEFAULT_COLUMN_ORDER,
   columnPinning: EMPTY_COLUMN_PINNING,
   pagination: DEFAULT_PAGINATION,
 };
+const REORDER_KEYBOARD_INSTRUCTIONS =
+  'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.';
 let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
@@ -112,7 +125,15 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   selector: 'nat-table',
   exportAs: 'natTable',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Grid, GridCell, GridRow, FlexRender, NatTableRowRenderEmitter],
+  imports: [
+    Grid,
+    GridCell,
+    GridRow,
+    CdkDropList,
+    CdkDrag,
+    FlexRender,
+    NatTableRowRenderEmitter,
+  ],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -134,6 +155,8 @@ export class NatTable<TData extends RowData = RowData> {
   readonly enableGlobalFilter = input(true, { transform: booleanAttribute });
   /** Enables sticky column pinning where the column allows it. */
   readonly allowColumnPinning = input(true, { transform: booleanAttribute });
+  /** Enables drag-and-drop and keyboard reordering for leaf header cells. */
+  readonly allowColumnReorder = input(false, { transform: booleanAttribute });
   /** Enables client-side pagination row models when external UI drives pagination state. */
   readonly enablePagination = input(false, { transform: booleanAttribute });
   /** Message rendered when the current view contains no rows. */
@@ -172,6 +195,7 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalColumnVisibility = signal<VisibilityState>(
     DEFAULT_TABLE_STATE.columnVisibility,
   );
+  private readonly internalColumnOrder = signal<ColumnOrderState>(DEFAULT_TABLE_STATE.columnOrder);
   private readonly internalColumnPinning = signal<ColumnPinningState>(
     DEFAULT_TABLE_STATE.columnPinning,
   );
@@ -186,6 +210,34 @@ export class NatTable<TData extends RowData = RowData> {
 
   protected readonly renderCycleToken = signal(0);
   protected readonly renderCycleStartedAt = signal(0);
+  private readonly allLeafColumnIds = computed(() =>
+    getColumnDefLeafIds(this.readRequiredInput(this.columns, [])),
+  );
+  private readonly resolvedColumnOrder = computed(() =>
+    normalizeColumnOrder(
+      this.state().columnOrder ?? this.internalColumnOrder(),
+      this.allLeafColumnIds(),
+    ),
+  );
+  private readonly resolvedColumnPinning = computed(() =>
+    this.allowColumnPinning()
+      ? normalizeColumnPinning(
+          this.state().columnPinning ?? this.internalColumnPinning(),
+          this.allLeafColumnIds(),
+        )
+      : EMPTY_COLUMN_PINNING,
+  );
+  protected readonly resolvedKeyboardInstructions = computed(() => {
+    const instructions = this.keyboardInstructions().trim();
+
+    if (!this.allowColumnReorder()) {
+      return instructions;
+    }
+
+    return instructions
+      ? `${instructions} ${REORDER_KEYBOARD_INSTRUCTIONS}`
+      : REORDER_KEYBOARD_INSTRUCTIONS;
+  });
 
   protected readonly headerGroups = computed(() => this.table.getHeaderGroups());
   protected readonly bodyRows = computed(() => this.table.getRowModel().rows);
@@ -198,9 +250,8 @@ export class NatTable<TData extends RowData = RowData> {
       : '',
     columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
-    columnPinning: this.allowColumnPinning()
-      ? (this.state().columnPinning ?? this.internalColumnPinning())
-      : EMPTY_COLUMN_PINNING,
+    columnOrder: this.resolvedColumnOrder(),
+    columnPinning: this.resolvedColumnPinning(),
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
@@ -216,6 +267,9 @@ export class NatTable<TData extends RowData = RowData> {
   );
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
   protected readonly tableSummary = computed(() => this.buildTableSummary());
+  protected readonly leafHeaderRowId = computed(
+    () => this.table.getHeaderGroups().at(-1)?.id ?? null,
+  );
   protected readonly ariaDescribedBy = computed(() => {
     const ids: string[] = [this.tableSummaryId];
 
@@ -223,7 +277,7 @@ export class NatTable<TData extends RowData = RowData> {
       ids.push(this.tableDescriptionId);
     }
 
-    if (this.keyboardInstructions().trim()) {
+    if (this.resolvedKeyboardInstructions().trim()) {
       ids.push(this.tableKeyboardInstructionsId);
     }
 
@@ -241,6 +295,7 @@ export class NatTable<TData extends RowData = RowData> {
     state: this.mergedState(),
     enableMultiSort: false,
     enableColumnPinning: this.allowColumnPinning(),
+    enableColumnOrdering: true,
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
     getRowId: (row, index) => this.resolveRowId(row, index),
@@ -254,6 +309,7 @@ export class NatTable<TData extends RowData = RowData> {
     onColumnFiltersChange: (updater) =>
       this.updateState({ columnFilters: updater, pagination: this.firstPageUpdater }),
     onColumnVisibilityChange: (updater) => this.updateState({ columnVisibility: updater }),
+    onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
     onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
   })) as Table<TData>;
@@ -361,6 +417,7 @@ export class NatTable<TData extends RowData = RowData> {
       this.internalColumnVisibility.set(
         initialState.columnVisibility ?? DEFAULT_TABLE_STATE.columnVisibility,
       );
+      this.internalColumnOrder.set(initialState.columnOrder ?? DEFAULT_TABLE_STATE.columnOrder);
       this.internalColumnPinning.set(
         this.allowColumnPinning()
           ? (initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning)
@@ -437,6 +494,92 @@ export class NatTable<TData extends RowData = RowData> {
     return this.generatedTableId;
   }
 
+  protected isLeafHeaderRow(headerGroup: HeaderGroup<TData>): boolean {
+    return headerGroup.id === this.leafHeaderRowId();
+  }
+
+  protected getHeaderRowColumnIds(headerGroup: HeaderGroup<TData>): string[] {
+    return headerGroup.headers
+      .filter((header) => !header.isPlaceholder)
+      .map((header) => header.column.id);
+  }
+
+  protected canReorderHeader(header: Header<TData, unknown>): boolean {
+    if (!this.allowColumnReorder() || header.isPlaceholder) {
+      return false;
+    }
+
+    return this.getVisibleZoneColumnIds(this.getColumnZone(header.column)).length > 1;
+  }
+
+  protected onHeaderDrop(
+    event: CdkDragDrop<string[]>,
+    headerGroup: HeaderGroup<TData>,
+  ): void {
+    if (
+      !this.allowColumnReorder() ||
+      !this.isLeafHeaderRow(headerGroup) ||
+      event.previousIndex === event.currentIndex
+    ) {
+      return;
+    }
+
+    const rowColumnIds = this.getHeaderRowColumnIds(headerGroup);
+    const movingColumnId = this.resolveDraggedColumnId(event, rowColumnIds);
+
+    if (!movingColumnId) {
+      return;
+    }
+
+    const zone = this.getColumnZoneById(movingColumnId);
+
+    if (!zone || !this.isDropIndexWithinZone(rowColumnIds, zone, event.currentIndex)) {
+      return;
+    }
+
+    const reorderedRowColumnIds = moveItemInArrayCopy(
+      rowColumnIds,
+      event.previousIndex,
+      event.currentIndex,
+    );
+    const nextVisibleZoneOrder = reorderedRowColumnIds.filter(
+      (columnId) => this.getColumnZoneById(columnId) === zone,
+    );
+
+    this.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
+  }
+
+  protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
+    if (!this.allowColumnReorder() || !event.altKey || !event.shiftKey) {
+      return;
+    }
+
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+      return;
+    }
+
+    const zone = this.getColumnZone(column);
+    const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+    const currentIndex = visibleZoneColumnIds.indexOf(column.id);
+
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const nextIndex = currentIndex + (event.key === 'ArrowLeft' ? -1 : 1);
+
+    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
+
+    this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
+  }
+
   protected getCellTone(
     column: Column<TData, unknown>,
     context: CellContext<TData, unknown>,
@@ -467,7 +610,14 @@ export class NatTable<TData extends RowData = RowData> {
         currentState.columnVisibility,
         updaters.columnVisibility,
       ),
-      columnPinning: this.resolveUpdater(currentState.columnPinning, updaters.columnPinning),
+      columnOrder: normalizeColumnOrder(
+        this.resolveUpdater(currentState.columnOrder, updaters.columnOrder),
+        this.allLeafColumnIds(),
+      ),
+      columnPinning: normalizeColumnPinning(
+        this.resolveUpdater(currentState.columnPinning, updaters.columnPinning),
+        this.allLeafColumnIds(),
+      ),
       pagination: this.resolveUpdater(currentState.pagination, updaters.pagination),
     };
 
@@ -492,6 +642,10 @@ export class NatTable<TData extends RowData = RowData> {
       this.internalColumnVisibility.set(nextState.columnVisibility);
     }
 
+    if (this.state().columnOrder === undefined) {
+      this.internalColumnOrder.set(nextState.columnOrder);
+    }
+
     if (this.state().columnPinning === undefined) {
       this.internalColumnPinning.set(nextState.columnPinning);
     }
@@ -499,6 +653,139 @@ export class NatTable<TData extends RowData = RowData> {
     if (this.state().pagination === undefined) {
       this.internalPagination.set(nextState.pagination);
     }
+  }
+
+  private resolveDraggedColumnId(
+    event: CdkDragDrop<string[]>,
+    rowColumnIds: readonly string[],
+  ): string | null {
+    const draggedColumnId = event.item.data;
+
+    if (typeof draggedColumnId === 'string' && rowColumnIds.includes(draggedColumnId)) {
+      return draggedColumnId;
+    }
+
+    return rowColumnIds[event.previousIndex] ?? null;
+  }
+
+  private isDropIndexWithinZone(
+    rowColumnIds: readonly string[],
+    zone: ColumnReorderZone,
+    currentIndex: number,
+  ): boolean {
+    const zoneIndices = rowColumnIds.reduce<number[]>((indices, columnId, index) => {
+      if (this.getColumnZoneById(columnId) === zone) {
+        indices.push(index);
+      }
+
+      return indices;
+    }, []);
+
+    if (!zoneIndices.length) {
+      return false;
+    }
+
+    return currentIndex >= zoneIndices[0] && currentIndex <= zoneIndices[zoneIndices.length - 1];
+  }
+
+  private applyVisibleZoneReorder(
+    zone: ColumnReorderZone,
+    movingColumnId: string,
+    nextVisibleZoneOrder: readonly string[],
+  ): void {
+    const currentState = this.mergedState();
+    const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+    const movingColumn = this.table.getColumn(movingColumnId);
+
+    if (
+      !movingColumn ||
+      !currentVisibleZoneColumnIds.length ||
+      hasSameStringOrder(currentVisibleZoneColumnIds, nextVisibleZoneOrder)
+    ) {
+      return;
+    }
+
+    const label = resolveColumnLabel(movingColumn);
+
+    if (zone === 'center') {
+      const nextColumnOrder = replaceIdsInSlots(
+        currentState.columnOrder,
+        nextVisibleZoneOrder,
+        new Set(currentVisibleZoneColumnIds),
+      );
+
+      if (hasSameStringOrder(currentState.columnOrder, nextColumnOrder)) {
+        return;
+      }
+
+      this.updateState({ columnOrder: nextColumnOrder });
+      this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+      return;
+    }
+
+    const currentPinnedZoneOrder =
+      (zone === 'left' ? currentState.columnPinning.left : currentState.columnPinning.right) ?? [];
+    const nextPinnedZoneOrder = replaceIdsInSlots(
+      currentPinnedZoneOrder,
+      nextVisibleZoneOrder,
+      new Set(currentVisibleZoneColumnIds),
+    );
+
+    if (hasSameStringOrder(currentPinnedZoneOrder, nextPinnedZoneOrder)) {
+      return;
+    }
+
+    this.updateState({
+      columnPinning: {
+        ...currentState.columnPinning,
+        [zone]: nextPinnedZoneOrder,
+      },
+    });
+    this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+  }
+
+  private announceColumnReorder(
+    label: string,
+    zone: ColumnReorderZone,
+    nextVisibleZoneOrder: readonly string[],
+    movingColumnId: string,
+  ): void {
+    const nextIndex = nextVisibleZoneOrder.indexOf(movingColumnId);
+
+    if (nextIndex === -1) {
+      return;
+    }
+
+    this.announce(
+      `Moved ${label} column to position ${nextIndex + 1} of ${nextVisibleZoneOrder.length} in the ${describeColumnZone(zone)} region.`,
+    );
+  }
+
+  private getColumnZone(column: Column<TData, unknown>): ColumnReorderZone {
+    const pinnedState = column.getIsPinned();
+
+    if (pinnedState === 'left') {
+      return 'left';
+    }
+
+    if (pinnedState === 'right') {
+      return 'right';
+    }
+
+    return 'center';
+  }
+
+  private getColumnZoneById(columnId: string): ColumnReorderZone | null {
+    const column = this.table.getColumn(columnId);
+
+    return column ? this.getColumnZone(column) : null;
+  }
+
+  private getVisibleZoneColumnIds(zone: ColumnReorderZone): string[] {
+    return this.table
+      .getVisibleLeafColumns()
+      .filter((column) => this.getColumnZone(column) === zone)
+      .map((column) => column.id);
   }
 
   private initializeHeaderObservation(): void {
@@ -712,6 +999,129 @@ export class NatTable<TData extends RowData = RowData> {
   }
 }
 
+function getColumnDefLeafIds<TData extends RowData>(
+  columns: readonly ColumnDef<TData, unknown>[],
+): string[] {
+  return columns.flatMap((column) => {
+    const childColumns = (column as ColumnDef<TData, unknown> & {
+      columns?: readonly ColumnDef<TData, unknown>[];
+    }).columns;
+
+    if (childColumns?.length) {
+      return getColumnDefLeafIds(childColumns);
+    }
+
+    const columnId = resolveColumnDefId(column);
+
+    return columnId ? [columnId] : [];
+  });
+}
+
+function resolveColumnDefId<TData extends RowData>(column: ColumnDef<TData, unknown>): string | null {
+  if (column.id) {
+    return column.id;
+  }
+
+  const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
+
+  if (typeof accessorKey === 'string') {
+    return accessorKey;
+  }
+
+  return typeof column.header === 'string' ? column.header : null;
+}
+
+function normalizeColumnOrder(
+  columnOrder: readonly string[],
+  allLeafColumnIds: readonly string[],
+): ColumnOrderState {
+  const validColumnIds = new Set(allLeafColumnIds);
+  const nextOrder = uniqueStringValues(columnOrder.filter((columnId) => validColumnIds.has(columnId)));
+
+  for (const columnId of allLeafColumnIds) {
+    if (!nextOrder.includes(columnId)) {
+      nextOrder.push(columnId);
+    }
+  }
+
+  return nextOrder;
+}
+
+function normalizeColumnPinning(
+  columnPinning: ColumnPinningState,
+  allLeafColumnIds: readonly string[],
+): ColumnPinningState {
+  const validColumnIds = new Set(allLeafColumnIds);
+  const leftColumnIds = columnPinning.left ?? [];
+  const rightColumnIds = columnPinning.right ?? [];
+
+  return {
+    left: uniqueStringValues(leftColumnIds.filter((columnId) => validColumnIds.has(columnId))),
+    right: uniqueStringValues(rightColumnIds.filter((columnId) => validColumnIds.has(columnId))),
+  };
+}
+
+function uniqueStringValues(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+
+  return values.filter((value) => {
+    if (seen.has(value)) {
+      return false;
+    }
+
+    seen.add(value);
+    return true;
+  });
+}
+
+function moveItemInArrayCopy(values: readonly string[], fromIndex: number, toIndex: number): string[] {
+  const nextValues = [...values];
+  const [movedValue] = nextValues.splice(fromIndex, 1);
+
+  if (movedValue === undefined) {
+    return nextValues;
+  }
+
+  nextValues.splice(toIndex, 0, movedValue);
+  return nextValues;
+}
+
+function replaceIdsInSlots(
+  currentOrder: readonly string[],
+  nextVisibleOrder: readonly string[],
+  movableIds: ReadonlySet<string>,
+): string[] {
+  const nextValues = [...nextVisibleOrder];
+
+  return currentOrder.map((columnId) => {
+    if (!movableIds.has(columnId)) {
+      return columnId;
+    }
+
+    return nextValues.shift() ?? columnId;
+  });
+}
+
+function hasSameStringOrder(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((value, index) => value === right[index]);
+}
+
+function describeColumnZone(zone: ColumnReorderZone): string {
+  if (zone === 'left') {
+    return 'left pinned';
+  }
+
+  if (zone === 'right') {
+    return 'right pinned';
+  }
+
+  return 'unpinned';
+}
+
 function matchesFilterQuery(value: unknown, query: string): boolean {
   if (value === null || value === undefined) {
     return false;
@@ -790,12 +1200,14 @@ function hasSameColumnVisibility(
     return false;
   }
 
-  return current.every(
-    (column, index) =>
-      column.id === next[index]?.id &&
-      column.label === next[index]?.label &&
-      column.visible === next[index]?.visible,
-  );
+  return current.every((column) => {
+    const nextColumn = next.find((candidate) => candidate.id === column.id);
+
+    return (
+      nextColumn?.label === column.label &&
+      nextColumn.visible === column.visible
+    );
+  });
 }
 
 function pluralize(noun: string, count: number): string {
