@@ -54,7 +54,7 @@ function wrapColumnHeader<TData extends RowData>(
           context: context as HeaderContext<RowData, unknown>,
           content: originalHeader as NatTableHeaderRenderContent,
           label,
-          accessibilityLabels: options.accessibilityLabels ?? options.labels,
+          accessibilityLabels: options.accessibilityLabels,
           sortIndicator: options.sortIndicator,
         },
       }),

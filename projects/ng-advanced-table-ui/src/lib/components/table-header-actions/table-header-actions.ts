@@ -46,8 +46,6 @@ export interface NatTableHeaderActionsOptions {
   sortIndicator?: NatTableSortIndicatorContent;
   /** Optional accessibility label overrides for the built-in sort and pin actions. */
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
-  /** @deprecated Use `accessibilityLabels`. */
-  labels?: NatTableAccessibilityHeaderActionLabels;
 }
 
 @Component({
@@ -65,9 +63,6 @@ export class NatTableHeaderActions {
   readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(
     undefined,
   );
-  readonly legacyLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(undefined, {
-    alias: 'labels',
-  });
 
   protected canSort(): boolean {
     return this.column().getCanSort();
@@ -171,6 +166,6 @@ export class NatTableHeaderActions {
   }
 
   private resolveAccessibilityLabels(): NatTableAccessibilityHeaderActionLabels {
-    return this.accessibilityLabels() ?? this.legacyLabels() ?? {};
+    return this.accessibilityLabels() ?? {};
   }
 }

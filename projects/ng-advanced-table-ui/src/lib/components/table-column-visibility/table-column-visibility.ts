@@ -35,12 +35,6 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
   readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(
     undefined,
   );
-  readonly legacyLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(
-    undefined,
-    {
-      alias: 'labels',
-    },
-  );
   protected readonly tableElementId = computed(() => this.for().tableElementId());
 
   private readonly allLeafColumns = computed(() => this.for().table.getAllLeafColumns());
@@ -48,9 +42,7 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
     () => this.for().table.getVisibleLeafColumns().length,
   );
   protected readonly totalColumnCount = computed(() => this.allLeafColumns().length);
-  private readonly resolvedAccessibilityLabels = computed(
-    () => this.accessibilityLabels() ?? this.legacyLabels() ?? {},
-  );
+  private readonly resolvedAccessibilityLabels = computed(() => this.accessibilityLabels() ?? {});
   protected readonly resolvedHeading = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 

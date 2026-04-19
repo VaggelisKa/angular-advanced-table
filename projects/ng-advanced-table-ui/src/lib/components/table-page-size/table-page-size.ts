@@ -30,16 +30,11 @@ export class NatTablePageSize<TData extends RowData = RowData> {
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
   readonly ariaLabel = input('Rows per page');
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
-  readonly legacyLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined, {
-    alias: 'labels',
-  });
 
   protected readonly table = computed(() => this.for().table);
   protected readonly tableElementId = computed(() => this.for().tableElementId());
   protected readonly selectedPageSize = computed(() => this.table().getState().pagination.pageSize);
-  private readonly resolvedAccessibilityLabels = computed(
-    () => this.accessibilityLabels() ?? this.legacyLabels() ?? {},
-  );
+  private readonly resolvedAccessibilityLabels = computed(() => this.accessibilityLabels() ?? {});
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 

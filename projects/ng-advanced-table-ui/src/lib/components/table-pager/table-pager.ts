@@ -16,9 +16,6 @@ export class NatTablePager<TData extends RowData = RowData> {
   readonly for = input.required<NatTable<TData>>();
   readonly ariaLabel = input('Table pagination');
   readonly accessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
-  readonly legacyLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined, {
-    alias: 'labels',
-  });
 
   protected readonly table = computed(() => this.for().table);
   protected readonly tableElementId = computed(() => this.for().tableElementId());
@@ -27,9 +24,7 @@ export class NatTablePager<TData extends RowData = RowData> {
   protected readonly currentPage = computed(() => this.pageIndex() + 1);
   protected readonly canPreviousPage = computed(() => this.table().getCanPreviousPage());
   protected readonly canNextPage = computed(() => this.table().getCanNextPage());
-  private readonly resolvedAccessibilityLabels = computed(
-    () => this.accessibilityLabels() ?? this.legacyLabels() ?? {},
-  );
+  private readonly resolvedAccessibilityLabels = computed(() => this.accessibilityLabels() ?? {});
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
