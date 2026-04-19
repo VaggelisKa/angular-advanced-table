@@ -14,11 +14,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Grid, GridCell, GridCellWidget, GridRow } from '@angular/aria/grid';
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import {
   CdkDrag,
   CdkDragDrop,
-  CdkDragHandle,
   CdkDropList,
 } from '@angular/cdk/drag-drop';
 import {
@@ -124,11 +123,9 @@ const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => 
   imports: [
     Grid,
     GridCell,
-    GridCellWidget,
     GridRow,
     CdkDropList,
     CdkDrag,
-    CdkDragHandle,
     FlexRender,
     NatTableRowRenderEmitter,
   ],
@@ -481,10 +478,6 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     return this.getVisibleZoneColumnIds(this.getColumnZone(header.column)).length > 1;
-  }
-
-  protected getColumnReorderHandleLabel(column: Column<TData, unknown>): string {
-    return `Reorder ${resolveColumnLabel(column)} column`;
   }
 
   protected onHeaderDrop(

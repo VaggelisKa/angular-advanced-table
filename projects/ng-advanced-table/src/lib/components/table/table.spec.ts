@@ -221,12 +221,12 @@ describe('NatTable', () => {
   it('only renders reorder handles when allowColumnReorder is enabled', async () => {
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.column-reorder-handle')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.header-cell.is-reorderable')).toBeNull();
 
     await recreateHost({ allowColumnReorder: true });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.column-reorder-handle').length).toBe(3);
+    expect(fixture.nativeElement.querySelectorAll('.header-cell.is-reorderable').length).toBe(3);
   });
 
   it('lets callers patch state and emits the next state', () => {

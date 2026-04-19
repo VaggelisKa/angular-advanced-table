@@ -31,6 +31,7 @@
               ngGridCell
               cdkDrag
               cdkDragLockAxis="x"
+              cdkDragPreviewContainer="parent"
               role="columnheader"
               class="header-cell"
               [class.is-align-end]="isColumnAlignedEnd(header.column)"
@@ -62,18 +63,6 @@
                       {{ rendered }}
                     </ng-container>
                   </span>
-
-                  @if (canReorderHeader(header)) {
-                    <button
-                      type="button"
-                      ngGridCellWidget
-                      cdkDragHandle
-                      class="column-reorder-handle"
-                      [attr.aria-label]="getColumnReorderHandleLabel(header.column)"
-                    >
-                      <span aria-hidden="true">::</span>
-                    </button>
-                  }
                 </div>
               }
             </th>

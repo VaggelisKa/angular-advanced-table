@@ -54,6 +54,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--nat-table-space-header-content-gap, 8px);
+  min-width: 100%;
 }
 
 .header-cell-primary {
@@ -63,47 +64,42 @@
 }
 
 .header-cell.is-reorderable {
-  touch-action: pan-y;
-}
-
-.column-reorder-handle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  min-width: 26px;
-  min-height: 26px;
-  padding: 0 6px;
-  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 6%, transparent);
-  color: color-mix(in srgb, currentColor 72%, transparent);
-  font: inherit;
-  letter-spacing: 0.08em;
   cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
 }
 
-.column-reorder-handle:hover {
-  background: color-mix(in srgb, currentColor 12%, transparent);
-  color: inherit;
-}
-
-.column-reorder-handle:active {
+.header-cell.is-reorderable:active {
   cursor: grabbing;
-}
-
-.column-reorder-handle:focus-visible {
-  outline: var(--nat-table-focus-ring-width, 2px) solid
-    var(--nat-table-focus-ring-color, currentColor);
-  outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }
 
 .header-cell.cdk-drag-preview {
   display: table-cell;
   z-index: 12;
+  background: var(
+    --nat-table-header-background,
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+  );
+  color: var(--nat-table-header-color, inherit);
+  border-bottom-color: var(
+    --nat-table-header-border-color,
+    color-mix(in srgb, currentColor 16%, transparent)
+  );
+  opacity: 0.98;
   box-shadow:
     0 14px 30px color-mix(in srgb, currentColor 16%, transparent),
     0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.header-cell.is-pinned-left.cdk-drag-preview,
+.header-cell.is-pinned-right.cdk-drag-preview {
+  background: var(
+    --nat-table-pinned-background,
+    var(
+      --nat-table-header-background,
+      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+    )
+  );
 }
 
 .header-cell.cdk-drag-placeholder {

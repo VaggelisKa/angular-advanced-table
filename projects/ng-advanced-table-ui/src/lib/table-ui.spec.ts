@@ -268,13 +268,14 @@ describe('ng-advanced-table-ui', () => {
     const pinButton = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .pin-button',
     ) as HTMLButtonElement;
-    const reorderHandle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"] .column-reorder-handle',
-    ) as HTMLButtonElement;
+    const reorderableHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLTableCellElement;
 
     expect(headerLabel.textContent?.trim()).toBe('Service');
-    expect(reorderHandle).toBeTruthy();
-    expect(reorderHandle.classList.contains('cdk-drag-handle')).toBe(true);
+    expect(reorderableHeader.classList.contains('is-reorderable')).toBe(true);
+    expect(reorderableHeader.classList.contains('cdk-drag')).toBe(true);
+    expect(reorderableHeader.querySelector('.column-reorder-handle')).toBeNull();
     expect(sortButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(pinButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(
