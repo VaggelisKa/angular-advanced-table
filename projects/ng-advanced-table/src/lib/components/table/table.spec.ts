@@ -266,6 +266,25 @@ describe('NatTable', () => {
     expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'status', 'region', 'throughput']);
   });
 
+  it('matches the stable row id during global filtering without requiring an id column', () => {
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+
+    table.patchState({
+      globalFilter: 'svc-00003',
+      pagination: (currentPagination) => ({
+        ...currentPagination,
+        pageIndex: 0,
+      }),
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
+  });
+
   it('respects controlled state slices without mutating the rendered table', () => {
     host.state.set({
       columnVisibility: {
@@ -453,6 +472,34 @@ describe('NatTable', () => {
     expect(liveRegion.textContent?.trim()).toBe(
       'Moved Region column to position 2 of 3 in the unpinned region.',
     );
+  });
+
+  it('uses the explicit pin order when computing sticky left offsets', () => {
+    host.state.set({
+      columnPinning: {
+        left: ['region', 'name'],
+        right: [],
+      },
+    });
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLElement;
+    const nameHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const regionCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="region"]',
+    ) as HTMLElement;
+    const nameCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child th[data-column-id="name"]',
+    ) as HTMLElement;
+
+    expect(regionHeader.style.left).toBe('0px');
+    expect(nameHeader.style.left).toBe('140px');
+    expect(regionCell.style.left).toBe('0px');
+    expect(nameCell.style.left).toBe('140px');
   });
 
   it('moves focus with arrow keys and stops at the grid edge', () => {

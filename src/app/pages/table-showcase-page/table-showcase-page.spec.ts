@@ -40,7 +40,7 @@ describe('TableShowcasePage', () => {
     ) as HTMLTableCellElement;
     const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
     const changeHeader = headers.find((header) =>
-      header.textContent?.includes('24h %'),
+      header.textContent?.includes('Chg %'),
     ) as HTMLElement;
 
     expect(rows.length).toBe(24);

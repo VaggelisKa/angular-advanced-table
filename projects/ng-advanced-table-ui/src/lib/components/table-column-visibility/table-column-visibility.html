@@ -7,20 +7,20 @@
       </span>
     </div>
     <div class="chip-row" role="group" [attr.aria-label]="ariaLabel()">
-      @for (column of columns(); track column.id) {
+      @for (column of columns(); track column.column.id) {
         <button
           type="button"
           class="chip column-chip"
-          [class.is-active]="column.getIsVisible()"
-          [disabled]="!canToggleColumnVisibility(column)"
-          [attr.aria-controls]="for().tableElementId()"
-          [attr.aria-pressed]="column.getIsVisible()"
-          [attr.aria-label]="getColumnVisibilityAction(column)"
-          [attr.data-column-id]="column.id"
+          [class.is-active]="column.visible"
+          [disabled]="!column.canToggle"
+          [attr.aria-controls]="tableElementId()"
+          [attr.aria-pressed]="column.visible"
+          [attr.aria-label]="column.actionLabel"
+          [attr.data-column-id]="column.column.id"
           (click)="toggleColumnVisibility(column)"
         >
-          <span>{{ getColumnLabel(column) }}</span>
-          <span class="chip-count">{{ column.getIsVisible() ? 'Shown' : 'Hidden' }}</span>
+          <span>{{ column.label }}</span>
+          <span class="chip-count">{{ column.visible ? 'Shown' : 'Hidden' }}</span>
         </button>
       }
     </div>

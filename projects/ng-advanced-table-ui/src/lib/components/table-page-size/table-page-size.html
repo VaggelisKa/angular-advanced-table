@@ -4,10 +4,10 @@
       <button
         type="button"
         class="chip"
-        [class.is-active]="for().table.getState().pagination.pageSize === size"
-        [attr.aria-controls]="for().tableElementId()"
+        [class.is-active]="selectedPageSize() === size"
+        [attr.aria-controls]="tableElementId()"
         [attr.aria-label]="'Show ' + size + ' rows per page'"
-        [attr.aria-pressed]="for().table.getState().pagination.pageSize === size"
+        [attr.aria-pressed]="selectedPageSize() === size"
         (click)="setPageSize(size)"
       >
         {{ size }} / page
