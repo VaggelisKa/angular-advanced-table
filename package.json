@@ -14,6 +14,8 @@
     "changeset": "changeset",
     "changeset:status": "changeset status --since=origin/main",
     "version:packages": "changeset version",
+    "version:release": "npm run version:packages && npm install --package-lock-only",
+    "release": "npm run build:packages && changeset publish",
     "pack:dry-run": "npm pack --dry-run ./dist/ng-advanced-table && npm pack --dry-run ./dist/ng-advanced-table-ui && npm pack --dry-run ./dist/ng-advanced-table-utils",
     "verify": "npm run test:packages && npm run build:packages && npm run build:showcase && npm run pack:dry-run"
   },

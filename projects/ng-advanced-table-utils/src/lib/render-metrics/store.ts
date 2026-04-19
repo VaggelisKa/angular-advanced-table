@@ -1,6 +1,6 @@
 import { computed, signal, type Signal } from '@angular/core';
-import type { NatTableRowRenderedEvent } from 'ng-advanced-table';
 
+import type { NatTableRenderMetricsEvent } from './contracts';
 import { getRowRenderTone, roundToSingleDecimal } from './tone';
 import type { RowRenderMeasurement, RowRenderMetric } from './types';
 
@@ -64,7 +64,7 @@ export class NatTableRenderMetricsStore {
    *
    * @param event Row-level render event payload from the table.
    */
-  record(event: NatTableRowRenderedEvent): void {
+  record(event: NatTableRenderMetricsEvent): void {
     const metric: RowRenderMetric = {
       durationMs: event.durationMs,
       measuredAt: Date.now(),
