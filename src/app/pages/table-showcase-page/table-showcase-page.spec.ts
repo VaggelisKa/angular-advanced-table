@@ -152,7 +152,7 @@ describe('TableShowcasePage', () => {
     fixture.detectChanges();
 
     const marks = fixture.nativeElement.querySelectorAll(
-      'tbody td[data-column-id="symbol"] nat-ticker-mark',
+      'tbody th[data-column-id="symbol"] nat-ticker-mark',
     );
 
     expect(marks.length).toBe(24);

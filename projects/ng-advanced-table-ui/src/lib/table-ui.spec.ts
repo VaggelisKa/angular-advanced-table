@@ -162,6 +162,18 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
   });
 
+  async function recreateHost(
+    options: {
+      allowColumnReorder?: boolean;
+    } = {},
+  ): Promise<void> {
+    fixture.destroy();
+    fixture = TestBed.createComponent(TableUiHost);
+    host = fixture.componentInstance;
+    host.allowColumnReorder = options.allowColumnReorder ?? host.allowColumnReorder;
+    await fixture.whenStable();
+  }
+
   it('renders projected controls inside the themed surface', () => {
     fixture.detectChanges();
 
@@ -252,8 +264,8 @@ describe('ng-advanced-table-ui', () => {
     });
   });
 
-  it('wraps headers with sort and pin actions without losing the original label', () => {
-    host.allowColumnReorder = true;
+  it('wraps headers with sort and pin actions without losing the original label', async () => {
+    await recreateHost({ allowColumnReorder: true });
     fixture.detectChanges();
 
     const headerLabel = fixture.nativeElement.querySelector(
