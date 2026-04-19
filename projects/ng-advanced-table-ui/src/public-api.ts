@@ -8,4 +8,10 @@ export type {
   NatTableHeaderActionsOptions,
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
-export type { NatTableSortDirection, NatTableSortIndicatorContext } from 'ng-advanced-table';
+export type {
+  NatTableColumnMeta,
+  NatTableSortDirection,
+  NatTableSortIndicatorContext,
+  NatTableUiController,
+  NatTableUiState,
+} from './lib/shared/table-ui.types';

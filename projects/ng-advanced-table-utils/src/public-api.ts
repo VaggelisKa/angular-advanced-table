@@ -3,6 +3,12 @@ export { NatRenderMetricsFilter } from './lib/render-metrics/filter';
 export { NatRenderMetricsPanel } from './lib/render-metrics/panel';
 export { withRenderMetricsColumn } from './lib/render-metrics/column';
 export type { WithRenderMetricsColumnOptions } from './lib/render-metrics/column';
+export type {
+  NatTableColumnMeta,
+  NatTableRenderMetricsController,
+  NatTableRenderMetricsEvent,
+  NatTableRenderMetricsState,
+} from './lib/render-metrics/contracts';
 export { getRowRenderTone, getRenderToneLabel, isRenderFilterValue } from './lib/render-metrics/tone';
 export {
   RENDER_FILTER_OPTIONS,

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTable } from 'ng-advanced-table';
+import type { NatTableUiController } from '../../shared/table-ui.types';
 
 let nextSearchFieldId = 0;
 
@@ -12,7 +12,7 @@ let nextSearchFieldId = 0;
   styleUrl: './table-search.css',
 })
 export class NatTableSearch<TData extends RowData = RowData> {
-  readonly for = input.required<NatTable<TData>>();
+  readonly for = input.required<NatTableUiController<TData>>();
   readonly label = input('Search rows');
   readonly placeholder = input('Search rows');
 

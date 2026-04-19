@@ -14,8 +14,10 @@
     "changeset": "changeset",
     "changeset:status": "changeset status --since=origin/main",
     "version:packages": "changeset version",
+    "verify:release-metadata": "node ./scripts/validate-workspace-release.mjs",
+    "release:plan": "node ./scripts/release-workspace-plan.mjs",
     "pack:dry-run": "npm pack --dry-run ./dist/ng-advanced-table && npm pack --dry-run ./dist/ng-advanced-table-ui && npm pack --dry-run ./dist/ng-advanced-table-utils",
-    "verify": "npm run test:packages && npm run build:packages && npm run build:showcase && npm run pack:dry-run"
+    "verify": "npm run verify:release-metadata && npm run test:packages && npm run build:packages && npm run build:showcase && npm run pack:dry-run"
   },
   "private": true,
   "packageManager": "npm@11.11.0",

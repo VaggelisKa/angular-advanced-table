@@ -3,8 +3,6 @@ import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/an
 
 import {
   NatTable,
-  type NatTableRowRenderedEvent,
-  type NatTableSortIndicatorContext,
   type NatTableState,
 } from 'ng-advanced-table';
 import {
@@ -13,12 +11,14 @@ import {
   NatTablePager,
   NatTableSearch,
   NatTableSurface,
+  type NatTableSortIndicatorContext,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
   NatTableRenderMetricsStore,
+  type NatTableRenderMetricsEvent,
   withRenderMetricsColumn,
 } from 'ng-advanced-table-utils';
 
@@ -440,7 +440,7 @@ export class TableShowcasePage {
     });
   }
 
-  protected onRowRendered(event: NatTableRowRenderedEvent): void {
+  protected onRowRendered(event: NatTableRenderMetricsEvent): void {
     this.metricsStore.record(event);
   }
 

@@ -58,31 +58,18 @@ jobs:
           npm run version:packages
           npm install --package-lock-only
 
+      - name: Validate workspace release metadata
+        run: npm run verify:release-metadata
+
       - name: Determine packages to release
         id: release_set
         shell: bash
         run: |
-          core_version=$(node -p "require('./projects/ng-advanced-table/package.json').version")
-          utils_version=$(node -p "require('./projects/ng-advanced-table-utils/package.json').version")
-          publish_core=false
-          publish_utils=false
+          node ./scripts/release-workspace-plan.mjs > "$RUNNER_TEMP/release-plan.json"
+          publish_count=$(node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); console.log(plan.packages.length);" "$RUNNER_TEMP/release-plan.json")
+          echo "publish_count=$publish_count" >> "$GITHUB_OUTPUT"
 
-          if ! git diff --quiet -- projects/ng-advanced-table/package.json; then
-            publish_core=true
-            echo "core_version=$core_version" >> "$GITHUB_OUTPUT"
-            echo "core_tag=ng-advanced-table@$core_version" >> "$GITHUB_OUTPUT"
-          fi
-
-          if ! git diff --quiet -- projects/ng-advanced-table-utils/package.json; then
-            publish_utils=true
-            echo "utils_version=$utils_version" >> "$GITHUB_OUTPUT"
-            echo "utils_tag=ng-advanced-table-utils@$utils_version" >> "$GITHUB_OUTPUT"
-          fi
-
-          echo "publish_core=$publish_core" >> "$GITHUB_OUTPUT"
-          echo "publish_utils=$publish_utils" >> "$GITHUB_OUTPUT"
-
-          if [ "$publish_core" = "false" ] && [ "$publish_utils" = "false" ]; then
+          if [ "$publish_count" -eq 0 ]; then
             echo "Changesets did not produce any package version updates."
             exit 1
           fi
@@ -91,7 +78,7 @@ jobs:
         run: npm run verify
 
       - name: Ensure npm token is configured
-        if: steps.release_set.outputs.publish_core == 'true' || steps.release_set.outputs.publish_utils == 'true'
+        if: steps.release_set.outputs.publish_count != '0'
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         shell: bash
@@ -102,31 +89,22 @@ jobs:
             exit 1
           fi
 
-      - name: Publish ng-advanced-table
-        if: steps.release_set.outputs.publish_core == 'true'
+      - name: Publish workspace packages
+        if: steps.release_set.outputs.publish_count != '0'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         shell: bash
         run: |
-          if npm view "ng-advanced-table@${{ steps.release_set.outputs.core_version }}" version >/dev/null 2>&1; then
-            echo "ng-advanced-table@${{ steps.release_set.outputs.core_version }} is already published. Skipping."
-            exit 0
-          fi
+          while IFS=$'\t' read -r package_name package_version publish_path; do
+            if npm view "${package_name}@${package_version}" version >/dev/null 2>&1; then
+              echo "${package_name}@${package_version} is already published. Skipping."
+              continue
+            fi
 
-          npm publish ./dist/ng-advanced-table
-
-      - name: Publish ng-advanced-table-utils
-        if: steps.release_set.outputs.publish_utils == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
-        run: |
-          if npm view "ng-advanced-table-utils@${{ steps.release_set.outputs.utils_version }}" version >/dev/null 2>&1; then
-            echo "ng-advanced-table-utils@${{ steps.release_set.outputs.utils_version }} is already published. Skipping."
-            exit 0
-          fi
-
-          npm publish ./dist/ng-advanced-table-utils
+            npm publish "./${publish_path}"
+          done < <(
+            node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); for (const workspacePackage of plan.packages) { console.log([workspacePackage.name, workspacePackage.version, workspacePackage.publishPath].join('\t')); }" "$RUNNER_TEMP/release-plan.json"
+          )
 
       - name: Configure git user
         run: |
@@ -136,15 +114,11 @@ jobs:
       - name: Commit release artifacts
         shell: bash
         run: |
-          git add .changeset package-lock.json projects/ng-advanced-table/package.json projects/ng-advanced-table-utils/package.json
-
-          if [ -f projects/ng-advanced-table/CHANGELOG.md ]; then
-            git add projects/ng-advanced-table/CHANGELOG.md
-          fi
-
-          if [ -f projects/ng-advanced-table-utils/CHANGELOG.md ]; then
-            git add projects/ng-advanced-table-utils/CHANGELOG.md
-          fi
+          while IFS= read -r path; do
+            git add "$path"
+          done < <(
+            node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); for (const path of plan.stagePaths) { console.log(path); }" "$RUNNER_TEMP/release-plan.json"
+          )
 
           if git diff --cached --quiet; then
             echo "No release artifacts to commit."
@@ -159,15 +133,12 @@ jobs:
         run: |
           tags=()
 
-          if [ "${{ steps.release_set.outputs.publish_core }}" = "true" ]; then
-            git tag "${{ steps.release_set.outputs.core_tag }}"
-            tags+=("${{ steps.release_set.outputs.core_tag }}")
-          fi
-
-          if [ "${{ steps.release_set.outputs.publish_utils }}" = "true" ]; then
-            git tag "${{ steps.release_set.outputs.utils_tag }}"
-            tags+=("${{ steps.release_set.outputs.utils_tag }}")
-          fi
+          while IFS= read -r tag; do
+            git tag "$tag"
+            tags+=("$tag")
+          done < <(
+            node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); for (const workspacePackage of plan.packages) { console.log(workspacePackage.tag); }" "$RUNNER_TEMP/release-plan.json"
+          )
 
           if [ "${#tags[@]}" -gt 0 ]; then
             git push origin "${tags[@]}"
