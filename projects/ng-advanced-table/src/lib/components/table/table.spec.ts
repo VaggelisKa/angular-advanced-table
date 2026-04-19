@@ -217,6 +217,25 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
   });
 
+  it('matches the stable row id during global filtering without requiring an id column', () => {
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+
+    table.patchState({
+      globalFilter: 'svc-00003',
+      pagination: (currentPagination) => ({
+        ...currentPagination,
+        pageIndex: 0,
+      }),
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
+  });
+
   it('respects controlled state slices without mutating the rendered table', () => {
     host.state.set({
       columnVisibility: {

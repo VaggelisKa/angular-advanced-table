@@ -22,7 +22,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  type Cell,
+  type CellContext,
   type Column,
   type ColumnFiltersState,
   type ColumnPinningState,
@@ -42,15 +42,23 @@ import type { NatTableCellTone, NatTableState } from './table.types';
 
 type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 
-interface PinOffsets {
-  left: Record<string, number>;
-  right: Record<string, number>;
-}
-
 interface TableColumnAccessibilityState {
   id: string;
   label: string;
   visible: boolean;
+}
+
+interface TableColumnRenderState {
+  alignEnd: boolean;
+  pinnedLeft: boolean;
+  pinnedRight: boolean;
+  hasPinnedEdgeLeft: boolean;
+  hasPinnedEdgeRight: boolean;
+  left: number | null;
+  right: number | null;
+  minWidth: number;
+  ariaSort: 'ascending' | 'descending' | null;
+  rowHeader: boolean;
 }
 
 interface TableAccessibilitySnapshot {
@@ -82,7 +90,7 @@ const DEFAULT_TABLE_STATE: NatTableState = {
 };
 let nextTableId = 0;
 
-const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => {
+const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   const query = String(filterValue ?? '')
     .trim()
     .toLowerCase();
@@ -91,9 +99,7 @@ const genericGlobalFilter: FilterFn<RowData> = (row, _columnId, filterValue) => 
     return true;
   }
 
-  return Object.values(row.original as Record<string, unknown>).some((value) =>
-    matchesFilterQuery(value, query),
-  );
+  return matchesFilterQuery(row.getValue(columnId), query) || matchesFilterQuery(row.id, query);
 };
 
 /**
@@ -181,6 +187,10 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly renderCycleToken = signal(0);
   protected readonly renderCycleStartedAt = signal(0);
 
+  protected readonly headerGroups = computed(() => this.table.getHeaderGroups());
+  protected readonly bodyRows = computed(() => this.table.getRowModel().rows);
+  private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
+  protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   protected readonly mergedState = computed<NatTableState>(() => ({
     sorting: this.state().sorting ?? this.internalSorting(),
     globalFilter: this.enableGlobalFilter()
@@ -193,15 +203,14 @@ export class NatTable<TData extends RowData = RowData> {
       : EMPTY_COLUMN_PINNING,
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
-  protected readonly visibleColumnCount = computed(() => this.table.getVisibleLeafColumns().length);
-  protected readonly visibleRowCount = computed(() => this.table.getRowModel().rows.length);
+  protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
+  protected readonly visibleRowCount = computed(() => this.bodyRows().length);
   protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
   protected readonly pageCount = computed(() =>
     this.enablePagination() ? Math.max(this.table.getPageCount(), 1) : 1,
   );
   protected readonly visibleColumnIds = computed(() =>
-    this.table
-      .getVisibleLeafColumns()
+    this.visibleColumns()
       .map((column) => column.id)
       .join('|'),
   );
@@ -254,20 +263,6 @@ export class NatTable<TData extends RowData = RowData> {
   private headerResizeObserver: ResizeObserver | null = null;
 
   /**
-   * Intrinsic floor per column. `table-layout: auto` uses these as a lower
-   * bound so columns never collapse below what the consumer considers
-   * readable, while still letting content drive the actual width.
-   */
-  protected readonly columnMinWidths = computed<Record<string, number>>(() => {
-    const result: Record<string, number> = {};
-
-    for (const column of this.table.getVisibleLeafColumns()) {
-      result[column.id] = Math.max(Math.round(column.getSize()), 1);
-    }
-
-    return result;
-  });
-  /**
    * Width per column used to compute pinned sticky offsets. Prefers the real
    * post-layout width reported by `ResizeObserver`; falls back to the TanStack
    * size hint when no measurement exists yet (initial paint, SSR, jsdom).
@@ -276,7 +271,7 @@ export class NatTable<TData extends RowData = RowData> {
     const measured = this.measuredHeaderWidths();
     const result: Record<string, number> = {};
 
-    for (const column of this.table.getVisibleLeafColumns()) {
+    for (const column of this.visibleColumns()) {
       const measuredWidth = measured[column.id];
       result[column.id] =
         measuredWidth !== undefined && measuredWidth > 0
@@ -286,25 +281,59 @@ export class NatTable<TData extends RowData = RowData> {
 
     return result;
   });
-  private readonly pinOffsets = computed<PinOffsets>(() => {
+  protected readonly columnRenderStates = computed<Record<string, TableColumnRenderState>>(() => {
+    const visibleColumns = this.visibleColumns();
     const widths = this.resolvedColumnWidths();
-    const left: Record<string, number> = {};
-    const right: Record<string, number> = {};
+    const state = this.mergedState();
+    const leftPinnedIds = new Set(state.columnPinning.left ?? []);
+    const rightPinnedIds = new Set(state.columnPinning.right ?? []);
+    const leftVisibleColumns = visibleColumns.filter((column) => leftPinnedIds.has(column.id));
+    const rightVisibleColumns = visibleColumns.filter((column) => rightPinnedIds.has(column.id));
+    const activeSorting = state.sorting[0];
+    const leftOffsets: Record<string, number> = {};
+    const rightOffsets: Record<string, number> = {};
+    const result: Record<string, TableColumnRenderState> = {};
     let leftOffset = 0;
 
-    for (const column of this.table.getLeftVisibleLeafColumns()) {
-      left[column.id] = leftOffset;
+    for (const column of leftVisibleColumns) {
+      leftOffsets[column.id] = leftOffset;
       leftOffset += widths[column.id] ?? 0;
     }
 
     let rightOffset = 0;
 
-    for (const column of [...this.table.getRightVisibleLeafColumns()].reverse()) {
-      right[column.id] = rightOffset;
+    for (let index = rightVisibleColumns.length - 1; index >= 0; index -= 1) {
+      const column = rightVisibleColumns[index];
+
+      rightOffsets[column.id] = rightOffset;
       rightOffset += widths[column.id] ?? 0;
     }
 
-    return { left, right };
+    for (const column of visibleColumns) {
+      const minWidth = Math.max(Math.round(column.getSize()), 1);
+      const pinnedLeft = leftPinnedIds.has(column.id);
+      const pinnedRight = rightPinnedIds.has(column.id);
+
+      result[column.id] = {
+        alignEnd: column.columnDef.meta?.align === 'end',
+        pinnedLeft,
+        pinnedRight,
+        hasPinnedEdgeLeft: pinnedLeft && leftVisibleColumns.at(-1)?.id === column.id,
+        hasPinnedEdgeRight: pinnedRight && rightVisibleColumns[0]?.id === column.id,
+        left: pinnedLeft ? (leftOffsets[column.id] ?? 0) : null,
+        right: pinnedRight ? (rightOffsets[column.id] ?? 0) : null,
+        minWidth,
+        ariaSort:
+          activeSorting?.id === column.id
+            ? activeSorting.desc
+              ? 'descending'
+              : 'ascending'
+            : null,
+        rowHeader: !!column.columnDef.meta?.rowHeader,
+      };
+    }
+
+    return result;
   });
 
   constructor() {
@@ -350,8 +379,7 @@ export class NatTable<TData extends RowData = RowData> {
         return;
       }
 
-      this.readRequiredInput(this.data, []);
-      this.table.getRowModel().rows;
+      this.bodyRows();
 
       this.renderCycleStartedAt.set(performance.now());
       this.renderCycleToken.update((token) => token + 1);
@@ -404,50 +432,11 @@ export class NatTable<TData extends RowData = RowData> {
     return this.generatedTableId;
   }
 
-  protected getPinnedLeft(column: Column<TData, unknown>): number | null {
-    return column.getIsPinned() === 'left' ? (this.pinOffsets().left[column.id] ?? 0) : null;
-  }
-
-  protected getPinnedRight(column: Column<TData, unknown>): number | null {
-    return column.getIsPinned() === 'right' ? (this.pinOffsets().right[column.id] ?? 0) : null;
-  }
-
-  protected getColumnMinWidth(column: Column<TData, unknown>): number {
-    return this.columnMinWidths()[column.id] ?? Math.max(Math.round(column.getSize()), 1);
-  }
-
-  protected isLastLeftPinnedColumn(column: Column<TData, unknown>): boolean {
-    return column.getIsPinned() === 'left' && column.getIsLastColumn('left');
-  }
-
-  protected isFirstRightPinnedColumn(column: Column<TData, unknown>): boolean {
-    return column.getIsPinned() === 'right' && column.getIsFirstColumn('right');
-  }
-
-  protected getAriaSort(column: Column<TData, unknown>): 'ascending' | 'descending' | null {
-    const sortState = column.getIsSorted();
-
-    if (sortState === 'asc') {
-      return 'ascending';
-    }
-
-    if (sortState === 'desc') {
-      return 'descending';
-    }
-
-    return null;
-  }
-
-  protected isColumnAlignedEnd(column: Column<TData, unknown>): boolean {
-    return column.columnDef.meta?.align === 'end';
-  }
-
-  protected isRowHeaderCell(cell: Cell<TData, unknown>): boolean {
-    return !!cell.column.columnDef.meta?.rowHeader;
-  }
-
-  protected getCellTone(cell: Cell<TData, unknown>): NatTableCellTone | null {
-    return cell.column.columnDef.meta?.cellTone?.(cell.getContext()) ?? null;
+  protected getCellTone(
+    column: Column<TData, unknown>,
+    context: CellContext<TData, unknown>,
+  ): NatTableCellTone | null {
+    return column.columnDef.meta?.cellTone?.(context) ?? null;
   }
 
   protected onRowRendered(event: NatTableRowRenderedEvent): void {
@@ -563,13 +552,13 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private buildTableSummary(): string {
+    const state = this.mergedState();
     const visibleRows = this.visibleRowCount();
     const totalRows = this.totalRowCount();
     const visibleColumns = this.visibleColumnCount();
     const pageCount = this.pageCount();
-    const currentPage = this.mergedState().pagination.pageIndex + 1;
-    const hasFilters =
-      !!this.mergedState().globalFilter.trim() || this.mergedState().columnFilters.length > 0;
+    const currentPage = state.pagination.pageIndex + 1;
+    const hasFilters = !!state.globalFilter.trim() || state.columnFilters.length > 0;
 
     let summary =
       visibleRows === 0
@@ -596,7 +585,7 @@ export class NatTable<TData extends RowData = RowData> {
       pageCount: this.pageCount(),
       visibleRows: this.visibleRowCount(),
       totalRows: this.totalRowCount(),
-      columns: this.table.getAllLeafColumns().map((column) => ({
+      columns: this.allLeafColumns().map((column) => ({
         id: column.id,
         label: resolveColumnLabel(column),
         visible: column.getIsVisible(),

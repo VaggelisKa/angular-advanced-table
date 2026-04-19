@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -17,11 +17,18 @@ export class NatTableSearch<TData extends RowData = RowData> {
   readonly placeholder = input('Search rows');
 
   protected readonly inputId = `nat-table-search-${nextSearchFieldId++}`;
+  protected readonly table = computed(() => this.for().table);
+  protected readonly tableElementId = computed(() => this.for().tableElementId());
+  protected readonly value = computed(() => this.table().getState().globalFilter ?? '');
 
   protected onInput(event: Event): void {
     const target = event.target;
 
     if (!(target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    if (target.value === this.value()) {
       return;
     }
 

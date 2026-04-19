@@ -5,6 +5,14 @@ import { NatTable } from 'ng-advanced-table';
 
 import { getNatTableColumnLabel } from '../../shared/table-ui.helpers';
 
+interface ColumnVisibilityItem<TData extends RowData = RowData> {
+  column: Column<TData, unknown>;
+  label: string;
+  visible: boolean;
+  canToggle: boolean;
+  actionLabel: string;
+}
+
 @Component({
   selector: 'nat-table-column-visibility',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,34 +23,37 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
   readonly for = input.required<NatTable<TData>>();
   readonly label = input('Columns');
   readonly ariaLabel = input('Column visibility');
+  protected readonly tableElementId = computed(() => this.for().tableElementId());
 
-  protected readonly columns = computed(() =>
-    this.for()
-      .table.getAllLeafColumns()
-      .filter((column) => column.getCanHide()),
-  );
+  private readonly allLeafColumns = computed(() => this.for().table.getAllLeafColumns());
   protected readonly visibleColumnCount = computed(
     () => this.for().table.getVisibleLeafColumns().length,
   );
-  protected readonly totalColumnCount = computed(() => this.for().table.getAllLeafColumns().length);
+  protected readonly totalColumnCount = computed(() => this.allLeafColumns().length);
+  protected readonly columns = computed<ColumnVisibilityItem<TData>[]>(() => {
+    const visibleColumnCount = this.visibleColumnCount();
 
-  protected getColumnLabel(column: Column<TData, unknown>): string {
-    return getNatTableColumnLabel(column);
-  }
+    return this.allLeafColumns()
+      .filter((column) => column.getCanHide())
+      .map((column) => {
+        const visible = column.getIsVisible();
+        const label = getNatTableColumnLabel(column);
 
-  protected canToggleColumnVisibility(column: Column<TData, unknown>): boolean {
-    return !column.getIsVisible() || this.visibleColumnCount() > 1;
-  }
+        return {
+          column,
+          label,
+          visible,
+          canToggle: !visible || visibleColumnCount > 1,
+          actionLabel: `${visible ? 'Hide' : 'Show'} ${label} column`,
+        };
+      });
+  });
 
-  protected toggleColumnVisibility(column: Column<TData, unknown>): void {
-    if (!this.canToggleColumnVisibility(column)) {
+  protected toggleColumnVisibility(column: ColumnVisibilityItem<TData>): void {
+    if (!column.canToggle) {
       return;
     }
 
-    column.toggleVisibility(!column.getIsVisible());
-  }
-
-  protected getColumnVisibilityAction(column: Column<TData, unknown>): string {
-    return `${column.getIsVisible() ? 'Hide' : 'Show'} ${this.getColumnLabel(column)} column`;
+    column.column.toggleVisibility(!column.visible);
   }
 }
