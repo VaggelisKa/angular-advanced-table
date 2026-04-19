@@ -1,5 +1,21 @@
 <div class="table-region" #tableRegion>
-  <table ngGrid class="data-table" [attr.aria-label]="ariaLabel()">
+  <p class="sr-only" [id]="tableSummaryId">{{ tableSummary() }}</p>
+  @if (ariaDescription().trim()) {
+    <p class="sr-only" [id]="tableDescriptionId">{{ ariaDescription() }}</p>
+  }
+  @if (keyboardInstructions().trim()) {
+    <p class="sr-only" [id]="tableKeyboardInstructionsId">{{ keyboardInstructions() }}</p>
+  }
+
+  <table
+    ngGrid
+    class="data-table"
+    [id]="generatedTableId"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-describedby]="ariaDescribedBy()"
+    rowWrap="nowrap"
+    colWrap="nowrap"
+  >
     <thead>
       @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
         <tr ngGridRow>
@@ -18,6 +34,7 @@
               [style.min-width.px]="getColumnMinWidth(header.column)"
               [attr.data-column-id]="header.column.id"
               [attr.aria-sort]="getAriaSort(header.column)"
+              scope="col"
             >
               @if (!header.isPlaceholder) {
                 <ng-container
@@ -48,26 +65,51 @@
             (natTableRowRendered)="onRowRendered($event)"
           >
             @for (cell of row.getVisibleCells(); track cell.id) {
-              <td
-                ngGridCell
-                class="data-cell"
-                [class.is-align-end]="isColumnAlignedEnd(cell.column)"
-                [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
-                [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
-                [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
-                [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
-                [style.left.px]="getPinnedLeft(cell.column)"
-                [style.right.px]="getPinnedRight(cell.column)"
-                [style.min-width.px]="getColumnMinWidth(cell.column)"
-                [attr.data-column-id]="cell.column.id"
-                [attr.data-tone]="getCellTone(cell)"
-              >
-                <ng-container
-                  *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"
+              @if (isRowHeaderCell(cell)) {
+                <th
+                  ngGridCell
+                  role="rowheader"
+                  scope="row"
+                  class="data-cell data-row-header"
+                  [class.is-align-end]="isColumnAlignedEnd(cell.column)"
+                  [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
+                  [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
+                  [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
+                  [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
+                  [style.left.px]="getPinnedLeft(cell.column)"
+                  [style.right.px]="getPinnedRight(cell.column)"
+                  [style.min-width.px]="getColumnMinWidth(cell.column)"
+                  [attr.data-column-id]="cell.column.id"
+                  [attr.data-tone]="getCellTone(cell)"
                 >
-                  {{ rendered }}
-                </ng-container>
-              </td>
+                  <ng-container
+                    *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"
+                  >
+                    {{ rendered }}
+                  </ng-container>
+                </th>
+              } @else {
+                <td
+                  ngGridCell
+                  class="data-cell"
+                  [class.is-align-end]="isColumnAlignedEnd(cell.column)"
+                  [class.is-pinned-left]="cell.column.getIsPinned() === 'left'"
+                  [class.is-pinned-right]="cell.column.getIsPinned() === 'right'"
+                  [class.has-pinned-edge-left]="isLastLeftPinnedColumn(cell.column)"
+                  [class.has-pinned-edge-right]="isFirstRightPinnedColumn(cell.column)"
+                  [style.left.px]="getPinnedLeft(cell.column)"
+                  [style.right.px]="getPinnedRight(cell.column)"
+                  [style.min-width.px]="getColumnMinWidth(cell.column)"
+                  [attr.data-column-id]="cell.column.id"
+                  [attr.data-tone]="getCellTone(cell)"
+                >
+                  <ng-container
+                    *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered"
+                  >
+                    {{ rendered }}
+                  </ng-container>
+                </td>
+              }
             }
           </tr>
         }
@@ -80,4 +122,6 @@
       }
     </tbody>
   </table>
+
+  <p class="sr-only" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</p>
 </div>

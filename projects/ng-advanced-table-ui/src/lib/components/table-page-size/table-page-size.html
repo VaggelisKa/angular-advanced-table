@@ -5,6 +5,8 @@
         type="button"
         class="chip"
         [class.is-active]="for().table.getState().pagination.pageSize === size"
+        [attr.aria-controls]="for().tableElementId()"
+        [attr.aria-label]="'Show ' + size + ' rows per page'"
         [attr.aria-pressed]="for().table.getState().pagination.pageSize === size"
         (click)="setPageSize(size)"
       >

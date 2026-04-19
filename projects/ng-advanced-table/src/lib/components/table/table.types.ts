@@ -57,6 +57,8 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   label?: string;
   /** Horizontal alignment for header and body cells in the column. */
   align?: 'start' | 'end';
+  /** Marks the body cell for this column as the row header announced by screen readers. */
+  rowHeader?: boolean;
   /** Optional callback that maps a cell to a semantic tone class. */
   cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
 }

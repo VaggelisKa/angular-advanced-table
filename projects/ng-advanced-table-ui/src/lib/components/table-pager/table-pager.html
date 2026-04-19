@@ -4,14 +4,12 @@
       type="button"
       class="pager-button"
       aria-label="Previous page"
+      [attr.aria-controls]="for().tableElementId()"
       [disabled]="!for().table.getCanPreviousPage()"
       (click)="for().table.previousPage()"
     >
       <svg class="pager-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path
-          fill="currentColor"
-          d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z"
-        />
+        <path fill="currentColor" d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" />
       </svg>
     </button>
     <span class="pager-label">Page {{ pageIndex() + 1 }} / {{ pageCount() }}</span>
@@ -19,14 +17,12 @@
       type="button"
       class="pager-button"
       aria-label="Next page"
+      [attr.aria-controls]="for().tableElementId()"
       [disabled]="!for().table.getCanNextPage()"
       (click)="for().table.nextPage()"
     >
       <svg class="pager-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-        <path
-          fill="currentColor"
-          d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z"
-        />
+        <path fill="currentColor" d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z" />
       </svg>
     </button>
   </div>

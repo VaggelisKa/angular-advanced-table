@@ -14,7 +14,7 @@ import { DEFAULT_PAGE_SIZE_OPTIONS, sanitizePageSizeOptions } from '../../shared
 export class NatTablePageSize<TData extends RowData = RowData> {
   readonly for = input.required<NatTable<TData>>();
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
-  readonly ariaLabel = input('Page size');
+  readonly ariaLabel = input('Rows per page');
 
   protected readonly sanitizedPageSizeOptions = computed(() =>
     sanitizePageSizeOptions(this.pageSizeOptions()),

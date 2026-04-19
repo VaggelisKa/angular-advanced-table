@@ -1,14 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { GridCellWidget } from '@angular/aria/grid';
 import {
   FlexRender,
   type FlexRenderContent,
   type HeaderContext,
   type RowData,
 } from '@tanstack/angular-table';
-import type {
-  NatTableSortDirection,
-  NatTableSortIndicatorContext,
-} from 'ng-advanced-table';
+import type { NatTableSortDirection, NatTableSortIndicatorContext } from 'ng-advanced-table';
 
 export type NatTableHeaderRenderContent =
   | string
@@ -46,7 +44,7 @@ export interface NatTableHeaderActionsOptions {
 @Component({
   selector: 'nat-table-header-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FlexRender],
+  imports: [FlexRender, GridCellWidget],
   templateUrl: './table-header-actions.html',
   styleUrl: './table-header-actions.css',
 })
@@ -118,7 +116,7 @@ export class NatTableHeaderActions {
   }
 
   protected getSortLabel(): string {
-    return `Toggle sort for ${this.label()}`;
+    return `Change sorting for ${this.label()}`;
   }
 
   protected getPinLabel(): string {

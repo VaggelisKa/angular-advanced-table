@@ -1,16 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
-import {
-  flexRenderComponent,
-  type ColumnDef,
-  type FilterFn,
-} from '@tanstack/angular-table';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import {
   NatTable,
@@ -94,7 +83,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     header: 'Symbol',
     size: 120,
     minSize: 100,
-    meta: { label: 'Symbol' },
+    meta: { label: 'Symbol', rowHeader: true },
     enablePinning: true,
     sortingFn: (left, right) =>
       compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
