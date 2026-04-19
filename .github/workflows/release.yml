@@ -1,14 +1,17 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   release:
@@ -20,12 +23,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure releases run from main
-        if: github.ref_name != 'main'
-        run: |
-          echo "The Release workflow must be run from the main branch."
-          exit 1
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,110 +33,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Ensure pending changesets exist
-        shell: bash
-        run: |
-          shopt -s nullglob
-          pending_changesets=()
-
-          for file in .changeset/*.md; do
-            if [ "$(basename "$file")" != "README.md" ]; then
-              pending_changesets+=("$file")
-            fi
-          done
-
-          if [ "${#pending_changesets[@]}" -eq 0 ]; then
-            echo "No pending changesets found. Add a changeset before running the release workflow."
-            exit 1
-          fi
-
-      - name: Apply version updates
-        run: |
-          npm run version:packages
-          npm install --package-lock-only
-
-      - name: Validate workspace release metadata
-        run: npm run verify:release-metadata
-
-      - name: Determine packages to release
-        id: release_set
-        shell: bash
-        run: |
-          node ./scripts/release-workspace-plan.mjs > "$RUNNER_TEMP/release-plan.json"
-          publish_count=$(node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); console.log(plan.packages.length);" "$RUNNER_TEMP/release-plan.json")
-          echo "publish_count=$publish_count" >> "$GITHUB_OUTPUT"
-
-          if [ "$publish_count" -eq 0 ]; then
-            echo "Changesets did not produce any package version updates."
-            exit 1
-          fi
-
-      - name: Verify workspace
-        run: npm run verify
-
-      - name: Ensure npm token is configured
-        if: steps.release_set.outputs.publish_count != '0'
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: npm run version:release
+          publish: npm run release
+          createGithubReleases: false
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
-        run: |
-          if [ -z "${NPM_TOKEN}" ]; then
-            echo "Missing NPM_TOKEN GitHub Actions secret."
-            echo "Create an npm access token with write access, then add it as the NPM_TOKEN repository secret."
-            exit 1
-          fi
-
-      - name: Publish workspace packages
-        if: steps.release_set.outputs.publish_count != '0'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
-        run: |
-          while IFS=$'\t' read -r package_name package_version publish_path; do
-            if npm view "${package_name}@${package_version}" version >/dev/null 2>&1; then
-              echo "${package_name}@${package_version} is already published. Skipping."
-              continue
-            fi
-
-            npm publish "./${publish_path}"
-          done < <(
-            node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); for (const workspacePackage of plan.packages) { console.log([workspacePackage.name, workspacePackage.version, workspacePackage.publishPath].join('\t')); }" "$RUNNER_TEMP/release-plan.json"
-          )
-
-      - name: Configure git user
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Commit release artifacts
-        shell: bash
-        run: |
-          while IFS= read -r path; do
-            git add "$path"
-          done < <(
-            node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); for (const path of plan.stagePaths) { console.log(path); }" "$RUNNER_TEMP/release-plan.json"
-          )
-
-          if git diff --cached --quiet; then
-            echo "No release artifacts to commit."
-            exit 1
-          fi
-
-          git commit -m "Release packages"
-          git push origin HEAD:${GITHUB_REF_NAME}
-
-      - name: Tag released packages
-        shell: bash
-        run: |
-          tags=()
-
-          while IFS= read -r tag; do
-            git tag "$tag"
-            tags+=("$tag")
-          done < <(
-            node -e "const fs = require('node:fs'); const plan = JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); for (const workspacePackage of plan.packages) { console.log(workspacePackage.tag); }" "$RUNNER_TEMP/release-plan.json"
-          )
-
-          if [ "${#tags[@]}" -gt 0 ]; then
-            git push origin "${tags[@]}"
-          fi
