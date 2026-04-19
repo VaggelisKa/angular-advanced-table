@@ -285,10 +285,15 @@ export class NatTable<TData extends RowData = RowData> {
     const visibleColumns = this.visibleColumns();
     const widths = this.resolvedColumnWidths();
     const state = this.mergedState();
-    const leftPinnedIds = new Set(state.columnPinning.left ?? []);
-    const rightPinnedIds = new Set(state.columnPinning.right ?? []);
-    const leftVisibleColumns = visibleColumns.filter((column) => leftPinnedIds.has(column.id));
-    const rightVisibleColumns = visibleColumns.filter((column) => rightPinnedIds.has(column.id));
+    const visibleColumnsById = new Map(visibleColumns.map((column) => [column.id, column] as const));
+    const leftVisibleColumns = (state.columnPinning.left ?? [])
+      .map((columnId) => visibleColumnsById.get(columnId))
+      .filter((column): column is Column<TData, unknown> => !!column);
+    const rightVisibleColumns = (state.columnPinning.right ?? [])
+      .map((columnId) => visibleColumnsById.get(columnId))
+      .filter((column): column is Column<TData, unknown> => !!column);
+    const leftPinnedIds = new Set(leftVisibleColumns.map((column) => column.id));
+    const rightPinnedIds = new Set(rightVisibleColumns.map((column) => column.id));
     const activeSorting = state.sorting[0];
     const leftOffsets: Record<string, number> = {};
     const rightOffsets: Record<string, number> = {};
