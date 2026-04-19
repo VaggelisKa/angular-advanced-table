@@ -5,7 +5,7 @@ import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
-import type { NatTableState } from './table.types';
+import type { NatTableAccessibilityText, NatTableState } from './table.types';
 
 interface Row {
   id: string;
@@ -82,6 +82,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       [allowColumnReorder]="allowColumnReorder"
       [enablePagination]="enablePagination"
       [getRowId]="getRowId"
+      [accessibilityText]="accessibilityText"
       (stateChange)="onStateChange($event)"
     />
   `,
@@ -104,6 +105,7 @@ class TableHost {
   };
   enablePagination = false;
   allowColumnReorder = false;
+  accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
 
   onStateChange(state: NatTableState): void {
@@ -129,6 +131,7 @@ describe('NatTable', () => {
     options: {
       allowColumnReorder?: boolean;
       enablePagination?: boolean;
+      accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
       state?: Partial<NatTableState>;
     } = {},
@@ -138,6 +141,7 @@ describe('NatTable', () => {
     host = fixture.componentInstance;
     host.allowColumnReorder = options.allowColumnReorder ?? host.allowColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
 
     if (options.state) {
@@ -308,6 +312,75 @@ describe('NatTable', () => {
 
     expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
     expect(host.stateEvents.length).toBeGreaterThan(0);
+  });
+
+  it('lets callers override accessibility summaries and live announcements', async () => {
+    const accessibilityText: NatTableAccessibilityText = {
+      reorderKeyboardInstructions: 'Usa Alt+Shift para mover columnas.',
+      tableSummary: ({
+        visibleRowsText,
+        totalRowsText,
+        visibleColumnsText,
+        pageText,
+        pageCountText,
+      }) => `Resumen ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
+      filteringChange: ({ query, visibleRowsText }) => `Filtro ${query}:${visibleRowsText}`,
+      sortingChange: ({ columnLabel, sortState }) => `Orden ${columnLabel}:${sortState}`,
+      pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
+        `Pagina ${pageText}/${pageCountText}:${visibleRowsText}`,
+    };
+    await recreateHost({
+      enablePagination: true,
+      allowColumnReorder: true,
+      accessibilityText,
+    });
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const describedByIds = table.getAttribute('aria-describedby')?.split(' ') ?? [];
+    const summary = fixture.nativeElement.querySelector(
+      `#${describedByIds[0] ?? ''}`,
+    ) as HTMLElement;
+    const instructions = fixture.nativeElement.querySelector(
+      `#${describedByIds.at(-1) ?? ''}`,
+    ) as HTMLElement;
+    const liveRegion = fixture.nativeElement.querySelector(
+      'p[aria-live="polite"]',
+    ) as HTMLElement;
+    const tableComponent = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+
+    expect(summary.textContent?.trim()).toBe('Resumen 2/6/4/1/3');
+    expect(instructions.textContent).toContain('Usa Alt+Shift para mover columnas.');
+
+    tableComponent.table.nextPage();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(liveRegion.textContent?.trim()).toBe('Pagina 2/3:2');
+
+    tableComponent.patchState({
+      globalFilter: 'gamma',
+      pagination: (currentPagination) => ({
+        ...currentPagination,
+        pageIndex: 0,
+      }),
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(liveRegion.textContent?.trim()).toBe('Filtro gamma:1');
+
+    tableComponent.patchState({
+      sorting: [{ id: 'name', desc: false }],
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(liveRegion.textContent?.trim()).toBe('Orden Service:ascending');
   });
 
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {

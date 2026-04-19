@@ -1,12 +1,12 @@
 @if (columns().length) {
   <div class="control-block">
     <div class="control-heading">
-      <span class="control-label">{{ label() }}</span>
+      <span class="control-label">{{ resolvedHeading() }}</span>
       <span class="control-caption">
-        {{ visibleColumnCount() }} / {{ totalColumnCount() }} visible
+        {{ visibilitySummary() }}
       </span>
     </div>
-    <div class="chip-row" role="group" [attr.aria-label]="ariaLabel()">
+    <div class="chip-row" role="group" [attr.aria-label]="resolvedAriaLabel()">
       @for (column of columns(); track column.column.id) {
         <button
           type="button"
@@ -20,7 +20,7 @@
           (click)="toggleColumnVisibility(column)"
         >
           <span>{{ column.label }}</span>
-          <span class="chip-count">{{ column.visible ? 'Shown' : 'Hidden' }}</span>
+          <span class="chip-count">{{ column.stateLabel }}</span>
         </button>
       }
     </div>

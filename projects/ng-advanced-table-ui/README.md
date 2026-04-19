@@ -113,6 +113,58 @@ export class OrdersTableComponent {
 - `NatTableSurface` owns the default `--nat-table-*` variables that used to live in core.
 - `withNatTableHeaderActions(...)` is additive: it preserves the original header content and only adds controls when the underlying column can sort or pin.
 
+## Custom Accessibility Labels
+
+The companion controls expose `accessibilityLabels` overrides so consumers can localize or replace the default wording.
+
+```ts
+readonly pageSizeLabels = {
+  groupAriaLabel: 'Filas por pagina',
+  pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} filas`,
+  pageSizeOptionAriaLabel: ({ pageSizeText }) => `Mostrar ${pageSizeText} filas`,
+};
+
+readonly pagerLabels = {
+  groupAriaLabel: 'Paginacion',
+  previousPageAriaLabel: 'Pagina anterior',
+  nextPageAriaLabel: 'Pagina siguiente',
+  pageIndicator: ({ pageText, pageCountText }) => `Pagina ${pageText} de ${pageCountText}`,
+};
+
+readonly columnVisibilityLabels = {
+  heading: 'Columnas',
+  groupAriaLabel: 'Visibilidad de columnas',
+  visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
+    `${visibleColumnCountText} de ${totalColumnCountText} visibles`,
+  toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
+    `${toggleAction === 'hide' ? 'Ocultar' : 'Mostrar'} columna ${columnLabel}`,
+  columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Visible' : 'Oculta'),
+};
+
+readonly columns = withNatTableHeaderActions(baseColumns, {
+  accessibilityLabels: {
+    sortButton: ({ label }) => `Ordenar ${label}`,
+    pinButton: ({ label, toggleAction }) =>
+      `${toggleAction === 'unpin' ? 'Liberar' : 'Fijar'} columna ${label}`,
+    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Liberar' : 'Fijar'),
+  },
+});
+```
+
+```html
+<nat-table-column-visibility [for]="grid" [accessibilityLabels]="columnVisibilityLabels" />
+<nat-table-page-size
+  [for]="grid"
+  [pageSizeOptions]="[25, 50, 100]"
+  [accessibilityLabels]="pageSizeLabels"
+/>
+<nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
+```
+
+`NatTableSearch` already supports custom text through its existing `label` and `placeholder` inputs.
+
+The accessibility formatter contexts also expose browser-locale number strings such as `pageText` and semantic states such as `toggleAction`, so most consumers only need to override copy, not rebuild table state.
+
 ## Custom Sort Indicator
 
 Pass `sortIndicator` as the second argument to `withNatTableHeaderActions(...)` when you want to replace the built-in `↑`, `↓`, and `↕` glyphs.

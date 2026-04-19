@@ -1,9 +1,9 @@
 @if (for().enablePagination()) {
-  <div class="pager" role="group" [attr.aria-label]="ariaLabel()">
+  <div class="pager" role="group" [attr.aria-label]="resolvedAriaLabel()">
     <button
       type="button"
       class="pager-button"
-      aria-label="Previous page"
+      [attr.aria-label]="previousPageAriaLabel()"
       [attr.aria-controls]="tableElementId()"
       [disabled]="!canPreviousPage()"
       (click)="previousPage()"
@@ -12,11 +12,11 @@
         <path fill="currentColor" d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" />
       </svg>
     </button>
-    <span class="pager-label">Page {{ pageIndex() + 1 }} / {{ pageCount() }}</span>
+    <span class="pager-label">{{ pageIndicator() }}</span>
     <button
       type="button"
       class="pager-button"
-      aria-label="Next page"
+      [attr.aria-label]="nextPageAriaLabel()"
       [attr.aria-controls]="tableElementId()"
       [disabled]="!canNextPage()"
       (click)="nextPage()"

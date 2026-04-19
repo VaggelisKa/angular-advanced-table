@@ -58,7 +58,7 @@
       (pointerdown)="$event.stopPropagation()"
       (click)="togglePin()"
     >
-      {{ isPinned() ? 'Unpin' : 'Pin' }}
+      {{ getPinText() }}
     </button>
   }
 </div>

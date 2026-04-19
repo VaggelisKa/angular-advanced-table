@@ -10,6 +10,12 @@ import { NatTablePageSize } from './components/table-page-size/table-page-size';
 import { NatTablePager } from './components/table-pager/table-pager';
 import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableSurface } from './components/table-surface/table-surface';
+import type {
+  NatTableAccessibilityColumnVisibilityLabels,
+  NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityPageSizeLabels,
+  NatTableAccessibilityPagerLabels,
+} from './shared/table-ui.types';
 
 interface Row {
   id: string;
@@ -148,13 +154,91 @@ class CustomSortIndicatorHost {
   }
 }
 
+@Component({
+  imports: [
+    NatTable,
+    NatTableColumnVisibility,
+    NatTablePageSize,
+    NatTablePager,
+    NatTableSurface,
+  ],
+  template: `
+    <nat-table
+      #grid="natTable"
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      [initialState]="initialState"
+      [enablePagination]="true"
+      [getRowId]="getRowId"
+      ariaLabel="Operations table"
+      (stateChange)="onTableStateChange($event)"
+    />
+
+    <nat-table-surface>
+      <nat-table-column-visibility [for]="grid" [accessibilityLabels]="columnVisibilityLabels" />
+      <nat-table-page-size
+        [for]="grid"
+        [pageSizeOptions]="pageSizeOptions"
+        [accessibilityLabels]="pageSizeLabels"
+      />
+      <nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
+    </nat-table-surface>
+  `,
+})
+class CustomAccessibilityLabelsHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly pageSizeLabels: NatTableAccessibilityPageSizeLabels = {
+    groupAriaLabel: 'Filas por pagina',
+    pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} filas`,
+    pageSizeOptionAriaLabel: ({ pageSizeText }) => `Mostrar ${pageSizeText} filas`,
+  };
+  readonly pagerLabels: NatTableAccessibilityPagerLabels = {
+    groupAriaLabel: 'Paginacion',
+    previousPageAriaLabel: 'Pagina anterior',
+    nextPageAriaLabel: 'Pagina siguiente',
+    pageIndicator: ({ pageText, pageCountText }) => `Pagina ${pageText} de ${pageCountText}`,
+  };
+  readonly columnVisibilityLabels: NatTableAccessibilityColumnVisibilityLabels = {
+    heading: 'Columnas',
+    groupAriaLabel: 'Visibilidad de columnas',
+    visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
+      `${visibleColumnCountText} de ${totalColumnCountText} visibles`,
+    toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
+      `${toggleAction === 'hide' ? 'Ocultar' : 'Mostrar'} columna ${columnLabel}`,
+    columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Visible' : 'Oculta'),
+  };
+  readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
+    sortButton: ({ label }) => `Ordenar ${label}`,
+    pinButton: ({ label, toggleAction }) =>
+      `${toggleAction === 'unpin' ? 'Liberar' : 'Fijar'} columna ${label}`,
+    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Liberar' : 'Fijar'),
+  };
+  readonly columns = withNatTableHeaderActions(baseColumns, {
+    accessibilityLabels: this.headerActionLabels,
+  });
+  readonly getRowId = (row: Row) => row.id;
+  readonly pageSizeOptions = [2, 3, 5] as const;
+  readonly tableState = signal<Partial<NatTableState>>({});
+  readonly initialState: Partial<NatTableState> = {
+    pagination: {
+      pageIndex: 1,
+      pageSize: 2,
+    },
+  };
+
+  onTableStateChange(state: NatTableState): void {
+    this.tableState.set(state);
+  }
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost, CustomSortIndicatorHost],
+      imports: [TableUiHost, CustomSortIndicatorHost, CustomAccessibilityLabelsHost],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableUiHost);
@@ -380,6 +464,82 @@ describe('ng-advanced-table-ui', () => {
 
     expect(sortIcon.textContent?.trim()).toBe('A');
     expect(sortIcon.textContent).not.toContain('↕');
+  });
+
+  it('renders caller-provided accessibility labels across the UI controls', () => {
+    const customFixture = TestBed.createComponent(CustomAccessibilityLabelsHost);
+
+    customFixture.detectChanges();
+
+    const nativeElement = customFixture.nativeElement as HTMLElement;
+    const visibilityHeading = nativeElement.querySelector(
+      'nat-table-column-visibility .control-label',
+    ) as HTMLElement;
+    const visibilityCaption = nativeElement.querySelector(
+      'nat-table-column-visibility .control-caption',
+    ) as HTMLElement;
+    const visibilityGroup = nativeElement.querySelector(
+      'nat-table-column-visibility .chip-row',
+    ) as HTMLElement;
+    const firstColumnChip = nativeElement.querySelector(
+      'nat-table-column-visibility .column-chip',
+    ) as HTMLButtonElement;
+    const firstColumnState = firstColumnChip.querySelector('.chip-count') as HTMLElement;
+    const pageSizeGroup = nativeElement.querySelector(
+      'nat-table-page-size .chip-row',
+    ) as HTMLElement;
+    const pageSizeButton = nativeElement.querySelector(
+      'nat-table-page-size .chip',
+    ) as HTMLButtonElement;
+    const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
+    const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
+    const previousButton = nativeElement.querySelector(
+      'nat-table-pager .pager-button:first-child',
+    ) as HTMLButtonElement;
+    const nextButton = nativeElement.querySelector(
+      'nat-table-pager .pager-button:last-child',
+    ) as HTMLButtonElement;
+    const sortButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-button',
+    ) as HTMLButtonElement;
+    const pinButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .pin-button',
+    ) as HTMLButtonElement;
+
+    expect(visibilityHeading.textContent?.trim()).toBe('Columnas');
+    expect(visibilityCaption.textContent?.trim()).toBe('4 de 4 visibles');
+    expect(visibilityGroup.getAttribute('aria-label')).toBe('Visibilidad de columnas');
+    expect(firstColumnChip.getAttribute('aria-label')).toBe('Ocultar columna Service');
+    expect(firstColumnState.textContent?.trim()).toBe('Visible');
+
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Filas por pagina');
+    expect(pageSizeButton.textContent?.trim()).toBe('2 filas');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('Mostrar 2 filas');
+
+    expect(pager.getAttribute('aria-label')).toBe('Paginacion');
+    expect(pagerLabel.textContent?.trim()).toBe('Pagina 2 de 3');
+    expect(previousButton.getAttribute('aria-label')).toBe('Pagina anterior');
+    expect(nextButton.getAttribute('aria-label')).toBe('Pagina siguiente');
+
+    expect(sortButton.getAttribute('aria-label')).toBe('Ordenar Service');
+    expect(pinButton.getAttribute('aria-label')).toBe('Fijar columna Service');
+    expect(pinButton.textContent?.trim()).toBe('Fijar');
+
+    pinButton.click();
+    customFixture.detectChanges();
+
+    const updatedPinButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .pin-button',
+    ) as HTMLButtonElement;
+
+    expect(updatedPinButton.getAttribute('aria-label')).toBe('Liberar columna Service');
+    expect(updatedPinButton.textContent?.trim()).toBe('Liberar');
+
+    firstColumnChip.click();
+    customFixture.detectChanges();
+
+    expect(firstColumnChip.getAttribute('aria-label')).toBe('Mostrar columna Service');
+    expect(firstColumnState.textContent?.trim()).toBe('Oculta');
   });
 });
 

@@ -8,4 +8,17 @@ export type {
   NatTableHeaderActionsOptions,
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
+export type {
+  NatTableAccessibilityColumnVisibilityActionContext,
+  NatTableAccessibilityColumnVisibilityLabels,
+  NatTableAccessibilityColumnVisibilityStateContext,
+  NatTableAccessibilityColumnVisibilitySummaryContext,
+  NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityHeaderActionPinContext,
+  NatTableAccessibilityHeaderActionSortContext,
+  NatTableAccessibilityPagerContext,
+  NatTableAccessibilityPagerLabels,
+  NatTableAccessibilityPageSizeLabels,
+  NatTableAccessibilityPageSizeOptionContext,
+} from './lib/shared/table-ui.types';
 export type { NatTableSortDirection, NatTableSortIndicatorContext } from 'ng-advanced-table';

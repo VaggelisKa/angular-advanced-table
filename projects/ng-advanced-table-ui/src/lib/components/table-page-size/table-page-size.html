@@ -1,16 +1,16 @@
 @if (for().enablePagination()) {
-  <div class="chip-row compact" role="group" [attr.aria-label]="ariaLabel()">
-    @for (size of sanitizedPageSizeOptions(); track size) {
+  <div class="chip-row compact" role="group" [attr.aria-label]="resolvedAriaLabel()">
+    @for (option of resolvedPageSizeOptions(); track option.pageSize) {
       <button
         type="button"
         class="chip"
-        [class.is-active]="selectedPageSize() === size"
+        [class.is-active]="selectedPageSize() === option.pageSize"
         [attr.aria-controls]="tableElementId()"
-        [attr.aria-label]="'Show ' + size + ' rows per page'"
-        [attr.aria-pressed]="selectedPageSize() === size"
-        (click)="setPageSize(size)"
+        [attr.aria-label]="option.ariaLabel"
+        [attr.aria-pressed]="selectedPageSize() === option.pageSize"
+        (click)="setPageSize(option.pageSize)"
       >
-        {{ size }} / page
+        {{ option.text }}
       </button>
     }
   </div>

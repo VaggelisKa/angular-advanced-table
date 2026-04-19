@@ -105,6 +105,7 @@ export class ServiceTableComponent {
 - `data`: required table rows
 - `columns`: required TanStack column definitions
 - `ariaLabel`: required accessible name for the grid
+- `accessibilityText`: overrides generated screen-reader summaries, live announcements, and reorder instructions
 - `enableGlobalFilter`: enables global filtering for external search controls
 - `allowColumnPinning`: enables sticky pinning where columns allow it
 - `allowColumnReorder`: enables drag-and-drop and keyboard reordering for leaf headers
@@ -125,6 +126,42 @@ export class ServiceTableComponent {
 
 - `table`: raw TanStack table instance
 - `patchState(...)`: applies state updaters while respecting controlled slices
+
+## Custom Accessibility Text
+
+Use `accessibilityText` when the built-in English summaries or live announcements do not fit your product language or terminology.
+
+```ts
+readonly accessibilityText = {
+  reorderKeyboardInstructions: 'Usa Alt+Shift para mover columnas.',
+  tableSummary: ({
+    visibleRowsText,
+    totalRowsText,
+    visibleColumnsText,
+    pageText,
+    pageCountText,
+  }) => `Resumen ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
+  filteringChange: ({ query, visibleRowsText }) => `Filtro ${query}:${visibleRowsText}`,
+  sortingChange: ({ columnLabel, sortState }) => `Orden ${columnLabel}:${sortState}`,
+  pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
+    `Pagina ${pageText}/${pageCountText}:${visibleRowsText}`,
+};
+```
+
+```html
+<nat-table
+  [data]="rows()"
+  [columns]="columns"
+  [state]="tableState()"
+  [enablePagination]="true"
+  [allowColumnReorder]="true"
+  [accessibilityText]="accessibilityText"
+  ariaLabel="Orders"
+  (stateChange)="tableState.set($event)"
+/>
+```
+
+Every formatter receives structured context with browser-locale number strings such as `pageText` and semantic states such as `sortState`, so consumers can localize copy without re-deriving state or formatting counts themselves.
 
 ## `NatTableColumnMeta`
 
