@@ -2,6 +2,7 @@ import type {
   CellContext,
   Column,
   ColumnFiltersState,
+  ColumnOrderState,
   ColumnPinningState,
   PaginationState,
   RowData,
@@ -22,6 +23,8 @@ export interface NatTableState {
   columnFilters: ColumnFiltersState;
   /** Visibility map for hideable columns. */
   columnVisibility: VisibilityState;
+  /** Leaf-column order, restored when columns are unpinned. */
+  columnOrder: ColumnOrderState;
   /** Left and right pinned column ids. */
   columnPinning: ColumnPinningState;
   /** Pagination cursor and page size. */

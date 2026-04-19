@@ -3,8 +3,8 @@
   @if (ariaDescription().trim()) {
     <p class="sr-only" [id]="tableDescriptionId">{{ ariaDescription() }}</p>
   }
-  @if (keyboardInstructions().trim()) {
-    <p class="sr-only" [id]="tableKeyboardInstructionsId">{{ keyboardInstructions() }}</p>
+  @if (resolvedKeyboardInstructions().trim()) {
+    <p class="sr-only" [id]="tableKeyboardInstructionsId">{{ resolvedKeyboardInstructions() }}</p>
   }
 
   <table
@@ -18,10 +18,19 @@
   >
     <thead>
       @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
-        <tr ngGridRow>
+        <tr
+          ngGridRow
+          cdkDropList
+          cdkDropListOrientation="horizontal"
+          [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
+          [cdkDropListDisabled]="!allowColumnReorder() || !isLeafHeaderRow(headerGroup)"
+          (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
+        >
           @for (header of headerGroup.headers; track header.id) {
             <th
               ngGridCell
+              cdkDrag
+              cdkDragLockAxis="x"
               role="columnheader"
               class="header-cell"
               [class.is-align-end]="isColumnAlignedEnd(header.column)"
@@ -29,23 +38,43 @@
               [class.is-pinned-right]="header.column.getIsPinned() === 'right'"
               [class.has-pinned-edge-left]="isLastLeftPinnedColumn(header.column)"
               [class.has-pinned-edge-right]="isFirstRightPinnedColumn(header.column)"
+              [class.is-reorderable]="canReorderHeader(header)"
+              [cdkDragData]="header.column.id"
+              [cdkDragDisabled]="!canReorderHeader(header)"
               [style.left.px]="getPinnedLeft(header.column)"
               [style.right.px]="getPinnedRight(header.column)"
               [style.min-width.px]="getColumnMinWidth(header.column)"
               [attr.data-column-id]="header.column.id"
               [attr.aria-sort]="getAriaSort(header.column)"
+              (keydown)="onHeaderKeydown($event, header.column)"
               scope="col"
             >
               @if (!header.isPlaceholder) {
-                <ng-container
-                  *flexRender="
-                    header.column.columnDef.header;
-                    props: header.getContext();
-                    let rendered
-                  "
-                >
-                  {{ rendered }}
-                </ng-container>
+                <div class="header-cell-content">
+                  <span class="header-cell-primary">
+                    <ng-container
+                      *flexRender="
+                        header.column.columnDef.header;
+                        props: header.getContext();
+                        let rendered
+                      "
+                    >
+                      {{ rendered }}
+                    </ng-container>
+                  </span>
+
+                  @if (canReorderHeader(header)) {
+                    <button
+                      type="button"
+                      ngGridCellWidget
+                      cdkDragHandle
+                      class="column-reorder-handle"
+                      [attr.aria-label]="getColumnReorderHandleLabel(header.column)"
+                    >
+                      <span aria-hidden="true">::</span>
+                    </button>
+                  }
+                </div>
               }
             </th>
           }

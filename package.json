@@ -25,6 +25,7 @@
     "projects/ng-advanced-table-utils"
   ],
   "dependencies": {
+    "@angular/cdk": "^21.2.6",
     "@angular/aria": "^21.2.6",
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",

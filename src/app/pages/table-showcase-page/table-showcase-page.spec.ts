@@ -35,6 +35,9 @@ describe('TableShowcasePage', () => {
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
     const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
+    const firstReorderHandle = fixture.nativeElement.querySelector(
+      '.column-reorder-handle',
+    ) as HTMLButtonElement;
     const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
     const changeHeader = headers.find((header) =>
       header.textContent?.includes('24h %'),
@@ -42,6 +45,7 @@ describe('TableShowcasePage', () => {
 
     expect(rows.length).toBe(24);
     expect(firstPinButton.textContent?.trim()).toBe('Pin');
+    expect(firstReorderHandle).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
     expect(changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]')).toBeTruthy();
   });

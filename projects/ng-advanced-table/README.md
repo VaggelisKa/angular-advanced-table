@@ -5,7 +5,7 @@
 ## What Stays In Core
 
 - standalone `NatTable`
-- TanStack sorting, filtering, visibility, pinning, and optional pagination state
+- TanStack sorting, filtering, visibility, column ordering, pinning, and optional pagination state
 - sticky header and sticky pinned-column layout
 - controlled or uncontrolled `NatTableState`
 - typed column metadata through `NatTableColumnMeta`
@@ -25,7 +25,7 @@ Use [`ng-advanced-table-ui`](../ng-advanced-table-ui/README.md) for:
 ## Installation
 
 ```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/aria
+npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 ```
 
 Add `ng-advanced-table-ui` only if you want the companion controls:
@@ -59,6 +59,7 @@ interface ServiceRow {
       [columns]="columns"
       [state]="tableState()"
       [initialState]="initialState"
+      [allowColumnReorder]="true"
       [enablePagination]="true"
       [getRowId]="getRowId"
       ariaLabel="Service latency"
@@ -106,6 +107,7 @@ export class ServiceTableComponent {
 - `ariaLabel`: required accessible name for the grid
 - `enableGlobalFilter`: enables global filtering for external search controls
 - `allowColumnPinning`: enables sticky pinning where columns allow it
+- `allowColumnReorder`: enables drag-and-drop and keyboard reordering for leaf headers
 - `enablePagination`: enables TanStack pagination row models; defaults to `false`
 - `emptyStateLabel`: message shown when the current row model is empty
 - `globalFilterFn`: override for the built-in generic global search
@@ -143,6 +145,12 @@ The key integration points are:
 - `grid.patchState(...)`: update table state from your own UI while respecting controlled slices
 - `(stateChange)`: keep external state in sync if you use controlled state
 
+When column reordering is enabled:
+
+- unpinned columns follow `state.columnOrder`
+- left and right pinned columns follow `state.columnPinning.left` and `state.columnPinning.right`
+- dragging does not move a column across pinning zones; use `column.pin(...)` to change zones
+
 For read-only UI, prefer `grid.table`:
 
 - `grid.table.getState().pagination`
@@ -153,6 +161,7 @@ For read-only UI, prefer `grid.table`:
 For write UI, prefer `grid.patchState(...)` when you want to update state slices directly, or call TanStack instance methods when the behavior already exists there:
 
 - `grid.patchState({ globalFilter: 'abc' })`
+- `grid.patchState({ columnOrder: ['region', 'service', 'latencyMs'] })`
 - `grid.patchState({ pagination: (current) => ({ ...current, pageIndex: 0 }) })`
 - `grid.table.nextPage()`
 - `grid.table.previousPage()`

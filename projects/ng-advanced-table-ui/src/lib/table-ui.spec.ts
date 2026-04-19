@@ -89,6 +89,7 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       [columns]="columns"
       [state]="tableState()"
       [initialState]="initialState"
+      [allowColumnReorder]="allowColumnReorder"
       [enablePagination]="true"
       [getRowId]="getRowId"
       ariaLabel="Operations table"
@@ -108,6 +109,7 @@ class TableUiHost {
   readonly columns = withNatTableHeaderActions(baseColumns);
   readonly getRowId = (row: Row) => row.id;
   readonly pageSizeOptions = [2, 3, 5] as const;
+  allowColumnReorder = false;
   readonly tableState = signal<Partial<NatTableState>>({});
   readonly initialState: Partial<NatTableState> = {
     pagination: {
@@ -251,6 +253,7 @@ describe('ng-advanced-table-ui', () => {
   });
 
   it('wraps headers with sort and pin actions without losing the original label', () => {
+    host.allowColumnReorder = true;
     fixture.detectChanges();
 
     const headerLabel = fixture.nativeElement.querySelector(
@@ -265,8 +268,15 @@ describe('ng-advanced-table-ui', () => {
     const pinButton = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .pin-button',
     ) as HTMLButtonElement;
+    const reorderHandle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .column-reorder-handle',
+    ) as HTMLButtonElement;
 
     expect(headerLabel.textContent?.trim()).toBe('Service');
+    expect(reorderHandle).toBeTruthy();
+    expect(reorderHandle.classList.contains('cdk-drag-handle')).toBe(true);
+    expect(sortButton.classList.contains('cdk-drag-handle')).toBe(false);
+    expect(pinButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(
       fixture.nativeElement
         .querySelector('thead th[data-column-id="name"]')

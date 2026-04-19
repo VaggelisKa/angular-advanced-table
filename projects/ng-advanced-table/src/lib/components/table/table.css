@@ -49,6 +49,75 @@
     var(--nat-table-header-border-color, color-mix(in srgb, currentColor 16%, transparent));
 }
 
+.header-cell-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--nat-table-space-header-content-gap, 8px);
+}
+
+.header-cell-primary {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.header-cell.is-reorderable {
+  touch-action: pan-y;
+}
+
+.column-reorder-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0 6px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  font: inherit;
+  letter-spacing: 0.08em;
+  cursor: grab;
+}
+
+.column-reorder-handle:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  color: inherit;
+}
+
+.column-reorder-handle:active {
+  cursor: grabbing;
+}
+
+.column-reorder-handle:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+.header-cell.cdk-drag-preview {
+  display: table-cell;
+  z-index: 12;
+  box-shadow:
+    0 14px 30px color-mix(in srgb, currentColor 16%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.header-cell.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+.cdk-drop-list-dragging .header-cell.is-reorderable:not(.cdk-drag-placeholder) {
+  transition: transform 180ms ease;
+}
+
+.header-cell.cdk-drag-animating {
+  transition: transform 180ms ease;
+}
+
 .data-row {
   background: var(--nat-table-row-background, transparent);
   transition: background-color 120ms ease;
