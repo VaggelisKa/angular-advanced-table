@@ -12,6 +12,14 @@ import {
   type NatTableHeaderRenderContent,
 } from './table-header-actions';
 
+/**
+ * Wraps column headers with the shared sort/pin action UI from
+ * `ng-advanced-table-ui`.
+ *
+ * The helper preserves the original header content, applies the wrapper
+ * recursively to grouped columns, and optionally injects custom sort-indicator
+ * content through `options.sortIndicator`.
+ */
 export function withNatTableHeaderActions<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
   options: NatTableHeaderActionsOptions = {},

@@ -17,6 +17,12 @@ export type NatTableHeaderRenderContent =
   | null
   | undefined;
 
+/**
+ * Custom content accepted by `withNatTableHeaderActions(..., { sortIndicator })`.
+ *
+ * Return a string/number for simple glyph swaps, or a FlexRender-compatible
+ * renderer for richer Angular content.
+ */
 export type NatTableSortIndicatorContent =
   | string
   | number
@@ -26,7 +32,14 @@ export type NatTableSortIndicatorContent =
   | null
   | undefined;
 
+/**
+ * Options for {@link withNatTableHeaderActions}.
+ *
+ * Use `sortIndicator` to replace the built-in unsorted/ascending/descending
+ * glyphs while keeping the same sort and pin button behavior.
+ */
 export interface NatTableHeaderActionsOptions {
+  /** Custom content rendered inside the sort button for each sortable column. */
   sortIndicator?: NatTableSortIndicatorContent;
 }
 
