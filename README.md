@@ -153,3 +153,7 @@ npm run build:showcase
 npm run pack:dry-run
 npm run verify
 ```
+
+## Release Process
+
+Releases are manual. Run the GitHub Actions `Release` workflow from the `main` branch when you want Changesets to create or update the release PR, or to publish an already versioned release.
