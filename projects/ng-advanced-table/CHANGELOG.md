@@ -1,5 +1,17 @@
 # ng-advanced-table
 
+## 0.1.1
+
+### Patch Changes
+
+- dc47fce: Refine the accessibility customization API by standardizing on accessibility-prefixed label/context types and update the showcased localization examples to Danish.
+
+  `ng-advanced-table` now exposes richer accessibility formatter contexts with localized number strings and semantic states, while `ng-advanced-table-ui` uses `accessibilityLabels` as the single customization entry point for companion controls and header actions.
+
+- d82d039: Reorganize package documentation so the workspace README is the canonical reference and package READMEs act as scoped entry points.
+
+  The updated docs centralize the core table, UI, and render-metrics guidance in one place, add clearer cross-links between packages, and make the published README structure easier for agents and maintainers to parse.
+
 ## 0.1.0
 
 ### Minor Changes
