@@ -1,5 +1,17 @@
 # ng-advanced-table-utils
 
+## 1.0.1
+
+### Patch Changes
+
+- 2addb25: Remove direct package coupling to `ng-advanced-table` by switching the companion UI and render-metrics packages to structural controller/event contracts.
+
+  `<nat-table #grid="natTable">` instances still work as the `for` input in consuming apps, but `ng-advanced-table-ui` and `ng-advanced-table-utils` no longer declare `ng-advanced-table` as a peer dependency or import its runtime/types internally.
+
+- d82d039: Reorganize package documentation so the workspace README is the canonical reference and package READMEs act as scoped entry points.
+
+  The updated docs centralize the core table, UI, and render-metrics guidance in one place, add clearer cross-links between packages, and make the published README structure easier for agents and maintainers to parse.
+
 ## 1.0.0
 
 ### Patch Changes
