@@ -20,5 +20,9 @@ export type {
   NatTableAccessibilityPagerLabels,
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPageSizeOptionContext,
+  NatTableColumnMeta,
+  NatTableSortDirection,
+  NatTableSortIndicatorContext,
+  NatTableUiController,
+  NatTableUiState,
 } from './lib/shared/table-ui.types';
-export type { NatTableSortDirection, NatTableSortIndicatorContext } from 'ng-advanced-table';

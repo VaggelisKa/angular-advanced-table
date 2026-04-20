@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { ColumnFiltersState } from '@tanstack/angular-table';
-import { NatTable } from 'ng-advanced-table';
 
+import type { NatTableRenderMetricsController } from './contracts';
 import type { NatTableRenderMetricsStore } from './store';
 import { isRenderFilterValue } from './tone';
 import {
@@ -22,7 +22,7 @@ import {
 })
 export class NatRenderMetricsFilter<TData = unknown> {
   /** The `<nat-table>` instance this filter drives. */
-  readonly for = input.required<NatTable<TData>>();
+  readonly for = input.required<NatTableRenderMetricsController<TData>>();
   /** Shared store — used only so the panel/filter can react to measurement changes. */
   readonly store = input.required<NatTableRenderMetricsStore>();
   /** Column id to target when the metrics column uses a custom identifier. */

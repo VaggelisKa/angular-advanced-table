@@ -6,7 +6,10 @@ import {
   type HeaderContext,
   type RowData,
 } from '@tanstack/angular-table';
-import type { NatTableSortDirection, NatTableSortIndicatorContext } from 'ng-advanced-table';
+import type {
+  NatTableSortDirection,
+  NatTableSortIndicatorContext,
+} from '../../shared/table-ui.types';
 
 import type {
   NatTableAccessibilityHeaderActionLabels,

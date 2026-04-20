@@ -1,6 +1,7 @@
 # ng-advanced-table-utils
 
 Optional companion helpers for [`ng-advanced-table`](../ng-advanced-table/README.md). Ship only the pieces you need alongside the core `<nat-table>` component.
+This package does not import the core library directly; it works with structural event/controller contracts so consuming apps can compose it with any compatible table implementation.
 
 Currently bundled:
 
@@ -52,7 +53,7 @@ npm install --package-lock-only
 npm run verify
 ```
 
-Then publish this package after `ng-advanced-table` when both ship together:
+Then publish this package on its own, or alongside any compatible table package:
 
 ```bash
 npm run pack:dry-run

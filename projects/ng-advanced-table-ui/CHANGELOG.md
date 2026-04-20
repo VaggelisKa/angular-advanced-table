@@ -1,5 +1,11 @@
 # ng-advanced-table-ui
 
+## 1.0.0
+
+### Major Changes
+
+- Split the optional table controls out of the core package into `ng-advanced-table-ui`, keeping the existing `<nat-table #grid="natTable">` usage compatible while publishing the UI package independently.
+
 ## 0.0.2
 
 ### Patch Changes

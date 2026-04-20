@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTable } from 'ng-advanced-table';
-
 import {
   DEFAULT_PAGE_SIZE_OPTIONS,
   formatNatTableAccessibilityNumber,
@@ -11,6 +9,7 @@ import {
 import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPageSizeOptionContext,
+  NatTableUiController,
 } from '../../shared/table-ui.types';
 
 interface PageSizeOption {
@@ -26,7 +25,7 @@ interface PageSizeOption {
   styleUrl: './table-page-size.css',
 })
 export class NatTablePageSize<TData extends RowData = RowData> {
-  readonly for = input.required<NatTable<TData>>();
+  readonly for = input.required<NatTableUiController<TData>>();
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
   readonly ariaLabel = input('Rows per page');
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTable } from 'ng-advanced-table';
+import type { NatTableUiController } from '../../shared/table-ui.types';
 
 import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.types';
@@ -13,7 +13,7 @@ import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.typ
   styleUrl: './table-pager.css',
 })
 export class NatTablePager<TData extends RowData = RowData> {
-  readonly for = input.required<NatTable<TData>>();
+  readonly for = input.required<NatTableUiController<TData>>();
   readonly ariaLabel = input('Table pagination');
   readonly accessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
 

@@ -3,11 +3,12 @@
 Optional UI primitives for [`ng-advanced-table`](../ng-advanced-table/README.md).
 
 This package keeps the table core composable: you import only the controls and visual shell you want.
+It does not import the core library directly; the controls accept any compatible table controller, including `<nat-table #grid="natTable">`.
 
 ## Exports
 
 - `NatTableSurface`: themed card/surface wrapper and `--nat-table-*` token owner
-- `NatTableSearch`: global search field wired to `NatTable.patchState(...)`
+- `NatTableSearch`: global search field wired to a compatible table controller's `patchState(...)`
 - `NatTableColumnVisibility`: column toggle chip group
 - `NatTablePageSize`: page-size chip group
 - `NatTablePager`: previous/next pager
@@ -109,7 +110,8 @@ export class OrdersTableComponent {
 
 ## Notes
 
-- `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` all take `for: NatTable<TData>`.
+- `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` all take `for: NatTableUiController<TData>`.
+- `<nat-table #grid="natTable">` satisfies that contract without any adapter boilerplate.
 - `NatTableSurface` owns the default `--nat-table-*` variables that used to live in core.
 - `withNatTableHeaderActions(...)` is additive: it preserves the original header content and only adds controls when the underlying column can sort or pin.
 
@@ -193,7 +195,7 @@ Typical replacement strategies:
 
 - keep `NatTableSurface`, replace only pagination
 - keep `withNatTableHeaderActions(...)`, replace search and column visibility
-- skip this package entirely and build all controls directly against `NatTable`
+- skip this package entirely and build all controls directly against your own controller
 
 The shipped UI components are intentionally thin wrappers around the core API:
 
@@ -204,7 +206,7 @@ If you want a custom pagination component, this is the minimum contract:
 
 ```ts
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { NatTable } from 'ng-advanced-table';
+import type { NatTableUiController } from 'ng-advanced-table-ui';
 
 @Component({
   selector: 'app-custom-pagination',
@@ -227,7 +229,7 @@ import { NatTable } from 'ng-advanced-table';
   `,
 })
 export class CustomPaginationComponent<TData = unknown> {
-  readonly for = input.required<NatTable<TData>>();
+  readonly for = input.required<NatTableUiController<TData>>();
 
   protected previous(): void {
     this.for().table.previousPage();
