@@ -133,18 +133,18 @@ Use `accessibilityText` when the built-in English summaries or live announcement
 
 ```ts
 readonly accessibilityText = {
-  reorderKeyboardInstructions: 'Usa Alt+Shift para mover columnas.',
+  reorderKeyboardInstructions: 'Brug Alt+Shift til at flytte kolonner.',
   tableSummary: ({
     visibleRowsText,
     totalRowsText,
     visibleColumnsText,
     pageText,
     pageCountText,
-  }) => `Resumen ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
-  filteringChange: ({ query, visibleRowsText }) => `Filtro ${query}:${visibleRowsText}`,
-  sortingChange: ({ columnLabel, sortState }) => `Orden ${columnLabel}:${sortState}`,
+  }) => `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
+  filteringChange: ({ query, visibleRowsText }) => `Filter ${query}:${visibleRowsText}`,
+  sortingChange: ({ columnLabel, sortState }) => `Sortering ${columnLabel}:${sortState}`,
   pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
-    `Pagina ${pageText}/${pageCountText}:${visibleRowsText}`,
+    `Side ${pageText}/${pageCountText}:${visibleRowsText}`,
 };
 ```
 

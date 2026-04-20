@@ -316,18 +316,18 @@ describe('NatTable', () => {
 
   it('lets callers override accessibility summaries and live announcements', async () => {
     const accessibilityText: NatTableAccessibilityText = {
-      reorderKeyboardInstructions: 'Usa Alt+Shift para mover columnas.',
+      reorderKeyboardInstructions: 'Brug Alt+Shift til at flytte kolonner.',
       tableSummary: ({
         visibleRowsText,
         totalRowsText,
         visibleColumnsText,
         pageText,
         pageCountText,
-      }) => `Resumen ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
-      filteringChange: ({ query, visibleRowsText }) => `Filtro ${query}:${visibleRowsText}`,
-      sortingChange: ({ columnLabel, sortState }) => `Orden ${columnLabel}:${sortState}`,
+      }) => `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
+      filteringChange: ({ query, visibleRowsText }) => `Filter ${query}:${visibleRowsText}`,
+      sortingChange: ({ columnLabel, sortState }) => `Sortering ${columnLabel}:${sortState}`,
       pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
-        `Pagina ${pageText}/${pageCountText}:${visibleRowsText}`,
+        `Side ${pageText}/${pageCountText}:${visibleRowsText}`,
     };
     await recreateHost({
       enablePagination: true,
@@ -350,15 +350,15 @@ describe('NatTable', () => {
     const tableComponent = fixture.debugElement.query(By.directive(NatTable))
       .componentInstance as NatTable<Row>;
 
-    expect(summary.textContent?.trim()).toBe('Resumen 2/6/4/1/3');
-    expect(instructions.textContent).toContain('Usa Alt+Shift para mover columnas.');
+    expect(summary.textContent?.trim()).toBe('Oversigt 2/6/4/1/3');
+    expect(instructions.textContent).toContain('Brug Alt+Shift til at flytte kolonner.');
 
     tableComponent.table.nextPage();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('Pagina 2/3:2');
+    expect(liveRegion.textContent?.trim()).toBe('Side 2/3:2');
 
     tableComponent.patchState({
       globalFilter: 'gamma',
@@ -371,7 +371,7 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('Filtro gamma:1');
+    expect(liveRegion.textContent?.trim()).toBe('Filter gamma:1');
 
     tableComponent.patchState({
       sorting: [{ id: 'name', desc: false }],
@@ -380,7 +380,7 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('Orden Service:ascending');
+    expect(liveRegion.textContent?.trim()).toBe('Sortering Service:ascending');
   });
 
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {

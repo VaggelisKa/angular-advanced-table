@@ -121,34 +121,34 @@ The companion controls expose `accessibilityLabels` overrides so consumers can l
 
 ```ts
 readonly pageSizeLabels = {
-  groupAriaLabel: 'Filas por pagina',
-  pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} filas`,
-  pageSizeOptionAriaLabel: ({ pageSizeText }) => `Mostrar ${pageSizeText} filas`,
+  groupAriaLabel: 'Rækker pr. side',
+  pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
+  pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
 };
 
 readonly pagerLabels = {
-  groupAriaLabel: 'Paginacion',
-  previousPageAriaLabel: 'Pagina anterior',
-  nextPageAriaLabel: 'Pagina siguiente',
-  pageIndicator: ({ pageText, pageCountText }) => `Pagina ${pageText} de ${pageCountText}`,
+  groupAriaLabel: 'Sideskift',
+  previousPageAriaLabel: 'Forrige side',
+  nextPageAriaLabel: 'Næste side',
+  pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
 };
 
 readonly columnVisibilityLabels = {
-  heading: 'Columnas',
-  groupAriaLabel: 'Visibilidad de columnas',
+  heading: 'Kolonner',
+  groupAriaLabel: 'Kolonnesynlighed',
   visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-    `${visibleColumnCountText} de ${totalColumnCountText} visibles`,
+    `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
   toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
-    `${toggleAction === 'hide' ? 'Ocultar' : 'Mostrar'} columna ${columnLabel}`,
-  columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Visible' : 'Oculta'),
+    `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
+  columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
 };
 
 readonly columns = withNatTableHeaderActions(baseColumns, {
   accessibilityLabels: {
-    sortButton: ({ label }) => `Ordenar ${label}`,
+    sortButton: ({ label }) => `Sorter ${label}`,
     pinButton: ({ label, toggleAction }) =>
-      `${toggleAction === 'unpin' ? 'Liberar' : 'Fijar'} columna ${label}`,
-    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Liberar' : 'Fijar'),
+      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label}`,
+    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'),
   },
 });
 ```

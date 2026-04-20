@@ -189,30 +189,30 @@ class CustomSortIndicatorHost {
 class CustomAccessibilityLabelsHost {
   readonly rows = signal<Row[]>(buildRows(6));
   readonly pageSizeLabels: NatTableAccessibilityPageSizeLabels = {
-    groupAriaLabel: 'Filas por pagina',
-    pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} filas`,
-    pageSizeOptionAriaLabel: ({ pageSizeText }) => `Mostrar ${pageSizeText} filas`,
+    groupAriaLabel: 'Rækker pr. side',
+    pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
+    pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
   };
   readonly pagerLabels: NatTableAccessibilityPagerLabels = {
-    groupAriaLabel: 'Paginacion',
-    previousPageAriaLabel: 'Pagina anterior',
-    nextPageAriaLabel: 'Pagina siguiente',
-    pageIndicator: ({ pageText, pageCountText }) => `Pagina ${pageText} de ${pageCountText}`,
+    groupAriaLabel: 'Sideskift',
+    previousPageAriaLabel: 'Forrige side',
+    nextPageAriaLabel: 'Næste side',
+    pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
   };
   readonly columnVisibilityLabels: NatTableAccessibilityColumnVisibilityLabels = {
-    heading: 'Columnas',
-    groupAriaLabel: 'Visibilidad de columnas',
+    heading: 'Kolonner',
+    groupAriaLabel: 'Kolonnesynlighed',
     visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-      `${visibleColumnCountText} de ${totalColumnCountText} visibles`,
+      `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
     toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
-      `${toggleAction === 'hide' ? 'Ocultar' : 'Mostrar'} columna ${columnLabel}`,
-    columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Visible' : 'Oculta'),
+      `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
+    columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
   };
   readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
-    sortButton: ({ label }) => `Ordenar ${label}`,
+    sortButton: ({ label }) => `Sorter ${label}`,
     pinButton: ({ label, toggleAction }) =>
-      `${toggleAction === 'unpin' ? 'Liberar' : 'Fijar'} columna ${label}`,
-    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Liberar' : 'Fijar'),
+      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label}`,
+    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'),
   };
   readonly columns = withNatTableHeaderActions(baseColumns, {
     accessibilityLabels: this.headerActionLabels,
@@ -506,24 +506,24 @@ describe('ng-advanced-table-ui', () => {
       'thead th[data-column-id="name"] .pin-button',
     ) as HTMLButtonElement;
 
-    expect(visibilityHeading.textContent?.trim()).toBe('Columnas');
-    expect(visibilityCaption.textContent?.trim()).toBe('4 de 4 visibles');
-    expect(visibilityGroup.getAttribute('aria-label')).toBe('Visibilidad de columnas');
-    expect(firstColumnChip.getAttribute('aria-label')).toBe('Ocultar columna Service');
-    expect(firstColumnState.textContent?.trim()).toBe('Visible');
+    expect(visibilityHeading.textContent?.trim()).toBe('Kolonner');
+    expect(visibilityCaption.textContent?.trim()).toBe('4 af 4 synlige');
+    expect(visibilityGroup.getAttribute('aria-label')).toBe('Kolonnesynlighed');
+    expect(firstColumnChip.getAttribute('aria-label')).toBe('Skjul kolonne Service');
+    expect(firstColumnState.textContent?.trim()).toBe('Synlig');
 
-    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Filas por pagina');
-    expect(pageSizeButton.textContent?.trim()).toBe('2 filas');
-    expect(pageSizeButton.getAttribute('aria-label')).toBe('Mostrar 2 filas');
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
+    expect(pageSizeButton.textContent?.trim()).toBe('2 rækker');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker');
 
-    expect(pager.getAttribute('aria-label')).toBe('Paginacion');
-    expect(pagerLabel.textContent?.trim()).toBe('Pagina 2 de 3');
-    expect(previousButton.getAttribute('aria-label')).toBe('Pagina anterior');
-    expect(nextButton.getAttribute('aria-label')).toBe('Pagina siguiente');
+    expect(pager.getAttribute('aria-label')).toBe('Sideskift');
+    expect(pagerLabel.textContent?.trim()).toBe('Side 2 af 3');
+    expect(previousButton.getAttribute('aria-label')).toBe('Forrige side');
+    expect(nextButton.getAttribute('aria-label')).toBe('Næste side');
 
-    expect(sortButton.getAttribute('aria-label')).toBe('Ordenar Service');
-    expect(pinButton.getAttribute('aria-label')).toBe('Fijar columna Service');
-    expect(pinButton.textContent?.trim()).toBe('Fijar');
+    expect(sortButton.getAttribute('aria-label')).toBe('Sorter Service');
+    expect(pinButton.getAttribute('aria-label')).toBe('Fastgør kolonne Service');
+    expect(pinButton.textContent?.trim()).toBe('Fastgør');
 
     pinButton.click();
     customFixture.detectChanges();
@@ -532,14 +532,14 @@ describe('ng-advanced-table-ui', () => {
       'thead th[data-column-id="name"] .pin-button',
     ) as HTMLButtonElement;
 
-    expect(updatedPinButton.getAttribute('aria-label')).toBe('Liberar columna Service');
-    expect(updatedPinButton.textContent?.trim()).toBe('Liberar');
+    expect(updatedPinButton.getAttribute('aria-label')).toBe('Frigør kolonne Service');
+    expect(updatedPinButton.textContent?.trim()).toBe('Frigør');
 
     firstColumnChip.click();
     customFixture.detectChanges();
 
-    expect(firstColumnChip.getAttribute('aria-label')).toBe('Mostrar columna Service');
-    expect(firstColumnState.textContent?.trim()).toBe('Oculta');
+    expect(firstColumnChip.getAttribute('aria-label')).toBe('Vis kolonne Service');
+    expect(firstColumnState.textContent?.trim()).toBe('Skjult');
   });
 });
 
