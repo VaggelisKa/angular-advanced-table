@@ -6,6 +6,7 @@ Optional UI package for the `angular-advanced-table` workspace.
 
 - Workspace and package docs: [../../README.md](../../README.md)
 - UI package reference: [../../README.md#ui-package](../../README.md#ui-package)
+- UI accessibility overrides: [../../README.md#accessibility-label-overrides](../../README.md#accessibility-label-overrides)
 - Core table reference: [../../README.md#core-table](../../README.md#core-table)
 - Install options: [../../README.md#install](../../README.md#install)
 
@@ -40,6 +41,17 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `withNatTableHeaderActions(...)`
 - `NatTableHeaderActionsOptions`
 - `NatTableSortIndicatorContent`
+- `NatTableAccessibilityPageSizeOptionContext`
+- `NatTableAccessibilityPageSizeLabels`
+- `NatTableAccessibilityPagerContext`
+- `NatTableAccessibilityPagerLabels`
+- `NatTableAccessibilityColumnVisibilitySummaryContext`
+- `NatTableAccessibilityColumnVisibilityActionContext`
+- `NatTableAccessibilityColumnVisibilityStateContext`
+- `NatTableAccessibilityColumnVisibilityLabels`
+- `NatTableAccessibilityHeaderActionSortContext`
+- `NatTableAccessibilityHeaderActionPinContext`
+- `NatTableAccessibilityHeaderActionLabels`
 - `NatTableUiController`
 - `NatTableUiState`
 - `NatTableColumnMeta`
@@ -50,6 +62,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables.
 - The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, and `tableElementId()`.
+- Companion controls expose `accessibilityLabels` inputs so consumers can localize the UI without rebuilding table state.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin.
 - You can use any subset of this package or replace all of it with custom controls.
 

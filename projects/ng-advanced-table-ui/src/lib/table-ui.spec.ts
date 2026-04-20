@@ -10,6 +10,12 @@ import { NatTablePageSize } from './components/table-page-size/table-page-size';
 import { NatTablePager } from './components/table-pager/table-pager';
 import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableSurface } from './components/table-surface/table-surface';
+import type {
+  NatTableAccessibilityColumnVisibilityLabels,
+  NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityPageSizeLabels,
+  NatTableAccessibilityPagerLabels,
+} from './shared/table-ui.types';
 
 interface Row {
   id: string;
@@ -148,13 +154,91 @@ class CustomSortIndicatorHost {
   }
 }
 
+@Component({
+  imports: [
+    NatTable,
+    NatTableColumnVisibility,
+    NatTablePageSize,
+    NatTablePager,
+    NatTableSurface,
+  ],
+  template: `
+    <nat-table
+      #grid="natTable"
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      [initialState]="initialState"
+      [enablePagination]="true"
+      [getRowId]="getRowId"
+      ariaLabel="Operations table"
+      (stateChange)="onTableStateChange($event)"
+    />
+
+    <nat-table-surface>
+      <nat-table-column-visibility [for]="grid" [accessibilityLabels]="columnVisibilityLabels" />
+      <nat-table-page-size
+        [for]="grid"
+        [pageSizeOptions]="pageSizeOptions"
+        [accessibilityLabels]="pageSizeLabels"
+      />
+      <nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
+    </nat-table-surface>
+  `,
+})
+class CustomAccessibilityLabelsHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly pageSizeLabels: NatTableAccessibilityPageSizeLabels = {
+    groupAriaLabel: 'Rækker pr. side',
+    pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
+    pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
+  };
+  readonly pagerLabels: NatTableAccessibilityPagerLabels = {
+    groupAriaLabel: 'Sideskift',
+    previousPageAriaLabel: 'Forrige side',
+    nextPageAriaLabel: 'Næste side',
+    pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
+  };
+  readonly columnVisibilityLabels: NatTableAccessibilityColumnVisibilityLabels = {
+    heading: 'Kolonner',
+    groupAriaLabel: 'Kolonnesynlighed',
+    visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
+      `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
+    toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
+      `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
+    columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
+  };
+  readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
+    sortButton: ({ label }) => `Sorter ${label}`,
+    pinButton: ({ label, toggleAction }) =>
+      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label}`,
+    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'),
+  };
+  readonly columns = withNatTableHeaderActions(baseColumns, {
+    accessibilityLabels: this.headerActionLabels,
+  });
+  readonly getRowId = (row: Row) => row.id;
+  readonly pageSizeOptions = [2, 3, 5] as const;
+  readonly tableState = signal<Partial<NatTableState>>({});
+  readonly initialState: Partial<NatTableState> = {
+    pagination: {
+      pageIndex: 1,
+      pageSize: 2,
+    },
+  };
+
+  onTableStateChange(state: NatTableState): void {
+    this.tableState.set(state);
+  }
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost, CustomSortIndicatorHost],
+      imports: [TableUiHost, CustomSortIndicatorHost, CustomAccessibilityLabelsHost],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableUiHost);
@@ -380,6 +464,82 @@ describe('ng-advanced-table-ui', () => {
 
     expect(sortIcon.textContent?.trim()).toBe('A');
     expect(sortIcon.textContent).not.toContain('↕');
+  });
+
+  it('renders caller-provided accessibility labels across the UI controls', () => {
+    const customFixture = TestBed.createComponent(CustomAccessibilityLabelsHost);
+
+    customFixture.detectChanges();
+
+    const nativeElement = customFixture.nativeElement as HTMLElement;
+    const visibilityHeading = nativeElement.querySelector(
+      'nat-table-column-visibility .control-label',
+    ) as HTMLElement;
+    const visibilityCaption = nativeElement.querySelector(
+      'nat-table-column-visibility .control-caption',
+    ) as HTMLElement;
+    const visibilityGroup = nativeElement.querySelector(
+      'nat-table-column-visibility .chip-row',
+    ) as HTMLElement;
+    const firstColumnChip = nativeElement.querySelector(
+      'nat-table-column-visibility .column-chip',
+    ) as HTMLButtonElement;
+    const firstColumnState = firstColumnChip.querySelector('.chip-count') as HTMLElement;
+    const pageSizeGroup = nativeElement.querySelector(
+      'nat-table-page-size .chip-row',
+    ) as HTMLElement;
+    const pageSizeButton = nativeElement.querySelector(
+      'nat-table-page-size .chip',
+    ) as HTMLButtonElement;
+    const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
+    const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
+    const previousButton = nativeElement.querySelector(
+      'nat-table-pager .pager-button:first-child',
+    ) as HTMLButtonElement;
+    const nextButton = nativeElement.querySelector(
+      'nat-table-pager .pager-button:last-child',
+    ) as HTMLButtonElement;
+    const sortButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-button',
+    ) as HTMLButtonElement;
+    const pinButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .pin-button',
+    ) as HTMLButtonElement;
+
+    expect(visibilityHeading.textContent?.trim()).toBe('Kolonner');
+    expect(visibilityCaption.textContent?.trim()).toBe('4 af 4 synlige');
+    expect(visibilityGroup.getAttribute('aria-label')).toBe('Kolonnesynlighed');
+    expect(firstColumnChip.getAttribute('aria-label')).toBe('Skjul kolonne Service');
+    expect(firstColumnState.textContent?.trim()).toBe('Synlig');
+
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
+    expect(pageSizeButton.textContent?.trim()).toBe('2 rækker');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker');
+
+    expect(pager.getAttribute('aria-label')).toBe('Sideskift');
+    expect(pagerLabel.textContent?.trim()).toBe('Side 2 af 3');
+    expect(previousButton.getAttribute('aria-label')).toBe('Forrige side');
+    expect(nextButton.getAttribute('aria-label')).toBe('Næste side');
+
+    expect(sortButton.getAttribute('aria-label')).toBe('Sorter Service');
+    expect(pinButton.getAttribute('aria-label')).toBe('Fastgør kolonne Service');
+    expect(pinButton.textContent?.trim()).toBe('Fastgør');
+
+    pinButton.click();
+    customFixture.detectChanges();
+
+    const updatedPinButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .pin-button',
+    ) as HTMLButtonElement;
+
+    expect(updatedPinButton.getAttribute('aria-label')).toBe('Frigør kolonne Service');
+    expect(updatedPinButton.textContent?.trim()).toBe('Frigør');
+
+    firstColumnChip.click();
+    customFixture.detectChanges();
+
+    expect(firstColumnChip.getAttribute('aria-label')).toBe('Vis kolonne Service');
+    expect(firstColumnState.textContent?.trim()).toBe('Skjult');
   });
 });
 

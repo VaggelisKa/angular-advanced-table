@@ -25,6 +25,14 @@ Public exports:
 
 - `NatTable`
 - `NatTableRowRenderedEvent`
+- `NatTableAccessibilityText`
+- `NatTableAccessibilitySummaryContext`
+- `NatTableAccessibilitySortingAnnouncementContext`
+- `NatTableAccessibilityFilteringAnnouncementContext`
+- `NatTableAccessibilityColumnVisibilityAnnouncementChange`
+- `NatTableAccessibilityColumnVisibilityAnnouncementContext`
+- `NatTableAccessibilityPaginationAnnouncementContext`
+- `NatTableAccessibilityColumnReorderAnnouncementContext`
 - `NatTableState`
 - `NatTableColumnMeta`
 - `NatTableCellTone`
@@ -45,6 +53,17 @@ Public exports:
 - `withNatTableHeaderActions(...)`
 - `NatTableHeaderActionsOptions`
 - `NatTableSortIndicatorContent`
+- `NatTableAccessibilityPageSizeOptionContext`
+- `NatTableAccessibilityPageSizeLabels`
+- `NatTableAccessibilityPagerContext`
+- `NatTableAccessibilityPagerLabels`
+- `NatTableAccessibilityColumnVisibilitySummaryContext`
+- `NatTableAccessibilityColumnVisibilityActionContext`
+- `NatTableAccessibilityColumnVisibilityStateContext`
+- `NatTableAccessibilityColumnVisibilityLabels`
+- `NatTableAccessibilityHeaderActionSortContext`
+- `NatTableAccessibilityHeaderActionPinContext`
+- `NatTableAccessibilityHeaderActionLabels`
 - `NatTableUiController`
 - `NatTableUiState`
 - `NatTableColumnMeta`
@@ -218,6 +237,7 @@ Use [`ng-advanced-table-ui`](projects/ng-advanced-table-ui/README.md) for the fi
 - `ariaLabel`: required accessible name for the table region.
 - `ariaDescription`: optional longer description announced with the table.
 - `keyboardInstructions`: optional screen-reader instructions. A default is provided.
+- `accessibilityText`: optional overrides for built-in table summaries, live announcements, and reorder instructions.
 - `enableGlobalFilter`: enables the global filter pipeline. Defaults to `true`.
 - `allowColumnPinning`: enables sticky column pinning. Defaults to `true`.
 - `allowColumnReorder`: enables drag-and-drop and keyboard reordering. Defaults to `false`.
@@ -261,6 +281,53 @@ Attach optional metadata through `columnDef.meta`:
 - `align`: `'start' | 'end'`.
 - `rowHeader`: marks body cells in the column as row headers.
 - `cellTone`: maps a cell to `'positive' | 'negative' | 'neutral' | 'warning' | null`.
+
+### Accessibility text overrides
+
+Use `accessibilityText` when the built-in English summaries or live announcements do not match your product language or terminology.
+
+Supported overrides:
+
+- `reorderKeyboardInstructions`
+- `tableSummary(...)`
+- `sortingChange(...)`
+- `filteringChange(...)`
+- `columnVisibilityChange(...)`
+- `pageSizeChange(...)`
+- `pageChange(...)`
+- `columnReorder(...)`
+
+```ts
+readonly accessibilityText = {
+  reorderKeyboardInstructions: 'Brug Alt+Shift til at flytte kolonner.',
+  tableSummary: ({
+    visibleRowsText,
+    totalRowsText,
+    visibleColumnsText,
+    pageText,
+    pageCountText,
+  }) => `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
+  filteringChange: ({ query, visibleRowsText }) => `Filter ${query}:${visibleRowsText}`,
+  sortingChange: ({ columnLabel, sortState }) => `Sortering ${columnLabel}:${sortState}`,
+  pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
+    `Side ${pageText}/${pageCountText}:${visibleRowsText}`,
+};
+```
+
+```html
+<nat-table
+  [data]="rows()"
+  [columns]="columns"
+  [state]="tableState()"
+  [enablePagination]="true"
+  [allowColumnReorder]="true"
+  [accessibilityText]="accessibilityText"
+  ariaLabel="Orders"
+  (stateChange)="tableState.set($event)"
+/>
+```
+
+The formatter contexts expose browser-locale number strings such as `pageText` and semantic state values such as `sortState`, so most consumers can localize copy without re-deriving table state.
 
 ### Composition rules
 
@@ -312,6 +379,17 @@ Exports:
 - `withNatTableHeaderActions(...)`
 - `NatTableHeaderActionsOptions`
 - `NatTableSortIndicatorContent`
+- `NatTableAccessibilityPageSizeOptionContext`
+- `NatTableAccessibilityPageSizeLabels`
+- `NatTableAccessibilityPagerContext`
+- `NatTableAccessibilityPagerLabels`
+- `NatTableAccessibilityColumnVisibilitySummaryContext`
+- `NatTableAccessibilityColumnVisibilityActionContext`
+- `NatTableAccessibilityColumnVisibilityStateContext`
+- `NatTableAccessibilityColumnVisibilityLabels`
+- `NatTableAccessibilityHeaderActionSortContext`
+- `NatTableAccessibilityHeaderActionPinContext`
+- `NatTableAccessibilityHeaderActionLabels`
 - `NatTableUiController`
 - `NatTableUiState`
 - `NatTableColumnMeta`
@@ -335,6 +413,58 @@ The UI package works with any controller that implements:
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` are intentionally small wrappers over the controller contract.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning.
+
+### Accessibility label overrides
+
+The UI components expose `accessibilityLabels` overrides so consumers can localize or replace the default wording.
+
+```ts
+readonly pageSizeLabels = {
+  groupAriaLabel: 'Rækker pr. side',
+  pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
+  pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
+};
+
+readonly pagerLabels = {
+  groupAriaLabel: 'Sideskift',
+  previousPageAriaLabel: 'Forrige side',
+  nextPageAriaLabel: 'Næste side',
+  pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
+};
+
+readonly columnVisibilityLabels = {
+  heading: 'Kolonner',
+  groupAriaLabel: 'Kolonnesynlighed',
+  visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
+    `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
+  toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
+    `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
+  columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
+};
+
+readonly columns = withNatTableHeaderActions(baseColumns, {
+  accessibilityLabels: {
+    sortButton: ({ label }) => `Sorter ${label}`,
+    pinButton: ({ label, toggleAction }) =>
+      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label}`,
+    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'),
+  },
+});
+```
+
+```html
+<nat-table-column-visibility [for]="grid" [accessibilityLabels]="columnVisibilityLabels" />
+<nat-table-page-size
+  [for]="grid"
+  [pageSizeOptions]="[25, 50, 100]"
+  [accessibilityLabels]="pageSizeLabels"
+/>
+<nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
+```
+
+`NatTableSearch` already supports custom text through its `label` and `placeholder` inputs.
+
+The formatter contexts also expose browser-locale number strings such as `pageText` and semantic states such as `toggleAction`, so most consumers only need to override copy, not rebuild table state.
 
 ### Sort-indicator override
 

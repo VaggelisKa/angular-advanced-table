@@ -7,6 +7,7 @@ Core table package for the `angular-advanced-table` workspace.
 - Workspace and package docs: [../../README.md](../../README.md)
 - Core table overview: [../../README.md#core-table](../../README.md#core-table)
 - Core API reference: [../../README.md#core-api](../../README.md#core-api)
+- Core accessibility overrides: [../../README.md#accessibility-text-overrides](../../README.md#accessibility-text-overrides)
 - Migration notes: [../../README.md#migration](../../README.md#migration)
 
 This package README is intentionally scoped to package entry-point information. The root README is the canonical source for table behavior and API details.
@@ -20,6 +21,7 @@ Use this package when you want:
 - Sorting, filtering, visibility, pinning, ordering, and optional pagination state.
 - Sticky headers and sticky pinned columns.
 - Optional `(rowRendered)` instrumentation.
+- Custom accessibility summaries and live announcements through `accessibilityText`.
 
 This package does not include:
 
@@ -42,6 +44,14 @@ npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 
 - `NatTable`
 - `NatTableRowRenderedEvent`
+- `NatTableAccessibilityText`
+- `NatTableAccessibilitySummaryContext`
+- `NatTableAccessibilitySortingAnnouncementContext`
+- `NatTableAccessibilityFilteringAnnouncementContext`
+- `NatTableAccessibilityColumnVisibilityAnnouncementChange`
+- `NatTableAccessibilityColumnVisibilityAnnouncementContext`
+- `NatTableAccessibilityPaginationAnnouncementContext`
+- `NatTableAccessibilityColumnReorderAnnouncementContext`
 - `NatTableState`
 - `NatTableColumnMeta`
 - `NatTableCellTone`
