@@ -1,9 +1,7 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,6 +16,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Require main branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "The Release workflow can only run from the main branch." >&2
+          exit 1
+
       - name: Check out repository
         uses: actions/checkout@v4
         with:
