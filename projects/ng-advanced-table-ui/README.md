@@ -1,26 +1,72 @@
 # ng-advanced-table-ui
 
-Optional UI primitives for [`ng-advanced-table`](../ng-advanced-table/README.md).
+Optional UI package for the `angular-advanced-table` workspace.
 
-This package keeps the table core composable: you import only the controls and visual shell you want.
-It does not import the core library directly; the controls accept any compatible table controller, including `<nat-table #grid="natTable">`.
+## Canonical Docs
 
-## Exports
+- Workspace and package docs: [../../README.md](../../README.md)
+- UI package reference: [../../README.md#ui-package](../../README.md#ui-package)
+- UI accessibility overrides: [../../README.md#accessibility-label-overrides](../../README.md#accessibility-label-overrides)
+- Core table reference: [../../README.md#core-table](../../README.md#core-table)
+- Install options: [../../README.md#install](../../README.md#install)
 
-- `NatTableSurface`: themed card/surface wrapper and `--nat-table-*` token owner
-- `NatTableSearch`: global search field wired to a compatible table controller's `patchState(...)`
-- `NatTableColumnVisibility`: column toggle chip group
-- `NatTablePageSize`: page-size chip group
-- `NatTablePager`: previous/next pager
-- `withNatTableHeaderActions(...)`: wraps column headers with optional sort/pin buttons and custom sort-indicator content
+This package README is intentionally scoped to package entry-point information. The root README is the canonical source for controller behavior and composition rules.
 
-## Installation
+## Package Scope
+
+Use this package when you want optional companions around `NatTable`:
+
+- `NatTableSurface`
+- `NatTableSearch`
+- `NatTableColumnVisibility`
+- `NatTablePageSize`
+- `NatTablePager`
+- `withNatTableHeaderActions(...)`
+
+The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #grid="natTable">` satisfies that contract directly.
+
+## Install
 
 ```bash
-npm install ng-advanced-table-ui ng-advanced-table @tanstack/angular-table @angular/aria
+npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/aria @angular/cdk
 ```
 
-## Example
+## Public Exports
+
+- `NatTableSurface`
+- `NatTableSearch`
+- `NatTableColumnVisibility`
+- `NatTablePageSize`
+- `NatTablePager`
+- `withNatTableHeaderActions(...)`
+- `NatTableHeaderActionsOptions`
+- `NatTableSortIndicatorContent`
+- `NatTableAccessibilityPageSizeOptionContext`
+- `NatTableAccessibilityPageSizeLabels`
+- `NatTableAccessibilityPagerContext`
+- `NatTableAccessibilityPagerLabels`
+- `NatTableAccessibilityColumnVisibilitySummaryContext`
+- `NatTableAccessibilityColumnVisibilityActionContext`
+- `NatTableAccessibilityColumnVisibilityStateContext`
+- `NatTableAccessibilityColumnVisibilityLabels`
+- `NatTableAccessibilityHeaderActionSortContext`
+- `NatTableAccessibilityHeaderActionPinContext`
+- `NatTableAccessibilityHeaderActionLabels`
+- `NatTableUiController`
+- `NatTableUiState`
+- `NatTableColumnMeta`
+- `NatTableSortDirection`
+- `NatTableSortIndicatorContext`
+
+## Package Notes
+
+- `NatTableSurface` owns the default `--nat-table-*` CSS variables.
+- The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, and `tableElementId()`.
+- Companion controls expose `accessibilityLabels` inputs so consumers can localize the UI without rebuilding table state.
+- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin.
+- You can use any subset of this package or replace all of it with custom controls.
+
+## Minimal Example
 
 ```ts
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
@@ -28,8 +74,6 @@ import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
-  NatTableColumnVisibility,
-  NatTablePageSize,
   NatTablePager,
   NatTableSearch,
   NatTableSurface,
@@ -39,7 +83,6 @@ import {
 interface OrderRow {
   id: string;
   symbol: string;
-  desk: string;
   notional: number;
 }
 
@@ -47,14 +90,7 @@ const columns = withNatTableHeaderActions<OrderRow>([
   {
     accessorKey: 'symbol',
     header: 'Symbol',
-    enablePinning: true,
     meta: { label: 'Symbol' },
-    cell: (context) => context.getValue<string>(),
-  },
-  {
-    accessorKey: 'desk',
-    header: 'Desk',
-    meta: { label: 'Desk' },
     cell: (context) => context.getValue<string>(),
   },
   {
@@ -68,31 +104,20 @@ const columns = withNatTableHeaderActions<OrderRow>([
 @Component({
   selector: 'app-orders-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NatTable,
-    NatTableColumnVisibility,
-    NatTablePageSize,
-    NatTablePager,
-    NatTableSearch,
-    NatTableSurface,
-  ],
+  imports: [NatTable, NatTablePager, NatTableSearch, NatTableSurface],
   template: `
     <nat-table
       #grid="natTable"
       [data]="rows()"
       [columns]="columns"
       [state]="tableState()"
-      [initialState]="initialState"
       [enablePagination]="true"
-      [getRowId]="getRowId"
       ariaLabel="Orders"
       (stateChange)="tableState.set($event)"
     />
 
     <nat-table-surface>
       <nat-table-search [for]="grid" />
-      <nat-table-column-visibility [for]="grid" />
-      <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
       <nat-table-pager [for]="grid" />
     </nat-table-surface>
   `,
@@ -101,182 +126,5 @@ export class OrdersTableComponent {
   readonly rows = signal<OrderRow[]>([]);
   readonly columns = columns;
   readonly tableState = signal<Partial<NatTableState>>({});
-  readonly initialState: Partial<NatTableState> = {
-    pagination: { pageIndex: 0, pageSize: 25 },
-  };
-  readonly getRowId = (row: OrderRow) => row.id;
 }
-```
-
-## Notes
-
-- `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` all take `for: NatTableUiController<TData>`.
-- `<nat-table #grid="natTable">` satisfies that contract without any adapter boilerplate.
-- `NatTableSurface` owns the default `--nat-table-*` variables that used to live in core.
-- `withNatTableHeaderActions(...)` is additive: it preserves the original header content and only adds controls when the underlying column can sort or pin.
-
-## Custom Accessibility Labels
-
-The companion controls expose `accessibilityLabels` overrides so consumers can localize or replace the default wording.
-
-```ts
-readonly pageSizeLabels = {
-  groupAriaLabel: 'Rækker pr. side',
-  pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
-  pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
-};
-
-readonly pagerLabels = {
-  groupAriaLabel: 'Sideskift',
-  previousPageAriaLabel: 'Forrige side',
-  nextPageAriaLabel: 'Næste side',
-  pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
-};
-
-readonly columnVisibilityLabels = {
-  heading: 'Kolonner',
-  groupAriaLabel: 'Kolonnesynlighed',
-  visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-    `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
-  toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
-    `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
-  columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
-};
-
-readonly columns = withNatTableHeaderActions(baseColumns, {
-  accessibilityLabels: {
-    sortButton: ({ label }) => `Sorter ${label}`,
-    pinButton: ({ label, toggleAction }) =>
-      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label}`,
-    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'),
-  },
-});
-```
-
-```html
-<nat-table-column-visibility [for]="grid" [accessibilityLabels]="columnVisibilityLabels" />
-<nat-table-page-size
-  [for]="grid"
-  [pageSizeOptions]="[25, 50, 100]"
-  [accessibilityLabels]="pageSizeLabels"
-/>
-<nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
-```
-
-`NatTableSearch` already supports custom text through its existing `label` and `placeholder` inputs.
-
-The accessibility formatter contexts also expose browser-locale number strings such as `pageText` and semantic states such as `toggleAction`, so most consumers only need to override copy, not rebuild table state.
-
-## Custom Sort Indicator
-
-Pass `sortIndicator` as the second argument to `withNatTableHeaderActions(...)` when you want to replace the built-in `↑`, `↓`, and `↕` glyphs.
-
-```ts
-const columns = withNatTableHeaderActions<OrderRow>(baseColumns, {
-  sortIndicator: ({ sortState }) =>
-    sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇',
-});
-```
-
-The callback receives:
-
-- `sortState`: `'asc' | 'desc' | false`
-- `ariaSort`: `'ascending' | 'descending' | 'none'`
-- `column`: the TanStack column instance
-- `label`: the resolved column label
-
-For richer UI, return `flexRenderComponent(...)` instead of a string so the indicator can be a standalone Angular component.
-
-## Replacing Built-In UI With Your Own
-
-You do not need to use the components from this package as a bundle.
-
-Typical replacement strategies:
-
-- keep `NatTableSurface`, replace only pagination
-- keep `withNatTableHeaderActions(...)`, replace search and column visibility
-- skip this package entirely and build all controls directly against your own controller
-
-The shipped UI components are intentionally thin wrappers around the core API:
-
-- they read from `for().table`
-- they write through `for().patchState(...)` or `for().table.*` methods
-
-If you want a custom pagination component, this is the minimum contract:
-
-```ts
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import type { NatTableUiController } from 'ng-advanced-table-ui';
-
-@Component({
-  selector: 'app-custom-pagination',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="pagination-shell">
-      <button type="button" [disabled]="!for().table.getCanPreviousPage()" (click)="previous()">
-        Previous
-      </button>
-
-      <strong>
-        Page {{ for().table.getState().pagination.pageIndex + 1 }} of
-        {{ for().table.getPageCount() || 1 }}
-      </strong>
-
-      <button type="button" [disabled]="!for().table.getCanNextPage()" (click)="next()">
-        Next
-      </button>
-    </div>
-  `,
-})
-export class CustomPaginationComponent<TData = unknown> {
-  readonly for = input.required<NatTableUiController<TData>>();
-
-  protected previous(): void {
-    this.for().table.previousPage();
-  }
-
-  protected next(): void {
-    this.for().table.nextPage();
-  }
-}
-```
-
-```html
-<nat-table
-  #grid="natTable"
-  [data]="rows()"
-  [columns]="columns"
-  [state]="tableState()"
-  [enablePagination]="true"
-  ariaLabel="Orders"
-  (stateChange)="tableState.set($event)"
-/>
-
-<app-custom-pagination [for]="grid" />
-```
-
-Use `patchState(...)` instead when you want to set values directly rather than trigger TanStack methods:
-
-```ts
-this.for().patchState({
-  pagination: (current) => ({
-    ...current,
-    pageIndex: 0,
-    pageSize: 100,
-  }),
-});
-```
-
-The same pattern applies to custom search or visibility controls:
-
-- search: write `globalFilter` and usually reset `pagination.pageIndex` to `0`
-- page size: write `pagination.pageSize` and usually reset `pagination.pageIndex` to `0`
-- column visibility: call `column.toggleVisibility(...)` or patch `columnVisibility`
-- sorting: call `column.toggleSorting()`
-- pinning: call `column.pin(...)`
-
-## Building
-
-```bash
-npx ng build ng-advanced-table-ui
 ```
