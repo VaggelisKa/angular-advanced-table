@@ -11,6 +11,11 @@ import type {
   NatTableSortIndicatorContext,
 } from '../../shared/table-ui.types';
 
+import type {
+  NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityHeaderActionPinContext,
+} from '../../shared/table-ui.types';
+
 export type NatTableHeaderRenderContent =
   | string
   | number
@@ -42,6 +47,8 @@ export type NatTableSortIndicatorContent =
 export interface NatTableHeaderActionsOptions {
   /** Custom content rendered inside the sort button for each sortable column. */
   sortIndicator?: NatTableSortIndicatorContent;
+  /** Optional accessibility label overrides for the built-in sort and pin actions. */
+  accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
 
 @Component({
@@ -56,6 +63,9 @@ export class NatTableHeaderActions {
   readonly content = input.required<NatTableHeaderRenderContent>();
   readonly label = input.required<string>();
   readonly sortIndicator = input<NatTableSortIndicatorContent>(undefined);
+  readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(
+    undefined,
+  );
 
   protected canSort(): boolean {
     return this.column().getCanSort();
@@ -119,14 +129,46 @@ export class NatTableHeaderActions {
   }
 
   protected getSortLabel(): string {
-    return `Change sorting for ${this.label()}`;
+    const labels = this.resolveAccessibilityLabels();
+
+    return (
+      labels.sortButton?.({
+        label: this.label(),
+        sortState: this.ariaSort(),
+      }) ?? `Change sorting for ${this.label()}`
+    );
   }
 
   protected getPinLabel(): string {
-    return `${this.isPinned() ? 'Unpin' : 'Pin'} ${this.label()} column`;
+    const labels = this.resolveAccessibilityLabels();
+    const context: NatTableAccessibilityHeaderActionPinContext = {
+      label: this.label(),
+      pinState: this.isPinned() ? 'pinned' : 'unpinned',
+      toggleAction: this.isPinned() ? 'unpin' : 'pin',
+    };
+
+    return (
+      labels.pinButton?.(context) ??
+      `${context.toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${context.label} column`
+    );
+  }
+
+  protected getPinText(): string {
+    const labels = this.resolveAccessibilityLabels();
+    const context: NatTableAccessibilityHeaderActionPinContext = {
+      label: this.label(),
+      pinState: this.isPinned() ? 'pinned' : 'unpinned',
+      toggleAction: this.isPinned() ? 'unpin' : 'pin',
+    };
+
+    return labels.pinButtonText?.(context) ?? (context.toggleAction === 'unpin' ? 'Unpin' : 'Pin');
   }
 
   protected column() {
     return this.context().column;
+  }
+
+  private resolveAccessibilityLabels(): NatTableAccessibilityHeaderActionLabels {
+    return this.accessibilityLabels() ?? {};
   }
 }

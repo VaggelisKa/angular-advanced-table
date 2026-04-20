@@ -9,6 +9,17 @@ export type {
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
 export type {
+  NatTableAccessibilityColumnVisibilityActionContext,
+  NatTableAccessibilityColumnVisibilityLabels,
+  NatTableAccessibilityColumnVisibilityStateContext,
+  NatTableAccessibilityColumnVisibilitySummaryContext,
+  NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityHeaderActionPinContext,
+  NatTableAccessibilityHeaderActionSortContext,
+  NatTableAccessibilityPagerContext,
+  NatTableAccessibilityPagerLabels,
+  NatTableAccessibilityPageSizeLabels,
+  NatTableAccessibilityPageSizeOptionContext,
   NatTableColumnMeta,
   NatTableSortDirection,
   NatTableSortIndicatorContext,

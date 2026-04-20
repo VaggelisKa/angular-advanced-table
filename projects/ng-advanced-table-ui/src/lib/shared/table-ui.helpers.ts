@@ -8,6 +8,10 @@ export function sanitizePageSizeOptions(options: readonly number[]): number[] {
   return sanitized.length ? sanitized : [...DEFAULT_PAGE_SIZE_OPTIONS];
 }
 
+export function formatNatTableAccessibilityNumber(value: number): string {
+  return new Intl.NumberFormat().format(value);
+}
+
 export function getNatTableColumnLabel<TData extends RowData>(
   column: Column<TData, unknown>,
 ): string {
