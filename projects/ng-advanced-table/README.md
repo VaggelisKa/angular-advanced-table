@@ -1,40 +1,54 @@
 # ng-advanced-table
 
-`ng-advanced-table` is the bare core table package in this workspace. It renders the table itself and owns the TanStack state integration, but it does not ship opinionated controls or card styling.
+Core table package for the `angular-advanced-table` workspace.
 
-## What Stays In Core
+## Canonical Docs
 
-- standalone `NatTable`
-- TanStack sorting, filtering, visibility, column ordering, pinning, and optional pagination state
-- sticky header and sticky pinned-column layout
-- controlled or uncontrolled `NatTableState`
-- typed column metadata through `NatTableColumnMeta`
-- optional `(rowRendered)` instrumentation for performance tooling
+- Workspace and package docs: [../../README.md](../../README.md)
+- Core table overview: [../../README.md#core-table](../../README.md#core-table)
+- Core API reference: [../../README.md#core-api](../../README.md#core-api)
+- Migration notes: [../../README.md#migration](../../README.md#migration)
 
-## What Moved Out
+This package README is intentionally scoped to package entry-point information. The root README is the canonical source for table behavior and API details.
 
-Use [`ng-advanced-table-ui`](../ng-advanced-table-ui/README.md) for:
+## Package Scope
 
-- search input
-- column visibility chips
-- page-size chips
-- pager buttons
-- sort/pin header actions
-- themed card/surface styling
+Use this package when you want:
 
-## Installation
+- The `NatTable` component.
+- Controlled or uncontrolled `NatTableState`.
+- Sorting, filtering, visibility, pinning, ordering, and optional pagination state.
+- Sticky headers and sticky pinned columns.
+- Optional `(rowRendered)` instrumentation.
+
+This package does not include:
+
+- Search UI.
+- Column visibility UI.
+- Page-size UI.
+- Pager UI.
+- Header action buttons.
+- Surface styling.
+
+Use [`ng-advanced-table-ui`](../ng-advanced-table-ui/README.md) for optional UI and [`ng-advanced-table-utils`](../ng-advanced-table-utils/README.md) for render-metrics tooling.
+
+## Install
 
 ```bash
 npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 ```
 
-Add `ng-advanced-table-ui` only if you want the companion controls:
+## Public Exports
 
-```bash
-npm install ng-advanced-table-ui
-```
+- `NatTable`
+- `NatTableRowRenderedEvent`
+- `NatTableState`
+- `NatTableColumnMeta`
+- `NatTableCellTone`
+- `NatTableSortDirection`
+- `NatTableSortIndicatorContext`
 
-## Quick Start
+## Minimal Example
 
 ```ts
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
@@ -45,7 +59,6 @@ import { NatTable, type NatTableState } from 'ng-advanced-table';
 interface ServiceRow {
   id: string;
   service: string;
-  region: string;
   latencyMs: number;
 }
 
@@ -58,10 +71,7 @@ interface ServiceRow {
       [data]="rows()"
       [columns]="columns"
       [state]="tableState()"
-      [initialState]="initialState"
-      [allowColumnReorder]="true"
       [enablePagination]="true"
-      [getRowId]="getRowId"
       ariaLabel="Service latency"
       (stateChange)="tableState.set($event)"
     />
@@ -74,14 +84,7 @@ export class ServiceTableComponent {
     {
       accessorKey: 'service',
       header: 'Service',
-      enablePinning: true,
       meta: { label: 'Service' },
-      cell: (context) => context.getValue<string>(),
-    },
-    {
-      accessorKey: 'region',
-      header: 'Region',
-      meta: { label: 'Region' },
       cell: (context) => context.getValue<string>(),
     },
     {
@@ -91,149 +94,5 @@ export class ServiceTableComponent {
       cell: (context) => `${context.getValue<number>()} ms`,
     },
   ];
-  readonly initialState: Partial<NatTableState> = {
-    pagination: { pageIndex: 0, pageSize: 25 },
-  };
-  readonly getRowId = (row: ServiceRow) => row.id;
 }
 ```
-
-## Core API
-
-### Inputs
-
-- `data`: required table rows
-- `columns`: required TanStack column definitions
-- `ariaLabel`: required accessible name for the grid
-- `enableGlobalFilter`: enables global filtering for external search controls
-- `allowColumnPinning`: enables sticky pinning where columns allow it
-- `allowColumnReorder`: enables drag-and-drop and keyboard reordering for leaf headers
-- `enablePagination`: enables TanStack pagination row models; defaults to `false`
-- `emptyStateLabel`: message shown when the current row model is empty
-- `globalFilterFn`: override for the built-in generic global search
-- `initialState`: uncontrolled initial state
-- `state`: controlled state slices
-- `getRowId`: optional stable row id resolver
-- `emitRowRenderEvents`: enables `(rowRendered)`
-
-### Outputs
-
-- `stateChange`: emits the next full `NatTableState`
-- `rowRendered`: emits per-row paint measurements when instrumentation is enabled
-
-### Public Instance API
-
-- `table`: raw TanStack table instance
-- `patchState(...)`: applies state updaters while respecting controlled slices
-
-## `NatTableColumnMeta`
-
-Attach optional metadata through `columnDef.meta`:
-
-- `label`: accessible/friendly label for optional companion controls
-- `align`: `'start' | 'end'`
-- `cellTone`: returns `'positive' | 'negative' | 'neutral' | 'warning' | null`
-
-## Building Custom UI Around `NatTable`
-
-`NatTable` is designed so consumers can replace any optional UI with their own components.
-
-The key integration points are:
-
-- `#grid="natTable"`: get the component instance in the template
-- `grid.table`: read the raw TanStack table state and derived helpers
-- `grid.patchState(...)`: update table state from your own UI while respecting controlled slices
-- `(stateChange)`: keep external state in sync if you use controlled state
-
-When column reordering is enabled:
-
-- unpinned columns follow `state.columnOrder`
-- left and right pinned columns follow `state.columnPinning.left` and `state.columnPinning.right`
-- dragging does not move a column across pinning zones; use `column.pin(...)` to change zones
-
-For read-only UI, prefer `grid.table`:
-
-- `grid.table.getState().pagination`
-- `grid.table.getCanNextPage()`
-- `grid.table.getVisibleLeafColumns()`
-- `grid.table.getAllLeafColumns()`
-
-For write UI, prefer `grid.patchState(...)` when you want to update state slices directly, or call TanStack instance methods when the behavior already exists there:
-
-- `grid.patchState({ globalFilter: 'abc' })`
-- `grid.patchState({ columnOrder: ['region', 'service', 'latencyMs'] })`
-- `grid.patchState({ pagination: (current) => ({ ...current, pageIndex: 0 }) })`
-- `grid.table.nextPage()`
-- `grid.table.previousPage()`
-- `column.toggleVisibility(...)`
-- `column.toggleSorting()`
-- `column.pin('left')`
-
-### Custom Pagination Example
-
-```ts
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { NatTable } from 'ng-advanced-table';
-
-@Component({
-  selector: 'app-custom-pagination',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <nav class="pagination" aria-label="Table pagination">
-      <button type="button" [disabled]="!for().table.getCanPreviousPage()" (click)="previous()">
-        Back
-      </button>
-
-      <span> {{ pageIndex() + 1 }} / {{ pageCount() }} </span>
-
-      <button type="button" [disabled]="!for().table.getCanNextPage()" (click)="next()">
-        Forward
-      </button>
-    </nav>
-  `,
-})
-export class CustomPaginationComponent<TData = unknown> {
-  readonly for = input.required<NatTable<TData>>();
-
-  protected pageIndex(): number {
-    return this.for().table.getState().pagination.pageIndex;
-  }
-
-  protected pageCount(): number {
-    return this.for().table.getPageCount() || 1;
-  }
-
-  protected previous(): void {
-    this.for().table.previousPage();
-  }
-
-  protected next(): void {
-    this.for().table.nextPage();
-  }
-}
-```
-
-```html
-<nat-table
-  #grid="natTable"
-  [data]="rows()"
-  [columns]="columns"
-  [state]="tableState()"
-  [enablePagination]="true"
-  ariaLabel="Orders"
-  (stateChange)="tableState.set($event)"
-/>
-
-<app-custom-pagination [for]="grid" />
-```
-
-The same pattern works for custom search, custom page-size pickers, custom “show/hide columns” menus, and custom table toolbars.
-
-## Migration Notes
-
-If you are upgrading from the previous all-in-one `NatTable`:
-
-- replace `showPagination` with `enablePagination`
-- remove `pageSizeOptions`, `searchLabel`, `searchPlaceholder`, and `showColumnVisibility` from `NatTable`
-- wrap headers with `withNatTableHeaderActions(...)` if you still want built-in sort/pin buttons or custom sort indicators
-- compose search, pager, and visibility with `ng-advanced-table-ui`

@@ -1,61 +1,100 @@
 # ng-advanced-table-utils
 
-Optional companion helpers for [`ng-advanced-table`](../ng-advanced-table/README.md). Ship only the pieces you need alongside the core `<nat-table>` component.
-This package does not import the core library directly; it works with structural event/controller contracts so consuming apps can compose it with any compatible table implementation.
+Optional utilities package for the `angular-advanced-table` workspace.
 
-Currently bundled:
+## Canonical Docs
 
-- **Render metrics** — a lightweight instrumentation layer that records per-row render time, aggregates it into a measurement signal, and renders a KPI chip plus a fast / watch / slow filter chip row. Useful for perf demos and render-health dashboards.
+- Workspace and package docs: [../../README.md](../../README.md)
+- Utils package reference: [../../README.md#utils-package](../../README.md#utils-package)
+- Core table reference: [../../README.md#core-table](../../README.md#core-table)
+- Install options: [../../README.md#install](../../README.md#install)
 
-## Building
+This package README is intentionally scoped to package entry-point information. The root README is the canonical source for render-metrics behavior and wiring.
+
+## Package Scope
+
+Use this package when you want optional render-metrics helpers:
+
+- `NatTableRenderMetricsStore`
+- `NatRenderMetricsFilter`
+- `NatRenderMetricsPanel`
+- `withRenderMetricsColumn(...)`
+
+The package composes structurally with any compatible table controller and event source. The common pairing is `<nat-table [emitRowRenderEvents]="true" (rowRendered)="store.record($event)">`.
+
+## Install
 
 ```bash
-npm run build:packages
+npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @angular/aria @angular/cdk
 ```
 
-Output is written to `dist/ng-advanced-table-utils`.
+## Public Exports
 
-## Running unit tests
+- `NatTableRenderMetricsStore`
+- `NatRenderMetricsFilter`
+- `NatRenderMetricsPanel`
+- `withRenderMetricsColumn(...)`
+- `WithRenderMetricsColumnOptions`
+- `NatTableRenderMetricsController`
+- `NatTableRenderMetricsEvent`
+- `NatTableRenderMetricsState`
+- `getRowRenderTone(...)`
+- `getRenderToneLabel(...)`
+- `isRenderFilterValue(...)`
+- `RENDER_FILTER_OPTIONS`
+- `RENDER_METRIC_COLUMN_ID`
+- `RowRenderFilterOption`
+- `RowRenderFilterValue`
+- `RowRenderMeasurement`
+- `RowRenderMetric`
+- `RowRenderTone`
 
-```bash
-npm run test:packages
-```
+## Package Notes
 
-To run only this package's tests:
+- `NatTableRenderMetricsStore` tracks per-row timings and computes the latest aggregate measurement.
+- `withRenderMetricsColumn(...)` appends a synthetic metrics column. The default id is `__rowRenderMetric`.
+- `NatRenderMetricsFilter` writes a column filter for the metrics column and resets pagination to the first page.
+- `NatRenderMetricsPanel` renders a compact summary for the latest captured measurement.
 
-```bash
-ng test ng-advanced-table-utils
-```
+## Minimal Example
 
-## Versioning
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { type ColumnDef } from '@tanstack/angular-table';
 
-Track publishable changes from the repo root with Changesets:
+import { NatTable, type NatTableState } from 'ng-advanced-table';
+import {
+  NatRenderMetricsPanel,
+  NatTableRenderMetricsStore,
+  withRenderMetricsColumn,
+} from 'ng-advanced-table-utils';
 
-```bash
-npm run changeset
-```
+interface MetricRow {
+  id: string;
+}
 
-Apply pending version bumps and changelog updates before a release:
+@Component({
+  selector: 'app-metric-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NatTable, NatRenderMetricsPanel],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      [emitRowRenderEvents]="true"
+      ariaLabel="Metric table"
+      (stateChange)="tableState.set($event)"
+      (rowRendered)="metrics.record($event)"
+    />
 
-```bash
-npm run version:packages
-```
-
-## Publishing
-
-The preferred release path is the repo-level GitHub Actions `Release` workflow.
-
-For a local fallback, prepare and validate the release from the workspace root:
-
-```bash
-npm run version:packages
-npm install --package-lock-only
-npm run verify
-```
-
-Then publish this package on its own, or alongside any compatible table package:
-
-```bash
-npm run pack:dry-run
-npm publish ./dist/ng-advanced-table-utils
+    <nat-render-metrics-panel [store]="metrics" />
+  `,
+})
+export class MetricTableComponent {
+  readonly rows = signal<MetricRow[]>([]);
+  readonly tableState = signal<Partial<NatTableState>>({});
+  readonly metrics = new NatTableRenderMetricsStore();
+  readonly columns: ColumnDef<MetricRow>[] = withRenderMetricsColumn<MetricRow>([], this.metrics);
+}
 ```
