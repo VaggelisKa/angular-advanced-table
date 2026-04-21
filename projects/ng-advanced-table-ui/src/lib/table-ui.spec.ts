@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
@@ -239,6 +240,7 @@ describe('ng-advanced-table-ui', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TableUiHost, CustomSortIndicatorHost, CustomAccessibilityLabelsHost],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableUiHost);

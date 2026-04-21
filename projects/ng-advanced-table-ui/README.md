@@ -31,6 +31,11 @@ The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #g
 npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/aria @angular/cdk
 ```
 
+## Zoneless Compatibility
+
+- `ng-advanced-table-ui` is validated in a zoneless Angular `TestBed` configuration.
+- Angular 21+ consumers do not need `zone.js` to use this package.
+
 ## Public Exports
 
 - `NatTableSurface`

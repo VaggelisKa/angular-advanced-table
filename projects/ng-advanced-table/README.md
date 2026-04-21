@@ -40,6 +40,11 @@ Use [`ng-advanced-table-ui`](../ng-advanced-table-ui/README.md) for optional UI 
 npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 ```
 
+## Zoneless Compatibility
+
+- `ng-advanced-table` is validated in a zoneless Angular `TestBed` configuration.
+- Angular 21+ consumers do not need `zone.js` to use this package.
+
 ## Public Exports
 
 - `NatTable`

@@ -115,6 +115,12 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/aria @angular/cdk
 ```
 
+## Zoneless
+
+- The showcase application and Angular component specs in this workspace run with zoneless change detection.
+- Angular 21+ applications can use these packages without adding `zone.js`.
+- The packages stay compatible with zoned consumer apps as long as the consuming application chooses that bootstrap mode.
+
 ## Quick Start
 
 ```ts

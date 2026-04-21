@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TableShowcasePage } from './table-showcase-page';
@@ -17,6 +18,7 @@ describe('TableShowcasePage', () => {
 
     await TestBed.configureTestingModule({
       imports: [TableShowcasePage],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableShowcasePage);
