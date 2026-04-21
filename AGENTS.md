@@ -1,5 +1,13 @@
 You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
 
+## Release Workflow
+
+- For every code change that affects behavior, public API, docs, examples, or tests, add a new Changeset file in `.changeset/` as part of the same task unless the user explicitly says not to.
+- Default the version bump to `patch` when the user does not specify a release level.
+- Use `minor` only for explicitly requested feature releases and `major` only for breaking changes.
+- Include all packages meaningfully affected by the change in the Changeset frontmatter.
+- Do not reuse or edit unrelated existing Changeset files unless the user asks for that.
+
 ## TypeScript Best Practices
 
 - Use strict type checking
