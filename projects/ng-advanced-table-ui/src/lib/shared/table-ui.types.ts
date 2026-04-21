@@ -12,6 +12,13 @@ import type {
   VisibilityState,
 } from '@tanstack/angular-table';
 
+/**
+ * Serializable state shape expected by `ng-advanced-table-ui` companion
+ * controls.
+ *
+ * This mirrors the slices surfaced by `NatTable.patchState(...)`, including
+ * column ordering for drag-and-drop header actions.
+ */
 export interface NatTableUiState {
   sorting: SortingState;
   globalFilter: string;
@@ -22,6 +29,12 @@ export interface NatTableUiState {
   pagination: PaginationState;
 }
 
+/**
+ * Minimal table-controller contract consumed by the optional UI package.
+ *
+ * `<nat-table #grid="natTable">` satisfies this shape directly, but custom
+ * wrappers can also implement it to reuse the stock controls.
+ */
 export interface NatTableUiController<TData extends RowData = RowData> {
   readonly table: Table<TData>;
   enableGlobalFilter(): boolean;
@@ -34,20 +47,35 @@ export interface NatTableUiController<TData extends RowData = RowData> {
   tableElementId(): string;
 }
 
+/** Current sort direction for a header cell. */
 export type NatTableSortDirection = 'asc' | 'desc' | false;
 
+/** Context passed to companion sort-indicator renderers. */
 export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
+  /** Alias for `sortState`, useful for `let-state` style template bindings. */
   $implicit: NatTableSortDirection;
+  /** Current TanStack sort direction for the column. */
   sortState: NatTableSortDirection;
+  /** ARIA token applied to the header cell. */
   ariaSort: 'ascending' | 'descending' | 'none';
+  /** TanStack column instance for advanced custom indicators. */
   column: Column<TData, unknown>;
+  /** Resolved human-readable label for the column. */
   label: string;
 }
 
+/**
+ * Extra metadata understood by companion UI when attached to a TanStack
+ * column definition.
+ */
 export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
+  /** Accessible label used by companion controls when the header is not a string. */
   label?: string;
+  /** Horizontal alignment for header and body cells in the column. */
   align?: 'start' | 'end';
+  /** Marks the body cell for this column as the row header announced by screen readers. */
   rowHeader?: boolean;
+  /** Optional callback that maps a cell to a semantic tone-like value. */
   cellTone?: (context: CellContext<TData, TValue>) => unknown;
 }
 
