@@ -236,6 +236,31 @@ const defaultTableState: Partial<NatTableState> = {
 };
 
 type ShowcaseTheme = 'light' | 'dark';
+type TableFeatureKey =
+  | 'allowColumnPinning'
+  | 'allowColumnReorder'
+  | 'enablePagination'
+  | 'enableGlobalFilter'
+  | 'showColumnVisibility'
+  | 'showRenderMetrics';
+
+interface TableFeatureConfig {
+  allowColumnPinning: boolean;
+  allowColumnReorder: boolean;
+  enablePagination: boolean;
+  enableGlobalFilter: boolean;
+  showColumnVisibility: boolean;
+  showRenderMetrics: boolean;
+}
+
+const defaultTableFeatures: TableFeatureConfig = {
+  allowColumnPinning: true,
+  allowColumnReorder: true,
+  enablePagination: true,
+  enableGlobalFilter: true,
+  showColumnVisibility: true,
+  showRenderMetrics: true,
+};
 
 @Component({
   selector: 'app-market-sort-indicator',
@@ -362,6 +387,8 @@ export class TableShowcasePage {
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
   protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
+  protected readonly isFeatureDialogOpen = signal(false);
+  protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],
   });
@@ -400,6 +427,26 @@ export class TableShowcasePage {
 
   protected runManualPulse(): void {
     this.simulation.pulse();
+  }
+
+  protected openFeatureDialog(): void {
+    this.isFeatureDialogOpen.set(true);
+  }
+
+  protected closeFeatureDialog(): void {
+    this.isFeatureDialogOpen.set(false);
+  }
+
+  protected toggleFeature(key: TableFeatureKey, enabled: boolean): void {
+    this.tableFeatures.update((current) => ({
+      ...current,
+      [key]: enabled,
+    }));
+  }
+
+  protected readChecked(event: Event): boolean {
+    const target = event.target;
+    return target instanceof HTMLInputElement ? target.checked : false;
   }
 
   protected toggleStatus(status: SimulationStatus): void {

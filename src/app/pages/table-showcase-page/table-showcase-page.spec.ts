@@ -193,4 +193,29 @@ describe('TableShowcasePage', () => {
       ]),
     );
   });
+
+  it('should toggle table capabilities from the options dialog', () => {
+    fixture.detectChanges();
+
+    const optionsButton = fixture.nativeElement.querySelector(
+      '[data-testid="open-table-options"]',
+    ) as HTMLButtonElement;
+
+    optionsButton.click();
+    fixture.detectChanges();
+
+    const pinningToggle = fixture.nativeElement.querySelector(
+      '.feature-toggle[data-feature="allowColumnPinning"] input',
+    ) as HTMLInputElement;
+    const searchToggle = fixture.nativeElement.querySelector(
+      '.feature-toggle[data-feature="enableGlobalFilter"] input',
+    ) as HTMLInputElement;
+
+    pinningToggle.click();
+    searchToggle.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
+  });
 });
