@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -120,6 +121,7 @@ describe('NatTable', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TableHost],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableHost);

@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { SPARK_HISTORY_LENGTH, TableSimulation } from './table-simulation';
@@ -6,7 +7,9 @@ describe('TableSimulation', () => {
   let service: TableSimulation;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
     service = TestBed.inject(TableSimulation);
     service.pause();
   });
