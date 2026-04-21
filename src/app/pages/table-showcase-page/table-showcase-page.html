@@ -181,14 +181,14 @@
         </div>
       </div>
 
-      <div class="toolbar-group toolbar-group-stretch toolbar-group-metrics">
-        @if (tableFeatures().showRenderMetrics) {
+      @if (tableFeatures().showRenderMetrics) {
+        <div class="toolbar-group toolbar-group-stretch toolbar-group-metrics">
           <div class="metrics-row">
             <nat-render-metrics-filter [for]="grid" [store]="metricsStore" />
             <nat-render-metrics-panel [store]="metricsStore" />
           </div>
-        }
-      </div>
+        </div>
+      }
     </section>
 
     <section class="table-card">
@@ -202,30 +202,32 @@
         </div>
       </div>
 
-      <nat-table-surface class="table-controls-surface">
-        <div class="table-controls-grid">
-          @if (tableFeatures().enableGlobalFilter) {
-            <nat-table-search
-              [for]="grid"
-              label="Search symbol, company, exchange, desk, or id"
-              placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
-            />
-          }
-          @if (tableFeatures().showColumnVisibility) {
-            <nat-table-column-visibility [for]="grid" />
-          }
-        </div>
-      </nat-table-surface>
-
-      <nat-table-surface class="table-shell">
-        <div class="table-toolbar">
-          <div class="table-actions">
-            @if (tableFeatures().enablePagination) {
-              <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
-              <nat-table-pager [for]="grid" />
+      @if (hasTopTableControls()) {
+        <nat-table-surface class="table-controls-surface">
+          <div class="table-controls-grid">
+            @if (tableFeatures().enableGlobalFilter) {
+              <nat-table-search
+                [for]="grid"
+                label="Search symbol, company, exchange, desk, or id"
+                placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
+              />
+            }
+            @if (tableFeatures().showColumnVisibility) {
+              <nat-table-column-visibility [for]="grid" />
             }
           </div>
-        </div>
+        </nat-table-surface>
+      }
+
+      <nat-table-surface class="table-shell">
+        @if (hasTablePaginationControls()) {
+          <div class="table-toolbar">
+            <div class="table-actions">
+              <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
+              <nat-table-pager [for]="grid" />
+            </div>
+          </div>
+        }
 
         <nat-table
           #grid="natTable"

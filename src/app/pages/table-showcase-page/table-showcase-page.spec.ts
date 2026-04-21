@@ -210,12 +210,22 @@ describe('TableShowcasePage', () => {
     const searchToggle = fixture.nativeElement.querySelector(
       '.feature-toggle[data-feature="enableGlobalFilter"] input',
     ) as HTMLInputElement;
+    const visibilityToggle = fixture.nativeElement.querySelector(
+      '.feature-toggle[data-feature="showColumnVisibility"] input',
+    ) as HTMLInputElement;
+    const paginationToggle = fixture.nativeElement.querySelector(
+      '.feature-toggle[data-feature="enablePagination"] input',
+    ) as HTMLInputElement;
 
     pinningToggle.click();
     searchToggle.click();
+    visibilityToggle.click();
+    paginationToggle.click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.table-controls-surface')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.table-toolbar')).toBeFalsy();
   });
 });

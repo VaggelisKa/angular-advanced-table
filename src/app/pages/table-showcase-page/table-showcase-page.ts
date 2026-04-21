@@ -389,6 +389,13 @@ export class TableShowcasePage {
   protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
   protected readonly isFeatureDialogOpen = signal(false);
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
+  protected readonly hasTopTableControls = computed(() => {
+    const features = this.tableFeatures();
+    return features.enableGlobalFilter || features.showColumnVisibility;
+  });
+  protected readonly hasTablePaginationControls = computed(
+    () => this.tableFeatures().enablePagination,
+  );
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],
   });
