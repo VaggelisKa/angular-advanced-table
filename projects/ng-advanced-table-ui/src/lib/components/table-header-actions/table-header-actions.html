@@ -52,6 +52,8 @@
           type="button"
           ngGridCellWidget
           class="pin-button"
+          [class.is-icon-only]="!hasCustomPinText()"
+          [class.is-textual]="hasCustomPinText()"
           [class.is-pinned]="isPinned(side)"
           [attr.aria-pressed]="isPinned(side)"
           [attr.aria-label]="getPinLabel(side)"
@@ -59,7 +61,37 @@
           (pointerdown)="$event.stopPropagation()"
           (click)="togglePin(side)"
         >
-          {{ getPinText(side) }}
+          @if (hasCustomPinText()) {
+            {{ getPinText(side) }}
+          } @else {
+            <span class="pin-button-icon" [attr.data-pin-side]="side" aria-hidden="true">
+              @if (side === 'left') {
+                <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
+                  <path class="pin-button-icon__rail" d="M3.25 4.25v9.5" />
+                  <rect
+                    class="pin-button-icon__panel"
+                    x="6.25"
+                    y="5.25"
+                    width="8.5"
+                    height="7.5"
+                    rx="2"
+                  />
+                </svg>
+              } @else {
+                <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
+                  <path class="pin-button-icon__rail" d="M14.75 4.25v9.5" />
+                  <rect
+                    class="pin-button-icon__panel"
+                    x="3.25"
+                    y="5.25"
+                    width="8.5"
+                    height="7.5"
+                    rx="2"
+                  />
+                </svg>
+              }
+            </span>
+          }
         </button>
       }
     </div>

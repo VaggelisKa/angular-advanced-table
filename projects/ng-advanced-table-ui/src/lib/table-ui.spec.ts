@@ -385,8 +385,10 @@ describe('ng-advanced-table-ui', () => {
       'none',
     );
     expect(sortIcon.querySelector('.nat-default-sort__svg')).toBeTruthy();
-    expect(leftPinButton.textContent?.trim()).toBe('Left');
-    expect(rightPinButton.textContent?.trim()).toBe('Right');
+    expect(leftPinButton.textContent?.trim()).toBe('');
+    expect(rightPinButton.textContent?.trim()).toBe('');
+    expect(leftPinButton.querySelector('.pin-button-icon[data-pin-side="left"]')).toBeTruthy();
+    expect(rightPinButton.querySelector('.pin-button-icon[data-pin-side="right"]')).toBeTruthy();
 
     sortButton.click();
     fixture.detectChanges();

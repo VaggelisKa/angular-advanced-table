@@ -166,6 +166,10 @@ export class NatTableHeaderActions {
     return labels.pinButtonText?.(context) ?? (context.pinSide === 'left' ? 'Left' : 'Right');
   }
 
+  protected hasCustomPinText(): boolean {
+    return !!this.resolveAccessibilityLabels().pinButtonText;
+  }
+
   protected column() {
     return this.context().column;
   }

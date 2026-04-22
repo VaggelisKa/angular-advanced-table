@@ -51,8 +51,12 @@ describe('TableShowcasePage', () => {
     ) as HTMLElement;
 
     expect(rows.length).toBe(24);
-    expect(firstLeftPinButton.textContent?.trim()).toBe('Left');
-    expect(firstRightPinButton.textContent?.trim()).toBe('Right');
+    expect(firstLeftPinButton.textContent?.trim()).toBe('');
+    expect(firstRightPinButton.textContent?.trim()).toBe('');
+    expect(firstLeftPinButton.querySelector('.pin-button-icon[data-pin-side="left"]')).toBeTruthy();
+    expect(
+      firstRightPinButton.querySelector('.pin-button-icon[data-pin-side="right"]'),
+    ).toBeTruthy();
     expect(firstReorderableHeader).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
     expect(
