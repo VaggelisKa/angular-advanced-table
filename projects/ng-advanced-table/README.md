@@ -7,6 +7,7 @@ Core table package for the `angular-advanced-table` workspace.
 - Workspace and package docs: [../../README.md](../../README.md)
 - Core table overview: [../../README.md#core-table](../../README.md#core-table)
 - Core API reference: [../../README.md#core-api](../../README.md#core-api)
+- Custom cell component guidance: [../../README.md#custom-cell-components](../../README.md#custom-cell-components)
 - Core accessibility overrides: [../../README.md#accessibility-text-overrides](../../README.md#accessibility-text-overrides)
 - Migration notes: [../../README.md#migration](../../README.md#migration)
 
@@ -111,3 +112,5 @@ export class ServiceTableComponent {
   ];
 }
 ```
+
+For Angular component-backed cells and more interactive cell UIs, see [Custom cell components](../../README.md#custom-cell-components) in the root README.
