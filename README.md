@@ -371,6 +371,89 @@ Common write patterns:
 - `column.toggleSorting()`
 - `column.pin('left')`
 
+### Custom cell components
+
+`NatTable` renders whatever a TanStack cell renderer returns, so Angular component cells work through `flexRenderComponent(...)` from `@tanstack/angular-table`.
+
+```ts
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+
+interface PositionRow {
+  id: string;
+  symbol: string;
+  status: 'Live' | 'Queued' | 'Halted';
+}
+
+@Component({
+  selector: 'app-position-actions-cell',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div class="actions-cell">
+      <button type="button" [disabled]="busy()" (click)="trade.emit(row().id)">Trade</button>
+      <button type="button" (click)="details.emit(row())">Details</button>
+    </div>
+  `,
+})
+export class PositionActionsCell {
+  readonly row = input.required<PositionRow>();
+  readonly busy = input(false);
+
+  readonly trade = output<string>();
+  readonly details = output<PositionRow>();
+}
+```
+
+```ts
+import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
+
+readonly columns: ColumnDef<PositionRow>[] = [
+  {
+    accessorKey: 'symbol',
+    header: 'Symbol',
+    meta: { label: 'Symbol', rowHeader: true },
+    cell: (info) => info.getValue<string>(),
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    meta: { label: 'Actions', align: 'end' },
+    enableSorting: false,
+    enableGlobalFilter: false,
+    cell: (info) =>
+      flexRenderComponent(PositionActionsCell, {
+        inputs: {
+          row: info.row.original,
+          busy: info.row.original.status !== 'Live',
+        },
+        outputs: {
+          trade: (id) => this.placeTrade(id),
+          details: (row) => this.openDetails(row),
+        },
+      }),
+  },
+];
+```
+
+Recommended integration pattern:
+
+- Keep data loading, mutations, dialogs, and table state in the table container. Treat the cell component as a presentational leaf that emits intent.
+- Pass a small view model through `inputs` by default. Pass the full TanStack `CellContext<TData, TValue>` only when the component genuinely needs row or column APIs.
+- Use component `output()` events for actions such as opening drawers, menus, or dialogs. This keeps custom cells reusable and makes side effects easy to test.
+- Set `meta.label` whenever the header is not a plain string so announcements, column-visibility controls, and custom header UI still have a stable human-readable label.
+- Use column `meta` for table-level concerns such as `align`, `rowHeader`, and `cellTone`. Keep the component focused on the inner UI rendered inside the cell.
+
+Advanced UI guidance:
+
+- Buttons, toggles, badges, charts, menus, and overlays are all valid inside a custom cell. `NatTable` still renders normal `<td>` and `<th>` elements around them.
+- The default keyboard instructions already tell assistive technology users to use Tab to move into controls inside a cell. Keep focusable elements deliberate and avoid turning one cell into a long tab stop unless the workflow requires it.
+- Give icon-only controls explicit accessible names, and use standard Angular CDK or Angular Aria patterns for popovers, menus, and dialogs.
+- If cell actions can cause filtering, sorting, or pagination updates, provide a stable `getRowId` so row identity survives view changes.
+
+Showcase references:
+
+- [`NatTickerMark`](src/app/pages/table-showcase-page/nat-ticker-mark.ts) demonstrates a lightweight component-backed cell.
+- [`NatSparkline`](src/app/pages/table-showcase-page/nat-sparkline.ts) demonstrates a richer visual cell rendered with `flexRenderComponent(...)`.
+
 ## UI Package
 
 `ng-advanced-table-ui` is optional. It provides thin Angular components and helpers around the core controller contract.
@@ -478,8 +561,7 @@ Pass `sortIndicator` as the second argument to `withNatTableHeaderActions(...)` 
 
 ```ts
 const columns = withNatTableHeaderActions<OrderRow>(baseColumns, {
-  sortIndicator: ({ sortState }) =>
-    sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇',
+  sortIndicator: ({ sortState }) => (sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇'),
 });
 ```
 
