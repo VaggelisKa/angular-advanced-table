@@ -598,7 +598,62 @@ describe('NatTable', () => {
 
     expect(document.activeElement).toBe(lastCell);
   });
+
+  it('does not announce a visibility change when only column labels are swapped', async () => {
+    const dynamicColumns = signal<ColumnDef<Row, unknown>[]>(buildDynamicColumns('Service'));
+    @Component({
+      imports: [NatTable],
+      template: `
+        <nat-table
+          [data]="rows()"
+          [columns]="columns()"
+          ariaLabel="Operations table"
+        />
+      `,
+    })
+    class DynamicColumnsHost {
+      readonly rows = signal<Row[]>(buildRows(3));
+      readonly columns = dynamicColumns;
+    }
+
+    const dynamicFixture = TestBed.createComponent(DynamicColumnsHost);
+
+    await dynamicFixture.whenStable();
+    dynamicFixture.detectChanges();
+
+    const liveRegion = dynamicFixture.nativeElement.querySelector(
+      'p[aria-live="polite"]',
+    ) as HTMLElement;
+
+    expect(liveRegion.textContent?.trim()).toBe('');
+
+    dynamicColumns.set(buildDynamicColumns('Servicio'));
+    dynamicFixture.detectChanges();
+    await dynamicFixture.whenStable();
+    dynamicFixture.detectChanges();
+
+    expect(liveRegion.textContent?.trim()).toBe('');
+  });
 });
+
+function buildDynamicColumns(nameHeader: string): ColumnDef<Row, unknown>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: nameHeader,
+      size: 180,
+      meta: { label: nameHeader, rowHeader: true },
+      cell: (info) => info.getValue<string>(),
+    },
+    {
+      accessorKey: 'region',
+      header: 'Region',
+      size: 140,
+      meta: { label: 'Region' },
+      cell: (info) => info.getValue<string>(),
+    },
+  ];
+}
 
 type NatTableInternals = NatTable<Row> & {
   onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number]): void;
