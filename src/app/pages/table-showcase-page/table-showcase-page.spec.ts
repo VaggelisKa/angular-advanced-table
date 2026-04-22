@@ -160,6 +160,26 @@ describe('TableShowcasePage', () => {
     expect(marks.length).toBe(24);
   });
 
+  it('should render a three-dots actions menu in each visible row', async () => {
+    fixture.detectChanges();
+
+    const actionTriggers = fixture.nativeElement.querySelectorAll(
+      'tbody td[data-column-id="actions"] .row-actions-trigger',
+    ) as NodeListOf<HTMLButtonElement>;
+
+    expect(actionTriggers.length).toBe(24);
+
+    actionTriggers[0].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const actionLabels = Array.from(
+      document.body.querySelectorAll('.row-actions-item .row-actions-item-label'),
+    ).map((element) => element.textContent?.trim());
+
+    expect(actionLabels).toEqual(['Inspect tape', 'Create alert', 'Send to blotter']);
+  });
+
   it('should preserve the table render filter when toggling statuses', () => {
     fixture.detectChanges();
 

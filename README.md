@@ -448,6 +448,81 @@ Advanced UI guidance:
 - The default keyboard instructions already tell assistive technology users to use Tab to move into controls inside a cell. Keep focusable elements deliberate and avoid turning one cell into a long tab stop unless the workflow requires it.
 - Give icon-only controls explicit accessible names, and use standard Angular CDK or Angular Aria patterns for popovers, menus, and dialogs.
 - If cell actions can cause filtering, sorting, or pagination updates, provide a stable `getRowId` so row identity survives view changes.
+ 
+### Row actions and menus
+
+Row-level actions are intentionally consumer-defined because the action set, iconography, and menu behavior are product-specific. The recommended pattern is to render a dedicated `actions` column with a small standalone component, disable table behaviors that do not make sense for that column, and use Angular CDK menu primitives for accessible keyboard and focus management.
+
+```ts
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { CdkMenuModule } from '@angular/cdk/menu';
+import { GridCellWidget } from '@angular/aria/grid';
+import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
+
+interface PositionRow {
+  id: string;
+  symbol: string;
+}
+
+@Component({
+  selector: 'app-position-actions-menu',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CdkMenuModule, GridCellWidget],
+  template: `
+    <button
+      type="button"
+      ngGridCellWidget
+      [attr.aria-label]="'Open actions for ' + symbol()"
+      [cdkMenuTriggerFor]="menu"
+    >
+      ...
+    </button>
+
+    <ng-template #menu>
+      <div cdkMenu [attr.aria-label]="'Actions for ' + symbol()">
+        <button type="button" cdkMenuItem>Inspect</button>
+        <button type="button" cdkMenuItem>Create alert</button>
+        <button type="button" cdkMenuItem>Send to blotter</button>
+      </div>
+    </ng-template>
+  `,
+})
+class PositionActionsMenu {
+  readonly symbol = input.required<string>();
+}
+
+const columns: ColumnDef<PositionRow>[] = [
+  {
+    accessorKey: 'symbol',
+    header: 'Symbol',
+    meta: { label: 'Symbol' },
+    cell: (context) => context.getValue<string>(),
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    size: 92,
+    minSize: 84,
+    meta: { label: 'Actions', align: 'end' },
+    enableSorting: false,
+    enableGlobalFilter: false,
+    enablePinning: false,
+    enableHiding: false,
+    cell: (context) =>
+      flexRenderComponent(PositionActionsMenu, {
+        inputs: { symbol: context.row.original.symbol },
+      }),
+  },
+];
+```
+
+Implementation notes:
+
+- Use `ngGridCellWidget` on the trigger so the grid can hand focus off to the interactive control inside the cell.
+- Give the menu trigger and the menu itself row-specific accessible labels.
+- Most action columns should disable sorting, global filtering, and pinning.
+- Set `enableHiding: false` if the actions column is operationally important and should stay visible.
+- The showcase app includes this pattern as a trailing three-dots `Actions` column.
 
 Showcase references:
 
