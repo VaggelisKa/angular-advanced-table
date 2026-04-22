@@ -1,5 +1,17 @@
 # ng-advanced-table
 
+## 0.1.2
+
+### Patch Changes
+
+- 04116d6: Add a table options dialog to the showcase page so users can toggle capabilities such as column pinning, column reordering, pagination, search, column visibility controls, and render metrics to quickly test simpler table variants. Also collapse optional control sections entirely when toggled off so extra dividers and empty bars are removed.
+- f176a19: Add documentation for building custom Angular cell components with `flexRenderComponent(...)`, including guidance for interactive cell UIs, focus management, outputs, and stable row identity.
+- 835df8d: Rewrite the root README into a shorter, example-led API reference with a tighter package matrix, one representative setup example, and compact sections for the core, UI, and render-metrics APIs.
+- 5330f50: Improve the showcase options modal by opening it through Angular CDK Dialog so dialog interactions (focus trapping, escape handling, and backdrop close behavior) use the framework's accessible defaults.
+- 0f452b3: Document the custom row-actions column pattern, including an accessible three-dots menu example for showcase-style tables.
+- 0f452b3: Add an `Actions` column to the showcase table with an accessible three-dots row menu that exposes a few demo-only actions for each instrument.
+- 86dd926: Document zoneless Angular support and validate the core and UI component test suites under explicit zoneless change detection.
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # ng-advanced-table-ui
 
+## 1.0.2
+
+### Patch Changes
+
+- 349ee00: Add right-side pinning support to the shared header actions through a three-dot overflow menu with explicit left and right pin actions.
+- 80c69f6: Switch the header pinning menu to Angular Aria menu primitives for stronger built-in keyboard and screen reader behavior, and declare the package's Angular Aria/CDK peer dependencies explicitly.
+- 835df8d: Rewrite the root README into a shorter, example-led API reference with a tighter package matrix, one representative setup example, and compact sections for the core, UI, and render-metrics APIs.
+- 0f452b3: Document the custom row-actions column pattern, including an accessible three-dots menu example for showcase-style tables.
+- 86dd926: Document zoneless Angular support and validate the core and UI component test suites under explicit zoneless change detection.
+
 ## 1.0.1
 
 ### Patch Changes

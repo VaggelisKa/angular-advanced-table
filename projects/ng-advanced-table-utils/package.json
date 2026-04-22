@@ -1,6 +1,6 @@
 {
   "name": "ng-advanced-table-utils",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Optional companion helpers for ng-advanced-table, including render metrics tooling.",
   "repository": {
     "type": "git",

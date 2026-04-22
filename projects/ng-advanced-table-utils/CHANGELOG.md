@@ -1,5 +1,11 @@
 # ng-advanced-table-utils
 
+## 1.0.2
+
+### Patch Changes
+
+- 835df8d: Rewrite the root README into a shorter, example-led API reference with a tighter package matrix, one representative setup example, and compact sections for the core, UI, and render-metrics APIs.
+
 ## 1.0.1
 
 ### Patch Changes
