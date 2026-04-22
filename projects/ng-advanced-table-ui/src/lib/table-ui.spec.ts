@@ -406,9 +406,15 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
+    const openMenu = getOpenPinMenu();
     const leftPinMenuItem = getOpenMenuItem('left');
     const rightPinMenuItem = getOpenMenuItem('right');
 
+    expect(menuButton.getAttribute('aria-expanded')).toBe('true');
+    expect(openMenu?.getAttribute('role')).toBe('menu');
+    expect(openMenu?.getAttribute('aria-label')).toBe('Column pinning options for Service');
+    expect(leftPinMenuItem.getAttribute('role')).toBe('menuitem');
+    expect(rightPinMenuItem.getAttribute('role')).toBe('menuitem');
     expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
       'Pin left',
     );
@@ -638,7 +644,7 @@ function getHeaderColumnIds(fixture: ComponentFixture<TableUiHost>): string[] {
 }
 
 function getOpenPinMenu(): HTMLElement | null {
-  const menus = Array.from(document.body.querySelectorAll('.column-menu')) as HTMLElement[];
+  const menus = Array.from(document.querySelectorAll('.column-menu')) as HTMLElement[];
 
   return menus.at(-1) ?? null;
 }

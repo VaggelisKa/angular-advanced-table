@@ -49,65 +49,14 @@
     }
 
     @if (canPin()) {
-      <ng-template #pinMenu>
-        <div class="column-menu" cdkMenu>
-          @for (side of pinSides; track side) {
-            <button
-              type="button"
-              cdkMenuItem
-              class="column-menu-item"
-              [class.is-active]="isPinned(side)"
-              [attr.aria-label]="getPinLabel(side)"
-              [attr.data-pin-side]="side"
-              (click)="togglePin(side)"
-            >
-              <span
-                class="column-menu-item__check"
-                [class.is-visible]="isPinned(side)"
-                aria-hidden="true"
-              >
-                <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
-                  <path d="M2 6.25 4.55 8.8 10 3.35" />
-                </svg>
-              </span>
-              <span class="column-menu-item__label">{{ getPinText(side) }}</span>
-              <span class="column-menu-item__dock" [attr.data-pin-side]="side" aria-hidden="true">
-                @if (side === 'left') {
-                  <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
-                    <path class="column-menu-item__dock-rail" d="M3.25 4.25v9.5" />
-                    <rect
-                      class="column-menu-item__dock-panel"
-                      x="6.25"
-                      y="5.25"
-                      width="8.5"
-                      height="7.5"
-                      rx="2"
-                    />
-                  </svg>
-                } @else {
-                  <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
-                    <path class="column-menu-item__dock-rail" d="M14.75 4.25v9.5" />
-                    <rect
-                      class="column-menu-item__dock-panel"
-                      x="3.25"
-                      y="5.25"
-                      width="8.5"
-                      height="7.5"
-                      rx="2"
-                    />
-                  </svg>
-                }
-              </span>
-            </button>
-          }
-        </div>
-      </ng-template>
-
       <button
         type="button"
         ngGridCellWidget
         class="menu-button"
-        [cdkMenuTriggerFor]="pinMenu"
+        ngMenuTrigger
+        #menuOrigin
+        #menuTrigger="ngMenuTrigger"
+        [menu]="pinMenu()"
         [attr.aria-label]="getMenuButtonLabel()"
         (pointerdown)="$event.stopPropagation()"
       >
@@ -117,6 +66,73 @@
           <circle cx="7" cy="11.75" r="1.15" />
         </svg>
       </button>
+
+      <ng-template
+        [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
+        [cdkConnectedOverlay]="{ origin: menuOrigin, usePopover: 'inline' }"
+        [cdkConnectedOverlayPositions]="pinMenuPositions"
+        cdkAttachPopoverAsChild
+      >
+        <div
+          ngMenu
+          #pinMenu="ngMenu"
+          class="column-menu"
+          [attr.aria-label]="getMenuLabel()"
+        >
+          <ng-template ngMenuContent>
+            @for (side of pinSides; track side) {
+              <button
+                type="button"
+                ngMenuItem
+                class="column-menu-item"
+                [class.is-active]="isPinned(side)"
+                [value]="getPinLabel(side)"
+                [attr.aria-label]="getPinLabel(side)"
+                [attr.data-pin-side]="side"
+                (click)="togglePin(side); menuTrigger.close()"
+              >
+                <span
+                  class="column-menu-item__check"
+                  [class.is-visible]="isPinned(side)"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+                    <path d="M2 6.25 4.55 8.8 10 3.35" />
+                  </svg>
+                </span>
+                <span class="column-menu-item__label">{{ getPinText(side) }}</span>
+                <span class="column-menu-item__dock" [attr.data-pin-side]="side" aria-hidden="true">
+                  @if (side === 'left') {
+                    <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
+                      <path class="column-menu-item__dock-rail" d="M3.25 4.25v9.5" />
+                      <rect
+                        class="column-menu-item__dock-panel"
+                        x="6.25"
+                        y="5.25"
+                        width="8.5"
+                        height="7.5"
+                        rx="2"
+                      />
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
+                      <path class="column-menu-item__dock-rail" d="M14.75 4.25v9.5" />
+                      <rect
+                        class="column-menu-item__dock-panel"
+                        x="3.25"
+                        y="5.25"
+                        width="8.5"
+                        height="7.5"
+                        rx="2"
+                      />
+                    </svg>
+                  }
+                </span>
+              </button>
+            }
+          </ng-template>
+        </div>
+      </ng-template>
     }
   </div>
 </div>
