@@ -34,6 +34,7 @@ import {
   type SimulationRow,
   type SimulationStatus,
 } from './table-simulation';
+import { NatRowActionsMenu } from './nat-row-actions-menu';
 
 const STATUS_FILTER_ID = 'status';
 const THEME_STORAGE_KEY = 'nat-showcase-theme';
@@ -220,6 +221,23 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     meta: { label: 'Updated', align: 'end' },
     enablePinning: true,
     cell: (info) => timeFormatter.format(info.getValue<number>()),
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    size: 92,
+    minSize: 84,
+    meta: { label: 'Actions', align: 'end' },
+    enableSorting: false,
+    enableGlobalFilter: false,
+    enablePinning: false,
+    enableHiding: false,
+    cell: (info) =>
+      flexRenderComponent(NatRowActionsMenu, {
+        inputs: {
+          symbol: info.row.original.symbol,
+        },
+      }),
   },
 ];
 
