@@ -1,100 +1,24 @@
 # angular-advanced-table
 
-Signals-first Angular workspace for three composable table packages built on TanStack Table.
+Signals-first Angular workspace for composable TanStack Table primitives.
 
 ## Documentation Map
 
-- Canonical documentation for the workspace and all packages lives in this file.
-- Package supplements live here:
-  - [`projects/ng-advanced-table/README.md`](projects/ng-advanced-table/README.md)
-  - [`projects/ng-advanced-table-ui/README.md`](projects/ng-advanced-table-ui/README.md)
-  - [`projects/ng-advanced-table-utils/README.md`](projects/ng-advanced-table-utils/README.md)
-- If a package README and this file disagree, prefer this file.
-- Agent routing:
-  - Use [Core Table](#core-table) for `NatTable`.
-  - Use [UI Package](#ui-package) for optional controls, surfaces, and header actions.
-  - Use [Utils Package](#utils-package) for render-metrics tooling.
+This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules.
 
-## Package Matrix
+| Package | Use it for | Main exports |
+| --- | --- | --- |
+| `ng-advanced-table` | Core table primitive | `NatTable`, `NatTableState`, `NatTableColumnMeta` |
+| `ng-advanced-table-ui` | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `withNatTableHeaderActions(...)` |
+| `ng-advanced-table-utils` | Optional render-metrics tooling | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)` |
 
-### `ng-advanced-table`
+Supplemental package READMEs:
 
-Purpose: the core table primitive.
+- [`projects/ng-advanced-table/README.md`](projects/ng-advanced-table/README.md)
+- [`projects/ng-advanced-table-ui/README.md`](projects/ng-advanced-table-ui/README.md)
+- [`projects/ng-advanced-table-utils/README.md`](projects/ng-advanced-table-utils/README.md)
 
-Public exports:
-
-- `NatTable`
-- `NatTableRowRenderedEvent`
-- `NatTableAccessibilityText`
-- `NatTableAccessibilitySummaryContext`
-- `NatTableAccessibilitySortingAnnouncementContext`
-- `NatTableAccessibilityFilteringAnnouncementContext`
-- `NatTableAccessibilityColumnVisibilityAnnouncementChange`
-- `NatTableAccessibilityColumnVisibilityAnnouncementContext`
-- `NatTableAccessibilityPaginationAnnouncementContext`
-- `NatTableAccessibilityColumnReorderAnnouncementContext`
-- `NatTableState`
-- `NatTableColumnMeta`
-- `NatTableCellTone`
-- `NatTableSortDirection`
-- `NatTableSortIndicatorContext`
-
-### `ng-advanced-table-ui`
-
-Purpose: optional UI controls and presentational helpers that compose around a compatible table controller.
-
-Public exports:
-
-- `NatTableSurface`
-- `NatTableSearch`
-- `NatTableColumnVisibility`
-- `NatTablePageSize`
-- `NatTablePager`
-- `withNatTableHeaderActions(...)`
-- `NatTableHeaderActionsOptions`
-- `NatTableSortIndicatorContent`
-- `NatTableAccessibilityPageSizeOptionContext`
-- `NatTableAccessibilityPageSizeLabels`
-- `NatTableAccessibilityPagerContext`
-- `NatTableAccessibilityPagerLabels`
-- `NatTableAccessibilityColumnVisibilitySummaryContext`
-- `NatTableAccessibilityColumnVisibilityActionContext`
-- `NatTableAccessibilityColumnVisibilityStateContext`
-- `NatTableAccessibilityColumnVisibilityLabels`
-- `NatTableAccessibilityHeaderActionMenuContext`
-- `NatTableAccessibilityHeaderActionSortContext`
-- `NatTableAccessibilityHeaderActionPinContext`
-- `NatTableAccessibilityHeaderActionLabels`
-- `NatTableUiController`
-- `NatTableUiState`
-- `NatTableColumnMeta`
-- `NatTableSortDirection`
-- `NatTableSortIndicatorContext`
-
-### `ng-advanced-table-utils`
-
-Purpose: optional instrumentation and render-metrics helpers.
-
-Public exports:
-
-- `NatTableRenderMetricsStore`
-- `NatRenderMetricsFilter`
-- `NatRenderMetricsPanel`
-- `withRenderMetricsColumn(...)`
-- `WithRenderMetricsColumnOptions`
-- `NatTableRenderMetricsController`
-- `NatTableRenderMetricsEvent`
-- `NatTableRenderMetricsState`
-- `getRowRenderTone(...)`
-- `getRenderToneLabel(...)`
-- `isRenderFilterValue(...)`
-- `RENDER_FILTER_OPTIONS`
-- `RENDER_METRIC_COLUMN_ID`
-- `RowRenderFilterOption`
-- `RowRenderFilterValue`
-- `RowRenderMeasurement`
-- `RowRenderMetric`
-- `RowRenderTone`
+Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 
 ## Install
 
@@ -115,12 +39,6 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 ```bash
 npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/aria @angular/cdk
 ```
-
-## Zoneless
-
-- The showcase application and Angular component specs in this workspace run with zoneless change detection.
-- Angular 21+ applications can use these packages without adding `zone.js`.
-- The packages stay compatible with zoned consumer apps as long as the consuming application chooses that bootstrap mode.
 
 ## Quick Start
 
@@ -149,8 +67,7 @@ const columns = withNatTableHeaderActions<PositionRow>([
   {
     accessorKey: 'symbol',
     header: 'Symbol',
-    enablePinning: true,
-    meta: { label: 'Symbol' },
+    meta: { label: 'Symbol', rowHeader: true },
     cell: (context) => context.getValue<string>(),
   },
   {
@@ -212,88 +129,128 @@ export class PositionsTableComponent {
 
 ## Core Table
 
-`NatTable` is the canonical core primitive in this workspace.
+`NatTable` is the core primitive. It renders the semantic grid, owns TanStack state integration, and exposes a stable controller surface for optional companion UI.
 
-Responsibilities:
+It does not ship search UI, column visibility UI, page-size UI, pager UI, header action buttons, or surface styling. Use `ng-advanced-table-ui` for those pieces and `ng-advanced-table-utils` for render instrumentation.
 
-- Render the table structure and semantic grid markup.
-- Own TanStack state integration for sorting, filtering, visibility, pinning, ordering, and optional pagination.
-- Support controlled and uncontrolled `NatTableState`.
-- Support sticky headers and sticky pinned columns.
-- Expose a stable imperative/read API to optional companion controls.
-- Provide accessibility announcements and keyboard guidance.
-- Optionally emit per-row render timings through `(rowRendered)`.
+Example, core only:
 
-Explicit non-goals:
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { type ColumnDef } from '@tanstack/angular-table';
 
-- Search UI.
-- Column visibility UI.
-- Page-size UI.
-- Pager UI.
-- Header action buttons.
-- Card or surface styling.
+import { NatTable } from 'ng-advanced-table';
 
-Use [`ng-advanced-table-ui`](projects/ng-advanced-table-ui/README.md) for the first five items and [`ng-advanced-table-utils`](projects/ng-advanced-table-utils/README.md) for render-metrics presentation.
+interface ServiceRow {
+  id: string;
+  service: string;
+  latencyMs: number;
+}
+
+@Component({
+  selector: 'app-service-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      ariaLabel="Service latency"
+    />
+  `,
+})
+export class ServiceTableComponent {
+  readonly rows = signal<readonly ServiceRow[]>([]);
+  readonly columns: ColumnDef<ServiceRow>[] = [
+    {
+      accessorKey: 'service',
+      header: 'Service',
+      meta: { label: 'Service', rowHeader: true },
+    },
+    {
+      accessorKey: 'latencyMs',
+      header: 'Latency',
+      meta: { label: 'Latency', align: 'end' },
+      cell: (context) => `${context.getValue<number>()} ms`,
+    },
+  ];
+}
+```
+
+Core exports:
+
+- Component: `NatTable`
+- Common types: `NatTableState`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Accessibility types: `NatTableAccessibilityText`, `NatTableAccessibilitySummaryContext`, `NatTableAccessibilitySortingAnnouncementContext`, `NatTableAccessibilityFilteringAnnouncementContext`, `NatTableAccessibilityColumnVisibilityAnnouncementChange`, `NatTableAccessibilityColumnVisibilityAnnouncementContext`, `NatTableAccessibilityPaginationAnnouncementContext`, `NatTableAccessibilityColumnReorderAnnouncementContext`
 
 ## Core API
 
 ### Inputs
 
-- `data`: required row data.
-- `columns`: required TanStack column definitions.
-- `ariaLabel`: required accessible name for the table region.
-- `ariaDescription`: optional longer description announced with the table.
-- `keyboardInstructions`: optional screen-reader instructions. A default is provided.
-- `accessibilityText`: optional overrides for built-in table summaries, live announcements, and reorder instructions.
-- `enableGlobalFilter`: enables the global filter pipeline. Defaults to `true`.
-- `allowColumnPinning`: enables sticky column pinning. Defaults to `true`.
-- `allowColumnReorder`: enables drag-and-drop and keyboard reordering. Defaults to `false`.
-- `enablePagination`: enables the pagination row model. Defaults to `false`.
-- `emptyStateLabel`: empty-state message. Defaults to `No rows match the current view.`.
-- `globalFilterFn`: optional override for the built-in generic global filter.
-- `initialState`: uncontrolled initial state, read once on first render.
-- `state`: controlled state slices. Omitted slices remain internal.
-- `getRowId`: optional stable row id resolver.
-- `emitRowRenderEvents`: enables `(rowRendered)`. Defaults to `false`.
-- `enableAnnouncements`: enables polite live announcements for sort, filter, and pagination changes. Defaults to `true`.
+| Input | Default | Notes |
+| --- | --- | --- |
+| `data` | required | Row array rendered by the table |
+| `columns` | required | TanStack `ColumnDef<TData>[]` |
+| `ariaLabel` | required | Accessible name for the table region |
+| `ariaDescription` | `''` | Extra description announced with the grid |
+| `keyboardInstructions` | built-in text | Screen-reader instructions for cell navigation |
+| `accessibilityText` | `{}` | Overrides summaries and live announcements |
+| `enableGlobalFilter` | `true` | Enables the global filter pipeline |
+| `allowColumnPinning` | `true` | Enables sticky pinning where columns allow it |
+| `allowColumnReorder` | `false` | Enables drag/drop and keyboard reordering |
+| `enablePagination` | `false` | Enables the pagination row model |
+| `emptyStateLabel` | `'No rows match the current view.'` | Empty-state copy |
+| `globalFilterFn` | built-in filter | Replaces the generic global filter |
+| `initialState` | `{}` | Uncontrolled initial state, read once |
+| `state` | `{}` | Controlled slices only; omitted slices stay internal |
+| `getRowId` | row index | Stable row id resolver for actions and metrics |
+| `emitRowRenderEvents` | `false` | Enables `(rowRendered)` instrumentation |
+| `enableAnnouncements` | `true` | Enables polite live announcements |
 
-### Outputs
+### Outputs and instance API
 
-- `stateChange`: emits the next full `NatTableState`.
-- `rowRendered`: emits `NatTableRowRenderedEvent` when render instrumentation is enabled.
-
-### Public instance API
-
-- `table`: raw TanStack `Table<TData>` instance.
-- `patchState(...)`: applies partial state updaters while respecting controlled slices.
-- `tableElementId()`: returns the generated DOM id for the table region.
+| API | Type | Notes |
+| --- | --- | --- |
+| `(stateChange)` | `NatTableState` | Emits the full next state |
+| `(rowRendered)` | `NatTableRowRenderedEvent` | Emits per-row timings when instrumentation is enabled |
+| `table` | `Table<TData>` | Raw TanStack instance for reads and advanced commands |
+| `patchState(...)` | method | Applies partial state updaters while respecting controlled slices |
+| `tableElementId()` | method | Returns the generated table region id |
 
 ### `NatTableState`
 
-State slices emitted by `stateChange` and accepted by `state` / `initialState`:
-
-- `sorting`
-- `globalFilter`
-- `columnFilters`
-- `columnVisibility`
-- `columnOrder`
-- `columnPinning`
-- `pagination`
+| Slice | Meaning |
+| --- | --- |
+| `sorting` | Active single-column sort |
+| `globalFilter` | Current global search query |
+| `columnFilters` | TanStack column filters keyed by column id |
+| `columnVisibility` | Visibility map for hideable columns |
+| `columnOrder` | Leaf-column order |
+| `columnPinning` | Left and right pinned column ids |
+| `pagination` | Page index and page size |
 
 ### `NatTableColumnMeta`
 
-Attach optional metadata through `columnDef.meta`:
+Attach metadata through `columnDef.meta`:
 
-- `label`: friendly label used by accessibility text and optional controls.
-- `align`: `'start' | 'end'`.
-- `rowHeader`: marks body cells in the column as row headers.
-- `cellTone`: maps a cell to `'positive' | 'negative' | 'neutral' | 'warning' | null`.
+| Field | Type | Purpose |
+| --- | --- | --- |
+| `label` | `string` | Stable human-readable label for accessibility and companion UI |
+| `align` | `'start' \| 'end'` | Cell and header alignment |
+| `rowHeader` | `boolean` | Marks body cells in the column as row headers |
+| `cellTone` | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone |
 
-### Accessibility text overrides
+### Behavior rules
 
-Use `accessibilityText` when the built-in English summaries or live announcements do not match your product language or terminology.
+- A slice is controlled only when that property is present in `state`.
+- Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
+- Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
+- `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
+- `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
 
-Supported overrides:
+## Accessibility Text Overrides
+
+Use `accessibilityText` when the built-in English summaries or live announcements do not match your product language or terminology. The available keys are:
 
 - `reorderKeyboardInstructions`
 - `tableSummary(...)`
@@ -305,266 +262,111 @@ Supported overrides:
 - `columnReorder(...)`
 
 ```ts
-readonly accessibilityText = {
-  reorderKeyboardInstructions: 'Brug Alt+Shift til at flytte kolonner.',
-  tableSummary: ({
-    visibleRowsText,
-    totalRowsText,
-    visibleColumnsText,
-    pageText,
-    pageCountText,
-  }) => `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
-  filteringChange: ({ query, visibleRowsText }) => `Filter ${query}:${visibleRowsText}`,
-  sortingChange: ({ columnLabel, sortState }) => `Sortering ${columnLabel}:${sortState}`,
-  pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
-    `Side ${pageText}/${pageCountText}:${visibleRowsText}`,
+import type { NatTableAccessibilityText } from 'ng-advanced-table';
+
+readonly accessibilityText: NatTableAccessibilityText = {
+  reorderKeyboardInstructions: 'Use Alt+Shift+Arrow keys to move columns.',
+  tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
+    `${visibleRowsText} of ${totalRowsText} rows visible. Page ${pageText} of ${pageCountText}.`,
+  filteringChange: ({ query, visibleRowsText }) => `Filter ${query}. ${visibleRowsText} rows visible.`,
+  sortingChange: ({ columnLabel, sortState }) => `${columnLabel} sorted ${sortState}.`,
 };
 ```
 
-```html
-<nat-table
-  [data]="rows()"
-  [columns]="columns"
-  [state]="tableState()"
-  [enablePagination]="true"
-  [allowColumnReorder]="true"
-  [accessibilityText]="accessibilityText"
-  ariaLabel="Orders"
-  (stateChange)="tableState.set($event)"
-/>
-```
+The formatter contexts already expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state.
 
-The formatter contexts expose browser-locale number strings such as `pageText` and semantic state values such as `sortState`, so most consumers can localize copy without re-deriving table state.
+## Custom Cell Components
 
-### Composition rules
-
-- A state slice is controlled only when that property is present in `state`.
-- Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
-- Reordering stays inside the current pinning zone. Dragging does not move a column between left, center, and right pin groups.
-- When `enablePagination` is `false`, the table uses filtered and sorted row models without pagination.
-- `emitRowRenderEvents` is intentionally opt-in because it installs per-row render instrumentation.
-- `enableAnnouncements` is on by default so sorting, filtering, and pagination changes are announced to assistive technology users.
-
-### Building custom UI around `NatTable`
-
-Template integration points:
-
-- `#grid="natTable"` gives you the component instance.
-- `grid.table` is the raw TanStack table for read operations and existing TanStack behaviors.
-- `grid.patchState(...)` is the stable write API for external controls.
-- `(stateChange)` keeps external state in sync when you control one or more slices.
-
-Common read patterns:
-
-- `grid.table.getState().pagination`
-- `grid.table.getCanNextPage()`
-- `grid.table.getVisibleLeafColumns()`
-- `grid.table.getAllLeafColumns()`
-
-Common write patterns:
-
-- `grid.patchState({ globalFilter: 'abc' })`
-- `grid.patchState({ columnOrder: ['region', 'service', 'latencyMs'] })`
-- `grid.patchState({ pagination: (current) => ({ ...current, pageIndex: 0 }) })`
-- `grid.table.nextPage()`
-- `grid.table.previousPage()`
-- `column.toggleVisibility(...)`
-- `column.toggleSorting()`
-- `column.pin('left')`
-- `column.pin('right')`
-
-### Custom cell components
-
-`NatTable` renders whatever a TanStack cell renderer returns, so Angular component cells work through `flexRenderComponent(...)` from `@tanstack/angular-table`.
+Use `flexRenderComponent(...)` from `@tanstack/angular-table` when a cell should render an Angular component instead of plain text.
 
 ```ts
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
 interface PositionRow {
   id: string;
   symbol: string;
-  status: 'Live' | 'Queued' | 'Halted';
 }
 
 @Component({
   selector: 'app-position-actions-cell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="actions-cell">
-      <button type="button" [disabled]="busy()" (click)="trade.emit(row().id)">Trade</button>
-      <button type="button" (click)="details.emit(row())">Details</button>
-    </div>
-  `,
+  template: `<button type="button" (click)="trade.emit(row().id)">Trade</button>`,
 })
 export class PositionActionsCell {
   readonly row = input.required<PositionRow>();
-  readonly busy = input(false);
-
   readonly trade = output<string>();
-  readonly details = output<PositionRow>();
 }
-```
-
-```ts
-import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
 readonly columns: ColumnDef<PositionRow>[] = [
   {
     accessorKey: 'symbol',
     header: 'Symbol',
     meta: { label: 'Symbol', rowHeader: true },
-    cell: (info) => info.getValue<string>(),
-  },
-  {
-    id: 'actions',
-    header: 'Actions',
-    meta: { label: 'Actions', align: 'end' },
-    enableSorting: false,
-    enableGlobalFilter: false,
-    cell: (info) =>
-      flexRenderComponent(PositionActionsCell, {
-        inputs: {
-          row: info.row.original,
-          busy: info.row.original.status !== 'Live',
-        },
-        outputs: {
-          trade: (id) => this.placeTrade(id),
-          details: (row) => this.openDetails(row),
-        },
-      }),
-  },
-];
-```
-
-Recommended integration pattern:
-
-- Keep data loading, mutations, dialogs, and table state in the table container. Treat the cell component as a presentational leaf that emits intent.
-- Pass a small view model through `inputs` by default. Pass the full TanStack `CellContext<TData, TValue>` only when the component genuinely needs row or column APIs.
-- Use component `output()` events for actions such as opening drawers, menus, or dialogs. This keeps custom cells reusable and makes side effects easy to test.
-- Set `meta.label` whenever the header is not a plain string so announcements, column-visibility controls, and custom header UI still have a stable human-readable label.
-- Use column `meta` for table-level concerns such as `align`, `rowHeader`, and `cellTone`. Keep the component focused on the inner UI rendered inside the cell.
-
-Advanced UI guidance:
-
-- Buttons, toggles, badges, charts, menus, and overlays are all valid inside a custom cell. `NatTable` still renders normal `<td>` and `<th>` elements around them.
-- The default keyboard instructions already tell assistive technology users to use Tab to move into controls inside a cell. Keep focusable elements deliberate and avoid turning one cell into a long tab stop unless the workflow requires it.
-- Give icon-only controls explicit accessible names, and use standard Angular CDK or Angular Aria patterns for popovers, menus, and dialogs.
-- If cell actions can cause filtering, sorting, or pagination updates, provide a stable `getRowId` so row identity survives view changes.
- 
-### Row actions and menus
-
-Row-level actions are intentionally consumer-defined because the action set, iconography, and menu behavior are product-specific. The recommended pattern is to render a dedicated `actions` column with a small standalone component, disable table behaviors that do not make sense for that column, and use Angular CDK menu primitives for accessible keyboard and focus management.
-
-```ts
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CdkMenuModule } from '@angular/cdk/menu';
-import { GridCellWidget } from '@angular/aria/grid';
-import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
-
-interface PositionRow {
-  id: string;
-  symbol: string;
-}
-
-@Component({
-  selector: 'app-position-actions-menu',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CdkMenuModule, GridCellWidget],
-  template: `
-    <button
-      type="button"
-      ngGridCellWidget
-      [attr.aria-label]="'Open actions for ' + symbol()"
-      [cdkMenuTriggerFor]="menu"
-    >
-      ...
-    </button>
-
-    <ng-template #menu>
-      <div cdkMenu [attr.aria-label]="'Actions for ' + symbol()">
-        <button type="button" cdkMenuItem>Inspect</button>
-        <button type="button" cdkMenuItem>Create alert</button>
-        <button type="button" cdkMenuItem>Send to blotter</button>
-      </div>
-    </ng-template>
-  `,
-})
-class PositionActionsMenu {
-  readonly symbol = input.required<string>();
-}
-
-const columns: ColumnDef<PositionRow>[] = [
-  {
-    accessorKey: 'symbol',
-    header: 'Symbol',
-    meta: { label: 'Symbol' },
     cell: (context) => context.getValue<string>(),
   },
   {
     id: 'actions',
     header: 'Actions',
-    size: 92,
-    minSize: 84,
     meta: { label: 'Actions', align: 'end' },
     enableSorting: false,
     enableGlobalFilter: false,
-    enablePinning: false,
-    enableHiding: false,
     cell: (context) =>
-      flexRenderComponent(PositionActionsMenu, {
-        inputs: { symbol: context.row.original.symbol },
+      flexRenderComponent(PositionActionsCell, {
+        inputs: { row: context.row.original },
+        outputs: { trade: (id) => this.placeTrade(id) },
       }),
   },
 ];
 ```
 
-Implementation notes:
+Guidelines:
 
-- Use `ngGridCellWidget` on the trigger so the grid can hand focus off to the interactive control inside the cell.
-- Give the menu trigger and the menu itself row-specific accessible labels.
-- Most action columns should disable sorting, global filtering, and pinning.
-- Set `enableHiding: false` if the actions column is operationally important and should stay visible.
-- The showcase app includes this pattern as a trailing three-dots `Actions` column.
-
-Showcase references:
-
-- [`NatTickerMark`](src/app/pages/table-showcase-page/nat-ticker-mark.ts) demonstrates a lightweight component-backed cell.
-- [`NatSparkline`](src/app/pages/table-showcase-page/nat-sparkline.ts) demonstrates a richer visual cell rendered with `flexRenderComponent(...)`.
+- Keep data loading, mutations, dialogs, and table state in the container. Treat the cell component as a presentational leaf that emits intent.
+- Set `meta.label` whenever the header is not a plain string so accessibility text and companion UI still have a stable label.
+- Row menus are intentionally consumer-defined. Build them as normal cell renderers, typically with Angular CDK menu primitives and `ngGridCellWidget` on the trigger.
 
 ## UI Package
 
-`ng-advanced-table-ui` is optional. It provides thin Angular components and helpers around the core controller contract.
+`ng-advanced-table-ui` provides small companion controls that compose around any `NatTableUiController<TData>`. `<nat-table #grid="natTable">` already satisfies that contract.
 
-Exports:
+Example, add stock controls around an existing table:
 
-- `NatTableSurface`
-- `NatTableSearch`
-- `NatTableColumnVisibility`
-- `NatTablePageSize`
-- `NatTablePager`
-- `withNatTableHeaderActions(...)`
-- `NatTableHeaderActionsOptions`
-- `NatTableSortIndicatorContent`
-- `NatTableAccessibilityPageSizeOptionContext`
-- `NatTableAccessibilityPageSizeLabels`
-- `NatTableAccessibilityPagerContext`
-- `NatTableAccessibilityPagerLabels`
-- `NatTableAccessibilityColumnVisibilitySummaryContext`
-- `NatTableAccessibilityColumnVisibilityActionContext`
-- `NatTableAccessibilityColumnVisibilityStateContext`
-- `NatTableAccessibilityColumnVisibilityLabels`
-- `NatTableAccessibilityHeaderActionSortContext`
-- `NatTableAccessibilityHeaderActionPinContext`
-- `NatTableAccessibilityHeaderActionLabels`
-- `NatTableUiController`
-- `NatTableUiState`
-- `NatTableColumnMeta`
-- `NatTableSortDirection`
-- `NatTableSortIndicatorContext`
+```html
+<nat-table
+  #grid="natTable"
+  [data]="rows()"
+  [columns]="columns"
+  [state]="tableState()"
+  [enablePagination]="true"
+  ariaLabel="Orders"
+  (stateChange)="tableState.set($event)"
+/>
 
-### `NatTableUiController`
+<nat-table-surface>
+  <nat-table-search [for]="grid" />
+  <nat-table-column-visibility [for]="grid" />
+  <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
+  <nat-table-pager [for]="grid" />
+</nat-table-surface>
+```
 
-The UI package works with any controller that implements:
+UI exports:
+
+- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`
+- Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
+- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
+
+| API | Purpose | Key inputs or options |
+| --- | --- | --- |
+| `NatTableSurface` | Layout wrapper and default `--nat-table-*` CSS variables | none |
+| `NatTableSearch` | Global filter input | `for`, `label`, `placeholder` |
+| `NatTableColumnVisibility` | Toggle hideable columns | `for`, `label`, `ariaLabel`, `accessibilityLabels` |
+| `NatTablePageSize` | Chip-based page-size switcher | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
+| `NatTablePager` | Previous/next pagination control | `for`, `ariaLabel`, `accessibilityLabels` |
+| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels` |
+
+Controller contract required by the UI package:
 
 - `table: Table<TData>`
 - `enableGlobalFilter(): boolean`
@@ -572,30 +374,30 @@ The UI package works with any controller that implements:
 - `patchState(...)`
 - `tableElementId(): string`
 
-`<nat-table #grid="natTable">` satisfies this contract without any adapter code.
+Notes:
 
-### Package behavior
-
+- `NatTableSearch` is only useful when `enableGlobalFilter` is enabled. That is the core default.
+- `NatTablePageSize` and `NatTablePager` assume `enablePagination` is enabled.
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` are intentionally small wrappers over the controller contract.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
 
-### Accessibility label overrides
+## Accessibility Label Overrides
 
-The UI components expose `accessibilityLabels` overrides so consumers can localize or replace the default wording.
+The UI package exposes copy overrides without forcing you to rebuild controller state:
+
+- `NatTablePageSize`: `NatTableAccessibilityPageSizeLabels`
+- `NatTablePager`: `NatTableAccessibilityPagerLabels`
+- `NatTableColumnVisibility`: `NatTableAccessibilityColumnVisibilityLabels`
+- `withNatTableHeaderActions(...)`: `NatTableAccessibilityHeaderActionLabels`
+- `NatTableSearch`: use `label` and `placeholder`
 
 ```ts
-readonly pageSizeLabels = {
-  groupAriaLabel: 'Rækker pr. side',
-  pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
-  pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
-};
-
 readonly pagerLabels = {
-  groupAriaLabel: 'Sideskift',
-  previousPageAriaLabel: 'Forrige side',
-  nextPageAriaLabel: 'Næste side',
-  pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
+  groupAriaLabel: 'Pagination',
+  previousPageAriaLabel: 'Previous page',
+  nextPageAriaLabel: 'Next page',
+  pageIndicator: ({ pageText, pageCountText }) => `Page ${pageText} of ${pageCountText}`,
 };
 
 readonly columnVisibilityLabels = {
@@ -621,157 +423,61 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 });
 ```
 
-```html
-<nat-table-column-visibility [for]="grid" [accessibilityLabels]="columnVisibilityLabels" />
-<nat-table-page-size
-  [for]="grid"
-  [pageSizeOptions]="[25, 50, 100]"
-  [accessibilityLabels]="pageSizeLabels"
-/>
-<nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
-```
-
-`NatTableSearch` already supports custom text through its `label` and `placeholder` inputs.
-
-The formatter contexts also expose browser-locale number strings such as `pageText` and semantic states such as `toggleAction`, so most consumers only need to override copy, not rebuild table state.
-
-### Sort-indicator override
-
-Pass `sortIndicator` as the second argument to `withNatTableHeaderActions(...)` when you want custom sort content:
-
-```ts
-const columns = withNatTableHeaderActions<OrderRow>(baseColumns, {
-  sortIndicator: ({ sortState }) => (sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇'),
-});
-```
-
-The callback receives:
-
-- `sortState`
-- `ariaSort`
-- `column`
-- `label`
-
-### Replacement pattern
-
-You can use any subset of the UI package.
-
-Typical strategies:
-
-- Keep `NatTableSurface` and replace pagination.
-- Keep `withNatTableHeaderActions(...)` and replace search or visibility.
-- Skip the UI package entirely and build your own controls against `NatTable`.
-
-Write guidance for custom controls:
-
-- Search should update `globalFilter` and usually reset `pagination.pageIndex` to `0`.
-- Page size should update `pagination.pageSize` and usually reset `pagination.pageIndex` to `0`.
-- Column visibility can use `column.toggleVisibility(...)` or patch `columnVisibility`.
-- Sorting can use `column.toggleSorting()`.
-- Pinning can use `column.pin(...)`.
+The label callbacks receive locale-formatted numbers and semantic states such as `toggleAction`, `visibilityState`, `sortState`, `pinState`, and `pinSide`.
 
 ## Utils Package
 
-`ng-advanced-table-utils` is optional. Today it ships render-metrics instrumentation helpers.
+`ng-advanced-table-utils` currently ships render-metrics helpers for measuring row paint time and surfacing that data in the table.
 
-Exports:
+Example, wire metrics into an existing table:
 
-- `NatTableRenderMetricsStore`
-- `NatRenderMetricsFilter`
-- `NatRenderMetricsPanel`
-- `withRenderMetricsColumn(...)`
-- `WithRenderMetricsColumnOptions`
-- `NatTableRenderMetricsController`
-- `NatTableRenderMetricsEvent`
-- `NatTableRenderMetricsState`
-- `getRowRenderTone(...)`
-- `getRenderToneLabel(...)`
-- `isRenderFilterValue(...)`
-- `RENDER_FILTER_OPTIONS`
-- `RENDER_METRIC_COLUMN_ID`
-- `RowRenderFilterOption`
-- `RowRenderFilterValue`
-- `RowRenderMeasurement`
-- `RowRenderMetric`
-- `RowRenderTone`
+```ts
+readonly metrics = new NatTableRenderMetricsStore();
+readonly columns = withRenderMetricsColumn(baseColumns, this.metrics);
+```
+
+```html
+<nat-table
+  #grid="natTable"
+  [data]="rows()"
+  [columns]="columns"
+  [emitRowRenderEvents]="true"
+  ariaLabel="Render metrics demo"
+  (rowRendered)="metrics.record($event)"
+/>
+
+<nat-render-metrics-panel [store]="metrics" />
+<nat-render-metrics-filter [for]="grid" [store]="metrics" />
+```
+
+Utils exports:
+
+- Core helpers: `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`
+- Contracts and options: `WithRenderMetricsColumnOptions`, `NatTableRenderMetricsController`, `NatTableRenderMetricsEvent`, `NatTableRenderMetricsState`
+- Tone and filter helpers: `getRowRenderTone(...)`, `getRenderToneLabel(...)`, `isRenderFilterValue(...)`, `RENDER_FILTER_OPTIONS`, `RENDER_METRIC_COLUMN_ID`, `RowRenderFilterOption`, `RowRenderFilterValue`, `RowRenderMeasurement`, `RowRenderMetric`, `RowRenderTone`
+
+| API | Purpose |
+| --- | --- |
+| `NatTableRenderMetricsStore` | Stores per-row timings, exposes `measurement()`, `rowMetrics()`, `rowMetric(rowId)`, `record(...)`, and `reset()` |
+| `NatRenderMetricsPanel` | Compact summary of the latest render cycle |
+| `NatRenderMetricsFilter` | Chip group that filters the synthetic metrics column by tone |
+| `withRenderMetricsColumn(...)` | Appends a synthetic metrics column to an existing `ColumnDef[]` |
 
 ### Render-metrics wiring
 
 1. Create one `NatTableRenderMetricsStore`.
-2. Enable row render events on `<nat-table>`.
-3. Record each `(rowRendered)` event into the store.
+2. Enable `[emitRowRenderEvents]="true"` on `<nat-table>`.
+3. Record each `(rowRendered)` event with `store.record($event)`.
 4. Optionally wrap your columns with `withRenderMetricsColumn(...)`.
 5. Render `NatRenderMetricsPanel` and `NatRenderMetricsFilter` against the same store.
 
-```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
-
-import { NatTable, type NatTableState } from 'ng-advanced-table';
-import {
-  NatRenderMetricsFilter,
-  NatRenderMetricsPanel,
-  NatTableRenderMetricsStore,
-  withRenderMetricsColumn,
-} from 'ng-advanced-table-utils';
-
-@Component({
-  selector: 'app-render-metrics-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatRenderMetricsFilter, NatRenderMetricsPanel],
-  template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [enablePagination]="true"
-      [emitRowRenderEvents]="true"
-      ariaLabel="Render metrics demo"
-      (stateChange)="tableState.set($event)"
-      (rowRendered)="metrics.record($event)"
-    />
-
-    <nat-render-metrics-panel [store]="metrics" />
-    <nat-render-metrics-filter [for]="grid" [store]="metrics" />
-  `,
-})
-export class RenderMetricsTableComponent {
-  readonly rows = signal<readonly unknown[]>([]);
-  readonly tableState = signal<Partial<NatTableState>>({});
-  readonly metrics = new NatTableRenderMetricsStore();
-  readonly columns: ColumnDef<unknown>[] = withRenderMetricsColumn<unknown>([], this.metrics);
-}
-```
-
-### Render-metrics notes
-
-- `withRenderMetricsColumn(...)` appends a synthetic metrics column. The default id is `__rowRenderMetric`.
-- `NatRenderMetricsFilter` writes a column filter for the metrics column and resets pagination to the first page.
-- `NatTableRenderMetricsStore.measurement()` summarizes the latest completed render cycle on the current page.
-- `NatTableRenderMetricsStore.rowMetric(rowId)` returns the latest metric for an individual row.
-
 ## Migration
 
-If you are upgrading from the previous all-in-one `NatTable`:
+If you are upgrading from the earlier all-in-one `NatTable`:
 
 - `NatTable` is now intentionally barebones.
-- Search, column visibility, page-size, pager, sort buttons, pin buttons, and surface styling moved out of core.
+- Search, column visibility, page-size, pager, sort controls, pin menu actions, and surface styling moved to `ng-advanced-table-ui`.
 - `showPagination` was replaced by `enablePagination`.
 - `enablePagination` now defaults to `false`.
 - `pageSizeOptions`, `searchLabel`, `searchPlaceholder`, and `showColumnVisibility` were removed from `NatTable`.
-- Wrap columns with `withNatTableHeaderActions(...)` if you still want built-in sort or pin buttons.
-
-## Repo Scripts
-
-```bash
-npm run test:packages
-npm run build:packages
-npm run build:showcase
-npm run pack:dry-run
-npm run verify
-```
-
-## Release Process
-
-Releases are manual. Run the GitHub Actions `Release` workflow from the `main` branch when you want Changesets to create or update the release PR, or to publish an already versioned release.
+- Wrap columns with `withNatTableHeaderActions(...)` if you want the stock sort control and pin menu.
