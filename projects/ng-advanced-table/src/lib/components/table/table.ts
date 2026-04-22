@@ -1359,13 +1359,17 @@ function hasSameColumnVisibility(
     return false;
   }
 
+  // Intentionally ignores label changes so swapping i18n labels (or any other
+  // purely cosmetic column-def change) does not flow through to a misleading
+  // visibility announcement on the live region.
   return current.every((column) => {
     const nextColumn = next.find((candidate) => candidate.id === column.id);
 
-    return (
-      nextColumn?.label === column.label &&
-      nextColumn.visible === column.visible
-    );
+    if (!nextColumn) {
+      return false;
+    }
+
+    return nextColumn.visible === column.visible;
   });
 }
 
