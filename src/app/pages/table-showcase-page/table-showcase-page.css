@@ -958,14 +958,8 @@
 }
 
 /* ---------- Feature dialog ---------- */
-.feature-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: color-mix(in srgb, #000000 45%, transparent);
+:host ::ng-deep .feature-dialog-panel {
+  max-inline-size: min(480px, calc(100vw - 24px));
 }
 
 .feature-dialog {

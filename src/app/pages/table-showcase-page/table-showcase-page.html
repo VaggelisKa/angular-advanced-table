@@ -250,87 +250,79 @@
     </section>
   </main>
 
-  @if (isFeatureDialogOpen()) {
-    <div class="feature-dialog-backdrop" (click)="closeFeatureDialog()">
-      <section
-        class="feature-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="feature-dialog-title"
-        (click)="$event.stopPropagation()"
-      >
-        <header class="feature-dialog-header">
-          <h2 id="feature-dialog-title">Table options</h2>
-          <button
-            type="button"
-            class="btn btn-ghost"
-            (click)="closeFeatureDialog()"
-            aria-label="Close table options"
-          >
-            Close
-          </button>
-        </header>
+  <ng-template #featureDialog>
+    <section class="feature-dialog" aria-labelledby="feature-dialog-title">
+      <header class="feature-dialog-header">
+        <h2 id="feature-dialog-title">Table options</h2>
+        <button
+          type="button"
+          class="btn btn-ghost"
+          (click)="closeFeatureDialog()"
+          aria-label="Close table options"
+        >
+          Close
+        </button>
+      </header>
 
-        <p class="feature-dialog-copy">
-          Toggle table capabilities to test a simpler or more advanced setup.
-        </p>
+      <p class="feature-dialog-copy">
+        Toggle table capabilities to test a simpler or more advanced setup.
+      </p>
 
-        <div class="feature-toggle-list" role="group" aria-label="Table functionality toggles">
-          <label class="feature-toggle" data-feature="allowColumnPinning">
-            <input
-              type="checkbox"
-              [checked]="tableFeatures().allowColumnPinning"
-              (change)="toggleFeature('allowColumnPinning', readChecked($event))"
-            />
-            <span>Column pinning</span>
-          </label>
+      <div class="feature-toggle-list" role="group" aria-label="Table functionality toggles">
+        <label class="feature-toggle" data-feature="allowColumnPinning">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().allowColumnPinning"
+            (change)="toggleFeature('allowColumnPinning', readChecked($event))"
+          />
+          <span>Column pinning</span>
+        </label>
 
-          <label class="feature-toggle" data-feature="allowColumnReorder">
-            <input
-              type="checkbox"
-              [checked]="tableFeatures().allowColumnReorder"
-              (change)="toggleFeature('allowColumnReorder', readChecked($event))"
-            />
-            <span>Column reordering</span>
-          </label>
+        <label class="feature-toggle" data-feature="allowColumnReorder">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().allowColumnReorder"
+            (change)="toggleFeature('allowColumnReorder', readChecked($event))"
+          />
+          <span>Column reordering</span>
+        </label>
 
-          <label class="feature-toggle" data-feature="enablePagination">
-            <input
-              type="checkbox"
-              [checked]="tableFeatures().enablePagination"
-              (change)="toggleFeature('enablePagination', readChecked($event))"
-            />
-            <span>Pagination controls</span>
-          </label>
+        <label class="feature-toggle" data-feature="enablePagination">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().enablePagination"
+            (change)="toggleFeature('enablePagination', readChecked($event))"
+          />
+          <span>Pagination controls</span>
+        </label>
 
-          <label class="feature-toggle" data-feature="enableGlobalFilter">
-            <input
-              type="checkbox"
-              [checked]="tableFeatures().enableGlobalFilter"
-              (change)="toggleFeature('enableGlobalFilter', readChecked($event))"
-            />
-            <span>Search</span>
-          </label>
+        <label class="feature-toggle" data-feature="enableGlobalFilter">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().enableGlobalFilter"
+            (change)="toggleFeature('enableGlobalFilter', readChecked($event))"
+          />
+          <span>Search</span>
+        </label>
 
-          <label class="feature-toggle" data-feature="showColumnVisibility">
-            <input
-              type="checkbox"
-              [checked]="tableFeatures().showColumnVisibility"
-              (change)="toggleFeature('showColumnVisibility', readChecked($event))"
-            />
-            <span>Column visibility control</span>
-          </label>
+        <label class="feature-toggle" data-feature="showColumnVisibility">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().showColumnVisibility"
+            (change)="toggleFeature('showColumnVisibility', readChecked($event))"
+          />
+          <span>Column visibility control</span>
+        </label>
 
-          <label class="feature-toggle" data-feature="showRenderMetrics">
-            <input
-              type="checkbox"
-              [checked]="tableFeatures().showRenderMetrics"
-              (change)="toggleFeature('showRenderMetrics', readChecked($event))"
-            />
-            <span>Render metrics panel</span>
-          </label>
-        </div>
-      </section>
-    </div>
-  }
+        <label class="feature-toggle" data-feature="showRenderMetrics">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().showRenderMetrics"
+            (change)="toggleFeature('showRenderMetrics', readChecked($event))"
+          />
+          <span>Render metrics panel</span>
+        </label>
+      </div>
+    </section>
+  </ng-template>
 </div>

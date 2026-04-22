@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, input, signal, viewChild } from '@angular/core';
+import { Dialog, DialogRef } from '@angular/cdk/dialog';
 import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import {
@@ -388,6 +389,9 @@ class MarketSortIndicator {
   styleUrl: './table-showcase-page.css',
 })
 export class TableShowcasePage {
+  private readonly dialog = inject(Dialog);
+  private readonly featureDialogTemplate = viewChild.required<TemplateRef<unknown>>('featureDialog');
+
   protected readonly simulation = inject(TableSimulation);
   protected readonly datasetOptions = DATASET_OPTIONS;
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
@@ -405,7 +409,6 @@ export class TableShowcasePage {
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly initialTableState = defaultTableState;
   protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
-  protected readonly isFeatureDialogOpen = signal(false);
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
   protected readonly hasTopTableControls = computed(() => {
     const features = this.tableFeatures();
@@ -454,12 +457,25 @@ export class TableShowcasePage {
     this.simulation.pulse();
   }
 
+  private featureDialogRef: DialogRef<unknown, unknown> | null = null;
+
   protected openFeatureDialog(): void {
-    this.isFeatureDialogOpen.set(true);
+    if (this.featureDialogRef) {
+      return;
+    }
+
+    this.featureDialogRef = this.dialog.open(this.featureDialogTemplate(), {
+      ariaLabelledBy: 'feature-dialog-title',
+      panelClass: 'feature-dialog-panel',
+    });
+
+    this.featureDialogRef.closed.subscribe(() => {
+      this.featureDialogRef = null;
+    });
   }
 
   protected closeFeatureDialog(): void {
-    this.isFeatureDialogOpen.set(false);
+    this.featureDialogRef?.close();
   }
 
   protected toggleFeature(key: TableFeatureKey, enabled: boolean): void {

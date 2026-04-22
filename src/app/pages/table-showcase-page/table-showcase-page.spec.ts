@@ -231,16 +231,16 @@ describe('TableShowcasePage', () => {
     optionsButton.click();
     fixture.detectChanges();
 
-    const pinningToggle = fixture.nativeElement.querySelector(
+    const pinningToggle = document.querySelector(
       '.feature-toggle[data-feature="allowColumnPinning"] input',
     ) as HTMLInputElement;
-    const searchToggle = fixture.nativeElement.querySelector(
+    const searchToggle = document.querySelector(
       '.feature-toggle[data-feature="enableGlobalFilter"] input',
     ) as HTMLInputElement;
-    const visibilityToggle = fixture.nativeElement.querySelector(
+    const visibilityToggle = document.querySelector(
       '.feature-toggle[data-feature="showColumnVisibility"] input',
     ) as HTMLInputElement;
-    const paginationToggle = fixture.nativeElement.querySelector(
+    const paginationToggle = document.querySelector(
       '.feature-toggle[data-feature="enablePagination"] input',
     ) as HTMLInputElement;
 
