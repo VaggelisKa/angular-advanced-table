@@ -3,39 +3,43 @@
 }
 
 .header-content {
-  display: grid;
-  gap: var(--nat-table-space-header-content-gap, 8px);
-  justify-items: start;
-  align-content: start;
-}
-
-.header-content.is-align-end {
-  justify-items: end;
-}
-
-.header-label {
+  display: flex;
   max-width: 100%;
 }
 
-.pin-button-group {
-  display: inline-grid;
-  grid-template-columns: repeat(2, minmax(0, max-content));
+.header-content.is-align-end {
+  justify-content: flex-end;
+}
+
+.header-actions-row {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px;
-  border-radius: var(--nat-table-radius-chip, 999px);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 4%),
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 84%, currentColor 8%)
-  );
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, currentColor 10%, transparent),
-    inset 0 1px 0 color-mix(in srgb, white 55%, transparent);
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.header-label {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, currentColor 54%, transparent);
+  cursor: pointer;
 }
 
 .sort-button,
-.pin-button {
+.menu-button {
   transition:
     background-color var(--nat-table-transition-medium, 180ms ease),
     border-color var(--nat-table-transition-medium, 180ms ease),
@@ -49,6 +53,7 @@
   align-items: center;
   gap: var(--nat-table-space-chip-row-gap, 10px);
   max-width: 100%;
+  min-width: 0;
   padding: 0;
   background: none;
   border: 0;
@@ -67,8 +72,14 @@
   color: var(--nat-table-sort-button-color-sorted, inherit);
 }
 
+.menu-button:hover {
+  color: inherit;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  transform: translateY(-1px);
+}
+
 .sort-button:focus-visible,
-.pin-button:focus-visible {
+.menu-button:focus-visible {
   outline: var(--nat-table-focus-ring-width, 2px) solid
     var(--nat-table-focus-ring-color, currentColor);
   outline-offset: var(--nat-table-focus-ring-offset, 2px);
@@ -80,6 +91,13 @@
   min-width: var(--nat-table-sort-icon-min-width, 1.05rem);
   justify-content: center;
   line-height: 0;
+}
+
+.menu-button__icon {
+  display: block;
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+  fill: currentColor;
 }
 
 .nat-default-sort {
@@ -160,96 +178,138 @@
   transform: none;
 }
 
-.pin-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--nat-table-pin-min-height, 28px);
-  min-width: var(--nat-table-pin-min-height, 28px);
-  padding: 0 var(--nat-table-pin-padding-x, 10px);
-  border-radius: var(--nat-table-radius-chip, 999px);
-  border: 0;
-  color: var(--nat-table-pin-color, color-mix(in srgb, currentColor 60%, transparent));
-  background: var(--nat-table-pin-background, transparent);
-  font-size: var(--nat-table-font-size-pin-button, 0.72rem);
-  letter-spacing: var(--nat-table-letter-spacing-pin-button, 0.03em);
-  cursor: pointer;
-}
-
-.pin-button.is-icon-only {
-  padding: 0;
-  inline-size: calc(var(--nat-table-pin-min-height, 28px) + 4px);
-}
-
-.pin-button:hover {
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  transform: var(--nat-table-hover-lift, translateY(-1px));
-}
-
-.pin-button.is-pinned {
-  color: var(--nat-table-pin-color-pinned, inherit);
+.column-menu {
+  display: grid;
+  gap: 2px;
+  min-width: 12rem;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--nat-table-pin-color-pinned, currentColor) 12%, transparent),
-    color-mix(in srgb, var(--nat-table-pin-color-pinned, currentColor) 18%, transparent)
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 96%, currentColor 4%),
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 90%, currentColor 10%)
   );
+  color: var(--nat-table-header-color, inherit);
   box-shadow:
-    inset 0 0 0 1px var(--nat-table-pin-border-color-pinned, currentColor),
-    0 1px 0 color-mix(in srgb, currentColor 10%, transparent),
-    var(--nat-table-pin-shadow-pinned, none);
+    0 18px 48px color-mix(in srgb, black 28%, transparent),
+    0 2px 8px color-mix(in srgb, black 12%, transparent);
+  backdrop-filter: blur(12px);
+  animation: header-menu-enter 140ms ease-out;
 }
 
-.pin-button-icon {
-  display: inline-flex;
+.column-menu-item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 18px;
   align-items: center;
-  justify-content: center;
-  inline-size: 16px;
-  block-size: 16px;
-}
-
-.pin-button-icon svg {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  overflow: visible;
-}
-
-.pin-button-icon__rail,
-.pin-button-icon__panel {
-  vector-effect: non-scaling-stroke;
+  gap: 10px;
+  min-height: 2.25rem;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   transition:
-    opacity var(--nat-table-transition-fast, 120ms ease),
-    fill var(--nat-table-transition-fast, 120ms ease),
-    stroke var(--nat-table-transition-fast, 120ms ease),
+    background-color var(--nat-table-transition-fast, 120ms ease),
+    color var(--nat-table-transition-fast, 120ms ease),
     transform var(--nat-table-transition-fast, 120ms ease);
 }
 
-.pin-button-icon__rail {
+.column-menu-item:hover,
+.column-menu-item:focus-visible {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  outline: none;
+}
+
+.column-menu-item:focus-visible {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.column-menu-item.is-active {
+  color: var(--nat-table-pin-color-pinned, inherit);
+  background: color-mix(in srgb, var(--nat-table-pin-color-pinned, currentColor) 12%, transparent);
+}
+
+.column-menu-item__check {
+  color: currentColor;
+  opacity: 0;
+  transform: scale(0.75);
+  transition:
+    opacity var(--nat-table-transition-fast, 120ms ease),
+    transform var(--nat-table-transition-fast, 120ms ease);
+}
+
+.column-menu-item__check.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.column-menu-item__check svg,
+.column-menu-item__dock svg {
   fill: none;
+  display: block;
+  overflow: visible;
+}
+
+.column-menu-item__check svg {
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+}
+
+.column-menu-item__check path {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.column-menu-item__label {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.column-menu-item__dock {
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+
+.column-menu-item.is-active .column-menu-item__dock {
+  color: currentColor;
+}
+
+.column-menu-item__dock svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.column-menu-item__dock-rail,
+.column-menu-item__dock-panel {
+  vector-effect: non-scaling-stroke;
+}
+
+.column-menu-item__dock-rail {
   stroke: currentColor;
   stroke-linecap: round;
   stroke-width: 1.5;
-  opacity: 0.38;
+  opacity: 0.42;
 }
 
-.pin-button-icon__panel {
-  fill: none;
+.column-menu-item__dock-panel {
   stroke: currentColor;
   stroke-width: 1.5;
-  opacity: 0.82;
+  opacity: 0.84;
 }
 
-.pin-button:hover .pin-button-icon__rail,
-.pin-button:hover .pin-button-icon__panel {
-  opacity: 1;
-}
+@keyframes header-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
 
-.pin-button.is-pinned .pin-button-icon__rail {
-  opacity: 0.7;
-}
-
-.pin-button.is-pinned .pin-button-icon__panel {
-  fill: color-mix(in srgb, currentColor 14%, transparent);
-  opacity: 1;
-  transform: translateY(-0.2px);
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

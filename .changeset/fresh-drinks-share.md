@@ -2,4 +2,4 @@
 'ng-advanced-table-ui': patch
 ---
 
-Add separate left and right pin controls to the shared header actions so columns can be pinned to either side from the default UI.
+Add right-side pinning support to the shared header actions through a three-dot overflow menu with explicit left and right pin actions.

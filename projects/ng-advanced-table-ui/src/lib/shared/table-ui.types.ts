@@ -173,6 +173,12 @@ export interface NatTableAccessibilityHeaderActionSortContext {
   sortState: 'ascending' | 'descending' | 'none';
 }
 
+/** Context passed to the overflow menu trigger label formatter. */
+export interface NatTableAccessibilityHeaderActionMenuContext {
+  /** Human-readable column label. */
+  label: string;
+}
+
 /** Context passed to pin-button label formatters. */
 export interface NatTableAccessibilityHeaderActionPinContext {
   /** Human-readable column label. */
@@ -191,9 +197,11 @@ export interface NatTableAccessibilityHeaderActionPinContext {
 export interface NatTableAccessibilityHeaderActionLabels {
   /** `aria-label` applied to the sort button. */
   sortButton?: (context: NatTableAccessibilityHeaderActionSortContext) => string;
+  /** `aria-label` applied to the overflow menu trigger. */
+  menuButton?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
   /** `aria-label` applied to the pin button. */
   pinButton?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
-  /** Visible text rendered inside the pin button. */
+  /** Visible text rendered inside each pin menu item. */
   pinButtonText?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
 }
 

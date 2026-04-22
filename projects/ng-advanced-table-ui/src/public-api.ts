@@ -14,6 +14,7 @@ export type {
   NatTableAccessibilityColumnVisibilityStateContext,
   NatTableAccessibilityColumnVisibilitySummaryContext,
   NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityHeaderActionMenuContext,
   NatTableAccessibilityHeaderActionPinContext,
   NatTableAccessibilityHeaderActionSortContext,
   NatTableAccessibilityPagerContext,

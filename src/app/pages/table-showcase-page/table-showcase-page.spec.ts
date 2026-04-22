@@ -36,11 +36,8 @@ describe('TableShowcasePage', () => {
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    const firstLeftPinButton = fixture.nativeElement.querySelector(
-      '.pin-button[data-pin-side="left"]',
-    ) as HTMLButtonElement;
-    const firstRightPinButton = fixture.nativeElement.querySelector(
-      '.pin-button[data-pin-side="right"]',
+    const firstMenuButton = fixture.nativeElement.querySelector(
+      '.menu-button',
     ) as HTMLButtonElement;
     const firstReorderableHeader = fixture.nativeElement.querySelector(
       'thead th.is-reorderable',
@@ -51,12 +48,8 @@ describe('TableShowcasePage', () => {
     ) as HTMLElement;
 
     expect(rows.length).toBe(24);
-    expect(firstLeftPinButton.textContent?.trim()).toBe('');
-    expect(firstRightPinButton.textContent?.trim()).toBe('');
-    expect(firstLeftPinButton.querySelector('.pin-button-icon[data-pin-side="left"]')).toBeTruthy();
-    expect(
-      firstRightPinButton.querySelector('.pin-button-icon[data-pin-side="right"]'),
-    ).toBeTruthy();
+    expect(firstMenuButton.getAttribute('aria-label')).toContain('Open column actions');
+    expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
     expect(firstReorderableHeader).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
     expect(
@@ -170,6 +163,26 @@ describe('TableShowcasePage', () => {
     );
 
     expect(marks.length).toBe(24);
+  });
+
+  it('should render a three-dots actions menu in each visible row', async () => {
+    fixture.detectChanges();
+
+    const actionTriggers = fixture.nativeElement.querySelectorAll(
+      'tbody td[data-column-id="actions"] .row-actions-trigger',
+    ) as NodeListOf<HTMLButtonElement>;
+
+    expect(actionTriggers.length).toBe(24);
+
+    actionTriggers[0].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const actionLabels = Array.from(
+      document.body.querySelectorAll('.row-actions-item .row-actions-item-label'),
+    ).map((element) => element.textContent?.trim());
+
+    expect(actionLabels).toEqual(['Inspect tape', 'Create alert', 'Send to blotter']);
   });
 
   it('should preserve the table render filter when toggling statuses', () => {

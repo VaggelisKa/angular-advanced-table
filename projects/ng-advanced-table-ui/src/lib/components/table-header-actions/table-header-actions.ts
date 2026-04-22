@@ -1,3 +1,4 @@
+import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
 import {
@@ -13,6 +14,7 @@ import type {
 
 import type {
   NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityHeaderActionMenuContext,
   NatTableAccessibilityHeaderActionPinContext,
 } from '../../shared/table-ui.types';
 
@@ -56,7 +58,7 @@ export interface NatTableHeaderActionsOptions {
 @Component({
   selector: 'nat-table-header-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FlexRender, GridCellWidget],
+  imports: [FlexRender, GridCellWidget, CdkMenu, CdkMenuItem, CdkMenuTrigger],
   templateUrl: './table-header-actions.html',
   styleUrl: './table-header-actions.css',
 })
@@ -163,11 +165,15 @@ export class NatTableHeaderActions {
     const context = this.getPinContext(side);
     const labels = this.resolveAccessibilityLabels();
 
-    return labels.pinButtonText?.(context) ?? (context.pinSide === 'left' ? 'Left' : 'Right');
+    return (
+      labels.pinButtonText?.(context) ?? (context.pinSide === 'left' ? 'Pin left' : 'Pin right')
+    );
   }
 
-  protected hasCustomPinText(): boolean {
-    return !!this.resolveAccessibilityLabels().pinButtonText;
+  protected getMenuButtonLabel(): string {
+    const labels = this.resolveAccessibilityLabels();
+
+    return labels.menuButton?.(this.getMenuContext()) ?? `Open column actions for ${this.label()}`;
   }
 
   protected column() {
@@ -189,6 +195,12 @@ export class NatTableHeaderActions {
       toggleAction: pinnedSide === side ? 'unpin' : 'pin',
       pinSide: side,
       pinnedSide,
+    };
+  }
+
+  private getMenuContext(): NatTableAccessibilityHeaderActionMenuContext {
+    return {
+      label: this.label(),
     };
   }
 
