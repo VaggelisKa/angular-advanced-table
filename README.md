@@ -355,7 +355,7 @@ UI exports:
 
 - Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
-- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
+- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
 | API | Purpose | Key inputs or options |
 | --- | --- | --- |
@@ -364,7 +364,7 @@ UI exports:
 | `NatTableColumnVisibility` | Toggle hideable columns | `for`, `label`, `ariaLabel`, `accessibilityLabels` |
 | `NatTablePageSize` | Chip-based page-size switcher | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
 | `NatTablePager` | Previous/next pagination control | `for`, `ariaLabel`, `accessibilityLabels` |
-| `withNatTableHeaderActions(...)` | Wraps header content with built-in sort and pin buttons | `sortIndicator`, `accessibilityLabels` |
+| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels` |
 
 Controller contract required by the UI package:
 
@@ -378,7 +378,9 @@ Notes:
 
 - `NatTableSearch` is only useful when `enableGlobalFilter` is enabled. That is the core default.
 - `NatTablePageSize` and `NatTablePager` assume `enablePagination` is enabled.
-- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column can sort or pin.
+- `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
+- `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` are intentionally small wrappers over the controller contract.
+- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
 
 ## Accessibility Label Overrides
 
@@ -397,9 +399,31 @@ readonly pagerLabels = {
   nextPageAriaLabel: 'Next page',
   pageIndicator: ({ pageText, pageCountText }) => `Page ${pageText} of ${pageCountText}`,
 };
+
+readonly columnVisibilityLabels = {
+  heading: 'Kolonner',
+  groupAriaLabel: 'Kolonnesynlighed',
+  visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
+    `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
+  toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
+    `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
+  columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
+};
+
+readonly columns = withNatTableHeaderActions(baseColumns, {
+  accessibilityLabels: {
+    sortButton: ({ label }) => `Sorter ${label}`,
+    menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
+    pinButton: ({ label, toggleAction, pinSide }) =>
+      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
+        toggleAction === 'unpin' ? 'fra' : 'til'
+      } ${pinSide === 'left' ? 'venstre' : 'højre'}`,
+    pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Venstre' : 'Højre'),
+  },
+});
 ```
 
-The label callbacks receive locale-formatted numbers and semantic states such as `toggleAction`, `visibilityState`, `sortState`, and `pinState`.
+The label callbacks receive locale-formatted numbers and semantic states such as `toggleAction`, `visibilityState`, `sortState`, `pinState`, and `pinSide`.
 
 ## Utils Package
 
@@ -452,8 +476,8 @@ Utils exports:
 If you are upgrading from the earlier all-in-one `NatTable`:
 
 - `NatTable` is now intentionally barebones.
-- Search, column visibility, page-size, pager, sort buttons, pin buttons, and surface styling moved to `ng-advanced-table-ui`.
+- Search, column visibility, page-size, pager, sort controls, pin menu actions, and surface styling moved to `ng-advanced-table-ui`.
 - `showPagination` was replaced by `enablePagination`.
 - `enablePagination` now defaults to `false`.
 - `pageSizeOptions`, `searchLabel`, `searchPlaceholder`, and `showColumnVisibility` were removed from `NatTable`.
-- Wrap columns with `withNatTableHeaderActions(...)` if you want the stock sort and pin buttons.
+- Wrap columns with `withNatTableHeaderActions(...)` if you want the stock sort control and pin menu.

@@ -1,64 +1,122 @@
 <div class="header-content" [class.is-align-end]="isAlignedEnd()">
-  @if (canSort()) {
-    <button
-      type="button"
-      ngGridCellWidget
-      class="sort-button"
-      [class.is-sorted]="!!column().getIsSorted()"
-      [attr.aria-label]="getSortLabel()"
-      (pointerdown)="$event.stopPropagation()"
-      (click)="toggleSort()"
-    >
+  <div class="header-actions-row">
+    @if (canSort()) {
+      <button
+        type="button"
+        ngGridCellWidget
+        class="sort-button"
+        [class.is-sorted]="!!column().getIsSorted()"
+        [attr.aria-label]="getSortLabel()"
+        (pointerdown)="$event.stopPropagation()"
+        (click)="toggleSort()"
+      >
+        <span class="header-label">
+          <ng-container *flexRender="content(); props: context(); let rendered">
+            {{ rendered }}
+          </ng-container>
+        </span>
+        <span class="sort-icon" aria-hidden="true">
+          @if (hasCustomSortIndicator()) {
+            <ng-container
+              *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"
+            >
+              {{ rendered }}
+            </ng-container>
+          } @else {
+            <span
+              class="nat-default-sort"
+              [attr.data-sort-state]="sortState() === false ? 'none' : sortState()"
+            >
+              <svg
+                class="nat-default-sort__svg"
+                viewBox="0 0 12 14"
+                focusable="false"
+                aria-hidden="true"
+              >
+                <path class="nat-default-sort__up" d="M6 2 10 6 H2z" />
+                <path class="nat-default-sort__down" d="M6 12 2 8 H10z" />
+              </svg>
+            </span>
+          }
+        </span>
+      </button>
+    } @else {
       <span class="header-label">
         <ng-container *flexRender="content(); props: context(); let rendered">
           {{ rendered }}
         </ng-container>
       </span>
-      <span class="sort-icon" aria-hidden="true">
-        @if (hasCustomSortIndicator()) {
-          <ng-container
-            *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"
-          >
-            {{ rendered }}
-          </ng-container>
-        } @else {
-          <span
-            class="nat-default-sort"
-            [attr.data-sort-state]="sortState() === false ? 'none' : sortState()"
-          >
-            <svg
-              class="nat-default-sort__svg"
-              viewBox="0 0 12 14"
-              focusable="false"
-              aria-hidden="true"
-            >
-              <path class="nat-default-sort__up" d="M6 2 10 6 H2z" />
-              <path class="nat-default-sort__down" d="M6 12 2 8 H10z" />
-            </svg>
-          </span>
-        }
-      </span>
-    </button>
-  } @else {
-    <span class="header-label">
-      <ng-container *flexRender="content(); props: context(); let rendered">
-        {{ rendered }}
-      </ng-container>
-    </span>
-  }
+    }
 
-  @if (canPin()) {
-    <button
-      type="button"
-      ngGridCellWidget
-      class="pin-button"
-      [class.is-pinned]="isPinned()"
-      [attr.aria-pressed]="isPinned()"
-      [attr.aria-label]="getPinLabel()"
-      (pointerdown)="$event.stopPropagation()"
-      (click)="togglePin()"
-    >
-      {{ getPinText() }}
-    </button>
-  }
+    @if (canPin()) {
+      <ng-template #pinMenu>
+        <div class="column-menu" cdkMenu>
+          @for (side of pinSides; track side) {
+            <button
+              type="button"
+              cdkMenuItem
+              class="column-menu-item"
+              [class.is-active]="isPinned(side)"
+              [attr.aria-label]="getPinLabel(side)"
+              [attr.data-pin-side]="side"
+              (click)="togglePin(side)"
+            >
+              <span
+                class="column-menu-item__check"
+                [class.is-visible]="isPinned(side)"
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+                  <path d="M2 6.25 4.55 8.8 10 3.35" />
+                </svg>
+              </span>
+              <span class="column-menu-item__label">{{ getPinText(side) }}</span>
+              <span class="column-menu-item__dock" [attr.data-pin-side]="side" aria-hidden="true">
+                @if (side === 'left') {
+                  <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
+                    <path class="column-menu-item__dock-rail" d="M3.25 4.25v9.5" />
+                    <rect
+                      class="column-menu-item__dock-panel"
+                      x="6.25"
+                      y="5.25"
+                      width="8.5"
+                      height="7.5"
+                      rx="2"
+                    />
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 18 18" focusable="false" aria-hidden="true">
+                    <path class="column-menu-item__dock-rail" d="M14.75 4.25v9.5" />
+                    <rect
+                      class="column-menu-item__dock-panel"
+                      x="3.25"
+                      y="5.25"
+                      width="8.5"
+                      height="7.5"
+                      rx="2"
+                    />
+                  </svg>
+                }
+              </span>
+            </button>
+          }
+        </div>
+      </ng-template>
+
+      <button
+        type="button"
+        ngGridCellWidget
+        class="menu-button"
+        [cdkMenuTriggerFor]="pinMenu"
+        [attr.aria-label]="getMenuButtonLabel()"
+        (pointerdown)="$event.stopPropagation()"
+      >
+        <svg class="menu-button__icon" viewBox="0 0 14 14" focusable="false" aria-hidden="true">
+          <circle cx="7" cy="2.25" r="1.15" />
+          <circle cx="7" cy="7" r="1.15" />
+          <circle cx="7" cy="11.75" r="1.15" />
+        </svg>
+      </button>
+    }
+  </div>
 </div>

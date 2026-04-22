@@ -156,13 +156,7 @@ class CustomSortIndicatorHost {
 }
 
 @Component({
-  imports: [
-    NatTable,
-    NatTableColumnVisibility,
-    NatTablePageSize,
-    NatTablePager,
-    NatTableSurface,
-  ],
+  imports: [NatTable, NatTableColumnVisibility, NatTablePageSize, NatTablePager, NatTableSurface],
   template: `
     <nat-table
       #grid="natTable"
@@ -211,9 +205,12 @@ class CustomAccessibilityLabelsHost {
   };
   readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
     sortButton: ({ label }) => `Sorter ${label}`,
-    pinButton: ({ label, toggleAction }) =>
-      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label}`,
-    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'),
+    menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
+    pinButton: ({ label, toggleAction, pinSide }) =>
+      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
+        toggleAction === 'unpin' ? 'fra' : 'til'
+      } ${pinSide === 'left' ? 'venstre' : 'højre'}`,
+    pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Venstre' : 'Højre'),
   };
   readonly columns = withNatTableHeaderActions(baseColumns, {
     accessibilityLabels: this.headerActionLabels,
@@ -360,12 +357,12 @@ describe('ng-advanced-table-ui', () => {
     const sortButton = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
+    const menuButton = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .menu-button',
+    ) as HTMLButtonElement;
     const sortIcon = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .sort-icon',
     ) as HTMLElement;
-    const pinButton = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"] .pin-button',
-    ) as HTMLButtonElement;
     const reorderableHeader = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"]',
     ) as HTMLTableCellElement;
@@ -375,7 +372,7 @@ describe('ng-advanced-table-ui', () => {
     expect(reorderableHeader.classList.contains('cdk-drag')).toBe(true);
     expect(reorderableHeader.querySelector('.column-reorder-handle')).toBeNull();
     expect(sortButton.classList.contains('cdk-drag-handle')).toBe(false);
-    expect(pinButton.classList.contains('cdk-drag-handle')).toBe(false);
+    expect(menuButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(
       fixture.nativeElement
         .querySelector('thead th[data-column-id="name"]')
@@ -385,7 +382,8 @@ describe('ng-advanced-table-ui', () => {
       'none',
     );
     expect(sortIcon.querySelector('.nat-default-sort__svg')).toBeTruthy();
-    expect(pinButton.textContent?.trim()).toBe('Pin');
+    expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Service');
+    expect(menuButton.querySelector('.menu-button__icon')).toBeTruthy();
 
     sortButton.click();
     fixture.detectChanges();
@@ -403,16 +401,58 @@ describe('ng-advanced-table-ui', () => {
         ?.getAttribute('data-sort-state'),
     ).toBe('asc');
 
-    pinButton.click();
+    menuButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const leftPinMenuItem = getOpenMenuItem('left');
+    const rightPinMenuItem = getOpenMenuItem('right');
+
+    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+      'Pin left',
+    );
+    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+      'Pin right',
+    );
+    expect(
+      leftPinMenuItem.querySelector('.column-menu-item__dock[data-pin-side="left"]'),
+    ).toBeTruthy();
+    expect(
+      rightPinMenuItem.querySelector('.column-menu-item__dock[data-pin-side="right"]'),
+    ).toBeTruthy();
+
+    leftPinMenuItem.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(host.tableState().columnPinning).toEqual({
       left: ['name'],
       right: [],
     });
-    expect(pinButton.classList.contains('is-pinned')).toBe(true);
-    expect(pinButton.textContent?.trim()).toBe('Unpin');
-    expect(pinButton.getAttribute('aria-pressed')).toBe('true');
+
+    menuButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const updatedLeftPinMenuItem = getOpenMenuItem('left');
+    const updatedRightPinMenuItem = getOpenMenuItem('right');
+
+    expect(updatedLeftPinMenuItem.classList.contains('is-active')).toBe(true);
+    expect(updatedRightPinMenuItem.classList.contains('is-active')).toBe(false);
+
+    updatedRightPinMenuItem.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.tableState().columnPinning).toEqual({
+      left: [],
+      right: ['name'],
+    });
+    expect(getHeaderColumnIds(fixture)).toEqual(['region', 'status', 'throughput', 'name']);
     expect(headerLabel.textContent?.trim()).toBe('Service');
   });
 
@@ -468,7 +508,7 @@ describe('ng-advanced-table-ui', () => {
     expect(sortIcon.textContent).not.toContain('↕');
   });
 
-  it('renders caller-provided accessibility labels across the UI controls', () => {
+  it('renders caller-provided accessibility labels across the UI controls', async () => {
     const customFixture = TestBed.createComponent(CustomAccessibilityLabelsHost);
 
     customFixture.detectChanges();
@@ -504,8 +544,8 @@ describe('ng-advanced-table-ui', () => {
     const sortButton = nativeElement.querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
-    const pinButton = nativeElement.querySelector(
-      'thead th[data-column-id="name"] .pin-button',
+    const menuButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .menu-button',
     ) as HTMLButtonElement;
 
     expect(visibilityHeading.textContent?.trim()).toBe('Kolonner');
@@ -524,24 +564,58 @@ describe('ng-advanced-table-ui', () => {
     expect(nextButton.getAttribute('aria-label')).toBe('Næste side');
 
     expect(sortButton.getAttribute('aria-label')).toBe('Sorter Service');
-    expect(pinButton.getAttribute('aria-label')).toBe('Fastgør kolonne Service');
-    expect(pinButton.textContent?.trim()).toBe('Fastgør');
+    expect(menuButton.getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
 
-    pinButton.click();
+    menuButton.click();
+    customFixture.detectChanges();
+    await customFixture.whenStable();
     customFixture.detectChanges();
 
-    const updatedPinButton = nativeElement.querySelector(
-      'thead th[data-column-id="name"] .pin-button',
-    ) as HTMLButtonElement;
+    const leftPinMenuItem = getOpenMenuItem('left');
+    const rightPinMenuItem = getOpenMenuItem('right');
 
-    expect(updatedPinButton.getAttribute('aria-label')).toBe('Frigør kolonne Service');
-    expect(updatedPinButton.textContent?.trim()).toBe('Frigør');
+    expect(leftPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til venstre');
+    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+      'Venstre',
+    );
+    expect(rightPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til højre');
+    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+      'Højre',
+    );
+
+    leftPinMenuItem.click();
+    customFixture.detectChanges();
+    await customFixture.whenStable();
+    customFixture.detectChanges();
+
+    menuButton.click();
+    customFixture.detectChanges();
+    await customFixture.whenStable();
+    customFixture.detectChanges();
+
+    const updatedLeftPinMenuItem = getOpenMenuItem('left');
+    const updatedRightPinMenuItem = getOpenMenuItem('right');
+
+    expect(updatedLeftPinMenuItem.getAttribute('aria-label')).toBe(
+      'Frigør kolonne Service fra venstre',
+    );
+    expect(
+      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim(),
+    ).toBe('Venstre');
+    expect(updatedRightPinMenuItem.getAttribute('aria-label')).toBe(
+      'Fastgør kolonne Service til højre',
+    );
+    expect(
+      updatedRightPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim(),
+    ).toBe('Højre');
 
     firstColumnChip.click();
     customFixture.detectChanges();
 
     expect(firstColumnChip.getAttribute('aria-label')).toBe('Vis kolonne Service');
     expect(firstColumnState.textContent?.trim()).toBe('Skjult');
+
+    customFixture.destroy();
   });
 });
 
@@ -555,4 +629,34 @@ function buildRows(size: number): Row[] {
     status: statuses[index % statuses.length],
     throughput: 1000 + index * 1000,
   }));
+}
+
+function getHeaderColumnIds(fixture: ComponentFixture<TableUiHost>): string[] {
+  return Array.from(fixture.nativeElement.querySelectorAll('thead th[data-column-id]')).map(
+    (header) => (header as HTMLElement).dataset['columnId'] ?? '',
+  );
+}
+
+function getOpenPinMenu(): HTMLElement | null {
+  const menus = Array.from(document.body.querySelectorAll('.column-menu')) as HTMLElement[];
+
+  return menus.at(-1) ?? null;
+}
+
+function getOpenMenuItem(side: 'left' | 'right'): HTMLButtonElement {
+  const menu = getOpenPinMenu();
+
+  if (!menu) {
+    throw new Error('Expected the pin menu to be open.');
+  }
+
+  const item = menu.querySelector(
+    `.column-menu-item[data-pin-side="${side}"]`,
+  ) as HTMLButtonElement | null;
+
+  if (!item) {
+    throw new Error(`Expected a menu item for pin side "${side}".`);
+  }
+
+  return item;
 }
