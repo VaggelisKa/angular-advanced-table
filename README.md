@@ -133,6 +133,50 @@ export class PositionsTableComponent {
 
 It does not ship search UI, column visibility UI, page-size UI, pager UI, header action buttons, or surface styling. Use `ng-advanced-table-ui` for those pieces and `ng-advanced-table-utils` for render instrumentation.
 
+Example, core only:
+
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { type ColumnDef } from '@tanstack/angular-table';
+
+import { NatTable } from 'ng-advanced-table';
+
+interface ServiceRow {
+  id: string;
+  service: string;
+  latencyMs: number;
+}
+
+@Component({
+  selector: 'app-service-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      ariaLabel="Service latency"
+    />
+  `,
+})
+export class ServiceTableComponent {
+  readonly rows = signal<readonly ServiceRow[]>([]);
+  readonly columns: ColumnDef<ServiceRow>[] = [
+    {
+      accessorKey: 'service',
+      header: 'Service',
+      meta: { label: 'Service', rowHeader: true },
+    },
+    {
+      accessorKey: 'latencyMs',
+      header: 'Latency',
+      meta: { label: 'Latency', align: 'end' },
+      cell: (context) => `${context.getValue<number>()} ms`,
+    },
+  ];
+}
+```
+
 Core exports:
 
 - Component: `NatTable`
@@ -286,6 +330,27 @@ Guidelines:
 
 `ng-advanced-table-ui` provides small companion controls that compose around any `NatTableUiController<TData>`. `<nat-table #grid="natTable">` already satisfies that contract.
 
+Example, add stock controls around an existing table:
+
+```html
+<nat-table
+  #grid="natTable"
+  [data]="rows()"
+  [columns]="columns"
+  [state]="tableState()"
+  [enablePagination]="true"
+  ariaLabel="Orders"
+  (stateChange)="tableState.set($event)"
+/>
+
+<nat-table-surface>
+  <nat-table-search [for]="grid" />
+  <nat-table-column-visibility [for]="grid" />
+  <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
+  <nat-table-pager [for]="grid" />
+</nat-table-surface>
+```
+
 UI exports:
 
 - Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`
@@ -340,6 +405,27 @@ The label callbacks receive locale-formatted numbers and semantic states such as
 
 `ng-advanced-table-utils` currently ships render-metrics helpers for measuring row paint time and surfacing that data in the table.
 
+Example, wire metrics into an existing table:
+
+```ts
+readonly metrics = new NatTableRenderMetricsStore();
+readonly columns = withRenderMetricsColumn(baseColumns, this.metrics);
+```
+
+```html
+<nat-table
+  #grid="natTable"
+  [data]="rows()"
+  [columns]="columns"
+  [emitRowRenderEvents]="true"
+  ariaLabel="Render metrics demo"
+  (rowRendered)="metrics.record($event)"
+/>
+
+<nat-render-metrics-panel [store]="metrics" />
+<nat-render-metrics-filter [for]="grid" [store]="metrics" />
+```
+
 Utils exports:
 
 - Core helpers: `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`
@@ -360,25 +446,6 @@ Utils exports:
 3. Record each `(rowRendered)` event with `store.record($event)`.
 4. Optionally wrap your columns with `withRenderMetricsColumn(...)`.
 5. Render `NatRenderMetricsPanel` and `NatRenderMetricsFilter` against the same store.
-
-```ts
-readonly metrics = new NatTableRenderMetricsStore();
-readonly columns = withRenderMetricsColumn(baseColumns, this.metrics);
-```
-
-```html
-<nat-table
-  #grid="natTable"
-  [data]="rows()"
-  [columns]="columns"
-  [emitRowRenderEvents]="true"
-  ariaLabel="Render metrics demo"
-  (rowRendered)="metrics.record($event)"
-/>
-
-<nat-render-metrics-panel [store]="metrics" />
-<nat-render-metrics-filter [for]="grid" [store]="metrics" />
-```
 
 ## Migration
 

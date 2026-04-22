@@ -4,4 +4,4 @@
 'ng-advanced-table-utils': patch
 ---
 
-Rewrite the root README into a shorter API-first reference with a tighter package matrix, one representative setup example, and compact sections for the core, UI, and render-metrics APIs.
+Rewrite the root README into a shorter, example-led API reference with a tighter package matrix, one representative setup example, and compact sections for the core, UI, and render-metrics APIs.
