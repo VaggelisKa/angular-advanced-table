@@ -1,6 +1,7 @@
-import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { OverlayModule, type ConnectedPosition } from '@angular/cdk/overlay';
+import { ChangeDetectionStrategy, Component, input, viewChild } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
+import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import {
   FlexRender,
   type FlexRenderContent,
@@ -58,12 +59,44 @@ export interface NatTableHeaderActionsOptions {
 @Component({
   selector: 'nat-table-header-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FlexRender, GridCellWidget, CdkMenu, CdkMenuItem, CdkMenuTrigger],
+  imports: [
+    FlexRender,
+    GridCellWidget,
+    Menu,
+    MenuContent,
+    MenuItem,
+    MenuTrigger,
+    OverlayModule,
+  ],
   templateUrl: './table-header-actions.html',
   styleUrl: './table-header-actions.css',
 })
 export class NatTableHeaderActions {
   protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
+  protected readonly pinMenu = viewChild<Menu<NatTablePinSide>>('pinMenu');
+  protected readonly pinMenuPositions: ConnectedPosition[] = [
+    {
+      originX: 'end',
+      originY: 'bottom',
+      overlayX: 'end',
+      overlayY: 'top',
+      offsetY: 6,
+    },
+    {
+      originX: 'start',
+      originY: 'bottom',
+      overlayX: 'start',
+      overlayY: 'top',
+      offsetY: 6,
+    },
+    {
+      originX: 'end',
+      originY: 'top',
+      overlayX: 'end',
+      overlayY: 'bottom',
+      offsetY: -6,
+    },
+  ];
   readonly context = input.required<HeaderContext<RowData, unknown>>();
   readonly content = input.required<NatTableHeaderRenderContent>();
   readonly label = input.required<string>();
@@ -174,6 +207,10 @@ export class NatTableHeaderActions {
     const labels = this.resolveAccessibilityLabels();
 
     return labels.menuButton?.(this.getMenuContext()) ?? `Open column actions for ${this.label()}`;
+  }
+
+  protected getMenuLabel(): string {
+    return `Column pinning options for ${this.label()}`;
   }
 
   protected column() {

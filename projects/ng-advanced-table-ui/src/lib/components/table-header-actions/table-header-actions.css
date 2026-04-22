@@ -72,7 +72,8 @@
   color: var(--nat-table-sort-button-color-sorted, inherit);
 }
 
-.menu-button:hover {
+.menu-button:hover,
+.menu-button[aria-expanded='true'] {
   color: inherit;
   background: color-mix(in srgb, currentColor 8%, transparent);
   transform: translateY(-1px);
@@ -219,6 +220,7 @@
 }
 
 .column-menu-item:hover,
+.column-menu-item[data-active='true'],
 .column-menu-item:focus-visible {
   background: color-mix(in srgb, currentColor 10%, transparent);
   outline: none;
