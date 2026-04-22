@@ -466,7 +466,7 @@ export class TableShowcasePage {
 
     this.featureDialogRef = this.dialog.open(this.featureDialogTemplate(), {
       ariaLabelledBy: 'feature-dialog-title',
-      panelClass: 'feature-dialog-panel',
+      panelClass: ['feature-dialog-panel', `feature-dialog-panel--${this.theme()}`],
     });
 
     this.featureDialogRef.closed.subscribe(() => {
