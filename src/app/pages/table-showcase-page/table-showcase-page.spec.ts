@@ -36,7 +36,12 @@ describe('TableShowcasePage', () => {
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    const firstPinButton = fixture.nativeElement.querySelector('.pin-button') as HTMLButtonElement;
+    const firstLeftPinButton = fixture.nativeElement.querySelector(
+      '.pin-button[data-pin-side="left"]',
+    ) as HTMLButtonElement;
+    const firstRightPinButton = fixture.nativeElement.querySelector(
+      '.pin-button[data-pin-side="right"]',
+    ) as HTMLButtonElement;
     const firstReorderableHeader = fixture.nativeElement.querySelector(
       'thead th.is-reorderable',
     ) as HTMLTableCellElement;
@@ -46,10 +51,13 @@ describe('TableShowcasePage', () => {
     ) as HTMLElement;
 
     expect(rows.length).toBe(24);
-    expect(firstPinButton.textContent?.trim()).toBe('Pin');
+    expect(firstLeftPinButton.textContent?.trim()).toBe('Left');
+    expect(firstRightPinButton.textContent?.trim()).toBe('Right');
     expect(firstReorderableHeader).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
-    expect(changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]')).toBeTruthy();
+    expect(
+      changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]'),
+    ).toBeTruthy();
   });
 
   it('should update the status filter through controlled table state', () => {

@@ -158,13 +158,9 @@ export interface NatTableAccessibilityColumnVisibilityLabels {
   /** `aria-label` applied to the chip group. */
   groupAriaLabel?: string;
   /** Visible caption showing how many columns are active. */
-  visibilitySummary?: (
-    context: NatTableAccessibilityColumnVisibilitySummaryContext,
-  ) => string;
+  visibilitySummary?: (context: NatTableAccessibilityColumnVisibilitySummaryContext) => string;
   /** `aria-label` applied to each column chip. */
-  toggleColumnAriaLabel?: (
-    context: NatTableAccessibilityColumnVisibilityActionContext,
-  ) => string;
+  toggleColumnAriaLabel?: (context: NatTableAccessibilityColumnVisibilityActionContext) => string;
   /** Visible state text rendered inside each chip. */
   columnState?: (context: NatTableAccessibilityColumnVisibilityStateContext) => string;
 }
@@ -181,10 +177,14 @@ export interface NatTableAccessibilityHeaderActionSortContext {
 export interface NatTableAccessibilityHeaderActionPinContext {
   /** Human-readable column label. */
   label: string;
-  /** Current pin state before toggling. */
+  /** Whether the column is pinned at all before toggling. */
   pinState: 'pinned' | 'unpinned';
   /** Action that activating the control will perform. */
   toggleAction: 'pin' | 'unpin';
+  /** Side targeted by the current button. */
+  pinSide: 'left' | 'right';
+  /** Currently active pin side for the column, if any. */
+  pinnedSide: 'left' | 'right' | null;
 }
 
 /** Optional accessibility label overrides for header sort/pin actions. */

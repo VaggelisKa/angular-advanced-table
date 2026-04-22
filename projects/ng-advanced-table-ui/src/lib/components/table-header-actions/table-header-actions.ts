@@ -16,6 +16,8 @@ import type {
   NatTableAccessibilityHeaderActionPinContext,
 } from '../../shared/table-ui.types';
 
+type NatTablePinSide = 'left' | 'right';
+
 export type NatTableHeaderRenderContent =
   | string
   | number
@@ -59,6 +61,7 @@ export interface NatTableHeaderActionsOptions {
   styleUrl: './table-header-actions.css',
 })
 export class NatTableHeaderActions {
+  protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
   readonly context = input.required<HeaderContext<RowData, unknown>>();
   readonly content = input.required<NatTableHeaderRenderContent>();
   readonly label = input.required<string>();
@@ -75,8 +78,10 @@ export class NatTableHeaderActions {
     return this.column().getCanPin();
   }
 
-  protected isPinned(): boolean {
-    return !!this.column().getIsPinned();
+  protected isPinned(side?: NatTablePinSide): boolean {
+    const pinnedSide = this.pinnedSide();
+
+    return side ? pinnedSide === side : pinnedSide !== null;
   }
 
   protected isAlignedEnd(): boolean {
@@ -123,9 +128,10 @@ export class NatTableHeaderActions {
     this.column().toggleSorting();
   }
 
-  protected togglePin(): void {
+  protected togglePin(side: NatTablePinSide): void {
     const column = this.column();
-    column.pin(column.getIsPinned() ? false : 'left');
+
+    column.pin(this.isPinned(side) ? false : side);
   }
 
   protected getSortLabel(): string {
@@ -139,33 +145,47 @@ export class NatTableHeaderActions {
     );
   }
 
-  protected getPinLabel(): string {
+  protected getPinLabel(side: NatTablePinSide): string {
+    const context = this.getPinContext(side);
     const labels = this.resolveAccessibilityLabels();
-    const context: NatTableAccessibilityHeaderActionPinContext = {
-      label: this.label(),
-      pinState: this.isPinned() ? 'pinned' : 'unpinned',
-      toggleAction: this.isPinned() ? 'unpin' : 'pin',
-    };
 
     return (
       labels.pinButton?.(context) ??
-      `${context.toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${context.label} column`
+      `${
+        context.toggleAction === 'unpin' ? 'Unpin' : 'Pin'
+      } ${context.label} column ${context.toggleAction === 'unpin' ? 'from' : 'to'} the ${
+        context.pinSide
+      }`
     );
   }
 
-  protected getPinText(): string {
+  protected getPinText(side: NatTablePinSide): string {
+    const context = this.getPinContext(side);
     const labels = this.resolveAccessibilityLabels();
-    const context: NatTableAccessibilityHeaderActionPinContext = {
-      label: this.label(),
-      pinState: this.isPinned() ? 'pinned' : 'unpinned',
-      toggleAction: this.isPinned() ? 'unpin' : 'pin',
-    };
 
-    return labels.pinButtonText?.(context) ?? (context.toggleAction === 'unpin' ? 'Unpin' : 'Pin');
+    return labels.pinButtonText?.(context) ?? (context.pinSide === 'left' ? 'Left' : 'Right');
   }
 
   protected column() {
     return this.context().column;
+  }
+
+  private pinnedSide(): NatTablePinSide | null {
+    const pinState = this.column().getIsPinned();
+
+    return pinState === 'left' || pinState === 'right' ? pinState : null;
+  }
+
+  private getPinContext(side: NatTablePinSide): NatTableAccessibilityHeaderActionPinContext {
+    const pinnedSide = this.pinnedSide();
+
+    return {
+      label: this.label(),
+      pinState: pinnedSide ? 'pinned' : 'unpinned',
+      toggleAction: pinnedSide === side ? 'unpin' : 'pin',
+      pinSide: side,
+      pinnedSide,
+    };
   }
 
   private resolveAccessibilityLabels(): NatTableAccessibilityHeaderActionLabels {

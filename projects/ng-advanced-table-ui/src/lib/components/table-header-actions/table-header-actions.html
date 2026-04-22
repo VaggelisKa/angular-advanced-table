@@ -16,9 +16,7 @@
       </span>
       <span class="sort-icon" aria-hidden="true">
         @if (hasCustomSortIndicator()) {
-          <ng-container
-            *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"
-          >
+          <ng-container *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered">
             {{ rendered }}
           </ng-container>
         } @else {
@@ -48,17 +46,22 @@
   }
 
   @if (canPin()) {
-    <button
-      type="button"
-      ngGridCellWidget
-      class="pin-button"
-      [class.is-pinned]="isPinned()"
-      [attr.aria-pressed]="isPinned()"
-      [attr.aria-label]="getPinLabel()"
-      (pointerdown)="$event.stopPropagation()"
-      (click)="togglePin()"
-    >
-      {{ getPinText() }}
-    </button>
+    <div class="pin-button-group">
+      @for (side of pinSides; track side) {
+        <button
+          type="button"
+          ngGridCellWidget
+          class="pin-button"
+          [class.is-pinned]="isPinned(side)"
+          [attr.aria-pressed]="isPinned(side)"
+          [attr.aria-label]="getPinLabel(side)"
+          [attr.data-pin-side]="side"
+          (pointerdown)="$event.stopPropagation()"
+          (click)="togglePin(side)"
+        >
+          {{ getPinText(side) }}
+        </button>
+      }
+    </div>
   }
 </div>

@@ -17,6 +17,12 @@
   max-width: 100%;
 }
 
+.pin-button-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--nat-table-space-chip-row-gap, 6px);
+}
+
 .sort-button,
 .pin-button {
   transition:
@@ -104,10 +110,7 @@
 /* Solid chevrons read with stronger contrast than thin outlines. */
 .nat-default-sort__up,
 .nat-default-sort__down {
-  fill: var(
-    --nat-table-sort-icon-color-idle,
-    color-mix(in srgb, currentColor 45%, transparent)
-  );
+  fill: var(--nat-table-sort-icon-color-idle, color-mix(in srgb, currentColor 45%, transparent));
   stroke: none;
   transform-origin: center;
   transition:
@@ -117,11 +120,10 @@
 }
 
 .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
-.sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__down {
-  fill: var(
-    --nat-table-sort-icon-color-hover,
-    color-mix(in srgb, currentColor 78%, transparent)
-  );
+.sort-button:hover:not([disabled])
+  .nat-default-sort[data-sort-state='none']
+  .nat-default-sort__down {
+  fill: var(--nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent));
 }
 
 /* Sorted: active direction is the accent color; inactive direction fades back. */
@@ -133,10 +135,7 @@
 
 .nat-default-sort[data-sort-state='asc'] .nat-default-sort__down,
 .nat-default-sort[data-sort-state='desc'] .nat-default-sort__up {
-  fill: var(
-    --nat-table-sort-icon-color-muted,
-    color-mix(in srgb, currentColor 22%, transparent)
-  );
+  fill: var(--nat-table-sort-icon-color-muted, color-mix(in srgb, currentColor 22%, transparent));
   opacity: var(--nat-table-sort-icon-muted-opacity, 0.75);
 }
 
@@ -151,6 +150,9 @@
 }
 
 .pin-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--nat-table-pin-min-height, 28px);
   padding: 0 var(--nat-table-pin-padding-x, 10px);
   border-radius: var(--nat-table-radius-chip, 999px);

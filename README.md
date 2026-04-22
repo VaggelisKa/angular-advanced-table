@@ -370,6 +370,7 @@ Common write patterns:
 - `column.toggleVisibility(...)`
 - `column.toggleSorting()`
 - `column.pin('left')`
+- `column.pin('right')`
 
 ## UI Package
 
@@ -418,7 +419,7 @@ The UI package works with any controller that implements:
 
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` are intentionally small wrappers over the controller contract.
-- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning.
+- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including separate left and right pin toggles.
 
 ### Accessibility label overrides
 
@@ -451,9 +452,11 @@ readonly columnVisibilityLabels = {
 readonly columns = withNatTableHeaderActions(baseColumns, {
   accessibilityLabels: {
     sortButton: ({ label }) => `Sorter ${label}`,
-    pinButton: ({ label, toggleAction }) =>
-      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label}`,
-    pinButtonText: ({ toggleAction }) => (toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'),
+    pinButton: ({ label, toggleAction, pinSide }) =>
+      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
+        toggleAction === 'unpin' ? 'fra' : 'til'
+      } ${pinSide === 'left' ? 'venstre' : 'højre'}`,
+    pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Venstre' : 'Højre'),
   },
 });
 ```
@@ -478,8 +481,7 @@ Pass `sortIndicator` as the second argument to `withNatTableHeaderActions(...)` 
 
 ```ts
 const columns = withNatTableHeaderActions<OrderRow>(baseColumns, {
-  sortIndicator: ({ sortState }) =>
-    sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇',
+  sortIndicator: ({ sortState }) => (sortState === 'asc' ? '▲' : sortState === 'desc' ? '▼' : '◇'),
 });
 ```
 
