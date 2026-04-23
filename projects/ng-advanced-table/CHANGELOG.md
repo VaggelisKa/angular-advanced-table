@@ -1,5 +1,21 @@
 # ng-advanced-table
 
+## 0.2.0
+
+### Minor Changes
+
+- fb7e652: Add expandable row support to `NatTable` with controlled/uncontrolled expansion state, a row-level expansion predicate, and projected detail-row templates.
+
+### Patch Changes
+
+- fc084e6: Remove the showcase table's seeded initial state so examples no longer load with preset sorting, pinning, or a custom page size.
+- 3da05b9: Update the GitHub Actions CI and release workflows to use the latest `actions/checkout`
+  and `actions/setup-node` majors, and move the Node.js runtime from 22 to 24.
+- d5de8ec: Fix three latent bugs in `<nat-table>`:
+  - `hasSameColumnVisibility` now compares visibility only, so swapping purely cosmetic column metadata (e.g. i18n label changes or a new `columns` array with different headers but the same visibility map) no longer triggers a misleading "visible columns" announcement on the polite live region.
+  - The helper also guards against a missing counterpart column in the previous/next accessibility snapshot, removing an unsafe property access that could throw when consumers swap an entire column set while keeping the leaf count the same.
+  - The keyboard focus style no longer forces `position: relative` on pinned or sticky header cells. Sticky left/right pinned body cells and the sticky header row now keep their `position: sticky` context while focused, so keyboard users see pinned columns stay put instead of briefly unsticking when focus lands on them.
+
 ## 0.1.2
 
 ### Patch Changes
