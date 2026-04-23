@@ -165,6 +165,26 @@ describe('TableShowcasePage', () => {
     expect(marks.length).toBe(24);
   });
 
+  it('should expand actionable rows into a trade brief panel', () => {
+    fixture.detectChanges();
+
+    const expandTrigger = fixture.nativeElement.querySelector(
+      '.row-expand-trigger',
+    ) as HTMLButtonElement;
+
+    expect(expandTrigger).toBeTruthy();
+    expect(expandTrigger.getAttribute('aria-expanded')).toBe('false');
+
+    expandTrigger.click();
+    fixture.detectChanges();
+
+    const tradeBrief = fixture.nativeElement.querySelector('.trade-brief') as HTMLElement;
+
+    expect(tradeBrief).toBeTruthy();
+    expect(tradeBrief.textContent).toContain('Playbook');
+    expect(expandTrigger.getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('should render a three-dots actions menu in each visible row', async () => {
     fixture.detectChanges();
 

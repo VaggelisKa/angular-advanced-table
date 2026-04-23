@@ -4,9 +4,12 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ExpandedState,
   PaginationState,
+  Row,
   RowData,
   SortingState,
+  Table,
   VisibilityState,
 } from '@tanstack/angular-table';
 
@@ -29,6 +32,31 @@ export interface NatTableState {
   columnPinning: ColumnPinningState;
   /** Pagination cursor and page size. */
   pagination: PaginationState;
+  /** Expanded row ids keyed by the resolved row id. */
+  expanded: ExpandedState;
+}
+
+/** Expanded row state shape emitted through `NatTableState`. */
+export type NatTableExpandedState = ExpandedState;
+
+/** Predicate used to decide whether a row can render expandable detail content. */
+export type NatTableRowExpandablePredicate<TData extends RowData = RowData> = (
+  row: TData,
+  index: number,
+) => boolean;
+
+/** Context exposed to expanded-row `TemplateRef`s. */
+export interface NatTableExpandedRowContext<TData extends RowData = RowData> {
+  /** Alias for `rowData` so templates can use `let-rowData`. */
+  $implicit: TData;
+  /** Original row object supplied in `data`. */
+  rowData: TData;
+  /** TanStack row instance for advanced interactions. */
+  row: Row<TData>;
+  /** Owning table instance. */
+  table: Table<TData>;
+  /** Collapses the current row. */
+  collapse: () => void;
 }
 
 /** Context passed to custom table summary formatters. */

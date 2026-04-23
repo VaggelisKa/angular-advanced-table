@@ -74,6 +74,13 @@ const columns: ColumnDef<Row, unknown>[] = [
 @Component({
   imports: [NatTable],
   template: `
+    <ng-template #expandedRow let-rowData let-collapse="collapse">
+      <div class="expanded-detail">
+        <span>{{ rowData.name }} diagnostics</span>
+        <button type="button" class="collapse-detail" (click)="collapse()">Collapse</button>
+      </div>
+    </ng-template>
+
     <nat-table
       [data]="rows()"
       [columns]="columns"
@@ -83,6 +90,8 @@ const columns: ColumnDef<Row, unknown>[] = [
       [allowColumnReorder]="allowColumnReorder"
       [enablePagination]="enablePagination"
       [getRowId]="getRowId"
+      [canExpandRow]="canExpandRow"
+      [expandedRow]="expandedRow"
       [accessibilityText]="accessibilityText"
       (stateChange)="onStateChange($event)"
     />
@@ -93,6 +102,7 @@ class TableHost {
   readonly state = signal<Partial<NatTableState>>({});
   readonly columns = columns;
   readonly getRowId = (row: Row) => row.id;
+  readonly canExpandRow = (row: Row) => row.status !== 'Healthy';
   initialState: Partial<NatTableState> = {
     sorting: [{ id: 'throughput', desc: true }],
     columnPinning: {
@@ -256,6 +266,30 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
   });
 
+  it('renders expanded row content for rows that can expand when expansion is uncontrolled', () => {
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+    const expandableRow = table.table.getRowModel().rows[0];
+
+    expect(expandableRow.getCanExpand()).toBe(true);
+    expect(fixture.nativeElement.querySelector('[data-expanded-row-for]')).toBeNull();
+
+    expandableRow.toggleExpanded();
+    fixture.detectChanges();
+
+    const expandedRow = fixture.nativeElement.querySelector(
+      `[data-expanded-row-for="${expandableRow.id}"]`,
+    ) as HTMLTableRowElement;
+
+    expect(expandedRow).toBeTruthy();
+    expect(expandedRow.textContent).toContain('Zeta diagnostics');
+    expect(host.stateEvents.at(-1)?.expanded).toEqual({
+      [expandableRow.id]: true,
+    });
+  });
+
   it('reorders visible center columns and emits the next column order when uncontrolled', async () => {
     await recreateHost({ allowColumnReorder: true });
     fixture.detectChanges();
@@ -269,7 +303,12 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
+      'name',
+      'status',
+      'region',
+      'throughput',
+    ]);
   });
 
   it('matches the stable row id during global filtering without requiring an id column', () => {
@@ -316,6 +355,33 @@ describe('NatTable', () => {
     expect(host.stateEvents.length).toBeGreaterThan(0);
   });
 
+  it('keeps controlled expanded state external while still emitting the requested next state', async () => {
+    await recreateHost({
+      state: {
+        expanded: {
+          'svc-00006': true,
+        },
+      },
+    });
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+    const expandableRow = table.table.getRowModel().rows[0];
+
+    expect(
+      fixture.nativeElement.querySelector(`[data-expanded-row-for="${expandableRow.id}"]`),
+    ).toBeTruthy();
+
+    expandableRow.toggleExpanded(false);
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector(`[data-expanded-row-for="${expandableRow.id}"]`),
+    ).toBeTruthy();
+    expect(host.stateEvents.at(-1)?.expanded).toEqual({});
+  });
+
   it('lets callers override accessibility summaries and live announcements', async () => {
     const accessibilityText: NatTableAccessibilityText = {
       reorderKeyboardInstructions: 'Brug Alt+Shift til at flytte kolonner.',
@@ -325,7 +391,8 @@ describe('NatTable', () => {
         visibleColumnsText,
         pageText,
         pageCountText,
-      }) => `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
+      }) =>
+        `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
       filteringChange: ({ query, visibleRowsText }) => `Filter ${query}:${visibleRowsText}`,
       sortingChange: ({ columnLabel, sortState }) => `Sortering ${columnLabel}:${sortState}`,
       pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
@@ -346,9 +413,7 @@ describe('NatTable', () => {
     const instructions = fixture.nativeElement.querySelector(
       `#${describedByIds.at(-1) ?? ''}`,
     ) as HTMLElement;
-    const liveRegion = fixture.nativeElement.querySelector(
-      'p[aria-live="polite"]',
-    ) as HTMLElement;
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
     const tableComponent = fixture.debugElement.query(By.directive(NatTable))
       .componentInstance as NatTable<Row>;
 
@@ -405,7 +470,12 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'region', 'status']);
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'region', 'status', 'throughput']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
+      'name',
+      'region',
+      'status',
+      'throughput',
+    ]);
   });
 
   it('keeps hidden columns in their stored order when they are shown again', async () => {
@@ -435,7 +505,12 @@ describe('NatTable', () => {
     });
     fixture.detectChanges();
 
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'throughput', 'status', 'region']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
+      'name',
+      'throughput',
+      'status',
+      'region',
+    ]);
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'status', 'region']);
   });
 
@@ -604,11 +679,7 @@ describe('NatTable', () => {
     @Component({
       imports: [NatTable],
       template: `
-        <nat-table
-          [data]="rows()"
-          [columns]="columns()"
-          ariaLabel="Operations table"
-        />
+        <nat-table [data]="rows()" [columns]="columns()" ariaLabel="Operations table" />
       `,
     })
     class DynamicColumnsHost {
@@ -656,7 +727,10 @@ function buildDynamicColumns(nameHeader: string): ColumnDef<Row, unknown>[] {
 }
 
 type NatTableInternals = NatTable<Row> & {
-  onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number]): void;
+  onHeaderDrop(
+    event: CdkDragDrop<string[]>,
+    headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number],
+  ): void;
 };
 
 function getInternalTable(fixture: ComponentFixture<TableHost>): NatTableInternals {
