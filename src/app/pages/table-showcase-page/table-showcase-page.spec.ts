@@ -32,7 +32,7 @@ describe('TableShowcasePage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should keep the default sort, no pinning, and page size', () => {
+  it('should start without seeded sorting, pinning, or custom pagination', () => {
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
@@ -47,13 +47,13 @@ describe('TableShowcasePage', () => {
       header.textContent?.includes('Chg %'),
     ) as HTMLElement;
 
-    expect(rows.length).toBe(24);
+    expect(rows.length).toBe(10);
     expect(firstMenuButton.getAttribute('aria-label')).toContain('Open column actions');
     expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
     expect(firstReorderableHeader).toBeTruthy();
-    expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
+    expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeFalsy();
     expect(
-      changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]'),
+      changeHeader.querySelector('.market-sort-indicator[data-sort-state="none"]'),
     ).toBeTruthy();
   });
 

@@ -306,18 +306,6 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   },
 ];
 
-const defaultTableState: Partial<NatTableState> = {
-  sorting: [{ id: 'changePercent', desc: true }],
-  columnPinning: {
-    left: [],
-    right: [],
-  },
-  pagination: {
-    pageIndex: 0,
-    pageSize: 24,
-  },
-};
-
 type ShowcaseTheme = 'light' | 'dark';
 type TableFeatureKey =
   | 'allowColumnPinning'
@@ -473,7 +461,6 @@ export class TableShowcasePage {
   );
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly canExpandRow = isTradeBriefRow;
-  protected readonly initialTableState = defaultTableState;
   protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
   protected readonly hasTopTableControls = computed(() => {
