@@ -149,6 +149,20 @@
   );
 }
 
+.expanded-row {
+  background: var(
+    --nat-table-expanded-row-background,
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 96%, currentColor 4%)
+  );
+}
+
+.expanded-row-cell {
+  padding: var(--nat-table-space-expanded-row, 18px 20px);
+  border-bottom: 1px solid
+    var(--nat-table-cell-border-color, color-mix(in srgb, currentColor 12%, transparent));
+  background: inherit;
+}
+
 .data-cell {
   transition: background-color 120ms ease;
 }

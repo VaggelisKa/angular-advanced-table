@@ -76,6 +76,7 @@
     </thead>
     <tbody>
       @let rows = bodyRows();
+      @let expandedRowTemplate = expandedRow();
       @if (rows.length) {
         @for (row of rows; track row.id) {
           @let visibleCells = row.getVisibleCells();
@@ -139,6 +140,16 @@
               }
             }
           </tr>
+          @if (expandedRowTemplate && isRowExpanded(row)) {
+            <tr ngGridRow class="expanded-row" [attr.data-expanded-row-for]="row.id">
+              <td ngGridCell class="expanded-row-cell" [colSpan]="emptyStateColSpan()">
+                <ng-container
+                  [ngTemplateOutlet]="expandedRowTemplate"
+                  [ngTemplateOutletContext]="getExpandedRowContext(row)"
+                />
+              </td>
+            </tr>
+          }
         }
       } @else {
         <tr ngGridRow>

@@ -17,10 +17,13 @@
     </div>
 
     <div class="topbar-actions">
-      <button type="button" class="btn btn-ghost" (click)="runManualPulse()">
-        Tick once
-      </button>
-      <button type="button" class="btn btn-ghost" data-testid="open-table-options" (click)="openFeatureDialog()">
+      <button type="button" class="btn btn-ghost" (click)="runManualPulse()">Tick once</button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        data-testid="open-table-options"
+        (click)="openFeatureDialog()"
+      >
         Table options
       </button>
       <button
@@ -40,12 +43,7 @@
           [attr.aria-pressed]="theme() === 'light'"
           (click)="setTheme('light')"
         >
-          <svg
-            class="theme-icon"
-            viewBox="0 0 16 16"
-            aria-hidden="true"
-            focusable="false"
-          >
+          <svg class="theme-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
             <circle cx="8" cy="8" r="3" />
             <path
               d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"
@@ -64,16 +62,8 @@
           [attr.aria-pressed]="theme() === 'dark'"
           (click)="setTheme('dark')"
         >
-          <svg
-            class="theme-icon"
-            viewBox="0 0 16 16"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              d="M13 9.5A5.5 5.5 0 1 1 6.5 3a4.5 4.5 0 0 0 6.5 6.5z"
-              fill="currentColor"
-            />
+          <svg class="theme-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M13 9.5A5.5 5.5 0 1 1 6.5 3a4.5 4.5 0 0 0 6.5 6.5z" fill="currentColor" />
           </svg>
           Dark
         </button>
@@ -219,6 +209,71 @@
         </nat-table-surface>
       }
 
+      <ng-template #tradeBriefRow let-rowData let-collapse="collapse">
+        @let brief = describeTradeBrief(rowData);
+        <section
+          class="trade-brief"
+          [attr.data-tone]="brief.tone"
+          [attr.aria-label]="'Trade brief for ' + rowData.symbol"
+        >
+          <div class="trade-brief-header">
+            <div class="trade-brief-copy">
+              <p class="trade-brief-kicker">{{ brief.label }}</p>
+              <h3 class="trade-brief-title">{{ rowData.symbol }} · {{ rowData.company }}</h3>
+              <p class="trade-brief-summary">{{ brief.summary }}</p>
+            </div>
+
+            <button type="button" class="btn btn-ghost trade-brief-dismiss" (click)="collapse()">
+              Collapse
+            </button>
+          </div>
+
+          <div class="trade-brief-stats" aria-label="Trade brief metrics">
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Price</span>
+              <strong class="trade-brief-stat-value">{{ formatCurrency(rowData.price) }}</strong>
+            </div>
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Session move</span>
+              <strong class="trade-brief-stat-value" [attr.data-tone]="brief.tone">
+                {{ formatSignedPercent(rowData.changePercent) }}
+              </strong>
+            </div>
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Turnover</span>
+              <strong class="trade-brief-stat-value">
+                {{ formatCurrency(rowData.turnoverMillions) }}M
+              </strong>
+            </div>
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Updated</span>
+              <strong class="trade-brief-stat-value">{{ formatTime(rowData.updatedAt) }}</strong>
+            </div>
+          </div>
+
+          <div class="trade-brief-grid">
+            <article class="trade-brief-card">
+              <h4>Catalyst</h4>
+              <p>{{ brief.catalyst }}</p>
+            </article>
+            <article class="trade-brief-card">
+              <h4>Playbook</h4>
+              <p>{{ brief.playbook }}</p>
+            </article>
+            <article class="trade-brief-card">
+              <h4>Risk</h4>
+              <p>{{ brief.risk }}</p>
+            </article>
+          </div>
+
+          <div class="trade-brief-tags" aria-label="Trade brief tags">
+            @for (tag of brief.tags; track tag) {
+              <span class="trade-brief-tag">{{ tag }}</span>
+            }
+          </div>
+        </section>
+      </ng-template>
+
       <nat-table-surface class="table-shell">
         @if (hasTablePaginationControls()) {
           <div class="table-toolbar">
@@ -241,6 +296,8 @@
           [enableGlobalFilter]="tableFeatures().enableGlobalFilter"
           [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
           [getRowId]="getRowId"
+          [canExpandRow]="canExpandRow"
+          [expandedRow]="tradeBriefRow"
           ariaLabel="Live market movers table"
           emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
           (stateChange)="onTableStateChange($event)"

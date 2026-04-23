@@ -1,11 +1,22 @@
-import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, input, signal, viewChild } from '@angular/core';
-import { Dialog, DialogRef } from '@angular/cdk/dialog';
-import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
-
 import {
-  NatTable,
-  type NatTableState,
-} from 'ng-advanced-table';
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { Dialog, DialogRef } from '@angular/cdk/dialog';
+import {
+  flexRenderComponent,
+  type ColumnDef,
+  type FilterFn,
+  type Row,
+} from '@tanstack/angular-table';
+
+import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePageSize,
@@ -79,6 +90,42 @@ const statusFilter: FilterFn<SimulationRow> = (row, columnId, filterValue) => {
   return selectedStatuses.includes(row.getValue(columnId) as SimulationStatus);
 };
 
+@Component({
+  selector: 'app-market-row-expand-toggle',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (row().getCanExpand()) {
+      <button
+        type="button"
+        class="row-expand-trigger"
+        [attr.aria-expanded]="row().getIsExpanded()"
+        [attr.aria-label]="toggleLabel()"
+        (click)="toggleRow()"
+      >
+        <span class="row-expand-trigger__chevron" aria-hidden="true"></span>
+        <span class="row-expand-trigger__label">
+          {{ row().getIsExpanded() ? 'Hide' : 'Brief' }}
+        </span>
+      </button>
+    } @else {
+      <span class="row-expand-empty" aria-hidden="true">-</span>
+    }
+  `,
+})
+class MarketRowExpandToggle {
+  readonly row = input.required<Row<SimulationRow>>();
+
+  protected toggleRow(): void {
+    this.row().toggleExpanded();
+  }
+
+  protected toggleLabel(): string {
+    return this.row().getIsExpanded()
+      ? `Collapse trade brief for ${this.row().original.symbol}`
+      : `Expand trade brief for ${this.row().original.symbol}`;
+  }
+}
+
 const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'symbol',
@@ -134,6 +181,23 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     enablePinning: true,
     filterFn: statusFilter,
     cell: (info) => info.getValue<string>(),
+  },
+  {
+    id: 'brief',
+    header: 'Brief',
+    size: 104,
+    minSize: 92,
+    meta: { label: 'Brief' },
+    enableSorting: false,
+    enableGlobalFilter: false,
+    enablePinning: false,
+    enableHiding: false,
+    cell: (info) =>
+      flexRenderComponent(MarketRowExpandToggle, {
+        inputs: {
+          row: info.row,
+        },
+      }),
   },
   {
     accessorKey: 'price',
@@ -390,7 +454,8 @@ class MarketSortIndicator {
 })
 export class TableShowcasePage {
   private readonly dialog = inject(Dialog);
-  private readonly featureDialogTemplate = viewChild.required<TemplateRef<unknown>>('featureDialog');
+  private readonly featureDialogTemplate =
+    viewChild.required<TemplateRef<unknown>>('featureDialog');
 
   protected readonly simulation = inject(TableSimulation);
   protected readonly datasetOptions = DATASET_OPTIONS;
@@ -407,6 +472,7 @@ export class TableShowcasePage {
     },
   );
   protected readonly getRowId = (row: SimulationRow) => row.id;
+  protected readonly canExpandRow = isTradeBriefRow;
   protected readonly initialTableState = defaultTableState;
   protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
@@ -540,11 +606,85 @@ export class TableShowcasePage {
     return compactFormatter.format(value);
   }
 
+  protected formatCurrency(value: number): string {
+    return currencyFormatter.format(value);
+  }
+
+  protected formatSignedPercent(value: number): string {
+    return `${signedPercentFormatter.format(value)}%`;
+  }
+
+  protected formatTime(value: number): string {
+    return timeFormatter.format(value);
+  }
+
+  protected describeTradeBrief(row: SimulationRow): SimulationTradeBrief {
+    return buildTradeBrief(row);
+  }
+
   private updateColumnFilter(columnId: string, value: unknown | null): void {
     this.tableState.update((currentState) => ({
       columnFilters: upsertColumnFilter(currentState.columnFilters ?? [], columnId, value),
     }));
   }
+}
+
+interface SimulationTradeBrief {
+  label: string;
+  tone: 'positive' | 'negative' | 'neutral' | 'warning';
+  summary: string;
+  catalyst: string;
+  playbook: string;
+  risk: string;
+  tags: readonly string[];
+}
+
+function isTradeBriefRow(row: SimulationRow): boolean {
+  if (row.status === 'Halted') {
+    return true;
+  }
+
+  if (Math.abs(row.changePercent) < 4.5) {
+    return false;
+  }
+
+  return row.desk === 'Momentum' || row.desk === 'Volatility';
+}
+
+function buildTradeBrief(row: SimulationRow): SimulationTradeBrief {
+  if (row.status === 'Halted') {
+    return {
+      label: 'Halt watch',
+      tone: 'warning',
+      summary: `${row.symbol} is paused after an abrupt move, so the desk is focused on the reopen auction and the first clean liquidity pocket.`,
+      catalyst: `Trading paused at ${timeFormatter.format(row.updatedAt)} after ${signedPercentFormatter.format(row.changePercent)}% versus the prior close on ${row.exchange}.`,
+      playbook: `Wait for the first resume print, then only engage if ${row.desk} flow re-establishes above ${currencyFormatter.format(row.previousClose)} with stable spreads.`,
+      risk: 'Gap reopens, headline-driven reversals, and thin prints can invalidate the first directional move.',
+      tags: ['Halt reopen', row.exchange, row.desk],
+    };
+  }
+
+  if (row.changePercent > 0) {
+    return {
+      label: 'Momentum continuation',
+      tone: 'positive',
+      summary: `${row.symbol} is printing a clean upside tape with volume confirmation, making it a candidate for continuation rather than a passive watch-only name.`,
+      catalyst: `${currencyFormatter.format(row.turnoverMillions)}M of turnover and ${compactFormatter.format(row.volume)} shares traded while the signal remains ${row.status.toLowerCase()}.`,
+      playbook: `Favor pullback entries near ${currencyFormatter.format(row.previousClose)} or the last higher-low sequence if ${row.desk} flow stays constructive.`,
+      risk: 'A failed push after a sharp extension can flip into fast profit-taking, especially around the next volume stall.',
+      tags: ['Upside continuation', row.exchange, row.desk],
+    };
+  }
+
+  return {
+    label: 'Washout alert',
+    tone: 'negative',
+    summary: `${row.symbol} is leaning lower with enough urgency to justify a concise desk brief instead of a simple row-level quote check.`,
+    catalyst: `${signedPercentFormatter.format(row.changePercent)}% on the session with ${compactFormatter.format(row.volume)} shares crossed and the tape still marked ${row.status.toLowerCase()}.`,
+    playbook: `Use ${currencyFormatter.format(row.previousClose)} as the decision level: failed reclaim keeps the short pressure in play, while a reclaim shifts the setup toward mean reversion.`,
+    risk: 'Oversold bounces can be violent when sell programs exhaust, so entries need tighter invalidation than normal.',
+    tags: ['Downside pressure', row.exchange, row.desk],
+  };
 }
 
 function readInitialTheme(): ShowcaseTheme {
