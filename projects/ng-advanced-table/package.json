@@ -1,6 +1,6 @@
 {
   "name": "ng-advanced-table",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Signals-first Angular data table primitives built on TanStack Table.",
   "repository": {
     "type": "git",

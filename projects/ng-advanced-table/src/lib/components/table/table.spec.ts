@@ -79,6 +79,13 @@ const columns: ColumnDef<Row, unknown>[] = [
 @Component({
   imports: [NatTable],
   template: `
+    <ng-template #expandedRow let-rowData let-collapse="collapse">
+      <div class="expanded-detail">
+        <span>{{ rowData.name }} diagnostics</span>
+        <button type="button" class="collapse-detail" (click)="collapse()">Collapse</button>
+      </div>
+    </ng-template>
+
     <nat-table
       [data]="rows()"
       [columns]="columns"
@@ -89,6 +96,8 @@ const columns: ColumnDef<Row, unknown>[] = [
       [enablePagination]="enablePagination"
       [virtualization]="virtualization"
       [getRowId]="getRowId"
+      [canExpandRow]="canExpandRow"
+      [expandedRow]="expandedRow"
       [accessibilityText]="accessibilityText"
       (stateChange)="onStateChange($event)"
     />
@@ -99,6 +108,7 @@ class TableHost {
   readonly state = signal<Partial<NatTableState>>({});
   readonly columns = columns;
   readonly getRowId = (row: Row) => row.id;
+  readonly canExpandRow = (row: Row) => row.status !== 'Healthy';
   initialState: Partial<NatTableState> = {
     sorting: [{ id: 'throughput', desc: true }],
     columnPinning: {
@@ -304,6 +314,30 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
   });
 
+  it('renders expanded row content for rows that can expand when expansion is uncontrolled', () => {
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+    const expandableRow = table.table.getRowModel().rows[0];
+
+    expect(expandableRow.getCanExpand()).toBe(true);
+    expect(fixture.nativeElement.querySelector('[data-expanded-row-for]')).toBeNull();
+
+    expandableRow.toggleExpanded();
+    fixture.detectChanges();
+
+    const expandedRow = fixture.nativeElement.querySelector(
+      `[data-expanded-row-for="${expandableRow.id}"]`,
+    ) as HTMLTableRowElement;
+
+    expect(expandedRow).toBeTruthy();
+    expect(expandedRow.textContent).toContain('Zeta diagnostics');
+    expect(host.stateEvents.at(-1)?.expanded).toEqual({
+      [expandableRow.id]: true,
+    });
+  });
+
   it('reorders visible center columns and emits the next column order when uncontrolled', async () => {
     await recreateHost({ allowColumnReorder: true });
     fixture.detectChanges();
@@ -367,6 +401,33 @@ describe('NatTable', () => {
 
     expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
     expect(host.stateEvents.length).toBeGreaterThan(0);
+  });
+
+  it('keeps controlled expanded state external while still emitting the requested next state', async () => {
+    await recreateHost({
+      state: {
+        expanded: {
+          'svc-00006': true,
+        },
+      },
+    });
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+    const expandableRow = table.table.getRowModel().rows[0];
+
+    expect(
+      fixture.nativeElement.querySelector(`[data-expanded-row-for="${expandableRow.id}"]`),
+    ).toBeTruthy();
+
+    expandableRow.toggleExpanded(false);
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector(`[data-expanded-row-for="${expandableRow.id}"]`),
+    ).toBeTruthy();
+    expect(host.stateEvents.at(-1)?.expanded).toEqual({});
   });
 
   it('lets callers override accessibility summaries and live announcements', async () => {

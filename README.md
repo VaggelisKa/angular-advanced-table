@@ -174,33 +174,35 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableVirtualizationOptions`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableVirtualizationOptions`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility types: `NatTableAccessibilityText`, `NatTableAccessibilitySummaryContext`, `NatTableAccessibilitySortingAnnouncementContext`, `NatTableAccessibilityFilteringAnnouncementContext`, `NatTableAccessibilityColumnVisibilityAnnouncementChange`, `NatTableAccessibilityColumnVisibilityAnnouncementContext`, `NatTableAccessibilityPaginationAnnouncementContext`, `NatTableAccessibilityColumnReorderAnnouncementContext`
 
 ## Core API
 
 ### Inputs
 
-| Input                  | Default                             | Notes                                                                   |
-| ---------------------- | ----------------------------------- | ----------------------------------------------------------------------- |
-| `data`                 | required                            | Row array rendered by the table                                         |
-| `columns`              | required                            | TanStack `ColumnDef<TData>[]`                                           |
-| `ariaLabel`            | required                            | Accessible name for the table region                                    |
-| `ariaDescription`      | `''`                                | Extra description announced with the grid                               |
-| `keyboardInstructions` | built-in text                       | Screen-reader instructions for cell navigation                          |
-| `accessibilityText`    | `{}`                                | Overrides summaries and live announcements                              |
-| `enableGlobalFilter`   | `true`                              | Enables the global filter pipeline                                      |
-| `allowColumnPinning`   | `true`                              | Enables sticky pinning where columns allow it                           |
-| `allowColumnReorder`   | `false`                             | Enables drag/drop and keyboard reordering                               |
-| `enablePagination`     | `false`                             | Enables the pagination row model                                        |
-| `virtualization`       | `null`                              | Enables CDK-backed fixed-size body-row virtualization with an auto-capped viewport |
-| `emptyStateLabel`      | `'No rows match the current view.'` | Empty-state copy                                                        |
-| `globalFilterFn`       | built-in filter                     | Replaces the generic global filter                                      |
-| `initialState`         | `{}`                                | Uncontrolled initial state, read once                                   |
-| `state`                | `{}`                                | Controlled slices only; omitted slices stay internal                    |
-| `getRowId`             | row index                           | Stable row id resolver for actions and metrics                          |
-| `emitRowRenderEvents`  | `false`                             | Enables `(rowRendered)` instrumentation                                 |
-| `enableAnnouncements`  | `true`                              | Enables polite live announcements                                       |
+| Input                  | Default                             | Notes                                                |
+| ---------------------- | ----------------------------------- | ---------------------------------------------------- |
+| `data`                 | required                            | Row array rendered by the table                      |
+| `columns`              | required                            | TanStack `ColumnDef<TData>[]`                        |
+| `ariaLabel`            | required                            | Accessible name for the table region                 |
+| `ariaDescription`      | `''`                                | Extra description announced with the grid            |
+| `keyboardInstructions` | built-in text                       | Screen-reader instructions for cell navigation       |
+| `accessibilityText`    | `{}`                                | Overrides summaries and live announcements           |
+| `enableGlobalFilter`   | `true`                              | Enables the global filter pipeline                   |
+| `allowColumnPinning`   | `true`                              | Enables sticky pinning where columns allow it        |
+| `allowColumnReorder`   | `false`                             | Enables drag/drop and keyboard reordering            |
+| `enablePagination`     | `false`                             | Enables the pagination row model                     |
+| `virtualization`       | `null`                              | Enables CDK-backed fixed-size body-row virtualization |
+| `emptyStateLabel`      | `'No rows match the current view.'` | Empty-state copy                                     |
+| `globalFilterFn`       | built-in filter                     | Replaces the generic global filter                   |
+| `initialState`         | `{}`                                | Uncontrolled initial state, read once                |
+| `state`                | `{}`                                | Controlled slices only; omitted slices stay internal |
+| `getRowId`             | row index                           | Stable row id resolver for actions and metrics       |
+| `canExpandRow`         | `undefined`                         | Optional predicate that marks which rows can expand  |
+| `expandedRow`          | `null`                              | Optional `TemplateRef` rendered below expanded rows  |
+| `emitRowRenderEvents`  | `false`                             | Enables `(rowRendered)` instrumentation              |
+| `enableAnnouncements`  | `true`                              | Enables polite live announcements                    |
 
 ### Outputs and instance API
 
@@ -223,6 +225,7 @@ Core exports:
 | `columnOrder`      | Leaf-column order                          |
 | `columnPinning`    | Left and right pinned column ids           |
 | `pagination`       | Page index and page size                   |
+| `expanded`         | Expanded row ids keyed by resolved row id  |
 
 ### `NatTableColumnMeta`
 
@@ -241,6 +244,8 @@ Attach metadata through `columnDef.meta`:
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
 - `virtualization` uses Angular CDK scrolling primitives with a fixed row height and mounts at most `maxRenderedRows` body rows at once. The default cap is `50`.
+- Rows become expandable when `expandedRow` is supplied. `canExpandRow` defaults to every row in that case.
+- Use TanStack row APIs such as `info.row.toggleExpanded()` or `table.getRow(rowId)?.toggleExpanded()` to open and close detail rows.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
 
@@ -267,6 +272,30 @@ Notes:
 
 - The body viewport is powered by Angular CDK virtual scrolling and auto-caps itself to the virtual row budget, so a `pageSize` of `100` still mounts only about `50` body rows by default.
 - Rows should stay at a consistent height. If your table uses a taller custom row layout, pass `rowHeight`.
+
+## Expandable Rows
+
+Use `expandedRow` to render a full-width detail panel below any expanded body row. The template receives `rowData`, `row`, `table`, and a `collapse()` helper.
+
+```html
+<ng-template #serviceDetail let-rowData let-collapse="collapse">
+  <section class="service-detail">
+    <h3>{{ rowData.service }}</h3>
+    <p>{{ rowData.summary }}</p>
+    <button type="button" (click)="collapse()">Close</button>
+  </section>
+</ng-template>
+
+<nat-table
+  [data]="rows()"
+  [columns]="columns"
+  [canExpandRow]="canExpandService"
+  [expandedRow]="serviceDetail"
+  ariaLabel="Service latency"
+/>
+```
+
+Call `info.row.toggleExpanded()` from a custom cell renderer or action button to reveal the detail row. Expansion participates in `NatTableState`, so `initialState.expanded` and controlled `state.expanded` both work.
 
 ## Accessibility Text Overrides
 

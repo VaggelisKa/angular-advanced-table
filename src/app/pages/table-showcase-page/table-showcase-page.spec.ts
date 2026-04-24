@@ -35,7 +35,7 @@ describe('TableShowcasePage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should keep the default sort, no pinning, and page size', () => {
+  it('should start without seeded sorting, pinning, or custom pagination', () => {
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
@@ -50,13 +50,13 @@ describe('TableShowcasePage', () => {
       header.textContent?.includes('Chg %'),
     ) as HTMLElement;
 
-    expect(rows.length).toBe(24);
+    expect(rows.length).toBe(10);
     expect(firstMenuButton.getAttribute('aria-label')).toContain('Open column actions');
     expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
     expect(firstReorderableHeader).toBeTruthy();
-    expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeTruthy();
+    expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeFalsy();
     expect(
-      changeHeader.querySelector('.market-sort-indicator[data-sort-state="desc"]'),
+      changeHeader.querySelector('.market-sort-indicator[data-sort-state="none"]'),
     ).toBeTruthy();
   });
 
@@ -112,14 +112,16 @@ describe('TableShowcasePage', () => {
     expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Exchange');
   });
 
-  it('should apply positive and negative tones to move cells', () => {
+  it('should apply semantic tones to move cells', () => {
     fixture.detectChanges();
 
-    const changePercentCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child td[data-column-id="changePercent"]',
-    ) as HTMLTableCellElement;
+    const changePercentCells = Array.from(
+      fixture.nativeElement.querySelectorAll('tbody td[data-column-id="changePercent"]'),
+    ) as HTMLTableCellElement[];
+    const tones = changePercentCells.map((cell) => cell.getAttribute('data-tone'));
 
-    expect(changePercentCell.getAttribute('data-tone')).toBe('positive');
+    expect(tones).toContain('negative');
+    expect(tones).toContain('warning');
   });
 
   it('should toggle between light and dark themes', () => {
@@ -155,7 +157,7 @@ describe('TableShowcasePage', () => {
       'tbody td[data-column-id="spark"] nat-sparkline svg',
     );
 
-    expect(sparkCells.length).toBe(24);
+    expect(sparkCells.length).toBe(10);
   });
 
   it('should render ticker marks in the symbol column', () => {
@@ -165,7 +167,7 @@ describe('TableShowcasePage', () => {
       'tbody th[data-column-id="symbol"] nat-ticker-mark',
     );
 
-    expect(marks.length).toBe(24);
+    expect(marks.length).toBe(10);
   });
 
   it('should offer a 100-row page size while keeping the virtual window capped at 50 rows', async () => {
@@ -198,6 +200,26 @@ describe('TableShowcasePage', () => {
     expect(tableNote.textContent).toContain('50 body rows');
   });
 
+  it('should expand actionable rows into a trade brief panel', () => {
+    fixture.detectChanges();
+
+    const expandTrigger = fixture.nativeElement.querySelector(
+      '.row-expand-trigger',
+    ) as HTMLButtonElement;
+
+    expect(expandTrigger).toBeTruthy();
+    expect(expandTrigger.getAttribute('aria-expanded')).toBe('false');
+
+    expandTrigger.click();
+    fixture.detectChanges();
+
+    const tradeBrief = fixture.nativeElement.querySelector('.trade-brief') as HTMLElement;
+
+    expect(tradeBrief).toBeTruthy();
+    expect(tradeBrief.textContent).toContain('Playbook');
+    expect(expandTrigger.getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('should render a three-dots actions menu in each visible row', async () => {
     fixture.detectChanges();
 
@@ -205,7 +227,7 @@ describe('TableShowcasePage', () => {
       'tbody td[data-column-id="actions"] .row-actions-trigger',
     ) as NodeListOf<HTMLButtonElement>;
 
-    expect(actionTriggers.length).toBe(24);
+    expect(actionTriggers.length).toBe(10);
 
     actionTriggers[0].click();
     fixture.detectChanges();

@@ -1,5 +1,12 @@
 # ng-advanced-table-utils
 
+## 1.0.3
+
+### Patch Changes
+
+- 3da05b9: Update the GitHub Actions CI and release workflows to use the latest `actions/checkout`
+  and `actions/setup-node` majors, and move the Node.js runtime from 22 to 24.
+
 ## 1.0.2
 
 ### Patch Changes

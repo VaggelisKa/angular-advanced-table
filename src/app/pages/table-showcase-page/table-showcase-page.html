@@ -217,6 +217,71 @@
         </nat-table-surface>
       }
 
+      <ng-template #tradeBriefRow let-rowData let-collapse="collapse">
+        @let brief = describeTradeBrief(rowData);
+        <section
+          class="trade-brief"
+          [attr.data-tone]="brief.tone"
+          [attr.aria-label]="'Trade brief for ' + rowData.symbol"
+        >
+          <div class="trade-brief-header">
+            <div class="trade-brief-copy">
+              <p class="trade-brief-kicker">{{ brief.label }}</p>
+              <h3 class="trade-brief-title">{{ rowData.symbol }} · {{ rowData.company }}</h3>
+              <p class="trade-brief-summary">{{ brief.summary }}</p>
+            </div>
+
+            <button type="button" class="btn btn-ghost trade-brief-dismiss" (click)="collapse()">
+              Collapse
+            </button>
+          </div>
+
+          <div class="trade-brief-stats" aria-label="Trade brief metrics">
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Price</span>
+              <strong class="trade-brief-stat-value">{{ formatCurrency(rowData.price) }}</strong>
+            </div>
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Session move</span>
+              <strong class="trade-brief-stat-value" [attr.data-tone]="brief.tone">
+                {{ formatSignedPercent(rowData.changePercent) }}
+              </strong>
+            </div>
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Turnover</span>
+              <strong class="trade-brief-stat-value">
+                {{ formatCurrency(rowData.turnoverMillions) }}M
+              </strong>
+            </div>
+            <div class="trade-brief-stat">
+              <span class="trade-brief-stat-label">Updated</span>
+              <strong class="trade-brief-stat-value">{{ formatTime(rowData.updatedAt) }}</strong>
+            </div>
+          </div>
+
+          <div class="trade-brief-grid">
+            <article class="trade-brief-card">
+              <h4>Catalyst</h4>
+              <p>{{ brief.catalyst }}</p>
+            </article>
+            <article class="trade-brief-card">
+              <h4>Playbook</h4>
+              <p>{{ brief.playbook }}</p>
+            </article>
+            <article class="trade-brief-card">
+              <h4>Risk</h4>
+              <p>{{ brief.risk }}</p>
+            </article>
+          </div>
+
+          <div class="trade-brief-tags" aria-label="Trade brief tags">
+            @for (tag of brief.tags; track tag) {
+              <span class="trade-brief-tag">{{ tag }}</span>
+            }
+          </div>
+        </section>
+      </ng-template>
+
       <nat-table-surface class="table-shell">
         @if (hasTablePaginationControls()) {
           <div class="table-toolbar">
@@ -232,7 +297,6 @@
           [data]="simulation.rows()"
           [columns]="columns"
           [state]="tableState()"
-          [initialState]="initialTableState"
           [allowColumnPinning]="tableFeatures().allowColumnPinning"
           [allowColumnReorder]="tableFeatures().allowColumnReorder"
           [enablePagination]="tableFeatures().enablePagination"
@@ -240,6 +304,8 @@
           [enableGlobalFilter]="tableFeatures().enableGlobalFilter"
           [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
           [getRowId]="getRowId"
+          [canExpandRow]="canExpandRow"
+          [expandedRow]="tradeBriefRow"
           ariaLabel="Live market movers table"
           emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
           (stateChange)="onTableStateChange($event)"
