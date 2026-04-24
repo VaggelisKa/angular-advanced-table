@@ -670,6 +670,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.table-card-note {
+  flex-basis: 100%;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+
 .table-controls-surface,
 .table-shell {
   display: block;

@@ -189,6 +189,14 @@
             {{ formatInteger(simulation.rows().length) }} instruments · updated
             {{ lastTickLabel() }}
           </span>
+          <span class="table-card-note">
+            @if (tableFeatures().enableVirtualization) {
+              Virtual window keeps up to 50 body rows mounted. Pick 100 rows per page or disable
+              pagination to stress it.
+            } @else {
+              Virtualization is off, so the full current row model stays mounted.
+            }
+          </span>
         </div>
       </div>
 
@@ -292,6 +300,7 @@
           [allowColumnPinning]="tableFeatures().allowColumnPinning"
           [allowColumnReorder]="tableFeatures().allowColumnReorder"
           [enablePagination]="tableFeatures().enablePagination"
+          [virtualization]="tableVirtualization()"
           [enableGlobalFilter]="tableFeatures().enableGlobalFilter"
           [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
           [getRowId]="getRowId"
@@ -350,6 +359,15 @@
             (change)="toggleFeature('enablePagination', readChecked($event))"
           />
           <span>Pagination controls</span>
+        </label>
+
+        <label class="feature-toggle" data-feature="enableVirtualization">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().enableVirtualization"
+            (change)="toggleFeature('enableVirtualization', readChecked($event))"
+          />
+          <span>Virtualize body rows</span>
         </label>
 
         <label class="feature-toggle" data-feature="enableGlobalFilter">

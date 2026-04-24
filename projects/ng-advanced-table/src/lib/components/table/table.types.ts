@@ -59,6 +59,23 @@ export interface NatTableExpandedRowContext<TData extends RowData = RowData> {
   collapse: () => void;
 }
 
+/** Fixed-size row virtualization options for {@link NatTable}. */
+export interface NatTableVirtualizationOptions {
+  /**
+   * Fixed row height in CSS pixels.
+   *
+   * When omitted, the table measures the first rendered body row and falls
+   * back to a conservative default until that measurement is available.
+   */
+  rowHeight?: number;
+  /**
+   * Maximum number of body rows kept mounted at once.
+   *
+   * Defaults to `50`.
+   */
+  maxRenderedRows?: number;
+}
+
 /** Context passed to custom table summary formatters. */
 export interface NatTableAccessibilitySummaryContext {
   /** Rows currently rendered in the body. */

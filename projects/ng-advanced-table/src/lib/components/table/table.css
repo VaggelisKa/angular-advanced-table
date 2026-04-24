@@ -10,10 +10,45 @@
     var(--nat-table-region-border-color, color-mix(in srgb, currentColor 12%, transparent));
   border-radius: var(--nat-table-radius-region, 16px);
   background: var(--nat-table-region-background, transparent);
+  overscroll-behavior: contain;
 }
 
 .table-region:focus-within {
   border-color: var(--nat-table-focus-ring-color, Highlight);
+}
+
+.virtual-table-region {
+  overflow: hidden;
+}
+
+.virtual-header-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.virtual-header-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.virtual-body-viewport {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.virtual-header-row,
+.virtual-body-row {
+  display: grid;
+  min-width: max-content;
+  width: max-content;
+}
+
+.virtual-header-row {
+  min-width: 100%;
+}
+
+.virtual-body-row {
+  min-width: 100%;
 }
 
 .data-table {
@@ -230,6 +265,10 @@
   color: var(--nat-table-empty-state-color, color-mix(in srgb, currentColor 72%, transparent));
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
+}
+
+.virtual-empty-state {
+  grid-column: 1 / -1;
 }
 
 [ngGridCell]:focus-visible {

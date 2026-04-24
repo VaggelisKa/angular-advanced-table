@@ -16,7 +16,11 @@ import {
   type Row,
 } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import {
+  NatTable,
+  type NatTableState,
+  type NatTableVirtualizationOptions,
+} from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePageSize,
@@ -311,6 +315,7 @@ type TableFeatureKey =
   | 'allowColumnPinning'
   | 'allowColumnReorder'
   | 'enablePagination'
+  | 'enableVirtualization'
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
   | 'showRenderMetrics';
@@ -319,6 +324,7 @@ interface TableFeatureConfig {
   allowColumnPinning: boolean;
   allowColumnReorder: boolean;
   enablePagination: boolean;
+  enableVirtualization: boolean;
   enableGlobalFilter: boolean;
   showColumnVisibility: boolean;
   showRenderMetrics: boolean;
@@ -328,6 +334,7 @@ const defaultTableFeatures: TableFeatureConfig = {
   allowColumnPinning: true,
   allowColumnReorder: true,
   enablePagination: true,
+  enableVirtualization: true,
   enableGlobalFilter: true,
   showColumnVisibility: true,
   showRenderMetrics: true,
@@ -469,6 +476,13 @@ export class TableShowcasePage {
   });
   protected readonly hasTablePaginationControls = computed(
     () => this.tableFeatures().enablePagination,
+  );
+  protected readonly tableVirtualization = computed<NatTableVirtualizationOptions | null>(() =>
+    this.tableFeatures().enableVirtualization
+      ? {
+          maxRenderedRows: 50,
+        }
+      : null,
   );
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],

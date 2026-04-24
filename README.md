@@ -174,7 +174,7 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableVirtualizationOptions`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility types: `NatTableAccessibilityText`, `NatTableAccessibilitySummaryContext`, `NatTableAccessibilitySortingAnnouncementContext`, `NatTableAccessibilityFilteringAnnouncementContext`, `NatTableAccessibilityColumnVisibilityAnnouncementChange`, `NatTableAccessibilityColumnVisibilityAnnouncementContext`, `NatTableAccessibilityPaginationAnnouncementContext`, `NatTableAccessibilityColumnReorderAnnouncementContext`
 
 ## Core API
@@ -193,6 +193,7 @@ Core exports:
 | `allowColumnPinning`   | `true`                              | Enables sticky pinning where columns allow it        |
 | `allowColumnReorder`   | `false`                             | Enables drag/drop and keyboard reordering            |
 | `enablePagination`     | `false`                             | Enables the pagination row model                     |
+| `virtualization`       | `null`                              | Enables CDK-backed fixed-size body-row virtualization |
 | `emptyStateLabel`      | `'No rows match the current view.'` | Empty-state copy                                     |
 | `globalFilterFn`       | built-in filter                     | Replaces the generic global filter                   |
 | `initialState`         | `{}`                                | Uncontrolled initial state, read once                |
@@ -242,10 +243,35 @@ Attach metadata through `columnDef.meta`:
 - A slice is controlled only when that property is present in `state`.
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
+- `virtualization` uses Angular CDK scrolling primitives with a fixed row height and mounts at most `maxRenderedRows` body rows at once. The default cap is `50`.
 - Rows become expandable when `expandedRow` is supplied. `canExpandRow` defaults to every row in that case.
 - Use TanStack row APIs such as `info.row.toggleExpanded()` or `table.getRow(rowId)?.toggleExpanded()` to open and close detail rows.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
+
+### Virtualization
+
+Use `virtualization` when the current row model can grow large enough that you do not want every body row mounted at once.
+
+```ts
+readonly virtualization = {
+  maxRenderedRows: 50,
+};
+```
+
+```html
+<nat-table
+  [data]="rows()"
+  [columns]="columns"
+  [virtualization]="virtualization"
+  ariaLabel="Orders"
+/>
+```
+
+Notes:
+
+- The body viewport is powered by Angular CDK virtual scrolling and auto-caps itself to the virtual row budget, so a `pageSize` of `100` still mounts only about `50` body rows by default.
+- Rows should stay at a consistent height. If your table uses a taller custom row layout, pass `rowHeight`.
 
 ## Expandable Rows
 

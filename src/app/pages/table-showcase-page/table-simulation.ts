@@ -69,7 +69,7 @@ export const SIMULATION_PROFILES = {
 } satisfies Record<SimulationProfile, SimulationProfilePreset>;
 
 export const DATASET_OPTIONS = [2000, 12000, 25000] as const;
-export const PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
+export const PAGE_SIZE_OPTIONS = [12, 24, 48, 100] as const;
 
 const EXCHANGES = ['NASDAQ', 'NYSE', 'IEX', 'CBOE'] as const;
 const DESKS = ['Momentum', 'Macro', 'Quant', 'Delta One', 'Volatility'] as const;
@@ -143,10 +143,7 @@ export class TableSimulation {
         return;
       }
 
-      const timer = globalThis.setInterval(
-        () => this.pulse(),
-        this.profilePreset().tickIntervalMs,
-      );
+      const timer = globalThis.setInterval(() => this.pulse(), this.profilePreset().tickIntervalMs);
 
       onCleanup(() => globalThis.clearInterval(timer));
     });
@@ -210,8 +207,8 @@ function buildDataset(size: number): SimulationRow[] {
   return Array.from({ length: size }, (_, index) => {
     const instrument = INSTRUMENTS[index % INSTRUMENTS.length];
     const seriesNumber = Math.floor(index / INSTRUMENTS.length) + 1;
-    const previousClose = roundToCents(18 + ((index * 19) % 380) + ((index % 7) * 0.37));
-    const changePercent = roundToHundredths((((index * 37) % 1400) / 100) - 7);
+    const previousClose = roundToCents(18 + ((index * 19) % 380) + (index % 7) * 0.37);
+    const changePercent = roundToHundredths(((index * 37) % 1400) / 100 - 7);
     const price = roundToCents(previousClose * (1 + changePercent / 100));
     const change = roundToCents(price - previousClose);
     const volume = 150_000 + ((index * 91_713) % 22_000_000);
@@ -239,11 +236,7 @@ function buildDataset(size: number): SimulationRow[] {
   });
 }
 
-function seedPriceHistory(
-  index: number,
-  previousClose: number,
-  currentPrice: number,
-): number[] {
+function seedPriceHistory(index: number, previousClose: number, currentPrice: number): number[] {
   const amplitude = Math.max(previousClose * 0.025, 0.3);
   const phase = (index % 11) * 0.41;
   const drift = (currentPrice - previousClose) / Math.max(SPARK_HISTORY_LENGTH - 1, 1);
@@ -300,8 +293,7 @@ function mutateRows(
 }
 
 function mutateRow(row: SimulationRow, now: number): SimulationRow {
-  const staysHalted =
-    row.status === 'Halted' ? Math.random() < 0.72 : Math.random() < 0.018;
+  const staysHalted = row.status === 'Halted' ? Math.random() < 0.72 : Math.random() < 0.018;
   const priceStep = Math.max(row.previousClose * 0.035, 0.18);
   const price = staysHalted
     ? row.price

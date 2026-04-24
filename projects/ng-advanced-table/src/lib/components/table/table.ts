@@ -19,6 +19,11 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import {
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
+import {
   FlexRender,
   createAngularTable,
   getCoreRowModel,
@@ -59,6 +64,7 @@ import type {
   NatTableExpandedRowContext,
   NatTableRowExpandablePredicate,
   NatTableState,
+  NatTableVirtualizationOptions,
 } from './table.types';
 
 type TableRowIdGetter<TData> = (row: TData, index: number) => string;
@@ -93,6 +99,11 @@ interface TableAccessibilitySnapshot {
   columns: TableColumnAccessibilityState[];
 }
 
+interface ResolvedTableVirtualizationOptions {
+  rowHeight: number;
+  maxRenderedRows: number;
+}
+
 const EMPTY_COLUMN_PINNING: ColumnPinningState = {
   left: [],
   right: [],
@@ -114,6 +125,8 @@ const DEFAULT_TABLE_STATE: NatTableState = {
 };
 const REORDER_KEYBOARD_INSTRUCTIONS =
   'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.';
+const DEFAULT_VIRTUAL_ROW_HEIGHT = 40;
+const DEFAULT_MAX_RENDERED_ROWS = 50;
 let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
@@ -145,6 +158,9 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
     GridRow,
     CdkDropList,
     CdkDrag,
+    CdkVirtualScrollViewport,
+    CdkFixedSizeVirtualScroll,
+    CdkVirtualForOf,
     FlexRender,
     NatTableRowRenderEmitter,
   ],
@@ -175,6 +191,13 @@ export class NatTable<TData extends RowData = RowData> {
   readonly allowColumnReorder = input(false, { transform: booleanAttribute });
   /** Enables client-side pagination row models when external UI drives pagination state. */
   readonly enablePagination = input(false, { transform: booleanAttribute });
+  /**
+   * Enables fixed-size row virtualization for the current body row model.
+   *
+   * The viewport height auto-caps itself to the configured row budget so the
+   * table keeps a compact scroll window without requiring extra wrappers.
+   */
+  readonly virtualization = input<NatTableVirtualizationOptions | null>(null);
   /** Message rendered when the current view contains no rows. */
   readonly emptyStateLabel = input('No rows match the current view.');
   /** Optional override for the global filter implementation. */
@@ -222,6 +245,8 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   private readonly internalExpanded = signal<ExpandedState>(DEFAULT_TABLE_STATE.expanded);
   private readonly hasSeededInitialState = signal(false);
+  private readonly virtualScrollIndex = signal(0);
+  private readonly measuredBodyRowHeight = signal<number | null>(null);
   protected readonly liveMessage = signal('');
   protected readonly generatedTableId = `nat-table-${nextTableId++}`;
   protected readonly tableSummaryId = `${this.generatedTableId}-summary`;
@@ -264,6 +289,28 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly bodyRows = computed(() => this.table.getRowModel().rows);
   private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
   protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
+  protected readonly resolvedVirtualization = computed<ResolvedTableVirtualizationOptions | null>(
+    () => {
+      const virtualization = this.virtualization();
+
+      if (!virtualization) {
+        return null;
+      }
+
+      return {
+        rowHeight:
+          normalizePositiveNumber(virtualization.rowHeight) ??
+          this.measuredBodyRowHeight() ??
+          DEFAULT_VIRTUAL_ROW_HEIGHT,
+        maxRenderedRows: Math.max(
+          Math.floor(
+            normalizePositiveNumber(virtualization.maxRenderedRows) ?? DEFAULT_MAX_RENDERED_ROWS,
+          ),
+          1,
+        ),
+      };
+    },
+  );
   protected readonly mergedState = computed<NatTableState>(() => ({
     sorting: this.state().sorting ?? this.internalSorting(),
     globalFilter: this.enableGlobalFilter()
@@ -279,6 +326,9 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   protected readonly visibleRowCount = computed(() => this.bodyRows().length);
   protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
+  protected readonly tableAriaRowCount = computed(
+    () => this.headerGroups().length + this.visibleRowCount(),
+  );
   protected readonly pageCount = computed(() =>
     this.enablePagination() ? Math.max(this.table.getPageCount(), 1) : 1,
   );
@@ -292,6 +342,49 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly leafHeaderRowId = computed(
     () => this.table.getHeaderGroups().at(-1)?.id ?? null,
   );
+  protected readonly isVirtualized = computed(() => {
+    const virtualization = this.resolvedVirtualization();
+
+    return !!virtualization && this.bodyRows().length > virtualization.maxRenderedRows;
+  });
+  protected readonly virtualViewportHeight = computed(() => {
+    const virtualization = this.resolvedVirtualization();
+
+    if (!virtualization || !this.isVirtualized()) {
+      return null;
+    }
+
+    return Math.min(this.visibleRowCount(), virtualization.maxRenderedRows) * virtualization.rowHeight;
+  });
+  protected readonly virtualMinBufferPx = computed(() => 0);
+  protected readonly virtualMaxBufferPx = computed(() => 0);
+  protected readonly gridTemplateColumns = computed(() =>
+    this.visibleColumns()
+      .map((column) => `${this.resolvedColumnWidths()[column.id] ?? Math.max(column.getSize(), 1)}px`)
+      .join(' '),
+  );
+  private readonly renderCycleKey = computed(() => {
+    const rows = this.bodyRows();
+
+    if (!this.isVirtualized()) {
+      return rows.map((row) => row.id).join('|');
+    }
+
+    const virtualization = this.resolvedVirtualization();
+
+    if (!virtualization) {
+      return rows.map((row) => row.id).join('|');
+    }
+
+    const renderedCount = Math.min(rows.length, virtualization.maxRenderedRows);
+    const maxStartIndex = Math.max(rows.length - renderedCount, 0);
+    const startIndex = clamp(this.virtualScrollIndex(), 0, maxStartIndex);
+
+    return rows
+      .slice(startIndex, startIndex + renderedCount)
+      .map((row) => row.id)
+      .join('|');
+  });
   protected readonly ariaDescribedBy = computed(() => {
     const ids: string[] = [this.tableSummaryId];
 
@@ -339,7 +432,16 @@ export class NatTable<TData extends RowData = RowData> {
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
     onExpandedChange: (updater) => this.updateState({ expanded: updater }),
   })) as Table<TData>;
-  private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
+  private readonly tableRegionRef = viewChild('tableRegion', {
+    read: ElementRef,
+  });
+  private readonly virtualHeaderRegionRef = viewChild('virtualHeaderRegion', {
+    read: ElementRef,
+  });
+  private readonly virtualBodyRegionRef = viewChild('virtualBodyRegion', {
+    read: ElementRef,
+  });
+  private readonly virtualViewportRef = viewChild(CdkVirtualScrollViewport);
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
   private readonly destroyRef = inject(DestroyRef);
   private headerResizeObserver: ResizeObserver | null = null;
@@ -470,10 +572,27 @@ export class NatTable<TData extends RowData = RowData> {
         return;
       }
 
-      this.bodyRows();
+      this.renderCycleKey();
 
       this.renderCycleStartedAt.set(performance.now());
       this.renderCycleToken.update((token) => token + 1);
+    });
+
+    effect(() => {
+      if (!this.isVirtualized()) {
+        return;
+      }
+
+      const state = this.mergedState();
+
+      serializeSorting(state.sorting);
+      state.globalFilter.trim();
+      serializeColumnFilters(state.columnFilters);
+      state.pagination.pageIndex;
+      state.pagination.pageSize;
+
+      this.virtualViewportRef()?.scrollToIndex(0);
+      this.virtualScrollIndex.set(0);
     });
 
     effect(() => {
@@ -497,10 +616,26 @@ export class NatTable<TData extends RowData = RowData> {
       }
     });
 
-    afterNextRender(() => this.initializeHeaderObservation());
+    afterNextRender(() => {
+      this.initializeHeaderObservation();
+      this.measureBodyRowHeight();
+    });
     afterRenderEffect(() => {
       this.visibleColumnIds();
       this.reattachHeaderObservers();
+    });
+    afterRenderEffect(() => {
+      if (!this.isVirtualized()) {
+        return;
+      }
+
+      this.virtualViewportHeight();
+      this.resolvedVirtualization()?.rowHeight;
+      this.virtualViewportRef()?.checkViewportSize();
+    });
+    afterRenderEffect(() => {
+      this.renderCycleKey();
+      this.measureBodyRowHeight();
     });
 
     this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
@@ -525,6 +660,34 @@ export class NatTable<TData extends RowData = RowData> {
 
   protected isLeafHeaderRow(headerGroup: HeaderGroup<TData>): boolean {
     return headerGroup.id === this.leafHeaderRowId();
+  }
+
+  protected getHeaderAriaRowIndex(headerRowIndex: number): number {
+    return headerRowIndex + 1;
+  }
+
+  protected getBodyAriaRowIndex(bodyRowIndex: number): number {
+    return this.headerGroups().length + bodyRowIndex + 1;
+  }
+
+  protected trackVirtualRow(_index: number, row: Row<TData>): string {
+    return row.id;
+  }
+
+  protected onVirtualScrollIndexChange(index: number): void {
+    if (this.virtualScrollIndex() === index) {
+      return;
+    }
+
+    this.virtualScrollIndex.set(index);
+  }
+
+  protected onVirtualBodyScroll(event: Event): void {
+    this.syncVirtualScrollLeft((event.currentTarget as HTMLElement).scrollLeft, 'body');
+  }
+
+  protected onVirtualHeaderScroll(event: Event): void {
+    this.syncVirtualScrollLeft((event.currentTarget as HTMLElement).scrollLeft, 'header');
   }
 
   protected getHeaderRowColumnIds(headerGroup: HeaderGroup<TData>): string[] {
@@ -845,6 +1008,18 @@ export class NatTable<TData extends RowData = RowData> {
       .map((column) => column.id);
   }
 
+  private syncVirtualScrollLeft(scrollLeft: number, source: 'body' | 'header'): void {
+    const header = this.virtualHeaderRegionRef()?.nativeElement as HTMLElement | undefined;
+    const body = this.virtualBodyRegionRef()?.nativeElement as HTMLElement | undefined;
+    const target = source === 'body' ? header : body;
+
+    if (!target || Math.round(target.scrollLeft) === Math.round(scrollLeft)) {
+      return;
+    }
+
+    target.scrollLeft = scrollLeft;
+  }
+
   private initializeHeaderObservation(): void {
     if (typeof ResizeObserver === 'undefined' || this.headerResizeObserver) {
       return;
@@ -856,7 +1031,7 @@ export class NatTable<TData extends RowData = RowData> {
 
   private reattachHeaderObservers(): void {
     const observer = this.headerResizeObserver;
-    const region = this.tableRegionRef()?.nativeElement;
+    const region = this.tableRegionRef()?.nativeElement as HTMLElement | undefined;
 
     if (!observer || !region) {
       return;
@@ -874,13 +1049,13 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private measureHeaderWidths(): void {
-    const region = this.tableRegionRef()?.nativeElement;
+    const region = this.tableRegionRef()?.nativeElement as HTMLElement | undefined;
 
     if (!region) {
       return;
     }
 
-    const headerCells = region.querySelectorAll<HTMLTableCellElement>('thead th[data-column-id]');
+    const headerCells = region.querySelectorAll<HTMLElement>('[data-column-id].header-cell');
     const next: Record<string, number> = {};
 
     for (const cell of headerCells) {
@@ -893,11 +1068,29 @@ export class NatTable<TData extends RowData = RowData> {
       next[columnId] = cell.getBoundingClientRect().width;
     }
 
-    if (hasSameWidths(this.measuredHeaderWidths(), next)) {
+    if (!hasSameWidths(this.measuredHeaderWidths(), next)) {
+      this.measuredHeaderWidths.set(next);
+    }
+  }
+
+  private measureBodyRowHeight(): void {
+    const region = this.tableRegionRef()?.nativeElement as HTMLElement | undefined;
+
+    if (!region) {
       return;
     }
 
-    this.measuredHeaderWidths.set(next);
+    const nextRowHeight = Math.round(
+      region.querySelector<HTMLTableRowElement>('tbody tr.data-row')?.getBoundingClientRect()
+        .height ?? 0,
+    );
+    const resolvedRowHeight = nextRowHeight > 0 ? nextRowHeight : null;
+
+    if (this.measuredBodyRowHeight() === resolvedRowHeight) {
+      return;
+    }
+
+    this.measuredBodyRowHeight.set(resolvedRowHeight);
   }
 
   private buildTableSummary(): string {
@@ -1365,6 +1558,14 @@ function hasSameWidths(left: Record<string, number>, right: Record<string, numbe
   }
 
   return true;
+}
+
+function normalizePositiveNumber(value: number | undefined): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
 
 function resolveColumnLabel<TData extends RowData>(column: Column<TData, unknown>): string {

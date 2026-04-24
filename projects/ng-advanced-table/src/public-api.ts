@@ -17,4 +17,5 @@ export type {
   NatTableSortDirection,
   NatTableSortIndicatorContext,
   NatTableState,
+  NatTableVirtualizationOptions,
 } from './lib/components/table/table.types';
