@@ -52,10 +52,12 @@
     color var(--nat-table-transition-medium, 180ms ease);
 }
 
-.chip:hover:not(:disabled) {
-  background: var(--nat-table-chip-background-hover, transparent);
-  border-color: var(--nat-table-chip-border-color-hover, currentColor);
-  transform: var(--nat-table-hover-lift, translateY(-1px));
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover:not(:disabled) {
+    background: var(--nat-table-chip-background-hover, transparent);
+    border-color: var(--nat-table-chip-border-color-hover, currentColor);
+    transform: var(--nat-table-hover-lift, translateY(-1px));
+  }
 }
 
 .chip.is-active {

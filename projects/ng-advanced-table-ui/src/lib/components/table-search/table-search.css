@@ -33,8 +33,10 @@
   color: var(--nat-table-search-placeholder-color, currentColor);
 }
 
-.search-input:hover {
-  border-color: var(--nat-table-search-border-color-hover, currentColor);
+@media (hover: hover) and (pointer: fine) {
+  .search-input:hover {
+    border-color: var(--nat-table-search-border-color-hover, currentColor);
+  }
 }
 
 .search-input:focus {

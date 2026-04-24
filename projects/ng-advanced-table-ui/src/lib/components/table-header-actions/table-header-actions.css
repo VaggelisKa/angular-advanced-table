@@ -64,19 +64,54 @@
   cursor: pointer;
 }
 
-.sort-button:hover {
-  transform: var(--nat-table-hover-lift, translateY(-1px));
-}
-
 .sort-button.is-sorted {
   color: var(--nat-table-sort-button-color-sorted, inherit);
 }
 
-.menu-button:hover,
+@media (hover: hover) and (pointer: fine) {
+  .sort-button:hover {
+    transform: var(--nat-table-hover-lift, translateY(-1px));
+  }
+
+  .menu-button:hover {
+    color: inherit;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .sort-button:hover:not([disabled]) .nat-default-sort {
+    background: var(
+      --nat-table-sort-icon-chip-background-hover,
+      color-mix(in srgb, currentColor 8%, transparent)
+    );
+  }
+
+  .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
+  .sort-button:hover:not([disabled])
+    .nat-default-sort[data-sort-state='none']
+    .nat-default-sort__down {
+    fill: var(
+      --nat-table-sort-icon-color-hover,
+      color-mix(in srgb, currentColor 78%, transparent)
+    );
+  }
+
+  .column-menu-item:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    outline: none;
+  }
+}
+
 .menu-button[aria-expanded='true'] {
   color: inherit;
   background: color-mix(in srgb, currentColor 8%, transparent);
   transform: translateY(-1px);
+}
+
+.column-menu-item[data-active='true'],
+.column-menu-item:focus-visible {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  outline: none;
 }
 
 .sort-button:focus-visible,
@@ -114,13 +149,6 @@
     box-shadow var(--nat-table-transition-fast, 120ms ease);
 }
 
-.sort-button:hover:not([disabled]) .nat-default-sort {
-  background: var(
-    --nat-table-sort-icon-chip-background-hover,
-    color-mix(in srgb, currentColor 8%, transparent)
-  );
-}
-
 .nat-default-sort[data-sort-state='asc'],
 .nat-default-sort[data-sort-state='desc'] {
   background: var(
@@ -147,13 +175,6 @@
     fill var(--nat-table-transition-fast, 120ms ease),
     opacity var(--nat-table-transition-fast, 120ms ease),
     transform var(--nat-table-transition-fast, 120ms ease);
-}
-
-.sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
-.sort-button:hover:not([disabled])
-  .nat-default-sort[data-sort-state='none']
-  .nat-default-sort__down {
-  fill: var(--nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent));
 }
 
 /* Sorted: active direction is the accent color; inactive direction fades back. */
@@ -217,13 +238,6 @@
     background-color var(--nat-table-transition-fast, 120ms ease),
     color var(--nat-table-transition-fast, 120ms ease),
     transform var(--nat-table-transition-fast, 120ms ease);
-}
-
-.column-menu-item:hover,
-.column-menu-item[data-active='true'],
-.column-menu-item:focus-visible {
-  background: color-mix(in srgb, currentColor 10%, transparent);
-  outline: none;
 }
 
 .column-menu-item:focus-visible {
