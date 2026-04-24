@@ -277,8 +277,10 @@
     background-color var(--nat-table-transition-slow);
 }
 
-.surface:hover {
-  border-color: var(--nat-table-card-border-color-hover);
+@media (hover: hover) and (pointer: fine) {
+  .surface:hover {
+    border-color: var(--nat-table-card-border-color-hover);
+  }
 }
 
 @media (max-width: 720px) {

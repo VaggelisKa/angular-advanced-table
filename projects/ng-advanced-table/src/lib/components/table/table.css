@@ -119,25 +119,10 @@
   transition: background-color 120ms ease;
 }
 
-.data-row:hover {
-  background: var(
-    --nat-table-row-background-hover,
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
-  );
-}
-
 .data-row:focus-within {
   background: var(
     --nat-table-row-background-focus,
     color-mix(in srgb, var(--nat-table-region-background, canvas) 88%, currentColor 12%)
-  );
-}
-
-.data-row:hover .is-pinned-left,
-.data-row:hover .is-pinned-right {
-  background: var(
-    --nat-table-row-background-hover-pinned,
-    color-mix(in srgb, var(--nat-table-pinned-background, canvas) 88%, currentColor 12%)
   );
 }
 
@@ -147,6 +132,30 @@
     --nat-table-row-background-focus-pinned,
     color-mix(in srgb, var(--nat-table-pinned-background, canvas) 84%, currentColor 16%)
   );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .data-row:hover {
+    background: var(
+      --nat-table-row-background-hover,
+      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+    );
+  }
+
+  .data-row:hover .is-pinned-left,
+  .data-row:hover .is-pinned-right {
+    background: var(
+      --nat-table-row-background-hover-pinned,
+      color-mix(in srgb, var(--nat-table-pinned-background, canvas) 88%, currentColor 12%)
+    );
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .header-cell.is-reorderable {
+    cursor: default;
+    touch-action: auto;
+  }
 }
 
 .expanded-row {
