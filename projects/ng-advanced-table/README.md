@@ -20,6 +20,7 @@ Use this package when you want:
 - The `NatTable` component.
 - Controlled or uncontrolled `NatTableState`.
 - Sorting, filtering, visibility, pinning, ordering, and optional pagination state.
+- Optional CDK-backed fixed-size row virtualization.
 - Sticky headers and sticky pinned columns.
 - Optional `(rowRendered)` instrumentation.
 - Custom accessibility summaries and live announcements through `accessibilityText`.
@@ -59,6 +60,7 @@ npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 - `NatTableAccessibilityPaginationAnnouncementContext`
 - `NatTableAccessibilityColumnReorderAnnouncementContext`
 - `NatTableState`
+- `NatTableVirtualizationOptions`
 - `NatTableColumnMeta`
 - `NatTableCellTone`
 - `NatTableSortDirection`

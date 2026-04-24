@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -6,7 +7,11 @@ import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
-import type { NatTableAccessibilityText, NatTableState } from './table.types';
+import type {
+  NatTableAccessibilityText,
+  NatTableState,
+  NatTableVirtualizationOptions,
+} from './table.types';
 
 interface Row {
   id: string;
@@ -82,6 +87,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       [state]="state()"
       [allowColumnReorder]="allowColumnReorder"
       [enablePagination]="enablePagination"
+      [virtualization]="virtualization"
       [getRowId]="getRowId"
       [accessibilityText]="accessibilityText"
       (stateChange)="onStateChange($event)"
@@ -106,6 +112,7 @@ class TableHost {
   };
   enablePagination = false;
   allowColumnReorder = false;
+  virtualization: NatTableVirtualizationOptions | null = null;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
 
@@ -133,6 +140,7 @@ describe('NatTable', () => {
     options: {
       allowColumnReorder?: boolean;
       enablePagination?: boolean;
+      virtualization?: NatTableVirtualizationOptions | null;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
       state?: Partial<NatTableState>;
@@ -143,6 +151,7 @@ describe('NatTable', () => {
     host = fixture.componentInstance;
     host.allowColumnReorder = options.allowColumnReorder ?? host.allowColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.virtualization = options.virtualization ?? host.virtualization;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
 
@@ -224,6 +233,45 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
   });
 
+  it('virtualizes large row models into a 50-row window when configured', async () => {
+    await recreateHost({
+      enablePagination: true,
+      virtualization: {
+        rowHeight: 40,
+        maxRenderedRows: 50,
+      },
+      initialState: {
+        sorting: [],
+        columnPinning: {
+          left: ['name'],
+          right: [],
+        },
+        pagination: {
+          pageIndex: 0,
+          pageSize: 100,
+        },
+      },
+    });
+    host.rows.set(buildRows(120));
+    fixture.detectChanges();
+    setVirtualViewportHeight(fixture, 40 * 50);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const grid = fixture.nativeElement.querySelector('[ngGrid]') as HTMLElement;
+    const viewportElement = fixture.nativeElement.querySelector(
+      'cdk-virtual-scroll-viewport',
+    ) as HTMLElement;
+    const tableComponent = getVirtualizationTable(fixture);
+
+    expect(tableComponent.bodyRows().length).toBe(100);
+    expect(tableComponent.isVirtualized()).toBe(true);
+    expect(tableComponent.virtualViewportHeight()).toBe(40 * 50);
+    expect(grid.getAttribute('aria-rowcount')).toBe('101');
+    expect(viewportElement).toBeTruthy();
+    expect(viewportElement.style.height).toBe('2000px');
+  });
+
   it('only renders reorder handles when allowColumnReorder is enabled', async () => {
     fixture.detectChanges();
 
@@ -269,7 +317,12 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
+      'name',
+      'status',
+      'region',
+      'throughput',
+    ]);
   });
 
   it('matches the stable row id during global filtering without requiring an id column', () => {
@@ -325,7 +378,8 @@ describe('NatTable', () => {
         visibleColumnsText,
         pageText,
         pageCountText,
-      }) => `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
+      }) =>
+        `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
       filteringChange: ({ query, visibleRowsText }) => `Filter ${query}:${visibleRowsText}`,
       sortingChange: ({ columnLabel, sortState }) => `Sortering ${columnLabel}:${sortState}`,
       pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
@@ -346,9 +400,7 @@ describe('NatTable', () => {
     const instructions = fixture.nativeElement.querySelector(
       `#${describedByIds.at(-1) ?? ''}`,
     ) as HTMLElement;
-    const liveRegion = fixture.nativeElement.querySelector(
-      'p[aria-live="polite"]',
-    ) as HTMLElement;
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
     const tableComponent = fixture.debugElement.query(By.directive(NatTable))
       .componentInstance as NatTable<Row>;
 
@@ -405,7 +457,12 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'region', 'status']);
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'region', 'status', 'throughput']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
+      'name',
+      'region',
+      'status',
+      'throughput',
+    ]);
   });
 
   it('keeps hidden columns in their stored order when they are shown again', async () => {
@@ -435,7 +492,12 @@ describe('NatTable', () => {
     });
     fixture.detectChanges();
 
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual(['name', 'throughput', 'status', 'region']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
+      'name',
+      'throughput',
+      'status',
+      'region',
+    ]);
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'status', 'region']);
   });
 
@@ -604,11 +666,7 @@ describe('NatTable', () => {
     @Component({
       imports: [NatTable],
       template: `
-        <nat-table
-          [data]="rows()"
-          [columns]="columns()"
-          ariaLabel="Operations table"
-        />
+        <nat-table [data]="rows()" [columns]="columns()" ariaLabel="Operations table" />
       `,
     })
     class DynamicColumnsHost {
@@ -656,11 +714,27 @@ function buildDynamicColumns(nameHeader: string): ColumnDef<Row, unknown>[] {
 }
 
 type NatTableInternals = NatTable<Row> & {
-  onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number]): void;
+  onHeaderDrop(
+    event: CdkDragDrop<string[]>,
+    headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number],
+  ): void;
+};
+
+type NatTableVirtualizationInternals = NatTable<Row> & {
+  bodyRows(): readonly Row[];
+  isVirtualized(): boolean;
+  virtualViewportHeight(): number | null;
 };
 
 function getInternalTable(fixture: ComponentFixture<TableHost>): NatTableInternals {
   return fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTableInternals;
+}
+
+function getVirtualizationTable(
+  fixture: ComponentFixture<TableHost>,
+): NatTableVirtualizationInternals {
+  return fixture.debugElement.query(By.directive(NatTable))
+    .componentInstance as NatTableVirtualizationInternals;
 }
 
 function createDropEvent(
@@ -679,6 +753,56 @@ function getHeaderColumnIds(fixture: ComponentFixture<TableHost>): string[] {
   return Array.from(fixture.nativeElement.querySelectorAll('thead th[data-column-id]')).map(
     (header) => (header as HTMLElement).dataset['columnId'] ?? '',
   );
+}
+
+function getDataRows(fixture: ComponentFixture<TableHost>): HTMLTableRowElement[] {
+  return Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row'));
+}
+
+function setVirtualViewportHeight(
+  fixture: ComponentFixture<unknown>,
+  height: number,
+  width = 960,
+): void {
+  const viewportDebugElement = fixture.debugElement.query(By.directive(CdkVirtualScrollViewport));
+
+  if (!viewportDebugElement) {
+    return;
+  }
+
+  const viewportElement = viewportDebugElement.nativeElement as HTMLElement;
+  const rect = {
+    width,
+    height,
+    top: 0,
+    left: 0,
+    right: width,
+    bottom: height,
+    x: 0,
+    y: 0,
+    toJSON: () => undefined,
+  } as DOMRect;
+
+  Object.defineProperty(viewportElement, 'clientHeight', {
+    configurable: true,
+    value: height,
+  });
+  Object.defineProperty(viewportElement, 'offsetHeight', {
+    configurable: true,
+    value: height,
+  });
+  Object.defineProperty(viewportElement, 'clientWidth', {
+    configurable: true,
+    value: width,
+  });
+  Object.defineProperty(viewportElement, 'offsetWidth', {
+    configurable: true,
+    value: width,
+  });
+  viewportElement.getBoundingClientRect = () => rect;
+
+  (viewportDebugElement.componentInstance as CdkVirtualScrollViewport).checkViewportSize();
+  fixture.detectChanges();
 }
 
 function buildRows(size: number): Row[] {

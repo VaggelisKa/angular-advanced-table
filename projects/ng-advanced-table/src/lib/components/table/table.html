@@ -1,36 +1,41 @@
-<div class="table-region" #tableRegion>
-  <p class="sr-only" [id]="tableSummaryId">{{ tableSummary() }}</p>
-  @if (ariaDescription().trim()) {
-    <p class="sr-only" [id]="tableDescriptionId">{{ ariaDescription() }}</p>
-  }
-  @if (resolvedKeyboardInstructions().trim()) {
-    <p class="sr-only" [id]="tableKeyboardInstructionsId">{{ resolvedKeyboardInstructions() }}</p>
-  }
+<p class="sr-only" [id]="tableSummaryId">{{ tableSummary() }}</p>
+@if (ariaDescription().trim()) {
+  <p class="sr-only" [id]="tableDescriptionId">{{ ariaDescription() }}</p>
+}
+@if (resolvedKeyboardInstructions().trim()) {
+  <p class="sr-only" [id]="tableKeyboardInstructionsId">{{ resolvedKeyboardInstructions() }}</p>
+}
 
-  <table
+@if (isVirtualized()) {
+  <div
     ngGrid
-    class="data-table"
+    class="table-region virtual-table-region"
     [id]="generatedTableId"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.aria-rowcount]="tableAriaRowCount()"
     rowWrap="nowrap"
     colWrap="nowrap"
+    #tableRegion
   >
     @let columnStates = columnRenderStates();
-    <thead>
+    <div class="virtual-header-scroll" #virtualHeaderRegion (scroll)="onVirtualHeaderScroll($event)">
       @let tableHeaderGroups = headerGroups();
-      @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
-        <tr
+      @for (headerGroup of tableHeaderGroups; track headerGroup.id; let headerRowIndex = $index) {
+        <div
           ngGridRow
           cdkDropList
           cdkDropListOrientation="horizontal"
+          class="virtual-header-row"
+          [style.grid-template-columns]="gridTemplateColumns()"
           [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
           [cdkDropListDisabled]="!allowColumnReorder() || !isLeafHeaderRow(headerGroup)"
+          [attr.aria-rowindex]="getHeaderAriaRowIndex(headerRowIndex)"
           (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
         >
           @for (header of headerGroup.headers; track header.id) {
             @let columnState = columnStates[header.column.id];
-            <th
+            <div
               ngGridCell
               cdkDrag
               cdkDragLockAxis="x"
@@ -51,7 +56,6 @@
               [attr.data-column-id]="header.column.id"
               [attr.aria-sort]="columnState?.ariaSort"
               (keydown)="onHeaderKeydown($event, header.column)"
-              scope="col"
             >
               @if (!header.isPlaceholder) {
                 @let headerContext = header.getContext();
@@ -69,34 +73,45 @@
                   </span>
                 </div>
               }
-            </th>
+            </div>
           }
-        </tr>
+        </div>
       }
-    </thead>
-    <tbody>
+    </div>
+
+    <cdk-virtual-scroll-viewport
+      class="virtual-body-viewport"
+      [style.height.px]="virtualViewportHeight()"
+      [itemSize]="resolvedVirtualization()?.rowHeight ?? 0"
+      [minBufferPx]="virtualMinBufferPx()"
+      [maxBufferPx]="virtualMaxBufferPx()"
+      #virtualBodyRegion
+      (scroll)="onVirtualBodyScroll($event)"
+      (scrolledIndexChange)="onVirtualScrollIndexChange($event)"
+    >
       @let rows = bodyRows();
       @if (rows.length) {
-        @for (row of rows; track row.id) {
-          @let visibleCells = row.getVisibleCells();
-          <tr
+        <div
+            *cdkVirtualFor="let row of rows; let rowIndex = index; trackBy: trackVirtualRow"
             ngGridRow
-            class="data-row"
+            class="virtual-body-row data-row"
+            [style.grid-template-columns]="gridTemplateColumns()"
+            [attr.aria-rowindex]="getBodyAriaRowIndex(rowIndex)"
             [natTableRowRenderEmitter]="row.id"
             [natTableRowRenderEnabled]="emitRowRenderEvents()"
             [natTableRowRenderToken]="renderCycleToken()"
             [natTableRowRenderStartedAt]="renderCycleStartedAt()"
             (natTableRowRendered)="onRowRendered($event)"
           >
+            @let visibleCells = row.getVisibleCells();
             @for (cell of visibleCells; track cell.id) {
               @let columnState = columnStates[cell.column.id];
               @let cellContext = cell.getContext();
               @let cellTone = getCellTone(cell.column, cellContext);
               @if (columnState?.rowHeader) {
-                <th
+                <div
                   ngGridCell
                   role="rowheader"
-                  scope="row"
                   class="data-cell data-row-header"
                   [class.is-align-end]="columnState?.alignEnd"
                   [class.is-pinned-left]="columnState?.pinnedLeft"
@@ -114,9 +129,9 @@
                   >
                     {{ rendered }}
                   </ng-container>
-                </th>
+                </div>
               } @else {
-                <td
+                <div
                   ngGridCell
                   class="data-cell"
                   [class.is-align-end]="columnState?.alignEnd"
@@ -135,20 +150,171 @@
                   >
                     {{ rendered }}
                   </ng-container>
-                </td>
+                </div>
               }
+            }
+        </div>
+      } @else {
+        <div
+          ngGridRow
+          class="virtual-body-row"
+          [style.grid-template-columns]="gridTemplateColumns()"
+        >
+          <div ngGridCell class="empty-state virtual-empty-state">
+            {{ emptyStateLabel() }}
+          </div>
+        </div>
+      }
+    </cdk-virtual-scroll-viewport>
+  </div>
+} @else {
+  <div class="table-region" #tableRegion>
+    <table
+      ngGrid
+      class="data-table"
+      [id]="generatedTableId"
+      [attr.aria-label]="ariaLabel()"
+      [attr.aria-describedby]="ariaDescribedBy()"
+      [attr.aria-rowcount]="tableAriaRowCount()"
+      rowWrap="nowrap"
+      colWrap="nowrap"
+    >
+      @let columnStates = columnRenderStates();
+      <thead>
+        @let tableHeaderGroups = headerGroups();
+        @for (headerGroup of tableHeaderGroups; track headerGroup.id; let headerRowIndex = $index) {
+          <tr
+            ngGridRow
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
+            [cdkDropListDisabled]="!allowColumnReorder() || !isLeafHeaderRow(headerGroup)"
+            [attr.aria-rowindex]="getHeaderAriaRowIndex(headerRowIndex)"
+            (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
+          >
+            @for (header of headerGroup.headers; track header.id) {
+              @let columnState = columnStates[header.column.id];
+              <th
+                ngGridCell
+                cdkDrag
+                cdkDragLockAxis="x"
+                cdkDragPreviewContainer="parent"
+                role="columnheader"
+                class="header-cell"
+                [class.is-align-end]="columnState?.alignEnd"
+                [class.is-pinned-left]="columnState?.pinnedLeft"
+                [class.is-pinned-right]="columnState?.pinnedRight"
+                [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+                [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                [class.is-reorderable]="canReorderHeader(header)"
+                [cdkDragData]="header.column.id"
+                [cdkDragDisabled]="!canReorderHeader(header)"
+                [style.left.px]="columnState?.left"
+                [style.right.px]="columnState?.right"
+                [style.min-width.px]="columnState?.minWidth"
+                [attr.data-column-id]="header.column.id"
+                [attr.aria-sort]="columnState?.ariaSort"
+                (keydown)="onHeaderKeydown($event, header.column)"
+                scope="col"
+              >
+                @if (!header.isPlaceholder) {
+                  @let headerContext = header.getContext();
+                  <div class="header-cell-content">
+                    <span class="header-cell-primary">
+                      <ng-container
+                        *flexRender="
+                          header.column.columnDef.header;
+                          props: headerContext;
+                          let rendered
+                        "
+                      >
+                        {{ rendered }}
+                      </ng-container>
+                    </span>
+                  </div>
+                }
+              </th>
             }
           </tr>
         }
-      } @else {
-        <tr ngGridRow>
-          <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
-            {{ emptyStateLabel() }}
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @let rows = bodyRows();
+        @if (rows.length) {
+          @for (row of rows; track row.id; let rowIndex = $index) {
+            @let visibleCells = row.getVisibleCells();
+            <tr
+              ngGridRow
+              class="data-row"
+              [attr.aria-rowindex]="getBodyAriaRowIndex(rowIndex)"
+              [natTableRowRenderEmitter]="row.id"
+              [natTableRowRenderEnabled]="emitRowRenderEvents()"
+              [natTableRowRenderToken]="renderCycleToken()"
+              [natTableRowRenderStartedAt]="renderCycleStartedAt()"
+              (natTableRowRendered)="onRowRendered($event)"
+            >
+              @for (cell of visibleCells; track cell.id) {
+                @let columnState = columnStates[cell.column.id];
+                @let cellContext = cell.getContext();
+                @let cellTone = getCellTone(cell.column, cellContext);
+                @if (columnState?.rowHeader) {
+                  <th
+                    ngGridCell
+                    role="rowheader"
+                    scope="row"
+                    class="data-cell data-row-header"
+                    [class.is-align-end]="columnState?.alignEnd"
+                    [class.is-pinned-left]="columnState?.pinnedLeft"
+                    [class.is-pinned-right]="columnState?.pinnedRight"
+                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                    [style.left.px]="columnState?.left"
+                    [style.right.px]="columnState?.right"
+                    [style.min-width.px]="columnState?.minWidth"
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                  >
+                    <ng-container
+                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                    >
+                      {{ rendered }}
+                    </ng-container>
+                  </th>
+                } @else {
+                  <td
+                    ngGridCell
+                    class="data-cell"
+                    [class.is-align-end]="columnState?.alignEnd"
+                    [class.is-pinned-left]="columnState?.pinnedLeft"
+                    [class.is-pinned-right]="columnState?.pinnedRight"
+                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                    [style.left.px]="columnState?.left"
+                    [style.right.px]="columnState?.right"
+                    [style.min-width.px]="columnState?.minWidth"
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                  >
+                    <ng-container
+                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                    >
+                      {{ rendered }}
+                    </ng-container>
+                  </td>
+                }
+              }
+            </tr>
+          }
+        } @else {
+          <tr ngGridRow>
+            <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
+              {{ emptyStateLabel() }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
 
-  <p class="sr-only" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</p>
-</div>
+<p class="sr-only" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</p>

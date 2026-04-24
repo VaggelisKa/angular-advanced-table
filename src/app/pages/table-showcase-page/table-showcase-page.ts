@@ -1,10 +1,20 @@
-import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, input, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Dialog, DialogRef } from '@angular/cdk/dialog';
 import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import {
   NatTable,
   type NatTableState,
+  type NatTableVirtualizationOptions,
 } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
@@ -259,6 +269,7 @@ type TableFeatureKey =
   | 'allowColumnPinning'
   | 'allowColumnReorder'
   | 'enablePagination'
+  | 'enableVirtualization'
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
   | 'showRenderMetrics';
@@ -267,6 +278,7 @@ interface TableFeatureConfig {
   allowColumnPinning: boolean;
   allowColumnReorder: boolean;
   enablePagination: boolean;
+  enableVirtualization: boolean;
   enableGlobalFilter: boolean;
   showColumnVisibility: boolean;
   showRenderMetrics: boolean;
@@ -276,6 +288,7 @@ const defaultTableFeatures: TableFeatureConfig = {
   allowColumnPinning: true,
   allowColumnReorder: true,
   enablePagination: true,
+  enableVirtualization: true,
   enableGlobalFilter: true,
   showColumnVisibility: true,
   showRenderMetrics: true,
@@ -390,7 +403,8 @@ class MarketSortIndicator {
 })
 export class TableShowcasePage {
   private readonly dialog = inject(Dialog);
-  private readonly featureDialogTemplate = viewChild.required<TemplateRef<unknown>>('featureDialog');
+  private readonly featureDialogTemplate =
+    viewChild.required<TemplateRef<unknown>>('featureDialog');
 
   protected readonly simulation = inject(TableSimulation);
   protected readonly datasetOptions = DATASET_OPTIONS;
@@ -416,6 +430,13 @@ export class TableShowcasePage {
   });
   protected readonly hasTablePaginationControls = computed(
     () => this.tableFeatures().enablePagination,
+  );
+  protected readonly tableVirtualization = computed<NatTableVirtualizationOptions | null>(() =>
+    this.tableFeatures().enableVirtualization
+      ? {
+          maxRenderedRows: 50,
+        }
+      : null,
   );
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],

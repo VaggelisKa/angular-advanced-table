@@ -1,5 +1,8 @@
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { NatTable } from 'ng-advanced-table';
 
 import { TableShowcasePage } from './table-showcase-page';
 import { TableSimulation } from './table-simulation';
@@ -165,6 +168,36 @@ describe('TableShowcasePage', () => {
     expect(marks.length).toBe(24);
   });
 
+  it('should offer a 100-row page size while keeping the virtual window capped at 50 rows', async () => {
+    fixture.detectChanges();
+
+    const hundredRowChip = Array.from(
+      fixture.nativeElement.querySelectorAll('.table-actions .chip'),
+    ).find((button) => (button as HTMLButtonElement).textContent?.trim().startsWith('100')) as
+      | HTMLButtonElement
+      | undefined;
+    const tableNote = fixture.nativeElement.querySelector('.table-card-note') as HTMLElement;
+
+    expect(hundredRowChip).toBeTruthy();
+
+    hundredRowChip?.click();
+    fixture.detectChanges();
+    setVirtualViewportHeight(fixture, 40 * 50);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const viewportElement = fixture.nativeElement.querySelector(
+      'cdk-virtual-scroll-viewport',
+    ) as HTMLElement;
+    const table = getVirtualizationTable(fixture);
+
+    expect(table.bodyRows().length).toBe(100);
+    expect(table.isVirtualized()).toBe(true);
+    expect(table.virtualViewportHeight()).toBe(40 * 50);
+    expect(viewportElement.style.height).toBe('2000px');
+    expect(tableNote.textContent).toContain('50 body rows');
+  });
+
   it('should render a three-dots actions menu in each visible row', async () => {
     fixture.detectChanges();
 
@@ -243,16 +276,82 @@ describe('TableShowcasePage', () => {
     const paginationToggle = document.querySelector(
       '.feature-toggle[data-feature="enablePagination"] input',
     ) as HTMLInputElement;
+    const virtualizationToggle = document.querySelector(
+      '.feature-toggle[data-feature="enableVirtualization"] input',
+    ) as HTMLInputElement;
 
     pinningToggle.click();
     searchToggle.click();
     visibilityToggle.click();
     paginationToggle.click();
+    virtualizationToggle.click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.table-controls-surface')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.table-toolbar')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.table-card-note')?.textContent).toContain(
+      'Virtualization is off',
+    );
   });
 });
+
+function setVirtualViewportHeight(
+  fixture: ComponentFixture<unknown>,
+  height: number,
+  width = 1440,
+): void {
+  const viewportDebugElement = fixture.debugElement.query(By.directive(CdkVirtualScrollViewport));
+
+  if (!viewportDebugElement) {
+    return;
+  }
+
+  const viewportElement = viewportDebugElement.nativeElement as HTMLElement;
+  const rect = {
+    width,
+    height,
+    top: 0,
+    left: 0,
+    right: width,
+    bottom: height,
+    x: 0,
+    y: 0,
+    toJSON: () => undefined,
+  } as DOMRect;
+
+  Object.defineProperty(viewportElement, 'clientHeight', {
+    configurable: true,
+    value: height,
+  });
+  Object.defineProperty(viewportElement, 'offsetHeight', {
+    configurable: true,
+    value: height,
+  });
+  Object.defineProperty(viewportElement, 'clientWidth', {
+    configurable: true,
+    value: width,
+  });
+  Object.defineProperty(viewportElement, 'offsetWidth', {
+    configurable: true,
+    value: width,
+  });
+  viewportElement.getBoundingClientRect = () => rect;
+
+  (viewportDebugElement.componentInstance as CdkVirtualScrollViewport).checkViewportSize();
+  fixture.detectChanges();
+}
+
+type NatTableVirtualizationInternals = NatTable<unknown> & {
+  bodyRows(): readonly unknown[];
+  isVirtualized(): boolean;
+  virtualViewportHeight(): number | null;
+};
+
+function getVirtualizationTable(
+  fixture: ComponentFixture<TableShowcasePage>,
+): NatTableVirtualizationInternals {
+  return fixture.debugElement.query(By.directive(NatTable))
+    .componentInstance as NatTableVirtualizationInternals;
+}

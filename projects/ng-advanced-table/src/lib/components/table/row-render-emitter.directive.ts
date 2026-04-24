@@ -17,7 +17,7 @@ import type { NatTableRowRenderedEvent } from './events';
  * `(rowRendered)` output on `<nat-table>` instead.
  */
 @Directive({
-  selector: 'tr[natTableRowRenderEmitter]',
+  selector: 'tr[natTableRowRenderEmitter], div[natTableRowRenderEmitter]',
 })
 export class NatTableRowRenderEmitter {
   readonly rowId = input.required<string>({

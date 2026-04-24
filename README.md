@@ -6,11 +6,11 @@ Signals-first Angular workspace for composable TanStack Table primitives.
 
 This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules.
 
-| Package | Use it for | Main exports |
-| --- | --- | --- |
-| `ng-advanced-table` | Core table primitive | `NatTable`, `NatTableState`, `NatTableColumnMeta` |
-| `ng-advanced-table-ui` | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `withNatTableHeaderActions(...)` |
-| `ng-advanced-table-utils` | Optional render-metrics tooling | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)` |
+| Package                   | Use it for                           | Main exports                                                                                                                           |
+| ------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                      |
+| `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `withNatTableHeaderActions(...)` |
+| `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                        |
 
 Supplemental package READMEs:
 
@@ -151,13 +151,7 @@ interface ServiceRow {
   selector: 'app-service-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable],
-  template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      ariaLabel="Service latency"
-    />
-  `,
+  template: ` <nat-table [data]="rows()" [columns]="columns" ariaLabel="Service latency" /> `,
 })
 export class ServiceTableComponent {
   readonly rows = signal<readonly ServiceRow[]>([]);
@@ -180,73 +174,99 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Common types: `NatTableState`, `NatTableVirtualizationOptions`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility types: `NatTableAccessibilityText`, `NatTableAccessibilitySummaryContext`, `NatTableAccessibilitySortingAnnouncementContext`, `NatTableAccessibilityFilteringAnnouncementContext`, `NatTableAccessibilityColumnVisibilityAnnouncementChange`, `NatTableAccessibilityColumnVisibilityAnnouncementContext`, `NatTableAccessibilityPaginationAnnouncementContext`, `NatTableAccessibilityColumnReorderAnnouncementContext`
 
 ## Core API
 
 ### Inputs
 
-| Input | Default | Notes |
-| --- | --- | --- |
-| `data` | required | Row array rendered by the table |
-| `columns` | required | TanStack `ColumnDef<TData>[]` |
-| `ariaLabel` | required | Accessible name for the table region |
-| `ariaDescription` | `''` | Extra description announced with the grid |
-| `keyboardInstructions` | built-in text | Screen-reader instructions for cell navigation |
-| `accessibilityText` | `{}` | Overrides summaries and live announcements |
-| `enableGlobalFilter` | `true` | Enables the global filter pipeline |
-| `allowColumnPinning` | `true` | Enables sticky pinning where columns allow it |
-| `allowColumnReorder` | `false` | Enables drag/drop and keyboard reordering |
-| `enablePagination` | `false` | Enables the pagination row model |
-| `emptyStateLabel` | `'No rows match the current view.'` | Empty-state copy |
-| `globalFilterFn` | built-in filter | Replaces the generic global filter |
-| `initialState` | `{}` | Uncontrolled initial state, read once |
-| `state` | `{}` | Controlled slices only; omitted slices stay internal |
-| `getRowId` | row index | Stable row id resolver for actions and metrics |
-| `emitRowRenderEvents` | `false` | Enables `(rowRendered)` instrumentation |
-| `enableAnnouncements` | `true` | Enables polite live announcements |
+| Input                  | Default                             | Notes                                                                   |
+| ---------------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| `data`                 | required                            | Row array rendered by the table                                         |
+| `columns`              | required                            | TanStack `ColumnDef<TData>[]`                                           |
+| `ariaLabel`            | required                            | Accessible name for the table region                                    |
+| `ariaDescription`      | `''`                                | Extra description announced with the grid                               |
+| `keyboardInstructions` | built-in text                       | Screen-reader instructions for cell navigation                          |
+| `accessibilityText`    | `{}`                                | Overrides summaries and live announcements                              |
+| `enableGlobalFilter`   | `true`                              | Enables the global filter pipeline                                      |
+| `allowColumnPinning`   | `true`                              | Enables sticky pinning where columns allow it                           |
+| `allowColumnReorder`   | `false`                             | Enables drag/drop and keyboard reordering                               |
+| `enablePagination`     | `false`                             | Enables the pagination row model                                        |
+| `virtualization`       | `null`                              | Enables CDK-backed fixed-size body-row virtualization with an auto-capped viewport |
+| `emptyStateLabel`      | `'No rows match the current view.'` | Empty-state copy                                                        |
+| `globalFilterFn`       | built-in filter                     | Replaces the generic global filter                                      |
+| `initialState`         | `{}`                                | Uncontrolled initial state, read once                                   |
+| `state`                | `{}`                                | Controlled slices only; omitted slices stay internal                    |
+| `getRowId`             | row index                           | Stable row id resolver for actions and metrics                          |
+| `emitRowRenderEvents`  | `false`                             | Enables `(rowRendered)` instrumentation                                 |
+| `enableAnnouncements`  | `true`                              | Enables polite live announcements                                       |
 
 ### Outputs and instance API
 
-| API | Type | Notes |
-| --- | --- | --- |
-| `(stateChange)` | `NatTableState` | Emits the full next state |
-| `(rowRendered)` | `NatTableRowRenderedEvent` | Emits per-row timings when instrumentation is enabled |
-| `table` | `Table<TData>` | Raw TanStack instance for reads and advanced commands |
-| `patchState(...)` | method | Applies partial state updaters while respecting controlled slices |
-| `tableElementId()` | method | Returns the generated table region id |
+| API                | Type                       | Notes                                                             |
+| ------------------ | -------------------------- | ----------------------------------------------------------------- |
+| `(stateChange)`    | `NatTableState`            | Emits the full next state                                         |
+| `(rowRendered)`    | `NatTableRowRenderedEvent` | Emits per-row timings when instrumentation is enabled             |
+| `table`            | `Table<TData>`             | Raw TanStack instance for reads and advanced commands             |
+| `patchState(...)`  | method                     | Applies partial state updaters while respecting controlled slices |
+| `tableElementId()` | method                     | Returns the generated table region id                             |
 
 ### `NatTableState`
 
-| Slice | Meaning |
-| --- | --- |
-| `sorting` | Active single-column sort |
-| `globalFilter` | Current global search query |
-| `columnFilters` | TanStack column filters keyed by column id |
-| `columnVisibility` | Visibility map for hideable columns |
-| `columnOrder` | Leaf-column order |
-| `columnPinning` | Left and right pinned column ids |
-| `pagination` | Page index and page size |
+| Slice              | Meaning                                    |
+| ------------------ | ------------------------------------------ |
+| `sorting`          | Active single-column sort                  |
+| `globalFilter`     | Current global search query                |
+| `columnFilters`    | TanStack column filters keyed by column id |
+| `columnVisibility` | Visibility map for hideable columns        |
+| `columnOrder`      | Leaf-column order                          |
+| `columnPinning`    | Left and right pinned column ids           |
+| `pagination`       | Page index and page size                   |
 
 ### `NatTableColumnMeta`
 
 Attach metadata through `columnDef.meta`:
 
-| Field | Type | Purpose |
-| --- | --- | --- |
-| `label` | `string` | Stable human-readable label for accessibility and companion UI |
-| `align` | `'start' \| 'end'` | Cell and header alignment |
-| `rowHeader` | `boolean` | Marks body cells in the column as row headers |
-| `cellTone` | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone |
+| Field       | Type                                                                      | Purpose                                                        |
+| ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `label`     | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
+| `align`     | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
+| `rowHeader` | `boolean`                                                                 | Marks body cells in the column as row headers                  |
+| `cellTone`  | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
 
 ### Behavior rules
 
 - A slice is controlled only when that property is present in `state`.
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
+- `virtualization` uses Angular CDK scrolling primitives with a fixed row height and mounts at most `maxRenderedRows` body rows at once. The default cap is `50`.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
+
+### Virtualization
+
+Use `virtualization` when the current row model can grow large enough that you do not want every body row mounted at once.
+
+```ts
+readonly virtualization = {
+  maxRenderedRows: 50,
+};
+```
+
+```html
+<nat-table
+  [data]="rows()"
+  [columns]="columns"
+  [virtualization]="virtualization"
+  ariaLabel="Orders"
+/>
+```
+
+Notes:
+
+- The body viewport is powered by Angular CDK virtual scrolling and auto-caps itself to the virtual row budget, so a `pageSize` of `100` still mounts only about `50` body rows by default.
+- Rows should stay at a consistent height. If your table uses a taller custom row layout, pass `rowHeight`.
 
 ## Accessibility Text Overrides
 
@@ -357,14 +377,14 @@ UI exports:
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
-| API | Purpose | Key inputs or options |
-| --- | --- | --- |
-| `NatTableSurface` | Layout wrapper and default `--nat-table-*` CSS variables | none |
-| `NatTableSearch` | Global filter input | `for`, `label`, `placeholder` |
-| `NatTableColumnVisibility` | Toggle hideable columns | `for`, `label`, `ariaLabel`, `accessibilityLabels` |
-| `NatTablePageSize` | Chip-based page-size switcher | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
-| `NatTablePager` | Previous/next pagination control | `for`, `ariaLabel`, `accessibilityLabels` |
-| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels` |
+| API                              | Purpose                                                        | Key inputs or options                                        |
+| -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
+| `NatTableSurface`                | Layout wrapper and default `--nat-table-*` CSS variables       | none                                                         |
+| `NatTableSearch`                 | Global filter input                                            | `for`, `label`, `placeholder`                                |
+| `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `ariaLabel`, `accessibilityLabels`           |
+| `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
+| `NatTablePager`                  | Previous/next pagination control                               | `for`, `ariaLabel`, `accessibilityLabels`                    |
+| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`                       |
 
 Controller contract required by the UI package:
 
@@ -456,12 +476,12 @@ Utils exports:
 - Contracts and options: `WithRenderMetricsColumnOptions`, `NatTableRenderMetricsController`, `NatTableRenderMetricsEvent`, `NatTableRenderMetricsState`
 - Tone and filter helpers: `getRowRenderTone(...)`, `getRenderToneLabel(...)`, `isRenderFilterValue(...)`, `RENDER_FILTER_OPTIONS`, `RENDER_METRIC_COLUMN_ID`, `RowRenderFilterOption`, `RowRenderFilterValue`, `RowRenderMeasurement`, `RowRenderMetric`, `RowRenderTone`
 
-| API | Purpose |
-| --- | --- |
-| `NatTableRenderMetricsStore` | Stores per-row timings, exposes `measurement()`, `rowMetrics()`, `rowMetric(rowId)`, `record(...)`, and `reset()` |
-| `NatRenderMetricsPanel` | Compact summary of the latest render cycle |
-| `NatRenderMetricsFilter` | Chip group that filters the synthetic metrics column by tone |
-| `withRenderMetricsColumn(...)` | Appends a synthetic metrics column to an existing `ColumnDef[]` |
+| API                            | Purpose                                                                                                           |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `NatTableRenderMetricsStore`   | Stores per-row timings, exposes `measurement()`, `rowMetrics()`, `rowMetric(rowId)`, `record(...)`, and `reset()` |
+| `NatRenderMetricsPanel`        | Compact summary of the latest render cycle                                                                        |
+| `NatRenderMetricsFilter`       | Chip group that filters the synthetic metrics column by tone                                                      |
+| `withRenderMetricsColumn(...)` | Appends a synthetic metrics column to an existing `ColumnDef[]`                                                   |
 
 ### Render-metrics wiring
 
