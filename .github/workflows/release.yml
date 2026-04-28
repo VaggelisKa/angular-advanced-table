@@ -41,22 +41,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Version packages
-        run: npm run version:release
+      - name: Validate release preview
+        run: npx nx release --dry-run
 
-      - name: Commit release changes
-        run: |
-          git add -A
-
-          if git diff --cached --quiet; then
-            echo "No release changes to commit."
-            exit 0
-          fi
-
-          git commit -m "chore: release packages"
-
-      - name: Publish packages
-        run: npm run release
+      - name: Release packages
+        run: npx nx release --yes
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

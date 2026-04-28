@@ -1,26 +1,27 @@
 {
-  "name": "ng-advanced-table-ui",
+  "name": "ng-advanced-table-utils",
   "version": "1.0.3",
-  "description": "Optional composable UI primitives for ng-advanced-table.",
+  "description": "Optional companion helpers for ng-advanced-table, including render metrics tooling.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/VaggelisKa/angular-advanced-table.git",
-    "directory": "projects/ng-advanced-table-ui"
+    "directory": "libs/ng-advanced-table-utils"
   },
-  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/projects/ng-advanced-table-ui#readme",
+  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/libs/ng-advanced-table-utils#readme",
   "bugs": {
     "url": "https://github.com/VaggelisKa/angular-advanced-table/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "angular",
     "table",
-    "ui",
-    "data-table",
+    "render-metrics",
+    "performance",
     "tanstack-table"
   ],
   "peerDependencies": {
-    "@angular/cdk": "^21.2.0",
-    "@angular/aria": "^21.2.0",
     "@angular/core": "^21.2.0",
     "@tanstack/angular-table": "^8.21.4"
   },

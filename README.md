@@ -1,10 +1,10 @@
 # angular-advanced-table
 
-Signals-first Angular workspace for composable TanStack Table primitives.
+Signals-first Nx monorepo for composable Angular TanStack Table primitives.
 
 ## Documentation Map
 
-This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules.
+This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules. The `apps/showcase` project is the demo app, and publishable packages live under `libs/*`.
 
 | Package                   | Use it for                           | Main exports                                                                                                                           |
 | ------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -14,9 +14,9 @@ This README is the canonical workspace reference. Package READMEs stay intention
 
 Supplemental package READMEs:
 
-- [`projects/ng-advanced-table/README.md`](projects/ng-advanced-table/README.md)
-- [`projects/ng-advanced-table-ui/README.md`](projects/ng-advanced-table-ui/README.md)
-- [`projects/ng-advanced-table-utils/README.md`](projects/ng-advanced-table-utils/README.md)
+- [`libs/ng-advanced-table/README.md`](libs/ng-advanced-table/README.md)
+- [`libs/ng-advanced-table-ui/README.md`](libs/ng-advanced-table-ui/README.md)
+- [`libs/ng-advanced-table-utils/README.md`](libs/ng-advanced-table-utils/README.md)
 
 Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 

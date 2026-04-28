@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "main",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.spec.ts",
+      "!{projectRoot}/tsconfig.spec.json"
+    ],
+    "sharedGlobals": []
+  },
+  "targetDefaults": {
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    },
+    "nx-release-publish": {
+      "dependsOn": ["build"]
+    }
+  },
+  "release": {
+    "projects": [
+      "ng-advanced-table",
+      "ng-advanced-table-ui",
+      "ng-advanced-table-utils"
+    ],
+    "projectsRelationship": "independent",
+    "versionPlans": true,
+    "releaseTag": {
+      "pattern": "{projectName}@{version}"
+    },
+    "changelog": {
+      "workspaceChangelog": false,
+      "projectChangelogs": true
+    },
+    "git": {
+      "commitMessage": "chore(release): publish"
+    }
+  }
+}

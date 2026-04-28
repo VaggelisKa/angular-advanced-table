@@ -1,24 +1,29 @@
 {
-  "name": "ng-advanced-table-utils",
-  "version": "1.0.3",
-  "description": "Optional companion helpers for ng-advanced-table, including render metrics tooling.",
+  "name": "ng-advanced-table",
+  "version": "0.2.0",
+  "description": "Signals-first Angular data table primitives built on TanStack Table.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/VaggelisKa/angular-advanced-table.git",
-    "directory": "projects/ng-advanced-table-utils"
+    "directory": "libs/ng-advanced-table"
   },
-  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/projects/ng-advanced-table-utils#readme",
+  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/libs/ng-advanced-table#readme",
   "bugs": {
     "url": "https://github.com/VaggelisKa/angular-advanced-table/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "angular",
+    "signals",
     "table",
-    "render-metrics",
-    "performance",
+    "data-table",
     "tanstack-table"
   ],
   "peerDependencies": {
+    "@angular/cdk": "^21.2.0",
+    "@angular/aria": "^21.2.0",
     "@angular/core": "^21.2.0",
     "@tanstack/angular-table": "^8.21.4"
   },
