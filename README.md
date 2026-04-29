@@ -18,6 +18,10 @@ Supplemental package READMEs:
 - [`libs/ng-advanced-table-ui/README.md`](libs/ng-advanced-table-ui/README.md)
 - [`libs/ng-advanced-table-utils/README.md`](libs/ng-advanced-table-utils/README.md)
 
+Consumer theming guide:
+
+- [`THEMING.md`](THEMING.md)
+
 Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 
 ## Install
