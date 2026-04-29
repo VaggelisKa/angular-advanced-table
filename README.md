@@ -18,6 +18,10 @@ Supplemental package READMEs:
 - [`libs/ng-advanced-table-ui/README.md`](libs/ng-advanced-table-ui/README.md)
 - [`libs/ng-advanced-table-utils/README.md`](libs/ng-advanced-table-utils/README.md)
 
+Consumer theming guide:
+
+- [`THEMING.md`](THEMING.md)
+
 Focused guides:
 
 - [Accessibility and internationalization](docs/accessibility.md)
