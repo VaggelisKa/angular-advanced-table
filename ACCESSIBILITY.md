@@ -1,5 +1,7 @@
 # Accessibility and Internationalization
 
+For workspace install, core API tables, and composition overview, see [README.md](README.md).
+
 `ng-advanced-table` ships English defaults for generated screen-reader copy. Consumers should treat those defaults as fallbacks and provide localized labels, descriptions, summaries, and live announcements for their product language.
 
 This guide focuses on text that the consuming application owns. It does not replace normal accessibility review for custom cells, custom controls, dialogs, menus, or product-specific workflows.

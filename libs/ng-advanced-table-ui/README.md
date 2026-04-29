@@ -6,7 +6,7 @@ Optional UI package for the `angular-advanced-table` workspace.
 
 - Workspace and package docs: [../../README.md](../../README.md)
 - UI package reference: [../../README.md#ui-package](../../README.md#ui-package)
-- Accessibility and internationalization: [../../docs/accessibility.md](../../docs/accessibility.md)
+- Accessibility and internationalization: [../../ACCESSIBILITY.md](../../ACCESSIBILITY.md)
 - Core table reference: [../../README.md#core-table](../../README.md#core-table)
 - Install options: [../../README.md#install](../../README.md#install)
 

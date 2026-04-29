@@ -12,6 +12,8 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                        |
 
+- **[Accessibility](ACCESSIBILITY.md)** — customize screen reader summaries and UI companion labels (`accessibilityText`, `accessibilityLabels`).
+
 Supplemental package READMEs:
 
 - [`libs/ng-advanced-table/README.md`](libs/ng-advanced-table/README.md)
@@ -21,10 +23,6 @@ Supplemental package READMEs:
 Consumer theming guide:
 
 - [`THEMING.md`](THEMING.md)
-
-Focused guides:
-
-- [Accessibility and internationalization](docs/accessibility.md)
 
 Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 
@@ -295,7 +293,7 @@ Call `info.row.toggleExpanded()` from a custom cell renderer or action button to
 
 Accessible copy is consumer-owned. Set a localized `ariaLabel`, stable `columnDef.meta.label` values, and the `accessibilityText` object for everything else: supplemental description, keyboard instructions, the empty state message, table summaries, and live announcements.
 
-See [Accessibility and internationalization](docs/accessibility.md) for the agent checklist, localization guidance, and examples.
+See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent checklist, localization guidance, and examples.
 
 `NatTableAccessibilityText` combines plain strings and formatter callbacks:
 
@@ -438,7 +436,7 @@ Notes:
 
 The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`.
 
-See [Accessibility and internationalization](docs/accessibility.md#optional-ui-controls) for the full label surface.
+See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 
 ## Utils Package
 
