@@ -6,6 +6,7 @@ export type {
   NatTableColumnMeta,
   NatTableExpandedRowContext,
   NatTableExpandedState,
+  NatTableRowActivateEvent,
   NatTableRowExpandablePredicate,
   NatTableRowIdGetter,
   NatTableSortDirection,

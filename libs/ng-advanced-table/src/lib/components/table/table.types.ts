@@ -56,6 +56,25 @@ export type NatTableRowIdGetter<TData extends RowData = RowData> = (
   parent?: Row<TData>,
 ) => string;
 
+/**
+ * Payload emitted by `(rowActivate)` when a body row is activated through a
+ * primary click or an Enter / Space key press.
+ *
+ * The originating event is forwarded so consumers can call
+ * `event.preventDefault()` or read modifier keys without re-deriving them.
+ * The table only fires this event for activations that did not originate
+ * from an interactive descendant (button, link, form control, menu item,
+ * `contenteditable`), so cell-level controls keep their own behavior.
+ */
+export interface NatTableRowActivateEvent<TData extends RowData = RowData> {
+  /** Original row object supplied in `data`. */
+  rowData: TData;
+  /** TanStack row instance for advanced interactions. */
+  row: Row<TData>;
+  /** Pointer or keyboard event that triggered the activation. */
+  originalEvent: MouseEvent | KeyboardEvent;
+}
+
 /** Context exposed to expanded-row `TemplateRef`s. */
 export interface NatTableExpandedRowContext<TData extends RowData = RowData> {
   /** Alias for `rowData` so templates can use `let-rowData`. */
@@ -102,11 +121,11 @@ export interface NatTableAccessibilitySummaryContext {
 
 /** Context passed to custom sort announcement formatters. */
 export interface NatTableAccessibilitySortingAnnouncementContext {
-  /** Sorted column id when sorting is active. */
+  /** Sorted column id, or `null` when sorting is cleared. */
   columnId: string | null;
-  /** Resolved human-readable column label when sorting is active. */
+  /** Resolved human-readable column label, or `null`. */
   columnLabel: string | null;
-  /** Active ARIA sort state. */
+  /** Active ARIA sort state for the sorted column, or `'none'` when cleared. */
   sortState: 'ascending' | 'descending' | 'none';
 }
 

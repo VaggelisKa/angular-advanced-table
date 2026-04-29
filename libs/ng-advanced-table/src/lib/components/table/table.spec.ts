@@ -92,7 +92,6 @@ const columns: ColumnDef<Row, unknown>[] = [
       [initialState]="initialState"
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
-      [enableMultiSort]="enableMultiSort"
       [enablePagination]="enablePagination"
       [getRowId]="getRowId"
       [canExpandRow]="canExpandRow"
@@ -130,7 +129,6 @@ class TableHost {
   };
   enablePagination = false;
   enableColumnReorder = false;
-  enableMultiSort = false;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
   readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
@@ -202,7 +200,6 @@ describe('NatTable', () => {
   async function recreateHost(
     options: {
       enableColumnReorder?: boolean;
-      enableMultiSort?: boolean;
       enablePagination?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -213,7 +210,6 @@ describe('NatTable', () => {
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
     host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
-    host.enableMultiSort = options.enableMultiSort ?? host.enableMultiSort;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -833,7 +829,7 @@ describe('NatTable', () => {
     expect(liveRegion.textContent?.trim()).toBe('');
   });
 
-  it('keeps a single sort when enableMultiSort is false even if state requests more', async () => {
+  it('normalizes sorting state to a single column when multiple entries are supplied', async () => {
     await recreateHost({
       state: {
         sorting: [
@@ -856,8 +852,8 @@ describe('NatTable', () => {
     expect(sortedHeaders[0].dataset['columnId']).toBe('name');
   });
 
-  it('caps multi-sort to three columns and announces every active sort', async () => {
-    await recreateHost({ enableMultiSort: true, initialState: {} });
+  it('normalizes many sorting entries to the first column and announces a single-column sort', async () => {
+    await recreateHost({ initialState: {} });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -876,22 +872,12 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(table.table.getState().sorting).toEqual([
-      { id: 'name', desc: false },
-      { id: 'region', desc: true },
-      { id: 'status', desc: false },
-    ]);
-    expect(host.sortingEvents.at(-1)).toEqual([
-      { id: 'name', desc: false },
-      { id: 'region', desc: true },
-      { id: 'status', desc: false },
-    ]);
+    expect(table.table.getState().sorting).toEqual([{ id: 'name', desc: false }]);
+    expect(host.sortingEvents.at(-1)).toEqual([{ id: 'name', desc: false }]);
 
     const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
 
-    expect(liveRegion.textContent?.trim()).toBe(
-      'Sorted by Service ascending, Region descending, then Status ascending.',
-    );
+    expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
   });
 
   it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {
