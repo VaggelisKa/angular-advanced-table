@@ -56,6 +56,7 @@ npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 - `NatTableExpandedRowContext`
 - `NatTableRowExpandablePredicate`
 - `NatTableRowIdGetter`
+- `NatTableRowActivateEvent`
 - `NatTableState`
 - `NatTableColumnMeta`
 - `NatTableCellTone`

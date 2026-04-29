@@ -88,6 +88,8 @@
             [natTableRowRenderToken]="renderCycleToken()"
             [natTableRowRenderStartedAt]="renderCycleStartedAt()"
             (natTableRowRendered)="onRowRendered($event)"
+            (click)="onRowClick($event, row)"
+            (keydown)="onRowKeydown($event, row)"
           >
             @for (cell of visibleCells; track cell.id) {
               @let columnState = columnStates[cell.column.id];

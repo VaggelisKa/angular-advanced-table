@@ -6,7 +6,11 @@ import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
-import type { NatTableAccessibilityText, NatTableState } from './table.types';
+import type {
+  NatTableAccessibilityText,
+  NatTableRowActivateEvent,
+  NatTableState,
+} from './table.types';
 
 interface Row {
   id: string;
@@ -88,6 +92,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       [initialState]="initialState"
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
+      [enableMultiSort]="enableMultiSort"
       [enablePagination]="enablePagination"
       [getRowId]="getRowId"
       [canExpandRow]="canExpandRow"
@@ -102,6 +107,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       (columnOrderChange)="onColumnOrderChange($event)"
       (columnPinningChange)="onColumnPinningChange($event)"
       (expandedChange)="onExpandedChange($event)"
+      (rowActivate)="onRowActivate($event)"
     />
   `,
 })
@@ -124,8 +130,10 @@ class TableHost {
   };
   enablePagination = false;
   enableColumnReorder = false;
+  enableMultiSort = false;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
+  readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
   readonly sortingEvents: NatTableState['sorting'][] = [];
   readonly paginationEvents: NatTableState['pagination'][] = [];
   readonly globalFilterEvents: NatTableState['globalFilter'][] = [];
@@ -170,6 +178,10 @@ class TableHost {
   onExpandedChange(expanded: NatTableState['expanded']): void {
     this.expandedEvents.push(expanded);
   }
+
+  onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+    this.rowActivateEvents.push(event);
+  }
 }
 
 describe('NatTable', () => {
@@ -190,6 +202,7 @@ describe('NatTable', () => {
   async function recreateHost(
     options: {
       enableColumnReorder?: boolean;
+      enableMultiSort?: boolean;
       enablePagination?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -200,6 +213,7 @@ describe('NatTable', () => {
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
     host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
+    host.enableMultiSort = options.enableMultiSort ?? host.enableMultiSort;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -817,6 +831,154 @@ describe('NatTable', () => {
     dynamicFixture.detectChanges();
 
     expect(liveRegion.textContent?.trim()).toBe('');
+  });
+
+  it('keeps a single sort when enableMultiSort is false even if state requests more', async () => {
+    await recreateHost({
+      state: {
+        sorting: [
+          { id: 'name', desc: false },
+          { id: 'region', desc: true },
+        ],
+      },
+    });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    expect(table.table.getState().sorting).toEqual([{ id: 'name', desc: false }]);
+
+    const sortedHeaders = Array.from(
+      fixture.nativeElement.querySelectorAll('thead th[aria-sort]'),
+    ) as HTMLTableCellElement[];
+
+    expect(sortedHeaders.length).toBe(1);
+    expect(sortedHeaders[0].dataset['columnId']).toBe('name');
+  });
+
+  it('caps multi-sort to three columns and announces every active sort', async () => {
+    await recreateHost({ enableMultiSort: true, initialState: {} });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    table.patchState({
+      sorting: [
+        { id: 'name', desc: false },
+        { id: 'region', desc: true },
+        { id: 'status', desc: false },
+        { id: 'throughput', desc: true },
+      ],
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(table.table.getState().sorting).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: true },
+      { id: 'status', desc: false },
+    ]);
+    expect(host.sortingEvents.at(-1)).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: true },
+      { id: 'status', desc: false },
+    ]);
+
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    expect(liveRegion.textContent?.trim()).toBe(
+      'Sorted by Service ascending, Region descending, then Status ascending.',
+    );
+  });
+
+  it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+    const firstRow = fixture.nativeElement.querySelector('tbody tr.data-row') as HTMLTableRowElement;
+    const expectedRowId = table.table.getRowModel().rows[0]?.original.id;
+
+    expect(expectedRowId).toBeDefined();
+
+    firstRow.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
+    fixture.detectChanges();
+
+    expect(host.rowActivateEvents.length).toBe(1);
+    expect(host.rowActivateEvents.at(-1)?.rowData.id).toBe(expectedRowId);
+    expect(host.rowActivateEvents.at(-1)?.originalEvent).toBeInstanceOf(MouseEvent);
+
+    firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(host.rowActivateEvents.length).toBe(2);
+    expect(host.rowActivateEvents.at(-1)?.originalEvent).toBeInstanceOf(KeyboardEvent);
+
+    const spaceEvent = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+
+    firstRow.dispatchEvent(spaceEvent);
+    fixture.detectChanges();
+
+    expect(host.rowActivateEvents.length).toBe(3);
+    expect(spaceEvent.defaultPrevented).toBe(true);
+  });
+
+  it('does not emit rowActivate when activation originates from an interactive cell descendant', async () => {
+    @Component({
+      imports: [NatTable],
+      template: `
+        <nat-table
+          [data]="rows()"
+          [columns]="columns"
+          ariaLabel="Operations table"
+          (rowActivate)="onRowActivate($event)"
+        />
+      `,
+    })
+    class InteractiveCellHost {
+      readonly rows = signal<Row[]>(buildRows(2));
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          id: 'select',
+          header: 'Select',
+          enableSorting: false,
+          enableGlobalFilter: false,
+          cell: () => '<button type="button" class="row-action">Select</button>',
+        },
+        {
+          accessorKey: 'name',
+          header: 'Service',
+          meta: { label: 'Service', rowHeader: true },
+          cell: (info) => info.getValue<string>(),
+        },
+      ];
+      readonly events: NatTableRowActivateEvent<Row>[] = [];
+
+      onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+        this.events.push(event);
+      }
+    }
+
+    const interactiveFixture = TestBed.createComponent(InteractiveCellHost);
+
+    await interactiveFixture.whenStable();
+    interactiveFixture.detectChanges();
+
+    const cell = interactiveFixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="select"]',
+    ) as HTMLElement;
+
+    cell.innerHTML = '<button type="button" class="row-action">Select</button>';
+    interactiveFixture.detectChanges();
+
+    const button = cell.querySelector('button.row-action') as HTMLButtonElement;
+
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
+    interactiveFixture.detectChanges();
+
+    expect(interactiveFixture.componentInstance.events.length).toBe(0);
   });
 });
 
