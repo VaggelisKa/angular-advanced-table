@@ -174,7 +174,7 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableRowIdGetter`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
@@ -213,6 +213,7 @@ Core exports:
 | `(columnPinningChange)`   | `ColumnPinningState`       | Emits when only the column pinning slice actually changed                              |
 | `(paginationChange)`      | `PaginationState`          | Emits when only the pagination slice actually changed                                  |
 | `(expandedChange)`        | `ExpandedState`            | Emits when only the expanded-rows slice actually changed                               |
+| `(rowActivate)`           | `NatTableRowActivateEvent<TData>` | Emits when a body row is activated through a primary click or `Enter` / `Space` key press; activations from interactive cell descendants are ignored |
 | `(rowRendered)`           | `NatTableRowRenderedEvent` | Emits per-row timings when instrumentation is enabled                                  |
 | `table`                   | `Table<TData>`             | Raw TanStack instance for reads and advanced commands                                  |
 | `patchState(...)`         | method                     | Applies partial state updaters while respecting controlled slices                      |
@@ -248,9 +249,11 @@ Attach metadata through `columnDef.meta`:
 
 ### Behavior rules
 
-- A slice is controlled only when that property is present in `state`.
+- A slice is controlled **only** when its property is *present* in `state`, even if the value is an empty array or empty record. Omitted properties stay uncontrolled and are managed internally.
+- `initialState` is a one-time seed read on the first render; once a slice is also controlled through `state`, the seed for that slice is ignored.
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
+- `(rowActivate)` ignores activations whose target sits inside an interactive cell descendant — `<a href>`, `<button>`, form controls, `<summary>`, `contenteditable`, or elements with `role="button" | "link" | "checkbox" | "menuitem" | "tab" | "switch" | "combobox" | "textbox" | "searchbox"`. Use it for row-level navigation; keep cell-level controls inside cells.
 - Rows become expandable when `expandedRow` is supplied. `canExpandRow` defaults to every row in that case.
 - Use TanStack row APIs such as `info.row.toggleExpanded()` or `table.getRow(rowId)?.toggleExpanded()` to open and close detail rows.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
