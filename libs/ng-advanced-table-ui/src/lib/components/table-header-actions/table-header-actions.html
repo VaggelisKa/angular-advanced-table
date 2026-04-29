@@ -8,7 +8,7 @@
         [class.is-sorted]="!!column().getIsSorted()"
         [attr.aria-label]="getSortLabel()"
         (pointerdown)="$event.stopPropagation()"
-        (click)="toggleSort()"
+        (click)="column().toggleSorting()"
       >
         <span class="header-label">
           <ng-container *flexRender="content(); props: context(); let rendered">

@@ -1,16 +1,16 @@
 <div class="table-region" #tableRegion>
-  <p class="sr-only" [id]="tableSummaryId">{{ tableSummary() }}</p>
-  @if (ariaDescription().trim()) {
-    <p class="sr-only" [id]="tableDescriptionId">{{ ariaDescription() }}</p>
+  <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
+  @if (resolvedDescription().trim()) {
+    <p class="sr-only" [id]="tableDescriptionId()">{{ resolvedDescription() }}</p>
   }
   @if (resolvedKeyboardInstructions().trim()) {
-    <p class="sr-only" [id]="tableKeyboardInstructionsId">{{ resolvedKeyboardInstructions() }}</p>
+    <p class="sr-only" [id]="tableKeyboardInstructionsId()">{{ resolvedKeyboardInstructions() }}</p>
   }
 
   <table
     ngGrid
     class="data-table"
-    [id]="generatedTableId"
+    [id]="tableElementId()"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-describedby]="ariaDescribedBy()"
     rowWrap="nowrap"
@@ -25,7 +25,7 @@
           cdkDropList
           cdkDropListOrientation="horizontal"
           [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
-          [cdkDropListDisabled]="!allowColumnReorder() || !isLeafHeaderRow(headerGroup)"
+          [cdkDropListDisabled]="!enableColumnReorder() || !isLeafHeaderRow(headerGroup)"
           (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
         >
           @for (header of headerGroup.headers; track header.id) {
@@ -88,6 +88,8 @@
             [natTableRowRenderToken]="renderCycleToken()"
             [natTableRowRenderStartedAt]="renderCycleStartedAt()"
             (natTableRowRendered)="onRowRendered($event)"
+            (click)="onRowClick($event, row)"
+            (keydown)="onRowKeydown($event, row)"
           >
             @for (cell of visibleCells; track cell.id) {
               @let columnState = columnStates[cell.column.id];
@@ -154,7 +156,7 @@
       } @else {
         <tr ngGridRow>
           <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
-            {{ emptyStateLabel() }}
+            {{ resolvedEmptyState() }}
           </td>
         </tr>
       }

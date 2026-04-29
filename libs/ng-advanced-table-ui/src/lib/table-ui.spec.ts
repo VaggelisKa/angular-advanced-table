@@ -96,7 +96,7 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       [columns]="columns"
       [state]="tableState()"
       [initialState]="initialState"
-      [allowColumnReorder]="allowColumnReorder"
+      [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="true"
       [getRowId]="getRowId"
       ariaLabel="Operations table"
@@ -116,7 +116,7 @@ class TableUiHost {
   readonly columns = withNatTableHeaderActions(baseColumns);
   readonly getRowId = (row: Row) => row.id;
   readonly pageSizeOptions = [2, 3, 5] as const;
-  allowColumnReorder = false;
+  enableColumnReorder = false;
   readonly tableState = signal<Partial<NatTableState>>({});
   readonly initialState: Partial<NatTableState> = {
     pagination: {
@@ -247,13 +247,13 @@ describe('ng-advanced-table-ui', () => {
 
   async function recreateHost(
     options: {
-      allowColumnReorder?: boolean;
+      enableColumnReorder?: boolean;
     } = {},
   ): Promise<void> {
     fixture.destroy();
     fixture = TestBed.createComponent(TableUiHost);
     host = fixture.componentInstance;
-    host.allowColumnReorder = options.allowColumnReorder ?? host.allowColumnReorder;
+    host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     await fixture.whenStable();
   }
 
@@ -348,7 +348,7 @@ describe('ng-advanced-table-ui', () => {
   });
 
   it('wraps headers with sort and pin actions without losing the original label', async () => {
-    await recreateHost({ allowColumnReorder: true });
+    await recreateHost({ enableColumnReorder: true });
     fixture.detectChanges();
 
     const headerLabel = fixture.nativeElement.querySelector(

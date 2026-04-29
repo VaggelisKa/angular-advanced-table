@@ -3,11 +3,7 @@
   "defaultBase": "main",
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": [
-      "default",
-      "!{projectRoot}/**/*.spec.ts",
-      "!{projectRoot}/tsconfig.spec.json"
-    ],
+    "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/tsconfig.spec.json"],
     "sharedGlobals": []
   },
   "targetDefaults": {
@@ -25,11 +21,7 @@
     }
   },
   "release": {
-    "projects": [
-      "ng-advanced-table",
-      "ng-advanced-table-ui",
-      "ng-advanced-table-utils"
-    ],
+    "projects": ["ng-advanced-table", "ng-advanced-table-ui", "ng-advanced-table-utils"],
     "projectsRelationship": "independent",
     "versionPlans": true,
     "releaseTag": {
@@ -46,5 +38,6 @@
     "git": {
       "commitMessage": "chore(release): publish"
     }
-  }
+  },
+  "analytics": true
 }

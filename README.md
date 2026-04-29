@@ -174,44 +174,52 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
-- Accessibility types: `NatTableAccessibilityText`, `NatTableAccessibilitySummaryContext`, `NatTableAccessibilitySortingAnnouncementContext`, `NatTableAccessibilityFilteringAnnouncementContext`, `NatTableAccessibilityColumnVisibilityAnnouncementChange`, `NatTableAccessibilityColumnVisibilityAnnouncementContext`, `NatTableAccessibilityPaginationAnnouncementContext`, `NatTableAccessibilityColumnReorderAnnouncementContext`
+- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
 
 ### Inputs
 
-| Input                  | Default                             | Notes                                                |
-| ---------------------- | ----------------------------------- | ---------------------------------------------------- |
-| `data`                 | required                            | Row array rendered by the table                      |
-| `columns`              | required                            | TanStack `ColumnDef<TData>[]`                        |
-| `ariaLabel`            | required                            | Accessible name for the table region                 |
-| `ariaDescription`      | `''`                                | Extra description announced with the grid            |
-| `keyboardInstructions` | built-in text                       | Screen-reader instructions for cell navigation       |
-| `accessibilityText`    | `{}`                                | Overrides summaries and live announcements           |
-| `enableGlobalFilter`   | `true`                              | Enables the global filter pipeline                   |
-| `allowColumnPinning`   | `true`                              | Enables sticky pinning where columns allow it        |
-| `allowColumnReorder`   | `false`                             | Enables drag/drop and keyboard reordering            |
-| `enablePagination`     | `false`                             | Enables the pagination row model                     |
-| `emptyStateLabel`      | `'No rows match the current view.'` | Empty-state copy                                     |
-| `globalFilterFn`       | built-in filter                     | Replaces the generic global filter                   |
-| `initialState`         | `{}`                                | Uncontrolled initial state, read once                |
-| `state`                | `{}`                                | Controlled slices only; omitted slices stay internal |
-| `getRowId`             | row index                           | Stable row id resolver for actions and metrics       |
-| `canExpandRow`         | `undefined`                         | Optional predicate that marks which rows can expand  |
-| `expandedRow`          | `null`                              | Optional `TemplateRef` rendered below expanded rows  |
-| `emitRowRenderEvents`  | `false`                             | Enables `(rowRendered)` instrumentation              |
-| `enableAnnouncements`  | `true`                              | Enables polite live announcements                    |
+| Input                 | Default     | Notes                                                                                    |
+| --------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| `data`                | required    | Row array rendered by the table                                                          |
+| `columns`             | required    | TanStack `ColumnDef<TData>[]`                                                            |
+| `ariaLabel`           | required    | Accessible name for the table region                                                     |
+| `accessibilityText`   | `{}`        | Overrides for description, keyboard instructions, empty-state copy, and announcements    |
+| `enableGlobalFilter`  | `true`      | Enables the global filter pipeline                                                       |
+| `enableColumnPinning` | `true`      | Enables sticky pinning where columns allow it                                            |
+| `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering                                                |
+| `enablePagination`    | `false`     | Enables the pagination row model                                                         |
+| `globalFilterFn`      | built-in    | Replaces the generic global filter                                                       |
+| `initialState`        | `{}`        | Uncontrolled initial state, read once                                                    |
+| `state`               | `{}`        | Controlled slices only; omitted slices stay internal                                     |
+| `getRowId`            | row index   | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
+| `canExpandRow`        | `undefined` | Optional predicate that marks which rows can expand                                      |
+| `expandedRow`         | `null`      | Optional `TemplateRef` rendered below expanded rows                                      |
+| `emitRowRenderEvents` | `false`     | Enables `(rowRendered)` instrumentation                                                  |
+| `enableAnnouncements` | `true`      | Enables polite live announcements                                                        |
 
 ### Outputs and instance API
 
-| API                | Type                       | Notes                                                             |
-| ------------------ | -------------------------- | ----------------------------------------------------------------- |
-| `(stateChange)`    | `NatTableState`            | Emits the full next state                                         |
-| `(rowRendered)`    | `NatTableRowRenderedEvent` | Emits per-row timings when instrumentation is enabled             |
-| `table`            | `Table<TData>`             | Raw TanStack instance for reads and advanced commands             |
-| `patchState(...)`  | method                     | Applies partial state updaters while respecting controlled slices |
-| `tableElementId()` | method                     | Returns the generated table region id                             |
+| API                       | Type                       | Notes                                                                                  |
+| ------------------------- | -------------------------- | -------------------------------------------------------------------------------------- |
+| `(stateChange)`           | `NatTableState`            | Emits the full next state on every update                                              |
+| `(sortingChange)`         | `SortingState`             | Emits when only the sorting slice actually changed                                     |
+| `(globalFilterChange)`    | `string`                   | Emits when only the global filter slice actually changed                               |
+| `(columnFiltersChange)`   | `ColumnFiltersState`       | Emits when only the column filters slice actually changed                              |
+| `(columnVisibilityChange)`| `VisibilityState`          | Emits when only the column visibility slice actually changed                           |
+| `(columnOrderChange)`     | `ColumnOrderState`         | Emits when only the column order slice actually changed                                |
+| `(columnPinningChange)`   | `ColumnPinningState`       | Emits when only the column pinning slice actually changed                              |
+| `(paginationChange)`      | `PaginationState`          | Emits when only the pagination slice actually changed                                  |
+| `(expandedChange)`        | `ExpandedState`            | Emits when only the expanded-rows slice actually changed                               |
+| `(rowActivate)`           | `NatTableRowActivateEvent<TData>` | Emits when a body row is activated through a primary click or `Enter` / `Space` key press; activations from interactive cell descendants are ignored |
+| `(rowRendered)`           | `NatTableRowRenderedEvent` | Emits per-row timings when instrumentation is enabled                                  |
+| `table`                   | `Table<TData>`             | Raw TanStack instance for reads and advanced commands                                  |
+| `patchState(...)`         | method                     | Applies partial state updaters while respecting controlled slices                      |
+| `tableElementId`        | `Signal<string>`           | Read-only signal holding the generated `<table>` element id (use `tableElementId()` in templates and `aria-controls` bindings) |
+
+The granular `*Change` outputs only fire when the corresponding slice differs from the previous emission, so binding to a single output (for example `(paginationChange)`) avoids the equality work that `(stateChange)` typically requires.
 
 ### `NatTableState`
 
@@ -223,8 +231,10 @@ Core exports:
 | `columnVisibility` | Visibility map for hideable columns        |
 | `columnOrder`      | Leaf-column order                          |
 | `columnPinning`    | Left and right pinned column ids           |
-| `pagination`       | Page index and page size                   |
+| `pagination`       | Page index and page size (still present in `NatTableState` when `enablePagination` is `false`; the client-side pagination row model is off, so only `stateChange` / UI that reads `pagination` will reflect it) |
 | `expanded`         | Expanded row ids keyed by resolved row id  |
+
+The `pagination` slice always exists so controlled and uncontrolled code paths stay stable. When `enablePagination` is `false`, `pageIndex` / `pageSize` still update with defaults and filter-driven resets, but the table body is not paginated until you opt in.
 
 ### `NatTableColumnMeta`
 
@@ -239,9 +249,11 @@ Attach metadata through `columnDef.meta`:
 
 ### Behavior rules
 
-- A slice is controlled only when that property is present in `state`.
+- A slice is controlled **only** when its property is *present* in `state`, even if the value is an empty array or empty record. Omitted properties stay uncontrolled and are managed internally.
+- `initialState` is a one-time seed read on the first render; once a slice is also controlled through `state`, the seed for that slice is ignored.
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
+- `(rowActivate)` ignores activations whose target sits inside an interactive cell descendant — `<a href>`, `<button>`, form controls, `<summary>`, `contenteditable`, or elements with `role="button" | "link" | "checkbox" | "menuitem" | "tab" | "switch" | "combobox" | "textbox" | "searchbox"`. Use it for row-level navigation; keep cell-level controls inside cells.
 - Rows become expandable when `expandedRow` is supplied. `canExpandRow` defaults to every row in that case.
 - Use TanStack row APIs such as `info.row.toggleExpanded()` or `table.getRow(rowId)?.toggleExpanded()` to open and close detail rows.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
@@ -275,7 +287,10 @@ Call `info.row.toggleExpanded()` from a custom cell renderer or action button to
 
 Use `accessibilityText` when the built-in English summaries or live announcements do not match your product language or terminology. The available keys are:
 
-- `reorderKeyboardInstructions`
+- `description` — supplemental description announced through `aria-describedby`
+- `keyboardInstructions` — screen-reader instructions for grid navigation
+- `emptyState` — visible message rendered when the current view contains no rows
+- `reorderKeyboardInstructions` — extra reorder instructions when reordering is enabled
 - `tableSummary(...)`
 - `sortingChange(...)`
 - `filteringChange(...)`
@@ -288,6 +303,8 @@ Use `accessibilityText` when the built-in English summaries or live announcement
 import type { NatTableAccessibilityText } from 'ng-advanced-table';
 
 readonly accessibilityText: NatTableAccessibilityText = {
+  description: 'Sortable table of open positions, with sticky symbol column.',
+  emptyState: 'No positions match the current filters.',
   reorderKeyboardInstructions: 'Use Alt+Shift+Arrow keys to move columns.',
   tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
     `${visibleRowsText} of ${totalRowsText} rows visible. Page ${pageText} of ${pageCountText}.`,
@@ -296,7 +313,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
 };
 ```
 
-The formatter contexts already expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state.
+`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). The formatter contexts already expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state. When you want explicit types for those formatter arguments, import the `NatTableA11y` namespace (for example `parameters: NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
 
 ## Custom Cell Components
 
@@ -395,7 +412,7 @@ Controller contract required by the UI package:
 - `enableGlobalFilter(): boolean`
 - `enablePagination(): boolean`
 - `patchState(...)`
-- `tableElementId(): string`
+- `tableElementId: Signal<string>`
 
 Notes:
 
@@ -493,14 +510,3 @@ Utils exports:
 3. Record each `(rowRendered)` event with `store.record($event)`.
 4. Optionally wrap your columns with `withRenderMetricsColumn(...)`.
 5. Render `NatRenderMetricsPanel` and `NatRenderMetricsFilter` against the same store.
-
-## Migration
-
-If you are upgrading from the earlier all-in-one `NatTable`:
-
-- `NatTable` is now intentionally barebones.
-- Search, column visibility, page-size, pager, sort controls, pin menu actions, and surface styling moved to `ng-advanced-table-ui`.
-- `showPagination` was replaced by `enablePagination`.
-- `enablePagination` now defaults to `false`.
-- `pageSizeOptions`, `searchLabel`, `searchPlaceholder`, and `showColumnVisibility` were removed from `NatTable`.
-- Wrap columns with `withNatTableHeaderActions(...)` if you want the stock sort control and pin menu.

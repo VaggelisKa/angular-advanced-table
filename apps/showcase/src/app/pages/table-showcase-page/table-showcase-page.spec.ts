@@ -252,7 +252,7 @@ describe('TableShowcasePage', () => {
     fixture.detectChanges();
 
     const pinningToggle = document.querySelector(
-      '.feature-toggle[data-feature="allowColumnPinning"] input',
+      '.feature-toggle[data-feature="enableColumnPinning"] input',
     ) as HTMLInputElement;
     const searchToggle = document.querySelector(
       '.feature-toggle[data-feature="enableGlobalFilter"] input',
