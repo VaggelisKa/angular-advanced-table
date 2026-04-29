@@ -12,7 +12,7 @@
     "watch": "nx build showcase --watch --configuration development",
     "test": "nx test showcase",
     "test:packages": "nx run-many -t test -p ng-advanced-table,ng-advanced-table-ui,ng-advanced-table-utils",
-    "release:check": "nx release plan:check && nx release --dry-run",
+    "release:check": "nx release plan:check --base=${NX_BASE:-main} --head=${NX_HEAD:-HEAD} && nx release --dry-run",
     "release": "nx release",
     "pack:dry-run": "npm pack --dry-run ./dist/libs/ng-advanced-table && npm pack --dry-run ./dist/libs/ng-advanced-table-ui && npm pack --dry-run ./dist/libs/ng-advanced-table-utils",
     "verify": "npm run test:packages && npm run build:packages && npm run build:showcase && npm run release:check && npm run pack:dry-run"
