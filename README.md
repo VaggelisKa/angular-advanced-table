@@ -174,8 +174,8 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
-- Accessibility types: `NatTableAccessibilityText`, `NatTableAccessibilitySummaryContext`, `NatTableAccessibilitySortingAnnouncementContext`, `NatTableAccessibilityFilteringAnnouncementContext`, `NatTableAccessibilityColumnVisibilityAnnouncementChange`, `NatTableAccessibilityColumnVisibilityAnnouncementContext`, `NatTableAccessibilityPaginationAnnouncementContext`, `NatTableAccessibilityColumnReorderAnnouncementContext`
+- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableRowIdGetter`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
 
@@ -194,7 +194,7 @@ Core exports:
 | `globalFilterFn`      | built-in    | Replaces the generic global filter                                                       |
 | `initialState`        | `{}`        | Uncontrolled initial state, read once                                                    |
 | `state`               | `{}`        | Controlled slices only; omitted slices stay internal                                     |
-| `getRowId`            | row index   | Stable row id resolver for actions and metrics                                           |
+| `getRowId`            | row index   | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
 | `canExpandRow`        | `undefined` | Optional predicate that marks which rows can expand                                      |
 | `expandedRow`         | `null`      | Optional `TemplateRef` rendered below expanded rows                                      |
 | `emitRowRenderEvents` | `false`     | Enables `(rowRendered)` instrumentation                                                  |
@@ -216,7 +216,7 @@ Core exports:
 | `(rowRendered)`           | `NatTableRowRenderedEvent` | Emits per-row timings when instrumentation is enabled                                  |
 | `table`                   | `Table<TData>`             | Raw TanStack instance for reads and advanced commands                                  |
 | `patchState(...)`         | method                     | Applies partial state updaters while respecting controlled slices                      |
-| `tableElementId()`        | method                     | Returns the generated table region id                                                  |
+| `tableElementId`        | `Signal<string>`           | Read-only signal holding the generated `<table>` element id (use `tableElementId()` in templates and `aria-controls` bindings) |
 
 The granular `*Change` outputs only fire when the corresponding slice differs from the previous emission, so binding to a single output (for example `(paginationChange)`) avoids the equality work that `(stateChange)` typically requires.
 
@@ -230,8 +230,10 @@ The granular `*Change` outputs only fire when the corresponding slice differs fr
 | `columnVisibility` | Visibility map for hideable columns        |
 | `columnOrder`      | Leaf-column order                          |
 | `columnPinning`    | Left and right pinned column ids           |
-| `pagination`       | Page index and page size                   |
+| `pagination`       | Page index and page size (still present in `NatTableState` when `enablePagination` is `false`; the client-side pagination row model is off, so only `stateChange` / UI that reads `pagination` will reflect it) |
 | `expanded`         | Expanded row ids keyed by resolved row id  |
+
+The `pagination` slice always exists so controlled and uncontrolled code paths stay stable. When `enablePagination` is `false`, `pageIndex` / `pageSize` still update with defaults and filter-driven resets, but the table body is not paginated until you opt in.
 
 ### `NatTableColumnMeta`
 
@@ -308,7 +310,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
 };
 ```
 
-`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). The formatter contexts already expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state.
+`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). The formatter contexts already expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state. When you want explicit types for those formatter arguments, import the `NatTableA11y` namespace (for example `parameters: NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
 
 ## Custom Cell Components
 
@@ -407,7 +409,7 @@ Controller contract required by the UI package:
 - `enableGlobalFilter(): boolean`
 - `enablePagination(): boolean`
 - `patchState(...)`
-- `tableElementId(): string`
+- `tableElementId: Signal<string>`
 
 Notes:
 
@@ -505,21 +507,3 @@ Utils exports:
 3. Record each `(rowRendered)` event with `store.record($event)`.
 4. Optionally wrap your columns with `withRenderMetricsColumn(...)`.
 5. Render `NatRenderMetricsPanel` and `NatRenderMetricsFilter` against the same store.
-
-## Migration
-
-If you are upgrading from the earlier all-in-one `NatTable`:
-
-- `NatTable` is now intentionally barebones.
-- Search, column visibility, page-size, pager, sort controls, pin menu actions, and surface styling moved to `ng-advanced-table-ui`.
-- `showPagination` was replaced by `enablePagination`.
-- `enablePagination` now defaults to `false`.
-- `pageSizeOptions`, `searchLabel`, `searchPlaceholder`, and `showColumnVisibility` were removed from `NatTable`.
-- Wrap columns with `withNatTableHeaderActions(...)` if you want the stock sort control and pin menu.
-
-### `0.3.0` API cleanup
-
-- `allowColumnPinning` was renamed to `enableColumnPinning`.
-- `allowColumnReorder` was renamed to `enableColumnReorder`.
-- The standalone `ariaDescription`, `keyboardInstructions`, and `emptyStateLabel` inputs were folded into `accessibilityText` as the `description`, `keyboardInstructions`, and `emptyState` keys, respectively.
-- New per-slice change outputs (`sortingChange`, `globalFilterChange`, `columnFiltersChange`, `columnVisibilityChange`, `columnOrderChange`, `columnPinningChange`, `paginationChange`, `expandedChange`) emit only when their slice actually changed; bind to them instead of `(stateChange)` when you only care about a single piece of state.

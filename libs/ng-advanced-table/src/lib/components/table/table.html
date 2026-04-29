@@ -1,16 +1,16 @@
 <div class="table-region" #tableRegion>
-  <p class="sr-only" [id]="tableSummaryId">{{ tableSummary() }}</p>
+  <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
   @if (resolvedDescription().trim()) {
-    <p class="sr-only" [id]="tableDescriptionId">{{ resolvedDescription() }}</p>
+    <p class="sr-only" [id]="tableDescriptionId()">{{ resolvedDescription() }}</p>
   }
   @if (resolvedKeyboardInstructions().trim()) {
-    <p class="sr-only" [id]="tableKeyboardInstructionsId">{{ resolvedKeyboardInstructions() }}</p>
+    <p class="sr-only" [id]="tableKeyboardInstructionsId()">{{ resolvedKeyboardInstructions() }}</p>
   }
 
   <table
     ngGrid
     class="data-table"
-    [id]="generatedTableId"
+    [id]="tableElementId()"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-describedby]="ariaDescribedBy()"
     rowWrap="nowrap"

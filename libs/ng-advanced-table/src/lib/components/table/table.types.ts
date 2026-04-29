@@ -45,6 +45,17 @@ export type NatTableRowExpandablePredicate<TData extends RowData = RowData> = (
   index: number,
 ) => boolean;
 
+/**
+ * Stable row id resolver passed to `getRowId`. Matches TanStack Table's
+ * `getRowId(originalRow, index, parentRow?)` shape so consumers can key
+ * sub-rows consistently when they enable nested features later.
+ */
+export type NatTableRowIdGetter<TData extends RowData = RowData> = (
+  row: TData,
+  index: number,
+  parent?: Row<TData>,
+) => string;
+
 /** Context exposed to expanded-row `TemplateRef`s. */
 export interface NatTableExpandedRowContext<TData extends RowData = RowData> {
   /** Alias for `rowData` so templates can use `let-rowData`. */

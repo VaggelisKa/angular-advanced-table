@@ -1,8 +1,9 @@
 ---
 ng-advanced-table: minor
+ng-advanced-table-ui: patch
 ---
 
-`NatTable` API ergonomics cleanup. Adds granular per-slice change outputs so consumers can subscribe to a single slice without diffing the full state, renames the `allow*` boolean inputs to match the existing `enable*` convention, folds the standalone `ariaDescription`, `keyboardInstructions`, and `emptyStateLabel` inputs into the existing `accessibilityText` object, and tightens the typing of `globalFilterFn`, `getRowId`, and `canExpandRow` so the optional inputs no longer surface an awkward `T | undefined` union in their declarations.
+`NatTable` API ergonomics cleanup. Adds granular per-slice change outputs so consumers can subscribe to a single slice without diffing the full state, renames the `allow*` boolean inputs to match the existing `enable*` convention, folds the standalone `ariaDescription`, `keyboardInstructions`, and `emptyStateLabel` inputs into the existing `accessibilityText` object, and tightens the typing of `globalFilterFn`, `getRowId`, and `canExpandRow` so the optional inputs no longer surface an awkward `T | undefined` union in their declarations. The `ng-advanced-table-ui` package picks up a patch bump so its integration suite tracks the renamed `enableColumnReorder` input on `<nat-table>`; its public API is unchanged.
 
 **New outputs**
 

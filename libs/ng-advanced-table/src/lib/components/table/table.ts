@@ -58,10 +58,9 @@ import type {
   NatTableCellTone,
   NatTableExpandedRowContext,
   NatTableRowExpandablePredicate,
+  NatTableRowIdGetter,
   NatTableState,
 } from './table.types';
-
-type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 type ColumnReorderZone = 'left' | 'center' | 'right';
 interface TableColumnAccessibilityState {
   id: string;
@@ -190,7 +189,7 @@ export class NatTable<TData extends RowData = RowData> {
    */
   readonly state = input<Partial<NatTableState>>({});
   /** Optional stable row id resolver used for selection, pinning, and events. */
-  readonly getRowId = input<TableRowIdGetter<TData>>();
+  readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Optional predicate that determines which rows can be expanded. */
   readonly canExpandRow = input<NatTableRowExpandablePredicate<TData>>();
   /** Optional template rendered in an extra full-width row when a row is expanded. */
@@ -245,10 +244,16 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalExpanded = signal<ExpandedState>(DEFAULT_TABLE_STATE.expanded);
   private readonly hasSeededInitialState = signal(false);
   protected readonly liveMessage = signal('');
-  protected readonly generatedTableId = `nat-table-${nextTableId++}`;
-  protected readonly tableSummaryId = `${this.generatedTableId}-summary`;
-  protected readonly tableDescriptionId = `${this.generatedTableId}-description`;
-  protected readonly tableKeyboardInstructionsId = `${this.generatedTableId}-instructions`;
+  /**
+   * Stable DOM id for the rendered `<table>` element. Exposed as a signal so
+   * consumers and companion UI can bind reactively without a method call.
+   */
+  readonly tableElementId = signal(`nat-table-${nextTableId++}`);
+  protected readonly tableSummaryId = computed(() => `${this.tableElementId()}-summary`);
+  protected readonly tableDescriptionId = computed(() => `${this.tableElementId()}-description`);
+  protected readonly tableKeyboardInstructionsId = computed(
+    () => `${this.tableElementId()}-instructions`,
+  );
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
 
   protected readonly renderCycleToken = signal(0);
@@ -323,14 +328,14 @@ export class NatTable<TData extends RowData = RowData> {
     () => this.table.getHeaderGroups().at(-1)?.id ?? null,
   );
   protected readonly ariaDescribedBy = computed(() => {
-    const ids: string[] = [this.tableSummaryId];
+    const ids: string[] = [this.tableSummaryId()];
 
     if (this.resolvedDescription().trim()) {
-      ids.push(this.tableDescriptionId);
+      ids.push(this.tableDescriptionId());
     }
 
     if (this.resolvedKeyboardInstructions().trim()) {
-      ids.push(this.tableKeyboardInstructionsId);
+      ids.push(this.tableKeyboardInstructionsId());
     }
 
     return ids.join(' ');
@@ -351,7 +356,7 @@ export class NatTable<TData extends RowData = RowData> {
     enableExpanding: !!this.expandedRow(),
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
-    getRowId: (row, index) => this.resolveRowId(row, index),
+    getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
     getRowCanExpand: (row) =>
       !!this.expandedRow() && (this.canExpandRow()?.(row.original, row.index) ?? true),
     getCoreRowModel: getCoreRowModel(),
@@ -549,10 +554,6 @@ export class NatTable<TData extends RowData = RowData> {
     this.updateState(updaters);
   }
 
-  tableElementId(): string {
-    return this.generatedTableId;
-  }
-
   protected isLeafHeaderRow(headerGroup: HeaderGroup<TData>): boolean {
     return headerGroup.id === this.leafHeaderRowId();
   }
@@ -732,35 +733,37 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private commitInternalState(nextState: NatTableState): void {
-    if (this.state().sorting === undefined) {
+    const controlled = this.state();
+
+    if (controlled.sorting === undefined) {
       this.internalSorting.set(nextState.sorting);
     }
 
-    if (this.state().globalFilter === undefined) {
+    if (controlled.globalFilter === undefined) {
       this.internalGlobalFilter.set(nextState.globalFilter);
     }
 
-    if (this.state().columnFilters === undefined) {
+    if (controlled.columnFilters === undefined) {
       this.internalColumnFilters.set(nextState.columnFilters);
     }
 
-    if (this.state().columnVisibility === undefined) {
+    if (controlled.columnVisibility === undefined) {
       this.internalColumnVisibility.set(nextState.columnVisibility);
     }
 
-    if (this.state().columnOrder === undefined) {
+    if (controlled.columnOrder === undefined) {
       this.internalColumnOrder.set(nextState.columnOrder);
     }
 
-    if (this.state().columnPinning === undefined) {
+    if (controlled.columnPinning === undefined) {
       this.internalColumnPinning.set(nextState.columnPinning);
     }
 
-    if (this.state().pagination === undefined) {
+    if (controlled.pagination === undefined) {
       this.internalPagination.set(nextState.pagination);
     }
 
-    if (this.state().expanded === undefined) {
+    if (controlled.expanded === undefined) {
       this.internalExpanded.set(nextState.expanded);
     }
   }
@@ -1226,10 +1229,10 @@ export class NatTable<TData extends RowData = RowData> {
     queueMicrotask(() => this.liveMessage.set(message));
   }
 
-  private resolveRowId(row: TData, index: number): string {
+  private resolveRowId(row: TData, index: number, parent?: Row<TData>): string {
     const getRowId = this.getRowId();
 
-    return getRowId ? getRowId(row, index) : String(index);
+    return getRowId ? getRowId(row, index, parent) : String(index);
   }
 
   private resolveUpdater<T>(currentValue: T, updater: Updater<T> | undefined): T {
