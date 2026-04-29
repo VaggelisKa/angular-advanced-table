@@ -135,3 +135,29 @@ input {
   height: 16px;
   accent-color: var(--fd-accent);
 }
+
+.feature-dialog-panel .feature-toggle--with-hint {
+  align-items: flex-start;
+}
+
+.feature-dialog-panel .feature-toggle--with-hint input {
+  margin-top: 3px;
+}
+
+.feature-dialog-panel .feature-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.feature-dialog-panel .feature-toggle-title {
+  font-size: 0.9rem;
+  color: var(--fd-text);
+}
+
+.feature-dialog-panel .feature-toggle-hint {
+  font-size: 0.78rem;
+  color: var(--fd-text-soft);
+  line-height: 1.45;
+}

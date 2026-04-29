@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import type {
   CellContext,
   Column,
@@ -44,7 +45,8 @@ export interface NatTableUiController<TData extends RowData = RowData> {
       [K in keyof NatTableUiState]: Updater<NatTableUiState[K]>;
     }>,
   ): void;
-  tableElementId(): string;
+  /** DOM id of the controlled `<table>`; companion controls bind `aria-controls` to this. */
+  readonly tableElementId: Signal<string>;
 }
 
 /** Current sort direction for a header cell. */

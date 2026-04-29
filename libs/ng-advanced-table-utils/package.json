@@ -23,7 +23,7 @@
   ],
   "peerDependencies": {
     "@angular/core": "^21.2.0",
-    "@tanstack/angular-table": "^8.21.4"
+    "@tanstack/angular-table": "^8.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

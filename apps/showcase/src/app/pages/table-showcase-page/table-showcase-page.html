@@ -289,8 +289,9 @@
           [data]="simulation.rows()"
           [columns]="columns"
           [state]="tableState()"
-          [allowColumnPinning]="tableFeatures().allowColumnPinning"
-          [allowColumnReorder]="tableFeatures().allowColumnReorder"
+          [accessibilityText]="accessibilityText"
+          [enableColumnPinning]="tableFeatures().enableColumnPinning"
+          [enableColumnReorder]="tableFeatures().enableColumnReorder"
           [enablePagination]="tableFeatures().enablePagination"
           [enableGlobalFilter]="tableFeatures().enableGlobalFilter"
           [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
@@ -298,8 +299,7 @@
           [canExpandRow]="canExpandRow"
           [expandedRow]="tradeBriefRow"
           ariaLabel="Live market movers table"
-          emptyStateLabel="No instruments match the current filters. Clear the search query or signal chips to repopulate the tape."
-          (stateChange)="onTableStateChange($event)"
+          (columnFiltersChange)="onColumnFiltersChange($event)"
           (rowRendered)="onRowRendered($event)"
         />
       </nat-table-surface>
@@ -325,20 +325,20 @@
       </p>
 
       <div class="feature-toggle-list" role="group" aria-label="Table functionality toggles">
-        <label class="feature-toggle" data-feature="allowColumnPinning">
+        <label class="feature-toggle" data-feature="enableColumnPinning">
           <input
             type="checkbox"
-            [checked]="tableFeatures().allowColumnPinning"
-            (change)="toggleFeature('allowColumnPinning', readChecked($event))"
+            [checked]="tableFeatures().enableColumnPinning"
+            (change)="toggleFeature('enableColumnPinning', readChecked($event))"
           />
           <span>Column pinning</span>
         </label>
 
-        <label class="feature-toggle" data-feature="allowColumnReorder">
+        <label class="feature-toggle" data-feature="enableColumnReorder">
           <input
             type="checkbox"
-            [checked]="tableFeatures().allowColumnReorder"
-            (change)="toggleFeature('allowColumnReorder', readChecked($event))"
+            [checked]="tableFeatures().enableColumnReorder"
+            (change)="toggleFeature('enableColumnReorder', readChecked($event))"
           />
           <span>Column reordering</span>
         </label>

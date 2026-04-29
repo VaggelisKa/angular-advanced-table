@@ -12,7 +12,7 @@ Always do this:
 
 - Give every `<nat-table>` a localized `ariaLabel`.
 - Set `columnDef.meta.label` for each data column. This is required when the header is not a plain string and recommended for all columns.
-- Localize `emptyStateLabel` whenever the app language is not English or the product has custom empty-state wording.
+- Provide localized `accessibilityText` strings (`description`, `keyboardInstructions`, `emptyState`) whenever the product language is not English or you need custom wording.
 - Localize optional UI controls through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels`.
 - Translate semantic state values such as `ascending`, `descending`, `visible`, `hidden`, `show`, `hide`, `pin`, `unpin`, `left`, and `right` before presenting them to users.
 - Recreate translated column definitions when the active locale can change at runtime.
@@ -30,9 +30,9 @@ Do not do this:
 For every generated table, verify these items before considering the work complete:
 
 - `<nat-table>` has a localized `ariaLabel`.
-- `ariaDescription` is present when users need extra context before navigating the grid.
-- `keyboardInstructions` is localized when the product language is not English.
-- `emptyStateLabel` is localized.
+- `accessibilityText.description` is present when users need extra context before navigating the grid.
+- `accessibilityText.keyboardInstructions` is localized when the product language is not English.
+- `accessibilityText.emptyState` is localized.
 - Each column has a stable localized `meta.label`.
 - `accessibilityText` is provided when summaries or live announcements need product-specific copy.
 - Every rendered `ng-advanced-table-ui` companion control has localized visible labels and group or button labels.
@@ -42,14 +42,14 @@ For every generated table, verify these items before considering the work comple
 
 The core table exposes these localization inputs:
 
-| Surface                      | API                    | Purpose                                                             |
-| ---------------------------- | ---------------------- | ------------------------------------------------------------------- |
-| Table name                   | `ariaLabel`            | Required accessible name for the grid.                              |
-| Supplemental description     | `ariaDescription`      | Optional hidden description referenced by `aria-describedby`.       |
-| Grid instructions            | `keyboardInstructions` | Hidden navigation instructions for screen-reader users.             |
-| Empty state                  | `emptyStateLabel`      | Visible text when no rows match the current view.                   |
-| Column labels                | `columnDef.meta.label` | Stable human-readable label used by announcements and companion UI. |
-| Generated accessibility text | `accessibilityText`    | Overrides summaries and live announcements.                         |
+| Surface                      | API                                      | Purpose                                                             |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------------------- |
+| Table name                   | `ariaLabel`                              | Required accessible name for the grid.                              |
+| Supplemental description     | `accessibilityText.description`          | Optional hidden description referenced by `aria-describedby`.       |
+| Grid instructions            | `accessibilityText.keyboardInstructions` | Hidden navigation instructions for screen-reader users.             |
+| Empty state                  | `accessibilityText.emptyState`           | Visible text when no rows match the current view.                   |
+| Column labels                | `columnDef.meta.label`                   | Stable human-readable label used by announcements and companion UI. |
+| Generated accessibility text | `accessibilityText`                      | Overrides summaries and live announcements.                         |
 
 Decision rules for agents:
 
@@ -61,6 +61,9 @@ Decision rules for agents:
 
 `accessibilityText` accepts these keys:
 
+- `description`
+- `keyboardInstructions`
+- `emptyState`
 - `reorderKeyboardInstructions`
 - `tableSummary(...)`
 - `sortingChange(...)`
@@ -131,9 +134,6 @@ interface OrderRow {
 
 interface TableCopy {
   tableLabel: string;
-  tableDescription: string;
-  keyboardInstructions: string;
-  emptyState: string;
   searchLabel: string;
   searchPlaceholder: string;
   columns: {
@@ -150,10 +150,6 @@ interface TableCopy {
 const tableCopy: Record<'en' | 'da', TableCopy> = {
   en: {
     tableLabel: 'Orders',
-    tableDescription: 'Sortable and filterable order table.',
-    keyboardInstructions:
-      'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
-    emptyState: 'No orders match the current view.',
     searchLabel: 'Search orders',
     searchPlaceholder: 'Search orders',
     columns: {
@@ -161,6 +157,10 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
       notional: 'Notional',
     },
     tableText: {
+      description: 'Sortable and filterable order table.',
+      keyboardInstructions:
+        'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
+      emptyState: 'No orders match the current view.',
       tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
         `${visibleRowsText} of ${totalRowsText} rows shown. Page ${pageText} of ${pageCountText}.`,
       sortingChange: ({ columnLabel, sortState }) =>
@@ -206,10 +206,6 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
   },
   da: {
     tableLabel: 'Ordrer',
-    tableDescription: 'Sorterbar og filtrerbar ordretabel.',
-    keyboardInstructions:
-      'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
-    emptyState: 'Ingen ordrer matcher den aktuelle visning.',
     searchLabel: 'Sog i ordrer',
     searchPlaceholder: 'Sog i ordrer',
     columns: {
@@ -217,6 +213,10 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
       notional: 'Nominel vaerdi',
     },
     tableText: {
+      description: 'Sorterbar og filtrerbar ordretabel.',
+      keyboardInstructions:
+        'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
+      emptyState: 'Ingen ordrer matcher den aktuelle visning.',
       tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
         `${visibleRowsText} af ${totalRowsText} raekker vises. Side ${pageText} af ${pageCountText}.`,
       sortingChange: ({ columnLabel, sortState }) =>
@@ -292,9 +292,6 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
       [state]="tableState()"
       [enablePagination]="true"
       [ariaLabel]="labels.tableLabel"
-      [ariaDescription]="labels.tableDescription"
-      [keyboardInstructions]="labels.keyboardInstructions"
-      [emptyStateLabel]="labels.emptyState"
       [accessibilityText]="labels.tableText"
       (stateChange)="tableState.set($event)"
     />

@@ -57,11 +57,11 @@ import type {
   NatTableAccessibilityText,
   NatTableCellTone,
   NatTableExpandedRowContext,
+  NatTableRowActivateEvent,
   NatTableRowExpandablePredicate,
+  NatTableRowIdGetter,
   NatTableState,
 } from './table.types';
-
-type TableRowIdGetter<TData> = (row: TData, index: number) => string;
 type ColumnReorderZone = 'left' | 'center' | 'right';
 interface TableColumnAccessibilityState {
   id: string;
@@ -114,6 +114,14 @@ const DEFAULT_TABLE_STATE: NatTableState = {
 };
 const REORDER_KEYBOARD_INSTRUCTIONS =
   'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.';
+const DEFAULT_KEYBOARD_INSTRUCTIONS =
+  'Use arrow keys to move between cells. Use Tab to move into controls within a cell.';
+const DEFAULT_EMPTY_STATE_LABEL = 'No rows match the current view.';
+const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
+  'a[href], button, input, select, textarea, summary, [contenteditable="true"], ' +
+  '[role="button"], [role="link"], [role="checkbox"], [role="menuitem"], ' +
+  '[role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="switch"], ' +
+  '[role="combobox"], [role="textbox"], [role="searchbox"]';
 let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
@@ -158,40 +166,50 @@ export class NatTable<TData extends RowData = RowData> {
   readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
   /** Accessible name announced for the table region. */
   readonly ariaLabel = input.required<string>();
-  /** Optional supplemental description announced when the grid receives focus. */
-  readonly ariaDescription = input('');
-  /** Instructions announced to screen readers for grid navigation. */
-  readonly keyboardInstructions = input(
-    'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
-  );
-  /** Optional overrides for built-in accessibility summaries and announcements. */
+  /**
+   * Optional overrides for accessibility copy and live announcements.
+   *
+   * Includes the supplemental `description`, screen-reader
+   * `keyboardInstructions`, the visible `emptyState` message, and formatter
+   * callbacks for sort/filter/visibility/pagination/reorder announcements.
+   */
   readonly accessibilityText = input<NatTableAccessibilityText>({});
 
   /** Enables the global filter pipeline for companion search controls. */
   readonly enableGlobalFilter = input(true, { transform: booleanAttribute });
   /** Enables sticky column pinning where the column allows it. */
-  readonly allowColumnPinning = input(true, { transform: booleanAttribute });
+  readonly enableColumnPinning = input(true, { transform: booleanAttribute });
   /** Enables drag-and-drop and keyboard reordering for leaf header cells. */
-  readonly allowColumnReorder = input(false, { transform: booleanAttribute });
+  readonly enableColumnReorder = input(false, { transform: booleanAttribute });
   /** Enables client-side pagination row models when external UI drives pagination state. */
   readonly enablePagination = input(false, { transform: booleanAttribute });
-  /** Message rendered when the current view contains no rows. */
-  readonly emptyStateLabel = input('No rows match the current view.');
   /** Optional override for the global filter implementation. */
-  readonly globalFilterFn = input<FilterFn<TData> | undefined>(undefined);
-  /** Initial uncontrolled state applied once during the first render. */
+  readonly globalFilterFn = input<FilterFn<TData>>();
+  /**
+   * Uncontrolled seed state read once during the first render.
+   *
+   * Each property listed here pre-populates the matching internal slice
+   * before the table emits its first `(stateChange)`. Slices that are also
+   * present in `state` are ignored here, because that input takes over the
+   * slice as a controlled value. After the seed pass, this input is no
+   * longer consulted; further updates flow through `(stateChange)` or one
+   * of the granular `*Change` outputs.
+   */
   readonly initialState = input<Partial<NatTableState>>({});
   /**
    * Controlled state slices supplied by the consumer.
    *
-   * Any property omitted from this object remains unmanaged and is updated
-   * internally by the table.
+   * A slice is considered controlled only when its property is *present*
+   * in this object, even if the value is an empty array or empty record.
+   * Omitted properties remain uncontrolled and are managed internally by
+   * the table; controlled slices can still be updated through the matching
+   * `*Change` output (or `(stateChange)`) and flowed back in.
    */
   readonly state = input<Partial<NatTableState>>({});
   /** Optional stable row id resolver used for selection, pinning, and events. */
-  readonly getRowId = input<TableRowIdGetter<TData> | undefined>(undefined);
+  readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Optional predicate that determines which rows can be expanded. */
-  readonly canExpandRow = input<NatTableRowExpandablePredicate<TData> | undefined>(undefined);
+  readonly canExpandRow = input<NatTableRowExpandablePredicate<TData>>();
   /** Optional template rendered in an extra full-width row when a row is expanded. */
   readonly expandedRow = input<TemplateRef<NatTableExpandedRowContext<TData>> | null>(null);
   /**
@@ -202,10 +220,38 @@ export class NatTable<TData extends RowData = RowData> {
   /** Enables polite live announcements for sort/filter/pagination changes. */
   readonly enableAnnouncements = input(true, { transform: booleanAttribute });
 
-  /** Emits the full next state whenever the table updates any state slice. */
+  /**
+   * Emits the full next state whenever the table updates any state slice.
+   *
+   * Prefer the granular `*Change` outputs when you only care about a single
+   * slice; this output remains the canonical "everything changed" signal.
+   */
   readonly stateChange = output<NatTableState>();
+  /** Emits the next sorting state when it actually changes. */
+  readonly sortingChange = output<SortingState>();
+  /** Emits the next global filter query when it actually changes. */
+  readonly globalFilterChange = output<string>();
+  /** Emits the next column filter list when it actually changes. */
+  readonly columnFiltersChange = output<ColumnFiltersState>();
+  /** Emits the next column visibility map when it actually changes. */
+  readonly columnVisibilityChange = output<VisibilityState>();
+  /** Emits the next leaf column order when it actually changes. */
+  readonly columnOrderChange = output<ColumnOrderState>();
+  /** Emits the next column pinning state when it actually changes. */
+  readonly columnPinningChange = output<ColumnPinningState>();
+  /** Emits the next pagination state when it actually changes. */
+  readonly paginationChange = output<PaginationState>();
+  /** Emits the next expanded row state when it actually changes. */
+  readonly expandedChange = output<ExpandedState>();
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
   readonly rowRendered = output<NatTableRowRenderedEvent>();
+  /**
+   * Emits when a body row is activated through a primary click or an
+   * Enter / Space key press. Activations that originate from an interactive
+   * descendant (button, link, form control, menu item, `contenteditable`)
+   * are ignored, so cell-level controls keep their own behavior.
+   */
+  readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
   private readonly internalGlobalFilter = signal(DEFAULT_TABLE_STATE.globalFilter);
@@ -223,10 +269,16 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalExpanded = signal<ExpandedState>(DEFAULT_TABLE_STATE.expanded);
   private readonly hasSeededInitialState = signal(false);
   protected readonly liveMessage = signal('');
-  protected readonly generatedTableId = `nat-table-${nextTableId++}`;
-  protected readonly tableSummaryId = `${this.generatedTableId}-summary`;
-  protected readonly tableDescriptionId = `${this.generatedTableId}-description`;
-  protected readonly tableKeyboardInstructionsId = `${this.generatedTableId}-instructions`;
+  /**
+   * Stable DOM id for the rendered `<table>` element. Exposed as a signal so
+   * consumers and companion UI can bind reactively without a method call.
+   */
+  readonly tableElementId = signal(`nat-table-${nextTableId++}`);
+  protected readonly tableSummaryId = computed(() => `${this.tableElementId()}-summary`);
+  protected readonly tableDescriptionId = computed(() => `${this.tableElementId()}-description`);
+  protected readonly tableKeyboardInstructionsId = computed(
+    () => `${this.tableElementId()}-instructions`,
+  );
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
 
   protected readonly renderCycleToken = signal(0);
@@ -241,19 +293,27 @@ export class NatTable<TData extends RowData = RowData> {
     ),
   );
   private readonly resolvedColumnPinning = computed(() =>
-    this.allowColumnPinning()
+    this.enableColumnPinning()
       ? normalizeColumnPinning(
           this.state().columnPinning ?? this.internalColumnPinning(),
           this.allLeafColumnIds(),
         )
       : EMPTY_COLUMN_PINNING,
   );
+  protected readonly resolvedDescription = computed(
+    () => this.accessibilityText().description ?? '',
+  );
+  protected readonly resolvedEmptyState = computed(
+    () => this.accessibilityText().emptyState ?? DEFAULT_EMPTY_STATE_LABEL,
+  );
   protected readonly resolvedKeyboardInstructions = computed(() => {
-    const instructions = this.keyboardInstructions().trim();
+    const instructions = (
+      this.accessibilityText().keyboardInstructions ?? DEFAULT_KEYBOARD_INSTRUCTIONS
+    ).trim();
     const reorderInstructions =
       this.accessibilityText().reorderKeyboardInstructions?.trim() ?? REORDER_KEYBOARD_INSTRUCTIONS;
 
-    if (!this.allowColumnReorder()) {
+    if (!this.enableColumnReorder()) {
       return instructions;
     }
 
@@ -265,7 +325,7 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
   protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   protected readonly mergedState = computed<NatTableState>(() => ({
-    sorting: this.state().sorting ?? this.internalSorting(),
+    sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting()),
     globalFilter: this.enableGlobalFilter()
       ? (this.state().globalFilter ?? this.internalGlobalFilter())
       : '',
@@ -293,14 +353,14 @@ export class NatTable<TData extends RowData = RowData> {
     () => this.table.getHeaderGroups().at(-1)?.id ?? null,
   );
   protected readonly ariaDescribedBy = computed(() => {
-    const ids: string[] = [this.tableSummaryId];
+    const ids: string[] = [this.tableSummaryId()];
 
-    if (this.ariaDescription().trim()) {
-      ids.push(this.tableDescriptionId);
+    if (this.resolvedDescription().trim()) {
+      ids.push(this.tableDescriptionId());
     }
 
     if (this.resolvedKeyboardInstructions().trim()) {
-      ids.push(this.tableKeyboardInstructionsId);
+      ids.push(this.tableKeyboardInstructionsId());
     }
 
     return ids.join(' ');
@@ -316,12 +376,13 @@ export class NatTable<TData extends RowData = RowData> {
     columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
     state: this.mergedState(),
     enableMultiSort: false,
-    enableColumnPinning: this.allowColumnPinning(),
+    isMultiSortEvent: () => false,
+    enableColumnPinning: this.enableColumnPinning(),
     enableColumnOrdering: true,
     enableExpanding: !!this.expandedRow(),
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
-    getRowId: (row, index) => this.resolveRowId(row, index),
+    getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
     getRowCanExpand: (row) =>
       !!this.expandedRow() && (this.canExpandRow()?.(row.original, row.index) ?? true),
     getCoreRowModel: getCoreRowModel(),
@@ -378,7 +439,6 @@ export class NatTable<TData extends RowData = RowData> {
       .filter((column): column is Column<TData, unknown> => !!column);
     const leftPinnedIds = new Set(leftVisibleColumns.map((column) => column.id));
     const rightPinnedIds = new Set(rightVisibleColumns.map((column) => column.id));
-    const activeSorting = state.sorting[0];
     const leftOffsets: Record<string, number> = {};
     const rightOffsets: Record<string, number> = {};
     const result: Record<string, TableColumnRenderState> = {};
@@ -403,6 +463,8 @@ export class NatTable<TData extends RowData = RowData> {
       const pinnedLeft = leftPinnedIds.has(column.id);
       const pinnedRight = rightPinnedIds.has(column.id);
 
+      const sortEntry = state.sorting.find((entry) => entry.id === column.id);
+
       result[column.id] = {
         alignEnd: column.columnDef.meta?.align === 'end',
         pinnedLeft,
@@ -412,12 +474,7 @@ export class NatTable<TData extends RowData = RowData> {
         left: pinnedLeft ? (leftOffsets[column.id] ?? 0) : null,
         right: pinnedRight ? (rightOffsets[column.id] ?? 0) : null,
         minWidth,
-        ariaSort:
-          activeSorting?.id === column.id
-            ? activeSorting.desc
-              ? 'descending'
-              : 'ascending'
-            : null,
+        ariaSort: sortEntry ? (sortEntry.desc ? 'descending' : 'ascending') : null,
         rowHeader: !!column.columnDef.meta?.rowHeader,
       };
     }
@@ -433,7 +490,9 @@ export class NatTable<TData extends RowData = RowData> {
 
       const initialState = this.initialState();
 
-      this.internalSorting.set(initialState.sorting ?? DEFAULT_TABLE_STATE.sorting);
+      this.internalSorting.set(
+        normalizeSortingState(initialState.sorting ?? DEFAULT_TABLE_STATE.sorting),
+      );
       this.internalGlobalFilter.set(
         this.enableGlobalFilter()
           ? (initialState.globalFilter ?? DEFAULT_TABLE_STATE.globalFilter)
@@ -447,7 +506,7 @@ export class NatTable<TData extends RowData = RowData> {
       );
       this.internalColumnOrder.set(initialState.columnOrder ?? DEFAULT_TABLE_STATE.columnOrder);
       this.internalColumnPinning.set(
-        this.allowColumnPinning()
+        this.enableColumnPinning()
           ? (initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning)
           : EMPTY_COLUMN_PINNING,
       );
@@ -519,10 +578,6 @@ export class NatTable<TData extends RowData = RowData> {
     this.updateState(updaters);
   }
 
-  tableElementId(): string {
-    return this.generatedTableId;
-  }
-
   protected isLeafHeaderRow(headerGroup: HeaderGroup<TData>): boolean {
     return headerGroup.id === this.leafHeaderRowId();
   }
@@ -534,7 +589,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected canReorderHeader(header: Header<TData, unknown>): boolean {
-    if (!this.allowColumnReorder() || header.isPlaceholder) {
+    if (!this.enableColumnReorder() || header.isPlaceholder) {
       return false;
     }
 
@@ -543,7 +598,7 @@ export class NatTable<TData extends RowData = RowData> {
 
   protected onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
     if (
-      !this.allowColumnReorder() ||
+      !this.enableColumnReorder() ||
       !this.isLeafHeaderRow(headerGroup) ||
       event.previousIndex === event.currentIndex
     ) {
@@ -576,7 +631,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (!this.allowColumnReorder() || !event.altKey || !event.shiftKey) {
+    if (!this.enableColumnReorder() || !event.altKey || !event.shiftKey) {
       return;
     }
 
@@ -631,6 +686,46 @@ export class NatTable<TData extends RowData = RowData> {
     this.rowRendered.emit(event);
   }
 
+  protected onRowClick(event: MouseEvent, row: Row<TData>): void {
+    if (event.button !== 0 || event.defaultPrevented) {
+      return;
+    }
+
+    if (originatesFromInteractiveDescendant(event)) {
+      return;
+    }
+
+    this.rowActivate.emit({
+      rowData: row.original,
+      row,
+      originalEvent: event,
+    });
+  }
+
+  protected onRowKeydown(event: KeyboardEvent, row: Row<TData>): void {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') {
+      return;
+    }
+
+    if (originatesFromInteractiveDescendant(event)) {
+      return;
+    }
+
+    if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+    }
+
+    this.rowActivate.emit({
+      rowData: row.original,
+      row,
+      originalEvent: event,
+    });
+  }
+
   private readonly firstPageUpdater: Updater<PaginationState> = (currentPagination) => ({
     ...currentPagination,
     pageIndex: 0,
@@ -643,7 +738,9 @@ export class NatTable<TData extends RowData = RowData> {
   ): void {
     const currentState = this.mergedState();
     const nextState: NatTableState = {
-      sorting: this.resolveUpdater(currentState.sorting, updaters.sorting),
+      sorting: normalizeSortingState(
+        this.resolveUpdater(currentState.sorting, updaters.sorting),
+      ),
       globalFilter: this.resolveUpdater(currentState.globalFilter, updaters.globalFilter),
       columnFilters: this.resolveUpdater(currentState.columnFilters, updaters.columnFilters),
       columnVisibility: this.resolveUpdater(
@@ -664,38 +761,75 @@ export class NatTable<TData extends RowData = RowData> {
 
     this.commitInternalState(nextState);
     this.stateChange.emit(nextState);
+    this.emitSliceChanges(currentState, nextState);
+  }
+
+  private emitSliceChanges(previous: NatTableState, next: NatTableState): void {
+    if (!hasSameSorting(previous.sorting, next.sorting)) {
+      this.sortingChange.emit(next.sorting);
+    }
+
+    if (previous.globalFilter !== next.globalFilter) {
+      this.globalFilterChange.emit(next.globalFilter);
+    }
+
+    if (!hasSameColumnFilters(previous.columnFilters, next.columnFilters)) {
+      this.columnFiltersChange.emit(next.columnFilters);
+    }
+
+    if (!hasSameVisibilityMap(previous.columnVisibility, next.columnVisibility)) {
+      this.columnVisibilityChange.emit(next.columnVisibility);
+    }
+
+    if (!hasSameStringOrder(previous.columnOrder, next.columnOrder)) {
+      this.columnOrderChange.emit(next.columnOrder);
+    }
+
+    if (!hasSameColumnPinning(previous.columnPinning, next.columnPinning)) {
+      this.columnPinningChange.emit(next.columnPinning);
+    }
+
+    if (!hasSamePagination(previous.pagination, next.pagination)) {
+      this.paginationChange.emit(next.pagination);
+    }
+
+    if (!hasSameExpandedState(previous.expanded, next.expanded)) {
+      this.expandedChange.emit(next.expanded);
+    }
   }
 
   private commitInternalState(nextState: NatTableState): void {
-    if (this.state().sorting === undefined) {
+    const controlled = this.state();
+
+    if (controlled.sorting === undefined) {
       this.internalSorting.set(nextState.sorting);
     }
 
-    if (this.state().globalFilter === undefined) {
+    if (controlled.globalFilter === undefined) {
       this.internalGlobalFilter.set(nextState.globalFilter);
     }
 
-    if (this.state().columnFilters === undefined) {
+    if (controlled.columnFilters === undefined) {
       this.internalColumnFilters.set(nextState.columnFilters);
     }
 
-    if (this.state().columnVisibility === undefined) {
+    if (controlled.columnVisibility === undefined) {
       this.internalColumnVisibility.set(nextState.columnVisibility);
     }
 
-    if (this.state().columnOrder === undefined) {
+    if (controlled.columnOrder === undefined) {
       this.internalColumnOrder.set(nextState.columnOrder);
     }
 
-    if (this.state().columnPinning === undefined) {
+    if (controlled.columnPinning === undefined) {
       this.internalColumnPinning.set(nextState.columnPinning);
     }
 
-    if (this.state().pagination === undefined) {
+    if (controlled.pagination === undefined) {
       this.internalPagination.set(nextState.pagination);
     }
 
-    if (this.state().expanded === undefined) {
+    if (controlled.expanded === undefined) {
       this.internalExpanded.set(nextState.expanded);
     }
   }
@@ -1008,29 +1142,28 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private describeSortingChange(snapshot: TableAccessibilitySnapshot): string {
-    const sorting = this.mergedState().sorting[0];
+    const sortingState = this.mergedState().sorting;
     const formatter = this.accessibilityText().sortingChange;
-    const label = sorting
-      ? (snapshot.columns.find((column) => column.id === sorting.id)?.label ?? null)
+    const entry = sortingState[0];
+    const columnLabel = entry
+      ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id)
       : null;
+    const sortState = entry ? (entry.desc ? 'descending' : 'ascending') : 'none';
     const context: NatTableAccessibilitySortingAnnouncementContext = {
-      columnId: sorting?.id ?? null,
-      columnLabel: label,
-      sortState: sorting ? (sorting.desc ? 'descending' : 'ascending') : 'none',
+      columnId: entry?.id ?? null,
+      columnLabel,
+      sortState,
     };
 
     if (formatter) {
       return formatter(context);
     }
 
-    if (!sorting) {
+    if (!entry) {
       return 'Sorting cleared.';
     }
 
-    const resolvedLabel = label ?? 'current column';
-    const direction = context.sortState === 'none' ? 'ascending' : context.sortState;
-
-    return `Sorted by ${resolvedLabel} ${direction}.`;
+    return `Sorted by ${columnLabel} ${sortState}.`;
   }
 
   private describeFilteringChange(snapshot: TableAccessibilitySnapshot): string {
@@ -1161,10 +1294,10 @@ export class NatTable<TData extends RowData = RowData> {
     queueMicrotask(() => this.liveMessage.set(message));
   }
 
-  private resolveRowId(row: TData, index: number): string {
+  private resolveRowId(row: TData, index: number, parent?: Row<TData>): string {
     const getRowId = this.getRowId();
 
-    return getRowId ? getRowId(row, index) : String(index);
+    return getRowId ? getRowId(row, index, parent) : String(index);
   }
 
   private resolveUpdater<T>(currentValue: T, updater: Updater<T> | undefined): T {
@@ -1222,6 +1355,59 @@ function resolveColumnDefId<TData extends RowData>(
   }
 
   return typeof column.header === 'string' ? column.header : null;
+}
+
+function originatesFromInteractiveDescendant(event: Event): boolean {
+  const target = event.target;
+  const currentTarget = event.currentTarget;
+
+  if (!(target instanceof Element) || !(currentTarget instanceof Element)) {
+    return false;
+  }
+
+  const interactive = target.closest(ROW_ACTIVATE_INTERACTIVE_SELECTOR);
+
+  if (!interactive) {
+    return false;
+  }
+
+  return interactive !== currentTarget && currentTarget.contains(interactive);
+}
+
+/** Collapses to a single primary sort column (deduped by id, first wins). */
+function normalizeSortingState(sorting: SortingState): SortingState {
+  if (!sorting.length) {
+    return sorting;
+  }
+
+  const seen = new Set<string>();
+  const deduped: SortingState = [];
+
+  for (const entry of sorting) {
+    if (!entry || seen.has(entry.id)) {
+      continue;
+    }
+
+    seen.add(entry.id);
+    deduped.push(entry);
+  }
+
+  const normalized = deduped.slice(0, 1);
+
+  if (normalized.length === sorting.length && normalized[0] === sorting[0]) {
+    return sorting;
+  }
+
+  if (
+    normalized.length === 1 &&
+    sorting.length === 1 &&
+    normalized[0]!.id === sorting[0]!.id &&
+    normalized[0]!.desc === sorting[0]!.desc
+  ) {
+    return sorting;
+  }
+
+  return normalized;
 }
 
 function normalizeColumnOrder(
@@ -1389,6 +1575,87 @@ function serializeSorting(sorting: SortingState): string {
 
 function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
   return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
+}
+
+function hasSameSorting(previous: SortingState, next: SortingState): boolean {
+  if (previous === next) {
+    return true;
+  }
+
+  return serializeSorting(previous) === serializeSorting(next);
+}
+
+function hasSameColumnFilters(previous: ColumnFiltersState, next: ColumnFiltersState): boolean {
+  if (previous === next) {
+    return true;
+  }
+
+  return serializeColumnFilters(previous) === serializeColumnFilters(next);
+}
+
+function hasSameVisibilityMap(previous: VisibilityState, next: VisibilityState): boolean {
+  if (previous === next) {
+    return true;
+  }
+
+  const previousKeys = Object.keys(previous);
+  const nextKeys = Object.keys(next);
+
+  if (previousKeys.length !== nextKeys.length) {
+    return false;
+  }
+
+  for (const key of previousKeys) {
+    if (previous[key] !== next[key]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function hasSameColumnPinning(previous: ColumnPinningState, next: ColumnPinningState): boolean {
+  if (previous === next) {
+    return true;
+  }
+
+  return (
+    hasSameStringOrder(previous.left ?? [], next.left ?? []) &&
+    hasSameStringOrder(previous.right ?? [], next.right ?? [])
+  );
+}
+
+function hasSamePagination(previous: PaginationState, next: PaginationState): boolean {
+  if (previous === next) {
+    return true;
+  }
+
+  return previous.pageIndex === next.pageIndex && previous.pageSize === next.pageSize;
+}
+
+function hasSameExpandedState(previous: ExpandedState, next: ExpandedState): boolean {
+  if (previous === next) {
+    return true;
+  }
+
+  if (previous === true || next === true) {
+    return previous === next;
+  }
+
+  const previousKeys = Object.keys(previous);
+  const nextKeys = Object.keys(next);
+
+  if (previousKeys.length !== nextKeys.length) {
+    return false;
+  }
+
+  for (const key of previousKeys) {
+    if (previous[key] !== next[key]) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function hasSameColumnVisibility(

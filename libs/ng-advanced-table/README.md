@@ -52,16 +52,12 @@ npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 - `NatTable`
 - `NatTableRowRenderedEvent`
 - `NatTableAccessibilityText`
-- `NatTableAccessibilitySummaryContext`
-- `NatTableAccessibilitySortingAnnouncementContext`
-- `NatTableAccessibilityFilteringAnnouncementContext`
-- `NatTableAccessibilityColumnVisibilityAnnouncementChange`
-- `NatTableAccessibilityColumnVisibilityAnnouncementContext`
-- `NatTableAccessibilityPaginationAnnouncementContext`
-- `NatTableAccessibilityColumnReorderAnnouncementContext`
+- `NatTableA11y` (namespace of deep accessibility formatter context types)
 - `NatTableExpandedState`
 - `NatTableExpandedRowContext`
 - `NatTableRowExpandablePredicate`
+- `NatTableRowIdGetter`
+- `NatTableRowActivateEvent`
 - `NatTableState`
 - `NatTableColumnMeta`
 - `NatTableCellTone`
