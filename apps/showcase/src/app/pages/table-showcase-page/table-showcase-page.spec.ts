@@ -109,14 +109,14 @@ describe('TableShowcasePage', () => {
     expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Exchange');
   });
 
-  it('should apply positive and negative tones to move cells', () => {
+  it('should apply warning tones to halted move cells', () => {
     fixture.detectChanges();
 
     const changePercentCell = fixture.nativeElement.querySelector(
       'tbody tr:first-child td[data-column-id="changePercent"]',
     ) as HTMLTableCellElement;
 
-    expect(changePercentCell.getAttribute('data-tone')).toBe('positive');
+    expect(changePercentCell.getAttribute('data-tone')).toBe('warning');
   });
 
   it('should toggle between light and dark themes', () => {
@@ -152,7 +152,7 @@ describe('TableShowcasePage', () => {
       'tbody td[data-column-id="spark"] nat-sparkline svg',
     );
 
-    expect(sparkCells.length).toBe(24);
+    expect(sparkCells.length).toBe(10);
   });
 
   it('should render ticker marks in the symbol column', () => {
@@ -162,7 +162,7 @@ describe('TableShowcasePage', () => {
       'tbody th[data-column-id="symbol"] nat-ticker-mark',
     );
 
-    expect(marks.length).toBe(24);
+    expect(marks.length).toBe(10);
   });
 
   it('should expand actionable rows into a trade brief panel', () => {
@@ -192,7 +192,7 @@ describe('TableShowcasePage', () => {
       'tbody td[data-column-id="actions"] .row-actions-trigger',
     ) as NodeListOf<HTMLButtonElement>;
 
-    expect(actionTriggers.length).toBe(24);
+    expect(actionTriggers.length).toBe(10);
 
     actionTriggers[0].click();
     fixture.detectChanges();

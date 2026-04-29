@@ -5,27 +5,28 @@
     "packageManager": "npm",
     "analytics": "30bb135d-e588-4678-a32a-ba61bf3fd5ef"
   },
-  "newProjectRoot": "projects",
+  "newProjectRoot": "libs",
   "projects": {
-    "angular-advanced-table": {
+    "showcase": {
       "projectType": "application",
       "schematics": {},
-      "root": "",
-      "sourceRoot": "src",
+      "root": "apps/showcase",
+      "sourceRoot": "apps/showcase/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
+          "outputs": ["{options.outputPath}"],
           "options": {
-            "browser": "src/main.ts",
-            "tsConfig": "tsconfig.app.json",
+            "browser": "apps/showcase/src/main.ts",
+            "tsConfig": "apps/showcase/tsconfig.app.json",
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": ["apps/showcase/src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -55,93 +56,180 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "angular-advanced-table:build:production"
+              "buildTarget": "showcase:build:production"
             },
             "development": {
-              "buildTarget": "angular-advanced-table:build:development"
+              "buildTarget": "showcase:build:development"
             }
           },
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "apps/showcase/tsconfig.spec.json"
+          }
         }
       }
     },
     "ng-advanced-table": {
       "projectType": "library",
-      "root": "projects/ng-advanced-table",
-      "sourceRoot": "projects/ng-advanced-table/src",
+      "root": "libs/ng-advanced-table",
+      "sourceRoot": "libs/ng-advanced-table/src",
       "prefix": "nat",
       "architect": {
         "build": {
-          "builder": "@angular/build:ng-packagr",
+          "builder": "@nx/angular:package",
+          "outputs": ["{workspaceRoot}/dist/libs/ng-advanced-table"],
+          "options": {
+            "project": "libs/ng-advanced-table/ng-package.json"
+          },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ng-advanced-table/tsconfig.lib.prod.json"
+              "tsConfig": "libs/ng-advanced-table/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ng-advanced-table/tsconfig.lib.json"
+              "tsConfig": "libs/ng-advanced-table/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
         },
+        "test-build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "libs/ng-advanced-table/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/ng-advanced-table/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/ng-advanced-table/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/ng-advanced-table/tsconfig.spec.json"
+            "buildTarget": "ng-advanced-table:test-build:development",
+            "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json"
+          }
+        },
+        "nx-release-publish": {
+          "executor": "@nx/js:release-publish",
+          "dependsOn": ["build"],
+          "options": {
+            "packageRoot": "dist/libs/ng-advanced-table",
+            "access": "public"
           }
         }
       }
     },
     "ng-advanced-table-utils": {
       "projectType": "library",
-      "root": "projects/ng-advanced-table-utils",
-      "sourceRoot": "projects/ng-advanced-table-utils/src",
+      "root": "libs/ng-advanced-table-utils",
+      "sourceRoot": "libs/ng-advanced-table-utils/src",
       "prefix": "nat",
       "architect": {
         "build": {
-          "builder": "@angular/build:ng-packagr",
+          "builder": "@nx/angular:package",
+          "outputs": ["{workspaceRoot}/dist/libs/ng-advanced-table-utils"],
+          "options": {
+            "project": "libs/ng-advanced-table-utils/ng-package.json"
+          },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ng-advanced-table-utils/tsconfig.lib.prod.json"
+              "tsConfig": "libs/ng-advanced-table-utils/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ng-advanced-table-utils/tsconfig.lib.json"
+              "tsConfig": "libs/ng-advanced-table-utils/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
         },
+        "test-build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "libs/ng-advanced-table-utils/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/ng-advanced-table-utils/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/ng-advanced-table-utils/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/ng-advanced-table-utils/tsconfig.spec.json"
+            "buildTarget": "ng-advanced-table-utils:test-build:development",
+            "tsConfig": "libs/ng-advanced-table-utils/tsconfig.spec.json"
+          }
+        },
+        "nx-release-publish": {
+          "executor": "@nx/js:release-publish",
+          "dependsOn": ["build"],
+          "options": {
+            "packageRoot": "dist/libs/ng-advanced-table-utils",
+            "access": "public"
           }
         }
       }
     },
     "ng-advanced-table-ui": {
       "projectType": "library",
-      "root": "projects/ng-advanced-table-ui",
-      "sourceRoot": "projects/ng-advanced-table-ui/src",
+      "root": "libs/ng-advanced-table-ui",
+      "sourceRoot": "libs/ng-advanced-table-ui/src",
       "prefix": "nat",
       "architect": {
         "build": {
-          "builder": "@angular/build:ng-packagr",
+          "builder": "@nx/angular:package",
+          "outputs": ["{workspaceRoot}/dist/libs/ng-advanced-table-ui"],
+          "options": {
+            "project": "libs/ng-advanced-table-ui/ng-package.json"
+          },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ng-advanced-table-ui/tsconfig.lib.prod.json"
+              "tsConfig": "libs/ng-advanced-table-ui/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ng-advanced-table-ui/tsconfig.lib.json"
+              "tsConfig": "libs/ng-advanced-table-ui/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
         },
+        "test-build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "libs/ng-advanced-table-ui/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "libs/ng-advanced-table-ui/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "libs/ng-advanced-table-ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/ng-advanced-table-ui/tsconfig.spec.json"
+            "buildTarget": "ng-advanced-table-ui:test-build:development",
+            "tsConfig": "libs/ng-advanced-table-ui/tsconfig.spec.json"
+          }
+        },
+        "nx-release-publish": {
+          "executor": "@nx/js:release-publish",
+          "dependsOn": ["build"],
+          "options": {
+            "packageRoot": "dist/libs/ng-advanced-table-ui",
+            "access": "public"
           }
         }
       }

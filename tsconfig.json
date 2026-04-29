@@ -6,16 +6,16 @@
     "baseUrl": "./",
     "paths": {
       "ng-advanced-table": [
-        "./dist/ng-advanced-table",
-        "./projects/ng-advanced-table/src/public-api.ts"
+        "./dist/libs/ng-advanced-table",
+        "./libs/ng-advanced-table/src/public-api.ts"
       ],
       "ng-advanced-table-ui": [
-        "./dist/ng-advanced-table-ui",
-        "./projects/ng-advanced-table-ui/src/public-api.ts"
+        "./dist/libs/ng-advanced-table-ui",
+        "./libs/ng-advanced-table-ui/src/public-api.ts"
       ],
       "ng-advanced-table-utils": [
-        "./dist/ng-advanced-table-utils",
-        "./projects/ng-advanced-table-utils/src/public-api.ts"
+        "./dist/libs/ng-advanced-table-utils",
+        "./libs/ng-advanced-table-utils/src/public-api.ts"
       ]
     },
     "strict": true,
@@ -39,28 +39,28 @@
   "files": [],
   "references": [
     {
-      "path": "./tsconfig.app.json"
+      "path": "./apps/showcase/tsconfig.app.json"
     },
     {
-      "path": "./tsconfig.spec.json"
+      "path": "./apps/showcase/tsconfig.spec.json"
     },
     {
-      "path": "./projects/ng-advanced-table/tsconfig.lib.json"
+      "path": "./libs/ng-advanced-table/tsconfig.lib.json"
     },
     {
-      "path": "./projects/ng-advanced-table/tsconfig.spec.json"
+      "path": "./libs/ng-advanced-table/tsconfig.spec.json"
     },
     {
-      "path": "./projects/ng-advanced-table-utils/tsconfig.lib.json"
+      "path": "./libs/ng-advanced-table-utils/tsconfig.lib.json"
     },
     {
-      "path": "./projects/ng-advanced-table-utils/tsconfig.spec.json"
+      "path": "./libs/ng-advanced-table-utils/tsconfig.spec.json"
     },
     {
-      "path": "./projects/ng-advanced-table-ui/tsconfig.lib.json"
+      "path": "./libs/ng-advanced-table-ui/tsconfig.lib.json"
     },
     {
-      "path": "./projects/ng-advanced-table-ui/tsconfig.spec.json"
+      "path": "./libs/ng-advanced-table-ui/tsconfig.spec.json"
     }
   ]
 }

@@ -2,14 +2,14 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ## Release Workflow
 
-- For every code change that affects behavior, public API, docs, examples, or tests, add a new Changeset file in `.changeset/` as part of the same task unless the user explicitly says not to.
+- For every code change that affects behavior, public API, docs, examples, or tests, add a new Nx version plan file in `.nx/version-plans/` as part of the same task unless the user explicitly says not to.
 - Follow [Semantic Versioning](https://semver.org/) when choosing the bump level:
   - `patch` is reserved for bug fixes and other changes that do not add or alter functionality (e.g., internal refactors, docs-only updates, test-only updates).
   - `minor` is required for any backwards-compatible new feature or enhancement, including additive changes to the public API.
   - `major` is required for any backwards-incompatible / breaking change to the public API or behavior.
 - When the user does not specify a release level, infer it from the change using the rules above rather than defaulting to `patch`. If the correct level is ambiguous, ask the user before proceeding.
-- Include all packages meaningfully affected by the change in the Changeset frontmatter.
-- Do not reuse or edit unrelated existing Changeset files unless the user asks for that.
+- Include all packages meaningfully affected by the change in the version plan frontmatter.
+- Do not reuse or edit unrelated existing version plan files unless the user asks for that.
 
 ## TypeScript Best Practices
 
