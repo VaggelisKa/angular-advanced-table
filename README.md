@@ -18,6 +18,10 @@ Supplemental package READMEs:
 - [`libs/ng-advanced-table-ui/README.md`](libs/ng-advanced-table-ui/README.md)
 - [`libs/ng-advanced-table-utils/README.md`](libs/ng-advanced-table-utils/README.md)
 
+Focused guides:
+
+- [Accessibility and internationalization](docs/accessibility.md)
+
 Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 
 ## Install
@@ -271,32 +275,11 @@ Use `expandedRow` to render a full-width detail panel below any expanded body ro
 
 Call `info.row.toggleExpanded()` from a custom cell renderer or action button to reveal the detail row. Expansion participates in `NatTableState`, so `initialState.expanded` and controlled `state.expanded` both work.
 
-## Accessibility Text Overrides
+## Accessibility and Internationalization
 
-Use `accessibilityText` when the built-in English summaries or live announcements do not match your product language or terminology. The available keys are:
+Accessible copy is consumer-owned. Set a localized `ariaLabel`, optional `ariaDescription`, `keyboardInstructions`, `emptyStateLabel`, and stable `columnDef.meta.label` values. Use `accessibilityText` for core table summaries and live announcements.
 
-- `reorderKeyboardInstructions`
-- `tableSummary(...)`
-- `sortingChange(...)`
-- `filteringChange(...)`
-- `columnVisibilityChange(...)`
-- `pageSizeChange(...)`
-- `pageChange(...)`
-- `columnReorder(...)`
-
-```ts
-import type { NatTableAccessibilityText } from 'ng-advanced-table';
-
-readonly accessibilityText: NatTableAccessibilityText = {
-  reorderKeyboardInstructions: 'Use Alt+Shift+Arrow keys to move columns.',
-  tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
-    `${visibleRowsText} of ${totalRowsText} rows visible. Page ${pageText} of ${pageCountText}.`,
-  filteringChange: ({ query, visibleRowsText }) => `Filter ${query}. ${visibleRowsText} rows visible.`,
-  sortingChange: ({ columnLabel, sortState }) => `${columnLabel} sorted ${sortState}.`,
-};
-```
-
-The formatter contexts already expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state.
+See [Accessibility and internationalization](docs/accessibility.md) for the full checklist and examples.
 
 ## Custom Cell Components
 
@@ -405,48 +388,11 @@ Notes:
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` are intentionally small wrappers over the controller contract.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
 
-## Accessibility Label Overrides
+## UI Accessibility Labels
 
-The UI package exposes copy overrides without forcing you to rebuild controller state:
+The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`.
 
-- `NatTablePageSize`: `NatTableAccessibilityPageSizeLabels`
-- `NatTablePager`: `NatTableAccessibilityPagerLabels`
-- `NatTableColumnVisibility`: `NatTableAccessibilityColumnVisibilityLabels`
-- `withNatTableHeaderActions(...)`: `NatTableAccessibilityHeaderActionLabels`
-- `NatTableSearch`: use `label` and `placeholder`
-
-```ts
-readonly pagerLabels = {
-  groupAriaLabel: 'Pagination',
-  previousPageAriaLabel: 'Previous page',
-  nextPageAriaLabel: 'Next page',
-  pageIndicator: ({ pageText, pageCountText }) => `Page ${pageText} of ${pageCountText}`,
-};
-
-readonly columnVisibilityLabels = {
-  heading: 'Kolonner',
-  groupAriaLabel: 'Kolonnesynlighed',
-  visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-    `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
-  toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
-    `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
-  columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
-};
-
-readonly columns = withNatTableHeaderActions(baseColumns, {
-  accessibilityLabels: {
-    sortButton: ({ label }) => `Sorter ${label}`,
-    menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
-    pinButton: ({ label, toggleAction, pinSide }) =>
-      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
-        toggleAction === 'unpin' ? 'fra' : 'til'
-      } ${pinSide === 'left' ? 'venstre' : 'højre'}`,
-    pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Venstre' : 'Højre'),
-  },
-});
-```
-
-The label callbacks receive locale-formatted numbers and semantic states such as `toggleAction`, `visibilityState`, `sortState`, `pinState`, and `pinSide`.
+See [Accessibility and internationalization](docs/accessibility.md#optional-ui-controls) for the full label surface.
 
 ## Utils Package
 
