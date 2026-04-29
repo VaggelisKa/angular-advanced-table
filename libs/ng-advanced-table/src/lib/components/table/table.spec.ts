@@ -87,13 +87,21 @@ const columns: ColumnDef<Row, unknown>[] = [
       ariaLabel="Operations table"
       [initialState]="initialState"
       [state]="state()"
-      [allowColumnReorder]="allowColumnReorder"
+      [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="enablePagination"
       [getRowId]="getRowId"
       [canExpandRow]="canExpandRow"
       [expandedRow]="expandedRow"
       [accessibilityText]="accessibilityText"
       (stateChange)="onStateChange($event)"
+      (sortingChange)="onSortingChange($event)"
+      (paginationChange)="onPaginationChange($event)"
+      (globalFilterChange)="onGlobalFilterChange($event)"
+      (columnFiltersChange)="onColumnFiltersChange($event)"
+      (columnVisibilityChange)="onColumnVisibilityChange($event)"
+      (columnOrderChange)="onColumnOrderChange($event)"
+      (columnPinningChange)="onColumnPinningChange($event)"
+      (expandedChange)="onExpandedChange($event)"
     />
   `,
 })
@@ -115,12 +123,52 @@ class TableHost {
     },
   };
   enablePagination = false;
-  allowColumnReorder = false;
+  enableColumnReorder = false;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
+  readonly sortingEvents: NatTableState['sorting'][] = [];
+  readonly paginationEvents: NatTableState['pagination'][] = [];
+  readonly globalFilterEvents: NatTableState['globalFilter'][] = [];
+  readonly columnFiltersEvents: NatTableState['columnFilters'][] = [];
+  readonly columnVisibilityEvents: NatTableState['columnVisibility'][] = [];
+  readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
+  readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
+  readonly expandedEvents: NatTableState['expanded'][] = [];
 
   onStateChange(state: NatTableState): void {
     this.stateEvents.push(state);
+  }
+
+  onSortingChange(sorting: NatTableState['sorting']): void {
+    this.sortingEvents.push(sorting);
+  }
+
+  onPaginationChange(pagination: NatTableState['pagination']): void {
+    this.paginationEvents.push(pagination);
+  }
+
+  onGlobalFilterChange(globalFilter: NatTableState['globalFilter']): void {
+    this.globalFilterEvents.push(globalFilter);
+  }
+
+  onColumnFiltersChange(columnFilters: NatTableState['columnFilters']): void {
+    this.columnFiltersEvents.push(columnFilters);
+  }
+
+  onColumnVisibilityChange(columnVisibility: NatTableState['columnVisibility']): void {
+    this.columnVisibilityEvents.push(columnVisibility);
+  }
+
+  onColumnOrderChange(columnOrder: NatTableState['columnOrder']): void {
+    this.columnOrderEvents.push(columnOrder);
+  }
+
+  onColumnPinningChange(columnPinning: NatTableState['columnPinning']): void {
+    this.columnPinningEvents.push(columnPinning);
+  }
+
+  onExpandedChange(expanded: NatTableState['expanded']): void {
+    this.expandedEvents.push(expanded);
   }
 }
 
@@ -141,7 +189,7 @@ describe('NatTable', () => {
 
   async function recreateHost(
     options: {
-      allowColumnReorder?: boolean;
+      enableColumnReorder?: boolean;
       enablePagination?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -151,7 +199,7 @@ describe('NatTable', () => {
     fixture.destroy();
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
-    host.allowColumnReorder = options.allowColumnReorder ?? host.allowColumnReorder;
+    host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -234,12 +282,12 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
   });
 
-  it('only renders reorder handles when allowColumnReorder is enabled', async () => {
+  it('only renders reorder handles when enableColumnReorder is true', async () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.header-cell.is-reorderable')).toBeNull();
 
-    await recreateHost({ allowColumnReorder: true });
+    await recreateHost({ enableColumnReorder: true });
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('.header-cell.is-reorderable').length).toBe(3);
@@ -262,6 +310,7 @@ describe('NatTable', () => {
 
     expect(host.stateEvents.at(-1)?.globalFilter).toBe('gamma');
     expect(host.stateEvents.at(-1)?.pagination.pageIndex).toBe(0);
+    expect(host.globalFilterEvents.at(-1)).toBe('gamma');
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
   });
@@ -288,10 +337,74 @@ describe('NatTable', () => {
     expect(host.stateEvents.at(-1)?.expanded).toEqual({
       [expandableRow.id]: true,
     });
+    expect(host.expandedEvents.at(-1)).toEqual({
+      [expandableRow.id]: true,
+    });
+  });
+
+  it('only emits granular slice outputs when the corresponding slice actually changed', async () => {
+    await recreateHost({ enablePagination: true });
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+
+    host.sortingEvents.length = 0;
+    host.paginationEvents.length = 0;
+    host.globalFilterEvents.length = 0;
+    host.columnFiltersEvents.length = 0;
+    host.columnVisibilityEvents.length = 0;
+    host.columnOrderEvents.length = 0;
+    host.columnPinningEvents.length = 0;
+
+    table.patchState({ sorting: [{ id: 'name', desc: false }] });
+    fixture.detectChanges();
+
+    expect(host.sortingEvents).toEqual([[{ id: 'name', desc: false }]]);
+    expect(host.globalFilterEvents).toEqual([]);
+    expect(host.paginationEvents).toEqual([]);
+    expect(host.columnFiltersEvents).toEqual([]);
+    expect(host.columnVisibilityEvents).toEqual([]);
+    expect(host.columnOrderEvents).toEqual([]);
+    expect(host.columnPinningEvents).toEqual([]);
+
+    table.patchState({ sorting: [{ id: 'name', desc: false }] });
+    fixture.detectChanges();
+
+    expect(host.sortingEvents.length).toBe(1);
+
+    table.patchState({ globalFilter: 'gamma' });
+    fixture.detectChanges();
+
+    expect(host.globalFilterEvents).toEqual(['gamma']);
+    expect(host.sortingEvents.length).toBe(1);
+    expect(host.columnVisibilityEvents).toEqual([]);
+  });
+
+  it('resets the page index and emits both globalFilterChange and paginationChange when the underlying TanStack filter changes', async () => {
+    await recreateHost({ enablePagination: true });
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+
+    table.patchState({
+      pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 1 }),
+    });
+    fixture.detectChanges();
+
+    host.paginationEvents.length = 0;
+    host.globalFilterEvents.length = 0;
+
+    table.table.setGlobalFilter('gamma');
+    fixture.detectChanges();
+
+    expect(host.globalFilterEvents).toEqual(['gamma']);
+    expect(host.paginationEvents.at(-1)?.pageIndex).toBe(0);
   });
 
   it('reorders visible center columns and emits the next column order when uncontrolled', async () => {
-    await recreateHost({ allowColumnReorder: true });
+    await recreateHost({ enableColumnReorder: true });
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
@@ -400,7 +513,7 @@ describe('NatTable', () => {
     };
     await recreateHost({
       enablePagination: true,
-      allowColumnReorder: true,
+      enableColumnReorder: true,
       accessibilityText,
     });
     fixture.detectChanges();
@@ -452,7 +565,7 @@ describe('NatTable', () => {
 
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {
     await recreateHost({
-      allowColumnReorder: true,
+      enableColumnReorder: true,
       state: {
         columnOrder: ['throughput', 'name', 'region', 'status'],
       },
@@ -479,7 +592,7 @@ describe('NatTable', () => {
   });
 
   it('keeps hidden columns in their stored order when they are shown again', async () => {
-    await recreateHost({ allowColumnReorder: true });
+    await recreateHost({ enableColumnReorder: true });
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
@@ -516,7 +629,7 @@ describe('NatTable', () => {
 
   it('reorders pinned left and right columns within their own zones', async () => {
     await recreateHost({
-      allowColumnReorder: true,
+      enableColumnReorder: true,
       initialState: {
         ...host.initialState,
         columnPinning: {
@@ -546,7 +659,7 @@ describe('NatTable', () => {
 
   it('ignores attempted cross-zone drops', async () => {
     await recreateHost({
-      allowColumnReorder: true,
+      enableColumnReorder: true,
       initialState: {
         ...host.initialState,
         columnPinning: {
@@ -597,7 +710,7 @@ describe('NatTable', () => {
   });
 
   it('reorders columns from the keyboard and announces the move', async () => {
-    await recreateHost({ allowColumnReorder: true });
+    await recreateHost({ enableColumnReorder: true });
     fixture.detectChanges();
 
     const regionHeader = fixture.nativeElement.querySelector(

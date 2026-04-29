@@ -181,6 +181,22 @@ export interface NatTableAccessibilityColumnReorderAnnouncementContext {
 
 /** Optional overrides for built-in screen-reader summaries and announcements. */
 export interface NatTableAccessibilityText {
+  /**
+   * Supplemental description announced through `aria-describedby` when the
+   * grid receives focus. Set to an empty string to suppress the description.
+   */
+  description?: string;
+  /**
+   * Screen-reader instructions for grid keyboard navigation. Falls back to a
+   * built-in English default when omitted. Set to an empty string to suppress
+   * the instructions.
+   */
+  keyboardInstructions?: string;
+  /**
+   * Visible message rendered in the body when the current view contains no
+   * rows. Falls back to a built-in English default when omitted.
+   */
+  emptyState?: string;
   /** Extra reorder instructions appended when column reordering is enabled. */
   reorderKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
