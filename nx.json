@@ -37,7 +37,11 @@
     },
     "changelog": {
       "workspaceChangelog": false,
-      "projectChangelogs": true
+      "projectChangelogs": {
+        "renderOptions": {
+          "authors": false
+        }
+      }
     },
     "git": {
       "commitMessage": "chore(release): publish"
