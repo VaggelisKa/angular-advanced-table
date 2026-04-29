@@ -1,3 +1,14 @@
+## 0.2.1 (2026-04-29)
+
+### 🩹 Fixes
+
+- Migrate the workspace to an Nx monorepo layout and move package versioning, changelogs, and npm publishing to Nx Release. ([#49](https://github.com/VaggelisKa/angular-advanced-table/pull/49))
+
+### ❤️ Thank You
+
+- Vaggelis Karavasileiadis
+- VaggelisKa @VaggelisKa
+
 # ng-advanced-table
 
 ## 0.2.0
