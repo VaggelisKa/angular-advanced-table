@@ -159,10 +159,6 @@ export class NatTableHeaderActions {
     };
   }
 
-  protected toggleSort(): void {
-    this.column().toggleSorting();
-  }
-
   protected togglePin(side: NatTablePinSide): void {
     const column = this.column();
 

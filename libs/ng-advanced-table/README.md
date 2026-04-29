@@ -8,7 +8,7 @@ Core table package for the `angular-advanced-table` workspace.
 - Core table overview: [../../README.md#core-table](../../README.md#core-table)
 - Core API reference: [../../README.md#core-api](../../README.md#core-api)
 - Custom cell component guidance: [../../README.md#custom-cell-components](../../README.md#custom-cell-components)
-- Core accessibility overrides: [../../README.md#accessibility-text-overrides](../../README.md#accessibility-text-overrides)
+- Accessibility and internationalization: [../../docs/accessibility.md](../../docs/accessibility.md)
 - Migration notes: [../../README.md#migration](../../README.md#migration)
 
 This package README is intentionally scoped to package entry-point information. The root README is the canonical source for table behavior and API details.
@@ -52,16 +52,12 @@ npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
 - `NatTable`
 - `NatTableRowRenderedEvent`
 - `NatTableAccessibilityText`
-- `NatTableAccessibilitySummaryContext`
-- `NatTableAccessibilitySortingAnnouncementContext`
-- `NatTableAccessibilityFilteringAnnouncementContext`
-- `NatTableAccessibilityColumnVisibilityAnnouncementChange`
-- `NatTableAccessibilityColumnVisibilityAnnouncementContext`
-- `NatTableAccessibilityPaginationAnnouncementContext`
-- `NatTableAccessibilityColumnReorderAnnouncementContext`
+- `NatTableA11y` (namespace of deep accessibility formatter context types)
 - `NatTableExpandedState`
 - `NatTableExpandedRowContext`
 - `NatTableRowExpandablePredicate`
+- `NatTableRowIdGetter`
+- `NatTableRowActivateEvent`
 - `NatTableState`
 - `NatTableColumnMeta`
 - `NatTableCellTone`

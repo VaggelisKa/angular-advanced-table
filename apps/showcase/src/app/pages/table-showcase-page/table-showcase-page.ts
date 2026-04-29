@@ -308,16 +308,16 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
 
 type ShowcaseTheme = 'light' | 'dark';
 type TableFeatureKey =
-  | 'allowColumnPinning'
-  | 'allowColumnReorder'
+  | 'enableColumnPinning'
+  | 'enableColumnReorder'
   | 'enablePagination'
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
   | 'showRenderMetrics';
 
 interface TableFeatureConfig {
-  allowColumnPinning: boolean;
-  allowColumnReorder: boolean;
+  enableColumnPinning: boolean;
+  enableColumnReorder: boolean;
   enablePagination: boolean;
   enableGlobalFilter: boolean;
   showColumnVisibility: boolean;
@@ -325,12 +325,17 @@ interface TableFeatureConfig {
 }
 
 const defaultTableFeatures: TableFeatureConfig = {
-  allowColumnPinning: true,
-  allowColumnReorder: true,
+  enableColumnPinning: true,
+  enableColumnReorder: true,
   enablePagination: true,
   enableGlobalFilter: true,
   showColumnVisibility: true,
   showRenderMetrics: true,
+};
+
+const showcaseAccessibilityText = {
+  emptyState:
+    'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.',
 };
 
 @Component({
@@ -461,6 +466,7 @@ export class TableShowcasePage {
   );
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly canExpandRow = isTradeBriefRow;
+  protected readonly accessibilityText = showcaseAccessibilityText;
   protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
   protected readonly hasTopTableControls = computed(() => {
@@ -566,19 +572,8 @@ export class TableShowcasePage {
     return selectedStatuses.size === 0 || selectedStatuses.has(status);
   }
 
-  protected onTableStateChange(state: NatTableState): void {
-    this.tableState.update((currentState) => {
-      const currentFilters = currentState.columnFilters ?? [];
-      const nextFilters = state.columnFilters ?? [];
-
-      if (areColumnFiltersEqual(currentFilters, nextFilters)) {
-        return currentState;
-      }
-
-      return {
-        columnFilters: nextFilters,
-      };
-    });
+  protected onColumnFiltersChange(columnFilters: NatTableState['columnFilters']): void {
+    this.tableState.set({ columnFilters });
   }
 
   protected onRowRendered(event: NatTableRenderMetricsEvent): void {
@@ -714,48 +709,6 @@ function upsertColumnFilter(
       value,
     },
   ];
-}
-
-function areColumnFiltersEqual(
-  currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
-  nextFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
-): boolean {
-  if (currentFilters.length !== nextFilters.length) {
-    return false;
-  }
-
-  for (let index = 0; index < currentFilters.length; index += 1) {
-    const currentFilter = currentFilters[index];
-    const nextFilter = nextFilters[index];
-
-    if (currentFilter.id !== nextFilter.id) {
-      return false;
-    }
-
-    if (!areFilterValuesEqual(currentFilter.value, nextFilter.value)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function areFilterValuesEqual(currentValue: unknown, nextValue: unknown): boolean {
-  if (Array.isArray(currentValue) && Array.isArray(nextValue)) {
-    if (currentValue.length !== nextValue.length) {
-      return false;
-    }
-
-    for (let index = 0; index < currentValue.length; index += 1) {
-      if (!Object.is(currentValue[index], nextValue[index])) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  return Object.is(currentValue, nextValue);
 }
 
 function compareSortKeys(left: string, right: string): number {
