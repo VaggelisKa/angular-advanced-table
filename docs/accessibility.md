@@ -4,6 +4,70 @@
 
 This guide focuses on text that the consuming application owns. It does not replace normal accessibility review for custom cells, custom controls, dialogs, menus, or product-specific workflows.
 
+## Machine-readable API map (agents)
+
+This section exists so automated tooling can validate implementations against the **actual exported surface** without guessing from prose.
+
+### Core (`ng-advanced-table`)
+
+| Symbol                      | Kind              | Notes                                                                                                     |
+| --------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `NatTable`                  | component         | Primary grid primitive                                                                                    |
+| `NatTableAccessibilityText` | type              | Primary bag for consumer-owned accessibility strings + announcement formatters                            |
+| `NatTableA11y`              | namespace         | Formatter context types for explicit typing (example: `NatTableA11y.NatTableAccessibilitySummaryContext`) |
+| `enableAnnouncements`       | input (`boolean`) | Turn built-in polite live-region announcements on/off                                                     |
+
+#### `NatTableAccessibilityText` keys
+
+Strings:
+
+- `description`
+- `keyboardInstructions`
+- `emptyState`
+- `reorderKeyboardInstructions`
+
+Formatters:
+
+- `tableSummary`
+- `sortingChange`
+- `filteringChange`
+- `columnVisibilityChange`
+- `pageSizeChange`
+- `pageChange`
+- `columnReorder`
+
+#### `NatTableA11y` formatter context exports
+
+Import like:
+
+```ts
+import type * as NatTableA11y from 'ng-advanced-table';
+```
+
+Context types:
+
+- `NatTableA11y.NatTableAccessibilitySummaryContext`
+- `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`
+- `NatTableA11y.NatTableAccessibilityFilteringAnnouncementContext`
+- `NatTableA11y.NatTableAccessibilityColumnVisibilityAnnouncementChange`
+- `NatTableA11y.NatTableAccessibilityColumnVisibilityAnnouncementContext`
+- `NatTableA11y.NatTableAccessibilityPaginationAnnouncementContext`
+- `NatTableA11y.NatTableAccessibilityColumnReorderAnnouncementContext`
+
+### UI (`ng-advanced-table-ui`)
+
+Companion controls accept localized visible strings plus structured `accessibilityLabels` bags:
+
+| Component / helper               | Primary localization inputs                                         |
+| -------------------------------- | ------------------------------------------------------------------- |
+| `NatTableSearch`                 | `label`, `placeholder`                                              |
+| `NatTableColumnVisibility`       | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
+| `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
+| `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
+| `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
+
+Note: some header chrome strings are still English defaults unless overridden upstream (for example the pin menu container label). Treat missing overrides as a localization gap, not an API gap.
+
 ## Agent Contract
 
 When generating or modifying a table for a consuming app, treat accessibility copy as required product copy, not as optional polish.
