@@ -2,6 +2,7 @@
   "name": "angular-advanced-table",
   "version": "0.0.0",
   "description": "Workspace for the ng-advanced-table Angular libraries and showcase application.",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "nx": "nx",

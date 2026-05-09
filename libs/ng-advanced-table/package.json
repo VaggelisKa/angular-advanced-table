@@ -2,6 +2,7 @@
   "name": "ng-advanced-table",
   "version": "1.0.0",
   "description": "Signals-first Angular data table primitives built on TanStack Table.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/VaggelisKa/angular-advanced-table.git",
