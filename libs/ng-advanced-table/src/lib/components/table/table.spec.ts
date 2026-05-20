@@ -709,14 +709,78 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('colgroup')).toBeNull();
     expect(headers[0]?.style.width).toBe('');
     expect(headers[0]?.style.maxWidth).toBe('');
-    expect(headers[0]?.style.minWidth).toBe('180px');
-    expect(headers[1]?.style.minWidth).toBe('140px');
+    expect(headers[0]?.style.minWidth).toBe('');
+    expect(headers[1]?.style.minWidth).toBe('');
     expect(bodyCells[0]?.style.width).toBe('');
-    expect(bodyCells[0]?.style.minWidth).toBe('180px');
+    expect(bodyCells[0]?.style.minWidth).toBe('');
     expect(headers[0]?.style.left).toBe('0px');
     expect(headers[1]?.style.left).toBe('180px');
     expect(bodyCells[1]?.style.left).toBe('180px');
     expect(headers[0]?.dataset['columnId']).toBe('name');
+  });
+
+  it('applies fixed and maximum column widths from column metadata', async () => {
+    @Component({
+      imports: [NatTable],
+      template: ` <nat-table [data]="rows()" [columns]="columns" ariaLabel="Operations table" /> `,
+    })
+    class ColumnWidthHost {
+      readonly rows = signal<Row[]>([
+        {
+          id: 'svc-width',
+          name: 'Very long service name that should be truncated',
+          region: 'eu-central-1 with extra routing detail',
+          status: 'Healthy',
+          throughput: 1000,
+        },
+      ]);
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Service',
+          meta: { label: 'Service', rowHeader: true, width: 96 },
+          cell: (info) => info.getValue<string>(),
+        },
+        {
+          accessorKey: 'region',
+          header: 'Region',
+          meta: { label: 'Region', maxWidth: '12rem' },
+          cell: (info) => info.getValue<string>(),
+        },
+      ];
+    }
+
+    const widthFixture = TestBed.createComponent(ColumnWidthHost);
+
+    await widthFixture.whenStable();
+    widthFixture.detectChanges();
+
+    const fixedHeader = widthFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const cappedHeader = widthFixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLElement;
+    const fixedCell = widthFixture.nativeElement.querySelector(
+      'tbody th[data-column-id="name"]',
+    ) as HTMLElement;
+    const cappedCell = widthFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="region"]',
+    ) as HTMLElement;
+
+    expect(fixedHeader.style.width).toBe('96px');
+    expect(fixedHeader.style.minWidth).toBe('96px');
+    expect(fixedHeader.style.maxWidth).toBe('96px');
+    expect(fixedCell.style.width).toBe('96px');
+    expect(fixedCell.style.minWidth).toBe('96px');
+    expect(fixedCell.style.maxWidth).toBe('96px');
+    expect(fixedCell.classList.contains('is-width-constrained')).toBe(true);
+    expect(fixedCell.querySelector('.data-cell-content')).toBeTruthy();
+    expect(cappedHeader.style.width).toBe('');
+    expect(cappedHeader.style.minWidth).toBe('');
+    expect(cappedHeader.style.maxWidth).toBe('12rem');
+    expect(cappedCell.style.maxWidth).toBe('12rem');
+    expect(cappedCell.classList.contains('is-width-constrained')).toBe(true);
   });
 
   it('reorders columns from the keyboard and announces the move', async () => {
@@ -884,7 +948,9 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
-    const firstRow = fixture.nativeElement.querySelector('tbody tr.data-row') as HTMLTableRowElement;
+    const firstRow = fixture.nativeElement.querySelector(
+      'tbody tr.data-row',
+    ) as HTMLTableRowElement;
     const expectedRowId = table.table.getRowModel().rows[0]?.original.id;
 
     expect(expectedRowId).toBeDefined();

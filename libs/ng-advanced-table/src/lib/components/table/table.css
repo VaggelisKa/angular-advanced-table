@@ -32,6 +32,12 @@
   white-space: nowrap;
 }
 
+.header-cell.is-width-constrained,
+.data-cell.is-width-constrained {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .header-cell {
   position: sticky;
   top: 0;
@@ -55,12 +61,24 @@
   justify-content: space-between;
   gap: var(--nat-table-space-header-content-gap, 8px);
   min-width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .header-cell-primary {
   display: block;
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-cell-content {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-cell.is-reorderable {
