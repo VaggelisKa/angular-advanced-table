@@ -1557,7 +1557,7 @@ function normalizeColumnDimension(value: number | string | undefined): string | 
 
 function getNumericColumnWidth(value: number | string | undefined): number | null {
   if (typeof value === 'number') {
-    return Number.isFinite(value) && value > 0 ? Math.round(value) : null;
+    return Number.isFinite(value) && value >= 0 ? Math.round(value) : null;
   }
 
   if (typeof value !== 'string') {
@@ -1572,7 +1572,7 @@ function getNumericColumnWidth(value: number | string | undefined): number | nul
 
   const width = Number(pixelMatch[1]);
 
-  return Number.isFinite(width) && width > 0 ? Math.round(width) : null;
+  return Number.isFinite(width) && width >= 0 ? Math.round(width) : null;
 }
 
 function isUnavailableRequiredInputError(error: unknown): error is Error & { code?: number } {
