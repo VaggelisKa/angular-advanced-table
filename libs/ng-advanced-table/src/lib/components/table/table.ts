@@ -77,7 +77,10 @@ interface TableColumnRenderState {
   hasPinnedEdgeRight: boolean;
   left: number | null;
   right: number | null;
-  minWidth: number;
+  width: string | null;
+  minWidth: string | null;
+  maxWidth: string | null;
+  constrainedWidth: boolean;
   ariaSort: 'ascending' | 'descending' | null;
   rowHeader: boolean;
 }
@@ -416,10 +419,14 @@ export class NatTable<TData extends RowData = RowData> {
 
     for (const column of this.visibleColumns()) {
       const measuredWidth = measured[column.id];
+      const fixedWidth = getNumericColumnWidth(column.columnDef.meta?.width);
+
       result[column.id] =
         measuredWidth !== undefined && measuredWidth > 0
           ? measuredWidth
-          : Math.max(Math.round(column.getSize()), 1);
+          : fixedWidth !== null
+            ? fixedWidth
+            : Math.max(Math.round(column.getSize()), 1);
     }
 
     return result;
@@ -459,7 +466,8 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     for (const column of visibleColumns) {
-      const minWidth = Math.max(Math.round(column.getSize()), 1);
+      const width = normalizeColumnDimension(column.columnDef.meta?.width);
+      const maxWidth = normalizeColumnDimension(column.columnDef.meta?.maxWidth);
       const pinnedLeft = leftPinnedIds.has(column.id);
       const pinnedRight = rightPinnedIds.has(column.id);
 
@@ -473,7 +481,10 @@ export class NatTable<TData extends RowData = RowData> {
         hasPinnedEdgeRight: pinnedRight && rightVisibleColumns[0]?.id === column.id,
         left: pinnedLeft ? (leftOffsets[column.id] ?? 0) : null,
         right: pinnedRight ? (rightOffsets[column.id] ?? 0) : null,
-        minWidth,
+        width,
+        minWidth: width,
+        maxWidth: width ?? maxWidth,
+        constrainedWidth: width !== null || maxWidth !== null,
         ariaSort: sortEntry ? (sortEntry.desc ? 'descending' : 'ascending') : null,
         rowHeader: !!column.columnDef.meta?.rowHeader,
       };
@@ -738,9 +749,7 @@ export class NatTable<TData extends RowData = RowData> {
   ): void {
     const currentState = this.mergedState();
     const nextState: NatTableState = {
-      sorting: normalizeSortingState(
-        this.resolveUpdater(currentState.sorting, updaters.sorting),
-      ),
+      sorting: normalizeSortingState(this.resolveUpdater(currentState.sorting, updaters.sorting)),
       globalFilter: this.resolveUpdater(currentState.globalFilter, updaters.globalFilter),
       columnFilters: this.resolveUpdater(currentState.columnFilters, updaters.columnFilters),
       columnVisibility: this.resolveUpdater(
@@ -1530,6 +1539,40 @@ function matchesFilterQuery(value: unknown, query: string): boolean {
   }
 
   return false;
+}
+
+function normalizeColumnDimension(value: number | string | undefined): string | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value >= 0 ? `${Math.round(value)}px` : null;
+  }
+
+  if (typeof value === 'string') {
+    const trimmedValue = value.trim();
+
+    return trimmedValue ? trimmedValue : null;
+  }
+
+  return null;
+}
+
+function getNumericColumnWidth(value: number | string | undefined): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : null;
+  }
+
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const pixelMatch = /^(\d+(?:\.\d+)?)px$/i.exec(value.trim());
+
+  if (!pixelMatch) {
+    return null;
+  }
+
+  const width = Number(pixelMatch[1]);
+
+  return Number.isFinite(width) && width > 0 ? Math.round(width) : null;
 }
 
 function isUnavailableRequiredInputError(error: unknown): error is Error & { code?: number } {
