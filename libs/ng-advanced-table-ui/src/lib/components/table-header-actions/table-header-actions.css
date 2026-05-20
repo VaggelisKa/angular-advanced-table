@@ -71,6 +71,7 @@
 .menu-button[aria-expanded='true'] {
   color: inherit;
   background: color-mix(in srgb, currentColor 8%, transparent);
+  transform: translateY(-1px);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -83,10 +84,6 @@
     background: color-mix(in srgb, currentColor 8%, transparent);
     transform: translateY(-1px);
   }
-}
-
-.menu-button[aria-expanded='true'] {
-  transform: translateY(-1px);
 }
 
 .sort-button:focus-visible,
