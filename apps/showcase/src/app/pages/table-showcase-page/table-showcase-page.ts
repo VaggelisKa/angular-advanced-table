@@ -314,6 +314,7 @@ type TableFeatureKey =
   | 'enablePagination'
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
+  | 'showScrollControl'
   | 'showRenderMetrics';
 
 interface TableFeatureConfig {
@@ -322,6 +323,7 @@ interface TableFeatureConfig {
   enablePagination: boolean;
   enableGlobalFilter: boolean;
   showColumnVisibility: boolean;
+  showScrollControl: boolean;
   showRenderMetrics: boolean;
 }
 
@@ -331,6 +333,7 @@ const defaultTableFeatures: TableFeatureConfig = {
   enablePagination: true,
   enableGlobalFilter: true,
   showColumnVisibility: true,
+  showScrollControl: false,
   showRenderMetrics: true,
 };
 

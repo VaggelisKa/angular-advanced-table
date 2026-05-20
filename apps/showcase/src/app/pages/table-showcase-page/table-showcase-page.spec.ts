@@ -263,16 +263,23 @@ describe('TableShowcasePage', () => {
     const paginationToggle = document.querySelector(
       '.feature-toggle[data-feature="enablePagination"] input',
     ) as HTMLInputElement;
+    const scrollControlToggle = document.querySelector(
+      '.feature-toggle[data-feature="showScrollControl"] input',
+    ) as HTMLInputElement;
+
+    expect(fixture.nativeElement.querySelector('nat-table-scroll-control')).toBeFalsy();
 
     pinningToggle.click();
     searchToggle.click();
     visibilityToggle.click();
     paginationToggle.click();
+    scrollControlToggle.click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.table-controls-surface')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.table-toolbar')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('nat-table-scroll-control')).toBeTruthy();
   });
 });
