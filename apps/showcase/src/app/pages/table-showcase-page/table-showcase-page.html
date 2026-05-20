@@ -302,6 +302,10 @@
           (columnFiltersChange)="onColumnFiltersChange($event)"
           (rowRendered)="onRowRendered($event)"
         />
+
+        @if (tableFeatures().showScrollControl) {
+          <nat-table-scroll-control [for]="grid" />
+        }
       </nat-table-surface>
     </section>
   </main>
@@ -368,6 +372,15 @@
             (change)="toggleFeature('showColumnVisibility', readChecked($event))"
           />
           <span>Column visibility control</span>
+        </label>
+
+        <label class="feature-toggle" data-feature="showScrollControl">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().showScrollControl"
+            (change)="toggleFeature('showScrollControl', readChecked($event))"
+          />
+          <span>Scroll control</span>
         </label>
 
         <label class="feature-toggle" data-feature="showRenderMetrics">

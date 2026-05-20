@@ -21,6 +21,7 @@ import {
   NatTableColumnVisibility,
   NatTablePageSize,
   NatTablePager,
+  NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
   type NatTableSortIndicatorContext,
@@ -313,6 +314,7 @@ type TableFeatureKey =
   | 'enablePagination'
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
+  | 'showScrollControl'
   | 'showRenderMetrics';
 
 interface TableFeatureConfig {
@@ -321,6 +323,7 @@ interface TableFeatureConfig {
   enablePagination: boolean;
   enableGlobalFilter: boolean;
   showColumnVisibility: boolean;
+  showScrollControl: boolean;
   showRenderMetrics: boolean;
 }
 
@@ -330,6 +333,7 @@ const defaultTableFeatures: TableFeatureConfig = {
   enablePagination: true,
   enableGlobalFilter: true,
   showColumnVisibility: true,
+  showScrollControl: false,
   showRenderMetrics: true,
 };
 
@@ -437,6 +441,7 @@ class MarketSortIndicator {
     NatTableColumnVisibility,
     NatTablePageSize,
     NatTablePager,
+    NatTableScrollControl,
     NatTableSearch,
     NatTableSurface,
     NatRenderMetricsFilter,

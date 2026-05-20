@@ -404,6 +404,13 @@ export class NatTable<TData extends RowData = RowData> {
     onExpandedChange: (updater) => this.updateState({ expanded: updater }),
   })) as Table<TData>;
   private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
+  /**
+   * Scrollable container that wraps the rendered `<table>`.
+   *
+   * Companion controls can use this to provide alternate horizontal
+   * scrolling affordances without querying implementation classes.
+   */
+  readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
   private readonly destroyRef = inject(DestroyRef);
   private headerResizeObserver: ResizeObserver | null = null;
