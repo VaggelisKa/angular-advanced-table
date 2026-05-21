@@ -43,7 +43,7 @@ Formatters:
 Import like:
 
 ```ts
-import type * as NatTableA11y from 'ng-advanced-table';
+import type { NatTableA11y } from 'ng-advanced-table';
 ```
 
 Context types:
@@ -66,6 +66,7 @@ Companion controls accept localized visible strings plus structured `accessibili
 | `NatTableColumnVisibility`       | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
 | `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
+| `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
 
 Note: some header chrome strings are still English defaults unless overridden upstream (for example the pin menu container label). Treat missing overrides as a localization gap, not an API gap.
@@ -351,18 +352,18 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
   template: `
     @let labels = copy();
 
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns()"
-      [state]="tableState()"
-      [enablePagination]="true"
-      [ariaLabel]="labels.tableLabel"
-      [accessibilityText]="labels.tableText"
-      (stateChange)="tableState.set($event)"
-    />
-
     <nat-table-surface>
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns()"
+        [state]="tableState()"
+        [enablePagination]="true"
+        [ariaLabel]="labels.tableLabel"
+        [accessibilityText]="labels.tableText"
+        (stateChange)="tableState.set($event)"
+      />
+
       <nat-table-search
         [for]="grid"
         [label]="labels.searchLabel"
