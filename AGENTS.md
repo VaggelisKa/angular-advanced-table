@@ -9,6 +9,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
   - `major` is required for any backwards-incompatible / breaking change to the public API or behavior.
 - When the user does not specify a release level, infer it from the change using the rules above rather than defaulting to `patch`. If the correct level is ambiguous, ask the user before proceeding.
 - Include all packages meaningfully affected by the change in the version plan frontmatter.
+- Do not create Nx version plan files for changes that only affect the showcase app, because showcase-only changes do not affect the published libraries.
 - Do not reuse or edit unrelated existing version plan files unless the user asks for that.
 
 ## TypeScript Best Practices
