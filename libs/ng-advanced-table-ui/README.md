@@ -29,7 +29,7 @@ The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #g
 ## Install
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Zoneless Compatibility
@@ -48,6 +48,8 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `withNatTableHeaderActions(...)`
 - `NatTableHeaderActionsOptions`
 - `NatTableSortIndicatorContent`
+- `NatTableAccessibilityScrollControlLabels`
+- `NatTableAccessibilityScrollControlPositionContext`
 - `NatTableAccessibilityPageSizeOptionContext`
 - `NatTableAccessibilityPageSizeLabels`
 - `NatTableAccessibilityPagerContext`
@@ -73,6 +75,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables.
 - The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, and `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string).
 - Companion controls expose `accessibilityLabels` inputs so consumers can localize the UI without rebuilding table state.
+- `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.
 - You can use any subset of this package or replace all of it with custom controls.
@@ -118,17 +121,18 @@ const columns = withNatTableHeaderActions<OrderRow>([
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTablePager, NatTableScrollControl, NatTableSearch, NatTableSurface],
   template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [enablePagination]="true"
-      ariaLabel="Orders"
-      (stateChange)="tableState.set($event)"
-    />
-
     <nat-table-surface>
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [enablePagination]="true"
+        ariaLabel="Orders"
+        (stateChange)="tableState.set($event)"
+      />
+
+      <nat-table-scroll-control [for]="grid" />
       <nat-table-search [for]="grid" />
       <nat-table-pager [for]="grid" />
       <nat-table-scroll-control [for]="grid" />

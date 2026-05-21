@@ -6,11 +6,11 @@ Signals-first Nx monorepo for composable Angular TanStack Table primitives.
 
 This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules. The `apps/showcase` project is the demo app, and publishable packages live under `libs/*`.
 
-| Package                   | Use it for                           | Main exports                                                                                                                           |
-| ------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                      |
+| Package                   | Use it for                           | Main exports                                                                                                                                                    |
+| ------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
 | `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
-| `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                        |
+| `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
 
 - **[Accessibility](ACCESSIBILITY.md)** — customize screen reader summaries and UI companion labels (`accessibilityText`, `accessibilityLabels`).
 
@@ -24,6 +24,12 @@ Consumer theming guide:
 
 - [`THEMING.md`](THEMING.md)
 
+Documentation maintenance checklist:
+
+- When a public export changes, update this package map, the matching package README public export list, and the API table for that package.
+- When accessibility or localization inputs change, update the machine-readable API map in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
+- When recommended composition changes, keep the examples in this README, package READMEs, and [`THEMING.md`](THEMING.md) in sync.
+
 Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 
 ## Install
@@ -31,19 +37,19 @@ Angular 21+ apps can consume these packages with or without `zone.js`. The works
 ### Core only
 
 ```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ### Core and UI
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ### Core, UI, and utils
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Quick Start
@@ -57,8 +63,8 @@ import {
   NatTableColumnVisibility,
   NatTablePageSize,
   NatTablePager,
-  NatTableSearch,
   NatTableScrollControl,
+  NatTableSearch,
   NatTableSurface,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
@@ -99,24 +105,25 @@ const columns = withNatTableHeaderActions<PositionRow>([
     NatTableColumnVisibility,
     NatTablePageSize,
     NatTablePager,
-    NatTableSearch,
     NatTableScrollControl,
+    NatTableSearch,
     NatTableSurface,
   ],
   template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [initialState]="initialState"
-      [enablePagination]="true"
-      [getRowId]="getRowId"
-      ariaLabel="Open positions"
-      (stateChange)="tableState.set($event)"
-    />
-
     <nat-table-surface>
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [initialState]="initialState"
+        [enablePagination]="true"
+        [getRowId]="getRowId"
+        ariaLabel="Open positions"
+        (stateChange)="tableState.set($event)"
+      />
+
+      <nat-table-scroll-control [for]="grid" />
       <nat-table-search [for]="grid" />
       <nat-table-column-visibility [for]="grid" />
       <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
@@ -390,22 +397,22 @@ Guidelines:
 Example, add stock controls around an existing table:
 
 ```html
-<nat-table
-  #grid="natTable"
-  [data]="rows()"
-  [columns]="columns"
-  [state]="tableState()"
-  [enablePagination]="true"
-  ariaLabel="Orders"
-  (stateChange)="tableState.set($event)"
-/>
-
 <nat-table-surface>
+  <nat-table
+    #grid="natTable"
+    [data]="rows()"
+    [columns]="columns"
+    [state]="tableState()"
+    [enablePagination]="true"
+    ariaLabel="Orders"
+    (stateChange)="tableState.set($event)"
+  />
+
+  <nat-table-scroll-control [for]="grid" />
   <nat-table-search [for]="grid" />
   <nat-table-column-visibility [for]="grid" />
   <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
   <nat-table-pager [for]="grid" />
-  <nat-table-scroll-control [for]="grid" />
 </nat-table-surface>
 ```
 
@@ -422,7 +429,7 @@ UI exports:
 | `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `ariaLabel`, `accessibilityLabels`           |
 | `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
 | `NatTablePager`                  | Previous/next pagination control                               | `for`, `ariaLabel`, `accessibilityLabels`                    |
-| `NatTableScrollControl`          | Alternate horizontal scroll controls and position slider       | `for`, `ariaLabel`, `scrollStep`, `accessibilityLabels`      |
+| `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `ariaLabel`, `scrollStep`, `accessibilityLabels`      |
 | `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`                       |
 
 Controller contract required by the UI package:

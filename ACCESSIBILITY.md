@@ -43,7 +43,7 @@ Formatters:
 Import like:
 
 ```ts
-import type * as NatTableA11y from 'ng-advanced-table';
+import type { NatTableA11y } from 'ng-advanced-table';
 ```
 
 Context types:
@@ -354,18 +354,18 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
   template: `
     @let labels = copy();
 
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns()"
-      [state]="tableState()"
-      [enablePagination]="true"
-      [ariaLabel]="labels.tableLabel"
-      [accessibilityText]="labels.tableText"
-      (stateChange)="tableState.set($event)"
-    />
-
     <nat-table-surface>
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns()"
+        [state]="tableState()"
+        [enablePagination]="true"
+        [ariaLabel]="labels.tableLabel"
+        [accessibilityText]="labels.tableText"
+        (stateChange)="tableState.set($event)"
+      />
+
       <nat-table-search
         [for]="grid"
         [label]="labels.searchLabel"

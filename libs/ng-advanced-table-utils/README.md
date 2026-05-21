@@ -25,7 +25,7 @@ The package composes structurally with any compatible table controller and event
 ## Install
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Public Exports
