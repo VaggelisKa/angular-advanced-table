@@ -21,6 +21,7 @@ Use this package when you want optional companions around `NatTable`:
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
+- `NatTableScrollControl`
 - `withNatTableHeaderActions(...)`
 
 The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #grid="natTable">` satisfies that contract directly.
@@ -43,6 +44,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
+- `NatTableScrollControl`
 - `withNatTableHeaderActions(...)`
 - `NatTableHeaderActionsOptions`
 - `NatTableSortIndicatorContent`
@@ -50,6 +52,8 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `NatTableAccessibilityPageSizeLabels`
 - `NatTableAccessibilityPagerContext`
 - `NatTableAccessibilityPagerLabels`
+- `NatTableAccessibilityScrollControlPositionContext`
+- `NatTableAccessibilityScrollControlLabels`
 - `NatTableAccessibilityColumnVisibilitySummaryContext`
 - `NatTableAccessibilityColumnVisibilityActionContext`
 - `NatTableAccessibilityColumnVisibilityStateContext`
@@ -82,6 +86,7 @@ import { type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTablePager,
+  NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
   withNatTableHeaderActions,
@@ -111,7 +116,7 @@ const columns = withNatTableHeaderActions<OrderRow>([
 @Component({
   selector: 'app-orders-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatTablePager, NatTableSearch, NatTableSurface],
+  imports: [NatTable, NatTablePager, NatTableScrollControl, NatTableSearch, NatTableSurface],
   template: `
     <nat-table
       #grid="natTable"
@@ -126,6 +131,7 @@ const columns = withNatTableHeaderActions<OrderRow>([
     <nat-table-surface>
       <nat-table-search [for]="grid" />
       <nat-table-pager [for]="grid" />
+      <nat-table-scroll-control [for]="grid" />
     </nat-table-surface>
   `,
 })

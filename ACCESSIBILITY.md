@@ -66,6 +66,7 @@ Companion controls accept localized visible strings plus structured `accessibili
 | `NatTableColumnVisibility`       | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
 | `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
+| `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
 
 Note: some header chrome strings are still English defaults unless overridden upstream (for example the pin menu container label). Treat missing overrides as a localization gap, not an API gap.
@@ -151,6 +152,7 @@ The `ng-advanced-table-ui` package exposes copy overrides without requiring cons
 | `NatTableColumnVisibility`       | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
 | `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
+| `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
 
 Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels. Do not rely on placeholder text as the only accessible label for search.
@@ -161,6 +163,7 @@ Decision rules for agents:
 - If `NatTableColumnVisibility` is rendered, pass `NatTableAccessibilityColumnVisibilityLabels`.
 - If `NatTablePageSize` is rendered, pass `NatTableAccessibilityPageSizeLabels`.
 - If `NatTablePager` is rendered, pass `NatTableAccessibilityPagerLabels`.
+- If `NatTableScrollControl` is rendered, pass `NatTableAccessibilityScrollControlLabels`.
 - If `withNatTableHeaderActions(...)` is used, pass `NatTableAccessibilityHeaderActionLabels` through its options.
 
 ## Runtime Locale Changes

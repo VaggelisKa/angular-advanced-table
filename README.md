@@ -9,7 +9,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | Package                   | Use it for                           | Main exports                                                                                                                           |
 | ------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                      |
-| `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `withNatTableHeaderActions(...)` |
+| `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                        |
 
 - **[Accessibility](ACCESSIBILITY.md)** — customize screen reader summaries and UI companion labels (`accessibilityText`, `accessibilityLabels`).
@@ -58,6 +58,7 @@ import {
   NatTablePageSize,
   NatTablePager,
   NatTableSearch,
+  NatTableScrollControl,
   NatTableSurface,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
@@ -99,6 +100,7 @@ const columns = withNatTableHeaderActions<PositionRow>([
     NatTablePageSize,
     NatTablePager,
     NatTableSearch,
+    NatTableScrollControl,
     NatTableSurface,
   ],
   template: `
@@ -119,6 +121,7 @@ const columns = withNatTableHeaderActions<PositionRow>([
       <nat-table-column-visibility [for]="grid" />
       <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
       <nat-table-pager [for]="grid" />
+      <nat-table-scroll-control [for]="grid" />
     </nat-table-surface>
   `,
 })
@@ -402,14 +405,15 @@ Example, add stock controls around an existing table:
   <nat-table-column-visibility [for]="grid" />
   <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
   <nat-table-pager [for]="grid" />
+  <nat-table-scroll-control [for]="grid" />
 </nat-table-surface>
 ```
 
 UI exports:
 
-- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`
+- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
-- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
+- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
 | API                              | Purpose                                                        | Key inputs or options                                        |
 | -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -418,6 +422,7 @@ UI exports:
 | `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `ariaLabel`, `accessibilityLabels`           |
 | `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
 | `NatTablePager`                  | Previous/next pagination control                               | `for`, `ariaLabel`, `accessibilityLabels`                    |
+| `NatTableScrollControl`          | Alternate horizontal scroll controls and position slider       | `for`, `ariaLabel`, `scrollStep`, `accessibilityLabels`      |
 | `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`                       |
 
 Controller contract required by the UI package:
@@ -427,13 +432,15 @@ Controller contract required by the UI package:
 - `enablePagination(): boolean`
 - `patchState(...)`
 - `tableElementId: Signal<string>`
+- `tableScrollContainer?: Signal<HTMLElement | null>`
 
 Notes:
 
 - `NatTableSearch` is only useful when `enableGlobalFilter` is enabled. That is the core default.
 - `NatTablePageSize` and `NatTablePager` assume `enablePagination` is enabled.
+- `NatTableScrollControl` binds to the controller's `tableScrollContainer` when available and falls back to the rendered table's parent element.
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
-- `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, and `NatTablePager` are intentionally small wrappers over the controller contract.
+- `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
 
 ## UI Accessibility Labels
