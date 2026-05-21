@@ -27,12 +27,6 @@
     color var(--nat-table-transition-medium, 180ms ease);
 }
 
-.chip:hover {
-  background: var(--nat-table-chip-background-hover, transparent);
-  border-color: var(--nat-table-chip-border-color-hover, currentColor);
-  transform: var(--nat-table-hover-lift, translateY(-1px));
-}
-
 .chip.is-active {
   background: var(--nat-table-chip-background-active, transparent);
   border-color: var(--nat-table-chip-border-color-active, currentColor);
@@ -43,4 +37,12 @@
   outline: var(--nat-table-focus-ring-width, 2px) solid
     var(--nat-table-focus-ring-color, currentColor);
   outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    background: var(--nat-table-chip-background-hover, transparent);
+    border-color: var(--nat-table-chip-border-color-hover, currentColor);
+    transform: var(--nat-table-hover-lift, translateY(-1px));
+  }
 }

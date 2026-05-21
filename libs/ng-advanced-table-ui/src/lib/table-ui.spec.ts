@@ -10,12 +10,14 @@ import { withNatTableHeaderActions } from './components/table-header-actions/wit
 import { NatTablePageSize } from './components/table-page-size/table-page-size';
 import { NatTablePager } from './components/table-pager/table-pager';
 import { NatTableSearch } from './components/table-search/table-search';
+import { NatTableScrollControl } from './components/table-scroll-control/table-scroll-control';
 import { NatTableSurface } from './components/table-surface/table-surface';
 import type {
   NatTableAccessibilityColumnVisibilityLabels,
   NatTableAccessibilityHeaderActionLabels,
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPagerLabels,
+  NatTableAccessibilityScrollControlLabels,
 } from './shared/table-ui.types';
 
 interface Row {
@@ -87,6 +89,7 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
     NatTablePageSize,
     NatTablePager,
     NatTableSearch,
+    NatTableScrollControl,
     NatTableSurface,
   ],
   template: `
@@ -108,6 +111,7 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       <nat-table-column-visibility [for]="grid" />
       <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
       <nat-table-pager [for]="grid" />
+      <nat-table-scroll-control [for]="grid" />
     </nat-table-surface>
   `,
 })
@@ -156,7 +160,14 @@ class CustomSortIndicatorHost {
 }
 
 @Component({
-  imports: [NatTable, NatTableColumnVisibility, NatTablePageSize, NatTablePager, NatTableSurface],
+  imports: [
+    NatTable,
+    NatTableColumnVisibility,
+    NatTablePageSize,
+    NatTablePager,
+    NatTableScrollControl,
+    NatTableSurface,
+  ],
   template: `
     <nat-table
       #grid="natTable"
@@ -178,6 +189,7 @@ class CustomSortIndicatorHost {
         [accessibilityLabels]="pageSizeLabels"
       />
       <nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
+      <nat-table-scroll-control [for]="grid" [accessibilityLabels]="scrollControlLabels" />
     </nat-table-surface>
   `,
 })
@@ -193,6 +205,13 @@ class CustomAccessibilityLabelsHost {
     previousPageAriaLabel: 'Forrige side',
     nextPageAriaLabel: 'Næste side',
     pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
+  };
+  readonly scrollControlLabels: NatTableAccessibilityScrollControlLabels = {
+    groupAriaLabel: 'Vandret tabelrulning',
+    scrollLeftAriaLabel: 'Rul tabel til venstre',
+    scrollRightAriaLabel: 'Rul tabel til højre',
+    scrollPositionAriaLabel: 'Vandret rulleposition',
+    scrollPositionText: ({ percentageText }) => `${percentageText} procent`,
   };
   readonly columnVisibilityLabels: NatTableAccessibilityColumnVisibilityLabels = {
     heading: 'Kolonner',
@@ -291,11 +310,69 @@ describe('ng-advanced-table-ui', () => {
     const pagerButton = fixture.nativeElement.querySelector(
       'nat-table-pager .pager-button',
     ) as HTMLButtonElement;
+    const scrollButton = fixture.nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-button',
+    ) as HTMLButtonElement;
+    const scrollRange = fixture.nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-range',
+    ) as HTMLInputElement;
 
     expect(searchInput.getAttribute('aria-controls')).toBe(table.id);
     expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
     expect(pageSizeButton.getAttribute('aria-controls')).toBe(table.id);
     expect(pagerButton.getAttribute('aria-controls')).toBe(table.id);
+    expect(scrollButton.getAttribute('aria-controls')).toBe(table.id);
+    expect(scrollRange.getAttribute('aria-controls')).toBe(table.id);
+  });
+
+  it('controls the horizontal table scroll position with buttons and the range bar', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const tableRegion = fixture.nativeElement.querySelector(
+      'nat-table .table-region',
+    ) as HTMLElement;
+    const leftButton = fixture.nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-button-left',
+    ) as HTMLButtonElement;
+    const rightButton = fixture.nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-button-right',
+    ) as HTMLButtonElement;
+    const range = fixture.nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-range',
+    ) as HTMLInputElement;
+    const position = fixture.nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-range-copy',
+    ) as HTMLElement;
+
+    setScrollMetrics(tableRegion, {
+      clientWidth: 300,
+      scrollWidth: 900,
+    });
+    tableRegion.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+
+    expect(leftButton.disabled).toBe(true);
+    expect(rightButton.disabled).toBe(false);
+    expect(range.max).toBe('600');
+    expect(range.value).toBe('0');
+    expect(position.textContent?.trim()).toBe('0% scrolled');
+
+    rightButton.click();
+    fixture.detectChanges();
+
+    expect(tableRegion.scrollLeft).toBe(240);
+    expect(leftButton.disabled).toBe(false);
+    expect(range.value).toBe('240');
+    expect(range.getAttribute('aria-valuetext')).toBe('40% scrolled');
+
+    range.value = '600';
+    range.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(tableRegion.scrollLeft).toBe(600);
+    expect(rightButton.disabled).toBe(true);
+    expect(position.textContent?.trim()).toBe('100% scrolled');
   });
 
   it('toggles column visibility and keeps the last visible column enabled', () => {
@@ -541,6 +618,21 @@ describe('ng-advanced-table-ui', () => {
     ) as HTMLButtonElement;
     const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
     const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
+    const scrollControl = nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-control',
+    ) as HTMLElement;
+    const scrollLeftButton = nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-button-left',
+    ) as HTMLButtonElement;
+    const scrollRightButton = nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-button-right',
+    ) as HTMLButtonElement;
+    const scrollRange = nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-range',
+    ) as HTMLInputElement;
+    const scrollPosition = nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-range-copy',
+    ) as HTMLElement;
     const previousButton = nativeElement.querySelector(
       'nat-table-pager .pager-button:first-child',
     ) as HTMLButtonElement;
@@ -568,6 +660,12 @@ describe('ng-advanced-table-ui', () => {
     expect(pagerLabel.textContent?.trim()).toBe('Side 2 af 3');
     expect(previousButton.getAttribute('aria-label')).toBe('Forrige side');
     expect(nextButton.getAttribute('aria-label')).toBe('Næste side');
+
+    expect(scrollControl.getAttribute('aria-label')).toBe('Vandret tabelrulning');
+    expect(scrollLeftButton.getAttribute('aria-label')).toBe('Rul tabel til venstre');
+    expect(scrollRightButton.getAttribute('aria-label')).toBe('Rul tabel til højre');
+    expect(scrollRange.getAttribute('aria-label')).toBe('Vandret rulleposition');
+    expect(scrollPosition.textContent?.trim()).toBe('0 procent');
 
     expect(sortButton.getAttribute('aria-label')).toBe('Sorter Service');
     expect(menuButton.getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
@@ -665,4 +763,21 @@ function getOpenMenuItem(side: 'left' | 'right'): HTMLButtonElement {
   }
 
   return item;
+}
+
+function setScrollMetrics(
+  element: HTMLElement,
+  metrics: {
+    clientWidth: number;
+    scrollWidth: number;
+  },
+): void {
+  Object.defineProperty(element, 'clientWidth', {
+    configurable: true,
+    value: metrics.clientWidth,
+  });
+  Object.defineProperty(element, 'scrollWidth', {
+    configurable: true,
+    value: metrics.scrollWidth,
+  });
 }

@@ -47,6 +47,8 @@ export interface NatTableUiController<TData extends RowData = RowData> {
   ): void;
   /** DOM id of the controlled `<table>`; companion controls bind `aria-controls` to this. */
   readonly tableElementId: Signal<string>;
+  /** Scrollable container that wraps the controlled `<table>`, when available. */
+  readonly tableScrollContainer?: Signal<HTMLElement | null>;
 }
 
 /** Current sort direction for a header cell. */
@@ -123,6 +125,36 @@ export interface NatTableAccessibilityPagerLabels {
   nextPageAriaLabel?: string;
   /** Visible page-indicator text between the pager buttons. */
   pageIndicator?: (context: NatTableAccessibilityPagerContext) => string;
+}
+
+/** Context passed to horizontal scroll position label formatters. */
+export interface NatTableAccessibilityScrollControlPositionContext {
+  /** Current horizontal scroll offset in CSS pixels. */
+  scrollLeftValue: number;
+  /** Browser-locale text for `scrollLeftValue`. */
+  scrollLeftText: string;
+  /** Maximum horizontal scroll offset in CSS pixels. */
+  maxScrollLeftValue: number;
+  /** Browser-locale text for `maxScrollLeftValue`. */
+  maxScrollLeftText: string;
+  /** Rounded scroll completion percentage from 0 to 100. */
+  percentageValue: number;
+  /** Browser-locale text for `percentageValue`. */
+  percentageText: string;
+}
+
+/** Optional accessibility label overrides for `NatTableScrollControl`. */
+export interface NatTableAccessibilityScrollControlLabels {
+  /** `aria-label` applied to the scroll control group. */
+  groupAriaLabel?: string;
+  /** `aria-label` for the scroll-left button. */
+  scrollLeftAriaLabel?: string;
+  /** `aria-label` for the scroll-right button. */
+  scrollRightAriaLabel?: string;
+  /** `aria-label` applied to the horizontal scroll slider. */
+  scrollPositionAriaLabel?: string;
+  /** Visible and screen-reader position text for the scroll slider. */
+  scrollPositionText?: (context: NatTableAccessibilityScrollControlPositionContext) => string;
 }
 
 /** Context passed to column-visibility summary formatters. */

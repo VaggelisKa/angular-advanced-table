@@ -12,7 +12,7 @@
   background: var(--nat-table-region-background, transparent);
 }
 
-.table-region:focus-within {
+.table-region:has(:focus-visible) {
   border-color: var(--nat-table-focus-ring-color, Highlight);
 }
 
@@ -30,6 +30,12 @@
   border-bottom: 1px solid
     var(--nat-table-cell-border-color, color-mix(in srgb, currentColor 12%, transparent));
   white-space: nowrap;
+}
+
+.header-cell.is-width-constrained,
+.data-cell.is-width-constrained {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-cell {
@@ -55,12 +61,24 @@
   justify-content: space-between;
   gap: var(--nat-table-space-header-content-gap, 8px);
   min-width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .header-cell-primary {
   display: block;
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-cell-content {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-cell.is-reorderable {
@@ -119,34 +137,36 @@
   transition: background-color 120ms ease;
 }
 
-.data-row:hover {
-  background: var(
-    --nat-table-row-background-hover,
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
-  );
-}
-
-.data-row:focus-within {
+.data-row:has(:focus-visible) {
   background: var(
     --nat-table-row-background-focus,
     color-mix(in srgb, var(--nat-table-region-background, canvas) 88%, currentColor 12%)
   );
 }
 
-.data-row:hover .is-pinned-left,
-.data-row:hover .is-pinned-right {
-  background: var(
-    --nat-table-row-background-hover-pinned,
-    color-mix(in srgb, var(--nat-table-pinned-background, canvas) 88%, currentColor 12%)
-  );
-}
-
-.data-row:focus-within .is-pinned-left,
-.data-row:focus-within .is-pinned-right {
+.data-row:has(:focus-visible) .is-pinned-left,
+.data-row:has(:focus-visible) .is-pinned-right {
   background: var(
     --nat-table-row-background-focus-pinned,
     color-mix(in srgb, var(--nat-table-pinned-background, canvas) 84%, currentColor 16%)
   );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .data-row:hover {
+    background: var(
+      --nat-table-row-background-hover,
+      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
+    );
+  }
+
+  .data-row:hover .is-pinned-left,
+  .data-row:hover .is-pinned-right {
+    background: var(
+      --nat-table-row-background-hover-pinned,
+      color-mix(in srgb, var(--nat-table-pinned-background, canvas) 88%, currentColor 12%)
+    );
+  }
 }
 
 .expanded-row {

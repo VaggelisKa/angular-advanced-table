@@ -276,6 +276,20 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   label?: string;
   /** Horizontal alignment for header and body cells in the column. */
   align?: 'start' | 'end';
+  /**
+   * Fixed CSS width for the column. Numbers are interpreted as pixels.
+   *
+   * When set, header and body cell content is clipped with an ellipsis instead
+   * of allowing the browser to expand the column.
+   */
+  width?: number | string;
+  /**
+   * Maximum CSS width for an intrinsically-sized column. Numbers are interpreted as pixels.
+   *
+   * Leave `width` unset when the column should size to its largest visible
+   * content up to this cap.
+   */
+  maxWidth?: number | string;
   /** Marks the body cell for this column as the row header announced by screen readers. */
   rowHeader?: boolean;
   /** Optional callback that maps a cell to a semantic tone class. */

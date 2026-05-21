@@ -1,3 +1,10 @@
+## 1.0.5 (2026-04-29)
+
+### 🩹 Fixes
+
+- Add consumer-facing theming documentation for table packages. ([#54](https://github.com/VaggelisKa/angular-advanced-table/pull/54))
+- Widen the `@tanstack/angular-table` peer dependency from `^8.21.4` to `^8.0.0` so any v8 release satisfies the peer instead of requiring a minimum minor aligned with this repo. ([#52](https://github.com/VaggelisKa/angular-advanced-table/pull/52))
+
 ## 1.0.4 (2026-04-29)
 
 ### 🩹 Fixes

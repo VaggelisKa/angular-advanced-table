@@ -1,3 +1,57 @@
+## 1.1.0 (2026-04-29)
+
+### 🚀 Features
+
+- DX polish for table identity, row ids, and public type surface. ([#53](https://github.com/VaggelisKa/angular-advanced-table/pull/53))
+
+  - **`tableElementId` as `Signal<string>`.** Replaces the `tableElementId(): string` method on `NatTable`. Companion code and templates should keep calling `tableElementId()` (now a signal read). `NatTableUiController` now requires `readonly tableElementId: Signal<string>` so custom controller wrappers align with the same reactive shape.
+  - **`NatTableRowIdGetter` and optional parent row.** Adds exported `NatTableRowIdGetter<TData>` with an optional third `parent` argument matching TanStack Table's `getRowId(originalRow, index, parent?)` callback; `getRowId` input on `NatTable` uses this type.
+  - **`NatTableA11y` namespace.** Deep accessibility formatter context types (`NatTableAccessibilitySummaryContext`, sorting/filtering/visibility/pagination/reorder contexts, and the column-visibility change entry) are re-exported only under `import type { NatTableA11y } from 'ng-advanced-table'`. `NatTableAccessibilityText` and all non-a11y types stay at the package root. **Breaking:** remove top-level imports of the former `NatTableAccessibility*` context symbols; use `NatTableA11y.*` instead.
+  - **`commitInternalState`:** reads `this.state()` once per update instead of eight separate signal reads.
+  - **Docs:** root README documents pagination slice behavior when `enablePagination` is `false`, updates the controller contract and core export list; package README drops the obsolete migration anchor.
+
+
+### 🩹 Fixes
+
+- Document consumer and agent responsibilities for localizing accessibility labels, summaries, announcements, and optional UI control copy. ([#51](https://github.com/VaggelisKa/angular-advanced-table/pull/51))
+- Add consumer-facing theming documentation for table packages. ([#54](https://github.com/VaggelisKa/angular-advanced-table/pull/54))
+- `NatTable` API ergonomics cleanup. Adds granular per-slice change outputs so consumers can subscribe to a single slice without diffing the full state, renames the `allow*` boolean inputs to match the existing `enable*` convention, folds the standalone `ariaDescription`, `keyboardInstructions`, and `emptyStateLabel` inputs into the existing `accessibilityText` object, and tightens the typing of `globalFilterFn`, `getRowId`, and `canExpandRow` so the optional inputs no longer surface an awkward `T | undefined` union in their declarations. The `ng-advanced-table-ui` package picks up a patch bump so its integration suite tracks the renamed `enableColumnReorder` input on `<nat-table>`; its public API is unchanged. ([#53](https://github.com/VaggelisKa/angular-advanced-table/pull/53))
+
+  **New outputs**
+
+  - `(sortingChange)` — emits `SortingState` when the sorting slice actually changed.
+  - `(globalFilterChange)` — emits `string` when the global filter slice actually changed.
+  - `(columnFiltersChange)` — emits `ColumnFiltersState` when the column filters slice actually changed.
+  - `(columnVisibilityChange)` — emits `VisibilityState` when the column visibility slice actually changed.
+  - `(columnOrderChange)` — emits `ColumnOrderState` when the column order slice actually changed.
+  - `(columnPinningChange)` — emits `ColumnPinningState` when the column pinning slice actually changed.
+  - `(paginationChange)` — emits `PaginationState` when the pagination slice actually changed.
+  - `(expandedChange)` — emits `ExpandedState` when the expanded-rows slice actually changed.
+
+  The granular outputs are gated on real changes; `(stateChange)` continues to emit the full state on every update for consumers that prefer the existing surface.
+
+  **Breaking changes**
+
+  - Renamed input `allowColumnPinning` → `enableColumnPinning`.
+  - Renamed input `allowColumnReorder` → `enableColumnReorder`.
+  - Removed input `ariaDescription`. Pass `accessibilityText.description` instead.
+  - Removed input `keyboardInstructions`. Pass `accessibilityText.keyboardInstructions` instead. The built-in default is preserved when the field is omitted; set it to `''` to suppress instructions entirely.
+  - Removed input `emptyStateLabel`. Pass `accessibilityText.emptyState` instead. The built-in default is preserved when the field is omitted.
+
+- **Breaking (`ng-advanced-table`):** Remove multi-column sorting (`enableMultiSort`, TanStack `maxMultiSortColCount`). Sorting is always single-column: merged state normalizes to one entry, TanStack is configured with `enableMultiSort: false` and `isMultiSortEvent` never true. Remove `NatTableAccessibilitySortingEntry` and the `sortings` field from `NatTableAccessibilitySortingAnnouncementContext`. ([#53](https://github.com/VaggelisKa/angular-advanced-table/pull/53))
+
+  **`ng-advanced-table-ui`:** Header sort control calls `column.toggleSorting()` again (no `getToggleSortingHandler` / Shift path).
+
+  Other recent `NatTable` additions (for example `(rowActivate)` and controlled-state documentation) are unchanged by this removal.
+
+- Widen the `@tanstack/angular-table` peer dependency from `^8.21.4` to `^8.0.0` so any v8 release satisfies the peer instead of requiring a minimum minor aligned with this repo. ([#52](https://github.com/VaggelisKa/angular-advanced-table/pull/52))
+- Add a machine-readable API map to the accessibility internationalization guide for agent consumers. ([#51](https://github.com/VaggelisKa/angular-advanced-table/pull/51))
+- Extract accessibility customization guides into root-level `ACCESSIBILITY.md` and update package README links for discoverability. ([5690475](https://github.com/VaggelisKa/angular-advanced-table/commit/5690475))
+
+### 🧱 Updated Dependencies
+
+- Updated ng-advanced-table to 1.0.0
+
 ## 1.0.4 (2026-04-29)
 
 ### 🩹 Fixes

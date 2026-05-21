@@ -2,4 +2,4 @@
 ng-advanced-table: patch
 ---
 
-Remove a stale package README link to root migration notes that no longer exist.
+Remove the stale migration-notes link from the `ng-advanced-table` package README now that the root workspace README no longer publishes a migration section.

@@ -43,11 +43,14 @@
               [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
               [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
               [class.is-reorderable]="canReorderHeader(header)"
+              [class.is-width-constrained]="columnState?.constrainedWidth"
               [cdkDragData]="header.column.id"
               [cdkDragDisabled]="!canReorderHeader(header)"
               [style.left.px]="columnState?.left"
               [style.right.px]="columnState?.right"
-              [style.min-width.px]="columnState?.minWidth"
+              [style.width]="columnState?.width"
+              [style.min-width]="columnState?.minWidth"
+              [style.max-width]="columnState?.maxWidth"
               [attr.data-column-id]="header.column.id"
               [attr.aria-sort]="columnState?.ariaSort"
               (keydown)="onHeaderKeydown($event, header.column)"
@@ -106,17 +109,22 @@
                   [class.is-pinned-right]="columnState?.pinnedRight"
                   [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
                   [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                  [class.is-width-constrained]="columnState?.constrainedWidth"
                   [style.left.px]="columnState?.left"
                   [style.right.px]="columnState?.right"
-                  [style.min-width.px]="columnState?.minWidth"
+                  [style.width]="columnState?.width"
+                  [style.min-width]="columnState?.minWidth"
+                  [style.max-width]="columnState?.maxWidth"
                   [attr.data-column-id]="cell.column.id"
                   [attr.data-tone]="cellTone"
                 >
-                  <ng-container
-                    *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                  >
-                    {{ rendered }}
-                  </ng-container>
+                  <span class="data-cell-content">
+                    <ng-container
+                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                    >
+                      {{ rendered }}
+                    </ng-container>
+                  </span>
                 </th>
               } @else {
                 <td
@@ -127,17 +135,22 @@
                   [class.is-pinned-right]="columnState?.pinnedRight"
                   [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
                   [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                  [class.is-width-constrained]="columnState?.constrainedWidth"
                   [style.left.px]="columnState?.left"
                   [style.right.px]="columnState?.right"
-                  [style.min-width.px]="columnState?.minWidth"
+                  [style.width]="columnState?.width"
+                  [style.min-width]="columnState?.minWidth"
+                  [style.max-width]="columnState?.maxWidth"
                   [attr.data-column-id]="cell.column.id"
                   [attr.data-tone]="cellTone"
                 >
-                  <ng-container
-                    *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                  >
-                    {{ rendered }}
-                  </ng-container>
+                  <span class="data-cell-content">
+                    <ng-container
+                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                    >
+                      {{ rendered }}
+                    </ng-container>
+                  </span>
                 </td>
               }
             }

@@ -73,13 +73,13 @@ const columns = withNatTableHeaderActions<PositionRow>([
   {
     accessorKey: 'symbol',
     header: 'Symbol',
-    meta: { label: 'Symbol', rowHeader: true },
+    meta: { label: 'Symbol', rowHeader: true, width: 96 },
     cell: (context) => context.getValue<string>(),
   },
   {
     accessorKey: 'desk',
     header: 'Desk',
-    meta: { label: 'Desk' },
+    meta: { label: 'Desk', maxWidth: 160 },
     cell: (context) => context.getValue<string>(),
   },
   {
@@ -246,12 +246,16 @@ The `pagination` slice always exists so controlled and uncontrolled code paths s
 
 Attach metadata through `columnDef.meta`:
 
-| Field       | Type                                                                      | Purpose                                                        |
-| ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `label`     | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
-| `align`     | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
-| `rowHeader` | `boolean`                                                                 | Marks body cells in the column as row headers                  |
-| `cellTone`  | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
+| Field       | Type                                                                      | Purpose                                                                                   |
+| ----------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `label`     | `string`                                                                  | Stable human-readable label for accessibility and companion UI                            |
+| `align`     | `'start' \| 'end'`                                                        | Cell and header alignment                                                                 |
+| `width`     | `number \| string`                                                        | Fixed column width; numbers are pixels, and overflowing header/body content is ellipsized |
+| `maxWidth`  | `number \| string`                                                        | Maximum column width while preserving intrinsic browser sizing; numbers are pixels        |
+| `rowHeader` | `boolean`                                                                 | Marks body cells in the column as row headers                                             |
+| `cellTone`  | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                                            |
+
+Without `width` or `maxWidth`, the browser sizes each column intrinsically from the largest rendered content. Set `width` for a hard column size with ellipsis truncation, or set only `maxWidth` to let the column grow naturally until that cap.
 
 ### Behavior rules
 
