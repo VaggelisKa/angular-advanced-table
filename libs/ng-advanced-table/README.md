@@ -9,7 +9,6 @@ Core table package for the `angular-advanced-table` workspace.
 - Core API reference: [../../README.md#core-api](../../README.md#core-api)
 - Custom cell component guidance: [../../README.md#custom-cell-components](../../README.md#custom-cell-components)
 - Accessibility and internationalization: [../../ACCESSIBILITY.md](../../ACCESSIBILITY.md)
-- Migration notes: [../../README.md#migration](../../README.md#migration)
 
 This package README is intentionally scoped to package entry-point information. The root README is the canonical source for table behavior and API details.
 
