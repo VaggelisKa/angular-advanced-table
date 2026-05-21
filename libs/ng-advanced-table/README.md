@@ -38,7 +38,7 @@ Use [`ng-advanced-table-ui`](../ng-advanced-table-ui/README.md) for optional UI 
 ## Install
 
 ```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Zoneless Compatibility

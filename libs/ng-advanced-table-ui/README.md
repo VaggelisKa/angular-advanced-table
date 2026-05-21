@@ -28,7 +28,7 @@ The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #g
 ## Install
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Zoneless Compatibility

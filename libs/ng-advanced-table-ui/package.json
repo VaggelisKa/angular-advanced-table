@@ -25,6 +25,7 @@
   "peerDependencies": {
     "@angular/cdk": "^21.2.0",
     "@angular/aria": "^21.2.0",
+    "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0",
     "@tanstack/angular-table": "^8.0.0"
   },

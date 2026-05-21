@@ -31,19 +31,19 @@ Angular 21+ apps can consume these packages with or without `zone.js`. The works
 ### Core only
 
 ```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ### Core and UI
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ### Core, UI, and utils
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/aria @angular/cdk
+npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Quick Start
