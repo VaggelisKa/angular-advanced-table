@@ -314,25 +314,30 @@ Attach metadata through `columnDef.meta`:
 
 | Field       | Type                                                                      | Purpose                                                        |
 | ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `label`     | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
-| `align`     | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
-| `rowHeader` | `boolean`                                                                 | Marks body cells in the column as row headers                  |
-| `cellTone`  | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
+| `label`          | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
+| `align`          | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
+| `rowHeader`      | `boolean`                                                                 | Marks body cells in the column as row headers                  |
+| `cellTone`       | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
+| `headerSize`     | `number \| string`                                                        | Optional header-only width in pixels                           |
+| `headerMinSize`  | `number \| string`                                                        | Optional header-only minimum width in pixels                   |
+| `headerMaxSize`  | `number \| string`                                                        | Optional header-only maximum width in pixels                   |
 
 ### Column sizing and pinned offsets
 
-`NatTable` uses TanStack column sizing fields as the rendered sizing API:
+`NatTable` uses TanStack column sizing fields for **body cells** only:
 
-- `size` sets the preferred rendered width in pixels.
-- `minSize` sets CSS `min-width` in pixels.
-- `maxSize` sets CSS `max-width` in pixels.
+- `size` — preferred body cell width in pixels (rendered as CSS `width`).
+- `minSize` — applies a CSS `min-width` to body cells in pixels.
+- `maxSize` — caps body cells with CSS `max-width` in pixels.
 
-Use one sizing model per column:
+Column headers size from their content by default. To constrain a header independently, set optional `meta.headerSize`, `meta.headerMinSize`, or `meta.headerMaxSize` on the column definition.
 
-- Fixed width: set `size`. Header and body content ellipsizes at that width unless `maxSize` permits a wider column.
+Use one body sizing model per column:
+
+- Fixed width: set `size`. Body content ellipsizes at that width unless `maxSize` permits a wider cell.
 - Minimum width: set `minSize`, with or without `size`.
-- Maximum width: set `maxSize` and leave `size` unset when the browser should size the column from content up to that cap.
-- Intrinsic width: leave `size`, `minSize`, and `maxSize` unset. The browser sizes the column from content.
+- Maximum width: set `maxSize` and leave `size` unset when the browser should size body cells from content up to that cap.
+- Intrinsic width: leave `size`, `minSize`, and `maxSize` unset. Body cells size from content.
 
 Pinned column offsets are based on measured header widths after layout. Before a measurement exists, the fallback is:
 

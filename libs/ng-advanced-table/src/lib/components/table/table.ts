@@ -81,6 +81,10 @@ interface TableColumnRenderState {
   minWidth: string | null;
   maxWidth: string | null;
   constrainedWidth: boolean;
+  headerWidth: string | null;
+  headerMinWidth: string | null;
+  headerMaxWidth: string | null;
+  headerConstrainedWidth: boolean;
   ariaSort: 'ascending' | 'descending' | null;
   rowHeader: boolean;
 }
@@ -508,9 +512,24 @@ export class NatTable<TData extends RowData = RowData> {
       const pinnedRight = rightPinnedIds.has(column.id);
 
       const sortEntry = state.sorting.find((entry) => entry.id === column.id);
+      const meta = column.columnDef.meta;
+      const headerWidth =
+        meta?.headerSize !== undefined ? normalizeColumnDimension(meta.headerSize) : null;
+      const headerMinWidth =
+        meta?.headerMinSize !== undefined
+          ? normalizeColumnDimension(meta.headerMinSize)
+          : headerWidth !== null
+            ? headerWidth
+            : null;
+      const headerMaxWidth =
+        meta?.headerMaxSize !== undefined
+          ? normalizeColumnDimension(meta.headerMaxSize)
+          : headerWidth !== null
+            ? headerWidth
+            : null;
 
       result[column.id] = {
-        alignEnd: column.columnDef.meta?.align === 'end',
+        alignEnd: meta?.align === 'end',
         pinnedLeft,
         pinnedRight,
         hasPinnedEdgeLeft: pinnedLeft && leftVisibleColumns.at(-1)?.id === column.id,
@@ -521,8 +540,12 @@ export class NatTable<TData extends RowData = RowData> {
         minWidth,
         maxWidth,
         constrainedWidth: width !== null || maxWidth !== null,
+        headerWidth,
+        headerMinWidth,
+        headerMaxWidth,
+        headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
         ariaSort: sortEntry ? (sortEntry.desc ? 'descending' : 'ascending') : null,
-        rowHeader: !!column.columnDef.meta?.rowHeader,
+        rowHeader: !!meta?.rowHeader,
       };
     }
 

@@ -1,31 +1,62 @@
 :host {
   display: block;
+  inline-size: 100%;
 }
 
 .header-content {
   display: flex;
+  inline-size: 100%;
   max-width: 100%;
-}
-
-.header-content.is-align-end {
-  justify-content: flex-end;
 }
 
 .header-actions-row {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
-  max-width: 100%;
+  justify-content: space-between;
+  gap: var(--nat-table-space-header-actions-gap, 12px);
+  inline-size: 100%;
   min-width: 0;
 }
 
+.header-content.is-align-end .header-actions-row {
+  flex-direction: row-reverse;
+}
+
+.header-leading {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.header-content.is-align-end .header-leading {
+  justify-content: flex-end;
+}
+
+.header-controls {
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--nat-table-space-header-controls-gap, 6px);
+}
+
 .header-label {
-  display: inline-block;
-  max-width: 100%;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-content.is-align-end .header-label {
+  text-align: right;
 }
 
 .menu-button {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   inline-size: 1.9rem;
@@ -64,6 +95,10 @@
   cursor: pointer;
 }
 
+.sort-button .header-label {
+  flex: 1 1 auto;
+}
+
 .sort-button.is-sorted {
   color: var(--nat-table-sort-button-color-sorted, inherit);
 }
@@ -95,6 +130,7 @@
 
 .sort-icon {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   min-width: var(--nat-table-sort-icon-min-width, 1.05rem);
   justify-content: center;

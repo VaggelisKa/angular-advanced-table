@@ -280,6 +280,12 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   rowHeader?: boolean;
   /** Optional callback that maps a cell to a semantic tone class. */
   cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
+  /** Optional header-only width in pixels. Does not affect body cells. */
+  headerSize?: number | string;
+  /** Optional header-only minimum width in pixels. Does not affect body cells. */
+  headerMinSize?: number | string;
+  /** Optional header-only maximum width in pixels. Does not affect body cells. */
+  headerMaxSize?: number | string;
 }
 
 declare module '@tanstack/table-core' {

@@ -57,20 +57,25 @@
 
 .header-cell-content {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--nat-table-space-header-content-gap, 8px);
-  min-width: 100%;
+  min-width: 0;
   max-width: 100%;
-  overflow: hidden;
 }
 
 .header-cell-primary {
   display: block;
   flex: 1 1 auto;
   min-width: 0;
+  max-width: 100%;
+  inline-size: 100%;
+}
+
+.header-cell.is-width-constrained .header-cell-primary {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .data-cell-content {
