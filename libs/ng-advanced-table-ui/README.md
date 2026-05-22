@@ -54,8 +54,6 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `NatTableAccessibilityPageSizeLabels`
 - `NatTableAccessibilityPagerContext`
 - `NatTableAccessibilityPagerLabels`
-- `NatTableAccessibilityScrollControlPositionContext`
-- `NatTableAccessibilityScrollControlLabels`
 - `NatTableAccessibilityColumnVisibilitySummaryContext`
 - `NatTableAccessibilityColumnVisibilityActionContext`
 - `NatTableAccessibilityColumnVisibilityStateContext`
@@ -135,7 +133,6 @@ const columns = withNatTableHeaderActions<OrderRow>([
       <nat-table-scroll-control [for]="grid" />
       <nat-table-search [for]="grid" />
       <nat-table-pager [for]="grid" />
-      <nat-table-scroll-control [for]="grid" />
     </nat-table-surface>
   `,
 })

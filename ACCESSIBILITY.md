@@ -162,8 +162,7 @@ Decision rules for agents:
 - If `NatTableSearch` is rendered, localize both `label` and `placeholder`.
 - If `NatTableColumnVisibility` is rendered, pass `NatTableAccessibilityColumnVisibilityLabels`.
 - If `NatTablePageSize` is rendered, pass `NatTableAccessibilityPageSizeLabels`.
-- If `NatTablePager` is rendered, pass `NatTableAccessibilityPagerLabels`.
-- If `NatTableScrollControl` is rendered, pass `NatTableAccessibilityScrollControlLabels`.
+- For `NatTablePager`, pass `NatTableAccessibilityPagerLabels`; for `NatTableScrollControl`, pass `NatTableAccessibilityScrollControlLabels`.
 - If `withNatTableHeaderActions(...)` is used, pass `NatTableAccessibilityHeaderActionLabels` through its options.
 
 ## Runtime Locale Changes
