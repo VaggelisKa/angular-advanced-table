@@ -82,6 +82,9 @@
 .sort-button {
   display: inline-flex;
   align-items: center;
+  gap: var(--nat-table-space-chip-row-gap, 10px);
+  max-width: 100%;
+  min-width: 0;
   padding: 0;
   background: none;
   border: 0;
@@ -92,13 +95,8 @@
   cursor: pointer;
 }
 
-.sort-button--label {
-  max-width: 100%;
-  min-width: 0;
-}
-
-.sort-button--icon {
-  flex: 0 0 auto;
+.sort-button .header-label {
+  flex: 1 1 auto;
 }
 
 .sort-button.is-sorted {

@@ -5,7 +5,7 @@
         <button
           type="button"
           ngGridCellWidget
-          class="sort-button sort-button--label"
+          class="sort-button"
           [class.is-sorted]="!!column().getIsSorted()"
           [attr.aria-label]="getSortLabel()"
           (pointerdown)="$event.stopPropagation()"
@@ -15,6 +15,30 @@
             <ng-container *flexRender="content(); props: context(); let rendered">
               {{ rendered }}
             </ng-container>
+          </span>
+          <span class="sort-icon" aria-hidden="true">
+            @if (hasCustomSortIndicator()) {
+              <ng-container
+                *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"
+              >
+                {{ rendered }}
+              </ng-container>
+            } @else {
+              <span
+                class="nat-default-sort"
+                [attr.data-sort-state]="sortState() === false ? 'none' : sortState()"
+              >
+                <svg
+                  class="nat-default-sort__svg"
+                  viewBox="0 0 12 14"
+                  focusable="false"
+                  aria-hidden="true"
+                >
+                  <path class="nat-default-sort__up" d="M6 2 10 6 H2z" />
+                  <path class="nat-default-sort__down" d="M6 12 2 8 H10z" />
+                </svg>
+              </span>
+            }
           </span>
         </button>
       } @else {
@@ -26,47 +50,9 @@
       }
     </div>
 
-    @if (canSort() || canPin()) {
+    @if (canPin()) {
       <div class="header-controls">
-        @if (canSort()) {
-          <button
-            type="button"
-            ngGridCellWidget
-            class="sort-button sort-button--icon"
-            [class.is-sorted]="!!column().getIsSorted()"
-            [attr.aria-label]="getSortLabel()"
-            (pointerdown)="$event.stopPropagation()"
-            (click)="column().toggleSorting()"
-          >
-            <span class="sort-icon" aria-hidden="true">
-              @if (hasCustomSortIndicator()) {
-                <ng-container
-                  *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"
-                >
-                  {{ rendered }}
-                </ng-container>
-              } @else {
-                <span
-                  class="nat-default-sort"
-                  [attr.data-sort-state]="sortState() === false ? 'none' : sortState()"
-                >
-                  <svg
-                    class="nat-default-sort__svg"
-                    viewBox="0 0 12 14"
-                    focusable="false"
-                    aria-hidden="true"
-                  >
-                    <path class="nat-default-sort__up" d="M6 2 10 6 H2z" />
-                    <path class="nat-default-sort__down" d="M6 12 2 8 H10z" />
-                  </svg>
-                </span>
-              }
-            </span>
-          </button>
-        }
-
-        @if (canPin()) {
-          <button
+        <button
             type="button"
             ngGridCellWidget
             class="menu-button"
@@ -150,7 +136,6 @@
               </ng-template>
             </div>
           </ng-template>
-        }
       </div>
     }
   </div>

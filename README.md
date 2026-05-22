@@ -326,9 +326,9 @@ Attach metadata through `columnDef.meta`:
 
 `NatTable` uses TanStack column sizing fields for **body cells** only:
 
-- `size` sets the preferred rendered body width in pixels.
-- `minSize` sets CSS `min-width` on body cells in pixels.
-- `maxSize` sets CSS `max-width` on body cells in pixels.
+- `size` — preferred body cell width in pixels (rendered as CSS `width`).
+- `minSize` — applies a CSS `min-width` to body cells in pixels.
+- `maxSize` — caps body cells with CSS `max-width` in pixels.
 
 Column headers size from their content by default. To constrain a header independently, set optional `meta.headerSize`, `meta.headerMinSize`, or `meta.headerMaxSize` on the column definition.
 
