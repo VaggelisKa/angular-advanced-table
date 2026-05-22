@@ -115,12 +115,10 @@ const columns = withNatTableHeaderActions<PositionRow>([
         #grid="natTable"
         [data]="rows()"
         [columns]="columns"
-        [state]="tableState()"
         [initialState]="initialState"
         [enablePagination]="true"
         [getRowId]="getRowId"
         ariaLabel="Open positions"
-        (stateChange)="tableState.set($event)"
       />
 
       <nat-table-scroll-control [for]="grid" />
@@ -134,7 +132,6 @@ const columns = withNatTableHeaderActions<PositionRow>([
 export class PositionsTableComponent {
   readonly rows = signal<PositionRow[]>([]);
   readonly columns = columns;
-  readonly tableState = signal<Partial<NatTableState>>({});
   readonly initialState: Partial<NatTableState> = {
     pagination: { pageIndex: 0, pageSize: 25 },
   };
@@ -219,7 +216,7 @@ Core exports:
 
 | API                        | Type                              | Notes                                                                                                                                                |
 | -------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `(stateChange)`            | `NatTableState`                   | Emits the full next state on every update                                                                                                            |
+| `(stateChange)`            | `NatTableState`                   | Emits the full next state on every update; prefer granular outputs when only one slice is controlled                                                 |
 | `(sortingChange)`          | `SortingState`                    | Emits when only the sorting slice actually changed                                                                                                   |
 | `(globalFilterChange)`     | `string`                          | Emits when only the global filter slice actually changed                                                                                             |
 | `(columnFiltersChange)`    | `ColumnFiltersState`              | Emits when only the column filters slice actually changed                                                                                            |
@@ -235,6 +232,63 @@ Core exports:
 | `tableElementId`           | `Signal<string>`                  | Read-only signal holding the generated `<table>` element id (use `tableElementId()` in templates and `aria-controls` bindings)                       |
 
 The granular `*Change` outputs only fire when the corresponding slice differs from the previous emission, so binding to a single output (for example `(paginationChange)`) avoids the equality work that `(stateChange)` typically requires.
+
+### State ownership patterns
+
+Most tables should start uncontrolled: omit `[state]`, pass `[initialState]` only for defaults such as the first page size, and let `NatTable` plus companion controls manage sorting, filters, visibility, pagination, pinning, order, and expansion internally.
+
+Use granular outputs when your application owns one slice. Pass only the slice you control back through `[state]`; omitted properties remain internal:
+
+```ts
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { type ColumnDef, type ColumnFiltersState } from '@tanstack/angular-table';
+
+import { NatTable, type NatTableState } from 'ng-advanced-table';
+
+interface OrderRow {
+  id: string;
+  status: string;
+  total: number;
+}
+
+@Component({
+  selector: 'app-filtered-orders-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [state]="controlledState()"
+      ariaLabel="Filtered orders"
+      (columnFiltersChange)="columnFilters.set($event)"
+    />
+  `,
+})
+export class FilteredOrdersTableComponent {
+  readonly rows = signal<OrderRow[]>([]);
+  readonly columns: ColumnDef<OrderRow>[] = [
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      meta: { label: 'Status', rowHeader: true },
+      cell: (context) => context.getValue<string>(),
+    },
+    {
+      accessorKey: 'total',
+      header: 'Total',
+      meta: { label: 'Total', align: 'end' },
+      cell: (context) => `$${context.getValue<number>().toFixed(2)}`,
+    },
+  ];
+  readonly columnFilters = signal<ColumnFiltersState>([{ id: 'status', value: 'open' }]);
+  readonly controlledState = computed<Partial<NatTableState>>(() => ({
+    columnFilters: this.columnFilters(),
+  }));
+}
+```
+
+Use `(stateChange)` when you need a complete-state snapshot for logging, persistence, or deliberately controlling the entire normalized table state. `(stateChange)` emits a full `NatTableState` on every update; if you assign that event to the same signal used by `[state]`, every emitted property becomes controlled after the first update.
 
 ### `NatTableState`
 
@@ -401,10 +455,8 @@ Example, add stock controls around an existing table:
     #grid="natTable"
     [data]="rows()"
     [columns]="columns"
-    [state]="tableState()"
     [enablePagination]="true"
     ariaLabel="Orders"
-    (stateChange)="tableState.set($event)"
   />
 
   <nat-table-scroll-control [for]="grid" />

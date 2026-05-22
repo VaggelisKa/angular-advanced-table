@@ -207,6 +207,10 @@ export class NatTable<TData extends RowData = RowData> {
    * Omitted properties remain uncontrolled and are managed internally by
    * the table; controlled slices can still be updated through the matching
    * `*Change` output (or `(stateChange)`) and flowed back in.
+   *
+   * Prefer passing only the slices your application owns. Feeding the full
+   * `(stateChange)` payload back into this input controls every slice after
+   * the first update.
    */
   readonly state = input<Partial<NatTableState>>({});
   /** Optional stable row id resolver used for selection, pinning, and events. */
@@ -227,7 +231,8 @@ export class NatTable<TData extends RowData = RowData> {
    * Emits the full next state whenever the table updates any state slice.
    *
    * Prefer the granular `*Change` outputs when you only care about a single
-   * slice; this output remains the canonical "everything changed" signal.
+   * slice. This event always emits a complete normalized `NatTableState`,
+   * including slices that are otherwise uncontrolled.
    */
   readonly stateChange = output<NatTableState>();
   /** Emits the next sorting state when it actually changes. */

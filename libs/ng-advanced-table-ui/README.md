@@ -84,7 +84,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { NatTable } from 'ng-advanced-table';
 import {
   NatTablePager,
   NatTableScrollControl,
@@ -124,10 +124,8 @@ const columns = withNatTableHeaderActions<OrderRow>([
         #grid="natTable"
         [data]="rows()"
         [columns]="columns"
-        [state]="tableState()"
         [enablePagination]="true"
         ariaLabel="Orders"
-        (stateChange)="tableState.set($event)"
       />
 
       <nat-table-scroll-control [for]="grid" />
@@ -139,6 +137,5 @@ const columns = withNatTableHeaderActions<OrderRow>([
 export class OrdersTableComponent {
   readonly rows = signal<OrderRow[]>([]);
   readonly columns = columns;
-  readonly tableState = signal<Partial<NatTableState>>({});
 }
 ```

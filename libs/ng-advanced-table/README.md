@@ -69,7 +69,7 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { NatTable } from 'ng-advanced-table';
 
 interface ServiceRow {
   id: string;
@@ -85,16 +85,13 @@ interface ServiceRow {
     <nat-table
       [data]="rows()"
       [columns]="columns"
-      [state]="tableState()"
       [enablePagination]="true"
       ariaLabel="Service latency"
-      (stateChange)="tableState.set($event)"
     />
   `,
 })
 export class ServiceTableComponent {
   readonly rows = signal<ServiceRow[]>([]);
-  readonly tableState = signal<Partial<NatTableState>>({});
   readonly columns: ColumnDef<ServiceRow>[] = [
     {
       accessorKey: 'service',
