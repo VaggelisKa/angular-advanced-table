@@ -9,9 +9,11 @@ import { NatTableColumnVisibility } from './components/table-column-visibility/t
 import { withNatTableHeaderActions } from './components/table-header-actions/with-table-header-actions';
 import { NatTablePageSize } from './components/table-page-size/table-page-size';
 import { NatTablePager } from './components/table-pager/table-pager';
+import { withNatTableExpansionColumn } from './components/table-row-expand-toggle/with-table-expansion-column';
 import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableScrollControl } from './components/table-scroll-control/table-scroll-control';
 import { NatTableSurface } from './components/table-surface/table-surface';
+import type { NatTableRowExpansionLabels } from './components/table-row-expand-toggle/table-row-expand-toggle';
 import type {
   NatTableAccessibilityColumnVisibilityLabels,
   NatTableAccessibilityHeaderActionLabels,
@@ -249,13 +251,76 @@ class CustomAccessibilityLabelsHost {
   }
 }
 
+const expansionLabels: NatTableRowExpansionLabels<Row> = {
+  expandButton: ({ rowData }) => `Open details for ${rowData.name}`,
+  collapseButton: ({ rowData }) => `Close details for ${rowData.name}`,
+  unavailableButton: ({ rowData }) => `No details for ${rowData.name}`,
+  expandText: () => 'Open',
+  collapseText: () => 'Close',
+};
+
+@Component({
+  imports: [NatTable],
+  template: `
+    <ng-template #detail let-rowData>
+      <div class="expansion-detail">{{ rowData.name }} detail</div>
+    </ng-template>
+
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      [getRowId]="getRowId"
+      [canExpandRow]="canExpandRow"
+      [expandedRow]="detail"
+      ariaLabel="Operations table"
+      (stateChange)="onStateChange($event)"
+      (expandedChange)="onExpandedChange($event)"
+    />
+  `,
+})
+class ExpansionColumnHost {
+  readonly rows = signal<Row[]>(buildRows(3));
+  readonly columns = withNatTableExpansionColumn<Row>(baseColumns, {
+    labels: expansionLabels,
+  });
+  readonly getRowId = (row: Row) => row.id;
+  readonly canExpandRow = (row: Row) => row.status !== 'Healthy';
+  readonly tableState = signal<Partial<NatTableState>>({});
+  readonly stateEvents: NatTableState[] = [];
+  readonly expandedEvents: NatTableState['expanded'][] = [];
+  syncExpanded = false;
+
+  onStateChange(state: NatTableState): void {
+    this.stateEvents.push(state);
+  }
+
+  onExpandedChange(expanded: NatTableState['expanded']): void {
+    this.expandedEvents.push(expanded);
+
+    if (!this.syncExpanded) {
+      return;
+    }
+
+    this.tableState.update((current) => ({
+      ...current,
+      expanded,
+    }));
+  }
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost, CustomSortIndicatorHost, CustomAccessibilityLabelsHost],
+      imports: [
+        TableUiHost,
+        CustomSortIndicatorHost,
+        CustomAccessibilityLabelsHost,
+        ExpansionColumnHost,
+      ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -591,6 +656,92 @@ describe('ng-advanced-table-ui', () => {
     expect(sortIcon.textContent).not.toContain('↕');
   });
 
+  it('adds an accessible expansion toggle column that emits expandedChange', async () => {
+    const expansionFixture = TestBed.createComponent(ExpansionColumnHost);
+
+    await expansionFixture.whenStable();
+    expansionFixture.detectChanges();
+
+    const host = expansionFixture.componentInstance;
+    const nativeElement = expansionFixture.nativeElement as HTMLElement;
+    const headers = Array.from(nativeElement.querySelectorAll('thead th')) as HTMLElement[];
+    const buttons = getExpansionButtons(expansionFixture);
+    const disabledButton = buttons.find((button) => button.disabled);
+    const betaButton = getExpansionButton(expansionFixture, 'Open details for Beta');
+
+    expect(getHeaderColumnIds(expansionFixture)).toEqual([
+      'nat-row-expand',
+      'name',
+      'region',
+      'status',
+      'throughput',
+    ]);
+    expect(headers[0].textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Details');
+    expect(nativeElement.querySelector('nat-table-row-expand-toggle')).toBeTruthy();
+    expect(buttons.length).toBe(3);
+    expect(disabledButton).toBeTruthy();
+    expect(disabledButton?.getAttribute('aria-expanded')).toBeNull();
+    expect(disabledButton?.getAttribute('aria-label')).toBe('No details for Alpha');
+    expect(betaButton.disabled).toBe(false);
+    expect(betaButton.getAttribute('aria-expanded')).toBe('false');
+    expect(betaButton.textContent?.trim()).toBe('Open');
+
+    betaButton.click();
+    expansionFixture.detectChanges();
+
+    const expandedRow = nativeElement.querySelector(
+      '[data-expanded-row-for="svc-00002"]',
+    ) as HTMLTableRowElement;
+    const updatedBetaButton = getExpansionButton(expansionFixture, 'Close details for Beta');
+
+    expect(expandedRow).toBeTruthy();
+    expect(expandedRow.textContent).toContain('Beta detail');
+    expect(updatedBetaButton.getAttribute('aria-expanded')).toBe('true');
+    expect(updatedBetaButton.textContent?.trim()).toBe('Close');
+    expect(host.expandedEvents.at(-1)).toEqual({
+      'svc-00002': true,
+    });
+    expect(host.stateEvents.at(-1)?.expanded).toEqual({
+      'svc-00002': true,
+    });
+
+    expansionFixture.destroy();
+  });
+
+  it('works with getRowId and controlled expanded state', async () => {
+    const expansionFixture = TestBed.createComponent(ExpansionColumnHost);
+    const host = expansionFixture.componentInstance;
+
+    host.syncExpanded = true;
+    host.tableState.set({
+      expanded: {
+        'svc-00002': true,
+      },
+    });
+
+    await expansionFixture.whenStable();
+    expansionFixture.detectChanges();
+
+    const nativeElement = expansionFixture.nativeElement as HTMLElement;
+
+    expect(nativeElement.querySelector('[data-expanded-row-for="svc-00002"]')).toBeTruthy();
+    expect(
+      getExpansionButton(expansionFixture, 'Close details for Beta').getAttribute('aria-expanded'),
+    ).toBe('true');
+
+    getExpansionButton(expansionFixture, 'Close details for Beta').click();
+    expansionFixture.detectChanges();
+
+    expect(host.expandedEvents.at(-1)).toEqual({});
+    expect(host.tableState().expanded).toEqual({});
+    expect(nativeElement.querySelector('[data-expanded-row-for="svc-00002"]')).toBeNull();
+    expect(
+      getExpansionButton(expansionFixture, 'Open details for Beta').getAttribute('aria-expanded'),
+    ).toBe('false');
+
+    expansionFixture.destroy();
+  });
+
   it('renders caller-provided accessibility labels across the UI controls', async () => {
     const customFixture = TestBed.createComponent(CustomAccessibilityLabelsHost);
 
@@ -735,10 +886,28 @@ function buildRows(size: number): Row[] {
   }));
 }
 
-function getHeaderColumnIds(fixture: ComponentFixture<TableUiHost>): string[] {
+function getHeaderColumnIds<T>(fixture: ComponentFixture<T>): string[] {
   return Array.from(fixture.nativeElement.querySelectorAll('thead th[data-column-id]')).map(
     (header) => (header as HTMLElement).dataset['columnId'] ?? '',
   );
+}
+
+function getExpansionButtons<T>(fixture: ComponentFixture<T>): HTMLButtonElement[] {
+  return Array.from(
+    fixture.nativeElement.querySelectorAll('nat-table-row-expand-toggle button'),
+  ) as HTMLButtonElement[];
+}
+
+function getExpansionButton<T>(fixture: ComponentFixture<T>, ariaLabel: string): HTMLButtonElement {
+  const button = getExpansionButtons(fixture).find(
+    (candidate) => candidate.getAttribute('aria-label') === ariaLabel,
+  );
+
+  if (!button) {
+    throw new Error(`Expected an expansion button labeled "${ariaLabel}".`);
+  }
+
+  return button;
 }
 
 function getOpenPinMenu(): HTMLElement | null {

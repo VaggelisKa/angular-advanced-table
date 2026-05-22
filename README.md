@@ -6,11 +6,11 @@ Signals-first Nx monorepo for composable Angular TanStack Table primitives.
 
 This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules. The `apps/showcase` project is the demo app, and publishable packages live under `libs/*`.
 
-| Package                   | Use it for                           | Main exports                                                                                                                                                    |
-| ------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
-| `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
-| `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
+| Package                   | Use it for                                | Main exports                                                                                                                                                                                                                   |
+| ------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ng-advanced-table`       | Core table primitive                      | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                                                                                              |
+| `ng-advanced-table-ui`    | Optional controls and cell/header helpers | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `NatTableRowExpandToggle`, `withNatTableExpansionColumn(...)`, `withNatTableHeaderActions(...)` |
+| `ng-advanced-table-utils` | Optional render-metrics tooling           | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                                                                                |
 
 - **[Accessibility](ACCESSIBILITY.md)** — customize screen reader summaries and UI companion labels (`accessibilityText`, `accessibilityLabels`).
 
@@ -56,7 +56,6 @@ npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tans
 
 ```ts
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
@@ -347,13 +346,73 @@ Pinned column offsets are based on measured header widths after layout. Before a
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
 - `(rowActivate)` ignores activations whose target sits inside an interactive cell descendant — `<a href>`, `<button>`, form controls, `<summary>`, `contenteditable`, or elements with `role="button" | "link" | "checkbox" | "menuitem" | "tab" | "switch" | "combobox" | "textbox" | "searchbox"`. Use it for row-level navigation; keep cell-level controls inside cells.
 - Rows become expandable when `expandedRow` is supplied. `canExpandRow` defaults to every row in that case.
-- Use TanStack row APIs such as `info.row.toggleExpanded()` or `table.getRow(rowId)?.toggleExpanded()` to open and close detail rows.
+- Use `withNatTableExpansionColumn(...)` from `ng-advanced-table-ui` for the standard accessible expand/collapse trigger. Advanced cell renderers can still call TanStack row APIs directly when they need custom behavior.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
 
 ## Expandable Rows
 
 Use `expandedRow` to render a full-width detail panel below any expanded body row. The template receives `rowData`, `row`, `table`, and a `collapse()` helper.
+
+For the common trigger column, use `withNatTableExpansionColumn(...)` from `ng-advanced-table-ui`. It adds a disabled state for rows that fail `canExpandRow`, sets `aria-expanded`, and accepts localized button labels.
+
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+
+import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { type NatTableRowExpansionLabels, withNatTableExpansionColumn } from 'ng-advanced-table-ui';
+
+interface ServiceRow {
+  id: string;
+  service: string;
+  summary: string;
+  hasDiagnostics: boolean;
+}
+
+const expansionLabels: NatTableRowExpansionLabels<ServiceRow> = {
+  expandButton: ({ rowData }) => `Expand diagnostics for ${rowData.service}`,
+  collapseButton: ({ rowData }) => `Collapse diagnostics for ${rowData.service}`,
+  unavailableButton: ({ rowData }) => `No diagnostics available for ${rowData.service}`,
+  expandText: () => 'Details',
+  collapseText: () => 'Hide',
+};
+
+const columns = withNatTableExpansionColumn<ServiceRow>(
+  [
+    {
+      accessorKey: 'service',
+      header: 'Service',
+      meta: { label: 'Service', rowHeader: true },
+      cell: (context) => context.getValue<string>(),
+    },
+  ],
+  {
+    header: 'Details',
+    labels: expansionLabels,
+  },
+);
+
+@Component({
+  selector: 'app-service-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NatTable],
+  templateUrl: './service-table.html',
+})
+export class ServiceTableComponent {
+  readonly rows = signal<readonly ServiceRow[]>([]);
+  readonly columns = columns;
+  readonly tableState = signal<Partial<NatTableState>>({});
+  readonly getRowId = (row: ServiceRow) => row.id;
+  readonly canExpandService = (row: ServiceRow) => row.hasDiagnostics;
+
+  onExpandedChange(expanded: NatTableState['expanded']): void {
+    this.tableState.update((current) => ({
+      ...current,
+      expanded,
+    }));
+  }
+}
+```
 
 ```html
 <ng-template #serviceDetail let-rowData let-collapse="collapse">
@@ -367,13 +426,16 @@ Use `expandedRow` to render a full-width detail panel below any expanded body ro
 <nat-table
   [data]="rows()"
   [columns]="columns"
+  [state]="tableState()"
+  [getRowId]="getRowId"
   [canExpandRow]="canExpandService"
   [expandedRow]="serviceDetail"
   ariaLabel="Service latency"
+  (expandedChange)="onExpandedChange($event)"
 />
 ```
 
-Call `info.row.toggleExpanded()` from a custom cell renderer or action button to reveal the detail row. Expansion participates in `NatTableState`, so `initialState.expanded` and controlled `state.expanded` both work.
+For uncontrolled expansion, omit `[state]` and `(expandedChange)`; the helper still manages the internal expansion slice. For controlled expansion, feed `(expandedChange)` back into `state.expanded` as shown above. `getRowId` is used for the emitted expansion keys, so stable ids work without exposing TanStack row commands in the template.
 
 ## Accessibility and Internationalization
 
@@ -488,19 +550,21 @@ Example, add stock controls around an existing table:
 
 UI exports:
 
-- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`
-- Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
-- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
+- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `NatTableRowExpandToggle`
+- Helpers and contracts: `withNatTableExpansionColumn(...)`, `withNatTableHeaderActions(...)`, `NatTableExpansionColumnOptions`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
+- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableRowExpansionLabels`, `NatTableRowExpansionToggleContext`, `NatTableRowExpansionState`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
-| API                              | Purpose                                                        | Key inputs or options                                        |
-| -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
-| `NatTableSurface`                | Layout wrapper and default `--nat-table-*` CSS variables       | none                                                         |
-| `NatTableSearch`                 | Global filter input                                            | `for`, `label`, `placeholder`                                |
-| `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `ariaLabel`, `accessibilityLabels`           |
-| `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
-| `NatTablePager`                  | Previous/next pagination control                               | `for`, `ariaLabel`, `accessibilityLabels`                    |
-| `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `ariaLabel`, `scrollStep`, `accessibilityLabels`      |
-| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`                       |
+| API                                | Purpose                                                        | Key inputs or options                                        |
+| ---------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
+| `NatTableSurface`                  | Layout wrapper and default `--nat-table-*` CSS variables       | none                                                         |
+| `NatTableSearch`                   | Global filter input                                            | `for`, `label`, `placeholder`                                |
+| `NatTableColumnVisibility`         | Toggle hideable columns                                        | `for`, `label`, `ariaLabel`, `accessibilityLabels`           |
+| `NatTablePageSize`                 | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
+| `NatTablePager`                    | Previous/next pagination control                               | `for`, `ariaLabel`, `accessibilityLabels`                    |
+| `NatTableScrollControl`            | Horizontal scroll buttons and range control                    | `for`, `ariaLabel`, `scrollStep`, `accessibilityLabels`      |
+| `NatTableRowExpandToggle`          | Accessible row expand/collapse cell button                     | `row`, `labels`, `ariaControls`                              |
+| `withNatTableExpansionColumn(...)` | Adds a standard expansion toggle column                        | `id`, `header`, `label`, `position`, `labels`, sizing        |
+| `withNatTableHeaderActions(...)`   | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`                       |
 
 Controller contract required by the UI package:
 
@@ -518,11 +582,12 @@ Notes:
 - `NatTableScrollControl` binds to the controller's `tableScrollContainer` when available and falls back to the rendered table's parent element.
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
+- `withNatTableExpansionColumn(...)` renders `NatTableRowExpandToggle` in each body row and leaves expansion state ownership to the core table.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
 
 ## UI Accessibility Labels
 
-The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`.
+The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, `labels`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; expansion button labels are configured through `withNatTableExpansionColumn(..., { labels })` or the `NatTableRowExpandToggle` `labels` input.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 

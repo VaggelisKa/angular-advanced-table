@@ -169,7 +169,7 @@ describe('TableShowcasePage', () => {
     fixture.detectChanges();
 
     const expandTrigger = fixture.nativeElement.querySelector(
-      '.row-expand-trigger',
+      'nat-table-row-expand-toggle button:not([disabled])',
     ) as HTMLButtonElement;
 
     expect(expandTrigger).toBeTruthy();

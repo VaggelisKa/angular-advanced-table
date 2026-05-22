@@ -4,7 +4,18 @@ export { NatTableColumnVisibility } from './lib/components/table-column-visibili
 export { NatTablePageSize } from './lib/components/table-page-size/table-page-size';
 export { NatTablePager } from './lib/components/table-pager/table-pager';
 export { NatTableScrollControl } from './lib/components/table-scroll-control/table-scroll-control';
+export { NatTableRowExpandToggle } from './lib/components/table-row-expand-toggle/table-row-expand-toggle';
+export { withNatTableExpansionColumn } from './lib/components/table-row-expand-toggle/with-table-expansion-column';
 export { withNatTableHeaderActions } from './lib/components/table-header-actions/with-table-header-actions';
+export type {
+  NatTableRowExpansionLabels,
+  NatTableRowExpansionState,
+  NatTableRowExpansionToggleContext,
+} from './lib/components/table-row-expand-toggle/table-row-expand-toggle';
+export type {
+  NatTableExpansionColumnOptions,
+  NatTableExpansionColumnPosition,
+} from './lib/components/table-row-expand-toggle/with-table-expansion-column';
 export type {
   NatTableHeaderActionsOptions,
   NatTableSortIndicatorContent,

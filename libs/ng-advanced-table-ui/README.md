@@ -22,6 +22,8 @@ Use this package when you want optional companions around `NatTable`:
 - `NatTablePageSize`
 - `NatTablePager`
 - `NatTableScrollControl`
+- `NatTableRowExpandToggle`
+- `withNatTableExpansionColumn(...)`
 - `withNatTableHeaderActions(...)`
 
 The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #grid="natTable">` satisfies that contract directly.
@@ -45,6 +47,13 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `NatTablePageSize`
 - `NatTablePager`
 - `NatTableScrollControl`
+- `NatTableRowExpandToggle`
+- `withNatTableExpansionColumn(...)`
+- `NatTableExpansionColumnOptions`
+- `NatTableExpansionColumnPosition`
+- `NatTableRowExpansionLabels`
+- `NatTableRowExpansionState`
+- `NatTableRowExpansionToggleContext`
 - `withNatTableHeaderActions(...)`
 - `NatTableHeaderActionsOptions`
 - `NatTableSortIndicatorContent`
@@ -74,6 +83,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, and `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string).
 - Companion controls expose `accessibilityLabels` inputs so consumers can localize the UI without rebuilding table state.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
+- `withNatTableExpansionColumn(...)` inserts a standard accessible row expand/collapse button column for tables that provide `expandedRow`.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.
 - You can use any subset of this package or replace all of it with custom controls.

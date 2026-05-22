@@ -1,0 +1,95 @@
+:host {
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.row-expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nat-table-row-expand-gap, 6px);
+  min-inline-size: var(--nat-table-row-expand-min-width, 2rem);
+  min-block-size: var(--nat-table-row-expand-min-height, 1.75rem);
+  max-inline-size: 100%;
+  padding: var(--nat-table-row-expand-padding, 0 10px);
+  border: 1px solid
+    var(--nat-table-row-expand-border-color, color-mix(in srgb, currentColor 18%, transparent));
+  border-radius: var(--nat-table-row-expand-radius, 999px);
+  background: var(--nat-table-row-expand-background, transparent);
+  color: var(--nat-table-row-expand-color, inherit);
+  font: inherit;
+  font-size: var(--nat-table-row-expand-font-size, 0.8125rem);
+  font-weight: var(--nat-table-row-expand-font-weight, 600);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--nat-table-transition-fast, 120ms ease),
+    border-color var(--nat-table-transition-fast, 120ms ease),
+    color var(--nat-table-transition-fast, 120ms ease),
+    transform var(--nat-table-transition-fast, 120ms ease);
+}
+
+.row-expand-toggle[data-state='expanded'] {
+  background: var(
+    --nat-table-row-expand-background-active,
+    color-mix(in srgb, var(--nat-table-color-accent, currentColor) 12%, transparent)
+  );
+  border-color: var(
+    --nat-table-row-expand-border-color-active,
+    color-mix(in srgb, var(--nat-table-color-accent, currentColor) 38%, transparent)
+  );
+  color: var(--nat-table-row-expand-color-active, var(--nat-table-color-accent, currentColor));
+}
+
+.row-expand-toggle[disabled] {
+  color: var(
+    --nat-table-row-expand-color-disabled,
+    color-mix(in srgb, currentColor 44%, transparent)
+  );
+  cursor: not-allowed;
+  opacity: var(--nat-table-disabled-opacity, 0.6);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row-expand-toggle:hover:not([disabled]) {
+    background: var(
+      --nat-table-row-expand-background-hover,
+      color-mix(in srgb, currentColor 8%, transparent)
+    );
+    border-color: var(
+      --nat-table-row-expand-border-color-hover,
+      color-mix(in srgb, currentColor 28%, transparent)
+    );
+    transform: var(--nat-table-hover-lift, translateY(-1px));
+  }
+}
+
+.row-expand-toggle:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+.row-expand-toggle__icon {
+  display: block;
+  inline-size: var(--nat-table-row-expand-icon-size, 0.75rem);
+  block-size: var(--nat-table-row-expand-icon-size, 0.75rem);
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--nat-table-transition-fast, 120ms ease);
+}
+
+.row-expand-toggle[data-state='expanded'] .row-expand-toggle__icon {
+  transform: rotate(90deg);
+}
+
+.row-expand-toggle__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,22 @@
+<button
+  type="button"
+  ngGridCellWidget
+  class="row-expand-toggle"
+  [attr.data-state]="expansionState()"
+  [attr.aria-expanded]="canExpand() ? isExpanded() : null"
+  [attr.aria-controls]="canExpand() ? ariaControls() : null"
+  [attr.aria-disabled]="!canExpand() ? true : null"
+  [attr.aria-label]="buttonLabel()"
+  [disabled]="!canExpand()"
+  [attr.disabled]="!canExpand() ? true : null"
+  (pointerdown)="stopCellInteraction($event)"
+  (click)="toggleRow($event)"
+>
+  <svg class="row-expand-toggle__icon" viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+    <path d="M4.25 2.5 7.75 6 4.25 9.5" />
+  </svg>
+  @let text = buttonText();
+  @if (text) {
+    <span class="row-expand-toggle__text">{{ text }}</span>
+  }
+</button>

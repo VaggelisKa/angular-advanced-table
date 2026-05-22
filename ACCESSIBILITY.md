@@ -60,14 +60,16 @@ Context types:
 
 Companion controls accept localized visible strings plus structured `accessibilityLabels` bags:
 
-| Component / helper               | Primary localization inputs                                         |
-| -------------------------------- | ------------------------------------------------------------------- |
-| `NatTableSearch`                 | `label`, `placeholder`                                              |
-| `NatTableColumnVisibility`       | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
-| `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
-| `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
-| `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
-| `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
+| Component / helper                 | Primary localization inputs                                         |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| `NatTableSearch`                   | `label`, `placeholder`                                              |
+| `NatTableColumnVisibility`         | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
+| `NatTablePageSize`                 | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
+| `NatTablePager`                    | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
+| `NatTableScrollControl`            | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
+| `NatTableRowExpandToggle`          | `NatTableRowExpansionLabels`, `ariaControls`                        |
+| `withNatTableExpansionColumn(...)` | `NatTableRowExpansionLabels`                                        |
+| `withNatTableHeaderActions(...)`   | `NatTableAccessibilityHeaderActionLabels`                           |
 
 Note: some header chrome strings are still English defaults unless overridden upstream (for example the pin menu container label). Treat missing overrides as a localization gap, not an API gap.
 
@@ -81,6 +83,7 @@ Always do this:
 - Set `columnDef.meta.label` for each data column. This is required when the header is not a plain string and recommended for all columns.
 - Provide localized `accessibilityText` strings (`description`, `keyboardInstructions`, `emptyState`) whenever the product language is not English or you need custom wording.
 - Localize optional UI controls through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels`.
+- Localize row expansion trigger labels through `NatTableRowExpansionLabels` when using `NatTableRowExpandToggle` or `withNatTableExpansionColumn(...)`.
 - Translate semantic state values such as `ascending`, `descending`, `visible`, `hidden`, `show`, `hide`, `pin`, `unpin`, `left`, and `right` before presenting them to users.
 - Recreate translated column definitions when the active locale can change at runtime.
 
@@ -103,6 +106,7 @@ For every generated table, verify these items before considering the work comple
 - Each column has a stable localized `meta.label`.
 - `accessibilityText` is provided when summaries or live announcements need product-specific copy.
 - Every rendered `ng-advanced-table-ui` companion control has localized visible labels and group or button labels.
+- Every generated expansion toggle has localized expand, collapse, and unavailable labels when expandable rows are enabled.
 - Runtime locale changes rebuild `columns`, `accessibilityText`, and UI `accessibilityLabels` from the same translation source.
 
 ## Core Table
@@ -146,16 +150,18 @@ Formatter callbacks receive semantic state and both raw numeric values and prefo
 
 The `ng-advanced-table-ui` package exposes copy overrides without requiring consumers to rebuild table state.
 
-| Component or helper              | Consumer-owned copy                                                 |
-| -------------------------------- | ------------------------------------------------------------------- |
-| `NatTableSearch`                 | `label`, `placeholder`                                              |
-| `NatTableColumnVisibility`       | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
-| `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
-| `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
-| `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
-| `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
+| Component or helper                | Consumer-owned copy                                                 |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| `NatTableSearch`                   | `label`, `placeholder`                                              |
+| `NatTableColumnVisibility`         | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
+| `NatTablePageSize`                 | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
+| `NatTablePager`                    | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
+| `NatTableScrollControl`            | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
+| `NatTableRowExpandToggle`          | `NatTableRowExpansionLabels`, `ariaControls`                        |
+| `withNatTableExpansionColumn(...)` | `NatTableRowExpansionLabels`                                        |
+| `withNatTableHeaderActions(...)`   | `NatTableAccessibilityHeaderActionLabels`                           |
 
-Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels. Do not rely on placeholder text as the only accessible label for search.
+Use `label` for visible control labels, `ariaLabel` for group names, `labels` for row expansion triggers, and `accessibilityLabels` for generated button text, summaries, and per-state labels. Do not rely on placeholder text as the only accessible label for search.
 
 Decision rules for agents:
 
@@ -163,6 +169,7 @@ Decision rules for agents:
 - If `NatTableColumnVisibility` is rendered, pass `NatTableAccessibilityColumnVisibilityLabels`.
 - If `NatTablePageSize` is rendered, pass `NatTableAccessibilityPageSizeLabels`.
 - For `NatTablePager`, pass `NatTableAccessibilityPagerLabels`; for `NatTableScrollControl`, pass `NatTableAccessibilityScrollControlLabels`.
+- If expandable rows use `withNatTableExpansionColumn(...)` or `NatTableRowExpandToggle`, pass `NatTableRowExpansionLabels` for expand, collapse, and unavailable states.
 - If `withNatTableHeaderActions(...)` is used, pass `NatTableAccessibilityHeaderActionLabels` through its options.
 
 ## Runtime Locale Changes
@@ -440,6 +447,7 @@ Before finishing a table accessibility/i18n change, answer these questions:
 ## Reference Notes
 
 - `columnDef.meta.label` is the label used when headers are rendered by templates, functions, icons, or other non-string content.
+- `withNatTableExpansionColumn(...)` sets a generated expansion column label and uses `NatTableRowExpansionLabels` for per-row button names and visible text.
 - `withNatTableHeaderActions(...)` resolves labels when columns are wrapped, so translated columns should be rebuilt when the active locale changes.
 - Built-in fallback copy is English. Passing only some overrides is valid, but any omitted key falls back to English.
 - Live announcements can be disabled with `[enableAnnouncements]="false"` if the consumer owns a different announcement strategy.
