@@ -1,23 +1,45 @@
 :host {
   display: block;
+  inline-size: 100%;
 }
 
 .header-content {
   display: flex;
+  inline-size: 100%;
   max-width: 100%;
-}
-
-.header-content.is-align-end {
-  justify-content: flex-end;
 }
 
 .header-actions-row {
-  display: inline-flex;
+  display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
-  max-width: 100%;
+  justify-content: space-between;
+  gap: var(--nat-table-space-header-actions-gap, 12px);
+  inline-size: 100%;
   min-width: 0;
+}
+
+.header-content.is-align-end .header-actions-row {
+  flex-direction: row-reverse;
+}
+
+.header-leading {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.header-content.is-align-end .header-leading {
+  justify-content: flex-end;
+}
+
+.header-controls {
+  display: inline-flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--nat-table-space-header-controls-gap, 6px);
 }
 
 .header-label {
@@ -26,6 +48,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.header-content.is-align-end .header-label {
+  text-align: right;
 }
 
 .menu-button {
@@ -55,11 +81,7 @@
 
 .sort-button {
   display: inline-flex;
-  flex: 1 1 auto;
   align-items: center;
-  gap: var(--nat-table-space-chip-row-gap, 10px);
-  max-width: 100%;
-  min-width: 0;
   padding: 0;
   background: none;
   border: 0;
@@ -70,8 +92,13 @@
   cursor: pointer;
 }
 
-.sort-button .header-label {
-  flex: 1 1 auto;
+.sort-button--label {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.sort-button--icon {
+  flex: 0 0 auto;
 }
 
 .sort-button.is-sorted {
