@@ -35,7 +35,7 @@ This package does not include:
 
 Use [`ng-advanced-table-ui`](../ng-advanced-table-ui/README.md) for optional UI and [`ng-advanced-table-utils`](../ng-advanced-table-utils/README.md) for render-metrics tooling.
 
-Rendered column sizing is controlled by TanStack `ColumnDef.size`, `minSize`, and `maxSize`.
+Body cell sizing is controlled by TanStack `ColumnDef.size`, `minSize`, and `maxSize`. Headers are intrinsic unless `meta.headerSize`, `meta.headerMinSize`, or `meta.headerMaxSize` are set.
 
 ## Install
 
