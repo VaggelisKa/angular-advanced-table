@@ -62,7 +62,7 @@ npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @a
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { NatTable } from 'ng-advanced-table';
 import {
   NatRenderMetricsPanel,
   NatTableRenderMetricsStore,
@@ -81,10 +81,8 @@ interface MetricRow {
     <nat-table
       [data]="rows()"
       [columns]="columns"
-      [state]="tableState()"
       [emitRowRenderEvents]="true"
       ariaLabel="Metric table"
-      (stateChange)="tableState.set($event)"
       (rowRendered)="metrics.record($event)"
     />
 
@@ -93,7 +91,6 @@ interface MetricRow {
 })
 export class MetricTableComponent {
   readonly rows = signal<MetricRow[]>([]);
-  readonly tableState = signal<Partial<NatTableState>>({});
   readonly metrics = new NatTableRenderMetricsStore();
   readonly columns: ColumnDef<MetricRow>[] = withRenderMetricsColumn<MetricRow>([], this.metrics);
 }
