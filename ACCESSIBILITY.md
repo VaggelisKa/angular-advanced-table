@@ -152,6 +152,7 @@ The `ng-advanced-table-ui` package exposes copy overrides without requiring cons
 | `NatTableColumnVisibility`       | `label`, `ariaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
 | `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
+| `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
 
 Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels. Do not rely on placeholder text as the only accessible label for search.
@@ -161,7 +162,7 @@ Decision rules for agents:
 - If `NatTableSearch` is rendered, localize both `label` and `placeholder`.
 - If `NatTableColumnVisibility` is rendered, pass `NatTableAccessibilityColumnVisibilityLabels`.
 - If `NatTablePageSize` is rendered, pass `NatTableAccessibilityPageSizeLabels`.
-- If `NatTablePager` is rendered, pass `NatTableAccessibilityPagerLabels`.
+- For `NatTablePager`, pass `NatTableAccessibilityPagerLabels`; for `NatTableScrollControl`, pass `NatTableAccessibilityScrollControlLabels`.
 - If `withNatTableHeaderActions(...)` is used, pass `NatTableAccessibilityHeaderActionLabels` through its options.
 
 ## Runtime Locale Changes
