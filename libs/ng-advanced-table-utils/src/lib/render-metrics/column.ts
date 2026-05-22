@@ -12,10 +12,12 @@ export interface WithRenderMetricsColumnOptions {
   columnId?: string;
   /** Static header label. */
   header?: string;
-  /** Optional size override. */
+  /** Optional TanStack size override. */
   size?: number;
-  /** Optional min size override. */
+  /** Optional TanStack min-size override. */
   minSize?: number;
+  /** Optional TanStack max-size override. */
+  maxSize?: number;
   /** Cell label when no metric has been recorded yet. Defaults to `'Pending'`. */
   pendingLabel?: string;
   /** Suffix appended to measurement values. Defaults to `' ms'`. */
@@ -45,14 +47,16 @@ export function withRenderMetricsColumn<TData extends RowData>(
   const columnId = options.columnId ?? RENDER_METRIC_COLUMN_ID;
   const pendingLabel = options.pendingLabel ?? 'Pending';
   const unitSuffix = options.unitSuffix ?? ' ms';
+  const header = options.header ?? 'Render';
 
   const metricsColumn: ColumnDef<TData, unknown> = {
     id: columnId,
-    header: options.header ?? 'Render',
+    header,
     size: options.size ?? 110,
     minSize: options.minSize ?? 80,
+    maxSize: options.maxSize,
     meta: {
-      label: options.header ?? 'Render',
+      label: header,
       align: 'end',
     },
     enableGlobalFilter: false,

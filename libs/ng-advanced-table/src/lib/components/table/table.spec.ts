@@ -35,6 +35,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     accessorKey: 'name',
     header: 'Service',
     size: 180,
+    minSize: 120,
     meta: {
       label: 'Service',
       rowHeader: true,
@@ -46,6 +47,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     accessorKey: 'region',
     header: 'Region',
     size: 140,
+    minSize: 100,
     meta: {
       label: 'Region',
     },
@@ -692,7 +694,7 @@ describe('NatTable', () => {
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'region', 'status', 'throughput']);
   });
 
-  it('lets the browser size columns intrinsically while driving pin offsets from column sizes', () => {
+  it('renders TanStack size hints and uses them for initial pin offsets', () => {
     host.state.set({
       columnPinning: {
         left: ['name', 'region'],
@@ -707,22 +709,31 @@ describe('NatTable', () => {
     ) as HTMLElement[];
 
     expect(fixture.nativeElement.querySelector('colgroup')).toBeNull();
-    expect(headers[0]?.style.width).toBe('');
-    expect(headers[0]?.style.maxWidth).toBe('');
-    expect(headers[0]?.style.minWidth).toBe('');
-    expect(headers[1]?.style.minWidth).toBe('');
-    expect(bodyCells[0]?.style.width).toBe('');
-    expect(bodyCells[0]?.style.minWidth).toBe('');
+    expect(headers[0]?.style.width).toBe('180px');
+    expect(headers[0]?.style.minWidth).toBe('120px');
+    expect(headers[0]?.style.maxWidth).toBe('180px');
+    expect(headers[1]?.style.width).toBe('140px');
+    expect(headers[1]?.style.minWidth).toBe('100px');
+    expect(headers[1]?.style.maxWidth).toBe('140px');
+    expect(bodyCells[0]?.style.width).toBe('180px');
+    expect(bodyCells[0]?.style.minWidth).toBe('120px');
     expect(headers[0]?.style.left).toBe('0px');
     expect(headers[1]?.style.left).toBe('180px');
     expect(bodyCells[1]?.style.left).toBe('180px');
     expect(headers[0]?.dataset['columnId']).toBe('name');
   });
 
-  it('applies fixed and maximum column widths from column metadata', async () => {
+  it('applies fixed, maximum, and intrinsic column sizing from TanStack column definitions', async () => {
     @Component({
       imports: [NatTable],
-      template: ` <nat-table [data]="rows()" [columns]="columns" ariaLabel="Operations table" /> `,
+      template: `
+        <nat-table
+          [data]="rows()"
+          [columns]="columns"
+          [initialState]="initialState"
+          ariaLabel="Operations table"
+        />
+      `,
     })
     class ColumnWidthHost {
       readonly rows = signal<Row[]>([
@@ -734,17 +745,35 @@ describe('NatTable', () => {
           throughput: 1000,
         },
       ]);
+      readonly initialState: Partial<NatTableState> = {
+        columnPinning: {
+          left: ['name', 'region', 'status'],
+          right: [],
+        },
+      };
       readonly columns: ColumnDef<Row, unknown>[] = [
         {
           accessorKey: 'name',
           header: 'Service',
-          meta: { label: 'Service', rowHeader: true, width: 96 },
+          size: 96,
+          minSize: 80,
+          enablePinning: true,
+          meta: { label: 'Service', rowHeader: true },
           cell: (info) => info.getValue<string>(),
         },
         {
           accessorKey: 'region',
           header: 'Region',
-          meta: { label: 'Region', maxWidth: '12rem' },
+          maxSize: 192,
+          enablePinning: true,
+          meta: { label: 'Region' },
+          cell: (info) => info.getValue<string>(),
+        },
+        {
+          accessorKey: 'status',
+          header: 'Status',
+          enablePinning: true,
+          meta: { label: 'Status' },
           cell: (info) => info.getValue<string>(),
         },
       ];
@@ -767,20 +796,31 @@ describe('NatTable', () => {
     const cappedCell = widthFixture.nativeElement.querySelector(
       'tbody td[data-column-id="region"]',
     ) as HTMLElement;
+    const intrinsicHeader = widthFixture.nativeElement.querySelector(
+      'thead th[data-column-id="status"]',
+    ) as HTMLElement;
+    const intrinsicCell = widthFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="status"]',
+    ) as HTMLElement;
 
     expect(fixedHeader.style.width).toBe('96px');
-    expect(fixedHeader.style.minWidth).toBe('96px');
+    expect(fixedHeader.style.minWidth).toBe('80px');
     expect(fixedHeader.style.maxWidth).toBe('96px');
+    expect(cappedHeader.style.left).toBe('96px');
     expect(fixedCell.style.width).toBe('96px');
-    expect(fixedCell.style.minWidth).toBe('96px');
+    expect(fixedCell.style.minWidth).toBe('80px');
     expect(fixedCell.style.maxWidth).toBe('96px');
     expect(fixedCell.classList.contains('is-width-constrained')).toBe(true);
     expect(fixedCell.querySelector('.data-cell-content')).toBeTruthy();
     expect(cappedHeader.style.width).toBe('');
     expect(cappedHeader.style.minWidth).toBe('');
-    expect(cappedHeader.style.maxWidth).toBe('12rem');
-    expect(cappedCell.style.maxWidth).toBe('12rem');
+    expect(cappedHeader.style.maxWidth).toBe('192px');
+    expect(cappedCell.style.maxWidth).toBe('192px');
     expect(cappedCell.classList.contains('is-width-constrained')).toBe(true);
+    expect(intrinsicHeader.style.width).toBe('');
+    expect(intrinsicHeader.style.minWidth).toBe('');
+    expect(intrinsicHeader.style.maxWidth).toBe('');
+    expect(intrinsicCell.classList.contains('is-width-constrained')).toBe(false);
   });
 
   it('reorders columns from the keyboard and announces the move', async () => {

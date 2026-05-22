@@ -85,6 +85,12 @@ interface TableColumnRenderState {
   rowHeader: boolean;
 }
 
+interface TableColumnSizingState {
+  hasSize: boolean;
+  hasMinSize: boolean;
+  hasMaxSize: boolean;
+}
+
 interface TableAccessibilitySnapshot {
   sortingKey: string;
   globalFilter: string;
@@ -294,6 +300,9 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly allLeafColumnIds = computed(() =>
     getColumnDefLeafIds(this.readRequiredInput(this.columns, [])),
   );
+  private readonly userColumnSizing = computed(() =>
+    getUserColumnSizing(this.readRequiredInput(this.columns, [])),
+  );
   private readonly resolvedColumnOrder = computed(() =>
     normalizeColumnOrder(
       this.state().columnOrder ?? this.internalColumnOrder(),
@@ -421,9 +430,10 @@ export class NatTable<TData extends RowData = RowData> {
   private headerResizeObserver: ResizeObserver | null = null;
 
   /**
-   * Width per column used to compute pinned sticky offsets. Prefers the real
-   * post-layout width reported by `ResizeObserver`; falls back to the TanStack
-   * size hint when no measurement exists yet (initial paint, SSR, jsdom).
+   * Width per column used to compute pinned sticky offsets. Rendered CSS width
+   * is controlled by TanStack `size` / `minSize` / `maxSize`; `column.getSize()`
+   * remains an offset fallback for intrinsic columns until real post-layout
+   * measurements are available (initial paint, SSR, jsdom).
    */
   private readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
     const measured = this.measuredHeaderWidths();
@@ -431,7 +441,8 @@ export class NatTable<TData extends RowData = RowData> {
 
     for (const column of this.visibleColumns()) {
       const measuredWidth = measured[column.id];
-      const fixedWidth = getNumericColumnWidth(column.columnDef.meta?.width);
+      const sizing = this.userColumnSizing()[column.id];
+      const fixedWidth = sizing?.hasSize === true ? getNumericColumnWidth(column.getSize()) : null;
 
       result[column.id] =
         measuredWidth !== undefined && measuredWidth > 0
@@ -446,6 +457,7 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly columnRenderStates = computed<Record<string, TableColumnRenderState>>(() => {
     const visibleColumns = this.visibleColumns();
     const widths = this.resolvedColumnWidths();
+    const userColumnSizing = this.userColumnSizing();
     const state = this.mergedState();
     const visibleColumnsById = new Map(
       visibleColumns.map((column) => [column.id, column] as const),
@@ -478,8 +490,20 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     for (const column of visibleColumns) {
-      const width = normalizeColumnDimension(column.columnDef.meta?.width);
-      const maxWidth = normalizeColumnDimension(column.columnDef.meta?.maxWidth);
+      const sizing = userColumnSizing[column.id];
+      const width = sizing?.hasSize === true ? normalizeColumnDimension(column.getSize()) : null;
+      const minWidth =
+        sizing?.hasMinSize === true
+          ? normalizeColumnDimension(column.columnDef.minSize)
+          : width !== null
+            ? width
+            : null;
+      const maxWidth =
+        sizing?.hasMaxSize === true
+          ? normalizeColumnDimension(column.columnDef.maxSize)
+          : width !== null
+            ? width
+            : null;
       const pinnedLeft = leftPinnedIds.has(column.id);
       const pinnedRight = rightPinnedIds.has(column.id);
 
@@ -494,8 +518,8 @@ export class NatTable<TData extends RowData = RowData> {
         left: pinnedLeft ? (leftOffsets[column.id] ?? 0) : null,
         right: pinnedRight ? (rightOffsets[column.id] ?? 0) : null,
         width,
-        minWidth: width,
-        maxWidth: width ?? maxWidth,
+        minWidth,
+        maxWidth,
         constrainedWidth: width !== null || maxWidth !== null,
         ariaSort: sortEntry ? (sortEntry.desc ? 'descending' : 'ascending') : null,
         rowHeader: !!column.columnDef.meta?.rowHeader,
@@ -1360,6 +1384,42 @@ function getColumnDefLeafIds<TData extends RowData>(
 
     return columnId ? [columnId] : [];
   });
+}
+
+function getUserColumnSizing<TData extends RowData>(
+  columns: readonly ColumnDef<TData, unknown>[],
+): Record<string, TableColumnSizingState> {
+  const result: Record<string, TableColumnSizingState> = {};
+
+  for (const column of columns) {
+    const childColumns = (
+      column as ColumnDef<TData, unknown> & {
+        columns?: readonly ColumnDef<TData, unknown>[];
+      }
+    ).columns;
+
+    if (childColumns?.length) {
+      Object.assign(result, getUserColumnSizing(childColumns));
+      continue;
+    }
+
+    const columnId = resolveColumnDefId(column);
+
+    if (!columnId) {
+      continue;
+    }
+
+    // TanStack applies default `size`, `minSize`, and `maxSize` to runtime
+    // column definitions. Read the original input defs so only user-provided
+    // sizing becomes rendered CSS.
+    result[columnId] = {
+      hasSize: column.size !== undefined,
+      hasMinSize: column.minSize !== undefined,
+      hasMaxSize: column.maxSize !== undefined,
+    };
+  }
+
+  return result;
 }
 
 function resolveColumnDefId<TData extends RowData>(
