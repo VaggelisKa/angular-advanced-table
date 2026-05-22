@@ -145,8 +145,8 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'company',
     header: 'Company',
-    size: 220,
-    minSize: 180,
+    size: 96,
+    minSize: 80,
     meta: { label: 'Company' },
     enablePinning: true,
     sortingFn: (left, right) =>
