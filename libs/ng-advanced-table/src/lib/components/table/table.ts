@@ -295,8 +295,8 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly allLeafColumnIds = computed(() =>
     getColumnDefLeafIds(this.readRequiredInput(this.columns, [])),
   );
-  private readonly sourceColumnSizing = computed(() =>
-    getColumnDefSizing(this.readRequiredInput(this.columns, [])),
+  private readonly userColumnSizing = computed(() =>
+    getUserColumnSizing(this.readRequiredInput(this.columns, [])),
   );
   private readonly resolvedColumnOrder = computed(() =>
     normalizeColumnOrder(
@@ -436,7 +436,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     for (const column of this.visibleColumns()) {
       const measuredWidth = measured[column.id];
-      const sizing = this.sourceColumnSizing()[column.id];
+      const sizing = this.userColumnSizing()[column.id];
       const fixedWidth = sizing?.hasSize === true ? getNumericColumnWidth(column.getSize()) : null;
 
       result[column.id] =
@@ -452,7 +452,7 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly columnRenderStates = computed<Record<string, TableColumnRenderState>>(() => {
     const visibleColumns = this.visibleColumns();
     const widths = this.resolvedColumnWidths();
-    const sourceColumnSizing = this.sourceColumnSizing();
+    const userColumnSizing = this.userColumnSizing();
     const state = this.mergedState();
     const visibleColumnsById = new Map(
       visibleColumns.map((column) => [column.id, column] as const),
@@ -485,7 +485,7 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     for (const column of visibleColumns) {
-      const sizing = sourceColumnSizing[column.id];
+      const sizing = userColumnSizing[column.id];
       const width = sizing?.hasSize === true ? normalizeColumnDimension(column.getSize()) : null;
       const minWidth =
         sizing?.hasMinSize === true
@@ -1381,7 +1381,7 @@ function getColumnDefLeafIds<TData extends RowData>(
   });
 }
 
-function getColumnDefSizing<TData extends RowData>(
+function getUserColumnSizing<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
 ): Record<string, TableColumnSizingState> {
   const result: Record<string, TableColumnSizingState> = {};
@@ -1394,7 +1394,7 @@ function getColumnDefSizing<TData extends RowData>(
     ).columns;
 
     if (childColumns?.length) {
-      Object.assign(result, getColumnDefSizing(childColumns));
+      Object.assign(result, getUserColumnSizing(childColumns));
       continue;
     }
 
@@ -1404,6 +1404,9 @@ function getColumnDefSizing<TData extends RowData>(
       continue;
     }
 
+    // TanStack applies default `size`, `minSize`, and `maxSize` to runtime
+    // column definitions. Read the original input defs so only user-provided
+    // sizing becomes rendered CSS.
     result[columnId] = {
       hasSize: column.size !== undefined,
       hasMinSize: column.minSize !== undefined,
