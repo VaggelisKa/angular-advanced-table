@@ -128,7 +128,6 @@ const columns = withNatTableHeaderActions<PositionRow>([
       <nat-table-column-visibility [for]="grid" />
       <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
       <nat-table-pager [for]="grid" />
-      <nat-table-scroll-control [for]="grid" />
     </nat-table-surface>
   `,
 })
