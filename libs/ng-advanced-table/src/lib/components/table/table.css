@@ -72,6 +72,12 @@
   inline-size: 100%;
 }
 
+.header-cell.is-width-constrained .header-cell-primary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .data-cell-content {
   display: block;
   min-width: 0;
