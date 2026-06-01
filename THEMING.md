@@ -113,7 +113,6 @@ These are the most important stable customization points for the core table.
 | `--nat-table-row-background` | Default body row background |
 | `--nat-table-row-background-hover` | Body row hover background |
 | `--nat-table-row-background-focus` | Body row focus-within background |
-| `--nat-table-expanded-row-background` | Expanded detail row background |
 | `--nat-table-pinned-background` | Sticky pinned cell background |
 | `--nat-table-pinned-divider-color` | Divider at pinned column edges |
 | `--nat-table-cell-border-color` | Body cell divider color |
@@ -126,7 +125,6 @@ These are the most important stable customization points for the core table.
 | `--nat-table-focus-ring-width` | Keyboard focus indicator width |
 | `--nat-table-space-cell-y` | Cell block padding |
 | `--nat-table-space-cell-x` | Cell inline padding |
-| `--nat-table-space-expanded-row` | Expanded detail row padding |
 | `--nat-table-font-size-header` | Header font size |
 | `--nat-table-letter-spacing-header` | Header letter spacing |
 | `--nat-table-text-transform-header` | Header text transform |

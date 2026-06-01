@@ -12,10 +12,8 @@ import {
   input,
   output,
   signal,
-  TemplateRef,
   viewChild,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
 import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import {
@@ -31,7 +29,6 @@ import {
   type ColumnOrderState,
   type ColumnPinningState,
   type ColumnDef,
-  type ExpandedState,
   type FilterFn,
   type Header,
   type HeaderGroup,
@@ -56,9 +53,7 @@ import type {
   NatTableAccessibilitySummaryContext,
   NatTableAccessibilityText,
   NatTableCellTone,
-  NatTableExpandedRowContext,
   NatTableRowActivateEvent,
-  NatTableRowExpandablePredicate,
   NatTableRowIdGetter,
   NatTableState,
 } from './table.types';
@@ -123,7 +118,6 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnOrder: DEFAULT_COLUMN_ORDER,
   columnPinning: EMPTY_COLUMN_PINNING,
   pagination: DEFAULT_PAGINATION,
-  expanded: {},
 };
 const REORDER_KEYBOARD_INSTRUCTIONS =
   'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.';
@@ -160,7 +154,6 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   exportAs: 'natTable',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    NgTemplateOutlet,
     Grid,
     GridCell,
     GridRow,
@@ -225,10 +218,6 @@ export class NatTable<TData extends RowData = RowData> {
   readonly state = input<Partial<NatTableState>>({});
   /** Optional stable row id resolver used for selection, pinning, and events. */
   readonly getRowId = input<NatTableRowIdGetter<TData>>();
-  /** Optional predicate that determines which rows can be expanded. */
-  readonly canExpandRow = input<NatTableRowExpandablePredicate<TData>>();
-  /** Optional template rendered in an extra full-width row when a row is expanded. */
-  readonly expandedRow = input<TemplateRef<NatTableExpandedRowContext<TData>> | null>(null);
   /**
    * When `true`, emits one `rowRendered` event per body row per render cycle.
    * Kept off by default since it installs an `afterRenderEffect` per row.
@@ -259,8 +248,6 @@ export class NatTable<TData extends RowData = RowData> {
   readonly columnPinningChange = output<ColumnPinningState>();
   /** Emits the next pagination state when it actually changes. */
   readonly paginationChange = output<PaginationState>();
-  /** Emits the next expanded row state when it actually changes. */
-  readonly expandedChange = output<ExpandedState>();
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
   readonly rowRendered = output<NatTableRowRenderedEvent>();
   /**
@@ -284,7 +271,6 @@ export class NatTable<TData extends RowData = RowData> {
     DEFAULT_TABLE_STATE.columnPinning,
   );
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
-  private readonly internalExpanded = signal<ExpandedState>(DEFAULT_TABLE_STATE.expanded);
   private readonly hasSeededInitialState = signal(false);
   protected readonly liveMessage = signal('');
   /**
@@ -355,7 +341,6 @@ export class NatTable<TData extends RowData = RowData> {
     columnOrder: this.resolvedColumnOrder(),
     columnPinning: this.resolvedColumnPinning(),
     pagination: this.state().pagination ?? this.internalPagination(),
-    expanded: this.state().expanded ?? this.internalExpanded(),
   }));
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   protected readonly visibleRowCount = computed(() => this.bodyRows().length);
@@ -400,12 +385,9 @@ export class NatTable<TData extends RowData = RowData> {
     isMultiSortEvent: () => false,
     enableColumnPinning: this.enableColumnPinning(),
     enableColumnOrdering: true,
-    enableExpanding: !!this.expandedRow(),
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
     getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
-    getRowCanExpand: (row) =>
-      !!this.expandedRow() && (this.canExpandRow()?.(row.original, row.index) ?? true),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -419,7 +401,6 @@ export class NatTable<TData extends RowData = RowData> {
     onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
     onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
-    onExpandedChange: (updater) => this.updateState({ expanded: updater }),
   })) as Table<TData>;
   private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
   /**
@@ -584,7 +565,6 @@ export class NatTable<TData extends RowData = RowData> {
         pageIndex: initialState.pagination?.pageIndex ?? DEFAULT_PAGINATION.pageIndex,
         pageSize: initialState.pagination?.pageSize ?? DEFAULT_PAGINATION.pageSize,
       });
-      this.internalExpanded.set(initialState.expanded ?? DEFAULT_TABLE_STATE.expanded);
       this.hasSeededInitialState.set(true);
     });
 
@@ -738,20 +718,6 @@ export class NatTable<TData extends RowData = RowData> {
     return column.columnDef.meta?.cellTone?.(context) ?? null;
   }
 
-  protected isRowExpanded(row: Row<TData>): boolean {
-    return !!this.expandedRow() && row.getCanExpand() && row.getIsExpanded();
-  }
-
-  protected getExpandedRowContext(row: Row<TData>): NatTableExpandedRowContext<TData> {
-    return {
-      $implicit: row.original,
-      rowData: row.original,
-      row,
-      table: this.table,
-      collapse: () => row.toggleExpanded(false),
-    };
-  }
-
   protected onRowRendered(event: NatTableRowRenderedEvent): void {
     this.rowRendered.emit(event);
   }
@@ -824,7 +790,6 @@ export class NatTable<TData extends RowData = RowData> {
         this.allLeafColumnIds(),
       ),
       pagination: this.resolveUpdater(currentState.pagination, updaters.pagination),
-      expanded: this.resolveUpdater(currentState.expanded, updaters.expanded),
     };
 
     this.commitInternalState(nextState);
@@ -860,10 +825,6 @@ export class NatTable<TData extends RowData = RowData> {
     if (!hasSamePagination(previous.pagination, next.pagination)) {
       this.paginationChange.emit(next.pagination);
     }
-
-    if (!hasSameExpandedState(previous.expanded, next.expanded)) {
-      this.expandedChange.emit(next.expanded);
-    }
   }
 
   private commitInternalState(nextState: NatTableState): void {
@@ -895,10 +856,6 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (controlled.pagination === undefined) {
       this.internalPagination.set(nextState.pagination);
-    }
-
-    if (controlled.expanded === undefined) {
-      this.internalExpanded.set(nextState.expanded);
     }
   }
 
@@ -1769,31 +1726,6 @@ function hasSamePagination(previous: PaginationState, next: PaginationState): bo
   }
 
   return previous.pageIndex === next.pageIndex && previous.pageSize === next.pageSize;
-}
-
-function hasSameExpandedState(previous: ExpandedState, next: ExpandedState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  if (previous === true || next === true) {
-    return previous === next;
-  }
-
-  const previousKeys = Object.keys(previous);
-  const nextKeys = Object.keys(next);
-
-  if (previousKeys.length !== nextKeys.length) {
-    return false;
-  }
-
-  for (const key of previousKeys) {
-    if (previous[key] !== next[key]) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 function hasSameColumnVisibility(

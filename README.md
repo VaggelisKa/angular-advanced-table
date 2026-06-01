@@ -189,7 +189,7 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Common types: `NatTableState`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
@@ -210,8 +210,6 @@ Core exports:
 | `initialState`        | `{}`        | Uncontrolled initial state, read once                                                                              |
 | `state`               | `{}`        | Controlled slices only; omitted slices stay internal                                                               |
 | `getRowId`            | row index   | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
-| `canExpandRow`        | `undefined` | Optional predicate that marks which rows can expand                                                                |
-| `expandedRow`         | `null`      | Optional `TemplateRef` rendered below expanded rows                                                                |
 | `emitRowRenderEvents` | `false`     | Enables `(rowRendered)` instrumentation                                                                            |
 | `enableAnnouncements` | `true`      | Enables polite live announcements                                                                                  |
 
@@ -227,7 +225,6 @@ Core exports:
 | `(columnOrderChange)`      | `ColumnOrderState`                | Emits when only the column order slice actually changed                                                                                              |
 | `(columnPinningChange)`    | `ColumnPinningState`              | Emits when only the column pinning slice actually changed                                                                                            |
 | `(paginationChange)`       | `PaginationState`                 | Emits when only the pagination slice actually changed                                                                                                |
-| `(expandedChange)`         | `ExpandedState`                   | Emits when only the expanded-rows slice actually changed                                                                                             |
 | `(rowActivate)`            | `NatTableRowActivateEvent<TData>` | Emits when a body row is activated through a primary click or `Enter` / `Space` key press; activations from interactive cell descendants are ignored |
 | `(rowRendered)`            | `NatTableRowRenderedEvent`        | Emits per-row timings when instrumentation is enabled                                                                                                |
 | `table`                    | `Table<TData>`                    | Raw TanStack instance for reads and advanced commands                                                                                                |
@@ -238,7 +235,7 @@ The granular `*Change` outputs only fire when the corresponding slice differs fr
 
 ### State ownership patterns
 
-Most tables should start uncontrolled: omit `[state]`, pass `[initialState]` only for defaults such as the first page size, and let `NatTable` plus companion controls manage sorting, filters, visibility, pagination, pinning, order, and expansion internally.
+Most tables should start uncontrolled: omit `[state]`, pass `[initialState]` only for defaults such as the first page size, and let `NatTable` plus companion controls manage sorting, filters, visibility, pagination, pinning, and order internally.
 
 Use granular outputs when your application owns one slice. Pass only the slice you control back through `[state]`; omitted properties remain internal:
 
@@ -304,7 +301,6 @@ Use `(stateChange)` when you need a complete-state snapshot for logging, persist
 | `columnOrder`      | Leaf-column order                                                                                                                                                                                               |
 | `columnPinning`    | Left and right pinned column ids                                                                                                                                                                                |
 | `pagination`       | Page index and page size (still present in `NatTableState` when `enablePagination` is `false`; the client-side pagination row model is off, so only `stateChange` / UI that reads `pagination` will reflect it) |
-| `expanded`         | Expanded row ids keyed by resolved row id                                                                                                                                                                       |
 
 The `pagination` slice always exists so controlled and uncontrolled code paths stay stable. When `enablePagination` is `false`, `pageIndex` / `pageSize` still update with defaults and filter-driven resets, but the table body is not paginated until you opt in.
 
@@ -351,34 +347,8 @@ Pinned column offsets are based on measured header widths after layout. Before a
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
 - `(rowActivate)` ignores activations whose target sits inside an interactive cell descendant — `<a href>`, `<button>`, form controls, `<summary>`, `contenteditable`, or elements with `role="button" | "link" | "checkbox" | "menuitem" | "tab" | "switch" | "combobox" | "textbox" | "searchbox"`. Use it for row-level navigation; keep cell-level controls inside cells.
-- Rows become expandable when `expandedRow` is supplied. `canExpandRow` defaults to every row in that case.
-- Use TanStack row APIs such as `info.row.toggleExpanded()` or `table.getRow(rowId)?.toggleExpanded()` to open and close detail rows.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
-
-## Expandable Rows
-
-Use `expandedRow` to render a full-width detail panel below any expanded body row. The template receives `rowData`, `row`, `table`, and a `collapse()` helper.
-
-```html
-<ng-template #serviceDetail let-rowData let-collapse="collapse">
-  <section class="service-detail">
-    <h3>{{ rowData.service }}</h3>
-    <p>{{ rowData.summary }}</p>
-    <button type="button" (click)="collapse()">Close</button>
-  </section>
-</ng-template>
-
-<nat-table
-  [data]="rows()"
-  [columns]="columns"
-  [canExpandRow]="canExpandService"
-  [expandedRow]="serviceDetail"
-  ariaLabel="Service latency"
-/>
-```
-
-Call `info.row.toggleExpanded()` from a custom cell renderer or action button to reveal the detail row. Expansion participates in `NatTableState`, so `initialState.expanded` and controlled `state.expanded` both work.
 
 ## Accessibility and Internationalization
 
