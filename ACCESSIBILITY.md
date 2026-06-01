@@ -422,7 +422,7 @@ export class OrdersTableComponent {
 
 ## Custom Cells and Actions
 
-Any custom cell renderer, row action, menu, dialog trigger, or expandable detail panel is outside the built-in label system. Localize those controls in the consuming app and make sure interactive elements have their own accessible names.
+Any custom cell renderer, row action, menu, dialog trigger, or custom detail panel is outside the built-in label system. Localize those controls in the consuming app and make sure interactive elements have their own accessible names.
 
 When a focusable widget is rendered inside a grid cell, use the appropriate Angular Aria grid primitive, such as `ngGridCellWidget`, so keyboard users can move between grid navigation and the widget predictably.
 

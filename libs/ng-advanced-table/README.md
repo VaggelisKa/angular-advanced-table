@@ -19,7 +19,6 @@ Use this package when you want:
 - The `NatTable` component.
 - Controlled or uncontrolled `NatTableState`.
 - Sorting, filtering, visibility, pinning, ordering, and optional pagination state.
-- Optional expandable detail rows driven by `expandedRow` and `state.expanded`.
 - Sticky headers and sticky pinned columns.
 - Optional `(rowRendered)` instrumentation.
 - Custom accessibility summaries and live announcements through `accessibilityText`.
@@ -54,9 +53,6 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 - `NatTableRowRenderedEvent`
 - `NatTableAccessibilityText`
 - `NatTableA11y` (namespace of deep accessibility formatter context types)
-- `NatTableExpandedState`
-- `NatTableExpandedRowContext`
-- `NatTableRowExpandablePredicate`
 - `NatTableRowIdGetter`
 - `NatTableRowActivateEvent`
 - `NatTableState`
