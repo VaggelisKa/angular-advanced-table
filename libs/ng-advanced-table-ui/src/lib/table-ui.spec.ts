@@ -225,6 +225,7 @@ class CustomAccessibilityLabelsHost {
   readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
     sortButton: ({ label }) => `Sorter ${label}`,
     menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
+    pinMenu: ({ label }) => `Fastgørelsesmuligheder for ${label}`,
     pinButton: ({ label, toggleAction, pinSide }) =>
       `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
         toggleAction === 'unpin' ? 'fra' : 'til'
@@ -674,6 +675,8 @@ describe('ng-advanced-table-ui', () => {
     customFixture.detectChanges();
     await customFixture.whenStable();
     customFixture.detectChanges();
+
+    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Fastgørelsesmuligheder for Service');
 
     const leftPinMenuItem = getOpenMenuItem('left');
     const rightPinMenuItem = getOpenMenuItem('right');

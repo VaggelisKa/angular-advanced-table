@@ -5,6 +5,8 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  FlexRenderContent,
+  HeaderContext,
   PaginationState,
   RowData,
   SortingState,
@@ -54,6 +56,19 @@ export interface NatTableUiController<TData extends RowData = RowData> {
 /** Current sort direction for a header cell. */
 export type NatTableSortDirection = 'asc' | 'desc' | false;
 
+/**
+ * Custom content accepted by `withNatTableHeaderActions(..., { sortIndicator })` and
+ * per-column `meta.headerActions.sortIndicator`.
+ */
+export type NatTableSortIndicatorContent =
+  | string
+  | number
+  | ((
+      props: NatTableSortIndicatorContext<RowData>,
+    ) => FlexRenderContent<NatTableSortIndicatorContext<RowData>>)
+  | null
+  | undefined;
+
 /** Context passed to companion sort-indicator renderers. */
 export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
   /** Alias for `sortState`, useful for `let-state` style template bindings. */
@@ -72,6 +87,14 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
  * Extra metadata understood by companion UI when attached to a TanStack
  * column definition.
  */
+/** Per-column overrides for {@link withNatTableHeaderActions}. */
+export interface NatTableHeaderActionsColumnOptions {
+  /** Per-column sort-indicator override merged with helper-level options. */
+  sortIndicator?: NatTableSortIndicatorContent;
+  /** Per-column accessibility label overrides merged with helper-level options. */
+  accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
+}
+
 export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
   /** Accessible label used by companion controls when the header is not a string. */
   label?: string;
@@ -81,6 +104,14 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   rowHeader?: boolean;
   /** Optional callback that maps a cell to a semantic tone-like value. */
   cellTone?: (context: CellContext<TData, TValue>) => unknown;
+  /**
+   * Per-column header-action configuration.
+   *
+   * Set to `false` to keep the original header renderer without sort/pin chrome.
+   * Pass an object to override helper-level `sortIndicator` or `accessibilityLabels`
+   * for a single column.
+   */
+  headerActions?: false | NatTableHeaderActionsColumnOptions;
 }
 
 /** Context passed to page-size option label formatters. */
@@ -233,6 +264,8 @@ export interface NatTableAccessibilityHeaderActionLabels {
   sortButton?: (context: NatTableAccessibilityHeaderActionSortContext) => string;
   /** `aria-label` applied to the overflow menu trigger. */
   menuButton?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
+  /** `aria-label` applied to the pin overflow menu container. */
+  pinMenu?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
   /** `aria-label` applied to the pin button. */
   pinButton?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
   /** Visible text rendered inside each pin menu item. */

@@ -67,9 +67,7 @@ Companion controls accept localized visible strings plus structured `accessibili
 | `NatTablePageSize`               | `ariaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
 | `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
-| `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
-
-Note: some header chrome strings are still English defaults unless overridden upstream (for example the pin menu container label). Treat missing overrides as a localization gap, not an API gap.
+| `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels` (`sortButton`, `menuButton`, `pinMenu`, `pinButton`, `pinButtonText`) |
 
 ## Agent Contract
 
@@ -265,6 +263,7 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
     headerActions: {
       sortButton: ({ label }) => `Change sorting for ${label}`,
       menuButton: ({ label }) => `Open column actions for ${label}`,
+      pinMenu: ({ label }) => `Column pinning options for ${label}`,
       pinButton: ({ label, toggleAction, pinSide }) =>
         `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${label} column ${
           toggleAction === 'unpin' ? 'from' : 'to'
@@ -329,6 +328,7 @@ const tableCopy: Record<'en' | 'da', TableCopy> = {
     headerActions: {
       sortButton: ({ label }) => `Skift sortering for ${label}`,
       menuButton: ({ label }) => `Aabn kolonnehandlinger for ${label}`,
+      pinMenu: ({ label }) => `Fastgorelse for kolonnen ${label}`,
       pinButton: ({ label, toggleAction, pinSide }) =>
         `${toggleAction === 'unpin' ? 'Frigor' : 'Fastgor'} kolonnen ${label} ${
           toggleAction === 'unpin' ? 'fra' : 'til'
@@ -437,9 +437,26 @@ Before finishing a table accessibility/i18n change, answer these questions:
 - Do custom cells and row actions provide accessible names outside the table's built-in label system?
 - Does changing the locale update headers, `meta.label`, table announcements, and companion controls together?
 
+## Header Actions Composition
+
+Use `withNatTableHeaderActions(...)` once per column array. The helper is idempotent, so calling it again inside a `computed(...)` does not nest duplicate sort or pin controls.
+
+Per-column behavior:
+
+- Set `columnDef.meta.headerActions` to `false` to keep the original header without sort/pin chrome (for example an actions column).
+- Pass an object on `meta.headerActions` to override helper-level `sortIndicator` or `accessibilityLabels` for one column.
+
+Helper composition order with utils:
+
+1. Build base data columns.
+2. Call `withNatTableHeaderActions(...)` on those columns.
+3. Call `withRenderMetricsColumn(...)` last so the synthetic metrics column is appended without extra header chrome.
+
+`NatTableAccessibilityHeaderActionLabels` covers every generated header-action string: `sortButton`, `menuButton`, `pinMenu`, `pinButton`, and `pinButtonText`. Header labels are resolved when the header renders from `meta.label`, string headers, or accessor keys, so rebuilding translated column definitions keeps copy in sync when the locale changes.
+
 ## Reference Notes
 
 - `columnDef.meta.label` is the label used when headers are rendered by templates, functions, icons, or other non-string content.
-- `withNatTableHeaderActions(...)` resolves labels when columns are wrapped, so translated columns should be rebuilt when the active locale changes.
+- `withNatTableHeaderActions(...)` is safe to call from reactive column builders; already wrapped columns are skipped automatically.
 - Built-in fallback copy is English. Passing only some overrides is valid, but any omitted key falls back to English.
 - Live announcements can be disabled with `[enableAnnouncements]="false"` if the consumer owns a different announcement strategy.

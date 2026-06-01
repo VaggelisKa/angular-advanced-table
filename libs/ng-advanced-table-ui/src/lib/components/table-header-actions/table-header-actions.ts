@@ -9,14 +9,12 @@ import {
   type RowData,
 } from '@tanstack/angular-table';
 import type {
-  NatTableSortDirection,
-  NatTableSortIndicatorContext,
-} from '../../shared/table-ui.types';
-
-import type {
   NatTableAccessibilityHeaderActionLabels,
   NatTableAccessibilityHeaderActionMenuContext,
   NatTableAccessibilityHeaderActionPinContext,
+  NatTableSortDirection,
+  NatTableSortIndicatorContent,
+  NatTableSortIndicatorContext,
 } from '../../shared/table-ui.types';
 
 type NatTablePinSide = 'left' | 'right';
@@ -28,20 +26,7 @@ export type NatTableHeaderRenderContent =
   | null
   | undefined;
 
-/**
- * Custom content accepted by `withNatTableHeaderActions(..., { sortIndicator })`.
- *
- * Return a string/number for simple glyph swaps, or a FlexRender-compatible
- * renderer for richer Angular content.
- */
-export type NatTableSortIndicatorContent =
-  | string
-  | number
-  | ((
-      props: NatTableSortIndicatorContext<RowData>,
-    ) => FlexRenderContent<NatTableSortIndicatorContext<RowData>>)
-  | null
-  | undefined;
+export type { NatTableSortIndicatorContent } from '../../shared/table-ui.types';
 
 /**
  * Options for {@link withNatTableHeaderActions}.
@@ -206,7 +191,12 @@ export class NatTableHeaderActions {
   }
 
   protected getMenuLabel(): string {
-    return `Column pinning options for ${this.label()}`;
+    const labels = this.resolveAccessibilityLabels();
+
+    return (
+      labels.pinMenu?.(this.getMenuContext()) ??
+      `Column pinning options for ${this.label()}`
+    );
   }
 
   protected column() {
