@@ -12,12 +12,15 @@ This section exists so automated tooling can validate implementations against th
 
 ### Core (`ng-advanced-table`)
 
-| Symbol                      | Kind              | Notes                                                                                                     |
-| --------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `NatTable`                  | component         | Primary grid primitive                                                                                    |
-| `NatTableAccessibilityText` | type              | Primary bag for consumer-owned accessibility strings + announcement formatters                            |
-| `NatTableA11y`              | namespace         | Formatter context types for explicit typing (example: `NatTableA11y.NatTableAccessibilitySummaryContext`) |
-| `enableAnnouncements`       | input (`boolean`) | Turn built-in polite live-region announcements on/off                                                     |
+| Symbol                          | Kind              | Notes                                                                                                     |
+| ------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `NatTable`                      | component         | Primary grid primitive                                                                                    |
+| `NatTableAccessibilityText`     | type              | Primary bag for consumer-owned accessibility strings + announcement formatters                            |
+| `NatTableA11y`                  | namespace         | Formatter context types for explicit typing (example: `NatTableA11y.NatTableAccessibilitySummaryContext`) |
+| `getNatTableRowExpansionToggle` | function          | Builds state, ARIA value, and guarded actions for consumer-owned expansion triggers                       |
+| `NatTableRowExpansionToggle`    | type              | View model returned by `getNatTableRowExpansionToggle(...)`                                               |
+| `NatTableRowExpansionState`     | type              | `'collapsed'`, `'expanded'`, or `'unavailable'` state for custom expansion trigger UI                     |
+| `enableAnnouncements`           | input (`boolean`) | Turn built-in polite live-region announcements on/off                                                     |
 
 #### `NatTableAccessibilityText` keys
 
@@ -84,6 +87,7 @@ Always do this:
 - Provide localized `accessibilityText` strings (`description`, `keyboardInstructions`, `emptyState`) whenever the product language is not English or you need custom wording.
 - Localize optional UI controls through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels`.
 - Localize row expansion trigger labels through `NatTableRowExpansionLabels` when using `NatTableRowExpandToggle` or `withNatTableExpansionColumn(...)`.
+- For consumer-owned expansion triggers, use `getNatTableRowExpansionToggle(...)`, bind `ariaExpanded`, and provide localized accessible labels from app copy.
 - Translate semantic state values such as `ascending`, `descending`, `visible`, `hidden`, `show`, `hide`, `pin`, `unpin`, `left`, and `right` before presenting them to users.
 - Recreate translated column definitions when the active locale can change at runtime.
 
@@ -107,6 +111,7 @@ For every generated table, verify these items before considering the work comple
 - `accessibilityText` is provided when summaries or live announcements need product-specific copy.
 - Every rendered `ng-advanced-table-ui` companion control has localized visible labels and group or button labels.
 - Every generated expansion toggle has localized expand, collapse, and unavailable labels when expandable rows are enabled.
+- Every consumer-owned expansion trigger binds `aria-expanded` from `getNatTableRowExpansionToggle(...)` and exposes localized expand, collapse, and unavailable labels.
 - Runtime locale changes rebuild `columns`, `accessibilityText`, and UI `accessibilityLabels` from the same translation source.
 
 ## Core Table

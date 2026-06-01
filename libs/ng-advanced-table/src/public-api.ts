@@ -1,5 +1,10 @@
 export { NatTable } from './lib/components/table/table';
+export { getNatTableRowExpansionToggle } from './lib/components/table/row-expansion';
 export type { NatTableRowRenderedEvent } from './lib/components/table/events';
+export type {
+  NatTableRowExpansionState,
+  NatTableRowExpansionToggle,
+} from './lib/components/table/row-expansion';
 export type {
   NatTableAccessibilityText,
   NatTableCellTone,

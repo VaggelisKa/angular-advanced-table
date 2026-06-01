@@ -6,6 +6,7 @@ import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
+import { getNatTableRowExpansionToggle } from './row-expansion';
 import type {
   NatTableAccessibilityText,
   NatTableRowActivateEvent,
@@ -352,6 +353,51 @@ describe('NatTable', () => {
     expect(host.expandedEvents.at(-1)).toEqual({
       [expandableRow.id]: true,
     });
+  });
+
+  it('builds a non-UI row expansion toggle model for custom controls', () => {
+    fixture.detectChanges();
+
+    const table = fixture.debugElement.query(By.directive(NatTable))
+      .componentInstance as NatTable<Row>;
+    const expandableRow = table.table.getRowModel().rows.find((row) => row.getCanExpand());
+    const unavailableRow = table.table.getRowModel().rows.find((row) => !row.getCanExpand());
+
+    expect(expandableRow).toBeTruthy();
+    expect(unavailableRow).toBeTruthy();
+
+    const toggle = getNatTableRowExpansionToggle(expandableRow!);
+
+    expect(toggle.rowData).toBe(expandableRow!.original);
+    expect(toggle.rowId).toBe(expandableRow!.id);
+    expect(toggle.canExpand).toBe(true);
+    expect(toggle.isExpanded).toBe(false);
+    expect(toggle.ariaExpanded).toBe('false');
+    expect(toggle.expansionState).toBe('collapsed');
+
+    toggle.expand();
+    fixture.detectChanges();
+
+    expect(host.expandedEvents.at(-1)).toEqual({
+      [expandableRow!.id]: true,
+    });
+    expect(getNatTableRowExpansionToggle(expandableRow!).ariaExpanded).toBe('true');
+
+    getNatTableRowExpansionToggle(expandableRow!).collapse();
+    fixture.detectChanges();
+
+    expect(host.expandedEvents.at(-1)).toEqual({});
+
+    const unavailableToggle = getNatTableRowExpansionToggle(unavailableRow!);
+
+    expect(unavailableToggle.canExpand).toBe(false);
+    expect(unavailableToggle.ariaExpanded).toBeNull();
+    expect(unavailableToggle.expansionState).toBe('unavailable');
+
+    unavailableToggle.toggle();
+    fixture.detectChanges();
+
+    expect(host.expandedEvents.at(-1)).toEqual({});
   });
 
   it('only emits granular slice outputs when the corresponding slice actually changed', async () => {
@@ -709,18 +755,71 @@ describe('NatTable', () => {
     ) as HTMLElement[];
 
     expect(fixture.nativeElement.querySelector('colgroup')).toBeNull();
-    expect(headers[0]?.style.width).toBe('180px');
-    expect(headers[0]?.style.minWidth).toBe('120px');
-    expect(headers[0]?.style.maxWidth).toBe('180px');
-    expect(headers[1]?.style.width).toBe('140px');
-    expect(headers[1]?.style.minWidth).toBe('100px');
-    expect(headers[1]?.style.maxWidth).toBe('140px');
+    expect(headers[0]?.style.width).toBe('');
+    expect(headers[0]?.style.minWidth).toBe('');
+    expect(headers[0]?.style.maxWidth).toBe('');
+    expect(headers[1]?.style.width).toBe('');
+    expect(headers[1]?.style.minWidth).toBe('');
+    expect(headers[1]?.style.maxWidth).toBe('');
     expect(bodyCells[0]?.style.width).toBe('180px');
     expect(bodyCells[0]?.style.minWidth).toBe('120px');
     expect(headers[0]?.style.left).toBe('0px');
     expect(headers[1]?.style.left).toBe('180px');
     expect(bodyCells[1]?.style.left).toBe('180px');
     expect(headers[0]?.dataset['columnId']).toBe('name');
+  });
+
+  it('applies optional header sizing from column meta without affecting body cells', async () => {
+    @Component({
+      imports: [NatTable],
+      template: ` <nat-table [data]="rows()" [columns]="columns" ariaLabel="Operations table" /> `,
+    })
+    class HeaderSizingHost {
+      readonly rows = signal<Row[]>([
+        {
+          id: 'svc-header',
+          name: 'Service',
+          region: 'eu-central-1',
+          status: 'Healthy',
+          throughput: 1000,
+        },
+      ]);
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Service',
+          size: 96,
+          minSize: 80,
+          meta: {
+            label: 'Service',
+            rowHeader: true,
+            headerSize: 140,
+            headerMinSize: 120,
+          },
+          cell: (info) => info.getValue<string>(),
+        },
+      ];
+    }
+
+    const headerFixture = TestBed.createComponent(HeaderSizingHost);
+
+    await headerFixture.whenStable();
+    headerFixture.detectChanges();
+
+    const header = headerFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const bodyCell = headerFixture.nativeElement.querySelector(
+      'tbody th[data-column-id="name"]',
+    ) as HTMLElement;
+
+    expect(header.style.width).toBe('140px');
+    expect(header.style.minWidth).toBe('120px');
+    expect(header.style.maxWidth).toBe('140px');
+    expect(header.classList.contains('is-width-constrained')).toBe(true);
+    expect(bodyCell.style.width).toBe('96px');
+    expect(bodyCell.style.minWidth).toBe('80px');
+    expect(bodyCell.style.maxWidth).toBe('96px');
   });
 
   it('applies fixed, maximum, and intrinsic column sizing from TanStack column definitions', async () => {
@@ -803,9 +902,10 @@ describe('NatTable', () => {
       'tbody td[data-column-id="status"]',
     ) as HTMLElement;
 
-    expect(fixedHeader.style.width).toBe('96px');
-    expect(fixedHeader.style.minWidth).toBe('80px');
-    expect(fixedHeader.style.maxWidth).toBe('96px');
+    expect(fixedHeader.style.width).toBe('');
+    expect(fixedHeader.style.minWidth).toBe('');
+    expect(fixedHeader.style.maxWidth).toBe('');
+    expect(fixedHeader.classList.contains('is-width-constrained')).toBe(false);
     expect(cappedHeader.style.left).toBe('96px');
     expect(fixedCell.style.width).toBe('96px');
     expect(fixedCell.style.minWidth).toBe('80px');
@@ -814,7 +914,8 @@ describe('NatTable', () => {
     expect(fixedCell.querySelector('.data-cell-content')).toBeTruthy();
     expect(cappedHeader.style.width).toBe('');
     expect(cappedHeader.style.minWidth).toBe('');
-    expect(cappedHeader.style.maxWidth).toBe('192px');
+    expect(cappedHeader.style.maxWidth).toBe('');
+    expect(cappedHeader.classList.contains('is-width-constrained')).toBe(false);
     expect(cappedCell.style.maxWidth).toBe('192px');
     expect(cappedCell.classList.contains('is-width-constrained')).toBe(true);
     expect(intrinsicHeader.style.width).toBe('');

@@ -8,7 +8,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 
 | Package                   | Use it for                                | Main exports                                                                                                                                                                                                                   |
 | ------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ng-advanced-table`       | Core table primitive                      | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                                                                                              |
+| `ng-advanced-table`       | Core table primitive                      | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `getNatTableRowExpansionToggle(...)`                                                                                                                                        |
 | `ng-advanced-table-ui`    | Optional controls and cell/header helpers | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `NatTableRowExpandToggle`, `withNatTableExpansionColumn(...)`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils` | Optional render-metrics tooling           | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                                                                                |
 
@@ -188,7 +188,8 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpandablePredicate`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Helpers: `getNatTableRowExpansionToggle(...)`
+- Common types: `NatTableState`, `NatTableExpandedState`, `NatTableExpandedRowContext`, `NatTableRowExpansionState`, `NatTableRowExpansionToggle`, `NatTableRowExpandablePredicate`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
@@ -311,27 +312,32 @@ The `pagination` slice always exists so controlled and uncontrolled code paths s
 
 Attach metadata through `columnDef.meta`:
 
-| Field       | Type                                                                      | Purpose                                                        |
-| ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `label`     | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
-| `align`     | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
-| `rowHeader` | `boolean`                                                                 | Marks body cells in the column as row headers                  |
-| `cellTone`  | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
+| Field           | Type                                                                      | Purpose                                                        |
+| --------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `label`         | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
+| `align`         | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
+| `rowHeader`     | `boolean`                                                                 | Marks body cells in the column as row headers                  |
+| `cellTone`      | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
+| `headerSize`    | `number \| string`                                                        | Optional header-only width in pixels                           |
+| `headerMinSize` | `number \| string`                                                        | Optional header-only minimum width in pixels                   |
+| `headerMaxSize` | `number \| string`                                                        | Optional header-only maximum width in pixels                   |
 
 ### Column sizing and pinned offsets
 
-`NatTable` uses TanStack column sizing fields as the rendered sizing API:
+`NatTable` uses TanStack column sizing fields for **body cells** only:
 
-- `size` sets the preferred rendered width in pixels.
-- `minSize` sets CSS `min-width` in pixels.
-- `maxSize` sets CSS `max-width` in pixels.
+- `size` — preferred body cell width in pixels (rendered as CSS `width`).
+- `minSize` — applies a CSS `min-width` to body cells in pixels.
+- `maxSize` — caps body cells with CSS `max-width` in pixels.
 
-Use one sizing model per column:
+Column headers size from their content by default. To constrain a header independently, set optional `meta.headerSize`, `meta.headerMinSize`, or `meta.headerMaxSize` on the column definition.
 
-- Fixed width: set `size`. Header and body content ellipsizes at that width unless `maxSize` permits a wider column.
+Use one body sizing model per column:
+
+- Fixed width: set `size`. Body content ellipsizes at that width unless `maxSize` permits a wider cell.
 - Minimum width: set `minSize`, with or without `size`.
-- Maximum width: set `maxSize` and leave `size` unset when the browser should size the column from content up to that cap.
-- Intrinsic width: leave `size`, `minSize`, and `maxSize` unset. The browser sizes the column from content.
+- Maximum width: set `maxSize` and leave `size` unset when the browser should size body cells from content up to that cap.
+- Intrinsic width: leave `size`, `minSize`, and `maxSize` unset. Body cells size from content.
 
 Pinned column offsets are based on measured header widths after layout. Before a measurement exists, the fallback is:
 
@@ -346,7 +352,8 @@ Pinned column offsets are based on measured header widths after layout. Before a
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
 - `(rowActivate)` ignores activations whose target sits inside an interactive cell descendant — `<a href>`, `<button>`, form controls, `<summary>`, `contenteditable`, or elements with `role="button" | "link" | "checkbox" | "menuitem" | "tab" | "switch" | "combobox" | "textbox" | "searchbox"`. Use it for row-level navigation; keep cell-level controls inside cells.
 - Rows become expandable when `expandedRow` is supplied. `canExpandRow` defaults to every row in that case.
-- Use `withNatTableExpansionColumn(...)` from `ng-advanced-table-ui` for the standard accessible expand/collapse trigger. Advanced cell renderers can still call TanStack row APIs directly when they need custom behavior.
+- Use `getNatTableRowExpansionToggle(...)` from `ng-advanced-table` when consumers own the trigger UI and do not want any UI-package components.
+- Use `withNatTableExpansionColumn(...)` from `ng-advanced-table-ui` only when the standard accessible expand/collapse trigger is desired.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
 
@@ -354,7 +361,62 @@ Pinned column offsets are based on measured header widths after layout. Before a
 
 Use `expandedRow` to render a full-width detail panel below any expanded body row. The template receives `rowData`, `row`, `table`, and a `collapse()` helper.
 
-For the common trigger column, use `withNatTableExpansionColumn(...)` from `ng-advanced-table-ui`. It adds a disabled state for rows that fail `canExpandRow`, sets `aria-expanded`, and accepts localized button labels.
+For consumer-owned trigger UI, use `getNatTableRowExpansionToggle(...)` from `ng-advanced-table`. It converts the TanStack row into a small view model with `canExpand`, `isExpanded`, `ariaExpanded`, `rowData`, `rowId`, and guarded `toggle()`, `expand()`, and `collapse()` actions. No `ng-advanced-table-ui` import is required.
+
+```ts
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { flexRenderComponent, type ColumnDef, type Row } from '@tanstack/angular-table';
+
+import { getNatTableRowExpansionToggle } from 'ng-advanced-table';
+
+@Component({
+  selector: 'app-service-expand-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @let toggle = rowToggle();
+
+    <button
+      type="button"
+      [disabled]="!toggle.canExpand"
+      [attr.aria-expanded]="toggle.ariaExpanded"
+      [attr.aria-label]="toggle.isExpanded ? 'Hide diagnostics' : 'Show diagnostics'"
+      (click)="toggle.toggle()"
+    >
+      {{ toggle.isExpanded ? 'Hide' : 'Details' }}
+    </button>
+  `,
+})
+export class ServiceExpandButton {
+  readonly row = input.required<Row<ServiceRow>>();
+
+  protected rowToggle() {
+    return getNatTableRowExpansionToggle(this.row());
+  }
+}
+
+const customColumns: ColumnDef<ServiceRow>[] = [
+  {
+    id: 'details',
+    header: 'Details',
+    meta: { label: 'Details' },
+    enableSorting: false,
+    enableGlobalFilter: false,
+    cell: (context) =>
+      flexRenderComponent(ServiceExpandButton, {
+        inputs: { row: context.row },
+      }),
+  },
+  {
+    accessorKey: 'service',
+    header: 'Service',
+    meta: { label: 'Service', rowHeader: true },
+  },
+];
+```
+
+If the button participates in Angular Aria grid keyboard navigation, add `ngGridCellWidget` to the trigger or its focusable wrapper.
+
+For the common stock trigger column, use `withNatTableExpansionColumn(...)` from `ng-advanced-table-ui`. It adds a disabled state for rows that fail `canExpandRow`, sets `aria-expanded`, and accepts localized button labels.
 
 ```ts
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
