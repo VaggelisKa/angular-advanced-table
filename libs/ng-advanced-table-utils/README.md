@@ -38,6 +38,7 @@ npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @a
 - `NatTableRenderMetricsController`
 - `NatTableRenderMetricsEvent`
 - `NatTableRenderMetricsState`
+- `NatTableColumnMeta`
 - `getRowRenderTone(...)`
 - `getRenderToneLabel(...)`
 - `isRenderFilterValue(...)`
@@ -48,6 +49,8 @@ npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @a
 - `RowRenderMeasurement`
 - `RowRenderMetric`
 - `RowRenderTone`
+
+`NatTableColumnMeta` is kept aligned with the workspace's internal contract checks. Prefer importing the shared metadata contract from `ng-advanced-table` when a column definition is used by multiple packages.
 
 ## Package Notes
 

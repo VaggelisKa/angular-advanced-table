@@ -1,3 +1,24 @@
+## 1.2.0 (2026-06-02)
+
+### 🚀 Features
+
+- Respect input modality for table focus and hover affordances. ([#60](https://github.com/VaggelisKa/angular-advanced-table/pull/60))
+- Add a companion horizontal scroll control for tables, with accessible left and right controls and a range bar that reflects and updates the table scroll position. ([#62](https://github.com/VaggelisKa/angular-advanced-table/pull/62))
+- Add the private `ng-advanced-table-types` contract library, align the public table metadata and state contracts against it, add type coverage to catch future drift, and document the preferred public imports. ([#86](https://github.com/VaggelisKa/angular-advanced-table/pull/86))
+
+### 🩹 Fixes
+
+- Clarify partial-control `NatTableState` ownership and remove full-state round-tripping from quick-start examples. ([#79](https://github.com/VaggelisKa/angular-advanced-table/pull/79))
+- Document the horizontal scroll control in the root and UI package references, including its controller contract and accessibility label surface. ([#78](https://github.com/VaggelisKa/angular-advanced-table/pull/78))
+- Align public documentation with the exported UI controls, recommended surface composition, and named `NatTableA11y` type namespace import. ([#77](https://github.com/VaggelisKa/angular-advanced-table/pull/77))
+- Remove a duplicate scroll-control entry from the README quick-start example. ([#78](https://github.com/VaggelisKa/angular-advanced-table/pull/78))
+- Declare the `@angular/common` peer dependency for packages that import Angular Common APIs and align the published install documentation. ([#77](https://github.com/VaggelisKa/angular-advanced-table/pull/77))
+- Add MIT license metadata and include the project license text. ([#56](https://github.com/VaggelisKa/angular-advanced-table/pull/56))
+
+### 🧱 Updated Dependencies
+
+- Updated ng-advanced-table to 1.1.0
+
 ## 1.1.0 (2026-04-29)
 
 ### 🚀 Features

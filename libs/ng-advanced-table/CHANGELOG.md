@@ -1,3 +1,23 @@
+## 1.1.0 (2026-06-02)
+
+### 🚀 Features
+
+- Use TanStack `size`, `minSize`, and `maxSize` as the rendered column sizing API and add `maxSize` support to the render-metrics column helper. ([#80](https://github.com/VaggelisKa/angular-advanced-table/pull/80))
+- Respect input modality for table focus and hover affordances. ([#60](https://github.com/VaggelisKa/angular-advanced-table/pull/60))
+- Remove the built-in expanded-row capability from `NatTable`, including the `expanded` state slice, `canExpandRow` and `expandedRow` inputs, `(expandedChange)` output, expanded-row public types, renderer support, and associated theme tokens. ([#83](https://github.com/VaggelisKa/angular-advanced-table/pull/83))
+- Add a companion horizontal scroll control for tables, with accessible left and right controls and a range bar that reflects and updates the table scroll position. ([#62](https://github.com/VaggelisKa/angular-advanced-table/pull/62))
+
+### 🩹 Fixes
+
+- Document accessible custom cell and row action recipes for `ng-advanced-table` consumers. ([#84](https://github.com/VaggelisKa/angular-advanced-table/pull/84))
+- Clarify partial-control `NatTableState` ownership and remove full-state round-tripping from quick-start examples. ([#79](https://github.com/VaggelisKa/angular-advanced-table/pull/79))
+- Document the horizontal scroll control in the root and UI package references, including its controller contract and accessibility label surface. ([#78](https://github.com/VaggelisKa/angular-advanced-table/pull/78))
+- Align public documentation with the exported UI controls, recommended surface composition, and named `NatTableA11y` type namespace import. ([#77](https://github.com/VaggelisKa/angular-advanced-table/pull/77))
+- Remove the stale migration-notes link from the `ng-advanced-table` package README now that the root workspace README no longer publishes a migration section. ([#55](https://github.com/VaggelisKa/angular-advanced-table/pull/55))
+- Add the private `ng-advanced-table-types` contract library, align the public table metadata and state contracts against it, add type coverage to catch future drift, and document the preferred public imports. ([#86](https://github.com/VaggelisKa/angular-advanced-table/pull/86))
+- Declare the `@angular/common` peer dependency for packages that import Angular Common APIs and align the published install documentation. ([#77](https://github.com/VaggelisKa/angular-advanced-table/pull/77))
+- Add MIT license metadata and include the project license text. ([#56](https://github.com/VaggelisKa/angular-advanced-table/pull/56))
+
 # 1.0.0 (2026-04-29)
 
 ### 🚀 Features
