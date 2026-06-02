@@ -536,7 +536,61 @@ describe('ng-advanced-table-ui', () => {
       right: ['name'],
     });
     expect(getHeaderColumnIds(fixture)).toEqual(['region', 'status', 'throughput', 'name']);
+    const rightPinnedHeaderActions = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .header-actions-row',
+    ) as HTMLElement;
+
+    expect(rightPinnedHeaderActions.lastElementChild?.classList.contains('header-controls')).toBe(
+      true,
+    );
     expect(headerLabel.textContent?.trim()).toBe('Service');
+  });
+
+  it('keeps the column actions menu on the right for end-aligned headers', () => {
+    fixture.detectChanges();
+
+    const endAlignedHeaderContent = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="throughput"] .header-content',
+    ) as HTMLElement;
+    const endAlignedHeaderActions = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="throughput"] .header-actions-row',
+    ) as HTMLElement;
+
+    expect(endAlignedHeaderContent.classList.contains('is-align-end')).toBe(true);
+    expect(endAlignedHeaderActions.lastElementChild?.classList.contains('header-controls')).toBe(
+      true,
+    );
+  });
+
+  it('keeps the column actions menu on the right for right-pinned end-aligned headers', async () => {
+    fixture.detectChanges();
+
+    const throughputMenuButton = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="throughput"] .menu-button',
+    ) as HTMLButtonElement;
+
+    throughputMenuButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    getOpenMenuItem('right').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.tableState().columnPinning).toEqual({
+      left: [],
+      right: ['throughput'],
+    });
+
+    const rightPinnedEndAlignedHeaderActions = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="throughput"] .header-actions-row',
+    ) as HTMLElement;
+
+    expect(
+      rightPinnedEndAlignedHeaderActions.lastElementChild?.classList.contains('header-controls'),
+    ).toBe(true);
   });
 
   it('announces sort and filter updates through the table live region', async () => {
