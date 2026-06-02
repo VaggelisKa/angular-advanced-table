@@ -47,6 +47,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `NatTableScrollControl`
 - `withNatTableHeaderActions(...)`
 - `NatTableHeaderActionsOptions`
+- `NatTableHeaderActionsColumnOptions`
 - `NatTableSortIndicatorContent`
 - `NatTableAccessibilityScrollControlLabels`
 - `NatTableAccessibilityScrollControlPositionContext`
@@ -75,6 +76,9 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - Companion controls expose `accessibilityLabels` inputs so consumers can localize the UI without rebuilding table state.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.
+- `withNatTableHeaderActions(...)` is idempotent. Reapplying it to already-wrapped columns updates the wrapper options instead of nesting header controls.
+- Use `column.meta.headerActions = false` to opt out per column, or provide `{ sortIndicator, accessibilityLabels }` there to override the helper-level options for one column.
+- Apply other column helpers first, then wrap the final column list with `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.
 - You can use any subset of this package or replace all of it with custom controls.
 

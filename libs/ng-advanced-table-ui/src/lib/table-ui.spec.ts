@@ -225,6 +225,7 @@ class CustomAccessibilityLabelsHost {
   readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
     sortButton: ({ label }) => `Sorter ${label}`,
     menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
+    menuLabel: ({ label }) => `Fastgørelsesmuligheder for ${label}`,
     pinButton: ({ label, toggleAction, pinSide }) =>
       `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
         toggleAction === 'unpin' ? 'fra' : 'til'
@@ -249,13 +250,57 @@ class CustomAccessibilityLabelsHost {
   }
 }
 
+@Component({
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      ariaLabel="Operations table"
+      (stateChange)="onTableStateChange($event)"
+    />
+  `,
+})
+class HeaderActionCompositionHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = withNatTableHeaderActions(
+    withNatTableHeaderActions(buildHeaderActionCompositionColumns(), {
+      sortIndicator: 'F',
+      accessibilityLabels: {
+        sortButton: ({ label }) => `First sort ${label}`,
+        menuButton: ({ label }) => `First menu ${label}`,
+        menuLabel: ({ label }) => `First pin menu ${label}`,
+      },
+    }),
+    {
+      sortIndicator: 'S',
+      accessibilityLabels: {
+        sortButton: ({ label }) => `Second sort ${label}`,
+        menuButton: ({ label }) => `Second menu ${label}`,
+        menuLabel: ({ label }) => `Second pin menu ${label}`,
+      },
+    },
+  );
+  readonly tableState = signal<Partial<NatTableState>>({});
+
+  onTableStateChange(state: NatTableState): void {
+    this.tableState.set(state);
+  }
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost, CustomSortIndicatorHost, CustomAccessibilityLabelsHost],
+      imports: [
+        TableUiHost,
+        CustomSortIndicatorHost,
+        CustomAccessibilityLabelsHost,
+        HeaderActionCompositionHost,
+      ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -675,6 +720,8 @@ describe('ng-advanced-table-ui', () => {
     await customFixture.whenStable();
     customFixture.detectChanges();
 
+    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Fastgørelsesmuligheder for Service');
+
     const leftPinMenuItem = getOpenMenuItem('left');
     const rightPinMenuItem = getOpenMenuItem('right');
 
@@ -721,6 +768,50 @@ describe('ng-advanced-table-ui', () => {
 
     customFixture.destroy();
   });
+
+  it('applies header actions idempotently and honors per-column metadata', async () => {
+    const compositionFixture = TestBed.createComponent(HeaderActionCompositionHost);
+
+    compositionFixture.detectChanges();
+
+    const nativeElement = compositionFixture.nativeElement as HTMLElement;
+    const nameHeader = nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const regionHeader = nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLElement;
+    const statusHeader = nativeElement.querySelector(
+      'thead th[data-column-id="status"]',
+    ) as HTMLElement;
+    const nameSortButton = nameHeader.querySelector('.sort-button') as HTMLButtonElement;
+    const statusSortButton = statusHeader.querySelector('.sort-button') as HTMLButtonElement;
+    const nameMenuButton = nameHeader.querySelector('.menu-button') as HTMLButtonElement;
+
+    expect(nameHeader.querySelectorAll('.header-actions-row').length).toBe(1);
+    expect(nameHeader.querySelectorAll('.sort-button').length).toBe(1);
+    expect(nameHeader.querySelector('.header-label')?.textContent?.trim()).toBe('Service');
+    expect(nameHeader.querySelector('.sort-icon')?.textContent?.trim()).toBe('S');
+    expect(nameSortButton.getAttribute('aria-label')).toBe('Second sort Service');
+    expect(nameMenuButton.getAttribute('aria-label')).toBe('Second menu Service');
+
+    expect(regionHeader.querySelector('.sort-button')).toBeNull();
+    expect(regionHeader.querySelector('.menu-button')).toBeNull();
+    expect(regionHeader.textContent?.trim()).toBe('Region');
+
+    expect(statusHeader.querySelectorAll('.header-actions-row').length).toBe(1);
+    expect(statusHeader.querySelector('.sort-icon')?.textContent?.trim()).toBe('Column');
+    expect(statusSortButton.getAttribute('aria-label')).toBe('Column override for Status');
+
+    nameMenuButton.click();
+    compositionFixture.detectChanges();
+    await compositionFixture.whenStable();
+    compositionFixture.detectChanges();
+
+    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Second pin menu Service');
+
+    compositionFixture.destroy();
+  });
 });
 
 function buildRows(size: number): Row[] {
@@ -733,6 +824,39 @@ function buildRows(size: number): Row[] {
     status: statuses[index % statuses.length],
     throughput: 1000 + index * 1000,
   }));
+}
+
+function buildHeaderActionCompositionColumns(): ColumnDef<Row, unknown>[] {
+  return baseColumns.map((column) => {
+    const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
+
+    if (accessorKey === 'region') {
+      return {
+        ...column,
+        meta: {
+          ...column.meta,
+          headerActions: false,
+        },
+      };
+    }
+
+    if (accessorKey === 'status') {
+      return {
+        ...column,
+        meta: {
+          ...column.meta,
+          headerActions: {
+            sortIndicator: 'Column',
+            accessibilityLabels: {
+              sortButton: ({ label }) => `Column override for ${label}`,
+            },
+          },
+        },
+      };
+    }
+
+    return column;
+  });
 }
 
 function getHeaderColumnIds(fixture: ComponentFixture<TableUiHost>): string[] {

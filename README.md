@@ -196,22 +196,22 @@ Core exports:
 
 ### Inputs
 
-| Input                 | Default     | Notes                                                                                                              |
-| --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| `data`                | required    | Row array rendered by the table                                                                                    |
-| `columns`             | required    | TanStack `ColumnDef<TData>[]`                                                                                      |
-| `ariaLabel`           | required    | Accessible name for the table region                                                                               |
-| `accessibilityText`   | `{}`        | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
-| `enableGlobalFilter`  | `true`      | Enables the global filter pipeline                                                                                 |
-| `enableColumnPinning` | `true`      | Enables sticky pinning where columns allow it                                                                      |
-| `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering                                                                          |
-| `enablePagination`    | `false`     | Enables the pagination row model                                                                                   |
-| `globalFilterFn`      | built-in    | Replaces the generic global filter                                                                                 |
-| `initialState`        | `{}`        | Uncontrolled initial state, read once                                                                              |
-| `state`               | `{}`        | Controlled slices only; omitted slices stay internal                                                               |
-| `getRowId`            | row index   | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
-| `emitRowRenderEvents` | `false`     | Enables `(rowRendered)` instrumentation                                                                            |
-| `enableAnnouncements` | `true`      | Enables polite live announcements                                                                                  |
+| Input                 | Default   | Notes                                                                                                              |
+| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------ |
+| `data`                | required  | Row array rendered by the table                                                                                    |
+| `columns`             | required  | TanStack `ColumnDef<TData>[]`                                                                                      |
+| `ariaLabel`           | required  | Accessible name for the table region                                                                               |
+| `accessibilityText`   | `{}`      | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
+| `enableGlobalFilter`  | `true`    | Enables the global filter pipeline                                                                                 |
+| `enableColumnPinning` | `true`    | Enables sticky pinning where columns allow it                                                                      |
+| `enableColumnReorder` | `false`   | Enables drag/drop and keyboard reordering                                                                          |
+| `enablePagination`    | `false`   | Enables the pagination row model                                                                                   |
+| `globalFilterFn`      | built-in  | Replaces the generic global filter                                                                                 |
+| `initialState`        | `{}`      | Uncontrolled initial state, read once                                                                              |
+| `state`               | `{}`      | Controlled slices only; omitted slices stay internal                                                               |
+| `getRowId`            | row index | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
+| `emitRowRenderEvents` | `false`   | Enables `(rowRendered)` instrumentation                                                                            |
+| `enableAnnouncements` | `true`    | Enables polite live announcements                                                                                  |
 
 ### Outputs and instance API
 
@@ -308,15 +308,15 @@ The `pagination` slice always exists so controlled and uncontrolled code paths s
 
 Attach metadata through `columnDef.meta`:
 
-| Field       | Type                                                                      | Purpose                                                        |
-| ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `label`          | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
-| `align`          | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
-| `rowHeader`      | `boolean`                                                                 | Marks body cells in the column as row headers                  |
-| `cellTone`       | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
-| `headerSize`     | `number \| string`                                                        | Optional header-only width in pixels                           |
-| `headerMinSize`  | `number \| string`                                                        | Optional header-only minimum width in pixels                   |
-| `headerMaxSize`  | `number \| string`                                                        | Optional header-only maximum width in pixels                   |
+| Field           | Type                                                                      | Purpose                                                        |
+| --------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `label`         | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
+| `align`         | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
+| `rowHeader`     | `boolean`                                                                 | Marks body cells in the column as row headers                  |
+| `cellTone`      | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
+| `headerSize`    | `number \| string`                                                        | Optional header-only width in pixels                           |
+| `headerMinSize` | `number \| string`                                                        | Optional header-only minimum width in pixels                   |
+| `headerMaxSize` | `number \| string`                                                        | Optional header-only maximum width in pixels                   |
 
 ### Column sizing and pinned offsets
 
@@ -464,7 +464,7 @@ Example, add stock controls around an existing table:
 UI exports:
 
 - Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`
-- Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
+- Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
 | API                              | Purpose                                                        | Key inputs or options                                        |
@@ -475,7 +475,7 @@ UI exports:
 | `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
 | `NatTablePager`                  | Previous/next pagination control                               | `for`, `ariaLabel`, `accessibilityLabels`                    |
 | `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `ariaLabel`, `scrollStep`, `accessibilityLabels`      |
-| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`                       |
+| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`, `meta.headerActions` |
 
 Controller contract required by the UI package:
 
@@ -494,10 +494,13 @@ Notes:
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
+- Applying `withNatTableHeaderActions(...)` repeatedly is safe. If a reactive column builder receives already-wrapped columns, the helper updates the wrapper options instead of nesting another header action surface.
+- For per-column behavior, set `column.meta.headerActions` to `false` to opt out, or provide `{ sortIndicator, accessibilityLabels }` to override the helper-level options for that column only.
+- When composing with column helpers that add or prepend columns, apply those helpers first and then call `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
 
 ## UI Accessibility Labels
 
-The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`.
+The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 
