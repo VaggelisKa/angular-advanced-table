@@ -4,6 +4,14 @@ For workspace install, core API tables, and composition overview, see [README.md
 
 `ng-advanced-table` ships English defaults for generated screen-reader copy. Consumers should treat those defaults as fallbacks and provide localized labels, descriptions, summaries, and live announcements for their product language.
 
+Generated copy resolves in this order:
+
+1. Built-in English defaults.
+2. App or feature providers such as `provideNatTableIntl(...)`, `provideNatTableUiIntl(...)`, and `provideNatTableUtilsIntl(...)`.
+3. Per-table, per-control, or per-helper inputs/options.
+
+Use providers for common product language and number formatting. Use inputs/options for the few controls that need instance-specific wording.
+
 This guide focuses on text that the consuming application owns. It does not replace normal accessibility review for custom cells, custom controls, dialogs, menus, or product-specific workflows.
 
 ## Machine-readable API map (agents)
@@ -15,6 +23,7 @@ This section exists so automated tooling can validate implementations against th
 | Symbol                      | Kind              | Notes                                                                                                     |
 | --------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
 | `NatTable`                  | component         | Primary grid primitive                                                                                    |
+| `provideNatTableIntl(...)`  | provider          | App/feature defaults for `accessibilityText` and table number formatting                                  |
 | `NatTableAccessibilityText` | type              | Primary bag for consumer-owned accessibility strings + announcement formatters                            |
 | `NatTableA11y`              | namespace         | Formatter context types for explicit typing (example: `NatTableA11y.NatTableAccessibilitySummaryContext`) |
 | `enableAnnouncements`       | input (`boolean`) | Turn built-in polite live-region announcements on/off                                                     |
@@ -68,8 +77,20 @@ Companion controls accept localized visible strings plus structured `accessibili
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
 | `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
+| `provideNatTableUiIntl(...)`     | App/feature defaults for the labels above and UI number formatting  |
 
-Note: some header chrome strings are still English defaults unless overridden upstream (for example the pin menu container label). Treat missing overrides as a localization gap, not an API gap.
+Header action labels include the sort button, menu trigger, menu content, pin buttons, and visible pin menu item text.
+
+### Utils (`ng-advanced-table-utils`)
+
+| Symbol                          | Kind      | Notes                                                                                |
+| ------------------------------- | --------- | ------------------------------------------------------------------------------------ |
+| `provideNatTableUtilsIntl(...)` | provider  | App/feature defaults for render-metrics filter, panel, column, and number formatting |
+| `NatRenderMetricsFilter`        | component | Accepts provider defaults plus per-instance `labels`                                 |
+| `NatRenderMetricsPanel`         | component | Accepts provider defaults plus per-instance `labels`                                 |
+| `withRenderMetricsColumn(...)`  | helper    | Accepts provider defaults when called in Angular DI plus per-call options            |
+
+`withRenderMetricsColumn(...)` can also be called outside Angular. In that case provider defaults are unavailable, but explicit options still localize the generated column header, pending label, and duration text.
 
 ## Agent Contract
 
@@ -79,7 +100,7 @@ Always do this:
 
 - Give every `<nat-table>` a localized `ariaLabel`.
 - Set `columnDef.meta.label` for each data column. This is required when the header is not a plain string and recommended for all columns.
-- Provide localized `accessibilityText` strings (`description`, `keyboardInstructions`, `emptyState`) whenever the product language is not English or you need custom wording.
+- Provide localized `accessibilityText` strings (`description`, `keyboardInstructions`, `emptyState`) through `provideNatTableIntl(...)` or per-table inputs whenever the product language is not English or you need custom wording.
 - Localize optional UI controls through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels`.
 - Translate semantic state values such as `ascending`, `descending`, `visible`, `hidden`, `show`, `hide`, `pin`, `unpin`, `left`, and `right` before presenting them to users.
 - Recreate translated column definitions when the active locale can change at runtime.
@@ -89,7 +110,7 @@ Do not do this:
 - Do not rely on the built-in English fallback strings for a localized product.
 - Do not use placeholder text as the only accessible label for search.
 - Do not echo raw semantic tokens like `sortState`, `toggleAction`, `visibilityState`, `pinSide`, or `pinState` directly into localized copy.
-- Do not assume `Intl.NumberFormat()` uses the app locale. Use numeric `...Value` fields if the app locale can differ from the browser default.
+- Do not assume browser-default number formatting matches the app locale. Configure provider `formatNumber` defaults, or use numeric `...Value` fields for table-specific formatting.
 - Do not add custom interactive cell controls without giving those controls their own accessible names.
 
 ## Implementation Checklist
@@ -104,6 +125,92 @@ For every generated table, verify these items before considering the work comple
 - `accessibilityText` is provided when summaries or live announcements need product-specific copy.
 - Every rendered `ng-advanced-table-ui` companion control has localized visible labels and group or button labels.
 - Runtime locale changes rebuild `columns`, `accessibilityText`, and UI `accessibilityLabels` from the same translation source.
+
+## App-Level Localization Providers
+
+Configure common defaults once at app or feature scope. Per-instance inputs and helper options remain useful for table-specific copy and always take precedence over provider defaults.
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideNatTableIntl } from 'ng-advanced-table';
+import { provideNatTableUiIntl } from 'ng-advanced-table-ui';
+import { provideNatTableUtilsIntl } from 'ng-advanced-table-utils';
+
+const locale = 'da-DK';
+const formatNumber = (value: number, options?: Intl.NumberFormatOptions) =>
+  new Intl.NumberFormat(locale, options).format(value);
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideNatTableIntl({
+      formatNumber,
+      accessibilityText: {
+        keyboardInstructions:
+          'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
+        emptyState: 'Ingen rækker matcher den aktuelle visning.',
+        tableSummary: ({ visibleRowsText, totalRowsText, visibleColumnsText }) =>
+          `${visibleRowsText} af ${totalRowsText} rækker vises på tværs af ${visibleColumnsText} kolonner.`,
+        sortingChange: ({ columnLabel, sortState }) =>
+          columnLabel
+            ? `${columnLabel} er ${
+                sortState === 'ascending'
+                  ? 'sorteret stigende'
+                  : sortState === 'descending'
+                    ? 'sorteret faldende'
+                    : 'ikke sorteret'
+              }.`
+            : 'Sortering ryddet.',
+      },
+    }),
+    provideNatTableUiIntl({
+      formatNumber,
+      search: {
+        label: 'Søg i rækker',
+        placeholder: 'Søg i rækker',
+      },
+      pageSize: {
+        ariaLabel: 'Rækker pr. side',
+        accessibilityLabels: {
+          pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
+          pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
+        },
+      },
+      pager: {
+        ariaLabel: 'Sideskift',
+        accessibilityLabels: {
+          previousPageAriaLabel: 'Forrige side',
+          nextPageAriaLabel: 'Næste side',
+          pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
+        },
+      },
+      headerActions: {
+        accessibilityLabels: {
+          menu: ({ label }) => `Kolonnehandlinger for ${label}`,
+        },
+      },
+    }),
+    provideNatTableUtilsIntl({
+      formatNumber,
+      renderMetrics: {
+        filter: {
+          heading: 'Renderhastighed',
+          groupAriaLabel: 'Rækkernes renderhastighed',
+        },
+        panel: {
+          ariaLabel: 'Renderprøve for rækker',
+          duration: ({ durationMsText }) => `${durationMsText} ms`,
+        },
+        column: {
+          header: 'Render',
+          pendingLabel: 'Afventer',
+        },
+      },
+    }),
+  ],
+};
+```
+
+Feature routes can provide a smaller override. Nested providers merge with their parent provider, so a feature can replace only the copy it owns while keeping the app-level formatter and labels.
 
 ## Core Table
 
@@ -140,11 +247,11 @@ Decision rules for agents:
 - `pageChange(...)`
 - `columnReorder(...)`
 
-Formatter callbacks receive semantic state and both raw numeric values and preformatted text values. The text values are formatted with `Intl.NumberFormat()` using the runtime default locale. If your app locale can differ from the browser default, use the numeric `...Value` fields and format them with your own locale-aware formatter.
+Formatter callbacks receive semantic state and both raw numeric values and preformatted text values. The text values use the active `provideNatTableIntl(...)` number formatter, falling back to the runtime default locale. If one table needs a different locale or format, use the numeric `...Value` fields inside that table's formatter.
 
 ## Optional UI Controls
 
-The `ng-advanced-table-ui` package exposes copy overrides without requiring consumers to rebuild table state.
+The `ng-advanced-table-ui` package exposes provider defaults and per-instance copy overrides without requiring consumers to rebuild table state.
 
 | Component or helper              | Consumer-owned copy                                                 |
 | -------------------------------- | ------------------------------------------------------------------- |
@@ -155,15 +262,15 @@ The `ng-advanced-table-ui` package exposes copy overrides without requiring cons
 | `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
 
-Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels. Do not rely on placeholder text as the only accessible label for search.
+Use `provideNatTableUiIntl(...)` for common labels. Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels when one control needs instance-specific copy. Do not rely on placeholder text as the only accessible label for search.
 
 Decision rules for agents:
 
-- If `NatTableSearch` is rendered, localize both `label` and `placeholder`.
-- If `NatTableColumnVisibility` is rendered, pass `NatTableAccessibilityColumnVisibilityLabels`.
-- If `NatTablePageSize` is rendered, pass `NatTableAccessibilityPageSizeLabels`.
-- For `NatTablePager`, pass `NatTableAccessibilityPagerLabels`; for `NatTableScrollControl`, pass `NatTableAccessibilityScrollControlLabels`.
-- If `withNatTableHeaderActions(...)` is used, pass `NatTableAccessibilityHeaderActionLabels` through its options.
+- If `NatTableSearch` is rendered, localize both `label` and `placeholder` through provider defaults or inputs.
+- If `NatTableColumnVisibility` is rendered, provide `NatTableAccessibilityColumnVisibilityLabels`.
+- If `NatTablePageSize` is rendered, provide `NatTableAccessibilityPageSizeLabels`.
+- For `NatTablePager`, provide `NatTableAccessibilityPagerLabels`; for `NatTableScrollControl`, provide `NatTableAccessibilityScrollControlLabels`.
+- If `withNatTableHeaderActions(...)` is used, provide `NatTableAccessibilityHeaderActionLabels` through `provideNatTableUiIntl(...)` or helper options.
 
 ## Runtime Locale Changes
 

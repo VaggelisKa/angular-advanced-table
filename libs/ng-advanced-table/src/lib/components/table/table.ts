@@ -43,6 +43,11 @@ import {
 
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
+import {
+  formatNatTableIntlNumber,
+  mergeNatTableAccessibilityText,
+  NAT_TABLE_INTL,
+} from './table-intl';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
@@ -153,15 +158,7 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   selector: 'nat-table',
   exportAs: 'natTable',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    Grid,
-    GridCell,
-    GridRow,
-    CdkDropList,
-    CdkDrag,
-    FlexRender,
-    NatTableRowRenderEmitter,
-  ],
+  imports: [Grid, GridCell, GridRow, CdkDropList, CdkDrag, FlexRender, NatTableRowRenderEmitter],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -283,6 +280,7 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly tableKeyboardInstructionsId = computed(
     () => `${this.tableElementId()}-instructions`,
   );
+  private readonly tableIntl = inject(NAT_TABLE_INTL);
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
 
   protected readonly renderCycleToken = signal(0);
@@ -307,18 +305,22 @@ export class NatTable<TData extends RowData = RowData> {
         )
       : EMPTY_COLUMN_PINNING,
   );
+  private readonly resolvedAccessibilityText = computed(() =>
+    mergeNatTableAccessibilityText(this.tableIntl.accessibilityText, this.accessibilityText()),
+  );
   protected readonly resolvedDescription = computed(
-    () => this.accessibilityText().description ?? '',
+    () => this.resolvedAccessibilityText().description ?? '',
   );
   protected readonly resolvedEmptyState = computed(
-    () => this.accessibilityText().emptyState ?? DEFAULT_EMPTY_STATE_LABEL,
+    () => this.resolvedAccessibilityText().emptyState ?? DEFAULT_EMPTY_STATE_LABEL,
   );
   protected readonly resolvedKeyboardInstructions = computed(() => {
     const instructions = (
-      this.accessibilityText().keyboardInstructions ?? DEFAULT_KEYBOARD_INSTRUCTIONS
+      this.resolvedAccessibilityText().keyboardInstructions ?? DEFAULT_KEYBOARD_INSTRUCTIONS
     ).trim();
     const reorderInstructions =
-      this.accessibilityText().reorderKeyboardInstructions?.trim() ?? REORDER_KEYBOARD_INSTRUCTIONS;
+      this.resolvedAccessibilityText().reorderKeyboardInstructions?.trim() ??
+      REORDER_KEYBOARD_INSTRUCTIONS;
 
     if (!this.enableColumnReorder()) {
       return instructions;
@@ -960,15 +962,15 @@ export class NatTable<TData extends RowData = RowData> {
       return;
     }
 
-    const formatter = this.accessibilityText().columnReorder;
+    const formatter = this.resolvedAccessibilityText().columnReorder;
     const context: NatTableAccessibilityColumnReorderAnnouncementContext = {
       columnId: movingColumnId,
       label,
       zone,
       positionValue: nextIndex + 1,
-      positionText: formatAccessibilityNumber(nextIndex + 1),
+      positionText: this.formatAccessibilityNumber(nextIndex + 1),
       totalValue: nextVisibleZoneOrder.length,
-      totalText: formatAccessibilityNumber(nextVisibleZoneOrder.length),
+      totalText: this.formatAccessibilityNumber(nextVisibleZoneOrder.length),
     };
 
     this.announce(
@@ -1061,7 +1063,7 @@ export class NatTable<TData extends RowData = RowData> {
 
   private buildTableSummary(): string {
     const summaryContext = this.getSummaryContext();
-    const formatter = this.accessibilityText().tableSummary;
+    const formatter = this.resolvedAccessibilityText().tableSummary;
 
     if (formatter) {
       return formatter(summaryContext);
@@ -1101,16 +1103,16 @@ export class NatTable<TData extends RowData = RowData> {
 
     return {
       visibleRowsValue: visibleRows,
-      visibleRowsText: formatAccessibilityNumber(visibleRows),
+      visibleRowsText: this.formatAccessibilityNumber(visibleRows),
       totalRowsValue: totalRows,
-      totalRowsText: formatAccessibilityNumber(totalRows),
+      totalRowsText: this.formatAccessibilityNumber(totalRows),
       visibleColumnsValue: visibleColumns,
-      visibleColumnsText: formatAccessibilityNumber(visibleColumns),
+      visibleColumnsText: this.formatAccessibilityNumber(visibleColumns),
       pageIndex: state.pagination.pageIndex,
       pageValue: page,
-      pageText: formatAccessibilityNumber(page),
+      pageText: this.formatAccessibilityNumber(page),
       pageCountValue: pageCount,
-      pageCountText: formatAccessibilityNumber(pageCount),
+      pageCountText: this.formatAccessibilityNumber(pageCount),
       filterState:
         state.globalFilter.trim() || state.columnFilters.length > 0 ? 'filtered' : 'unfiltered',
       paginationState: this.enablePagination() ? 'enabled' : 'disabled',
@@ -1168,7 +1170,7 @@ export class NatTable<TData extends RowData = RowData> {
 
   private describeSortingChange(snapshot: TableAccessibilitySnapshot): string {
     const sortingState = this.mergedState().sorting;
-    const formatter = this.accessibilityText().sortingChange;
+    const formatter = this.resolvedAccessibilityText().sortingChange;
     const entry = sortingState[0];
     const columnLabel = entry
       ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id)
@@ -1192,7 +1194,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private describeFilteringChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.accessibilityText().filteringChange;
+    const formatter = this.resolvedAccessibilityText().filteringChange;
     const query = snapshot.globalFilter;
     const hasColumnFilters = !!snapshot.columnFiltersKey;
     const context: NatTableAccessibilityFilteringAnnouncementContext = {
@@ -1205,9 +1207,9 @@ export class NatTable<TData extends RowData = RowData> {
           ? 'column'
           : 'none',
       visibleRowsValue: snapshot.visibleRows,
-      visibleRowsText: formatAccessibilityNumber(snapshot.visibleRows),
+      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows),
       totalRowsValue: snapshot.totalRows,
-      totalRowsText: formatAccessibilityNumber(snapshot.totalRows),
+      totalRowsText: this.formatAccessibilityNumber(snapshot.totalRows),
     };
 
     if (formatter) {
@@ -1250,13 +1252,13 @@ export class NatTable<TData extends RowData = RowData> {
       [],
     );
     const visibleCount = next.filter((column) => column.visible).length;
-    const formatter = this.accessibilityText().columnVisibilityChange;
+    const formatter = this.resolvedAccessibilityText().columnVisibilityChange;
     const context: NatTableAccessibilityColumnVisibilityAnnouncementContext = {
       changedColumns,
       visibleColumnsValue: visibleCount,
-      visibleColumnsText: formatAccessibilityNumber(visibleCount),
+      visibleColumnsText: this.formatAccessibilityNumber(visibleCount),
       totalColumnsValue: next.length,
-      totalColumnsText: formatAccessibilityNumber(next.length),
+      totalColumnsText: this.formatAccessibilityNumber(next.length),
     };
 
     if (formatter) {
@@ -1273,7 +1275,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private describePageSizeChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.accessibilityText().pageSizeChange;
+    const formatter = this.resolvedAccessibilityText().pageSizeChange;
     const context = this.getPaginationAnnouncementContext(snapshot);
 
     if (formatter) {
@@ -1284,7 +1286,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private describePageChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.accessibilityText().pageChange;
+    const formatter = this.resolvedAccessibilityText().pageChange;
     const context = this.getPaginationAnnouncementContext(snapshot);
 
     if (formatter) {
@@ -1304,13 +1306,13 @@ export class NatTable<TData extends RowData = RowData> {
     return {
       pageIndex: snapshot.pagination.pageIndex,
       pageValue: page,
-      pageText: formatAccessibilityNumber(page),
+      pageText: this.formatAccessibilityNumber(page),
       pageCountValue: pageCount,
-      pageCountText: formatAccessibilityNumber(pageCount),
+      pageCountText: this.formatAccessibilityNumber(pageCount),
       pageSizeValue: pageSize,
-      pageSizeText: formatAccessibilityNumber(pageSize),
+      pageSizeText: this.formatAccessibilityNumber(pageSize),
       visibleRowsValue: snapshot.visibleRows,
-      visibleRowsText: formatAccessibilityNumber(snapshot.visibleRows),
+      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows),
     };
   }
 
@@ -1323,6 +1325,10 @@ export class NatTable<TData extends RowData = RowData> {
     const getRowId = this.getRowId();
 
     return getRowId ? getRowId(row, index, parent) : String(index);
+  }
+
+  private formatAccessibilityNumber(value: number): string {
+    return formatNatTableIntlNumber(this.tableIntl, value);
   }
 
   private resolveUpdater<T>(currentValue: T, updater: Updater<T> | undefined): T {
@@ -1752,8 +1758,4 @@ function hasSameColumnVisibility(
 
 function pluralize(noun: string, count: number): string {
   return count === 1 ? noun : `${noun}s`;
-}
-
-function formatAccessibilityNumber(value: number): string {
-  return new Intl.NumberFormat().format(value);
 }

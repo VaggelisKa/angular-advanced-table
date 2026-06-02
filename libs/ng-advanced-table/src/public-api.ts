@@ -1,5 +1,11 @@
 export { NatTable } from './lib/components/table/table';
+export {
+  NAT_TABLE_DEFAULT_INTL,
+  NAT_TABLE_INTL,
+  provideNatTableIntl,
+} from './lib/components/table/table-intl';
 export type { NatTableRowRenderedEvent } from './lib/components/table/events';
+export type { NatTableIntl, NatTableNumberFormatter } from './lib/components/table/table-intl';
 export type {
   NatTableAccessibilityText,
   NatTableCellTone,

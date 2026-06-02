@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { Column, RowData } from '@tanstack/angular-table';
 
 import {
   formatNatTableAccessibilityNumber,
   getNatTableColumnLabel,
 } from '../../shared/table-ui.helpers';
+import { mergeColumnVisibilityLabels, NAT_TABLE_UI_INTL } from '../../shared/table-ui-intl';
 import type {
   NatTableAccessibilityColumnVisibilityActionContext,
   NatTableAccessibilityColumnVisibilityLabels,
@@ -29,11 +30,12 @@ interface ColumnVisibilityItem<TData extends RowData = RowData> {
 })
 export class NatTableColumnVisibility<TData extends RowData = RowData> {
   readonly for = input.required<NatTableUiController<TData>>();
-  readonly label = input('Columns');
-  readonly ariaLabel = input('Column visibility');
+  readonly label = input<string | undefined>(undefined);
+  readonly ariaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(
     undefined,
   );
+  private readonly tableUiIntl = inject(NAT_TABLE_UI_INTL);
   protected readonly tableElementId = computed(() => this.for().tableElementId());
 
   private readonly allLeafColumns = computed(() => this.for().table.getAllLeafColumns());
@@ -41,16 +43,26 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
     () => this.for().table.getVisibleLeafColumns().length,
   );
   protected readonly totalColumnCount = computed(() => this.allLeafColumns().length);
-  private readonly resolvedAccessibilityLabels = computed(() => this.accessibilityLabels() ?? {});
+  private readonly resolvedAccessibilityLabels = computed(() =>
+    mergeColumnVisibilityLabels(
+      this.tableUiIntl.columnVisibility?.accessibilityLabels,
+      this.accessibilityLabels(),
+    ),
+  );
   protected readonly resolvedHeading = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return labels.heading ?? this.label();
+    return labels.heading ?? this.label() ?? this.tableUiIntl.columnVisibility?.label ?? 'Columns';
   });
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return labels.groupAriaLabel ?? this.ariaLabel();
+    return (
+      labels.groupAriaLabel ??
+      this.ariaLabel() ??
+      this.tableUiIntl.columnVisibility?.ariaLabel ??
+      'Column visibility'
+    );
   });
   protected readonly visibilitySummary = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
@@ -58,14 +70,20 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
     const totalColumnCount = this.totalColumnCount();
     const context = {
       visibleColumnCountValue: visibleColumnCount,
-      visibleColumnCountText: formatNatTableAccessibilityNumber(visibleColumnCount),
+      visibleColumnCountText: formatNatTableAccessibilityNumber(
+        visibleColumnCount,
+        this.tableUiIntl.formatNumber,
+      ),
       totalColumnCountValue: totalColumnCount,
-      totalColumnCountText: formatNatTableAccessibilityNumber(totalColumnCount),
+      totalColumnCountText: formatNatTableAccessibilityNumber(
+        totalColumnCount,
+        this.tableUiIntl.formatNumber,
+      ),
     };
 
     return (
       labels.visibilitySummary?.(context) ??
-      `${visibleColumnCount} / ${totalColumnCount} visible`
+      `${context.visibleColumnCountText} / ${context.totalColumnCountText} visible`
     );
   });
   protected readonly columns = computed<ColumnVisibilityItem<TData>[]>(() => {
@@ -94,9 +112,7 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
           actionLabel:
             labels.toggleColumnAriaLabel?.(actionContext) ??
             `${visible ? 'Hide' : 'Show'} ${label} column`,
-          stateLabel:
-            labels.columnState?.(stateContext) ??
-            (visible ? 'Shown' : 'Hidden'),
+          stateLabel: labels.columnState?.(stateContext) ?? (visible ? 'Shown' : 'Hidden'),
         };
       });
   });

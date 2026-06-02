@@ -13,6 +13,7 @@ import {
 import type { RowData } from '@tanstack/angular-table';
 
 import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
+import { mergeScrollControlLabels, NAT_TABLE_UI_INTL } from '../../shared/table-ui-intl';
 import type {
   NatTableAccessibilityScrollControlLabels,
   NatTableAccessibilityScrollControlPositionContext,
@@ -29,7 +30,7 @@ const DEFAULT_SCROLL_STEP = 240;
 })
 export class NatTableScrollControl<TData extends RowData = RowData> {
   readonly for = input.required<NatTableUiController<TData>>();
-  readonly ariaLabel = input('Table horizontal scroll');
+  readonly ariaLabel = input<string | undefined>(undefined);
   readonly scrollStep = input(DEFAULT_SCROLL_STEP, { transform: numberAttribute });
   readonly accessibilityLabels = input<NatTableAccessibilityScrollControlLabels | undefined>(
     undefined,
@@ -37,6 +38,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
 
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly tableUiIntl = inject(NAT_TABLE_UI_INTL);
   private readonly scrollContainer = signal<HTMLElement | null>(null);
   private cleanupScrollTarget: (() => void) | null = null;
 
@@ -46,11 +48,21 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
   protected readonly canScroll = computed(() => this.maxScrollLeft() > 0);
   protected readonly canScrollLeft = computed(() => this.scrollLeft() > 0);
   protected readonly canScrollRight = computed(() => this.scrollLeft() < this.maxScrollLeft());
-  private readonly resolvedAccessibilityLabels = computed(() => this.accessibilityLabels() ?? {});
+  private readonly resolvedAccessibilityLabels = computed(() =>
+    mergeScrollControlLabels(
+      this.tableUiIntl.scrollControl?.accessibilityLabels,
+      this.accessibilityLabels(),
+    ),
+  );
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return labels.groupAriaLabel ?? this.ariaLabel();
+    return (
+      labels.groupAriaLabel ??
+      this.ariaLabel() ??
+      this.tableUiIntl.scrollControl?.ariaLabel ??
+      'Table horizontal scroll'
+    );
   });
   protected readonly scrollLeftAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
@@ -74,14 +86,17 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     const percentage = maxScrollLeft ? Math.round((scrollLeft / maxScrollLeft) * 100) : 0;
     const context: NatTableAccessibilityScrollControlPositionContext = {
       scrollLeftValue: scrollLeft,
-      scrollLeftText: formatNatTableAccessibilityNumber(scrollLeft),
+      scrollLeftText: formatNatTableAccessibilityNumber(scrollLeft, this.tableUiIntl.formatNumber),
       maxScrollLeftValue: maxScrollLeft,
-      maxScrollLeftText: formatNatTableAccessibilityNumber(maxScrollLeft),
+      maxScrollLeftText: formatNatTableAccessibilityNumber(
+        maxScrollLeft,
+        this.tableUiIntl.formatNumber,
+      ),
       percentageValue: percentage,
-      percentageText: formatNatTableAccessibilityNumber(percentage),
+      percentageText: formatNatTableAccessibilityNumber(percentage, this.tableUiIntl.formatNumber),
     };
 
-    return labels.scrollPositionText?.(context) ?? `${percentage}% scrolled`;
+    return labels.scrollPositionText?.(context) ?? `${context.percentageText}% scrolled`;
   });
   private readonly sanitizedScrollStep = computed(() => {
     const step = Math.trunc(this.scrollStep());

@@ -12,6 +12,7 @@ import { NatTablePager } from './components/table-pager/table-pager';
 import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableScrollControl } from './components/table-scroll-control/table-scroll-control';
 import { NatTableSurface } from './components/table-surface/table-surface';
+import { provideNatTableUiIntl } from './shared/table-ui-intl';
 import type {
   NatTableAccessibilityColumnVisibilityLabels,
   NatTableAccessibilityHeaderActionLabels,
@@ -249,13 +250,120 @@ class CustomAccessibilityLabelsHost {
   }
 }
 
+@Component({
+  imports: [
+    NatTable,
+    NatTableColumnVisibility,
+    NatTablePageSize,
+    NatTablePager,
+    NatTableSearch,
+    NatTableScrollControl,
+    NatTableSurface,
+  ],
+  providers: [
+    provideNatTableUiIntl({
+      formatNumber: (value) => `n${value}`,
+      search: {
+        label: 'Provider search',
+        placeholder: 'Provider placeholder',
+      },
+      columnVisibility: {
+        label: 'Provider columns',
+        ariaLabel: 'Provider column visibility',
+        accessibilityLabels: {
+          visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
+            `Provider ${visibleColumnCountText}/${totalColumnCountText}`,
+        },
+      },
+      pageSize: {
+        ariaLabel: 'Provider page size',
+        accessibilityLabels: {
+          pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} provider rows`,
+          pageSizeOptionAriaLabel: ({ pageSizeText }) => `Provider show ${pageSizeText} rows`,
+        },
+      },
+      pager: {
+        ariaLabel: 'Provider pager',
+        accessibilityLabels: {
+          previousPageAriaLabel: 'Provider previous',
+          nextPageAriaLabel: 'Provider next',
+          pageIndicator: ({ pageText, pageCountText }) =>
+            `Provider page ${pageText}/${pageCountText}`,
+        },
+      },
+      scrollControl: {
+        ariaLabel: 'Provider horizontal scroll',
+        accessibilityLabels: {
+          scrollLeftAriaLabel: 'Provider scroll left',
+          scrollRightAriaLabel: 'Provider scroll right',
+          scrollPositionAriaLabel: 'Provider scroll position',
+          scrollPositionText: ({ percentageText }) => `Provider ${percentageText} percent`,
+        },
+      },
+      headerActions: {
+        accessibilityLabels: {
+          sortButton: ({ label }) => `Provider sort ${label}`,
+          menuButton: ({ label }) => `Provider actions for ${label}`,
+          menu: ({ label }) => `Provider menu for ${label}`,
+          pinButton: ({ label, pinSide }) => `Provider pin ${label} ${pinSide}`,
+          pinButtonText: ({ pinSide }) => `Provider ${pinSide}`,
+        },
+      },
+    }),
+  ],
+  template: `
+    <nat-table
+      #grid="natTable"
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      [initialState]="initialState"
+      [enablePagination]="true"
+      [getRowId]="getRowId"
+      ariaLabel="Operations table"
+      (stateChange)="onTableStateChange($event)"
+    />
+
+    <nat-table-surface>
+      <nat-table-search [for]="grid" [label]="searchLabel()" />
+      <nat-table-column-visibility [for]="grid" />
+      <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
+      <nat-table-pager [for]="grid" />
+      <nat-table-scroll-control [for]="grid" />
+    </nat-table-surface>
+  `,
+})
+class ProviderAccessibilityLabelsHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = withNatTableHeaderActions(baseColumns);
+  readonly getRowId = (row: Row) => row.id;
+  readonly pageSizeOptions = [2, 3, 5] as const;
+  readonly tableState = signal<Partial<NatTableState>>({});
+  readonly initialState: Partial<NatTableState> = {
+    pagination: {
+      pageIndex: 1,
+      pageSize: 2,
+    },
+  };
+  readonly searchLabel = signal<string | undefined>(undefined);
+
+  onTableStateChange(state: NatTableState): void {
+    this.tableState.set(state);
+  }
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost, CustomSortIndicatorHost, CustomAccessibilityLabelsHost],
+      imports: [
+        TableUiHost,
+        CustomSortIndicatorHost,
+        CustomAccessibilityLabelsHost,
+        ProviderAccessibilityLabelsHost,
+      ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -720,6 +828,89 @@ describe('ng-advanced-table-ui', () => {
     expect(firstColumnState.textContent?.trim()).toBe('Skjult');
 
     customFixture.destroy();
+  });
+
+  it('uses provider accessibility labels and lets component inputs override them', async () => {
+    const providerFixture = TestBed.createComponent(ProviderAccessibilityLabelsHost);
+    const providerHost = providerFixture.componentInstance;
+
+    providerFixture.detectChanges();
+
+    const nativeElement = providerFixture.nativeElement as HTMLElement;
+    const searchLabel = nativeElement.querySelector(
+      'nat-table-search .control-label',
+    ) as HTMLElement;
+    const searchInput = nativeElement.querySelector(
+      'nat-table-search .search-input',
+    ) as HTMLInputElement;
+    const visibilityHeading = nativeElement.querySelector(
+      'nat-table-column-visibility .control-label',
+    ) as HTMLElement;
+    const visibilityCaption = nativeElement.querySelector(
+      'nat-table-column-visibility .control-caption',
+    ) as HTMLElement;
+    const visibilityGroup = nativeElement.querySelector(
+      'nat-table-column-visibility .chip-row',
+    ) as HTMLElement;
+    const pageSizeGroup = nativeElement.querySelector(
+      'nat-table-page-size .chip-row',
+    ) as HTMLElement;
+    const pageSizeButton = nativeElement.querySelector(
+      'nat-table-page-size .chip',
+    ) as HTMLButtonElement;
+    const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
+    const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
+    const previousButton = nativeElement.querySelector(
+      'nat-table-pager .pager-button:first-child',
+    ) as HTMLButtonElement;
+    const nextButton = nativeElement.querySelector(
+      'nat-table-pager .pager-button:last-child',
+    ) as HTMLButtonElement;
+    const scrollControl = nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-control',
+    ) as HTMLElement;
+    const scrollPosition = nativeElement.querySelector(
+      'nat-table-scroll-control .scroll-range-copy',
+    ) as HTMLElement;
+    const sortButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-button',
+    ) as HTMLButtonElement;
+    const menuButton = nativeElement.querySelector(
+      'thead th[data-column-id="name"] .menu-button',
+    ) as HTMLButtonElement;
+
+    expect(searchLabel.textContent?.trim()).toBe('Provider search');
+    expect(searchInput.placeholder).toBe('Provider placeholder');
+    expect(visibilityHeading.textContent?.trim()).toBe('Provider columns');
+    expect(visibilityCaption.textContent?.trim()).toBe('Provider n4/n4');
+    expect(visibilityGroup.getAttribute('aria-label')).toBe('Provider column visibility');
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Provider page size');
+    expect(pageSizeButton.textContent?.trim()).toBe('n2 provider rows');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('Provider show n2 rows');
+    expect(pager.getAttribute('aria-label')).toBe('Provider pager');
+    expect(pagerLabel.textContent?.trim()).toBe('Provider page n2/n3');
+    expect(previousButton.getAttribute('aria-label')).toBe('Provider previous');
+    expect(nextButton.getAttribute('aria-label')).toBe('Provider next');
+    expect(scrollControl.getAttribute('aria-label')).toBe('Provider horizontal scroll');
+    expect(scrollPosition.textContent?.trim()).toBe('Provider n0 percent');
+    expect(sortButton.getAttribute('aria-label')).toBe('Provider sort Service');
+    expect(menuButton.getAttribute('aria-label')).toBe('Provider actions for Service');
+
+    menuButton.click();
+    providerFixture.detectChanges();
+    await providerFixture.whenStable();
+    providerFixture.detectChanges();
+
+    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Provider menu for Service');
+    expect(getOpenMenuItem('left').textContent).toContain('Provider left');
+
+    providerHost.searchLabel.set('Input search');
+    providerFixture.detectChanges();
+
+    expect(searchLabel.textContent?.trim()).toBe('Input search');
+    expect(searchInput.placeholder).toBe('Provider placeholder');
+
+    providerFixture.destroy();
   });
 });
 

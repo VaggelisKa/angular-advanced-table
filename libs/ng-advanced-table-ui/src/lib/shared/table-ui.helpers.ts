@@ -1,4 +1,5 @@
 import type { Column, ColumnDef, RowData } from '@tanstack/angular-table';
+import type { NatTableUiNumberFormatter } from './table-ui-intl';
 
 export const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 
@@ -8,8 +9,16 @@ export function sanitizePageSizeOptions(options: readonly number[]): number[] {
   return sanitized.length ? sanitized : [...DEFAULT_PAGE_SIZE_OPTIONS];
 }
 
-export function formatNatTableAccessibilityNumber(value: number): string {
-  return new Intl.NumberFormat().format(value);
+export function formatNatTableAccessibilityNumber(
+  value: number,
+  formatter?: NatTableUiNumberFormatter,
+  options?: Intl.NumberFormatOptions,
+): string {
+  return (
+    formatter ??
+    ((numberValue, numberOptions) =>
+      new Intl.NumberFormat(undefined, numberOptions).format(numberValue))
+  )(value, options);
 }
 
 export function getNatTableColumnLabel<TData extends RowData>(

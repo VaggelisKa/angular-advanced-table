@@ -1,5 +1,5 @@
 import { OverlayModule, type ConnectedPosition } from '@angular/cdk/overlay';
-import { ChangeDetectionStrategy, Component, input, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, viewChild } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import {
@@ -18,6 +18,7 @@ import type {
   NatTableAccessibilityHeaderActionMenuContext,
   NatTableAccessibilityHeaderActionPinContext,
 } from '../../shared/table-ui.types';
+import { mergeHeaderActionLabels, NAT_TABLE_UI_INTL } from '../../shared/table-ui-intl';
 
 type NatTablePinSide = 'left' | 'right';
 
@@ -59,19 +60,12 @@ export interface NatTableHeaderActionsOptions {
 @Component({
   selector: 'nat-table-header-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FlexRender,
-    GridCellWidget,
-    Menu,
-    MenuContent,
-    MenuItem,
-    MenuTrigger,
-    OverlayModule,
-  ],
+  imports: [FlexRender, GridCellWidget, Menu, MenuContent, MenuItem, MenuTrigger, OverlayModule],
   templateUrl: './table-header-actions.html',
   styleUrl: './table-header-actions.css',
 })
 export class NatTableHeaderActions {
+  private readonly tableUiIntl = inject(NAT_TABLE_UI_INTL);
   protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
   protected readonly pinMenu = viewChild<Menu<NatTablePinSide>>('pinMenu');
   protected readonly pinMenuPositions: ConnectedPosition[] = [
@@ -206,7 +200,9 @@ export class NatTableHeaderActions {
   }
 
   protected getMenuLabel(): string {
-    return `Column pinning options for ${this.label()}`;
+    const labels = this.resolveAccessibilityLabels();
+
+    return labels.menu?.(this.getMenuContext()) ?? `Column pinning options for ${this.label()}`;
   }
 
   protected column() {
@@ -238,6 +234,9 @@ export class NatTableHeaderActions {
   }
 
   private resolveAccessibilityLabels(): NatTableAccessibilityHeaderActionLabels {
-    return this.accessibilityLabels() ?? {};
+    return mergeHeaderActionLabels(
+      this.tableUiIntl.headerActions?.accessibilityLabels,
+      this.accessibilityLabels(),
+    );
   }
 }

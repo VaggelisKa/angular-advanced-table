@@ -5,10 +5,25 @@ export { NatTablePageSize } from './lib/components/table-page-size/table-page-si
 export { NatTablePager } from './lib/components/table-pager/table-pager';
 export { NatTableScrollControl } from './lib/components/table-scroll-control/table-scroll-control';
 export { withNatTableHeaderActions } from './lib/components/table-header-actions/with-table-header-actions';
+export {
+  NAT_TABLE_UI_DEFAULT_INTL,
+  NAT_TABLE_UI_INTL,
+  provideNatTableUiIntl,
+} from './lib/shared/table-ui-intl';
 export type {
   NatTableHeaderActionsOptions,
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
+export type {
+  NatTableColumnVisibilityIntl,
+  NatTableHeaderActionsIntl,
+  NatTablePageSizeIntl,
+  NatTablePagerIntl,
+  NatTableScrollControlIntl,
+  NatTableSearchIntl,
+  NatTableUiIntl,
+  NatTableUiNumberFormatter,
+} from './lib/shared/table-ui-intl';
 export type {
   NatTableAccessibilityColumnVisibilityActionContext,
   NatTableAccessibilityColumnVisibilityLabels,

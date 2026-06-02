@@ -1,5 +1,11 @@
 import type { ColumnDef, RowData } from '@tanstack/angular-table';
 
+import {
+  formatNatTableUtilsNumber,
+  injectNatTableUtilsIntl,
+  mergeRenderMetricsColumnIntl,
+  type NatTableRenderMetricsColumnIntl,
+} from './intl';
 import type { NatTableRenderMetricsStore } from './store';
 import { isRenderFilterValue } from './tone';
 import { RENDER_METRIC_COLUMN_ID } from './types';
@@ -7,27 +13,16 @@ import { RENDER_METRIC_COLUMN_ID } from './types';
 /**
  * Configuration for {@link withRenderMetricsColumn}.
  */
-export interface WithRenderMetricsColumnOptions {
+export interface WithRenderMetricsColumnOptions extends NatTableRenderMetricsColumnIntl {
   /** Column identifier. Defaults to `__rowRenderMetric`. */
   columnId?: string;
-  /** Static header label. */
-  header?: string;
   /** Optional TanStack size override. */
   size?: number;
   /** Optional TanStack min-size override. */
   minSize?: number;
   /** Optional TanStack max-size override. */
   maxSize?: number;
-  /** Cell label when no metric has been recorded yet. Defaults to `'Pending'`. */
-  pendingLabel?: string;
-  /** Suffix appended to measurement values. Defaults to `' ms'`. */
-  unitSuffix?: string;
 }
-
-const decimalFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-});
 
 /**
  * Returns a new column definition array with a synthetic "render" column
@@ -44,10 +39,12 @@ export function withRenderMetricsColumn<TData extends RowData>(
   store: NatTableRenderMetricsStore,
   options: WithRenderMetricsColumnOptions = {},
 ): ColumnDef<TData, unknown>[] {
+  const utilsIntl = injectNatTableUtilsIntl();
+  const columnIntl = mergeRenderMetricsColumnIntl(utilsIntl.renderMetrics?.column, options);
   const columnId = options.columnId ?? RENDER_METRIC_COLUMN_ID;
-  const pendingLabel = options.pendingLabel ?? 'Pending';
-  const unitSuffix = options.unitSuffix ?? ' ms';
-  const header = options.header ?? 'Render';
+  const pendingLabel = columnIntl.pendingLabel ?? 'Pending';
+  const unitSuffix = columnIntl.unitSuffix ?? ' ms';
+  const header = columnIntl.header ?? 'Render';
 
   const metricsColumn: ColumnDef<TData, unknown> = {
     id: columnId,
@@ -85,7 +82,17 @@ export function withRenderMetricsColumn<TData extends RowData>(
         return pendingLabel;
       }
 
-      return `${decimalFormatter.format(metric.durationMs)}${unitSuffix}`;
+      const durationMsText = formatNatTableUtilsNumber(utilsIntl, metric.durationMs, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      });
+
+      return (
+        columnIntl.duration?.({
+          durationMsValue: metric.durationMs,
+          durationMsText,
+        }) ?? `${durationMsText}${unitSuffix}`
+      );
     },
   };
 
