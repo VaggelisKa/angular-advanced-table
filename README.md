@@ -198,22 +198,22 @@ Core exports:
 
 ### Inputs
 
-| Input                 | Default     | Notes                                                                                                              |
-| --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| `data`                | required    | Row array rendered by the table                                                                                    |
-| `columns`             | required    | TanStack `ColumnDef<TData>[]`                                                                                      |
-| `ariaLabel`           | required    | Accessible name for the table region                                                                               |
-| `accessibilityText`   | `{}`        | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
-| `enableGlobalFilter`  | `true`      | Enables the global filter pipeline                                                                                 |
-| `enableColumnPinning` | `true`      | Enables sticky pinning where columns allow it                                                                      |
-| `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering                                                                          |
-| `enablePagination`    | `false`     | Enables the pagination row model                                                                                   |
-| `globalFilterFn`      | built-in    | Replaces the generic global filter                                                                                 |
-| `initialState`        | `{}`        | Uncontrolled initial state, read once                                                                              |
-| `state`               | `{}`        | Controlled slices only; omitted slices stay internal                                                               |
-| `getRowId`            | row index   | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
-| `emitRowRenderEvents` | `false`     | Enables `(rowRendered)` instrumentation                                                                            |
-| `enableAnnouncements` | `true`      | Enables polite live announcements                                                                                  |
+| Input                 | Default   | Notes                                                                                                              |
+| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------ |
+| `data`                | required  | Row array rendered by the table                                                                                    |
+| `columns`             | required  | TanStack `ColumnDef<TData>[]`                                                                                      |
+| `ariaLabel`           | required  | Accessible name for the table region                                                                               |
+| `accessibilityText`   | `{}`      | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
+| `enableGlobalFilter`  | `true`    | Enables the global filter pipeline                                                                                 |
+| `enableColumnPinning` | `true`    | Enables sticky pinning where columns allow it                                                                      |
+| `enableColumnReorder` | `false`   | Enables drag/drop and keyboard reordering                                                                          |
+| `enablePagination`    | `false`   | Enables the pagination row model                                                                                   |
+| `globalFilterFn`      | built-in  | Replaces the generic global filter                                                                                 |
+| `initialState`        | `{}`      | Uncontrolled initial state, read once                                                                              |
+| `state`               | `{}`      | Controlled slices only; omitted slices stay internal                                                               |
+| `getRowId`            | row index | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
+| `emitRowRenderEvents` | `false`   | Enables `(rowRendered)` instrumentation                                                                            |
+| `enableAnnouncements` | `true`    | Enables polite live announcements                                                                                  |
 
 ### Outputs and instance API
 
@@ -318,15 +318,15 @@ import type { NatTableColumnMeta } from 'ng-advanced-table';
 
 Attach metadata through `columnDef.meta`:
 
-| Field       | Type                                                                      | Purpose                                                        |
-| ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `label`          | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
-| `align`          | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
-| `rowHeader`      | `boolean`                                                                 | Marks body cells in the column as row headers                  |
-| `cellTone`       | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
-| `headerSize`     | `number \| string`                                                        | Optional header-only width in pixels                           |
-| `headerMinSize`  | `number \| string`                                                        | Optional header-only minimum width in pixels                   |
-| `headerMaxSize`  | `number \| string`                                                        | Optional header-only maximum width in pixels                   |
+| Field           | Type                                                                      | Purpose                                                        |
+| --------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `label`         | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
+| `align`         | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
+| `rowHeader`     | `boolean`                                                                 | Marks body cells in the column as row headers                  |
+| `cellTone`      | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
+| `headerSize`    | `number \| string`                                                        | Optional header-only width in pixels                           |
+| `headerMinSize` | `number \| string`                                                        | Optional header-only minimum width in pixels                   |
+| `headerMaxSize` | `number \| string`                                                        | Optional header-only maximum width in pixels                   |
 
 ### Column sizing and pinned offsets
 
@@ -404,6 +404,8 @@ Use `flexRenderComponent(...)` from `@tanstack/angular-table` when a cell should
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
+import { CustomTradeButton } from './custom-trade-button';
+
 interface PositionRow {
   id: string;
   symbol: string;
@@ -412,7 +414,13 @@ interface PositionRow {
 @Component({
   selector: 'app-position-actions-cell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<button type="button" (click)="trade.emit(row().id)">Trade</button>`,
+  imports: [CustomTradeButton],
+  template: `
+    <custom-trade-button
+      [ariaLabel]="'Trade ' + row().symbol"
+      (pressed)="trade.emit(row().id)"
+    />
+  `,
 })
 export class PositionActionsCell {
   readonly row = input.required<PositionRow>();
@@ -445,7 +453,71 @@ Guidelines:
 
 - Keep data loading, mutations, dialogs, and table state in the container. Treat the cell component as a presentational leaf that emits intent.
 - Set `meta.label` whenever the header is not a plain string so accessibility text and companion UI still have a stable label.
-- Row menus are intentionally consumer-defined. Build them as normal cell renderers, typically with Angular CDK menu primitives and `ngGridCellWidget` on the trigger.
+- Compose your own app or design-system components inside the cell; placeholder `custom-*` examples show where consumer UI belongs.
+- Put `ngGridCellWidget` from `@angular/aria/grid` on the real focusable element. If the custom component renders the button, link, or input internally, apply it inside that component. If the custom host itself is focusable, apply it at the call site.
+- Give icon-only buttons and ambiguous links a row-specific accessible name with `aria-label` or visible text.
+- Use real interactive elements (`button`, `a[href]`, form controls, or accessible menu items from your UI library). Avoid clickable `<div>` and `<span>` content inside grid cells.
+- `(rowActivate)` is for row-level primary actions only. It ignores events from interactive descendants; let cell widgets emit their own outputs for cell-level actions.
+- Row menus are consumer-defined. Use your app's accessible menu primitive, and put `ngGridCellWidget` on the focusable trigger.
+
+### Custom component accessibility
+
+Most consumers should keep existing design-system or app components and adapt them at the cell boundary. The wrapper cell maps row data into custom-component inputs and custom outputs back to the container.
+
+- The wrapper cell supplies row-specific labels and row ids.
+- The custom component renders the real interactive element: button, anchor, input, menu trigger, or dialog trigger.
+- The real focusable element gets `ngGridCellWidget`.
+- The custom component owns normal accessibility behavior: names, disabled state, `aria-expanded`, menu keyboard behavior, focus return, and dialog focus management.
+
+When the focusable element is inside the custom component, the component itself owns the grid widget marker:
+
+```ts
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { GridCellWidget } from '@angular/aria/grid';
+
+@Component({
+  selector: 'custom-pay-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [GridCellWidget],
+  template: `
+    <button type="button" ngGridCellWidget [attr.aria-label]="ariaLabel()" (click)="pressed.emit()">
+      Pay
+    </button>
+  `,
+})
+export class CustomPayButton {
+  readonly ariaLabel = input.required<string>();
+  readonly pressed = output<void>();
+}
+```
+
+For row action menus, keep the menu implementation in the consumer app:
+
+```html
+<custom-row-actions-menu
+  [row]="row()"
+  [ariaLabel]="'Open actions for ' + row().name"
+  (action)="action.emit($event)"
+/>
+```
+
+That menu can use CDK Menu, a design-system menu, or another accessible implementation. It should provide the trigger name, roles, keyboard navigation, focus return, and dismiss behavior. The table-specific part is still `ngGridCellWidget` on the focusable trigger.
+
+For dialog triggers, let the container open the dialog so focus management, async state, and errors stay outside the cell. The custom trigger should only emit intent.
+
+For expand controls, pass the current state into the custom component and expose it on the real control with `aria-expanded` and a row-specific name:
+
+```html
+<custom-expand-button
+  [expanded]="expanded()"
+  [ariaLabel]="(expanded() ? 'Collapse ' : 'Expand ') + row().name"
+  (pressed)="toggle.emit(row().id)"
+/>
+```
+
+For navigation, use a custom link component only if it renders or hosts a real anchor with `href`. `NatTable` treats anchors with `href` as interactive descendants, so clicking the link does not emit `(rowActivate)`.
+
+If a consuming app builds a cell entirely from scratch rather than composing an existing component, the same rules apply. Plain buttons, anchors, form controls, and accessible menu primitives work fine. Angular CDK Menu is a good option for a from-scratch menu, but it is not required by `NatTable`.
 
 ## UI Package
 
