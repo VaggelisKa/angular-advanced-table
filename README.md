@@ -12,6 +12,8 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
 
+The workspace keeps shared table contracts aligned through the private `ng-advanced-table-types` library. Consumers should import public contracts from published packages only; prefer `ng-advanced-table` for `NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` when column definitions or state move across package boundaries. The UI and utils packages keep compatibility exports for consumers already importing from those entry points.
+
 - **[Accessibility](ACCESSIBILITY.md)** — customize screen reader summaries and UI companion labels (`accessibilityText`, `accessibilityLabels`).
 
 Supplemental package READMEs:
@@ -306,6 +308,14 @@ The `pagination` slice always exists so controlled and uncontrolled code paths s
 
 ### `NatTableColumnMeta`
 
+Prefer the canonical import when metadata is shared across packages:
+
+```ts
+import type { NatTableColumnMeta } from 'ng-advanced-table';
+```
+
+`ng-advanced-table-ui` and `ng-advanced-table-utils` expose matching compatibility types for consumers already importing from those packages.
+
 Attach metadata through `columnDef.meta`:
 
 | Field       | Type                                                                      | Purpose                                                        |
@@ -465,7 +475,8 @@ UI exports:
 
 - Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
-- Shared types: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`, `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
+- Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
 | API                              | Purpose                                                        | Key inputs or options                                        |
 | -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -529,7 +540,7 @@ readonly columns = withRenderMetricsColumn(baseColumns, this.metrics);
 Utils exports:
 
 - Core helpers: `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`
-- Contracts and options: `WithRenderMetricsColumnOptions`, `NatTableRenderMetricsController`, `NatTableRenderMetricsEvent`, `NatTableRenderMetricsState`
+- Contracts and options: `WithRenderMetricsColumnOptions`, `NatTableRenderMetricsController`, `NatTableRenderMetricsEvent`, `NatTableRenderMetricsState`, `NatTableColumnMeta`
 - Tone and filter helpers: `getRowRenderTone(...)`, `getRenderToneLabel(...)`, `isRenderFilterValue(...)`, `RENDER_FILTER_OPTIONS`, `RENDER_METRIC_COLUMN_ID`, `RowRenderFilterOption`, `RowRenderFilterValue`, `RowRenderMeasurement`, `RowRenderMetric`, `RowRenderTone`
 
 | API                            | Purpose                                                                                                           |

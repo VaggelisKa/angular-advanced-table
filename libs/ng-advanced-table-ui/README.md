@@ -68,6 +68,8 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 - `NatTableSortDirection`
 - `NatTableSortIndicatorContext`
 
+`NatTableColumnMeta`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` are kept aligned with the workspace's internal contract checks. Prefer importing shared contracts from `ng-advanced-table` when a column definition is used by multiple packages.
+
 ## Package Notes
 
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables.

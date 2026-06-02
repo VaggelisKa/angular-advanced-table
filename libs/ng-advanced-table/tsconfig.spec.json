@@ -11,6 +11,9 @@
         "libs/ng-advanced-table/src/public-api.ts",
         "dist/libs/ng-advanced-table"
       ],
+      "ng-advanced-table-types": [
+        "libs/ng-advanced-table-types/src/public-api.ts"
+      ],
       "ng-advanced-table-ui": [
         "libs/ng-advanced-table-ui/src/public-api.ts",
         "dist/libs/ng-advanced-table-ui"

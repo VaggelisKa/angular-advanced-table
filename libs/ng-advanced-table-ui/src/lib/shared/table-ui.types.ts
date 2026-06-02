@@ -70,7 +70,8 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
 
 /**
  * Extra metadata understood by companion UI when attached to a TanStack
- * column definition.
+ * column definition. This mirrors the workspace's internal contract without
+ * exposing a private package to consumers.
  */
 export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
   /** Accessible label used by companion controls when the header is not a string. */
@@ -79,8 +80,16 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   align?: 'start' | 'end';
   /** Marks the body cell for this column as the row header announced by screen readers. */
   rowHeader?: boolean;
-  /** Optional callback that maps a cell to a semantic tone-like value. */
-  cellTone?: (context: CellContext<TData, TValue>) => unknown;
+  /** Optional callback that maps a cell to a semantic tone. */
+  cellTone?: (
+    context: CellContext<TData, TValue>,
+  ) => 'positive' | 'negative' | 'neutral' | 'warning' | null;
+  /** Optional header-only width in pixels. Does not affect body cells. */
+  headerSize?: number | string;
+  /** Optional header-only minimum width in pixels. Does not affect body cells. */
+  headerMinSize?: number | string;
+  /** Optional header-only maximum width in pixels. Does not affect body cells. */
+  headerMaxSize?: number | string;
 }
 
 /** Context passed to page-size option label formatters. */
