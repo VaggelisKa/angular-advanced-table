@@ -5,6 +5,7 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  FlexRenderContent,
   PaginationState,
   RowData,
   SortingState,
@@ -66,6 +67,29 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
   column: Column<TData, unknown>;
   /** Resolved human-readable label for the column. */
   label: string;
+}
+
+/**
+ * Custom content accepted by `withNatTableHeaderActions(..., { sortIndicator })`.
+ *
+ * Return a string/number for simple glyph swaps, or a FlexRender-compatible
+ * renderer for richer Angular content.
+ */
+export type NatTableSortIndicatorContent =
+  | string
+  | number
+  | ((
+      props: NatTableSortIndicatorContext<RowData>,
+    ) => FlexRenderContent<NatTableSortIndicatorContext<RowData>>)
+  | null
+  | undefined;
+
+/** Per-column options for the header action wrapper. */
+export interface NatTableHeaderActionsColumnOptions {
+  /** Custom content rendered inside the sort button for this column. */
+  sortIndicator?: NatTableSortIndicatorContent;
+  /** Optional accessibility label overrides for this column's built-in actions. */
+  accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
 
 /**
@@ -242,6 +266,8 @@ export interface NatTableAccessibilityHeaderActionLabels {
   sortButton?: (context: NatTableAccessibilityHeaderActionSortContext) => string;
   /** `aria-label` applied to the overflow menu trigger. */
   menuButton?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
+  /** `aria-label` applied to the opened pinning menu. */
+  menuLabel?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
   /** `aria-label` applied to the pin button. */
   pinButton?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
   /** Visible text rendered inside each pin menu item. */
@@ -252,5 +278,13 @@ declare module '@tanstack/table-core' {
   interface ColumnMeta<
     TData extends import('@tanstack/angular-table').RowData,
     TValue,
-  > extends NatTableColumnMeta<TData, TValue> {}
+  > extends NatTableColumnMeta<TData, TValue> {
+    /**
+     * Controls the shared header action wrapper for this column.
+     *
+     * Set to `false` to opt out of `withNatTableHeaderActions(...)`, or provide
+     * overrides that merge with the helper-level options for this column only.
+     */
+    headerActions?: false | NatTableHeaderActionsColumnOptions;
+  }
 }
