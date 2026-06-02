@@ -19,14 +19,6 @@
   min-width: 0;
 }
 
-.header-content.is-align-end .header-actions-row {
-  flex-direction: row-reverse;
-}
-
-.header-content.is-pinned-right .header-actions-row {
-  flex-direction: row;
-}
-
 .header-leading {
   display: flex;
   flex: 1 1 auto;
