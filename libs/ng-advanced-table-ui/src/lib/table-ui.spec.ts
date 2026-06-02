@@ -536,6 +536,15 @@ describe('ng-advanced-table-ui', () => {
       right: ['name'],
     });
     expect(getHeaderColumnIds(fixture)).toEqual(['region', 'status', 'throughput', 'name']);
+    const rightPinnedHeaderContent = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .header-content',
+    ) as HTMLElement;
+    const rightPinnedHeaderActions = rightPinnedHeaderContent.querySelector(
+      '.header-actions-row',
+    ) as HTMLElement;
+
+    expect(rightPinnedHeaderContent.classList.contains('is-pinned-right')).toBe(true);
+    expect(getComputedStyle(rightPinnedHeaderActions).flexDirection).toBe('row');
     expect(headerLabel.textContent?.trim()).toBe('Service');
   });
 

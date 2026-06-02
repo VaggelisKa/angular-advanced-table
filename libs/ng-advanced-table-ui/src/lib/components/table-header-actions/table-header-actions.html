@@ -1,4 +1,8 @@
-<div class="header-content" [class.is-align-end]="isAlignedEnd()">
+<div
+  class="header-content"
+  [class.is-align-end]="isAlignedEnd()"
+  [class.is-pinned-right]="isPinned('right')"
+>
   <div class="header-actions-row">
     <div class="header-leading">
       @if (canSort()) {

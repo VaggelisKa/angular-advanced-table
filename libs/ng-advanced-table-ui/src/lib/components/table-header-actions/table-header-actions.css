@@ -23,6 +23,10 @@
   flex-direction: row-reverse;
 }
 
+.header-content.is-pinned-right .header-actions-row {
+  flex-direction: row;
+}
+
 .header-leading {
   display: flex;
   flex: 1 1 auto;
