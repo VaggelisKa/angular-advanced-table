@@ -211,7 +211,7 @@ export function mergeHeaderActionLabels(
   return {
     sortButton: override?.sortButton ?? parent?.sortButton,
     menuButton: override?.menuButton ?? parent?.menuButton,
-    menu: override?.menu ?? parent?.menu,
+    menuLabel: override?.menuLabel ?? parent?.menuLabel,
     pinButton: override?.pinButton ?? parent?.pinButton,
     pinButtonText: override?.pinButtonText ?? parent?.pinButtonText,
   };

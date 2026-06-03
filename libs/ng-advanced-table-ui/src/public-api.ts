@@ -40,6 +40,7 @@ export type {
   NatTableAccessibilityScrollControlLabels,
   NatTableAccessibilityScrollControlPositionContext,
   NatTableColumnMeta,
+  NatTableHeaderActionsColumnOptions,
   NatTableSortDirection,
   NatTableSortIndicatorContext,
   NatTableUiController,

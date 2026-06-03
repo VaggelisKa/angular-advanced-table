@@ -169,13 +169,7 @@ export class NatTable<TData extends RowData = RowData> {
   readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
   /** Accessible name announced for the table region. */
   readonly ariaLabel = input.required<string>();
-  /**
-   * Optional overrides for accessibility copy and live announcements.
-   *
-   * Includes the supplemental `description`, screen-reader
-   * `keyboardInstructions`, the visible `emptyState` message, and formatter
-   * callbacks for sort/filter/visibility/pagination/reorder announcements.
-   */
+  /** Optional accessibility copy and live-announcement formatters. */
   readonly accessibilityText = input<NatTableAccessibilityText>({});
 
   /** Enables the global filter pipeline for companion search controls. */
@@ -189,47 +183,29 @@ export class NatTable<TData extends RowData = RowData> {
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData>>();
   /**
-   * Uncontrolled seed state read once during the first render.
+   * One-time uncontrolled seed for state slices.
    *
-   * Each property listed here pre-populates the matching internal slice
-   * before the table emits its first `(stateChange)`. Slices that are also
-   * present in `state` are ignored here, because that input takes over the
-   * slice as a controlled value. After the seed pass, this input is no
-   * longer consulted; further updates flow through `(stateChange)` or one
-   * of the granular `*Change` outputs.
+   * Ignored for slices also present in `state`. After the first render, use
+   * `(stateChange)` or granular `*Change` outputs instead.
    */
   readonly initialState = input<Partial<NatTableState>>({});
   /**
-   * Controlled state slices supplied by the consumer.
+   * Controlled state slices. A slice is controlled when its key is present
+   * here, even if the value is empty. Omitted keys stay internal.
    *
-   * A slice is considered controlled only when its property is *present*
-   * in this object, even if the value is an empty array or empty record.
-   * Omitted properties remain uncontrolled and are managed internally by
-   * the table; controlled slices can still be updated through the matching
-   * `*Change` output (or `(stateChange)`) and flowed back in.
-   *
-   * Prefer passing only the slices your application owns. Feeding the full
-   * `(stateChange)` payload back into this input controls every slice after
-   * the first update.
+   * Update controlled slices via the matching `*Change` output (or
+   * `(stateChange)`) and flow the value back in. Pass only the slices you
+   * own; echoing the full `(stateChange)` payload controls every slice.
    */
   readonly state = input<Partial<NatTableState>>({});
   /** Optional stable row id resolver used for selection, pinning, and events. */
   readonly getRowId = input<NatTableRowIdGetter<TData>>();
-  /**
-   * When `true`, emits one `rowRendered` event per body row per render cycle.
-   * Kept off by default since it installs an `afterRenderEffect` per row.
-   */
+  /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
   /** Enables polite live announcements for sort/filter/pagination changes. */
   readonly enableAnnouncements = input(true, { transform: booleanAttribute });
 
-  /**
-   * Emits the full next state whenever the table updates any state slice.
-   *
-   * Prefer the granular `*Change` outputs when you only care about a single
-   * slice. This event always emits a complete normalized `NatTableState`,
-   * including slices that are otherwise uncontrolled.
-   */
+  /** Full normalized state whenever any slice changes, including uncontrolled slices. Prefer granular `*Change` outputs when you only need one slice. */
   readonly stateChange = output<NatTableState>();
   /** Emits the next sorting state when it actually changes. */
   readonly sortingChange = output<SortingState>();
@@ -247,12 +223,7 @@ export class NatTable<TData extends RowData = RowData> {
   readonly paginationChange = output<PaginationState>();
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
   readonly rowRendered = output<NatTableRowRenderedEvent>();
-  /**
-   * Emits when a body row is activated through a primary click or an
-   * Enter / Space key press. Activations that originate from an interactive
-   * descendant (button, link, form control, menu item, `contenteditable`)
-   * are ignored, so cell-level controls keep their own behavior.
-   */
+  /** Emits on row click or Enter/Space unless the event started on an interactive descendant. */
   readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
@@ -270,10 +241,7 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   private readonly hasSeededInitialState = signal(false);
   protected readonly liveMessage = signal('');
-  /**
-   * Stable DOM id for the rendered `<table>` element. Exposed as a signal so
-   * consumers and companion UI can bind reactively without a method call.
-   */
+  /** Stable DOM id for the rendered `<table>` element. */
   readonly tableElementId = signal(`nat-table-${nextTableId++}`);
   protected readonly tableSummaryId = computed(() => `${this.tableElementId()}-summary`);
   protected readonly tableDescriptionId = computed(() => `${this.tableElementId()}-description`);
@@ -373,12 +341,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     return ids.join(' ');
   });
-  /**
-   * Raw TanStack `Table<TData>` instance.
-   *
-   * Exposed so companion controls and advanced consumers can read derived
-   * state and invoke TanStack APIs directly.
-   */
+  /** TanStack `Table<TData>` instance; read derived state or call TanStack APIs directly. */
   readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.readRequiredInput(this.data, []) as TData[],
     columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
@@ -405,22 +368,16 @@ export class NatTable<TData extends RowData = RowData> {
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
   })) as Table<TData>;
   private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
-  /**
-   * Scrollable container that wraps the rendered `<table>`.
-   *
-   * Companion controls can use this to provide alternate horizontal
-   * scrolling affordances without querying implementation classes.
-   */
+  /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
   readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
   private readonly destroyRef = inject(DestroyRef);
   private headerResizeObserver: ResizeObserver | null = null;
 
   /**
-   * Width per column used to compute pinned sticky offsets. Rendered CSS width
-   * is controlled by TanStack `size` / `minSize` / `maxSize`; `column.getSize()`
-   * remains an offset fallback for intrinsic columns until real post-layout
-   * measurements are available (initial paint, SSR, jsdom).
+   * Per-column widths for pinned sticky offsets. CSS width comes from TanStack
+   * `size` / `minSize` / `maxSize`; this uses measured headers, then fixed
+   * sizing, then `column.getSize()` as a fallback.
    */
   private readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
     const measured = this.measuredHeaderWidths();
@@ -617,11 +574,7 @@ export class NatTable<TData extends RowData = RowData> {
     this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
   }
 
-  /**
-   * Merge the given state patch into the table, honouring both controlled and
-   * uncontrolled slices. Companion controls use this to drive the table from
-   * the outside (e.g. search, pager, or synthetic filters).
-   */
+  /** Apply a partial state update from companion controls (search, pager, filters). Respects controlled and uncontrolled slices. */
   patchState(
     updaters: Partial<{
       [K in keyof NatTableState]: Updater<NatTableState[K]>;

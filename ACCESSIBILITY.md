@@ -185,7 +185,7 @@ export const appConfig: ApplicationConfig = {
       },
       headerActions: {
         accessibilityLabels: {
-          menu: ({ label }) => `Kolonnehandlinger for ${label}`,
+          menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
         },
       },
     }),
@@ -270,7 +270,7 @@ Decision rules for agents:
 - If `NatTableColumnVisibility` is rendered, provide `NatTableAccessibilityColumnVisibilityLabels`.
 - If `NatTablePageSize` is rendered, provide `NatTableAccessibilityPageSizeLabels`.
 - For `NatTablePager`, provide `NatTableAccessibilityPagerLabels`; for `NatTableScrollControl`, provide `NatTableAccessibilityScrollControlLabels`.
-- If `withNatTableHeaderActions(...)` is used, provide `NatTableAccessibilityHeaderActionLabels` through `provideNatTableUiIntl(...)` or helper options.
+- If `withNatTableHeaderActions(...)` is used, provide `NatTableAccessibilityHeaderActionLabels` through `provideNatTableUiIntl(...)` or helper options. This label surface covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin menu item text.
 
 ## Runtime Locale Changes
 
@@ -282,6 +282,8 @@ Use this pattern:
 - Derive `copy` with `computed(...)`.
 - Derive `columns` with `computed(...)`, so headers and `meta.label` update together.
 - Pass UI label objects from the same `copy()` result used by the table.
+- Apply column helpers that add or reorder columns first, then apply `withNatTableHeaderActions(...)` to the final column list. Reapplying the header helper is safe, so computed builders can compose it without nesting header controls.
+- Use `column.meta.headerActions = false` when a translated column needs to opt out of the generated sort/pin surface. Use `column.meta.headerActions = { accessibilityLabels, sortIndicator }` when one column needs localized action copy or indicator content that differs from the table-level options.
 
 ```ts
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
@@ -547,6 +549,6 @@ Before finishing a table accessibility/i18n change, answer these questions:
 ## Reference Notes
 
 - `columnDef.meta.label` is the label used when headers are rendered by templates, functions, icons, or other non-string content.
-- `withNatTableHeaderActions(...)` resolves labels when columns are wrapped, so translated columns should be rebuilt when the active locale changes.
+- `withNatTableHeaderActions(...)` is idempotent and resolves generated action labels from the rendered column definition. Translated column definitions should still be rebuilt when the active locale changes so visible headers, `meta.label`, and table announcements update from the same source.
 - Built-in fallback copy is English. Passing only some overrides is valid, but any omitted key falls back to English.
 - Live announcements can be disabled with `[enableAnnouncements]="false"` if the consumer owns a different announcement strategy.
