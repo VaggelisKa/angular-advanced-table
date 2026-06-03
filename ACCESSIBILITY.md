@@ -7,7 +7,7 @@ For workspace install, core API tables, and composition overview, see [README.md
 Generated copy resolves in this order:
 
 1. Built-in English locale defaults.
-2. The locale selected by `<nat-table [locale]="localeId()">`, or the provider `defaultLocale` when no table locale is set.
+2. The locale selected by `<nat-table [locale]="localeId()">`, or English when no table locale is set.
 3. Per-table, per-control, or per-helper inputs/options for instance-specific copy.
 
 Use providers for locale dictionaries and number formatting. Use inputs/options for the few controls that need instance-specific wording.
@@ -142,7 +142,6 @@ const formatNumber = (value: number, options?: Intl.NumberFormatOptions, locale 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideNatTableIntl({
-      defaultLocale: 'en',
       locales: {
         da: {
           formatNumber,

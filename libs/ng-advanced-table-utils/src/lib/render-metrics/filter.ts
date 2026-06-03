@@ -6,7 +6,7 @@ import {
   formatNatTableUtilsNumber,
   mergeRenderMetricsFilterIntl,
   NAT_TABLE_UTILS_INTL,
-  readNatTableUtilsDefaultLocale,
+  NAT_TABLE_UTILS_ENGLISH_LOCALE,
   resolveNatTableUtilsIntl,
   type NatTableRenderMetricsFilterIntl,
 } from './intl';
@@ -38,10 +38,7 @@ export class NatRenderMetricsFilter<TData = unknown> {
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
   private readonly localeId = computed(
-    () =>
-      this.locale() ??
-      this.for().localeId?.() ??
-      readNatTableUtilsDefaultLocale(this.utilsIntlConfig),
+    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE,
   );
   private readonly utilsIntl = computed(() =>
     resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),

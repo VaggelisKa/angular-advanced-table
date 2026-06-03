@@ -4,7 +4,7 @@ import {
   formatNatTableUtilsNumber,
   mergeRenderMetricsPanelIntl,
   NAT_TABLE_UTILS_INTL,
-  readNatTableUtilsDefaultLocale,
+  NAT_TABLE_UTILS_ENGLISH_LOCALE,
   resolveNatTableUtilsIntl,
   type NatTableRenderMetricsPanelIntl,
 } from './intl';
@@ -37,9 +37,7 @@ export class NatRenderMetricsPanel {
   readonly labels = input<NatTableRenderMetricsPanelIntl | undefined>(undefined);
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
-  private readonly localeId = computed(
-    () => this.locale() ?? readNatTableUtilsDefaultLocale(this.utilsIntlConfig),
-  );
+  private readonly localeId = computed(() => this.locale() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
   private readonly utilsIntl = computed(() =>
     resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
   );

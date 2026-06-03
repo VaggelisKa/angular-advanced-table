@@ -1,4 +1,4 @@
-import { InjectionToken, Optional, SkipSelf, type Provider, type Signal } from '@angular/core';
+import { InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
 
 import type { NatTableAccessibilityText } from './table.types';
 
@@ -20,15 +20,13 @@ export interface NatTableIntl {
 }
 
 export interface NatTableIntlConfig {
-  /** Locale used when a table does not receive its own `locale` input. */
-  defaultLocale?: string | Signal<string>;
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableIntl>;
 }
 
 export type NatTableIntlProviderConfig = NatTableIntl | NatTableIntlConfig;
 
-const NAT_TABLE_ENGLISH_LOCALE = 'en';
+export const NAT_TABLE_ENGLISH_LOCALE = 'en';
 
 const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
@@ -123,7 +121,6 @@ export const NAT_TABLE_ENGLISH_INTL: NatTableIntl = {
 
 /** Built-in locale defaults used when no provider is configured. */
 export const NAT_TABLE_DEFAULT_INTL: NatTableIntlConfig = {
-  defaultLocale: NAT_TABLE_ENGLISH_LOCALE,
   locales: {
     [NAT_TABLE_ENGLISH_LOCALE]: NAT_TABLE_ENGLISH_INTL,
   },
@@ -191,16 +188,6 @@ export function formatNatTableIntlNumber(
   return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 }
 
-export function readNatTableDefaultLocale(intl: NatTableIntlConfig): string {
-  const defaultLocale = intl.defaultLocale;
-
-  if (typeof defaultLocale === 'function') {
-    return defaultLocale();
-  }
-
-  return defaultLocale ?? NAT_TABLE_ENGLISH_LOCALE;
-}
-
 export function resolveNatTableIntl(intl: NatTableIntlConfig, locale: string): NatTableIntl {
   const englishIntl = intl.locales?.[NAT_TABLE_ENGLISH_LOCALE] ?? NAT_TABLE_ENGLISH_INTL;
   const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_TABLE_ENGLISH_LOCALE ? {} : null);
@@ -214,9 +201,7 @@ function mergeNatTableIntlConfig(
   parent: NatTableIntlConfig,
   override: NatTableIntlProviderConfig,
 ): NatTableIntlConfig {
-  const parentDefaultLocale = readNatTableDefaultLocale(parent);
-  const overrideConfig = normalizeIntlProviderConfig(override, parentDefaultLocale);
-  const nextDefaultLocale = overrideConfig.defaultLocale ?? parent.defaultLocale;
+  const overrideConfig = normalizeIntlProviderConfig(override);
   const nextLocales: Record<string, NatTableIntl> = {
     ...(parent.locales ?? {}),
   };
@@ -226,28 +211,24 @@ function mergeNatTableIntlConfig(
   }
 
   return {
-    defaultLocale: nextDefaultLocale ?? NAT_TABLE_ENGLISH_LOCALE,
     locales: nextLocales,
   };
 }
 
-function normalizeIntlProviderConfig(
-  config: NatTableIntlProviderConfig,
-  defaultLocale: string,
-): NatTableIntlConfig {
+function normalizeIntlProviderConfig(config: NatTableIntlProviderConfig): NatTableIntlConfig {
   if (isIntlConfig(config)) {
     return config;
   }
 
   return {
     locales: {
-      [defaultLocale]: config,
+      [NAT_TABLE_ENGLISH_LOCALE]: config,
     },
   };
 }
 
 function isIntlConfig(config: NatTableIntlProviderConfig): config is NatTableIntlConfig {
-  return 'defaultLocale' in config || 'locales' in config;
+  return 'locales' in config;
 }
 
 function mergeNatTableLocaleIntl(parent?: NatTableIntl, override?: NatTableIntl): NatTableIntl {

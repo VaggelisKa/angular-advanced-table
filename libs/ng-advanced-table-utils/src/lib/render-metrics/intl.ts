@@ -1,11 +1,4 @@
-import {
-  inject,
-  InjectionToken,
-  Optional,
-  SkipSelf,
-  type Provider,
-  type Signal,
-} from '@angular/core';
+import { inject, InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
 
 import { RENDER_FILTER_OPTIONS, type RowRenderFilterOption, type RowRenderTone } from './types';
 
@@ -87,15 +80,13 @@ export interface NatTableUtilsIntl {
 }
 
 export interface NatTableUtilsIntlConfig {
-  /** Locale used when a render-metrics control cannot inherit one from `<nat-table>`. */
-  defaultLocale?: string | Signal<string>;
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableUtilsIntl>;
 }
 
 export type NatTableUtilsIntlProviderConfig = NatTableUtilsIntl | NatTableUtilsIntlConfig;
 
-const NAT_TABLE_UTILS_ENGLISH_LOCALE = 'en';
+export const NAT_TABLE_UTILS_ENGLISH_LOCALE = 'en';
 
 const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
@@ -141,7 +132,6 @@ export const NAT_TABLE_UTILS_ENGLISH_INTL: NatTableUtilsIntl = {
 
 /** Built-in locale defaults used when no provider is configured. */
 export const NAT_TABLE_UTILS_DEFAULT_INTL: NatTableUtilsIntlConfig = {
-  defaultLocale: NAT_TABLE_UTILS_ENGLISH_LOCALE,
   locales: {
     [NAT_TABLE_UTILS_ENGLISH_LOCALE]: NAT_TABLE_UTILS_ENGLISH_INTL,
   },
@@ -255,16 +245,6 @@ export function injectNatTableUtilsIntl(): NatTableUtilsIntlConfig {
   }
 }
 
-export function readNatTableUtilsDefaultLocale(intl: NatTableUtilsIntlConfig): string {
-  const defaultLocale = intl.defaultLocale;
-
-  if (typeof defaultLocale === 'function') {
-    return defaultLocale();
-  }
-
-  return defaultLocale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE;
-}
-
 export function resolveNatTableUtilsIntl(
   intl: NatTableUtilsIntlConfig,
   locale: string,
@@ -283,9 +263,7 @@ function mergeNatTableUtilsIntlConfig(
   parent: NatTableUtilsIntlConfig,
   override: NatTableUtilsIntlProviderConfig,
 ): NatTableUtilsIntlConfig {
-  const parentDefaultLocale = readNatTableUtilsDefaultLocale(parent);
-  const overrideConfig = normalizeUtilsIntlProviderConfig(override, parentDefaultLocale);
-  const nextDefaultLocale = overrideConfig.defaultLocale ?? parent.defaultLocale;
+  const overrideConfig = normalizeUtilsIntlProviderConfig(override);
   const nextLocales: Record<string, NatTableUtilsIntl> = {
     ...(parent.locales ?? {}),
   };
@@ -295,14 +273,12 @@ function mergeNatTableUtilsIntlConfig(
   }
 
   return {
-    defaultLocale: nextDefaultLocale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE,
     locales: nextLocales,
   };
 }
 
 function normalizeUtilsIntlProviderConfig(
   config: NatTableUtilsIntlProviderConfig,
-  defaultLocale: string,
 ): NatTableUtilsIntlConfig {
   if (isUtilsIntlConfig(config)) {
     return config;
@@ -310,7 +286,7 @@ function normalizeUtilsIntlProviderConfig(
 
   return {
     locales: {
-      [defaultLocale]: config,
+      [NAT_TABLE_UTILS_ENGLISH_LOCALE]: config,
     },
   };
 }
@@ -318,7 +294,7 @@ function normalizeUtilsIntlProviderConfig(
 function isUtilsIntlConfig(
   config: NatTableUtilsIntlProviderConfig,
 ): config is NatTableUtilsIntlConfig {
-  return 'defaultLocale' in config || 'locales' in config;
+  return 'locales' in config;
 }
 
 function isMissingInjectionContextError(error: unknown): error is Error & { code?: number } {

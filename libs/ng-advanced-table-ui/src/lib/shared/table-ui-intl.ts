@@ -1,4 +1,4 @@
-import { InjectionToken, Optional, SkipSelf, type Provider, type Signal } from '@angular/core';
+import { InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
 
 import type {
   NatTableAccessibilityColumnVisibilityLabels,
@@ -70,15 +70,13 @@ export interface NatTableUiIntl {
 }
 
 export interface NatTableUiIntlConfig {
-  /** Locale used when a companion control cannot inherit one from `<nat-table>`. */
-  defaultLocale?: string | Signal<string>;
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableUiIntl>;
 }
 
 export type NatTableUiIntlProviderConfig = NatTableUiIntl | NatTableUiIntlConfig;
 
-const NAT_TABLE_UI_ENGLISH_LOCALE = 'en';
+export const NAT_TABLE_UI_ENGLISH_LOCALE = 'en';
 
 const DEFAULT_NUMBER_FORMATTER: NatTableUiNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
@@ -141,7 +139,6 @@ export const NAT_TABLE_UI_ENGLISH_INTL: NatTableUiIntl = {
 
 /** Built-in locale defaults used when no provider is configured. */
 export const NAT_TABLE_UI_DEFAULT_INTL: NatTableUiIntlConfig = {
-  defaultLocale: NAT_TABLE_UI_ENGLISH_LOCALE,
   locales: {
     [NAT_TABLE_UI_ENGLISH_LOCALE]: NAT_TABLE_UI_ENGLISH_INTL,
   },
@@ -223,16 +220,6 @@ export function formatNatTableUiNumber(
   return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 }
 
-export function readNatTableUiDefaultLocale(intl: NatTableUiIntlConfig): string {
-  const defaultLocale = intl.defaultLocale;
-
-  if (typeof defaultLocale === 'function') {
-    return defaultLocale();
-  }
-
-  return defaultLocale ?? NAT_TABLE_UI_ENGLISH_LOCALE;
-}
-
 export function resolveNatTableUiIntl(intl: NatTableUiIntlConfig, locale: string): NatTableUiIntl {
   const englishIntl = intl.locales?.[NAT_TABLE_UI_ENGLISH_LOCALE] ?? NAT_TABLE_UI_ENGLISH_INTL;
   const selectedIntl =
@@ -247,9 +234,7 @@ function mergeNatTableUiIntlConfig(
   parent: NatTableUiIntlConfig,
   override: NatTableUiIntlProviderConfig,
 ): NatTableUiIntlConfig {
-  const parentDefaultLocale = readNatTableUiDefaultLocale(parent);
-  const overrideConfig = normalizeUiIntlProviderConfig(override, parentDefaultLocale);
-  const nextDefaultLocale = overrideConfig.defaultLocale ?? parent.defaultLocale;
+  const overrideConfig = normalizeUiIntlProviderConfig(override);
   const nextLocales: Record<string, NatTableUiIntl> = {
     ...(parent.locales ?? {}),
   };
@@ -259,28 +244,24 @@ function mergeNatTableUiIntlConfig(
   }
 
   return {
-    defaultLocale: nextDefaultLocale ?? NAT_TABLE_UI_ENGLISH_LOCALE,
     locales: nextLocales,
   };
 }
 
-function normalizeUiIntlProviderConfig(
-  config: NatTableUiIntlProviderConfig,
-  defaultLocale: string,
-): NatTableUiIntlConfig {
+function normalizeUiIntlProviderConfig(config: NatTableUiIntlProviderConfig): NatTableUiIntlConfig {
   if (isUiIntlConfig(config)) {
     return config;
   }
 
   return {
     locales: {
-      [defaultLocale]: config,
+      [NAT_TABLE_UI_ENGLISH_LOCALE]: config,
     },
   };
 }
 
 function isUiIntlConfig(config: NatTableUiIntlProviderConfig): config is NatTableUiIntlConfig {
-  return 'defaultLocale' in config || 'locales' in config;
+  return 'locales' in config;
 }
 
 export function mergeColumnVisibilityLabels(

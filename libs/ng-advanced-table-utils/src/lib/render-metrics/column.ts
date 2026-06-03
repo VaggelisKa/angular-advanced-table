@@ -4,7 +4,7 @@ import {
   formatNatTableUtilsNumber,
   injectNatTableUtilsIntl,
   mergeRenderMetricsColumnIntl,
-  readNatTableUtilsDefaultLocale,
+  NAT_TABLE_UTILS_ENGLISH_LOCALE,
   resolveNatTableUtilsIntl,
   type NatTableRenderMetricsColumnIntl,
 } from './intl';
@@ -51,7 +51,7 @@ export function withRenderMetricsColumn<TData extends RowData>(
   options: WithRenderMetricsColumnOptions = {},
 ): ColumnDef<TData, unknown>[] {
   const utilsIntlConfig = injectNatTableUtilsIntl();
-  const locale = options.locale ?? readNatTableUtilsDefaultLocale(utilsIntlConfig);
+  const locale = options.locale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE;
   const utilsIntl = resolveNatTableUtilsIntl(utilsIntlConfig, locale);
   const columnIntl = mergeRenderMetricsColumnIntl(utilsIntl.renderMetrics?.column, options);
   const columnId = options.columnId ?? RENDER_METRIC_COLUMN_ID;

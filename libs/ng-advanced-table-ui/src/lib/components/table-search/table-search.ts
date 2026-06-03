@@ -3,7 +3,7 @@ import type { RowData } from '@tanstack/angular-table';
 
 import {
   NAT_TABLE_UI_INTL,
-  readNatTableUiDefaultLocale,
+  NAT_TABLE_UI_ENGLISH_LOCALE,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
 import type { NatTableUiController } from '../../shared/table-ui.types';
@@ -25,10 +25,7 @@ export class NatTableSearch<TData extends RowData = RowData> {
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   protected readonly inputId = `nat-table-search-${nextSearchFieldId++}`;
   private readonly localeId = computed(
-    () =>
-      this.locale() ??
-      this.for().localeId?.() ??
-      readNatTableUiDefaultLocale(this.tableUiIntlConfig),
+    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),

@@ -16,7 +16,7 @@ import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers
 import {
   mergeScrollControlLabels,
   NAT_TABLE_UI_INTL,
-  readNatTableUiDefaultLocale,
+  NAT_TABLE_UI_ENGLISH_LOCALE,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
 import type {
@@ -46,10 +46,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
   private readonly destroyRef = inject(DestroyRef);
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(
-    () =>
-      this.locale() ??
-      this.for().localeId?.() ??
-      readNatTableUiDefaultLocale(this.tableUiIntlConfig),
+    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),

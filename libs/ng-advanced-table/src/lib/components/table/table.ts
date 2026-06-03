@@ -46,8 +46,8 @@ import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
   formatNatTableIntlNumber,
   mergeNatTableAccessibilityText,
+  NAT_TABLE_ENGLISH_LOCALE,
   NAT_TABLE_INTL,
-  readNatTableDefaultLocale,
   resolveNatTableIntl,
 } from './table-intl';
 import type {
@@ -249,10 +249,8 @@ export class NatTable<TData extends RowData = RowData> {
   );
   private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
-  /** Current locale id resolved from the `locale` input or provider default. */
-  readonly localeId = computed(
-    () => this.locale() ?? readNatTableDefaultLocale(this.tableIntlConfig),
-  );
+  /** Current locale id resolved from the `locale` input or built-in English default. */
+  readonly localeId = computed(() => this.locale() ?? NAT_TABLE_ENGLISH_LOCALE);
   private readonly tableIntl = computed(() =>
     resolveNatTableIntl(this.tableIntlConfig, this.localeId()),
   );
