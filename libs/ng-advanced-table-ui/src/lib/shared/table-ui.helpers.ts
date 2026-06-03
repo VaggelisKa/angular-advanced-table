@@ -13,12 +13,13 @@ export function formatNatTableAccessibilityNumber(
   value: number,
   formatter?: NatTableUiNumberFormatter,
   options?: Intl.NumberFormatOptions,
+  locale?: string,
 ): string {
   return (
     formatter ??
-    ((numberValue, numberOptions) =>
-      new Intl.NumberFormat(undefined, numberOptions).format(numberValue))
-  )(value, options);
+    ((numberValue, numberOptions, numberLocale) =>
+      new Intl.NumberFormat(numberLocale, numberOptions).format(numberValue))
+  )(value, options, locale);
 }
 
 export function getNatTableColumnLabel<TData extends RowData>(

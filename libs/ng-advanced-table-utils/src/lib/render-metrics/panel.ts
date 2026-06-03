@@ -4,10 +4,12 @@ import {
   formatNatTableUtilsNumber,
   mergeRenderMetricsPanelIntl,
   NAT_TABLE_UTILS_INTL,
+  readNatTableUtilsDefaultLocale,
+  resolveNatTableUtilsIntl,
   type NatTableRenderMetricsPanelIntl,
 } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
-import { getRenderToneLabel, getRowRenderTone } from './tone';
+import { getRowRenderTone } from './tone';
 
 type RenderHealthTone = 'idle' | 'fast' | 'watch' | 'slow';
 
@@ -29,30 +31,36 @@ interface RenderHealthState {
 export class NatRenderMetricsPanel {
   /** Shared store. */
   readonly store = input.required<NatTableRenderMetricsStore>();
+  /** Locale id override for generated render-metrics labels. */
+  readonly locale = input<string | undefined>(undefined);
   /** Per-instance label overrides. */
   readonly labels = input<NatTableRenderMetricsPanelIntl | undefined>(undefined);
 
-  private readonly utilsIntl = inject(NAT_TABLE_UTILS_INTL);
+  private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
+  private readonly localeId = computed(
+    () => this.locale() ?? readNatTableUtilsDefaultLocale(this.utilsIntlConfig),
+  );
+  private readonly utilsIntl = computed(() =>
+    resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
+  );
   private readonly resolvedLabels = computed(() =>
-    mergeRenderMetricsPanelIntl(this.utilsIntl.renderMetrics?.panel, this.labels()),
+    mergeRenderMetricsPanelIntl(this.utilsIntl().renderMetrics?.panel, this.labels()),
   );
 
   protected readonly measurement = computed(() => this.store().measurement());
-  protected readonly ariaLabel = computed(
-    () => this.resolvedLabels().ariaLabel ?? 'Row render sample',
-  );
+  protected readonly ariaLabel = computed(() => this.resolvedLabels().ariaLabel ?? '');
 
   protected readonly health = computed<RenderHealthState>(() => {
     const measurement = this.measurement();
     const labels = this.resolvedLabels();
 
     if (!measurement || !measurement.rowCount) {
-      return { label: labels.toneLabel?.('idle') ?? 'Idle', tone: 'idle' };
+      return { label: labels.toneLabel?.('idle') ?? '', tone: 'idle' };
     }
 
     const tone = getRowRenderTone(measurement.durationMs);
 
-    return { label: labels.toneLabel?.(tone) ?? getRenderToneLabel(tone), tone };
+    return { label: labels.toneLabel?.(tone) ?? '', tone };
   });
 
   protected readonly compactSummary = computed(() => {
@@ -60,31 +68,41 @@ export class NatRenderMetricsPanel {
     const labels = this.resolvedLabels();
 
     if (!measurement || !measurement.rowCount) {
-      return labels.idleSummary ?? 'idle';
+      return labels.idleSummary ?? '';
     }
 
-    const rowCountText = formatNatTableUtilsNumber(this.utilsIntl, measurement.rowCount);
+    const rowCountText = formatNatTableUtilsNumber(
+      this.utilsIntl(),
+      measurement.rowCount,
+      undefined,
+      this.localeId(),
+    );
 
     return (
       labels.rowSampleSummary?.({
         rowCountValue: measurement.rowCount,
         rowCountText,
-      }) ?? `${rowCountText} ${measurement.rowCount === 1 ? 'row' : 'rows'} sampled`
+      }) ?? ''
     );
   });
 
   protected formatDurationMs(value: number): string {
     const labels = this.resolvedLabels();
-    const durationMsText = formatNatTableUtilsNumber(this.utilsIntl, value, {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    });
+    const durationMsText = formatNatTableUtilsNumber(
+      this.utilsIntl(),
+      value,
+      {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      },
+      this.localeId(),
+    );
 
     return (
       labels.duration?.({
         durationMsValue: value,
         durationMsText,
-      }) ?? `${durationMsText} ms`
+      }) ?? ''
     );
   }
 }

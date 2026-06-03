@@ -4,6 +4,8 @@ import {
   formatNatTableUtilsNumber,
   injectNatTableUtilsIntl,
   mergeRenderMetricsColumnIntl,
+  readNatTableUtilsDefaultLocale,
+  resolveNatTableUtilsIntl,
   type NatTableRenderMetricsColumnIntl,
 } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
@@ -14,6 +16,8 @@ import { RENDER_METRIC_COLUMN_ID } from './types';
  * Configuration for {@link withRenderMetricsColumn}.
  */
 export interface WithRenderMetricsColumnOptions extends NatTableRenderMetricsColumnIntl {
+  /** Locale id used when resolving provider defaults at helper-call time. */
+  locale?: string;
   /** Column identifier. Defaults to `__rowRenderMetric`. */
   columnId?: string;
   /** Optional TanStack size override. */
@@ -34,8 +38,10 @@ export interface WithRenderMetricsColumnOptions extends NatTableRenderMetricsCol
  * @param options Optional labels, sizing, and identifier overrides.
  *
  * Call this helper from an Angular injection context to apply
- * `provideNatTableUtilsIntl(...)` defaults. Calls outside DI still work, but
- * use built-in defaults plus the explicit `options` passed here.
+ * `provideNatTableUtilsIntl(...)` defaults. Pass `options.locale` or rebuild
+ * columns from a computed value when the table locale changes. Calls outside DI
+ * still work, but use built-in defaults plus the explicit `options` passed
+ * here.
  *
  * @returns A shallow copy of `columns` with the metrics column appended.
  */
@@ -44,12 +50,14 @@ export function withRenderMetricsColumn<TData extends RowData>(
   store: NatTableRenderMetricsStore,
   options: WithRenderMetricsColumnOptions = {},
 ): ColumnDef<TData, unknown>[] {
-  const utilsIntl = injectNatTableUtilsIntl();
+  const utilsIntlConfig = injectNatTableUtilsIntl();
+  const locale = options.locale ?? readNatTableUtilsDefaultLocale(utilsIntlConfig);
+  const utilsIntl = resolveNatTableUtilsIntl(utilsIntlConfig, locale);
   const columnIntl = mergeRenderMetricsColumnIntl(utilsIntl.renderMetrics?.column, options);
   const columnId = options.columnId ?? RENDER_METRIC_COLUMN_ID;
-  const pendingLabel = columnIntl.pendingLabel ?? 'Pending';
-  const unitSuffix = columnIntl.unitSuffix ?? ' ms';
-  const header = columnIntl.header ?? 'Render';
+  const pendingLabel = columnIntl.pendingLabel ?? '';
+  const unitSuffix = columnIntl.unitSuffix ?? '';
+  const header = columnIntl.header ?? '';
 
   const metricsColumn: ColumnDef<TData, unknown> = {
     id: columnId,
@@ -87,10 +95,15 @@ export function withRenderMetricsColumn<TData extends RowData>(
         return pendingLabel;
       }
 
-      const durationMsText = formatNatTableUtilsNumber(utilsIntl, metric.durationMs, {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      });
+      const durationMsText = formatNatTableUtilsNumber(
+        utilsIntl,
+        metric.durationMs,
+        {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        },
+        locale,
+      );
 
       return (
         columnIntl.duration?.({

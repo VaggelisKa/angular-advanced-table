@@ -74,8 +74,8 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 ## Package Notes
 
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables.
-- The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, and `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string).
-- Companion controls expose `accessibilityLabels` inputs so consumers can localize the UI without rebuilding table state.
+- The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), and optional `localeId`.
+- Companion controls inherit the controlled table locale and expose label inputs only for instance-specific overrides.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.
 - `withNatTableHeaderActions(...)` is idempotent. Reapplying it to already-wrapped columns updates the wrapper options instead of nesting header controls.

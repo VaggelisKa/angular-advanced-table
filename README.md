@@ -394,7 +394,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
 };
 ```
 
-`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). Formatter contexts expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
+`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). Generated table copy has English defaults and can be localized through provider `locales` dictionaries plus `<nat-table [locale]="localeId()">`. Formatter contexts expose locale-formatted numbers and semantic state labels. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
 
 ## Custom Cell Components
 
@@ -568,6 +568,7 @@ Controller contract required by the UI package:
 - `patchState(...)`
 - `tableElementId: Signal<string>`
 - `tableScrollContainer?: Signal<HTMLElement | null>`
+- `localeId?: Signal<string>`
 
 Notes:
 
@@ -583,7 +584,7 @@ Notes:
 
 ## UI Accessibility Labels
 
-The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
+The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiIntl({ locales })`. Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 

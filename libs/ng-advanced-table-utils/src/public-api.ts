@@ -3,6 +3,7 @@ export { NatRenderMetricsFilter } from './lib/render-metrics/filter';
 export { NatRenderMetricsPanel } from './lib/render-metrics/panel';
 export { withRenderMetricsColumn } from './lib/render-metrics/column';
 export {
+  NAT_TABLE_UTILS_ENGLISH_INTL,
   NAT_TABLE_UTILS_DEFAULT_INTL,
   NAT_TABLE_UTILS_INTL,
   provideNatTableUtilsIntl,
@@ -16,6 +17,8 @@ export type {
   NatTableRenderMetricsPanelIntl,
   NatTableRenderMetricsRowCountContext,
   NatTableUtilsIntl,
+  NatTableUtilsIntlConfig,
+  NatTableUtilsIntlProviderConfig,
   NatTableUtilsNumberFormatter,
 } from './lib/render-metrics/intl';
 export type {

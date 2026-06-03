@@ -6,6 +6,7 @@ export { NatTablePager } from './lib/components/table-pager/table-pager';
 export { NatTableScrollControl } from './lib/components/table-scroll-control/table-scroll-control';
 export { withNatTableHeaderActions } from './lib/components/table-header-actions/with-table-header-actions';
 export {
+  NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_DEFAULT_INTL,
   NAT_TABLE_UI_INTL,
   provideNatTableUiIntl,
@@ -22,6 +23,8 @@ export type {
   NatTableScrollControlIntl,
   NatTableSearchIntl,
   NatTableUiIntl,
+  NatTableUiIntlConfig,
+  NatTableUiIntlProviderConfig,
   NatTableUiNumberFormatter,
 } from './lib/shared/table-ui-intl';
 export type {

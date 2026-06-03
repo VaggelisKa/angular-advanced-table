@@ -2,15 +2,15 @@
 
 For workspace install, core API tables, and composition overview, see [README.md](README.md).
 
-`ng-advanced-table` ships English defaults for generated screen-reader copy. Consumers should treat those defaults as fallbacks and provide localized labels, descriptions, summaries, and live announcements for their product language.
+`ng-advanced-table` ships English defaults for generated screen-reader copy and companion-control labels. Consumers should only pass case-specific copy at the table instance, such as the table's accessible name/caption, column labels, and product-specific descriptions. Common UI and announcement copy should live in locale dictionaries.
 
 Generated copy resolves in this order:
 
-1. Built-in English defaults.
-2. App or feature providers such as `provideNatTableIntl(...)`, `provideNatTableUiIntl(...)`, and `provideNatTableUtilsIntl(...)`.
-3. Per-table, per-control, or per-helper inputs/options.
+1. Built-in English locale defaults.
+2. The locale selected by `<nat-table [locale]="localeId()">`, or the provider `defaultLocale` when no table locale is set.
+3. Per-table, per-control, or per-helper inputs/options for instance-specific copy.
 
-Use providers for common product language and number formatting. Use inputs/options for the few controls that need instance-specific wording.
+Use providers for locale dictionaries and number formatting. Use inputs/options for the few controls that need instance-specific wording.
 
 This guide focuses on text that the consuming application owns. It does not replace normal accessibility review for custom cells, custom controls, dialogs, menus, or product-specific workflows.
 
@@ -22,8 +22,8 @@ This section exists so automated tooling can validate implementations against th
 
 | Symbol                      | Kind              | Notes                                                                                                     |
 | --------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `NatTable`                  | component         | Primary grid primitive                                                                                    |
-| `provideNatTableIntl(...)`  | provider          | App/feature defaults for `accessibilityText` and table number formatting                                  |
+| `NatTable`                  | component         | Primary grid primitive. Accepts `locale` for generated labels.                                            |
+| `provideNatTableIntl(...)`  | provider          | App/feature locale dictionaries for `accessibilityText` and table number formatting                       |
 | `NatTableAccessibilityText` | type              | Primary bag for consumer-owned accessibility strings + announcement formatters                            |
 | `NatTableA11y`              | namespace         | Formatter context types for explicit typing (example: `NatTableA11y.NatTableAccessibilitySummaryContext`) |
 | `enableAnnouncements`       | input (`boolean`) | Turn built-in polite live-region announcements on/off                                                     |
@@ -67,7 +67,7 @@ Context types:
 
 ### UI (`ng-advanced-table-ui`)
 
-Companion controls accept localized visible strings plus structured `accessibilityLabels` bags:
+Companion controls inherit the controlled table's `locale` through `[for]="grid"` and accept localized visible strings plus structured `accessibilityLabels` bags for instance-specific overrides:
 
 | Component / helper               | Primary localization inputs                                         |
 | -------------------------------- | ------------------------------------------------------------------- |
@@ -77,20 +77,20 @@ Companion controls accept localized visible strings plus structured `accessibili
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
 | `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
-| `provideNatTableUiIntl(...)`     | App/feature defaults for the labels above and UI number formatting  |
+| `provideNatTableUiIntl(...)`     | App/feature locale dictionaries for the labels above and UI numbers |
 
 Header action labels include the sort button, menu trigger, menu content, pin buttons, and visible pin menu item text.
 
 ### Utils (`ng-advanced-table-utils`)
 
-| Symbol                          | Kind      | Notes                                                                                |
-| ------------------------------- | --------- | ------------------------------------------------------------------------------------ |
-| `provideNatTableUtilsIntl(...)` | provider  | App/feature defaults for render-metrics filter, panel, column, and number formatting |
-| `NatRenderMetricsFilter`        | component | Accepts provider defaults plus per-instance `labels`                                 |
-| `NatRenderMetricsPanel`         | component | Accepts provider defaults plus per-instance `labels`                                 |
-| `withRenderMetricsColumn(...)`  | helper    | Accepts provider defaults when called in Angular DI plus per-call options            |
+| Symbol                          | Kind      | Notes                                                                           |
+| ------------------------------- | --------- | ------------------------------------------------------------------------------- |
+| `provideNatTableUtilsIntl(...)` | provider  | App/feature locale dictionaries for render-metrics labels and number formatting |
+| `NatRenderMetricsFilter`        | component | Accepts provider defaults plus per-instance `labels`                            |
+| `NatRenderMetricsPanel`         | component | Accepts provider defaults plus per-instance `labels`                            |
+| `withRenderMetricsColumn(...)`  | helper    | Accepts provider defaults when called in Angular DI plus per-call options       |
 
-`withRenderMetricsColumn(...)` can also be called outside Angular. In that case provider defaults are unavailable, but explicit options still localize the generated column header, pending label, and duration text.
+`withRenderMetricsColumn(...)` can also be called outside Angular. In that case provider defaults are unavailable, but explicit options still localize the generated column header, pending label, and duration text. Because the helper creates static column definitions, rebuild those columns when the locale changes or pass `options.locale` when building them.
 
 ## Agent Contract
 
@@ -100,17 +100,17 @@ Always do this:
 
 - Give every `<nat-table>` a localized `ariaLabel`.
 - Set `columnDef.meta.label` for each data column. This is required when the header is not a plain string and recommended for all columns.
-- Provide localized `accessibilityText` strings (`description`, `keyboardInstructions`, `emptyState`) through `provideNatTableIntl(...)` or per-table inputs whenever the product language is not English or you need custom wording.
-- Localize optional UI controls through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels`.
+- Provide localized `accessibilityText` strings (`description`, `keyboardInstructions`, `emptyState`) through `provideNatTableIntl({ locales: ... })` whenever the product language is not English or you need custom wording.
+- Localize optional UI controls through `provideNatTableUiIntl({ locales: ... })`; use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` only for instance-specific overrides.
 - Translate semantic state values such as `ascending`, `descending`, `visible`, `hidden`, `show`, `hide`, `pin`, `unpin`, `left`, and `right` before presenting them to users.
-- Recreate translated column definitions when the active locale can change at runtime.
+- Pass `<nat-table [locale]="localeId()">` when the active locale can change at runtime. Companion UI controls inherit that locale through `[for]="grid"`.
 
 Do not do this:
 
-- Do not rely on the built-in English fallback strings for a localized product.
+- Do not rely on the built-in English locale for a localized product.
 - Do not use placeholder text as the only accessible label for search.
 - Do not echo raw semantic tokens like `sortState`, `toggleAction`, `visibilityState`, `pinSide`, or `pinState` directly into localized copy.
-- Do not assume browser-default number formatting matches the app locale. Configure provider `formatNumber` defaults, or use numeric `...Value` fields for table-specific formatting.
+- Do not assume browser-default number formatting matches the table locale. Provider number formatters receive the active locale id as their third argument.
 - Do not add custom interactive cell controls without giving those controls their own accessible names.
 
 ## Implementation Checklist
@@ -124,11 +124,11 @@ For every generated table, verify these items before considering the work comple
 - Each column has a stable localized `meta.label`.
 - `accessibilityText` is provided when summaries or live announcements need product-specific copy.
 - Every rendered `ng-advanced-table-ui` companion control has localized visible labels and group or button labels.
-- Runtime locale changes rebuild `columns`, `accessibilityText`, and UI `accessibilityLabels` from the same translation source.
+- Runtime locale changes update `<nat-table [locale]>`, companion controls, and any translated column definitions/helpers from the same translation source.
 
 ## App-Level Localization Providers
 
-Configure common defaults once at app or feature scope. Per-instance inputs and helper options remain useful for table-specific copy and always take precedence over provider defaults.
+Configure locale dictionaries once at app or feature scope. Per-instance inputs and helper options remain useful for table-specific copy and always take precedence over provider locale defaults.
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
@@ -136,73 +136,86 @@ import { provideNatTableIntl } from 'ng-advanced-table';
 import { provideNatTableUiIntl } from 'ng-advanced-table-ui';
 import { provideNatTableUtilsIntl } from 'ng-advanced-table-utils';
 
-const locale = 'da-DK';
-const formatNumber = (value: number, options?: Intl.NumberFormatOptions) =>
+const formatNumber = (value: number, options?: Intl.NumberFormatOptions, locale = 'en') =>
   new Intl.NumberFormat(locale, options).format(value);
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideNatTableIntl({
-      formatNumber,
-      accessibilityText: {
-        keyboardInstructions:
-          'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
-        emptyState: 'Ingen rækker matcher den aktuelle visning.',
-        tableSummary: ({ visibleRowsText, totalRowsText, visibleColumnsText }) =>
-          `${visibleRowsText} af ${totalRowsText} rækker vises på tværs af ${visibleColumnsText} kolonner.`,
-        sortingChange: ({ columnLabel, sortState }) =>
-          columnLabel
-            ? `${columnLabel} er ${
-                sortState === 'ascending'
-                  ? 'sorteret stigende'
-                  : sortState === 'descending'
-                    ? 'sorteret faldende'
-                    : 'ikke sorteret'
-              }.`
-            : 'Sortering ryddet.',
+      defaultLocale: 'en',
+      locales: {
+        da: {
+          formatNumber,
+          accessibilityText: {
+            keyboardInstructions:
+              'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
+            emptyState: 'Ingen rækker matcher den aktuelle visning.',
+            tableSummary: ({ visibleRowsText, totalRowsText, visibleColumnsText }) =>
+              `${visibleRowsText} af ${totalRowsText} rækker vises på tværs af ${visibleColumnsText} kolonner.`,
+            sortingChange: ({ columnLabel, sortState }) =>
+              columnLabel
+                ? `${columnLabel} er ${
+                    sortState === 'ascending'
+                      ? 'sorteret stigende'
+                      : sortState === 'descending'
+                        ? 'sorteret faldende'
+                        : 'ikke sorteret'
+                  }.`
+                : 'Sortering ryddet.',
+          },
+        },
       },
     }),
     provideNatTableUiIntl({
-      formatNumber,
-      search: {
-        label: 'Søg i rækker',
-        placeholder: 'Søg i rækker',
-      },
-      pageSize: {
-        ariaLabel: 'Rækker pr. side',
-        accessibilityLabels: {
-          pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
-          pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
-        },
-      },
-      pager: {
-        ariaLabel: 'Sideskift',
-        accessibilityLabels: {
-          previousPageAriaLabel: 'Forrige side',
-          nextPageAriaLabel: 'Næste side',
-          pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
-        },
-      },
-      headerActions: {
-        accessibilityLabels: {
-          menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
+      locales: {
+        da: {
+          formatNumber,
+          search: {
+            label: 'Søg i rækker',
+            placeholder: 'Søg i rækker',
+          },
+          pageSize: {
+            ariaLabel: 'Rækker pr. side',
+            accessibilityLabels: {
+              pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
+              pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
+            },
+          },
+          pager: {
+            ariaLabel: 'Sideskift',
+            accessibilityLabels: {
+              previousPageAriaLabel: 'Forrige side',
+              nextPageAriaLabel: 'Næste side',
+              pageIndicator: ({ pageText, pageCountText }) =>
+                `Side ${pageText} af ${pageCountText}`,
+            },
+          },
+          headerActions: {
+            accessibilityLabels: {
+              menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
+            },
+          },
         },
       },
     }),
     provideNatTableUtilsIntl({
-      formatNumber,
-      renderMetrics: {
-        filter: {
-          heading: 'Renderhastighed',
-          groupAriaLabel: 'Rækkernes renderhastighed',
-        },
-        panel: {
-          ariaLabel: 'Renderprøve for rækker',
-          duration: ({ durationMsText }) => `${durationMsText} ms`,
-        },
-        column: {
-          header: 'Render',
-          pendingLabel: 'Afventer',
+      locales: {
+        da: {
+          formatNumber,
+          renderMetrics: {
+            filter: {
+              heading: 'Renderhastighed',
+              groupAriaLabel: 'Rækkernes renderhastighed',
+            },
+            panel: {
+              ariaLabel: 'Renderprøve for rækker',
+              duration: ({ durationMsText }) => `${durationMsText} ms`,
+            },
+            column: {
+              header: 'Render',
+              pendingLabel: 'Afventer',
+            },
+          },
         },
       },
     }),
@@ -210,7 +223,23 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-Feature routes can provide a smaller override. Nested providers merge with their parent provider, so a feature can replace only the copy it owns while keeping the app-level formatter and labels.
+Feature routes can provide a smaller override. Nested providers merge with their parent provider per locale, so a feature can replace only the copy it owns while keeping the app-level formatter and labels.
+
+Use the table locale to switch generated copy at runtime:
+
+```html
+<nat-table
+  #grid="natTable"
+  [locale]="localeId()"
+  [data]="rows()"
+  [columns]="columns()"
+  ariaLabel="Operations table"
+/>
+
+<nat-table-search [for]="grid" />
+<nat-table-page-size [for]="grid" />
+<nat-table-pager [for]="grid" />
+```
 
 ## Core Table
 
@@ -247,11 +276,11 @@ Decision rules for agents:
 - `pageChange(...)`
 - `columnReorder(...)`
 
-Formatter callbacks receive semantic state and both raw numeric values and preformatted text values. The text values use the active `provideNatTableIntl(...)` number formatter, falling back to the runtime default locale. If one table needs a different locale or format, use the numeric `...Value` fields inside that table's formatter.
+Formatter callbacks receive semantic state and both raw numeric values and preformatted text values. The text values use the active locale dictionary's number formatter and receive the active locale id. If one table needs a different format, use the numeric `...Value` fields inside that table's formatter.
 
 ## Optional UI Controls
 
-The `ng-advanced-table-ui` package exposes provider defaults and per-instance copy overrides without requiring consumers to rebuild table state.
+The `ng-advanced-table-ui` package exposes provider locale dictionaries and per-instance copy overrides without requiring consumers to rebuild table state.
 
 | Component or helper              | Consumer-owned copy                                                 |
 | -------------------------------- | ------------------------------------------------------------------- |
@@ -262,46 +291,32 @@ The `ng-advanced-table-ui` package exposes provider defaults and per-instance co
 | `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
 
-Use `provideNatTableUiIntl(...)` for common labels. Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels when one control needs instance-specific copy. Do not rely on placeholder text as the only accessible label for search.
+Use `provideNatTableUiIntl(...)` for common locale labels. Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels only when one control needs instance-specific copy. Do not rely on placeholder text as the only accessible label for search.
 
 Decision rules for agents:
 
-- If `NatTableSearch` is rendered, localize both `label` and `placeholder` through provider defaults or inputs.
-- If `NatTableColumnVisibility` is rendered, provide `NatTableAccessibilityColumnVisibilityLabels`.
-- If `NatTablePageSize` is rendered, provide `NatTableAccessibilityPageSizeLabels`.
-- For `NatTablePager`, provide `NatTableAccessibilityPagerLabels`; for `NatTableScrollControl`, provide `NatTableAccessibilityScrollControlLabels`.
-- If `withNatTableHeaderActions(...)` is used, provide `NatTableAccessibilityHeaderActionLabels` through `provideNatTableUiIntl(...)` or helper options. This label surface covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin menu item text.
+- If `NatTableSearch` is rendered in a non-English product, localize both `label` and `placeholder` through provider locale dictionaries or inputs.
+- If one `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, or `NatTableScrollControl` instance needs different wording from the active locale, pass its specific label input or `accessibilityLabels` bag.
+- If `withNatTableHeaderActions(...)` is used and one table/column needs wording different from the active locale, pass `NatTableAccessibilityHeaderActionLabels` through helper options or column metadata. This label surface covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin menu item text.
 
 ## Runtime Locale Changes
 
-When translations can change while the component is alive, build the table copy and column definitions from signals or another reactive source. This keeps headers, `meta.label`, live announcements, and companion-control labels in sync.
+When translations can change while the component is alive, pass the active locale id to `<nat-table>`. Generated core labels and companion controls that receive `[for]="grid"` resolve from the matching provider dictionaries automatically.
 
 Use this pattern:
 
-- Store all table copy in one typed object per locale.
-- Derive `copy` with `computed(...)`.
-- Derive `columns` with `computed(...)`, so headers and `meta.label` update together.
-- Pass UI label objects from the same `copy()` result used by the table.
-- Apply column helpers that add or reorder columns first, then apply `withNatTableHeaderActions(...)` to the final column list. Reapplying the header helper is safe, so computed builders can compose it without nesting header controls.
-- Use `column.meta.headerActions = false` when a translated column needs to opt out of the generated sort/pin surface. Use `column.meta.headerActions = { accessibilityLabels, sortIndicator }` when one column needs localized action copy or indicator content that differs from the table-level options.
+- Store common generated copy in provider `locales` dictionaries.
+- Pass `<nat-table [locale]="localeId()">`.
+- Keep `ariaLabel`, visible captions, and column `meta.label` as table-specific product copy.
+- Derive translated `columns` with `computed(...)` when headers or `meta.label` change with the locale.
+- Rebuild static helpers such as `withRenderMetricsColumn(...)` when the locale changes, or pass their `locale` option when constructing columns.
 
 ```ts
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableAccessibilityText, type NatTableState } from 'ng-advanced-table';
-import {
-  NatTableColumnVisibility,
-  NatTablePageSize,
-  NatTablePager,
-  NatTableSearch,
-  NatTableSurface,
-  withNatTableHeaderActions,
-  type NatTableAccessibilityColumnVisibilityLabels,
-  type NatTableAccessibilityHeaderActionLabels,
-  type NatTableAccessibilityPagerLabels,
-  type NatTableAccessibilityPageSizeLabels,
-} from 'ng-advanced-table-ui';
+import { NatTable } from 'ng-advanced-table';
+import { NatTablePageSize, NatTablePager, NatTableSearch } from 'ng-advanced-table-ui';
 
 interface OrderRow {
   id: string;
@@ -309,222 +324,55 @@ interface OrderRow {
   notional: number;
 }
 
-interface TableCopy {
-  tableLabel: string;
-  searchLabel: string;
-  searchPlaceholder: string;
-  columns: {
-    symbol: string;
-    notional: string;
-  };
-  tableText: NatTableAccessibilityText;
-  columnVisibility: NatTableAccessibilityColumnVisibilityLabels;
-  pageSize: NatTableAccessibilityPageSizeLabels;
-  pager: NatTableAccessibilityPagerLabels;
-  headerActions: NatTableAccessibilityHeaderActionLabels;
-}
-
-const tableCopy: Record<'en' | 'da', TableCopy> = {
-  en: {
-    tableLabel: 'Orders',
-    searchLabel: 'Search orders',
-    searchPlaceholder: 'Search orders',
-    columns: {
-      symbol: 'Symbol',
-      notional: 'Notional',
-    },
-    tableText: {
-      description: 'Sortable and filterable order table.',
-      keyboardInstructions:
-        'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
-      emptyState: 'No orders match the current view.',
-      tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
-        `${visibleRowsText} of ${totalRowsText} rows shown. Page ${pageText} of ${pageCountText}.`,
-      sortingChange: ({ columnLabel, sortState }) =>
-        columnLabel
-          ? `${columnLabel} is ${sortState === 'none' ? 'not sorted' : `sorted ${sortState}`}.`
-          : 'Sorting cleared.',
-      filteringChange: ({ query, visibleRowsText }) =>
-        query ? `${visibleRowsText} rows match "${query}".` : `${visibleRowsText} rows shown.`,
-      pageSizeChange: ({ pageSizeText, pageText, pageCountText }) =>
-        `Showing ${pageSizeText} rows per page. Page ${pageText} of ${pageCountText}.`,
-      pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
-        `Page ${pageText} of ${pageCountText}. ${visibleRowsText} rows shown.`,
-    },
-    columnVisibility: {
-      heading: 'Columns',
-      groupAriaLabel: 'Column visibility',
-      visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-        `${visibleColumnCountText} of ${totalColumnCountText} visible`,
-      toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
-        `${toggleAction === 'hide' ? 'Hide' : 'Show'} ${columnLabel} column`,
-      columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Shown' : 'Hidden'),
-    },
-    pageSize: {
-      groupAriaLabel: 'Rows per page',
-      pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} / page`,
-      pageSizeOptionAriaLabel: ({ pageSizeText }) => `Show ${pageSizeText} rows per page`,
-    },
-    pager: {
-      groupAriaLabel: 'Table pagination',
-      previousPageAriaLabel: 'Previous page',
-      nextPageAriaLabel: 'Next page',
-      pageIndicator: ({ pageText, pageCountText }) => `Page ${pageText} of ${pageCountText}`,
-    },
-    headerActions: {
-      sortButton: ({ label }) => `Change sorting for ${label}`,
-      menuButton: ({ label }) => `Open column actions for ${label}`,
-      pinButton: ({ label, toggleAction, pinSide }) =>
-        `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${label} column ${
-          toggleAction === 'unpin' ? 'from' : 'to'
-        } the ${pinSide}`,
-      pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Pin left' : 'Pin right'),
-    },
-  },
-  da: {
-    tableLabel: 'Ordrer',
-    searchLabel: 'Sog i ordrer',
-    searchPlaceholder: 'Sog i ordrer',
-    columns: {
-      symbol: 'Symbol',
-      notional: 'Nominel vaerdi',
-    },
-    tableText: {
-      description: 'Sorterbar og filtrerbar ordretabel.',
-      keyboardInstructions:
-        'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
-      emptyState: 'Ingen ordrer matcher den aktuelle visning.',
-      tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
-        `${visibleRowsText} af ${totalRowsText} raekker vises. Side ${pageText} af ${pageCountText}.`,
-      sortingChange: ({ columnLabel, sortState }) =>
-        columnLabel
-          ? `${columnLabel} er ${
-              sortState === 'ascending'
-                ? 'sorteret stigende'
-                : sortState === 'descending'
-                  ? 'sorteret faldende'
-                  : 'ikke sorteret'
-            }.`
-          : 'Sortering ryddet.',
-      filteringChange: ({ query, visibleRowsText }) =>
-        query
-          ? `${visibleRowsText} raekker matcher "${query}".`
-          : `${visibleRowsText} raekker vises.`,
-      pageSizeChange: ({ pageSizeText, pageText, pageCountText }) =>
-        `Viser ${pageSizeText} raekker per side. Side ${pageText} af ${pageCountText}.`,
-      pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
-        `Side ${pageText} af ${pageCountText}. ${visibleRowsText} raekker vises.`,
-    },
-    columnVisibility: {
-      heading: 'Kolonner',
-      groupAriaLabel: 'Kolonnesynlighed',
-      visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-        `${visibleColumnCountText} af ${totalColumnCountText} synlige`,
-      toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
-        `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonnen ${columnLabel}`,
-      columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
-    },
-    pageSize: {
-      groupAriaLabel: 'Raekker per side',
-      pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} / side`,
-      pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} raekker per side`,
-    },
-    pager: {
-      groupAriaLabel: 'Tabelpagination',
-      previousPageAriaLabel: 'Forrige side',
-      nextPageAriaLabel: 'Naeste side',
-      pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
-    },
-    headerActions: {
-      sortButton: ({ label }) => `Skift sortering for ${label}`,
-      menuButton: ({ label }) => `Aabn kolonnehandlinger for ${label}`,
-      pinButton: ({ label, toggleAction, pinSide }) =>
-        `${toggleAction === 'unpin' ? 'Frigor' : 'Fastgor'} kolonnen ${label} ${
-          toggleAction === 'unpin' ? 'fra' : 'til'
-        } ${pinSide === 'left' ? 'venstre' : 'hojre'}`,
-      pinButtonText: ({ pinSide }) =>
-        pinSide === 'left' ? 'Fastgor til venstre' : 'Fastgor til hojre',
-    },
-  },
-};
+const columnCopy = {
+  en: { table: 'Orders', symbol: 'Symbol', notional: 'Notional' },
+  da: { table: 'Ordrer', symbol: 'Symbol', notional: 'Nominel vaerdi' },
+} as const;
 
 @Component({
   selector: 'app-orders-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NatTable,
-    NatTableColumnVisibility,
-    NatTablePageSize,
-    NatTablePager,
-    NatTableSearch,
-    NatTableSurface,
-  ],
+  imports: [NatTable, NatTableSearch, NatTablePageSize, NatTablePager],
   template: `
-    @let labels = copy();
+    <nat-table
+      #grid="natTable"
+      [locale]="localeId()"
+      [data]="rows()"
+      [columns]="columns()"
+      [enablePagination]="true"
+      [ariaLabel]="copy().table"
+    />
 
-    <nat-table-surface>
-      <nat-table
-        #grid="natTable"
-        [data]="rows()"
-        [columns]="columns()"
-        [state]="tableState()"
-        [enablePagination]="true"
-        [ariaLabel]="labels.tableLabel"
-        [accessibilityText]="labels.tableText"
-        (stateChange)="tableState.set($event)"
-      />
-
-      <nat-table-search
-        [for]="grid"
-        [label]="labels.searchLabel"
-        [placeholder]="labels.searchPlaceholder"
-      />
-      <nat-table-column-visibility
-        [for]="grid"
-        [label]="labels.columnVisibility.heading ?? 'Columns'"
-        [ariaLabel]="labels.columnVisibility.groupAriaLabel ?? 'Column visibility'"
-        [accessibilityLabels]="labels.columnVisibility"
-      />
-      <nat-table-page-size
-        [for]="grid"
-        [ariaLabel]="labels.pageSize.groupAriaLabel ?? 'Rows per page'"
-        [accessibilityLabels]="labels.pageSize"
-      />
-      <nat-table-pager
-        [for]="grid"
-        [ariaLabel]="labels.pager.groupAriaLabel ?? 'Table pagination'"
-        [accessibilityLabels]="labels.pager"
-      />
-    </nat-table-surface>
+    <nat-table-search [for]="grid" />
+    <nat-table-page-size [for]="grid" />
+    <nat-table-pager [for]="grid" />
   `,
 })
 export class OrdersTableComponent {
-  readonly locale = signal<'en' | 'da'>('en');
+  readonly localeId = signal<keyof typeof columnCopy>('en');
   readonly rows = signal<readonly OrderRow[]>([]);
-  readonly tableState = signal<Partial<NatTableState>>({});
-  readonly copy = computed(() => tableCopy[this.locale()]);
+  readonly copy = computed(() => columnCopy[this.localeId()]);
   readonly columns = computed<ColumnDef<OrderRow>[]>(() => {
     const labels = this.copy();
 
-    return withNatTableHeaderActions<OrderRow>(
-      [
-        {
-          accessorKey: 'symbol',
-          header: labels.columns.symbol,
-          meta: { label: labels.columns.symbol, rowHeader: true },
-          cell: (context) => context.getValue<string>(),
-        },
-        {
-          accessorKey: 'notional',
-          header: labels.columns.notional,
-          meta: { label: labels.columns.notional, align: 'end' },
-          cell: (context) => String(context.getValue<number>()),
-        },
-      ],
+    return [
       {
-        accessibilityLabels: labels.headerActions,
+        accessorKey: 'symbol',
+        header: labels.symbol,
+        meta: {
+          label: labels.symbol,
+          rowHeader: true,
+        },
       },
-    );
+      {
+        accessorKey: 'notional',
+        header: labels.notional,
+        meta: {
+          label: labels.notional,
+          align: 'end',
+        },
+      },
+    ];
   });
 }
 ```

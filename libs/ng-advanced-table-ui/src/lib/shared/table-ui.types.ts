@@ -50,6 +50,8 @@ export interface NatTableUiController<TData extends RowData = RowData> {
   readonly tableElementId: Signal<string>;
   /** Scrollable container that wraps the controlled `<table>`, when available. */
   readonly tableScrollContainer?: Signal<HTMLElement | null>;
+  /** Locale id used by generated companion-control labels, when available. */
+  readonly localeId?: Signal<string>;
 }
 
 /** Current sort direction for a header cell. */

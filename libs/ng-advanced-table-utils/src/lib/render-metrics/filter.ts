@@ -6,6 +6,8 @@ import {
   formatNatTableUtilsNumber,
   mergeRenderMetricsFilterIntl,
   NAT_TABLE_UTILS_INTL,
+  readNatTableUtilsDefaultLocale,
+  resolveNatTableUtilsIntl,
   type NatTableRenderMetricsFilterIntl,
 } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
@@ -29,18 +31,27 @@ export class NatRenderMetricsFilter<TData = unknown> {
   readonly store = input.required<NatTableRenderMetricsStore>();
   /** Column id to target when the metrics column uses a custom identifier. */
   readonly columnId = input(RENDER_METRIC_COLUMN_ID);
+  /** Locale id override for generated render-metrics labels. Defaults to the controlled table locale. */
+  readonly locale = input<string | undefined>(undefined);
   /** Per-instance label overrides. */
   readonly labels = input<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
-  private readonly utilsIntl = inject(NAT_TABLE_UTILS_INTL);
+  private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
+  private readonly localeId = computed(
+    () =>
+      this.locale() ??
+      this.for().localeId?.() ??
+      readNatTableUtilsDefaultLocale(this.utilsIntlConfig),
+  );
+  private readonly utilsIntl = computed(() =>
+    resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
+  );
   private readonly resolvedLabels = computed(() =>
-    mergeRenderMetricsFilterIntl(this.utilsIntl.renderMetrics?.filter, this.labels()),
+    mergeRenderMetricsFilterIntl(this.utilsIntl().renderMetrics?.filter, this.labels()),
   );
 
-  protected readonly heading = computed(() => this.resolvedLabels().heading ?? 'Render speed');
-  protected readonly groupAriaLabel = computed(
-    () => this.resolvedLabels().groupAriaLabel ?? 'Row render speed',
-  );
+  protected readonly heading = computed(() => this.resolvedLabels().heading ?? '');
+  protected readonly groupAriaLabel = computed(() => this.resolvedLabels().groupAriaLabel ?? '');
   protected readonly options = computed(
     () => this.resolvedLabels().options ?? RENDER_FILTER_OPTIONS,
   );
@@ -58,16 +69,21 @@ export class NatRenderMetricsFilter<TData = unknown> {
     const labels = this.resolvedLabels();
 
     if (!measurement || !measurement.rowCount) {
-      return labels.idleCaption ?? 'Captures the latest row paint time for the current page.';
+      return labels.idleCaption ?? '';
     }
 
-    const rowCountText = formatNatTableUtilsNumber(this.utilsIntl, measurement.rowCount);
+    const rowCountText = formatNatTableUtilsNumber(
+      this.utilsIntl(),
+      measurement.rowCount,
+      undefined,
+      this.localeId(),
+    );
 
     return (
       labels.rowSampleCaption?.({
         rowCountValue: measurement.rowCount,
         rowCountText,
-      }) ?? `${rowCountText} visible ${measurement.rowCount === 1 ? 'row' : 'rows'} sampled`
+      }) ?? ''
     );
   });
 

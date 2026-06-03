@@ -1,11 +1,19 @@
-import { inject, InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
+import {
+  inject,
+  InjectionToken,
+  Optional,
+  SkipSelf,
+  type Provider,
+  type Signal,
+} from '@angular/core';
 
-import type { RowRenderFilterOption, RowRenderTone } from './types';
+import { RENDER_FILTER_OPTIONS, type RowRenderFilterOption, type RowRenderTone } from './types';
 
 /** Formats numbers used in render-metrics labels and values. */
 export type NatTableUtilsNumberFormatter = (
   value: number,
   options?: Intl.NumberFormatOptions,
+  locale?: string,
 ) => string;
 
 /** Context passed to row-count label formatters. */
@@ -71,26 +79,82 @@ export interface NatTableRenderMetricsIntl {
   column?: NatTableRenderMetricsColumnIntl;
 }
 
-/** App or feature-level defaults for `ng-advanced-table-utils`. */
+/** Locale-specific defaults for `ng-advanced-table-utils`. */
 export interface NatTableUtilsIntl {
   renderMetrics?: NatTableRenderMetricsIntl;
   /** Number formatter used for row counts and durations. */
   formatNumber?: NatTableUtilsNumberFormatter;
 }
 
-const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options) =>
-  new Intl.NumberFormat(undefined, options).format(value);
+export interface NatTableUtilsIntlConfig {
+  /** Locale used when a render-metrics control cannot inherit one from `<nat-table>`. */
+  defaultLocale?: string | Signal<string>;
+  /** Locale dictionaries keyed by locale id. */
+  locales?: Record<string, NatTableUtilsIntl>;
+}
 
-/** Built-in locale defaults used when no provider is configured. */
-export const NAT_TABLE_UTILS_DEFAULT_INTL: NatTableUtilsIntl = {
+export type NatTableUtilsIntlProviderConfig = NatTableUtilsIntl | NatTableUtilsIntlConfig;
+
+const NAT_TABLE_UTILS_ENGLISH_LOCALE = 'en';
+
+const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options, locale) =>
+  new Intl.NumberFormat(locale, options).format(value);
+
+/** Built-in English locale defaults used when no provider is configured. */
+export const NAT_TABLE_UTILS_ENGLISH_INTL: NatTableUtilsIntl = {
+  renderMetrics: {
+    filter: {
+      heading: 'Render speed',
+      groupAriaLabel: 'Row render speed',
+      idleCaption: 'Captures the latest row paint time for the current page.',
+      rowSampleCaption: ({ rowCountValue, rowCountText }) =>
+        `${rowCountText} visible ${rowCountValue === 1 ? 'row' : 'rows'} sampled`,
+      options: RENDER_FILTER_OPTIONS,
+    },
+    panel: {
+      ariaLabel: 'Row render sample',
+      toneLabel: (tone) => {
+        switch (tone) {
+          case 'fast':
+            return 'Fast';
+          case 'watch':
+            return 'Watch';
+          case 'slow':
+            return 'Slow';
+          case 'idle':
+            return 'Idle';
+        }
+      },
+      idleSummary: 'idle',
+      rowSampleSummary: ({ rowCountValue, rowCountText }) =>
+        `${rowCountText} ${rowCountValue === 1 ? 'row' : 'rows'} sampled`,
+      duration: ({ durationMsText }) => `${durationMsText} ms`,
+    },
+    column: {
+      header: 'Render',
+      pendingLabel: 'Pending',
+      unitSuffix: ' ms',
+    },
+  },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };
 
+/** Built-in locale defaults used when no provider is configured. */
+export const NAT_TABLE_UTILS_DEFAULT_INTL: NatTableUtilsIntlConfig = {
+  defaultLocale: NAT_TABLE_UTILS_ENGLISH_LOCALE,
+  locales: {
+    [NAT_TABLE_UTILS_ENGLISH_LOCALE]: NAT_TABLE_UTILS_ENGLISH_INTL,
+  },
+};
+
 /** Injection token backing `provideNatTableUtilsIntl(...)`. */
-export const NAT_TABLE_UTILS_INTL = new InjectionToken<NatTableUtilsIntl>('NAT_TABLE_UTILS_INTL', {
-  providedIn: 'root',
-  factory: () => NAT_TABLE_UTILS_DEFAULT_INTL,
-});
+export const NAT_TABLE_UTILS_INTL = new InjectionToken<NatTableUtilsIntlConfig>(
+  'NAT_TABLE_UTILS_INTL',
+  {
+    providedIn: 'root',
+    factory: () => NAT_TABLE_UTILS_DEFAULT_INTL,
+  },
+);
 
 /**
  * Provides default labels and number formatting for optional utility helpers.
@@ -98,37 +162,37 @@ export const NAT_TABLE_UTILS_INTL = new InjectionToken<NatTableUtilsIntl>('NAT_T
  * Nested providers merge with parent defaults, so feature-level providers can
  * override a subset of app-level copy without replacing the entire bag.
  */
-export function provideNatTableUtilsIntl(intl: NatTableUtilsIntl): Provider[] {
+export function provideNatTableUtilsIntl(intl: NatTableUtilsIntlProviderConfig): Provider[] {
   return [
     {
       provide: NAT_TABLE_UTILS_INTL,
       deps: [[new Optional(), new SkipSelf(), NAT_TABLE_UTILS_INTL]],
-      useFactory: (parent: NatTableUtilsIntl | null) =>
-        mergeNatTableUtilsIntl(parent ?? NAT_TABLE_UTILS_DEFAULT_INTL, intl),
+      useFactory: (parent: NatTableUtilsIntlConfig | null) =>
+        mergeNatTableUtilsIntlConfig(parent ?? NAT_TABLE_UTILS_DEFAULT_INTL, intl),
     },
   ];
 }
 
 export function mergeNatTableUtilsIntl(
-  parent: NatTableUtilsIntl,
+  parent: NatTableUtilsIntl | undefined,
   override: NatTableUtilsIntl,
 ): NatTableUtilsIntl {
   return {
     renderMetrics: {
       filter: mergeRenderMetricsFilterIntl(
-        parent.renderMetrics?.filter,
+        parent?.renderMetrics?.filter,
         override.renderMetrics?.filter,
       ),
       panel: mergeRenderMetricsPanelIntl(
-        parent.renderMetrics?.panel,
+        parent?.renderMetrics?.panel,
         override.renderMetrics?.panel,
       ),
       column: mergeRenderMetricsColumnIntl(
-        parent.renderMetrics?.column,
+        parent?.renderMetrics?.column,
         override.renderMetrics?.column,
       ),
     },
-    formatNumber: override.formatNumber ?? parent.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
+    formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
   };
 }
 
@@ -174,11 +238,12 @@ export function formatNatTableUtilsNumber(
   intl: NatTableUtilsIntl,
   value: number,
   options?: Intl.NumberFormatOptions,
+  locale?: string,
 ): string {
-  return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options);
+  return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 }
 
-export function injectNatTableUtilsIntl(): NatTableUtilsIntl {
+export function injectNatTableUtilsIntl(): NatTableUtilsIntlConfig {
   try {
     return inject(NAT_TABLE_UTILS_INTL);
   } catch (error) {
@@ -188,6 +253,72 @@ export function injectNatTableUtilsIntl(): NatTableUtilsIntl {
 
     return NAT_TABLE_UTILS_DEFAULT_INTL;
   }
+}
+
+export function readNatTableUtilsDefaultLocale(intl: NatTableUtilsIntlConfig): string {
+  const defaultLocale = intl.defaultLocale;
+
+  if (typeof defaultLocale === 'function') {
+    return defaultLocale();
+  }
+
+  return defaultLocale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE;
+}
+
+export function resolveNatTableUtilsIntl(
+  intl: NatTableUtilsIntlConfig,
+  locale: string,
+): NatTableUtilsIntl {
+  const englishIntl =
+    intl.locales?.[NAT_TABLE_UTILS_ENGLISH_LOCALE] ?? NAT_TABLE_UTILS_ENGLISH_INTL;
+  const selectedIntl =
+    intl.locales?.[locale] ?? (locale === NAT_TABLE_UTILS_ENGLISH_LOCALE ? {} : null);
+
+  return selectedIntl
+    ? mergeNatTableUtilsIntl(englishIntl, selectedIntl)
+    : mergeNatTableUtilsIntl(englishIntl, {});
+}
+
+function mergeNatTableUtilsIntlConfig(
+  parent: NatTableUtilsIntlConfig,
+  override: NatTableUtilsIntlProviderConfig,
+): NatTableUtilsIntlConfig {
+  const parentDefaultLocale = readNatTableUtilsDefaultLocale(parent);
+  const overrideConfig = normalizeUtilsIntlProviderConfig(override, parentDefaultLocale);
+  const nextDefaultLocale = overrideConfig.defaultLocale ?? parent.defaultLocale;
+  const nextLocales: Record<string, NatTableUtilsIntl> = {
+    ...(parent.locales ?? {}),
+  };
+
+  for (const [locale, localeIntl] of Object.entries(overrideConfig.locales ?? {})) {
+    nextLocales[locale] = mergeNatTableUtilsIntl(nextLocales[locale], localeIntl);
+  }
+
+  return {
+    defaultLocale: nextDefaultLocale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE,
+    locales: nextLocales,
+  };
+}
+
+function normalizeUtilsIntlProviderConfig(
+  config: NatTableUtilsIntlProviderConfig,
+  defaultLocale: string,
+): NatTableUtilsIntlConfig {
+  if (isUtilsIntlConfig(config)) {
+    return config;
+  }
+
+  return {
+    locales: {
+      [defaultLocale]: config,
+    },
+  };
+}
+
+function isUtilsIntlConfig(
+  config: NatTableUtilsIntlProviderConfig,
+): config is NatTableUtilsIntlConfig {
+  return 'defaultLocale' in config || 'locales' in config;
 }
 
 function isMissingInjectionContextError(error: unknown): error is Error & { code?: number } {

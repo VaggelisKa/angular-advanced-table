@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { NatTable, provideNatTableIntl, type NatTableState } from 'ng-advanced-table';
 
 import { NatTableColumnVisibility } from './components/table-column-visibility/table-column-visibility';
 import { withNatTableHeaderActions } from './components/table-header-actions/with-table-header-actions';
@@ -360,6 +360,71 @@ class ProviderAccessibilityLabelsHost {
 }
 
 @Component({
+  imports: [NatTable, NatTablePageSize, NatTablePager, NatTableSearch, NatTableSurface],
+  providers: [
+    provideNatTableIntl({
+      locales: {
+        da: {
+          accessibilityText: {
+            emptyState: 'Ingen rækker matcher visningen.',
+            tableSummary: ({ visibleRowsText, visibleColumnsText }) =>
+              `${visibleRowsText} rækker og ${visibleColumnsText} kolonner.`,
+          },
+        },
+      },
+    }),
+    provideNatTableUiIntl({
+      locales: {
+        da: {
+          search: {
+            label: 'Søg i rækker',
+            placeholder: 'Søg i rækker',
+          },
+          pageSize: {
+            ariaLabel: 'Rækker pr. side',
+            accessibilityLabels: {
+              pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} / side`,
+              pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker pr. side`,
+            },
+          },
+          pager: {
+            ariaLabel: 'Tabelsider',
+            accessibilityLabels: {
+              previousPageAriaLabel: 'Forrige side',
+              nextPageAriaLabel: 'Næste side',
+              pageIndicator: ({ pageText, pageCountText }) =>
+                `Side ${pageText} af ${pageCountText}`,
+            },
+          },
+        },
+      },
+    }),
+  ],
+  template: `
+    <nat-table
+      #grid="natTable"
+      [locale]="locale()"
+      [data]="rows()"
+      [columns]="columns"
+      [enablePagination]="true"
+      ariaLabel="Operations table"
+    />
+
+    <nat-table-surface>
+      <nat-table-search [for]="grid" />
+      <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
+      <nat-table-pager [for]="grid" />
+    </nat-table-surface>
+  `,
+})
+class LocaleSwitchingHost {
+  readonly locale = signal('en');
+  readonly rows = signal<Row[]>([]);
+  readonly columns = baseColumns;
+  readonly pageSizeOptions = [2, 3] as const;
+}
+
+@Component({
   imports: [NatTable],
   template: `
     <nat-table
@@ -409,6 +474,7 @@ describe('ng-advanced-table-ui', () => {
         CustomSortIndicatorHost,
         CustomAccessibilityLabelsHost,
         ProviderAccessibilityLabelsHost,
+        LocaleSwitchingHost,
         HeaderActionCompositionHost,
       ],
       providers: [provideZonelessChangeDetection()],
@@ -1016,6 +1082,63 @@ describe('ng-advanced-table-ui', () => {
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Input page size');
 
     providerFixture.destroy();
+  });
+
+  it('switches table and companion-control locale labels dynamically', () => {
+    const localeFixture = TestBed.createComponent(LocaleSwitchingHost);
+    const localeHost = localeFixture.componentInstance;
+
+    localeFixture.detectChanges();
+
+    const nativeElement = localeFixture.nativeElement as HTMLElement;
+    const emptyState = nativeElement.querySelector('.empty-state') as HTMLElement;
+    const tableSummary = nativeElement.querySelector('p.sr-only') as HTMLElement;
+    const searchLabel = nativeElement.querySelector(
+      'nat-table-search .control-label',
+    ) as HTMLElement;
+    const searchInput = nativeElement.querySelector(
+      'nat-table-search .search-input',
+    ) as HTMLInputElement;
+    const pageSizeGroup = nativeElement.querySelector(
+      'nat-table-page-size .chip-row',
+    ) as HTMLElement;
+    const pageSizeButton = nativeElement.querySelector(
+      'nat-table-page-size .chip',
+    ) as HTMLButtonElement;
+    const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
+    const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
+    const nextButton = nativeElement.querySelector(
+      'nat-table-pager .pager-button:last-child',
+    ) as HTMLButtonElement;
+
+    expect(emptyState.textContent?.trim()).toBe('No rows match the current view.');
+    expect(tableSummary.textContent?.trim()).toBe(
+      'No rows are currently shown. 4 visible columns. Page 1 of 1.',
+    );
+    expect(searchLabel.textContent?.trim()).toBe('Search rows');
+    expect(searchInput.placeholder).toBe('Search rows');
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rows per page');
+    expect(pageSizeButton.textContent?.trim()).toBe('2 / page');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('Show 2 rows per page');
+    expect(pager.getAttribute('aria-label')).toBe('Table pagination');
+    expect(pagerLabel.textContent?.trim()).toBe('Page 1 / 1');
+    expect(nextButton.getAttribute('aria-label')).toBe('Next page');
+
+    localeHost.locale.set('da');
+    localeFixture.detectChanges();
+
+    expect(emptyState.textContent?.trim()).toBe('Ingen rækker matcher visningen.');
+    expect(tableSummary.textContent?.trim()).toBe('0 rækker og 4 kolonner.');
+    expect(searchLabel.textContent?.trim()).toBe('Søg i rækker');
+    expect(searchInput.placeholder).toBe('Søg i rækker');
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
+    expect(pageSizeButton.textContent?.trim()).toBe('2 / side');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker pr. side');
+    expect(pager.getAttribute('aria-label')).toBe('Tabelsider');
+    expect(pagerLabel.textContent?.trim()).toBe('Side 1 af 1');
+    expect(nextButton.getAttribute('aria-label')).toBe('Næste side');
+
+    localeFixture.destroy();
   });
 
   it('applies header actions idempotently and honors per-column metadata', async () => {
