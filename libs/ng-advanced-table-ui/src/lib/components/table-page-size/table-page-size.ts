@@ -42,8 +42,8 @@ export class NatTablePageSize<TData extends RowData = RowData> {
     const labels = this.resolvedAccessibilityLabels();
 
     return (
-      labels.groupAriaLabel ??
       this.ariaLabel() ??
+      labels.groupAriaLabel ??
       this.tableUiIntl.pageSize?.ariaLabel ??
       'Rows per page'
     );

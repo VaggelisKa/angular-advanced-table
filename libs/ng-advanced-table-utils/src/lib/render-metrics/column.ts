@@ -32,6 +32,11 @@ export interface WithRenderMetricsColumnOptions extends NatTableRenderMetricsCol
  * @param columns Existing table columns.
  * @param store Shared metrics store populated from `<nat-table (rowRendered)>`.
  * @param options Optional labels, sizing, and identifier overrides.
+ *
+ * Call this helper from an Angular injection context to apply
+ * `provideNatTableUtilsIntl(...)` defaults. Calls outside DI still work, but
+ * use built-in defaults plus the explicit `options` passed here.
+ *
  * @returns A shallow copy of `columns` with the metrics column appended.
  */
 export function withRenderMetricsColumn<TData extends RowData>(

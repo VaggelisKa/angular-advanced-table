@@ -279,6 +279,7 @@ class CustomAccessibilityLabelsHost {
       pageSize: {
         ariaLabel: 'Provider page size',
         accessibilityLabels: {
+          groupAriaLabel: 'Provider page size group',
           pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} provider rows`,
           pageSizeOptionAriaLabel: ({ pageSizeText }) => `Provider show ${pageSizeText} rows`,
         },
@@ -328,7 +329,11 @@ class CustomAccessibilityLabelsHost {
     <nat-table-surface>
       <nat-table-search [for]="grid" [label]="searchLabel()" />
       <nat-table-column-visibility [for]="grid" />
-      <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
+      <nat-table-page-size
+        [for]="grid"
+        [ariaLabel]="pageSizeAriaLabel()"
+        [pageSizeOptions]="pageSizeOptions"
+      />
       <nat-table-pager [for]="grid" />
       <nat-table-scroll-control [for]="grid" />
     </nat-table-surface>
@@ -347,6 +352,7 @@ class ProviderAccessibilityLabelsHost {
     },
   };
   readonly searchLabel = signal<string | undefined>(undefined);
+  readonly pageSizeAriaLabel = signal<string | undefined>(undefined);
 
   onTableStateChange(state: NatTableState): void {
     this.tableState.set(state);
@@ -981,7 +987,7 @@ describe('ng-advanced-table-ui', () => {
     expect(visibilityHeading.textContent?.trim()).toBe('Provider columns');
     expect(visibilityCaption.textContent?.trim()).toBe('Provider n4/n4');
     expect(visibilityGroup.getAttribute('aria-label')).toBe('Provider column visibility');
-    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Provider page size');
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Provider page size group');
     expect(pageSizeButton.textContent?.trim()).toBe('n2 provider rows');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('Provider show n2 rows');
     expect(pager.getAttribute('aria-label')).toBe('Provider pager');
@@ -1002,10 +1008,12 @@ describe('ng-advanced-table-ui', () => {
     expect(getOpenMenuItem('left').textContent).toContain('Provider left');
 
     providerHost.searchLabel.set('Input search');
+    providerHost.pageSizeAriaLabel.set('Input page size');
     providerFixture.detectChanges();
 
     expect(searchLabel.textContent?.trim()).toBe('Input search');
     expect(searchInput.placeholder).toBe('Provider placeholder');
+    expect(pageSizeGroup.getAttribute('aria-label')).toBe('Input page size');
 
     providerFixture.destroy();
   });

@@ -181,7 +181,18 @@ export function formatNatTableUtilsNumber(
 export function injectNatTableUtilsIntl(): NatTableUtilsIntl {
   try {
     return inject(NAT_TABLE_UTILS_INTL);
-  } catch {
+  } catch (error) {
+    if (!isMissingInjectionContextError(error)) {
+      throw error;
+    }
+
     return NAT_TABLE_UTILS_DEFAULT_INTL;
   }
+}
+
+function isMissingInjectionContextError(error: unknown): error is Error & { code?: number } {
+  return (
+    error instanceof Error &&
+    (Math.abs((error as { code?: number }).code ?? 0) === 203 || error.message.includes('NG0203'))
+  );
 }
