@@ -28,7 +28,7 @@
     "@tanstack/angular-table": "^8.0.0"
   },
   "dependencies": {
-    "ng-advanced-table-locales": "^1.0.0",
+    "ng-advanced-table-locales": "*",
     "tslib": "^2.3.0"
   },
   "sideEffects": false
