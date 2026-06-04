@@ -1,5 +1,6 @@
 import { InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
 
+import { NAT_TABLE_BUILT_IN_LOCALES } from './built-in-locales';
 import {
   NAT_EN_LOCALE_ID,
   NAT_EN_LOCALE_LABELS,
@@ -41,7 +42,7 @@ export const NAT_TABLE_INTL = new InjectionToken<NatTableIntlConfig>('NAT_TABLE_
  * column definitions.
  */
 export function provideNatTableLocales(overrides: NatTableLocaleLabelsMap = {}): Provider[] {
-  const locales = mergeLocaleMaps(NAT_TABLE_DEFAULT_INTL.locales ?? {}, overrides);
+  const locales = mergeLocaleMaps(NAT_TABLE_BUILT_IN_LOCALES, overrides);
 
   return provideNatTableIntl({ locales });
 }
