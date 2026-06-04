@@ -1,0 +1,35 @@
+{
+  "name": "ng-advanced-table-locales",
+  "version": "1.0.0",
+  "description": "Built-in locale registry and provider helpers for ng-advanced-table.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VaggelisKa/angular-advanced-table.git",
+    "directory": "libs/ng-advanced-table-locales"
+  },
+  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/libs/ng-advanced-table-locales#readme",
+  "bugs": {
+    "url": "https://github.com/VaggelisKa/angular-advanced-table/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "angular",
+    "table",
+    "i18n",
+    "localization",
+    "accessibility"
+  ],
+  "peerDependencies": {
+    "@angular/core": "^21.2.0",
+    "ng-advanced-table": "^1.1.0",
+    "ng-advanced-table-ui": "^1.2.0",
+    "ng-advanced-table-utils": "^1.1.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

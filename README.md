@@ -362,7 +362,7 @@ Pinned column offsets are based on measured header widths after layout. Before a
 
 ## Accessibility and Internationalization
 
-Accessible copy is consumer-owned. Set a localized `ariaLabel`, stable `columnDef.meta.label` values, and the `accessibilityText` object for everything else: supplemental description, keyboard instructions, the empty state message, table summaries, and live announcements.
+Accessible copy is split by ownership. Set table-specific copy such as `ariaLabel`, captions, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated interaction copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent checklist, localization guidance, and examples.
 
@@ -394,7 +394,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
 };
 ```
 
-`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). Generated table copy has English defaults and can be localized through provider `locales` dictionaries plus `<nat-table [locale]="localeId()">`. Formatter contexts expose locale-formatted numbers and semantic state labels. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
+`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). Generated table copy has English defaults and can be localized through `provideNatTableLocales()` plus `<nat-table [locale]="localeId()">`. Formatter contexts expose locale-formatted numbers and semantic state labels. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
 
 ## Custom Cell Components
 
@@ -584,7 +584,7 @@ Notes:
 
 ## UI Accessibility Labels
 
-The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiIntl({ locales })`. Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
+The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableLocales()`. Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 
