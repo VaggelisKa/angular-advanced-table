@@ -2,8 +2,6 @@ import { inject, InjectionToken, Optional, SkipSelf, type Provider } from '@angu
 
 import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './utils-built-in-locales';
 import {
-  NAT_EN_LOCALE_ID,
-  NAT_EN_UTILS_LOCALE_LABELS,
   NAT_TABLE_UTILS_ENGLISH_INTL,
   NAT_TABLE_UTILS_ENGLISH_LOCALE,
 } from './utils-en';
@@ -24,9 +22,7 @@ const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options, 
 
 /** Built-in locale defaults used when no utils locale provider is configured. */
 export const NAT_TABLE_UTILS_DEFAULT_INTL: NatTableUtilsIntlConfig = {
-  locales: {
-    [NAT_EN_LOCALE_ID]: NAT_EN_UTILS_LOCALE_LABELS,
-  },
+  locales: NAT_TABLE_BUILT_IN_UTILS_LOCALES,
 };
 
 /** Injection token backing `provideNatTableUtilsLocales(...)`. */
@@ -46,9 +42,7 @@ export const NAT_TABLE_UTILS_INTL = new InjectionToken<NatTableUtilsIntlConfig>(
 export function provideNatTableUtilsLocales(
   overrides: NatTableUtilsLocaleLabelsMap = {},
 ): Provider[] {
-  return provideNatTableUtilsIntl({
-    locales: mergeLocaleMaps(NAT_TABLE_BUILT_IN_UTILS_LOCALES, overrides),
-  });
+  return provideNatTableUtilsIntl({ locales: overrides });
 }
 
 /**
@@ -196,16 +190,16 @@ function isUtilsIntlConfig(
 }
 
 function mergeLocaleMaps(
-  builtInLocales: NatTableUtilsLocaleLabelsMap,
-  overrides: NatTableUtilsLocaleLabelsMap,
+  parentLocales: NatTableUtilsLocaleLabelsMap,
+  overrideLocales: NatTableUtilsLocaleLabelsMap,
 ): NatTableUtilsLocaleLabelsMap {
   const merged: NatTableUtilsLocaleLabelsMap = {};
 
-  for (const [localeId, labels] of Object.entries(builtInLocales)) {
+  for (const [localeId, labels] of Object.entries(parentLocales)) {
     merged[localeId] = mergeNatTableUtilsLocaleIntl(undefined, labels);
   }
 
-  for (const [localeId, labels] of Object.entries(overrides)) {
+  for (const [localeId, labels] of Object.entries(overrideLocales)) {
     merged[localeId] = mergeNatTableUtilsLocaleIntl(merged[localeId], labels);
   }
 

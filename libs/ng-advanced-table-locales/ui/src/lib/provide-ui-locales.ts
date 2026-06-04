@@ -2,8 +2,6 @@ import { InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core
 
 import { NAT_TABLE_BUILT_IN_UI_LOCALES } from './ui-built-in-locales';
 import {
-  NAT_EN_LOCALE_ID,
-  NAT_EN_UI_LOCALE_LABELS,
   NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_ENGLISH_LOCALE,
 } from './ui-en';
@@ -26,9 +24,7 @@ const DEFAULT_NUMBER_FORMATTER: NatTableUiNumberFormatter = (value, options, loc
 
 /** Built-in locale defaults used when no UI locale provider is configured. */
 export const NAT_TABLE_UI_DEFAULT_INTL: NatTableUiIntlConfig = {
-  locales: {
-    [NAT_EN_LOCALE_ID]: NAT_EN_UI_LOCALE_LABELS,
-  },
+  locales: NAT_TABLE_BUILT_IN_UI_LOCALES,
 };
 
 /** Injection token backing `provideNatTableUiLocales(...)`. */
@@ -45,9 +41,7 @@ export const NAT_TABLE_UI_INTL = new InjectionToken<NatTableUiIntlConfig>('NAT_T
 export function provideNatTableUiLocales(
   overrides: NatTableUiLocaleLabelsMap = {},
 ): Provider[] {
-  return provideNatTableUiIntl({
-    locales: mergeLocaleMaps(NAT_TABLE_BUILT_IN_UI_LOCALES, overrides),
-  });
+  return provideNatTableUiIntl({ locales: overrides });
 }
 
 /**
@@ -158,16 +152,16 @@ function isUiIntlConfig(config: NatTableUiIntlProviderConfig): config is NatTabl
 }
 
 function mergeLocaleMaps(
-  builtInLocales: NatTableUiLocaleLabelsMap,
-  overrides: NatTableUiLocaleLabelsMap,
+  parentLocales: NatTableUiLocaleLabelsMap,
+  overrideLocales: NatTableUiLocaleLabelsMap,
 ): NatTableUiLocaleLabelsMap {
   const merged: NatTableUiLocaleLabelsMap = {};
 
-  for (const [localeId, labels] of Object.entries(builtInLocales)) {
+  for (const [localeId, labels] of Object.entries(parentLocales)) {
     merged[localeId] = mergeNatTableUiLocaleIntl(undefined, labels);
   }
 
-  for (const [localeId, labels] of Object.entries(overrides)) {
+  for (const [localeId, labels] of Object.entries(overrideLocales)) {
     merged[localeId] = mergeNatTableUiLocaleIntl(merged[localeId], labels);
   }
 
