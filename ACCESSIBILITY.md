@@ -10,7 +10,7 @@ Generated copy resolves in this order:
 2. The locale selected by `<nat-table [locale]="localeId()">`, or English when no table locale is set.
 3. Per-table, per-control, or per-helper inputs/options for instance-specific copy.
 
-Use `provideNatTableLocales()` for locale dictionaries and number formatting. Use inputs/options for the few controls that need instance-specific wording.
+Use `provideNatTableLocales()` for table locale dictionaries and number formatting. Add `provideNatTableUiLocales()` or `provideNatTableUtilsLocales()` only when using those companion packages.
 
 This guide focuses on text that the consuming application owns. It does not replace normal accessibility review for custom cells, custom controls, dialogs, menus, or product-specific workflows.
 
@@ -32,14 +32,34 @@ This section exists so automated tooling can validate implementations against th
 
 | Symbol                        | Kind     | Notes                                                                                  |
 | ----------------------------- | -------- | -------------------------------------------------------------------------------------- |
-| `provideNatTableLocales(...)` | provider | Registers every locale shipped by the locale package, plus optional overrides           |
-| `NAT_TABLE_BUILT_IN_LOCALES`  | constant | Built-in locale registry. Starts with English and grows when new locales are published |
+| `provideNatTableLocales(...)` | provider | Registers every table locale shipped by the locale package, plus optional overrides    |
+| `NAT_TABLE_BUILT_IN_LOCALES`  | constant | Built-in table locale registry. Starts with English                                    |
 | `NAT_EN_LOCALE_ID`            | constant | Built-in English locale id (`en`)                                                      |
-| `NAT_EN_LOCALE_LABELS`        | constant | Flat English locale labels for spreading and overrides                                 |
-| `NatTableLocaleLabels`        | type     | Flat locale label shape for core, UI, utils, and shared number formatting              |
+| `NAT_EN_LOCALE_LABELS`        | constant | English table locale labels for spreading and overrides                                |
+| `NatTableLocaleLabels`        | type     | Table locale label shape for generated table copy and number formatting                |
 | `NatTableLocaleLabelsMap`     | type     | Locale dictionaries keyed by locale id                                                 |
 
-`provideNatTableLocales(...)` is the primary localization API. The package-specific providers are advanced escape hatches for consumers that deliberately do not want the unified registry.
+Table localization is the primary entry point. Companion packages use separate locale entry points: `ng-advanced-table-locales/ui` and `ng-advanced-table-locales/utils`.
+
+### UI Locales (`ng-advanced-table-locales/ui`)
+
+| Symbol                           | Kind     | Notes                                      |
+| -------------------------------- | -------- | ------------------------------------------ |
+| `provideNatTableUiLocales(...)`  | provider | Registers companion UI locale dictionaries |
+| `NAT_TABLE_BUILT_IN_UI_LOCALES`  | constant | Built-in UI locale registry                |
+| `NAT_EN_UI_LOCALE_LABELS`        | constant | English UI locale labels                   |
+| `NatTableUiLocaleLabels`         | type     | UI locale label shape                      |
+| `NatTableUiLocaleLabelsMap`      | type     | UI locale dictionaries keyed by locale id  |
+
+### Utils Locales (`ng-advanced-table-locales/utils`)
+
+| Symbol                              | Kind     | Notes                                          |
+| ----------------------------------- | -------- | ---------------------------------------------- |
+| `provideNatTableUtilsLocales(...)`  | provider | Registers render-metrics locale dictionaries   |
+| `NAT_TABLE_BUILT_IN_UTILS_LOCALES`  | constant | Built-in utils locale registry                 |
+| `NAT_EN_UTILS_LOCALE_LABELS`        | constant | English utils locale labels                    |
+| `NatTableUtilsLocaleLabels`         | type     | Utils locale label shape                       |
+| `NatTableUtilsLocaleLabelsMap`      | type     | Utils locale dictionaries keyed by locale id   |
 
 #### `NatTableAccessibilityText` keys
 
@@ -113,7 +133,9 @@ Always do this:
 
 - Give every `<nat-table>` a localized `ariaLabel`.
 - Set `columnDef.meta.label` for each data column. This is required when the header is not a plain string and recommended for all columns.
-- Provide generated localized labels through `provideNatTableLocales()`. Pass overrides only when adding custom locale ids or changing built-in generated copy.
+- Provide generated table labels through `provideNatTableLocales()`. Pass overrides only when adding custom locale ids or changing built-in generated table copy.
+- When rendering `ng-advanced-table-ui` controls, provide common generated UI labels through `provideNatTableUiLocales()`.
+- When rendering `ng-advanced-table-utils` controls/helpers, provide common generated utility labels through `provideNatTableUtilsLocales()`.
 - Keep table-specific copy such as accessible names, captions, descriptions, empty-state wording that differs per table, and column labels on table inputs or column definitions.
 - Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` only for instance-specific control overrides.
 - Translate semantic state values such as `ascending`, `descending`, `visible`, `hidden`, `show`, `hide`, `pin`, `unpin`, `left`, and `right` before presenting them to users.
@@ -142,11 +164,13 @@ For every generated table, verify these items before considering the work comple
 
 ## App-Level Localization Providers
 
-Configure locale dictionaries once at app or feature scope. `provideNatTableLocales()` registers every locale shipped by `ng-advanced-table-locales`; pass configuration only to override built-ins or add custom locale ids. Per-instance inputs and helper options remain useful for table-specific copy and always take precedence over provider locale defaults.
+Configure locale dictionaries once at app or feature scope. `provideNatTableLocales()` registers table locales. Add `provideNatTableUiLocales()` and `provideNatTableUtilsLocales()` only when the app uses those packages. Pass configuration only to override built-ins or add custom locale ids. Per-instance inputs and helper options remain useful for table-specific copy and always take precedence over provider locale defaults.
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
 import { provideNatTableLocales } from 'ng-advanced-table-locales';
+import { provideNatTableUiLocales } from 'ng-advanced-table-locales/ui';
+import { provideNatTableUtilsLocales } from 'ng-advanced-table-locales/utils';
 
 const formatNumber = (value: number, options?: Intl.NumberFormatOptions, locale = 'en') =>
   new Intl.NumberFormat(locale, options).format(value);
@@ -173,6 +197,11 @@ export const appConfig: ApplicationConfig = {
                 }.`
               : 'Sortering ryddet.',
         },
+      },
+    }),
+    provideNatTableUiLocales({
+      da: {
+        formatNumber,
         search: {
           label: 'Søg i rækker',
           placeholder: 'Søg i rækker',
@@ -198,6 +227,11 @@ export const appConfig: ApplicationConfig = {
             menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
           },
         },
+      },
+    }),
+    provideNatTableUtilsLocales({
+      da: {
+        formatNumber,
         renderMetrics: {
           filter: {
             heading: 'Renderhastighed',
@@ -218,7 +252,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-Feature routes can provide a smaller override. Nested providers merge with their parent provider per locale, so a feature can replace only the copy it owns while keeping the app-level formatter and labels. Low-level `provideNatTableIntl(...)`, `provideNatTableUiIntl(...)`, and `provideNatTableUtilsIntl(...)` remain available for package-specific advanced use.
+Feature routes can provide a smaller override. Nested providers merge with their parent provider per locale, so a feature can replace only the copy it owns while keeping the app-level formatter and labels. Low-level `provideNatTableIntl(...)`, `provideNatTableUiIntl(...)`, and `provideNatTableUtilsIntl(...)` remain available for package-internal advanced use.
 
 Use the table locale to switch generated copy at runtime:
 
@@ -275,7 +309,7 @@ Formatter callbacks receive semantic state and both raw numeric values and prefo
 
 ## Optional UI Controls
 
-The `ng-advanced-table-ui` package consumes locale dictionaries from `provideNatTableLocales()` and exposes per-instance copy overrides without requiring consumers to rebuild table state.
+The `ng-advanced-table-ui` package consumes locale dictionaries from `provideNatTableUiLocales()` and exposes per-instance copy overrides without requiring consumers to rebuild table state.
 
 | Component or helper              | Consumer-owned copy                                                 |
 | -------------------------------- | ------------------------------------------------------------------- |
@@ -286,11 +320,11 @@ The `ng-advanced-table-ui` package consumes locale dictionaries from `provideNat
 | `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
 
-Use `provideNatTableLocales()` for common locale labels. Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels only when one control needs instance-specific copy. Do not rely on placeholder text as the only accessible label for search.
+Use `provideNatTableUiLocales()` for common UI locale labels. Use `label` for visible control labels, `ariaLabel` for group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels only when one control needs instance-specific copy. Do not rely on placeholder text as the only accessible label for search.
 
 Decision rules for agents:
 
-- If `NatTableSearch` is rendered in a non-English product, localize both `label` and `placeholder` through `provideNatTableLocales()` or inputs.
+- If `NatTableSearch` is rendered in a non-English product, localize both `label` and `placeholder` through `provideNatTableUiLocales()` or inputs.
 - If one `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, or `NatTableScrollControl` instance needs different wording from the active locale, pass its specific label input or `accessibilityLabels` bag.
 - If `withNatTableHeaderActions(...)` is used and one table/column needs wording different from the active locale, pass `NatTableAccessibilityHeaderActionLabels` through helper options or column metadata. This label surface covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin menu item text.
 
@@ -300,7 +334,8 @@ When translations can change while the component is alive, pass the active local
 
 Use this pattern:
 
-- Store common generated copy in `provideNatTableLocales()` dictionaries.
+- Store common generated table copy in `provideNatTableLocales()` dictionaries.
+- Store common generated companion copy in `provideNatTableUiLocales()` or `provideNatTableUtilsLocales()` dictionaries when those packages are used.
 - Pass `<nat-table [locale]="localeId()">`.
 - Keep `ariaLabel`, visible captions, and column `meta.label` as table-specific product copy.
 - Derive translated `columns` with `computed(...)` when headers or `meta.label` change with the locale.

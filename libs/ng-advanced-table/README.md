@@ -22,7 +22,6 @@ Use this package when you want:
 - Sticky headers and sticky pinned columns.
 - Optional `(rowRendered)` instrumentation.
 - Custom accessibility summaries and live announcements through `accessibilityText`.
-- Built-in English generated copy, with app-level localization through `provideNatTableLocales()` from `ng-advanced-table-locales`.
 
 This package does not include:
 
@@ -52,7 +51,7 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 ## Public Exports
 
 - `NatTable`
-- `provideNatTableIntl(...)` for package-specific advanced overrides. Prefer `provideNatTableLocales()` from `ng-advanced-table-locales` for app-level localization.
+- `provideNatTableIntl(...)`
 - `NatTableRowRenderedEvent`
 - `NatTableAccessibilityText`
 - `NatTableA11y` (namespace of deep accessibility formatter context types)

@@ -1,21 +1,115 @@
-import { NAT_TABLE_ENGLISH_INTL } from 'ng-advanced-table';
-import { NAT_TABLE_UI_ENGLISH_INTL } from 'ng-advanced-table-ui';
-import { NAT_TABLE_UTILS_ENGLISH_INTL } from 'ng-advanced-table-utils';
+import type { NatTableLocaleLabels, NatTableNumberFormatter } from './types';
 
-import type { NatTableLocaleLabels } from './types';
-
-/** Locale id for the built-in English locale. */
+/** Locale id for the built-in English table locale. */
 export const NAT_EN_LOCALE_ID = 'en';
 
-/** Built-in English labels shipped with the table packages. */
+export const NAT_TABLE_ENGLISH_LOCALE = NAT_EN_LOCALE_ID;
+
+const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, locale) =>
+  new Intl.NumberFormat(locale, options).format(value);
+
+/** Built-in English labels shipped with the table locale package. */
 export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
-  accessibilityText: NAT_TABLE_ENGLISH_INTL.accessibilityText,
-  search: NAT_TABLE_UI_ENGLISH_INTL.search,
-  columnVisibility: NAT_TABLE_UI_ENGLISH_INTL.columnVisibility,
-  pageSize: NAT_TABLE_UI_ENGLISH_INTL.pageSize,
-  pager: NAT_TABLE_UI_ENGLISH_INTL.pager,
-  scrollControl: NAT_TABLE_UI_ENGLISH_INTL.scrollControl,
-  headerActions: NAT_TABLE_UI_ENGLISH_INTL.headerActions,
-  renderMetrics: NAT_TABLE_UTILS_ENGLISH_INTL.renderMetrics,
-  formatNumber: NAT_TABLE_ENGLISH_INTL.formatNumber,
+  accessibilityText: {
+    keyboardInstructions:
+      'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
+    emptyState: 'No rows match the current view.',
+    reorderKeyboardInstructions:
+      'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+    tableSummary: ({
+      filterState,
+      pageCountText,
+      pageText,
+      paginationState,
+      totalRowsValue,
+      totalRowsText,
+      visibleColumnsValue,
+      visibleColumnsText,
+      visibleRowsValue,
+      visibleRowsText,
+    }) => {
+      let summary =
+        visibleRowsValue === 0
+          ? `No rows are currently shown. ${visibleColumnsText} visible ${pluralize(
+              'column',
+              visibleColumnsValue,
+            )}.`
+          : filterState === 'filtered' && totalRowsValue !== visibleRowsValue
+            ? `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
+                'row',
+                totalRowsValue,
+              )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`
+            : `Showing ${visibleRowsText} ${pluralize(
+                'row',
+                visibleRowsValue,
+              )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+
+      if (paginationState === 'enabled') {
+        summary += ` Page ${pageText} of ${pageCountText}.`;
+      }
+
+      return summary;
+    },
+    sortingChange: ({ columnLabel, sortState }) =>
+      columnLabel ? `Sorted by ${columnLabel} ${sortState}.` : 'Sorting cleared.',
+    filteringChange: ({ filterState, query, visibleRowsValue, visibleRowsText }) => {
+      if (visibleRowsValue === 0) {
+        return query ? `No rows match "${query}".` : 'No rows match the current filters.';
+      }
+
+      if (query) {
+        return `Showing ${visibleRowsText} matching ${pluralize('row', visibleRowsValue)} for "${query}".`;
+      }
+
+      if (filterState === 'column') {
+        return `Showing ${visibleRowsText} filtered ${pluralize('row', visibleRowsValue)}.`;
+      }
+
+      return `Showing all ${visibleRowsText} ${pluralize('row', visibleRowsValue)}.`;
+    },
+    columnVisibilityChange: ({ changedColumns, visibleColumnsValue, visibleColumnsText }) => {
+      if (changedColumns.length === 1) {
+        const [column] = changedColumns;
+
+        return `${column.label} column ${
+          column.visibilityState === 'visible' ? 'shown' : 'hidden'
+        }. ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+      }
+
+      return `${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+    },
+    pageSizeChange: ({ pageCountText, pageSizeValue, pageSizeText, pageText }) =>
+      `Showing ${pageSizeText} ${pluralize(
+        'row',
+        pageSizeValue,
+      )} per page. Page ${pageText} of ${pageCountText}.`,
+    pageChange: ({ pageCountText, pageText, visibleRowsValue, visibleRowsText }) =>
+      `Page ${pageText} of ${pageCountText}. ${visibleRowsText} ${pluralize(
+        'row',
+        visibleRowsValue,
+      )} shown.`,
+    columnReorder: ({ label, positionText, totalText, zone }) =>
+      `Moved ${label} column to position ${positionText} of ${totalText} in the ${describeColumnZone(
+        zone,
+      )} region.`,
+  },
+  formatNumber: DEFAULT_NUMBER_FORMATTER,
 };
+
+export const NAT_TABLE_ENGLISH_INTL = NAT_EN_LOCALE_LABELS;
+
+function pluralize(label: string, count: number): string {
+  return count === 1 ? label : `${label}s`;
+}
+
+function describeColumnZone(zone: 'left' | 'center' | 'right'): string {
+  if (zone === 'left') {
+    return 'left pinned';
+  }
+
+  if (zone === 'right') {
+    return 'right pinned';
+  }
+
+  return 'unpinned';
+}

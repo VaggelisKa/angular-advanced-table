@@ -2,6 +2,7 @@
   "name": "ng-advanced-table-locales",
   "version": "1.0.0",
   "description": "Built-in locale registry and provider helpers for ng-advanced-table.",
+  "typings": "src/public-api.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -23,10 +24,7 @@
     "accessibility"
   ],
   "peerDependencies": {
-    "@angular/core": "^21.2.0",
-    "ng-advanced-table": "^1.1.0",
-    "ng-advanced-table-ui": "^1.2.0",
-    "ng-advanced-table-utils": "^1.1.0"
+    "@angular/core": "^21.2.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

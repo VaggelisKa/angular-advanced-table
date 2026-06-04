@@ -1,4 +1,33 @@
-export { NAT_EN_LOCALE_ID, NAT_EN_LOCALE_LABELS } from './lib/en';
+export {
+  NAT_EN_LOCALE_ID,
+  NAT_EN_LOCALE_LABELS,
+  NAT_TABLE_ENGLISH_INTL,
+  NAT_TABLE_ENGLISH_LOCALE,
+} from './lib/en';
 export { NAT_TABLE_BUILT_IN_LOCALES } from './lib/built-in-locales';
-export { provideNatTableLocales } from './lib/provide-table-locales';
-export type { NatTableLocaleLabels, NatTableLocaleLabelsMap } from './lib/types';
+export {
+  formatNatTableIntlNumber,
+  mergeNatTableAccessibilityText,
+  mergeNatTableIntl,
+  NAT_TABLE_DEFAULT_INTL,
+  NAT_TABLE_INTL,
+  provideNatTableIntl,
+  provideNatTableLocales,
+  resolveNatTableIntl,
+} from './lib/provide-table-locales';
+export type {
+  NatTableAccessibilityColumnReorderAnnouncementContext,
+  NatTableAccessibilityColumnVisibilityAnnouncementChange,
+  NatTableAccessibilityColumnVisibilityAnnouncementContext,
+  NatTableAccessibilityFilteringAnnouncementContext,
+  NatTableAccessibilityPaginationAnnouncementContext,
+  NatTableAccessibilitySortingAnnouncementContext,
+  NatTableAccessibilitySummaryContext,
+  NatTableAccessibilityText,
+  NatTableIntl,
+  NatTableIntlConfig,
+  NatTableIntlProviderConfig,
+  NatTableLocaleLabels,
+  NatTableLocaleLabelsMap,
+  NatTableNumberFormatter,
+} from './lib/types';

@@ -11,7 +11,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
 | `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
-| `ng-advanced-table-locales` | Built-in locale registry           | `provideNatTableLocales(...)`, `NAT_TABLE_BUILT_IN_LOCALES`, `NAT_EN_LOCALE_LABELS`                                                                             |
+| `ng-advanced-table-locales` | Built-in locale registry           | `provideNatTableLocales(...)`, optional `ng-advanced-table-locales/ui` and `ng-advanced-table-locales/utils` entry points                                        |
 
 The workspace keeps shared table contracts aligned through the private `ng-advanced-table-types` library. Consumers should import public contracts from published packages only; prefer `ng-advanced-table` for `NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` when column definitions or state move across package boundaries. The UI and utils packages keep compatibility exports for consumers already importing from those entry points.
 
@@ -370,7 +370,7 @@ Pinned column offsets are based on measured header widths after layout. Before a
 
 ## Accessibility and Internationalization
 
-Accessible copy is split by ownership. Set table-specific copy such as `ariaLabel`, captions, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated interaction copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`.
+Accessible copy is split by ownership. Set table-specific copy such as `ariaLabel`, captions, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated table copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`; UI and utils labels opt in through their companion locale entry points.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent checklist, localization guidance, and examples.
 
@@ -592,7 +592,7 @@ Notes:
 
 ## UI Accessibility Labels
 
-The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableLocales()`. Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
+The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 

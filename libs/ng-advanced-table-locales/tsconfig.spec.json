@@ -7,24 +7,20 @@
     "outDir": "../../out-tsc/spec-locales",
     "types": ["vitest/globals"],
     "paths": {
-      "ng-advanced-table": [
-        "libs/ng-advanced-table/src/public-api.ts",
-        "dist/libs/ng-advanced-table"
-      ],
       "ng-advanced-table-locales": [
         "libs/ng-advanced-table-locales/src/public-api.ts",
         "dist/libs/ng-advanced-table-locales"
       ],
+      "ng-advanced-table-locales/ui": [
+        "libs/ng-advanced-table-locales/ui/src/public-api.ts",
+        "dist/libs/ng-advanced-table-locales/ui"
+      ],
+      "ng-advanced-table-locales/utils": [
+        "libs/ng-advanced-table-locales/utils/src/public-api.ts",
+        "dist/libs/ng-advanced-table-locales/utils"
+      ],
       "ng-advanced-table-types": [
         "libs/ng-advanced-table-types/src/public-api.ts"
-      ],
-      "ng-advanced-table-ui": [
-        "libs/ng-advanced-table-ui/src/public-api.ts",
-        "dist/libs/ng-advanced-table-ui"
-      ],
-      "ng-advanced-table-utils": [
-        "libs/ng-advanced-table-utils/src/public-api.ts",
-        "dist/libs/ng-advanced-table-utils"
       ]
     }
   },
