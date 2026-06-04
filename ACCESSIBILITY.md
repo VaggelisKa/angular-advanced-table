@@ -23,7 +23,7 @@ This section exists so automated tooling can validate implementations against th
 | Symbol                      | Kind              | Notes                                                                                                     |
 | --------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
 | `NatTable`                  | component         | Primary grid primitive. Accepts `locale` for generated labels.                                            |
-| `provideNatTableIntl(...)`  | provider          | App/feature locale dictionaries for `accessibilityText` and table number formatting                       |
+| `provideNatTableIntl(...)`  | provider          | Advanced core-only override provider used by the locale registry for table copy and number formatting     |
 | `NatTableAccessibilityText` | type              | Primary bag for consumer-owned accessibility strings + announcement formatters                            |
 | `NatTableA11y`              | namespace         | Formatter context types for explicit typing (example: `NatTableA11y.NatTableAccessibilitySummaryContext`) |
 | `enableAnnouncements`       | input (`boolean`) | Turn built-in polite live-region announcements on/off                                                     |
@@ -38,6 +38,8 @@ This section exists so automated tooling can validate implementations against th
 | `NAT_EN_LOCALE_LABELS`        | constant | Flat English locale labels for spreading and overrides                                 |
 | `NatTableLocaleLabels`        | type     | Flat locale label shape for core, UI, utils, and shared number formatting              |
 | `NatTableLocaleLabelsMap`     | type     | Locale dictionaries keyed by locale id                                                 |
+
+`provideNatTableLocales(...)` is the primary localization API. The package-specific providers are advanced escape hatches for consumers that deliberately do not want the unified registry.
 
 #### `NatTableAccessibilityText` keys
 
@@ -88,7 +90,7 @@ Companion controls inherit the controlled table's `locale` through `[for]="grid"
 | `NatTablePager`                  | `ariaLabel`, `NatTableAccessibilityPagerLabels`                     |
 | `NatTableScrollControl`          | `ariaLabel`, `NatTableAccessibilityScrollControlLabels`             |
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                           |
-| `provideNatTableUiIntl(...)`     | App/feature locale dictionaries for the labels above and UI numbers |
+| `provideNatTableUiIntl(...)`     | Advanced UI-only override provider used by the locale registry      |
 
 Header action labels include the sort button, menu trigger, menu content, pin buttons, and visible pin menu item text.
 
@@ -96,7 +98,7 @@ Header action labels include the sort button, menu trigger, menu content, pin bu
 
 | Symbol                          | Kind      | Notes                                                                           |
 | ------------------------------- | --------- | ------------------------------------------------------------------------------- |
-| `provideNatTableUtilsIntl(...)` | provider  | App/feature locale dictionaries for render-metrics labels and number formatting |
+| `provideNatTableUtilsIntl(...)` | provider  | Advanced utils-only override provider used by the locale registry for render-metrics copy |
 | `NatRenderMetricsFilter`        | component | Accepts provider defaults plus per-instance `labels`                            |
 | `NatRenderMetricsPanel`         | component | Accepts provider defaults plus per-instance `labels`                            |
 | `withRenderMetricsColumn(...)`  | helper    | Accepts provider defaults when called in Angular DI plus per-call options       |

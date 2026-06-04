@@ -32,6 +32,9 @@ The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #g
 npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
+For app-level localization through `provideNatTableLocales()`, also install
+`ng-advanced-table-locales` and `ng-advanced-table-utils`.
+
 ## Zoneless Compatibility
 
 - `ng-advanced-table-ui` is validated in a zoneless Angular `TestBed` configuration.
@@ -75,6 +78,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables.
 - The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), and optional `localeId`.
+- Use `provideNatTableLocales()` from `ng-advanced-table-locales` as the app-level localization API. The lower-level UI provider remains available for package-specific advanced overrides.
 - Companion controls inherit the controlled table locale and expose label inputs only for instance-specific overrides.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.

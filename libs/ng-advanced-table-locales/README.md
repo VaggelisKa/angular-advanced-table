@@ -3,6 +3,8 @@
 Built-in locale registry for `ng-advanced-table`, `ng-advanced-table-ui`, and
 `ng-advanced-table-utils`.
 
+Use this package as the primary app-level localization entry point.
+
 ```ts
 import { provideNatTableLocales } from 'ng-advanced-table-locales';
 

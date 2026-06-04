@@ -55,6 +55,7 @@ npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @a
 ## Package Notes
 
 - `NatTableRenderMetricsStore` tracks per-row timings and computes the latest aggregate measurement.
+- Use `provideNatTableLocales()` from `ng-advanced-table-locales` as the app-level localization API. The lower-level utils provider remains available for render-metrics-only advanced overrides.
 - `withRenderMetricsColumn(...)` appends a synthetic metrics column. The default id is `__rowRenderMetric`.
 - Use `size`, `minSize`, and `maxSize` in `WithRenderMetricsColumnOptions` for the synthetic metrics column.
 - `NatRenderMetricsFilter` writes a column filter for the metrics column and resets pagination to the first page.

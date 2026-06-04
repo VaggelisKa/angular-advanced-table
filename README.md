@@ -11,6 +11,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
 | `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
+| `ng-advanced-table-locales` | Built-in locale registry           | `provideNatTableLocales(...)`, `NAT_TABLE_BUILT_IN_LOCALES`, `NAT_EN_LOCALE_LABELS`                                                                             |
 
 The workspace keeps shared table contracts aligned through the private `ng-advanced-table-types` library. Consumers should import public contracts from published packages only; prefer `ng-advanced-table` for `NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` when column definitions or state move across package boundaries. The UI and utils packages keep compatibility exports for consumers already importing from those entry points.
 
@@ -21,6 +22,7 @@ Supplemental package READMEs:
 - [`libs/ng-advanced-table/README.md`](libs/ng-advanced-table/README.md)
 - [`libs/ng-advanced-table-ui/README.md`](libs/ng-advanced-table-ui/README.md)
 - [`libs/ng-advanced-table-utils/README.md`](libs/ng-advanced-table-utils/README.md)
+- [`libs/ng-advanced-table-locales/README.md`](libs/ng-advanced-table-locales/README.md)
 
 Consumer theming guide:
 
@@ -52,6 +54,12 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 
 ```bash
 npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/common @angular/aria @angular/cdk
+```
+
+### With built-in locale registry
+
+```bash
+npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils ng-advanced-table-locales @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Quick Start
