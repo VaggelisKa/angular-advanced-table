@@ -35,7 +35,7 @@ export const NAT_TABLE_UTILS_INTL = new InjectionToken<NatTableUtilsIntlConfig>(
 );
 
 /**
- * Registers every utility locale shipped by `ng-advanced-table-locales/utils`.
+ * Registers every utility locale shipped by `ng-advanced-table-locales`.
  *
  * Call this only when using `ng-advanced-table-utils`.
  */

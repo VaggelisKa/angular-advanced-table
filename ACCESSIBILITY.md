@@ -39,9 +39,9 @@ This section exists so automated tooling can validate implementations against th
 | `NatTableLocaleLabels`        | type     | Table locale label shape for generated table copy and number formatting                |
 | `NatTableLocaleLabelsMap`     | type     | Locale dictionaries keyed by locale id                                                 |
 
-Table localization is the primary entry point. Companion packages use separate locale entry points: `ng-advanced-table-locales/ui` and `ng-advanced-table-locales/utils`.
+Table, UI, and utils locale providers are exported from `ng-advanced-table-locales`.
 
-### UI Locales (`ng-advanced-table-locales/ui`)
+### UI Locales (`ng-advanced-table-locales`)
 
 | Symbol                           | Kind     | Notes                                      |
 | -------------------------------- | -------- | ------------------------------------------ |
@@ -51,7 +51,7 @@ Table localization is the primary entry point. Companion packages use separate l
 | `NatTableUiLocaleLabels`         | type     | UI locale label shape                      |
 | `NatTableUiLocaleLabelsMap`      | type     | UI locale dictionaries keyed by locale id  |
 
-### Utils Locales (`ng-advanced-table-locales/utils`)
+### Utils Locales (`ng-advanced-table-locales`)
 
 | Symbol                              | Kind     | Notes                                          |
 | ----------------------------------- | -------- | ---------------------------------------------- |
@@ -168,9 +168,11 @@ Configure locale dictionaries once at app or feature scope. `provideNatTableLoca
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
-import { provideNatTableLocales } from 'ng-advanced-table-locales';
-import { provideNatTableUiLocales } from 'ng-advanced-table-locales/ui';
-import { provideNatTableUtilsLocales } from 'ng-advanced-table-locales/utils';
+import {
+  provideNatTableLocales,
+  provideNatTableUiLocales,
+  provideNatTableUtilsLocales,
+} from 'ng-advanced-table-locales';
 
 const formatNumber = (value: number, options?: Intl.NumberFormatOptions, locale = 'en') =>
   new Intl.NumberFormat(locale, options).format(value);

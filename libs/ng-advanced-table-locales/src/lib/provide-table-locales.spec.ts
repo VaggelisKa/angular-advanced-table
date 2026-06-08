@@ -6,14 +6,12 @@ import {
 import { TestBed } from '@angular/core/testing';
 import {
   NAT_TABLE_BUILT_IN_UI_LOCALES,
-  NAT_TABLE_UI_INTL,
-  provideNatTableUiLocales,
-} from 'ng-advanced-table-locales/ui';
-import {
   NAT_TABLE_BUILT_IN_UTILS_LOCALES,
+  NAT_TABLE_UI_INTL,
   NAT_TABLE_UTILS_INTL,
+  provideNatTableUiLocales,
   provideNatTableUtilsLocales,
-} from 'ng-advanced-table-locales/utils';
+} from 'ng-advanced-table-locales';
 
 import { NAT_TABLE_BUILT_IN_LOCALES } from './built-in-locales';
 import { NAT_TABLE_INTL, provideNatTableLocales } from './provide-table-locales';

@@ -8,7 +8,7 @@ export const NAT_TABLE_UI_ENGLISH_LOCALE = NAT_EN_LOCALE_ID;
 const DEFAULT_NUMBER_FORMATTER: NatTableUiNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
 
-/** Built-in English labels shipped with `ng-advanced-table-locales/ui`. */
+/** Built-in English labels shipped with `ng-advanced-table-locales`. */
 export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
   search: {
     label: 'Search rows',

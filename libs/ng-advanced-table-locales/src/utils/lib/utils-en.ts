@@ -33,7 +33,7 @@ export function getRenderToneLabel(tone: RowRenderTone | 'idle'): string {
 const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
 
-/** Built-in English labels shipped with `ng-advanced-table-locales/utils`. */
+/** Built-in English labels shipped with `ng-advanced-table-locales`. */
 export const NAT_EN_UTILS_LOCALE_LABELS: NatTableUtilsLocaleLabels = {
   renderMetrics: {
     filter: {

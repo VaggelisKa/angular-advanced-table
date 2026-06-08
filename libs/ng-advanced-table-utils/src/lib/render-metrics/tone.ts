@@ -1,5 +1,5 @@
 import type { RowRenderFilterValue, RowRenderTone } from './types';
-export { getRenderToneLabel } from 'ng-advanced-table-locales/utils';
+export { getRenderToneLabel } from 'ng-advanced-table-locales';
 
 /**
  * Maps a row render duration to the library's coarse health bands.
