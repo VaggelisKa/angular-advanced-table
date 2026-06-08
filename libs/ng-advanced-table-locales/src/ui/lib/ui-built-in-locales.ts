@@ -2,7 +2,7 @@ import { NAT_EN_LOCALE_ID, NAT_EN_UI_LOCALE_LABELS } from './ui-en';
 import type { NatTableUiLocaleLabelsMap } from './ui-types';
 
 /**
- * Companion UI locale registry shipped by `ng-advanced-table-locales/ui`.
+ * Companion UI locale registry shipped by `ng-advanced-table-locales`.
  *
  * Importing `provideNatTableUiLocales()` registers every locale in this object.
  */

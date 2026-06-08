@@ -31,3 +31,5 @@ export type {
   NatTableLocaleLabelsMap,
   NatTableNumberFormatter,
 } from './lib/types';
+export * from './ui/public-api';
+export * from './utils/public-api';

@@ -34,7 +34,7 @@ export const NAT_TABLE_UI_INTL = new InjectionToken<NatTableUiIntlConfig>('NAT_T
 });
 
 /**
- * Registers every companion UI locale shipped by `ng-advanced-table-locales/ui`.
+ * Registers every companion UI locale shipped by `ng-advanced-table-locales`.
  *
  * Call this only when using `ng-advanced-table-ui`.
  */

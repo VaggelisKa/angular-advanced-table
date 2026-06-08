@@ -1,5 +1,7 @@
 ---
-ng-advanced-table-locales: patch
+ng-advanced-table-locales: minor
+ng-advanced-table-ui: patch
+ng-advanced-table-utils: patch
 ---
 
-Move secondary locale entry point implementation under the main locales source tree without changing public import paths.
+Expose UI and utils locale APIs from the main `ng-advanced-table-locales` entrypoint and remove the `/ui` and `/utils` secondary entrypoints.

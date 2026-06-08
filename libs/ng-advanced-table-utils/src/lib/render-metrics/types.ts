@@ -26,9 +26,9 @@ export interface RowRenderMeasurement {
 }
 
 /** Metadata used to render the filter chip options in the metrics companion UI. */
-export type { RowRenderFilterOption } from 'ng-advanced-table-locales/utils';
+export type { RowRenderFilterOption } from 'ng-advanced-table-locales';
 
 /** Default id used by the synthetic render-metrics column. */
 export const RENDER_METRIC_COLUMN_ID = '__rowRenderMetric';
 
-export { RENDER_FILTER_OPTIONS } from 'ng-advanced-table-locales/utils';
+export { RENDER_FILTER_OPTIONS } from 'ng-advanced-table-locales';

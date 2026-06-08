@@ -4,9 +4,11 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideNatTableLocales } from 'ng-advanced-table-locales';
-import { provideNatTableUiLocales } from 'ng-advanced-table-locales/ui';
-import { provideNatTableUtilsLocales } from 'ng-advanced-table-locales/utils';
+import {
+  provideNatTableLocales,
+  provideNatTableUiLocales,
+  provideNatTableUtilsLocales,
+} from 'ng-advanced-table-locales';
 
 import { routes } from './app.routes';
 

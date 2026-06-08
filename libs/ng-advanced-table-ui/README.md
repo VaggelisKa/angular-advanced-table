@@ -33,7 +33,7 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 ```
 
 For app-level UI localization through `provideNatTableUiLocales()`, also install
-`ng-advanced-table-locales` and import `ng-advanced-table-locales/ui`.
+`ng-advanced-table-locales` and import it from `ng-advanced-table-locales`.
 
 ## Zoneless Compatibility
 
