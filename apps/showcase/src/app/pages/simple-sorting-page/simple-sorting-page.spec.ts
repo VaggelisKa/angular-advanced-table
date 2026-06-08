@@ -30,6 +30,8 @@ describe('SimpleSortingPage', () => {
     const sortButtons = fixture.nativeElement.querySelectorAll('.sort-button');
 
     expect(table).toBeTruthy();
+    expect(table.classList.contains('simple-table')).toBe(true);
+    expect(fixture.nativeElement.querySelector('nat-table-surface')).toBeFalsy();
     expect(rows.length).toBe(5);
     expect(sortButtons.length).toBe(9);
     expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Owner');
