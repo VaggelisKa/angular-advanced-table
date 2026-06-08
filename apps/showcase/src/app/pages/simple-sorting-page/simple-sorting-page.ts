@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable } from 'ng-advanced-table';
+import { NatTable, type NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
 import { ShowcaseThemeStore } from '../../showcase-theme';
@@ -163,6 +163,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'id',
     header: 'Order',
+    enablePinning: false,
     size: 132,
     minSize: 112,
     meta: {
@@ -179,6 +180,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'customer',
     header: 'Customer',
+    enablePinning: false,
     size: 220,
     minSize: 160,
     meta: {
@@ -189,6 +191,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'owner',
     header: 'Owner',
+    enablePinning: false,
     size: 150,
     minSize: 120,
     meta: {
@@ -199,6 +202,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'channel',
     header: 'Channel',
+    enablePinning: false,
     size: 140,
     minSize: 116,
     meta: {
@@ -209,6 +213,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'region',
     header: 'Region',
+    enablePinning: false,
     size: 140,
     minSize: 112,
     meta: {
@@ -219,6 +224,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'status',
     header: 'Status',
+    enablePinning: false,
     size: 132,
     minSize: 108,
     meta: {
@@ -234,6 +240,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'items',
     header: 'Items',
+    enablePinning: false,
     size: 104,
     minSize: 88,
     meta: {
@@ -245,6 +252,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'updatedAt',
     header: 'Updated',
+    enablePinning: false,
     size: 128,
     minSize: 108,
     meta: {
@@ -255,6 +263,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   {
     accessorKey: 'total',
     header: 'Total',
+    enablePinning: false,
     size: 128,
     minSize: 104,
     meta: {
@@ -264,6 +273,13 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     cell: (info) => currencyFormatter.format(info.getValue<number>()),
   },
 ]);
+
+const preconfiguredTableState: Partial<NatTableState> = {
+  columnPinning: {
+    left: ['owner'],
+    right: ['total'],
+  },
+};
 
 @Component({
   selector: 'app-simple-sorting-page',
@@ -278,5 +294,6 @@ export class SimpleSortingPage {
   protected readonly theme = this.themeStore.theme;
   protected readonly rows = mockOrderRows;
   protected readonly columns = mockOrderColumns;
+  protected readonly tableState = preconfiguredTableState;
   protected readonly getRowId = (row: MockOrderRow) => row.id;
 }

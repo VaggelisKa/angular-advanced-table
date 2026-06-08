@@ -66,6 +66,30 @@ describe('SimpleSortingPage', () => {
     expect(totalCell.classList.contains('is-align-end')).toBe(true);
   });
 
+  it('should pin owner left and total right without pin controls', () => {
+    fixture.detectChanges();
+
+    const ownerHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="owner"]',
+    ) as HTMLTableCellElement;
+    const ownerCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="owner"]',
+    ) as HTMLTableCellElement;
+    const totalHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="total"]',
+    ) as HTMLTableCellElement;
+    const totalCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="total"]',
+    ) as HTMLTableCellElement;
+
+    expect(ownerHeader.classList.contains('is-pinned-left')).toBe(true);
+    expect(ownerCell.classList.contains('is-pinned-left')).toBe(true);
+    expect(totalHeader.classList.contains('is-pinned-right')).toBe(true);
+    expect(totalCell.classList.contains('is-pinned-right')).toBe(true);
+    expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.menu-button')).toBeFalsy();
+  });
+
   it('should sort the mock rows from a header action', () => {
     fixture.detectChanges();
 
