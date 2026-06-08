@@ -30,109 +30,8 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-pinning-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
-  styles: `
-    .showcase-container {
-      display: grid;
-      gap: 24px;
-      padding: 32px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .header-section {
-      border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-      padding-bottom: 16px;
-    }
-    .title {
-      font-size: 2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #1f6feb, #00ced1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0 0 8px;
-    }
-    .description {
-      color: #657786;
-      font-size: 1rem;
-      margin: 0;
-    }
-    .grid-layout {
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 24px;
-      align-items: start;
-    }
-    @media (max-width: 900px) {
-      .grid-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-    .card {
-      background: var(--card-bg, #ffffff);
-      border-radius: 12px;
-      border: 1px solid var(--card-border, rgba(0, 0, 0, 0.06));
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-    }
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin: 0 0 16px;
-    }
-    .pinning-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .column-control {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px dashed var(--border-color, rgba(0, 0, 0, 0.06));
-    }
-    .column-name {
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-    .btn-group {
-      display: inline-flex;
-      background: #f1f3f5;
-      padding: 3px;
-      border-radius: 8px;
-    }
-    .btn-sm {
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      transition: all 120ms ease;
-    }
-    .btn-sm.active {
-      background: #ffffff;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-      color: #1f6feb;
-    }
-    :host-context([data-theme='dark']) {
-      --card-bg: #14171c;
-      --card-border: #262b33;
-      .description {
-        color: #9aa4b1;
-      }
-      .btn-group {
-        background: #212529;
-      }
-      .btn-sm.active {
-        background: #14171c;
-        color: #4f8bff;
-      }
-    }
-  `,
   template: `
-    <div class="showcase-container">
+    <div class="showcase-page showcase-container">
       <header class="header-section">
         <h1 class="title">Column Pinning</h1>
         <p class="description">
@@ -140,7 +39,7 @@ const DEMO_DATA: DemoItem[] = [
         </p>
       </header>
 
-      <div class="grid-layout">
+      <div class="grid-layout grid-layout-with-panel">
         <div class="card">
           <h2 class="card-title">Scrollable Grid with Pinning</h2>
           <nat-table-surface>

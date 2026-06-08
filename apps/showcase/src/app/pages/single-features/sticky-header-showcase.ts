@@ -31,94 +31,12 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   styles: `
-    .showcase-container {
-      display: grid;
-      gap: 24px;
-      padding: 32px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .header-section {
-      border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-      padding-bottom: 16px;
-    }
-    .title {
-      font-size: 2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #1f6feb, #ff1493);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0 0 8px;
-    }
-    .description {
-      color: #657786;
-      font-size: 1rem;
-      margin: 0;
-    }
-    .grid-layout {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 24px;
-      align-items: start;
-    }
-    @media (max-width: 900px) {
-      .grid-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-    .card {
-      background: var(--card-bg, #ffffff);
-      border-radius: 12px;
-      border: 1px solid var(--card-border, rgba(0, 0, 0, 0.06));
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-    }
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin: 0 0 16px;
-    }
     nat-table {
       --nat-table-max-height: 400px;
     }
-    .control-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .toggle-label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .toggle-label input {
-      width: 16px;
-      height: 16px;
-      accent-color: #1f6feb;
-    }
-    .tip {
-      font-size: 0.82rem;
-      color: #657786;
-      line-height: 1.45;
-      padding-top: 12px;
-      border-top: 1px dashed var(--border-color, rgba(0, 0, 0, 0.08));
-    }
-    :host-context([data-theme='dark']) {
-      --card-bg: #14171c;
-      --card-border: #262b33;
-      .description {
-        color: #9aa4b1;
-      }
-      .tip {
-        color: #9aa4b1;
-      }
-    }
   `,
   template: `
-    <div class="showcase-container">
+    <div class="showcase-page showcase-container">
       <header class="header-section">
         <h1 class="title">Sticky Header</h1>
         <p class="description">
@@ -127,7 +45,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
         </p>
       </header>
 
-      <div class="grid-layout">
+      <div class="grid-layout grid-layout-with-panel">
         <div class="card">
           <h2 class="card-title">Scrollable Grid</h2>
           <nat-table-surface>

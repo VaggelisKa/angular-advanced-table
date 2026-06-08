@@ -42,7 +42,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-table-builder',
-  standalone: true,
   imports: [
     NatTable,
     NatTableSurface,
@@ -118,7 +117,7 @@ export class TableBuilderPage {
   readonly generatedHtml = computed(() => {
     let topControls = '';
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
-      topControls = '\n  <div class="table-controls-grid" style="margin-bottom: 24px;">';
+      topControls = '\n  <div class="table-controls-grid">';
       if (this.withGlobalFilter()) {
         topControls +=
           '\n    <nat-table-search [for]="grid" label="Search rows" placeholder="Type here..." />';
@@ -206,7 +205,6 @@ interface DemoItem {
 
 @Component({
   selector: 'app-custom-table',
-  standalone: true,
   imports: [
     NatTable,
     NatTableSurface,${uiImports

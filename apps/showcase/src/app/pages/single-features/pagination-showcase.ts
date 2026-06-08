@@ -38,71 +38,8 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-pagination-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTablePageSize, NatTablePager],
-  styles: `
-    .showcase-container {
-      display: grid;
-      gap: 24px;
-      padding: 32px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .header-section {
-      border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-      padding-bottom: 16px;
-    }
-    .title {
-      font-size: 2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #1f6feb, #ffa500);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0 0 8px;
-    }
-    .description {
-      color: #657786;
-      font-size: 1rem;
-      margin: 0;
-    }
-    .grid-layout {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-      align-items: start;
-    }
-    .card {
-      background: var(--card-bg, #ffffff);
-      border-radius: 12px;
-      border: 1px solid var(--card-border, rgba(0, 0, 0, 0.06));
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-    }
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin: 0 0 16px;
-    }
-    .table-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 16px;
-      padding: 12px;
-      background: var(--card-contrast, #fafbfc);
-      border-radius: 8px;
-      border: 1px solid var(--card-border, rgba(0, 0, 0, 0.06));
-    }
-    :host-context([data-theme='dark']) {
-      --card-bg: #14171c;
-      --card-border: #262b33;
-      --card-contrast: #1a1e24;
-      .description {
-        color: #9aa4b1;
-      }
-    }
-  `,
   template: `
-    <div class="showcase-container">
+    <div class="showcase-page showcase-container">
       <header class="header-section">
         <h1 class="title">Table Pagination</h1>
         <p class="description">
