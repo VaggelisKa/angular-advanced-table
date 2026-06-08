@@ -5,6 +5,7 @@
 }
 
 .table-region {
+  position: relative;
   overflow: auto;
   max-height: var(--nat-table-max-height, inherit);
   height: var(--nat-table-height, inherit);
