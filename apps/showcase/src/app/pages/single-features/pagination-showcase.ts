@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { type ColumnDef, type PaginationState } from '@tanstack/angular-table';
+import { type CellContext, type ColumnDef, type PaginationState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableSurface,
@@ -152,7 +152,7 @@ export class PaginationShowcasePage {
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toLocaleString()}`,
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
     },
   ]);
 

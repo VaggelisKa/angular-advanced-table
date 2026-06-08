@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
+import { type CellContext, type ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
@@ -131,7 +131,6 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
           <h2 class="card-title">Scrollable Grid</h2>
           <nat-table-surface>
             <nat-table
-              #grid="natTable"
               [data]="data"
               [columns]="columns"
               [stickyHeader]="stickyHeaderEnabled()"
@@ -184,7 +183,7 @@ export class StickyHeaderShowcasePage {
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toLocaleString()}`,
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
     },
   ]);
 

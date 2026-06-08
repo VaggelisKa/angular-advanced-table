@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import {
+  type CellContext,
   type ColumnDef,
   type PaginationState,
   type VisibilityState,
@@ -95,7 +96,7 @@ export class TableBuilderPage {
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toLocaleString()}`,
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
     },
   ]);
 

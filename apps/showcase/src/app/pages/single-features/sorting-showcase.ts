@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
-import { type ColumnDef, type SortingState } from '@tanstack/angular-table';
+import { type CellContext, type ColumnDef, type SortingState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
@@ -142,7 +142,6 @@ const DEMO_DATA: DemoItem[] = [
           <h2 class="card-title">Interactive Sorting Grid</h2>
           <nat-table-surface>
             <nat-table
-              #grid="natTable"
               [data]="data"
               [columns]="columns"
               [state]="tableState()"
@@ -197,7 +196,7 @@ export class SortingShowcasePage {
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toLocaleString()}`,
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
     },
   ]);
 

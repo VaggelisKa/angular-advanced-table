@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
-import { type ColumnDef, type ColumnPinningState } from '@tanstack/angular-table';
+import { type CellContext, type ColumnDef, type ColumnPinningState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
@@ -139,7 +139,6 @@ const DEMO_DATA: DemoItem[] = [
           <h2 class="card-title">Scrollable Grid with Pinning</h2>
           <nat-table-surface>
             <nat-table
-              #grid="natTable"
               [data]="data"
               [columns]="columns"
               [state]="tableState()"
@@ -228,7 +227,7 @@ export class PinningShowcasePage {
       size: 150,
       enablePinning: true,
       meta: { label: 'Value', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toLocaleString()}`,
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
     },
   ]);
 
