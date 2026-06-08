@@ -10,6 +10,7 @@
   <table
     ngGrid
     class="data-table"
+    [class.has-sticky-header]="stickyHeader()"
     [id]="tableElementId()"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-describedby]="ariaDescribedBy()"

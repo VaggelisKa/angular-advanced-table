@@ -6,6 +6,8 @@
 
 .table-region {
   overflow: auto;
+  max-height: var(--nat-table-max-height, inherit);
+  height: var(--nat-table-height, inherit);
   border: 1px solid
     var(--nat-table-region-border-color, color-mix(in srgb, currentColor 12%, transparent));
   border-radius: var(--nat-table-radius-region, 16px);
@@ -39,9 +41,6 @@
 }
 
 .header-cell {
-  position: sticky;
-  top: 0;
-  z-index: 4;
   background: var(
     --nat-table-header-background,
     color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
@@ -53,6 +52,12 @@
   text-transform: var(--nat-table-text-transform-header, uppercase);
   border-bottom: 1px solid
     var(--nat-table-header-border-color, color-mix(in srgb, currentColor 16%, transparent));
+}
+
+.data-table.has-sticky-header .header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 4;
 }
 
 .header-cell-content {

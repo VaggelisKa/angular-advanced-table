@@ -43,9 +43,9 @@ import {
   type SimulationStatus,
 } from './table-simulation';
 import { NatRowActionsMenu } from './nat-row-actions-menu';
+import { ThemeService, type ShowcaseTheme } from '../../theme.service';
 
 const STATUS_FILTER_ID = 'status';
-const THEME_STORAGE_KEY = 'nat-showcase-theme';
 
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {
@@ -249,7 +249,6 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   },
 ];
 
-type ShowcaseTheme = 'light' | 'dark';
 type TableFeatureKey =
   | 'enableColumnPinning'
   | 'enableColumnReorder'
@@ -257,7 +256,8 @@ type TableFeatureKey =
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
   | 'showScrollControl'
-  | 'showRenderMetrics';
+  | 'showRenderMetrics'
+  | 'stickyHeader';
 
 interface TableFeatureConfig {
   enableColumnPinning: boolean;
@@ -267,6 +267,7 @@ interface TableFeatureConfig {
   showColumnVisibility: boolean;
   showScrollControl: boolean;
   showRenderMetrics: boolean;
+  stickyHeader: boolean;
 }
 
 const defaultTableFeatures: TableFeatureConfig = {
@@ -277,6 +278,7 @@ const defaultTableFeatures: TableFeatureConfig = {
   showColumnVisibility: true,
   showScrollControl: false,
   showRenderMetrics: true,
+  stickyHeader: true,
 };
 
 const showcaseAccessibilityText = {
@@ -413,7 +415,8 @@ export class TableShowcasePage {
   );
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly accessibilityText = showcaseAccessibilityText;
-  protected readonly theme = signal<ShowcaseTheme>(readInitialTheme());
+  private readonly themeService = inject(ThemeService);
+  protected readonly theme = computed(() => this.themeService.theme());
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
   protected readonly hasTopTableControls = computed(() => {
     const features = this.tableFeatures();
@@ -450,8 +453,7 @@ export class TableShowcasePage {
   }
 
   protected setTheme(theme: ShowcaseTheme): void {
-    this.theme.set(theme);
-    persistTheme(theme);
+    this.themeService.setTheme(theme);
   }
 
   protected toggleSimulation(): void {
@@ -553,27 +555,7 @@ export class TableShowcasePage {
   }
 }
 
-function readInitialTheme(): ShowcaseTheme {
-  try {
-    const stored = globalThis.localStorage?.getItem(THEME_STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') {
-      return stored;
-    }
-  } catch {
-    // Storage access can throw in private/sandboxed contexts; fall through to the media query.
-  }
 
-  const media = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
-  return media?.matches ? 'dark' : 'light';
-}
-
-function persistTheme(theme: ShowcaseTheme): void {
-  try {
-    globalThis.localStorage?.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // Ignore quota / privacy-mode failures.
-  }
-}
 
 function upsertColumnFilter(
   currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,

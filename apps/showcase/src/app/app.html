@@ -1,1 +1,63 @@
-<router-outlet />
+<div class="app-layout" [attr.data-theme]="theme()">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
+          <path d="M7 12h10M12 7v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <span class="logo-text">NatTable</span>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <span class="icon">📊</span>
+        <span>Overview Dashboard</span>
+      </a>
+      <div class="nav-divider">Single Features</div>
+      <a routerLink="/sorting" routerLinkActive="active" class="nav-item">
+        <span class="icon">🔀</span>
+        <span>Sorting</span>
+      </a>
+      <a routerLink="/pinning" routerLinkActive="active" class="nav-item">
+        <span class="icon">📌</span>
+        <span>Column Pinning</span>
+      </a>
+      <a routerLink="/reordering" routerLinkActive="active" class="nav-item">
+        <span class="icon">↕️</span>
+        <span>Column Reordering</span>
+      </a>
+      <a routerLink="/pagination" routerLinkActive="active" class="nav-item">
+        <span class="icon">🔢</span>
+        <span>Pagination</span>
+      </a>
+      <a routerLink="/visibility" routerLinkActive="active" class="nav-item">
+        <span class="icon">👁️</span>
+        <span>Column Visibility</span>
+      </a>
+      <a routerLink="/search" routerLinkActive="active" class="nav-item">
+        <span class="icon">🔍</span>
+        <span>Global Search</span>
+      </a>
+      <a routerLink="/sticky-header" routerLinkActive="active" class="nav-item">
+        <span class="icon">📌</span>
+        <span>Sticky Header</span>
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <button type="button" (click)="toggleTheme()" class="theme-btn">
+        @if (theme() === 'dark') {
+          <span>☀️ Light Theme</span>
+        } @else {
+          <span>🌙 Dark Theme</span>
+        }
+      </button>
+    </div>
+  </aside>
+  
+  <main class="main-content">
+    <router-outlet />
+  </main>
+</div>
