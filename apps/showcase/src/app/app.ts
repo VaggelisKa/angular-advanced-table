@@ -10,8 +10,8 @@ const showcaseExamples = [
     path: '/examples/multiple-features',
   },
   {
-    label: 'Simple sorting',
-    description: 'Mock table only',
+    label: 'Sorting with pinned columns',
+    description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',
   },
 ];

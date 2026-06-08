@@ -16,7 +16,7 @@ export const routes: Routes = [
   },
   {
     path: 'examples/simple-sorting',
-    title: 'Simple sorting | Angular Advanced Table',
+    title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>
       import('./pages/simple-sorting-page/simple-sorting-page').then(
         (module) => module.SimpleSortingPage,

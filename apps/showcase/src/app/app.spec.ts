@@ -62,7 +62,7 @@ describe('App', () => {
 
     expect(linkLabels).toEqual([
       expect.stringContaining('Multiple features'),
-      expect.stringContaining('Simple sorting'),
+      expect.stringContaining('Sorting with pinned columns'),
     ]);
     expect(linkTargets).toEqual(['/examples/multiple-features', '/examples/simple-sorting']);
     expect(compiled.querySelector('.showcase-theme-toggle')).not.toBeNull();

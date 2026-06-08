@@ -22,7 +22,7 @@ describe('SimpleSortingPage', () => {
     await fixture.whenStable();
   });
 
-  it('should create a single mock table with sorting controls only', () => {
+  it('should create a single mock table with sorting and fixed pins', () => {
     fixture.detectChanges();
 
     const table = fixture.nativeElement.querySelector('nat-table') as HTMLElement;
