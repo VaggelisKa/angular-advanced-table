@@ -1,10 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
-
-import { ShowcaseThemeStore } from '../../showcase-theme';
 
 interface MockOrderRow {
   id: string;
@@ -27,10 +25,10 @@ interface MockOrderRow {
       align-items: center;
       min-height: 1.75rem;
       padding-inline: 0.62rem;
-      border: 1px solid color-mix(in srgb, var(--page-text) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--showcase-page-text) 12%, transparent);
       border-radius: 6px;
-      background: color-mix(in srgb, var(--page-text) 4%, var(--page-surface));
-      color: var(--page-text);
+      background: color-mix(in srgb, var(--showcase-page-text) 4%, var(--showcase-page-surface));
+      color: var(--showcase-page-text);
       font-family:
         'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
       font-size: 0.78rem;
@@ -58,7 +56,7 @@ class OrderCode {
       border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
       border-radius: 999px;
       background: color-mix(in srgb, currentColor 9%, transparent);
-      color: var(--page-text-soft);
+      color: var(--showcase-page-text-soft);
       font-size: 0.78rem;
       font-weight: 650;
       line-height: 1;
@@ -74,11 +72,11 @@ class OrderCode {
     }
 
     :host([data-status='Ready']) {
-      color: var(--page-positive);
+      color: var(--showcase-page-positive);
     }
 
     :host([data-status='Review']) {
-      color: var(--page-warning);
+      color: var(--showcase-page-warning);
     }
   `,
   template: `<span>{{ status() }}</span>`,
@@ -289,9 +287,6 @@ const preconfiguredTableState: Partial<NatTableState> = {
   styleUrl: './simple-sorting-page.css',
 })
 export class SimpleSortingPage {
-  private readonly themeStore = inject(ShowcaseThemeStore);
-
-  protected readonly theme = this.themeStore.theme;
   protected readonly rows = mockOrderRows;
   protected readonly columns = mockOrderColumns;
   protected readonly tableState = preconfiguredTableState;

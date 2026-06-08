@@ -2,7 +2,6 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SimpleSortingPage } from './simple-sorting-page';
-import { ShowcaseThemeStore } from '../../showcase-theme';
 
 describe('SimpleSortingPage', () => {
   let fixture: ComponentFixture<SimpleSortingPage>;
@@ -114,17 +113,12 @@ describe('SimpleSortingPage', () => {
     expect(firstRowHeader.textContent?.trim()).toBe('ORD-1011');
   });
 
-  it('should inherit the shared showcase theme', () => {
+  it('should use the shared showcase page layout', () => {
     fixture.detectChanges();
 
-    const themeStore = TestBed.inject(ShowcaseThemeStore);
     const page = fixture.nativeElement.querySelector('.simple-sorting-page') as HTMLDivElement;
 
-    expect(page.getAttribute('data-theme')).toMatch(/^(light|dark)$/);
-
-    themeStore.setTheme('dark');
-    fixture.detectChanges();
-
-    expect(page.getAttribute('data-theme')).toBe('dark');
+    expect(page.classList.contains('showcase-page')).toBe(true);
+    expect(page.getAttribute('data-theme')).toBeNull();
   });
 });
