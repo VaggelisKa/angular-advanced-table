@@ -1,0 +1,191 @@
+<div class="showcase-container">
+  <header class="header-section">
+    <h1 class="title">Table Builder</h1>
+    <p class="description">
+      Visually configure your table primitives, preview the grid interactively, and copy the clean
+      Angular code.
+    </p>
+  </header>
+
+  <div class="builder-layout">
+    <!-- Configuration Panel (Left) -->
+    <aside class="config-card">
+      <h2 class="card-title">Configure Features</h2>
+      <div class="config-options">
+        <label class="toggle-control">
+          <input
+            type="checkbox"
+            [checked]="withGlobalFilter()"
+            (change)="withGlobalFilter.set(!withGlobalFilter())"
+          />
+          <span class="slider"></span>
+          <span class="toggle-label">Global Search</span>
+        </label>
+        <span class="option-help">Adds fuzzy-search inputs to query row content globally.</span>
+
+        <label class="toggle-control">
+          <input
+            type="checkbox"
+            [checked]="showColumnVisibility()"
+            (change)="showColumnVisibility.set(!showColumnVisibility())"
+          />
+          <span class="slider"></span>
+          <span class="toggle-label">Column Visibility</span>
+        </label>
+        <span class="option-help">Renders interactive visibility chips to toggle columns.</span>
+
+        <label class="toggle-control">
+          <input
+            type="checkbox"
+            [checked]="withPagination()"
+            (change)="withPagination.set(!withPagination())"
+          />
+          <span class="slider"></span>
+          <span class="toggle-label">Pagination</span>
+        </label>
+        <span class="option-help"
+          >Enables paging logic with page-size chips and pager navigation.</span
+        >
+
+        <label class="toggle-control">
+          <input
+            type="checkbox"
+            [checked]="withColumnPinning()"
+            (change)="withColumnPinning.set(!withColumnPinning())"
+          />
+          <span class="slider"></span>
+          <span class="toggle-label">Column Pinning</span>
+        </label>
+        <span class="option-help">Allows columns to be stuck to the left/right boundaries.</span>
+
+        <label class="toggle-control">
+          <input
+            type="checkbox"
+            [checked]="withColumnReorder()"
+            (change)="withColumnReorder.set(!withColumnReorder())"
+          />
+          <span class="slider"></span>
+          <span class="toggle-label">Column Reordering</span>
+        </label>
+        <span class="option-help">Enables drag-and-drop column header reordering.</span>
+
+        <label class="toggle-control">
+          <input
+            type="checkbox"
+            [checked]="showScrollControl()"
+            (change)="showScrollControl.set(!showScrollControl())"
+          />
+          <span class="slider"></span>
+          <span class="toggle-label">Scroll Control</span>
+        </label>
+        <span class="option-help">Renders a horizontal scrolling slider for wide tables.</span>
+
+        <label class="toggle-control">
+          <input
+            type="checkbox"
+            [checked]="withStickyHeader()"
+            (change)="withStickyHeader.set(!withStickyHeader())"
+          />
+          <span class="slider"></span>
+          <span class="toggle-label">Sticky Header</span>
+        </label>
+        <span class="option-help"
+          >Pins the table header to the top of the viewport during scroll.</span
+        >
+      </div>
+    </aside>
+
+    <!-- Workspace Panel (Right) -->
+    <main class="workspace-area">
+      <!-- Live Preview -->
+      <section class="card preview-card">
+        <h2 class="card-title">Live Preview</h2>
+
+        <nat-table-surface class="table-shell">
+          @if (withGlobalFilter() || showColumnVisibility()) {
+            <div class="table-controls-grid" style="margin-bottom: 24px">
+              @if (withGlobalFilter()) {
+                <nat-table-search
+                  [for]="grid"
+                  label="Search rows"
+                  placeholder="Try 'Alpha' or 'Security'..."
+                />
+              }
+              @if (showColumnVisibility()) {
+                <nat-table-column-visibility [for]="grid" />
+              }
+            </div>
+          }
+
+          @if (withPagination()) {
+            <div class="table-toolbar">
+              <div class="table-actions">
+                <nat-table-page-size [for]="grid" [pageSizeOptions]="[3, 5, 10]" />
+                <nat-table-pager [for]="grid" />
+              </div>
+            </div>
+          }
+
+          <nat-table
+            #grid="natTable"
+            [data]="data"
+            [columns]="columns"
+            [state]="tableState()"
+            [enablePagination]="withPagination()"
+            [enableGlobalFilter]="withGlobalFilter()"
+            [enableColumnPinning]="withColumnPinning()"
+            [enableColumnReorder]="withColumnReorder()"
+            [stickyHeader]="withStickyHeader()"
+            ariaLabel="Custom configured table preview"
+            (stateChange)="onTableStateChange($event)"
+          />
+
+          @if (showScrollControl()) {
+            <nat-table-scroll-control [for]="grid" />
+          }
+        </nat-table-surface>
+      </section>
+
+      <!-- Code Viewer -->
+      <section class="card code-card">
+        <header class="code-card-header">
+          <div class="tab-group">
+            <button
+              type="button"
+              class="tab-btn"
+              [class.is-active]="activeTab() === 'html'"
+              (click)="setTab('html')"
+            >
+              custom-table.html
+            </button>
+            <button
+              type="button"
+              class="tab-btn"
+              [class.is-active]="activeTab() === 'ts'"
+              (click)="setTab('ts')"
+            >
+              custom-table.ts
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-primary btn-copy"
+            [class.is-copied]="copied()"
+            (click)="copyCode()"
+          >
+            {{ copied() ? '✓ Copied' : '📋 Copy Code' }}
+          </button>
+        </header>
+
+        <div class="code-editor">
+          @if (activeTab() === 'html') {
+            <pre class="code-content"><code>{{ generatedHtml() }}</code></pre>
+          } @else {
+            <pre class="code-content"><code>{{ generatedTs() }}</code></pre>
+          }
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

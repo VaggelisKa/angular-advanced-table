@@ -222,6 +222,7 @@ Core exports:
 | `getRowId`            | row index | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
 | `emitRowRenderEvents` | `false`   | Enables `(rowRendered)` instrumentation                                                                            |
 | `enableAnnouncements` | `true`    | Enables polite live announcements                                                                                  |
+| `stickyHeader`        | `true`    | Enables vertical sticky positioning for the table header row                                                      |
 
 ### Outputs and instance API
 

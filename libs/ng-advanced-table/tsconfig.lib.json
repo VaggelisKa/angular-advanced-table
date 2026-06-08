@@ -9,8 +9,8 @@
     "types": [],
     "paths": {
       "ng-advanced-table-locales": [
-        "dist/libs/ng-advanced-table-locales",
-        "libs/ng-advanced-table-locales/src/public-api.ts"
+        "../../dist/libs/ng-advanced-table-locales",
+        "../../libs/ng-advanced-table-locales/src/public-api.ts"
       ]
     }
   },

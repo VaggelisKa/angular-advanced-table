@@ -60,11 +60,15 @@ describe('App', () => {
     const linkLabels = links.map((link) => link.textContent);
     const linkTargets = links.map((link) => link.getAttribute('href'));
 
-    expect(linkLabels).toEqual([
-      expect.stringContaining('Multiple features'),
-      expect.stringContaining('Sorting with pinned columns'),
-    ]);
-    expect(linkTargets).toEqual(['/examples/multiple-features', '/examples/simple-sorting']);
+    const expectedLabels = fixture.componentInstance['examples'].map(
+      (example) => expect.stringContaining(example.label)
+    );
+    const expectedTargets = fixture.componentInstance['examples'].map(
+      (example) => example.path
+    );
+
+    expect(linkLabels).toEqual(expectedLabels);
+    expect(linkTargets).toEqual(expectedTargets);
     expect(compiled.querySelector('.showcase-theme-toggle')).not.toBeNull();
   });
 

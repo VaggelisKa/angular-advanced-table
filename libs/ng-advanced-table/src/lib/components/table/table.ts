@@ -8,6 +8,7 @@ import {
   DestroyRef,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   input,
   output,
@@ -203,6 +204,8 @@ export class NatTable<TData extends RowData = RowData> {
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
   /** Enables polite live announcements for sort/filter/pagination changes. */
   readonly enableAnnouncements = input(true, { transform: booleanAttribute });
+  /** Enables sticky positioning for the table header row. */
+  readonly stickyHeader = input(true, { transform: booleanAttribute });
 
   /** Full normalized state whenever any slice changes, including uncontrolled slices. Prefer granular `*Change` outputs when you only need one slice. */
   readonly stateChange = output<NatTableState>();

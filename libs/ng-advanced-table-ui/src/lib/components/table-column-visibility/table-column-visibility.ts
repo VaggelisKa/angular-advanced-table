@@ -41,6 +41,7 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
   readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(
     undefined,
   );
+
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(
     () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
