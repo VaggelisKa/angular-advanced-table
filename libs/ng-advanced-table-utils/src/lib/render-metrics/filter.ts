@@ -1,14 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { ColumnFiltersState } from '@tanstack/angular-table';
 
 import type { NatTableRenderMetricsController } from './contracts';
+import {
+  formatNatTableUtilsNumber,
+  mergeRenderMetricsFilterIntl,
+  NAT_TABLE_UTILS_INTL,
+  NAT_TABLE_UTILS_ENGLISH_LOCALE,
+  resolveNatTableUtilsIntl,
+  type NatTableRenderMetricsFilterIntl,
+} from './intl';
 import type { NatTableRenderMetricsStore } from './store';
 import { isRenderFilterValue } from './tone';
-import {
-  RENDER_FILTER_OPTIONS,
-  RENDER_METRIC_COLUMN_ID,
-  type RowRenderFilterValue,
-} from './types';
+import { RENDER_FILTER_OPTIONS, RENDER_METRIC_COLUMN_ID, type RowRenderFilterValue } from './types';
 
 /**
  * Filter chip group that drives the synthetic render-metrics column created by
@@ -27,8 +31,27 @@ export class NatRenderMetricsFilter<TData = unknown> {
   readonly store = input.required<NatTableRenderMetricsStore>();
   /** Column id to target when the metrics column uses a custom identifier. */
   readonly columnId = input(RENDER_METRIC_COLUMN_ID);
+  /** Locale id override for generated render-metrics labels. Defaults to the controlled table locale. */
+  readonly locale = input<string | undefined>(undefined);
+  /** Per-instance label overrides. */
+  readonly labels = input<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
-  protected readonly options = RENDER_FILTER_OPTIONS;
+  private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
+  private readonly localeId = computed(
+    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE,
+  );
+  private readonly utilsIntl = computed(() =>
+    resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
+  );
+  private readonly resolvedLabels = computed(() =>
+    mergeRenderMetricsFilterIntl(this.utilsIntl().renderMetrics?.filter, this.labels()),
+  );
+
+  protected readonly heading = computed(() => this.resolvedLabels().heading ?? '');
+  protected readonly groupAriaLabel = computed(() => this.resolvedLabels().groupAriaLabel ?? '');
+  protected readonly options = computed(
+    () => this.resolvedLabels().options ?? RENDER_FILTER_OPTIONS,
+  );
 
   protected readonly selected = computed<RowRenderFilterValue>(() => {
     const columnId = this.columnId();
@@ -40,14 +63,25 @@ export class NatRenderMetricsFilter<TData = unknown> {
 
   protected readonly caption = computed(() => {
     const measurement = this.store().measurement();
+    const labels = this.resolvedLabels();
 
     if (!measurement || !measurement.rowCount) {
-      return 'Captures the latest row paint time for the current page.';
+      return labels.idleCaption ?? '';
     }
 
-    const rowLabel = measurement.rowCount === 1 ? 'row' : 'rows';
+    const rowCountText = formatNatTableUtilsNumber(
+      this.utilsIntl(),
+      measurement.rowCount,
+      undefined,
+      this.localeId(),
+    );
 
-    return `${Intl.NumberFormat('en-US').format(measurement.rowCount)} visible ${rowLabel} sampled`;
+    return (
+      labels.rowSampleCaption?.({
+        rowCountValue: measurement.rowCount,
+        rowCountText,
+      }) ?? ''
+    );
   });
 
   protected setFilter(value: RowRenderFilterValue): void {

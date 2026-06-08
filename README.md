@@ -11,6 +11,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
 | `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
+| `ng-advanced-table-locales` | Built-in locale registry           | `provideNatTableLocales(...)`, optional `ng-advanced-table-locales/ui` and `ng-advanced-table-locales/utils` entry points                                        |
 
 The workspace keeps shared table contracts aligned through the private `ng-advanced-table-types` library. Consumers should import public contracts from published packages only; prefer `ng-advanced-table` for `NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` when column definitions or state move across package boundaries. The UI and utils packages keep compatibility exports for consumers already importing from those entry points.
 
@@ -21,6 +22,7 @@ Supplemental package READMEs:
 - [`libs/ng-advanced-table/README.md`](libs/ng-advanced-table/README.md)
 - [`libs/ng-advanced-table-ui/README.md`](libs/ng-advanced-table-ui/README.md)
 - [`libs/ng-advanced-table-utils/README.md`](libs/ng-advanced-table-utils/README.md)
+- [`libs/ng-advanced-table-locales/README.md`](libs/ng-advanced-table-locales/README.md)
 
 Consumer theming guide:
 
@@ -52,6 +54,12 @@ npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angu
 
 ```bash
 npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/common @angular/aria @angular/cdk
+```
+
+### With built-in locale registry
+
+```bash
+npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils ng-advanced-table-locales @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Quick Start
@@ -362,7 +370,7 @@ Pinned column offsets are based on measured header widths after layout. Before a
 
 ## Accessibility and Internationalization
 
-Accessible copy is consumer-owned. Set a localized `ariaLabel`, stable `columnDef.meta.label` values, and the `accessibilityText` object for everything else: supplemental description, keyboard instructions, the empty state message, table summaries, and live announcements.
+Accessible copy is split by ownership. Set table-specific copy such as `ariaLabel`, captions, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated table copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`; UI and utils labels opt in through their companion locale entry points.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent checklist, localization guidance, and examples.
 
@@ -394,7 +402,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
 };
 ```
 
-`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). Formatter contexts expose locale-formatted numbers and semantic state labels, so most consumers only need to replace copy rather than recompute table state. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
+`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). Generated table copy has English defaults and can be localized through `provideNatTableLocales()` plus `<nat-table [locale]="localeId()">`. Formatter contexts expose locale-formatted numbers and semantic state labels. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
 
 ## Custom Cell Components
 
@@ -568,6 +576,7 @@ Controller contract required by the UI package:
 - `patchState(...)`
 - `tableElementId: Signal<string>`
 - `tableScrollContainer?: Signal<HTMLElement | null>`
+- `localeId?: Signal<string>`
 
 Notes:
 
@@ -583,7 +592,7 @@ Notes:
 
 ## UI Accessibility Labels
 
-The optional UI controls expose localized copy through `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
+The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 

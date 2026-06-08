@@ -1,0 +1,27 @@
+export {
+  formatNatTableUiNumber,
+  mergeColumnVisibilityLabels,
+  mergeHeaderActionLabels,
+  mergeNatTableUiIntl,
+  mergePageSizeLabels,
+  mergePagerLabels,
+  mergeScrollControlLabels,
+  NAT_TABLE_UI_DEFAULT_INTL,
+  NAT_TABLE_UI_ENGLISH_INTL,
+  NAT_TABLE_UI_ENGLISH_LOCALE,
+  NAT_TABLE_UI_INTL,
+  provideNatTableUiIntl,
+  resolveNatTableUiIntl,
+} from 'ng-advanced-table-locales/ui';
+export type {
+  NatTableColumnVisibilityIntl,
+  NatTableHeaderActionsIntl,
+  NatTablePageSizeIntl,
+  NatTablePagerIntl,
+  NatTableScrollControlIntl,
+  NatTableSearchIntl,
+  NatTableUiIntl,
+  NatTableUiIntlConfig,
+  NatTableUiIntlProviderConfig,
+  NatTableUiNumberFormatter,
+} from 'ng-advanced-table-locales/ui';

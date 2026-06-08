@@ -51,6 +51,7 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 ## Public Exports
 
 - `NatTable`
+- `provideNatTableIntl(...)`
 - `NatTableRowRenderedEvent`
 - `NatTableAccessibilityText`
 - `NatTableA11y` (namespace of deep accessibility formatter context types)

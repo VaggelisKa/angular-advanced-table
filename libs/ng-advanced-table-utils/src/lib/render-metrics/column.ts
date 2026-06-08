@@ -1,5 +1,13 @@
 import type { ColumnDef, RowData } from '@tanstack/angular-table';
 
+import {
+  formatNatTableUtilsNumber,
+  injectNatTableUtilsIntl,
+  mergeRenderMetricsColumnIntl,
+  NAT_TABLE_UTILS_ENGLISH_LOCALE,
+  resolveNatTableUtilsIntl,
+  type NatTableRenderMetricsColumnIntl,
+} from './intl';
 import type { NatTableRenderMetricsStore } from './store';
 import { isRenderFilterValue } from './tone';
 import { RENDER_METRIC_COLUMN_ID } from './types';
@@ -7,27 +15,18 @@ import { RENDER_METRIC_COLUMN_ID } from './types';
 /**
  * Configuration for {@link withRenderMetricsColumn}.
  */
-export interface WithRenderMetricsColumnOptions {
+export interface WithRenderMetricsColumnOptions extends NatTableRenderMetricsColumnIntl {
+  /** Locale id used when resolving provider defaults at helper-call time. */
+  locale?: string;
   /** Column identifier. Defaults to `__rowRenderMetric`. */
   columnId?: string;
-  /** Static header label. */
-  header?: string;
   /** Optional TanStack size override. */
   size?: number;
   /** Optional TanStack min-size override. */
   minSize?: number;
   /** Optional TanStack max-size override. */
   maxSize?: number;
-  /** Cell label when no metric has been recorded yet. Defaults to `'Pending'`. */
-  pendingLabel?: string;
-  /** Suffix appended to measurement values. Defaults to `' ms'`. */
-  unitSuffix?: string;
 }
-
-const decimalFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-});
 
 /**
  * Returns a new column definition array with a synthetic "render" column
@@ -37,6 +36,13 @@ const decimalFormatter = new Intl.NumberFormat('en-US', {
  * @param columns Existing table columns.
  * @param store Shared metrics store populated from `<nat-table (rowRendered)>`.
  * @param options Optional labels, sizing, and identifier overrides.
+ *
+ * Call this helper from an Angular injection context to apply
+ * `provideNatTableUtilsIntl(...)` defaults. Pass `options.locale` or rebuild
+ * columns from a computed value when the table locale changes. Calls outside DI
+ * still work, but use built-in defaults plus the explicit `options` passed
+ * here.
+ *
  * @returns A shallow copy of `columns` with the metrics column appended.
  */
 export function withRenderMetricsColumn<TData extends RowData>(
@@ -44,10 +50,14 @@ export function withRenderMetricsColumn<TData extends RowData>(
   store: NatTableRenderMetricsStore,
   options: WithRenderMetricsColumnOptions = {},
 ): ColumnDef<TData, unknown>[] {
+  const utilsIntlConfig = injectNatTableUtilsIntl();
+  const locale = options.locale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE;
+  const utilsIntl = resolveNatTableUtilsIntl(utilsIntlConfig, locale);
+  const columnIntl = mergeRenderMetricsColumnIntl(utilsIntl.renderMetrics?.column, options);
   const columnId = options.columnId ?? RENDER_METRIC_COLUMN_ID;
-  const pendingLabel = options.pendingLabel ?? 'Pending';
-  const unitSuffix = options.unitSuffix ?? ' ms';
-  const header = options.header ?? 'Render';
+  const pendingLabel = columnIntl.pendingLabel ?? '';
+  const unitSuffix = columnIntl.unitSuffix ?? '';
+  const header = columnIntl.header ?? '';
 
   const metricsColumn: ColumnDef<TData, unknown> = {
     id: columnId,
@@ -85,7 +95,22 @@ export function withRenderMetricsColumn<TData extends RowData>(
         return pendingLabel;
       }
 
-      return `${decimalFormatter.format(metric.durationMs)}${unitSuffix}`;
+      const durationMsText = formatNatTableUtilsNumber(
+        utilsIntl,
+        metric.durationMs,
+        {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        },
+        locale,
+      );
+
+      return (
+        columnIntl.duration?.({
+          durationMsValue: metric.durationMs,
+          durationMsText,
+        }) ?? `${durationMsText}${unitSuffix}`
+      );
     },
   };
 

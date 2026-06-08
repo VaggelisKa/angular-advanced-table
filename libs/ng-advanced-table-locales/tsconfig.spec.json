@@ -1,0 +1,28 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../../",
+    "outDir": "../../out-tsc/spec-locales",
+    "types": ["vitest/globals"],
+    "paths": {
+      "ng-advanced-table-locales": [
+        "libs/ng-advanced-table-locales/src/public-api.ts",
+        "dist/libs/ng-advanced-table-locales"
+      ],
+      "ng-advanced-table-locales/ui": [
+        "libs/ng-advanced-table-locales/ui/src/public-api.ts",
+        "dist/libs/ng-advanced-table-locales/ui"
+      ],
+      "ng-advanced-table-locales/utils": [
+        "libs/ng-advanced-table-locales/utils/src/public-api.ts",
+        "dist/libs/ng-advanced-table-locales/utils"
+      ],
+      "ng-advanced-table-types": [
+        "libs/ng-advanced-table-types/src/public-api.ts"
+      ]
+    }
+  },
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+}

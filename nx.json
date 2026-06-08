@@ -21,7 +21,12 @@
     }
   },
   "release": {
-    "projects": ["ng-advanced-table", "ng-advanced-table-ui", "ng-advanced-table-utils"],
+    "projects": [
+      "ng-advanced-table",
+      "ng-advanced-table-ui",
+      "ng-advanced-table-utils",
+      "ng-advanced-table-locales"
+    ],
     "projectsRelationship": "independent",
     "versionPlans": true,
     "releaseTag": {

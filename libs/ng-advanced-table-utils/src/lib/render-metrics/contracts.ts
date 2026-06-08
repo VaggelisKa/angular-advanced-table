@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import type {
   CellContext,
   ColumnFiltersState,
@@ -36,6 +37,8 @@ export interface NatTableRenderMetricsState {
  */
 export interface NatTableRenderMetricsController<TData extends RowData = RowData> {
   readonly table: Table<TData>;
+  /** Locale id used by generated render-metrics labels, when available. */
+  readonly localeId?: Signal<string>;
   patchState(
     updaters: Partial<{
       [K in keyof NatTableRenderMetricsState]: Updater<NatTableRenderMetricsState[K]>;
