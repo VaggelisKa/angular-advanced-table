@@ -86,7 +86,7 @@ interface ServiceRow {
       [data]="rows()"
       [columns]="columns"
       [enablePagination]="true"
-      ariaLabel="Service latency"
+      accessibleName="Service latency"
     />
   `,
 })

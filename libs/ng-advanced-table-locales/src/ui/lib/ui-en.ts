@@ -16,7 +16,7 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
   },
   columnVisibility: {
     label: 'Columns',
-    ariaLabel: 'Column visibility',
+    groupAriaLabel: 'Column visibility',
     accessibilityLabels: {
       visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
         `${visibleColumnCountText} / ${totalColumnCountText} visible`,
@@ -26,14 +26,14 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
     },
   },
   pageSize: {
-    ariaLabel: 'Rows per page',
+    groupAriaLabel: 'Rows per page',
     accessibilityLabels: {
       pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} / page`,
       pageSizeOptionAriaLabel: ({ pageSizeText }) => `Show ${pageSizeText} rows per page`,
     },
   },
   pager: {
-    ariaLabel: 'Table pagination',
+    groupAriaLabel: 'Table pagination',
     accessibilityLabels: {
       previousPageAriaLabel: 'Previous page',
       nextPageAriaLabel: 'Next page',
@@ -41,7 +41,7 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
     },
   },
   scrollControl: {
-    ariaLabel: 'Table horizontal scroll',
+    groupAriaLabel: 'Table horizontal scroll',
     accessibilityLabels: {
       scrollLeftAriaLabel: 'Scroll table left',
       scrollRightAriaLabel: 'Scroll table right',

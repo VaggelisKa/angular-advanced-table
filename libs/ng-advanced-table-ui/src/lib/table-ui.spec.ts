@@ -103,7 +103,7 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="true"
       [getRowId]="getRowId"
-      ariaLabel="Operations table"
+      accessibleName="Operations table"
       (stateChange)="onTableStateChange($event)"
     />
 
@@ -142,7 +142,7 @@ class TableUiHost {
       [data]="rows()"
       [columns]="columns"
       [state]="tableState()"
-      ariaLabel="Operations table"
+      accessibleName="Operations table"
       (stateChange)="onTableStateChange($event)"
     />
   `,
@@ -178,7 +178,7 @@ class CustomSortIndicatorHost {
       [initialState]="initialState"
       [enablePagination]="true"
       [getRowId]="getRowId"
-      ariaLabel="Operations table"
+      accessibleName="Operations table"
       (stateChange)="onTableStateChange($event)"
     />
 
@@ -270,14 +270,14 @@ class CustomAccessibilityLabelsHost {
       },
       columnVisibility: {
         label: 'Provider columns',
-        ariaLabel: 'Provider column visibility',
+        groupAriaLabel: 'Provider column visibility',
         accessibilityLabels: {
           visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
             `Provider ${visibleColumnCountText}/${totalColumnCountText}`,
         },
       },
       pageSize: {
-        ariaLabel: 'Provider page size',
+        groupAriaLabel: 'Provider page size',
         accessibilityLabels: {
           groupAriaLabel: 'Provider page size group',
           pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} provider rows`,
@@ -285,7 +285,7 @@ class CustomAccessibilityLabelsHost {
         },
       },
       pager: {
-        ariaLabel: 'Provider pager',
+        groupAriaLabel: 'Provider pager',
         accessibilityLabels: {
           previousPageAriaLabel: 'Provider previous',
           nextPageAriaLabel: 'Provider next',
@@ -294,7 +294,7 @@ class CustomAccessibilityLabelsHost {
         },
       },
       scrollControl: {
-        ariaLabel: 'Provider horizontal scroll',
+        groupAriaLabel: 'Provider horizontal scroll',
         accessibilityLabels: {
           scrollLeftAriaLabel: 'Provider scroll left',
           scrollRightAriaLabel: 'Provider scroll right',
@@ -322,7 +322,7 @@ class CustomAccessibilityLabelsHost {
       [initialState]="initialState"
       [enablePagination]="true"
       [getRowId]="getRowId"
-      ariaLabel="Operations table"
+      accessibleName="Operations table"
       (stateChange)="onTableStateChange($event)"
     />
 
@@ -331,7 +331,7 @@ class CustomAccessibilityLabelsHost {
       <nat-table-column-visibility [for]="grid" />
       <nat-table-page-size
         [for]="grid"
-        [ariaLabel]="pageSizeAriaLabel()"
+        [groupAriaLabel]="pageSizeGroupAriaLabel()"
         [pageSizeOptions]="pageSizeOptions"
       />
       <nat-table-pager [for]="grid" />
@@ -352,7 +352,7 @@ class ProviderAccessibilityLabelsHost {
     },
   };
   readonly searchLabel = signal<string | undefined>(undefined);
-  readonly pageSizeAriaLabel = signal<string | undefined>(undefined);
+  readonly pageSizeGroupAriaLabel = signal<string | undefined>(undefined);
 
   onTableStateChange(state: NatTableState): void {
     this.tableState.set(state);
@@ -381,14 +381,14 @@ class ProviderAccessibilityLabelsHost {
             placeholder: 'Søg i rækker',
           },
           pageSize: {
-            ariaLabel: 'Rækker pr. side',
+            groupAriaLabel: 'Rækker pr. side',
             accessibilityLabels: {
               pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} / side`,
               pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker pr. side`,
             },
           },
           pager: {
-            ariaLabel: 'Tabelsider',
+            groupAriaLabel: 'Tabelsider',
             accessibilityLabels: {
               previousPageAriaLabel: 'Forrige side',
               nextPageAriaLabel: 'Næste side',
@@ -407,7 +407,7 @@ class ProviderAccessibilityLabelsHost {
       [data]="rows()"
       [columns]="columns"
       [enablePagination]="true"
-      ariaLabel="Operations table"
+      accessibleName="Operations table"
     />
 
     <nat-table-surface>
@@ -431,7 +431,7 @@ class LocaleSwitchingHost {
       [data]="rows()"
       [columns]="columns"
       [state]="tableState()"
-      ariaLabel="Operations table"
+      accessibleName="Operations table"
       (stateChange)="onTableStateChange($event)"
     />
   `,
@@ -1074,7 +1074,7 @@ describe('ng-advanced-table-ui', () => {
     expect(getOpenMenuItem('left').textContent).toContain('Provider left');
 
     providerHost.searchLabel.set('Input search');
-    providerHost.pageSizeAriaLabel.set('Input page size');
+    providerHost.pageSizeGroupAriaLabel.set('Input page size');
     providerFixture.detectChanges();
 
     expect(searchLabel.textContent?.trim()).toBe('Input search');

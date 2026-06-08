@@ -21,7 +21,7 @@ import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.typ
 export class NatTablePager<TData extends RowData = RowData> {
   readonly for = input.required<NatTableUiController<TData>>();
   readonly locale = input<string | undefined>(undefined);
-  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
@@ -44,7 +44,12 @@ export class NatTablePager<TData extends RowData = RowData> {
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return this.ariaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().pager?.ariaLabel ?? '';
+    return (
+      this.groupAriaLabel() ??
+      labels.groupAriaLabel ??
+      this.tableUiIntl().pager?.groupAriaLabel ??
+      ''
+    );
   });
   protected readonly previousPageAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();

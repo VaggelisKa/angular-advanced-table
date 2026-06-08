@@ -173,29 +173,29 @@ export interface NatTableSearchIntl {
 export interface NatTableColumnVisibilityIntl {
   /** Visible heading above the column visibility chips. */
   label?: string;
-  /** Group label for the column visibility chip set. */
-  ariaLabel?: string;
+  /** `aria-label` applied to the column visibility chip group. */
+  groupAriaLabel?: string;
   /** Generated labels and summaries for the column visibility control. */
   accessibilityLabels?: NatTableAccessibilityColumnVisibilityLabels;
 }
 
 export interface NatTablePageSizeIntl {
-  /** Group label for the page-size chip set. */
-  ariaLabel?: string;
+  /** `aria-label` applied to the page-size chip group. */
+  groupAriaLabel?: string;
   /** Generated labels for page-size options. */
   accessibilityLabels?: NatTableAccessibilityPageSizeLabels;
 }
 
 export interface NatTablePagerIntl {
-  /** Group label for pager controls. */
-  ariaLabel?: string;
+  /** `aria-label` applied to the pager control group. */
+  groupAriaLabel?: string;
   /** Generated pager button and indicator labels. */
   accessibilityLabels?: NatTableAccessibilityPagerLabels;
 }
 
 export interface NatTableScrollControlIntl {
-  /** Group label for horizontal scroll controls. */
-  ariaLabel?: string;
+  /** `aria-label` applied to the horizontal scroll control group. */
+  groupAriaLabel?: string;
   /** Generated scroll button, slider, and position labels. */
   accessibilityLabels?: NatTableAccessibilityScrollControlLabels;
 }

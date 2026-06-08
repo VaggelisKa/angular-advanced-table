@@ -164,8 +164,10 @@ export class NatTable<TData extends RowData = RowData> {
   readonly data = input.required<readonly TData[]>();
   /** TanStack column definitions for the current row type. */
   readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
-  /** Accessible name announced for the table region. */
-  readonly ariaLabel = input.required<string>();
+  /** Accessible name announced for the grid when no visible caption is rendered. */
+  readonly accessibleName = input<string | undefined>(undefined);
+  /** Visible table caption. When present, it provides the grid's accessible name. */
+  readonly caption = input<string | undefined>(undefined);
   /** Locale id used to resolve generated table accessibility copy. */
   readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
@@ -242,6 +244,7 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly liveMessage = signal('');
   /** Stable DOM id for the rendered `<table>` element. */
   readonly tableElementId = signal(`nat-table-${nextTableId++}`);
+  protected readonly tableCaptionId = computed(() => `${this.tableElementId()}-caption`);
   protected readonly tableSummaryId = computed(() => `${this.tableElementId()}-summary`);
   protected readonly tableDescriptionId = computed(() => `${this.tableElementId()}-description`);
   protected readonly tableKeyboardInstructionsId = computed(
@@ -285,6 +288,17 @@ export class NatTable<TData extends RowData = RowData> {
   );
   protected readonly resolvedEmptyState = computed(
     () => this.resolvedAccessibilityText().emptyState ?? '',
+  );
+  protected readonly resolvedCaption = computed(() => this.caption()?.trim() ?? '');
+  protected readonly tableAriaLabel = computed(() => {
+    if (this.resolvedCaption()) {
+      return null;
+    }
+
+    return this.accessibleName()?.trim() || null;
+  });
+  protected readonly tableAriaLabelledBy = computed(() =>
+    this.resolvedCaption() ? this.tableCaptionId() : null,
   );
   protected readonly resolvedKeyboardInstructions = computed(() => {
     const instructions = (this.resolvedAccessibilityText().keyboardInstructions ?? '').trim();

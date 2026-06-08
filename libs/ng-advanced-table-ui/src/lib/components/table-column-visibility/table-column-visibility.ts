@@ -37,7 +37,7 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
   readonly for = input.required<NatTableUiController<TData>>();
   readonly locale = input<string | undefined>(undefined);
   readonly label = input<string | undefined>(undefined);
-  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(
     undefined,
   );
@@ -70,9 +70,9 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
     const labels = this.resolvedAccessibilityLabels();
 
     return (
-      this.ariaLabel() ??
+      this.groupAriaLabel() ??
       labels.groupAriaLabel ??
-      this.tableUiIntl().columnVisibility?.ariaLabel ??
+      this.tableUiIntl().columnVisibility?.groupAriaLabel ??
       ''
     );
   });

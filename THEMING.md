@@ -22,7 +22,7 @@ Preferred shape:
       [data]="rows()"
       [columns]="columns"
       [enablePagination]="true"
-      ariaLabel="Orders"
+      accessibleName="Orders"
     />
 
     <nat-table-search [for]="grid" />
@@ -100,49 +100,49 @@ Use an app-level scope when all tables should follow the active product theme:
 
 These are the most important stable customization points for the core table.
 
-| Token | Purpose |
-| --- | --- |
-| `--nat-table-color-text` | Base text color inherited by the table |
-| `--nat-table-font-family` | Table font family |
-| `--nat-table-region-background` | Scrollable table region background |
-| `--nat-table-region-border-color` | Scrollable table region border |
-| `--nat-table-radius-region` | Scrollable table region corner radius |
-| `--nat-table-header-background` | Sticky header background |
-| `--nat-table-header-color` | Sticky header text color |
-| `--nat-table-header-border-color` | Header divider color |
-| `--nat-table-row-background` | Default body row background |
-| `--nat-table-row-background-hover` | Body row hover background |
-| `--nat-table-row-background-focus` | Body row focus-within background |
-| `--nat-table-pinned-background` | Sticky pinned cell background |
-| `--nat-table-pinned-divider-color` | Divider at pinned column edges |
-| `--nat-table-cell-border-color` | Body cell divider color |
-| `--nat-table-cell-color-positive` | Positive semantic cell tone |
-| `--nat-table-cell-color-negative` | Negative semantic cell tone |
-| `--nat-table-cell-color-warning` | Warning semantic cell tone |
-| `--nat-table-cell-color-neutral` | Neutral semantic cell tone |
-| `--nat-table-empty-state-color` | Empty-state text color |
-| `--nat-table-focus-ring-color` | Keyboard focus indicator color |
-| `--nat-table-focus-ring-width` | Keyboard focus indicator width |
-| `--nat-table-space-cell-y` | Cell block padding |
-| `--nat-table-space-cell-x` | Cell inline padding |
-| `--nat-table-font-size-header` | Header font size |
-| `--nat-table-letter-spacing-header` | Header letter spacing |
-| `--nat-table-text-transform-header` | Header text transform |
-| `--nat-table-font-weight-row-header` | Row header cell weight |
+| Token                                | Purpose                                |
+| ------------------------------------ | -------------------------------------- |
+| `--nat-table-color-text`             | Base text color inherited by the table |
+| `--nat-table-font-family`            | Table font family                      |
+| `--nat-table-region-background`      | Scrollable table region background     |
+| `--nat-table-region-border-color`    | Scrollable table region border         |
+| `--nat-table-radius-region`          | Scrollable table region corner radius  |
+| `--nat-table-header-background`      | Sticky header background               |
+| `--nat-table-header-color`           | Sticky header text color               |
+| `--nat-table-header-border-color`    | Header divider color                   |
+| `--nat-table-row-background`         | Default body row background            |
+| `--nat-table-row-background-hover`   | Body row hover background              |
+| `--nat-table-row-background-focus`   | Body row focus-within background       |
+| `--nat-table-pinned-background`      | Sticky pinned cell background          |
+| `--nat-table-pinned-divider-color`   | Divider at pinned column edges         |
+| `--nat-table-cell-border-color`      | Body cell divider color                |
+| `--nat-table-cell-color-positive`    | Positive semantic cell tone            |
+| `--nat-table-cell-color-negative`    | Negative semantic cell tone            |
+| `--nat-table-cell-color-warning`     | Warning semantic cell tone             |
+| `--nat-table-cell-color-neutral`     | Neutral semantic cell tone             |
+| `--nat-table-empty-state-color`      | Empty-state text color                 |
+| `--nat-table-focus-ring-color`       | Keyboard focus indicator color         |
+| `--nat-table-focus-ring-width`       | Keyboard focus indicator width         |
+| `--nat-table-space-cell-y`           | Cell block padding                     |
+| `--nat-table-space-cell-x`           | Cell inline padding                    |
+| `--nat-table-font-size-header`       | Header font size                       |
+| `--nat-table-letter-spacing-header`  | Header letter spacing                  |
+| `--nat-table-text-transform-header`  | Header text transform                  |
+| `--nat-table-font-weight-row-header` | Row header cell weight                 |
 
 ## UI Theme Tokens
 
 Use these when consuming `ng-advanced-table-ui`.
 
-| Token group | Common tokens |
-| --- | --- |
-| Surface | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-border-color-hover`, `--nat-table-card-shadow`, `--nat-table-card-backdrop-filter`, `--nat-table-radius-card`, `--nat-table-space-card` |
-| Controls | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-letter-spacing-label`, `--nat-table-text-transform-label`, `--nat-table-space-control-block-gap` |
-| Search | `--nat-table-search-background`, `--nat-table-search-background-focus`, `--nat-table-search-color`, `--nat-table-search-placeholder-color`, `--nat-table-search-border-color`, `--nat-table-search-border-color-focus`, `--nat-table-search-focus-ring`, `--nat-table-search-min-height` |
-| Chips | `--nat-table-chip-background`, `--nat-table-chip-background-hover`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-chip-border-color-active`, `--nat-table-chip-shadow-active`, `--nat-table-chip-count-color`, `--nat-table-chip-min-height`, `--nat-table-radius-chip` |
-| Pager | `--nat-table-pager-background`, `--nat-table-pager-background-hover`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-label-color`, `--nat-table-pager-min-height`, `--nat-table-pager-padding-x` |
-| Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-sort-icon-color-muted`, `--nat-table-sort-icon-color-hover`, `--nat-table-sort-icon-chip-background-active`, `--nat-table-pin-color-pinned`, `--nat-table-pin-border-color-pinned` |
-| Motion and disabled states | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-transition-slow`, `--nat-table-hover-lift`, `--nat-table-disabled-opacity` |
+| Token group                | Common tokens                                                                                                                                                                                                                                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Surface                    | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-border-color-hover`, `--nat-table-card-shadow`, `--nat-table-card-backdrop-filter`, `--nat-table-radius-card`, `--nat-table-space-card`                                                                                     |
+| Controls                   | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-letter-spacing-label`, `--nat-table-text-transform-label`, `--nat-table-space-control-block-gap`                                                                                                                                  |
+| Search                     | `--nat-table-search-background`, `--nat-table-search-background-focus`, `--nat-table-search-color`, `--nat-table-search-placeholder-color`, `--nat-table-search-border-color`, `--nat-table-search-border-color-focus`, `--nat-table-search-focus-ring`, `--nat-table-search-min-height`                      |
+| Chips                      | `--nat-table-chip-background`, `--nat-table-chip-background-hover`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-chip-border-color-active`, `--nat-table-chip-shadow-active`, `--nat-table-chip-count-color`, `--nat-table-chip-min-height`, `--nat-table-radius-chip` |
+| Pager                      | `--nat-table-pager-background`, `--nat-table-pager-background-hover`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-label-color`, `--nat-table-pager-min-height`, `--nat-table-pager-padding-x`                                                                             |
+| Header actions             | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-sort-icon-color-muted`, `--nat-table-sort-icon-color-hover`, `--nat-table-sort-icon-chip-background-active`, `--nat-table-pin-color-pinned`, `--nat-table-pin-border-color-pinned`                                     |
+| Motion and disabled states | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-transition-slow`, `--nat-table-hover-lift`, `--nat-table-disabled-opacity`                                                                                                                                                       |
 
 ## Core-Only Tables
 

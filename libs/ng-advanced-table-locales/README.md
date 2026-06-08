@@ -24,11 +24,7 @@ import {
 } from 'ng-advanced-table-locales';
 
 export const appConfig = {
-  providers: [
-    provideNatTableLocales(),
-    provideNatTableUiLocales(),
-    provideNatTableUtilsLocales(),
-  ],
+  providers: [provideNatTableLocales(), provideNatTableUiLocales(), provideNatTableUtilsLocales()],
 };
 ```
 
@@ -57,13 +53,13 @@ export const appConfig = {
     provideNatTableUiLocales({
       en: {
         pageSize: {
-          ariaLabel: 'Invoices per page',
+          groupAriaLabel: 'Invoices per page',
         },
       },
       'en-GB': {
         ...NAT_EN_UI_LOCALE_LABELS,
         pageSize: {
-          ariaLabel: 'Invoices per page',
+          groupAriaLabel: 'Invoices per page',
         },
       },
     }),
