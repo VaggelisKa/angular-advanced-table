@@ -26,9 +26,10 @@
 .header-cell,
 .data-cell {
   box-sizing: border-box;
-  padding: var(--nat-table-space-cell-y, 12px) var(--nat-table-space-cell-x, 16px);
+  padding: var(--nat-table-space-cell-y, 0) var(--nat-table-space-cell-x, 0);
   border-bottom: 1px solid
     var(--nat-table-cell-border-color, color-mix(in srgb, currentColor 12%, transparent));
+  text-align: start;
   white-space: nowrap;
 }
 

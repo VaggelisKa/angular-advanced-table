@@ -9,6 +9,11 @@ const showcaseExamples = [
     description: 'Kitchen sink demo',
     path: '/examples/multiple-features',
   },
+  {
+    label: 'Sorting with pinned columns',
+    description: 'Fixed owner and total columns',
+    path: '/examples/simple-sorting',
+  },
 ];
 
 @Component({

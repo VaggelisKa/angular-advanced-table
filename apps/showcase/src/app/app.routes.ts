@@ -15,6 +15,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'examples/simple-sorting',
+    title: 'Sorting with pinned columns | Angular Advanced Table',
+    loadComponent: () =>
+      import('./pages/simple-sorting-page/simple-sorting-page').then(
+        (module) => module.SimpleSortingPage,
+      ),
+  },
+  {
     path: '**',
     redirectTo: 'examples/multiple-features',
   },
