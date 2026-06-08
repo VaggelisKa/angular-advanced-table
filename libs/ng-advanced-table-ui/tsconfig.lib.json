@@ -14,11 +14,11 @@
       ],
       "ng-advanced-table-locales/ui": [
         "dist/libs/ng-advanced-table-locales/ui",
-        "libs/ng-advanced-table-locales/ui/src/public-api.ts"
+        "libs/ng-advanced-table-locales/src/ui/public-api.ts"
       ],
       "ng-advanced-table-locales/utils": [
         "dist/libs/ng-advanced-table-locales/utils",
-        "libs/ng-advanced-table-locales/utils/src/public-api.ts"
+        "libs/ng-advanced-table-locales/src/utils/public-api.ts"
       ]
     }
   },
