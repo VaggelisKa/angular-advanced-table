@@ -1,5 +1,12 @@
 import { OverlayModule, type ConnectedPosition } from '@angular/cdk/overlay';
-import { ChangeDetectionStrategy, Component, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import {
@@ -16,6 +23,12 @@ import type {
   NatTableSortIndicatorContext,
   NatTableSortIndicatorContent,
 } from '../../shared/table-ui.types';
+import {
+  mergeHeaderActionLabels,
+  NAT_TABLE_UI_INTL,
+  NAT_TABLE_UI_ENGLISH_LOCALE,
+  resolveNatTableUiIntl,
+} from '../../shared/table-ui-intl';
 
 type NatTablePinSide = 'left' | 'right';
 
@@ -37,6 +50,8 @@ export type { NatTableSortIndicatorContent } from '../../shared/table-ui.types';
 export interface NatTableHeaderActionsOptions {
   /** Custom content rendered inside the sort button for each sortable column. */
   sortIndicator?: NatTableSortIndicatorContent;
+  /** Static locale override for generated action labels. Defaults to the hosting table locale. */
+  locale?: string;
   /** Optional accessibility label overrides for the built-in sort and pin actions. */
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
@@ -49,6 +64,11 @@ export interface NatTableHeaderActionsOptions {
   styleUrl: './table-header-actions.css',
 })
 export class NatTableHeaderActions {
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
+  private readonly localeId = computed(() => this.locale() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
+  private readonly tableUiIntl = computed(() =>
+    resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
+  );
   protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
   protected readonly pinMenu = viewChild<Menu<NatTablePinSide>>('pinMenu');
   protected readonly pinMenuPositions: ConnectedPosition[] = [
@@ -77,6 +97,7 @@ export class NatTableHeaderActions {
   readonly context = input.required<HeaderContext<RowData, unknown>>();
   readonly content = input.required<NatTableHeaderRenderContent>();
   readonly label = input.required<string>();
+  readonly locale = input<string | undefined>(undefined);
   readonly sortIndicator = input<NatTableSortIndicatorContent>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(
     undefined,
@@ -149,7 +170,7 @@ export class NatTableHeaderActions {
       labels.sortButton?.({
         label: this.label(),
         sortState: this.ariaSort(),
-      }) ?? `Change sorting for ${this.label()}`
+      }) ?? ''
     );
   }
 
@@ -157,37 +178,26 @@ export class NatTableHeaderActions {
     const context = this.getPinContext(side);
     const labels = this.resolveAccessibilityLabels();
 
-    return (
-      labels.pinButton?.(context) ??
-      `${
-        context.toggleAction === 'unpin' ? 'Unpin' : 'Pin'
-      } ${context.label} column ${context.toggleAction === 'unpin' ? 'from' : 'to'} the ${
-        context.pinSide
-      }`
-    );
+    return labels.pinButton?.(context) ?? '';
   }
 
   protected getPinText(side: NatTablePinSide): string {
     const context = this.getPinContext(side);
     const labels = this.resolveAccessibilityLabels();
 
-    return (
-      labels.pinButtonText?.(context) ?? (context.pinSide === 'left' ? 'Pin left' : 'Pin right')
-    );
+    return labels.pinButtonText?.(context) ?? '';
   }
 
   protected getMenuButtonLabel(): string {
     const labels = this.resolveAccessibilityLabels();
 
-    return labels.menuButton?.(this.getMenuContext()) ?? `Open column actions for ${this.label()}`;
+    return labels.menuButton?.(this.getMenuContext()) ?? '';
   }
 
   protected getMenuLabel(): string {
     const labels = this.resolveAccessibilityLabels();
 
-    return (
-      labels.menuLabel?.(this.getMenuContext()) ?? `Column pinning options for ${this.label()}`
-    );
+    return labels.menuLabel?.(this.getMenuContext()) ?? '';
   }
 
   protected column() {
@@ -219,6 +229,9 @@ export class NatTableHeaderActions {
   }
 
   private resolveAccessibilityLabels(): NatTableAccessibilityHeaderActionLabels {
-    return this.accessibilityLabels() ?? {};
+    return mergeHeaderActionLabels(
+      this.tableUiIntl().headerActions?.accessibilityLabels,
+      this.accessibilityLabels(),
+    );
   }
 }

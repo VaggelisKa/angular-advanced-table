@@ -1,13 +1,13 @@
 @if (for().enableGlobalFilter()) {
   <div class="control-block">
-    <label class="control-label" [attr.for]="inputId">{{ label() }}</label>
+    <label class="control-label" [attr.for]="inputId">{{ resolvedLabel() }}</label>
     <input
       [id]="inputId"
       type="search"
       class="search-input"
       [attr.aria-controls]="tableElementId()"
       [value]="value()"
-      [placeholder]="placeholder()"
+      [placeholder]="resolvedPlaceholder()"
       (input)="onInput($event)"
     />
   </div>

@@ -8,6 +8,7 @@ import {
   DestroyRef,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   input,
   output,
@@ -43,6 +44,13 @@ import {
 
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
+import {
+  formatNatTableIntlNumber,
+  mergeNatTableAccessibilityText,
+  NAT_TABLE_ENGLISH_LOCALE,
+  NAT_TABLE_INTL,
+  resolveNatTableIntl,
+} from './table-intl';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
@@ -119,11 +127,6 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnPinning: EMPTY_COLUMN_PINNING,
   pagination: DEFAULT_PAGINATION,
 };
-const REORDER_KEYBOARD_INSTRUCTIONS =
-  'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.';
-const DEFAULT_KEYBOARD_INSTRUCTIONS =
-  'Use arrow keys to move between cells. Use Tab to move into controls within a cell.';
-const DEFAULT_EMPTY_STATE_LABEL = 'No rows match the current view.';
 const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
   'a[href], button, input, select, textarea, summary, [contenteditable="true"], ' +
   '[role="button"], [role="link"], [role="checkbox"], [role="menuitem"], ' +
@@ -153,15 +156,7 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   selector: 'nat-table',
   exportAs: 'natTable',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    Grid,
-    GridCell,
-    GridRow,
-    CdkDropList,
-    CdkDrag,
-    FlexRender,
-    NatTableRowRenderEmitter,
-  ],
+  imports: [Grid, GridCell, GridRow, CdkDropList, CdkDrag, FlexRender, NatTableRowRenderEmitter],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -172,6 +167,8 @@ export class NatTable<TData extends RowData = RowData> {
   readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
   /** Accessible name announced for the table region. */
   readonly ariaLabel = input.required<string>();
+  /** Locale id used to resolve generated table accessibility copy. */
+  readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
   readonly accessibilityText = input<NatTableAccessibilityText>({});
 
@@ -253,7 +250,13 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly tableKeyboardInstructionsId = computed(
     () => `${this.tableElementId()}-instructions`,
   );
+  private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
+  /** Current locale id resolved from the `locale` input or built-in English default. */
+  readonly localeId = computed(() => this.locale() ?? NAT_TABLE_ENGLISH_LOCALE);
+  private readonly tableIntl = computed(() =>
+    resolveNatTableIntl(this.tableIntlConfig, this.localeId()),
+  );
 
   protected readonly renderCycleToken = signal(0);
   protected readonly renderCycleStartedAt = signal(0);
@@ -277,18 +280,19 @@ export class NatTable<TData extends RowData = RowData> {
         )
       : EMPTY_COLUMN_PINNING,
   );
+  private readonly resolvedAccessibilityText = computed(() =>
+    mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText()),
+  );
   protected readonly resolvedDescription = computed(
-    () => this.accessibilityText().description ?? '',
+    () => this.resolvedAccessibilityText().description ?? '',
   );
   protected readonly resolvedEmptyState = computed(
-    () => this.accessibilityText().emptyState ?? DEFAULT_EMPTY_STATE_LABEL,
+    () => this.resolvedAccessibilityText().emptyState ?? '',
   );
   protected readonly resolvedKeyboardInstructions = computed(() => {
-    const instructions = (
-      this.accessibilityText().keyboardInstructions ?? DEFAULT_KEYBOARD_INSTRUCTIONS
-    ).trim();
+    const instructions = (this.resolvedAccessibilityText().keyboardInstructions ?? '').trim();
     const reorderInstructions =
-      this.accessibilityText().reorderKeyboardInstructions?.trim() ?? REORDER_KEYBOARD_INSTRUCTIONS;
+      this.resolvedAccessibilityText().reorderKeyboardInstructions?.trim() ?? '';
 
     if (!this.enableColumnReorder()) {
       return instructions;
@@ -350,6 +354,9 @@ export class NatTable<TData extends RowData = RowData> {
     isMultiSortEvent: () => false,
     enableColumnPinning: this.enableColumnPinning(),
     enableColumnOrdering: true,
+    meta: {
+      natTableLocaleId: this.localeId(),
+    },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
     getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
@@ -915,21 +922,18 @@ export class NatTable<TData extends RowData = RowData> {
       return;
     }
 
-    const formatter = this.accessibilityText().columnReorder;
+    const formatter = this.resolvedAccessibilityText().columnReorder;
     const context: NatTableAccessibilityColumnReorderAnnouncementContext = {
       columnId: movingColumnId,
       label,
       zone,
       positionValue: nextIndex + 1,
-      positionText: formatAccessibilityNumber(nextIndex + 1),
+      positionText: this.formatAccessibilityNumber(nextIndex + 1),
       totalValue: nextVisibleZoneOrder.length,
-      totalText: formatAccessibilityNumber(nextVisibleZoneOrder.length),
+      totalText: this.formatAccessibilityNumber(nextVisibleZoneOrder.length),
     };
 
-    this.announce(
-      formatter?.(context) ??
-        `Moved ${label} column to position ${nextIndex + 1} of ${nextVisibleZoneOrder.length} in the ${describeColumnZone(zone)} region.`,
-    );
+    this.announce(formatter?.(context) ?? '');
   }
 
   private getColumnZone(column: Column<TData, unknown>): ColumnReorderZone {
@@ -1016,34 +1020,9 @@ export class NatTable<TData extends RowData = RowData> {
 
   private buildTableSummary(): string {
     const summaryContext = this.getSummaryContext();
-    const formatter = this.accessibilityText().tableSummary;
+    const formatter = this.resolvedAccessibilityText().tableSummary;
 
-    if (formatter) {
-      return formatter(summaryContext);
-    }
-
-    const {
-      filterState,
-      pageCountValue,
-      pageValue,
-      paginationState,
-      totalRowsValue,
-      visibleColumnsValue,
-      visibleRowsValue,
-    } = summaryContext;
-
-    let summary =
-      visibleRowsValue === 0
-        ? `No rows are currently shown. ${visibleColumnsValue} visible ${pluralize('column', visibleColumnsValue)}.`
-        : filterState === 'filtered' && totalRowsValue !== visibleRowsValue
-          ? `Showing ${visibleRowsValue} of ${totalRowsValue} ${pluralize('row', totalRowsValue)} across ${visibleColumnsValue} visible ${pluralize('column', visibleColumnsValue)}.`
-          : `Showing ${visibleRowsValue} ${pluralize('row', visibleRowsValue)} across ${visibleColumnsValue} visible ${pluralize('column', visibleColumnsValue)}.`;
-
-    if (paginationState === 'enabled') {
-      summary += ` Page ${pageValue} of ${pageCountValue}.`;
-    }
-
-    return summary;
+    return formatter?.(summaryContext) ?? '';
   }
 
   private getSummaryContext(): NatTableAccessibilitySummaryContext {
@@ -1056,16 +1035,16 @@ export class NatTable<TData extends RowData = RowData> {
 
     return {
       visibleRowsValue: visibleRows,
-      visibleRowsText: formatAccessibilityNumber(visibleRows),
+      visibleRowsText: this.formatAccessibilityNumber(visibleRows),
       totalRowsValue: totalRows,
-      totalRowsText: formatAccessibilityNumber(totalRows),
+      totalRowsText: this.formatAccessibilityNumber(totalRows),
       visibleColumnsValue: visibleColumns,
-      visibleColumnsText: formatAccessibilityNumber(visibleColumns),
+      visibleColumnsText: this.formatAccessibilityNumber(visibleColumns),
       pageIndex: state.pagination.pageIndex,
       pageValue: page,
-      pageText: formatAccessibilityNumber(page),
+      pageText: this.formatAccessibilityNumber(page),
       pageCountValue: pageCount,
-      pageCountText: formatAccessibilityNumber(pageCount),
+      pageCountText: this.formatAccessibilityNumber(pageCount),
       filterState:
         state.globalFilter.trim() || state.columnFilters.length > 0 ? 'filtered' : 'unfiltered',
       paginationState: this.enablePagination() ? 'enabled' : 'disabled',
@@ -1123,7 +1102,7 @@ export class NatTable<TData extends RowData = RowData> {
 
   private describeSortingChange(snapshot: TableAccessibilitySnapshot): string {
     const sortingState = this.mergedState().sorting;
-    const formatter = this.accessibilityText().sortingChange;
+    const formatter = this.resolvedAccessibilityText().sortingChange;
     const entry = sortingState[0];
     const columnLabel = entry
       ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id)
@@ -1139,15 +1118,11 @@ export class NatTable<TData extends RowData = RowData> {
       return formatter(context);
     }
 
-    if (!entry) {
-      return 'Sorting cleared.';
-    }
-
-    return `Sorted by ${columnLabel} ${sortState}.`;
+    return '';
   }
 
   private describeFilteringChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.accessibilityText().filteringChange;
+    const formatter = this.resolvedAccessibilityText().filteringChange;
     const query = snapshot.globalFilter;
     const hasColumnFilters = !!snapshot.columnFiltersKey;
     const context: NatTableAccessibilityFilteringAnnouncementContext = {
@@ -1160,28 +1135,16 @@ export class NatTable<TData extends RowData = RowData> {
           ? 'column'
           : 'none',
       visibleRowsValue: snapshot.visibleRows,
-      visibleRowsText: formatAccessibilityNumber(snapshot.visibleRows),
+      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows),
       totalRowsValue: snapshot.totalRows,
-      totalRowsText: formatAccessibilityNumber(snapshot.totalRows),
+      totalRowsText: this.formatAccessibilityNumber(snapshot.totalRows),
     };
 
     if (formatter) {
       return formatter(context);
     }
 
-    if (context.visibleRowsValue === 0) {
-      return query ? `No rows match "${query}".` : 'No rows match the current filters.';
-    }
-
-    if (query) {
-      return `Showing ${context.visibleRowsValue} matching ${pluralize('row', context.visibleRowsValue)} for "${query}".`;
-    }
-
-    if (context.filterState === 'column') {
-      return `Showing ${context.visibleRowsValue} filtered ${pluralize('row', context.visibleRowsValue)}.`;
-    }
-
-    return `Showing all ${context.visibleRowsValue} ${pluralize('row', context.visibleRowsValue)}.`;
+    return '';
   }
 
   private describeColumnVisibilityChange(
@@ -1205,48 +1168,42 @@ export class NatTable<TData extends RowData = RowData> {
       [],
     );
     const visibleCount = next.filter((column) => column.visible).length;
-    const formatter = this.accessibilityText().columnVisibilityChange;
+    const formatter = this.resolvedAccessibilityText().columnVisibilityChange;
     const context: NatTableAccessibilityColumnVisibilityAnnouncementContext = {
       changedColumns,
       visibleColumnsValue: visibleCount,
-      visibleColumnsText: formatAccessibilityNumber(visibleCount),
+      visibleColumnsText: this.formatAccessibilityNumber(visibleCount),
       totalColumnsValue: next.length,
-      totalColumnsText: formatAccessibilityNumber(next.length),
+      totalColumnsText: this.formatAccessibilityNumber(next.length),
     };
 
     if (formatter) {
       return formatter(context);
     }
 
-    if (changedColumns.length === 1) {
-      const [column] = changedColumns;
-
-      return `${column.label} column ${column.visibilityState === 'visible' ? 'shown' : 'hidden'}. ${visibleCount} visible ${pluralize('column', visibleCount)}.`;
-    }
-
-    return `${visibleCount} visible ${pluralize('column', visibleCount)}.`;
+    return '';
   }
 
   private describePageSizeChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.accessibilityText().pageSizeChange;
+    const formatter = this.resolvedAccessibilityText().pageSizeChange;
     const context = this.getPaginationAnnouncementContext(snapshot);
 
     if (formatter) {
       return formatter(context);
     }
 
-    return `Showing ${context.pageSizeValue} ${pluralize('row', context.pageSizeValue)} per page. Page ${context.pageValue} of ${context.pageCountValue}.`;
+    return '';
   }
 
   private describePageChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.accessibilityText().pageChange;
+    const formatter = this.resolvedAccessibilityText().pageChange;
     const context = this.getPaginationAnnouncementContext(snapshot);
 
     if (formatter) {
       return formatter(context);
     }
 
-    return `Page ${context.pageValue} of ${context.pageCountValue}. ${context.visibleRowsValue} ${pluralize('row', context.visibleRowsValue)} shown.`;
+    return '';
   }
 
   private getPaginationAnnouncementContext(
@@ -1259,13 +1216,13 @@ export class NatTable<TData extends RowData = RowData> {
     return {
       pageIndex: snapshot.pagination.pageIndex,
       pageValue: page,
-      pageText: formatAccessibilityNumber(page),
+      pageText: this.formatAccessibilityNumber(page),
       pageCountValue: pageCount,
-      pageCountText: formatAccessibilityNumber(pageCount),
+      pageCountText: this.formatAccessibilityNumber(pageCount),
       pageSizeValue: pageSize,
-      pageSizeText: formatAccessibilityNumber(pageSize),
+      pageSizeText: this.formatAccessibilityNumber(pageSize),
       visibleRowsValue: snapshot.visibleRows,
-      visibleRowsText: formatAccessibilityNumber(snapshot.visibleRows),
+      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows),
     };
   }
 
@@ -1278,6 +1235,10 @@ export class NatTable<TData extends RowData = RowData> {
     const getRowId = this.getRowId();
 
     return getRowId ? getRowId(row, index, parent) : String(index);
+  }
+
+  private formatAccessibilityNumber(value: number): string {
+    return formatNatTableIntlNumber(this.tableIntl(), value, undefined, this.localeId());
   }
 
   private resolveUpdater<T>(currentValue: T, updater: Updater<T> | undefined): T {
@@ -1511,18 +1472,6 @@ function hasSameStringOrder(left: readonly string[], right: readonly string[]): 
   return left.every((value, index) => value === right[index]);
 }
 
-function describeColumnZone(zone: ColumnReorderZone): string {
-  if (zone === 'left') {
-    return 'left pinned';
-  }
-
-  if (zone === 'right') {
-    return 'right pinned';
-  }
-
-  return 'unpinned';
-}
-
 function matchesFilterQuery(value: unknown, query: string): boolean {
   if (value === null || value === undefined) {
     return false;
@@ -1703,12 +1652,4 @@ function hasSameColumnVisibility(
 
     return nextColumn.visible === column.visible;
   });
-}
-
-function pluralize(noun: string, count: number): string {
-  return count === 1 ? noun : `${noun}s`;
-}
-
-function formatAccessibilityNumber(value: number): string {
-  return new Intl.NumberFormat().format(value);
 }

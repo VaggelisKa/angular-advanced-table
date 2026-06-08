@@ -9,6 +9,10 @@
         "./dist/libs/ng-advanced-table",
         "./libs/ng-advanced-table/src/public-api.ts"
       ],
+      "ng-advanced-table-locales": [
+        "./dist/libs/ng-advanced-table-locales",
+        "./libs/ng-advanced-table-locales/src/public-api.ts"
+      ],
       "ng-advanced-table-types": [
         "./libs/ng-advanced-table-types/src/public-api.ts"
       ],
@@ -52,6 +56,12 @@
     },
     {
       "path": "./libs/ng-advanced-table/tsconfig.spec.json"
+    },
+    {
+      "path": "./libs/ng-advanced-table-locales/tsconfig.lib.json"
+    },
+    {
+      "path": "./libs/ng-advanced-table-locales/tsconfig.spec.json"
     },
     {
       "path": "./libs/ng-advanced-table-types/tsconfig.lib.json"

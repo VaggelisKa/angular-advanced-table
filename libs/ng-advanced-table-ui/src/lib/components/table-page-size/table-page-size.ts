@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
 import {
@@ -6,6 +6,12 @@ import {
   formatNatTableAccessibilityNumber,
   sanitizePageSizeOptions,
 } from '../../shared/table-ui.helpers';
+import {
+  mergePageSizeLabels,
+  NAT_TABLE_UI_INTL,
+  NAT_TABLE_UI_ENGLISH_LOCALE,
+  resolveNatTableUiIntl,
+} from '../../shared/table-ui-intl';
 import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPageSizeOptionContext,
@@ -26,25 +32,45 @@ interface PageSizeOption {
 })
 export class NatTablePageSize<TData extends RowData = RowData> {
   readonly for = input.required<NatTableUiController<TData>>();
+  readonly locale = input<string | undefined>(undefined);
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
-  readonly ariaLabel = input('Rows per page');
+  readonly ariaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
+  private readonly localeId = computed(
+    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
+  );
+  private readonly tableUiIntl = computed(() =>
+    resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
+  );
   protected readonly table = computed(() => this.for().table);
   protected readonly tableElementId = computed(() => this.for().tableElementId());
   protected readonly selectedPageSize = computed(() => this.table().getState().pagination.pageSize);
-  private readonly resolvedAccessibilityLabels = computed(() => this.accessibilityLabels() ?? {});
+  private readonly resolvedAccessibilityLabels = computed(() =>
+    mergePageSizeLabels(
+      this.tableUiIntl().pageSize?.accessibilityLabels,
+      this.accessibilityLabels(),
+    ),
+  );
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return labels.groupAriaLabel ?? this.ariaLabel();
+    return (
+      this.ariaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().pageSize?.ariaLabel ?? ''
+    );
   });
   protected readonly resolvedPageSizeOptions = computed<PageSizeOption[]>(() => {
     const labels = this.resolvedAccessibilityLabels();
     const selectedPageSize = this.selectedPageSize();
 
     return sanitizePageSizeOptions(this.pageSizeOptions()).map((pageSize) => {
-      const pageSizeText = formatNatTableAccessibilityNumber(pageSize);
+      const pageSizeText = formatNatTableAccessibilityNumber(
+        pageSize,
+        this.tableUiIntl().formatNumber,
+        undefined,
+        this.localeId(),
+      );
       const context: NatTableAccessibilityPageSizeOptionContext = {
         pageSizeValue: pageSize,
         pageSizeText,
@@ -53,9 +79,8 @@ export class NatTablePageSize<TData extends RowData = RowData> {
 
       return {
         pageSize,
-        text: labels.pageSizeOptionText?.(context) ?? `${pageSize} / page`,
-        ariaLabel:
-          labels.pageSizeOptionAriaLabel?.(context) ?? `Show ${pageSize} rows per page`,
+        text: labels.pageSizeOptionText?.(context) ?? '',
+        ariaLabel: labels.pageSizeOptionAriaLabel?.(context) ?? '',
       };
     });
   });

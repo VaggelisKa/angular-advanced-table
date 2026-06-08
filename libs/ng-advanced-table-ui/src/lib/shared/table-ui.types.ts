@@ -50,6 +50,8 @@ export interface NatTableUiController<TData extends RowData = RowData> {
   readonly tableElementId: Signal<string>;
   /** Scrollable container that wraps the controlled `<table>`, when available. */
   readonly tableScrollContainer?: Signal<HTMLElement | null>;
+  /** Locale id used by generated companion-control labels, when available. */
+  readonly localeId?: Signal<string>;
 }
 
 /** Current sort direction for a header cell. */
@@ -120,7 +122,7 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
 export interface NatTableAccessibilityPageSizeOptionContext {
   /** Candidate page size. */
   pageSizeValue: number;
-  /** Browser-locale text for `pageSizeValue`. */
+  /** Provider-formatted text for `pageSizeValue`. */
   pageSizeText: string;
   /** Whether the option represents the currently selected value. */
   selectionState: 'selected' | 'not-selected';
@@ -140,11 +142,11 @@ export interface NatTableAccessibilityPageSizeLabels {
 export interface NatTableAccessibilityPagerContext {
   /** One-based current page number. */
   pageValue: number;
-  /** Browser-locale text for `pageValue`. */
+  /** Provider-formatted text for `pageValue`. */
   pageText: string;
   /** Total available pages. */
   pageCountValue: number;
-  /** Browser-locale text for `pageCountValue`. */
+  /** Provider-formatted text for `pageCountValue`. */
   pageCountText: string;
 }
 
@@ -164,15 +166,15 @@ export interface NatTableAccessibilityPagerLabels {
 export interface NatTableAccessibilityScrollControlPositionContext {
   /** Current horizontal scroll offset in CSS pixels. */
   scrollLeftValue: number;
-  /** Browser-locale text for `scrollLeftValue`. */
+  /** Provider-formatted text for `scrollLeftValue`. */
   scrollLeftText: string;
   /** Maximum horizontal scroll offset in CSS pixels. */
   maxScrollLeftValue: number;
-  /** Browser-locale text for `maxScrollLeftValue`. */
+  /** Provider-formatted text for `maxScrollLeftValue`. */
   maxScrollLeftText: string;
   /** Rounded scroll completion percentage from 0 to 100. */
   percentageValue: number;
-  /** Browser-locale text for `percentageValue`. */
+  /** Provider-formatted text for `percentageValue`. */
   percentageText: string;
 }
 
@@ -194,11 +196,11 @@ export interface NatTableAccessibilityScrollControlLabels {
 export interface NatTableAccessibilityColumnVisibilitySummaryContext {
   /** Number of currently visible leaf columns. */
   visibleColumnCountValue: number;
-  /** Browser-locale text for `visibleColumnCountValue`. */
+  /** Provider-formatted text for `visibleColumnCountValue`. */
   visibleColumnCountText: string;
   /** Total leaf-column count. */
   totalColumnCountValue: number;
-  /** Browser-locale text for `totalColumnCountValue`. */
+  /** Provider-formatted text for `totalColumnCountValue`. */
   totalColumnCountText: string;
 }
 

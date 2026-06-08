@@ -1,3 +1,4 @@
+import { Dialog, DialogRef } from '@angular/cdk/dialog';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,7 +9,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Dialog, DialogRef } from '@angular/cdk/dialog';
 import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -19,17 +19,19 @@ import {
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  type NatTableSortIndicatorContext,
   withNatTableHeaderActions,
+  type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
   NatTableRenderMetricsStore,
-  type NatTableRenderMetricsEvent,
   withRenderMetricsColumn,
+  type NatTableRenderMetricsEvent,
 } from 'ng-advanced-table-utils';
 
+import { ShowcaseThemeStore } from '../../showcase-theme';
+import { NatRowActionsMenu } from './nat-row-actions-menu';
 import { NatSparkline } from './nat-sparkline';
 import { NatTickerMark } from './nat-ticker-mark';
 import {
@@ -42,8 +44,6 @@ import {
   type SimulationRow,
   type SimulationStatus,
 } from './table-simulation';
-import { NatRowActionsMenu } from './nat-row-actions-menu';
-import { ThemeService, type ShowcaseTheme } from '../../theme.service';
 
 const STATUS_FILTER_ID = 'status';
 
@@ -396,6 +396,7 @@ class MarketSortIndicator {
 })
 export class TableShowcasePage {
   private readonly dialog = inject(Dialog);
+  private readonly themeStore = inject(ShowcaseThemeStore);
   private readonly featureDialogTemplate =
     viewChild.required<TemplateRef<unknown>>('featureDialog');
 
@@ -415,8 +416,7 @@ export class TableShowcasePage {
   );
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly accessibilityText = showcaseAccessibilityText;
-  private readonly themeService = inject(ThemeService);
-  protected readonly theme = computed(() => this.themeService.theme());
+  protected readonly theme = this.themeStore.theme;
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
   protected readonly hasTopTableControls = computed(() => {
     const features = this.tableFeatures();
@@ -450,10 +450,6 @@ export class TableShowcasePage {
 
   protected setProfile(profile: SimulationProfile): void {
     this.simulation.setProfile(profile);
-  }
-
-  protected setTheme(theme: ShowcaseTheme): void {
-    this.themeService.setTheme(theme);
   }
 
   protected toggleSimulation(): void {
@@ -554,8 +550,6 @@ export class TableShowcasePage {
     }));
   }
 }
-
-
 
 function upsertColumnFilter(
   currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,

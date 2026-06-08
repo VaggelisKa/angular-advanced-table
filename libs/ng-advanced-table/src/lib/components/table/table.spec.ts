@@ -6,6 +6,7 @@ import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
+import { provideNatTableIntl } from './table-intl';
 import type {
   NatTableAccessibilityText,
   NatTableRowActivateEvent,
@@ -170,13 +171,41 @@ class TableHost {
   }
 }
 
+@Component({
+  imports: [NatTable],
+  providers: [
+    provideNatTableIntl({
+      formatNumber: (value) => `n${value}`,
+      accessibilityText: {
+        emptyState: 'Provider empty state',
+        keyboardInstructions: 'Provider keyboard instructions.',
+        tableSummary: ({ visibleRowsText, totalRowsText }) =>
+          `Provider summary ${visibleRowsText}/${totalRowsText}`,
+      },
+    }),
+  ],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      ariaLabel="Provider table"
+      [accessibilityText]="accessibilityText()"
+    />
+  `,
+})
+class ProviderAccessibilityHost {
+  readonly rows = signal<Row[]>([]);
+  readonly columns = columns;
+  readonly accessibilityText = signal<NatTableAccessibilityText>({});
+}
+
 describe('NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost],
+      imports: [TableHost, ProviderAccessibilityHost],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -509,6 +538,39 @@ describe('NatTable', () => {
     expect(liveRegion.textContent?.trim()).toBe('Sortering Service:ascending');
   });
 
+  it('uses provider accessibility defaults and lets table inputs override them', () => {
+    const providerFixture = TestBed.createComponent(ProviderAccessibilityHost);
+    const providerHost = providerFixture.componentInstance;
+
+    providerFixture.detectChanges();
+
+    let summary = providerFixture.nativeElement.querySelector('p[id$="-summary"]') as HTMLElement;
+    let emptyState = providerFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
+    let instructions = providerFixture.nativeElement.querySelector(
+      'p[id$="-instructions"]',
+    ) as HTMLElement;
+
+    expect(summary.textContent?.trim()).toBe('Provider summary n0/n0');
+    expect(emptyState.textContent?.trim()).toBe('Provider empty state');
+    expect(instructions.textContent?.trim()).toBe('Provider keyboard instructions.');
+
+    providerHost.accessibilityText.set({
+      emptyState: 'Input empty state',
+      tableSummary: ({ visibleRowsText }) => `Input summary ${visibleRowsText}`,
+    });
+    providerFixture.detectChanges();
+
+    summary = providerFixture.nativeElement.querySelector('p[id$="-summary"]') as HTMLElement;
+    emptyState = providerFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
+    instructions = providerFixture.nativeElement.querySelector(
+      'p[id$="-instructions"]',
+    ) as HTMLElement;
+
+    expect(summary.textContent?.trim()).toBe('Input summary n0');
+    expect(emptyState.textContent?.trim()).toBe('Input empty state');
+    expect(instructions.textContent?.trim()).toBe('Provider keyboard instructions.');
+  });
+
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {
     await recreateHost({
       enableColumnReorder: true,
@@ -660,9 +722,7 @@ describe('NatTable', () => {
   it('applies optional header sizing from column meta without affecting body cells', async () => {
     @Component({
       imports: [NatTable],
-      template: `
-        <nat-table [data]="rows()" [columns]="columns" ariaLabel="Operations table" />
-      `,
+      template: ` <nat-table [data]="rows()" [columns]="columns" ariaLabel="Operations table" /> `,
     })
     class HeaderSizingHost {
       readonly rows = signal<Row[]>([

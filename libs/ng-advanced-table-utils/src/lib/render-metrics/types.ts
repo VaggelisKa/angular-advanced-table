@@ -26,38 +26,9 @@ export interface RowRenderMeasurement {
 }
 
 /** Metadata used to render the filter chip options in the metrics companion UI. */
-export interface RowRenderFilterOption {
-  /** Filter value applied to the metrics column. */
-  value: RowRenderFilterValue;
-  /** Short label shown in the UI. */
-  label: string;
-  /** Supporting description shown alongside the label. */
-  description: string;
-}
+export type { RowRenderFilterOption } from 'ng-advanced-table-locales';
 
 /** Default id used by the synthetic render-metrics column. */
 export const RENDER_METRIC_COLUMN_ID = '__rowRenderMetric';
 
-/** Built-in filter options shared by the metrics filter component. */
-export const RENDER_FILTER_OPTIONS: readonly RowRenderFilterOption[] = [
-  {
-    value: 'all',
-    label: 'All rows',
-    description: 'Latest sample',
-  },
-  {
-    value: 'fast',
-    label: 'Fast',
-    description: 'Under 4 ms',
-  },
-  {
-    value: 'watch',
-    label: 'Watch',
-    description: '4 to 8 ms',
-  },
-  {
-    value: 'slow',
-    label: 'Slow',
-    description: 'Over 8 ms',
-  },
-] as const;
+export { RENDER_FILTER_OPTIONS } from 'ng-advanced-table-locales';

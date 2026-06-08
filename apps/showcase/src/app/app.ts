@@ -1,19 +1,71 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { ThemeService } from './theme.service';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
+import { ShowcaseThemeStore, type ShowcaseTheme } from './showcase-theme';
+
+const showcaseExamples = [
+  {
+    label: 'Multiple features',
+    description: 'Kitchen sink demo',
+    path: '/examples/multiple-features',
+  },
+  {
+    label: 'Table builder',
+    description: 'Interactive config',
+    path: '/builder',
+  },
+  {
+    label: 'Sorting',
+    description: 'Column sorting',
+    path: '/sorting',
+  },
+  {
+    label: 'Column pinning',
+    description: 'Sticky boundary pinning',
+    path: '/pinning',
+  },
+  {
+    label: 'Column reordering',
+    description: 'Drag-and-drop headers',
+    path: '/reordering',
+  },
+  {
+    label: 'Pagination',
+    description: 'Row-based pagination',
+    path: '/pagination',
+  },
+  {
+    label: 'Column visibility',
+    description: 'Dynamic column display',
+    path: '/visibility',
+  },
+  {
+    label: 'Global search',
+    description: 'Fuzzy filter mapping',
+    path: '/search',
+  },
+  {
+    label: 'Sticky header',
+    description: 'Fixed viewport headers',
+    path: '/sticky-header',
+  },
+];
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
-  private readonly themeService = inject(ThemeService);
-  readonly theme = this.themeService.theme;
+  private readonly themeStore = inject(ShowcaseThemeStore);
 
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
+  protected readonly examples = showcaseExamples;
+  protected readonly exactLinkMatch = { exact: true };
+  protected readonly theme = this.themeStore.theme;
+
+  protected setTheme(theme: ShowcaseTheme): void {
+    this.themeStore.setTheme(theme);
   }
 }

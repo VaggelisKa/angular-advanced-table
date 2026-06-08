@@ -82,6 +82,7 @@ function wrapColumnHeader<TData extends RowData>(
         context: context as HeaderContext<RowData, unknown>,
         content: fallbackContent as NatTableHeaderRenderContent,
         label: resolveHeaderActionLabel(context, fallbackContent, fallbackId),
+        locale: actionOptions.locale ?? resolveTableLocale(context),
         accessibilityLabels: actionOptions.accessibilityLabels,
         sortIndicator: actionOptions.sortIndicator,
       },
@@ -129,11 +130,20 @@ function resolveHeaderActionsOptions<TData extends RowData>(
 
   return {
     sortIndicator: columnOptions?.sortIndicator ?? options.sortIndicator,
+    locale: options.locale,
     accessibilityLabels: mergeAccessibilityLabels(
       options.accessibilityLabels,
       columnOptions?.accessibilityLabels,
     ),
   };
+}
+
+function resolveTableLocale<TData extends RowData>(
+  context: HeaderContext<TData, unknown>,
+): string | undefined {
+  const tableMeta = context.table.options.meta as { natTableLocaleId?: unknown } | undefined;
+
+  return typeof tableMeta?.natTableLocaleId === 'string' ? tableMeta.natTableLocaleId : undefined;
 }
 
 function mergeAccessibilityLabels(

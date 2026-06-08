@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TableShowcasePage } from './table-showcase-page';
 import { TableSimulation } from './table-simulation';
+import { ShowcaseThemeStore } from '../../showcase-theme';
 
 describe('TableShowcasePage', () => {
   let component: TableShowcasePage;
@@ -119,30 +120,23 @@ describe('TableShowcasePage', () => {
     expect(changePercentCell.getAttribute('data-tone')).toBe('warning');
   });
 
-  it('should toggle between light and dark themes', () => {
+  it('should inherit the shared showcase theme', () => {
     fixture.detectChanges();
 
+    const themeStore = TestBed.inject(ShowcaseThemeStore);
     const demoSurface = fixture.nativeElement.querySelector('.demo-surface') as HTMLDivElement;
-    const darkOption = fixture.nativeElement.querySelectorAll(
-      '.theme-option',
-    )[1] as HTMLButtonElement;
-    const lightOption = fixture.nativeElement.querySelectorAll(
-      '.theme-option',
-    )[0] as HTMLButtonElement;
 
     expect(demoSurface.getAttribute('data-theme')).toMatch(/^(light|dark)$/);
 
-    darkOption.click();
+    themeStore.setTheme('dark');
     fixture.detectChanges();
 
     expect(demoSurface.getAttribute('data-theme')).toBe('dark');
-    expect(darkOption.getAttribute('aria-pressed')).toBe('true');
 
-    lightOption.click();
+    themeStore.setTheme('light');
     fixture.detectChanges();
 
     expect(demoSurface.getAttribute('data-theme')).toBe('light');
-    expect(lightOption.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('should render a sparkline svg for each visible row', () => {

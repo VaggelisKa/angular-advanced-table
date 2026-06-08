@@ -3,10 +3,23 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    title: 'Advanced Table - Live Tape',
+    pathMatch: 'full',
+    redirectTo: 'examples/multiple-features',
+  },
+  {
+    path: 'examples/multiple-features',
+    title: 'Multiple features | Angular Advanced Table',
     loadComponent: () =>
       import('./pages/table-showcase-page/table-showcase-page').then(
         (module) => module.TableShowcasePage,
+      ),
+  },
+  {
+    path: 'builder',
+    title: 'Table builder | Angular Advanced Table',
+    loadComponent: () =>
+      import('./pages/table-builder/table-builder').then(
+        (module) => module.TableBuilderPage,
       ),
   },
   {
@@ -53,9 +66,7 @@ export const routes: Routes = [
     path: 'search',
     title: 'Advanced Table - Global Search',
     loadComponent: () =>
-      import('./pages/single-features/search-showcase').then(
-        (module) => module.SearchShowcasePage,
-      ),
+      import('./pages/single-features/search-showcase').then((module) => module.SearchShowcasePage),
   },
   {
     path: 'sticky-header',
@@ -64,5 +75,9 @@ export const routes: Routes = [
       import('./pages/single-features/sticky-header-showcase').then(
         (module) => module.StickyHeaderShowcasePage,
       ),
+  },
+  {
+    path: '**',
+    redirectTo: 'examples/multiple-features',
   },
 ];

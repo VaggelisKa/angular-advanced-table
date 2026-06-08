@@ -34,40 +34,6 @@
       >
         {{ simulation.isRunning() ? 'Pause feed' : 'Resume feed' }}
       </button>
-
-      <div class="theme-toggle" role="group" aria-label="Color theme">
-        <button
-          type="button"
-          class="theme-option"
-          [class.is-active]="theme() === 'light'"
-          [attr.aria-pressed]="theme() === 'light'"
-          (click)="setTheme('light')"
-        >
-          <svg class="theme-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <circle cx="8" cy="8" r="3" />
-            <path
-              d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linecap="round"
-              fill="none"
-            />
-          </svg>
-          Light
-        </button>
-        <button
-          type="button"
-          class="theme-option"
-          [class.is-active]="theme() === 'dark'"
-          [attr.aria-pressed]="theme() === 'dark'"
-          (click)="setTheme('dark')"
-        >
-          <svg class="theme-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M13 9.5A5.5 5.5 0 1 1 6.5 3a4.5 4.5 0 0 0 6.5 6.5z" fill="currentColor" />
-          </svg>
-          Dark
-        </button>
-      </div>
     </div>
   </header>
 

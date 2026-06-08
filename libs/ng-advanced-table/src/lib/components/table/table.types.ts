@@ -66,25 +66,25 @@ export interface NatTableRowActivateEvent<TData extends RowData = RowData> {
 export interface NatTableAccessibilitySummaryContext {
   /** Rows currently rendered in the body. */
   visibleRowsValue: number;
-  /** Browser-locale text for `visibleRowsValue`. */
+  /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
   /** Total rows supplied to the table before filtering/pagination. */
   totalRowsValue: number;
-  /** Browser-locale text for `totalRowsValue`. */
+  /** Provider-formatted text for `totalRowsValue`. */
   totalRowsText: string;
   /** Visible leaf columns in the current view. */
   visibleColumnsValue: number;
-  /** Browser-locale text for `visibleColumnsValue`. */
+  /** Provider-formatted text for `visibleColumnsValue`. */
   visibleColumnsText: string;
   /** Zero-based current page index. */
   pageIndex: number;
   /** One-based current page number. */
   pageValue: number;
-  /** Browser-locale text for `pageValue`. */
+  /** Provider-formatted text for `pageValue`. */
   pageText: string;
   /** Total available pages. */
   pageCountValue: number;
-  /** Browser-locale text for `pageCountValue`. */
+  /** Provider-formatted text for `pageCountValue`. */
   pageCountText: string;
   /** Whether the current view is filtered. */
   filterState: 'filtered' | 'unfiltered';
@@ -110,11 +110,11 @@ export interface NatTableAccessibilityFilteringAnnouncementContext {
   filterState: 'none' | 'global' | 'column' | 'global-and-column';
   /** Rows currently rendered after filtering/pagination. */
   visibleRowsValue: number;
-  /** Browser-locale text for `visibleRowsValue`. */
+  /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
   /** Total rows supplied to the table before filtering. */
   totalRowsValue: number;
-  /** Browser-locale text for `totalRowsValue`. */
+  /** Provider-formatted text for `totalRowsValue`. */
   totalRowsText: string;
 }
 
@@ -134,11 +134,11 @@ export interface NatTableAccessibilityColumnVisibilityAnnouncementContext {
   changedColumns: readonly NatTableAccessibilityColumnVisibilityAnnouncementChange[];
   /** Visible column count after the change. */
   visibleColumnsValue: number;
-  /** Browser-locale text for `visibleColumnsValue`. */
+  /** Provider-formatted text for `visibleColumnsValue`. */
   visibleColumnsText: string;
   /** Total leaf-column count. */
   totalColumnsValue: number;
-  /** Browser-locale text for `totalColumnsValue`. */
+  /** Provider-formatted text for `totalColumnsValue`. */
   totalColumnsText: string;
 }
 
@@ -148,19 +148,19 @@ export interface NatTableAccessibilityPaginationAnnouncementContext {
   pageIndex: number;
   /** One-based current page number. */
   pageValue: number;
-  /** Browser-locale text for `pageValue`. */
+  /** Provider-formatted text for `pageValue`. */
   pageText: string;
   /** Total available pages. */
   pageCountValue: number;
-  /** Browser-locale text for `pageCountValue`. */
+  /** Provider-formatted text for `pageCountValue`. */
   pageCountText: string;
   /** Current page size. */
   pageSizeValue: number;
-  /** Browser-locale text for `pageSizeValue`. */
+  /** Provider-formatted text for `pageSizeValue`. */
   pageSizeText: string;
   /** Rows currently rendered in the body. */
   visibleRowsValue: number;
-  /** Browser-locale text for `visibleRowsValue`. */
+  /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
 }
 
@@ -174,11 +174,11 @@ export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   zone: 'left' | 'center' | 'right';
   /** One-based position within the zone after the move. */
   positionValue: number;
-  /** Browser-locale text for `positionValue`. */
+  /** Provider-formatted text for `positionValue`. */
   positionText: string;
   /** Total visible columns in the zone. */
   totalValue: number;
-  /** Browser-locale text for `totalValue`. */
+  /** Provider-formatted text for `totalValue`. */
   totalText: string;
 }
 

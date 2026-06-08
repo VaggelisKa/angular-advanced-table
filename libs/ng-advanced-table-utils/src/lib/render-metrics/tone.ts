@@ -1,4 +1,5 @@
 import type { RowRenderFilterValue, RowRenderTone } from './types';
+export { getRenderToneLabel } from 'ng-advanced-table-locales';
 
 /**
  * Maps a row render duration to the library's coarse health bands.
@@ -15,24 +16,6 @@ export function getRowRenderTone(durationMs: number): RowRenderTone {
   }
 
   return 'slow';
-}
-
-/**
- * Human-readable label for a render tone.
- *
- * @param tone Render tone or idle sentinel.
- */
-export function getRenderToneLabel(tone: RowRenderTone | 'idle'): string {
-  switch (tone) {
-    case 'fast':
-      return 'Fast';
-    case 'watch':
-      return 'Watch';
-    case 'slow':
-      return 'Slow';
-    case 'idle':
-      return 'Idle';
-  }
 }
 
 /**
