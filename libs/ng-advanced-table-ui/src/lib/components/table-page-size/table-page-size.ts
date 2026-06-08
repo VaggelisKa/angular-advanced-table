@@ -34,7 +34,7 @@ export class NatTablePageSize<TData extends RowData = RowData> {
   readonly for = input.required<NatTableUiController<TData>>();
   readonly locale = input<string | undefined>(undefined);
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
-  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
@@ -57,7 +57,10 @@ export class NatTablePageSize<TData extends RowData = RowData> {
     const labels = this.resolvedAccessibilityLabels();
 
     return (
-      this.ariaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().pageSize?.ariaLabel ?? ''
+      this.groupAriaLabel() ??
+      labels.groupAriaLabel ??
+      this.tableUiIntl().pageSize?.groupAriaLabel ??
+      ''
     );
   });
   protected readonly resolvedPageSizeOptions = computed<PageSizeOption[]>(() => {

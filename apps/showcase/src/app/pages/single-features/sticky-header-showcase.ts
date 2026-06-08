@@ -53,7 +53,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
               [data]="data"
               [columns]="columns"
               [stickyHeader]="stickyHeaderEnabled()"
-              ariaLabel="Sticky header demo table"
+              accessibleName="Sticky header demo table"
             />
           </nat-table-surface>
         </div>

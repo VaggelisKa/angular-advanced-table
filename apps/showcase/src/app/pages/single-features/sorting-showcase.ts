@@ -47,7 +47,7 @@ const DEMO_DATA: DemoItem[] = [
               [data]="data"
               [columns]="columns"
               [state]="tableState()"
-              ariaLabel="Sorting demo table"
+              accessibleName="Sorting demo table"
               (sortingChange)="onSortingChange($event)"
             />
           </nat-table-surface>

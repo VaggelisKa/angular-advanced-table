@@ -36,7 +36,7 @@ const DEFAULT_SCROLL_STEP = 240;
 export class NatTableScrollControl<TData extends RowData = RowData> {
   readonly for = input.required<NatTableUiController<TData>>();
   readonly locale = input<string | undefined>(undefined);
-  readonly ariaLabel = input<string | undefined>(undefined);
+  readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly scrollStep = input(DEFAULT_SCROLL_STEP, { transform: numberAttribute });
   readonly accessibilityLabels = input<NatTableAccessibilityScrollControlLabels | undefined>(
     undefined,
@@ -71,7 +71,10 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     const labels = this.resolvedAccessibilityLabels();
 
     return (
-      this.ariaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().scrollControl?.ariaLabel ?? ''
+      this.groupAriaLabel() ??
+      labels.groupAriaLabel ??
+      this.tableUiIntl().scrollControl?.groupAriaLabel ??
+      ''
     );
   });
   protected readonly scrollLeftAriaLabel = computed(() => {

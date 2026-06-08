@@ -49,7 +49,7 @@ const DEMO_DATA: DemoItem[] = [
               [columns]="columns"
               [state]="tableState()"
               [enableColumnReorder]="true"
-              ariaLabel="Reordering demo table"
+              accessibleName="Reordering demo table"
               (columnOrderChange)="onColumnOrderChange($event)"
             />
           </nat-table-surface>

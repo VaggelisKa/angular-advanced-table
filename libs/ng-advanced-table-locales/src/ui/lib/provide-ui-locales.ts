@@ -1,10 +1,7 @@
 import { InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
 
 import { NAT_TABLE_BUILT_IN_UI_LOCALES } from './ui-built-in-locales';
-import {
-  NAT_TABLE_UI_ENGLISH_INTL,
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-} from './ui-en';
+import { NAT_TABLE_UI_ENGLISH_INTL, NAT_TABLE_UI_ENGLISH_LOCALE } from './ui-en';
 import type {
   NatTableAccessibilityColumnVisibilityLabels,
   NatTableAccessibilityHeaderActionLabels,
@@ -38,9 +35,7 @@ export const NAT_TABLE_UI_INTL = new InjectionToken<NatTableUiIntlConfig>('NAT_T
  *
  * Call this only when using `ng-advanced-table-ui`.
  */
-export function provideNatTableUiLocales(
-  overrides: NatTableUiLocaleLabelsMap = {},
-): Provider[] {
+export function provideNatTableUiLocales(overrides: NatTableUiLocaleLabelsMap = {}): Provider[] {
   return provideNatTableUiIntl({ locales: overrides });
 }
 
@@ -195,8 +190,7 @@ export function mergePageSizeLabels(
   return {
     groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel,
     pageSizeOptionText: override?.pageSizeOptionText ?? parent?.pageSizeOptionText,
-    pageSizeOptionAriaLabel:
-      override?.pageSizeOptionAriaLabel ?? parent?.pageSizeOptionAriaLabel,
+    pageSizeOptionAriaLabel: override?.pageSizeOptionAriaLabel ?? parent?.pageSizeOptionAriaLabel,
   };
 }
 
@@ -220,8 +214,7 @@ export function mergeScrollControlLabels(
     groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel,
     scrollLeftAriaLabel: override?.scrollLeftAriaLabel ?? parent?.scrollLeftAriaLabel,
     scrollRightAriaLabel: override?.scrollRightAriaLabel ?? parent?.scrollRightAriaLabel,
-    scrollPositionAriaLabel:
-      override?.scrollPositionAriaLabel ?? parent?.scrollPositionAriaLabel,
+    scrollPositionAriaLabel: override?.scrollPositionAriaLabel ?? parent?.scrollPositionAriaLabel,
     scrollPositionText: override?.scrollPositionText ?? parent?.scrollPositionText,
   };
 }

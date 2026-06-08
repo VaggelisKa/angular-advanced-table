@@ -12,11 +12,16 @@
     class="data-table"
     [class.has-sticky-header]="stickyHeader()"
     [id]="tableElementId()"
-    [attr.aria-label]="ariaLabel()"
+    [attr.aria-label]="tableAriaLabel()"
+    [attr.aria-labelledby]="tableAriaLabelledBy()"
     [attr.aria-describedby]="ariaDescribedBy()"
     rowWrap="nowrap"
     colWrap="nowrap"
   >
+    @if (resolvedCaption(); as caption) {
+      <caption [id]="tableCaptionId()">{{ caption }}</caption>
+    }
+
     @let columnStates = columnRenderStates();
     <thead>
       @let tableHeaderGroups = headerGroups();

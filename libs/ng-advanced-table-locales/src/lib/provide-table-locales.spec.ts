@@ -61,7 +61,7 @@ describe('provideNatTableLocales', () => {
         provideNatTableUiLocales({
           en: {
             pageSize: {
-              ariaLabel: 'Invoices per page',
+              groupAriaLabel: 'Invoices per page',
               accessibilityLabels: {
                 pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} invoices`,
               },
@@ -79,7 +79,7 @@ describe('provideNatTableLocales', () => {
       selectionState: 'not-selected' as const,
     };
 
-    expect(pageSize?.ariaLabel).toBe('Invoices per page');
+    expect(pageSize?.groupAriaLabel).toBe('Invoices per page');
     expect(pageSize?.accessibilityLabels?.pageSizeOptionText?.(context)).toBe('25 invoices');
     expect(pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(context)).toBe(
       'Show 25 rows per page',
@@ -171,7 +171,7 @@ describe('provideNatTableLocales', () => {
         provideNatTableUiLocales({
           en: {
             pageSize: {
-              ariaLabel: 'Parent page size',
+              groupAriaLabel: 'Parent page size',
             },
           },
         }),
@@ -199,7 +199,7 @@ describe('provideNatTableLocales', () => {
         selectionState: 'not-selected' as const,
       };
 
-      expect(uiIntl.locales?.['en']?.pageSize?.ariaLabel).toBe('Parent page size');
+      expect(uiIntl.locales?.['en']?.pageSize?.groupAriaLabel).toBe('Parent page size');
       expect(uiIntl.locales?.['en']?.search?.label).toBe('Child search');
       expect(
         uiIntl.locales?.['en']?.pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(
@@ -248,9 +248,7 @@ describe('provideNatTableLocales', () => {
       expect(utilsIntl.locales?.['en']?.renderMetrics?.panel?.ariaLabel).toBe(
         'Parent render panel',
       );
-      expect(utilsIntl.locales?.['en']?.renderMetrics?.column?.header).toBe(
-        'Child render column',
-      );
+      expect(utilsIntl.locales?.['en']?.renderMetrics?.column?.header).toBe('Child render column');
       expect(utilsIntl.locales?.['en']?.renderMetrics?.column?.unitSuffix).toBe(' ms');
     } finally {
       childInjector.destroy();

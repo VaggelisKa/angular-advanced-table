@@ -6,12 +6,12 @@ Signals-first Nx monorepo for composable Angular TanStack Table primitives.
 
 This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules. The `apps/showcase` project is the demo app, and publishable packages live under `libs/*`.
 
-| Package                   | Use it for                           | Main exports                                                                                                                                                    |
-| ------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`       | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
-| `ng-advanced-table-ui`    | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
-| `ng-advanced-table-utils` | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
-| `ng-advanced-table-locales` | Built-in locale registry           | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                               |
+| Package                     | Use it for                           | Main exports                                                                                                                                                    |
+| --------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ng-advanced-table`         | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
+| `ng-advanced-table-ui`      | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
+| `ng-advanced-table-utils`   | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
+| `ng-advanced-table-locales` | Built-in locale registry             | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                              |
 
 The workspace keeps shared table contracts aligned through the private `ng-advanced-table-types` library. Consumers should import public contracts from published packages only; prefer `ng-advanced-table` for `NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` when column definitions or state move across package boundaries. The UI and utils packages keep compatibility exports for consumers already importing from those entry points.
 
@@ -131,7 +131,7 @@ const columns = withNatTableHeaderActions<PositionRow>([
         [initialState]="initialState"
         [enablePagination]="true"
         [getRowId]="getRowId"
-        ariaLabel="Open positions"
+        accessibleName="Open positions"
       />
 
       <nat-table-scroll-control [for]="grid" />
@@ -176,7 +176,7 @@ interface ServiceRow {
   selector: 'app-service-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable],
-  template: ` <nat-table [data]="rows()" [columns]="columns" ariaLabel="Service latency" /> `,
+  template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Service latency" /> `,
 })
 export class ServiceTableComponent {
   readonly rows = signal<readonly ServiceRow[]>([]);
@@ -206,23 +206,26 @@ Core exports:
 
 ### Inputs
 
-| Input                 | Default   | Notes                                                                                                              |
-| --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------ |
-| `data`                | required  | Row array rendered by the table                                                                                    |
-| `columns`             | required  | TanStack `ColumnDef<TData>[]`                                                                                      |
-| `ariaLabel`           | required  | Accessible name for the table region                                                                               |
-| `accessibilityText`   | `{}`      | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
-| `enableGlobalFilter`  | `true`    | Enables the global filter pipeline                                                                                 |
-| `enableColumnPinning` | `true`    | Enables sticky pinning where columns allow it                                                                      |
-| `enableColumnReorder` | `false`   | Enables drag/drop and keyboard reordering                                                                          |
-| `enablePagination`    | `false`   | Enables the pagination row model                                                                                   |
-| `globalFilterFn`      | built-in  | Replaces the generic global filter                                                                                 |
-| `initialState`        | `{}`      | Uncontrolled initial state, read once                                                                              |
-| `state`               | `{}`      | Controlled slices only; omitted slices stay internal                                                               |
-| `getRowId`            | row index | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
-| `emitRowRenderEvents` | `false`   | Enables `(rowRendered)` instrumentation                                                                            |
-| `enableAnnouncements` | `true`    | Enables polite live announcements                                                                                  |
-| `stickyHeader`        | `true`    | Enables vertical sticky positioning for the table header row                                                      |
+| Input                 | Default     | Notes                                                                                                              |
+| --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| `data`                | required    | Row array rendered by the table                                                                                    |
+| `columns`             | required    | TanStack `ColumnDef<TData>[]`                                                                                      |
+| `accessibleName`      | required    | Accessible name for the grid when no visible `caption` is rendered                                                 |
+| `caption`             | `undefined` | Visible table caption; when present, it provides the grid's accessible name                                        |
+| `accessibilityText`   | `{}`        | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
+| `enableGlobalFilter`  | `true`      | Enables the global filter pipeline                                                                                 |
+| `enableColumnPinning` | `true`      | Enables sticky pinning where columns allow it                                                                      |
+| `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering                                                                          |
+| `enablePagination`    | `false`     | Enables the pagination row model                                                                                   |
+| `globalFilterFn`      | built-in    | Replaces the generic global filter                                                                                 |
+| `initialState`        | `{}`        | Uncontrolled initial state, read once                                                                              |
+| `state`               | `{}`        | Controlled slices only; omitted slices stay internal                                                               |
+| `getRowId`            | row index   | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
+| `emitRowRenderEvents` | `false`     | Enables `(rowRendered)` instrumentation                                                                            |
+| `enableAnnouncements` | `true`      | Enables polite live announcements                                                                                  |
+| `stickyHeader`        | `true`      | Enables vertical sticky positioning for the table header row                                                       |
+
+A visible `caption` takes over the rendered grid label, while `accessibleName` remains the required captionless fallback.
 
 ### Outputs and instance API
 
@@ -271,7 +274,7 @@ interface OrderRow {
       [data]="rows()"
       [columns]="columns"
       [state]="controlledState()"
-      ariaLabel="Filtered orders"
+      accessibleName="Filtered orders"
       (columnFiltersChange)="columnFilters.set($event)"
     />
   `,
@@ -371,7 +374,7 @@ Pinned column offsets are based on measured header widths after layout. Before a
 
 ## Accessibility and Internationalization
 
-Accessible copy is split by ownership. Set table-specific copy such as `ariaLabel`, captions, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated table copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`; UI and utils labels opt in through their companion locale entry points.
+Accessible copy is split by ownership. Set table-specific copy such as `accessibleName`, `caption`, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated table copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`; UI and utils labels opt in through their companion locale entry points.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent checklist, localization guidance, and examples.
 
@@ -426,7 +429,7 @@ interface PositionRow {
   imports: [CustomTradeButton],
   template: `
     <custom-trade-button
-      [ariaLabel]="'Trade ' + row().symbol"
+      [accessibleName]="'Trade ' + row().symbol"
       (pressed)="trade.emit(row().id)"
     />
   `,
@@ -489,13 +492,18 @@ import { GridCellWidget } from '@angular/aria/grid';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [GridCellWidget],
   template: `
-    <button type="button" ngGridCellWidget [attr.aria-label]="ariaLabel()" (click)="pressed.emit()">
+    <button
+      type="button"
+      ngGridCellWidget
+      [attr.aria-label]="accessibleName()"
+      (click)="pressed.emit()"
+    >
       Pay
     </button>
   `,
 })
 export class CustomPayButton {
-  readonly ariaLabel = input.required<string>();
+  readonly accessibleName = input.required<string>();
   readonly pressed = output<void>();
 }
 ```
@@ -505,7 +513,7 @@ For row action menus, keep the menu implementation in the consumer app:
 ```html
 <custom-row-actions-menu
   [row]="row()"
-  [ariaLabel]="'Open actions for ' + row().name"
+  [accessibleName]="'Open actions for ' + row().name"
   (action)="action.emit($event)"
 />
 ```
@@ -519,7 +527,7 @@ For expand controls, pass the current state into the custom component and expose
 ```html
 <custom-expand-button
   [expanded]="expanded()"
-  [ariaLabel]="(expanded() ? 'Collapse ' : 'Expand ') + row().name"
+  [accessibleName]="(expanded() ? 'Collapse ' : 'Expand ') + row().name"
   (pressed)="toggle.emit(row().id)"
 />
 ```
@@ -541,7 +549,7 @@ Example, add stock controls around an existing table:
     [data]="rows()"
     [columns]="columns"
     [enablePagination]="true"
-    ariaLabel="Orders"
+    accessibleName="Orders"
   />
 
   <nat-table-scroll-control [for]="grid" />
@@ -559,15 +567,15 @@ UI exports:
 - Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
-| API                              | Purpose                                                        | Key inputs or options                                        |
-| -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
-| `NatTableSurface`                | Layout wrapper and default `--nat-table-*` CSS variables       | none                                                         |
-| `NatTableSearch`                 | Global filter input                                            | `for`, `label`, `placeholder`                                |
-| `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `ariaLabel`, `accessibilityLabels`           |
-| `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `ariaLabel`, `accessibilityLabels` |
-| `NatTablePager`                  | Previous/next pagination control                               | `for`, `ariaLabel`, `accessibilityLabels`                    |
-| `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `ariaLabel`, `scrollStep`, `accessibilityLabels`      |
-| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`, `meta.headerActions` |
+| API                              | Purpose                                                        | Key inputs or options                                             |
+| -------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `NatTableSurface`                | Layout wrapper and default `--nat-table-*` CSS variables       | none                                                              |
+| `NatTableSearch`                 | Global filter input                                            | `for`, `label`, `placeholder`                                     |
+| `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `groupAriaLabel`, `accessibilityLabels`           |
+| `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels` |
+| `NatTablePager`                  | Previous/next pagination control                               | `for`, `groupAriaLabel`, `accessibilityLabels`                    |
+| `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`      |
+| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`, `meta.headerActions`      |
 
 Controller contract required by the UI package:
 
@@ -593,7 +601,7 @@ Notes:
 
 ## UI Accessibility Labels
 
-The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `ariaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
+The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `groupAriaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 
@@ -614,7 +622,7 @@ readonly columns = withRenderMetricsColumn(baseColumns, this.metrics);
   [data]="rows()"
   [columns]="columns"
   [emitRowRenderEvents]="true"
-  ariaLabel="Render metrics demo"
+  accessibleName="Render metrics demo"
   (rowRendered)="metrics.record($event)"
 />
 

@@ -134,7 +134,7 @@ const columns = withNatTableHeaderActions<OrderRow>([
         [data]="rows()"
         [columns]="columns"
         [enablePagination]="true"
-        ariaLabel="Orders"
+        accessibleName="Orders"
       />
 
       <nat-table-scroll-control [for]="grid" />

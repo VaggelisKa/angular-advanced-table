@@ -63,7 +63,7 @@ const DEMO_DATA: DemoItem[] = [
               [columns]="columns"
               [state]="tableState()"
               [enablePagination]="true"
-              ariaLabel="Pagination demo table"
+              accessibleName="Pagination demo table"
               (paginationChange)="onPaginationChange($event)"
             />
           </nat-table-surface>

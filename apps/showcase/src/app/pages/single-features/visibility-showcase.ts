@@ -57,7 +57,7 @@ const DEMO_DATA: DemoItem[] = [
               [data]="data"
               [columns]="columns"
               [state]="tableState()"
-              ariaLabel="Visibility demo table"
+              accessibleName="Visibility demo table"
               (columnVisibilityChange)="onColumnVisibilityChange($event)"
             />
           </nat-table-surface>

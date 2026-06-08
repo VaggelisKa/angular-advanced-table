@@ -58,7 +58,7 @@ const DEMO_DATA: DemoItem[] = [
               [columns]="columns"
               [state]="tableState()"
               [enableGlobalFilter]="true"
-              ariaLabel="Search demo table"
+              accessibleName="Search demo table"
               (globalFilterChange)="onGlobalFilterChange($event)"
             />
           </nat-table-surface>

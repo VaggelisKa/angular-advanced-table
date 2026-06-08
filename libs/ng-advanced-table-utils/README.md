@@ -86,7 +86,7 @@ interface MetricRow {
       [data]="rows()"
       [columns]="columns"
       [emitRowRenderEvents]="true"
-      ariaLabel="Metric table"
+      accessibleName="Metric table"
       (rowRendered)="metrics.record($event)"
     />
 

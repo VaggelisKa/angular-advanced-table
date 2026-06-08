@@ -84,7 +84,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     <nat-table
       [data]="rows()"
       [columns]="columns"
-      ariaLabel="Operations table"
+      accessibleName="Operations table"
       [initialState]="initialState"
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
@@ -188,7 +188,7 @@ class TableHost {
     <nat-table
       [data]="rows()"
       [columns]="columns"
-      ariaLabel="Provider table"
+      accessibleName="Provider table"
       [accessibilityText]="accessibilityText()"
     />
   `,
@@ -199,13 +199,38 @@ class ProviderAccessibilityHost {
   readonly accessibilityText = signal<NatTableAccessibilityText>({});
 }
 
+@Component({
+  imports: [NatTable],
+  template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Latency table" /> `,
+})
+class AccessibleNameHost {
+  readonly rows = signal<Row[]>(buildRows(2));
+  readonly columns = columns;
+}
+
+@Component({
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      accessibleName="Ignored accessible name"
+      caption="Visible operations"
+    />
+  `,
+})
+class CaptionHost {
+  readonly rows = signal<Row[]>(buildRows(2));
+  readonly columns = columns;
+}
+
 describe('NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost, ProviderAccessibilityHost],
+      imports: [TableHost, ProviderAccessibilityHost, AccessibleNameHost, CaptionHost],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -285,6 +310,36 @@ describe('NatTable', () => {
     expect(summary.textContent).toContain('Showing 6 rows across 4 visible columns.');
     expect(rowHeaderCell.getAttribute('role')).toBe('rowheader');
     expect(rowHeaderCell.getAttribute('data-column-id')).toBe('name');
+  });
+
+  it('accepts accessibleName as the preferred grid name input', () => {
+    const nameFixture = TestBed.createComponent(AccessibleNameHost);
+
+    nameFixture.detectChanges();
+
+    const table = nameFixture.nativeElement.querySelector('table') as HTMLTableElement;
+
+    expect(table.getAttribute('aria-label')).toBe('Latency table');
+    expect(table.getAttribute('aria-labelledby')).toBeNull();
+
+    nameFixture.destroy();
+  });
+
+  it('renders caption as a semantic table label when provided', () => {
+    const captionFixture = TestBed.createComponent(CaptionHost);
+
+    captionFixture.detectChanges();
+
+    const table = captionFixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const caption = captionFixture.nativeElement.querySelector(
+      'caption',
+    ) as HTMLTableCaptionElement;
+
+    expect(caption.textContent?.trim()).toBe('Visible operations');
+    expect(table.getAttribute('aria-label')).toBeNull();
+    expect(table.getAttribute('aria-labelledby')).toBe(caption.id);
+
+    captionFixture.destroy();
   });
 
   it('only applies aria-sort to the actively sorted header', () => {
@@ -722,7 +777,9 @@ describe('NatTable', () => {
   it('applies optional header sizing from column meta without affecting body cells', async () => {
     @Component({
       imports: [NatTable],
-      template: ` <nat-table [data]="rows()" [columns]="columns" ariaLabel="Operations table" /> `,
+      template: `
+        <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      `,
     })
     class HeaderSizingHost {
       readonly rows = signal<Row[]>([
@@ -780,7 +837,7 @@ describe('NatTable', () => {
           [data]="rows()"
           [columns]="columns"
           [initialState]="initialState"
-          ariaLabel="Operations table"
+          accessibleName="Operations table"
         />
       `,
     })
@@ -957,7 +1014,7 @@ describe('NatTable', () => {
     @Component({
       imports: [NatTable],
       template: `
-        <nat-table [data]="rows()" [columns]="columns()" ariaLabel="Operations table" />
+        <nat-table [data]="rows()" [columns]="columns()" accessibleName="Operations table" />
       `,
     })
     class DynamicColumnsHost {
@@ -1075,7 +1132,7 @@ describe('NatTable', () => {
         <nat-table
           [data]="rows()"
           [columns]="columns"
-          ariaLabel="Operations table"
+          accessibleName="Operations table"
           (rowActivate)="onRowActivate($event)"
         />
       `,

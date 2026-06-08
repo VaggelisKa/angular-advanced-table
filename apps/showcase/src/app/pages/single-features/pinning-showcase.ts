@@ -48,7 +48,7 @@ const DEMO_DATA: DemoItem[] = [
               [columns]="columns"
               [state]="tableState()"
               [enableColumnPinning]="true"
-              ariaLabel="Pinning demo table"
+              accessibleName="Pinning demo table"
               (columnPinningChange)="onColumnPinningChange($event)"
             />
           </nat-table-surface>
