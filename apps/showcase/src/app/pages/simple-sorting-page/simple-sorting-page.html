@@ -1,0 +1,14 @@
+<main class="simple-sorting-page" [attr.data-theme]="theme()">
+  <nat-table-surface class="simple-table-surface">
+    <nat-table
+      [data]="rows"
+      [columns]="columns"
+      [enableColumnPinning]="false"
+      [enableColumnReorder]="false"
+      [enableGlobalFilter]="false"
+      [enablePagination]="false"
+      [getRowId]="getRowId"
+      ariaLabel="Simple sortable order table"
+    />
+  </nat-table-surface>
+</main>

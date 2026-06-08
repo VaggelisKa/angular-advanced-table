@@ -9,6 +9,11 @@ const showcaseExamples = [
     description: 'Kitchen sink demo',
     path: '/examples/multiple-features',
   },
+  {
+    label: 'Simple sorting',
+    description: 'Mock table only',
+    path: '/examples/simple-sorting',
+  },
 ];
 
 @Component({
