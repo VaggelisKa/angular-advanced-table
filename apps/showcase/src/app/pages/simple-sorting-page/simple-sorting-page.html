@@ -1,0 +1,14 @@
+<main class="showcase-page simple-sorting-page">
+  <nat-table
+    class="simple-table"
+    [data]="rows"
+    [columns]="columns"
+    [state]="tableState"
+    [enableColumnPinning]="true"
+    [enableColumnReorder]="false"
+    [enableGlobalFilter]="false"
+    [enablePagination]="false"
+    [getRowId]="getRowId"
+    accessibleName="Sortable order table with pinned owner and total columns"
+  />
+</main>

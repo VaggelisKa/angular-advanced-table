@@ -1,3 +1,4 @@
+import { Dialog, DialogRef } from '@angular/cdk/dialog';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,7 +9,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Dialog, DialogRef } from '@angular/cdk/dialog';
 import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -19,17 +19,19 @@ import {
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  type NatTableSortIndicatorContext,
   withNatTableHeaderActions,
+  type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
   NatTableRenderMetricsStore,
-  type NatTableRenderMetricsEvent,
   withRenderMetricsColumn,
+  type NatTableRenderMetricsEvent,
 } from 'ng-advanced-table-utils';
 
+import { ShowcaseThemeStore } from '../../showcase-theme';
+import { NatRowActionsMenu } from './nat-row-actions-menu';
 import { NatSparkline } from './nat-sparkline';
 import { NatTickerMark } from './nat-ticker-mark';
 import {
@@ -42,8 +44,6 @@ import {
   type SimulationRow,
   type SimulationStatus,
 } from './table-simulation';
-import { NatRowActionsMenu } from './nat-row-actions-menu';
-import { ShowcaseThemeStore } from '../../showcase-theme';
 
 const STATUS_FILTER_ID = 'status';
 
@@ -256,7 +256,8 @@ type TableFeatureKey =
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
   | 'showScrollControl'
-  | 'showRenderMetrics';
+  | 'showRenderMetrics'
+  | 'stickyHeader';
 
 interface TableFeatureConfig {
   enableColumnPinning: boolean;
@@ -266,6 +267,7 @@ interface TableFeatureConfig {
   showColumnVisibility: boolean;
   showScrollControl: boolean;
   showRenderMetrics: boolean;
+  stickyHeader: boolean;
 }
 
 const defaultTableFeatures: TableFeatureConfig = {
@@ -276,6 +278,7 @@ const defaultTableFeatures: TableFeatureConfig = {
   showColumnVisibility: true,
   showScrollControl: false,
   showRenderMetrics: true,
+  stickyHeader: true,
 };
 
 const showcaseAccessibilityText = {

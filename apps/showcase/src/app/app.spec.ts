@@ -33,6 +33,10 @@ describe('App', () => {
             path: 'examples/multiple-features',
             component: TestExamplePage,
           },
+          {
+            path: 'examples/simple-sorting',
+            component: TestExamplePage,
+          },
         ]),
       ],
     }).compileComponents();
@@ -52,12 +56,19 @@ describe('App', () => {
 
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
     expect(compiled.querySelector('.showcase-nav')?.textContent).toContain('Table examples');
-    expect(compiled.querySelector('.showcase-nav-link')?.textContent).toContain(
-      'Multiple features',
+    const links = Array.from(compiled.querySelectorAll('.showcase-nav-link'));
+    const linkLabels = links.map((link) => link.textContent);
+    const linkTargets = links.map((link) => link.getAttribute('href'));
+
+    const expectedLabels = fixture.componentInstance['examples'].map(
+      (example) => expect.stringContaining(example.label)
     );
-    expect(compiled.querySelector('.showcase-nav-link')?.getAttribute('href')).toBe(
-      '/examples/multiple-features',
+    const expectedTargets = fixture.componentInstance['examples'].map(
+      (example) => example.path
     );
+
+    expect(linkLabels).toEqual(expectedLabels);
+    expect(linkTargets).toEqual(expectedTargets);
     expect(compiled.querySelector('.showcase-theme-toggle')).not.toBeNull();
   });
 
@@ -68,12 +79,8 @@ describe('App', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const shell = compiled.querySelector('.showcase-shell') as HTMLDivElement;
-    const darkOption = compiled.querySelectorAll(
-      '.showcase-theme-option',
-    )[1] as HTMLButtonElement;
-    const lightOption = compiled.querySelectorAll(
-      '.showcase-theme-option',
-    )[0] as HTMLButtonElement;
+    const darkOption = compiled.querySelectorAll('.showcase-theme-option')[1] as HTMLButtonElement;
+    const lightOption = compiled.querySelectorAll('.showcase-theme-option')[0] as HTMLButtonElement;
 
     darkOption.click();
     fixture.detectChanges();

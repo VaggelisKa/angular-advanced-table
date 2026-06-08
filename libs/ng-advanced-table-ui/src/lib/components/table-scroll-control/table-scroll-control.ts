@@ -45,6 +45,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
+
   private readonly localeId = computed(
     () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );

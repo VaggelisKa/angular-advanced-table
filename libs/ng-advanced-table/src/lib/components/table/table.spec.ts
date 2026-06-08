@@ -89,6 +89,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="enablePagination"
+      [stickyHeader]="stickyHeader"
       [getRowId]="getRowId"
       [accessibilityText]="accessibilityText"
       (stateChange)="onStateChange($event)"
@@ -121,6 +122,7 @@ class TableHost {
   };
   enablePagination = false;
   enableColumnReorder = false;
+  stickyHeader = true;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
   readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
@@ -241,6 +243,7 @@ describe('NatTable', () => {
     options: {
       enableColumnReorder?: boolean;
       enablePagination?: boolean;
+      stickyHeader?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
       state?: Partial<NatTableState>;
@@ -251,6 +254,7 @@ describe('NatTable', () => {
     host = fixture.componentInstance;
     host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
 
@@ -1175,6 +1179,17 @@ describe('NatTable', () => {
     interactiveFixture.detectChanges();
 
     expect(interactiveFixture.componentInstance.events.length).toBe(0);
+  });
+
+  it('applies sticky class and toggles vertical sticky header positioning', async () => {
+    fixture.detectChanges();
+    let tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    expect(tableElement.classList.contains('has-sticky-header')).toBe(true);
+
+    await recreateHost({ stickyHeader: false });
+    fixture.detectChanges();
+    tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    expect(tableElement.classList.contains('has-sticky-header')).toBe(false);
   });
 });
 

@@ -197,6 +197,7 @@
           [enableGlobalFilter]="tableFeatures().enableGlobalFilter"
           [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
           [getRowId]="getRowId"
+          [stickyHeader]="tableFeatures().stickyHeader"
           accessibleName="Live market movers table"
           (columnFiltersChange)="onColumnFiltersChange($event)"
           (rowRendered)="onRowRendered($event)"
@@ -289,6 +290,15 @@
             (change)="toggleFeature('showRenderMetrics', readChecked($event))"
           />
           <span>Render metrics panel</span>
+        </label>
+
+        <label class="feature-toggle" data-feature="stickyHeader">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().stickyHeader"
+            (change)="toggleFeature('stickyHeader', readChecked($event))"
+          />
+          <span>Sticky header</span>
         </label>
       </div>
     </section>
