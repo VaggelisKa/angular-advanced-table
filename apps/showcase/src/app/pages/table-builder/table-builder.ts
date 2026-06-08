@@ -120,7 +120,8 @@ export class TableBuilderPage {
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
       topControls = '\n  <div class="table-controls-grid" style="margin-bottom: 24px;">';
       if (this.withGlobalFilter()) {
-        topControls += '\n    <nat-table-search [for]="grid" label="Search rows" placeholder="Type here..." />';
+        topControls +=
+          '\n    <nat-table-search [for]="grid" label="Search rows" placeholder="Type here..." />';
       }
       if (this.showColumnVisibility()) {
         topControls += '\n    <nat-table-column-visibility [for]="grid" />';
@@ -132,7 +133,8 @@ export class TableBuilderPage {
     if (this.withPagination()) {
       paginationControls = '\n\n  <div class="table-toolbar">';
       paginationControls += '\n    <div class="table-actions">';
-      paginationControls += '\n      <nat-table-page-size [for]="grid" [pageSizeOptions]="[3, 5, 10]" />';
+      paginationControls +=
+        '\n      <nat-table-page-size [for]="grid" [pageSizeOptions]="[3, 5, 10]" />';
       paginationControls += '\n      <nat-table-pager [for]="grid" />';
       paginationControls += '\n    </div>';
       paginationControls += '\n  </div>';
@@ -263,9 +265,14 @@ export class CustomTableComponent {
 
   copyCode(): void {
     const code = this.activeTab() === 'html' ? this.generatedHtml() : this.generatedTs();
-    navigator.clipboard.writeText(code).then(() => {
-      this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 2000);
-    });
+    navigator.clipboard
+      .writeText(code)
+      .then(() => {
+        this.copied.set(true);
+        setTimeout(() => this.copied.set(false), 2000);
+      })
+      .catch(() => {
+        this.copied.set(false);
+      });
   }
 }
