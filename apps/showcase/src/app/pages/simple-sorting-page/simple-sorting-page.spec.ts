@@ -32,7 +32,11 @@ describe('SimpleSortingPage', () => {
 
     expect(table).toBeTruthy();
     expect(rows.length).toBe(5);
-    expect(sortButtons.length).toBe(5);
+    expect(sortButtons.length).toBe(9);
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Owner');
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Channel');
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Items');
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Updated');
     expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.column-chip')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.pager')).toBeFalsy();
@@ -40,9 +44,15 @@ describe('SimpleSortingPage', () => {
     expect(fixture.nativeElement.querySelector('app-order-status-badge')).toBeTruthy();
   });
 
-  it('should right-align the numeric total column', () => {
+  it('should right-align numeric columns', () => {
     fixture.detectChanges();
 
+    const itemsHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="items"]',
+    ) as HTMLTableCellElement;
+    const itemsCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="items"]',
+    ) as HTMLTableCellElement;
     const totalHeader = fixture.nativeElement.querySelector(
       'thead th[data-column-id="total"]',
     ) as HTMLTableCellElement;
@@ -50,6 +60,8 @@ describe('SimpleSortingPage', () => {
       'tbody tr:first-child td[data-column-id="total"]',
     ) as HTMLTableCellElement;
 
+    expect(itemsHeader.classList.contains('is-align-end')).toBe(true);
+    expect(itemsCell.classList.contains('is-align-end')).toBe(true);
     expect(totalHeader.classList.contains('is-align-end')).toBe(true);
     expect(totalCell.classList.contains('is-align-end')).toBe(true);
   });

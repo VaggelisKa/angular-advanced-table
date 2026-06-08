@@ -46,7 +46,7 @@
 
 .simple-table-surface {
   display: block;
-  width: min(920px, 100%);
+  width: min(1180px, 100%);
   min-width: 0;
   --text: var(--page-text);
   --text-soft: var(--page-text-soft);
