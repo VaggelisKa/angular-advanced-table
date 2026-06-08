@@ -303,6 +303,9 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly tableAriaLabelledBy = computed(() =>
     this.resolvedCaption() ? this.tableCaptionId() : null,
   );
+  private readonly hasAccessibleGridName = computed(
+    () => !!this.resolvedCaption() || !!this.accessibleName()?.trim(),
+  );
   protected readonly resolvedKeyboardInstructions = computed(() => {
     const instructions = (this.resolvedAccessibilityText().keyboardInstructions ?? '').trim();
     const reorderInstructions =
@@ -514,6 +517,12 @@ export class NatTable<TData extends RowData = RowData> {
   });
 
   constructor() {
+    effect(() => {
+      if (!this.hasAccessibleGridName()) {
+        throw new Error('NatTable requires either a non-empty `caption` or `accessibleName`.');
+      }
+    });
+
     effect(() => {
       if (this.hasSeededInitialState()) {
         return;

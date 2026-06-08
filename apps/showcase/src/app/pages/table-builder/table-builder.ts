@@ -168,7 +168,7 @@ export class TableBuilderPage {
     return `<nat-table-surface class="table-shell">${topControls}${paginationControls}
 
   <nat-table${tableAttributes}
-    accessibleName="Custom configured table"
+    accessibleName="Custom configured table preview"
     (stateChange)="onTableStateChange($event)"
   />${scrollControls}
 </nat-table-surface>`;
