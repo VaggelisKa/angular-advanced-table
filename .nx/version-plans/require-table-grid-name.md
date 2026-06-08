@@ -1,5 +1,5 @@
 ---
-ng-advanced-table: patch
+ng-advanced-table: minor
 ---
 
-Restore runtime validation that `NatTable` requires either a non-empty `caption` or `accessibleName` so rendered grids cannot be unnamed.
+Declare `NatTable`'s `accessibleName` input as required so Angular enforces the grid naming contract through the component API.

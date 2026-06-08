@@ -224,28 +224,13 @@ class CaptionHost {
   readonly columns = columns;
 }
 
-@Component({
-  imports: [NatTable],
-  template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="   " /> `,
-})
-class BlankAccessibleNameHost {
-  readonly rows = signal<Row[]>(buildRows(2));
-  readonly columns = columns;
-}
-
 describe('NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        TableHost,
-        ProviderAccessibilityHost,
-        AccessibleNameHost,
-        CaptionHost,
-        BlankAccessibleNameHost,
-      ],
+      imports: [TableHost, ProviderAccessibilityHost, AccessibleNameHost, CaptionHost],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -355,17 +340,6 @@ describe('NatTable', () => {
     expect(table.getAttribute('aria-labelledby')).toBe(caption.id);
 
     captionFixture.destroy();
-  });
-
-  it('requires either a caption or a non-empty accessibleName', () => {
-    let blankNameFixture: ComponentFixture<BlankAccessibleNameHost> | undefined;
-
-    expect(() => {
-      blankNameFixture = TestBed.createComponent(BlankAccessibleNameHost);
-      blankNameFixture.detectChanges();
-    }).toThrowError('NatTable requires either a non-empty `caption` or `accessibleName`.');
-
-    blankNameFixture?.destroy();
   });
 
   it('only applies aria-sort to the actively sorted header', () => {

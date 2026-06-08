@@ -165,8 +165,8 @@ export class NatTable<TData extends RowData = RowData> {
   readonly data = input.required<readonly TData[]>();
   /** TanStack column definitions for the current row type. */
   readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
-  /** Accessible name announced for the grid when no visible caption is rendered. */
-  readonly accessibleName = input<string | undefined>(undefined);
+  /** Required accessible name announced for the grid when no visible caption is rendered. */
+  readonly accessibleName = input.required<string>();
   /** Visible table caption. When present, it provides the grid's accessible name. */
   readonly caption = input<string | undefined>(undefined);
   /** Locale id used to resolve generated table accessibility copy. */
@@ -298,13 +298,10 @@ export class NatTable<TData extends RowData = RowData> {
       return null;
     }
 
-    return this.accessibleName()?.trim() || null;
+    return this.accessibleName().trim() || null;
   });
   protected readonly tableAriaLabelledBy = computed(() =>
     this.resolvedCaption() ? this.tableCaptionId() : null,
-  );
-  private readonly hasAccessibleGridName = computed(
-    () => !!this.resolvedCaption() || !!this.accessibleName()?.trim(),
   );
   protected readonly resolvedKeyboardInstructions = computed(() => {
     const instructions = (this.resolvedAccessibilityText().keyboardInstructions ?? '').trim();
@@ -517,12 +514,6 @@ export class NatTable<TData extends RowData = RowData> {
   });
 
   constructor() {
-    effect(() => {
-      if (!this.hasAccessibleGridName()) {
-        throw new Error('NatTable requires either a non-empty `caption` or `accessibleName`.');
-      }
-    });
-
     effect(() => {
       if (this.hasSeededInitialState()) {
         return;

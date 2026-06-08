@@ -210,7 +210,7 @@ Core exports:
 | --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
 | `data`                | required    | Row array rendered by the table                                                                                    |
 | `columns`             | required    | TanStack `ColumnDef<TData>[]`                                                                                      |
-| `accessibleName`      | required\*  | Accessible name for the grid when no visible `caption` is rendered                                                 |
+| `accessibleName`      | required    | Accessible name for the grid when no visible `caption` is rendered                                                 |
 | `caption`             | `undefined` | Visible table caption; when present, it provides the grid's accessible name                                        |
 | `accessibilityText`   | `{}`        | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
 | `enableGlobalFilter`  | `true`      | Enables the global filter pipeline                                                                                 |
@@ -225,7 +225,7 @@ Core exports:
 | `enableAnnouncements` | `true`      | Enables polite live announcements                                                                                  |
 | `stickyHeader`        | `true`      | Enables vertical sticky positioning for the table header row                                                       |
 
-\*Provide either `accessibleName` or `caption` so the grid has an accessible name.
+A visible `caption` takes over the rendered grid label, while `accessibleName` remains the required captionless fallback.
 
 ### Outputs and instance API
 
