@@ -17,9 +17,9 @@
   --nat-table-focus-ring-color: var(--showcase-page-focus);
   --nat-table-focus-ring-width: 3px;
   --nat-table-radius-region: 8px;
-  --nat-table-space-cell-y: 9px;
-  --nat-table-space-cell-x: 12px;
-  --nat-table-space-header-content-gap: 10px;
+  --nat-table-space-cell-y: 7px;
+  --nat-table-space-cell-x: 9px;
+  --nat-table-space-header-content-gap: 8px;
   --nat-table-header-background: var(--showcase-page-surface-contrast);
   --nat-table-header-border-color: var(--showcase-page-border);
   --nat-table-region-background: var(--showcase-page-surface);
@@ -30,4 +30,12 @@
     var(--showcase-page-accent) 15%,
     transparent
   );
+}
+
+@media (min-width: 768px) {
+  .simple-table {
+    --nat-table-space-cell-y: 12px;
+    --nat-table-space-cell-x: 16px;
+    --nat-table-space-header-content-gap: 12px;
+  }
 }
