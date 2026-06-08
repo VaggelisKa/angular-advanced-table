@@ -18,9 +18,7 @@ export const routes: Routes = [
     path: 'builder',
     title: 'Table builder | Angular Advanced Table',
     loadComponent: () =>
-      import('./pages/table-builder/table-builder').then(
-        (module) => module.TableBuilderPage,
-      ),
+      import('./pages/table-builder/table-builder').then((module) => module.TableBuilderPage),
   },
   {
     path: 'sorting',
@@ -74,6 +72,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/single-features/sticky-header-showcase').then(
         (module) => module.StickyHeaderShowcasePage,
+      ),
+  },
+  {
+    path: 'examples/simple-sorting',
+    title: 'Sorting with pinned columns | Angular Advanced Table',
+    loadComponent: () =>
+      import('./pages/simple-sorting-page/simple-sorting-page').then(
+        (module) => module.SimpleSortingPage,
       ),
   },
   {

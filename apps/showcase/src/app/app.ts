@@ -49,6 +49,11 @@ const showcaseExamples = [
     description: 'Fixed viewport headers',
     path: '/sticky-header',
   },
+  {
+    label: 'Sorting with pinned columns',
+    description: 'Fixed owner and total columns',
+    path: '/examples/simple-sorting',
+  },
 ];
 
 @Component({

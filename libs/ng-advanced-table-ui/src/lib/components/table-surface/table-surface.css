@@ -39,8 +39,8 @@
   --nat-table-space-pager-gap: 10px;
   --nat-table-space-chip-row-gap: 10px;
   --nat-table-space-header-content-gap: 8px;
-  --nat-table-space-cell-y: 15px;
-  --nat-table-space-cell-x: 16px;
+  --nat-table-space-cell-y: 0;
+  --nat-table-space-cell-x: 0;
   --nat-table-space-empty-state: 48px 28px;
 
   --nat-table-radius-card: 28px;

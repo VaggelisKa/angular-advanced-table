@@ -33,6 +33,10 @@ describe('App', () => {
             path: 'examples/multiple-features',
             component: TestExamplePage,
           },
+          {
+            path: 'examples/simple-sorting',
+            component: TestExamplePage,
+          },
         ]),
       ],
     }).compileComponents();
@@ -52,12 +56,15 @@ describe('App', () => {
 
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
     expect(compiled.querySelector('.showcase-nav')?.textContent).toContain('Table examples');
-    expect(compiled.querySelector('.showcase-nav-link')?.textContent).toContain(
-      'Multiple features',
-    );
-    expect(compiled.querySelector('.showcase-nav-link')?.getAttribute('href')).toBe(
-      '/examples/multiple-features',
-    );
+    const links = Array.from(compiled.querySelectorAll('.showcase-nav-link'));
+    const linkLabels = links.map((link) => link.textContent);
+    const linkTargets = links.map((link) => link.getAttribute('href'));
+
+    expect(linkLabels).toEqual([
+      expect.stringContaining('Multiple features'),
+      expect.stringContaining('Sorting with pinned columns'),
+    ]);
+    expect(linkTargets).toEqual(['/examples/multiple-features', '/examples/simple-sorting']);
     expect(compiled.querySelector('.showcase-theme-toggle')).not.toBeNull();
   });
 
