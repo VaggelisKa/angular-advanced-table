@@ -247,6 +247,8 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
 export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
   /** Accessible label used by companion controls when the header is not a string. */
   label?: string;
+  /** Visually hidden header label for utility columns where a visible title would be redundant. */
+  hiddenHeaderLabel?: string;
   /** Horizontal alignment for header and body cells in the column. */
   align?: 'start' | 'end';
   /** Marks the body cell for this column as the row header announced by screen readers. */

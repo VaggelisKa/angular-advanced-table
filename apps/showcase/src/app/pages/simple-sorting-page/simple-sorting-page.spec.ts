@@ -67,7 +67,7 @@ describe('SimpleSortingPage', () => {
     expect(totalCell.classList.contains('is-align-end')).toBe(true);
   });
 
-  it('should pin owner left and total right without pin controls', () => {
+  it('should pin owner left and row actions right without pin controls', () => {
     fixture.detectChanges();
 
     const ownerHeader = fixture.nativeElement.querySelector(
@@ -76,19 +76,41 @@ describe('SimpleSortingPage', () => {
     const ownerCell = fixture.nativeElement.querySelector(
       'tbody tr:first-child td[data-column-id="owner"]',
     ) as HTMLTableCellElement;
-    const totalHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="total"]',
+    const actionsHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="actions"]',
     ) as HTMLTableCellElement;
-    const totalCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child td[data-column-id="total"]',
+    const actionsCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="actions"]',
     ) as HTMLTableCellElement;
 
     expect(ownerHeader.classList.contains('is-pinned-left')).toBe(true);
     expect(ownerCell.classList.contains('is-pinned-left')).toBe(true);
-    expect(totalHeader.classList.contains('is-pinned-right')).toBe(true);
-    expect(totalCell.classList.contains('is-pinned-right')).toBe(true);
+    expect(actionsHeader.classList.contains('is-pinned-right')).toBe(true);
+    expect(actionsCell.classList.contains('is-pinned-right')).toBe(true);
+    expect(actionsHeader.querySelector('.sr-only')?.textContent?.trim()).toBe('Row actions');
     expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.menu-button')).toBeFalsy();
+  });
+
+  it('should render a right-pinned three-dots actions menu for each row', async () => {
+    fixture.detectChanges();
+
+    const actionTriggers = fixture.nativeElement.querySelectorAll(
+      'tbody td[data-column-id="actions"] .row-actions-trigger',
+    ) as NodeListOf<HTMLButtonElement>;
+
+    expect(actionTriggers.length).toBe(5);
+    expect(actionTriggers[0]?.getAttribute('aria-label')).toBe('Open demo actions for ord-1007');
+
+    actionTriggers[0]!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const actionLabels = Array.from(
+      document.body.querySelectorAll('.row-actions-item .row-actions-item-label'),
+    ).map((element) => element.textContent?.trim());
+
+    expect(actionLabels).toEqual(['Inspect tape', 'Create alert', 'Send to blotter']);
   });
 
   it('should sort the mock rows from a header action', () => {

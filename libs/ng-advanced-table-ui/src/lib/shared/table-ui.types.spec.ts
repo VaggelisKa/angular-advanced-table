@@ -30,7 +30,7 @@ describe('ng-advanced-table-ui public table contracts', () => {
     const column: ColumnDef<ContractRow, number> = {
       accessorKey: 'amount',
       meta: {
-        label: 'Amount',
+        hiddenHeaderLabel: 'Amount',
         align: 'end',
         rowHeader: true,
         headerSize: 120,
@@ -40,6 +40,7 @@ describe('ng-advanced-table-ui public table contracts', () => {
       } satisfies NatTableColumnMeta<ContractRow, number>,
     };
 
+    expect(column.meta?.hiddenHeaderLabel).toBe('Amount');
     expect(column.meta?.headerSize).toBe(120);
     expect(column.meta?.headerMinSize).toBe('8rem');
     expect(column.meta?.headerMaxSize).toBe(180);

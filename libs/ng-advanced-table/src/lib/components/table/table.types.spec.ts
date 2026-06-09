@@ -21,20 +21,24 @@ type _NatTableColumnMetaMatchesInternalContract = Expect<
   Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
 >;
 type _NatTableSortIndicatorContextMatchesInternalContract = Expect<
-  Equal<NatTableSortIndicatorContext<ContractRow>, InternalNatTableSortIndicatorContext<ContractRow>>
+  Equal<
+    NatTableSortIndicatorContext<ContractRow>,
+    InternalNatTableSortIndicatorContext<ContractRow>
+  >
 >;
 
 describe('ng-advanced-table public table contracts', () => {
   it('keeps public table contracts aligned with the internal contract library', () => {
     const stateKey: keyof NatTableState = 'pagination';
     const meta: NatTableColumnMeta<ContractRow, number> = {
-      label: 'Amount',
+      hiddenHeaderLabel: 'Amount',
       align: 'end',
       headerSize: 120,
       cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
     };
 
     expect(stateKey).toBe('pagination');
+    expect(meta.hiddenHeaderLabel).toBe('Amount');
     expect(meta.headerSize).toBe(120);
     expect(meta.cellTone).toEqual(expect.any(Function));
   });

@@ -330,15 +330,18 @@ import type { NatTableColumnMeta } from 'ng-advanced-table';
 
 Attach metadata through `columnDef.meta`:
 
-| Field           | Type                                                                      | Purpose                                                        |
-| --------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `label`         | `string`                                                                  | Stable human-readable label for accessibility and companion UI |
-| `align`         | `'start' \| 'end'`                                                        | Cell and header alignment                                      |
-| `rowHeader`     | `boolean`                                                                 | Marks body cells in the column as row headers                  |
-| `cellTone`      | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                 |
-| `headerSize`    | `number \| string`                                                        | Optional header-only width in pixels                           |
-| `headerMinSize` | `number \| string`                                                        | Optional header-only minimum width in pixels                   |
-| `headerMaxSize` | `number \| string`                                                        | Optional header-only maximum width in pixels                   |
+| Field               | Type                                                                      | Purpose                                                                        |
+| ------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `label`             | `string`                                                                  | Stable human-readable label for accessibility and companion UI                 |
+| `hiddenHeaderLabel` | `string`                                                                  | Visually hidden header label for utility columns with redundant visible titles |
+| `align`             | `'start' \| 'end'`                                                        | Cell and header alignment                                                      |
+| `rowHeader`         | `boolean`                                                                 | Marks body cells in the column as row headers                                  |
+| `cellTone`          | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                                 |
+| `headerSize`        | `number \| string`                                                        | Optional header-only width in pixels                                           |
+| `headerMinSize`     | `number \| string`                                                        | Optional header-only minimum width in pixels                                   |
+| `headerMaxSize`     | `number \| string`                                                        | Optional header-only maximum width in pixels                                   |
+
+Set `hiddenHeaderLabel: 'Row actions'` for compact utility columns whose title would be redundant visually, such as row actions or menu columns. Primitive string/number headers render that value as screen-reader-only text. When the column is wrapped with `withNatTableHeaderActions(...)`, only the header label is visually hidden; sort buttons and the three-dot pin menu stay visible and use `hiddenHeaderLabel` for their generated accessible labels.
 
 ### Column sizing and pinned offsets
 
@@ -595,6 +598,7 @@ Notes:
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
+- Set `column.meta.hiddenHeaderLabel` to visually hide a redundant header title while keeping that label available to assistive technology; wrapped header actions keep their controls visible.
 - Applying `withNatTableHeaderActions(...)` repeatedly is safe. If a reactive column builder receives already-wrapped columns, the helper updates the wrapper options instead of nesting another header action surface.
 - For per-column behavior, set `column.meta.headerActions` to `false` to opt out, or provide `{ sortIndicator, accessibilityLabels }` to override the helper-level options for that column only.
 - When composing with column helpers that add or prepend columns, apply those helpers first and then call `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.

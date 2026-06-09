@@ -97,6 +97,7 @@ export class NatTableHeaderActions {
   readonly context = input.required<HeaderContext<RowData, unknown>>();
   readonly content = input.required<NatTableHeaderRenderContent>();
   readonly label = input.required<string>();
+  readonly hideLabel = input(false);
   readonly locale = input<string | undefined>(undefined);
   readonly sortIndicator = input<NatTableSortIndicatorContent>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(

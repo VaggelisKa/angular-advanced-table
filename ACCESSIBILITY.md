@@ -133,6 +133,7 @@ Always do this:
 
 - Give every `<nat-table>` a localized `accessibleName` or visible `caption`.
 - Set `columnDef.meta.label` for each data column. This is required when the header is not a plain string and recommended for all columns.
+- Set `columnDef.meta.hiddenHeaderLabel` only when a visible header title is redundant; localize it like any other column label.
 - Provide generated table labels through `provideNatTableLocales()`. Pass overrides only when adding custom locale ids or changing built-in generated table copy.
 - When rendering `ng-advanced-table-ui` controls, provide common generated UI labels through `provideNatTableUiLocales()`.
 - When rendering `ng-advanced-table-utils` controls/helpers, provide common generated utility labels through `provideNatTableUtilsLocales()`.
@@ -275,15 +276,16 @@ Use the table locale to switch generated copy at runtime:
 
 The core table exposes these localization inputs:
 
-| Surface                      | API                                      | Purpose                                                             |
-| ---------------------------- | ---------------------------------------- | ------------------------------------------------------------------- |
-| Grid accessible name         | `accessibleName`                         | Required accessible name when no visible `caption` is rendered.     |
-| Table caption                | `caption`                                | Visible table caption; when present, it names the grid.             |
-| Supplemental description     | `accessibilityText.description`          | Optional hidden description referenced by `aria-describedby`.       |
-| Grid instructions            | `accessibilityText.keyboardInstructions` | Hidden navigation instructions for screen-reader users.             |
-| Empty state                  | `accessibilityText.emptyState`           | Visible text when no rows match the current view.                   |
-| Column labels                | `columnDef.meta.label`                   | Stable human-readable label used by announcements and companion UI. |
-| Generated accessibility text | `accessibilityText`                      | Overrides summaries and live announcements.                         |
+| Surface                      | API                                      | Purpose                                                                                                            |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Grid accessible name         | `accessibleName`                         | Required accessible name when no visible `caption` is rendered.                                                    |
+| Table caption                | `caption`                                | Visible table caption; when present, it names the grid.                                                            |
+| Supplemental description     | `accessibilityText.description`          | Optional hidden description referenced by `aria-describedby`.                                                      |
+| Grid instructions            | `accessibilityText.keyboardInstructions` | Hidden navigation instructions for screen-reader users.                                                            |
+| Empty state                  | `accessibilityText.emptyState`           | Visible text when no rows match the current view.                                                                  |
+| Column labels                | `columnDef.meta.label`                   | Stable human-readable label used by announcements and companion UI.                                                |
+| Visually hidden header label | `columnDef.meta.hiddenHeaderLabel`       | Optional localized label for redundant utility-column titles that should remain available to assistive technology. |
+| Generated accessibility text | `accessibilityText`                      | Overrides summaries and live announcements.                                                                        |
 
 Decision rules for agents:
 

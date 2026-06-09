@@ -82,6 +82,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.
 - `withNatTableHeaderActions(...)` is idempotent. Reapplying it to already-wrapped columns updates the wrapper options instead of nesting header controls.
+- Set `column.meta.hiddenHeaderLabel` to visually hide the header title while keeping the sort button and three-dot menu visible with generated accessible labels.
 - Use `column.meta.headerActions = false` to opt out per column, or provide `{ sortIndicator, accessibilityLabels }` there to override the helper-level options for one column.
 - Apply other column helpers first, then wrap the final column list with `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.

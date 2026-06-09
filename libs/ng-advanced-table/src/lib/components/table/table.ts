@@ -73,6 +73,8 @@ interface TableColumnAccessibilityState {
 }
 
 interface TableColumnRenderState {
+  label: string;
+  hiddenHeaderLabel: string | null;
   alignEnd: boolean;
   pinnedLeft: boolean;
   pinnedRight: boolean;
@@ -474,6 +476,7 @@ export class NatTable<TData extends RowData = RowData> {
 
       const sortEntry = state.sorting.find((entry) => entry.id === column.id);
       const meta = column.columnDef.meta;
+      const label = resolveColumnLabel(column);
       const headerWidth =
         meta?.headerSize !== undefined ? normalizeColumnDimension(meta.headerSize) : null;
       const headerMinWidth =
@@ -490,6 +493,8 @@ export class NatTable<TData extends RowData = RowData> {
             : null;
 
       result[column.id] = {
+        label,
+        hiddenHeaderLabel: normalizeColumnLabel(meta?.hiddenHeaderLabel),
         alignEnd: meta?.align === 'end',
         pinnedLeft,
         pinnedRight,
@@ -620,6 +625,15 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     return this.getVisibleZoneColumnIds(this.getColumnZone(header.column)).length > 1;
+  }
+
+  protected shouldHidePrimitiveHeaderLabel(
+    header: Header<TData, unknown>,
+    columnState: TableColumnRenderState | undefined,
+  ): boolean {
+    return (
+      !!columnState?.hiddenHeaderLabel && isPrimitiveHeaderContent(header.column.columnDef.header)
+    );
   }
 
   protected onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
@@ -1567,6 +1581,12 @@ function hasSameWidths(left: Record<string, number>, right: Record<string, numbe
 }
 
 function resolveColumnLabel<TData extends RowData>(column: Column<TData, unknown>): string {
+  const hiddenHeaderLabel = normalizeColumnLabel(column.columnDef.meta?.hiddenHeaderLabel);
+
+  if (hiddenHeaderLabel) {
+    return hiddenHeaderLabel;
+  }
+
   const metaLabel = column.columnDef.meta?.label;
 
   if (metaLabel) {
@@ -1580,6 +1600,18 @@ function resolveColumnLabel<TData extends RowData>(column: Column<TData, unknown
   const accessorKey = (column.columnDef as { accessorKey?: unknown }).accessorKey;
 
   return typeof accessorKey === 'string' ? accessorKey : column.id || 'Column';
+}
+
+function normalizeColumnLabel(label: string | undefined): string | null {
+  const normalized = label?.trim() ?? '';
+
+  return normalized || null;
+}
+
+function isPrimitiveHeaderContent<TData extends RowData>(
+  header: ColumnDef<TData, unknown>['header'],
+): boolean {
+  return typeof header === 'string' || typeof header === 'number';
 }
 
 function serializeSorting(sorting: SortingState): string {

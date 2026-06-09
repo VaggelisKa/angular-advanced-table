@@ -161,6 +161,44 @@ class CustomSortIndicatorHost {
 }
 
 @Component({
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      accessibleName="Operations table"
+      (stateChange)="onTableStateChange($event)"
+    />
+  `,
+})
+class HiddenHeaderActionLabelHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = withNatTableHeaderActions(
+    baseColumns.map((column) => {
+      const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
+
+      if (accessorKey !== 'name') {
+        return column;
+      }
+
+      return {
+        ...column,
+        meta: {
+          rowHeader: column.meta?.rowHeader,
+          hiddenHeaderLabel: 'Row actions',
+        },
+      };
+    }),
+  );
+  readonly tableState = signal<Partial<NatTableState>>({});
+
+  onTableStateChange(state: NatTableState): void {
+    this.tableState.set(state);
+  }
+}
+
+@Component({
   imports: [
     NatTable,
     NatTableColumnVisibility,
@@ -472,6 +510,7 @@ describe('ng-advanced-table-ui', () => {
       imports: [
         TableUiHost,
         CustomSortIndicatorHost,
+        HiddenHeaderActionLabelHost,
         CustomAccessibilityLabelsHost,
         ProviderAccessibilityLabelsHost,
         LocaleSwitchingHost,
@@ -765,6 +804,28 @@ describe('ng-advanced-table-ui', () => {
       true,
     );
     expect(headerLabel.textContent?.trim()).toBe('Service');
+  });
+
+  it('keeps header action controls visible when the header label is hidden', () => {
+    const hiddenFixture = TestBed.createComponent(HiddenHeaderActionLabelHost);
+
+    hiddenFixture.detectChanges();
+
+    const nameHeader = hiddenFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const headerLabel = nameHeader.querySelector('.header-label') as HTMLElement;
+    const sortButton = nameHeader.querySelector('.sort-button') as HTMLButtonElement;
+    const menuButton = nameHeader.querySelector('.menu-button') as HTMLButtonElement;
+
+    expect(headerLabel.classList.contains('sr-only')).toBe(true);
+    expect(headerLabel.textContent?.trim()).toBe('Row actions');
+    expect(sortButton).toBeTruthy();
+    expect(menuButton).toBeTruthy();
+    expect(sortButton.getAttribute('aria-label')).toBe('Change sorting for Row actions');
+    expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Row actions');
+
+    hiddenFixture.destroy();
   });
 
   it('keeps the column actions menu on the right for end-aligned headers', () => {

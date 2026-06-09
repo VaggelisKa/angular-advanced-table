@@ -11,10 +11,14 @@
           (pointerdown)="$event.stopPropagation()"
           (click)="column().toggleSorting()"
         >
-          <span class="header-label">
-            <ng-container *flexRender="content(); props: context(); let rendered">
-              {{ rendered }}
-            </ng-container>
+          <span class="header-label" [class.sr-only]="hideLabel()">
+            @if (hideLabel()) {
+              {{ label() }}
+            } @else {
+              <ng-container *flexRender="content(); props: context(); let rendered">
+                {{ rendered }}
+              </ng-container>
+            }
           </span>
           <span class="sort-icon" aria-hidden="true">
             @if (hasCustomSortIndicator()) {
@@ -42,10 +46,14 @@
           </span>
         </button>
       } @else {
-        <span class="header-label">
-          <ng-container *flexRender="content(); props: context(); let rendered">
-            {{ rendered }}
-          </ng-container>
+        <span class="header-label" [class.sr-only]="hideLabel()">
+          @if (hideLabel()) {
+            {{ label() }}
+          } @else {
+            <ng-container *flexRender="content(); props: context(); let rendered">
+              {{ rendered }}
+            </ng-container>
+          }
         </span>
       }
     </div>
