@@ -332,8 +332,8 @@ Attach metadata through `columnDef.meta`:
 
 | Field               | Type                                                                      | Purpose                                                                        |
 | ------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `label`             | `string`                                                                  | Stable human-readable label for accessibility and companion UI                 |
-| `hiddenHeaderLabel` | `string`                                                                  | Visually hidden header label for utility columns with redundant visible titles |
+| `label`             | `string?`                                                                 | Stable human-readable label for accessibility and companion UI                 |
+| `hiddenHeaderLabel` | `string?`                                                                 | Visually hidden header label for utility columns with redundant visible titles |
 | `align`             | `'start' \| 'end'`                                                        | Cell and header alignment                                                      |
 | `rowHeader`         | `boolean`                                                                 | Marks body cells in the column as row headers                                  |
 | `cellTone`          | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                                 |
