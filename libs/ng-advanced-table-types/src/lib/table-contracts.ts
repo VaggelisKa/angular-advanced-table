@@ -46,6 +46,7 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
  */
 export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
   label?: string;
+  hiddenHeaderLabel?: string;
   align?: 'start' | 'end';
   rowHeader?: boolean;
   cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;

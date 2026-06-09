@@ -4,6 +4,8 @@ import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import { withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
+import { NatRowActionsMenu } from '../table-showcase-page/nat-row-actions-menu';
+
 interface MockOrderRow {
   id: string;
   customer: string;
@@ -270,12 +272,32 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     },
     cell: (info) => currencyFormatter.format(info.getValue<number>()),
   },
+  {
+    id: 'actions',
+    header: 'Actions',
+    enableSorting: false,
+    enablePinning: false,
+    size: 72,
+    minSize: 64,
+    maxSize: 72,
+    meta: {
+      hiddenHeaderLabel: 'Row actions',
+      align: 'end',
+      headerSize: 72,
+    },
+    cell: (info) =>
+      flexRenderComponent(NatRowActionsMenu, {
+        inputs: {
+          symbol: info.row.original.id,
+        },
+      }),
+  },
 ]);
 
 const preconfiguredTableState: Partial<NatTableState> = {
   columnPinning: {
     left: ['owner'],
-    right: ['total'],
+    right: ['actions'],
   },
 };
 

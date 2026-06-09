@@ -82,6 +82,7 @@ function wrapColumnHeader<TData extends RowData>(
         context: context as HeaderContext<RowData, unknown>,
         content: fallbackContent as NatTableHeaderRenderContent,
         label: resolveHeaderActionLabel(context, fallbackContent, fallbackId),
+        hideLabel: !!context.column.columnDef.meta?.hiddenHeaderLabel?.trim(),
         locale: actionOptions.locale ?? resolveTableLocale(context),
         accessibilityLabels: actionOptions.accessibilityLabels,
         sortIndicator: actionOptions.sortIndicator,

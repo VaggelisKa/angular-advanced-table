@@ -109,4 +109,6 @@ export class ServiceTableComponent {
 }
 ```
 
+Use `meta.hiddenHeaderLabel: 'Row actions'` for compact utility columns where the visible title is redundant. The table renders that value as screen-reader-only text, and `withNatTableHeaderActions(...)` hides only the label while keeping sort and menu controls visible.
+
 For Angular component-backed cells and more interactive cell UIs, see [Custom cell components](../../README.md#custom-cell-components) in the root README.

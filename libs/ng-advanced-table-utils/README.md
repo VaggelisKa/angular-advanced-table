@@ -50,7 +50,7 @@ npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @a
 - `RowRenderMetric`
 - `RowRenderTone`
 
-`NatTableColumnMeta` is kept aligned with the workspace's internal contract checks. Prefer importing the shared metadata contract from `ng-advanced-table` when a column definition is used by multiple packages.
+`NatTableColumnMeta` is kept aligned with the workspace's internal contract checks. Prefer importing the shared metadata contract from `ng-advanced-table` when a column definition is used by multiple packages. The shared metadata includes `hiddenHeaderLabel` for utility columns whose visible title should be suppressed while the label remains available to assistive technology.
 
 ## Package Notes
 

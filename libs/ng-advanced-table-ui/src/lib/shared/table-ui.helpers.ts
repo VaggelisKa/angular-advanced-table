@@ -32,6 +32,12 @@ export function resolveNatTableColumnLabel<TData extends RowData>(
   columnDef: ColumnDef<TData, unknown>,
   fallbackId: string,
 ): string {
+  const hiddenHeaderLabel = normalizeColumnLabel(columnDef.meta?.hiddenHeaderLabel);
+
+  if (hiddenHeaderLabel) {
+    return hiddenHeaderLabel;
+  }
+
   const metaLabel = columnDef.meta?.label;
 
   if (metaLabel) {
@@ -49,4 +55,10 @@ export function resolveNatTableColumnLabel<TData extends RowData>(
   }
 
   return fallbackId || 'Column';
+}
+
+function normalizeColumnLabel(label: string | undefined): string | null {
+  const normalized = label?.trim() ?? '';
+
+  return normalized || null;
 }

@@ -284,6 +284,44 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('.pin-button')).toBeNull();
   });
 
+  it('visually hides primitive header labels while keeping accessible text', async () => {
+    @Component({
+      imports: [NatTable],
+      template: `
+        <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      `,
+    })
+    class HiddenHeaderLabelHost {
+      readonly rows = signal<Row[]>(buildRows(1));
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Menu',
+          meta: {
+            hiddenHeaderLabel: 'Row actions',
+          },
+          cell: (info) => info.getValue<string>(),
+        },
+      ];
+    }
+
+    const hiddenHeaderFixture = TestBed.createComponent(HiddenHeaderLabelHost);
+
+    await hiddenHeaderFixture.whenStable();
+    hiddenHeaderFixture.detectChanges();
+
+    const header = hiddenHeaderFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const hiddenLabel = header.querySelector('.sr-only') as HTMLElement;
+
+    expect(hiddenLabel.textContent?.trim()).toBe('Row actions');
+    expect(header.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Row actions');
+    expect(header.textContent).not.toContain('Menu');
+
+    hiddenHeaderFixture.destroy();
+  });
+
   it('applies semantic tone attributes from column metadata', () => {
     fixture.detectChanges();
 

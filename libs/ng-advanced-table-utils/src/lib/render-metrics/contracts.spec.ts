@@ -30,7 +30,7 @@ describe('ng-advanced-table-utils public table contracts', () => {
     const column: ColumnDef<ContractRow, number> = {
       accessorKey: 'durationMs',
       meta: {
-        label: 'Duration',
+        hiddenHeaderLabel: 'Duration',
         align: 'end',
         headerSize: 96,
         headerMinSize: '6rem',
@@ -39,6 +39,7 @@ describe('ng-advanced-table-utils public table contracts', () => {
       } satisfies NatTableColumnMeta<ContractRow, number>,
     };
 
+    expect(column.meta?.hiddenHeaderLabel).toBe('Duration');
     expect(column.meta?.headerSize).toBe(96);
     expect(column.meta?.headerMinSize).toBe('6rem');
     expect(column.meta?.headerMaxSize).toBe(144);
