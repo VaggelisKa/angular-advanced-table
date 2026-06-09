@@ -169,19 +169,18 @@ class CustomSortIndicatorHost {
     NatTableSurface,
   ],
   template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [initialState]="initialState"
-      [enablePagination]="true"
-      [getRowId]="getRowId"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
-
     <nat-table-surface>
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [initialState]="initialState"
+        [enablePagination]="true"
+        [getRowId]="getRowId"
+        accessibleName="Operations table"
+        (stateChange)="onTableStateChange($event)"
+      />
       <nat-table-column-visibility [accessibilityLabels]="columnVisibilityLabels" />
       <nat-table-page-size
         [pageSizeOptions]="pageSizeOptions"
@@ -312,19 +311,18 @@ class CustomAccessibilityLabelsHost {
     }),
   ],
   template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [initialState]="initialState"
-      [enablePagination]="true"
-      [getRowId]="getRowId"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
-
     <nat-table-surface>
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [initialState]="initialState"
+        [enablePagination]="true"
+        [getRowId]="getRowId"
+        accessibleName="Operations table"
+        (stateChange)="onTableStateChange($event)"
+      />
       <nat-table-search [label]="searchLabel()" />
       <nat-table-column-visibility />
       <nat-table-page-size

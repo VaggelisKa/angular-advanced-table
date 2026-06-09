@@ -163,12 +163,13 @@
           <div class="table-controls-grid">
             @if (tableFeatures().enableGlobalFilter) {
               <nat-table-search
+                [for]="grid"
                 label="Search symbol, company, exchange, desk, or id"
                 placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
               />
             }
             @if (tableFeatures().showColumnVisibility) {
-              <nat-table-column-visibility />
+              <nat-table-column-visibility [for]="grid" />
             }
           </div>
         </nat-table-surface>
