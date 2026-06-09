@@ -14,6 +14,7 @@ import {
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
+  NatTableUiService,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
 
@@ -54,6 +55,7 @@ const DEMO_DATA: DemoItem[] = [
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [NatTableUiService],
 })
 export class TableBuilderPage {
   // Feature Toggles
@@ -120,10 +122,10 @@ export class TableBuilderPage {
       topControls = '\n  <div class="table-controls-grid">';
       if (this.withGlobalFilter()) {
         topControls +=
-          '\n    <nat-table-search [for]="grid" label="Search rows" placeholder="Type here..." />';
+          '\n    <nat-table-search label="Search rows" placeholder="Type here..." />';
       }
       if (this.showColumnVisibility()) {
-        topControls += '\n    <nat-table-column-visibility [for]="grid" />';
+        topControls += '\n    <nat-table-column-visibility />';
       }
       topControls += '\n  </div>';
     }
@@ -133,18 +135,18 @@ export class TableBuilderPage {
       paginationControls = '\n\n  <div class="table-toolbar">';
       paginationControls += '\n    <div class="table-actions">';
       paginationControls +=
-        '\n      <nat-table-page-size [for]="grid" [pageSizeOptions]="[3, 5, 10]" />';
-      paginationControls += '\n      <nat-table-pager [for]="grid" />';
+        '\n      <nat-table-page-size [pageSizeOptions]="[3, 5, 10]" />';
+      paginationControls += '\n      <nat-table-pager />';
       paginationControls += '\n    </div>';
       paginationControls += '\n  </div>';
     }
 
     let scrollControls = '';
     if (this.showScrollControl()) {
-      scrollControls = '\n\n  <nat-table-scroll-control [for]="grid" />';
+      scrollControls = '\n\n  <nat-table-scroll-control />';
     }
 
-    let tableAttributes = '\n    #grid="natTable"';
+    let tableAttributes = '';
     tableAttributes += '\n    [data]="data"';
     tableAttributes += '\n    [columns]="columns"';
     tableAttributes += '\n    [state]="tableState()"';

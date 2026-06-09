@@ -163,13 +163,12 @@
           <div class="table-controls-grid">
             @if (tableFeatures().enableGlobalFilter) {
               <nat-table-search
-                [for]="grid"
                 label="Search symbol, company, exchange, desk, or id"
                 placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
               />
             }
             @if (tableFeatures().showColumnVisibility) {
-              <nat-table-column-visibility [for]="grid" />
+              <nat-table-column-visibility />
             }
           </div>
         </nat-table-surface>
@@ -179,8 +178,8 @@
         @if (hasTablePaginationControls()) {
           <div class="table-toolbar">
             <div class="table-actions">
-              <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
-              <nat-table-pager [for]="grid" />
+              <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
+              <nat-table-pager />
             </div>
           </div>
         }
@@ -204,7 +203,7 @@
         />
 
         @if (tableFeatures().showScrollControl) {
-          <nat-table-scroll-control [for]="grid" />
+          <nat-table-scroll-control />
         }
       </nat-table-surface>
     </section>

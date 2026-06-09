@@ -56,12 +56,6 @@
     var(--nat-table-header-border-color, color-mix(in srgb, currentColor 16%, transparent));
 }
 
-.data-table.has-sticky-header .header-cell {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-}
-
 .header-cell-content {
   display: flex;
   align-items: center;
@@ -189,6 +183,14 @@
   font-weight: var(--nat-table-font-weight-row-header, 600);
 }
 
+.has-sticky-header .header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+.has-sticky-header .is-pinned-left,
+.has-sticky-header .is-pinned-right,
 .is-pinned-left,
 .is-pinned-right {
   position: sticky;

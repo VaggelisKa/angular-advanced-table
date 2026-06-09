@@ -106,13 +106,12 @@
             <div class="table-controls-grid">
               @if (withGlobalFilter()) {
                 <nat-table-search
-                  [for]="grid"
                   label="Search rows"
                   placeholder="Try 'Alpha' or 'Security'..."
                 />
               }
               @if (showColumnVisibility()) {
-                <nat-table-column-visibility [for]="grid" />
+                <nat-table-column-visibility />
               }
             </div>
           }
@@ -120,14 +119,13 @@
           @if (withPagination()) {
             <div class="table-toolbar">
               <div class="table-actions">
-                <nat-table-page-size [for]="grid" [pageSizeOptions]="[3, 5, 10]" />
-                <nat-table-pager [for]="grid" />
+                <nat-table-page-size [pageSizeOptions]="[3, 5, 10]" />
+                <nat-table-pager />
               </div>
             </div>
           }
 
           <nat-table
-            #grid="natTable"
             [data]="data"
             [columns]="columns"
             [state]="tableState()"
@@ -141,7 +139,7 @@
           />
 
           @if (showScrollControl()) {
-            <nat-table-scroll-control [for]="grid" />
+            <nat-table-scroll-control />
           }
         </nat-table-surface>
       </section>

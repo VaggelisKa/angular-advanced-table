@@ -25,10 +25,10 @@ Preferred shape:
       accessibleName="Orders"
     />
 
-    <nat-table-search [for]="grid" />
-    <nat-table-column-visibility [for]="grid" />
-    <nat-table-page-size [for]="grid" />
-    <nat-table-pager [for]="grid" />
+    <nat-table-search />
+    <nat-table-column-visibility />
+    <nat-table-page-size />
+    <nat-table-pager />
   </nat-table-surface>
 </section>
 ```
