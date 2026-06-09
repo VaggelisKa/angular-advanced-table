@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
+import { NatTableUiService } from '../../shared/table-ui.service';
 import {
   DEFAULT_PAGE_SIZE_OPTIONS,
   formatNatTableAccessibilityNumber,
@@ -31,22 +32,25 @@ interface PageSizeOption {
   styleUrl: './table-page-size.css',
 })
 export class NatTablePageSize<TData extends RowData = RowData> {
-  readonly for = input.required<NatTableUiController<TData>>();
+  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
+  private readonly uiService = inject<NatTableUiService<TData>>(NatTableUiService, { optional: true });
+  protected readonly controller = computed(() => this.for() ?? this.uiService?.controller() ?? null);
+
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(
-    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
+    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
-  protected readonly table = computed(() => this.for().table);
-  protected readonly tableElementId = computed(() => this.for().tableElementId());
-  protected readonly selectedPageSize = computed(() => this.table().getState().pagination.pageSize);
+  protected readonly table = computed(() => this.controller()?.table);
+  protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
+  protected readonly selectedPageSize = computed(() => this.table()?.getState().pagination.pageSize ?? 0);
   private readonly resolvedAccessibilityLabels = computed(() =>
     mergePageSizeLabels(
       this.tableUiIntl().pageSize?.accessibilityLabels,
@@ -93,7 +97,7 @@ export class NatTablePageSize<TData extends RowData = RowData> {
       return;
     }
 
-    this.for().patchState({
+    this.controller()?.patchState({
       pagination: () => ({
         pageIndex: 0,
         pageSize,

@@ -1,28 +1,30 @@
-@if (columns().length) {
-  <div class="control-block">
-    <div class="control-heading">
-      <span class="control-label">{{ resolvedHeading() }}</span>
-      <span class="control-caption">
-        {{ visibilitySummary() }}
-      </span>
+@if (controller()) {
+  @if (columns().length) {
+    <div class="control-block">
+      <div class="control-heading">
+        <span class="control-label">{{ resolvedHeading() }}</span>
+        <span class="control-caption">
+          {{ visibilitySummary() }}
+        </span>
+      </div>
+      <div class="chip-row" role="group" [attr.aria-label]="resolvedAriaLabel()">
+        @for (column of columns(); track column.column.id) {
+          <button
+            type="button"
+            class="chip column-chip"
+            [class.is-active]="column.visible"
+            [disabled]="!column.canToggle"
+            [attr.aria-controls]="tableElementId()"
+            [attr.aria-pressed]="column.visible"
+            [attr.aria-label]="column.actionLabel"
+            [attr.data-column-id]="column.column.id"
+            (click)="toggleColumnVisibility(column)"
+          >
+            <span>{{ column.label }}</span>
+            <span class="chip-count">{{ column.stateLabel }}</span>
+          </button>
+        }
+      </div>
     </div>
-    <div class="chip-row" role="group" [attr.aria-label]="resolvedAriaLabel()">
-      @for (column of columns(); track column.column.id) {
-        <button
-          type="button"
-          class="chip column-chip"
-          [class.is-active]="column.visible"
-          [disabled]="!column.canToggle"
-          [attr.aria-controls]="tableElementId()"
-          [attr.aria-pressed]="column.visible"
-          [attr.aria-label]="column.actionLabel"
-          [attr.data-column-id]="column.column.id"
-          (click)="toggleColumnVisibility(column)"
-        >
-          <span>{{ column.label }}</span>
-          <span class="chip-count">{{ column.stateLabel }}</span>
-        </button>
-      }
-    </div>
-  </div>
+  }
 }
