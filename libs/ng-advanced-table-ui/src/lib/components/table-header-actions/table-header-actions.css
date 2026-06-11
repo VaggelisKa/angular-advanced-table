@@ -145,6 +145,26 @@
   line-height: 0;
 }
 
+/* Multi-sort priority badge (1-based order; only shown when >1 column is sorted). */
+.sort-priority {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 1rem;
+  block-size: 1rem;
+  padding: 0 0.25rem;
+  margin-inline-start: 0.25rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--nat-table-sort-icon-color-active, var(--accent, currentColor));
+  background: var(
+    --nat-table-sort-icon-chip-background-active,
+    color-mix(in srgb, currentColor 14%, transparent)
+  );
+}
+
 .menu-button__icon {
   display: block;
   inline-size: 0.9rem;

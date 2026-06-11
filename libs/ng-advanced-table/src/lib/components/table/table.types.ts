@@ -4,9 +4,11 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnSizingState,
   PaginationState,
   Row,
   RowData,
+  RowSelectionState,
   SortingState,
   VisibilityState,
 } from '@tanstack/angular-table';
@@ -30,6 +32,10 @@ export interface NatTableState {
   columnOrder: ColumnOrderState;
   /** Left and right pinned column ids. */
   columnPinning: ColumnPinningState;
+  /** Per-column pixel widths keyed by column id, set by interactive resizing. */
+  columnSizing: ColumnSizingState;
+  /** Selected row ids keyed by `getRowId`. */
+  rowSelection: RowSelectionState;
 }
 
 /**
@@ -92,6 +98,16 @@ export interface NatTableAccessibilitySummaryContext {
   paginationState: 'enabled' | 'disabled';
 }
 
+/** Single active sort entry passed to sort announcement formatters. */
+export interface NatTableAccessibilitySortingAnnouncementEntry {
+  /** TanStack column id. */
+  id: string;
+  /** Resolved human-readable column label. */
+  label: string;
+  /** Active sort direction for the column. */
+  sortState: 'ascending' | 'descending';
+}
+
 /** Context passed to custom sort announcement formatters. */
 export interface NatTableAccessibilitySortingAnnouncementContext {
   /** Sorted column id, or `null` when sorting is cleared. */
@@ -100,6 +116,8 @@ export interface NatTableAccessibilitySortingAnnouncementContext {
   columnLabel: string | null;
   /** Active ARIA sort state for the sorted column, or `'none'` when cleared. */
   sortState: 'ascending' | 'descending' | 'none';
+  /** All active sort entries in priority order; more than one during a multi-sort. */
+  sortedColumns: readonly NatTableAccessibilitySortingAnnouncementEntry[];
 }
 
 /** Context passed to custom filtering announcement formatters. */
@@ -164,6 +182,30 @@ export interface NatTableAccessibilityPaginationAnnouncementContext {
   visibleRowsText: string;
 }
 
+/** Context passed to custom row-selection announcement formatters. */
+export interface NatTableAccessibilitySelectionAnnouncementContext {
+  /** Number of currently selected rows. */
+  selectedCountValue: number;
+  /** Browser-locale text for `selectedCountValue`. */
+  selectedCountText: string;
+  /** Total rows supplied to the table. */
+  totalRowsValue: number;
+  /** Browser-locale text for `totalRowsValue`. */
+  totalRowsText: string;
+}
+
+/** Context passed to custom column-resize announcement formatters. */
+export interface NatTableAccessibilityColumnResizeAnnouncementContext {
+  /** TanStack column id. */
+  columnId: string;
+  /** Resolved human-readable column label. */
+  label: string;
+  /** New column width in CSS pixels. */
+  widthValue: number;
+  /** Browser-locale text for `widthValue`. */
+  widthText: string;
+}
+
 /** Context passed to custom column-reorder announcement formatters. */
 export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   /** TanStack column id. */
@@ -202,6 +244,8 @@ export interface NatTableAccessibilityText {
   emptyState?: string;
   /** Extra reorder instructions appended when column reordering is enabled. */
   reorderKeyboardInstructions?: string;
+  /** Extra resize instructions appended when column resizing is enabled. */
+  resizeKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
   tableSummary?: (context: NatTableAccessibilitySummaryContext) => string;
   /** Live announcement emitted when sorting changes. */
@@ -218,6 +262,10 @@ export interface NatTableAccessibilityText {
   pageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when a column is reordered. */
   columnReorder?: (context: NatTableAccessibilityColumnReorderAnnouncementContext) => string;
+  /** Live announcement emitted when a column is resized. */
+  columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
+  /** Live announcement emitted when the row selection changes. */
+  selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
 }
 
 /** Semantic tone that can be applied to a rendered body cell. */
@@ -261,6 +309,28 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerMinSize?: number | string;
   /** Optional header-only maximum width in pixels. Does not affect body cells. */
   headerMaxSize?: number | string;
+  /** Declarative typed-filter configuration consumed by companion filter UI and `natTypedFilterFn`. */
+  filter?: {
+    type: 'text' | 'number' | 'date' | 'boolean' | 'set';
+    operators?: readonly (
+      | 'equals'
+      | 'notEquals'
+      | 'contains'
+      | 'startsWith'
+      | 'endsWith'
+      | 'gt'
+      | 'gte'
+      | 'lt'
+      | 'lte'
+      | 'between'
+      | 'in'
+      | 'isEmpty'
+      | 'notEmpty'
+    )[];
+    options?: readonly unknown[] | ((rows: readonly unknown[]) => readonly unknown[]);
+  };
+  /** Declarative display formatting; used for cells without an explicit `cell` renderer. */
+  valueFormatter?: (context: { value: TValue; row: TData; locale: string }) => string;
 }
 
 declare module '@tanstack/table-core' {

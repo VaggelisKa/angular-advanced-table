@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
+import { type ColumnDef, type FilterFn, type Row as TanStackRow } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
 import { provideNatTableIntl } from './table-intl';
@@ -89,6 +89,17 @@ const columns: ColumnDef<Row, unknown>[] = [
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="enablePagination"
+      [enableMultiSort]="enableMultiSort"
+      [enableColumnResizing]="enableColumnResizing"
+      [enableRowSelection]="enableRowSelection"
+      [selectionMode]="selectionMode"
+      [manualSorting]="manualSorting"
+      [manualFiltering]="manualFiltering"
+      [manualPagination]="manualPagination"
+      [rowCount]="rowCount"
+      [loading]="loading"
+      [locale]="locale"
+      [direction]="direction"
       [stickyHeader]="stickyHeader"
       [getRowId]="getRowId"
       [accessibilityText]="accessibilityText"
@@ -100,6 +111,8 @@ const columns: ColumnDef<Row, unknown>[] = [
       (columnVisibilityChange)="onColumnVisibilityChange($event)"
       (columnOrderChange)="onColumnOrderChange($event)"
       (columnPinningChange)="onColumnPinningChange($event)"
+      (columnSizingChange)="onColumnSizingChange($event)"
+      (rowSelectionChange)="onRowSelectionChange($event)"
       (rowActivate)="onRowActivate($event)"
     />
   `,
@@ -122,6 +135,17 @@ class TableHost {
   };
   enablePagination = false;
   enableColumnReorder = false;
+  enableMultiSort = false;
+  enableColumnResizing = false;
+  enableRowSelection = false;
+  selectionMode: 'single' | 'multiple' = 'multiple';
+  manualSorting = false;
+  manualFiltering = false;
+  manualPagination = false;
+  rowCount: number | undefined = undefined;
+  loading = false;
+  locale: string | undefined = undefined;
+  direction: 'ltr' | 'rtl' | undefined = undefined;
   stickyHeader = true;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
@@ -133,6 +157,8 @@ class TableHost {
   readonly columnVisibilityEvents: NatTableState['columnVisibility'][] = [];
   readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
   readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
+  readonly columnSizingEvents: NatTableState['columnSizing'][] = [];
+  readonly rowSelectionEvents: NatTableState['rowSelection'][] = [];
 
   onStateChange(state: NatTableState): void {
     this.stateEvents.push(state);
@@ -164,6 +190,14 @@ class TableHost {
 
   onColumnPinningChange(columnPinning: NatTableState['columnPinning']): void {
     this.columnPinningEvents.push(columnPinning);
+  }
+
+  onColumnSizingChange(columnSizing: NatTableState['columnSizing']): void {
+    this.columnSizingEvents.push(columnSizing);
+  }
+
+  onRowSelectionChange(rowSelection: NatTableState['rowSelection']): void {
+    this.rowSelectionEvents.push(rowSelection);
   }
 
   onRowActivate(event: NatTableRowActivateEvent<Row>): void {
@@ -243,6 +277,17 @@ describe('NatTable', () => {
     options: {
       enableColumnReorder?: boolean;
       enablePagination?: boolean;
+      enableMultiSort?: boolean;
+      enableColumnResizing?: boolean;
+      enableRowSelection?: boolean;
+      selectionMode?: 'single' | 'multiple';
+      manualSorting?: boolean;
+      manualFiltering?: boolean;
+      manualPagination?: boolean;
+      rowCount?: number;
+      loading?: boolean;
+      locale?: string;
+      direction?: 'ltr' | 'rtl';
       stickyHeader?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -252,8 +297,19 @@ describe('NatTable', () => {
     fixture.destroy();
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
+    host.locale = options.locale ?? host.locale;
+    host.direction = options.direction ?? host.direction;
     host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.enableMultiSort = options.enableMultiSort ?? host.enableMultiSort;
+    host.enableColumnResizing = options.enableColumnResizing ?? host.enableColumnResizing;
+    host.enableRowSelection = options.enableRowSelection ?? host.enableRowSelection;
+    host.selectionMode = options.selectionMode ?? host.selectionMode;
+    host.manualSorting = options.manualSorting ?? host.manualSorting;
+    host.manualFiltering = options.manualFiltering ?? host.manualFiltering;
+    host.manualPagination = options.manualPagination ?? host.manualPagination;
+    host.rowCount = options.rowCount ?? host.rowCount;
+    host.loading = options.loading ?? host.loading;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -1128,6 +1184,471 @@ describe('NatTable', () => {
     const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
 
     expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
+  });
+
+  it('keeps multiple sort columns and marks each header when enableMultiSort is true', async () => {
+    await recreateHost({
+      enableMultiSort: true,
+      state: {
+        sorting: [
+          { id: 'name', desc: false },
+          { id: 'region', desc: true },
+        ],
+      },
+    });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    expect(table.table.getState().sorting).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: true },
+    ]);
+
+    const sortedHeaders = Array.from(
+      fixture.nativeElement.querySelectorAll('thead th[aria-sort]'),
+    ) as HTMLTableCellElement[];
+
+    expect(sortedHeaders.map((header) => header.dataset['columnId'])).toEqual(['name', 'region']);
+  });
+
+  it('emits the full sorting array and announces a multi-column sort when enableMultiSort is true', async () => {
+    await recreateHost({ enableMultiSort: true, initialState: {} });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    table.patchState({
+      sorting: [
+        { id: 'name', desc: false },
+        { id: 'region', desc: true },
+      ],
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.sortingEvents.at(-1)).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: true },
+    ]);
+
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    expect(liveRegion.textContent?.trim()).toBe(
+      'Sorted by Service ascending, then Region descending.',
+    );
+  });
+
+  it('renders resize handles only when enableColumnResizing is true', async () => {
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.column-resize-handle')).toBeNull();
+
+    await recreateHost({ enableColumnResizing: true });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.column-resize-handle').length).toBe(4);
+  });
+
+  it('resizes a column from the keyboard, updates the width, and emits columnSizingChange', async () => {
+    await recreateHost({ enableColumnResizing: true });
+    fixture.detectChanges();
+
+    const regionHandle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .column-resize-handle',
+    ) as HTMLElement;
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    regionHandle.focus();
+    regionHandle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+
+    const regionCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="region"]',
+    ) as HTMLElement;
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLElement;
+
+    expect(regionCell.style.width).toBe('148px');
+    // The resize must drive the header width too, or the column never visibly resizes.
+    expect(regionHeader.style.width).toBe('148px');
+    expect(liveRegion.textContent?.trim()).toBe('Region column width 148 pixels.');
+  });
+
+  it('inverts keyboard resize arrows in RTL and clamps Home/Arrow to the min bound', async () => {
+    await recreateHost({ enableColumnResizing: true, direction: 'rtl' });
+    fixture.detectChanges();
+
+    const handle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .column-resize-handle',
+    ) as HTMLElement;
+    handle.focus();
+
+    // RTL: the resize edge is on the left, so ArrowLeft grows (region 140 → 148).
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+
+    // Home jumps to the column's minSize (100).
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 100 });
+
+    // Already at min: ArrowRight (shrink in RTL) clamps to 100 and emits nothing new.
+    const eventsAtMin = host.columnSizingEvents.length;
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.length).toBe(eventsAtMin);
+  });
+
+  it('resizes via a pointer drag on the handle (TanStack getResizeHandler path)', async () => {
+    await recreateHost({ enableColumnResizing: true });
+    fixture.detectChanges();
+
+    const handle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .column-resize-handle',
+    ) as HTMLElement;
+
+    // region starts at 140; the pointer delta 0 → 70 adds 70px (onEnd mode applies an
+    // absolute pixel delta) → 210. This exercises the getResizeHandler →
+    // setColumnSizingInfo → setColumnSizing path, a no-op unless onColumnSizingInfoChange is wired.
+    handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0, button: 0 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 70 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 70 }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 210 });
+    expect(
+      (fixture.nativeElement.querySelector('thead th[data-column-id="region"]') as HTMLElement)
+        .style.width,
+    ).toBe('210px');
+  });
+
+  it('applies controlled columnSizing widths to the rendered cells', async () => {
+    await recreateHost({ state: { columnSizing: { region: 250 } } });
+    fixture.detectChanges();
+
+    const regionCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="region"]',
+    ) as HTMLElement;
+
+    expect(regionCell.style.width).toBe('250px');
+  });
+
+  it('derives page count from rowCount and keeps server rows unsliced under manualPagination', async () => {
+    await recreateHost({
+      enablePagination: true,
+      manualPagination: true,
+      rowCount: 100,
+      initialState: { pagination: { pageIndex: 0, pageSize: 2 } },
+    });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    expect(table.table.getPageCount()).toBe(50);
+    // Pagination row model is disabled, so the server-provided page (all data) renders as-is.
+    expect(fixture.nativeElement.querySelectorAll('tbody tr.data-row').length).toBe(6);
+
+    const summary = fixture.nativeElement.querySelector('.sr-only') as HTMLElement;
+
+    expect(summary.textContent).toContain('Showing 6 of 100 rows');
+    expect(summary.textContent).toContain('Page 1 of 50');
+  });
+
+  it('preserves data order under manualSorting even with a sorting state set', async () => {
+    await recreateHost({
+      manualSorting: true,
+      initialState: { sorting: [{ id: 'throughput', desc: true }] },
+    });
+    fixture.detectChanges();
+
+    // Client sorted row model is disabled, so rows stay in the supplied (data) order.
+    expect(fixture.nativeElement.querySelector('tbody tr.data-row')?.textContent).toContain(
+      'Alpha',
+    );
+  });
+
+  it('keeps every row under manualFiltering even with a column filter that would exclude them', async () => {
+    await recreateHost({
+      manualFiltering: true,
+      initialState: { columnFilters: [{ id: 'status', value: ['__none__'] }] },
+    });
+    fixture.detectChanges();
+
+    // Client filtered row model is disabled, so the server-supplied rows render unfiltered.
+    expect(fixture.nativeElement.querySelectorAll('tbody tr.data-row').length).toBe(6);
+  });
+
+  it('applies a per-row class from the rowClass callback while keeping data-row', async () => {
+    @Component({
+      imports: [NatTable],
+      template: `
+        <nat-table
+          [data]="rows()"
+          [columns]="columns"
+          [rowClass]="rowClass"
+          [getRowId]="getRowId"
+          accessibleName="Operations table"
+        />
+      `,
+    })
+    class RowClassHost {
+      readonly rows = signal<Row[]>(buildRows(6));
+      readonly columns = columns;
+      readonly getRowId = (row: Row) => row.id;
+      readonly rowClass = (row: TanStackRow<Row>): string | null =>
+        row.original.status === 'Alert' ? 'is-alert' : null;
+    }
+
+    const rowClassFixture = TestBed.createComponent(RowClassHost);
+
+    await rowClassFixture.whenStable();
+    rowClassFixture.detectChanges();
+
+    const alertRows = Array.from(
+      rowClassFixture.nativeElement.querySelectorAll('tbody tr.is-alert'),
+    ) as HTMLElement[];
+
+    expect(alertRows.length).toBeGreaterThan(0);
+    expect(alertRows.every((row) => row.classList.contains('data-row'))).toBe(true);
+  });
+
+  it('marks the grid busy while loading', async () => {
+    await recreateHost({ loading: true });
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    const region = fixture.nativeElement.querySelector('.table-region') as HTMLElement;
+
+    expect(table.getAttribute('aria-busy')).toBe('true');
+    expect(region.classList.contains('is-loading')).toBe(true);
+  });
+
+  it('reflects the resolved text direction on the grid', async () => {
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+
+    expect(table.getAttribute('dir')).toBe('ltr');
+
+    await recreateHost({ direction: 'rtl' });
+    fixture.detectChanges();
+
+    const rtlTable = fixture.nativeElement.querySelector('table') as HTMLElement;
+
+    expect(rtlTable.getAttribute('dir')).toBe('rtl');
+  });
+
+  it('formats announced numbers using the resolved locale', async () => {
+    await recreateHost({
+      locale: 'da-DK',
+      rowCount: 1500,
+      accessibilityText: { tableSummary: ({ totalRowsText }) => `Total ${totalRowsText}` },
+    });
+    fixture.detectChanges();
+
+    const summary = fixture.nativeElement.querySelector('.sr-only') as HTMLElement;
+
+    // da-DK groups thousands with a period.
+    expect(summary.textContent?.trim()).toBe('Total 1.500');
+  });
+
+  it('renders meta.valueFormatter output for cells without an explicit cell renderer', async () => {
+    @Component({
+      imports: [NatTable],
+      template: `
+        <nat-table
+          [data]="rows()"
+          [columns]="columns"
+          [locale]="'da-DK'"
+          [getRowId]="getRowId"
+          accessibleName="Operations table"
+        />
+      `,
+    })
+    class ValueFormatterHost {
+      readonly rows = signal<Row[]>(buildRows(1));
+      readonly getRowId = (row: Row) => row.id;
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Service',
+          meta: { label: 'Service', rowHeader: true },
+        },
+        {
+          accessorKey: 'throughput',
+          header: 'Throughput',
+          meta: {
+            label: 'Throughput',
+            valueFormatter: ({ value, locale }) =>
+              new Intl.NumberFormat(locale).format(value as number),
+          },
+        },
+      ];
+    }
+
+    const vfFixture = TestBed.createComponent(ValueFormatterHost);
+
+    await vfFixture.whenStable();
+    vfFixture.detectChanges();
+
+    const throughputCell = vfFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="throughput"]',
+    ) as HTMLElement;
+
+    // buildRows(1) → throughput 1000; da-DK → "1.000"
+    expect(throughputCell.textContent?.trim()).toBe('1.000');
+  });
+
+  it('exposes grid count semantics for assistive technology', () => {
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    // @angular/aria emits aria-rowindex/aria-colindex on the cells, not the rows.
+    const firstHeaderCell = fixture.nativeElement.querySelector('thead th') as HTMLElement;
+    const secondHeaderCell = fixture.nativeElement.querySelectorAll('thead th')[1] as HTMLElement;
+    const firstBodyCell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row th, tbody tr.data-row td',
+    ) as HTMLElement;
+
+    expect(table.getAttribute('aria-rowcount')).toBe('7'); // 1 header row + 6 data rows
+    expect(table.getAttribute('aria-colcount')).toBe('4');
+    expect(firstHeaderCell.getAttribute('aria-rowindex')).toBe('1');
+    expect(firstHeaderCell.getAttribute('aria-colindex')).toBe('1');
+    expect(secondHeaderCell.getAttribute('aria-colindex')).toBe('2');
+    expect(firstBodyCell.getAttribute('aria-rowindex')).toBe('2');
+    expect(firstBodyCell.getAttribute('aria-colindex')).toBe('1');
+  });
+
+  it('reports header-only aria-rowcount and an empty-state row when there are no rows', async () => {
+    host.rows.set([]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    expect(table.getAttribute('aria-rowcount')).toBe('1'); // header row only, 0 data rows
+
+    const emptyCell = fixture.nativeElement.querySelector('td.empty-state') as HTMLElement;
+    expect(emptyCell).toBeTruthy();
+    expect(Number(emptyCell.getAttribute('colspan'))).toBe(4); // spans the visible columns
+
+    const summary = fixture.nativeElement.querySelector('.sr-only') as HTMLElement;
+    expect(summary.textContent).toContain('No rows');
+  });
+
+  it('offsets body aria-rowindex by the current page', async () => {
+    await recreateHost({
+      enablePagination: true,
+      initialState: { pagination: { pageIndex: 1, pageSize: 2 } },
+    });
+    fixture.detectChanges();
+
+    const firstBodyCell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row th, tbody tr.data-row td',
+    ) as HTMLElement;
+
+    // 1 header row + pageIndex(1) * pageSize(2) + localIndex(0) + 1 = 4
+    expect(firstBodyCell.getAttribute('aria-rowindex')).toBe('4');
+  });
+
+  it('does not expose aria-selected unless enableRowSelection is true', () => {
+    fixture.detectChanges();
+
+    const row = fixture.nativeElement.querySelector('tbody tr.data-row') as HTMLElement;
+
+    expect(row.getAttribute('aria-selected')).toBeNull();
+  });
+
+  it('reflects controlled rowSelection through aria-selected', async () => {
+    await recreateHost({
+      enableRowSelection: true,
+      state: { rowSelection: { 'svc-00002': true } },
+    });
+    fixture.detectChanges();
+
+    const selected = Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
+      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
+    );
+
+    expect(selected.length).toBe(1);
+  });
+
+  it('collapses to the first selected row (by key order) in single mode', async () => {
+    await recreateHost({
+      enableRowSelection: true,
+      selectionMode: 'single',
+      state: { rowSelection: { 'svc-00001': true, 'svc-00002': true } },
+    });
+    fixture.detectChanges();
+
+    const selected = Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
+      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
+    );
+
+    expect(selected.length).toBe(1);
+    // Deterministic: the collapse keeps the first key, not an arbitrary row.
+    expect(getInternalTable(fixture).table.getState().rowSelection).toEqual({ 'svc-00001': true });
+  });
+
+  it('emits rowSelectionChange and announces the selection', async () => {
+    await recreateHost({ enableRowSelection: true, initialState: {} });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    table.patchState({ rowSelection: { 'svc-00001': true } });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.rowSelectionEvents.at(-1)).toEqual({ 'svc-00001': true });
+
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    expect(liveRegion.textContent?.trim()).toBe('1 row selected.');
+  });
+
+  it('warns once in dev mode when getRowId is missing and data is present', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    @Component({
+      imports: [NatTable],
+      template: `<nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />`,
+    })
+    class MissingRowIdHost {
+      readonly rows = signal<Row[]>(buildRows(2));
+      readonly columns = columns;
+    }
+
+    const missingFixture = TestBed.createComponent(MissingRowIdHost);
+
+    await missingFixture.whenStable();
+    missingFixture.detectChanges();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain('getRowId');
+
+    warn.mockRestore();
   });
 
   it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {

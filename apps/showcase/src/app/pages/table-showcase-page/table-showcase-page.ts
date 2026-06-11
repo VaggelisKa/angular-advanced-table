@@ -9,9 +9,19 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
+import {
+  flexRenderComponent,
+  type ColumnDef,
+  type FilterFn,
+  type Row,
+} from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import {
+  composeColumns,
+  NatTable,
+  type NatTableAccessibilityText,
+  type NatTableState,
+} from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePageSize,
@@ -21,6 +31,7 @@ import {
   NatTableSurface,
   NatTableService,
   withNatTableHeaderActions,
+  withNatTableSelectionColumn,
   type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
 import {
@@ -253,6 +264,9 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
 type TableFeatureKey =
   | 'enableColumnPinning'
   | 'enableColumnReorder'
+  | 'enableColumnResizing'
+  | 'enableMultiSort'
+  | 'enableRowSelection'
   | 'enablePagination'
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
@@ -263,6 +277,9 @@ type TableFeatureKey =
 interface TableFeatureConfig {
   enableColumnPinning: boolean;
   enableColumnReorder: boolean;
+  enableColumnResizing: boolean;
+  enableMultiSort: boolean;
+  enableRowSelection: boolean;
   enablePagination: boolean;
   enableGlobalFilter: boolean;
   showColumnVisibility: boolean;
@@ -274,6 +291,9 @@ interface TableFeatureConfig {
 const defaultTableFeatures: TableFeatureConfig = {
   enableColumnPinning: true,
   enableColumnReorder: true,
+  enableColumnResizing: true,
+  enableMultiSort: false,
+  enableRowSelection: true,
   enablePagination: true,
   enableGlobalFilter: true,
   showColumnVisibility: true,
@@ -282,9 +302,69 @@ const defaultTableFeatures: TableFeatureConfig = {
   stickyHeader: true,
 };
 
-const showcaseAccessibilityText = {
-  emptyState:
-    'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.',
+type ShowcaseLanguage = 'en' | 'da';
+
+const danishSortState = (sortState: 'ascending' | 'descending' | 'none'): string =>
+  sortState === 'ascending' ? 'stigende' : sortState === 'descending' ? 'faldende' : 'ingen';
+
+const SHOWCASE_TEXT: Record<ShowcaseLanguage, NatTableAccessibilityText> = {
+  en: {
+    emptyState:
+      'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.',
+  },
+  da: {
+    emptyState:
+      'Ingen instrumenter matcher de aktuelle filtre. Ryd søgningen eller signal-chipsene for at genopfylde båndet.',
+    tableSummary: ({ visibleRowsText, totalRowsText, visibleColumnsText }) =>
+      visibleRowsText === totalRowsText
+        ? `Viser ${visibleRowsText} rækker på tværs af ${visibleColumnsText} synlige kolonner.`
+        : `Viser ${visibleRowsText} af ${totalRowsText} rækker på tværs af ${visibleColumnsText} synlige kolonner.`,
+    sortingChange: ({ columnLabel, sortState }) =>
+      columnLabel
+        ? `Sorteret efter ${columnLabel} ${danishSortState(sortState)}.`
+        : 'Sortering ryddet.',
+    filteringChange: ({ visibleRowsText }) => `Viser ${visibleRowsText} matchende rækker.`,
+    pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
+      `Side ${pageText} af ${pageCountText}. ${visibleRowsText} rækker vist.`,
+    selectionChange: ({ selectedCountText }) => `${selectedCountText} rækker valgt.`,
+  },
+};
+
+/** Danish column header / label overrides keyed by column id (English uses the column defaults). */
+const COLUMN_HEADERS: Record<ShowcaseLanguage, Record<string, string>> = {
+  en: {},
+  da: {
+    symbol: 'Symbol',
+    company: 'Selskab',
+    exchange: 'Børs',
+    desk: 'Bord',
+    status: 'Signal',
+    price: 'Sidste',
+    change: 'Ænd. $',
+    changePercent: 'Ænd. %',
+    spark: 'Tendens',
+    volume: 'Volumen',
+    turnoverMillions: 'Omsætning',
+    updatedAt: 'Opdateret',
+    actions: 'Handlinger',
+  },
+};
+
+/** Visible UI-control strings per language. */
+const UI_TEXT: Record<
+  ShowcaseLanguage,
+  { searchLabel: string; searchPlaceholder: string; columnsLabel: string }
+> = {
+  en: {
+    searchLabel: 'Search symbol, company, exchange, desk, or id',
+    searchPlaceholder: 'Try AURA01, NASDAQ, Momentum, or eqt-00042...',
+    columnsLabel: 'Columns',
+  },
+  da: {
+    searchLabel: 'Søg symbol, selskab, børs, bord eller id',
+    searchPlaceholder: 'Prøv AURA01, NASDAQ, Momentum eller eqt-00042...',
+    columnsLabel: 'Kolonner',
+  },
 };
 
 @Component({
@@ -407,19 +487,43 @@ export class TableShowcasePage {
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
   protected readonly metricsStore = new NatTableRenderMetricsStore();
-  protected readonly columns = withNatTableHeaderActions(
-    withRenderMetricsColumn(simulationColumns, this.metricsStore),
-    {
-      sortIndicator: (context) =>
-        flexRenderComponent(MarketSortIndicator, {
-          inputs: { context },
-        }),
-    },
-  );
-  protected readonly getRowId = (row: SimulationRow) => row.id;
-  protected readonly accessibilityText = showcaseAccessibilityText;
-  protected readonly theme = this.themeStore.theme;
   protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
+  protected readonly columns = computed<ColumnDef<SimulationRow, unknown>[]>(() => {
+    const headers = COLUMN_HEADERS[this.language()];
+    const localizedColumns = simulationColumns.map((column) => {
+      const id = (column as { accessorKey?: string }).accessorKey ?? column.id ?? '';
+      const label = headers[id];
+
+      return label ? { ...column, header: label, meta: { ...column.meta, label } } : column;
+    });
+
+    const base = composeColumns(
+      localizedColumns,
+      (cols) => withRenderMetricsColumn(cols, this.metricsStore),
+      (cols) =>
+        withNatTableHeaderActions(cols, {
+          sortIndicator: (context) =>
+            flexRenderComponent(MarketSortIndicator, { inputs: { context } }),
+        }),
+    );
+
+    return this.tableFeatures().enableRowSelection
+      ? withNatTableSelectionColumn(base, {
+          selectAllAriaLabel: 'Select all instruments',
+          selectRowAriaLabel: (row) => `Select ${row.original.symbol}`,
+        })
+      : base;
+  });
+  protected readonly getRowId = (row: SimulationRow) => row.id;
+  protected readonly language = signal<ShowcaseLanguage>('en');
+  protected readonly locale = computed(() => (this.language() === 'da' ? 'da-DK' : 'en-US'));
+  protected readonly accessibilityText = computed(() => SHOWCASE_TEXT[this.language()]);
+  protected readonly uiText = computed(() => UI_TEXT[this.language()]);
+  protected readonly direction = signal<'ltr' | 'rtl'>('ltr');
+  protected readonly loading = signal(false);
+  protected readonly rowClass = (row: Row<SimulationRow>): string | null =>
+    row.original.status === 'Halted' ? 'is-halted-row' : null;
+  protected readonly theme = this.themeStore.theme;
   protected readonly hasTopTableControls = computed(() => {
     const features = this.tableFeatures();
     return features.enableGlobalFilter || features.showColumnVisibility;
@@ -453,6 +557,19 @@ export class TableShowcasePage {
   protected setProfile(profile: SimulationProfile): void {
     this.simulation.setProfile(profile);
   }
+
+  protected setLanguage(language: ShowcaseLanguage): void {
+    this.language.set(language);
+  }
+
+  protected setDirection(direction: 'ltr' | 'rtl'): void {
+    this.direction.set(direction);
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update((value) => !value);
+  }
+
 
   protected toggleSimulation(): void {
     this.simulation.toggleRunning();

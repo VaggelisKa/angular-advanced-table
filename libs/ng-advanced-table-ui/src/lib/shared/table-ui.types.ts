@@ -5,9 +5,11 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnSizingState,
   FlexRenderContent,
   PaginationState,
   RowData,
+  RowSelectionState,
   SortingState,
   Table,
   Updater,
@@ -28,6 +30,8 @@ export interface NatTableUiState {
   columnVisibility: VisibilityState;
   columnOrder: ColumnOrderState;
   columnPinning: ColumnPinningState;
+  columnSizing: ColumnSizingState;
+  rowSelection: RowSelectionState;
   pagination: PaginationState;
 }
 
@@ -118,6 +122,28 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerMinSize?: number | string;
   /** Optional header-only maximum width in pixels. Does not affect body cells. */
   headerMaxSize?: number | string;
+  /** Declarative typed-filter configuration consumed by companion filter UI and `natTypedFilterFn`. */
+  filter?: {
+    type: 'text' | 'number' | 'date' | 'boolean' | 'set';
+    operators?: readonly (
+      | 'equals'
+      | 'notEquals'
+      | 'contains'
+      | 'startsWith'
+      | 'endsWith'
+      | 'gt'
+      | 'gte'
+      | 'lt'
+      | 'lte'
+      | 'between'
+      | 'in'
+      | 'isEmpty'
+      | 'notEmpty'
+    )[];
+    options?: readonly unknown[] | ((rows: readonly unknown[]) => readonly unknown[]);
+  };
+  /** Declarative display formatting; used for cells without an explicit `cell` renderer. */
+  valueFormatter?: (context: { value: TValue; row: TData; locale: string }) => string;
 }
 
 /** Context passed to page-size option label formatters. */
@@ -242,6 +268,10 @@ export interface NatTableAccessibilityHeaderActionSortContext {
   label: string;
   /** Current sort state before toggling. */
   sortState: 'ascending' | 'descending' | 'none';
+  /** 1-based position in a multi-column sort, or `null` when this column is not sorted. */
+  sortPriority: number | null;
+  /** Total number of columns currently sorted. */
+  sortCount: number;
 }
 
 /** Context passed to the overflow menu trigger label formatter. */

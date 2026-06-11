@@ -34,6 +34,29 @@
       >
         {{ simulation.isRunning() ? 'Pause feed' : 'Resume feed' }}
       </button>
+
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button
+          type="button"
+          class="lang-option"
+          data-language="en"
+          [class.is-active]="language() === 'en'"
+          [attr.aria-pressed]="language() === 'en'"
+          (click)="setLanguage('en')"
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          class="lang-option"
+          data-language="da"
+          [class.is-active]="language() === 'da'"
+          [attr.aria-pressed]="language() === 'da'"
+          (click)="setLanguage('da')"
+        >
+          DA
+        </button>
+      </div>
     </div>
   </header>
 
@@ -164,12 +187,12 @@
             @if (tableFeatures().enableGlobalFilter) {
               <nat-table-search
                 [for]="grid"
-                label="Search symbol, company, exchange, desk, or id"
-                placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
+                [label]="uiText().searchLabel"
+                [placeholder]="uiText().searchPlaceholder"
               />
             }
             @if (tableFeatures().showColumnVisibility) {
-              <nat-table-column-visibility [for]="grid" />
+              <nat-table-column-visibility [for]="grid" [label]="uiText().columnsLabel" />
             }
           </div>
         </nat-table-surface>
@@ -188,11 +211,18 @@
         <nat-table
           #grid="natTable"
           [data]="simulation.rows()"
-          [columns]="columns"
+          [columns]="columns()"
           [state]="tableState()"
-          [accessibilityText]="accessibilityText"
+          [accessibilityText]="accessibilityText()"
+          [locale]="locale()"
+          [direction]="direction()"
+          [loading]="loading()"
+          [rowClass]="rowClass"
           [enableColumnPinning]="tableFeatures().enableColumnPinning"
           [enableColumnReorder]="tableFeatures().enableColumnReorder"
+          [enableColumnResizing]="tableFeatures().enableColumnResizing"
+          [enableMultiSort]="tableFeatures().enableMultiSort"
+          [enableRowSelection]="tableFeatures().enableRowSelection"
           [enablePagination]="tableFeatures().enablePagination"
           [enableGlobalFilter]="tableFeatures().enableGlobalFilter"
           [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
@@ -245,6 +275,33 @@
             (change)="toggleFeature('enableColumnReorder', readChecked($event))"
           />
           <span>Column reordering</span>
+        </label>
+
+        <label class="feature-toggle" data-feature="enableColumnResizing">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().enableColumnResizing"
+            (change)="toggleFeature('enableColumnResizing', readChecked($event))"
+          />
+          <span>Column resizing</span>
+        </label>
+
+        <label class="feature-toggle" data-feature="enableMultiSort">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().enableMultiSort"
+            (change)="toggleFeature('enableMultiSort', readChecked($event))"
+          />
+          <span>Multi-column sort</span>
+        </label>
+
+        <label class="feature-toggle" data-feature="enableRowSelection">
+          <input
+            type="checkbox"
+            [checked]="tableFeatures().enableRowSelection"
+            (change)="toggleFeature('enableRowSelection', readChecked($event))"
+          />
+          <span>Row selection</span>
         </label>
 
         <label class="feature-toggle" data-feature="enablePagination">
@@ -300,6 +357,45 @@
           />
           <span>Sticky header</span>
         </label>
+      </div>
+
+      <div class="feature-control-row" role="group" aria-label="Direction and loading">
+        <div class="feature-control">
+          <span class="toolbar-label">Direction</span>
+          <div class="segmented" role="group" aria-label="Text direction">
+            <button
+              type="button"
+              class="segment"
+              [class.is-active]="direction() === 'ltr'"
+              [attr.aria-pressed]="direction() === 'ltr'"
+              (click)="setDirection('ltr')"
+            >
+              LTR
+            </button>
+            <button
+              type="button"
+              class="segment"
+              [class.is-active]="direction() === 'rtl'"
+              [attr.aria-pressed]="direction() === 'rtl'"
+              (click)="setDirection('rtl')"
+            >
+              RTL
+            </button>
+          </div>
+        </div>
+
+        <div class="feature-control">
+          <span class="toolbar-label">Loading</span>
+          <button
+            type="button"
+            class="btn btn-ghost"
+            [class.is-active]="loading()"
+            [attr.aria-pressed]="loading()"
+            (click)="toggleLoading()"
+          >
+            {{ loading() ? 'Stop loading' : 'Simulate loading' }}
+          </button>
+        </div>
       </div>
     </section>
   </ng-template>

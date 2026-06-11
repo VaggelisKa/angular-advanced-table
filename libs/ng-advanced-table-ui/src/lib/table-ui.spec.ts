@@ -495,6 +495,46 @@ class HeaderActionCompositionHost {
   }
 }
 
+@Component({
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [state]="tableState()"
+      [enableMultiSort]="true"
+      accessibleName="Operations table"
+      (stateChange)="onTableStateChange($event)"
+    />
+  `,
+})
+class MultiSortHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = withNatTableHeaderActions(baseColumns);
+  readonly tableState = signal<Partial<NatTableState>>({});
+
+  onTableStateChange(state: NatTableState): void {
+    this.tableState.set(state);
+  }
+}
+
+@Component({
+  imports: [NatTable],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [enableColumnResizing]="true"
+      [enableColumnPinning]="true"
+      accessibleName="Keyboard walk table"
+    />
+  `,
+})
+class KeyboardWalkHost {
+  readonly rows = signal<Row[]>(buildRows(2));
+  readonly columns = withNatTableHeaderActions(baseColumns);
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
@@ -509,6 +549,8 @@ describe('ng-advanced-table-ui', () => {
         ProviderAccessibilityLabelsHost,
         LocaleSwitchingHost,
         HeaderActionCompositionHost,
+        MultiSortHost,
+        KeyboardWalkHost,
       ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
@@ -1238,6 +1280,77 @@ describe('ng-advanced-table-ui', () => {
     expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Second pin menu Service');
 
     compositionFixture.destroy();
+  });
+
+  it('adds a second sort column on shift-click when multi-sort is enabled', () => {
+    const multiSortFixture = TestBed.createComponent(MultiSortHost);
+
+    multiSortFixture.detectChanges();
+
+    const nameSort = multiSortFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-button',
+    ) as HTMLButtonElement;
+    const regionSort = multiSortFixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .sort-button',
+    ) as HTMLButtonElement;
+
+    nameSort.click();
+    multiSortFixture.detectChanges();
+
+    regionSort.dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
+    multiSortFixture.detectChanges();
+
+    expect(multiSortFixture.componentInstance.tableState().sorting).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: false },
+    ]);
+    expect(multiSortFixture.nativeElement.querySelectorAll('.sort-priority').length).toBe(2);
+
+    // The visible priority badge is aria-hidden, so the ordinal must also reach AT
+    // through the sort button's accessible name.
+    expect(nameSort.getAttribute('aria-label')).toContain('1 of 2');
+    expect(regionSort.getAttribute('aria-label')).toContain('2 of 2');
+
+    multiSortFixture.destroy();
+  });
+
+  it('Tab walks focus through every interactive control in a cell, including the resize handle', async () => {
+    const walkFixture = TestBed.createComponent(KeyboardWalkHost);
+    walkFixture.detectChanges();
+    await walkFixture.whenStable();
+    walkFixture.detectChanges();
+
+    const firstHeaderCell = walkFixture.nativeElement.querySelector(
+      'thead th[role="columnheader"]',
+    ) as HTMLElement;
+    firstHeaderCell.focus();
+
+    const pressTab = (): HTMLElement => {
+      (document.activeElement as HTMLElement).dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }),
+      );
+      walkFixture.detectChanges();
+      return document.activeElement as HTMLElement;
+    };
+
+    const visited: string[] = [];
+    let previous: Element | null = firstHeaderCell;
+
+    // Walk the first two header cells' worth of controls (sort, menu, handle) ×2.
+    for (let step = 0; step < 6; step++) {
+      const focused = pressTab();
+      // Every Tab must advance focus — never stick on one item.
+      expect(focused).not.toBe(previous);
+      previous = focused;
+      visited.push(focused.className);
+    }
+
+    expect(visited.some((cls) => cls.includes('sort-button'))).toBe(true);
+    expect(visited.some((cls) => cls.includes('menu-button'))).toBe(true);
+    // The fix: the resize handle is part of the Tab iteration, not skipped.
+    expect(visited.some((cls) => cls.includes('column-resize-handle'))).toBe(true);
+
+    walkFixture.destroy();
   });
 });
 

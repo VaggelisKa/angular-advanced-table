@@ -1,4 +1,13 @@
 export { NatTable } from './lib/components/table/table';
+export { composeColumns, type NatTableColumnTransform } from './lib/compose-columns';
+export {
+  natTypedFilterFn,
+  type NatTableFilterType,
+  type NatTableFilterOperator,
+  type NatTableColumnFilterConfig,
+  type NatTableColumnFilterValue,
+} from './lib/filter-fns/typed-filter';
+export { localeSortingFn } from './lib/sorting-fns/locale-sort';
 export {
   NAT_TABLE_ENGLISH_INTL,
   NAT_TABLE_DEFAULT_INTL,

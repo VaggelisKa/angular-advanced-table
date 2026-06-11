@@ -164,13 +164,32 @@ export class NatTableHeaderActions {
     column.pin(this.isPinned(side) ? false : side);
   }
 
+  /** Toggle sort; Shift-click adds the column to a multi-sort when enabled. */
+  protected onSortClick(event: MouseEvent): void {
+    this.column().toggleSorting(undefined, event.shiftKey);
+  }
+
+  /** 1-based sort priority, shown only while more than one column is sorted. */
+  protected sortPriority(): number | null {
+    if (this.context().table.getState().sorting.length <= 1) {
+      return null;
+    }
+
+    const index = this.column().getSortIndex();
+
+    return index >= 0 ? index + 1 : null;
+  }
+
   protected getSortLabel(): string {
     const labels = this.resolveAccessibilityLabels();
-
+    const sortPriority = this.sortPriority();
+    const sortCount = this.context().table.getState().sorting.length;
     return (
       labels.sortButton?.({
         label: this.label(),
         sortState: this.ariaSort(),
+        sortPriority,
+        sortCount,
       }) ?? ''
     );
   }

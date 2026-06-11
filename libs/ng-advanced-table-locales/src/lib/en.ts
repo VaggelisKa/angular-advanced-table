@@ -12,12 +12,15 @@ const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, local
 export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
   accessibilityText: {
     keyboardInstructions:
-      'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
+      'Use arrow keys to move between cells. Press Enter to interact with the controls in a cell, ' +
+      'Tab to move between them, and Escape to return to the cell.',
     emptyState: 'No rows match the current view.',
     reorderKeyboardInstructions:
       'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+    resizeKeyboardInstructions:
+      'When a column resize handle is focused, press Left or Right Arrow to resize, ' +
+      'Shift with an arrow for larger steps, and Home or End for the minimum or maximum width.',
     tableSummary: ({
-      filterState,
       pageCountText,
       pageText,
       paginationState,
@@ -34,7 +37,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
               'column',
               visibleColumnsValue,
             )}.`
-          : filterState === 'filtered' && totalRowsValue !== visibleRowsValue
+          : totalRowsValue !== visibleRowsValue
             ? `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
                 'row',
                 totalRowsValue,
@@ -50,8 +53,19 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
 
       return summary;
     },
-    sortingChange: ({ columnLabel, sortState }) =>
-      columnLabel ? `Sorted by ${columnLabel} ${sortState}.` : 'Sorting cleared.',
+    sortingChange: ({ columnLabel, sortState, sortedColumns }) => {
+      if (!columnLabel) {
+        return 'Sorting cleared.';
+      }
+
+      if (sortedColumns.length > 1) {
+        const parts = sortedColumns.map((column) => `${column.label} ${column.sortState}`);
+
+        return `Sorted by ${parts.slice(0, -1).join(', ')}, then ${parts.at(-1)}.`;
+      }
+
+      return `Sorted by ${columnLabel} ${sortState}.`;
+    },
     filteringChange: ({ filterState, query, visibleRowsValue, visibleRowsText }) => {
       if (visibleRowsValue === 0) {
         return query ? `No rows match "${query}".` : 'No rows match the current filters.';
@@ -92,6 +106,18 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       `Moved ${label} column to position ${positionText} of ${totalText} in the ${describeColumnZone(
         zone,
       )} region.`,
+    columnResize: ({ label, widthText }) => `${label} column width ${widthText} pixels.`,
+    selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {
+      if (selectedCountValue === 0) {
+        return 'Selection cleared.';
+      }
+
+      if (selectedCountValue >= totalRowsValue && totalRowsValue > 0) {
+        return `All ${totalRowsText} ${pluralize('row', totalRowsValue)} selected.`;
+      }
+
+      return `${selectedCountText} ${pluralize('row', selectedCountValue)} selected.`;
+    },
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };

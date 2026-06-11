@@ -205,6 +205,39 @@
   color: var(--text-soft);
 }
 
+/* ---------- Language toggle ---------- */
+.lang-toggle {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.lang-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.lang-option.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
 /* ---------- Page grid ---------- */
 .page-shell {
   width: min(1360px, 100%);
@@ -808,6 +841,7 @@
 /* ---------- Focus rings ---------- */
 .btn:focus-visible,
 .segment:focus-visible,
+.lang-option:focus-visible,
 .filter-pill:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -832,6 +866,7 @@
     color: var(--text);
   }
 
+  .lang-option:hover,
   .segment:hover {
     color: var(--text);
   }
@@ -848,7 +883,6 @@
     transform: none;
     box-shadow: none;
   }
-
 }
 
 /* ---------- Responsive ---------- */
@@ -869,7 +903,6 @@
   .kpi:nth-last-child(-n + 2) {
     border-bottom: 0;
   }
-
 }
 
 @media (max-width: 760px) {
@@ -907,5 +940,25 @@
   .toolbar {
     padding: 12px;
   }
+}
 
+/* rowClass demo: highlight halted instruments. */
+.is-halted-row {
+  background: color-mix(in srgb, var(--warning, #a16207) 14%, transparent);
+}
+
+/* Language / direction / loading controls in the options dialog. */
+.feature-control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.feature-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

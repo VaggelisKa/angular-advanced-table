@@ -35,6 +35,16 @@ export interface NatTableAccessibilitySummaryContext {
   paginationState: 'enabled' | 'disabled';
 }
 
+/** Single active sort entry passed to sort announcement formatters. */
+export interface NatTableAccessibilitySortingAnnouncementEntry {
+  /** TanStack column id. */
+  id: string;
+  /** Resolved human-readable column label. */
+  label: string;
+  /** Active sort direction for the column. */
+  sortState: 'ascending' | 'descending';
+}
+
 /** Context passed to custom sort announcement formatters. */
 export interface NatTableAccessibilitySortingAnnouncementContext {
   /** Sorted column id, or `null` when sorting is cleared. */
@@ -43,6 +53,8 @@ export interface NatTableAccessibilitySortingAnnouncementContext {
   columnLabel: string | null;
   /** Active ARIA sort state for the sorted column, or `'none'` when cleared. */
   sortState: 'ascending' | 'descending' | 'none';
+  /** All active sort entries in priority order; more than one during a multi-sort. */
+  sortedColumns: readonly NatTableAccessibilitySortingAnnouncementEntry[];
 }
 
 /** Context passed to custom filtering announcement formatters. */
@@ -125,6 +137,30 @@ export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   totalText: string;
 }
 
+/** Context passed to custom row-selection announcement formatters. */
+export interface NatTableAccessibilitySelectionAnnouncementContext {
+  /** Number of currently selected rows. */
+  selectedCountValue: number;
+  /** Provider-formatted text for `selectedCountValue`. */
+  selectedCountText: string;
+  /** Total rows supplied to the table. */
+  totalRowsValue: number;
+  /** Provider-formatted text for `totalRowsValue`. */
+  totalRowsText: string;
+}
+
+/** Context passed to custom column-resize announcement formatters. */
+export interface NatTableAccessibilityColumnResizeAnnouncementContext {
+  /** TanStack column id. */
+  columnId: string;
+  /** Resolved human-readable column label. */
+  label: string;
+  /** New column width in CSS pixels. */
+  widthValue: number;
+  /** Provider-formatted text for `widthValue`. */
+  widthText: string;
+}
+
 /** Optional overrides for built-in screen-reader summaries and announcements. */
 export interface NatTableAccessibilityText {
   /**
@@ -145,6 +181,8 @@ export interface NatTableAccessibilityText {
   emptyState?: string;
   /** Extra reorder instructions appended when column reordering is enabled. */
   reorderKeyboardInstructions?: string;
+  /** Extra resize instructions appended when column resizing is enabled. */
+  resizeKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
   tableSummary?: (context: NatTableAccessibilitySummaryContext) => string;
   /** Live announcement emitted when sorting changes. */
@@ -161,6 +199,10 @@ export interface NatTableAccessibilityText {
   pageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when a column is reordered. */
   columnReorder?: (context: NatTableAccessibilityColumnReorderAnnouncementContext) => string;
+  /** Live announcement emitted when a column is resized. */
+  columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
+  /** Live announcement emitted when the row selection changes. */
+  selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
 }
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */
