@@ -5,7 +5,7 @@ import {
   NatTableSurface,
   NatTableColumnVisibility,
   withNatTableHeaderActions,
-  NatTableUiService,
+  NatTableService,
 } from 'ng-advanced-table-ui';
 
 interface DemoItem {
@@ -35,7 +35,7 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-visibility-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTableColumnVisibility],
-  providers: [NatTableUiService],
+  providers: [NatTableService],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">

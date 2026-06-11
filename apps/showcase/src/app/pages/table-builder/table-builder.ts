@@ -14,7 +14,7 @@ import {
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  NatTableUiService,
+  NatTableService,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
 
@@ -55,7 +55,7 @@ const DEMO_DATA: DemoItem[] = [
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [NatTableUiService],
+  providers: [NatTableService],
 })
 export class TableBuilderPage {
   // Feature Toggles

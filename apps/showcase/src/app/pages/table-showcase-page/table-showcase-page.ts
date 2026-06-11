@@ -19,7 +19,7 @@ import {
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  NatTableUiService,
+  NatTableService,
   withNatTableHeaderActions,
   type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
@@ -394,7 +394,7 @@ class MarketSortIndicator {
   ],
   templateUrl: './table-showcase-page.html',
   styleUrl: './table-showcase-page.css',
-  providers: [NatTableUiService],
+  providers: [NatTableService],
 })
 export class TableShowcasePage {
   private readonly dialog = inject(Dialog);

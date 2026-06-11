@@ -4,7 +4,7 @@ import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableSearch,
   NatTableSurface,
-  NatTableUiService,
+  NatTableService,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
 
@@ -35,7 +35,7 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-search-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTableSearch],
-  providers: [NatTableUiService],
+  providers: [NatTableService],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
