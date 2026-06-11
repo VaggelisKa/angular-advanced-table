@@ -26,9 +26,7 @@ export class NatToolbarSubmenuPosition {
 
   constructor() {
     afterRenderEffect(() => {
-      if (!this.menu.visible()) {
-        return;
-      }
+      if (!this.menu.visible()) return;
 
       const host = this.elementRef.nativeElement;
 
