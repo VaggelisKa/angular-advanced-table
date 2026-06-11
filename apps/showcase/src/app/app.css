@@ -245,6 +245,8 @@
 
 .showcase-nav-list {
   display: grid;
+  overflow-y: auto;
+  overflow-x: hidden;
   gap: 6px;
 }
 

@@ -5,6 +5,7 @@ import {
   NatTableSurface,
   NatTableColumnVisibility,
   withNatTableHeaderActions,
+  NatTableService,
 } from 'ng-advanced-table-ui';
 
 interface DemoItem {
@@ -34,6 +35,7 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-visibility-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTableColumnVisibility],
+  providers: [NatTableService],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
@@ -48,12 +50,11 @@ const DEMO_DATA: DemoItem[] = [
           <h2 class="card-title">Visibility Grid Control</h2>
 
           <div class="visibility-panel">
-            <nat-table-column-visibility [for]="grid" />
+            <nat-table-column-visibility />
           </div>
 
           <nat-table-surface>
             <nat-table
-              #grid="natTable"
               [data]="data"
               [columns]="columns"
               [state]="tableState()"

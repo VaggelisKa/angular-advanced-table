@@ -1,5 +1,4 @@
-import { Component, signal } from '@angular/core';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
@@ -9,8 +8,8 @@ import { NatTableColumnVisibility } from './components/table-column-visibility/t
 import { withNatTableHeaderActions } from './components/table-header-actions/with-table-header-actions';
 import { NatTablePageSize } from './components/table-page-size/table-page-size';
 import { NatTablePager } from './components/table-pager/table-pager';
-import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableScrollControl } from './components/table-scroll-control/table-scroll-control';
+import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableSurface } from './components/table-surface/table-surface';
 import { provideNatTableUiIntl } from './shared/table-ui-intl';
 import type {
@@ -94,25 +93,25 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
     NatTableSurface,
   ],
   template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [initialState]="initialState"
-      [enableColumnReorder]="enableColumnReorder"
-      [enablePagination]="true"
-      [getRowId]="getRowId"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
-
     <nat-table-surface>
-      <nat-table-search [for]="grid" />
-      <nat-table-column-visibility [for]="grid" />
-      <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
-      <nat-table-pager [for]="grid" />
-      <nat-table-scroll-control [for]="grid" />
+      <nat-table-search />
+      <nat-table-column-visibility />
+      <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
+      <nat-table-pager />
+
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [initialState]="initialState"
+        [enableColumnReorder]="enableColumnReorder"
+        [enablePagination]="true"
+        [getRowId]="getRowId"
+        accessibleName="Operations table"
+        (stateChange)="onTableStateChange($event)"
+      />
+
+      <nat-table-scroll-control />
     </nat-table-surface>
   `,
 })
@@ -208,27 +207,25 @@ class HiddenHeaderActionLabelHost {
     NatTableSurface,
   ],
   template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [initialState]="initialState"
-      [enablePagination]="true"
-      [getRowId]="getRowId"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
-
     <nat-table-surface>
-      <nat-table-column-visibility [for]="grid" [accessibilityLabels]="columnVisibilityLabels" />
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [initialState]="initialState"
+        [enablePagination]="true"
+        [getRowId]="getRowId"
+        accessibleName="Operations table"
+        (stateChange)="onTableStateChange($event)"
+      />
+      <nat-table-column-visibility [accessibilityLabels]="columnVisibilityLabels" />
       <nat-table-page-size
-        [for]="grid"
         [pageSizeOptions]="pageSizeOptions"
         [accessibilityLabels]="pageSizeLabels"
       />
-      <nat-table-pager [for]="grid" [accessibilityLabels]="pagerLabels" />
-      <nat-table-scroll-control [for]="grid" [accessibilityLabels]="scrollControlLabels" />
+      <nat-table-pager [accessibilityLabels]="pagerLabels" />
+      <nat-table-scroll-control [accessibilityLabels]="scrollControlLabels" />
     </nat-table-surface>
   `,
 })
@@ -352,28 +349,26 @@ class CustomAccessibilityLabelsHost {
     }),
   ],
   template: `
-    <nat-table
-      #grid="natTable"
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      [initialState]="initialState"
-      [enablePagination]="true"
-      [getRowId]="getRowId"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
-
     <nat-table-surface>
-      <nat-table-search [for]="grid" [label]="searchLabel()" />
-      <nat-table-column-visibility [for]="grid" />
+      <nat-table
+        #grid="natTable"
+        [data]="rows()"
+        [columns]="columns"
+        [state]="tableState()"
+        [initialState]="initialState"
+        [enablePagination]="true"
+        [getRowId]="getRowId"
+        accessibleName="Operations table"
+        (stateChange)="onTableStateChange($event)"
+      />
+      <nat-table-search [label]="searchLabel()" />
+      <nat-table-column-visibility />
       <nat-table-page-size
-        [for]="grid"
         [groupAriaLabel]="pageSizeGroupAriaLabel()"
         [pageSizeOptions]="pageSizeOptions"
       />
-      <nat-table-pager [for]="grid" />
-      <nat-table-scroll-control [for]="grid" />
+      <nat-table-pager />
+      <nat-table-scroll-control />
     </nat-table-surface>
   `,
 })
@@ -439,19 +434,18 @@ class ProviderAccessibilityLabelsHost {
     }),
   ],
   template: `
-    <nat-table
-      #grid="natTable"
-      [locale]="locale()"
-      [data]="rows()"
-      [columns]="columns"
-      [enablePagination]="true"
-      accessibleName="Operations table"
-    />
-
     <nat-table-surface>
-      <nat-table-search [for]="grid" />
-      <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
-      <nat-table-pager [for]="grid" />
+      <nat-table
+        [locale]="locale()"
+        [data]="rows()"
+        [columns]="columns"
+        [enablePagination]="true"
+        accessibleName="Operations table"
+      />
+
+      <nat-table-search />
+      <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
+      <nat-table-pager />
     </nat-table-surface>
   `,
 })

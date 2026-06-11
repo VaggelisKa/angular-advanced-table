@@ -134,11 +134,11 @@ const columns = withNatTableHeaderActions<PositionRow>([
         accessibleName="Open positions"
       />
 
-      <nat-table-scroll-control [for]="grid" />
-      <nat-table-search [for]="grid" />
-      <nat-table-column-visibility [for]="grid" />
-      <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
-      <nat-table-pager [for]="grid" />
+      <nat-table-scroll-control />
+      <nat-table-search />
+      <nat-table-column-visibility />
+      <nat-table-page-size [pageSizeOptions]="[25, 50, 100]" />
+      <nat-table-pager />
     </nat-table-surface>
   `,
 })
@@ -555,11 +555,11 @@ Example, add stock controls around an existing table:
     accessibleName="Orders"
   />
 
-  <nat-table-scroll-control [for]="grid" />
-  <nat-table-search [for]="grid" />
-  <nat-table-column-visibility [for]="grid" />
-  <nat-table-page-size [for]="grid" [pageSizeOptions]="[25, 50, 100]" />
-  <nat-table-pager [for]="grid" />
+  <nat-table-scroll-control />
+  <nat-table-search />
+  <nat-table-column-visibility />
+  <nat-table-page-size [pageSizeOptions]="[25, 50, 100]" />
+  <nat-table-pager />
 </nat-table-surface>
 ```
 

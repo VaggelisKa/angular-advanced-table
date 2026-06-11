@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { type CellContext, type ColumnDef, type PaginationState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
-  NatTableSurface,
   NatTablePageSize,
   NatTablePager,
+  NatTableSurface,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
 
@@ -53,12 +53,11 @@ const DEMO_DATA: DemoItem[] = [
 
           <nat-table-surface>
             <div class="table-toolbar">
-              <nat-table-page-size [for]="grid" [pageSizeOptions]="[3, 5, 10]" />
-              <nat-table-pager [for]="grid" />
+              <nat-table-page-size [pageSizeOptions]="[3, 5, 10]" />
+              <nat-table-pager />
             </div>
 
             <nat-table
-              #grid="natTable"
               [data]="data"
               [columns]="columns"
               [state]="tableState()"

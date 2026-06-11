@@ -138,9 +138,9 @@ const columns = withNatTableHeaderActions<OrderRow>([
         accessibleName="Orders"
       />
 
-      <nat-table-scroll-control [for]="grid" />
-      <nat-table-search [for]="grid" />
-      <nat-table-pager [for]="grid" />
+      <nat-table-scroll-control />
+      <nat-table-search />
+      <nat-table-pager />
     </nat-table-surface>
   `,
 })

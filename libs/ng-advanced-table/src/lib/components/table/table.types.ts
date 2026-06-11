@@ -22,14 +22,14 @@ export interface NatTableState {
   globalFilter: string;
   /** Active column filters keyed by TanStack column id. */
   columnFilters: ColumnFiltersState;
+  /** Pagination cursor and page size. */
+  pagination: PaginationState;
   /** Visibility map for hideable columns. */
   columnVisibility: VisibilityState;
   /** Leaf-column order, restored when columns are unpinned. */
   columnOrder: ColumnOrderState;
   /** Left and right pinned column ids. */
   columnPinning: ColumnPinningState;
-  /** Pagination cursor and page size. */
-  pagination: PaginationState;
 }
 
 /**

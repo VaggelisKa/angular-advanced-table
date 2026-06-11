@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
+import { NatTableService } from '../../shared/table.service';
 import type { NatTableUiController } from '../../shared/table-ui.types';
 
-import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import {
   mergePagerLabels,
-  NAT_TABLE_UI_INTL,
   NAT_TABLE_UI_ENGLISH_LOCALE,
+  NAT_TABLE_UI_INTL,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
+import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.types';
 
 @Component({
@@ -19,25 +20,32 @@ import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.typ
   styleUrl: './table-pager.css',
 })
 export class NatTablePager<TData extends RowData = RowData> {
-  readonly for = input.required<NatTableUiController<TData>>();
+  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
 
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, {
+    optional: true,
+  });
+  protected readonly controller = computed(
+    () => this.for() ?? this.natTableService?.controller() ?? null,
+  );
+
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(
-    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
+    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
-  protected readonly table = computed(() => this.for().table);
-  protected readonly tableElementId = computed(() => this.for().tableElementId());
-  protected readonly pageIndex = computed(() => this.table().getState().pagination.pageIndex);
-  protected readonly pageCount = computed(() => this.table().getPageCount() || 1);
+  protected readonly table = computed(() => this.controller()?.table);
+  protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
+  protected readonly pageIndex = computed(() => this.table()?.getState().pagination.pageIndex ?? 0);
+  protected readonly pageCount = computed(() => this.table()?.getPageCount() || 1);
   protected readonly currentPage = computed(() => this.pageIndex() + 1);
-  protected readonly canPreviousPage = computed(() => this.table().getCanPreviousPage());
-  protected readonly canNextPage = computed(() => this.table().getCanNextPage());
+  protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);
+  protected readonly canNextPage = computed(() => this.table()?.getCanNextPage() ?? false);
   private readonly resolvedAccessibilityLabels = computed(() =>
     mergePagerLabels(this.tableUiIntl().pager?.accessibilityLabels, this.accessibilityLabels()),
   );
@@ -90,7 +98,7 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
-    this.table().previousPage();
+    this.table()?.previousPage();
   }
 
   protected nextPage(): void {
@@ -98,6 +106,6 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
-    this.table().nextPage();
+    this.table()?.nextPage();
   }
 }

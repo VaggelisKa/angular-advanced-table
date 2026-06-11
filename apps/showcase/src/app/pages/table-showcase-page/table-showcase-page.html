@@ -179,8 +179,8 @@
         @if (hasTablePaginationControls()) {
           <div class="table-toolbar">
             <div class="table-actions">
-              <nat-table-page-size [for]="grid" [pageSizeOptions]="pageSizeOptions" />
-              <nat-table-pager [for]="grid" />
+              <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
+              <nat-table-pager />
             </div>
           </div>
         }
@@ -204,7 +204,7 @@
         />
 
         @if (tableFeatures().showScrollControl) {
-          <nat-table-scroll-control [for]="grid" />
+          <nat-table-scroll-control />
         }
       </nat-table-surface>
     </section>

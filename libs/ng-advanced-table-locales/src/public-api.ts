@@ -1,10 +1,10 @@
+export { NAT_TABLE_BUILT_IN_LOCALES } from './lib/built-in-locales';
 export {
   NAT_EN_LOCALE_ID,
   NAT_EN_LOCALE_LABELS,
   NAT_TABLE_ENGLISH_INTL,
   NAT_TABLE_ENGLISH_LOCALE,
 } from './lib/en';
-export { NAT_TABLE_BUILT_IN_LOCALES } from './lib/built-in-locales';
 export {
   formatNatTableIntlNumber,
   mergeNatTableAccessibilityText,

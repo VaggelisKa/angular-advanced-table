@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
+import { NatTableService } from '../../shared/table.service';
 import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import {
   mergeScrollControlLabels,
@@ -34,7 +35,7 @@ const DEFAULT_SCROLL_STEP = 240;
   styleUrl: './table-scroll-control.css',
 })
 export class NatTableScrollControl<TData extends RowData = RowData> {
-  readonly for = input.required<NatTableUiController<TData>>();
+  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly scrollStep = input(DEFAULT_SCROLL_STEP, { transform: numberAttribute });
@@ -42,12 +43,15 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     undefined,
   );
 
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  protected readonly controller = computed(() => this.for() ?? this.natTableService?.controller() ?? null);
+
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
 
   private readonly localeId = computed(
-    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
+    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
@@ -55,7 +59,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
   private readonly scrollContainer = signal<HTMLElement | null>(null);
   private cleanupScrollTarget: (() => void) | null = null;
 
-  protected readonly tableElementId = computed(() => this.for().tableElementId());
+  protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
   protected readonly scrollLeft = signal(0);
   protected readonly maxScrollLeft = signal(0);
   protected readonly canScroll = computed(() => this.maxScrollLeft() > 0);
@@ -131,7 +135,11 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
 
   constructor() {
     afterRenderEffect(() => {
-      const controller = this.for();
+      const controller = this.controller();
+      if (!controller) {
+        this.setScrollContainer(null);
+        return;
+      }
       const container =
         controller.tableScrollContainer?.() ??
         this.resolveScrollContainer(controller.tableElementId());
