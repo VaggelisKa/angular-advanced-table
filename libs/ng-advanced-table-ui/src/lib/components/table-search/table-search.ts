@@ -6,7 +6,7 @@ import {
   NAT_TABLE_UI_INTL,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
-import { NatTableUiService } from '../../shared/table-ui.service';
+import { NatTableService } from '../../shared/table.service';
 import type { NatTableUiController } from '../../shared/table-ui.types';
 
 let nextSearchFieldId = 0;
@@ -23,9 +23,9 @@ export class NatTableSearch<TData extends RowData = RowData> {
   readonly label = input<string | undefined>(undefined);
   readonly placeholder = input<string | undefined>(undefined);
 
-  private readonly uiService = inject<NatTableUiService<TData>>(NatTableUiService, { optional: true });
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
   protected readonly controller = computed(
-    () => this.for() ?? this.uiService?.controller() ?? null,
+    () => this.for() ?? this.natTableService?.controller() ?? null,
   );
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);

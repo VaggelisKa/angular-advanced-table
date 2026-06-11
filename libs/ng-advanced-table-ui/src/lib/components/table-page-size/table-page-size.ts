@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableUiService } from '../../shared/table-ui.service';
+import { NatTableService } from '../../shared/table.service';
 import {
   DEFAULT_PAGE_SIZE_OPTIONS,
   formatNatTableAccessibilityNumber,
@@ -38,8 +38,8 @@ export class NatTablePageSize<TData extends RowData = RowData> {
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
-  private readonly uiService = inject<NatTableUiService<TData>>(NatTableUiService, { optional: true });
-  protected readonly controller = computed(() => this.for() ?? this.uiService?.controller() ?? null);
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  protected readonly controller = computed(() => this.for() ?? this.natTableService?.controller() ?? null);
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(

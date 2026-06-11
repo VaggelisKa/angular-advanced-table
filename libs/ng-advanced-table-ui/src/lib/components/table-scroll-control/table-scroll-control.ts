@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableUiService } from '../../shared/table-ui.service';
+import { NatTableService } from '../../shared/table.service';
 import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import {
   mergeScrollControlLabels,
@@ -43,8 +43,8 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     undefined,
   );
 
-  private readonly uiService = inject<NatTableUiService<TData>>(NatTableUiService, { optional: true });
-  protected readonly controller = computed(() => this.for() ?? this.uiService?.controller() ?? null);
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  protected readonly controller = computed(() => this.for() ?? this.natTableService?.controller() ?? null);
 
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);

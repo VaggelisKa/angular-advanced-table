@@ -9,11 +9,11 @@ export const NAT_TABLE_UI_CONTROLLER = new InjectionToken<NatTableUiController<a
  * Scoped service to share the active table controller instance within a DI hierarchy.
  */
 @Injectable()
-export class NatTableUiService<TData extends RowData = RowData> {
+export class NatTableService<TData extends RowData = RowData> {
   private readonly controllerSignal = signal<NatTableUiController<TData> | null>(null);
   readonly controller = this.controllerSignal.asReadonly();
 
-  setController(controller: NatTableUiController<TData>): void {
+  setController(controller: NatTableUiController<TData> | null): void {
     this.controllerSignal.set(controller);
   }
 }

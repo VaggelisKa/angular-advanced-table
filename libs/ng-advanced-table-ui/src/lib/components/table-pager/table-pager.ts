@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
+import { NatTableService } from '../../shared/table.service';
 import type { NatTableUiController } from '../../shared/table-ui.types';
-import { NatTableUiService } from '../../shared/table-ui.service';
 
-import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import {
   mergePagerLabels,
-  NAT_TABLE_UI_INTL,
   NAT_TABLE_UI_ENGLISH_LOCALE,
+  NAT_TABLE_UI_INTL,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
+import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.types';
 
 @Component({
@@ -25,8 +25,12 @@ export class NatTablePager<TData extends RowData = RowData> {
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
 
-  private readonly uiService = inject<NatTableUiService<TData>>(NatTableUiService, { optional: true });
-  protected readonly controller = computed(() => this.for() ?? this.uiService?.controller() ?? null);
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, {
+    optional: true,
+  });
+  protected readonly controller = computed(
+    () => this.for() ?? this.natTableService?.controller() ?? null,
+  );
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(
