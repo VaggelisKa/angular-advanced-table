@@ -1,0 +1,154 @@
+/* The host is a direct flex child of the toolbar row: start 0, spacer 1, end 2, More 3. */
+:host {
+  display: inline-flex;
+  order: 3;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.more-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--nat-table-toolbar-more-button-size, 2rem);
+  block-size: var(--nat-table-toolbar-more-button-size, 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, currentColor 54%, transparent);
+  cursor: pointer;
+  transition:
+    background-color var(--nat-table-transition-medium, 180ms ease),
+    color var(--nat-table-transition-medium, 180ms ease);
+}
+
+.more-button[aria-expanded='true'] {
+  color: inherit;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .more-button:hover {
+    color: inherit;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}
+
+.more-button:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+.more-button__icon {
+  display: block;
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+  fill: none;
+}
+
+.more-button__icon path {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+/* The » chevron-double points right (LTR). In RTL the visual direction is
+   rightmost = first, so we mirror it to point left instead. */
+:host-context([dir='rtl']) .more-button__icon {
+  transform: scaleX(-1);
+}
+
+.more-menu {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  min-width: var(--nat-table-toolbar-menu-min-width, 12rem);
+  padding: 6px;
+  border-radius: var(--nat-table-toolbar-menu-radius, 14px);
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 96%, currentColor 4%),
+    color-mix(in srgb, var(--nat-table-region-background, canvas) 90%, currentColor 10%)
+  );
+  color: var(--nat-table-header-color, inherit);
+  box-shadow:
+    0 18px 48px color-mix(in srgb, black 28%, transparent),
+    0 2px 8px color-mix(in srgb, black 12%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.more-menu-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 2.25rem;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    background-color var(--nat-table-transition-fast, 120ms ease),
+    color var(--nat-table-transition-fast, 120ms ease);
+}
+
+.more-menu-item[data-active='true'],
+.more-menu-item:focus-visible {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  outline: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .more-menu-item:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+.more-menu-item__label {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.more-menu-item__chevron svg {
+  display: block;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  fill: none;
+}
+
+.more-menu-item__chevron path {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+/* Submenus live INSIDE the More panel (the Section A spike arrangement —
+   include any CSS tweak its gate note recorded); the Menu directive flags
+   visibility via data-visible. Real positioning is verified in the
+   Playwright suite. */
+.more-menu--submenu {
+  position: absolute;
+  inset-inline-start: calc(100% + 4px);
+  inset-block-start: 0;
+}
+
+/* NatToolbarSubmenuPosition mirrors the submenu to the opposite inline side
+   when the default side would leave the viewport. */
+.more-menu--submenu[data-edge-flip] {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + 4px);
+}
+
+.more-menu--submenu[data-visible='false'] {
+  display: none;
+}

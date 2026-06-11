@@ -1,0 +1,71 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-input {
+  width: var(--nat-toolbar-search-width, 220px);
+  min-height: var(--nat-table-toolbar-control-height, 36px);
+  padding: 0 var(--nat-toolbar-search-padding-x, 12px);
+  border-radius: var(--nat-table-radius-input, 10px);
+  border: 1px solid
+    var(--nat-table-search-border-color, color-mix(in srgb, currentColor 25%, transparent));
+  background: var(--nat-table-search-background, transparent);
+  color: var(--nat-table-search-color, inherit);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color var(--nat-table-transition-slow, 200ms ease),
+    background-color var(--nat-table-transition-slow, 200ms ease);
+}
+
+.search-input::placeholder {
+  color: var(--nat-table-search-placeholder-color, currentColor);
+}
+
+.search-input:focus-visible {
+  border-color: var(--nat-table-search-border-color-focus, currentColor);
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+.search-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--nat-table-toolbar-control-height, 36px);
+  block-size: var(--nat-table-toolbar-control-height, 36px);
+  padding: 0;
+  border: 1px solid
+    var(--nat-table-search-border-color, color-mix(in srgb, currentColor 25%, transparent));
+  border-radius: var(--nat-table-radius-input, 10px);
+  background: var(--nat-table-search-background, transparent);
+  color: inherit;
+  cursor: pointer;
+}
+
+.search-toggle:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+.search-toggle__icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .search-input:hover {
+    border-color: var(--nat-table-search-border-color-hover, currentColor);
+  }
+
+  .search-toggle:hover {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+}

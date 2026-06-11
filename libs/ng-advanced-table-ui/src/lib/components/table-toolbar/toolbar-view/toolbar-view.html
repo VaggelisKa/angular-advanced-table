@@ -1,0 +1,56 @@
+<button
+  type="button"
+  class="columns-trigger"
+  ngMenuTrigger
+  #trigger
+  #menuTrigger="ngMenuTrigger"
+  [menu]="viewMenu()"
+  [disabled]="controller() === null"
+  [softDisabled]="false"
+  [attr.aria-label]="resolvedTriggerLabel()"
+  [attr.tabindex]="toolbarTabIndex()"
+>
+  <span class="columns-trigger-label">{{ resolvedTriggerLabel() }}</span>
+</button>
+
+<ng-template #menuContentTpl>
+  @for (item of columnItems(); track item.id) {
+    <button
+      type="button"
+      ngMenuItem
+      class="columns-menu-item"
+      [value]="item.ariaLabel"
+      [disabled]="!item.canToggle"
+      [attr.disabled]="item.canToggle ? null : ''"
+      [attr.role]="'menuitemcheckbox'"
+      [attr.aria-checked]="item.visible"
+      [attr.data-column-id]="item.id"
+      (click)="toggleColumn(item)"
+    >
+      <span class="columns-menu-item-check" [class.is-visible]="item.visible" aria-hidden="true">
+        <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+          <path d="M2 6.25 4.55 8.8 10 3.35" />
+        </svg>
+      </span>
+      <span class="columns-menu-item-label">{{ item.label }}</span>
+    </button>
+  }
+</ng-template>
+
+<ng-template
+  [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
+  [cdkConnectedOverlay]="{ origin: trigger, usePopover: 'inline' }"
+  [cdkConnectedOverlayPositions]="menuPositions"
+  cdkAttachPopoverAsChild
+>
+  <div
+    ngMenu
+    #viewMenu="ngMenu"
+    class="columns-menu"
+    [attr.aria-label]="resolvedTriggerLabel()"
+  >
+    <ng-template ngMenuContent>
+      <ng-container [ngTemplateOutlet]="menuContentTpl" />
+    </ng-template>
+  </div>
+</ng-template>

@@ -17,8 +17,8 @@ This package README is intentionally scoped to package entry-point information. 
 Use this package when you want optional companions around `NatTable`:
 
 - `NatTableSurface`
-- `NatTableSearch`
-- `NatTableColumnVisibility`
+- `NatTableSearch` — **DEPRECATED**: use `NatToolbarSearch` instead
+- `NatTableColumnVisibility` — **DEPRECATED**: use `NatToolbarView` instead
 - `NatTablePageSize`
 - `NatTablePager`
 - `NatTableScrollControl`
@@ -43,8 +43,8 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 ## Public Exports
 
 - `NatTableSurface`
-- `NatTableSearch`
-- `NatTableColumnVisibility`
+- `NatTableSearch` — **DEPRECATED**: use `NatToolbarSearch` instead
+- `NatTableColumnVisibility` — **DEPRECATED**: use `NatToolbarView` instead
 - `NatTablePageSize`
 - `NatTablePager`
 - `NatTableScrollControl`

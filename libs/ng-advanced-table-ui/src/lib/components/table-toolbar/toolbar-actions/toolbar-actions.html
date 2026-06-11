@@ -1,0 +1,51 @@
+<button
+  type="button"
+  class="actions-trigger"
+  ngMenuTrigger
+  #trigger
+  #menuTrigger="ngMenuTrigger"
+  [menu]="actionsMenu()"
+  [attr.aria-label]="resolvedTriggerLabel()"
+  [attr.tabindex]="toolbarTabIndex()"
+>
+  <svg class="actions-trigger-icon" viewBox="0 0 14 14" focusable="false" aria-hidden="true">
+    <circle cx="7" cy="2.25" r="1.15" />
+    <circle cx="7" cy="7" r="1.15" />
+    <circle cx="7" cy="11.75" r="1.15" />
+  </svg>
+</button>
+
+<ng-template #menuContentTpl>
+  @for (entry of items(); track entry.label) {
+    <button
+      type="button"
+      ngMenuItem
+      class="actions-menu-item"
+      [value]="entry.label"
+      [disabled]="entry.disabled ?? false"
+      [attr.disabled]="entry.disabled ? '' : null"
+      [attr.data-action-label]="entry.label"
+      (click)="runAction(entry)"
+    >
+      @if (entry.icon) {
+        <span class="actions-menu-item-icon" aria-hidden="true">
+          <ng-container [ngTemplateOutlet]="entry.icon" />
+        </span>
+      }
+      <span class="actions-menu-item-label">{{ entry.label }}</span>
+    </button>
+  }
+</ng-template>
+
+<ng-template
+  [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
+  [cdkConnectedOverlay]="{ origin: trigger, usePopover: 'inline' }"
+  [cdkConnectedOverlayPositions]="menuPositions"
+  cdkAttachPopoverAsChild
+>
+  <div ngMenu #actionsMenu="ngMenu" class="actions-menu" [attr.aria-label]="resolvedTriggerLabel()">
+    <ng-template ngMenuContent>
+      <ng-container [ngTemplateOutlet]="menuContentTpl" />
+    </ng-template>
+  </div>
+</ng-template>

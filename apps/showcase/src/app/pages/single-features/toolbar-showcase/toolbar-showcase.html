@@ -1,0 +1,133 @@
+<div class="showcase-page showcase-container">
+  <header class="header-section">
+    <h1 class="title">Table Toolbar</h1>
+    <p class="description">
+      Composable toolbar shell with start/end alignment and automatic overflow into a More menu.
+      Resize the browser window, drag the dashed container edge, or use the width presets to watch
+      items collapse.
+    </p>
+  </header>
+
+  <div class="grid-layout">
+    <div class="card">
+      <h2 class="card-title">Overflow Playground</h2>
+
+      <div class="width-presets">
+        @for (preset of widthPresets; track preset) {
+          <button type="button" natToolbarButton (click)="containerWidth.set(preset)">
+            {{ preset }}px
+          </button>
+        }
+        <button
+          type="button"
+          natToolbarButton
+          data-testid="force-collapse-export"
+          (click)="toggleExportCollapse()"
+        >
+          {{ exportOverflow() === 'always' ? 'Restore Export' : 'Force-collapse Export' }}
+        </button>
+        <button
+          type="button"
+          natToolbarButton
+          data-testid="toggle-search-side"
+          (click)="toggleSearchPosition()"
+        >
+          {{ searchPosition() === 'start' ? 'Search → right' : 'Search → left' }}
+        </button>
+      </div>
+
+      <div class="resize-host" data-testid="resize-host" [style.max-width.px]="containerWidth()">
+        <nat-table-surface>
+          <nat-table-toolbar accessibleName="Products toolbar">
+            <nat-toolbar-search [natToolbarItem]="searchPosition()" />
+
+            <nat-toolbar-sort />
+            <nat-toolbar-view />
+
+            <button
+              type="button"
+              natToolbarButton
+              natToolbarItem
+              [natToolbarOverflow]="exportOverflow()"
+              data-testid="export-button"
+              (click)="recordAction('export-csv')"
+            >
+              Export
+            </button>
+
+            <button
+              type="button"
+              natToolbarButton
+              natToolbarItem
+              natToolbarOverflowLabel="Share"
+              [natToolbarOverflowPriority]="10"
+              aria-label="Share"
+              data-testid="share-button"
+              (click)="recordAction('share')"
+            >
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16">
+                <path
+                  d="M12 5.5A2.5 2.5 0 1 0 9.6 2.3L5.9 4.7a2.5 2.5 0 1 0 0 4.1l3.7 2.4A2.5 2.5 0 1 0 12 9L8.3 6.6c.1-.4.1-.8 0-1.2L12 5.5Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <div
+              natToolbarItem
+              [natToolbarOverflowTemplate]="densityMirror"
+              class="density-picker"
+              role="group"
+              aria-label="Row density"
+              data-testid="density-picker"
+            >
+              @for (option of densityOptions; track option) {
+                <button
+                  type="button"
+                  natToolbarButton
+                  [class.density-active]="density() === option"
+                  (click)="density.set(option)"
+                >
+                  {{ option }}
+                </button>
+              }
+            </div>
+
+            <nat-toolbar-actions [items]="bulkActions" />
+
+            <ng-template #densityMirror>
+              @for (option of densityOptions; track option) {
+                <button
+                  ngMenuItem
+                  [value]="option"
+                  [class.density-active]="density() === option"
+                  (click)="density.set(option)"
+                >
+                  {{ option }}
+                </button>
+              }
+            </ng-template>
+          </nat-table-toolbar>
+
+          <nat-table
+            [data]="data"
+            [columns]="columns"
+            [state]="tableState()"
+            [enableGlobalFilter]="true"
+            accessibleName="Toolbar demo table"
+            (globalFilterChange)="onGlobalFilterChange($event)"
+            (sortingChange)="onSortingChange($event)"
+            (columnVisibilityChange)="onColumnVisibilityChange($event)"
+          />
+        </nat-table-surface>
+      </div>
+
+      <dl class="demo-state">
+        <dt class="demo-state-term">Last action</dt>
+        <dd class="demo-state-value" data-testid="last-action">{{ lastAction() }}</dd>
+        <dt class="demo-state-term">Row density</dt>
+        <dd class="demo-state-value" data-testid="density-value">{{ density() }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>

@@ -61,6 +61,22 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
       pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Pin left' : 'Pin right'),
     },
   },
+  toolbar: {
+    toolbarLabel: 'Table toolbar',
+    sortMenuLabel: 'Sort',
+    viewMenuLabel: 'View',
+    actionsMenuLabel: 'Actions',
+    accessibilityLabels: {
+      moreButton: ({ hiddenCountText }) => `More toolbar items (${hiddenCountText} hidden)`,
+      moreMenuLabel: () => 'More toolbar items',
+      searchExpandButton: () => 'Expand search',
+      sortMenuItem: ({ columnLabel, direction }) =>
+        direction === 'none'
+          ? `Clear sorting for ${columnLabel}`
+          : `Sort ${columnLabel} ${direction}`,
+      viewMenuItem: ({ columnLabel }) => `Toggle ${columnLabel} column`,
+    },
+  },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };
 

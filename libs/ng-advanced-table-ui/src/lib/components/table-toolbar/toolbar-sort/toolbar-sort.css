@@ -1,0 +1,95 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--nat-table-toolbar-control-height, 36px);
+  padding: 0 var(--nat-table-toolbar-trigger-padding-x, 12px);
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: var(--nat-table-radius-input, 10px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sort-trigger[disabled] {
+  cursor: default;
+  opacity: var(--nat-table-disabled-opacity, 0.5);
+}
+
+.sort-trigger:focus-visible {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+.sort-menu {
+  display: grid;
+  gap: 2px;
+  min-width: var(--nat-table-toolbar-menu-min-width, 14rem);
+  padding: var(--nat-table-toolbar-menu-padding, 6px);
+  border-radius: var(--nat-table-toolbar-menu-radius, 14px);
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  background: var(--nat-table-toolbar-menu-background, var(--nat-table-region-background, canvas));
+  color: inherit;
+  box-shadow: var(
+    --nat-table-toolbar-menu-shadow,
+    0 18px 48px color-mix(in srgb, black 28%, transparent)
+  );
+}
+
+.sort-menu-item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 2.25rem;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.sort-menu-item[data-active='true'],
+.sort-menu-item:focus-visible {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  outline: none;
+}
+
+.sort-menu-item__check {
+  opacity: 0;
+  line-height: 0;
+}
+
+.sort-menu-item__check.is-visible {
+  opacity: 1;
+}
+
+.sort-menu-item__check svg {
+  inline-size: 12px;
+  block-size: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sort-trigger:hover:not([disabled]) {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  .sort-menu-item:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}

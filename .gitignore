@@ -40,8 +40,12 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+/test-results
 
 # System files
 .DS_Store
 Thumbs.db
 .vercel
+
+# AI
+.omc

@@ -1,0 +1,77 @@
+<button
+  type="button"
+  class="more-button"
+  ngMenuTrigger
+  #moreButton
+  #menuOrigin
+  #menuTrigger="ngMenuTrigger"
+  [menu]="moreMenu()"
+  [attr.aria-label]="moreButtonLabel()"
+  (focusin)="onMoreButtonFocusIn()"
+>
+  <svg class="more-button__icon" viewBox="0 0 14 14" focusable="false" aria-hidden="true">
+    <path d="M2 3.5 5.5 7 2 10.5" />
+    <path d="M7.5 3.5 11 7 7.5 10.5" />
+  </svg>
+</button>
+
+<ng-template
+  [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
+  [cdkConnectedOverlay]="{ origin: menuOrigin, usePopover: 'inline' }"
+  [cdkConnectedOverlayPositions]="menuPositions"
+  cdkAttachPopoverAsChild
+>
+  <div ngMenu #moreMenu="ngMenu" class="more-menu" [attr.aria-label]="moreMenuLabel()">
+    <ng-template ngMenuContent>
+      @for (entry of mirrorEntries(); track entry.item.id) {
+        @switch (entry.kind) {
+          @case ('button') {
+            <button
+              type="button"
+              ngMenuItem
+              class="more-menu-item"
+              [value]="entry.label"
+              [attr.aria-label]="entry.label"
+              [attr.data-toolbar-item-id]="entry.item.id"
+              (click)="activateMirror(entry)"
+            >
+              <span class="more-menu-item__label">{{ entry.label }}</span>
+            </button>
+          }
+          @case ('submenu') {
+            <button
+              type="button"
+              ngMenuItem
+              class="more-menu-item more-menu-item--submenu"
+              [value]="entry.label"
+              [submenu]="submenuRef"
+              [attr.aria-label]="entry.label"
+              [attr.data-toolbar-item-id]="entry.item.id"
+            >
+              <span class="more-menu-item__label">{{ entry.label }}</span>
+              <span class="more-menu-item__chevron" aria-hidden="true">
+                <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+                  <path d="M4.5 2.5 8 6 4.5 9.5" />
+                </svg>
+              </span>
+            </button>
+            <div
+              ngMenu
+              natToolbarSubmenuPosition
+              #submenuRef="ngMenu"
+              class="more-menu more-menu--submenu"
+              [attr.aria-label]="entry.label"
+            >
+              <ng-template ngMenuContent>
+                <ng-container [ngTemplateOutlet]="entry.template" />
+              </ng-template>
+            </div>
+          }
+          @case ('template') {
+            <ng-container [ngTemplateOutlet]="entry.template" />
+          }
+        }
+      }
+    </ng-template>
+  </div>
+</ng-template>

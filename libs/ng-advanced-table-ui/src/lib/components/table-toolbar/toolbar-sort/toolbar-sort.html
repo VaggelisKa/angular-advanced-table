@@ -1,0 +1,51 @@
+<button
+  #menuOrigin
+  #menuTrigger="ngMenuTrigger"
+  type="button"
+  class="sort-trigger"
+  ngMenuTrigger
+  [menu]="sortMenu()"
+  [disabled]="controller() === null"
+  [softDisabled]="false"
+  [attr.aria-label]="triggerLabel()"
+  [attr.tabindex]="toolbarItem.tabIndex()"
+>
+  {{ triggerLabel() }}
+</button>
+
+<ng-template
+  [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
+  [cdkConnectedOverlay]="{ origin: menuOrigin, usePopover: 'inline' }"
+  [cdkConnectedOverlayPositions]="menuPositions"
+  cdkAttachPopoverAsChild
+>
+  <div ngMenu #sortMenu="ngMenu" class="sort-menu" [attr.aria-label]="triggerLabel()">
+    <ng-template ngMenuContent>
+      <ng-container [ngTemplateOutlet]="sortMenuContent" />
+    </ng-template>
+  </div>
+</ng-template>
+
+<ng-template #sortMenuContent>
+  @for (item of menuItems(); track item.columnId + '-' + item.direction) {
+    <button
+      type="button"
+      ngMenuItem
+      class="sort-menu-item"
+      [value]="item.label"
+      [attr.role]="'menuitemradio'"
+      [attr.aria-checked]="item.active"
+      [attr.aria-label]="item.label"
+      [attr.data-column-id]="item.columnId"
+      [attr.data-direction]="item.direction"
+      (click)="onMenuItemClick(item)"
+    >
+      <span class="sort-menu-item__check" [class.is-visible]="item.active" aria-hidden="true">
+        <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+          <path d="M2 6.25 4.55 8.8 10 3.35" />
+        </svg>
+      </span>
+      <span class="sort-menu-item__label">{{ item.label }}</span>
+    </button>
+  }
+</ng-template>

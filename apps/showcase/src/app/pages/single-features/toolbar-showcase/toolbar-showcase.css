@@ -1,0 +1,47 @@
+.width-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.resize-host {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  resize: horizontal;
+  overflow: hidden;
+  width: 100%;
+  min-width: 280px;
+  padding: 12px;
+  border: 1px dashed #94a3b8;
+  border-radius: 8px;
+}
+
+.density-picker {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* density-active is bound via [class.density-active] on the button host;
+   Angular emulated encapsulation adds the _ngcontent attribute to the host,
+   so this selector reaches it correctly. */
+.density-picker .density-active {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.demo-state {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 16px 0 0;
+}
+
+.demo-state-term {
+  font-weight: 600;
+}
+
+.demo-state-value {
+  margin: 0;
+}

@@ -28,6 +28,9 @@ interface ColumnVisibilityItem<TData extends RowData = RowData> {
   stateLabel: string;
 }
 
+/**
+ * @deprecated Use `NatToolbarView` (toolbar built-in) instead — near drop-in, also works outside a toolbar shell. Removal planned for the next major.
+ */
 @Component({
   selector: 'nat-table-column-visibility',
   changeDetection: ChangeDetectionStrategy.OnPush,

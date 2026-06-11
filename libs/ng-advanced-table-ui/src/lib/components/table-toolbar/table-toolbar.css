@@ -1,0 +1,20 @@
+:host {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  gap: var(--nat-table-toolbar-gap, 12px);
+  padding: var(--nat-table-toolbar-padding, 0);
+  background: var(--nat-table-toolbar-background, transparent);
+}
+
+/* Always-present spacer between the start group (order 0) and the end group (order 2).
+   It is a zero-base-width flex child, which is why the fit math charges one gap per item. */
+:host::before {
+  content: '';
+  order: 1;
+  flex: 1 1 0;
+  min-width: 0;
+}

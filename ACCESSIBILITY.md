@@ -104,8 +104,8 @@ Companion controls inherit the controlled table's `locale` through `[for]="grid"
 
 | Component / helper               | Primary localization inputs                                              |
 | -------------------------------- | ------------------------------------------------------------------------ |
-| `NatTableSearch`                 | `label`, `placeholder`                                                   |
-| `NatTableColumnVisibility`       | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
+| `NatTableSearch` *(deprecated — use `NatToolbarSearch`)* | `label`, `placeholder`                                                   |
+| `NatTableColumnVisibility` *(deprecated — use `NatToolbarView`)* | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
 | `NatTablePageSize`               | `groupAriaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
 | `NatTablePager`                  | `groupAriaLabel`, `NatTableAccessibilityPagerLabels`                     |
 | `NatTableScrollControl`          | `groupAriaLabel`, `NatTableAccessibilityScrollControlLabels`             |
@@ -317,8 +317,8 @@ The `ng-advanced-table-ui` package consumes locale dictionaries from `provideNat
 
 | Component or helper              | Consumer-owned copy                                                      |
 | -------------------------------- | ------------------------------------------------------------------------ |
-| `NatTableSearch`                 | `label`, `placeholder`                                                   |
-| `NatTableColumnVisibility`       | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
+| `NatTableSearch` *(deprecated — use `NatToolbarSearch`)* | `label`, `placeholder`                                                   |
+| `NatTableColumnVisibility` *(deprecated — use `NatToolbarView`)* | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
 | `NatTablePageSize`               | `groupAriaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
 | `NatTablePager`                  | `groupAriaLabel`, `NatTableAccessibilityPagerLabels`                     |
 | `NatTableScrollControl`          | `groupAriaLabel`, `NatTableAccessibilityScrollControlLabels`             |

@@ -1,0 +1,32 @@
+@if (visible()) {
+  @if (showInput()) {
+    <input
+      #searchInput
+      type="search"
+      class="search-input"
+      [attr.aria-label]="resolvedLabel()"
+      [attr.aria-controls]="tableElementId()"
+      [attr.tabindex]="toolbarItem.tabIndex()"
+      [disabled]="controller() === null"
+      [value]="value()"
+      [placeholder]="resolvedPlaceholder()"
+      (input)="onInput($event)"
+      (keydown)="onSearchKeydown($event)"
+      (blur)="onSearchBlur()"
+    />
+  } @else {
+    <button
+      #expandButton
+      type="button"
+      class="search-toggle"
+      [attr.aria-label]="expandButtonLabel()"
+      [attr.tabindex]="toolbarItem.tabIndex()"
+      (click)="expand()"
+    >
+      <svg class="search-toggle__icon" viewBox="0 0 16 16" focusable="false" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.4" />
+        <path d="m10.4 10.4 3.4 3.4" />
+      </svg>
+    </button>
+  }
+}

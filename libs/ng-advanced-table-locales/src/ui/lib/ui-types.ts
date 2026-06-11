@@ -205,6 +205,59 @@ export interface NatTableHeaderActionsIntl {
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
 
+/** Context passed to the More-button label formatter. */
+export interface NatTableAccessibilityToolbarMoreButtonContext {
+  /** Number of items currently collapsed into the More menu. */
+  hiddenCountValue: number;
+  /** Provider-formatted text for `hiddenCountValue`. */
+  hiddenCountText: string;
+}
+
+/** Context passed to sort menu item label formatters. */
+export interface NatTableAccessibilityToolbarSortMenuItemContext {
+  /** Human-readable column label. */
+  columnLabel: string;
+  /** Direction the menu item applies when activated. */
+  direction: 'ascending' | 'descending' | 'none';
+  /** Whether this direction is currently active for the column. */
+  active: boolean;
+}
+
+/** Context passed to column visibility menu item label formatters. */
+export interface NatTableAccessibilityToolbarColumnMenuItemContext {
+  /** Human-readable column label. */
+  columnLabel: string;
+  /** Whether the column is currently visible. */
+  visible: boolean;
+}
+
+/** Optional accessibility label overrides for the table toolbar and its built-ins. */
+export interface NatTableAccessibilityToolbarLabels {
+  /** `aria-label` applied to the More overflow button. */
+  moreButton?: (context: NatTableAccessibilityToolbarMoreButtonContext) => string;
+  /** `aria-label` applied to the opened More menu. */
+  moreMenuLabel?: () => string;
+  /** `aria-label` applied to the collapsed search expand button. */
+  searchExpandButton?: () => string;
+  /** `aria-label` applied to each sort direction menu item (menuitemradio). */
+  sortMenuItem?: (context: NatTableAccessibilityToolbarSortMenuItemContext) => string;
+  /** `aria-label` applied to each column visibility menu item (menuitemcheckbox). */
+  viewMenuItem?: (context: NatTableAccessibilityToolbarColumnMenuItemContext) => string;
+}
+
+export interface NatTableToolbarIntl {
+  /** Default `aria-label` for the toolbar container; the `accessibleName` input wins. */
+  toolbarLabel?: string;
+  /** Visible label and `aria-label` for the sort menu trigger. */
+  sortMenuLabel?: string;
+  /** Visible label and `aria-label` for the column visibility menu trigger. */
+  viewMenuLabel?: string;
+  /** Visible label and `aria-label` for the generic actions menu trigger. */
+  actionsMenuLabel?: string;
+  /** Generated labels for the toolbar shell and built-in menus. */
+  accessibilityLabels?: NatTableAccessibilityToolbarLabels;
+}
+
 /** Locale-specific defaults for generated `ng-advanced-table-ui` copy. */
 export interface NatTableUiIntl {
   search?: NatTableSearchIntl;
@@ -213,6 +266,7 @@ export interface NatTableUiIntl {
   pager?: NatTablePagerIntl;
   scrollControl?: NatTableScrollControlIntl;
   headerActions?: NatTableHeaderActionsIntl;
+  toolbar?: NatTableToolbarIntl;
   /** Number formatter used for `...Text` fields passed to generated label formatters. */
   formatNumber?: NatTableUiNumberFormatter;
 }

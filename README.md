@@ -9,7 +9,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | Package                     | Use it for                           | Main exports                                                                                                                                                    |
 | --------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ng-advanced-table`         | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
-| `ng-advanced-table-ui`      | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
+| `ng-advanced-table-ui`      | Optional controls and header actions | `NatTableSurface`, `NatTableSearch` *(deprecated — use `NatToolbarSearch`)*, `NatTableColumnVisibility` *(deprecated — use `NatToolbarView`)*, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils`   | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
 | `ng-advanced-table-locales` | Built-in locale registry             | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                              |
 
@@ -565,7 +565,7 @@ Example, add stock controls around an existing table:
 
 UI exports:
 
-- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`
+- Components: `NatTableSurface`, `NatTableSearch` *(deprecated — use `NatToolbarSearch`)*, `NatTableColumnVisibility` *(deprecated — use `NatToolbarView`)*, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
@@ -573,8 +573,8 @@ UI exports:
 | API                              | Purpose                                                        | Key inputs or options                                             |
 | -------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------- |
 | `NatTableSurface`                | Layout wrapper and default `--nat-table-*` CSS variables       | none                                                              |
-| `NatTableSearch`                 | Global filter input                                            | `for`, `label`, `placeholder`                                     |
-| `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `groupAriaLabel`, `accessibilityLabels`           |
+| `NatTableSearch`                 | Global filter input *(deprecated — use `NatToolbarSearch`)* | `for`, `label`, `placeholder`                                   |
+| `NatTableColumnVisibility`       | Toggle hideable columns *(deprecated — use `NatToolbarView`)* | `for`, `label`, `groupAriaLabel`, `accessibilityLabels`  |
 | `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels` |
 | `NatTablePager`                  | Previous/next pagination control                               | `for`, `groupAriaLabel`, `accessibilityLabels`                    |
 | `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`      |

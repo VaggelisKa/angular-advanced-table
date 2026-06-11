@@ -8,6 +8,7 @@ import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPagerLabels,
   NatTableAccessibilityScrollControlLabels,
+  NatTableAccessibilityToolbarLabels,
   NatTableUiIntl,
   NatTableUiIntlConfig,
   NatTableUiIntlProviderConfig,
@@ -94,6 +95,13 @@ export function mergeNatTableUiIntl(
       accessibilityLabels: mergeHeaderActionLabels(
         parent?.headerActions?.accessibilityLabels,
         override.headerActions?.accessibilityLabels,
+      ),
+    },
+    toolbar: {
+      ...mergeDefined(parent?.toolbar, override.toolbar),
+      accessibilityLabels: mergeToolbarLabels(
+        parent?.toolbar?.accessibilityLabels,
+        override.toolbar?.accessibilityLabels,
       ),
     },
     formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
@@ -229,6 +237,19 @@ export function mergeHeaderActionLabels(
     menuLabel: override?.menuLabel ?? parent?.menuLabel,
     pinButton: override?.pinButton ?? parent?.pinButton,
     pinButtonText: override?.pinButtonText ?? parent?.pinButtonText,
+  };
+}
+
+export function mergeToolbarLabels(
+  parent?: NatTableAccessibilityToolbarLabels,
+  override?: NatTableAccessibilityToolbarLabels,
+): NatTableAccessibilityToolbarLabels {
+  return {
+    moreButton: override?.moreButton ?? parent?.moreButton,
+    moreMenuLabel: override?.moreMenuLabel ?? parent?.moreMenuLabel,
+    searchExpandButton: override?.searchExpandButton ?? parent?.searchExpandButton,
+    sortMenuItem: override?.sortMenuItem ?? parent?.sortMenuItem,
+    viewMenuItem: override?.viewMenuItem ?? parent?.viewMenuItem,
   };
 }
 
