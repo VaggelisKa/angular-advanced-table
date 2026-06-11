@@ -62,6 +62,7 @@ export function provideNatTableUtilsIntl(intl: NatTableUtilsIntlProviderConfig):
   ];
 }
 
+/** Merges utility locale dictionaries, with override values taking precedence. */
 export function mergeNatTableUtilsIntl(
   parent: NatTableUtilsIntl | undefined,
   override: NatTableUtilsIntl,
@@ -85,6 +86,7 @@ export function mergeNatTableUtilsIntl(
   };
 }
 
+/** Merges render-metrics filter labels and options field by field. */
 export function mergeRenderMetricsFilterIntl(
   parent?: NatTableRenderMetricsFilterIntl,
   override?: NatTableRenderMetricsFilterIntl,
@@ -98,6 +100,7 @@ export function mergeRenderMetricsFilterIntl(
   };
 }
 
+/** Merges render-metrics panel labels and formatters field by field. */
 export function mergeRenderMetricsPanelIntl(
   parent?: NatTableRenderMetricsPanelIntl,
   override?: NatTableRenderMetricsPanelIntl,
@@ -111,6 +114,7 @@ export function mergeRenderMetricsPanelIntl(
   };
 }
 
+/** Merges render-metrics column labels and formatters field by field. */
 export function mergeRenderMetricsColumnIntl(
   parent?: NatTableRenderMetricsColumnIntl,
   override?: NatTableRenderMetricsColumnIntl,
@@ -123,6 +127,7 @@ export function mergeRenderMetricsColumnIntl(
   };
 }
 
+/** Formats generated utility numbers through the configured locale formatter. */
 export function formatNatTableUtilsNumber(
   intl: NatTableUtilsIntl,
   value: number,
@@ -132,6 +137,11 @@ export function formatNatTableUtilsNumber(
   return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 }
 
+/**
+ * Reads utility locale defaults when called inside Angular injection context.
+ *
+ * Calls outside injection context fall back to the built-in default config.
+ */
 export function injectNatTableUtilsIntl(): NatTableUtilsIntlConfig {
   try {
     return inject(NAT_TABLE_UTILS_INTL);
@@ -144,6 +154,7 @@ export function injectNatTableUtilsIntl(): NatTableUtilsIntlConfig {
   }
 }
 
+/** Resolves a utility locale dictionary, falling back to built-in English defaults. */
 export function resolveNatTableUtilsIntl(
   intl: NatTableUtilsIntlConfig,
   locale: string,
