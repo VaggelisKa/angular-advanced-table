@@ -29,6 +29,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'locale-sorting',
+    title: 'Advanced Table - Locale-Aware Sorting',
+    loadComponent: () =>
+      import('./pages/single-features/locale-sorting-showcase').then(
+        (module) => module.LocaleSortingShowcasePage,
+      ),
+  },
+  {
     path: 'pinning',
     title: 'Advanced Table - Column Pinning',
     loadComponent: () =>

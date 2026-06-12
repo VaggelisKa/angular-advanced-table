@@ -20,6 +20,11 @@ const showcaseExamples = [
     path: '/sorting',
   },
   {
+    label: 'Locale-aware sorting',
+    description: 'Intl.Collator string sorting',
+    path: '/locale-sorting',
+  },
+  {
     label: 'Column pinning',
     description: 'Sticky boundary pinning',
     path: '/pinning',
