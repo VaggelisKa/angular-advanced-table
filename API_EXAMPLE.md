@@ -7,7 +7,7 @@ The following showcase demonstrates the simplified, context-aware API implemente
   mode="manual"
   [(state)]="tableState"
   [stickyHeader]="true"
-  [manualPageCount]="pageCount"
+  [manualPageCount]="pageCount()"
 >
   <nat-table-toolbar>
     <nat-render-metrics-filter />
@@ -32,10 +32,10 @@ The following showcase demonstrates the simplified, context-aware API implemente
 
 ### Component Script Code
 
-Below is the corresponding component class implementation demonstrating standalone setup, signal-based state synchronization, and manual data fetching:
+Below is the corresponding component class implementation demonstrating standalone setup, declarative data loading with `resource()`, and derived state using `computed()`:
 
 ```typescript
-import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, resource, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
@@ -70,20 +70,41 @@ interface DemoItem {
   templateUrl: './declarative-table-demo.html',
 })
 export class DeclarativeTableDemoComponent {
-  // Underlying table data signal
-  readonly data = signal<DemoItem[]>([
-    { id: '1', name: 'Server Node A', category: 'Infrastructure', status: 'Active' },
-    { id: '2', name: 'Server Node B', category: 'Security', status: 'Alert' },
-  ]);
-
-  // Two-way bindable table state
+  // Two-way bindable table state signal
   readonly tableState = signal<Partial<NatTableState>>({
     pagination: { pageIndex: 0, pageSize: 10 },
     sorting: [{ id: 'name', desc: false }],
   });
 
-  // Total page count for manual pagination
-  readonly pageCount = signal(5);
+  // Reactively fetch data from the server whenever the tableState changes
+  readonly serverResponse = resource({
+    request: () => this.tableState(),
+    loader: async ({ request: state }) => {
+      const params = new URLSearchParams();
+      if (state.pagination) {
+        params.set('page', String(state.pagination.pageIndex + 1));
+        params.set('limit', String(state.pagination.pageSize));
+      }
+      if (state.sorting?.length) {
+        const sort = state.sorting[0]!;
+        params.set('sortBy', sort.id);
+        params.set('order', sort.desc ? 'desc' : 'asc');
+      }
+      if (state.globalFilter) {
+        params.set('search', state.globalFilter);
+      }
+
+      const res = await fetch(`/api/nodes?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error('Failed to load nodes data');
+      }
+      return res.json() as Promise<{ items: DemoItem[]; totalPages: number }>;
+    }
+  });
+
+  // Derived signals reactively updated by the resource value
+  readonly data = computed(() => this.serverResponse.value()?.items ?? []);
+  readonly pageCount = computed(() => this.serverResponse.value()?.totalPages ?? 1);
 
   // Column definitions with header actions menu
   readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
@@ -104,21 +125,8 @@ export class DeclarativeTableDemoComponent {
     },
   ]);
 
-  constructor() {
-    // Reactively trigger API calls when state changes (under manual mode)
-    effect(() => {
-      const currentState = this.tableState();
-      this.fetchData(currentState);
-    });
-  }
-
-  private fetchData(state: Partial<NatTableState>): void {
-    console.log('Fetching manual page data with state:', state);
-    // Fetch/filtering logic goes here...
-  }
-
   protected refreshData(): void {
-    this.fetchData(this.tableState());
+    this.serverResponse.reload();
   }
 }
 ```
