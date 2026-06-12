@@ -1,0 +1,48 @@
+<div class="showcase-page showcase-container">
+  <header class="header-section">
+    <h1 class="title">Keyboard Interaction</h1>
+    <p class="description">
+      Demonstrates the ARIA grid cell-interaction model: Enter steps into a cell's controls, Tab
+      moves between controls, and Escape returns focus to the cell.
+    </p>
+  </header>
+
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card">
+      <h2 class="card-title">Interactive Cells Grid</h2>
+      <nat-table-surface>
+        <nat-table
+          [data]="data"
+          [columns]="columns"
+          accessibleName="Keyboard interaction demo table"
+        />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">How To Use The Keyboard</h2>
+      <div class="instructions">
+        <ol>
+          <li>
+            <strong>Tab</strong> to the grid, then move between cells with the
+            <code>Arrow</code> keys.
+          </li>
+          <li>
+            Press <code>Enter</code> on a header or an Actions cell to move focus into its control
+            (sort button or Acknowledge button).
+          </li>
+          <li>
+            Press <code>Tab</code> / <code>Shift + Tab</code> to walk between the controls across
+            the grid.
+          </li>
+          <li>Press <code>Escape</code> to return focus to the cell.</li>
+          <li>
+            Press <code>Enter</code> or <code>Space</code> on a focused control to activate it.
+          </li>
+        </ol>
+      </div>
+
+      <div class="info-tag" aria-live="polite">Last action: {{ lastAction() }}</div>
+    </div>
+  </div>
+</div>
