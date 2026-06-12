@@ -2,7 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 
 import { NatTableToolbar } from '../table-toolbar';
-import { NatToolbarItem } from '../toolbar-item.directive';
+import { NatToolbarItem } from '../toolbar-item/toolbar-item.directive';
 import { NatToolbarGroup } from './toolbar-group';
 
 @Component({

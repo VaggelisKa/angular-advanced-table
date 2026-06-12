@@ -2,10 +2,10 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import { NatTableToolbar } from './table-toolbar';
+import { NatTableToolbar } from '../table-toolbar';
 import { NatToolbarItem } from './toolbar-item.directive';
-import { NAT_TOOLBAR_ITEM } from './common/toolbar-tokens.const';
-import type { NatToolbarItemRef } from './common/toolbar-tokens.type';
+import { NAT_TOOLBAR_ITEM } from '../common/toolbar-tokens.const';
+import type { NatToolbarItemRef } from '../common/toolbar-tokens.type';
 
 @Component({
   imports: [NatTableToolbar, NatToolbarItem],
@@ -95,6 +95,6 @@ describe('NatToolbarItem', () => {
     expect(() => {
       const orphanFixture = TestBed.createComponent(ToolbarlessHost);
       orphanFixture.detectChanges();
-    }).toThrowError(/Toolbar/);
+    }).toThrow(/Toolbar/);
   });
 });
