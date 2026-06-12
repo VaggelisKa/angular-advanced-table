@@ -53,4 +53,24 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerSize?: number | string;
   headerMinSize?: number | string;
   headerMaxSize?: number | string;
+  /** Declarative typed-filter configuration consumed by companion filter UI and `natTypedFilterFn`. */
+  filter?: {
+    type: 'text' | 'number' | 'date' | 'boolean' | 'set';
+    operators?: readonly (
+      | 'equals'
+      | 'notEquals'
+      | 'contains'
+      | 'startsWith'
+      | 'endsWith'
+      | 'gt'
+      | 'gte'
+      | 'lt'
+      | 'lte'
+      | 'between'
+      | 'in'
+      | 'isEmpty'
+      | 'notEmpty'
+    )[];
+    options?: readonly unknown[] | ((rows: readonly unknown[]) => readonly unknown[]);
+  };
 }

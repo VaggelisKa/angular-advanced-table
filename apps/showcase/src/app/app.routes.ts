@@ -75,6 +75,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'typed-filters',
+    title: 'Advanced Table - Typed Column Filters',
+    loadComponent: () =>
+      import('./pages/single-features/typed-filters-showcase').then(
+        (module) => module.TypedFiltersShowcasePage,
+      ),
+  },
+  {
     path: 'keyboard-interaction',
     title: 'Advanced Table - Keyboard Interaction',
     loadComponent: () =>

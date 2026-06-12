@@ -1,3 +1,10 @@
+export {
+  natTypedFilterFn,
+  type NatTableFilterType,
+  type NatTableFilterOperator,
+  type NatTableColumnFilterConfig,
+  type NatTableColumnFilterValue,
+} from './lib/filter-fns/typed-filter';
 export { NatTable } from './lib/components/table/table';
 export {
   NAT_TABLE_ENGLISH_INTL,
