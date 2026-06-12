@@ -170,6 +170,12 @@
   --nat-table-pager-label-color: var(--nat-table-color-text-muted);
   --nat-table-pager-disabled-opacity: var(--nat-table-disabled-opacity);
 
+  --nat-table-region-overflow-x: auto;
+  --nat-table-region-overflow-y: auto;
+  --nat-table-max-height: inherit;
+  --nat-table-height: inherit;
+  --nat-table-sticky-top: 0;
+
   --nat-table-region-background: var(--nat-table-color-surface-elevated);
   --nat-table-region-border-color: color-mix(in srgb, var(--nat-table-color-text) 10%, transparent);
   --nat-table-region-border-width: 1px;
