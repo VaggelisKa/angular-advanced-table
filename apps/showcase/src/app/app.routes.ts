@@ -83,6 +83,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'resizing',
+    title: 'Advanced Table - Column Resizing',
+    loadComponent: () =>
+      import('./pages/single-features/resizing-showcase').then(
+        (module) => module.ResizingShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

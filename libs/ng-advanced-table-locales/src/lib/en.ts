@@ -17,6 +17,9 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
     emptyState: 'No rows match the current view.',
     reorderKeyboardInstructions:
       'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+    resizeKeyboardInstructions:
+      'When a column resize handle is focused, press Left or Right Arrow to resize, ' +
+      'Shift with an arrow for larger steps, and Home or End for the minimum or maximum width.',
     tableSummary: ({
       filterState,
       pageCountText,
@@ -93,6 +96,9 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       `Moved ${label} column to position ${positionText} of ${totalText} in the ${describeColumnZone(
         zone,
       )} region.`,
+    columnResize: ({ label, widthText }) => `${label} column width ${widthText} pixels.`,
+    columnResizeHandleLabel: ({ label }) => `Resize ${label} column`,
+    columnResizeHandleValueText: ({ widthText }) => `${widthText} pixels`,
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };

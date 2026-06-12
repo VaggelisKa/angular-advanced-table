@@ -78,6 +78,8 @@ export function mergeNatTableAccessibilityText(
     emptyState: override?.emptyState ?? parent?.emptyState,
     reorderKeyboardInstructions:
       override?.reorderKeyboardInstructions ?? parent?.reorderKeyboardInstructions,
+    resizeKeyboardInstructions:
+      override?.resizeKeyboardInstructions ?? parent?.resizeKeyboardInstructions,
     tableSummary: override?.tableSummary ?? parent?.tableSummary,
     sortingChange: override?.sortingChange ?? parent?.sortingChange,
     filteringChange: override?.filteringChange ?? parent?.filteringChange,
@@ -85,6 +87,10 @@ export function mergeNatTableAccessibilityText(
     pageSizeChange: override?.pageSizeChange ?? parent?.pageSizeChange,
     pageChange: override?.pageChange ?? parent?.pageChange,
     columnReorder: override?.columnReorder ?? parent?.columnReorder,
+    columnResize: override?.columnResize ?? parent?.columnResize,
+    columnResizeHandleLabel: override?.columnResizeHandleLabel ?? parent?.columnResizeHandleLabel,
+    columnResizeHandleValueText:
+      override?.columnResizeHandleValueText ?? parent?.columnResizeHandleValueText,
   };
 }
 

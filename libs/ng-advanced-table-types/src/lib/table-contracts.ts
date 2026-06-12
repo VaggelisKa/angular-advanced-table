@@ -4,6 +4,7 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnSizingState,
   PaginationState,
   RowData,
   SortingState,
@@ -22,6 +23,7 @@ export interface NatTableState {
   columnVisibility: VisibilityState;
   columnOrder: ColumnOrderState;
   columnPinning: ColumnPinningState;
+  columnSizing: ColumnSizingState;
   pagination: PaginationState;
 }
 

@@ -125,6 +125,26 @@ export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   totalText: string;
 }
 
+/** Context passed to custom column-resize announcement formatters. */
+export interface NatTableAccessibilityColumnResizeAnnouncementContext {
+  /** TanStack column id. */
+  columnId: string;
+  /** Resolved human-readable column label. */
+  label: string;
+  /** New column width in CSS pixels. */
+  widthValue: number;
+  /** Provider-formatted text for `widthValue`. */
+  widthText: string;
+}
+
+/** Context passed to the column resize handle label formatter. */
+export interface NatTableAccessibilityColumnResizeHandleContext {
+  /** TanStack column id. */
+  columnId: string;
+  /** Resolved human-readable column label. */
+  label: string;
+}
+
 /** Optional overrides for built-in screen-reader summaries and announcements. */
 export interface NatTableAccessibilityText {
   /**
@@ -145,6 +165,8 @@ export interface NatTableAccessibilityText {
   emptyState?: string;
   /** Extra reorder instructions appended when column reordering is enabled. */
   reorderKeyboardInstructions?: string;
+  /** Extra resize instructions appended when column resizing is enabled. */
+  resizeKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
   tableSummary?: (context: NatTableAccessibilitySummaryContext) => string;
   /** Live announcement emitted when sorting changes. */
@@ -161,6 +183,14 @@ export interface NatTableAccessibilityText {
   pageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when a column is reordered. */
   columnReorder?: (context: NatTableAccessibilityColumnReorderAnnouncementContext) => string;
+  /** Live announcement emitted when a column is resized. */
+  columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
+  /** Accessible label for a column's resize handle separator. */
+  columnResizeHandleLabel?: (context: NatTableAccessibilityColumnResizeHandleContext) => string;
+  /** Unit-bearing `aria-valuetext` for a column's resize handle separator. */
+  columnResizeHandleValueText?: (
+    context: NatTableAccessibilityColumnResizeAnnouncementContext,
+  ) => string;
 }
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */
