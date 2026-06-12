@@ -184,6 +184,8 @@ export class NatTable<TData extends RowData = RowData> {
   readonly enableColumnReorder = input(false, { transform: booleanAttribute });
   /** Enables client-side pagination row models when external UI drives pagination state. */
   readonly enablePagination = input(false, { transform: booleanAttribute });
+  /** Allows multiple simultaneous sort columns. Default false (single-column sort). */
+  readonly enableMultiSort = input(false, { transform: booleanAttribute });
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData>>();
   /**
@@ -322,7 +324,10 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
   protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   protected readonly mergedState = computed<NatTableState>(() => ({
-    sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting()),
+    sorting: normalizeSortingState(
+      this.state().sorting ?? this.internalSorting(),
+      this.enableMultiSort(),
+    ),
     globalFilter: this.enableGlobalFilter()
       ? (this.state().globalFilter ?? this.internalGlobalFilter())
       : '',
@@ -366,8 +371,9 @@ export class NatTable<TData extends RowData = RowData> {
     data: this.readRequiredInput(this.data, []) as TData[],
     columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
     state: this.mergedState(),
-    enableMultiSort: false,
-    isMultiSortEvent: () => false,
+    enableMultiSort: this.enableMultiSort(),
+    isMultiSortEvent: (event) =>
+      this.enableMultiSort() && (event as { shiftKey?: boolean })?.shiftKey === true,
     enableColumnPinning: this.enableColumnPinning(),
     enableColumnOrdering: true,
     meta: {
@@ -527,7 +533,10 @@ export class NatTable<TData extends RowData = RowData> {
       const initialState = this.initialState();
 
       this.internalSorting.set(
-        normalizeSortingState(initialState.sorting ?? DEFAULT_TABLE_STATE.sorting),
+        normalizeSortingState(
+          initialState.sorting ?? DEFAULT_TABLE_STATE.sorting,
+          this.enableMultiSort(),
+        ),
       );
       this.internalGlobalFilter.set(
         this.enableGlobalFilter()
@@ -895,7 +904,10 @@ export class NatTable<TData extends RowData = RowData> {
   ): void {
     const currentState = this.mergedState();
     const nextState: NatTableState = {
-      sorting: normalizeSortingState(this.resolveUpdater(currentState.sorting, updaters.sorting)),
+      sorting: normalizeSortingState(
+        this.resolveUpdater(currentState.sorting, updaters.sorting),
+        this.enableMultiSort(),
+      ),
       globalFilter: this.resolveUpdater(currentState.globalFilter, updaters.globalFilter),
       columnFilters: this.resolveUpdater(currentState.columnFilters, updaters.columnFilters),
       columnVisibility: this.resolveUpdater(
@@ -1267,17 +1279,19 @@ export class NatTable<TData extends RowData = RowData> {
       ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id)
       : null;
     const sortState = entry ? (entry.desc ? 'descending' : 'ascending') : 'none';
+    const sortedColumns = sortingState.map((sortEntry) => ({
+      id: sortEntry.id,
+      label: snapshot.columns.find((column) => column.id === sortEntry.id)?.label ?? sortEntry.id,
+      sortState: sortEntry.desc ? ('descending' as const) : ('ascending' as const),
+    }));
     const context: NatTableAccessibilitySortingAnnouncementContext = {
       columnId: entry?.id ?? null,
       columnLabel,
       sortState,
+      sortedColumns,
     };
 
-    if (formatter) {
-      return formatter(context);
-    }
-
-    return '';
+    return formatter?.(context) ?? '';
   }
 
   private describeFilteringChange(snapshot: TableAccessibilitySnapshot): string {
@@ -1510,8 +1524,11 @@ function originatesFromInteractiveDescendant(event: Event): boolean {
   return interactive !== currentTarget && currentTarget.contains(interactive);
 }
 
-/** Collapses to a single primary sort column (deduped by id, first wins). */
-function normalizeSortingState(sorting: SortingState): SortingState {
+/**
+ * Dedupes sort entries by id (first wins). Collapses to a single primary sort
+ * column unless `allowMulti` is set, in which case all deduped entries are kept.
+ */
+function normalizeSortingState(sorting: SortingState, allowMulti: boolean): SortingState {
   if (!sorting.length) {
     return sorting;
   }
@@ -1526,6 +1543,11 @@ function normalizeSortingState(sorting: SortingState): SortingState {
 
     seen.add(entry.id);
     deduped.push(entry);
+  }
+
+  if (allowMulti) {
+    // No duplicates removed → preserve the original reference for change detection.
+    return deduped.length === sorting.length ? sorting : deduped;
   }
 
   const normalized = deduped.slice(0, 1);

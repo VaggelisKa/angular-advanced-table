@@ -242,6 +242,10 @@ export interface NatTableAccessibilityHeaderActionSortContext {
   label: string;
   /** Current sort state before toggling. */
   sortState: 'ascending' | 'descending' | 'none';
+  /** 1-based position in a multi-column sort, or `null` when this column is not sorted. */
+  sortPriority: number | null;
+  /** Total number of columns currently sorted. */
+  sortCount: number;
 }
 
 /** Context passed to the overflow menu trigger label formatter. */

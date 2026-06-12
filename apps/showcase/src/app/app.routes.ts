@@ -29,6 +29,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'multi-sort',
+    title: 'Advanced Table - Multi-Column Sorting',
+    loadComponent: () =>
+      import('./pages/single-features/multi-sort-showcase').then(
+        (module) => module.MultiSortShowcasePage,
+      ),
+  },
+  {
     path: 'pinning',
     title: 'Advanced Table - Column Pinning',
     loadComponent: () =>
