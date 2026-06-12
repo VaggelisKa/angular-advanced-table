@@ -24,19 +24,17 @@ export class NatTablePager<TData extends RowData = RowData> {
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, {
-    optional: true,
-  });
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly controller = computed(
-    () => this.natTableService?.controller() ?? null,
+    () => this.natTableService.controller(),
   );
 
   constructor() {
-    this.natTableService?.registerPagination();
+    this.natTableService.registerPagination();
     this.destroyRef.onDestroy(() => {
-      this.natTableService?.unregisterPagination();
+      this.natTableService.unregisterPagination();
     });
   }
 

@@ -42,9 +42,9 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
     undefined,
   );
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   protected readonly controller = computed(
-    () => this.natTableService?.controller() ?? null,
+    () => this.natTableService.controller(),
   );
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);

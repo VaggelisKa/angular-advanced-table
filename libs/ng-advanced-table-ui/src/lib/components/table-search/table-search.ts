@@ -22,17 +22,17 @@ export class NatTableSearch<TData extends RowData = RowData> {
   readonly label = input<string | undefined>(undefined);
   readonly placeholder = input<string | undefined>(undefined);
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly controller = computed(
-    () => this.natTableService?.controller() ?? null,
+    () => this.natTableService.controller(),
   );
 
   constructor() {
-    this.natTableService?.registerSearch();
+    this.natTableService.registerSearch();
     this.destroyRef.onDestroy(() => {
-      this.natTableService?.unregisterSearch();
+      this.natTableService.unregisterSearch();
     });
   }
 

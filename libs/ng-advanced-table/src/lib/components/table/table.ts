@@ -188,22 +188,22 @@ export class NatTable<TData extends RowData = RowData> {
   /** Emits on row click or Enter/Space unless the event started on an interactive descendant. */
   readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
-  private readonly natTableService = inject(NatTableService, { optional: true });
+  private readonly natTableService = inject(NatTableService);
 
-  protected readonly initialState = computed(() => this.natTableService?.surfaceInitialState() ?? {});
-  protected readonly state = computed(() => this.natTableService?.state() ?? {});
-  protected readonly mode = computed(() => this.natTableService?.surfaceMode() ?? 'auto');
-  protected readonly manualPagination = computed(() => this.natTableService?.manualPagination() ?? false);
-  protected readonly manualSorting = computed(() => this.natTableService?.manualSorting() ?? false);
-  protected readonly manualFiltering = computed(() => this.natTableService?.manualFiltering() ?? false);
-  protected readonly enablePagination = computed(() => this.natTableService?.hasPagination() ?? false);
-  protected readonly enableGlobalFilter = computed(() => this.natTableService?.hasSearch() ?? true);
+  protected readonly initialState = computed(() => this.natTableService.surfaceInitialState());
+  protected readonly state = computed(() => this.natTableService.state());
+  protected readonly mode = computed(() => this.natTableService.surfaceMode());
+  protected readonly manualPagination = computed(() => this.natTableService.manualPagination());
+  protected readonly manualSorting = computed(() => this.natTableService.manualSorting());
+  protected readonly manualFiltering = computed(() => this.natTableService.manualFiltering());
+  protected readonly enablePagination = computed(() => this.natTableService.hasPagination());
+  protected readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
 
-  protected readonly manualPageCount = computed(() => this.natTableService?.manualPageCount() ?? undefined);
-  protected readonly enableAnnouncements = computed(() => this.natTableService?.enableAnnouncements() ?? true);
-  protected readonly stickyHeader = computed(() => this.natTableService?.stickyHeader() ?? true);
-  protected readonly locale = computed(() => this.natTableService?.locale() ?? undefined);
-  protected readonly accessibilityText = computed(() => this.natTableService?.accessibilityText() ?? {});
+  protected readonly manualPageCount = computed(() => this.natTableService.manualPageCount());
+  protected readonly enableAnnouncements = computed(() => this.natTableService.enableAnnouncements());
+  protected readonly stickyHeader = computed(() => this.natTableService.stickyHeader());
+  protected readonly locale = computed(() => this.natTableService.locale());
+  protected readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
   private readonly internalGlobalFilter = signal(DEFAULT_TABLE_STATE.globalFilter);
@@ -492,9 +492,6 @@ export class NatTable<TData extends RowData = RowData> {
   });
 
   constructor() {
-    if (!this.natTableService) {
-      throw new Error('nat-table must be used inside a nat-table-surface component.');
-    }
     this.natTableService.setController(this as unknown as NatTableUiController<any>);
 
     effect(() => {

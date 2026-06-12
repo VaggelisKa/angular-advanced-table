@@ -37,15 +37,15 @@ export class NatTablePageSize<TData extends RowData = RowData> {
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly controller = computed(() => this.natTableService?.controller() ?? null);
+  protected readonly controller = computed(() => this.natTableService.controller());
 
   constructor() {
-    this.natTableService?.registerPagination();
+    this.natTableService.registerPagination();
     this.destroyRef.onDestroy(() => {
-      this.natTableService?.unregisterPagination();
+      this.natTableService.unregisterPagination();
     });
   }
 

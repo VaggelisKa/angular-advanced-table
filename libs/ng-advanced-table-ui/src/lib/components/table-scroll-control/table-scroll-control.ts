@@ -42,8 +42,8 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     undefined,
   );
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
-  protected readonly controller = computed(() => this.natTableService?.controller() ?? null);
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  protected readonly controller = computed(() => this.natTableService.controller());
 
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);

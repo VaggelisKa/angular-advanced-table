@@ -42,15 +42,15 @@ export class NatTablePagination<TData extends RowData = RowData> {
   readonly pagerGroupAriaLabel = input<string | undefined>(undefined);
   readonly pagerAccessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly controller = computed(() => this.natTableService?.controller() ?? null);
+  protected readonly controller = computed(() => this.natTableService.controller());
 
   constructor() {
-    this.natTableService?.registerPagination();
+    this.natTableService.registerPagination();
     this.destroyRef.onDestroy(() => {
-      this.natTableService?.unregisterPagination();
+      this.natTableService.unregisterPagination();
     });
   }
 
