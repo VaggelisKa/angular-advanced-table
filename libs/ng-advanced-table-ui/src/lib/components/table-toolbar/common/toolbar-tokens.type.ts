@@ -27,16 +27,3 @@ export type NatToolbarItemRef = {
   /** Focuses the host element. */
   focus(): void;
 };
-
-/**
- * Contract the toolbar shell exposes to registered items (and built-ins).
- * Implemented and self-provided by `NatTableToolbar`:
- *   providers: [{ provide: NAT_TABLE_TOOLBAR, useExisting: NatTableToolbar }]
- */
-export type NatTableToolbarRef = {
-  /**
-   * Id of the item owning the roving tab stop. Never `null` while at least
-   * one item exists (falls back to the first item in visual order).
-   */
-  readonly activeItemId: Signal<string | null>;
-};
