@@ -2,31 +2,20 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
+import { NatTableToolbar } from './table-toolbar';
 import { NatToolbarItem } from './toolbar-item.directive';
-import { NAT_TABLE_TOOLBAR, NAT_TOOLBAR_ITEM } from './common/toolbar-tokens.const';
-import type { NatTableToolbarRef, NatToolbarItemRef } from './common/toolbar-tokens.type';
-
-class FakeToolbar implements NatTableToolbarRef {
-  public readonly activeItemId = signal<string | null>(null);
-  public readonly focusRegistrations: string[] = [];
-
-  public registerFocus(itemId: string): void {
-    this.focusRegistrations.push(itemId);
-    this.activeItemId.set(itemId);
-  }
-}
+import { NAT_TOOLBAR_ITEM } from './common/toolbar-tokens.const';
+import type { NatToolbarItemRef } from './common/toolbar-tokens.type';
 
 @Component({
-  imports: [NatToolbarItem],
-  providers: [{ provide: NAT_TABLE_TOOLBAR, useFactory: () => new FakeToolbar() }],
+  imports: [NatTableToolbar, NatToolbarItem],
   template: `
-    <button natToolbarItem id="default-end">Export</button>
-    <button natToolbarItem="start" id="explicit-start">Search</button>
-    <button [natToolbarItem]="dynamicPosition()" id="dynamic">Dynamic</button>
-    <div natToolbarItem id="plain-div">Custom widget</div>
-    <button natToolbarItem id="composite">
-      <input type="text" id="inner-input" aria-label="Filter" />
-    </button>
+    <nat-table-toolbar>
+      <button natToolbarItem value="export" id="default-end">Export</button>
+      <button natToolbarItem="start" value="search" id="explicit-start">Search</button>
+      <button [natToolbarItem]="dynamicPosition()" value="dynamic" id="dynamic">Dynamic</button>
+      <div natToolbarItem value="custom">Custom widget</div>
+    </nat-table-toolbar>
   `,
 })
 class DirectiveHost {
@@ -35,9 +24,9 @@ class DirectiveHost {
 
 @Component({
   imports: [NatToolbarItem],
-  template: `<button natToolbarItem id="standalone">Alone</button>`,
+  template: `<button natToolbarItem value="orphan">Orphan</button>`,
 })
-class StandaloneItemHost {}
+class ToolbarlessHost {}
 
 describe('NatToolbarItem', () => {
   let fixture: ComponentFixture<DirectiveHost>;
@@ -60,19 +49,23 @@ describe('NatToolbarItem', () => {
     return fixture.debugElement.query(By.css(`#${domId}`)).injector.get(NAT_TOOLBAR_ITEM);
   }
 
-  function fakeToolbar(): FakeToolbar {
-    return fixture.debugElement.injector.get(NAT_TABLE_TOOLBAR) as FakeToolbar;
-  }
-
-  it('assigns module-unique ids and applies the nat-toolbar-item class', () => {
-    const ids = ['default-end', 'explicit-start', 'plain-div'].map((domId) => itemRef(domId).id);
-
-    // nextNatToolbarItemId is module-level — never assume it starts at 0.
-    for (const id of ids) {
-      expect(id).toMatch(/^nat-toolbar-item-\d+$/);
-    }
-    expect(new Set(ids).size).toBe(ids.length);
+  it('applies the nat-toolbar-item class and mirrors the host id from the aria widget', () => {
     expect(element('default-end').classList.contains('nat-toolbar-item')).toBe(true);
+    // The id attribute feeds the exposed ToolbarWidget `id` input, whose host
+    // binding writes the same value back — consumer ids stay stable.
+    expect(itemRef('default-end').id).toBe('default-end');
+    expect(element('default-end').id).toBe('default-end');
+  });
+
+  it('generates a unique aria widget id when the host declares none', () => {
+    const unnamed = fixture.debugElement
+      .queryAll(By.directive(NatToolbarItem))
+      .map((debugElement) => debugElement.injector.get(NAT_TOOLBAR_ITEM))
+      .find((ref) => ref.element.tagName === 'DIV');
+
+    // cdk _IdGenerator format: ng-toolbar-widget-<appId>-<n>.
+    expect(unnamed?.id).toMatch(/^ng-toolbar-widget-/);
+    expect(unnamed?.element.id).toBe(unnamed?.id);
   });
 
   it("normalizes the position input: '' and 'end' -> end, 'start' and 'center' pass through", () => {
@@ -85,7 +78,7 @@ describe('NatToolbarItem', () => {
     expect(itemRef('dynamic').position()).toBe('center');
   });
 
-  it('re-binds the position at runtime', async () => {
+  it('re-binds the position signal at runtime (slot placement stays static)', async () => {
     expect(itemRef('dynamic').position()).toBe('end');
 
     fixture.componentInstance.dynamicPosition.set('start');
@@ -93,61 +86,15 @@ describe('NatToolbarItem', () => {
     await fixture.whenStable();
 
     expect(itemRef('dynamic').position()).toBe('start');
+    // ng-content slots are resolved at compile time — a bound position never
+    // moves the element out of the default (end) slot.
+    expect(itemRef('dynamic').element.isConnected).toBe(true);
   });
 
-  it('grants tabindex 0 only to the active item and reports focusin to the toolbar', async () => {
-    const exportRef = itemRef('default-end');
-
-    fakeToolbar().activeItemId.set(exportRef.id);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(element('default-end').getAttribute('tabindex')).toBe('0');
-    expect(element('explicit-start').getAttribute('tabindex')).toBe('-1');
-
-    element('explicit-start').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
-
-    expect(fakeToolbar().focusRegistrations).toContain(itemRef('explicit-start').id);
-  });
-
-  it('moves the roving target to an inner element via setFocusTarget', async () => {
-    const composite = itemRef('composite');
-    const inner = element('inner-input');
-
-    expect(composite.focusTarget()).toBe(element('composite'));
-
-    composite.setFocusTarget(inner);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    // Host tabindex attr is removed; the hosting component binds the inner one.
-    expect(element('composite').hasAttribute('tabindex')).toBe(false);
-    expect(composite.focusTarget()).toBe(inner);
-
-    composite.focus();
-    expect(document.activeElement).toBe(inner);
-
-    composite.setFocusTarget(null);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(composite.focusTarget()).toBe(element('composite'));
-    expect(element('composite').getAttribute('tabindex')).toBe('-1');
-  });
-
-  it('renders no tabindex attribute outside a toolbar and reports tabIndex() 0', async () => {
-    const standalone = TestBed.createComponent(StandaloneItemHost);
-
-    standalone.detectChanges();
-    await standalone.whenStable();
-
-    const ref = standalone.debugElement.query(By.css('#standalone')).injector.get(NAT_TOOLBAR_ITEM);
-
-    expect(ref.tabIndex()).toBe(0);
-    expect(
-      (standalone.nativeElement.querySelector('#standalone') as HTMLElement).hasAttribute(
-        'tabindex',
-      ),
-    ).toBe(false);
+  it('throws outside a toolbar — the ToolbarWidget host directive requires a parent ngToolbar', () => {
+    expect(() => {
+      const orphanFixture = TestBed.createComponent(ToolbarlessHost);
+      orphanFixture.detectChanges();
+    }).toThrowError(/Toolbar/);
   });
 });
