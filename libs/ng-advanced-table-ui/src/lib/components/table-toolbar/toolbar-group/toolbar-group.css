@@ -1,0 +1,8 @@
+:host {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-width: 0;
+  /* Tighter than the toolbar gap by default — group members read as one unit. */
+  gap: var(--nat-table-toolbar-group-gap, 4px);
+}
