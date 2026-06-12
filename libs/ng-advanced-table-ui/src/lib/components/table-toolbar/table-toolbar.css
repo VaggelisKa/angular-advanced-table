@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  gap: var(--nat-table-toolbar-gap, 12px);
+  padding: var(--nat-table-toolbar-padding, 0);
+  background: var(--nat-table-toolbar-background, transparent);
+}
+
+/* Static flex pivots between the ng-content slots: start slot before the
+   first, center slot between them, end slot after the second. Both flex so
+   the center group stays centered in the leftover space. */
+.nat-toolbar-spacer {
+  flex: 1 1 0;
+  min-width: 0;
+}

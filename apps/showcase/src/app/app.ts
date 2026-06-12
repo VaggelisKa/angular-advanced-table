@@ -50,6 +50,11 @@ const showcaseExamples = [
     path: '/sticky-header',
   },
   {
+    label: 'Toolbar',
+    description: 'Slot-based keyboard toolbar',
+    path: '/toolbar',
+  },
+  {
     label: 'Sorting with pinned columns',
     description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',

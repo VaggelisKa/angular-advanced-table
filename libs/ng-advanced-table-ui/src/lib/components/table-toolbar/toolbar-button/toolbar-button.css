@@ -1,0 +1,43 @@
+:host {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nat-table-toolbar-trigger-gap, 6px);
+  min-height: var(--nat-table-toolbar-trigger-min-height, 2.25rem);
+  padding: 0 var(--nat-table-toolbar-trigger-padding-x, 12px);
+  border: 1px solid
+    var(--nat-table-toolbar-trigger-border-color, color-mix(in srgb, currentcolor 16%, transparent));
+  border-radius: var(--nat-table-toolbar-trigger-radius, 10px);
+  background: var(--nat-table-toolbar-trigger-background, transparent);
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--nat-table-transition-medium, 180ms ease);
+}
+
+:host(:focus-visible) {
+  outline: var(--nat-table-focus-ring-width, 2px) solid
+    var(--nat-table-focus-ring-color, currentcolor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+}
+
+/* Icon-only: host contains a single SVG child — use square fixed dimensions */
+:host(:has(> svg:only-child)) {
+  inline-size: var(--nat-table-toolbar-icon-trigger-size, 2.25rem);
+  block-size: var(--nat-table-toolbar-icon-trigger-size, 2.25rem);
+  padding: 0;
+}
+
+:host(:has(> svg:only-child)) > svg {
+  inline-size: 14px;
+  block-size: 14px;
+  fill: currentcolor;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :host(:hover) {
+    background: color-mix(in srgb, currentcolor 8%, transparent);
+  }
+}

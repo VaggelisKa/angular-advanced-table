@@ -39,6 +39,7 @@ export type {
   NatTablePagerIntl,
   NatTableScrollControlIntl,
   NatTableSearchIntl,
+  NatTableToolbarIntl,
   NatTableUiIntl,
   NatTableUiIntlConfig,
   NatTableUiIntlProviderConfig,

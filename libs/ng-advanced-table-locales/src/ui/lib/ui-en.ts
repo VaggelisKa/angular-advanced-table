@@ -61,6 +61,9 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
       pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Pin left' : 'Pin right'),
     },
   },
+  toolbar: {
+    toolbarLabel: 'Table toolbar',
+  },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };
 
