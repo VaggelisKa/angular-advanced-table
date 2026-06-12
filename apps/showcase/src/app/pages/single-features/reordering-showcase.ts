@@ -43,14 +43,11 @@ const DEMO_DATA: DemoItem[] = [
       <div class="grid-layout grid-layout-with-panel">
         <div class="card">
           <h2 class="card-title">Drag & Reorder Grid</h2>
-          <nat-table-surface>
+          <nat-table-surface [(state)]="tableState">
             <nat-table
               [data]="data"
               [columns]="columns"
-              [state]="tableState()"
-              [enableColumnReorder]="true"
               accessibleName="Reordering demo table"
-              (columnOrderChange)="onColumnOrderChange($event)"
             />
           </nat-table-surface>
         </div>

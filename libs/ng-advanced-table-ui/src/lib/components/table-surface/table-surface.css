@@ -29,6 +29,7 @@
   --nat-table-text-transform-header: uppercase;
   --nat-table-text-transform-label: uppercase;
   --nat-table-line-height-empty-state: 1.6;
+  --nat-table-font-weight-row-header: 600;
 
   --nat-table-space-card: 28px;
   --nat-table-space-card-compact: 20px;
@@ -169,6 +170,12 @@
   --nat-table-pager-label-color: var(--nat-table-color-text-muted);
   --nat-table-pager-disabled-opacity: var(--nat-table-disabled-opacity);
 
+  --nat-table-region-overflow-x: auto;
+  --nat-table-region-overflow-y: auto;
+  --nat-table-max-height: inherit;
+  --nat-table-height: inherit;
+  --nat-table-sticky-top: 0;
+
   --nat-table-region-background: var(--nat-table-color-surface-elevated);
   --nat-table-region-border-color: color-mix(in srgb, var(--nat-table-color-text) 10%, transparent);
   --nat-table-region-border-width: 1px;
@@ -235,6 +242,16 @@
     color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
 
   --nat-table-row-background: transparent;
+  --nat-table-row-background-focus: color-mix(
+    in srgb,
+    var(--nat-table-region-background, canvas) 88%,
+    currentColor 12%
+  );
+  --nat-table-row-background-focus-pinned: color-mix(
+    in srgb,
+    var(--nat-table-pinned-background, canvas) 84%,
+    currentColor 16%
+  );
   --nat-table-row-background-hover: color-mix(
     in srgb,
     var(--nat-table-color-surface-sticky) 78%,

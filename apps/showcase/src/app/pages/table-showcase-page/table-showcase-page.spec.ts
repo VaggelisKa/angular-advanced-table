@@ -225,9 +225,6 @@ describe('TableShowcasePage', () => {
     optionsButton.click();
     fixture.detectChanges();
 
-    const pinningToggle = document.querySelector(
-      '.feature-toggle[data-feature="enableColumnPinning"] input',
-    ) as HTMLInputElement;
     const searchToggle = document.querySelector(
       '.feature-toggle[data-feature="enableGlobalFilter"] input',
     ) as HTMLInputElement;
@@ -242,18 +239,17 @@ describe('TableShowcasePage', () => {
     ) as HTMLInputElement;
 
     expect(fixture.nativeElement.querySelector('nat-table-scroll-control')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('nat-table-pagination')).toBeTruthy();
 
-    pinningToggle.click();
     searchToggle.click();
     visibilityToggle.click();
     paginationToggle.click();
     scrollControlToggle.click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.table-controls-surface')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.table-toolbar')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('nat-table-column-visibility')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('nat-table-pagination')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('nat-table-scroll-control')).toBeTruthy();
   });
 });

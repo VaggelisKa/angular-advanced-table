@@ -621,17 +621,19 @@ readonly columns = withRenderMetricsColumn(baseColumns, this.metrics);
 ```
 
 ```html
-<nat-table
-  #grid="natTable"
-  [data]="rows()"
-  [columns]="columns"
-  [emitRowRenderEvents]="true"
-  accessibleName="Render metrics demo"
-  (rowRendered)="metrics.record($event)"
-/>
+<nat-table-surface>
+  <nat-table
+    #grid="natTable"
+    [data]="rows()"
+    [columns]="columns"
+    [emitRowRenderEvents]="true"
+    accessibleName="Render metrics demo"
+    (rowRendered)="metrics.record($event)"
+  />
 
-<nat-render-metrics-panel [store]="metrics" />
-<nat-render-metrics-filter [for]="grid" [store]="metrics" />
+  <nat-render-metrics-panel [store]="metrics" />
+  <nat-render-metrics-filter [for]="grid" [store]="metrics" />
+</nat-table-surface>
 ```
 
 Utils exports:

@@ -136,15 +136,6 @@
           }
         </div>
       </div>
-
-      @if (tableFeatures().showRenderMetrics) {
-        <div class="toolbar-group toolbar-group-stretch toolbar-group-metrics">
-          <div class="metrics-row">
-            <nat-render-metrics-filter [for]="grid" [store]="metricsStore" />
-            <nat-render-metrics-panel [store]="metricsStore" />
-          </div>
-        </div>
-      }
     </section>
 
     <section class="table-card">
@@ -158,48 +149,44 @@
         </div>
       </div>
 
-      @if (hasTopTableControls()) {
-        <nat-table-surface class="table-controls-surface">
-          <div class="table-controls-grid">
+      <nat-table-surface
+        class="table-shell"
+        [(state)]="tableState"
+        [stickyHeader]="tableFeatures().stickyHeader"
+        [accessibilityText]="accessibilityText"
+      >
+        @if (tableFeatures().showRenderMetrics) {
+          <nat-table-toolbar>
+            <nat-render-metrics-filter [store]="metricsStore" />
+            <nat-render-metrics-panel [store]="metricsStore" />
+          </nat-table-toolbar>
+        }
+
+        @if (hasTopTableControls()) {
+          <nat-table-toolbar>
             @if (tableFeatures().enableGlobalFilter) {
               <nat-table-search
-                [for]="grid"
+                align-left
                 label="Search symbol, company, exchange, desk, or id"
                 placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
               />
             }
             @if (tableFeatures().showColumnVisibility) {
-              <nat-table-column-visibility [for]="grid" />
+              <nat-table-column-visibility />
             }
-          </div>
-        </nat-table-surface>
-      }
+          </nat-table-toolbar>
+        }
 
-      <nat-table-surface class="table-shell">
         @if (hasTablePaginationControls()) {
-          <div class="table-toolbar">
-            <div class="table-actions">
-              <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
-              <nat-table-pager />
-            </div>
-          </div>
+          <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
         }
 
         <nat-table
-          #grid="natTable"
           [data]="simulation.rows()"
           [columns]="columns"
-          [state]="tableState()"
-          [accessibilityText]="accessibilityText"
-          [enableColumnPinning]="tableFeatures().enableColumnPinning"
-          [enableColumnReorder]="tableFeatures().enableColumnReorder"
-          [enablePagination]="tableFeatures().enablePagination"
-          [enableGlobalFilter]="tableFeatures().enableGlobalFilter"
           [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
           [getRowId]="getRowId"
-          [stickyHeader]="tableFeatures().stickyHeader"
           accessibleName="Live market movers table"
-          (columnFiltersChange)="onColumnFiltersChange($event)"
           (rowRendered)="onRowRendered($event)"
         />
 
@@ -229,24 +216,6 @@
       </p>
 
       <div class="feature-toggle-list" role="group" aria-label="Table functionality toggles">
-        <label class="feature-toggle" data-feature="enableColumnPinning">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().enableColumnPinning"
-            (change)="toggleFeature('enableColumnPinning', readChecked($event))"
-          />
-          <span>Column pinning</span>
-        </label>
-
-        <label class="feature-toggle" data-feature="enableColumnReorder">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().enableColumnReorder"
-            (change)="toggleFeature('enableColumnReorder', readChecked($event))"
-          />
-          <span>Column reordering</span>
-        </label>
-
         <label class="feature-toggle" data-feature="enablePagination">
           <input
             type="checkbox"

@@ -4,6 +4,8 @@ export { NatTableSearch } from './lib/components/table-search/table-search';
 export { NatTableColumnVisibility } from './lib/components/table-column-visibility/table-column-visibility';
 export { NatTablePageSize } from './lib/components/table-page-size/table-page-size';
 export { NatTablePager } from './lib/components/table-pager/table-pager';
+export { NatTablePagination } from './lib/components/table-pagination/table-pagination';
+export { NatTableToolbar } from './lib/components/table-toolbar/table-toolbar';
 export { NatTableScrollControl } from './lib/components/table-scroll-control/table-scroll-control';
 export { withNatTableHeaderActions } from './lib/components/table-header-actions/with-table-header-actions';
 export {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, DestroyRef } from '@angular/core';
 import type { PaginationState, RowData } from '@tanstack/angular-table';
 
 import {
@@ -18,15 +18,23 @@ let nextSearchFieldId = 0;
   styleUrl: './table-search.css',
 })
 export class NatTableSearch<TData extends RowData = RowData> {
-  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly label = input<string | undefined>(undefined);
   readonly placeholder = input<string | undefined>(undefined);
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  private readonly destroyRef = inject(DestroyRef);
+
   protected readonly controller = computed(
-    () => this.for() ?? this.natTableService?.controller() ?? null,
+    () => this.natTableService.controller(),
   );
+
+  constructor() {
+    this.natTableService.registerSearch();
+    this.destroyRef.onDestroy(() => {
+      this.natTableService.unregisterSearch();
+    });
+  }
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   protected readonly inputId = `nat-table-search-${nextSearchFieldId++}`;
