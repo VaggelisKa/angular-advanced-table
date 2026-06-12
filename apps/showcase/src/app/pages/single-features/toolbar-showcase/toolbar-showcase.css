@@ -1,0 +1,20 @@
+.position-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.demo-state {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+
+.demo-state-term {
+  font-weight: 600;
+}
+
+.demo-state-value {
+  margin: 0;
+}
