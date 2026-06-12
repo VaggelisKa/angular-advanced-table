@@ -1276,23 +1276,22 @@ describe('NatTable', () => {
     expect(host.rowActivateEvents.length).toBe(1);
   });
 
-  it('walks grid controls with Tab and Shift+Tab and releases Tab at the edges', () => {
+  it("walks the cell's controls with Tab and Shift+Tab and releases Tab at the cell edges", () => {
     fixture.detectChanges();
 
-    const rows = Array.from(
-      fixture.nativeElement.querySelectorAll('tbody tr.data-row'),
-    ) as HTMLElement[];
-    const firstCell = rows[0].querySelector('td[data-column-id="region"]') as HTMLElement;
-    const secondCell = rows[1].querySelector('td[data-column-id="region"]') as HTMLElement;
+    const cell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="region"]',
+    ) as HTMLElement;
 
-    firstCell.innerHTML = '<button type="button" class="cell-action">First</button>';
-    secondCell.innerHTML = '<button type="button" class="cell-action">Second</button>';
+    cell.innerHTML =
+      '<button type="button" class="first">First</button>' +
+      '<button type="button" class="second">Second</button>';
 
-    const firstButton = firstCell.querySelector('button') as HTMLButtonElement;
-    const secondButton = secondCell.querySelector('button') as HTMLButtonElement;
+    const firstButton = cell.querySelector('button.first') as HTMLButtonElement;
+    const secondButton = cell.querySelector('button.second') as HTMLButtonElement;
 
     // Plain Tab on a focused cell is not intercepted, so focus can leave the grid.
-    firstCell.focus();
+    cell.focus();
 
     const tabFromCell = new KeyboardEvent('keydown', {
       key: 'Tab',
@@ -1300,12 +1299,12 @@ describe('NatTable', () => {
       cancelable: true,
     });
 
-    firstCell.dispatchEvent(tabFromCell);
+    cell.dispatchEvent(tabFromCell);
     fixture.detectChanges();
 
     expect(tabFromCell.defaultPrevented).toBe(false);
 
-    // Tab from a control walks to the next control across the grid.
+    // Tab from a control walks to the next control of the same cell.
     firstButton.focus();
     firstButton.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
@@ -1322,46 +1321,45 @@ describe('NatTable', () => {
 
     expect(document.activeElement).toBe(firstButton);
 
-    // Shift+Tab past the first control is not handled, so focus can leave the grid.
+    // Tab past the cell's last control is not handled, so focus can leave the grid.
     const leaveEvent = new KeyboardEvent('keydown', {
       key: 'Tab',
-      shiftKey: true,
       bubbles: true,
       cancelable: true,
     });
 
-    firstButton.dispatchEvent(leaveEvent);
+    secondButton.dispatchEvent(leaveEvent);
     fixture.detectChanges();
 
     expect(leaveEvent.defaultPrevented).toBe(false);
   });
 
-  it('skips non-tabbable controls in the Tab walk', () => {
+  it('skips non-tabbable controls but keeps roving grid-cell widgets reachable', () => {
     fixture.detectChanges();
 
-    const rows = Array.from(
-      fixture.nativeElement.querySelectorAll('tbody tr.data-row'),
-    ) as HTMLElement[];
-    const firstCell = rows[0].querySelector('td[data-column-id="region"]') as HTMLElement;
-    const secondCell = rows[1].querySelector('td[data-column-id="region"]') as HTMLElement;
+    const cell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="region"]',
+    ) as HTMLElement;
 
-    firstCell.innerHTML = '<button type="button" class="cell-action">First</button>';
-    secondCell.innerHTML =
+    cell.innerHTML =
+      '<button type="button" class="first">First</button>' +
       '<button type="button" tabindex="-1">Removed from tab order</button>' +
       '<span inert><button type="button">Inert</button></span>' +
       '<span aria-hidden="true"><button type="button">Hidden</button></span>' +
-      '<button type="button" class="reachable">Reachable</button>';
+      '<button type="button" ngGridCellWidget tabindex="-1" class="widget">Widget</button>';
 
-    const firstButton = firstCell.querySelector('button') as HTMLButtonElement;
-    const reachableButton = secondCell.querySelector('button.reachable') as HTMLButtonElement;
+    const firstButton = cell.querySelector('button.first') as HTMLButtonElement;
+    const widgetButton = cell.querySelector('button.widget') as HTMLButtonElement;
 
+    // The roving widget sits at tabindex="-1" (flexRender keeps it unregistered),
+    // but the model still treats it as the cell's next control.
     firstButton.focus();
     firstButton.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
     );
     fixture.detectChanges();
 
-    expect(document.activeElement).toBe(reachableButton);
+    expect(document.activeElement).toBe(widgetButton);
   });
 
   it('moves focus into a header control with Enter on the column header cell', () => {
