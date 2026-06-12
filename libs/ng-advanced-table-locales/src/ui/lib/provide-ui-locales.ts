@@ -96,6 +96,7 @@ export function mergeNatTableUiIntl(
         override.headerActions?.accessibilityLabels,
       ),
     },
+    toolbar: mergeDefined(parent?.toolbar, override.toolbar),
     formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
   };
 }

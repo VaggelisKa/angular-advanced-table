@@ -205,6 +205,11 @@ export interface NatTableHeaderActionsIntl {
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
 
+export interface NatTableToolbarIntl {
+  /** Default `aria-label` for the toolbar container; the `accessibleName` input wins. */
+  toolbarLabel?: string;
+}
+
 /** Locale-specific defaults for generated `ng-advanced-table-ui` copy. */
 export interface NatTableUiIntl {
   search?: NatTableSearchIntl;
@@ -213,6 +218,7 @@ export interface NatTableUiIntl {
   pager?: NatTablePagerIntl;
   scrollControl?: NatTableScrollControlIntl;
   headerActions?: NatTableHeaderActionsIntl;
+  toolbar?: NatTableToolbarIntl;
   /** Number formatter used for `...Text` fields passed to generated label formatters. */
   formatNumber?: NatTableUiNumberFormatter;
 }
