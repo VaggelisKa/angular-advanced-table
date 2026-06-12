@@ -178,7 +178,7 @@ export class TableBuilderPage {
 
     const componentImports = ['NatTable', 'NatTableState'];
 
-    const stateObj: any = {
+    const stateObj: Partial<NatTableState> = {
       columnVisibility: this.tableState().columnVisibility ?? { name: true, category: true, status: true, value: true },
     };
     if (this.withPagination()) {
