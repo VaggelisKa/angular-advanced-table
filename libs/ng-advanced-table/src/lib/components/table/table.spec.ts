@@ -1219,6 +1219,184 @@ describe('NatTable', () => {
     expect(interactiveFixture.componentInstance.events.length).toBe(0);
   });
 
+  it('moves focus into a cell control with Enter and back to the cell with Escape', () => {
+    fixture.detectChanges();
+
+    const cell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="region"]',
+    ) as HTMLElement;
+
+    cell.innerHTML =
+      '<button type="button" class="cell-action">Edit</button>' +
+      '<button type="button" class="cell-action">Delete</button>';
+
+    const [editButton] = Array.from(cell.querySelectorAll<HTMLButtonElement>('button.cell-action'));
+
+    cell.focus();
+
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    cell.dispatchEvent(enterEvent);
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(editButton);
+    expect(enterEvent.defaultPrevented).toBe(true);
+    expect(host.rowActivateEvents.length).toBe(0);
+
+    const escapeEvent = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    editButton.dispatchEvent(escapeEvent);
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(cell);
+    expect(escapeEvent.defaultPrevented).toBe(true);
+  });
+
+  it('lets Enter on a control-less cell fall through to row activation', () => {
+    fixture.detectChanges();
+
+    const cell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="region"]',
+    ) as HTMLElement;
+
+    cell.focus();
+    cell.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+
+    expect(host.rowActivateEvents.length).toBe(1);
+  });
+
+  it('walks grid controls with Tab and Shift+Tab and releases Tab at the edges', () => {
+    fixture.detectChanges();
+
+    const rows = Array.from(
+      fixture.nativeElement.querySelectorAll('tbody tr.data-row'),
+    ) as HTMLElement[];
+    const firstCell = rows[0].querySelector('td[data-column-id="region"]') as HTMLElement;
+    const secondCell = rows[1].querySelector('td[data-column-id="region"]') as HTMLElement;
+
+    firstCell.innerHTML = '<button type="button" class="cell-action">First</button>';
+    secondCell.innerHTML = '<button type="button" class="cell-action">Second</button>';
+
+    const firstButton = firstCell.querySelector('button') as HTMLButtonElement;
+    const secondButton = secondCell.querySelector('button') as HTMLButtonElement;
+
+    // Plain Tab on a focused cell is not intercepted, so focus can leave the grid.
+    firstCell.focus();
+
+    const tabFromCell = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    firstCell.dispatchEvent(tabFromCell);
+    fixture.detectChanges();
+
+    expect(tabFromCell.defaultPrevented).toBe(false);
+
+    // Tab from a control walks to the next control across the grid.
+    firstButton.focus();
+    firstButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(secondButton);
+
+    // Shift+Tab walks back.
+    secondButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(firstButton);
+
+    // Shift+Tab past the first control is not handled, so focus can leave the grid.
+    const leaveEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    firstButton.dispatchEvent(leaveEvent);
+    fixture.detectChanges();
+
+    expect(leaveEvent.defaultPrevented).toBe(false);
+  });
+
+  it('skips non-tabbable controls in the Tab walk', () => {
+    fixture.detectChanges();
+
+    const rows = Array.from(
+      fixture.nativeElement.querySelectorAll('tbody tr.data-row'),
+    ) as HTMLElement[];
+    const firstCell = rows[0].querySelector('td[data-column-id="region"]') as HTMLElement;
+    const secondCell = rows[1].querySelector('td[data-column-id="region"]') as HTMLElement;
+
+    firstCell.innerHTML = '<button type="button" class="cell-action">First</button>';
+    secondCell.innerHTML =
+      '<button type="button" tabindex="-1">Removed from tab order</button>' +
+      '<span inert><button type="button">Inert</button></span>' +
+      '<span aria-hidden="true"><button type="button">Hidden</button></span>' +
+      '<button type="button" class="reachable">Reachable</button>';
+
+    const firstButton = firstCell.querySelector('button') as HTMLButtonElement;
+    const reachableButton = secondCell.querySelector('button.reachable') as HTMLButtonElement;
+
+    firstButton.focus();
+    firstButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(reachableButton);
+  });
+
+  it('moves focus into a header control with Enter on the column header cell', () => {
+    fixture.detectChanges();
+
+    const headerCell = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLElement;
+
+    headerCell.innerHTML = '<button type="button" class="header-action">Sort by Region</button>';
+
+    const sortButton = headerCell.querySelector('button') as HTMLButtonElement;
+
+    headerCell.focus();
+
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    headerCell.dispatchEvent(enterEvent);
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(sortButton);
+    expect(enterEvent.defaultPrevented).toBe(true);
+
+    sortButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(headerCell);
+  });
+
   it('applies sticky class and toggles vertical sticky header positioning', async () => {
     fixture.detectChanges();
     let tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
