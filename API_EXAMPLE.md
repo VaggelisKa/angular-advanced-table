@@ -78,21 +78,11 @@ export class DeclarativeTableDemoComponent {
   readonly serverResponse = resource({
     request: () => this.tableState(),
     loader: async ({ request: state }) => {
-      const params = new URLSearchParams();
-      if (state.pagination) {
-        params.set('page', String(state.pagination.pageIndex + 1));
-        params.set('limit', String(state.pagination.pageSize));
-      }
-      if (state.sorting?.length) {
-        const sort = state.sorting[0]!;
-        params.set('sortBy', sort.id);
-        params.set('order', sort.desc ? 'desc' : 'asc');
-      }
-      if (state.globalFilter) {
-        params.set('search', state.globalFilter);
-      }
+      const page = state.pagination?.pageIndex ?? 0;
+      const size = state.pagination?.pageSize ?? 10;
+      const search = state.globalFilter ?? '';
 
-      const res = await fetch(`/api/nodes?${params.toString()}`);
+      const res = await fetch(`/api/nodes?page=${page}&size=${size}&search=${search}`);
       if (!res.ok) {
         throw new Error('Failed to load nodes data');
       }
