@@ -55,6 +55,11 @@ const showcaseExamples = [
     path: '/keyboard-interaction',
   },
   {
+    label: 'Value formatting',
+    description: 'Locale-aware cell display',
+    path: '/value-formatting',
+  },
+  {
     label: 'Sorting with pinned columns',
     description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',

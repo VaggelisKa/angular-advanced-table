@@ -410,7 +410,7 @@ input {
   --nat-table-region-border-width: 0;
 
   --nat-table-header-background: var(--showcase-page-surface-muted);
-  --nat-table-header-color: var(--showcase-page-text-muted);
+  --nat-table-header-color: var(--showcase-page-text-soft);
   --nat-table-header-border-color: var(--showcase-page-border);
   --nat-table-header-border-width: 1px;
 
@@ -546,7 +546,7 @@ input {
   border: 1px solid color-mix(in srgb, var(--showcase-page-accent) 45%, transparent);
   border-radius: var(--showcase-page-radius-sm);
   background: var(--showcase-page-accent-soft);
-  color: var(--showcase-page-accent);
+  color: var(--showcase-page-accent-strong);
   font-size: 0.78rem;
   font-weight: 500;
 }

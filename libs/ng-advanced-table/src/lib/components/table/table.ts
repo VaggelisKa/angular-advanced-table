@@ -24,6 +24,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type Cell,
   type CellContext,
   type Column,
   type ColumnFiltersState,
@@ -837,6 +838,23 @@ export class NatTable<TData extends RowData = RowData> {
     context: CellContext<TData, unknown>,
   ): NatTableCellTone | null {
     return column.columnDef.meta?.cellTone?.(context) ?? null;
+  }
+
+  /**
+   * Locale-aware display string for a cell whose column declares
+   * `meta.valueFormatter`, or `null` to fall back to the column's `cell`
+   * renderer.
+   */
+  protected cellValueFormatter(cell: Cell<TData, unknown>): string | null {
+    const formatter = cell.column.columnDef.meta?.valueFormatter;
+
+    return formatter
+      ? formatter({
+          value: cell.getValue(),
+          row: cell.row.original,
+          locale: this.localeId(),
+        })
+      : null;
   }
 
   protected onRowRendered(event: NatTableRowRenderedEvent): void {

@@ -53,4 +53,6 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerSize?: number | string;
   headerMinSize?: number | string;
   headerMaxSize?: number | string;
+  /** Declarative display formatting; used for cells without an explicit `cell` renderer. */
+  valueFormatter?: (context: { value: TValue; row: TData; locale: string }) => string;
 }

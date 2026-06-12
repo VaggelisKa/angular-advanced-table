@@ -1379,6 +1379,53 @@ describe('NatTable', () => {
     tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
     expect(tableElement.classList.contains('has-sticky-header')).toBe(false);
   });
+
+  it('renders meta.valueFormatter output for cells without an explicit cell renderer', async () => {
+    @Component({
+      imports: [NatTable],
+      template: `
+        <nat-table
+          [data]="rows()"
+          [columns]="columns"
+          [locale]="'da-DK'"
+          [getRowId]="getRowId"
+          accessibleName="Operations table"
+        />
+      `,
+    })
+    class ValueFormatterHost {
+      readonly rows = signal<Row[]>(buildRows(1));
+      readonly getRowId = (row: Row) => row.id;
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Service',
+          meta: { label: 'Service', rowHeader: true },
+        },
+        {
+          accessorKey: 'throughput',
+          header: 'Throughput',
+          meta: {
+            label: 'Throughput',
+            valueFormatter: ({ value, locale }) =>
+              new Intl.NumberFormat(locale).format(value as number),
+          },
+        },
+      ];
+    }
+
+    const vfFixture = TestBed.createComponent(ValueFormatterHost);
+
+    await vfFixture.whenStable();
+    vfFixture.detectChanges();
+
+    const throughputCell = vfFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="throughput"]',
+    ) as HTMLElement;
+
+    // buildRows(1) → throughput 1000; da-DK → "1.000"
+    expect(throughputCell.textContent?.trim()).toBe('1.000');
+  });
 });
 
 function buildDynamicColumns(nameHeader: string): ColumnDef<Row, unknown>[] {

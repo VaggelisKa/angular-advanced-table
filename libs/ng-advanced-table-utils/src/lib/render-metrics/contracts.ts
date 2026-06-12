@@ -80,6 +80,8 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerMinSize?: number | string;
   /** Optional header-only maximum width in pixels. Does not affect body cells. */
   headerMaxSize?: number | string;
+  /** Declarative display formatting; used for cells without an explicit `cell` renderer. */
+  valueFormatter?: (context: { value: TValue; row: TData; locale: string }) => string;
 }
 
 declare module '@tanstack/table-core' {

@@ -83,6 +83,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'value-formatting',
+    title: 'Advanced Table - Value Formatting',
+    loadComponent: () =>
+      import('./pages/single-features/value-formatting-showcase').then(
+        (module) => module.ValueFormattingShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

@@ -130,11 +130,16 @@
                   [attr.data-tone]="cellTone"
                 >
                   <span class="data-cell-content">
-                    <ng-container
-                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                    >
-                      {{ rendered }}
-                    </ng-container>
+                    @let formattedValue = cellValueFormatter(cell);
+                    @if (formattedValue !== null) {
+                      {{ formattedValue }}
+                    } @else {
+                      <ng-container
+                        *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                      >
+                        {{ rendered }}
+                      </ng-container>
+                    }
                   </span>
                 </th>
               } @else {
@@ -157,11 +162,16 @@
                   [attr.data-tone]="cellTone"
                 >
                   <span class="data-cell-content">
-                    <ng-container
-                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                    >
-                      {{ rendered }}
-                    </ng-container>
+                    @let formattedValue = cellValueFormatter(cell);
+                    @if (formattedValue !== null) {
+                      {{ formattedValue }}
+                    } @else {
+                      <ng-container
+                        *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                      >
+                        {{ rendered }}
+                      </ng-container>
+                    }
                   </span>
                 </td>
               }
