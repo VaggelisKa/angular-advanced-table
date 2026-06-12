@@ -6,6 +6,14 @@ export { NatTablePageSize } from './lib/components/table-page-size/table-page-si
 export { NatTablePager } from './lib/components/table-pager/table-pager';
 export { NatTableScrollControl } from './lib/components/table-scroll-control/table-scroll-control';
 export { withNatTableHeaderActions } from './lib/components/table-header-actions/with-table-header-actions';
+export { NatTableToolbar } from './lib/components/table-toolbar/table-toolbar';
+export { NatToolbarButton } from './lib/components/table-toolbar/toolbar-button/toolbar-button';
+export { NatToolbarGroup } from './lib/components/table-toolbar/toolbar-group/toolbar-group';
+export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item.directive';
+export {
+  NAT_TABLE_TOOLBAR,
+  NAT_TOOLBAR_ITEM,
+} from './lib/components/table-toolbar/common/toolbar-tokens.const';
 export {
   NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_DEFAULT_INTL,
@@ -17,12 +25,19 @@ export type {
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
 export type {
+  NatTableToolbarRef,
+  NatToolbarItemPosition,
+  NatToolbarItemPositionInput,
+  NatToolbarItemRef,
+} from './lib/components/table-toolbar/common/toolbar-tokens.type';
+export type {
   NatTableColumnVisibilityIntl,
   NatTableHeaderActionsIntl,
   NatTablePageSizeIntl,
   NatTablePagerIntl,
   NatTableScrollControlIntl,
   NatTableSearchIntl,
+  NatTableToolbarIntl,
   NatTableUiIntl,
   NatTableUiIntlConfig,
   NatTableUiIntlProviderConfig,

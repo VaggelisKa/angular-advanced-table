@@ -6,9 +6,11 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  * (border, radius, height, padding, hover, focus ring) using the same
  * `--nat-table-*` tokens as the built-in trigger buttons.
  *
- * Usage:
- *   <button natToolbarButton natToolbarItem>Export</button>
- *   <a href="/export" natToolbarButton natToolbarItem>Download</a>
+ * @example
+ * ```html
+ * <button natToolbarButton natToolbarItem value="export">Export</button>
+ * <a href="/export" natToolbarButton natToolbarItem value="download">Download</a>
+ * ```
  */
 @Component({
   selector: 'button[natToolbarButton], a[natToolbarButton]',
