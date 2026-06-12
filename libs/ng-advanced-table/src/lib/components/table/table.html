@@ -1,4 +1,4 @@
-<div class="table-region" #tableRegion>
+<div class="table-region" #tableRegion [attr.dir]="resolvedDirection()">
   <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
   @if (resolvedDescription().trim()) {
     <p class="sr-only" [id]="tableDescriptionId()">{{ resolvedDescription() }}</p>
@@ -15,6 +15,7 @@
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
     [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.dir]="resolvedDirection()"
     rowWrap="nowrap"
     colWrap="nowrap"
   >

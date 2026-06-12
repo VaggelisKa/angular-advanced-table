@@ -15,6 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Grid, GridCell, GridRow } from '@angular/aria/grid';
+import { Directionality } from '@angular/cdk/bidi';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import {
   FlexRender,
@@ -182,6 +183,8 @@ export class NatTable<TData extends RowData = RowData> {
   readonly enableColumnReorder = input(false, { transform: booleanAttribute });
   /** Enables client-side pagination row models when external UI drives pagination state. */
   readonly enablePagination = input(false, { transform: booleanAttribute });
+  /** Text direction. Falls back to the inherited CDK direction, then `'ltr'`. */
+  readonly direction = input<'ltr' | 'rtl'>();
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData>>();
   /**
@@ -393,6 +396,11 @@ export class NatTable<TData extends RowData = RowData> {
   readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
   private readonly destroyRef = inject(DestroyRef);
+  private readonly directionality = inject(Directionality, { optional: true });
+  /** Resolved text direction: explicit input → inherited CDK direction → `'ltr'`. */
+  protected readonly resolvedDirection = computed<'ltr' | 'rtl'>(
+    () => this.direction() ?? this.directionality?.value ?? 'ltr',
+  );
   private headerResizeObserver: ResizeObserver | null = null;
 
   /**
@@ -424,6 +432,8 @@ export class NatTable<TData extends RowData = RowData> {
     const widths = this.resolvedColumnWidths();
     const userColumnSizing = this.userColumnSizing();
     const state = this.mergedState();
+    // Pinned sticky offsets are physical CSS insets; mirror them for RTL.
+    const isRtl = this.resolvedDirection() === 'rtl';
     const visibleColumnsById = new Map(
       visibleColumns.map((column) => [column.id, column] as const),
     );
@@ -471,6 +481,10 @@ export class NatTable<TData extends RowData = RowData> {
             : null;
       const pinnedLeft = leftPinnedIds.has(column.id);
       const pinnedRight = rightPinnedIds.has(column.id);
+      const hasPinnedStartEdge = pinnedLeft && leftVisibleColumns.at(-1)?.id === column.id;
+      const hasPinnedEndEdge = pinnedRight && rightVisibleColumns[0]?.id === column.id;
+      const startInset = pinnedLeft ? (leftOffsets[column.id] ?? 0) : null;
+      const endInset = pinnedRight ? (rightOffsets[column.id] ?? 0) : null;
 
       const sortEntry = state.sorting.find((entry) => entry.id === column.id);
       const meta = column.columnDef.meta;
@@ -496,10 +510,10 @@ export class NatTable<TData extends RowData = RowData> {
         alignEnd: meta?.align === 'end',
         pinnedLeft,
         pinnedRight,
-        hasPinnedEdgeLeft: pinnedLeft && leftVisibleColumns.at(-1)?.id === column.id,
-        hasPinnedEdgeRight: pinnedRight && rightVisibleColumns[0]?.id === column.id,
-        left: pinnedLeft ? (leftOffsets[column.id] ?? 0) : null,
-        right: pinnedRight ? (rightOffsets[column.id] ?? 0) : null,
+        hasPinnedEdgeLeft: isRtl ? hasPinnedEndEdge : hasPinnedStartEdge,
+        hasPinnedEdgeRight: isRtl ? hasPinnedStartEdge : hasPinnedEndEdge,
+        left: isRtl ? endInset : startInset,
+        right: isRtl ? startInset : endInset,
         width,
         minWidth,
         maxWidth,

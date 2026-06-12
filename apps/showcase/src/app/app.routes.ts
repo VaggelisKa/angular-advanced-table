@@ -83,6 +83,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'rtl-direction',
+    title: 'Advanced Table - Text Direction (RTL)',
+    loadComponent: () =>
+      import('./pages/single-features/rtl-direction-showcase').then(
+        (module) => module.RtlDirectionShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

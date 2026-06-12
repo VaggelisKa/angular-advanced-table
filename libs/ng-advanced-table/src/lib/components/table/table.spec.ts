@@ -89,6 +89,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="enablePagination"
+      [direction]="direction"
       [stickyHeader]="stickyHeader"
       [getRowId]="getRowId"
       [accessibilityText]="accessibilityText"
@@ -122,6 +123,7 @@ class TableHost {
   };
   enablePagination = false;
   enableColumnReorder = false;
+  direction: 'ltr' | 'rtl' | undefined = undefined;
   stickyHeader = true;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
@@ -243,6 +245,7 @@ describe('NatTable', () => {
     options: {
       enableColumnReorder?: boolean;
       enablePagination?: boolean;
+      direction?: 'ltr' | 'rtl';
       stickyHeader?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -254,6 +257,7 @@ describe('NatTable', () => {
     host = fixture.componentInstance;
     host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.direction = options.direction ?? host.direction;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -282,6 +286,44 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('.pager')).toBeNull();
     expect(fixture.nativeElement.querySelector('.sort-button')).toBeNull();
     expect(fixture.nativeElement.querySelector('.pin-button')).toBeNull();
+  });
+
+  it('reflects the resolved text direction on the grid', async () => {
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+
+    expect(table.getAttribute('dir')).toBe('ltr');
+
+    await recreateHost({ direction: 'rtl' });
+    fixture.detectChanges();
+
+    const rtlTable = fixture.nativeElement.querySelector('table') as HTMLElement;
+
+    expect(rtlTable.getAttribute('dir')).toBe('rtl');
+  });
+
+  it('mirrors pinned sticky offsets to the opposite physical edge in RTL', async () => {
+    await recreateHost({
+      direction: 'rtl',
+      state: {
+        columnPinning: {
+          left: ['name', 'region'],
+          right: [],
+        },
+      },
+    });
+    fixture.detectChanges();
+
+    const region = fixture.nativeElement.querySelector('.table-region') as HTMLElement;
+    const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
+
+    expect(region.getAttribute('dir')).toBe('rtl');
+    // Start-pinned columns stick to the physical right edge in RTL.
+    expect(headers[0]?.style.left).toBe('');
+    expect(headers[0]?.style.right).toBe('0px');
+    expect(headers[1]?.style.left).toBe('');
+    expect(headers[1]?.style.right).toBe('180px');
   });
 
   it('visually hides primitive header labels while keeping accessible text', async () => {

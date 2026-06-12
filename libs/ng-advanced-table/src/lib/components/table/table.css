@@ -221,7 +221,7 @@
 
 .header-cell.is-align-end,
 .data-cell.is-align-end {
-  text-align: right;
+  text-align: end;
 }
 
 .data-cell.is-align-end {

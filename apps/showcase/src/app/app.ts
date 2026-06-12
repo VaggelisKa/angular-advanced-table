@@ -55,6 +55,11 @@ const showcaseExamples = [
     path: '/keyboard-interaction',
   },
   {
+    label: 'Text direction',
+    description: 'LTR / RTL mirroring',
+    path: '/rtl-direction',
+  },
+  {
     label: 'Sorting with pinned columns',
     description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',
