@@ -1,12 +1,12 @@
 import { Directive, computed, inject, input } from '@angular/core';
 import { ToolbarWidget } from '@angular/aria/toolbar';
 
-import { NAT_TOOLBAR_ITEM } from './common/toolbar-tokens.const';
+import { NAT_TOOLBAR_ITEM } from '../common/toolbar-tokens.const';
 import type {
   NatToolbarItemPosition,
   NatToolbarItemPositionInput,
   NatToolbarItemRef,
-} from './common/toolbar-tokens.type';
+} from '../common/toolbar-tokens.type';
 
 /**
  * Position attribute AND registration directive for toolbar items.

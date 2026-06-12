@@ -9,7 +9,7 @@ export { withNatTableHeaderActions } from './lib/components/table-header-actions
 export { NatTableToolbar } from './lib/components/table-toolbar/table-toolbar';
 export { NatToolbarButton } from './lib/components/table-toolbar/toolbar-button/toolbar-button';
 export { NatToolbarGroup } from './lib/components/table-toolbar/toolbar-group/toolbar-group';
-export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item.directive';
+export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item/toolbar-item.directive';
 export {
   NAT_TABLE_TOOLBAR,
   NAT_TOOLBAR_ITEM,
