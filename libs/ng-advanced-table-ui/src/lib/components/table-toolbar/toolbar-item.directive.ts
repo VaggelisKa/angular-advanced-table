@@ -24,6 +24,15 @@ import type {
  * model is disabled by the toolbar shell, so the value carries no behavior).
  * Items only work inside a `nat-table-toolbar` — outside one, the widget's
  * parent injection throws.
+ *
+ * @example
+ * ```html
+ * <nat-table-toolbar>
+ *   <button natToolbarItem="start" value="export">Export</button>
+ *   <!-- text inputs: bind [value] — a static attribute would prefill the field -->
+ *   <input natToolbarItem="end" [value]="'filter'" type="search" aria-label="Filter" />
+ * </nat-table-toolbar>
+ * ```
  */
 @Directive({
   selector: '[natToolbarItem]',
