@@ -100,44 +100,52 @@ export class NatTableSurface {
       }
 
       if (isFirstChange) {
-        const initial = this.natTableService.surfaceInitialState();
-        const currentBound = this.state();
-        previousState = {
-          sorting: currentBound.sorting ?? initial.sorting ?? [],
-          globalFilter: currentBound.globalFilter ?? initial.globalFilter ?? '',
-          columnFilters: currentBound.columnFilters ?? initial.columnFilters ?? [],
-          columnVisibility: currentBound.columnVisibility ?? initial.columnVisibility ?? {},
-          columnOrder: currentBound.columnOrder ?? initial.columnOrder ?? [],
-          columnPinning: currentBound.columnPinning ?? initial.columnPinning ?? { left: [], right: [] },
-          pagination: currentBound.pagination ?? initial.pagination ?? { pageIndex: 0, pageSize: 10 },
-        };
+        previousState = nextState;
         isFirstChange = false;
       }
 
       const prev = previousState;
       previousState = nextState;
 
-      this.stateChange.emit(nextState);
+      const sortingChanged = JSON.stringify(prev.sorting) !== JSON.stringify(nextState.sorting);
+      const globalFilterChanged = prev.globalFilter !== nextState.globalFilter;
+      const columnFiltersChanged = JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters);
+      const columnVisibilityChanged = JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility);
+      const columnOrderChanged = JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder);
+      const columnPinningChanged = JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning);
+      const paginationChanged = JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
 
-      if (JSON.stringify(prev.sorting) !== JSON.stringify(nextState.sorting)) {
+      if (
+        sortingChanged ||
+        globalFilterChanged ||
+        columnFiltersChanged ||
+        columnVisibilityChanged ||
+        columnOrderChanged ||
+        columnPinningChanged ||
+        paginationChanged
+      ) {
+        this.stateChange.emit(nextState);
+      }
+
+      if (sortingChanged) {
         this.sortingChange.emit(nextState.sorting);
       }
-      if (prev.globalFilter !== nextState.globalFilter) {
+      if (globalFilterChanged) {
         this.globalFilterChange.emit(nextState.globalFilter);
       }
-      if (JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters)) {
+      if (columnFiltersChanged) {
         this.columnFiltersChange.emit(nextState.columnFilters);
       }
-      if (JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility)) {
+      if (columnVisibilityChanged) {
         this.columnVisibilityChange.emit(nextState.columnVisibility);
       }
-      if (JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder)) {
+      if (columnOrderChanged) {
         this.columnOrderChange.emit(nextState.columnOrder);
       }
-      if (JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning)) {
+      if (columnPinningChanged) {
         this.columnPinningChange.emit(nextState.columnPinning);
       }
-      if (JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination)) {
+      if (paginationChanged) {
         this.paginationChange.emit(nextState.pagination);
       }
     });

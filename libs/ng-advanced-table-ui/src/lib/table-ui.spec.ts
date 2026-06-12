@@ -127,7 +127,9 @@ class TableUiHost {
     },
   };
 
+  stateChangeCalls = 0;
   onTableStateChange(state: Partial<NatTableState>): void {
+    this.stateChangeCalls++;
     this.tableState.set(state);
   }
 }
@@ -527,6 +529,15 @@ describe('ng-advanced-table-ui', () => {
     expect(fixture.nativeElement.querySelector('nat-table-surface .surface')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('.search-input')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('.column-chip').length).toBe(4);
+  });
+
+  it('does not emit stateChange on initialization', async () => {
+    fixture.destroy();
+    const newFixture = TestBed.createComponent(TableUiHost);
+    const newHost = newFixture.componentInstance;
+    newFixture.detectChanges();
+    await newFixture.whenStable();
+    expect(newHost.stateChangeCalls).toBe(0);
   });
 
   it('updates the global filter and resets pagination through NatTableSearch', () => {
