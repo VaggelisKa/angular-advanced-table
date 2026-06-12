@@ -2,7 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NatTableToolbar } from './table-toolbar';
-import { NatToolbarItem } from './toolbar-item.directive';
+import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
 
 /**
  * Tripwire suite for the @angular/aria (developer preview) integration.

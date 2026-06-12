@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Directionality, type Direction } from '@angular/cdk/bidi';
 
 import { NatTableToolbar } from './table-toolbar';
-import { NatToolbarItem } from './toolbar-item.directive';
+import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
 
 @Component({
   imports: [NatTableToolbar, NatToolbarItem],

@@ -9,8 +9,6 @@ import {
 } from '../../shared/table-ui-intl';
 import { injectNatTableUiController } from '../../shared/resolve-ui-controller';
 import type { NatTableUiController } from '../../shared/table-ui.types';
-import { NAT_TABLE_TOOLBAR } from './common/toolbar-tokens.const';
-import type { NatTableToolbarRef } from './common/toolbar-tokens.type';
 
 const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
   'text',
@@ -40,7 +38,6 @@ const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-toolbar.html',
   styleUrl: './table-toolbar.css',
-  providers: [{ provide: NAT_TABLE_TOOLBAR, useExisting: NatTableToolbar }],
   // Keyboard navigation (roving tabindex, RTL-aware arrows, wrap, Home/End)
   // comes from @angular/aria — it binds role="toolbar", aria-orientation and
   // the keydown/click/pointerdown handlers on this host.
@@ -51,7 +48,7 @@ const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
     '(focusin)': 'syncActiveItemFromFocus($event)',
   },
 })
-export class NatTableToolbar<TData extends RowData = RowData> implements NatTableToolbarRef {
+export class NatTableToolbar<TData extends RowData = RowData> {
   public readonly for = input<NatTableUiController<TData>>();
   public readonly accessibleName = input<string>();
   public readonly locale = input<string>();
@@ -73,21 +70,6 @@ export class NatTableToolbar<TData extends RowData = RowData> implements NatTabl
     () => this.accessibleName() ?? this.tableUiIntl().toolbar?.toolbarLabel ?? null,
   );
   protected readonly ariaControls = computed(() => this.controller()?.tableElementId() ?? null);
-
-  /**
-   * Id of the item owning the roving tab stop, from Aria's active widget.
-   * Falls back to the first item in visual order while Aria has no (or a
-   * stale) active widget.
-   */
-  public readonly activeItemId = computed<string | null>(() => {
-    const pattern = this.ariaToolbar._pattern;
-    const widgets = pattern.inputs.items();
-    const active = pattern.activeItem();
-
-    if (active !== undefined && widgets.includes(active)) return active.id();
-
-    return widgets[0]?.id() ?? null;
-  });
 
   constructor() {
     this.patchAriaToolbarPattern();

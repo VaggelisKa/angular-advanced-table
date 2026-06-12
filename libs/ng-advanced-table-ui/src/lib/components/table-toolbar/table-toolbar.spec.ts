@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 
 import { NatTableToolbar } from './table-toolbar';
-import { NatToolbarItem } from './toolbar-item.directive';
+import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
 import { NAT_TOOLBAR_ITEM } from './common/toolbar-tokens.const';
 import type { NatToolbarItemRef } from './common/toolbar-tokens.type';
 import type { NatTableUiController } from '../../shared/table-ui.types';
@@ -62,9 +62,6 @@ function getItemRefs(fixture: ComponentFixture<unknown>): NatToolbarItemRef[] {
     .map((debugElement) => debugElement.injector.get(NAT_TOOLBAR_ITEM));
 }
 
-function getToolbarInstance(fixture: ComponentFixture<unknown>): NatTableToolbar {
-  return fixture.debugElement.query(By.directive(NatTableToolbar)).componentInstance;
-}
 
 describe('NatTableToolbar', () => {
   beforeEach(async () => {
@@ -126,11 +123,9 @@ describe('NatTableToolbar', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const toolbar = getToolbarInstance(fixture);
     const [alpha, beta, gamma] = getItemRefs(fixture);
 
     expect(getItemRefs(fixture).length).toBe(3);
-    expect(toolbar.activeItemId()).toBe(alpha.id);
     expect(alpha.element.getAttribute('tabindex')).toBe('0');
     expect(beta.element.getAttribute('tabindex')).toBe('-1');
     expect(gamma.element.getAttribute('tabindex')).toBe('-1');

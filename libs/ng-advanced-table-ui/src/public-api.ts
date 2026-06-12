@@ -10,10 +10,7 @@ export { NatTableToolbar } from './lib/components/table-toolbar/table-toolbar';
 export { NatToolbarButton } from './lib/components/table-toolbar/toolbar-button/toolbar-button';
 export { NatToolbarGroup } from './lib/components/table-toolbar/toolbar-group/toolbar-group';
 export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item/toolbar-item.directive';
-export {
-  NAT_TABLE_TOOLBAR,
-  NAT_TOOLBAR_ITEM,
-} from './lib/components/table-toolbar/common/toolbar-tokens.const';
+export { NAT_TOOLBAR_ITEM } from './lib/components/table-toolbar/common/toolbar-tokens.const';
 export {
   NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_DEFAULT_INTL,
@@ -25,7 +22,6 @@ export type {
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
 export type {
-  NatTableToolbarRef,
   NatToolbarItemPosition,
   NatToolbarItemPositionInput,
   NatToolbarItemRef,
