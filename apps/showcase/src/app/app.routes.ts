@@ -83,6 +83,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'structural-columns',
+    title: 'Advanced Table - Structural Columns',
+    loadComponent: () =>
+      import('./pages/single-features/structural-columns-showcase').then(
+        (module) => module.StructuralColumnsShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

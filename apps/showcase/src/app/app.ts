@@ -55,6 +55,11 @@ const showcaseExamples = [
     path: '/keyboard-interaction',
   },
   {
+    label: 'Structural columns',
+    description: 'Row numbers and row actions',
+    path: '/structural-columns',
+  },
+  {
     label: 'Sorting with pinned columns',
     description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',
