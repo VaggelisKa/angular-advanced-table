@@ -89,6 +89,11 @@ const columns: ColumnDef<Row, unknown>[] = [
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="enablePagination"
+      [manualSorting]="manualSorting"
+      [manualFiltering]="manualFiltering"
+      [manualPagination]="manualPagination"
+      [rowCount]="rowCount"
+      [loading]="loading"
       [stickyHeader]="stickyHeader"
       [getRowId]="getRowId"
       [accessibilityText]="accessibilityText"
@@ -122,6 +127,11 @@ class TableHost {
   };
   enablePagination = false;
   enableColumnReorder = false;
+  manualSorting = false;
+  manualFiltering = false;
+  manualPagination = false;
+  rowCount: number | undefined = undefined;
+  loading = false;
   stickyHeader = true;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
@@ -243,6 +253,11 @@ describe('NatTable', () => {
     options: {
       enableColumnReorder?: boolean;
       enablePagination?: boolean;
+      manualSorting?: boolean;
+      manualFiltering?: boolean;
+      manualPagination?: boolean;
+      rowCount?: number;
+      loading?: boolean;
       stickyHeader?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -254,6 +269,11 @@ describe('NatTable', () => {
     host = fixture.componentInstance;
     host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.manualSorting = options.manualSorting ?? host.manualSorting;
+    host.manualFiltering = options.manualFiltering ?? host.manualFiltering;
+    host.manualPagination = options.manualPagination ?? host.manualPagination;
+    host.rowCount = options.rowCount ?? host.rowCount;
+    host.loading = options.loading ?? host.loading;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -1406,6 +1426,114 @@ describe('NatTable', () => {
     fixture.detectChanges();
     tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
     expect(tableElement.classList.contains('has-sticky-header')).toBe(false);
+  });
+
+  it('derives page count from rowCount and keeps server rows unsliced under manualPagination', async () => {
+    await recreateHost({
+      enablePagination: true,
+      manualPagination: true,
+      rowCount: 100,
+      initialState: { pagination: { pageIndex: 0, pageSize: 2 } },
+    });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    expect(table.table.getPageCount()).toBe(50);
+    // Pagination row model is disabled, so the server-provided page (all data) renders as-is.
+    expect(fixture.nativeElement.querySelectorAll('tbody tr.data-row').length).toBe(6);
+
+    const summary = fixture.nativeElement.querySelector('.sr-only') as HTMLElement;
+
+    expect(summary.textContent).toContain('Showing 6 of 100 rows');
+    expect(summary.textContent).toContain('Page 1 of 50');
+  });
+
+  it('preserves data order under manualSorting even with a sorting state set', async () => {
+    await recreateHost({
+      manualSorting: true,
+      initialState: { sorting: [{ id: 'throughput', desc: true }] },
+    });
+    fixture.detectChanges();
+
+    // Client sorted row model is disabled, so rows stay in the supplied (data) order.
+    expect(fixture.nativeElement.querySelector('tbody tr.data-row')?.textContent).toContain(
+      'Alpha',
+    );
+  });
+
+  it('keeps every row under manualFiltering even with a column filter that would exclude them', async () => {
+    await recreateHost({
+      manualFiltering: true,
+      initialState: { columnFilters: [{ id: 'status', value: ['__none__'] }] },
+    });
+    fixture.detectChanges();
+
+    // Client filtered row model is disabled, so the server-supplied rows render unfiltered.
+    expect(fixture.nativeElement.querySelectorAll('tbody tr.data-row').length).toBe(6);
+  });
+
+  it('marks the grid busy while loading', async () => {
+    await recreateHost({ loading: true });
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    const region = fixture.nativeElement.querySelector('.table-region') as HTMLElement;
+
+    expect(table.getAttribute('aria-busy')).toBe('true');
+    expect(region.classList.contains('is-loading')).toBe(true);
+  });
+
+  it('exposes grid count semantics for assistive technology', () => {
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    // @angular/aria emits aria-rowindex/aria-colindex on the cells, not the rows.
+    const firstHeaderCell = fixture.nativeElement.querySelector('thead th') as HTMLElement;
+    const secondHeaderCell = fixture.nativeElement.querySelectorAll('thead th')[1] as HTMLElement;
+    const firstBodyCell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row th, tbody tr.data-row td',
+    ) as HTMLElement;
+
+    expect(table.getAttribute('aria-rowcount')).toBe('7'); // 1 header row + 6 data rows
+    expect(table.getAttribute('aria-colcount')).toBe('4');
+    expect(firstHeaderCell.getAttribute('aria-rowindex')).toBe('1');
+    expect(firstHeaderCell.getAttribute('aria-colindex')).toBe('1');
+    expect(secondHeaderCell.getAttribute('aria-colindex')).toBe('2');
+    expect(firstBodyCell.getAttribute('aria-rowindex')).toBe('2');
+    expect(firstBodyCell.getAttribute('aria-colindex')).toBe('1');
+  });
+
+  it('reports header-only aria-rowcount and an empty-state row when there are no rows', async () => {
+    host.rows.set([]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    expect(table.getAttribute('aria-rowcount')).toBe('1'); // header row only, 0 data rows
+
+    const emptyCell = fixture.nativeElement.querySelector('td.empty-state') as HTMLElement;
+    expect(emptyCell).toBeTruthy();
+    expect(Number(emptyCell.getAttribute('colspan'))).toBe(4); // spans the visible columns
+
+    const summary = fixture.nativeElement.querySelector('.sr-only') as HTMLElement;
+    expect(summary.textContent).toContain('No rows');
+  });
+
+  it('offsets body aria-rowindex by the current page', async () => {
+    await recreateHost({
+      enablePagination: true,
+      initialState: { pagination: { pageIndex: 1, pageSize: 2 } },
+    });
+    fixture.detectChanges();
+
+    const firstBodyCell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row th, tbody tr.data-row td',
+    ) as HTMLElement;
+
+    // 1 header row + pageIndex(1) * pageSize(2) + localIndex(0) + 1 = 4
+    expect(firstBodyCell.getAttribute('aria-rowindex')).toBe('4');
   });
 });
 

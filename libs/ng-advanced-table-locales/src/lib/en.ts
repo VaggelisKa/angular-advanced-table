@@ -18,7 +18,6 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
     reorderKeyboardInstructions:
       'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
     tableSummary: ({
-      filterState,
       pageCountText,
       pageText,
       paginationState,
@@ -35,7 +34,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
               'column',
               visibleColumnsValue,
             )}.`
-          : filterState === 'filtered' && totalRowsValue !== visibleRowsValue
+          : totalRowsValue !== visibleRowsValue
             ? `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
                 'row',
                 totalRowsValue,

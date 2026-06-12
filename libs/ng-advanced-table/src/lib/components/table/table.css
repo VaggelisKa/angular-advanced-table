@@ -26,6 +26,12 @@
   min-width: 100%;
 }
 
+/* Busy hook for companion loading overlays; keeps rows visible (no layout jump). */
+.table-region.is-loading tbody {
+  opacity: var(--nat-table-loading-opacity, 0.6);
+  transition: opacity 120ms ease;
+}
+
 .header-cell,
 .data-cell {
   box-sizing: border-box;

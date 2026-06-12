@@ -83,6 +83,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'server-mode',
+    title: 'Advanced Table - Server-Driven Data Mode',
+    loadComponent: () =>
+      import('./pages/single-features/server-mode-showcase').then(
+        (module) => module.ServerModeShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

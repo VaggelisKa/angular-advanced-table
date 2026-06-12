@@ -1,4 +1,4 @@
-<div class="table-region" #tableRegion>
+<div class="table-region" #tableRegion [class.is-loading]="loading()">
   <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
   @if (resolvedDescription().trim()) {
     <p class="sr-only" [id]="tableDescriptionId()">{{ resolvedDescription() }}</p>
@@ -15,6 +15,9 @@
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
     [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.aria-busy]="loading() ? 'true' : null"
+    [attr.aria-rowcount]="ariaRowCount()"
+    [attr.aria-colcount]="ariaColCount()"
     rowWrap="nowrap"
     colWrap="nowrap"
   >
@@ -30,6 +33,7 @@
           ngGridRow
           cdkDropList
           cdkDropListOrientation="horizontal"
+          [rowIndex]="$index + 1"
           [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
           [cdkDropListDisabled]="!enableColumnReorder() || !isLeafHeaderRow(headerGroup)"
           (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
@@ -52,6 +56,7 @@
               [class.is-width-constrained]="columnState?.headerConstrainedWidth"
               [cdkDragData]="header.column.id"
               [cdkDragDisabled]="!canReorderHeader(header)"
+              [colIndex]="$index + 1"
               [style.left.px]="columnState?.left"
               [style.right.px]="columnState?.right"
               [style.width]="columnState?.headerWidth"
@@ -96,6 +101,7 @@
           <tr
             ngGridRow
             class="data-row"
+            [rowIndex]="bodyRowAriaIndex($index)"
             [natTableRowRenderEmitter]="row.id"
             [natTableRowRenderEnabled]="emitRowRenderEvents()"
             [natTableRowRenderToken]="renderCycleToken()"
@@ -128,6 +134,7 @@
                   [style.max-width]="columnState?.maxWidth"
                   [attr.data-column-id]="cell.column.id"
                   [attr.data-tone]="cellTone"
+                  [colIndex]="$index + 1"
                 >
                   <span class="data-cell-content">
                     <ng-container
@@ -155,6 +162,7 @@
                   [style.max-width]="columnState?.maxWidth"
                   [attr.data-column-id]="cell.column.id"
                   [attr.data-tone]="cellTone"
+                  [colIndex]="$index + 1"
                 >
                   <span class="data-cell-content">
                     <ng-container
@@ -169,8 +177,9 @@
           </tr>
         }
       } @else {
-        <tr ngGridRow>
-          <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
+        <!-- Empty-state placeholder: deliberately no aria-selected (not a selectable data row). -->
+        <tr ngGridRow [rowIndex]="bodyRowAriaIndex(0)">
+          <td ngGridCell class="empty-state" [colIndex]="1" [colSpan]="emptyStateColSpan()">
             {{ resolvedEmptyState() }}
           </td>
         </tr>

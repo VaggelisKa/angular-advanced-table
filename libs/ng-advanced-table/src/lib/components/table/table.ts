@@ -182,6 +182,16 @@ export class NatTable<TData extends RowData = RowData> {
   readonly enableColumnReorder = input(false, { transform: booleanAttribute });
   /** Enables client-side pagination row models when external UI drives pagination state. */
   readonly enablePagination = input(false, { transform: booleanAttribute });
+  /** Server drives sorting; disables the client sorted row model. */
+  readonly manualSorting = input(false, { transform: booleanAttribute });
+  /** Server drives filtering; disables the client filtered row model. */
+  readonly manualFiltering = input(false, { transform: booleanAttribute });
+  /** Server drives pagination; disables the client paginated row model. */
+  readonly manualPagination = input(false, { transform: booleanAttribute });
+  /** Total server row count. Drives the summary, page count, and counts; falls back to `data().length`. */
+  readonly rowCount = input<number>();
+  /** Marks the grid busy (sets `aria-busy`) while a remote request is in flight. */
+  readonly loading = input(false, { transform: booleanAttribute });
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData>>();
   /**
@@ -332,10 +342,18 @@ export class NatTable<TData extends RowData = RowData> {
   }));
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   protected readonly visibleRowCount = computed(() => this.bodyRows().length);
-  protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
+  protected readonly totalRowCount = computed(
+    () => this.rowCount() ?? this.readRequiredInput(this.data, []).length,
+  );
   protected readonly pageCount = computed(() =>
     this.enablePagination() ? Math.max(this.table.getPageCount(), 1) : 1,
   );
+  /** Header rows + total (server) rows, for the grid's `aria-rowcount`. */
+  protected readonly ariaRowCount = computed(
+    () => this.headerGroups().length + this.totalRowCount(),
+  );
+  /** Visible leaf columns, for the grid's `aria-colcount`. */
+  protected readonly ariaColCount = computed(() => this.visibleColumnCount());
   protected readonly visibleColumnIds = computed(() =>
     this.visibleColumns()
       .map((column) => column.id)
@@ -374,10 +392,15 @@ export class NatTable<TData extends RowData = RowData> {
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
     getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
+    manualSorting: this.manualSorting(),
+    manualFiltering: this.manualFiltering(),
+    manualPagination: this.manualPagination(),
+    rowCount: this.rowCount(),
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: this.enablePagination() ? getPaginationRowModel() : undefined,
+    getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
+    getSortedRowModel: this.manualSorting() ? undefined : getSortedRowModel(),
+    getPaginationRowModel:
+      this.enablePagination() && !this.manualPagination() ? getPaginationRowModel() : undefined,
     onSortingChange: (updater) => this.updateState({ sorting: updater }),
     onGlobalFilterChange: (updater) =>
       this.updateState({ globalFilter: updater, pagination: this.firstPageUpdater }),
@@ -712,6 +735,20 @@ export class NatTable<TData extends RowData = RowData> {
 
   protected onRowRendered(event: NatTableRowRenderedEvent): void {
     this.rowRendered.emit(event);
+  }
+
+  /**
+   * 1-based `aria-rowindex` for a rendered body row, accounting for header rows
+   * and (client or manual) pagination offset, so screen readers announce the
+   * row's position within the full dataset.
+   */
+  protected bodyRowAriaIndex(localIndex: number): number {
+    const headerRows = this.headerGroups().length;
+    const usesPaging = this.enablePagination() || this.manualPagination();
+    const pagination = this.mergedState().pagination;
+    const offset = usesPaging ? pagination.pageIndex * pagination.pageSize : 0;
+
+    return headerRows + offset + localIndex + 1;
   }
 
   protected onRowClick(event: MouseEvent, row: Row<TData>): void {
