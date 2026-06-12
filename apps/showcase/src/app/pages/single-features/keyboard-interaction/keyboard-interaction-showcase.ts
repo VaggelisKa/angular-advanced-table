@@ -3,6 +3,7 @@ import { flexRenderComponent, type CellContext, type ColumnDef } from '@tanstack
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 import { KeyboardDemoAcknowledgeButton } from './keyboard-demo-acknowledge-button';
+import { KeyboardDemoStatusCell } from './keyboard-demo-status-cell';
 
 type DemoItem = {
   readonly id: string;
@@ -34,7 +35,7 @@ const DEMO_DATA: DemoItem[] = [
   templateUrl: './keyboard-interaction-showcase.html',
 })
 export class KeyboardInteractionShowcasePage {
-  readonly data = DEMO_DATA;
+  readonly data = signal<DemoItem[]>(DEMO_DATA);
   readonly lastAction = signal('None yet');
 
   readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
@@ -55,6 +56,21 @@ export class KeyboardInteractionShowcasePage {
       cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
     },
     {
+      accessorKey: 'status',
+      header: 'Status',
+      enableSorting: false,
+      enableGlobalFilter: false,
+      meta: { label: 'Status', headerActions: false },
+      cell: (context: CellContext<DemoItem, unknown>) =>
+        flexRenderComponent(KeyboardDemoStatusCell, {
+          inputs: {
+            name: context.row.original.name,
+            status: context.row.original.status,
+          },
+          outputs: { toggled: () => this.onToggleStatus(context.row.original.id) },
+        }),
+    },
+    {
       id: 'actions',
       header: 'Actions',
       enableSorting: false,
@@ -70,5 +86,19 @@ export class KeyboardInteractionShowcasePage {
 
   onAcknowledge(name: string): void {
     this.lastAction.set(`Acknowledged ${name}`);
+  }
+
+  onToggleStatus(id: string): void {
+    this.data.update((items) =>
+      items.map((item) => {
+        if (item.id !== id) return item;
+
+        const status = item.status === 'Active' ? 'Paused' : 'Active';
+
+        this.lastAction.set(`${status === 'Active' ? 'Resumed' : 'Paused'} ${item.name}`);
+
+        return { ...item, status };
+      }),
+    );
   }
 }
