@@ -3,40 +3,28 @@ import type { Signal } from '@angular/core';
 /** Position of a toolbar item inside the flex row. */
 export type NatToolbarItemPosition = 'start' | 'center' | 'end';
 
-/** Raw value accepted by the `natToolbarItem` attribute. Empty string means `'end'`. */
+/**
+ * Raw value accepted by the `natToolbarItem` attribute. Empty string means
+ * `'end'`. Must be a STATIC attribute — the toolbar assigns slots at compile
+ * time via `<ng-content select>`, so bound positions land in the end group.
+ */
 export type NatToolbarItemPositionInput = '' | NatToolbarItemPosition;
-
-/** Roving tab stop value: `0` for the single active item, `-1` for the rest. */
-export type NatToolbarTabIndex = 0 | -1;
 
 /**
  * Contract every registered toolbar item exposes to the shell and to its own
  * hosting component. Implemented by the `NatToolbarItem` directive and
- * provided as `NAT_TOOLBAR_ITEM`.
+ * provided as `NAT_TOOLBAR_ITEM`. Registration, roving tabindex and keyboard
+ * navigation are delegated to the `ToolbarWidget` host directive from
+ * `@angular/aria/toolbar`.
  */
 export type NatToolbarItemRef = {
-  /** Stable id used in roving-tabindex bookkeeping. */
+  /** Widget id used in roving-tabindex bookkeeping (Aria `id` input). */
   readonly id: string;
-  /**
-   * Host element. MUST be a direct flex child of the toolbar row — the shell
-   * physically reorders it so DOM order matches visual order.
-   */
+  /** Host element. */
   readonly element: HTMLElement;
   /** Resolved position (`''` input normalized to `'end'`). */
   readonly position: Signal<NatToolbarItemPosition>;
-  /** Roving tab stop value for this item's focus target. */
-  readonly tabIndex: Signal<NatToolbarTabIndex>;
-  /**
-   * Composite items (search input, menu triggers) point the roving tabindex at
-   * an inner focusable element. `null` resets to the host element. While a
-   * custom target is set, the host's own `tabindex` attribute is removed and
-   * the hosting component MUST bind `[attr.tabindex]="itemRef.tabIndex()"` on
-   * the target element itself.
-   */
-  setFocusTarget(target: HTMLElement | null): void;
-  /** Element that receives focus for this item (custom target ?? host). */
-  focusTarget(): HTMLElement;
-  /** Focuses `focusTarget()`. Used by shell arrow navigation. */
+  /** Focuses the host element. */
   focus(): void;
 };
 
@@ -48,9 +36,7 @@ export type NatToolbarItemRef = {
 export type NatTableToolbarRef = {
   /**
    * Id of the item owning the roving tab stop. Never `null` while at least
-   * one item exists (shell defaults it to the first item in visual order).
+   * one item exists (falls back to the first item in visual order).
    */
   readonly activeItemId: Signal<string | null>;
-  /** Items call this on focusin so the shell moves the roving tab stop. */
-  registerFocus(itemId: string): void;
 };
