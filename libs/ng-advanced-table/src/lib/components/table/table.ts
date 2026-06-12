@@ -671,6 +671,10 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
+    if (this.handleCellInteractionKeydown(event)) {
+      return;
+    }
+
     if (!this.enableColumnReorder() || !event.altKey || !event.shiftKey) {
       return;
     }
@@ -699,6 +703,133 @@ export class NatTable<TData extends RowData = RowData> {
     const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
 
     this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
+  }
+
+  /** Keydown on a body data/row-header cell; routes through the cell-interaction model. */
+  protected onCellKeydown(event: KeyboardEvent): void {
+    this.handleCellInteractionKeydown(event);
+  }
+
+  /**
+   * ARIA grid cell-interaction: Enter moves focus from a cell into its first
+   * interactive control, Tab cycles between a cell's controls, and Escape returns
+   * to the cell. The controls are rendered through `flexRender` (separate views),
+   * so `@angular/aria`'s `GridCell` content query never registers them; this
+   * supplies the keyboard path the grid pattern otherwise cannot. Returns `true`
+   * when it handled the event (so the caller skips its own behavior, e.g. row activation).
+   */
+  private handleCellInteractionKeydown(event: KeyboardEvent): boolean {
+    if (event.defaultPrevented) {
+      return false;
+    }
+
+    const target = event.target;
+    const cell = this.closestGridCell(target);
+
+    if (!cell || !(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    const onCellItself = target === cell;
+
+    if (event.key === 'Enter' && onCellItself) {
+      const controls = this.cellInteractiveControls(cell);
+
+      if (controls.length === 0) {
+        return false; // Let a control-less cell fall through to row activation.
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      controls[0].focus();
+      return true;
+    }
+
+    if (event.key === 'Escape' && !onCellItself) {
+      event.preventDefault();
+      event.stopPropagation();
+      cell.focus();
+      return true;
+    }
+
+    if (event.key === 'Tab') {
+      const grid = cell.closest('table');
+
+      if (!grid) {
+        return false;
+      }
+
+      const controls = this.gridInteractiveControls(grid);
+
+      if (controls.length === 0) {
+        return false;
+      }
+
+      const forward = !event.shiftKey;
+
+      // Tab from a cell steps into that cell's own controls (first when forward, last when back).
+      if (onCellItself) {
+        const inCell = controls.filter((control) => cell.contains(control));
+
+        if (inCell.length === 0) {
+          return false; // No controls here — let Tab move on normally.
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        (forward ? inCell[0] : inCell[inCell.length - 1]).focus();
+        return true;
+      }
+
+      // Tab from a control walks to the next/previous control across the whole grid.
+      const index = controls.indexOf(target);
+
+      if (index === -1) {
+        return false;
+      }
+
+      const next = index + (forward ? 1 : -1);
+
+      if (next < 0 || next >= controls.length) {
+        return false; // Past the first/last control: let Tab leave the grid.
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      controls[next].focus();
+      return true;
+    }
+
+    return false;
+  }
+
+  private closestGridCell(target: EventTarget | null): HTMLElement | null {
+    return target instanceof Element
+      ? target.closest<HTMLElement>('[role="gridcell"], [role="columnheader"], [role="rowheader"]')
+      : null;
+  }
+
+  /** Controls Enter steps into — the cell's action controls, not the resize handle. */
+  private cellInteractiveControls(cell: HTMLElement): HTMLElement[] {
+    return this.collectInteractiveControls(cell, ROW_ACTIVATE_INTERACTIVE_SELECTOR);
+  }
+
+  /**
+   * Every focusable item in the grid in document order — the Tab walk order. Includes
+   * the column resize handles so Tab iterates through them alongside the cell controls.
+   */
+  private gridInteractiveControls(grid: HTMLElement): HTMLElement[] {
+    return this.collectInteractiveControls(
+      grid,
+      `${ROW_ACTIVATE_INTERACTIVE_SELECTOR}, .column-resize-handle`,
+    );
+  }
+
+  private collectInteractiveControls(root: HTMLElement, selector: string): HTMLElement[] {
+    return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(
+      (element) =>
+        !element.hasAttribute('disabled') && element.getAttribute('aria-hidden') !== 'true',
+    );
   }
 
   protected getCellTone(

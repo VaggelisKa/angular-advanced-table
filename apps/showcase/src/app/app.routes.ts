@@ -75,6 +75,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'keyboard-interaction',
+    title: 'Advanced Table - Keyboard Interaction',
+    loadComponent: () =>
+      import('./pages/single-features/keyboard-interaction-showcase').then(
+        (module) => module.KeyboardInteractionShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>
