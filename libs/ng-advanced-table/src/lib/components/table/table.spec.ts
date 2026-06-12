@@ -1362,7 +1362,7 @@ describe('NatTable', () => {
     expect(document.activeElement).toBe(widgetButton);
   });
 
-  it('moves focus into a header control with Enter on the column header cell', () => {
+  it('delegates focus to a header cell whose only content is its sort button', () => {
     fixture.detectChanges();
 
     const headerCell = fixture.nativeElement.querySelector(
@@ -1373,26 +1373,94 @@ describe('NatTable', () => {
 
     const sortButton = headerCell.querySelector('button') as HTMLButtonElement;
 
+    // Arriving on the cell moves focus straight to its sole control — no Enter needed.
     headerCell.focus();
+    fixture.detectChanges();
 
-    const enterEvent = new KeyboardEvent('keydown', {
-      key: 'Enter',
+    expect(document.activeElement).toBe(sortButton);
+
+    // The delegated control is the cell's focus stop, so Escape stays native.
+    const escapeEvent = new KeyboardEvent('keydown', {
+      key: 'Escape',
       bubbles: true,
       cancelable: true,
     });
 
-    headerCell.dispatchEvent(enterEvent);
+    sortButton.dispatchEvent(escapeEvent);
     fixture.detectChanges();
 
+    expect(escapeEvent.defaultPrevented).toBe(false);
     expect(document.activeElement).toBe(sortButton);
-    expect(enterEvent.defaultPrevented).toBe(true);
+  });
 
-    sortButton.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+  it('delegates focus to a body cell whose only perceivable content is one arrow-safe control', () => {
+    fixture.detectChanges();
+
+    const cell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="region"]',
+    ) as HTMLElement;
+
+    // Decorative content hidden from assistive technology does not block delegation.
+    cell.innerHTML =
+      '<span aria-hidden="true">icon</span>' +
+      '<button type="button" class="cell-action">Acknowledge</button>';
+
+    const button = cell.querySelector('button.cell-action') as HTMLButtonElement;
+
+    cell.focus();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('keeps the Enter model when a single control sits next to other cell content', () => {
+    fixture.detectChanges();
+
+    const cell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="region"]',
+    ) as HTMLElement;
+
+    cell.innerHTML = 'EMEA <button type="button" class="cell-action">Edit</button>';
+
+    const button = cell.querySelector('button.cell-action') as HTMLButtonElement;
+
+    // Focus stays on the cell so screen readers announce the text content too.
+    cell.focus();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(cell);
+
+    cell.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
     );
     fixture.detectChanges();
 
-    expect(document.activeElement).toBe(headerCell);
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('keeps the Enter model for a single arrow-consuming control', () => {
+    fixture.detectChanges();
+
+    const cell = fixture.nativeElement.querySelector(
+      'tbody tr.data-row td[data-column-id="region"]',
+    ) as HTMLElement;
+
+    cell.innerHTML = '<input type="text" class="cell-input" aria-label="Region" />';
+
+    const input = cell.querySelector('input.cell-input') as HTMLInputElement;
+
+    // A text input needs arrow keys for itself, so the grid keeps focus on the cell.
+    cell.focus();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(cell);
+
+    cell.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(input);
   });
 
   it('applies sticky class and toggles vertical sticky header positioning', async () => {
