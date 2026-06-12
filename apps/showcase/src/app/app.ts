@@ -55,6 +55,11 @@ const showcaseExamples = [
     path: '/keyboard-interaction',
   },
   {
+    label: 'Compose columns',
+    description: 'Column transform pipeline',
+    path: '/compose-columns',
+  },
+  {
     label: 'Sorting with pinned columns',
     description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',

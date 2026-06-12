@@ -83,6 +83,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'compose-columns',
+    title: 'Advanced Table - Compose Columns',
+    loadComponent: () =>
+      import('./pages/single-features/compose-columns-showcase').then(
+        (module) => module.ComposeColumnsShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

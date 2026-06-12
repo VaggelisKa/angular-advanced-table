@@ -1,3 +1,4 @@
+export { composeColumns, type NatTableColumnTransform } from './lib/compose-columns';
 export { NatTable } from './lib/components/table/table';
 export {
   NAT_TABLE_ENGLISH_INTL,
