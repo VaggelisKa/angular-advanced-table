@@ -75,6 +75,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'toolbar',
+    title: 'Advanced Table - Table Toolbar',
+    loadComponent: () =>
+      import('./pages/single-features/toolbar-showcase/toolbar-showcase').then(
+        (module) => module.ToolbarShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>
