@@ -83,6 +83,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'row-styling',
+    title: 'Advanced Table - Row Styling',
+    loadComponent: () =>
+      import('./pages/single-features/row-styling-showcase').then(
+        (module) => module.RowStylingShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

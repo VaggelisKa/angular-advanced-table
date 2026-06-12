@@ -96,6 +96,7 @@
           <tr
             ngGridRow
             class="data-row"
+            [class]="rowClassFor(row)"
             [natTableRowRenderEmitter]="row.id"
             [natTableRowRenderEnabled]="emitRowRenderEvents()"
             [natTableRowRenderToken]="renderCycleToken()"

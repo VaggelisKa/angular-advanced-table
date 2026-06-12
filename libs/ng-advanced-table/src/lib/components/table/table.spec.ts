@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
+import { type ColumnDef, type FilterFn, type Row as TanStackRow } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
 import { provideNatTableIntl } from './table-intl';
@@ -1395,6 +1395,40 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     expect(document.activeElement).toBe(headerCell);
+  });
+
+  it('applies a per-row class from the rowClass callback while keeping data-row', async () => {
+    @Component({
+      imports: [NatTable],
+      template: `
+        <nat-table
+          [data]="rows()"
+          [columns]="columns"
+          [rowClass]="rowClass"
+          [getRowId]="getRowId"
+          accessibleName="Operations table"
+        />
+      `,
+    })
+    class RowClassHost {
+      readonly rows = signal<Row[]>(buildRows(6));
+      readonly columns = columns;
+      readonly getRowId = (row: Row) => row.id;
+      readonly rowClass = (row: TanStackRow<Row>): string | null =>
+        row.original.status === 'Alert' ? 'is-alert' : null;
+    }
+
+    const rowClassFixture = TestBed.createComponent(RowClassHost);
+
+    await rowClassFixture.whenStable();
+    rowClassFixture.detectChanges();
+
+    const alertRows = Array.from(
+      rowClassFixture.nativeElement.querySelectorAll('tbody tr.is-alert'),
+    ) as HTMLElement[];
+
+    expect(alertRows.length).toBeGreaterThan(0);
+    expect(alertRows.every((row) => row.classList.contains('data-row'))).toBe(true);
   });
 
   it('applies sticky class and toggles vertical sticky header positioning', async () => {

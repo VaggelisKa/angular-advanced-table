@@ -202,6 +202,11 @@ export class NatTable<TData extends RowData = RowData> {
   readonly state = input<Partial<NatTableState>>({});
   /** Optional stable row id resolver used for selection, pinning, and events. */
   readonly getRowId = input<NatTableRowIdGetter<TData>>();
+  /**
+   * Optional per-row CSS class hook (e.g. highlight error/overdue rows). Purely
+   * visual — business meaning must not rely on color/class alone (WCAG 1.4.1).
+   */
+  readonly rowClass = input<(row: Row<TData>) => string | string[] | null>();
   /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
   /** Enables polite live announcements for sort/filter/pagination changes. */
@@ -712,6 +717,10 @@ export class NatTable<TData extends RowData = RowData> {
 
   protected onRowRendered(event: NatTableRowRenderedEvent): void {
     this.rowRendered.emit(event);
+  }
+
+  protected rowClassFor(row: Row<TData>): string | string[] | null {
+    return this.rowClass()?.(row) ?? null;
   }
 
   protected onRowClick(event: MouseEvent, row: Row<TData>): void {
