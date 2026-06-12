@@ -51,7 +51,7 @@ const showcaseExamples = [
   },
   {
     label: 'Toolbar',
-    description: 'Overflow-aware control row',
+    description: 'Slot-based keyboard toolbar',
     path: '/toolbar',
   },
   {

@@ -23,7 +23,13 @@ import { NatToolbarItem } from './toolbar-item.directive';
       @if (showD()) {
         <button natToolbarItem value="d" id="item-d">D</button>
       }
-      <input natToolbarItem="start" [value]="'search'" type="search" id="search" aria-label="Filter" />
+      <input
+        natToolbarItem="start"
+        [value]="'search'"
+        type="search"
+        id="search"
+        aria-label="Filter"
+      />
     </nat-table-toolbar>
   `,
 })
@@ -93,6 +99,20 @@ describe('NatTableToolbar @angular/aria integration', () => {
 
     expect(document.activeElement).toBe(element('item-c'));
     expect(element('item-c').getAttribute('tabindex')).toBe('0');
+  });
+
+  it('ignores clicks on text-entry items so the caret is never stolen', async () => {
+    // The onClick patch must bypass Aria entirely for text-entry widgets —
+    // if Aria handled the click it would re-focus the widget and move the
+    // roving tab stop, stealing the caret the user just placed.
+    await focusItem('item-a');
+
+    element('search').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(document.activeElement).toBe(element('item-a'));
+    expect(element('item-a').getAttribute('tabindex')).toBe('0');
   });
 
   it('moves the roving tab stop to the first visual item when the active item unmounts', async () => {

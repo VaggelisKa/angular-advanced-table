@@ -7,7 +7,7 @@
   min-height: var(--nat-table-toolbar-trigger-min-height, 2.25rem);
   padding: 0 var(--nat-table-toolbar-trigger-padding-x, 12px);
   border: 1px solid
-    var(--nat-table-toolbar-trigger-border-color, color-mix(in srgb, currentColor 16%, transparent));
+    var(--nat-table-toolbar-trigger-border-color, color-mix(in srgb, currentcolor 16%, transparent));
   border-radius: var(--nat-table-toolbar-trigger-radius, 10px);
   background: var(--nat-table-toolbar-trigger-background, transparent);
   color: inherit;
@@ -19,7 +19,7 @@
 
 :host(:focus-visible) {
   outline: var(--nat-table-focus-ring-width, 2px) solid
-    var(--nat-table-focus-ring-color, currentColor);
+    var(--nat-table-focus-ring-color, currentcolor);
   outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }
 
@@ -33,11 +33,11 @@
 :host(:has(> svg:only-child)) > svg {
   inline-size: 14px;
   block-size: 14px;
-  fill: currentColor;
+  fill: currentcolor;
 }
 
 @media (hover: hover) and (pointer: fine) {
   :host(:hover) {
-    background: color-mix(in srgb, currentColor 8%, transparent);
+    background: color-mix(in srgb, currentcolor 8%, transparent);
   }
 }

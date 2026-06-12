@@ -20,9 +20,14 @@ const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
   'tel',
   'password',
   'number',
+  'date',
+  'datetime-local',
+  'month',
+  'time',
+  'week',
 ]);
 
-/** True when the event target owns a text caret — toolbar keys must not steal it. */
+/** True when the event target owns caret/arrow-key editing — toolbar keys must not steal it. */
 const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
   if (target instanceof HTMLTextAreaElement) return true;
   if (target instanceof HTMLElement && target.isContentEditable) return true;
