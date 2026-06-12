@@ -60,6 +60,11 @@ export class NatTableToolbar<TData extends RowData = RowData> {
   // `value`s only serve Aria's registry and must merely be unique.
   private readonly ariaToolbar = inject(Toolbar, { self: true }) as Toolbar<unknown>;
 
+  /** Single touch point for Aria's private `_pattern` API — fix here if it ever renames. */
+  private get pattern() {
+    return this.ariaToolbar._pattern;
+  }
+
   protected readonly localeId = computed(
     () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
@@ -78,7 +83,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     // removed via @if would strand the roving tab stop on a dead widget, and
     // Tab would skip the toolbar). Reset it to the first visual item.
     effect(() => {
-      const pattern = this.ariaToolbar._pattern;
+      const pattern = this.pattern;
       const widgets = pattern.inputs.items();
       const active = pattern.activeItem();
 
@@ -95,7 +100,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
    * Re-verify all four on every `@angular/aria` bump.
    */
   private patchAriaToolbarPattern(): void {
-    const pattern = this.ariaToolbar._pattern;
+    const pattern = this.pattern;
 
     const originalOnKeydown = pattern.onKeydown.bind(pattern);
     pattern.onKeydown = (event: KeyboardEvent): void => {
@@ -141,7 +146,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     const target = event.target;
     if (!(target instanceof Element)) return;
 
-    const pattern = this.ariaToolbar._pattern;
+    const pattern = this.pattern;
     const item = pattern.inputs.getItem(target);
 
     if (item !== undefined && pattern.activeItem() !== item) {
