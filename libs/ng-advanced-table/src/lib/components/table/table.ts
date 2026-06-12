@@ -8,7 +8,6 @@ import {
   DestroyRef,
   effect,
   ElementRef,
-  forwardRef,
   inject,
   input,
   output,
@@ -42,6 +41,11 @@ import {
   type VisibilityState,
 } from '@tanstack/angular-table';
 
+import {
+  handleCellInteractionFocusIn,
+  handleCellInteractionKeydown,
+  ROW_ACTIVATE_INTERACTIVE_SELECTOR,
+} from './cell-interaction';
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
@@ -129,11 +133,6 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnPinning: EMPTY_COLUMN_PINNING,
   pagination: DEFAULT_PAGINATION,
 };
-const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
-  'a[href], button, input, select, textarea, summary, [contenteditable="true"], ' +
-  '[role="button"], [role="link"], [role="checkbox"], [role="menuitem"], ' +
-  '[role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="switch"], ' +
-  '[role="combobox"], [role="textbox"], [role="searchbox"]';
 let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
@@ -671,27 +670,26 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (!this.enableColumnReorder() || !event.altKey || !event.shiftKey) {
-      return;
-    }
+    if (handleCellInteractionKeydown(event)) return;
 
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
-      return;
-    }
+    const isReorderModifierPressed = event.altKey && event.shiftKey;
+
+    if (!this.enableColumnReorder() || !isReorderModifierPressed) return;
+
+    const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
+
+    if (!isHorizontalArrowKey) return;
 
     const zone = this.getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(column.id);
 
-    if (currentIndex === -1) {
-      return;
-    }
+    if (currentIndex === -1) return;
 
-    const nextIndex = currentIndex + (event.key === 'ArrowLeft' ? -1 : 1);
+    const directionDelta = event.key === 'ArrowLeft' ? -1 : 1;
+    const nextIndex = currentIndex + directionDelta;
 
-    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) {
-      return;
-    }
+    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -699,6 +697,16 @@ export class NatTable<TData extends RowData = RowData> {
     const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
 
     this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
+  }
+
+  /** Keydown on a body data/row-header cell; routes through the cell-interaction model. */
+  protected onCellKeydown(event: KeyboardEvent): void {
+    handleCellInteractionKeydown(event);
+  }
+
+  /** Focus arriving on any grid cell; delegates to the cell's sole arrow-safe control. */
+  protected onCellFocusIn(event: FocusEvent): void {
+    handleCellInteractionFocusIn(event);
   }
 
   protected getCellTone(

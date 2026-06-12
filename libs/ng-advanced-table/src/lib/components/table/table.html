@@ -60,6 +60,7 @@
               [attr.data-column-id]="header.column.id"
               [attr.aria-sort]="columnState?.ariaSort"
               (keydown)="onHeaderKeydown($event, header.column)"
+              (focusin)="onCellFocusIn($event)"
               scope="col"
             >
               @if (!header.isPlaceholder) {
@@ -114,6 +115,8 @@
                   role="rowheader"
                   scope="row"
                   class="data-cell data-row-header"
+                  (keydown)="onCellKeydown($event)"
+                  (focusin)="onCellFocusIn($event)"
                   [class.is-align-end]="columnState?.alignEnd"
                   [class.is-pinned-left]="columnState?.pinnedLeft"
                   [class.is-pinned-right]="columnState?.pinnedRight"
@@ -140,6 +143,8 @@
                 <td
                   ngGridCell
                   class="data-cell"
+                  (keydown)="onCellKeydown($event)"
+                  (focusin)="onCellFocusIn($event)"
                   [class.is-align-end]="columnState?.alignEnd"
                   [class.is-pinned-left]="columnState?.pinnedLeft"
                   [class.is-pinned-right]="columnState?.pinnedRight"
