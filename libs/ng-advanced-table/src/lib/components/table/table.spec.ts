@@ -89,6 +89,8 @@ const columns: ColumnDef<Row, unknown>[] = [
       [state]="state()"
       [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="enablePagination"
+      [enableRowSelection]="enableRowSelection"
+      [selectionMode]="selectionMode"
       [stickyHeader]="stickyHeader"
       [getRowId]="getRowId"
       [accessibilityText]="accessibilityText"
@@ -100,6 +102,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       (columnVisibilityChange)="onColumnVisibilityChange($event)"
       (columnOrderChange)="onColumnOrderChange($event)"
       (columnPinningChange)="onColumnPinningChange($event)"
+      (rowSelectionChange)="onRowSelectionChange($event)"
       (rowActivate)="onRowActivate($event)"
     />
   `,
@@ -122,6 +125,8 @@ class TableHost {
   };
   enablePagination = false;
   enableColumnReorder = false;
+  enableRowSelection = false;
+  selectionMode: 'single' | 'multiple' = 'multiple';
   stickyHeader = true;
   accessibilityText: NatTableAccessibilityText = {};
   readonly stateEvents: NatTableState[] = [];
@@ -133,6 +138,7 @@ class TableHost {
   readonly columnVisibilityEvents: NatTableState['columnVisibility'][] = [];
   readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
   readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
+  readonly rowSelectionEvents: NatTableState['rowSelection'][] = [];
 
   onStateChange(state: NatTableState): void {
     this.stateEvents.push(state);
@@ -164,6 +170,10 @@ class TableHost {
 
   onColumnPinningChange(columnPinning: NatTableState['columnPinning']): void {
     this.columnPinningEvents.push(columnPinning);
+  }
+
+  onRowSelectionChange(rowSelection: NatTableState['rowSelection']): void {
+    this.rowSelectionEvents.push(rowSelection);
   }
 
   onRowActivate(event: NatTableRowActivateEvent<Row>): void {
@@ -243,6 +253,8 @@ describe('NatTable', () => {
     options: {
       enableColumnReorder?: boolean;
       enablePagination?: boolean;
+      enableRowSelection?: boolean;
+      selectionMode?: 'single' | 'multiple';
       stickyHeader?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -254,6 +266,8 @@ describe('NatTable', () => {
     host = fixture.componentInstance;
     host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.enableRowSelection = options.enableRowSelection ?? host.enableRowSelection;
+    host.selectionMode = options.selectionMode ?? host.selectionMode;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -1128,6 +1142,110 @@ describe('NatTable', () => {
     const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
 
     expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
+  });
+
+  it('does not expose aria-selected unless enableRowSelection is true', () => {
+    fixture.detectChanges();
+
+    const row = fixture.nativeElement.querySelector('tbody tr.data-row') as HTMLElement;
+    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+
+    expect(row.getAttribute('aria-selected')).toBeNull();
+    expect(table.getAttribute('aria-multiselectable')).toBeNull();
+  });
+
+  it('marks the grid aria-multiselectable only for multiple-mode row selection', async () => {
+    await recreateHost({ enableRowSelection: true });
+    fixture.detectChanges();
+
+    let table = fixture.nativeElement.querySelector('table') as HTMLElement;
+
+    expect(table.getAttribute('aria-multiselectable')).toBe('true');
+
+    await recreateHost({ enableRowSelection: true, selectionMode: 'single' });
+    fixture.detectChanges();
+
+    table = fixture.nativeElement.querySelector('table') as HTMLElement;
+
+    expect(table.getAttribute('aria-multiselectable')).toBeNull();
+  });
+
+  it('reflects controlled rowSelection through aria-selected', async () => {
+    await recreateHost({
+      enableRowSelection: true,
+      state: { rowSelection: { 'svc-00002': true } },
+    });
+    fixture.detectChanges();
+
+    const selected = Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
+      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
+    );
+
+    expect(selected.length).toBe(1);
+  });
+
+  it('collapses to the first selected row (by key order) in single mode', async () => {
+    await recreateHost({
+      enableRowSelection: true,
+      selectionMode: 'single',
+      state: { rowSelection: { 'svc-00001': true, 'svc-00002': true } },
+    });
+    fixture.detectChanges();
+
+    const selected = Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
+      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
+    );
+
+    expect(selected.length).toBe(1);
+    // Deterministic: the collapse keeps the first key, not an arbitrary row.
+    expect(getInternalTable(fixture).table.getState().rowSelection).toEqual({ 'svc-00001': true });
+  });
+
+  it('emits rowSelectionChange and announces the selection', async () => {
+    await recreateHost({ enableRowSelection: true, initialState: {} });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    table.patchState({ rowSelection: { 'svc-00001': true } });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.rowSelectionEvents.at(-1)).toEqual({ 'svc-00001': true });
+
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    expect(liveRegion.textContent?.trim()).toBe('1 row selected.');
+  });
+
+  it('warns once in dev mode when getRowId is missing and data is present', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    @Component({
+      imports: [NatTable],
+      template: `<nat-table
+        [data]="rows()"
+        [columns]="columns"
+        accessibleName="Operations table"
+      />`,
+    })
+    class MissingRowIdHost {
+      readonly rows = signal<Row[]>(buildRows(2));
+      readonly columns = columns;
+    }
+
+    const missingFixture = TestBed.createComponent(MissingRowIdHost);
+
+    await missingFixture.whenStable();
+    missingFixture.detectChanges();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain('getRowId');
+
+    warn.mockRestore();
   });
 
   it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {

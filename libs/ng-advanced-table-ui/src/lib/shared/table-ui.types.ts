@@ -8,6 +8,7 @@ import type {
   FlexRenderContent,
   PaginationState,
   RowData,
+  RowSelectionState,
   SortingState,
   Table,
   Updater,
@@ -28,6 +29,7 @@ export interface NatTableUiState {
   columnVisibility: VisibilityState;
   columnOrder: ColumnOrderState;
   columnPinning: ColumnPinningState;
+  rowSelection: RowSelectionState;
   pagination: PaginationState;
 }
 
@@ -234,6 +236,20 @@ export interface NatTableAccessibilityColumnVisibilityLabels {
   toggleColumnAriaLabel?: (context: NatTableAccessibilityColumnVisibilityActionContext) => string;
   /** Visible state text rendered inside each chip. */
   columnState?: (context: NatTableAccessibilityColumnVisibilityStateContext) => string;
+}
+
+/** Context passed to per-row selection checkbox label formatters. */
+export interface NatTableAccessibilitySelectionRowContext {
+  /** Stable row id resolved through the table's `getRowId`. */
+  rowId: string;
+}
+
+/** Optional accessibility label overrides for the generated selection column. */
+export interface NatTableAccessibilitySelectionLabels {
+  /** `aria-label` applied to the select-all header checkbox. */
+  selectAllAriaLabel?: string;
+  /** `aria-label` applied to each per-row checkbox. */
+  selectRowAriaLabel?: (context: NatTableAccessibilitySelectionRowContext) => string;
 }
 
 /** Context passed to sort-button label formatters. */

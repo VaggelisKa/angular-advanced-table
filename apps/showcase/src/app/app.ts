@@ -55,6 +55,11 @@ const showcaseExamples = [
     path: '/keyboard-interaction',
   },
   {
+    label: 'Row selection',
+    description: 'Checkbox row selection',
+    path: '/selection',
+  },
+  {
     label: 'Sorting with pinned columns',
     description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',

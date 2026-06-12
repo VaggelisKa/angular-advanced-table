@@ -10,6 +10,7 @@ export type {
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,
   NatTableAccessibilityPaginationAnnouncementContext,
+  NatTableAccessibilitySelectionAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
 } from './components/table/table.types';

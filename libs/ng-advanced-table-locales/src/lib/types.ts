@@ -125,6 +125,18 @@ export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   totalText: string;
 }
 
+/** Context passed to custom row-selection announcement formatters. */
+export interface NatTableAccessibilitySelectionAnnouncementContext {
+  /** Number of currently selected rows. */
+  selectedCountValue: number;
+  /** Provider-formatted text for `selectedCountValue`. */
+  selectedCountText: string;
+  /** Total rows supplied to the table. */
+  totalRowsValue: number;
+  /** Provider-formatted text for `totalRowsValue`. */
+  totalRowsText: string;
+}
+
 /** Optional overrides for built-in screen-reader summaries and announcements. */
 export interface NatTableAccessibilityText {
   /**
@@ -161,6 +173,8 @@ export interface NatTableAccessibilityText {
   pageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when a column is reordered. */
   columnReorder?: (context: NatTableAccessibilityColumnReorderAnnouncementContext) => string;
+  /** Live announcement emitted when the row selection changes. */
+  selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
 }
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */

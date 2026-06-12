@@ -87,6 +87,7 @@ export function mergeNatTableAccessibilityText(
     pageSizeChange: override?.pageSizeChange ?? parent?.pageSizeChange,
     pageChange: override?.pageChange ?? parent?.pageChange,
     columnReorder: override?.columnReorder ?? parent?.columnReorder,
+    selectionChange: override?.selectionChange ?? parent?.selectionChange,
   };
 }
 

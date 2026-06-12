@@ -121,6 +121,20 @@ export interface NatTableAccessibilityColumnVisibilityLabels {
   columnState?: (context: NatTableAccessibilityColumnVisibilityStateContext) => string;
 }
 
+/** Context passed to per-row selection checkbox label formatters. */
+export interface NatTableAccessibilitySelectionRowContext {
+  /** Stable row id resolved through the table's `getRowId`. */
+  rowId: string;
+}
+
+/** Optional accessibility label overrides for the generated selection column. */
+export interface NatTableAccessibilitySelectionLabels {
+  /** `aria-label` applied to the select-all header checkbox. */
+  selectAllAriaLabel?: string;
+  /** `aria-label` applied to each per-row checkbox. */
+  selectRowAriaLabel?: (context: NatTableAccessibilitySelectionRowContext) => string;
+}
+
 /** Context passed to sort-button label formatters. */
 export interface NatTableAccessibilityHeaderActionSortContext {
   /** Human-readable column label. */
@@ -205,6 +219,13 @@ export interface NatTableHeaderActionsIntl {
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
 
+export interface NatTableSelectionIntl {
+  /** Human-readable label for the generated selection column. */
+  columnLabel?: string;
+  /** Generated labels for the selection checkboxes. */
+  accessibilityLabels?: NatTableAccessibilitySelectionLabels;
+}
+
 /** Locale-specific defaults for generated `ng-advanced-table-ui` copy. */
 export interface NatTableUiIntl {
   search?: NatTableSearchIntl;
@@ -213,6 +234,7 @@ export interface NatTableUiIntl {
   pager?: NatTablePagerIntl;
   scrollControl?: NatTableScrollControlIntl;
   headerActions?: NatTableHeaderActionsIntl;
+  selection?: NatTableSelectionIntl;
   /** Number formatter used for `...Text` fields passed to generated label formatters. */
   formatNumber?: NatTableUiNumberFormatter;
 }

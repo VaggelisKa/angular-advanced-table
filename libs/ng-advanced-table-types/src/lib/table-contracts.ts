@@ -6,6 +6,7 @@ import type {
   ColumnPinningState,
   PaginationState,
   RowData,
+  RowSelectionState,
   SortingState,
   VisibilityState,
 } from '@tanstack/angular-table';
@@ -22,6 +23,7 @@ export interface NatTableState {
   columnVisibility: VisibilityState;
   columnOrder: ColumnOrderState;
   columnPinning: ColumnPinningState;
+  rowSelection: RowSelectionState;
   pagination: PaginationState;
 }
 

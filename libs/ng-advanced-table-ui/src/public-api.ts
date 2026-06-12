@@ -7,6 +7,11 @@ export { NatTablePager } from './lib/components/table-pager/table-pager';
 export { NatTableScrollControl } from './lib/components/table-scroll-control/table-scroll-control';
 export { withNatTableHeaderActions } from './lib/components/table-header-actions/with-table-header-actions';
 export {
+  NatTableSelectionCheckbox,
+  withNatTableSelectionColumn,
+  type NatTableSelectionColumnOptions,
+} from './lib/components/table-selection/table-selection';
+export {
   NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_DEFAULT_INTL,
   NAT_TABLE_UI_INTL,
@@ -23,6 +28,7 @@ export type {
   NatTablePagerIntl,
   NatTableScrollControlIntl,
   NatTableSearchIntl,
+  NatTableSelectionIntl,
   NatTableUiIntl,
   NatTableUiIntlConfig,
   NatTableUiIntlProviderConfig,
@@ -43,6 +49,8 @@ export type {
   NatTableAccessibilityPageSizeOptionContext,
   NatTableAccessibilityScrollControlLabels,
   NatTableAccessibilityScrollControlPositionContext,
+  NatTableAccessibilitySelectionLabels,
+  NatTableAccessibilitySelectionRowContext,
   NatTableColumnMeta,
   NatTableHeaderActionsColumnOptions,
   NatTableSortDirection,
