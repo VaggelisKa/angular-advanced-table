@@ -21,7 +21,7 @@ The following showcase demonstrates the simplified, context-aware API implemente
 
     <nat-table-column-visibility />
     <nat-table-scroll-control />
-    <button class="btn btn-primary" (click)="refreshData()">Refresh</button>
+    <button class="btn btn-primary" (click)="serverResponse.reload()">Refresh</button>
   </nat-table-toolbar>
 
   <nat-table [data]="data()" [columns]="columns" accessibleName="Search demo table" />
@@ -124,10 +124,6 @@ export class DeclarativeTableDemoComponent {
       meta: { label: 'Status' },
     },
   ]);
-
-  protected refreshData(): void {
-    this.serverResponse.reload();
-  }
 }
 ```
 
