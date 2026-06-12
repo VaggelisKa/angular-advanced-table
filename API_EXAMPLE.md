@@ -15,13 +15,11 @@ The following showcase demonstrates the simplified, context-aware API implemente
   </nat-table-toolbar>
 
   <nat-table-toolbar>
-    <div align-left>
-      <nat-table-search placeholder="Search e.g. Analytics, Active, Delta..." />
-    </div>
+    <nat-table-search align-left placeholder="Search e.g. Analytics, Active, Delta..." />
 
     <nat-table-column-visibility />
-    <nat-table-scroll-control />
-    <button class="btn btn-primary" (click)="serverResponse.reload()">Refresh</button>
+
+    <button (click)="serverResponse.reload()">Refresh</button>
   </nat-table-toolbar>
 
   <nat-table [data]="data()" [columns]="columns" accessibleName="Search demo table" />
@@ -99,7 +97,7 @@ export class DeclarativeTableDemoComponent {
         throw new Error('Failed to load nodes data');
       }
       return res.json() as Promise<{ items: DemoItem[]; totalPages: number }>;
-    }
+    },
   });
 
   // Derived signals reactively updated by the resource value
@@ -126,4 +124,3 @@ export class DeclarativeTableDemoComponent {
   ]);
 }
 ```
-
