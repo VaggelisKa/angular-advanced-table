@@ -12,7 +12,8 @@ const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, local
 export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
   accessibilityText: {
     keyboardInstructions:
-      'Use arrow keys to move between cells. Use Tab to move into controls within a cell.',
+      'Use arrow keys to move between cells. Press Enter to interact with the controls in a cell, ' +
+      'Tab to move forward between them, Shift+Tab to move backward, and Escape to return to the cell.',
     emptyState: 'No rows match the current view.',
     reorderKeyboardInstructions:
       'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
