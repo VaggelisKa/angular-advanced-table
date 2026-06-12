@@ -9,8 +9,8 @@ import {
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
-  NatTablePageSize,
-  NatTablePager,
+  NatTablePagination,
+  NatTableToolbar,
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
@@ -48,14 +48,13 @@ const DEMO_DATA: DemoItem[] = [
     NatTableSurface,
     NatTableSearch,
     NatTableColumnVisibility,
-    NatTablePageSize,
-    NatTablePager,
+    NatTablePagination,
     NatTableScrollControl,
+    NatTableToolbar,
   ],
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [NatTableService],
 })
 export class TableBuilderPage {
   // Feature Toggles
@@ -113,32 +112,31 @@ export class TableBuilderPage {
       pageIndex: 0,
       pageSize: 3,
     },
+    columnPinning: {
+      left: ['name'],
+      right: [],
+    },
+    columnOrder: ['name', 'category', 'status', 'value'],
   });
 
   // Generated HTML code
   readonly generatedHtml = computed(() => {
     let topControls = '';
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
-      topControls = '\n  <div class="table-controls-grid">';
+      topControls = '\n  <nat-table-toolbar>';
       if (this.withGlobalFilter()) {
         topControls +=
-          '\n    <nat-table-search label="Search rows" placeholder="Type here..." />';
+          '\n    <nat-table-search align-left label="Search rows" placeholder="Type here..." />';
       }
       if (this.showColumnVisibility()) {
         topControls += '\n    <nat-table-column-visibility />';
       }
-      topControls += '\n  </div>';
+      topControls += '\n  </nat-table-toolbar>';
     }
 
     let paginationControls = '';
     if (this.withPagination()) {
-      paginationControls = '\n\n  <div class="table-toolbar">';
-      paginationControls += '\n    <div class="table-actions">';
-      paginationControls +=
-        '\n      <nat-table-page-size [pageSizeOptions]="[3, 5, 10]" />';
-      paginationControls += '\n      <nat-table-pager />';
-      paginationControls += '\n    </div>';
-      paginationControls += '\n  </div>';
+      paginationControls = '\n\n  <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />';
     }
 
     let scrollControls = '';
@@ -146,33 +144,21 @@ export class TableBuilderPage {
       scrollControls = '\n\n  <nat-table-scroll-control />';
     }
 
+    let surfaceAttributes = '';
+    if (this.withStickyHeader()) {
+      surfaceAttributes = ' [stickyHeader]="true"';
+    }
+
     let tableAttributes = '';
     tableAttributes += '\n    [data]="data"';
     tableAttributes += '\n    [columns]="columns"';
-    tableAttributes += '\n    [state]="tableState()"';
-    if (this.withPagination()) {
-      tableAttributes += '\n    [enablePagination]="true"';
-    }
-    if (this.withGlobalFilter()) {
-      tableAttributes += '\n    [enableGlobalFilter]="true"';
-    }
-    if (this.withColumnPinning()) {
-      tableAttributes += '\n    [enableColumnPinning]="true"';
-    }
-    if (this.withColumnReorder()) {
-      tableAttributes += '\n    [enableColumnReorder]="true"';
-    }
-    if (this.withStickyHeader()) {
-      tableAttributes += '\n    [stickyHeader]="true"';
-    }
 
-    return `<nat-table-surface class="table-shell">${topControls}${paginationControls}
-
-  <nat-table${tableAttributes}
-    accessibleName="Custom configured table preview"
-    (stateChange)="onTableStateChange($event)"
-  />${scrollControls}
-</nat-table-surface>`;
+    return `<nat-table-surface [(state)]="tableState"${surfaceAttributes}>${topControls}${paginationControls}
+ 
+   <nat-table${tableAttributes}
+     accessibleName="Custom configured table preview"
+   />${scrollControls}
+ </nat-table-surface>`;
   });
 
   // Generated TS code
@@ -180,15 +166,37 @@ export class TableBuilderPage {
     const imports = ['ChangeDetectionStrategy', 'Component', 'signal'];
     const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
 
+    if (this.withGlobalFilter() || this.showColumnVisibility()) {
+      uiImports.push('NatTableToolbar');
+    }
     if (this.withGlobalFilter()) uiImports.push('NatTableSearch');
     if (this.showColumnVisibility()) uiImports.push('NatTableColumnVisibility');
     if (this.withPagination()) {
-      uiImports.push('NatTablePageSize');
-      uiImports.push('NatTablePager');
+      uiImports.push('NatTablePagination');
     }
     if (this.showScrollControl()) uiImports.push('NatTableScrollControl');
 
     const componentImports = ['NatTable', 'NatTableState'];
+
+    const stateObj: any = {
+      columnVisibility: this.tableState().columnVisibility ?? { name: true, category: true, status: true, value: true },
+    };
+    if (this.withPagination()) {
+      stateObj.pagination = this.tableState().pagination ?? { pageIndex: 0, pageSize: 3 };
+    }
+    if (this.withColumnPinning() && this.tableState().columnPinning) {
+      stateObj.columnPinning = this.tableState().columnPinning;
+    }
+    if (this.withColumnReorder() && this.tableState().columnOrder) {
+      stateObj.columnOrder = this.tableState().columnOrder;
+    }
+
+    const formattedState = JSON.stringify(stateObj, null, 4)
+      .replace(/"([^"]+)":/g, '$1:')
+      .replace(/"/g, "'")
+      .split('\n')
+      .map((line, idx) => idx === 0 ? line : '    ' + line)
+      .join('\n');
 
     return `import { ${imports.join(', ')} } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
@@ -236,10 +244,7 @@ export class CustomTableComponent {
     },
   ]);
 
-  readonly tableState = signal<Partial<NatTableState>>({
-    columnVisibility: { name: true, category: true, status: true, value: true },
-    pagination: { pageIndex: 0, pageSize: 3 },
-  });
+  readonly tableState = signal<Partial<NatTableState>>(${formattedState});
 
   onTableStateChange(state: NatTableState): void {
     this.tableState.set(state);
@@ -247,16 +252,37 @@ export class CustomTableComponent {
 }`;
   });
 
-  onTableStateChange(state: NatTableState): void {
-    this.tableState.set(state);
+
+  toggleColumnPinning(): void {
+    const nextValue = !this.withColumnPinning();
+    this.withColumnPinning.set(nextValue);
+    if (nextValue) {
+      this.tableState.update((current) => ({
+        ...current,
+        columnPinning: { left: ['name'], right: [] },
+      }));
+    } else {
+      this.tableState.update((current) => ({
+        ...current,
+        columnPinning: { left: [], right: [] },
+      }));
+    }
   }
 
-  onColumnVisibilityChange(columnVisibility: VisibilityState): void {
-    this.tableState.update((current) => ({ ...current, columnVisibility }));
-  }
-
-  onPaginationChange(pagination: PaginationState): void {
-    this.tableState.update((current) => ({ ...current, pagination }));
+  toggleColumnReorder(): void {
+    const nextValue = !this.withColumnReorder();
+    this.withColumnReorder.set(nextValue);
+    if (nextValue) {
+      this.tableState.update((current) => ({
+        ...current,
+        columnOrder: ['name', 'category', 'status', 'value'],
+      }));
+    } else {
+      this.tableState.update((current) => {
+        const { columnOrder, ...rest } = current;
+        return rest;
+      });
+    }
   }
 
   setTab(tab: 'html' | 'ts'): void {

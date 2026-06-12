@@ -35,7 +35,6 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-visibility-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTableColumnVisibility],
-  providers: [NatTableService],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
@@ -49,17 +48,15 @@ const DEMO_DATA: DemoItem[] = [
         <div class="card">
           <h2 class="card-title">Visibility Grid Control</h2>
 
-          <div class="visibility-panel">
-            <nat-table-column-visibility />
-          </div>
+          <nat-table-surface [(state)]="tableState">
+            <div class="visibility-panel">
+              <nat-table-column-visibility />
+            </div>
 
-          <nat-table-surface>
             <nat-table
               [data]="data"
               [columns]="columns"
-              [state]="tableState()"
               accessibleName="Visibility demo table"
-              (columnVisibilityChange)="onColumnVisibilityChange($event)"
             />
           </nat-table-surface>
         </div>

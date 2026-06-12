@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { type CellContext, type ColumnDef, type PaginationState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
-  NatTablePageSize,
-  NatTablePager,
+  NatTablePagination,
   NatTableSurface,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
@@ -37,33 +36,46 @@ const DEMO_DATA: DemoItem[] = [
 @Component({
   selector: 'app-pagination-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatTableSurface, NatTablePageSize, NatTablePager],
+  imports: [NatTable, NatTableSurface, NatTablePagination],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
         <h1 class="title">Table Pagination</h1>
         <p class="description">
-          Demonstrates client-side pagination row models driven by pager and page-size switches.
+          Demonstrates client-side pagination row models driven by pager and page-size switches, as
+          well as server-side/manual configurations.
         </p>
       </header>
 
       <div class="grid-layout">
         <div class="card">
-          <h2 class="card-title">Paginated Grid</h2>
+          <h2 class="card-title">Paginated Grid (Client-Side)</h2>
 
-          <nat-table-surface>
-            <div class="table-toolbar">
-              <nat-table-page-size [pageSizeOptions]="[3, 5, 10]" />
-              <nat-table-pager />
-            </div>
+          <nat-table-surface [(state)]="tableState">
+            <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
+
+            <nat-table [data]="data" [columns]="columns" accessibleName="Pagination demo table" />
+          </nat-table-surface>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Manual / Server-Side Pagination (Mixed Mode)</h2>
+          <p class="description" style="margin-bottom: 1rem;">
+            Pagination is handled externally (simulated server-side slicing), while sorting remains
+            automatic client-side.
+          </p>
+
+          <nat-table-surface
+            [mode]="{ pagination: 'manual', sorting: 'auto' }"
+            [manualPageCount]="manualPageCount()"
+            [(state)]="manualTableState"
+          >
+            <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
 
             <nat-table
-              [data]="data"
+              [data]="manualData()"
               [columns]="columns"
-              [state]="tableState()"
-              [enablePagination]="true"
-              accessibleName="Pagination demo table"
-              (paginationChange)="onPaginationChange($event)"
+              accessibleName="Manual pagination demo table"
             />
           </nat-table-surface>
         </div>
@@ -105,7 +117,24 @@ export class PaginationShowcasePage {
     },
   });
 
-  onPaginationChange(pagination: PaginationState): void {
-    this.tableState.update((current) => ({ ...current, pagination }));
-  }
+  // Mixed Mode State & Computing
+  readonly manualTableState = signal<Partial<NatTableState>>({
+    pagination: {
+      pageIndex: 0,
+      pageSize: 3,
+    },
+  });
+
+  readonly manualData = computed(() => {
+    const pageState = this.manualTableState().pagination ?? { pageIndex: 0, pageSize: 3 };
+    const start = pageState.pageIndex * pageState.pageSize;
+    return DEMO_DATA.slice(start, start + pageState.pageSize);
+  });
+
+  readonly manualPageCount = computed(() => {
+    const pageState = this.manualTableState().pagination ?? { pageIndex: 0, pageSize: 3 };
+    return Math.ceil(DEMO_DATA.length / pageState.pageSize);
+  });
+
+
 }

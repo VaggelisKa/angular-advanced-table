@@ -35,7 +35,6 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-search-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTableSearch],
-  providers: [NatTableService],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
@@ -49,18 +48,17 @@ const DEMO_DATA: DemoItem[] = [
         <div class="card">
           <h2 class="card-title">Searchable Grid</h2>
 
-          <div class="search-panel">
-            <nat-table-search
-              label="Fuzzy search symbol, name, status, or category"
-              placeholder="Search e.g. Analytics, Active, Delta..."
-            />
-          </div>
+          <nat-table-surface [(state)]="tableState">
+            <div class="search-panel">
+              <nat-table-search
+                label="Fuzzy search symbol, name, status, or category"
+                placeholder="Search e.g. Analytics, Active, Delta..."
+              />
+            </div>
 
-          <nat-table-surface>
             <nat-table
               [data]="data"
               [columns]="columns"
-              [state]="tableState()"
               accessibleName="Search demo table"
             />
           </nat-table-surface>

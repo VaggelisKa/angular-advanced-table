@@ -46,29 +46,19 @@
         <span class="option-help"
           >Enables paging logic with page-size chips and pager navigation.</span
         >
-
         <label class="toggle-control">
-          <input
-            type="checkbox"
-            [checked]="withColumnPinning()"
-            (change)="withColumnPinning.set(!withColumnPinning())"
-          />
+          <input type="checkbox" [checked]="withColumnPinning()" (change)="toggleColumnPinning()" />
           <span class="slider"></span>
           <span class="toggle-label">Column Pinning</span>
         </label>
         <span class="option-help">Allows columns to be stuck to the left/right boundaries.</span>
 
         <label class="toggle-control">
-          <input
-            type="checkbox"
-            [checked]="withColumnReorder()"
-            (change)="withColumnReorder.set(!withColumnReorder())"
-          />
+          <input type="checkbox" [checked]="withColumnReorder()" (change)="toggleColumnReorder()" />
           <span class="slider"></span>
           <span class="toggle-label">Column Reordering</span>
         </label>
         <span class="option-help">Enables drag-and-drop column header reordering.</span>
-
         <label class="toggle-control">
           <input
             type="checkbox"
@@ -101,41 +91,35 @@
       <section class="card preview-card">
         <h2 class="card-title">Live Preview</h2>
 
-        <nat-table-surface class="table-shell">
+        <nat-table-surface
+          class="table-shell"
+          [(state)]="tableState"
+          [stickyHeader]="withStickyHeader()"
+        >
           @if (withGlobalFilter() || showColumnVisibility()) {
-            <div class="table-controls-grid">
+            <nat-table-toolbar>
               @if (withGlobalFilter()) {
                 <nat-table-search
+                  align-left
                   label="Search rows"
                   placeholder="Try 'Alpha' or 'Security'..."
                 />
               }
+
               @if (showColumnVisibility()) {
                 <nat-table-column-visibility />
               }
-            </div>
+            </nat-table-toolbar>
           }
 
           @if (withPagination()) {
-            <div class="table-toolbar">
-              <div class="table-actions">
-                <nat-table-page-size [pageSizeOptions]="[3, 5, 10]" />
-                <nat-table-pager />
-              </div>
-            </div>
+            <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
           }
 
           <nat-table
             [data]="data"
             [columns]="columns"
-            [state]="tableState()"
-            [enablePagination]="withPagination()"
-            [enableGlobalFilter]="withGlobalFilter()"
-            [enableColumnPinning]="withColumnPinning()"
-            [enableColumnReorder]="withColumnReorder()"
-            [stickyHeader]="withStickyHeader()"
             accessibleName="Custom configured table preview"
-            (stateChange)="onTableStateChange($event)"
           />
 
           @if (showScrollControl()) {

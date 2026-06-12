@@ -35,7 +35,6 @@ interface ColumnVisibilityItem<TData extends RowData = RowData> {
   styleUrl: './table-column-visibility.css',
 })
 export class NatTableColumnVisibility<TData extends RowData = RowData> {
-  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly label = input<string | undefined>(undefined);
   readonly groupAriaLabel = input<string | undefined>(undefined);
@@ -45,7 +44,7 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
   protected readonly controller = computed(
-    () => this.for() ?? this.natTableService?.controller() ?? null,
+    () => this.natTableService?.controller() ?? null,
   );
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);

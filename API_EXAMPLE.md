@@ -5,7 +5,9 @@
   <nat-table-toolbar>
     <nat-table-search placeholder="Search e.g. Analytics, Active, Delta..." />
 
-    <nat-actions> </nat-actions>
+    <nat-actions>
+      <!-- some-future-icon-component -->
+    </nat-actions>
   </nat-table-toolbar>
 
   <nat-pagination />

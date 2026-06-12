@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, DestroyRef } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from '../../shared/table.service';
@@ -20,7 +20,6 @@ import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.typ
   styleUrl: './table-pager.css',
 })
 export class NatTablePager<TData extends RowData = RowData> {
-  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
@@ -28,9 +27,18 @@ export class NatTablePager<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService, {
     optional: true,
   });
+  private readonly destroyRef = inject(DestroyRef);
+
   protected readonly controller = computed(
-    () => this.for() ?? this.natTableService?.controller() ?? null,
+    () => this.natTableService?.controller() ?? null,
   );
+
+  constructor() {
+    this.natTableService?.registerPagination();
+    this.destroyRef.onDestroy(() => {
+      this.natTableService?.unregisterPagination();
+    });
+  }
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(

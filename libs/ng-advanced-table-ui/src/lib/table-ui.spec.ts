@@ -93,7 +93,11 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
     NatTableSurface,
   ],
   template: `
-    <nat-table-surface>
+    <nat-table-surface
+      [state]="tableState()"
+      [initialState]="initialState"
+      (stateChange)="onTableStateChange($event)"
+    >
       <nat-table-search />
       <nat-table-column-visibility />
       <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
@@ -102,13 +106,8 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       <nat-table
         [data]="rows()"
         [columns]="columns"
-        [state]="tableState()"
-        [initialState]="initialState"
-        [enableColumnReorder]="enableColumnReorder"
-        [enablePagination]="true"
         [getRowId]="getRowId"
         accessibleName="Operations table"
-        (stateChange)="onTableStateChange($event)"
       />
 
       <nat-table-scroll-control />
@@ -120,7 +119,6 @@ class TableUiHost {
   readonly columns = withNatTableHeaderActions(baseColumns);
   readonly getRowId = (row: Row) => row.id;
   readonly pageSizeOptions = [2, 3, 5] as const;
-  enableColumnReorder = false;
   readonly tableState = signal<Partial<NatTableState>>({});
   readonly initialState: Partial<NatTableState> = {
     pagination: {
@@ -129,21 +127,21 @@ class TableUiHost {
     },
   };
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
-  imports: [NatTable],
+  imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
+    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        accessibleName="Operations table"
+      />
+    </nat-table-surface>
   `,
 })
 class CustomSortIndicatorHost {
@@ -154,21 +152,21 @@ class CustomSortIndicatorHost {
   });
   readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
-  imports: [NatTable],
+  imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
+    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        accessibleName="Operations table"
+      />
+    </nat-table-surface>
   `,
 })
 class HiddenHeaderActionLabelHost {
@@ -192,7 +190,7 @@ class HiddenHeaderActionLabelHost {
   );
   readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
@@ -207,17 +205,17 @@ class HiddenHeaderActionLabelHost {
     NatTableSurface,
   ],
   template: `
-    <nat-table-surface>
+    <nat-table-surface
+      [state]="tableState()"
+      [initialState]="initialState"
+      (stateChange)="onTableStateChange($event)"
+    >
       <nat-table
         #grid="natTable"
         [data]="rows()"
         [columns]="columns"
-        [state]="tableState()"
-        [initialState]="initialState"
-        [enablePagination]="true"
         [getRowId]="getRowId"
         accessibleName="Operations table"
-        (stateChange)="onTableStateChange($event)"
       />
       <nat-table-column-visibility [accessibilityLabels]="columnVisibilityLabels" />
       <nat-table-page-size
@@ -281,7 +279,7 @@ class CustomAccessibilityLabelsHost {
     },
   };
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
@@ -349,17 +347,17 @@ class CustomAccessibilityLabelsHost {
     }),
   ],
   template: `
-    <nat-table-surface>
+    <nat-table-surface
+      [state]="tableState()"
+      [initialState]="initialState"
+      (stateChange)="onTableStateChange($event)"
+    >
       <nat-table
         #grid="natTable"
         [data]="rows()"
         [columns]="columns"
-        [state]="tableState()"
-        [initialState]="initialState"
-        [enablePagination]="true"
         [getRowId]="getRowId"
         accessibleName="Operations table"
-        (stateChange)="onTableStateChange($event)"
       />
       <nat-table-search [label]="searchLabel()" />
       <nat-table-column-visibility />
@@ -387,7 +385,7 @@ class ProviderAccessibilityLabelsHost {
   readonly searchLabel = signal<string | undefined>(undefined);
   readonly pageSizeGroupAriaLabel = signal<string | undefined>(undefined);
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
@@ -434,12 +432,10 @@ class ProviderAccessibilityLabelsHost {
     }),
   ],
   template: `
-    <nat-table-surface>
+    <nat-table-surface [locale]="locale()">
       <nat-table
-        [locale]="locale()"
         [data]="rows()"
         [columns]="columns"
-        [enablePagination]="true"
         accessibleName="Operations table"
       />
 
@@ -457,15 +453,15 @@ class LocaleSwitchingHost {
 }
 
 @Component({
-  imports: [NatTable],
+  imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      [state]="tableState()"
-      accessibleName="Operations table"
-      (stateChange)="onTableStateChange($event)"
-    />
+    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        accessibleName="Operations table"
+      />
+    </nat-table-surface>
   `,
 })
 class HeaderActionCompositionHost {
@@ -490,7 +486,7 @@ class HeaderActionCompositionHost {
   );
   readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
@@ -518,15 +514,10 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
   });
 
-  async function recreateHost(
-    options: {
-      enableColumnReorder?: boolean;
-    } = {},
-  ): Promise<void> {
+  async function recreateHost(): Promise<void> {
     fixture.destroy();
     fixture = TestBed.createComponent(TableUiHost);
     host = fixture.componentInstance;
-    host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     await fixture.whenStable();
   }
 
@@ -679,7 +670,7 @@ describe('ng-advanced-table-ui', () => {
   });
 
   it('wraps headers with sort and pin actions without losing the original label', async () => {
-    await recreateHost({ enableColumnReorder: true });
+    await recreateHost();
     fixture.detectChanges();
 
     const headerLabel = fixture.nativeElement.querySelector(

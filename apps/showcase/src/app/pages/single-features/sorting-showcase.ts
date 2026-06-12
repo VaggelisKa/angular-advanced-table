@@ -42,13 +42,11 @@ const DEMO_DATA: DemoItem[] = [
       <div class="grid-layout grid-layout-with-panel">
         <div class="card">
           <h2 class="card-title">Interactive Sorting Grid</h2>
-          <nat-table-surface>
+          <nat-table-surface [(state)]="tableState">
             <nat-table
               [data]="data"
               [columns]="columns"
-              [state]="tableState()"
               accessibleName="Sorting demo table"
-              (sortingChange)="onSortingChange($event)"
             />
           </nat-table-surface>
         </div>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, DestroyRef } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from '../../shared/table.service';
@@ -32,14 +32,22 @@ interface PageSizeOption {
   styleUrl: './table-page-size.css',
 })
 export class NatTablePageSize<TData extends RowData = RowData> {
-  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
-  protected readonly controller = computed(() => this.for() ?? this.natTableService?.controller() ?? null);
+  private readonly destroyRef = inject(DestroyRef);
+
+  protected readonly controller = computed(() => this.natTableService?.controller() ?? null);
+
+  constructor() {
+    this.natTableService?.registerPagination();
+    this.destroyRef.onDestroy(() => {
+      this.natTableService?.unregisterPagination();
+    });
+  }
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(

@@ -437,16 +437,7 @@
   color: var(--warning);
 }
 
-.metrics-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.metrics-row nat-render-metrics-filter {
+nat-table-toolbar nat-render-metrics-filter {
   flex: 1 1 auto;
   min-width: 0;
 }

@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { Table } from '@tanstack/angular-table';
+import { NatTableService } from 'ng-advanced-table';
 
 import type { NatTableRenderMetricsController } from './contracts';
 import { NatRenderMetricsFilter } from './filter';
@@ -45,6 +46,7 @@ const providerOptions: readonly RowRenderFilterOption[] = [
 @Component({
   imports: [NatRenderMetricsFilter, NatRenderMetricsPanel],
   providers: [
+    NatTableService,
     provideNatTableUtilsIntl({
       formatNumber: (value) => `n${value}`,
       renderMetrics: {
@@ -65,7 +67,7 @@ const providerOptions: readonly RowRenderFilterOption[] = [
   ],
   template: `
     <nat-render-metrics-panel [store]="store" [labels]="panelLabels()" />
-    <nat-render-metrics-filter [for]="controller" [store]="store" [labels]="filterLabels()" />
+    <nat-render-metrics-filter [store]="store" [labels]="filterLabels()" />
   `,
 })
 class RenderMetricsIntlHost {
@@ -79,7 +81,10 @@ class RenderMetricsIntlHost {
   readonly panelLabels = signal<NatTableRenderMetricsPanelIntl | undefined>(undefined);
   readonly filterLabels = signal<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
+  private readonly natTableService = inject(NatTableService);
+
   constructor() {
+    this.natTableService.setController(this.controller as any);
     this.store.record({
       rowId: 'row-1',
       renderToken: 1,
