@@ -5,6 +5,13 @@
  * focus can leave the grid), and Escape returns focus to the cell. The controls are rendered
  * through `flexRender` (separate views), so `@angular/aria`'s `GridCell` content query never
  * registers them; this supplies the keyboard path the grid pattern otherwise cannot.
+ *
+ * Per APG "Whether to Focus on a Cell or an Element Inside It" (and `@angular/aria`'s
+ * single-widget mode), a cell whose entire content is one control that does not consume
+ * arrow keys delegates focus straight to that control: arriving on the cell focuses the
+ * control, Enter activates it natively, and Escape stays native because the control is
+ * the cell's focus stop. Cells with several controls, extra content, or an
+ * arrow-consuming control keep the Enter / Tab / Escape model above.
  */
 
 export const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
@@ -14,6 +21,18 @@ export const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
   '[role="combobox"], [role="textbox"], [role="searchbox"]';
 
 const GRID_CELL_SELECTOR = '[role="gridcell"], [role="columnheader"], [role="rowheader"]';
+
+/**
+ * Controls that operate without arrow keys or typing, so the grid keeps arrow
+ * navigation while one of them holds focus. Text-entry and arrow-driven controls
+ * (inputs, selects, comboboxes, radios) stay on the Enter-to-interact model.
+ * Must stay a subset of {@link ROW_ACTIVATE_INTERACTIVE_SELECTOR} — a control
+ * has to be reachable before it can be delegated to.
+ */
+const DELEGATED_CONTROL_SELECTOR =
+  'a[href], button, summary, input[type="checkbox"], input[type="button"], ' +
+  'input[type="submit"], input[type="reset"], ' +
+  '[role="button"], [role="link"], [role="checkbox"], [role="switch"]';
 
 /**
  * Routes a keydown on a grid cell (or a control inside one) through the
@@ -43,6 +62,26 @@ export const handleCellInteractionKeydown = (event: KeyboardEvent): boolean => {
   }
 };
 
+/**
+ * Routes a focusin on a grid cell through the single-control delegation rule:
+ * when the cell's whole content is one arrow-safe control, focus moves on to
+ * that control so it activates with a single Enter (APG "Whether to Focus on
+ * a Cell or an Element Inside It"). Returns `true` when it redirected focus.
+ */
+export const handleCellInteractionFocusIn = (event: FocusEvent): boolean => {
+  const target = event.target;
+
+  if (!(target instanceof HTMLElement) || !target.matches(GRID_CELL_SELECTOR)) return false;
+
+  const control = delegatedCellControl(target);
+
+  if (!control) return false;
+
+  control.focus();
+
+  return true;
+};
+
 /** Enter on a focused cell steps into the cell's first control. */
 const enterFirstCellControl = (
   event: KeyboardEvent,
@@ -67,6 +106,10 @@ const escapeBackToCell = (
   target: HTMLElement,
 ): boolean => {
   if (target === cell) return false;
+
+  // A delegated control is the cell's focus stop; refocusing the cell would only
+  // bounce focus back through the focusin redirect, so Escape stays native.
+  if (delegatedCellControl(cell) === target) return false;
 
   return focusAndConsume(event, cell);
 };
@@ -99,6 +142,39 @@ const focusAndConsume = (event: KeyboardEvent, control: HTMLElement): true => {
   control.focus();
 
   return true;
+};
+
+/**
+ * The control a cell delegates focus to: its only reachable control, arrow-safe,
+ * with no other perceivable content in the cell (text outside the control would be
+ * skipped by screen readers when focus lands on the control directly).
+ */
+const delegatedCellControl = (cell: HTMLElement): HTMLElement | null => {
+  const controls = cellInteractiveControls(cell);
+
+  if (controls.length !== 1) return null;
+
+  const [control] = controls;
+
+  if (!control.matches(DELEGATED_CONTROL_SELECTOR)) return null;
+
+  return hasContentOutsideControl(cell, control) ? null : control;
+};
+
+/** Whether the cell renders perceivable text outside the given control. */
+const hasContentOutsideControl = (cell: HTMLElement, control: HTMLElement): boolean => {
+  const walker = cell.ownerDocument.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (!node.textContent?.trim() || control.contains(node)) continue;
+
+    // Content hidden from assistive technology does not block delegation.
+    if (node.parentElement?.closest('[hidden], [inert], [aria-hidden="true"]')) continue;
+
+    return true;
+  }
+
+  return false;
 };
 
 /** The cell's action controls in document order — what Enter steps into and Tab walks. */
