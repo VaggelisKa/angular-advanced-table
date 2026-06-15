@@ -255,13 +255,8 @@
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
   white-space: normal;
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity var(--nat-table-state-transition-duration, 140ms)
-      var(--nat-table-state-transition-timing, ease-out),
-    transform var(--nat-table-state-transition-duration, 140ms)
-      var(--nat-table-state-transition-timing, ease-out);
+  animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms)
+    var(--nat-table-state-transition-timing, ease-out) both;
 }
 
 .loading-state {
@@ -275,16 +270,21 @@
   color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, #d1242f));
 }
 
-@starting-style {
-  .table-state {
+@keyframes nat-table-state-enter {
+  from {
     opacity: var(--nat-table-state-transition-opacity-from, 0);
     transform: translateY(var(--nat-table-state-transition-distance, 2px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .table-state {
-    transition: none;
+    animation: none;
   }
 }
 

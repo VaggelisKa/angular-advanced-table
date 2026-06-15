@@ -424,7 +424,7 @@ export class OrdersTable {
 
 Focusable controls inside `natTableLoading`, `natTableEmpty`, and `natTableError` templates are managed by `NatTable`; use normal buttons, links, and inputs. `ngGridCellWidget` is still needed for custom interactive controls rendered in ordinary data or header cells.
 
-State rows use a short enter transition by default and respect `prefers-reduced-motion`. Override the motion with `--nat-table-state-transition-duration`, `--nat-table-state-transition-timing`, `--nat-table-state-transition-distance`, and `--nat-table-state-transition-opacity-from`, or set `--nat-table-state-transition-duration: 0ms` to disable visible motion.
+State rows use a short keyframe enter animation by default and respect `prefers-reduced-motion`. Override the motion with `--nat-table-state-transition-duration`, `--nat-table-state-transition-timing`, `--nat-table-state-transition-distance`, and `--nat-table-state-transition-opacity-from`, or set `--nat-table-state-transition-duration: 0ms` to disable visible motion.
 
 ## Accessibility and Internationalization
 
