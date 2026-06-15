@@ -114,7 +114,7 @@ export interface NatTableAccessibilitySortingAnnouncementContext {
   /** Active ARIA sort state for the sorted column, or `'none'` when cleared. */
   sortState: 'ascending' | 'descending' | 'none';
   /** All active sort entries in priority order; more than one during a multi-sort. */
-  sortedColumns: NatTableAccessibilitySortingAnnouncementEntry[];
+  sortedColumns: readonly NatTableAccessibilitySortingAnnouncementEntry[];
 }
 
 /** Context passed to custom filtering announcement formatters. */
