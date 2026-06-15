@@ -6,7 +6,7 @@
   width: 100%;
   min-width: 0;
   gap: var(--nat-table-toolbar-gap, 12px);
-  padding: var(--nat-table-toolbar-padding, 0);
+  padding: var(--nat-table-toolbar-padding, 10px);
   background: var(--nat-table-toolbar-background, transparent);
 }
 
