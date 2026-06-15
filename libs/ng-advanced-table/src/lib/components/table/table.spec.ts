@@ -256,8 +256,17 @@ class CaptionHost {
         <span class="custom-empty">{{ filtered ? 'Filtered empty' : 'Empty' }} {{ columns }}</span>
       </ng-template>
 
-      <ng-template natTableError let-error>
-        <button type="button" class="custom-error">
+      <ng-template
+        natTableError
+        let-error
+        let-visibleRowsValue="visibleRowsValue"
+        let-totalRowsValue="totalRowsValue"
+      >
+        <button
+          type="button"
+          class="custom-error"
+          [attr.data-row-counts]="visibleRowsValue + '/' + totalRowsValue"
+        >
           {{ formatError(error) }}
         </button>
       </ng-template>
@@ -772,6 +781,29 @@ describe('NatTable', () => {
     expect(table.getAttribute('aria-busy')).toBe('true');
     expect(fixture.nativeElement.querySelector('.loading-state')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
+  });
+
+  it('reports rendered row counts when an error state hides cached rows', async () => {
+    const stateFixture = TestBed.createComponent(StateTemplatesHost);
+    const stateHost = stateFixture.componentInstance;
+
+    stateHost.rows.set(buildRows(6));
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+    stateHost.error.set(new Error('Cached refresh failed'));
+    stateFixture.detectChanges();
+    await stateFixture.whenStable();
+    stateFixture.detectChanges();
+
+    const summary = stateFixture.nativeElement.querySelector('p[id$="-summary"]') as HTMLElement;
+    const errorCell = stateFixture.nativeElement.querySelector('.error-state') as HTMLElement;
+    const errorButton = errorCell.querySelector('.custom-error') as HTMLButtonElement;
+
+    expect(stateFixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(stateFixture.nativeElement.querySelectorAll('tbody tr.data-row').length).toBe(0);
+    expect(summary.textContent?.trim()).toBe('No rows are currently shown. 4 visible columns.');
+    expect(errorButton.dataset['rowCounts']).toBe('0/0');
+
+    stateFixture.destroy();
   });
 
   it('renders caller-provided state templates with table state context', async () => {

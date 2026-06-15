@@ -90,7 +90,7 @@ export interface NatTableStateTemplateContext<TData extends RowData = RowData> {
   table: Table<TData>;
   /** Rows currently rendered in the body. */
   visibleRowsValue: number;
-  /** Total rows supplied to the table before filtering/pagination. */
+  /** Total rows represented by the current body state before filtering/pagination. */
   totalRowsValue: number;
   /** Visible leaf columns in the current view. */
   visibleColumnsValue: number;
@@ -136,7 +136,7 @@ export interface NatTableAccessibilitySummaryContext {
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
-  /** Total rows supplied to the table before filtering/pagination. */
+  /** Total rows represented by the current body state before filtering/pagination. */
   totalRowsValue: number;
   /** Provider-formatted text for `totalRowsValue`. */
   totalRowsText: string;
@@ -180,7 +180,7 @@ export interface NatTableAccessibilityFilteringAnnouncementContext {
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
-  /** Total rows supplied to the table before filtering. */
+  /** Total rows represented by the current body state before filtering. */
   totalRowsValue: number;
   /** Provider-formatted text for `totalRowsValue`. */
   totalRowsText: string;

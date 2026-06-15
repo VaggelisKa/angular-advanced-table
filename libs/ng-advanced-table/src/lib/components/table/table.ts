@@ -396,6 +396,22 @@ export class NatTable<TData extends RowData = RowData> {
 
     return this.visibleRowCount() > 0 ? NAT_TABLE_BODY_STATE.rows : NAT_TABLE_BODY_STATE.empty;
   });
+  private readonly renderedVisibleRowCount = computed(() =>
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 0,
+  );
+  private readonly stateTotalRowCount = computed(() => {
+    const bodyState = this.bodyState();
+
+    return bodyState === NAT_TABLE_BODY_STATE.loading || bodyState === NAT_TABLE_BODY_STATE.error
+      ? 0
+      : this.totalRowCount();
+  });
+  private readonly renderedPageIndex = computed(() =>
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.mergedState().pagination.pageIndex : 0,
+  );
+  private readonly renderedPageCount = computed(() =>
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.pageCount() : 1,
+  );
   protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(
     () => ({
       ...this.getStateTemplateBaseContext(),
@@ -1167,20 +1183,20 @@ export class NatTable<TData extends RowData = RowData> {
   } {
     return {
       table: this.table,
-      visibleRowsValue: this.visibleRowCount(),
-      totalRowsValue: this.totalRowCount(),
+      visibleRowsValue: this.renderedVisibleRowCount(),
+      totalRowsValue: this.stateTotalRowCount(),
       visibleColumnsValue: this.visibleColumnCount(),
       filtered: this.isFiltered(),
     };
   }
 
   private getSummaryContext(): NatTableAccessibilitySummaryContext {
-    const state = this.mergedState();
-    const visibleRows = this.visibleRowCount();
-    const totalRows = this.totalRowCount();
+    const visibleRows = this.renderedVisibleRowCount();
+    const totalRows = this.stateTotalRowCount();
     const visibleColumns = this.visibleColumnCount();
-    const page = state.pagination.pageIndex + 1;
-    const pageCount = this.pageCount();
+    const pageIndex = this.renderedPageIndex();
+    const page = pageIndex + 1;
+    const pageCount = this.renderedPageCount();
 
     return {
       visibleRowsValue: visibleRows,
@@ -1189,7 +1205,7 @@ export class NatTable<TData extends RowData = RowData> {
       totalRowsText: this.formatAccessibilityNumber(totalRows),
       visibleColumnsValue: visibleColumns,
       visibleColumnsText: this.formatAccessibilityNumber(visibleColumns),
-      pageIndex: state.pagination.pageIndex,
+      pageIndex,
       pageValue: page,
       pageText: this.formatAccessibilityNumber(page),
       pageCountValue: pageCount,
@@ -1213,10 +1229,13 @@ export class NatTable<TData extends RowData = RowData> {
       sortingKey: serializeSorting(state.sorting),
       globalFilter: state.globalFilter.trim(),
       columnFiltersKey: serializeColumnFilters(state.columnFilters),
-      pagination: state.pagination,
-      pageCount: this.pageCount(),
-      visibleRows: this.visibleRowCount(),
-      totalRows: this.totalRowCount(),
+      pagination: {
+        ...state.pagination,
+        pageIndex: this.renderedPageIndex(),
+      },
+      pageCount: this.renderedPageCount(),
+      visibleRows: this.renderedVisibleRowCount(),
+      totalRows: this.stateTotalRowCount(),
       columns: this.allLeafColumns().map((column) => ({
         id: column.id,
         label: resolveColumnLabel(column),
