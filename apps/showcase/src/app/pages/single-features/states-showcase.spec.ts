@@ -21,7 +21,7 @@ describe('StatesShowcasePage', () => {
     vi.useRealTimers();
   });
 
-  it('renders loading, empty, error, and refresh state examples', () => {
+  it('renders loading, empty, error, transition, and refresh state examples', () => {
     fixture.detectChanges();
 
     const page = fixture.nativeElement as HTMLElement;
@@ -30,11 +30,45 @@ describe('StatesShowcasePage', () => {
     );
     const busyTables = page.querySelectorAll('table[aria-busy="true"]');
 
-    expect(cards).toEqual(['Loading state', 'Empty state', 'Error state', 'Background refresh']);
+    expect(cards).toEqual([
+      'Loading state',
+      'Empty state',
+      'Error state',
+      'Transition preview',
+      'Background refresh',
+    ]);
     expect(page.textContent).toContain('Loading incidents');
     expect(page.textContent).toContain('No incidents found');
     expect(page.textContent).toContain('Incident queue unavailable');
-    expect(busyTables.length).toBe(2);
+    expect(page.textContent).toContain('Loading queue');
+    expect(busyTables.length).toBe(3);
+  });
+
+  it('switches the transition preview between table states', () => {
+    fixture.detectChanges();
+
+    const page = fixture.nativeElement as HTMLElement;
+    const transitionCard = Array.from(page.querySelectorAll('.card')).find(
+      (card) => card.querySelector('.card-title')?.textContent?.trim() === 'Transition preview',
+    ) as HTMLElement;
+
+    clickCardButton(transitionCard, 'Empty');
+    fixture.detectChanges();
+
+    expect(transitionCard.textContent).toContain('No transition rows');
+    expect(transitionCard.textContent).not.toContain('Loading queue');
+
+    clickCardButton(transitionCard, 'Error');
+    fixture.detectChanges();
+
+    expect(transitionCard.textContent).toContain('Transition request failed');
+    expect(transitionCard.textContent).toContain('Transition service returned 503.');
+
+    clickCardButton(transitionCard, 'Rows');
+    fixture.detectChanges();
+
+    expect(transitionCard.textContent).toContain('INC-1042');
+    expect(transitionCard.textContent).not.toContain('Transition request failed');
   });
 
   it('lets keyboard users enter the retry action from the state cell', async () => {
@@ -83,3 +117,11 @@ describe('StatesShowcasePage', () => {
     expect(page.textContent).toContain('Incident service returned 503 after retry.');
   });
 });
+
+function clickCardButton(card: HTMLElement, label: string): void {
+  const button = Array.from(card.querySelectorAll('button')).find(
+    (candidate) => candidate.textContent?.trim() === label,
+  ) as HTMLButtonElement;
+
+  button.click();
+}

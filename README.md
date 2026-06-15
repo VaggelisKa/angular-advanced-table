@@ -424,6 +424,8 @@ export class OrdersTable {
 
 Focusable controls inside `natTableLoading`, `natTableEmpty`, and `natTableError` templates are managed by `NatTable`; use normal buttons, links, and inputs. `ngGridCellWidget` is still needed for custom interactive controls rendered in ordinary data or header cells.
 
+State rows use a short enter transition by default and respect `prefers-reduced-motion`. Override the motion with `--nat-table-state-transition-duration`, `--nat-table-state-transition-timing`, `--nat-table-state-transition-distance`, and `--nat-table-state-transition-opacity-from`, or set `--nat-table-state-transition-duration: 0ms` to disable visible motion.
+
 ## Accessibility and Internationalization
 
 Accessible copy is split by ownership. Set table-specific copy such as `accessibleName`, `caption`, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated table copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`; UI and utils labels opt in through their companion locale entry points.

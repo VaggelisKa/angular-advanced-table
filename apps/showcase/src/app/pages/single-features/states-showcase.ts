@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 import {
   NAT_TABLE_DATA_STATUS,
@@ -17,6 +24,8 @@ interface IncidentRow {
   owner: string;
   severity: string;
 }
+
+type TransitionPreviewState = 'loading' | 'empty' | 'error' | 'rows';
 
 const DEMO_DATA: IncidentRow[] = [
   { id: 'INC-1042', service: 'Checkout API', owner: 'Payments', severity: 'High' },
@@ -116,6 +125,59 @@ const ERROR_RETRY_DELAY_MS = 900;
           </nat-table-surface>
         </div>
 
+        <div class="card">
+          <h2 class="card-title">Transition preview</h2>
+          <div class="transition-controls">
+            <div class="btn-group" aria-label="Preview table state">
+              @for (option of transitionPreviewOptions; track option.state) {
+                <button
+                  type="button"
+                  class="btn-sm"
+                  [class.active]="isTransitionPreviewState(option.state)"
+                  [attr.aria-pressed]="isTransitionPreviewState(option.state)"
+                  (click)="showTransitionPreviewState(option.state)"
+                >
+                  {{ option.label }}
+                </button>
+              }
+            </div>
+          </div>
+          <nat-table-surface
+            class="transition-preview-surface"
+            [accessibilityText]="transitionPreviewAccessibilityCopy"
+          >
+            <nat-table
+              [data]="transitionPreviewRows()"
+              [columns]="columns"
+              [dataStatus]="transitionPreviewDataStatus()"
+              [error]="transitionPreviewError"
+              accessibleName="State transition preview table"
+            >
+              <ng-template natTableLoading>
+                <div class="state-template">
+                  <strong>Loading queue</strong>
+                  <span>Preparing the next incident view.</span>
+                  <span class="state-skeleton" aria-hidden="true"></span>
+                </div>
+              </ng-template>
+
+              <ng-template natTableEmpty>
+                <div class="state-template">
+                  <strong>No transition rows</strong>
+                  <span>The selected view has no incidents.</span>
+                </div>
+              </ng-template>
+
+              <ng-template natTableError let-error>
+                <div class="state-template state-template-error">
+                  <strong>Transition request failed</strong>
+                  <span>{{ formatError(error) }}</span>
+                </div>
+              </ng-template>
+            </nat-table>
+          </nat-table-surface>
+        </div>
+
         <div class="card state-reference-card">
           <h2 class="card-title">Background refresh</h2>
           <nat-table-surface [accessibilityText]="refreshTableAccessibilityCopy">
@@ -159,6 +221,18 @@ const ERROR_RETRY_DELAY_MS = 900;
       color: var(--showcase-page-negative);
     }
 
+    .transition-controls {
+      display: flex;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--showcase-page-border);
+    }
+
+    .transition-preview-surface {
+      --nat-table-state-transition-duration: 320ms;
+      --nat-table-state-transition-distance: 8px;
+      --nat-table-state-transition-opacity-from: 0.08;
+    }
+
     .state-skeleton {
       display: block;
       width: min(240px, 80%);
@@ -194,6 +268,33 @@ export class StatesShowcasePage {
   readonly successRows = DEMO_DATA;
   readonly errorStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.error);
   readonly error = signal<unknown>(new Error('Incident service returned 503.'));
+  readonly transitionPreviewState = signal<TransitionPreviewState>('loading');
+  readonly transitionPreviewError = new Error('Transition service returned 503.');
+  readonly transitionPreviewRows = computed(() =>
+    this.transitionPreviewState() === 'rows' ? DEMO_DATA : [],
+  );
+  readonly transitionPreviewDataStatus = computed<NatTableDataStatus>(() => {
+    const state = this.transitionPreviewState();
+
+    if (state === 'loading') {
+      return NAT_TABLE_DATA_STATUS.loading;
+    }
+
+    if (state === 'error') {
+      return NAT_TABLE_DATA_STATUS.error;
+    }
+
+    return NAT_TABLE_DATA_STATUS.success;
+  });
+  readonly transitionPreviewOptions: readonly {
+    state: TransitionPreviewState;
+    label: string;
+  }[] = [
+    { state: 'loading', label: 'Loading' },
+    { state: 'empty', label: 'Empty' },
+    { state: 'error', label: 'Error' },
+    { state: 'rows', label: 'Rows' },
+  ];
 
   readonly columns: ColumnDef<IncidentRow, unknown>[] = [
     {
@@ -231,6 +332,11 @@ export class StatesShowcasePage {
   readonly refreshTableAccessibilityCopy: NatTableAccessibilityText = {
     loadingState: 'Refreshing incidents.',
   };
+  readonly transitionPreviewAccessibilityCopy: NatTableAccessibilityText = {
+    loadingState: 'Loading transition preview.',
+    emptyState: 'No transition preview rows.',
+    errorState: 'Transition request failed.',
+  };
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -251,6 +357,14 @@ export class StatesShowcasePage {
       this.errorStatus.set(NAT_TABLE_DATA_STATUS.error);
       this.retryTimeoutId = null;
     }, ERROR_RETRY_DELAY_MS);
+  }
+
+  showTransitionPreviewState(state: TransitionPreviewState): void {
+    this.transitionPreviewState.set(state);
+  }
+
+  isTransitionPreviewState(state: TransitionPreviewState): boolean {
+    return this.transitionPreviewState() === state;
   }
 
   formatError(error: unknown): string {

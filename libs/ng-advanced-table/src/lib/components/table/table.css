@@ -255,6 +255,13 @@
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
   white-space: normal;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--nat-table-state-transition-duration, 140ms)
+      var(--nat-table-state-transition-timing, ease-out),
+    transform var(--nat-table-state-transition-duration, 140ms)
+      var(--nat-table-state-transition-timing, ease-out);
 }
 
 .loading-state {
@@ -266,6 +273,19 @@
 
 .error-state {
   color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, #d1242f));
+}
+
+@starting-style {
+  .table-state {
+    opacity: var(--nat-table-state-transition-opacity-from, 0);
+    transform: translateY(var(--nat-table-state-transition-distance, 2px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table-state {
+    transition: none;
+  }
 }
 
 [ngGridCell]:focus-visible {
