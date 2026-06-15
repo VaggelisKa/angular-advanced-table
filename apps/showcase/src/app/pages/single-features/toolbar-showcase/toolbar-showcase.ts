@@ -10,7 +10,6 @@ import type { NatTableState } from 'ng-advanced-table';
 import {
   NatTableSurface,
   NatTableToolbar,
-  NatToolbarButton,
   NatToolbarGroup,
   NatToolbarItem,
   withNatTableHeaderActions,
@@ -46,7 +45,6 @@ const DEMO_DATA: DemoItem[] = [
     NatTable,
     NatTableSurface,
     NatTableToolbar,
-    NatToolbarButton,
     NatToolbarGroup,
     NatToolbarItem,
   ],
