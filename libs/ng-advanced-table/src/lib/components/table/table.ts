@@ -1574,62 +1574,6 @@ function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
   return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
 }
 
-function hasSameSorting(previous: SortingState, next: SortingState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return serializeSorting(previous) === serializeSorting(next);
-}
-
-function hasSameColumnFilters(previous: ColumnFiltersState, next: ColumnFiltersState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return serializeColumnFilters(previous) === serializeColumnFilters(next);
-}
-
-function hasSameVisibilityMap(previous: VisibilityState, next: VisibilityState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  const previousKeys = Object.keys(previous);
-  const nextKeys = Object.keys(next);
-
-  if (previousKeys.length !== nextKeys.length) {
-    return false;
-  }
-
-  for (const key of previousKeys) {
-    if (previous[key] !== next[key]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function hasSameColumnPinning(previous: ColumnPinningState, next: ColumnPinningState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return (
-    hasSameStringOrder(previous.left ?? [], next.left ?? []) &&
-    hasSameStringOrder(previous.right ?? [], next.right ?? [])
-  );
-}
-
-function hasSamePagination(previous: PaginationState, next: PaginationState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return previous.pageIndex === next.pageIndex && previous.pageSize === next.pageSize;
-}
-
 function hasSameColumnVisibility(
   current: readonly TableColumnAccessibilityState[],
   next: readonly TableColumnAccessibilityState[],
