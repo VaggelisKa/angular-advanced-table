@@ -17,7 +17,7 @@
           [class.is-sorted]="!!column().getIsSorted()"
           [attr.aria-label]="getSortLabel()"
           (pointerdown)="$event.stopPropagation()"
-          (click)="column().toggleSorting()"
+          (click)="onSortClick($event)"
         >
           <span class="header-label" [class.sr-only]="hideLabel()">
             @if (hideLabel()) {
@@ -52,6 +52,9 @@
               </span>
             }
           </span>
+          @if (sortPriority() !== null) {
+            <span class="sort-priority" aria-hidden="true">{{ sortPriority() }}</span>
+          }
         </button>
       } @else {
         <span class="header-label" [class.sr-only]="hideLabel()">
