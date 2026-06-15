@@ -1,0 +1,54 @@
+<div class="showcase-page showcase-container">
+  <header class="header-section">
+    <h1 class="title">Multi-Column Sorting</h1>
+    <p class="description">
+      Demonstrates multi-column sorting: hold Shift to add a column to the active sort. Each sorted
+      header shows a priority badge, and screen readers hear the combined sort order.
+    </p>
+  </header>
+
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card">
+      <h2 class="card-title">Multi-Sort Grid</h2>
+      <nat-table-surface>
+        <nat-table
+          [data]="data"
+          [columns]="columns"
+          [state]="tableState()"
+          [enableMultiSort]="true"
+          [getRowId]="getRowId"
+          accessibleName="Multi-column sorting demo table"
+          (sortingChange)="onSortingChange($event)"
+        />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Sort Priority</h2>
+      <div class="instructions">
+        <ol>
+          <li>Click a header's sort button to sort by that column.</li>
+          <li>
+            <strong>Shift + click</strong> (or <strong>Shift + Enter</strong> on a focused sort
+            button) adds another column to the sort.
+          </li>
+          <li>
+            Keyboard path: <code>Tab</code> to the grid, move to a header with the
+            <code>Arrow</code> keys, press <code>Enter</code> to focus the sort button, then press
+            <code>Enter</code> or <code>Shift + Enter</code>.
+          </li>
+          <li>A numbered badge on each sorted header shows its priority.</li>
+        </ol>
+      </div>
+
+      <div class="info-tag">Current sorting (priority order): {{ currentSortLabel() }}</div>
+
+      <div class="actions-panel">
+        <button type="button" class="btn btn-outline" (click)="applyPresetSort()">
+          Sort by Category, then Value
+        </button>
+        <button type="button" class="btn btn-outline" (click)="clearSort()">Clear Sorting</button>
+      </div>
+    </div>
+  </div>
+</div>
