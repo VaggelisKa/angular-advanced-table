@@ -97,7 +97,7 @@
           [stickyHeader]="withStickyHeader()"
         >
           @if (withGlobalFilter() || showColumnVisibility()) {
-            <nat-table-toolbar>
+            <nat-table-action-bar>
               @if (withGlobalFilter()) {
                 <nat-table-search
                   align-left
@@ -109,7 +109,7 @@
               @if (showColumnVisibility()) {
                 <nat-table-column-visibility />
               }
-            </nat-table-toolbar>
+            </nat-table-action-bar>
           }
 
           @if (withPagination()) {

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, DestroyRef } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableToolbar } from '../table-toolbar/table-toolbar';
+import { NatTableActionBar } from '../table-action-bar/table-action-bar';
 import { NatTableService } from '../../shared/table.service';
 import {
   DEFAULT_PAGE_SIZE_OPTIONS,
@@ -30,7 +30,7 @@ interface PageSizeOption {
 @Component({
   selector: 'nat-table-pagination',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTableToolbar],
+  imports: [NatTableActionBar],
   templateUrl: './table-pagination.html',
   styleUrl: './table-pagination.css',
 })

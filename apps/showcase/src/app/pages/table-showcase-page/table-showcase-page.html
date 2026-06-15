@@ -156,14 +156,14 @@
         [accessibilityText]="accessibilityText"
       >
         @if (tableFeatures().showRenderMetrics) {
-          <nat-table-toolbar>
+          <nat-table-action-bar>
             <nat-render-metrics-filter [store]="metricsStore" />
             <nat-render-metrics-panel [store]="metricsStore" />
-          </nat-table-toolbar>
+          </nat-table-action-bar>
         }
 
         @if (hasTopTableControls()) {
-          <nat-table-toolbar>
+          <nat-table-action-bar>
             @if (tableFeatures().enableGlobalFilter) {
               <nat-table-search
                 align-left
@@ -174,7 +174,7 @@
             @if (tableFeatures().showColumnVisibility) {
               <nat-table-column-visibility />
             }
-          </nat-table-toolbar>
+          </nat-table-action-bar>
         }
 
         @if (hasTablePaginationControls()) {

@@ -10,7 +10,7 @@ import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePagination,
-  NatTableToolbar,
+  NatTableActionBar,
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
@@ -50,7 +50,7 @@ const DEMO_DATA: DemoItem[] = [
     NatTableColumnVisibility,
     NatTablePagination,
     NatTableScrollControl,
-    NatTableToolbar,
+    NatTableActionBar,
   ],
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css',
@@ -123,7 +123,7 @@ export class TableBuilderPage {
   readonly generatedHtml = computed(() => {
     let topControls = '';
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
-      topControls = '\n  <nat-table-toolbar>';
+      topControls = '\n  <nat-table-action-bar>';
       if (this.withGlobalFilter()) {
         topControls +=
           '\n    <nat-table-search align-left label="Search rows" placeholder="Type here..." />';
@@ -131,7 +131,7 @@ export class TableBuilderPage {
       if (this.showColumnVisibility()) {
         topControls += '\n    <nat-table-column-visibility />';
       }
-      topControls += '\n  </nat-table-toolbar>';
+      topControls += '\n  </nat-table-action-bar>';
     }
 
     let paginationControls = '';
@@ -167,7 +167,7 @@ export class TableBuilderPage {
     const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
 
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
-      uiImports.push('NatTableToolbar');
+      uiImports.push('NatTableActionBar');
     }
     if (this.withGlobalFilter()) uiImports.push('NatTableSearch');
     if (this.showColumnVisibility()) uiImports.push('NatTableColumnVisibility');

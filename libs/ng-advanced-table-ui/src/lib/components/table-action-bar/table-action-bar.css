@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: var(--nat-table-space-toolbar-gap, 14px);
+  gap: var(--nat-table-space-action-bar-gap, 14px);
   margin: 0;
   padding: var(--nat-table-space-card-compact, 10px 20px);
   border-bottom: 1px solid var(--nat-table-color-border, #e4e7eb);
@@ -23,7 +23,7 @@
   display: none;
 }
 
-.left-toolbar {
+.left-action-bar {
   grid-column: 1;
   display: flex;
   align-items: center;
@@ -32,8 +32,8 @@
   min-width: 0;
 }
 
-.left-toolbar:empty,
-.left-toolbar:not(:has(*)) {
+.left-action-bar:empty,
+.left-action-bar:not(:has(*)) {
   display: none;
 }
 

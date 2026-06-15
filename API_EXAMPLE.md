@@ -9,18 +9,18 @@ The following showcase demonstrates the simplified, context-aware API implemente
   [stickyHeader]="true"
   [manualPageCount]="pageCount()"
 >
-  <nat-table-toolbar>
+  <nat-table-action-bar>
     <nat-render-metrics-filter />
     <nat-render-metrics-panel />
-  </nat-table-toolbar>
+  </nat-table-action-bar>
 
-  <nat-table-toolbar>
+  <nat-table-action-bar>
     <nat-table-search align-left placeholder="Search e.g. Analytics, Active, Delta..." />
 
     <nat-table-column-visibility />
 
     <button (click)="serverResponse.reload()">Refresh</button>
-  </nat-table-toolbar>
+  </nat-table-action-bar>
 
   <nat-table [data]="data()" [columns]="columns" accessibleName="Search demo table" />
 
@@ -38,7 +38,7 @@ import { type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableSurface,
-  NatTableToolbar,
+  NatTableActionBar,
   NatTableSearch,
   NatTablePagination,
   NatTableColumnVisibility,
@@ -58,7 +58,7 @@ interface DemoItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTableSurface,
-    NatTableToolbar,
+    NatTableActionBar,
     NatTableSearch,
     NatTableColumnVisibility,
     NatTableScrollControl,

@@ -18,7 +18,7 @@ import {
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  NatTableToolbar,
+  NatTableActionBar,
   withNatTableHeaderActions,
   type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
@@ -378,7 +378,7 @@ class MarketSortIndicator {
     NatTable,
     NatTableColumnVisibility,
     NatTablePagination,
-    NatTableToolbar,
+    NatTableActionBar,
     NatTableScrollControl,
     NatTableSearch,
     NatTableSurface,

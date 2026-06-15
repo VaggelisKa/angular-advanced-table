@@ -1,6 +1,6 @@
 @if (controller(); as ctrl) {
   @if (ctrl.enablePagination()) {
-    <nat-table-toolbar>
+    <nat-table-action-bar>
       <!-- Page Size Selection -->
       <div class="chip-row compact" role="group" [attr.aria-label]="resolvedPageSizeAriaLabel()">
         @for (option of resolvedPageSizeOptions(); track option.pageSize) {
@@ -46,6 +46,6 @@
           </svg>
         </button>
       </div>
-    </nat-table-toolbar>
+    </nat-table-action-bar>
   }
 }
