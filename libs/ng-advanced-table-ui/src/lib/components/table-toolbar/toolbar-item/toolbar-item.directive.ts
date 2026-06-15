@@ -1,46 +1,53 @@
-import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, inject, input } from '@angular/core';
 import { ToolbarWidget } from '@angular/aria/toolbar';
 
 import { NAT_TOOLBAR_ITEM } from '../common/toolbar-tokens.const';
-import type {
-  NatToolbarItemPosition,
-  NatToolbarItemPositionInput,
-  NatToolbarItemRef,
-} from '../common/toolbar-tokens.type';
+import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolbar-tokens.type';
 
 /**
- * Position attribute AND registration directive for toolbar items.
+ * Marks an interactive element (a `<button>`, `<input>`, …) as a toolbar item,
+ * so it joins the toolbar's roving keyboard focus (Left/Right, Home/End) and
+ * matches screen-reader order.
  *
- * `natToolbarItem` / `natToolbarItem=""` / `natToolbarItem="end"` -> end group;
- * `natToolbarItem="start"` -> start group; `natToolbarItem="center"` -> center
- * group. The position MUST be a static attribute — the toolbar places items
- * with compile-time `<ng-content select>` slots, so a property binding
- * (`[natToolbarItem]="expr"`) always lands in the end group.
+ * Plain action buttons need nothing more than the bare attribute:
+ * ```html
+ * <button natToolbarItem natToolbarItemPosition="start">Export</button>
+ * ```
  *
- * Keyboard navigation comes from the `ToolbarWidget` host directive
- * (`@angular/aria/toolbar`): it registers with the parent `ngToolbar`, owns the
- * roving tabindex and exposes `value`, `disabled` and `id` on this selector.
- * `value` is REQUIRED by Aria and must be unique per toolbar (its selection
- * model is disabled by the toolbar shell, so the value carries no behavior).
- * Items only work inside a `nat-table-toolbar` — outside one, the widget's
- * parent injection throws.
+ * For toggle or otherwise selectable items, give each one a unique `value` as a
+ * stable identity — one string per item, unique within the toolbar:
+ * ```html
+ * <button natToolbarItem="bold">Bold</button>
+ * <button natToolbarItem="italic">Italic</button>
+ * ```
+ *
+ * `natToolbarItemPosition="start" | "center" | "end"` (default `start`) picks
+ * the toolbar slot. It MUST be a static attribute — a binding
+ * (`[natToolbarItemPosition]="expr"`) always lands in the start slot.
+ *
+ * Items only work inside a `<nat-table-toolbar>`.
  *
  * @example
  * ```html
  * <nat-table-toolbar>
- *   <button natToolbarItem="start" value="export">Export</button>
- *   <!-- text inputs: bind [value] — a static attribute would prefill the field -->
- *   <input natToolbarItem="end" [value]="'filter'" type="search" aria-label="Filter" />
+ *   <button natToolbarItem natToolbarItemPosition="start">Export</button>
+ *   <input natToolbarItem type="search" aria-label="Filter" />
  * </nat-table-toolbar>
  * ```
  */
 @Directive({
   selector: '[natToolbarItem]',
   providers: [{ provide: NAT_TOOLBAR_ITEM, useExisting: NatToolbarItem }],
-  hostDirectives: [{ directive: ToolbarWidget, inputs: ['value', 'disabled', 'id'] }],
+  // Aria's `value` is required; aliasing it to the always-present
+  // selector attribute lets a bare `natToolbarItem` satisfy it with `''`. Bare
+  // items then share value `''` (non-unique) — harmless while selection is
+  // disabled; pass a string per item if Aria selection is ever re-enabled.
+  hostDirectives: [
+    { directive: ToolbarWidget, inputs: ['value: natToolbarItem', 'disabled', 'id'] },
+  ],
 })
 export class NatToolbarItem implements NatToolbarItemRef {
-  public readonly natToolbarItem = input<NatToolbarItemPositionInput>('');
+  public readonly natToolbarItemPosition = input<NatToolbarItemPosition>('start');
 
   private readonly widget = inject(ToolbarWidget, { self: true });
 
@@ -52,11 +59,7 @@ export class NatToolbarItem implements NatToolbarItemRef {
     return this.widget.element;
   }
 
-  public readonly position = computed<NatToolbarItemPosition>(() => {
-    const raw = this.natToolbarItem();
-
-    return raw === 'start' || raw === 'center' ? raw : 'end';
-  });
+  public readonly position = this.natToolbarItemPosition;
 
   public focus(): void {
     this.element.focus();
