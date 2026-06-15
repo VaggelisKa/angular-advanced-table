@@ -31,7 +31,7 @@
           cdkDropList
           cdkDropListOrientation="horizontal"
           [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
-          [cdkDropListDisabled]="!enableColumnReorder() || !isLeafHeaderRow(headerGroup)"
+          [cdkDropListDisabled]="!isLeafHeaderRow(headerGroup)"
           (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
         >
           @for (header of headerGroup.headers; track header.id) {

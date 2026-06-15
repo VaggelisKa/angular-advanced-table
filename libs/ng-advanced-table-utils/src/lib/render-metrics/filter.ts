@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { ColumnFiltersState } from '@tanstack/angular-table';
+import { NatTableService } from 'ng-advanced-table';
 
 import type { NatTableRenderMetricsController } from './contracts';
 import {
@@ -25,8 +26,6 @@ import { RENDER_FILTER_OPTIONS, RENDER_METRIC_COLUMN_ID, type RowRenderFilterVal
   styleUrl: './filter.css',
 })
 export class NatRenderMetricsFilter<TData = unknown> {
-  /** The `<nat-table>` instance this filter drives. */
-  readonly for = input.required<NatTableRenderMetricsController<TData>>();
   /** Shared store — used only so the panel/filter can react to measurement changes. */
   readonly store = input.required<NatTableRenderMetricsStore>();
   /** Column id to target when the metrics column uses a custom identifier. */
@@ -36,9 +35,12 @@ export class NatRenderMetricsFilter<TData = unknown> {
   /** Per-instance label overrides. */
   readonly labels = input<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
+  private readonly natTableService = inject(NatTableService);
+  protected readonly controller = computed(() => this.natTableService.controller() as NatTableRenderMetricsController<TData> | null);
+
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
   private readonly localeId = computed(
-    () => this.locale() ?? this.for().localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE,
+    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE,
   );
   private readonly utilsIntl = computed(() =>
     resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
@@ -54,8 +56,12 @@ export class NatRenderMetricsFilter<TData = unknown> {
   );
 
   protected readonly selected = computed<RowRenderFilterValue>(() => {
+    const controller = this.controller();
+    if (!controller) {
+      return 'all';
+    }
     const columnId = this.columnId();
-    const filters = (this.for().table.getState().columnFilters ?? []) as ColumnFiltersState;
+    const filters = (controller.table.getState().columnFilters ?? []) as ColumnFiltersState;
     const activeFilter = filters.find((entry) => entry.id === columnId);
 
     return isRenderFilterValue(activeFilter?.value) ? activeFilter.value : 'all';
@@ -85,10 +91,14 @@ export class NatRenderMetricsFilter<TData = unknown> {
   });
 
   protected setFilter(value: RowRenderFilterValue): void {
+    const controller = this.controller();
+    if (!controller) {
+      return;
+    }
     const columnId = this.columnId();
     const nextValue: unknown = value === 'all' ? null : value;
 
-    this.for().patchState({
+    controller.patchState({
       columnFilters: (currentFilters) => upsertColumnFilter(currentFilters, columnId, nextValue),
       pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 0 }),
     });
