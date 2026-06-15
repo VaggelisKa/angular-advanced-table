@@ -1,3 +1,5 @@
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -8,7 +10,6 @@ import {
   DestroyRef,
   effect,
   ElementRef,
-  forwardRef,
   inject,
   input,
   output,
@@ -16,21 +17,19 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { Grid, GridCell, GridRow } from '@angular/aria/grid';
-import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import {
-  FlexRender,
   createAngularTable,
+  FlexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type CellContext,
   type Column,
+  type ColumnDef,
   type ColumnFiltersState,
   type ColumnOrderState,
   type ColumnPinningState,
-  type ColumnDef,
   type FilterFn,
   type Header,
   type HeaderGroup,
@@ -43,6 +42,11 @@ import {
   type VisibilityState,
 } from '@tanstack/angular-table';
 
+import {
+  handleCellInteractionFocusIn,
+  handleCellInteractionKeydown,
+  ROW_ACTIVATE_INTERACTIVE_SELECTOR,
+} from './cell-interaction';
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
@@ -61,12 +65,9 @@ import type {
   NatTableAccessibilityPaginationAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
-  NatTableAccessibilityText,
   NatTableCellTone,
   NatTableRowActivateEvent,
   NatTableRowIdGetter,
-  NatTableMode,
-  NatTableModeConfiguration,
   NatTableState,
   NatTableUiController,
 } from './table.types';
@@ -134,11 +135,6 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnPinning: EMPTY_COLUMN_PINNING,
   pagination: DEFAULT_PAGINATION,
 };
-const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
-  'a[href], button, input, select, textarea, summary, [contenteditable="true"], ' +
-  '[role="button"], [role="link"], [role="checkbox"], [role="menuitem"], ' +
-  '[role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="switch"], ' +
-  '[role="combobox"], [role="textbox"], [role="searchbox"]';
 let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
@@ -200,7 +196,9 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
 
   protected readonly manualPageCount = computed(() => this.natTableService.manualPageCount());
-  protected readonly enableAnnouncements = computed(() => this.natTableService.enableAnnouncements());
+  protected readonly enableAnnouncements = computed(() =>
+    this.natTableService.enableAnnouncements(),
+  );
   protected readonly stickyHeader = computed(() => this.natTableService.stickyHeader());
   protected readonly locale = computed(() => this.natTableService.locale());
   protected readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
@@ -254,7 +252,7 @@ export class NatTable<TData extends RowData = RowData> {
     normalizeColumnPinning(
       this.state().columnPinning ?? this.internalColumnPinning(),
       this.allLeafColumnIds(),
-    )
+    ),
   );
   private readonly resolvedAccessibilityText = computed(() =>
     mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText()),
@@ -352,7 +350,8 @@ export class NatTable<TData extends RowData = RowData> {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
     getSortedRowModel: this.manualSorting() ? undefined : getSortedRowModel(),
-    getPaginationRowModel: !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
+    getPaginationRowModel:
+      !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
     onSortingChange: (updater) => this.updateState({ sorting: updater }),
     onGlobalFilterChange: (updater) =>
       this.updateState({ globalFilter: updater, pagination: this.firstPageUpdater }),
@@ -616,10 +615,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
-    if (
-      !this.isLeafHeaderRow(headerGroup) ||
-      event.previousIndex === event.currentIndex
-    ) {
+    if (!this.isLeafHeaderRow(headerGroup) || event.previousIndex === event.currentIndex) {
       return;
     }
 
@@ -649,27 +645,26 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (!event.altKey || !event.shiftKey) {
-      return;
-    }
+    if (handleCellInteractionKeydown(event)) return;
 
-    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
-      return;
-    }
+    const isReorderModifierPressed = event.altKey && event.shiftKey;
+
+    if (!isReorderModifierPressed) return;
+
+    const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
+
+    if (!isHorizontalArrowKey) return;
 
     const zone = this.getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(column.id);
 
-    if (currentIndex === -1) {
-      return;
-    }
+    if (currentIndex === -1) return;
 
-    const nextIndex = currentIndex + (event.key === 'ArrowLeft' ? -1 : 1);
+    const directionDelta = event.key === 'ArrowLeft' ? -1 : 1;
+    const nextIndex = currentIndex + directionDelta;
 
-    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) {
-      return;
-    }
+    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -677,6 +672,14 @@ export class NatTable<TData extends RowData = RowData> {
     const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
 
     this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
+  }
+
+  protected onCellKeydown(event: KeyboardEvent): void {
+    handleCellInteractionKeydown(event);
+  }
+
+  protected onCellFocusIn(event: FocusEvent): void {
+    handleCellInteractionFocusIn(event);
   }
 
   protected getCellTone(
