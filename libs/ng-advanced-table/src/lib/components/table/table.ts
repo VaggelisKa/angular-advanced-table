@@ -699,12 +699,10 @@ export class NatTable<TData extends RowData = RowData> {
     this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
   }
 
-  /** Keydown on a body data/row-header cell; routes through the cell-interaction model. */
   protected onCellKeydown(event: KeyboardEvent): void {
     handleCellInteractionKeydown(event);
   }
 
-  /** Focus arriving on any grid cell; delegates to the cell's sole arrow-safe control. */
   protected onCellFocusIn(event: FocusEvent): void {
     handleCellInteractionFocusIn(event);
   }
