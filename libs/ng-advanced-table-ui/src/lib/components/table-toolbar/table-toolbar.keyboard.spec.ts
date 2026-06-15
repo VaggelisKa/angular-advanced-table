@@ -9,12 +9,10 @@ import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem value="end-a" id="end-a">End A</button>
-      <button natToolbarItem="start" value="start-a" id="start-a">Start A</button>
-      <!-- [value] binds the aria widget input only; a static value attribute
-           would also prefill the text field. -->
-      <input natToolbarItem="start" [value]="'text-entry'" type="text" id="text-entry" aria-label="Filter" />
-      <button natToolbarItem value="end-b" id="end-b">End B</button>
+      <button natToolbarItem="end-a" natToolbarItemPosition="end" id="end-a">End A</button>
+      <button natToolbarItem="start-a" natToolbarItemPosition="start" id="start-a">Start A</button>
+      <input natToolbarItem="text-entry" natToolbarItemPosition="start" type="text" id="text-entry" aria-label="Filter" />
+      <button natToolbarItem="end-b" natToolbarItemPosition="end" id="end-b">End B</button>
     </nat-table-toolbar>
   `,
 })

@@ -1,5 +1,6 @@
-<ng-content select="[natToolbarItem='start'], [natToolbarGroup='start']" />
-<div class="nat-toolbar-spacer"></div>
-<ng-content select="[natToolbarItem='center'], [natToolbarGroup='center']" />
-<div class="nat-toolbar-spacer"></div>
+<!-- Selector-less slot is first so position-less items default to the start slot. -->
 <ng-content />
+<div class="nat-toolbar-spacer"></div>
+<ng-content select="[natToolbarItemPosition='center'], [natToolbarGroup='center']" />
+<div class="nat-toolbar-spacer"></div>
+<ng-content select="[natToolbarItemPosition='end'], [natToolbarGroup='end']" />

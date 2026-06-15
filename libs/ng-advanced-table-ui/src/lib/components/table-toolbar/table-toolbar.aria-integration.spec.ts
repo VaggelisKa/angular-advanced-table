@@ -17,15 +17,15 @@ import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="start" value="a" id="item-a">A</button>
-      <button natToolbarItem="center" value="b" id="item-b">B</button>
-      <button natToolbarItem value="c" id="item-c">C</button>
+      <button natToolbarItem="a" natToolbarItemPosition="start" id="item-a">A</button>
+      <button natToolbarItem="b" natToolbarItemPosition="center" id="item-b">B</button>
+      <button natToolbarItem="c" id="item-c">C</button>
       @if (showD()) {
-        <button natToolbarItem value="d" id="item-d">D</button>
+        <button natToolbarItem="d" id="item-d">D</button>
       }
       <input
-        natToolbarItem="start"
-        [value]="'search'"
+        natToolbarItem="search"
+        natToolbarItemPosition="start"
         type="search"
         id="search"
         aria-label="Filter"

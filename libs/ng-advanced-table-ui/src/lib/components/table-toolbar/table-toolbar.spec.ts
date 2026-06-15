@@ -44,17 +44,30 @@ class ToolbarShellHost {
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="start" value="alpha" class="item-alpha">Alpha</button>
+      <button natToolbarItem="alpha" natToolbarItemPosition="start" class="item-alpha">Alpha</button>
       @if (showBeta()) {
-        <button natToolbarItem value="beta" class="item-beta">Beta</button>
+        <button natToolbarItem="beta" class="item-beta">Beta</button>
       }
-      <button natToolbarItem value="gamma" class="item-gamma">Gamma</button>
+      <button natToolbarItem="gamma" class="item-gamma">Gamma</button>
     </nat-table-toolbar>
   `,
 })
 class ToolbarItemsHost {
   public readonly showBeta = signal(true);
 }
+
+@Component({
+  imports: [NatTableToolbar, NatToolbarItem],
+  template: `
+    <nat-table-toolbar>
+      <button natToolbarItem="end" natToolbarItemPosition="end" class="slot-end">End</button>
+      <button natToolbarItem="bare" class="slot-bare">Bare</button>
+      <button natToolbarItem="center" natToolbarItemPosition="center" class="slot-center">Center</button>
+      <button natToolbarItem="start" natToolbarItemPosition="start" class="slot-start">Start</button>
+    </nat-table-toolbar>
+  `,
+})
+class ToolbarSlotsHost {}
 
 function getItemRefs(fixture: ComponentFixture<unknown>): NatToolbarItemRef[] {
   return fixture.debugElement
@@ -66,7 +79,7 @@ function getItemRefs(fixture: ComponentFixture<unknown>): NatToolbarItemRef[] {
 describe('NatTableToolbar', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ToolbarShellHost, ToolbarControllerHost, ToolbarItemsHost],
+      imports: [ToolbarShellHost, ToolbarControllerHost, ToolbarItemsHost, ToolbarSlotsHost],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
   });
@@ -115,6 +128,27 @@ describe('NatTableToolbar', () => {
     fixture.detectChanges();
 
     expect(toolbar.getAttribute('aria-controls')).toBe('nat-table-el-1');
+  });
+
+  it('projects items into start/center/end slots, defaulting position-less items to start', () => {
+    const fixture = TestBed.createComponent(ToolbarSlotsHost);
+
+    fixture.detectChanges();
+
+    const children = Array.from(getToolbarElement(fixture).children);
+    const spacers = children.flatMap((el, i) =>
+      el.classList.contains('nat-toolbar-spacer') ? [i] : [],
+    );
+    const indexOf = (cls: string) => children.findIndex((el) => el.classList.contains(cls));
+
+    expect(spacers.length).toBe(2);
+    // start and the position-less item share the leading (start) slot
+    expect(indexOf('slot-start')).toBeLessThan(spacers[0]);
+    expect(indexOf('slot-bare')).toBeLessThan(spacers[0]);
+    // center sits between the spacers, end after the trailing spacer
+    expect(indexOf('slot-center')).toBeGreaterThan(spacers[0]);
+    expect(indexOf('slot-center')).toBeLessThan(spacers[1]);
+    expect(indexOf('slot-end')).toBeGreaterThan(spacers[1]);
   });
 
   it('registers projected items reactively and assigns one roving tab stop', async () => {
