@@ -22,7 +22,6 @@ export type {
 } from './lib/components/table-header-actions/table-header-actions';
 export type {
   NatToolbarItemPosition,
-  NatToolbarItemPositionInput,
   NatToolbarItemRef,
 } from './lib/components/table-toolbar/common/toolbar-tokens.type';
 export type {

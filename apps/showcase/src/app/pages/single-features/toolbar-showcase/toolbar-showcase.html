@@ -3,8 +3,8 @@
     <h1 class="title">Table Toolbar</h1>
     <p class="description">
       Composable toolbar shell with static start/center/end slots and roving keyboard focus. Items
-      pick their group with the <code>natToolbarItem</code> attribute — DOM, screen-reader and
-      keyboard order always match what you see.
+      pick their slot with the <code>natToolbarItemPosition</code> attribute — DOM, screen-reader
+      and keyboard order always match what you see.
     </p>
   </header>
 
@@ -17,8 +17,8 @@
           <button
             type="button"
             class="toolbar-button"
-            natToolbarItem="start"
-            value="export-csv"
+            natToolbarItem
+            natToolbarItemPosition="start"
             data-testid="export-button"
             (click)="recordAction('export-csv')"
           >
@@ -28,8 +28,8 @@
           <button
             type="button"
             class="toolbar-button"
-            natToolbarItem="center"
-            value="refresh"
+            natToolbarItem
+            natToolbarItemPosition="center"
             data-testid="refresh-button"
             (click)="recordAction('refresh')"
           >
@@ -41,7 +41,6 @@
               type="button"
               class="toolbar-button"
               natToolbarItem
-              value="density-compact"
               data-testid="density-compact-button"
               (click)="recordAction('density-compact')"
             >
@@ -51,7 +50,6 @@
               type="button"
               class="toolbar-button"
               natToolbarItem
-              value="density-comfortable"
               data-testid="density-comfortable-button"
               (click)="recordAction('density-comfortable')"
             >
@@ -62,8 +60,8 @@
           <button
             type="button"
             class="toolbar-button toolbar-button--icon"
-            natToolbarItem="end"
-            value="share"
+            natToolbarItem
+            natToolbarItemPosition="end"
             aria-label="Share"
             data-testid="share-button"
             (click)="recordAction('share')"
