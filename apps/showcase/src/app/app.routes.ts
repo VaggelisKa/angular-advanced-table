@@ -67,6 +67,12 @@ export const routes: Routes = [
       import('./pages/single-features/search-showcase').then((module) => module.SearchShowcasePage),
   },
   {
+    path: 'states',
+    title: 'Advanced Table - Table States',
+    loadComponent: () =>
+      import('./pages/single-features/states-showcase').then((module) => module.StatesShowcasePage),
+  },
+  {
     path: 'sticky-header',
     title: 'Advanced Table - Sticky Header',
     loadComponent: () =>

@@ -15,11 +15,16 @@
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
     [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.aria-busy]="tableAriaBusy()"
     rowWrap="nowrap"
     colWrap="nowrap"
   >
     @if (resolvedCaption(); as caption) {
-      <caption [id]="tableCaptionId()">{{ caption }}</caption>
+      <caption [id]="tableCaptionId()">
+        {{
+          caption
+        }}
+      </caption>
     }
 
     @let columnStates = columnRenderStates();
@@ -91,92 +96,133 @@
     </thead>
     <tbody>
       @let rows = bodyRows();
-      @if (rows.length) {
-        @for (row of rows; track row.id) {
-          @let visibleCells = row.getVisibleCells();
-          <tr
-            ngGridRow
-            class="data-row"
-            [natTableRowRenderEmitter]="row.id"
-            [natTableRowRenderEnabled]="emitRowRenderEvents()"
-            [natTableRowRenderToken]="renderCycleToken()"
-            [natTableRowRenderStartedAt]="renderCycleStartedAt()"
-            (natTableRowRendered)="onRowRendered($event)"
-            (click)="onRowClick($event, row)"
-            (keydown)="onRowKeydown($event, row)"
-          >
-            @for (cell of visibleCells; track cell.id) {
-              @let columnState = columnStates[cell.column.id];
-              @let cellContext = cell.getContext();
-              @let cellTone = getCellTone(cell.column, cellContext);
-              @if (columnState?.rowHeader) {
-                <th
-                  ngGridCell
-                  role="rowheader"
-                  scope="row"
-                  class="data-cell data-row-header"
-                  (keydown)="onCellKeydown($event)"
-                  (focusin)="onCellFocusIn($event)"
-                  [class.is-align-end]="columnState?.alignEnd"
-                  [class.is-pinned-left]="columnState?.pinnedLeft"
-                  [class.is-pinned-right]="columnState?.pinnedRight"
-                  [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-                  [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-                  [class.is-width-constrained]="columnState?.constrainedWidth"
-                  [style.left.px]="columnState?.left"
-                  [style.right.px]="columnState?.right"
-                  [style.width]="columnState?.width"
-                  [style.min-width]="columnState?.minWidth"
-                  [style.max-width]="columnState?.maxWidth"
-                  [attr.data-column-id]="cell.column.id"
-                  [attr.data-tone]="cellTone"
-                >
-                  <span class="data-cell-content">
-                    <ng-container
-                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                    >
-                      {{ rendered }}
-                    </ng-container>
-                  </span>
-                </th>
-              } @else {
-                <td
-                  ngGridCell
-                  class="data-cell"
-                  (keydown)="onCellKeydown($event)"
-                  (focusin)="onCellFocusIn($event)"
-                  [class.is-align-end]="columnState?.alignEnd"
-                  [class.is-pinned-left]="columnState?.pinnedLeft"
-                  [class.is-pinned-right]="columnState?.pinnedRight"
-                  [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-                  [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-                  [class.is-width-constrained]="columnState?.constrainedWidth"
-                  [style.left.px]="columnState?.left"
-                  [style.right.px]="columnState?.right"
-                  [style.width]="columnState?.width"
-                  [style.min-width]="columnState?.minWidth"
-                  [style.max-width]="columnState?.maxWidth"
-                  [attr.data-column-id]="cell.column.id"
-                  [attr.data-tone]="cellTone"
-                >
-                  <span class="data-cell-content">
-                    <ng-container
-                      *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                    >
-                      {{ rendered }}
-                    </ng-container>
-                  </span>
-                </td>
+      @switch (bodyState()) {
+        @case ('rows') {
+          @for (row of rows; track row.id) {
+            @let visibleCells = row.getVisibleCells();
+            <tr
+              ngGridRow
+              class="data-row"
+              [natTableRowRenderEmitter]="row.id"
+              [natTableRowRenderEnabled]="emitRowRenderEvents()"
+              [natTableRowRenderToken]="renderCycleToken()"
+              [natTableRowRenderStartedAt]="renderCycleStartedAt()"
+              (natTableRowRendered)="onRowRendered($event)"
+              (click)="onRowClick($event, row)"
+              (keydown)="onRowKeydown($event, row)"
+            >
+              @for (cell of visibleCells; track cell.id) {
+                @let columnState = columnStates[cell.column.id];
+                @let cellContext = cell.getContext();
+                @let cellTone = getCellTone(cell.column, cellContext);
+                @if (columnState?.rowHeader) {
+                  <th
+                    ngGridCell
+                    role="rowheader"
+                    scope="row"
+                    class="data-cell data-row-header"
+                    (keydown)="onCellKeydown($event)"
+                    (focusin)="onCellFocusIn($event)"
+                    [class.is-align-end]="columnState?.alignEnd"
+                    [class.is-pinned-left]="columnState?.pinnedLeft"
+                    [class.is-pinned-right]="columnState?.pinnedRight"
+                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                    [class.is-width-constrained]="columnState?.constrainedWidth"
+                    [style.left.px]="columnState?.left"
+                    [style.right.px]="columnState?.right"
+                    [style.width]="columnState?.width"
+                    [style.min-width]="columnState?.minWidth"
+                    [style.max-width]="columnState?.maxWidth"
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                  >
+                    <span class="data-cell-content">
+                      <ng-container
+                        *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                      >
+                        {{ rendered }}
+                      </ng-container>
+                    </span>
+                  </th>
+                } @else {
+                  <td
+                    ngGridCell
+                    class="data-cell"
+                    (keydown)="onCellKeydown($event)"
+                    (focusin)="onCellFocusIn($event)"
+                    [class.is-align-end]="columnState?.alignEnd"
+                    [class.is-pinned-left]="columnState?.pinnedLeft"
+                    [class.is-pinned-right]="columnState?.pinnedRight"
+                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                    [class.is-width-constrained]="columnState?.constrainedWidth"
+                    [style.left.px]="columnState?.left"
+                    [style.right.px]="columnState?.right"
+                    [style.width]="columnState?.width"
+                    [style.min-width]="columnState?.minWidth"
+                    [style.max-width]="columnState?.maxWidth"
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                  >
+                    <span class="data-cell-content">
+                      <ng-container
+                        *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
+                      >
+                        {{ rendered }}
+                      </ng-container>
+                    </span>
+                  </td>
+                }
               }
-            }
+            </tr>
+          }
+        }
+        @case ('loading') {
+          <tr ngGridRow>
+            <td ngGridCell class="table-state loading-state" [colSpan]="emptyStateColSpan()">
+              @if (loadingTemplateRef(); as templateRef) {
+                <ng-container
+                  [ngTemplateOutlet]="templateRef"
+                  [ngTemplateOutletContext]="loadingTemplateContext()"
+                  [ngTemplateOutletInjector]="'outlet'"
+                />
+              } @else {
+                {{ resolvedLoadingState() }}
+              }
+            </td>
           </tr>
         }
-      } @else {
-        <tr ngGridRow>
-          <td ngGridCell class="empty-state" [colSpan]="emptyStateColSpan()">
-            {{ resolvedEmptyState() }}
-          </td>
-        </tr>
+        @case ('error') {
+          <tr ngGridRow>
+            <td ngGridCell class="table-state error-state" [colSpan]="emptyStateColSpan()">
+              @if (errorTemplateRef(); as templateRef) {
+                <ng-container
+                  [ngTemplateOutlet]="templateRef"
+                  [ngTemplateOutletContext]="errorTemplateContext()"
+                  [ngTemplateOutletInjector]="'outlet'"
+                />
+              } @else {
+                {{ resolvedErrorState() }}
+              }
+            </td>
+          </tr>
+        }
+        @case ('empty') {
+          <tr ngGridRow>
+            <td ngGridCell class="table-state empty-state" [colSpan]="emptyStateColSpan()">
+              @if (emptyTemplateRef(); as templateRef) {
+                <ng-container
+                  [ngTemplateOutlet]="templateRef"
+                  [ngTemplateOutletContext]="emptyTemplateContext()"
+                  [ngTemplateOutletInjector]="'outlet'"
+                />
+              } @else {
+                {{ resolvedEmptyState() }}
+              }
+            </td>
+          </tr>
+        }
       }
     </tbody>
   </table>

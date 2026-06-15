@@ -45,6 +45,11 @@ const showcaseExamples = [
     path: '/search',
   },
   {
+    label: 'Table states',
+    description: 'Loading empty error',
+    path: '/states',
+  },
+  {
     label: 'Sticky header',
     description: 'Fixed viewport headers',
     path: '/sticky-header',

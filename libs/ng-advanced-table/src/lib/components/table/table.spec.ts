@@ -2,13 +2,21 @@ import { Component, signal } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { GridCellWidget } from '@angular/aria/grid';
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
 import { provideNatTableIntl } from './table-intl';
+import { NAT_TABLE_DATA_STATUS } from './table.types';
+import {
+  NatTableEmptyTemplate,
+  NatTableErrorTemplate,
+  NatTableLoadingTemplate,
+} from './table-state-templates';
 import type {
   NatTableAccessibilityText,
+  NatTableDataStatus,
   NatTableRowActivateEvent,
   NatTableState,
 } from './table.types';
@@ -87,6 +95,8 @@ const columns: ColumnDef<Row, unknown>[] = [
       accessibleName="Operations table"
       [initialState]="initialState"
       [state]="state()"
+      [dataStatus]="dataStatus()"
+      [error]="error()"
       [enableColumnReorder]="enableColumnReorder"
       [enablePagination]="enablePagination"
       [stickyHeader]="stickyHeader"
@@ -107,6 +117,8 @@ const columns: ColumnDef<Row, unknown>[] = [
 class TableHost {
   readonly rows = signal<Row[]>(buildRows(6));
   readonly state = signal<Partial<NatTableState>>({});
+  readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  readonly error = signal<unknown>(null);
   readonly columns = columns;
   readonly getRowId = (row: Row) => row.id;
   initialState: Partial<NatTableState> = {
@@ -224,13 +236,70 @@ class CaptionHost {
   readonly columns = columns;
 }
 
+@Component({
+  imports: [
+    GridCellWidget,
+    NatTable,
+    NatTableLoadingTemplate,
+    NatTableEmptyTemplate,
+    NatTableErrorTemplate,
+  ],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [dataStatus]="dataStatus()"
+      [error]="error()"
+      [state]="state()"
+      accessibleName="State template table"
+      [accessibilityText]="accessibilityText"
+    >
+      <ng-template natTableLoading let-status="status" let-totalRowsValue="totalRowsValue">
+        <span class="custom-loading">{{ status }} {{ totalRowsValue }}</span>
+      </ng-template>
+
+      <ng-template natTableEmpty let-filtered="filtered" let-columns="visibleColumnsValue">
+        <span class="custom-empty">{{ filtered ? 'Filtered empty' : 'Empty' }} {{ columns }}</span>
+      </ng-template>
+
+      <ng-template natTableError let-error>
+        <button type="button" class="custom-error" ngGridCellWidget>
+          {{ formatError(error) }}
+        </button>
+      </ng-template>
+    </nat-table>
+  `,
+})
+class StateTemplatesHost {
+  readonly rows = signal<Row[]>([]);
+  readonly state = signal<Partial<NatTableState>>({});
+  readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  readonly error = signal<unknown>(new Error('Request failed'));
+  readonly columns = columns;
+  readonly accessibilityText: NatTableAccessibilityText = {
+    loadingState: 'Loading operations.',
+    emptyState: 'No operations.',
+    errorState: 'Operations failed.',
+  };
+
+  formatError(error: unknown): string {
+    return error instanceof Error ? error.message : 'Request failed';
+  }
+}
+
 describe('NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost, ProviderAccessibilityHost, AccessibleNameHost, CaptionHost],
+      imports: [
+        TableHost,
+        ProviderAccessibilityHost,
+        AccessibleNameHost,
+        CaptionHost,
+        StateTemplatesHost,
+      ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -662,6 +731,85 @@ describe('NatTable', () => {
     expect(summary.textContent?.trim()).toBe('Input summary n0');
     expect(emptyState.textContent?.trim()).toBe('Input empty state');
     expect(instructions.textContent?.trim()).toBe('Provider keyboard instructions.');
+  });
+
+  it('renders built-in loading and error rows as spanning table body cells', async () => {
+    host.rows.set([]);
+    host.accessibilityText = {
+      loadingState: 'Loading operations.',
+      errorState: 'Operations failed.',
+    };
+    host.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const loadingCell = fixture.nativeElement.querySelector(
+      '.loading-state',
+    ) as HTMLTableCellElement;
+
+    expect(table.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(loadingCell.colSpan).toBe(4);
+    expect(loadingCell.textContent?.trim()).toBe('Loading operations.');
+
+    host.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const errorCell = fixture.nativeElement.querySelector('.error-state') as HTMLTableCellElement;
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    expect(table.getAttribute('aria-busy')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(errorCell.colSpan).toBe(4);
+    expect(errorCell.textContent?.trim()).toBe('Operations failed.');
+    expect(liveRegion.textContent?.trim()).toBe('Operations failed.');
+  });
+
+  it('keeps existing rows visible during background loading while exposing aria-busy', () => {
+    fixture.detectChanges();
+
+    host.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+
+    expect(table.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelector('.loading-state')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
+  });
+
+  it('renders caller-provided state templates with table state context', () => {
+    const stateFixture = TestBed.createComponent(StateTemplatesHost);
+    const stateHost = stateFixture.componentInstance;
+
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+    stateFixture.detectChanges();
+
+    let stateCell = stateFixture.nativeElement.querySelector('.loading-state') as HTMLElement;
+
+    expect(stateCell.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('loading 0');
+
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.success);
+    stateHost.state.set({ globalFilter: 'missing' });
+    stateFixture.detectChanges();
+
+    stateCell = stateFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
+
+    expect(stateCell.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Filtered empty 4');
+
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+    stateHost.error.set(new Error('API unavailable'));
+    stateFixture.detectChanges();
+
+    stateCell = stateFixture.nativeElement.querySelector('.error-state') as HTMLElement;
+    const errorWidget = stateFixture.debugElement.query(By.directive(GridCellWidget));
+
+    expect(stateCell.textContent?.trim()).toBe('API unavailable');
+    expect(errorWidget.nativeElement.textContent).toContain('API unavailable');
+
+    stateFixture.destroy();
   });
 
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {

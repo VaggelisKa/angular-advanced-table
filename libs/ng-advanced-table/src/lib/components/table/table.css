@@ -244,12 +244,24 @@
   color: var(--nat-table-cell-color-neutral, color-mix(in srgb, currentColor 72%, transparent));
 }
 
-.empty-state {
+.table-state {
   padding: var(--nat-table-space-empty-state, 40px 24px);
   text-align: center;
   color: var(--nat-table-empty-state-color, color-mix(in srgb, currentColor 72%, transparent));
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
+  white-space: normal;
+}
+
+.loading-state {
+  color: var(
+    --nat-table-loading-state-color,
+    var(--nat-table-empty-state-color, color-mix(in srgb, currentColor 72%, transparent))
+  );
+}
+
+.error-state {
+  color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, #d1242f));
 }
 
 [ngGridCell]:focus-visible {

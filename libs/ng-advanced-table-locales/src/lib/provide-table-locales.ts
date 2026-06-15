@@ -1,10 +1,7 @@
 import { InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
 
 import { NAT_TABLE_BUILT_IN_LOCALES } from './built-in-locales';
-import {
-  NAT_TABLE_ENGLISH_INTL,
-  NAT_TABLE_ENGLISH_LOCALE,
-} from './en';
+import { NAT_TABLE_ENGLISH_INTL, NAT_TABLE_ENGLISH_LOCALE } from './en';
 import type {
   NatTableAccessibilityText,
   NatTableIntl,
@@ -78,6 +75,8 @@ export function mergeNatTableAccessibilityText(
     description: override?.description ?? parent?.description,
     keyboardInstructions: override?.keyboardInstructions ?? parent?.keyboardInstructions,
     emptyState: override?.emptyState ?? parent?.emptyState,
+    loadingState: override?.loadingState ?? parent?.loadingState,
+    errorState: override?.errorState ?? parent?.errorState,
     reorderKeyboardInstructions:
       override?.reorderKeyboardInstructions ?? parent?.reorderKeyboardInstructions,
     tableSummary: override?.tableSummary ?? parent?.tableSummary,

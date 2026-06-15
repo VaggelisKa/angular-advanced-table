@@ -68,6 +68,8 @@ Strings:
 - `description`
 - `keyboardInstructions`
 - `emptyState`
+- `loadingState`
+- `errorState`
 - `reorderKeyboardInstructions`
 
 Formatters:
@@ -157,7 +159,7 @@ For every generated table, verify these items before considering the work comple
 - `<nat-table>` has a localized `accessibleName` or visible `caption`.
 - `accessibilityText.description` is present when users need extra context before navigating the grid.
 - `accessibilityText.keyboardInstructions` is localized when the product language is not English.
-- `accessibilityText.emptyState` is localized.
+- `accessibilityText.emptyState`, `loadingState`, and `errorState` are localized when those states can render.
 - Each column has a stable localized `meta.label`.
 - `accessibilityText` is provided when summaries or live announcements need product-specific copy.
 - Every rendered `ng-advanced-table-ui` companion control has localized visible labels and group or button labels.
@@ -283,6 +285,8 @@ The core table exposes these localization inputs:
 | Supplemental description     | `accessibilityText.description`          | Optional hidden description referenced by `aria-describedby`.                                                      |
 | Grid instructions            | `accessibilityText.keyboardInstructions` | Hidden navigation instructions for screen-reader users.                                                            |
 | Empty state                  | `accessibilityText.emptyState`           | Visible text when no rows match the current view.                                                                  |
+| Loading state                | `accessibilityText.loadingState`         | Visible text and live announcement while initial rows are loading.                                                 |
+| Error state                  | `accessibilityText.errorState`           | Visible text and live announcement when `dataStatus` is `error`.                                                   |
 | Column labels                | `columnDef.meta.label`                   | Stable human-readable label used by announcements and companion UI.                                                |
 | Visually hidden header label | `columnDef.meta.hiddenHeaderLabel`       | Optional localized label for redundant utility-column titles that should remain available to assistive technology. |
 | Generated accessibility text | `accessibilityText`                      | Overrides summaries and live announcements.                                                                        |
@@ -300,6 +304,8 @@ Decision rules for agents:
 - `description`
 - `keyboardInstructions`
 - `emptyState`
+- `loadingState`
+- `errorState`
 - `reorderKeyboardInstructions`
 - `tableSummary(...)`
 - `sortingChange(...)`
@@ -310,6 +316,17 @@ Decision rules for agents:
 - `columnReorder(...)`
 
 Formatter callbacks receive semantic state and both raw numeric values and preformatted text values. The text values use the active locale dictionary's number formatter and receive the active locale id. If one table needs a different format, use the numeric `...Value` fields inside that table's formatter.
+
+### Body state rows
+
+Use `dataStatus` for table-owned body states and keep data loading, retry, and error classification in the consuming container. Treat retry as `dataStatus="loading"`; a successful request with zero rows derives the empty row. The table renders loading, empty, and error UI as a single `<tbody>` row with one spanning grid cell, so custom UI stays inside the table structure instead of wrapping or replacing it.
+
+Accessibility requirements:
+
+- Loading uses `aria-busy="true"` on the rendered grid. If rows already exist, keep them visible during background refresh instead of replacing them with a loading row.
+- Loading and error transitions are announced through the existing polite live region when `enableAnnouncements` is `true`.
+- Custom `natTableLoading`, `natTableEmpty`, and `natTableError` templates must include visible text or accessible names that make sense without color or icon-only cues.
+- If a custom state template includes a button, link, input, or other focusable control, put `ngGridCellWidget` from `@angular/aria/grid` on the real focusable element.
 
 ## Optional UI Controls
 

@@ -143,6 +143,16 @@ export interface NatTableAccessibilityText {
    * rows. Falls back to the active locale default when omitted.
    */
   emptyState?: string;
+  /**
+   * Visible message rendered in the body while initial rows are loading.
+   * Falls back to the active locale default when omitted.
+   */
+  loadingState?: string;
+  /**
+   * Visible message rendered in the body when the table is in an error state.
+   * Falls back to the active locale default when omitted.
+   */
+  errorState?: string;
   /** Extra reorder instructions appended when column reordering is enabled. */
   reorderKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */

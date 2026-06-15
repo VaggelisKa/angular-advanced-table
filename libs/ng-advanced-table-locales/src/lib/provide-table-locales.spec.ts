@@ -133,6 +133,7 @@ describe('provideNatTableLocales', () => {
           en: {
             accessibilityText: {
               emptyState: 'Parent empty state',
+              loadingState: 'Parent loading state',
             },
           },
         }),
@@ -157,6 +158,8 @@ describe('provideNatTableLocales', () => {
       const accessibilityText = tableIntl.locales?.['en']?.accessibilityText;
 
       expect(accessibilityText?.emptyState).toBe('Parent empty state');
+      expect(accessibilityText?.loadingState).toBe('Parent loading state');
+      expect(accessibilityText?.errorState).toBe('Rows could not be loaded.');
       expect(accessibilityText?.description).toBe('Child table description');
       expect(accessibilityText?.keyboardInstructions).toContain('Use arrow keys');
     } finally {
