@@ -13,46 +13,13 @@ import type {
   Updater,
   VisibilityState,
 } from '@tanstack/angular-table';
+import type {
+  NatTableUiController as CoreNatTableUiController,
+  NatTableUiState as CoreNatTableUiState,
+} from 'ng-advanced-table';
 
-/**
- * Serializable state shape expected by `ng-advanced-table-ui` companion
- * controls.
- *
- * This mirrors the slices surfaced by `NatTable.patchState(...)`, including
- * column ordering for drag-and-drop header actions.
- */
-export interface NatTableUiState {
-  sorting: SortingState;
-  globalFilter: string;
-  columnFilters: ColumnFiltersState;
-  columnVisibility: VisibilityState;
-  columnOrder: ColumnOrderState;
-  columnPinning: ColumnPinningState;
-  pagination: PaginationState;
-}
-
-/**
- * Minimal table-controller contract consumed by the optional UI package.
- *
- * `<nat-table #grid="natTable">` satisfies this shape directly, but custom
- * wrappers can also implement it to reuse the stock controls.
- */
-export interface NatTableUiController<TData extends RowData = RowData> {
-  readonly table: Table<TData>;
-  enableGlobalFilter(): boolean;
-  enablePagination(): boolean;
-  patchState(
-    updaters: Partial<{
-      [K in keyof NatTableUiState]: Updater<NatTableUiState[K]>;
-    }>,
-  ): void;
-  /** DOM id of the controlled `<table>`; companion controls bind `aria-controls` to this. */
-  readonly tableElementId: Signal<string>;
-  /** Scrollable container that wraps the controlled `<table>`, when available. */
-  readonly tableScrollContainer?: Signal<HTMLElement | null>;
-  /** Locale id used by generated companion-control labels, when available. */
-  readonly localeId?: Signal<string>;
-}
+export type NatTableUiState = CoreNatTableUiState;
+export type NatTableUiController<TData extends RowData = RowData> = CoreNatTableUiController<TData>;
 
 /** Current sort direction for a header cell. */
 export type NatTableSortDirection = 'asc' | 'desc' | false;

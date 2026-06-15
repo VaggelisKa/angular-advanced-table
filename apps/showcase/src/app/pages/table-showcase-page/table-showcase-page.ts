@@ -14,12 +14,11 @@ import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/an
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
-  NatTablePageSize,
-  NatTablePager,
+  NatTablePagination,
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  NatTableService,
+  NatTableActionBar,
   withNatTableHeaderActions,
   type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
@@ -251,8 +250,6 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
 ];
 
 type TableFeatureKey =
-  | 'enableColumnPinning'
-  | 'enableColumnReorder'
   | 'enablePagination'
   | 'enableGlobalFilter'
   | 'showColumnVisibility'
@@ -261,8 +258,6 @@ type TableFeatureKey =
   | 'stickyHeader';
 
 interface TableFeatureConfig {
-  enableColumnPinning: boolean;
-  enableColumnReorder: boolean;
   enablePagination: boolean;
   enableGlobalFilter: boolean;
   showColumnVisibility: boolean;
@@ -272,8 +267,6 @@ interface TableFeatureConfig {
 }
 
 const defaultTableFeatures: TableFeatureConfig = {
-  enableColumnPinning: true,
-  enableColumnReorder: true,
   enablePagination: true,
   enableGlobalFilter: true,
   showColumnVisibility: true,
@@ -384,8 +377,8 @@ class MarketSortIndicator {
   imports: [
     NatTable,
     NatTableColumnVisibility,
-    NatTablePageSize,
-    NatTablePager,
+    NatTablePagination,
+    NatTableActionBar,
     NatTableScrollControl,
     NatTableSearch,
     NatTableSurface,
@@ -394,7 +387,6 @@ class MarketSortIndicator {
   ],
   templateUrl: './table-showcase-page.html',
   styleUrl: './table-showcase-page.css',
-  providers: [NatTableService],
 })
 export class TableShowcasePage {
   private readonly dialog = inject(Dialog);
@@ -516,10 +508,6 @@ export class TableShowcasePage {
     const selectedStatuses = this.activeStatuses();
 
     return selectedStatuses.size === 0 || selectedStatuses.has(status);
-  }
-
-  protected onColumnFiltersChange(columnFilters: NatTableState['columnFilters']): void {
-    this.tableState.set({ columnFilters });
   }
 
   protected onRowRendered(event: NatTableRenderMetricsEvent): void {

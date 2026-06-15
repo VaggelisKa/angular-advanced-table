@@ -247,7 +247,7 @@ input {
   gap: 14px;
 }
 
-.showcase-page .table-toolbar {
+.showcase-page .table-action-bar {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -794,7 +794,7 @@ input {
   .showcase-page .search-panel,
   .showcase-page .visibility-panel,
   .showcase-page .table-controls-grid,
-  .showcase-page .table-toolbar,
+  .showcase-page .table-action-bar,
   .showcase-page .code-card-header,
   .showcase-page .code-editor {
     padding-inline: 14px;

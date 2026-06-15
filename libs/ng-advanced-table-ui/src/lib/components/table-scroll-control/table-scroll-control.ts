@@ -35,7 +35,6 @@ const DEFAULT_SCROLL_STEP = 240;
   styleUrl: './table-scroll-control.css',
 })
 export class NatTableScrollControl<TData extends RowData = RowData> {
-  readonly for = input<NatTableUiController<TData> | undefined>(undefined);
   readonly locale = input<string | undefined>(undefined);
   readonly groupAriaLabel = input<string | undefined>(undefined);
   readonly scrollStep = input(DEFAULT_SCROLL_STEP, { transform: numberAttribute });
@@ -43,8 +42,8 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     undefined,
   );
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService, { optional: true });
-  protected readonly controller = computed(() => this.for() ?? this.natTableService?.controller() ?? null);
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  protected readonly controller = computed(() => this.natTableService.controller());
 
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);

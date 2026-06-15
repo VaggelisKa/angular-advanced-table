@@ -42,14 +42,11 @@ const DEMO_DATA: DemoItem[] = [
       <div class="grid-layout grid-layout-with-panel">
         <div class="card">
           <h2 class="card-title">Scrollable Grid with Pinning</h2>
-          <nat-table-surface>
+          <nat-table-surface [(state)]="tableState">
             <nat-table
               [data]="data"
               [columns]="columns"
-              [state]="tableState()"
-              [enableColumnPinning]="true"
               accessibleName="Pinning demo table"
-              (columnPinningChange)="onColumnPinningChange($event)"
             />
           </nat-table-surface>
         </div>

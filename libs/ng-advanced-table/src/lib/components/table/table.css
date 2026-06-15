@@ -6,7 +6,8 @@
 
 .table-region {
   position: relative;
-  overflow: auto;
+  overflow-x: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto));
+  overflow-y: var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
   max-height: var(--nat-table-max-height, inherit);
   height: var(--nat-table-height, inherit);
   border: 1px solid
@@ -185,7 +186,7 @@
 
 .has-sticky-header .header-cell {
   position: sticky;
-  top: 0;
+  top: var(--nat-table-sticky-top, 0);
   z-index: 4;
 }
 
@@ -204,8 +205,11 @@
   );
 }
 
+.has-sticky-header .header-cell.is-pinned-left,
+.has-sticky-header .header-cell.is-pinned-right,
 .header-cell.is-pinned-left,
 .header-cell.is-pinned-right {
+  position: sticky;
   z-index: 6;
 }
 
