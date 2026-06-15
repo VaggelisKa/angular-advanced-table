@@ -1,0 +1,63 @@
+.state-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.state-template {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: min(360px, 100%);
+  margin: 0 auto;
+  color: var(--showcase-page-text);
+  line-height: 1.45;
+}
+
+.state-template strong {
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.state-template span {
+  color: var(--showcase-page-text-soft);
+  font-size: 0.82rem;
+}
+
+.state-template-error span {
+  color: var(--showcase-page-negative);
+}
+
+.transition-controls {
+  display: flex;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--showcase-page-border);
+}
+
+.transition-preview-surface {
+  --nat-table-state-transition-duration: 320ms;
+  --nat-table-state-transition-distance: 8px;
+  --nat-table-state-transition-opacity-from: 0.08;
+}
+
+.state-skeleton {
+  display: block;
+  width: min(240px, 80%);
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--showcase-page-surface-muted),
+    var(--showcase-page-border-strong),
+    var(--showcase-page-surface-muted)
+  );
+}
+
+.state-reference-card {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .state-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

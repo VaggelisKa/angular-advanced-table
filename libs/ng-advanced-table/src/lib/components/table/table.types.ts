@@ -65,15 +65,18 @@ export interface NatTableRowActivateEvent<TData extends RowData = RowData> {
   originalEvent: MouseEvent | KeyboardEvent;
 }
 
+/** Data lifecycle state rendered by `<nat-table>` when rows are unavailable. */
+export type NatTableDataStatus = 'loading' | 'error' | 'success';
+
 /** Named data lifecycle states accepted by `<nat-table>`. */
 export const NAT_TABLE_DATA_STATUS = {
   loading: 'loading',
   error: 'error',
   success: 'success',
-} as const;
+} as const satisfies Record<NatTableDataStatus, NatTableDataStatus>;
 
-/** Data lifecycle state rendered by `<nat-table>` when rows are unavailable. */
-export type NatTableDataStatus = (typeof NAT_TABLE_DATA_STATUS)[keyof typeof NAT_TABLE_DATA_STATUS];
+/** State row currently rendered in the table body. */
+export type NatTableBodyState = 'rows' | 'loading' | 'empty' | 'error';
 
 /** Named state rows rendered in the table body. */
 export const NAT_TABLE_BODY_STATE = {
@@ -81,10 +84,7 @@ export const NAT_TABLE_BODY_STATE = {
   loading: 'loading',
   empty: 'empty',
   error: 'error',
-} as const;
-
-/** State row currently rendered in the table body. */
-export type NatTableBodyState = (typeof NAT_TABLE_BODY_STATE)[keyof typeof NAT_TABLE_BODY_STATE];
+} as const satisfies Record<NatTableBodyState, NatTableBodyState>;
 
 /** Shared context passed to custom table body state templates. */
 export interface NatTableStateTemplateContext<TData extends RowData = RowData> {
