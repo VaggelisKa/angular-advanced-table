@@ -20,6 +20,11 @@ const showcaseExamples = [
     path: '/sorting',
   },
   {
+    label: 'Multi-column sorting',
+    description: 'Priority shift-click sort',
+    path: '/multi-sort',
+  },
+  {
     label: 'Column pinning',
     description: 'Sticky boundary pinning',
     path: '/pinning',
