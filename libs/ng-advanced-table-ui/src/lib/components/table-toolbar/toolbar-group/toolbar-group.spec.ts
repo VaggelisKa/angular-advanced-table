@@ -55,12 +55,11 @@ describe('NatToolbarGroup', () => {
     return event;
   }
 
-  it('renders a labelled role="group" with the nat-toolbar-group class', () => {
+  it('renders a labelled role="group"', () => {
     const group = element('density-group');
 
     expect(group.getAttribute('role')).toBe('group');
     expect(group.getAttribute('aria-label')).toBe('View density');
-    expect(group.classList.contains('nat-toolbar-group')).toBe(true);
   });
 
   it('projects into its slot: after the first spacer, before the second', () => {

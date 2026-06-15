@@ -49,8 +49,7 @@ describe('NatToolbarItem', () => {
     return fixture.debugElement.query(By.css(`#${domId}`)).injector.get(NAT_TOOLBAR_ITEM);
   }
 
-  it('applies the nat-toolbar-item class and mirrors the host id from the aria widget', () => {
-    expect(element('default-end').classList.contains('nat-toolbar-item')).toBe(true);
+  it('mirrors the host id from the aria widget', () => {
     // The id attribute feeds the exposed ToolbarWidget `id` input, whose host
     // binding writes the same value back — consumer ids stay stable.
     expect(itemRef('default-end').id).toBe('default-end');

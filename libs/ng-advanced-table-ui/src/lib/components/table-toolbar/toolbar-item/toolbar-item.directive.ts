@@ -38,7 +38,6 @@ import type {
   selector: '[natToolbarItem]',
   providers: [{ provide: NAT_TOOLBAR_ITEM, useExisting: NatToolbarItem }],
   hostDirectives: [{ directive: ToolbarWidget, inputs: ['value', 'disabled', 'id'] }],
-  host: { class: 'nat-toolbar-item' },
 })
 export class NatToolbarItem implements NatToolbarItemRef {
   public readonly natToolbarItem = input<NatToolbarItemPositionInput>('');

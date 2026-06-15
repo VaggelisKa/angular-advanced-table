@@ -32,7 +32,6 @@ import type { NatToolbarItemPositionInput } from '../common/toolbar-tokens.type'
   styleUrl: './toolbar-group.css',
   hostDirectives: [{ directive: ToolbarWidgetGroup, inputs: ['disabled'] }],
   host: {
-    class: 'nat-toolbar-group',
     role: 'group',
     '[attr.aria-label]': 'accessibleName() ?? null',
   },
