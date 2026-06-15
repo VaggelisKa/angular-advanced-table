@@ -800,6 +800,51 @@ describe('ng-advanced-table-ui', () => {
     expect(headerLabel.textContent?.trim()).toBe('Service');
   });
 
+  it('wraps the header controls in one grid-cell widget and keeps them keyboard-reachable', () => {
+    fixture.detectChanges();
+
+    const header = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLTableCellElement;
+    const widgets = header.querySelectorAll('[ngGridCellWidget]');
+    const sortButton = header.querySelector('.sort-button') as HTMLButtonElement;
+    const menuButton = header.querySelector('.menu-button') as HTMLButtonElement;
+
+    // One complex widget per cell wraps both controls, per the aria grid pattern.
+    expect(widgets.length).toBe(1);
+    expect(widgets[0].classList.contains('header-content')).toBe(true);
+    expect(sortButton.tabIndex).toBe(0);
+    expect(menuButton.tabIndex).toBe(0);
+
+    // Enter steps into the cell's first control.
+    header.focus();
+    header.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+
+    expect(document.activeElement).toBe(sortButton);
+
+    // Tab and Shift+Tab walk between the cell's controls.
+    sortButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+    );
+
+    expect(document.activeElement).toBe(menuButton);
+
+    menuButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),
+    );
+
+    expect(document.activeElement).toBe(sortButton);
+
+    // Escape returns focus to the cell.
+    sortButton.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+
+    expect(document.activeElement).toBe(header);
+  });
+
   it('keeps header action controls visible when the header label is hidden', () => {
     const hiddenFixture = TestBed.createComponent(HiddenHeaderActionLabelHost);
 

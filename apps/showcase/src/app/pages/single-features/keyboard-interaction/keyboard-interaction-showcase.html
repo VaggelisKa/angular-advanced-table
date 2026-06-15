@@ -1,0 +1,56 @@
+<div class="showcase-page showcase-container">
+  <header class="header-section">
+    <h1 class="title">Keyboard Interaction</h1>
+    <p class="description">
+      Demonstrates the ARIA grid cell-interaction model: a cell whose only content is a single
+      button focuses it directly, while cells with several controls use Enter to step in, Tab to
+      move between the controls, and Escape to return focus to the cell.
+    </p>
+  </header>
+
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card">
+      <h2 class="card-title">Interactive Cells Grid</h2>
+      <nat-table-surface>
+        <nat-table
+          [data]="data()"
+          [columns]="columns"
+          accessibleName="Keyboard interaction demo table"
+        />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">How To Use The Keyboard</h2>
+      <div class="instructions">
+        <ol>
+          <li>
+            <strong>Tab</strong> to the grid, then move between cells with the
+            <code>Arrow</code> keys.
+          </li>
+          <li>
+            Move onto an Actions cell: its Acknowledge button is the cell's only content, so it is
+            focused directly — press <code>Enter</code> or <code>Space</code> to activate it.
+          </li>
+          <li>
+            Move onto a Status cell: it mixes text with a checkbox, so focus stays on the cell —
+            press <code>Enter</code> to reach the checkbox, then <code>Space</code> to toggle it.
+          </li>
+          <li>
+            Press <code>Enter</code> on a header to move focus into its controls (sort button and
+            column menu).
+          </li>
+          <li>
+            Press <code>Tab</code> / <code>Shift + Tab</code> to walk between the controls within
+            the cell; past the last control, Tab leaves the grid.
+          </li>
+          <li>
+            Press <code>Escape</code> to return focus from a header control to its cell.
+          </li>
+        </ol>
+      </div>
+
+      <div class="info-tag" aria-live="polite">Last action: {{ lastAction() }}</div>
+    </div>
+  </div>
+</div>
