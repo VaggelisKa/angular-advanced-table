@@ -494,16 +494,15 @@ class HeaderActionCompositionHost {
 }
 
 @Component({
-  imports: [NatTable],
+  imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
+    <nat-table-surface
       [state]="tableState()"
       [enableMultiSort]="true"
-      accessibleName="Operations table"
       (stateChange)="onTableStateChange($event)"
-    />
+    >
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+    </nat-table-surface>
   `,
 })
 class MultiSortHost {
@@ -511,7 +510,7 @@ class MultiSortHost {
   readonly columns = withNatTableHeaderActions(baseColumns);
   readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }

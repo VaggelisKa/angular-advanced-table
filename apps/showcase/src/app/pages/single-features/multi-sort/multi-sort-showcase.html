@@ -10,15 +10,16 @@
   <div class="grid-layout grid-layout-with-panel">
     <div class="card">
       <h2 class="card-title">Multi-Sort Grid</h2>
-      <nat-table-surface>
+      <nat-table-surface
+        [state]="tableState()"
+        [enableMultiSort]="true"
+        (sortingChange)="onSortingChange($event)"
+      >
         <nat-table
           [data]="data"
           [columns]="columns"
-          [state]="tableState()"
-          [enableMultiSort]="true"
           [getRowId]="getRowId"
           accessibleName="Multi-column sorting demo table"
-          (sortingChange)="onSortingChange($event)"
         />
       </nat-table-surface>
     </div>

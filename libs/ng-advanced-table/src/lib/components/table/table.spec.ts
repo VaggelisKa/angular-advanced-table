@@ -78,6 +78,7 @@ class TestTableSurface {
   readonly manualPageCount = input<number | undefined>(undefined);
   readonly enableAnnouncements = input(true, { transform: booleanAttribute });
   readonly stickyHeader = input(true, { transform: booleanAttribute });
+  readonly enableMultiSort = input(false, { transform: booleanAttribute });
   readonly locale = input<string | undefined>(undefined);
   readonly accessibilityText = input<NatTableAccessibilityText>({});
 
@@ -109,6 +110,9 @@ class TestTableSurface {
     });
     effect(() => {
       this.natTableService.stickyHeader.set(this.stickyHeader());
+    });
+    effect(() => {
+      this.natTableService.enableMultiSort.set(this.enableMultiSort());
     });
     effect(() => {
       this.natTableService.locale.set(this.locale());
