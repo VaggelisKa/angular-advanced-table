@@ -1,0 +1,70 @@
+<div class="showcase-page showcase-container">
+  <header class="header-section">
+    <h1 class="title">Sorting Feature</h1>
+    <p class="description">
+      Demonstrates single-column sorting configuration and state handling in the table.
+    </p>
+  </header>
+
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card">
+      <h2 class="card-title">Interactive Sorting Grid</h2>
+      <nat-table-surface [(state)]="tableState">
+        <nat-table [data]="data" [columns]="columns" accessibleName="Sorting demo table" />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Programmatic Sort Actions</h2>
+      <div class="actions-panel">
+        <button type="button" class="btn btn-outline" (click)="sortBy('value', 'asc')">
+          Sort by Value (Asc)
+        </button>
+        <button type="button" class="btn btn-outline" (click)="sortBy('name', 'desc')">
+          Sort by Name (Desc)
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="clearSort()">Clear Sorting</button>
+      </div>
+
+      <div class="info-tag">Current state: {{ currentSortLabel() }}</div>
+    </div>
+  </div>
+
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card">
+      <h2 class="card-title">Multi-Column Sorting Grid</h2>
+      <nat-table-surface [(state)]="multiSortState" [enableMultiSort]="true">
+        <nat-table
+          [data]="data"
+          [columns]="columns"
+          accessibleName="Multi-column sorting demo table"
+        />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Sort Priority</h2>
+      <div class="instructions">
+        <ol>
+          <li>Click a header's sort button to sort by that column.</li>
+          <li>
+            <strong>Shift + click</strong> (or <strong>Shift + Enter</strong> on a focused sort
+            button) adds another column to the sort.
+          </li>
+          <li>A numbered badge on each sorted header shows its priority.</li>
+        </ol>
+      </div>
+
+      <div class="info-tag">Current sorting (priority order): {{ multiSortLabel() }}</div>
+
+      <div class="actions-panel">
+        <button type="button" class="btn btn-outline" (click)="applyMultiPreset()">
+          Sort by Category, then Value
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="clearMultiSort()">
+          Clear Sorting
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

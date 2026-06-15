@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import type { CellContext, ColumnDef, SortingState } from '@tanstack/angular-table';
+import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
+import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
@@ -14,22 +14,27 @@ type DemoItem = {
 
 const DEMO_DATA: DemoItem[] = [
   { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
-  { id: 'item-2', name: 'Beta Runner', category: 'Security', status: 'Active', value: 1200 },
-  { id: 'item-3', name: 'Gamma Processor', category: 'Analytics', status: 'Paused', value: 7800 },
+  { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200 },
+  {
+    id: 'item-3',
+    name: 'Gamma Processor',
+    category: 'Data Science',
+    status: 'Paused',
+    value: 7800,
+  },
   { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
   { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Analytics', status: 'Halted', value: 500 },
+  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 },
 ];
 
 @Component({
-  selector: 'app-multi-sort-showcase',
+  selector: 'app-sorting-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
-  templateUrl: './multi-sort-showcase.html',
+  templateUrl: './sorting-showcase.html',
 })
-export class MultiSortShowcasePage {
+export class SortingShowcasePage {
   protected readonly data = DEMO_DATA;
-  protected readonly getRowId = (row: DemoItem) => row.id;
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
@@ -55,13 +60,38 @@ export class MultiSortShowcasePage {
     },
   ]);
 
-  public readonly tableState = signal<Partial<NatTableState>>({
-    sorting: [],
+  protected readonly tableState = signal<Partial<NatTableState>>({
+    sorting: [{ id: 'name', desc: false }],
   });
 
   protected readonly currentSortLabel = computed(() => {
     const sorting = this.tableState().sorting;
+    if (!sorting?.length) return 'None';
 
+    const entry = sorting[0]!;
+    return `${entry.id} (${entry.desc ? 'desc' : 'asc'})`;
+  });
+
+  protected sortBy(id: string, dir: 'asc' | 'desc'): void {
+    this.tableState.update((current) => ({
+      ...current,
+      sorting: [{ id, desc: dir === 'desc' }],
+    }));
+  }
+
+  protected clearSort(): void {
+    this.tableState.update((current) => ({
+      ...current,
+      sorting: [],
+    }));
+  }
+
+  protected readonly multiSortState = signal<Partial<NatTableState>>({
+    sorting: [],
+  });
+
+  protected readonly multiSortLabel = computed(() => {
+    const sorting = this.multiSortState().sorting;
     if (!sorting?.length) return 'None';
 
     return sorting
@@ -69,12 +99,8 @@ export class MultiSortShowcasePage {
       .join(', ');
   });
 
-  protected onSortingChange(sorting: SortingState): void {
-    this.tableState.update((current) => ({ ...current, sorting }));
-  }
-
-  protected applyPresetSort(): void {
-    this.tableState.update((current) => ({
+  protected applyMultiPreset(): void {
+    this.multiSortState.update((current) => ({
       ...current,
       sorting: [
         { id: 'category', desc: false },
@@ -83,7 +109,7 @@ export class MultiSortShowcasePage {
     }));
   }
 
-  protected clearSort(): void {
-    this.tableState.update((current) => ({ ...current, sorting: [] }));
+  protected clearMultiSort(): void {
+    this.multiSortState.update((current) => ({ ...current, sorting: [] }));
   }
 }
