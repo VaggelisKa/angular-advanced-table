@@ -1,17 +1,17 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ToolbarWidgetGroup } from '@angular/aria/toolbar';
 
-import type { NatToolbarItemPositionInput } from '../common/toolbar-tokens.type';
+import type { NatToolbarItemPosition } from '../common/toolbar-tokens.type';
 
 /**
  * Groups related toolbar items, proxying `ngToolbarWidgetGroup` from
  * `@angular/aria/toolbar` and adding what the stock directive leaves out:
  * `role="group"`, an accessible name, slot positioning and flex styling.
  *
- * `natToolbarGroup="start" | "center" | "end"` (default end) picks the
+ * `natToolbarGroup="start" | "center" | "end"` (default start) picks the
  * toolbar slot, same contract as `natToolbarItem` — static attribute only.
- * Items inside keep their own `natToolbarItem` + unique `value`; they are
- * projected with the group, so their own position attribute is ignored.
+ * Items inside keep their own `natToolbarItem` (their Aria value); they are
+ * projected with the group, so their own `natToolbarItemPosition` is ignored.
  *
  * Keyboard: Left/Right (and Home/End) traverse all toolbar items linearly;
  * Up/Down cycle within this group (Aria's group navigation). `disabled`
@@ -20,8 +20,8 @@ import type { NatToolbarItemPositionInput } from '../common/toolbar-tokens.type'
  * @example
  * ```html
  * <div natToolbarGroup="end" accessibleName="View density">
- *   <button natToolbarItem value="compact">Compact</button>
- *   <button natToolbarItem value="comfortable">Comfortable</button>
+ *   <button natToolbarItem="compact">Compact</button>
+ *   <button natToolbarItem="comfortable">Comfortable</button>
  * </div>
  * ```
  */
@@ -37,6 +37,6 @@ import type { NatToolbarItemPositionInput } from '../common/toolbar-tokens.type'
   },
 })
 export class NatToolbarGroup {
-  public readonly natToolbarGroup = input<NatToolbarItemPositionInput>('');
+  public readonly natToolbarGroup = input<NatToolbarItemPosition>('start');
   public readonly accessibleName = input<string>();
 }

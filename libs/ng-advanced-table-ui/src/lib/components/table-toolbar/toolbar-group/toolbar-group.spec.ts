@@ -9,17 +9,17 @@ import { NatToolbarGroup } from './toolbar-group';
   imports: [NatTableToolbar, NatToolbarItem, NatToolbarGroup],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="start" value="solo-start" id="solo-start">Solo start</button>
+      <button natToolbarItem="solo-start" natToolbarItemPosition="start" id="solo-start">Solo start</button>
       <div
         natToolbarGroup="center"
         accessibleName="View density"
         [disabled]="groupDisabled()"
         id="density-group"
       >
-        <button natToolbarItem value="compact" id="compact">Compact</button>
-        <button natToolbarItem value="comfortable" id="comfortable">Comfortable</button>
+        <button natToolbarItem="compact" id="compact">Compact</button>
+        <button natToolbarItem="comfortable" id="comfortable">Comfortable</button>
       </div>
-      <button natToolbarItem value="solo-end" id="solo-end">Solo end</button>
+      <button natToolbarItem="solo-end" natToolbarItemPosition="end" id="solo-end">Solo end</button>
     </nat-table-toolbar>
   `,
 })
