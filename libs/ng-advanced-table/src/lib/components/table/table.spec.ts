@@ -2,10 +2,10 @@ import { Component, signal } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { GridCellWidget } from '@angular/aria/grid';
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
+import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction';
 import { NatTable } from './table';
 import { provideNatTableIntl } from './table-intl';
 import { NAT_TABLE_DATA_STATUS } from './table.types';
@@ -237,13 +237,7 @@ class CaptionHost {
 }
 
 @Component({
-  imports: [
-    GridCellWidget,
-    NatTable,
-    NatTableLoadingTemplate,
-    NatTableEmptyTemplate,
-    NatTableErrorTemplate,
-  ],
+  imports: [NatTable, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
   template: `
     <nat-table
       [data]="rows()"
@@ -263,7 +257,7 @@ class CaptionHost {
       </ng-template>
 
       <ng-template natTableError let-error>
-        <button type="button" class="custom-error" ngGridCellWidget>
+        <button type="button" class="custom-error">
           {{ formatError(error) }}
         </button>
       </ng-template>
@@ -780,7 +774,7 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
   });
 
-  it('renders caller-provided state templates with table state context', () => {
+  it('renders caller-provided state templates with table state context', async () => {
     const stateFixture = TestBed.createComponent(StateTemplatesHost);
     const stateHost = stateFixture.componentInstance;
 
@@ -802,12 +796,28 @@ describe('NatTable', () => {
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
     stateHost.error.set(new Error('API unavailable'));
     stateFixture.detectChanges();
+    await stateFixture.whenStable();
+    stateFixture.detectChanges();
 
     stateCell = stateFixture.nativeElement.querySelector('.error-state') as HTMLElement;
-    const errorWidget = stateFixture.debugElement.query(By.directive(GridCellWidget));
+    const errorButton = stateCell.querySelector('.custom-error') as HTMLButtonElement;
 
     expect(stateCell.textContent?.trim()).toBe('API unavailable');
-    expect(errorWidget.nativeElement.textContent).toContain('API unavailable');
+    expect(errorButton.textContent).toContain('API unavailable');
+    expect(errorButton.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+    expect(errorButton.tabIndex).toBe(-1);
+
+    stateCell.focus();
+    stateCell.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    stateFixture.detectChanges();
+
+    expect(document.activeElement).toBe(errorButton);
 
     stateFixture.destroy();
   });

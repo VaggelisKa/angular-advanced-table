@@ -326,7 +326,7 @@ Accessibility requirements:
 - Loading uses `aria-busy="true"` on the rendered grid. If rows already exist, keep them visible during background refresh instead of replacing them with a loading row.
 - Loading and error transitions are announced through the existing polite live region when `enableAnnouncements` is `true`.
 - Custom `natTableLoading`, `natTableEmpty`, and `natTableError` templates must include visible text or accessible names that make sense without color or icon-only cues.
-- If a custom state template includes a button, link, input, or other focusable control, put `ngGridCellWidget` from `@angular/aria/grid` on the real focusable element.
+- Focusable controls inside custom state templates are managed by `NatTable`; use normal buttons, links, and inputs.
 
 ## Optional UI Controls
 
@@ -432,7 +432,7 @@ export class OrdersTableComponent {
 
 Any custom cell renderer, row action, menu, dialog trigger, or custom detail panel is outside the built-in label system. Localize those controls in the consuming app and make sure interactive elements have their own accessible names.
 
-When a focusable widget is rendered inside a grid cell, use the appropriate Angular Aria grid primitive, such as `ngGridCellWidget`, so keyboard users can move between grid navigation and the widget predictably.
+When a focusable widget is rendered inside an ordinary custom data or header cell, use the appropriate Angular Aria grid primitive, such as `ngGridCellWidget`, so keyboard users can move between grid navigation and the widget predictably. State-row template controls are managed by `NatTable`.
 
 ## Final Agent Review
 

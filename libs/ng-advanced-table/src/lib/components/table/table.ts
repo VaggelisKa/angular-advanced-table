@@ -63,6 +63,7 @@ import {
   NatTableErrorTemplate,
   NatTableLoadingTemplate,
 } from './table-state-templates';
+import { NatTableStateCell } from './table-state-cell.directive';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
@@ -181,6 +182,7 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
     CdkDrag,
     FlexRender,
     NatTableRowRenderEmitter,
+    NatTableStateCell,
   ],
   templateUrl: './table.html',
   styleUrl: './table.css',

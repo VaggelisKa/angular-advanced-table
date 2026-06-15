@@ -1,4 +1,3 @@
-import { GridCellWidget } from '@angular/aria/grid';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 import {
@@ -30,7 +29,6 @@ const ERROR_RETRY_DELAY_MS = 900;
   selector: 'app-states-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    GridCellWidget,
     NatTable,
     NatTableSurface,
     NatTableLoadingTemplate,
@@ -105,12 +103,7 @@ const ERROR_RETRY_DELAY_MS = 900;
                 <div class="state-template state-template-error">
                   <strong>Incident queue unavailable</strong>
                   <span>{{ formatError(error) }}</span>
-                  <button
-                    type="button"
-                    class="btn btn-outline"
-                    ngGridCellWidget
-                    (click)="retryErrorExample()"
-                  >
+                  <button type="button" class="btn btn-outline" (click)="retryErrorExample()">
                     Retry
                   </button>
                 </div>

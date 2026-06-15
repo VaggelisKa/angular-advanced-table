@@ -1,7 +1,5 @@
-import { GridCellWidget } from '@angular/aria/grid';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 
 import { StatesShowcasePage } from './states-showcase';
 
@@ -39,14 +37,28 @@ describe('StatesShowcasePage', () => {
     expect(busyTables.length).toBe(2);
   });
 
-  it('marks the retry action as a grid-cell widget', () => {
+  it('lets keyboard users enter the retry action from the state cell', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    const retryWidget = fixture.debugElement
-      .queryAll(By.directive(GridCellWidget))
-      .find((debugElement) => debugElement.nativeElement.textContent.includes('Retry'));
+    const page = fixture.nativeElement as HTMLElement;
+    const errorCell = page.querySelector('.error-state') as HTMLTableCellElement;
+    const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Retry'),
+    ) as HTMLButtonElement;
 
-    expect(retryWidget).toBeTruthy();
+    errorCell.focus();
+    errorCell.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(retryButton);
   });
 
   it('loops retry through loading and back to error', () => {

@@ -180,7 +180,12 @@
         }
         @case ('loading') {
           <tr ngGridRow>
-            <td ngGridCell class="table-state loading-state" [colSpan]="emptyStateColSpan()">
+            <td
+              ngGridCell
+              natTableStateCell
+              class="table-state loading-state"
+              [colSpan]="emptyStateColSpan()"
+            >
               @if (loadingTemplateRef(); as templateRef) {
                 <ng-container
                   [ngTemplateOutlet]="templateRef"
@@ -195,7 +200,12 @@
         }
         @case ('error') {
           <tr ngGridRow>
-            <td ngGridCell class="table-state error-state" [colSpan]="emptyStateColSpan()">
+            <td
+              ngGridCell
+              natTableStateCell
+              class="table-state error-state"
+              [colSpan]="emptyStateColSpan()"
+            >
               @if (errorTemplateRef(); as templateRef) {
                 <ng-container
                   [ngTemplateOutlet]="templateRef"
@@ -210,7 +220,12 @@
         }
         @case ('empty') {
           <tr ngGridRow>
-            <td ngGridCell class="table-state empty-state" [colSpan]="emptyStateColSpan()">
+            <td
+              ngGridCell
+              natTableStateCell
+              class="table-state empty-state"
+              [colSpan]="emptyStateColSpan()"
+            >
               @if (emptyTemplateRef(); as templateRef) {
                 <ng-container
                   [ngTemplateOutlet]="templateRef"

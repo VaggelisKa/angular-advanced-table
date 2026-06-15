@@ -422,7 +422,7 @@ export class OrdersTable {
 }
 ```
 
-If custom state templates include focusable controls, put `ngGridCellWidget` from `@angular/aria/grid` on the real button, link, or input. This keeps keyboard movement between grid cells and controls predictable.
+Focusable controls inside `natTableLoading`, `natTableEmpty`, and `natTableError` templates are managed by `NatTable`; use normal buttons, links, and inputs. `ngGridCellWidget` is still needed for custom interactive controls rendered in ordinary data or header cells.
 
 ## Accessibility and Internationalization
 
