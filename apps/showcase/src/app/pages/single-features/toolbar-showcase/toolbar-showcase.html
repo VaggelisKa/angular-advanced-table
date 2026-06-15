@@ -1,0 +1,115 @@
+<div class="showcase-page showcase-container">
+  <header class="header-section">
+    <h1 class="title">Table Toolbar</h1>
+    <p class="description">
+      Composable toolbar shell with static start/center/end slots and roving keyboard focus. Items
+      pick their slot with the <code>natToolbarItemPosition</code> attribute — DOM, screen-reader
+      and keyboard order always match what you see.
+    </p>
+  </header>
+
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card">
+      <h2 class="card-title">Toolbar Grid</h2>
+
+      <nat-table-surface
+        [state]="tableState()"
+        (sortingChange)="onSortingChange($event)"
+        (columnVisibilityChange)="onColumnVisibilityChange($event)"
+      >
+        <nat-table-toolbar accessibleName="Products toolbar">
+          <button
+            type="button"
+            class="toolbar-button"
+            natToolbarItem
+            natToolbarItemPosition="start"
+            data-testid="export-button"
+            (click)="recordAction('export-csv')"
+          >
+            Export
+          </button>
+
+          <button
+            type="button"
+            class="toolbar-button"
+            natToolbarItem
+            natToolbarItemPosition="center"
+            data-testid="refresh-button"
+            (click)="recordAction('refresh')"
+          >
+            Refresh
+          </button>
+
+          <div natToolbarGroup="end" accessibleName="View density">
+            <button
+              type="button"
+              class="toolbar-button"
+              natToolbarItem
+              data-testid="density-compact-button"
+              (click)="recordAction('density-compact')"
+            >
+              Compact
+            </button>
+            <button
+              type="button"
+              class="toolbar-button"
+              natToolbarItem
+              data-testid="density-comfortable-button"
+              (click)="recordAction('density-comfortable')"
+            >
+              Comfortable
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="toolbar-button toolbar-button--icon"
+            natToolbarItem
+            natToolbarItemPosition="end"
+            aria-label="Share"
+            data-testid="share-button"
+            (click)="recordAction('share')"
+          >
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="12" cy="3.5" r="2" />
+              <circle cx="4" cy="8" r="2" />
+              <circle cx="12" cy="12.5" r="2" />
+              <path d="M5.8 7 10.2 4.5M5.8 9l4.4 2.5" />
+            </svg>
+          </button>
+        </nat-table-toolbar>
+
+        <nat-table
+          [data]="data"
+          [columns]="columns"
+          accessibleName="Toolbar demo table"
+        />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Item Activation</h2>
+      <div class="control-panel">
+        <dl class="demo-state">
+          <dt class="demo-state-term">Last action</dt>
+          <dd class="demo-state-value" data-testid="last-action">{{ lastAction() }}</dd>
+        </dl>
+
+        <div class="tip">
+          Export sits in the start slot, Refresh is centered, the "View density" widget group and
+          Share are at the end. Activate an item to record the last action. Keyboard: Tab into the
+          toolbar, Left/Right + Home/End move across all items, Up/Down cycle inside the density
+          group.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

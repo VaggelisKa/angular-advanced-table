@@ -50,6 +50,11 @@ const showcaseExamples = [
     path: '/sticky-header',
   },
   {
+    label: 'Toolbar',
+    description: 'Slot-based keyboard toolbar',
+    path: '/toolbar',
+  },
+  {
     label: 'Keyboard interaction',
     description: 'Grid cell navigation',
     path: '/keyboard-interaction',

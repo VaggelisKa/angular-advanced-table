@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, DestroyRef } from '@angular/core';
 import type { PaginationState, RowData } from '@tanstack/angular-table';
 
+import { createIdGenerator } from '../../shared/create-id-generator';
 import {
   NAT_TABLE_UI_ENGLISH_LOCALE,
   NAT_TABLE_UI_INTL,
@@ -9,7 +10,7 @@ import {
 import { NatTableService } from '../../shared/table.service';
 import type { NatTableUiController } from '../../shared/table-ui.types';
 
-let nextSearchFieldId = 0;
+const nextSearchFieldId = createIdGenerator('nat-table-search');
 
 @Component({
   selector: 'nat-table-search',
@@ -37,7 +38,7 @@ export class NatTableSearch<TData extends RowData = RowData> {
   }
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  protected readonly inputId = `nat-table-search-${nextSearchFieldId++}`;
+  protected readonly inputId = nextSearchFieldId();
   private readonly localeId = computed(
     () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
