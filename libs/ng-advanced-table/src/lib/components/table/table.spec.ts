@@ -1134,7 +1134,7 @@ describe('NatTable', () => {
     expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
   });
 
-  it('keeps multiple sort columns and marks each header when enableMultiSort is true', async () => {
+  it('keeps multiple sort columns but only exposes aria-sort on the primary header', async () => {
     await recreateHost({
       enableMultiSort: true,
       state: {
@@ -1157,7 +1157,7 @@ describe('NatTable', () => {
       fixture.nativeElement.querySelectorAll('thead th[aria-sort]'),
     ) as HTMLTableCellElement[];
 
-    expect(sortedHeaders.map((header) => header.dataset['columnId'])).toEqual(['name', 'region']);
+    expect(sortedHeaders.map((header) => header.dataset['columnId'])).toEqual(['name']);
   });
 
   it('emits the full sorting array and announces a multi-column sort when enableMultiSort is true', async () => {

@@ -432,6 +432,7 @@ export class NatTable<TData extends RowData = RowData> {
     const widths = this.resolvedColumnWidths();
     const userColumnSizing = this.userColumnSizing();
     const state = this.mergedState();
+    const primarySortColumnId = state.sorting[0]?.id ?? null;
     const visibleColumnsById = new Map(
       visibleColumns.map((column) => [column.id, column] as const),
     );
@@ -480,7 +481,10 @@ export class NatTable<TData extends RowData = RowData> {
       const pinnedLeft = leftPinnedIds.has(column.id);
       const pinnedRight = rightPinnedIds.has(column.id);
 
-      const sortEntry = state.sorting.find((entry) => entry.id === column.id);
+      const primarySortEntry =
+        primarySortColumnId === column.id
+          ? state.sorting.find((entry) => entry.id === column.id) ?? null
+          : null;
       const meta = column.columnDef.meta;
       const label = resolveColumnLabel(column);
       const headerWidth =
@@ -516,7 +520,9 @@ export class NatTable<TData extends RowData = RowData> {
         headerMinWidth,
         headerMaxWidth,
         headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
-        ariaSort: sortEntry ? (sortEntry.desc ? 'descending' : 'ascending') : null,
+        ariaSort: primarySortEntry
+          ? (primarySortEntry.desc ? 'descending' : 'ascending')
+          : null,
         rowHeader: !!meta?.rowHeader,
       };
     }
