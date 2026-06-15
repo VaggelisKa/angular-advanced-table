@@ -24,16 +24,8 @@ export const routes: Routes = [
     path: 'sorting',
     title: 'Advanced Table - Sorting',
     loadComponent: () =>
-      import('./pages/single-features/sorting-showcase').then(
+      import('./pages/single-features/sorting/sorting-showcase').then(
         (module) => module.SortingShowcasePage,
-      ),
-  },
-  {
-    path: 'multi-sort',
-    title: 'Advanced Table - Multi-Column Sorting',
-    loadComponent: () =>
-      import('./pages/single-features/multi-sort/multi-sort-showcase').then(
-        (module) => module.MultiSortShowcasePage,
       ),
   },
   {
