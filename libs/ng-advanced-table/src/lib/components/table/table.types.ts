@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import type {
   CellContext,
   Column,
@@ -9,6 +10,7 @@ import type {
   RowData,
   SortingState,
   Table,
+  Updater,
   VisibilityState,
 } from '@tanstack/angular-table';
 
@@ -346,4 +348,35 @@ declare module '@tanstack/table-core' {
     TData extends import('@tanstack/angular-table').RowData,
     TValue,
   > extends NatTableColumnMeta<TData, TValue> {}
+}
+
+export type NatTableMode = 'auto' | 'manual';
+
+export interface NatTableModeConfiguration {
+  pagination?: NatTableMode;
+  sorting?: NatTableMode;
+  filtering?: NatTableMode;
+}
+
+/** Alias to NatTableState for UI component consumption. */
+export type NatTableUiState = NatTableState;
+
+/**
+ * Minimal table-controller contract consumed by UI companion controls.
+ */
+export interface NatTableUiController<TData extends RowData = RowData> {
+  readonly table: Table<TData>;
+  enableGlobalFilter(): boolean;
+  enablePagination(): boolean;
+  patchState(
+    updaters: Partial<{
+      [K in keyof NatTableUiState]: Updater<NatTableUiState[K]>;
+    }>,
+  ): void;
+  /** DOM id of the controlled `<table>`; companion controls bind `aria-controls` to this. */
+  readonly tableElementId: Signal<string>;
+  /** Scrollable container that wraps the controlled `<table>`, when available. */
+  readonly tableScrollContainer?: Signal<HTMLElement | null>;
+  /** Locale id used by generated companion-control labels, when available. */
+  readonly localeId?: Signal<string>;
 }

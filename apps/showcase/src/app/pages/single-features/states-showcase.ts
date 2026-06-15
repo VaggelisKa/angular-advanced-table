@@ -48,13 +48,12 @@ const ERROR_RETRY_DELAY_MS = 900;
       <div class="grid-layout state-grid">
         <div class="card">
           <h2 class="card-title">Loading state</h2>
-          <nat-table-surface>
+          <nat-table-surface [accessibilityText]="loadingTableAccessibilityCopy">
             <nat-table
               [data]="loadingRows"
               [columns]="columns"
               dataStatus="loading"
               accessibleName="Loading incidents table"
-              [accessibilityText]="loadingTableAccessibilityCopy"
             >
               <ng-template natTableLoading>
                 <div class="state-template">
@@ -69,12 +68,11 @@ const ERROR_RETRY_DELAY_MS = 900;
 
         <div class="card">
           <h2 class="card-title">Empty state</h2>
-          <nat-table-surface>
+          <nat-table-surface [accessibilityText]="emptyTableAccessibilityCopy">
             <nat-table
               [data]="emptyRows"
               [columns]="columns"
               accessibleName="Empty incidents table"
-              [accessibilityText]="emptyTableAccessibilityCopy"
             >
               <ng-template natTableEmpty let-filtered="filtered">
                 <div class="state-template">
@@ -90,14 +88,13 @@ const ERROR_RETRY_DELAY_MS = 900;
 
         <div class="card">
           <h2 class="card-title">Error state</h2>
-          <nat-table-surface>
+          <nat-table-surface [accessibilityText]="errorTableAccessibilityCopy">
             <nat-table
               [data]="errorRows"
               [columns]="columns"
               [dataStatus]="errorStatus()"
               [error]="error()"
               accessibleName="Errored incidents table"
-              [accessibilityText]="errorTableAccessibilityCopy"
             >
               <ng-template natTableError let-error>
                 <div class="state-template state-template-error">
@@ -121,13 +118,12 @@ const ERROR_RETRY_DELAY_MS = 900;
 
         <div class="card state-reference-card">
           <h2 class="card-title">Background refresh</h2>
-          <nat-table-surface>
+          <nat-table-surface [accessibilityText]="refreshTableAccessibilityCopy">
             <nat-table
               [data]="successRows"
               [columns]="columns"
               dataStatus="loading"
               accessibleName="Refreshing incidents table"
-              [accessibilityText]="refreshTableAccessibilityCopy"
             />
           </nat-table-surface>
         </div>

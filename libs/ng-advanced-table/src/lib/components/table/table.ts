@@ -1,3 +1,6 @@
+import { NgTemplateOutlet } from '@angular/common';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -13,25 +16,23 @@ import {
   input,
   output,
   signal,
+  untracked,
   viewChild,
   type TemplateRef,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
-import { Grid, GridCell, GridRow } from '@angular/aria/grid';
-import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import {
-  FlexRender,
   createAngularTable,
+  FlexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type CellContext,
   type Column,
+  type ColumnDef,
   type ColumnFiltersState,
   type ColumnOrderState,
   type ColumnPinningState,
-  type ColumnDef,
   type FilterFn,
   type Header,
   type HeaderGroup,
@@ -58,12 +59,13 @@ import {
   NAT_TABLE_INTL,
   resolveNatTableIntl,
 } from './table-intl';
+import { NatTableService } from './table.service';
+import { NatTableStateCell } from './table-state-cell.directive';
 import {
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
   NatTableLoadingTemplate,
 } from './table-state-templates';
-import { NatTableStateCell } from './table-state-cell.directive';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
@@ -82,6 +84,7 @@ import type {
   NatTableRowActivateEvent,
   NatTableRowIdGetter,
   NatTableState,
+  NatTableUiController,
 } from './table.types';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './table.types';
 type ColumnReorderZone = 'left' | 'center' | 'right';
@@ -196,70 +199,40 @@ export class NatTable<TData extends RowData = RowData> {
   readonly accessibleName = input.required<string>();
   /** Visible table caption. When present, it provides the grid's accessible name. */
   readonly caption = input<string | undefined>(undefined);
-  /** Locale id used to resolve generated table accessibility copy. */
-  readonly locale = input<string | undefined>(undefined);
-  /** Optional accessibility copy and live-announcement formatters. */
-  readonly accessibilityText = input<NatTableAccessibilityText>({});
   /** Data lifecycle status. The table renders state rows; consumers still own loading, retry, and error handling. */
   readonly dataStatus = input<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   /** Optional error payload passed through to `natTableError` templates. */
   readonly error = input<unknown>(null);
-
-  /** Enables the global filter pipeline for companion search controls. */
-  readonly enableGlobalFilter = input(true, { transform: booleanAttribute });
-  /** Enables sticky column pinning where the column allows it. */
-  readonly enableColumnPinning = input(true, { transform: booleanAttribute });
-  /** Enables drag-and-drop and keyboard reordering for leaf header cells. */
-  readonly enableColumnReorder = input(false, { transform: booleanAttribute });
-  /** Enables client-side pagination row models when external UI drives pagination state. */
-  readonly enablePagination = input(false, { transform: booleanAttribute });
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData>>();
-  /**
-   * One-time uncontrolled seed for state slices.
-   *
-   * Ignored for slices also present in `state`. After the first render, use
-   * `(stateChange)` or granular `*Change` outputs instead.
-   */
-  readonly initialState = input<Partial<NatTableState>>({});
-  /**
-   * Controlled state slices. A slice is controlled when its key is present
-   * here, even if the value is empty. Omitted keys stay internal.
-   *
-   * Update controlled slices via the matching `*Change` output (or
-   * `(stateChange)`) and flow the value back in. Pass only the slices you
-   * own; echoing the full `(stateChange)` payload controls every slice.
-   */
-  readonly state = input<Partial<NatTableState>>({});
   /** Optional stable row id resolver used for selection, pinning, and events. */
   readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
-  /** Enables polite live announcements for sort/filter/pagination changes. */
-  readonly enableAnnouncements = input(true, { transform: booleanAttribute });
-  /** Enables sticky positioning for the table header row. */
-  readonly stickyHeader = input(true, { transform: booleanAttribute });
 
-  /** Full normalized state whenever any slice changes, including uncontrolled slices. Prefer granular `*Change` outputs when you only need one slice. */
-  readonly stateChange = output<NatTableState>();
-  /** Emits the next sorting state when it actually changes. */
-  readonly sortingChange = output<SortingState>();
-  /** Emits the next global filter query when it actually changes. */
-  readonly globalFilterChange = output<string>();
-  /** Emits the next column filter list when it actually changes. */
-  readonly columnFiltersChange = output<ColumnFiltersState>();
-  /** Emits the next column visibility map when it actually changes. */
-  readonly columnVisibilityChange = output<VisibilityState>();
-  /** Emits the next leaf column order when it actually changes. */
-  readonly columnOrderChange = output<ColumnOrderState>();
-  /** Emits the next column pinning state when it actually changes. */
-  readonly columnPinningChange = output<ColumnPinningState>();
-  /** Emits the next pagination state when it actually changes. */
-  readonly paginationChange = output<PaginationState>();
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
   readonly rowRendered = output<NatTableRowRenderedEvent>();
   /** Emits on row click or Enter/Space unless the event started on an interactive descendant. */
   readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
+
+  private readonly natTableService = inject(NatTableService);
+
+  protected readonly initialState = computed(() => this.natTableService.surfaceInitialState());
+  protected readonly state = computed(() => this.natTableService.state());
+  protected readonly mode = computed(() => this.natTableService.surfaceMode());
+  protected readonly manualPagination = computed(() => this.natTableService.manualPagination());
+  protected readonly manualSorting = computed(() => this.natTableService.manualSorting());
+  protected readonly manualFiltering = computed(() => this.natTableService.manualFiltering());
+  protected readonly enablePagination = computed(() => this.natTableService.hasPagination());
+  protected readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
+
+  protected readonly manualPageCount = computed(() => this.natTableService.manualPageCount());
+  protected readonly enableAnnouncements = computed(() =>
+    this.natTableService.enableAnnouncements(),
+  );
+  protected readonly stickyHeader = computed(() => this.natTableService.stickyHeader());
+  protected readonly locale = computed(() => this.natTableService.locale());
+  protected readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
   private readonly internalGlobalFilter = signal(DEFAULT_TABLE_STATE.globalFilter);
@@ -307,12 +280,10 @@ export class NatTable<TData extends RowData = RowData> {
     ),
   );
   private readonly resolvedColumnPinning = computed(() =>
-    this.enableColumnPinning()
-      ? normalizeColumnPinning(
-          this.state().columnPinning ?? this.internalColumnPinning(),
-          this.allLeafColumnIds(),
-        )
-      : EMPTY_COLUMN_PINNING,
+    normalizeColumnPinning(
+      this.state().columnPinning ?? this.internalColumnPinning(),
+      this.allLeafColumnIds(),
+    ),
   );
   private readonly resolvedAccessibilityText = computed(() =>
     mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText()),
@@ -346,10 +317,6 @@ export class NatTable<TData extends RowData = RowData> {
     const reorderInstructions =
       this.resolvedAccessibilityText().reorderKeyboardInstructions?.trim() ?? '';
 
-    if (!this.enableColumnReorder()) {
-      return instructions;
-    }
-
     return [instructions, reorderInstructions].filter((value) => !!value).join(' ');
   });
 
@@ -371,9 +338,12 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   protected readonly visibleRowCount = computed(() => this.bodyRows().length);
   protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
-  protected readonly pageCount = computed(() =>
-    this.enablePagination() ? Math.max(this.table.getPageCount(), 1) : 1,
-  );
+  protected readonly resolvedPageCount = computed(() => {
+    if (this.manualPagination()) {
+      return this.manualPageCount() ?? 1;
+    }
+    return this.enablePagination() ? Math.max(this.table.getPageCount(), 1) : 1;
+  });
   protected readonly visibleColumnIds = computed(() =>
     this.visibleColumns()
       .map((column) => column.id)
@@ -410,7 +380,7 @@ export class NatTable<TData extends RowData = RowData> {
     this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.mergedState().pagination.pageIndex : 0,
   );
   private readonly renderedPageCount = computed(() =>
-    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.pageCount() : 1,
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.resolvedPageCount() : 1,
   );
   protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(
     () => ({
@@ -475,14 +445,17 @@ export class NatTable<TData extends RowData = RowData> {
 
     return ids.join(' ');
   });
-  /** TanStack `Table<TData>` instance; read derived state or call TanStack APIs directly. */
   readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.readRequiredInput(this.data, []) as TData[],
     columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
     state: this.mergedState(),
+    pageCount: this.manualPagination() ? this.manualPageCount() : undefined,
+    manualPagination: this.manualPagination(),
+    manualSorting: this.manualSorting(),
+    manualFiltering: this.manualFiltering(),
     enableMultiSort: false,
     isMultiSortEvent: () => false,
-    enableColumnPinning: this.enableColumnPinning(),
+    enableColumnPinning: true,
     enableColumnOrdering: true,
     meta: {
       natTableLocaleId: this.localeId(),
@@ -491,9 +464,10 @@ export class NatTable<TData extends RowData = RowData> {
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
     getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: this.enablePagination() ? getPaginationRowModel() : undefined,
+    getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
+    getSortedRowModel: this.manualSorting() ? undefined : getSortedRowModel(),
+    getPaginationRowModel:
+      !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
     onSortingChange: (updater) => this.updateState({ sorting: updater }),
     onGlobalFilterChange: (updater) =>
       this.updateState({ globalFilter: updater, pagination: this.firstPageUpdater }),
@@ -633,6 +607,8 @@ export class NatTable<TData extends RowData = RowData> {
   });
 
   constructor() {
+    this.natTableService.setController(this as unknown as NatTableUiController<any>);
+
     effect(() => {
       if (this.hasSeededInitialState()) {
         return;
@@ -656,15 +632,19 @@ export class NatTable<TData extends RowData = RowData> {
       );
       this.internalColumnOrder.set(initialState.columnOrder ?? DEFAULT_TABLE_STATE.columnOrder);
       this.internalColumnPinning.set(
-        this.enableColumnPinning()
-          ? (initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning)
-          : EMPTY_COLUMN_PINNING,
+        initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning,
       );
       this.internalPagination.set({
         pageIndex: initialState.pagination?.pageIndex ?? DEFAULT_PAGINATION.pageIndex,
         pageSize: initialState.pagination?.pageSize ?? DEFAULT_PAGINATION.pageSize,
       });
       this.hasSeededInitialState.set(true);
+
+      untracked(() => {
+        if (this.natTableService) {
+          this.natTableService.notifyStateChange(this.mergedState());
+        }
+      });
     });
 
     // Track render cycles for the row-render emitter. A "cycle" is any change
@@ -734,7 +714,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected canReorderHeader(header: Header<TData, unknown>): boolean {
-    if (!this.enableColumnReorder() || header.isPlaceholder) {
+    if (header.isPlaceholder) {
       return false;
     }
 
@@ -751,11 +731,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
-    if (
-      !this.enableColumnReorder() ||
-      !this.isLeafHeaderRow(headerGroup) ||
-      event.previousIndex === event.currentIndex
-    ) {
+    if (!this.isLeafHeaderRow(headerGroup) || event.previousIndex === event.currentIndex) {
       return;
     }
 
@@ -789,7 +765,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     const isReorderModifierPressed = event.altKey && event.shiftKey;
 
-    if (!this.enableColumnReorder() || !isReorderModifierPressed) return;
+    if (!isReorderModifierPressed) return;
 
     const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
 
@@ -904,37 +880,8 @@ export class NatTable<TData extends RowData = RowData> {
     };
 
     this.commitInternalState(nextState);
-    this.stateChange.emit(nextState);
-    this.emitSliceChanges(currentState, nextState);
-  }
-
-  private emitSliceChanges(previous: NatTableState, next: NatTableState): void {
-    if (!hasSameSorting(previous.sorting, next.sorting)) {
-      this.sortingChange.emit(next.sorting);
-    }
-
-    if (previous.globalFilter !== next.globalFilter) {
-      this.globalFilterChange.emit(next.globalFilter);
-    }
-
-    if (!hasSameColumnFilters(previous.columnFilters, next.columnFilters)) {
-      this.columnFiltersChange.emit(next.columnFilters);
-    }
-
-    if (!hasSameVisibilityMap(previous.columnVisibility, next.columnVisibility)) {
-      this.columnVisibilityChange.emit(next.columnVisibility);
-    }
-
-    if (!hasSameStringOrder(previous.columnOrder, next.columnOrder)) {
-      this.columnOrderChange.emit(next.columnOrder);
-    }
-
-    if (!hasSameColumnPinning(previous.columnPinning, next.columnPinning)) {
-      this.columnPinningChange.emit(next.columnPinning);
-    }
-
-    if (!hasSamePagination(previous.pagination, next.pagination)) {
-      this.paginationChange.emit(next.pagination);
+    if (this.natTableService) {
+      this.natTableService.notifyStateChange(nextState);
     }
   }
 
@@ -1792,62 +1739,6 @@ function serializeSorting(sorting: SortingState): string {
 
 function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
   return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
-}
-
-function hasSameSorting(previous: SortingState, next: SortingState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return serializeSorting(previous) === serializeSorting(next);
-}
-
-function hasSameColumnFilters(previous: ColumnFiltersState, next: ColumnFiltersState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return serializeColumnFilters(previous) === serializeColumnFilters(next);
-}
-
-function hasSameVisibilityMap(previous: VisibilityState, next: VisibilityState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  const previousKeys = Object.keys(previous);
-  const nextKeys = Object.keys(next);
-
-  if (previousKeys.length !== nextKeys.length) {
-    return false;
-  }
-
-  for (const key of previousKeys) {
-    if (previous[key] !== next[key]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function hasSameColumnPinning(previous: ColumnPinningState, next: ColumnPinningState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return (
-    hasSameStringOrder(previous.left ?? [], next.left ?? []) &&
-    hasSameStringOrder(previous.right ?? [], next.right ?? [])
-  );
-}
-
-function hasSamePagination(previous: PaginationState, next: PaginationState): boolean {
-  if (previous === next) {
-    return true;
-  }
-
-  return previous.pageIndex === next.pageIndex && previous.pageSize === next.pageSize;
 }
 
 function hasSameColumnVisibility(

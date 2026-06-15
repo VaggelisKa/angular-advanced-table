@@ -1,13 +1,32 @@
-import { Component, signal } from '@angular/core';
-import { provideZonelessChangeDetection } from '@angular/core';
+import type { CdkDragDrop } from '@angular/cdk/drag-drop';
+import {
+  Component,
+  DestroyRef,
+  booleanAttribute,
+  effect,
+  inject,
+  input,
+  output,
+  provideZonelessChangeDetection,
+  signal,
+} from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import type { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
+import {
+  type ColumnDef,
+  type ColumnFiltersState,
+  type ColumnOrderState,
+  type ColumnPinningState,
+  type FilterFn,
+  type PaginationState,
+  type SortingState,
+  type VisibilityState,
+} from '@tanstack/angular-table';
 
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction';
 import { NatTable } from './table';
 import { provideNatTableIntl } from './table-intl';
+import { NatTableService } from './table.service';
 import { NAT_TABLE_DATA_STATUS } from './table.types';
 import {
   NatTableEmptyTemplate,
@@ -17,9 +36,157 @@ import {
 import type {
   NatTableAccessibilityText,
   NatTableDataStatus,
+  NatTableMode,
+  NatTableModeConfiguration,
   NatTableRowActivateEvent,
   NatTableState,
 } from './table.types';
+
+@Component({
+  selector: 'test-pager',
+  template: '',
+})
+class TestPager {
+  private readonly service = inject(NatTableService);
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    this.service.registerPagination();
+    destroyRef.onDestroy(() => {
+      this.service.unregisterPagination();
+    });
+  }
+}
+
+@Component({
+  selector: 'test-search',
+  template: '',
+})
+class TestSearch {
+  private readonly service = inject(NatTableService);
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    this.service.registerSearch();
+    destroyRef.onDestroy(() => {
+      this.service.unregisterSearch();
+    });
+  }
+}
+
+@Component({
+  selector: 'nat-table-surface',
+  template: `<ng-content />`,
+  providers: [NatTableService],
+})
+class TestTableSurface {
+  readonly state = input<Partial<NatTableState>>({});
+  readonly stateChange = output<Partial<NatTableState>>();
+  readonly initialState = input<Partial<NatTableState>>({});
+  readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
+
+  readonly manualPageCount = input<number | undefined>(undefined);
+  readonly enableAnnouncements = input(true, { transform: booleanAttribute });
+  readonly stickyHeader = input(true, { transform: booleanAttribute });
+  readonly locale = input<string | undefined>(undefined);
+  readonly accessibilityText = input<NatTableAccessibilityText>({});
+
+  readonly sortingChange = output<SortingState>();
+  readonly globalFilterChange = output<string>();
+  readonly columnFiltersChange = output<ColumnFiltersState>();
+  readonly columnVisibilityChange = output<VisibilityState>();
+  readonly columnOrderChange = output<ColumnOrderState>();
+  readonly columnPinningChange = output<ColumnPinningState>();
+  readonly paginationChange = output<PaginationState>();
+
+  private readonly natTableService = inject(NatTableService);
+
+  constructor() {
+    effect(() => {
+      this.natTableService.setState(this.state());
+    });
+    effect(() => {
+      this.natTableService.surfaceInitialState.set(this.initialState());
+    });
+    effect(() => {
+      this.natTableService.surfaceMode.set(this.mode());
+    });
+    effect(() => {
+      this.natTableService.manualPageCount.set(this.manualPageCount());
+    });
+    effect(() => {
+      this.natTableService.enableAnnouncements.set(this.enableAnnouncements());
+    });
+    effect(() => {
+      this.natTableService.stickyHeader.set(this.stickyHeader());
+    });
+    effect(() => {
+      this.natTableService.locale.set(this.locale());
+    });
+    effect(() => {
+      this.natTableService.accessibilityText.set(this.accessibilityText());
+    });
+
+    let isFirstChange = true;
+    let previousState: NatTableState = {
+      sorting: [],
+      globalFilter: '',
+      columnFilters: [],
+      columnVisibility: {},
+      columnOrder: [],
+      columnPinning: { left: [], right: [] },
+      pagination: { pageIndex: 0, pageSize: 10 },
+    };
+    effect(() => {
+      const nextState = this.natTableService.stateChangeEvent();
+      if (!nextState) {
+        return;
+      }
+
+      if (isFirstChange) {
+        const initial = this.natTableService.surfaceInitialState();
+        const currentBound = this.state();
+        previousState = {
+          sorting: currentBound.sorting ?? initial.sorting ?? [],
+          globalFilter: currentBound.globalFilter ?? initial.globalFilter ?? '',
+          columnFilters: currentBound.columnFilters ?? initial.columnFilters ?? [],
+          columnVisibility: currentBound.columnVisibility ?? initial.columnVisibility ?? {},
+          columnOrder: currentBound.columnOrder ?? initial.columnOrder ?? [],
+          columnPinning: currentBound.columnPinning ??
+            initial.columnPinning ?? { left: [], right: [] },
+          pagination: currentBound.pagination ??
+            initial.pagination ?? { pageIndex: 0, pageSize: 10 },
+        };
+        isFirstChange = false;
+      }
+
+      const prev = previousState;
+      previousState = nextState;
+
+      this.stateChange.emit(nextState);
+
+      if (JSON.stringify(prev.sorting) !== JSON.stringify(nextState.sorting)) {
+        this.sortingChange.emit(nextState.sorting);
+      }
+      if (prev.globalFilter !== nextState.globalFilter) {
+        this.globalFilterChange.emit(nextState.globalFilter);
+      }
+      if (JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters)) {
+        this.columnFiltersChange.emit(nextState.columnFilters);
+      }
+      if (JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility)) {
+        this.columnVisibilityChange.emit(nextState.columnVisibility);
+      }
+      if (JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder)) {
+        this.columnOrderChange.emit(nextState.columnOrder);
+      }
+      if (JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning)) {
+        this.columnPinningChange.emit(nextState.columnPinning);
+      }
+      if (JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination)) {
+        this.paginationChange.emit(nextState.pagination);
+      }
+    });
+  }
+}
 
 interface Row {
   id: string;
@@ -87,21 +254,15 @@ const columns: ColumnDef<Row, unknown>[] = [
 ];
 
 @Component({
-  imports: [NatTable],
+  imports: [NatTable, TestTableSurface, TestPager, TestSearch],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      accessibleName="Operations table"
-      [initialState]="initialState"
+    <nat-table-surface
       [state]="state()"
-      [dataStatus]="dataStatus()"
-      [error]="error()"
-      [enableColumnReorder]="enableColumnReorder"
-      [enablePagination]="enablePagination"
+      [initialState]="initialState"
+      [mode]="mode"
       [stickyHeader]="stickyHeader"
-      [getRowId]="getRowId"
       [accessibilityText]="accessibilityText"
+      [manualPageCount]="manualPageCount"
       (stateChange)="onStateChange($event)"
       (sortingChange)="onSortingChange($event)"
       (paginationChange)="onPaginationChange($event)"
@@ -110,8 +271,23 @@ const columns: ColumnDef<Row, unknown>[] = [
       (columnVisibilityChange)="onColumnVisibilityChange($event)"
       (columnOrderChange)="onColumnOrderChange($event)"
       (columnPinningChange)="onColumnPinningChange($event)"
-      (rowActivate)="onRowActivate($event)"
-    />
+    >
+      @if (enablePagination) {
+        <test-pager />
+      }
+      @if (enableSearch) {
+        <test-search />
+      }
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        accessibleName="Operations table"
+        [getRowId]="getRowId"
+        [dataStatus]="dataStatus()"
+        [error]="error()"
+        (rowActivate)="onRowActivate($event)"
+      />
+    </nat-table-surface>
   `,
 })
 class TableHost {
@@ -133,10 +309,12 @@ class TableHost {
     },
   };
   enablePagination = false;
-  enableColumnReorder = false;
+  enableSearch = true;
   stickyHeader = true;
   accessibilityText: NatTableAccessibilityText = {};
-  readonly stateEvents: NatTableState[] = [];
+  mode: NatTableMode | NatTableModeConfiguration = 'auto';
+  manualPageCount: number | undefined = undefined;
+  readonly stateEvents: Partial<NatTableState>[] = [];
   readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
   readonly sortingEvents: NatTableState['sorting'][] = [];
   readonly paginationEvents: NatTableState['pagination'][] = [];
@@ -146,7 +324,7 @@ class TableHost {
   readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
   readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
 
-  onStateChange(state: NatTableState): void {
+  onStateChange(state: Partial<NatTableState>): void {
     this.stateEvents.push(state);
   }
 
@@ -184,7 +362,7 @@ class TableHost {
 }
 
 @Component({
-  imports: [NatTable],
+  imports: [NatTable, TestTableSurface],
   providers: [
     provideNatTableIntl({
       formatNumber: (value) => `n${value}`,
@@ -197,12 +375,9 @@ class TableHost {
     }),
   ],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      accessibleName="Provider table"
-      [accessibilityText]="accessibilityText()"
-    />
+    <nat-table-surface [accessibilityText]="accessibilityText()">
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Provider table" />
+    </nat-table-surface>
   `,
 })
 class ProviderAccessibilityHost {
@@ -212,8 +387,12 @@ class ProviderAccessibilityHost {
 }
 
 @Component({
-  imports: [NatTable],
-  template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Latency table" /> `,
+  imports: [NatTable, TestTableSurface],
+  template: `
+    <nat-table-surface>
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Latency table" />
+    </nat-table-surface>
+  `,
 })
 class AccessibleNameHost {
   readonly rows = signal<Row[]>(buildRows(2));
@@ -221,14 +400,16 @@ class AccessibleNameHost {
 }
 
 @Component({
-  imports: [NatTable],
+  imports: [NatTable, TestTableSurface],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      accessibleName="Ignored accessible name"
-      caption="Visible operations"
-    />
+    <nat-table-surface>
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        accessibleName="Ignored accessible name"
+        caption="Visible operations"
+      />
+    </nat-table-surface>
   `,
 })
 class CaptionHost {
@@ -237,40 +418,50 @@ class CaptionHost {
 }
 
 @Component({
-  imports: [NatTable, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
+  imports: [
+    NatTable,
+    TestTableSurface,
+    TestSearch,
+    NatTableLoadingTemplate,
+    NatTableEmptyTemplate,
+    NatTableErrorTemplate,
+  ],
   template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      [dataStatus]="dataStatus()"
-      [error]="error()"
-      [state]="state()"
-      accessibleName="State template table"
-      [accessibilityText]="accessibilityText"
-    >
-      <ng-template natTableLoading let-status="status" let-totalRowsValue="totalRowsValue">
-        <span class="custom-loading">{{ status }} {{ totalRowsValue }}</span>
-      </ng-template>
-
-      <ng-template natTableEmpty let-filtered="filtered" let-columns="visibleColumnsValue">
-        <span class="custom-empty">{{ filtered ? 'Filtered empty' : 'Empty' }} {{ columns }}</span>
-      </ng-template>
-
-      <ng-template
-        natTableError
-        let-error
-        let-visibleRowsValue="visibleRowsValue"
-        let-totalRowsValue="totalRowsValue"
+    <nat-table-surface [state]="state()" [accessibilityText]="accessibilityText">
+      <test-search />
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        [dataStatus]="dataStatus()"
+        [error]="error()"
+        accessibleName="State template table"
       >
-        <button
-          type="button"
-          class="custom-error"
-          [attr.data-row-counts]="visibleRowsValue + '/' + totalRowsValue"
+        <ng-template natTableLoading let-status="status" let-totalRowsValue="totalRowsValue">
+          <span class="custom-loading">{{ status }} {{ totalRowsValue }}</span>
+        </ng-template>
+
+        <ng-template natTableEmpty let-filtered="filtered" let-columns="visibleColumnsValue">
+          <span class="custom-empty"
+            >{{ filtered ? 'Filtered empty' : 'Empty' }} {{ columns }}</span
+          >
+        </ng-template>
+
+        <ng-template
+          natTableError
+          let-error
+          let-visibleRowsValue="visibleRowsValue"
+          let-totalRowsValue="totalRowsValue"
         >
-          {{ formatError(error) }}
-        </button>
-      </ng-template>
-    </nat-table>
+          <button
+            type="button"
+            class="custom-error"
+            [attr.data-row-counts]="visibleRowsValue + '/' + totalRowsValue"
+          >
+            {{ formatError(error) }}
+          </button>
+        </ng-template>
+      </nat-table>
+    </nat-table-surface>
   `,
 })
 class StateTemplatesHost {
@@ -313,22 +504,24 @@ describe('NatTable', () => {
 
   async function recreateHost(
     options: {
-      enableColumnReorder?: boolean;
       enablePagination?: boolean;
       stickyHeader?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
       state?: Partial<NatTableState>;
+      mode?: NatTableMode | NatTableModeConfiguration;
+      manualPageCount?: number;
     } = {},
   ): Promise<void> {
     fixture.destroy();
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
-    host.enableColumnReorder = options.enableColumnReorder ?? host.enableColumnReorder;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
+    host.mode = options.mode ?? host.mode;
+    host.manualPageCount = options.manualPageCount ?? host.manualPageCount;
 
     if (options.state) {
       host.state.set(options.state);
@@ -358,9 +551,11 @@ describe('NatTable', () => {
 
   it('visually hides primitive header labels while keeping accessible text', async () => {
     @Component({
-      imports: [NatTable],
+      imports: [NatTable, TestTableSurface],
       template: `
-        <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        <nat-table-surface>
+          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        </nat-table-surface>
       `,
     })
     class HiddenHeaderLabelHost {
@@ -476,12 +671,7 @@ describe('NatTable', () => {
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
   });
 
-  it('only renders reorder handles when enableColumnReorder is true', async () => {
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('.header-cell.is-reorderable')).toBeNull();
-
-    await recreateHost({ enableColumnReorder: true });
+  it('renders reorder handles on headers by default', async () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('.header-cell.is-reorderable').length).toBe(3);
@@ -503,7 +693,7 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     expect(host.stateEvents.at(-1)?.globalFilter).toBe('gamma');
-    expect(host.stateEvents.at(-1)?.pagination.pageIndex).toBe(0);
+    expect(host.stateEvents.at(-1)?.pagination?.pageIndex).toBe(0);
     expect(host.globalFilterEvents.at(-1)).toBe('gamma');
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
     expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
@@ -571,7 +761,7 @@ describe('NatTable', () => {
   });
 
   it('reorders visible center columns and emits the next column order when uncontrolled', async () => {
-    await recreateHost({ enableColumnReorder: true });
+    await recreateHost();
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
@@ -653,7 +843,6 @@ describe('NatTable', () => {
     };
     await recreateHost({
       enablePagination: true,
-      enableColumnReorder: true,
       accessibilityText,
     });
     fixture.detectChanges();
@@ -717,7 +906,9 @@ describe('NatTable', () => {
 
     expect(summary.textContent?.trim()).toBe('Provider summary n0/n0');
     expect(emptyState.textContent?.trim()).toBe('Provider empty state');
-    expect(instructions.textContent?.trim()).toBe('Provider keyboard instructions.');
+    expect(instructions.textContent?.trim()).toBe(
+      'Provider keyboard instructions. Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+    );
 
     providerHost.accessibilityText.set({
       emptyState: 'Input empty state',
@@ -733,7 +924,9 @@ describe('NatTable', () => {
 
     expect(summary.textContent?.trim()).toBe('Input summary n0');
     expect(emptyState.textContent?.trim()).toBe('Input empty state');
-    expect(instructions.textContent?.trim()).toBe('Provider keyboard instructions.');
+    expect(instructions.textContent?.trim()).toBe(
+      'Provider keyboard instructions. Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+    );
   });
 
   it('renders built-in loading and error rows as spanning table body cells', async () => {
@@ -820,6 +1013,8 @@ describe('NatTable', () => {
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.success);
     stateHost.state.set({ globalFilter: 'missing' });
     stateFixture.detectChanges();
+    await stateFixture.whenStable();
+    stateFixture.detectChanges();
 
     stateCell = stateFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
 
@@ -856,7 +1051,6 @@ describe('NatTable', () => {
 
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {
     await recreateHost({
-      enableColumnReorder: true,
       state: {
         columnOrder: ['throughput', 'name', 'region', 'status'],
       },
@@ -883,7 +1077,7 @@ describe('NatTable', () => {
   });
 
   it('keeps hidden columns in their stored order when they are shown again', async () => {
-    await recreateHost({ enableColumnReorder: true });
+    await recreateHost();
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
@@ -920,7 +1114,6 @@ describe('NatTable', () => {
 
   it('reorders pinned left and right columns within their own zones', async () => {
     await recreateHost({
-      enableColumnReorder: true,
       initialState: {
         ...host.initialState,
         columnPinning: {
@@ -950,7 +1143,6 @@ describe('NatTable', () => {
 
   it('ignores attempted cross-zone drops', async () => {
     await recreateHost({
-      enableColumnReorder: true,
       initialState: {
         ...host.initialState,
         columnPinning: {
@@ -965,6 +1157,8 @@ describe('NatTable', () => {
     const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
 
     expect(leafHeaderGroup).toBeTruthy();
+
+    host.stateEvents.length = 0;
 
     table.onHeaderDrop(createDropEvent('region', 1, 0), leafHeaderGroup!);
     fixture.detectChanges();
@@ -1004,9 +1198,11 @@ describe('NatTable', () => {
 
   it('applies optional header sizing from column meta without affecting body cells', async () => {
     @Component({
-      imports: [NatTable],
+      imports: [NatTable, TestTableSurface],
       template: `
-        <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        <nat-table-surface>
+          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        </nat-table-surface>
       `,
     })
     class HeaderSizingHost {
@@ -1059,14 +1255,11 @@ describe('NatTable', () => {
 
   it('applies fixed, maximum, and intrinsic column sizing from TanStack column definitions', async () => {
     @Component({
-      imports: [NatTable],
+      imports: [NatTable, TestTableSurface],
       template: `
-        <nat-table
-          [data]="rows()"
-          [columns]="columns"
-          [initialState]="initialState"
-          accessibleName="Operations table"
-        />
+        <nat-table-surface [initialState]="initialState">
+          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        </nat-table-surface>
       `,
     })
     class ColumnWidthHost {
@@ -1160,7 +1353,7 @@ describe('NatTable', () => {
   });
 
   it('reorders columns from the keyboard and announces the move', async () => {
-    await recreateHost({ enableColumnReorder: true });
+    await recreateHost();
     fixture.detectChanges();
 
     const regionHeader = fixture.nativeElement.querySelector(
@@ -1240,9 +1433,11 @@ describe('NatTable', () => {
   it('does not announce a visibility change when only column labels are swapped', async () => {
     const dynamicColumns = signal<ColumnDef<Row, unknown>[]>(buildDynamicColumns('Service'));
     @Component({
-      imports: [NatTable],
+      imports: [NatTable, TestTableSurface],
       template: `
-        <nat-table [data]="rows()" [columns]="columns()" accessibleName="Operations table" />
+        <nat-table-surface>
+          <nat-table [data]="rows()" [columns]="columns()" accessibleName="Operations table" />
+        </nat-table-surface>
       `,
     })
     class DynamicColumnsHost {
@@ -1355,14 +1550,16 @@ describe('NatTable', () => {
 
   it('does not emit rowActivate when activation originates from an interactive cell descendant', async () => {
     @Component({
-      imports: [NatTable],
+      imports: [NatTable, TestTableSurface],
       template: `
-        <nat-table
-          [data]="rows()"
-          [columns]="columns"
-          accessibleName="Operations table"
-          (rowActivate)="onRowActivate($event)"
-        />
+        <nat-table-surface>
+          <nat-table
+            [data]="rows()"
+            [columns]="columns"
+            accessibleName="Operations table"
+            (rowActivate)="onRowActivate($event)"
+          />
+        </nat-table-surface>
       `,
     })
     class InteractiveCellHost {
@@ -1662,6 +1859,96 @@ describe('NatTable', () => {
     fixture.detectChanges();
     tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
     expect(tableElement.classList.contains('has-sticky-header')).toBe(false);
+  });
+
+  describe('manual mode', () => {
+    it('does not paginate, sort, or filter client-side, but still tracks and emits state changes', async () => {
+      await recreateHost({
+        mode: 'manual',
+        enablePagination: true,
+        initialState: {
+          sorting: [{ id: 'throughput', desc: true }],
+          pagination: { pageIndex: 0, pageSize: 2 },
+        },
+        manualPageCount: 3,
+      });
+
+      fixture.detectChanges();
+
+      // In manual mode, all rows must be rendered since client-side pagination, sorting, and filtering are disabled.
+      const rows = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+      expect(rows.length).toBe(6);
+
+      // Verify the rendered order is the original order (Alpha first), not sorted by throughput descending
+      expect(rows[0].textContent).toContain('Alpha');
+
+      // Trigger pagination change
+      const table = getInternalTable(fixture);
+      table.patchState({
+        pagination: { pageIndex: 1, pageSize: 2 },
+      });
+      fixture.detectChanges();
+
+      // State should have updated, raising the output event
+      expect(host.paginationEvents.at(-1)).toEqual({ pageIndex: 1, pageSize: 2 });
+
+      // Rows must still not be sliced client-side
+      const rowsAfterPage = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+      expect(rowsAfterPage.length).toBe(6);
+
+      // Trigger sorting change
+      table.patchState({
+        sorting: [{ id: 'name', desc: false }],
+      });
+      fixture.detectChanges();
+
+      // State should have updated, raising the output event
+      expect(host.sortingEvents.at(-1)).toEqual([{ id: 'name', desc: false }]);
+
+      // Rows must still not be sorted client-side (Alpha first)
+      const rowsAfterSort = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+      expect(rowsAfterSort[0].textContent).toContain('Alpha');
+    });
+
+    it('supports mixed mode configuration (e.g. manual pagination, auto sorting)', async () => {
+      await recreateHost({
+        mode: {
+          pagination: 'manual',
+          sorting: 'auto',
+        },
+        enablePagination: true,
+        initialState: {
+          sorting: [{ id: 'throughput', desc: true }],
+          pagination: { pageIndex: 0, pageSize: 2 },
+        },
+        manualPageCount: 3,
+      });
+
+      fixture.detectChanges();
+
+      // In mixed mode: pagination is manual, sorting is auto.
+      // So sorting should be applied client-side (throughput desc).
+      // But pagination is manual, so data should NOT be sliced client-side (all 6 rows rendered).
+      const rows = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+      expect(rows.length).toBe(6);
+
+      // Verify the rendered order is sorted by throughput descending (Zeta has highest throughput)
+      expect(rows[0].textContent).toContain('Zeta');
+
+      // Trigger pagination change
+      const table = getInternalTable(fixture);
+      table.patchState({
+        pagination: { pageIndex: 1, pageSize: 2 },
+      });
+      fixture.detectChanges();
+
+      // State should have updated, raising the output event
+      expect(host.paginationEvents.at(-1)).toEqual({ pageIndex: 1, pageSize: 2 });
+
+      // Rows must still not be sliced client-side
+      const rowsAfterPage = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+      expect(rowsAfterPage.length).toBe(6);
+    });
   });
 });
 

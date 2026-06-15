@@ -1,4 +1,5 @@
 export { NatTable } from './lib/components/table/table';
+export { NatTableService, NAT_TABLE_UI_CONTROLLER } from './lib/components/table/table.service';
 export {
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
@@ -32,6 +33,10 @@ export type {
   NatTableSortDirection,
   NatTableSortIndicatorContext,
   NatTableStateTemplateContext,
+  NatTableMode,
+  NatTableModeConfiguration,
   NatTableState,
+  NatTableUiController,
+  NatTableUiState,
 } from './lib/components/table/table.types';
 export type * as NatTableA11y from './lib/nat-table-a11y-public';

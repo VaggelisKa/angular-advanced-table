@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
-import { withNatTableHeaderActions } from 'ng-advanced-table-ui';
+import { withNatTableHeaderActions, NatTableSurface } from 'ng-advanced-table-ui';
 
 import { NatRowActionsMenu } from '../table-showcase-page/nat-row-actions-menu';
 
@@ -304,7 +304,7 @@ const preconfiguredTableState: Partial<NatTableState> = {
 @Component({
   selector: 'app-simple-sorting-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable],
+  imports: [NatTable, NatTableSurface],
   templateUrl: './simple-sorting-page.html',
   styleUrl: './simple-sorting-page.css',
 })
