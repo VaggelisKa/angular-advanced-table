@@ -7,6 +7,7 @@ import type {
   NatTableLoadingTemplateContext,
 } from './table.types';
 
+// State slots must be templates because NatTable renders them inside its generated tbody row.
 @Directive({
   selector: 'ng-template[natTableLoading]',
 })
