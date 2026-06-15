@@ -12,7 +12,11 @@
     <div class="card">
       <h2 class="card-title">Toolbar Grid</h2>
 
-      <nat-table-surface>
+      <nat-table-surface
+        [state]="tableState()"
+        (sortingChange)="onSortingChange($event)"
+        (columnVisibilityChange)="onColumnVisibilityChange($event)"
+      >
         <nat-table-toolbar accessibleName="Products toolbar">
           <button
             type="button"
@@ -86,10 +90,7 @@
         <nat-table
           [data]="data"
           [columns]="columns"
-          [state]="tableState()"
           accessibleName="Toolbar demo table"
-          (sortingChange)="onSortingChange($event)"
-          (columnVisibilityChange)="onColumnVisibilityChange($event)"
         />
       </nat-table-surface>
     </div>
