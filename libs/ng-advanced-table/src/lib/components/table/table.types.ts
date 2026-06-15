@@ -95,6 +95,16 @@ export interface NatTableAccessibilitySummaryContext {
   paginationState: 'enabled' | 'disabled';
 }
 
+/** Single active sort entry passed to sort announcement formatters. */
+export type NatTableAccessibilitySortingAnnouncementEntry = {
+  /** TanStack column id. */
+  readonly id: string;
+  /** Resolved human-readable column label. */
+  readonly label: string;
+  /** Active sort direction for the column. */
+  readonly sortState: 'ascending' | 'descending';
+};
+
 /** Context passed to custom sort announcement formatters. */
 export interface NatTableAccessibilitySortingAnnouncementContext {
   /** Sorted column id, or `null` when sorting is cleared. */
@@ -103,6 +113,8 @@ export interface NatTableAccessibilitySortingAnnouncementContext {
   columnLabel: string | null;
   /** Active ARIA sort state for the sorted column, or `'none'` when cleared. */
   sortState: 'ascending' | 'descending' | 'none';
+  /** All active sort entries in priority order; more than one during a multi-sort. */
+  sortedColumns: readonly NatTableAccessibilitySortingAnnouncementEntry[];
 }
 
 /** Context passed to custom filtering announcement formatters. */
