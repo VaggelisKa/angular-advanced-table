@@ -51,7 +51,12 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
   },
   headerActions: {
     accessibilityLabels: {
-      sortButton: ({ label }) => `Change sorting for ${label}`,
+      // The visible priority badge is aria-hidden, so fold the ordinal into the
+      // accessible name; otherwise AT cannot tell primary from secondary sort.
+      sortButton: ({ label, sortState, sortPriority, sortCount }) =>
+        sortPriority !== null && sortCount > 1
+          ? `Change sorting for ${label}, sorted ${sortState}, ${sortPriority} of ${sortCount}`
+          : `Change sorting for ${label}`,
       menuButton: ({ label }) => `Open column actions for ${label}`,
       menuLabel: ({ label }) => `Column pinning options for ${label}`,
       pinButton: ({ label, toggleAction, pinSide }) =>
