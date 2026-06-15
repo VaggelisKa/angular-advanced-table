@@ -58,6 +58,7 @@ export function provideNatTableIntl(intl: NatTableIntlProviderConfig): Provider[
   ];
 }
 
+/** Merges table locale dictionaries, with override values taking precedence. */
 export function mergeNatTableIntl(parent: NatTableIntl, override: NatTableIntl): NatTableIntl {
   return {
     accessibilityText: mergeNatTableAccessibilityText(
@@ -68,6 +69,7 @@ export function mergeNatTableIntl(parent: NatTableIntl, override: NatTableIntl):
   };
 }
 
+/** Merges table accessibility copy and formatter callbacks field by field. */
 export function mergeNatTableAccessibilityText(
   parent?: NatTableAccessibilityText,
   override?: NatTableAccessibilityText,
@@ -88,6 +90,7 @@ export function mergeNatTableAccessibilityText(
   };
 }
 
+/** Formats generated table accessibility numbers through the configured locale formatter. */
 export function formatNatTableIntlNumber(
   intl: NatTableIntl,
   value: number,
@@ -97,6 +100,7 @@ export function formatNatTableIntlNumber(
   return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 }
 
+/** Resolves a locale dictionary, falling back to built-in English defaults. */
 export function resolveNatTableIntl(intl: NatTableIntlConfig, locale: string): NatTableIntl {
   const englishIntl = intl.locales?.[NAT_TABLE_ENGLISH_LOCALE] ?? NAT_TABLE_ENGLISH_INTL;
   const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_TABLE_ENGLISH_LOCALE ? {} : null);

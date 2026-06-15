@@ -1,10 +1,18 @@
-<div class="header-content" [class.is-align-end]="isAlignedEnd()">
+<!--
+  One ngGridCellWidget per cell, per the @angular/aria grid pattern: a cell with several
+  controls wraps them in a single complex widget instead of marking each control.
+-->
+<div
+  class="header-content"
+  ngGridCellWidget
+  widgetType="complex"
+  [class.is-align-end]="isAlignedEnd()"
+>
   <div class="header-actions-row">
     <div class="header-leading">
       @if (canSort()) {
         <button
           type="button"
-          ngGridCellWidget
           class="sort-button"
           [class.is-sorted]="!!column().getIsSorted()"
           [attr.aria-label]="getSortLabel()"
@@ -62,7 +70,6 @@
       <div class="header-controls">
         <button
             type="button"
-            ngGridCellWidget
             class="menu-button"
             ngMenuTrigger
             #menuOrigin

@@ -55,6 +55,11 @@ const showcaseExamples = [
     path: '/toolbar',
   },
   {
+    label: 'Keyboard interaction',
+    description: 'Grid cell navigation',
+    path: '/keyboard-interaction',
+  },
+  {
     label: 'Sorting with pinned columns',
     description: 'Fixed owner and total columns',
     path: '/examples/simple-sorting',

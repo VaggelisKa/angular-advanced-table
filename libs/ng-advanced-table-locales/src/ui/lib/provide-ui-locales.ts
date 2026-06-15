@@ -56,6 +56,7 @@ export function provideNatTableUiIntl(intl: NatTableUiIntlProviderConfig): Provi
   ];
 }
 
+/** Merges companion UI locale dictionaries, with override values taking precedence. */
 export function mergeNatTableUiIntl(
   parent: NatTableUiIntl | undefined,
   override: NatTableUiIntl,
@@ -101,6 +102,7 @@ export function mergeNatTableUiIntl(
   };
 }
 
+/** Formats generated companion UI numbers through the configured locale formatter. */
 export function formatNatTableUiNumber(
   intl: NatTableUiIntl,
   value: number,
@@ -110,6 +112,7 @@ export function formatNatTableUiNumber(
   return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 }
 
+/** Resolves a companion UI locale dictionary, falling back to built-in English defaults. */
 export function resolveNatTableUiIntl(intl: NatTableUiIntlConfig, locale: string): NatTableUiIntl {
   const englishIntl = intl.locales?.[NAT_TABLE_UI_ENGLISH_LOCALE] ?? NAT_TABLE_UI_ENGLISH_INTL;
   const selectedIntl =
@@ -171,6 +174,7 @@ function mergeNatTableUiLocaleIntl(
   return mergeNatTableUiIntl(parent, override ?? {});
 }
 
+/** Merges column visibility labels and formatters field by field. */
 export function mergeColumnVisibilityLabels(
   parent?: NatTableAccessibilityColumnVisibilityLabels,
   override?: NatTableAccessibilityColumnVisibilityLabels,
@@ -184,6 +188,7 @@ export function mergeColumnVisibilityLabels(
   };
 }
 
+/** Merges page-size labels and formatters field by field. */
 export function mergePageSizeLabels(
   parent?: NatTableAccessibilityPageSizeLabels,
   override?: NatTableAccessibilityPageSizeLabels,
@@ -195,6 +200,7 @@ export function mergePageSizeLabels(
   };
 }
 
+/** Merges pager labels and formatters field by field. */
 export function mergePagerLabels(
   parent?: NatTableAccessibilityPagerLabels,
   override?: NatTableAccessibilityPagerLabels,
@@ -207,6 +213,7 @@ export function mergePagerLabels(
   };
 }
 
+/** Merges horizontal scroll-control labels and formatters field by field. */
 export function mergeScrollControlLabels(
   parent?: NatTableAccessibilityScrollControlLabels,
   override?: NatTableAccessibilityScrollControlLabels,
@@ -220,6 +227,7 @@ export function mergeScrollControlLabels(
   };
 }
 
+/** Merges header action labels and formatters field by field. */
 export function mergeHeaderActionLabels(
   parent?: NatTableAccessibilityHeaderActionLabels,
   override?: NatTableAccessibilityHeaderActionLabels,
