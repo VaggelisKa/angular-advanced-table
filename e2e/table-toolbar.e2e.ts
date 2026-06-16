@@ -64,10 +64,12 @@ test('slots lay items out as start | center | end in DOM and on screen', async (
   await expectPrecedes(compactButton, shareButton);
 
   // The flex spacers sit between the slots: start | spacer | center | spacer | end.
-  await expectPrecedes(exportButton, page.locator('.nat-toolbar-spacer').first());
-  await expectPrecedes(page.locator('.nat-toolbar-spacer').first(), refreshButton);
-  await expectPrecedes(refreshButton, page.locator('.nat-toolbar-spacer').last());
-  await expectPrecedes(page.locator('.nat-toolbar-spacer').last(), compactButton);
+  // Scope to the Products toolbar — the page now has several toolbars.
+  const spacers = page.getByRole('toolbar', { name: 'Products toolbar' }).locator('.nat-toolbar-spacer');
+  await expectPrecedes(exportButton, spacers.first());
+  await expectPrecedes(spacers.first(), refreshButton);
+  await expectPrecedes(refreshButton, spacers.last());
+  await expectPrecedes(spacers.last(), compactButton);
 
   const exportBox = await exportButton.boundingBox();
   const refreshBox = await refreshButton.boundingBox();

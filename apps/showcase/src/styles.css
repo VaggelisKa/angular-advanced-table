@@ -176,6 +176,7 @@ input {
 
 .showcase-page .description {
   margin: 0;
+  padding: 10px;
   color: var(--showcase-page-text-soft);
   font-size: 0.82rem;
   line-height: 1.45;
