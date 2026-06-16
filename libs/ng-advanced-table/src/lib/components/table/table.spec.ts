@@ -23,11 +23,19 @@ import {
   type VisibilityState,
 } from '@tanstack/angular-table';
 
+import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction';
 import { NatTable } from './table';
 import { provideNatTableIntl } from './table-intl';
 import { NatTableService } from './table.service';
+import { NAT_TABLE_DATA_STATUS } from './table.types';
+import {
+  NatTableEmptyTemplate,
+  NatTableErrorTemplate,
+  NatTableLoadingTemplate,
+} from './table-state-templates';
 import type {
   NatTableAccessibilityText,
+  NatTableDataStatus,
   NatTableMode,
   NatTableModeConfiguration,
   NatTableRowActivateEvent,
@@ -275,6 +283,8 @@ const columns: ColumnDef<Row, unknown>[] = [
         [columns]="columns"
         accessibleName="Operations table"
         [getRowId]="getRowId"
+        [dataStatus]="dataStatus()"
+        [error]="error()"
         (rowActivate)="onRowActivate($event)"
       />
     </nat-table-surface>
@@ -283,6 +293,8 @@ const columns: ColumnDef<Row, unknown>[] = [
 class TableHost {
   readonly rows = signal<Row[]>(buildRows(6));
   readonly state = signal<Partial<NatTableState>>({});
+  readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  readonly error = signal<unknown>(null);
   readonly columns = columns;
   readonly getRowId = (row: Row) => row.id;
   initialState: Partial<NatTableState> = {
@@ -364,11 +376,7 @@ class TableHost {
   ],
   template: `
     <nat-table-surface [accessibilityText]="accessibilityText()">
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        accessibleName="Provider table"
-      />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Provider table" />
     </nat-table-surface>
   `,
 })
@@ -409,13 +417,83 @@ class CaptionHost {
   readonly columns = columns;
 }
 
+@Component({
+  imports: [
+    NatTable,
+    TestTableSurface,
+    TestSearch,
+    NatTableLoadingTemplate,
+    NatTableEmptyTemplate,
+    NatTableErrorTemplate,
+  ],
+  template: `
+    <nat-table-surface [state]="state()" [accessibilityText]="accessibilityText">
+      <test-search />
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        [dataStatus]="dataStatus()"
+        [error]="error()"
+        accessibleName="State template table"
+      >
+        <ng-template natTableLoading let-status="status" let-totalRowsValue="totalRowsValue">
+          <span class="custom-loading">{{ status }} {{ totalRowsValue }}</span>
+        </ng-template>
+
+        <ng-template natTableEmpty let-filtered="filtered" let-columns="visibleColumnsValue">
+          <span class="custom-empty"
+            >{{ filtered ? 'Filtered empty' : 'Empty' }} {{ columns }}</span
+          >
+        </ng-template>
+
+        <ng-template
+          natTableError
+          let-error
+          let-visibleRowsValue="visibleRowsValue"
+          let-totalRowsValue="totalRowsValue"
+        >
+          <button
+            type="button"
+            class="custom-error"
+            [attr.data-row-counts]="visibleRowsValue + '/' + totalRowsValue"
+          >
+            {{ formatError(error) }}
+          </button>
+        </ng-template>
+      </nat-table>
+    </nat-table-surface>
+  `,
+})
+class StateTemplatesHost {
+  readonly rows = signal<Row[]>([]);
+  readonly state = signal<Partial<NatTableState>>({});
+  readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  readonly error = signal<unknown>(new Error('Request failed'));
+  readonly columns = columns;
+  readonly accessibilityText: NatTableAccessibilityText = {
+    loadingState: 'Loading operations.',
+    emptyState: 'No operations.',
+    errorState: 'Operations failed.',
+  };
+
+  formatError(error: unknown): string {
+    return error instanceof Error ? error.message : 'Request failed';
+  }
+}
+
 describe('NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost, ProviderAccessibilityHost, AccessibleNameHost, CaptionHost],
+      imports: [
+        TableHost,
+        ProviderAccessibilityHost,
+        AccessibleNameHost,
+        CaptionHost,
+        StateTemplatesHost,
+      ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -849,6 +927,126 @@ describe('NatTable', () => {
     expect(instructions.textContent?.trim()).toBe(
       'Provider keyboard instructions. Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
     );
+  });
+
+  it('renders built-in loading and error rows as spanning table body cells', async () => {
+    host.rows.set([]);
+    host.accessibilityText = {
+      loadingState: 'Loading operations.',
+      errorState: 'Operations failed.',
+    };
+    host.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const loadingCell = fixture.nativeElement.querySelector(
+      '.loading-state',
+    ) as HTMLTableCellElement;
+
+    expect(table.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(loadingCell.colSpan).toBe(4);
+    expect(loadingCell.textContent?.trim()).toBe('Loading operations.');
+
+    host.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const errorCell = fixture.nativeElement.querySelector('.error-state') as HTMLTableCellElement;
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    expect(table.getAttribute('aria-busy')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(errorCell.colSpan).toBe(4);
+    expect(errorCell.textContent?.trim()).toBe('Operations failed.');
+    expect(liveRegion.textContent?.trim()).toBe('Operations failed.');
+  });
+
+  it('keeps existing rows visible during background loading while exposing aria-busy', () => {
+    fixture.detectChanges();
+
+    host.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+
+    expect(table.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelector('.loading-state')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
+  });
+
+  it('reports rendered row counts when an error state hides cached rows', async () => {
+    const stateFixture = TestBed.createComponent(StateTemplatesHost);
+    const stateHost = stateFixture.componentInstance;
+
+    stateHost.rows.set(buildRows(6));
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+    stateHost.error.set(new Error('Cached refresh failed'));
+    stateFixture.detectChanges();
+    await stateFixture.whenStable();
+    stateFixture.detectChanges();
+
+    const summary = stateFixture.nativeElement.querySelector('p[id$="-summary"]') as HTMLElement;
+    const errorCell = stateFixture.nativeElement.querySelector('.error-state') as HTMLElement;
+    const errorButton = errorCell.querySelector('.custom-error') as HTMLButtonElement;
+
+    expect(stateFixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(stateFixture.nativeElement.querySelectorAll('tbody tr.data-row').length).toBe(0);
+    expect(summary.textContent?.trim()).toBe('No rows are currently shown. 4 visible columns.');
+    expect(errorButton.dataset['rowCounts']).toBe('0/0');
+
+    stateFixture.destroy();
+  });
+
+  it('renders caller-provided state templates with table state context', async () => {
+    const stateFixture = TestBed.createComponent(StateTemplatesHost);
+    const stateHost = stateFixture.componentInstance;
+
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+    stateFixture.detectChanges();
+
+    let stateCell = stateFixture.nativeElement.querySelector('.loading-state') as HTMLElement;
+
+    expect(stateCell.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('loading 0');
+
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.success);
+    stateHost.state.set({ globalFilter: 'missing' });
+    stateFixture.detectChanges();
+    await stateFixture.whenStable();
+    stateFixture.detectChanges();
+
+    stateCell = stateFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
+
+    expect(stateCell.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Filtered empty 4');
+
+    stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+    stateHost.error.set(new Error('API unavailable'));
+    stateFixture.detectChanges();
+    await stateFixture.whenStable();
+    stateFixture.detectChanges();
+
+    stateCell = stateFixture.nativeElement.querySelector('.error-state') as HTMLElement;
+    const errorButton = stateCell.querySelector('.custom-error') as HTMLButtonElement;
+
+    expect(stateCell.textContent?.trim()).toBe('API unavailable');
+    expect(errorButton.textContent).toContain('API unavailable');
+    expect(errorButton.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+    expect(errorButton.tabIndex).toBe(-1);
+
+    stateCell.focus();
+    stateCell.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    stateFixture.detectChanges();
+
+    expect(document.activeElement).toBe(errorButton);
+
+    stateFixture.destroy();
   });
 
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {

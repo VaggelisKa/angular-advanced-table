@@ -1,5 +1,6 @@
-import { Grid, GridCell, GridRow } from '@angular/aria/grid';
+import { NgTemplateOutlet } from '@angular/common';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -7,6 +8,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   DestroyRef,
   effect,
   ElementRef,
@@ -16,6 +18,7 @@ import {
   signal,
   untracked,
   viewChild,
+  type TemplateRef,
 } from '@angular/core';
 import {
   createAngularTable,
@@ -57,6 +60,12 @@ import {
   resolveNatTableIntl,
 } from './table-intl';
 import { NatTableService } from './table.service';
+import { NatTableStateCell } from './table-state-cell.directive';
+import {
+  NatTableEmptyTemplate,
+  NatTableErrorTemplate,
+  NatTableLoadingTemplate,
+} from './table-state-templates';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
@@ -65,12 +74,19 @@ import type {
   NatTableAccessibilityPaginationAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
+  NatTableAccessibilityText,
+  NatTableBodyState,
   NatTableCellTone,
+  NatTableDataStatus,
+  NatTableEmptyTemplateContext,
+  NatTableErrorTemplateContext,
+  NatTableLoadingTemplateContext,
   NatTableRowActivateEvent,
   NatTableRowIdGetter,
   NatTableState,
   NatTableUiController,
 } from './table.types';
+import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './table.types';
 type ColumnReorderZone = 'left' | 'center' | 'right';
 interface TableColumnAccessibilityState {
   id: string;
@@ -107,6 +123,7 @@ interface TableColumnSizingState {
 }
 
 interface TableAccessibilitySnapshot {
+  dataStatus: NatTableDataStatus;
   sortingKey: string;
   globalFilter: string;
   columnFiltersKey: string;
@@ -159,7 +176,17 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   selector: 'nat-table',
   exportAs: 'natTable',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Grid, GridCell, GridRow, CdkDropList, CdkDrag, FlexRender, NatTableRowRenderEmitter],
+  imports: [
+    NgTemplateOutlet,
+    Grid,
+    GridCell,
+    GridRow,
+    CdkDropList,
+    CdkDrag,
+    FlexRender,
+    NatTableRowRenderEmitter,
+    NatTableStateCell,
+  ],
   templateUrl: './table.html',
   styleUrl: './table.css',
 })
@@ -172,6 +199,10 @@ export class NatTable<TData extends RowData = RowData> {
   readonly accessibleName = input.required<string>();
   /** Visible table caption. When present, it provides the grid's accessible name. */
   readonly caption = input<string | undefined>(undefined);
+  /** Data lifecycle status. The table renders state rows; consumers still own loading, retry, and error handling. */
+  readonly dataStatus = input<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  /** Optional error payload passed through to `natTableError` templates. */
+  readonly error = input<unknown>(null);
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData>>();
   /** Optional stable row id resolver used for selection, pinning, and events. */
@@ -263,6 +294,13 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly resolvedEmptyState = computed(
     () => this.resolvedAccessibilityText().emptyState ?? '',
   );
+  protected readonly resolvedLoadingState = computed(
+    () => this.resolvedAccessibilityText().loadingState ?? '',
+  );
+  protected readonly resolvedErrorState = computed(
+    () => this.resolvedAccessibilityText().errorState ?? '',
+  );
+  protected readonly resolvedDataStatus = computed(() => normalizeDataStatus(this.dataStatus()));
   protected readonly resolvedCaption = computed(() => this.caption()?.trim() ?? '');
   protected readonly tableAriaLabel = computed(() => {
     if (this.resolvedCaption()) {
@@ -312,6 +350,84 @@ export class NatTable<TData extends RowData = RowData> {
       .join('|'),
   );
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
+  protected readonly tableAriaBusy = computed(() =>
+    this.resolvedDataStatus() === NAT_TABLE_DATA_STATUS.loading ? 'true' : null,
+  );
+  protected readonly bodyState = computed<NatTableBodyState>(() => {
+    const dataStatus = this.resolvedDataStatus();
+
+    if (dataStatus === NAT_TABLE_DATA_STATUS.error) {
+      return NAT_TABLE_BODY_STATE.error;
+    }
+
+    if (dataStatus === NAT_TABLE_DATA_STATUS.loading && this.totalRowCount() === 0) {
+      return NAT_TABLE_BODY_STATE.loading;
+    }
+
+    return this.visibleRowCount() > 0 ? NAT_TABLE_BODY_STATE.rows : NAT_TABLE_BODY_STATE.empty;
+  });
+  private readonly renderedVisibleRowCount = computed(() =>
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 0,
+  );
+  private readonly stateTotalRowCount = computed(() => {
+    const bodyState = this.bodyState();
+
+    return bodyState === NAT_TABLE_BODY_STATE.loading || bodyState === NAT_TABLE_BODY_STATE.error
+      ? 0
+      : this.totalRowCount();
+  });
+  private readonly renderedPageIndex = computed(() =>
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.mergedState().pagination.pageIndex : 0,
+  );
+  private readonly renderedPageCount = computed(() =>
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.resolvedPageCount() : 1,
+  );
+  protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(
+    () => ({
+      ...this.getStateTemplateBaseContext(),
+      $implicit: NAT_TABLE_BODY_STATE.loading,
+      status: NAT_TABLE_BODY_STATE.loading,
+    }),
+  );
+  protected readonly emptyTemplateContext = computed<NatTableEmptyTemplateContext<TData>>(() => ({
+    ...this.getStateTemplateBaseContext(),
+    $implicit: NAT_TABLE_BODY_STATE.empty,
+    status: NAT_TABLE_BODY_STATE.empty,
+  }));
+  protected readonly errorTemplateContext = computed<NatTableErrorTemplateContext<TData>>(() => {
+    const error = this.error();
+
+    return {
+      ...this.getStateTemplateBaseContext(),
+      $implicit: error,
+      status: NAT_TABLE_BODY_STATE.error,
+      error,
+    };
+  });
+  private readonly loadingTemplate = contentChild(NatTableLoadingTemplate);
+  private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
+  private readonly errorTemplate = contentChild(NatTableErrorTemplate);
+  protected readonly loadingTemplateRef = computed<TemplateRef<
+    NatTableLoadingTemplateContext<TData>
+  > | null>(() => {
+    const templateRef = this.loadingTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatTableLoadingTemplateContext<TData>>) : null;
+  });
+  protected readonly emptyTemplateRef = computed<TemplateRef<
+    NatTableEmptyTemplateContext<TData>
+  > | null>(() => {
+    const templateRef = this.emptyTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatTableEmptyTemplateContext<TData>>) : null;
+  });
+  protected readonly errorTemplateRef = computed<TemplateRef<
+    NatTableErrorTemplateContext<TData>
+  > | null>(() => {
+    const templateRef = this.errorTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatTableErrorTemplateContext<TData>>) : null;
+  });
   protected readonly tableSummary = computed(() => this.buildTableSummary());
   protected readonly leafHeaderRowId = computed(
     () => this.table.getHeaderGroups().at(-1)?.id ?? null,
@@ -1005,13 +1121,29 @@ export class NatTable<TData extends RowData = RowData> {
     return formatter?.(summaryContext) ?? '';
   }
 
+  private getStateTemplateBaseContext(): {
+    table: Table<TData>;
+    visibleRowsValue: number;
+    totalRowsValue: number;
+    visibleColumnsValue: number;
+    filtered: boolean;
+  } {
+    return {
+      table: this.table,
+      visibleRowsValue: this.renderedVisibleRowCount(),
+      totalRowsValue: this.stateTotalRowCount(),
+      visibleColumnsValue: this.visibleColumnCount(),
+      filtered: this.isFiltered(),
+    };
+  }
+
   private getSummaryContext(): NatTableAccessibilitySummaryContext {
-    const state = this.mergedState();
-    const visibleRows = this.visibleRowCount();
-    const totalRows = this.totalRowCount();
+    const visibleRows = this.renderedVisibleRowCount();
+    const totalRows = this.stateTotalRowCount();
     const visibleColumns = this.visibleColumnCount();
-    const page = state.pagination.pageIndex + 1;
-    const pageCount = this.resolvedPageCount();
+    const pageIndex = this.renderedPageIndex();
+    const page = pageIndex + 1;
+    const pageCount = this.renderedPageCount();
 
     return {
       visibleRowsValue: visibleRows,
@@ -1020,28 +1152,37 @@ export class NatTable<TData extends RowData = RowData> {
       totalRowsText: this.formatAccessibilityNumber(totalRows),
       visibleColumnsValue: visibleColumns,
       visibleColumnsText: this.formatAccessibilityNumber(visibleColumns),
-      pageIndex: state.pagination.pageIndex,
+      pageIndex,
       pageValue: page,
       pageText: this.formatAccessibilityNumber(page),
       pageCountValue: pageCount,
       pageCountText: this.formatAccessibilityNumber(pageCount),
-      filterState:
-        state.globalFilter.trim() || state.columnFilters.length > 0 ? 'filtered' : 'unfiltered',
+      filterState: this.isFiltered() ? 'filtered' : 'unfiltered',
       paginationState: this.enablePagination() ? 'enabled' : 'disabled',
     };
+  }
+
+  private isFiltered(): boolean {
+    const state = this.mergedState();
+
+    return !!state.globalFilter.trim() || state.columnFilters.length > 0;
   }
 
   private captureAccessibilitySnapshot(): TableAccessibilitySnapshot {
     const state = this.mergedState();
 
     return {
+      dataStatus: this.resolvedDataStatus(),
       sortingKey: serializeSorting(state.sorting),
       globalFilter: state.globalFilter.trim(),
       columnFiltersKey: serializeColumnFilters(state.columnFilters),
-      pagination: state.pagination,
-      pageCount: this.resolvedPageCount(),
-      visibleRows: this.visibleRowCount(),
-      totalRows: this.totalRowCount(),
+      pagination: {
+        ...state.pagination,
+        pageIndex: this.renderedPageIndex(),
+      },
+      pageCount: this.renderedPageCount(),
+      visibleRows: this.renderedVisibleRowCount(),
+      totalRows: this.stateTotalRowCount(),
       columns: this.allLeafColumns().map((column) => ({
         id: column.id,
         label: resolveColumnLabel(column),
@@ -1054,6 +1195,10 @@ export class NatTable<TData extends RowData = RowData> {
     previous: TableAccessibilitySnapshot,
     next: TableAccessibilitySnapshot,
   ): string | null {
+    if (previous.dataStatus !== next.dataStatus) {
+      return this.describeDataStatusChange(next);
+    }
+
     if (previous.sortingKey !== next.sortingKey) {
       return this.describeSortingChange(next);
     }
@@ -1078,6 +1223,22 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     return null;
+  }
+
+  private describeDataStatusChange(snapshot: TableAccessibilitySnapshot): string {
+    if (snapshot.dataStatus === NAT_TABLE_DATA_STATUS.loading) {
+      return this.resolvedLoadingState();
+    }
+
+    if (snapshot.dataStatus === NAT_TABLE_DATA_STATUS.error) {
+      return this.resolvedErrorState();
+    }
+
+    if (snapshot.visibleRows === 0) {
+      return this.resolvedEmptyState();
+    }
+
+    return '';
   }
 
   private describeSortingChange(snapshot: TableAccessibilitySnapshot): string {
@@ -1397,6 +1558,12 @@ function normalizeColumnPinning(
     left: uniqueStringValues(leftColumnIds.filter((columnId) => validColumnIds.has(columnId))),
     right: uniqueStringValues(rightColumnIds.filter((columnId) => validColumnIds.has(columnId))),
   };
+}
+
+function normalizeDataStatus(status: NatTableDataStatus): NatTableDataStatus {
+  return status === NAT_TABLE_DATA_STATUS.loading || status === NAT_TABLE_DATA_STATUS.error
+    ? status
+    : NAT_TABLE_DATA_STATUS.success;
 }
 
 function uniqueStringValues(values: readonly string[]): string[] {

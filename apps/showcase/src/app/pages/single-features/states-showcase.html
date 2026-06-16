@@ -1,0 +1,142 @@
+<div class="showcase-page showcase-container table-states-page">
+  <header class="header-section">
+    <h1 class="title">Table States</h1>
+    <p class="description">
+      Loading, empty, and error rows stay inside the table body while callers provide the lifecycle
+      and custom UI.
+    </p>
+  </header>
+
+  <div class="grid-layout state-grid">
+    <div class="card">
+      <h2 class="card-title">Loading state</h2>
+      <nat-table-surface [accessibilityText]="loadingTableAccessibilityCopy">
+        <nat-table
+          [data]="loadingRows"
+          [columns]="columns"
+          dataStatus="loading"
+          accessibleName="Loading incidents table"
+        >
+          <ng-template natTableLoading>
+            <div class="state-template">
+              <strong>Loading incidents</strong>
+              <span>Fetching the latest incident queue.</span>
+              <span class="state-skeleton" aria-hidden="true"></span>
+            </div>
+          </ng-template>
+        </nat-table>
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Empty state</h2>
+      <nat-table-surface [accessibilityText]="emptyTableAccessibilityCopy">
+        <nat-table [data]="emptyRows" [columns]="columns" accessibleName="Empty incidents table">
+          <ng-template natTableEmpty let-filtered="filtered">
+            <div class="state-template">
+              <strong>No incidents found</strong>
+              <span>
+                {{ filtered ? 'No rows match the active filters.' : 'The queue is clear.' }}
+              </span>
+            </div>
+          </ng-template>
+        </nat-table>
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Error state</h2>
+      <nat-table-surface [accessibilityText]="errorTableAccessibilityCopy">
+        <nat-table
+          [data]="errorRows"
+          [columns]="columns"
+          [dataStatus]="errorStatus()"
+          [error]="error()"
+          accessibleName="Errored incidents table"
+        >
+          <ng-template natTableError let-error>
+            <div class="state-template state-template-error">
+              <strong>Incident queue unavailable</strong>
+              <span>{{ formatError(error) }}</span>
+              <button type="button" class="btn btn-outline" (click)="retryErrorExample()">
+                Retry
+              </button>
+            </div>
+          </ng-template>
+
+          <ng-template natTableLoading>
+            <div class="state-template">
+              <strong>Retrying incident queue</strong>
+              <span>Keeping the retry action in the container.</span>
+            </div>
+          </ng-template>
+        </nat-table>
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Transition preview</h2>
+      <div class="transition-controls">
+        <div class="btn-group" aria-label="Preview table state">
+          @for (option of transitionPreviewOptions; track option.state) {
+            <button
+              type="button"
+              class="btn-sm"
+              [class.active]="isTransitionPreviewState(option.state)"
+              [attr.aria-pressed]="isTransitionPreviewState(option.state)"
+              (click)="showTransitionPreviewState(option.state)"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
+      </div>
+      <nat-table-surface
+        class="transition-preview-surface"
+        [accessibilityText]="transitionPreviewAccessibilityCopy"
+      >
+        <nat-table
+          [data]="transitionPreviewRows()"
+          [columns]="columns"
+          [dataStatus]="transitionPreviewDataStatus()"
+          [error]="transitionPreviewError"
+          accessibleName="State transition preview table"
+        >
+          <ng-template natTableLoading>
+            <div class="state-template">
+              <strong>Loading queue</strong>
+              <span>Preparing the next incident view.</span>
+              <span class="state-skeleton" aria-hidden="true"></span>
+            </div>
+          </ng-template>
+
+          <ng-template natTableEmpty>
+            <div class="state-template">
+              <strong>No transition rows</strong>
+              <span>The selected view has no incidents.</span>
+            </div>
+          </ng-template>
+
+          <ng-template natTableError let-error>
+            <div class="state-template state-template-error">
+              <strong>Transition request failed</strong>
+              <span>{{ formatError(error) }}</span>
+            </div>
+          </ng-template>
+        </nat-table>
+      </nat-table-surface>
+    </div>
+
+    <div class="card state-reference-card">
+      <h2 class="card-title">Background refresh</h2>
+      <nat-table-surface [accessibilityText]="refreshTableAccessibilityCopy">
+        <nat-table
+          [data]="successRows"
+          [columns]="columns"
+          dataStatus="loading"
+          accessibleName="Refreshing incidents table"
+        />
+      </nat-table-surface>
+    </div>
+  </div>
+</div>

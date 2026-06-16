@@ -16,6 +16,8 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       'focuses it directly. In cells with several controls, press Enter to interact with them, ' +
       'Tab to move forward between them, Shift+Tab to move backward, and Escape to return to the cell.',
     emptyState: 'No rows match the current view.',
+    loadingState: 'Loading rows.',
+    errorState: 'Rows could not be loaded.',
     reorderKeyboardInstructions:
       'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
     tableSummary: ({

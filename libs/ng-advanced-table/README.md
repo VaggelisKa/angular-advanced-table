@@ -22,6 +22,7 @@ Use this package when you want:
 - Sticky headers and sticky pinned columns.
 - Optional `(rowRendered)` instrumentation.
 - Custom accessibility summaries and live announcements through `accessibilityText`.
+- Built-in loading, empty, and error body rows with optional custom state templates.
 
 This package does not include:
 
@@ -51,10 +52,16 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 ## Public Exports
 
 - `NatTable`
+- `NatTableLoadingTemplate`
+- `NatTableEmptyTemplate`
+- `NatTableErrorTemplate`
+- `NAT_TABLE_DATA_STATUS`
+- `NAT_TABLE_BODY_STATE`
 - `provideNatTableIntl(...)`
 - `NatTableRowRenderedEvent`
 - `NatTableAccessibilityText`
 - `NatTableA11y` (namespace of deep accessibility formatter context types)
+- `NatTableDataStatus`
 - `NatTableRowIdGetter`
 - `NatTableRowActivateEvent`
 - `NatTableState`

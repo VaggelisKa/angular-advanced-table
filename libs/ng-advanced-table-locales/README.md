@@ -44,6 +44,8 @@ export const appConfig = {
       en: {
         accessibilityText: {
           emptyState: 'No invoices match the current filters.',
+          loadingState: 'Loading invoices.',
+          errorState: 'Invoices could not be loaded.',
         },
       },
       'en-GB': {

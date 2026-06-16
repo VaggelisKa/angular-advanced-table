@@ -12,4 +12,8 @@ export type {
   NatTableAccessibilityPaginationAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
+  NatTableEmptyTemplateContext,
+  NatTableErrorTemplateContext,
+  NatTableLoadingTemplateContext,
+  NatTableStateTemplateContext,
 } from './components/table/table.types';

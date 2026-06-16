@@ -8,7 +8,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 
 | Package                     | Use it for                           | Main exports                                                                                                                                                    |
 | --------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`         | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`                                                                                                               |
+| `ng-advanced-table`         | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `NAT_TABLE_DATA_STATUS`                                                                                      |
 | `ng-advanced-table-ui`      | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
 | `ng-advanced-table-utils`   | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
 | `ng-advanced-table-locales` | Built-in locale registry             | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                              |
@@ -199,7 +199,7 @@ export class ServiceTableComponent {
 Core exports:
 
 - Component: `NatTable`
-- Common types: `NatTableState`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Common constants and types: `NAT_TABLE_DATA_STATUS`, `NAT_TABLE_BODY_STATE`, `NatTableState`, `NatTableDataStatus`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
@@ -212,7 +212,9 @@ Core exports:
 | `columns`             | required    | TanStack `ColumnDef<TData>[]`                                                                                      |
 | `accessibleName`      | required    | Accessible name for the grid when no visible `caption` is rendered                                                 |
 | `caption`             | `undefined` | Visible table caption; when present, it provides the grid's accessible name                                        |
-| `accessibilityText`   | `{}`        | Overrides for description, keyboard instructions, empty-state copy, and announcements                              |
+| `accessibilityText`   | `{}`        | Overrides for description, keyboard instructions, state-row copy, and announcements                                |
+| `dataStatus`          | `'success'` | Data lifecycle status: `'loading'`, `'error'`, or `'success'`                                                      |
+| `error`               | `null`      | Optional error payload passed to `natTableError` templates                                                         |
 | `enableGlobalFilter`  | `true`      | Enables the global filter pipeline                                                                                 |
 | `enableColumnPinning` | `true`      | Enables sticky pinning where columns allow it                                                                      |
 | `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering                                                                          |
@@ -375,6 +377,55 @@ Pinned column offsets are based on measured header widths after layout. Before a
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
 
+### Loading, empty, and error states
+
+`NatTable` owns the body-row structure for data lifecycle states, while consumers own fetching, retrying, and error classification. Pass `dataStatus="loading"` while initial data is unavailable or while retrying, `dataStatus="error"` when the table should show an error row, and keep the default `'success'` state after a successful request. Successful requests with no rows derive the empty body row. Loading with existing rows keeps those rows visible and sets `aria-busy="true"` for background refreshes.
+
+The built-in state rows render as one body row with a single grid cell spanning all visible columns. Customize the content with template directives:
+
+```ts
+import {
+  NAT_TABLE_DATA_STATUS,
+  NatTable,
+  NatTableEmptyTemplate,
+  NatTableErrorTemplate,
+  NatTableLoadingTemplate,
+  type NatTableDataStatus,
+} from 'ng-advanced-table';
+
+@Component({
+  imports: [NatTable, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
+  template: `
+    <nat-table
+      [data]="rows()"
+      [columns]="columns"
+      [dataStatus]="dataStatus()"
+      [error]="loadError()"
+      accessibleName="Orders"
+    >
+      <ng-template natTableLoading>
+        <app-table-skeleton />
+      </ng-template>
+
+      <ng-template natTableEmpty let-filtered="filtered">
+        <app-empty-orders [filtered]="filtered" />
+      </ng-template>
+
+      <ng-template natTableError let-error>
+        <app-table-error [error]="error" (retry)="reload()" />
+      </ng-template>
+    </nat-table>
+  `,
+})
+export class OrdersTable {
+  readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.loading);
+}
+```
+
+Focusable controls inside `natTableLoading`, `natTableEmpty`, and `natTableError` templates are managed by `NatTable`; use normal buttons, links, and inputs. `ngGridCellWidget` is still needed for custom interactive controls rendered in ordinary data or header cells.
+
+State rows use a short keyframe enter animation by default and respect `prefers-reduced-motion`. Override the motion with `--nat-table-state-transition-duration`, `--nat-table-state-transition-timing`, `--nat-table-state-transition-distance`, and `--nat-table-state-transition-opacity-from`, or set `--nat-table-state-transition-duration: 0ms` to disable visible motion.
+
 ## Accessibility and Internationalization
 
 Accessible copy is split by ownership. Set table-specific copy such as `accessibleName`, `caption`, descriptions, and stable `columnDef.meta.label` values on the table or columns. Generated table copy has built-in English defaults and can be configured once with `provideNatTableLocales()` from `ng-advanced-table-locales`; UI and utils labels opt in through their companion locale entry points.
@@ -386,6 +437,8 @@ See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent che
 - `description` — supplemental description announced through `aria-describedby`
 - `keyboardInstructions` — screen-reader instructions for grid navigation
 - `emptyState` — visible message rendered when the current view contains no rows
+- `loadingState` — visible message rendered while initial rows are loading
+- `errorState` — visible message rendered when `dataStatus` is `'error'`
 - `reorderKeyboardInstructions` — extra reorder instructions when reordering is enabled
 - `tableSummary(...)`
 - `sortingChange(...)`
@@ -401,6 +454,8 @@ import type { NatTableAccessibilityText } from 'ng-advanced-table';
 readonly accessibilityText: NatTableAccessibilityText = {
   description: 'Sortable table of open positions, with sticky symbol column.',
   emptyState: 'No positions match the current filters.',
+  loadingState: 'Loading positions.',
+  errorState: 'Positions could not be loaded.',
   reorderKeyboardInstructions: 'Use Alt+Shift+Arrow keys to move columns.',
   tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
     `${visibleRowsText} of ${totalRowsText} rows visible. Page ${pageText} of ${pageCountText}.`,
@@ -409,7 +464,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
 };
 ```
 
-`description`, `keyboardInstructions`, and `emptyState` accept any string (set them to `''` to suppress the description or keyboard instructions). Generated table copy has English defaults and can be localized through `provideNatTableLocales()` plus `<nat-table [locale]="localeId()">`. Formatter contexts expose locale-formatted numbers and semantic state labels. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
+`description`, `keyboardInstructions`, `emptyState`, `loadingState`, and `errorState` accept any string (set `description` or `keyboardInstructions` to `''` to suppress them). Generated table copy has English defaults and can be localized through `provideNatTableLocales()` plus `<nat-table [locale]="localeId()">`. Formatter contexts expose locale-formatted numbers and semantic state labels. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
 
 ## Custom Cell Components
 

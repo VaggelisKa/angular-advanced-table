@@ -65,13 +65,80 @@ export interface NatTableRowActivateEvent<TData extends RowData = RowData> {
   originalEvent: MouseEvent | KeyboardEvent;
 }
 
+/** Data lifecycle state rendered by `<nat-table>` when rows are unavailable. */
+export type NatTableDataStatus = 'loading' | 'error' | 'success';
+
+/** Named data lifecycle states accepted by `<nat-table>`. */
+export const NAT_TABLE_DATA_STATUS = {
+  loading: 'loading',
+  error: 'error',
+  success: 'success',
+} as const satisfies Record<NatTableDataStatus, NatTableDataStatus>;
+
+/** State row currently rendered in the table body. */
+export type NatTableBodyState = 'rows' | 'loading' | 'empty' | 'error';
+
+/** Named state rows rendered in the table body. */
+export const NAT_TABLE_BODY_STATE = {
+  rows: 'rows',
+  loading: 'loading',
+  empty: 'empty',
+  error: 'error',
+} as const satisfies Record<NatTableBodyState, NatTableBodyState>;
+
+/** Shared context passed to custom table body state templates. */
+export interface NatTableStateTemplateContext<TData extends RowData = RowData> {
+  /** TanStack table instance for advanced reads. */
+  table: Table<TData>;
+  /** Rows currently rendered in the body. */
+  visibleRowsValue: number;
+  /** Total rows represented by the current body state before filtering/pagination. */
+  totalRowsValue: number;
+  /** Visible leaf columns in the current view. */
+  visibleColumnsValue: number;
+  /** Whether the current view is filtered by global or column filters. */
+  filtered: boolean;
+}
+
+/** Context passed to `ng-template[natTableLoading]`. */
+export interface NatTableLoadingTemplateContext<
+  TData extends RowData = RowData,
+> extends NatTableStateTemplateContext<TData> {
+  /** Alias for `status`, useful for `let-status` style template bindings. */
+  $implicit: typeof NAT_TABLE_BODY_STATE.loading;
+  /** Current state row status. */
+  status: typeof NAT_TABLE_BODY_STATE.loading;
+}
+
+/** Context passed to `ng-template[natTableEmpty]`. */
+export interface NatTableEmptyTemplateContext<
+  TData extends RowData = RowData,
+> extends NatTableStateTemplateContext<TData> {
+  /** Alias for `status`, useful for `let-status` style template bindings. */
+  $implicit: typeof NAT_TABLE_BODY_STATE.empty;
+  /** Current state row status. */
+  status: typeof NAT_TABLE_BODY_STATE.empty;
+}
+
+/** Context passed to `ng-template[natTableError]`. */
+export interface NatTableErrorTemplateContext<
+  TData extends RowData = RowData,
+> extends NatTableStateTemplateContext<TData> {
+  /** Alias for `error`, useful for `let-error` style template bindings. */
+  $implicit: unknown;
+  /** Current state row status. */
+  status: typeof NAT_TABLE_BODY_STATE.error;
+  /** Consumer-supplied error payload. */
+  error: unknown;
+}
+
 /** Context passed to custom table summary formatters. */
 export interface NatTableAccessibilitySummaryContext {
   /** Rows currently rendered in the body. */
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
-  /** Total rows supplied to the table before filtering/pagination. */
+  /** Total rows represented by the current body state before filtering/pagination. */
   totalRowsValue: number;
   /** Provider-formatted text for `totalRowsValue`. */
   totalRowsText: string;
@@ -115,7 +182,7 @@ export interface NatTableAccessibilityFilteringAnnouncementContext {
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
-  /** Total rows supplied to the table before filtering. */
+  /** Total rows represented by the current body state before filtering. */
   totalRowsValue: number;
   /** Provider-formatted text for `totalRowsValue`. */
   totalRowsText: string;
@@ -203,6 +270,16 @@ export interface NatTableAccessibilityText {
    * rows. Falls back to a built-in English default when omitted.
    */
   emptyState?: string;
+  /**
+   * Visible message rendered in the body while initial rows are loading.
+   * Falls back to a built-in English default when omitted.
+   */
+  loadingState?: string;
+  /**
+   * Visible message rendered in the body when the table is in an error state.
+   * Falls back to a built-in English default when omitted.
+   */
+  errorState?: string;
   /** Extra reorder instructions appended when column reordering is enabled. */
   reorderKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */

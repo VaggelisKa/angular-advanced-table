@@ -19,6 +19,7 @@ export const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
   '[role="button"], [role="link"], [role="checkbox"], [role="menuitem"], ' +
   '[role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="switch"], ' +
   '[role="combobox"], [role="textbox"], [role="searchbox"]';
+export const NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE = 'data-nat-table-managed-cell-widget';
 
 const GRID_CELL_SELECTOR = '[role="gridcell"], [role="columnheader"], [role="rowheader"]';
 
@@ -194,5 +195,7 @@ const cellInteractiveControls = (cell: HTMLElement): HTMLElement[] =>
  */
 const isReachableControl = (element: HTMLElement): boolean =>
   !element.hasAttribute('disabled') &&
-  (element.tabIndex >= 0 || element.hasAttribute('ngGridCellWidget')) &&
+  (element.tabIndex >= 0 ||
+    element.hasAttribute('ngGridCellWidget') ||
+    element.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) &&
   !element.closest('[hidden], [inert], [aria-hidden="true"]');

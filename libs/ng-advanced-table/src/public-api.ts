@@ -1,11 +1,17 @@
 export { NatTable } from './lib/components/table/table';
 export { NatTableService, NAT_TABLE_UI_CONTROLLER } from './lib/components/table/table.service';
 export {
+  NatTableEmptyTemplate,
+  NatTableErrorTemplate,
+  NatTableLoadingTemplate,
+} from './lib/components/table/table-state-templates';
+export {
   NAT_TABLE_ENGLISH_INTL,
   NAT_TABLE_DEFAULT_INTL,
   NAT_TABLE_INTL,
   provideNatTableIntl,
 } from './lib/components/table/table-intl';
+export { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './lib/components/table/table.types';
 export type { NatTableRowRenderedEvent } from './lib/components/table/events';
 export type {
   NatTableIntl,
@@ -15,12 +21,18 @@ export type {
 } from './lib/components/table/table-intl';
 export type {
   NatTableAccessibilityText,
+  NatTableBodyState,
   NatTableCellTone,
   NatTableColumnMeta,
+  NatTableDataStatus,
+  NatTableEmptyTemplateContext,
+  NatTableErrorTemplateContext,
+  NatTableLoadingTemplateContext,
   NatTableRowActivateEvent,
   NatTableRowIdGetter,
   NatTableSortDirection,
   NatTableSortIndicatorContext,
+  NatTableStateTemplateContext,
   NatTableMode,
   NatTableModeConfiguration,
   NatTableState,

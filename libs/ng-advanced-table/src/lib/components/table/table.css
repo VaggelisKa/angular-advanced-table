@@ -10,8 +10,7 @@
   overflow-y: var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
   max-height: var(--nat-table-max-height, inherit);
   height: var(--nat-table-height, inherit);
-  border: 1px solid
-    var(--nat-table-region-border-color, color-mix(in srgb, currentColor 12%, transparent));
+  border: 1px solid var(--nat-table-region-border-color, rgba(128, 128, 128, 0.24));
   border-radius: var(--nat-table-radius-region, 16px);
   background: var(--nat-table-region-background, transparent);
 }
@@ -31,8 +30,7 @@
 .data-cell {
   box-sizing: border-box;
   padding: var(--nat-table-space-cell-y, 0) var(--nat-table-space-cell-x, 0);
-  border-bottom: 1px solid
-    var(--nat-table-cell-border-color, color-mix(in srgb, currentColor 12%, transparent));
+  border-bottom: 1px solid var(--nat-table-cell-border-color, rgba(128, 128, 128, 0.24));
   text-align: start;
   white-space: nowrap;
 }
@@ -44,17 +42,13 @@
 }
 
 .header-cell {
-  background: var(
-    --nat-table-header-background,
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
-  );
+  background: var(--nat-table-header-background, #f6f8fa);
   color: var(--nat-table-header-color, inherit);
   font-size: var(--nat-table-font-size-header, 0.84rem);
   font-weight: 600;
   letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
   text-transform: var(--nat-table-text-transform-header, uppercase);
-  border-bottom: 1px solid
-    var(--nat-table-header-border-color, color-mix(in srgb, currentColor 16%, transparent));
+  border-bottom: 1px solid var(--nat-table-header-border-color, rgba(128, 128, 128, 0.3));
 }
 
 .header-cell-content {
@@ -101,30 +95,18 @@
 .header-cell.cdk-drag-preview {
   display: table-cell;
   z-index: 12;
-  background: var(
-    --nat-table-header-background,
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
-  );
+  background: var(--nat-table-header-background, #f6f8fa);
   color: var(--nat-table-header-color, inherit);
-  border-bottom-color: var(
-    --nat-table-header-border-color,
-    color-mix(in srgb, currentColor 16%, transparent)
-  );
+  border-bottom-color: var(--nat-table-header-border-color, rgba(128, 128, 128, 0.3));
   opacity: 0.98;
   box-shadow:
-    0 14px 30px color-mix(in srgb, currentColor 16%, transparent),
-    0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+    0 14px 30px rgba(15, 23, 42, 0.16),
+    0 0 0 1px rgba(128, 128, 128, 0.3);
 }
 
 .header-cell.is-pinned-left.cdk-drag-preview,
 .header-cell.is-pinned-right.cdk-drag-preview {
-  background: var(
-    --nat-table-pinned-background,
-    var(
-      --nat-table-header-background,
-      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
-    )
-  );
+  background: var(--nat-table-pinned-background, var(--nat-table-header-background, #f6f8fa));
 }
 
 .header-cell.cdk-drag-placeholder {
@@ -145,34 +127,22 @@
 }
 
 .data-row:has(:focus-visible) {
-  background: var(
-    --nat-table-row-background-focus,
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 88%, currentColor 12%)
-  );
+  background: var(--nat-table-row-background-focus, rgba(128, 128, 128, 0.12));
 }
 
 .data-row:has(:focus-visible) .is-pinned-left,
 .data-row:has(:focus-visible) .is-pinned-right {
-  background: var(
-    --nat-table-row-background-focus-pinned,
-    color-mix(in srgb, var(--nat-table-pinned-background, canvas) 84%, currentColor 16%)
-  );
+  background: var(--nat-table-row-background-focus-pinned, rgba(128, 128, 128, 0.16));
 }
 
 @media (hover: hover) and (pointer: fine) {
   .data-row:hover {
-    background: var(
-      --nat-table-row-background-hover,
-      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
-    );
+    background: var(--nat-table-row-background-hover, rgba(128, 128, 128, 0.08));
   }
 
   .data-row:hover .is-pinned-left,
   .data-row:hover .is-pinned-right {
-    background: var(
-      --nat-table-row-background-hover-pinned,
-      color-mix(in srgb, var(--nat-table-pinned-background, canvas) 88%, currentColor 12%)
-    );
+    background: var(--nat-table-row-background-hover-pinned, rgba(128, 128, 128, 0.12));
   }
 }
 
@@ -196,13 +166,7 @@
 .is-pinned-right {
   position: sticky;
   z-index: 5;
-  background: var(
-    --nat-table-pinned-background,
-    var(
-      --nat-table-header-background,
-      color-mix(in srgb, var(--nat-table-region-background, canvas) 92%, currentColor 8%)
-    )
-  );
+  background: var(--nat-table-pinned-background, var(--nat-table-header-background, #f6f8fa));
 }
 
 .has-sticky-header .header-cell.is-pinned-left,
@@ -214,13 +178,11 @@
 }
 
 .has-pinned-edge-left {
-  box-shadow: inset -1px 0 0
-    var(--nat-table-pinned-divider-color, color-mix(in srgb, currentColor 18%, transparent));
+  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color, rgba(128, 128, 128, 0.34));
 }
 
 .has-pinned-edge-right {
-  box-shadow: inset 1px 0 0
-    var(--nat-table-pinned-divider-color, color-mix(in srgb, currentColor 18%, transparent));
+  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color, rgba(128, 128, 128, 0.34));
 }
 
 .header-cell.is-align-end,
@@ -245,15 +207,44 @@
 }
 
 .data-cell[data-tone='neutral'] {
-  color: var(--nat-table-cell-color-neutral, color-mix(in srgb, currentColor 72%, transparent));
+  color: var(--nat-table-cell-color-neutral, #5b6672);
 }
 
-.empty-state {
+.table-state {
   padding: var(--nat-table-space-empty-state, 40px 24px);
   text-align: center;
-  color: var(--nat-table-empty-state-color, color-mix(in srgb, currentColor 72%, transparent));
+  color: var(--nat-table-empty-state-color, #5b6672);
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
+  white-space: normal;
+  animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms)
+    var(--nat-table-state-transition-timing, ease-out) both;
+}
+
+.loading-state {
+  color: var(--nat-table-loading-state-color, var(--nat-table-empty-state-color, #5b6672));
+}
+
+.error-state {
+  color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, #d1242f));
+}
+
+@keyframes nat-table-state-enter {
+  from {
+    opacity: var(--nat-table-state-transition-opacity-from, 0);
+    transform: translateY(var(--nat-table-state-transition-distance, 2px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table-state {
+    animation: none;
+  }
 }
 
 [ngGridCell]:focus-visible {

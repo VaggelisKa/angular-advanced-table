@@ -33,6 +33,12 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - It MUST pass all AXE checks.
 - It MUST follow all WCAG AA minimums, including focus management, color contrast, and ARIA attributes.
 
+## Browser Compatibility
+
+- The project must support Safari 16.
+- Before using newer browser APIs, CSS features, or Angular/browser platform features, verify compatibility with Safari 16 and provide a compatible fallback or choose an older-supported approach.
+- Be especially cautious with recently introduced CSS APIs such as `@starting-style`, View Transitions, newer selectors, and animation features.
+
 ### Components
 
 - Keep components small and focused on a single responsibility
