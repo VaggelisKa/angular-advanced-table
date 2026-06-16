@@ -48,7 +48,6 @@
 @media (min-width: 768px) {
   .simple-table {
     --nat-table-space-cell-y: 12px;
-    --nat-table-space-cell-x: 16px;
     --nat-table-space-header-content-gap: 12px;
   }
 }
