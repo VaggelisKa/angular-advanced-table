@@ -99,7 +99,11 @@
           @if (withGlobalFilter() || showColumnVisibility()) {
             <nat-table-toolbar accessibleName="Table controls">
               @if (withGlobalFilter()) {
-                <nat-table-search label="Search rows" placeholder="Try 'Alpha' or 'Security'..." />
+                <app-table-search
+                  align-left
+                  label="Search rows"
+                  placeholder="Try 'Alpha' or 'Security'..."
+                />
               }
 
               @if (showColumnVisibility()) {

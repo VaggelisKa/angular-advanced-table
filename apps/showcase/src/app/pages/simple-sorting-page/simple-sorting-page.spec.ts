@@ -38,7 +38,7 @@ describe('SimpleSortingPage', () => {
     expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Channel');
     expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Items');
     expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Updated');
-    expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('app-table-search')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.column-chip')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.pager')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();

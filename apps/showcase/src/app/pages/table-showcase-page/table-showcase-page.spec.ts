@@ -93,7 +93,9 @@ describe('TableShowcasePage', () => {
   it('should keep search working end to end without rendering column visibility chips', () => {
     fixture.detectChanges();
 
-    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
+    const searchInput = fixture.nativeElement.querySelector(
+      'app-table-search input',
+    ) as HTMLInputElement;
 
     searchInput.value = 'eqt-00001';
     searchInput.dispatchEvent(new Event('input'));
@@ -220,7 +222,7 @@ describe('TableShowcasePage', () => {
     expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar').length).toBe(
       2,
     );
-    expect(fixture.nativeElement.querySelector('.search-input')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-table-search')).toBeTruthy();
     expect(
       fixture.nativeElement.querySelector(
         'nat-table-toolbar nat-table-pagination[natToolbarItemPosition="end"]',
