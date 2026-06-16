@@ -2,9 +2,22 @@
   display: block;
 }
 
-.simple-table {
+.simple-sorting-page {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.simple-sorting-page nat-table-surface {
   display: block;
   width: min(1180px, 100%);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.simple-table {
+  display: block;
+  width: 100%;
   min-width: 0;
   --text: var(--showcase-page-text);
   --text-soft: var(--showcase-page-text-soft);
