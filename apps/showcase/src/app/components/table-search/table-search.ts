@@ -28,8 +28,8 @@ let nextSearchFieldId = 0;
   styleUrl: './table-search.css',
 })
 export class TableSearch<TData extends RowData = RowData> {
-  public readonly label = input<string>('');
-  public readonly placeholder = input<string>('');
+  public readonly label = input('Search table');
+  public readonly placeholder = input('Type to search...');
 
   public readonly toolbar = input(false, { transform: booleanAttribute });
 
