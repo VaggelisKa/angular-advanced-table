@@ -12,6 +12,10 @@ export class ShowcaseThemeStore {
 
   readonly theme = this.themeState.asReadonly();
 
+  constructor() {
+    applyThemeToDocument(this.themeState());
+  }
+
   setTheme(theme: ShowcaseTheme): void {
     this.themeState.set(theme);
     persistTheme(theme);
