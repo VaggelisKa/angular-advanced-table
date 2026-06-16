@@ -112,6 +112,8 @@ interface TableColumnRenderState {
   headerMinWidth: string | null;
   headerMaxWidth: string | null;
   headerConstrainedWidth: boolean;
+  cellHeight: string | null;
+  cellMaxLines: string | null;
   ariaSort: 'ascending' | 'descending' | null;
   rowHeader: boolean;
 }
@@ -143,6 +145,7 @@ const DEFAULT_PAGINATION: PaginationState = {
   pageSize: 10,
 };
 const DEFAULT_COLUMN_ORDER: ColumnOrderState = [];
+const DEFAULT_CELL_MAX_LINES = 2;
 const DEFAULT_TABLE_STATE: NatTableState = {
   sorting: [],
   globalFilter: '',
@@ -579,6 +582,8 @@ export class NatTable<TData extends RowData = RowData> {
           : headerWidth !== null
             ? headerWidth
             : null;
+      const cellHeight =
+        meta?.cellHeight !== undefined ? normalizeColumnDimension(meta.cellHeight) : null;
 
       result[column.id] = {
         label,
@@ -598,6 +603,8 @@ export class NatTable<TData extends RowData = RowData> {
         headerMinWidth,
         headerMaxWidth,
         headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
+        cellHeight,
+        cellMaxLines: normalizeCellMaxLines(meta?.cellMaxLines),
         ariaSort: sortEntry ? (sortEntry.desc ? 'descending' : 'ascending') : null,
         rowHeader: !!meta?.rowHeader,
       };
@@ -1656,6 +1663,20 @@ function normalizeColumnDimension(value: number | string | undefined): string | 
   }
 
   return null;
+}
+
+function normalizeCellMaxLines(value: number | 'none' | undefined): string | null {
+  if (value === 'none') {
+    return null;
+  }
+
+  if (value === undefined) {
+    return String(DEFAULT_CELL_MAX_LINES);
+  }
+
+  return Number.isFinite(value) && value >= 1
+    ? String(Math.floor(value))
+    : String(DEFAULT_CELL_MAX_LINES);
 }
 
 function getNumericColumnWidth(value: number | string | undefined): number | null {

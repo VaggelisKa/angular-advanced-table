@@ -50,6 +50,8 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   align?: 'start' | 'end';
   rowHeader?: boolean;
   cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
+  cellHeight?: number | string;
+  cellMaxLines?: number | 'none';
   headerSize?: number | string;
   headerMinSize?: number | string;
   headerMaxSize?: number | string;

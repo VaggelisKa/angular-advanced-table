@@ -104,13 +104,18 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'company',
     header: 'Company',
-    size: 96,
-    minSize: 80,
-    meta: { label: 'Company' },
+    size: 180,
+    minSize: 160,
+    meta: {
+      label: 'Company',
+      cellHeight: 72,
+      cellMaxLines: 2,
+    },
     enablePinning: true,
     sortingFn: (left, right) =>
       compareSortKeys(left.original.companySortKey, right.original.companySortKey),
-    cell: (info) => info.getValue<string>(),
+    cell: (info) =>
+      `${info.getValue<string>()} liquidity review with multi-venue routing notes for ${info.row.original.symbol}`,
   },
   {
     accessorKey: 'exchange',

@@ -33,12 +33,16 @@ describe('ng-advanced-table public table contracts', () => {
     const meta: NatTableColumnMeta<ContractRow, number> = {
       hiddenHeaderLabel: 'Amount',
       align: 'end',
+      cellHeight: 48,
+      cellMaxLines: 3,
       headerSize: 120,
       cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
     };
 
     expect(stateKey).toBe('pagination');
     expect(meta.hiddenHeaderLabel).toBe('Amount');
+    expect(meta.cellHeight).toBe(48);
+    expect(meta.cellMaxLines).toBe(3);
     expect(meta.headerSize).toBe(120);
     expect(meta.cellTone).toEqual(expect.any(Function));
   });

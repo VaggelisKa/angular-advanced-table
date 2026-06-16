@@ -33,6 +33,8 @@ describe('ng-advanced-table-ui public table contracts', () => {
         hiddenHeaderLabel: 'Amount',
         align: 'end',
         rowHeader: true,
+        cellHeight: 52,
+        cellMaxLines: 'none',
         headerSize: 120,
         headerMinSize: '8rem',
         headerMaxSize: 180,
@@ -41,6 +43,8 @@ describe('ng-advanced-table-ui public table contracts', () => {
     };
 
     expect(column.meta?.hiddenHeaderLabel).toBe('Amount');
+    expect(column.meta?.cellHeight).toBe(52);
+    expect(column.meta?.cellMaxLines).toBe('none');
     expect(column.meta?.headerSize).toBe(120);
     expect(column.meta?.headerMinSize).toBe('8rem');
     expect(column.meta?.headerMaxSize).toBe(180);
