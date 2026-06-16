@@ -31,6 +31,7 @@ export class NatTableService<TData extends RowData = RowData> {
   readonly manualPageCount = signal<number | undefined>(undefined);
   readonly enableAnnouncements = signal(true);
   readonly stickyHeader = signal(true);
+  readonly enableMultiSort = signal(false);
   readonly locale = signal<string | undefined>(undefined);
   readonly accessibilityText = signal<NatTableAccessibilityText>({});
 

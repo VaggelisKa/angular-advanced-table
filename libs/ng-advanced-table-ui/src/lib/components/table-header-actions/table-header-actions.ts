@@ -164,13 +164,29 @@ export class NatTableHeaderActions {
     column.pin(this.isPinned(side) ? false : side);
   }
 
+  protected onSortClick(event: MouseEvent): void {
+    this.column().toggleSorting(undefined, event.shiftKey);
+  }
+
+  protected sortPriority(): number | null {
+    if (this.context().table.getState().sorting.length <= 1) return null;
+
+    const index = this.column().getSortIndex();
+
+    return index >= 0 ? index + 1 : null;
+  }
+
   protected getSortLabel(): string {
     const labels = this.resolveAccessibilityLabels();
+    const sortPriority = this.sortPriority();
+    const sortCount = this.context().table.getState().sorting.length;
 
     return (
       labels.sortButton?.({
         label: this.label(),
         sortState: this.ariaSort(),
+        sortPriority,
+        sortCount,
       }) ?? ''
     );
   }

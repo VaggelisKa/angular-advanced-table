@@ -231,6 +231,7 @@ export class NatTable<TData extends RowData = RowData> {
     this.natTableService.enableAnnouncements(),
   );
   protected readonly stickyHeader = computed(() => this.natTableService.stickyHeader());
+  protected readonly enableMultiSort = computed(() => this.natTableService.enableMultiSort());
   protected readonly locale = computed(() => this.natTableService.locale());
   protected readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
 
@@ -325,7 +326,10 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
   protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   protected readonly mergedState = computed<NatTableState>(() => ({
-    sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting()),
+    sorting: normalizeSortingState(
+      this.state().sorting ?? this.internalSorting(),
+      this.enableMultiSort(),
+    ),
     globalFilter: this.enableGlobalFilter()
       ? (this.state().globalFilter ?? this.internalGlobalFilter())
       : '',
@@ -453,8 +457,9 @@ export class NatTable<TData extends RowData = RowData> {
     manualPagination: this.manualPagination(),
     manualSorting: this.manualSorting(),
     manualFiltering: this.manualFiltering(),
-    enableMultiSort: false,
-    isMultiSortEvent: () => false,
+    enableMultiSort: this.enableMultiSort(),
+    isMultiSortEvent: (event) =>
+      this.enableMultiSort() && (event as { shiftKey?: boolean })?.shiftKey === true,
     enableColumnPinning: true,
     enableColumnOrdering: true,
     meta: {
@@ -514,6 +519,7 @@ export class NatTable<TData extends RowData = RowData> {
     const widths = this.resolvedColumnWidths();
     const userColumnSizing = this.userColumnSizing();
     const state = this.mergedState();
+    const primarySortColumnId = state.sorting[0]?.id ?? null;
     const visibleColumnsById = new Map(
       visibleColumns.map((column) => [column.id, column] as const),
     );
@@ -562,7 +568,10 @@ export class NatTable<TData extends RowData = RowData> {
       const pinnedLeft = leftPinnedIds.has(column.id);
       const pinnedRight = rightPinnedIds.has(column.id);
 
-      const sortEntry = state.sorting.find((entry) => entry.id === column.id);
+      const primarySortEntry =
+        primarySortColumnId === column.id
+          ? state.sorting.find((entry) => entry.id === column.id) ?? null
+          : null;
       const meta = column.columnDef.meta;
       const label = resolveColumnLabel(column);
       const headerWidth =
@@ -598,7 +607,9 @@ export class NatTable<TData extends RowData = RowData> {
         headerMinWidth,
         headerMaxWidth,
         headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
-        ariaSort: sortEntry ? (sortEntry.desc ? 'descending' : 'ascending') : null,
+        ariaSort: primarySortEntry
+          ? (primarySortEntry.desc ? 'descending' : 'ascending')
+          : null,
         rowHeader: !!meta?.rowHeader,
       };
     }
@@ -617,7 +628,10 @@ export class NatTable<TData extends RowData = RowData> {
       const initialState = this.initialState();
 
       this.internalSorting.set(
-        normalizeSortingState(initialState.sorting ?? DEFAULT_TABLE_STATE.sorting),
+        normalizeSortingState(
+          initialState.sorting ?? DEFAULT_TABLE_STATE.sorting,
+          this.enableMultiSort(),
+        ),
       );
       this.internalGlobalFilter.set(
         this.enableGlobalFilter()
@@ -861,7 +875,10 @@ export class NatTable<TData extends RowData = RowData> {
   ): void {
     const currentState = this.mergedState();
     const nextState: NatTableState = {
-      sorting: normalizeSortingState(this.resolveUpdater(currentState.sorting, updaters.sorting)),
+      sorting: normalizeSortingState(
+        this.resolveUpdater(currentState.sorting, updaters.sorting),
+        this.enableMultiSort(),
+      ),
       globalFilter: this.resolveUpdater(currentState.globalFilter, updaters.globalFilter),
       columnFilters: this.resolveUpdater(currentState.columnFilters, updaters.columnFilters),
       columnVisibility: this.resolveUpdater(
@@ -1249,17 +1266,19 @@ export class NatTable<TData extends RowData = RowData> {
       ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id)
       : null;
     const sortState = entry ? (entry.desc ? 'descending' : 'ascending') : 'none';
+    const sortedColumns = sortingState.map((sortEntry) => ({
+      id: sortEntry.id,
+      label: snapshot.columns.find((column) => column.id === sortEntry.id)?.label ?? sortEntry.id,
+      sortState: sortEntry.desc ? ('descending' as const) : ('ascending' as const),
+    }));
     const context: NatTableAccessibilitySortingAnnouncementContext = {
       columnId: entry?.id ?? null,
       columnLabel,
       sortState,
+      sortedColumns,
     };
 
-    if (formatter) {
-      return formatter(context);
-    }
-
-    return '';
+    return formatter?.(context) ?? '';
   }
 
   private describeFilteringChange(snapshot: TableAccessibilitySnapshot): string {
@@ -1492,8 +1511,11 @@ function originatesFromInteractiveDescendant(event: Event): boolean {
   return interactive !== currentTarget && currentTarget.contains(interactive);
 }
 
-/** Collapses to a single primary sort column (deduped by id, first wins). */
-function normalizeSortingState(sorting: SortingState): SortingState {
+/**
+ * Dedupes sort entries by id (first wins). Collapses to a single primary sort
+ * column unless `allowMulti` is set, in which case all deduped entries are kept.
+ */
+function normalizeSortingState(sorting: SortingState, allowMulti: boolean): SortingState {
   if (!sorting.length) {
     return sorting;
   }
@@ -1508,6 +1530,11 @@ function normalizeSortingState(sorting: SortingState): SortingState {
 
     seen.add(entry.id);
     deduped.push(entry);
+  }
+
+  if (allowMulti) {
+    // No duplicates removed → preserve the original reference for change detection.
+    return deduped.length === sorting.length ? sorting : deduped;
   }
 
   const normalized = deduped.slice(0, 1);

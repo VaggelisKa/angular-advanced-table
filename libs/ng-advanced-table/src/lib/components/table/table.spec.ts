@@ -86,6 +86,7 @@ class TestTableSurface {
   readonly manualPageCount = input<number | undefined>(undefined);
   readonly enableAnnouncements = input(true, { transform: booleanAttribute });
   readonly stickyHeader = input(true, { transform: booleanAttribute });
+  readonly enableMultiSort = input(false, { transform: booleanAttribute });
   readonly locale = input<string | undefined>(undefined);
   readonly accessibilityText = input<NatTableAccessibilityText>({});
 
@@ -117,6 +118,9 @@ class TestTableSurface {
     });
     effect(() => {
       this.natTableService.stickyHeader.set(this.stickyHeader());
+    });
+    effect(() => {
+      this.natTableService.enableMultiSort.set(this.enableMultiSort());
     });
     effect(() => {
       this.natTableService.locale.set(this.locale());
@@ -260,6 +264,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       [state]="state()"
       [initialState]="initialState"
       [mode]="mode"
+      [enableMultiSort]="enableMultiSort"
       [stickyHeader]="stickyHeader"
       [accessibilityText]="accessibilityText"
       [manualPageCount]="manualPageCount"
@@ -310,6 +315,7 @@ class TableHost {
   };
   enablePagination = false;
   enableSearch = true;
+  enableMultiSort = false;
   stickyHeader = true;
   accessibilityText: NatTableAccessibilityText = {};
   mode: NatTableMode | NatTableModeConfiguration = 'auto';
@@ -505,6 +511,7 @@ describe('NatTable', () => {
   async function recreateHost(
     options: {
       enablePagination?: boolean;
+      enableMultiSort?: boolean;
       stickyHeader?: boolean;
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
@@ -517,6 +524,7 @@ describe('NatTable', () => {
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
     host.enablePagination = options.enablePagination ?? host.enablePagination;
+    host.enableMultiSort = options.enableMultiSort ?? host.enableMultiSort;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
@@ -1513,6 +1521,62 @@ describe('NatTable', () => {
     const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
 
     expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
+  });
+
+  it('keeps multiple sort columns but only exposes aria-sort on the primary header', async () => {
+    await recreateHost({
+      enableMultiSort: true,
+      state: {
+        sorting: [
+          { id: 'name', desc: false },
+          { id: 'region', desc: true },
+        ],
+      },
+    });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    expect(table.table.getState().sorting).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: true },
+    ]);
+
+    const sortedHeaders = Array.from(
+      fixture.nativeElement.querySelectorAll('thead th[aria-sort]'),
+    ) as HTMLTableCellElement[];
+
+    expect(sortedHeaders.map((header) => header.dataset['columnId'])).toEqual(['name']);
+  });
+
+  it('emits the full sorting array and announces a multi-column sort when enableMultiSort is true', async () => {
+    await recreateHost({ enableMultiSort: true, initialState: {} });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+
+    table.patchState({
+      sorting: [
+        { id: 'name', desc: false },
+        { id: 'region', desc: true },
+      ],
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.sortingEvents.at(-1)).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: true },
+    ]);
+
+    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+
+    expect(liveRegion.textContent?.trim()).toBe(
+      'Sorted by Service ascending, then Region descending.',
+    );
   });
 
   it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {
