@@ -1,3 +1,26 @@
+## 1.2.0 (2026-06-16)
+
+### 🚀 Features
+
+- Enforce that the core `<nat-table>` component must be used inside a `<nat-table-surface>` component. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+  Remove the `[for]` input binding from all companion components (`nat-table-search`, `nat-table-pager`, `nat-table-page-size`, `nat-table-column-visibility`, `nat-table-scroll-control`, `nat-render-metrics-filter`).
+  Migrate view state inputs and outputs from `<nat-table>` to `<nat-table-surface>` to centralize state management.
+
+- Add `hiddenHeaderLabel` column metadata so compact utility columns can suppress redundant visible titles while preserving accessible labels. ([#99](https://github.com/VaggelisKa/angular-advanced-table/pull/99))
+- Add locale dictionaries with reactive table locale switching for generated accessibility labels. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Add provider-level localization defaults for table accessibility copy, optional UI labels, render-metrics labels, and shared number formatting. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+
+### 🩹 Fixes
+
+- Tighten localization precedence and render-metrics injection error handling. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Add `ng-advanced-table-locales` as the source of truth for built-in English locale labels, with table-first `provideNatTableLocales()` and optional `/ui` and `/utils` companion locale providers. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Expose UI and utils locale APIs from the main `ng-advanced-table-locales` entrypoint and remove the `/ui` and `/utils` secondary entrypoints. ([#92](https://github.com/VaggelisKa/angular-advanced-table/pull/92))
+
+### 🧱 Updated Dependencies
+
+- Updated ng-advanced-table to 1.2.0
+- Updated ng-advanced-table-locales to 1.1.0
+
 ## 1.1.0 (2026-06-02)
 
 ### 🚀 Features

@@ -1,3 +1,41 @@
+## 1.3.0 (2026-06-16)
+
+### 🚀 Features
+
+- Enforce that the core `<nat-table>` component must be used inside a `<nat-table-surface>` component. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+  Remove the `[for]` input binding from all companion components (`nat-table-search`, `nat-table-pager`, `nat-table-page-size`, `nat-table-column-visibility`, `nat-table-scroll-control`, `nat-render-metrics-filter`).
+  Migrate view state inputs and outputs from `<nat-table>` to `<nat-table-surface>` to centralize state management.
+
+- Replace ambiguous accessibility naming inputs for table and companion UI controls. `NatTable` now uses `accessibleName` for hidden grid names and supports a semantic visible `caption`; companion UI controls and UI locale dictionaries now use `groupAriaLabel` for group names. This intentionally removes the previous `ariaLabel` public inputs for these surfaces while keeping the release plan at `minor` per current project policy. ([#97](https://github.com/VaggelisKa/angular-advanced-table/pull/97))
+- Rename `NatTableUiService` to `NatTableService` and move to `table.service.ts` ([f36c2b4](https://github.com/VaggelisKa/angular-advanced-table/commit/f36c2b4))
+
+
+- Make header actions safe to compose repeatedly, add per-column header action metadata for opt-out and overrides, and expand header action localization to include the opened pin menu label. ([#87](https://github.com/VaggelisKa/angular-advanced-table/pull/87))
+- Add `hiddenHeaderLabel` column metadata so compact utility columns can suppress redundant visible titles while preserving accessible labels. ([#99](https://github.com/VaggelisKa/angular-advanced-table/pull/99))
+- Add locale dictionaries with reactive table locale switching for generated accessibility labels. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Add provider-level localization defaults for table accessibility copy, optional UI labels, render-metrics labels, and shared number formatting. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Add support for granular manual mode configuration on `<nat-table-surface>` and `<nat-table>`. The `mode` option can now accept either a single string `'auto' | 'manual'`, or a custom object configuration `Partial<{ pagination: 'auto' | 'manual', sorting: 'auto' | 'manual', filtering: 'auto' | 'manual' }>` to control client-side processing of individual slices independently. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+- Add multi-column sorting: a new `enableMultiSort` input keeps every deduped sort entry and treats Shift+click (or Shift+Enter on a focused sort button) as a multi-sort event, header actions render an aria-hidden sort-priority badge while folding the "N of M" ordinal into the sort button's accessible name, and the sorting live announcement now receives `sortedColumns` in priority order so the English locale reads combined sorts as "Sorted by A ascending, then B descending." ([#110](https://github.com/VaggelisKa/angular-advanced-table/pull/110))
+- Make the template reference variable `#grid="natTable"` and `[for]` inputs optional for all UI companion controls when placed inside `<nat-table-surface>`. ([ee6b3cc](https://github.com/VaggelisKa/angular-advanced-table/commit/ee6b3cc))
+- Promote table configuration inputs (`manualPageCount`, `stickyHeader`, `enableAnnouncements`, `locale`, `accessibilityText`) from `<nat-table>` to the `<nat-table-surface>` component. Also completely remove the redundant `enableColumnPinning` and `enableColumnReorder` inputs, since column pinning and column reordering capabilities are always supported by default and driven by the state model. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+- Rename `<nat-table-toolbar>` component (class `NatTableToolbar`) to `<nat-table-action-bar>` (class `NatTableActionBar`) to free up the name "toolbar" for a more feature-rich toolbar component in the future. ([f8399d0](https://github.com/VaggelisKa/angular-advanced-table/commit/f8399d0))
+- Add `<nat-table-pagination>` component to `ng-advanced-table-ui` library. This component merges the markup, styles, and logic of both `<nat-table-page-size>` and `<nat-table-pager>` into a single pagination toolbar component, simplifying standard paging integration for consumers. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+- Add `<nat-table-toolbar>` component to the `ng-advanced-table-ui` library. This is a presentational wrapper component that provides automatic layout and content projection, including an auto-hiding `.metrics-row` container for metrics components and standard projection slots for left-aligned (`[align-left]`) and right-aligned (`.actions`) controls. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+
+### 🩹 Fixes
+
+- Remove default table cell padding so cells only opt into spacing through explicit CSS variables. ([#93](https://github.com/VaggelisKa/angular-advanced-table/pull/93))
+- Tighten localization precedence and render-metrics injection error handling. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Add `ng-advanced-table-locales` as the source of truth for built-in English locale labels, with table-first `provideNatTableLocales()` and optional `/ui` and `/utils` companion locale providers. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Keep the header actions menu trigger on the right side of column headers. ([#88](https://github.com/VaggelisKa/angular-advanced-table/pull/88))
+- Float CSS variables defining table layout and region properties to the `<nat-table-surface>` component host. This includes splitting `--nat-table-region-overflow` into `--nat-table-region-overflow-x` and `--nat-table-region-overflow-y` to support independent control of table overflow on each axis. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+- Expose UI and utils locale APIs from the main `ng-advanced-table-locales` entrypoint and remove the `/ui` and `/utils` secondary entrypoints. ([#92](https://github.com/VaggelisKa/angular-advanced-table/pull/92))
+
+### 🧱 Updated Dependencies
+
+- Updated ng-advanced-table to 1.2.0
+- Updated ng-advanced-table-locales to 1.1.0
+
 ## 1.2.0 (2026-06-02)
 
 ### 🚀 Features

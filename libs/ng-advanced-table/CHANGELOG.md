@@ -1,3 +1,38 @@
+## 1.2.0 (2026-06-16)
+
+### 🚀 Features
+
+- Add the ARIA grid cell-interaction keyboard model: Enter moves focus from a focused grid cell into its first interactive control, Tab and Shift+Tab walk between the grid's controls, and Escape returns focus to the cell. A cell whose entire content is one arrow-safe control (button, link, checkbox) delegates focus straight to that control — matching `@angular/aria`'s single-widget mode — so it activates with a single Enter. This closes a WCAG 2.1.1 gap where `flexRender`-ed in-cell widgets (sort buttons, action buttons) were not keyboard reachable, and updates the English `keyboardInstructions` copy to describe the new behavior. ([#102](https://github.com/VaggelisKa/angular-advanced-table/pull/102))
+- Enforce that the core `<nat-table>` component must be used inside a `<nat-table-surface>` component. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+  Remove the `[for]` input binding from all companion components (`nat-table-search`, `nat-table-pager`, `nat-table-page-size`, `nat-table-column-visibility`, `nat-table-scroll-control`, `nat-render-metrics-filter`).
+  Migrate view state inputs and outputs from `<nat-table>` to `<nat-table-surface>` to centralize state management.
+
+- Replace ambiguous accessibility naming inputs for table and companion UI controls. `NatTable` now uses `accessibleName` for hidden grid names and supports a semantic visible `caption`; companion UI controls and UI locale dictionaries now use `groupAriaLabel` for group names. This intentionally removes the previous `ariaLabel` public inputs for these surfaces while keeping the release plan at `minor` per current project policy. ([#97](https://github.com/VaggelisKa/angular-advanced-table/pull/97))
+- Add `hiddenHeaderLabel` column metadata so compact utility columns can suppress redundant visible titles while preserving accessible labels. ([#99](https://github.com/VaggelisKa/angular-advanced-table/pull/99))
+- Add locale dictionaries with reactive table locale switching for generated accessibility labels. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Add provider-level localization defaults for table accessibility copy, optional UI labels, render-metrics labels, and shared number formatting. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Add support for granular manual mode configuration on `<nat-table-surface>` and `<nat-table>`. The `mode` option can now accept either a single string `'auto' | 'manual'`, or a custom object configuration `Partial<{ pagination: 'auto' | 'manual', sorting: 'auto' | 'manual', filtering: 'auto' | 'manual' }>` to control client-side processing of individual slices independently. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+- Add multi-column sorting: a new `enableMultiSort` input keeps every deduped sort entry and treats Shift+click (or Shift+Enter on a focused sort button) as a multi-sort event, header actions render an aria-hidden sort-priority badge while folding the "N of M" ordinal into the sort button's accessible name, and the sorting live announcement now receives `sortedColumns` in priority order so the English locale reads combined sorts as "Sorted by A ascending, then B descending." ([#110](https://github.com/VaggelisKa/angular-advanced-table/pull/110))
+- Make the template reference variable `#grid="natTable"` and `[for]` inputs optional for all UI companion controls when placed inside `<nat-table-surface>`. ([ee6b3cc](https://github.com/VaggelisKa/angular-advanced-table/commit/ee6b3cc))
+- Promote table configuration inputs (`manualPageCount`, `stickyHeader`, `enableAnnouncements`, `locale`, `accessibilityText`) from `<nat-table>` to the `<nat-table-surface>` component. Also completely remove the redundant `enableColumnPinning` and `enableColumnReorder` inputs, since column pinning and column reordering capabilities are always supported by default and driven by the state model. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+- Declare `NatTable`'s `accessibleName` input as required so Angular enforces the grid naming contract through the component API. ([#97](https://github.com/VaggelisKa/angular-advanced-table/pull/97))
+- Add table-owned loading, empty, and error body states with named loading/error/success status constants, custom state templates with table-managed focusable controls, built-in localized loading/error copy, rendered-row-count-aware summaries, and accessible announcements for data lifecycle transitions. ([#109](https://github.com/VaggelisKa/angular-advanced-table/pull/109))
+- Add a reduced-motion-aware default enter transition for loading, empty, and error table state rows with CSS variables for consumers to customize or disable the motion. ([#109](https://github.com/VaggelisKa/angular-advanced-table/pull/109))
+
+### 🩹 Fixes
+
+- Tighten NatTable JSDoc comments while preserving non-obvious controlled-state and pinning behavior. ([#89](https://github.com/VaggelisKa/angular-advanced-table/pull/89))
+- Remove default table cell padding so cells only opt into spacing through explicit CSS variables. ([#93](https://github.com/VaggelisKa/angular-advanced-table/pull/93))
+- Add `ng-advanced-table-locales` as the source of truth for built-in English locale labels, with table-first `provideNatTableLocales()` and optional `/ui` and `/utils` companion locale providers. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
+- Limit `aria-sort` to the primary sorted header during multi-column sorts. The table still preserves the full multi-sort state, priority badges, and combined live announcement, but secondary sort columns no longer advertise competing header-level sort semantics. ([#110](https://github.com/VaggelisKa/angular-advanced-table/pull/110))
+- Fix page overscroll when sticky header is active by adding relative positioning to the table region container. ([#95](https://github.com/VaggelisKa/angular-advanced-table/pull/95))
+- Float CSS variables defining table layout and region properties to the `<nat-table-surface>` component host. This includes splitting `--nat-table-region-overflow` into `--nat-table-region-overflow-x` and `--nat-table-region-overflow-y` to support independent control of table overflow on each axis. ([ced374f](https://github.com/VaggelisKa/angular-advanced-table/commit/ced374f))
+- Replace core table CSS `color-mix()` fallback values with Safari 16-safe defaults while preserving theme customization through CSS variables. ([#109](https://github.com/VaggelisKa/angular-advanced-table/pull/109))
+
+### 🧱 Updated Dependencies
+
+- Updated ng-advanced-table-locales to 1.1.0
+
 ## 1.1.0 (2026-06-02)
 
 ### 🚀 Features
