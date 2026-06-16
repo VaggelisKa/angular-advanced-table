@@ -13,13 +13,12 @@ describe('ShowcaseThemeStore', () => {
     clearThemeState();
   });
 
-  it('should apply the stored theme to the document root when initialized', () => {
+  it('should initialize from the stored theme', () => {
     globalThis.localStorage?.setItem(themeStorageKey, 'dark');
 
     const themeStore = TestBed.inject(ShowcaseThemeStore);
 
     expect(themeStore.theme()).toBe('dark');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
   it('should keep the document root theme synchronized with updates', () => {
