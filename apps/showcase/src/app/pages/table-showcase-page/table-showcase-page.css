@@ -43,6 +43,7 @@
     color 180ms ease;
 }
 
+:host-context(.showcase-shell[data-theme='dark']) .demo-surface,
 .demo-surface[data-theme='dark'] {
   --bg: #0b0d10;
   --surface: #14171c;
@@ -839,7 +840,6 @@ nat-table-action-bar nat-render-metrics-filter {
     transform: none;
     box-shadow: none;
   }
-
 }
 
 /* ---------- Responsive ---------- */
@@ -860,7 +860,6 @@ nat-table-action-bar nat-render-metrics-filter {
   .kpi:nth-last-child(-n + 2) {
     border-bottom: 0;
   }
-
 }
 
 @media (max-width: 760px) {
@@ -898,5 +897,4 @@ nat-table-action-bar nat-render-metrics-filter {
   .toolbar {
     padding: 12px;
   }
-
 }
