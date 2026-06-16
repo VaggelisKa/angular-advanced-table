@@ -277,13 +277,13 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     header: 'Actions',
     enableSorting: false,
     enablePinning: false,
-    size: 72,
-    minSize: 64,
-    maxSize: 72,
+    size: 48,
+    minSize: 48,
+    maxSize: 48,
     meta: {
       hiddenHeaderLabel: 'Row actions',
       align: 'end',
-      headerSize: 72,
+      headerSize: 48,
     },
     cell: (info) =>
       flexRenderComponent(NatRowActionsMenu, {

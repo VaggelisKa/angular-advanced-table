@@ -1,11 +1,60 @@
-<div class="showcase-shell" [attr.data-theme]="theme()">
-  <aside class="showcase-nav" aria-labelledby="showcase-nav-title">
+<div class="showcase-shell" [class.is-nav-open]="mobileNavOpen()" [attr.data-theme]="theme()">
+  <header class="showcase-mobile-header" [attr.inert]="mobileNavOpen() ? '' : null">
+    <span class="showcase-mobile-brand">
+      <span class="showcase-brand-copy">
+        <span class="showcase-eyebrow">Showcase</span>
+        <span class="showcase-mobile-title">Table examples</span>
+      </span>
+    </span>
+
+    <button
+      #mobileMenuButton
+      type="button"
+      class="showcase-menu-button"
+      aria-controls="showcase-navigation"
+      [attr.aria-expanded]="mobileNavOpen()"
+      aria-label="Open examples navigation"
+      title="Open examples navigation"
+      (click)="toggleMobileNav()"
+    >
+      <svg class="showcase-menu-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+        <path d="M3 5.5h14M3 10h14M3 14.5h14" />
+      </svg>
+    </button>
+  </header>
+
+  @if (mobileNavOpen()) {
+    <div class="showcase-nav-backdrop" aria-hidden="true" (click)="closeMobileNav()"></div>
+  }
+
+  <aside
+    #mobileNavPanel
+    id="showcase-navigation"
+    class="showcase-nav"
+    [class.is-open]="mobileNavOpen()"
+    [attr.role]="mobileNavOpen() ? 'dialog' : null"
+    [attr.aria-modal]="mobileNavOpen() ? 'true' : null"
+    aria-labelledby="showcase-nav-title"
+    (keydown)="trapMobileNavFocus($event)"
+    (keydown.escape)="closeMobileNav()"
+  >
     <div class="showcase-nav-header">
-      <span class="showcase-mark" aria-hidden="true">AT</span>
       <span class="showcase-brand-copy">
         <span class="showcase-eyebrow">Showcase</span>
         <h1 id="showcase-nav-title">Table examples</h1>
       </span>
+      <button
+        #mobileNavCloseButton
+        type="button"
+        class="showcase-nav-close"
+        aria-label="Close examples navigation"
+        title="Close examples navigation"
+        (click)="closeMobileNav()"
+      >
+        <svg class="showcase-menu-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+          <path d="M5 5l10 10M15 5 5 15" />
+        </svg>
+      </button>
     </div>
 
     <span class="showcase-nav-caption">Example variants</span>
@@ -18,6 +67,7 @@
           routerLinkActive="is-active"
           [routerLinkActiveOptions]="exactLinkMatch"
           ariaCurrentWhenActive="page"
+          (click)="closeMobileNav(false)"
         >
           <span class="showcase-nav-link-label">{{ example.label }}</span>
           <span class="showcase-nav-link-description">{{ example.description }}</span>
@@ -63,7 +113,7 @@
     </div>
   </aside>
 
-  <main class="showcase-content">
+  <main class="showcase-content" [attr.inert]="mobileNavOpen() ? '' : null">
     <router-outlet />
   </main>
 </div>
