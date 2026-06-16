@@ -217,6 +217,13 @@ input {
   box-sizing: border-box;
 }
 
+/* The toolbar dropdown in this card must paint outside the card when the table
+   is short (e.g. filtered to one row); base .card clips it. Trade-off: this
+   card's bottom corners no longer clip to the radius. */
+.showcase-page .card.card--overflow-visible {
+  overflow: visible;
+}
+
 .showcase-page .config-card {
   position: sticky;
   top: 20px;

@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { type CellContext, type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
-  NatTableSearch,
   NatTableSurface,
   NatTableService,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
+import { TableSearch } from '../../components/table-search/table-search';
 
 interface DemoItem {
   id: string;
@@ -34,7 +34,7 @@ const DEMO_DATA: DemoItem[] = [
 @Component({
   selector: 'app-search-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatTableSurface, NatTableSearch],
+  imports: [NatTable, NatTableSurface, TableSearch],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
@@ -50,7 +50,7 @@ const DEMO_DATA: DemoItem[] = [
 
           <nat-table-surface [(state)]="tableState">
             <div class="search-panel">
-              <nat-table-search
+              <app-table-search
                 label="Fuzzy search symbol, name, status, or category"
                 placeholder="Search e.g. Analytics, Active, Delta..."
               />
