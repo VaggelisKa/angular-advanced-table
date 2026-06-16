@@ -214,6 +214,8 @@
 }
 
 .showcase-nav-close {
+  width: 36px;
+  height: 36px;
   display: none;
 }
 
@@ -233,6 +235,11 @@
   width: 20px;
   height: 20px;
   color: currentcolor;
+}
+
+.showcase-nav-close .showcase-menu-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .showcase-menu-icon path {
@@ -264,23 +271,6 @@
   align-items: center;
   gap: 10px;
   padding: 0 8px 6px;
-}
-
-.showcase-mark {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  border: 1px solid color-mix(in srgb, var(--shell-accent) 34%, var(--shell-border));
-  border-radius: 8px;
-  background: var(--shell-accent-soft);
-  color: var(--shell-accent-strong);
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow: var(--shell-shadow);
 }
 
 .showcase-brand-copy {
