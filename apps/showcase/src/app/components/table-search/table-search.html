@@ -1,0 +1,26 @@
+@if (controller()?.enableGlobalFilter()) {
+  @if (toolbar()) {
+    <input
+      type="search"
+      class="table-search__input table-search__input--toolbar"
+      natToolbarItem
+      [attr.aria-label]="label()"
+      [value]="value()"
+      [placeholder]="placeholder()"
+      (input)="onInput($event)"
+    />
+  } @else {
+    <div class="table-search">
+      <label class="table-search__label" [attr.for]="inputId">{{ label() }}</label>
+      <input
+        [id]="inputId"
+        type="search"
+        class="table-search__input"
+        [attr.aria-controls]="tableElementId()"
+        [value]="value()"
+        [placeholder]="placeholder()"
+        (input)="onInput($event)"
+      />
+    </div>
+  }
+}
