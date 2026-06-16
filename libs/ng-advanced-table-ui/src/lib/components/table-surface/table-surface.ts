@@ -36,6 +36,8 @@ export class NatTableSurface {
   readonly enableAnnouncements = input(true, { transform: booleanAttribute });
   /** Enables sticky positioning for the table header row. */
   readonly stickyHeader = input(true, { transform: booleanAttribute });
+  /** Allows multiple simultaneous sort columns. Default false (single-column sort). */
+  readonly enableMultiSort = input(false, { transform: booleanAttribute });
   /** Locale id used to resolve generated table accessibility copy. */
   readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
@@ -73,6 +75,9 @@ export class NatTableSurface {
     });
     effect(() => {
       this.natTableService.stickyHeader.set(this.stickyHeader());
+    });
+    effect(() => {
+      this.natTableService.enableMultiSort.set(this.enableMultiSort());
     });
     effect(() => {
       this.natTableService.locale.set(this.locale());

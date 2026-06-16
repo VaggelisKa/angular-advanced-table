@@ -54,8 +54,17 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
 
       return summary;
     },
-    sortingChange: ({ columnLabel, sortState }) =>
-      columnLabel ? `Sorted by ${columnLabel} ${sortState}.` : 'Sorting cleared.',
+    sortingChange: ({ columnLabel, sortState, sortedColumns }) => {
+      if (!columnLabel) return 'Sorting cleared.';
+
+      if (sortedColumns.length > 1) {
+        const parts = sortedColumns.map((column) => `${column.label} ${column.sortState}`);
+
+        return `Sorted by ${parts.slice(0, -1).join(', ')}, then ${parts.at(-1)}.`;
+      }
+
+      return `Sorted by ${columnLabel} ${sortState}.`;
+    },
     filteringChange: ({ filterState, query, visibleRowsValue, visibleRowsText }) => {
       if (visibleRowsValue === 0) {
         return query ? `No rows match "${query}".` : 'No rows match the current filters.';

@@ -493,6 +493,28 @@ class HeaderActionCompositionHost {
   }
 }
 
+@Component({
+  imports: [NatTable, NatTableSurface],
+  template: `
+    <nat-table-surface
+      [state]="tableState()"
+      [enableMultiSort]="true"
+      (stateChange)="onTableStateChange($event)"
+    >
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+    </nat-table-surface>
+  `,
+})
+class MultiSortHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = withNatTableHeaderActions(baseColumns);
+  readonly tableState = signal<Partial<NatTableState>>({});
+
+  onTableStateChange(state: Partial<NatTableState>): void {
+    this.tableState.set(state);
+  }
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
@@ -507,6 +529,7 @@ describe('ng-advanced-table-ui', () => {
         ProviderAccessibilityLabelsHost,
         LocaleSwitchingHost,
         HeaderActionCompositionHost,
+        MultiSortHost,
       ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
@@ -1285,6 +1308,38 @@ describe('ng-advanced-table-ui', () => {
     expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Second pin menu Service');
 
     compositionFixture.destroy();
+  });
+
+  it('adds a second sort column on shift-click when multi-sort is enabled', () => {
+    const multiSortFixture = TestBed.createComponent(MultiSortHost);
+
+    multiSortFixture.detectChanges();
+
+    const nameSort = multiSortFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"] .sort-button',
+    ) as HTMLButtonElement;
+    const regionSort = multiSortFixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .sort-button',
+    ) as HTMLButtonElement;
+
+    nameSort.click();
+    multiSortFixture.detectChanges();
+
+    regionSort.dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
+    multiSortFixture.detectChanges();
+
+    expect(multiSortFixture.componentInstance.tableState().sorting).toEqual([
+      { id: 'name', desc: false },
+      { id: 'region', desc: false },
+    ]);
+    expect(multiSortFixture.nativeElement.querySelectorAll('.sort-priority').length).toBe(2);
+
+    // The visible priority badge is aria-hidden, so the ordinal must also reach AT
+    // through the sort button's accessible name.
+    expect(nameSort.getAttribute('aria-label')).toContain('1 of 2');
+    expect(regionSort.getAttribute('aria-label')).toContain('2 of 2');
+
+    multiSortFixture.destroy();
   });
 });
 

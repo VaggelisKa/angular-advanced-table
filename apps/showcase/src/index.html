@@ -5,6 +5,33 @@
     <title>AngularAdvancedTable</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      (function () {
+        var storageKey = 'nat-showcase-theme';
+        var storedTheme;
+
+        try {
+          storedTheme = window.localStorage && window.localStorage.getItem(storageKey);
+        } catch (error) {
+          storedTheme = null;
+        }
+
+        var theme = storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : 'light';
+
+        if (storedTheme !== 'light' && storedTheme !== 'dark') {
+          try {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              theme = 'dark';
+            }
+          } catch (error) {
+            theme = 'light';
+          }
+        }
+
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   </head>
   <body>

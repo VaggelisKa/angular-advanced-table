@@ -24,7 +24,7 @@ export const routes: Routes = [
     path: 'sorting',
     title: 'Advanced Table - Sorting',
     loadComponent: () =>
-      import('./pages/single-features/sorting-showcase').then(
+      import('./pages/single-features/sorting/sorting-showcase').then(
         (module) => module.SortingShowcasePage,
       ),
   },
