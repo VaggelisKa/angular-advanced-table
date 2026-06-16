@@ -51,7 +51,7 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   rowHeader?: boolean;
   cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
   cellHeight?: number | string;
-  cellMaxLines?: number | 'none';
+  cellMaxLines?: number;
   headerSize?: number | string;
   headerMinSize?: number | string;
   headerMaxSize?: number | string;

@@ -573,7 +573,7 @@ export class NatTable<TData extends RowData = RowData> {
 
       const primarySortEntry =
         primarySortColumnId === column.id
-          ? state.sorting.find((entry) => entry.id === column.id) ?? null
+          ? (state.sorting.find((entry) => entry.id === column.id) ?? null)
           : null;
       const meta = column.columnDef.meta;
       const label = resolveColumnLabel(column);
@@ -614,9 +614,7 @@ export class NatTable<TData extends RowData = RowData> {
         headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
         cellHeight,
         cellMaxLines: normalizeCellMaxLines(meta?.cellMaxLines),
-        ariaSort: primarySortEntry
-          ? (primarySortEntry.desc ? 'descending' : 'ascending')
-          : null,
+        ariaSort: primarySortEntry ? (primarySortEntry.desc ? 'descending' : 'ascending') : null,
         rowHeader: !!meta?.rowHeader,
       };
     }
@@ -1692,13 +1690,13 @@ function normalizeColumnDimension(value: number | string | undefined): string | 
   return null;
 }
 
-function normalizeCellMaxLines(value: number | 'none' | undefined): string | null {
-  if (value === 'none') {
-    return null;
-  }
-
+function normalizeCellMaxLines(value: number | undefined): string | null {
   if (value === undefined) {
     return String(DEFAULT_CELL_MAX_LINES);
+  }
+
+  if (value === Infinity) {
+    return null;
   }
 
   return Number.isFinite(value) && value >= 1

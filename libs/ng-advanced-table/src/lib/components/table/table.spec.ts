@@ -1396,7 +1396,7 @@ describe('NatTable', () => {
           header: 'Region',
           meta: {
             label: 'Region',
-            cellMaxLines: 'none',
+            cellMaxLines: Infinity,
           },
           cell: (info) => info.getValue<string>(),
         },
