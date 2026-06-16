@@ -1,5 +1,16 @@
 :root {
+  --showcase-document-bg: #f6f7f9;
+  --showcase-document-text: #0f1419;
+
   color-scheme: light;
+  background: var(--showcase-document-bg);
+}
+
+:root[data-theme='dark'] {
+  --showcase-document-bg: #0b0d10;
+  --showcase-document-text: #e6eaef;
+
+  color-scheme: dark;
 }
 
 *,
@@ -24,8 +35,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f6f7f9;
-  color: #0f1419;
+  background: var(--showcase-document-bg);
+  color: var(--showcase-document-text);
 }
 
 ::selection {

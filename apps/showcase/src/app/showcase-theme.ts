@@ -12,9 +12,14 @@ export class ShowcaseThemeStore {
 
   readonly theme = this.themeState.asReadonly();
 
+  constructor() {
+    applyThemeToDocument(this.themeState());
+  }
+
   setTheme(theme: ShowcaseTheme): void {
     this.themeState.set(theme);
     persistTheme(theme);
+    applyThemeToDocument(theme);
   }
 }
 
@@ -38,4 +43,8 @@ function persistTheme(theme: ShowcaseTheme): void {
   } catch {
     // Ignore quota / privacy-mode failures.
   }
+}
+
+function applyThemeToDocument(theme: ShowcaseTheme): void {
+  globalThis.document?.documentElement.setAttribute('data-theme', theme);
 }
