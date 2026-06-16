@@ -567,6 +567,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .showcase-nav,
+  .showcase-nav.is-open,
   .showcase-content {
     animation: none;
     transition: none;
