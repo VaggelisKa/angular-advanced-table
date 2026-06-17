@@ -10,11 +10,9 @@ export { NatTableToolbar } from './lib/components/table-toolbar/table-toolbar';
 export { NatToolbarGroup } from './lib/components/table-toolbar/toolbar-group/toolbar-group';
 export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item/toolbar-item.directive';
 export { NAT_TOOLBAR_ITEM } from './lib/components/table-toolbar/common/toolbar-tokens.const';
-export {
-  NatTableSelectionCheckbox,
-  withNatTableSelectionColumn,
-  type NatTableSelectionColumnOptions,
-} from './lib/components/table-selection/table-selection';
+export { NatTableSelectionCheckbox } from './lib/components/table-selection/table-selection';
+export { withNatTableSelectionColumn } from './lib/components/table-selection/with-table-selection-column';
+export type { NatTableSelectionColumnOptions } from './lib/components/table-selection/common/selection-tokens.type';
 export {
   NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_DEFAULT_INTL,

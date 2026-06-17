@@ -1,0 +1,12 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nat-selection-checkbox {
+  inline-size: var(--nat-table-selection-size, 18px);
+  block-size: var(--nat-table-selection-size, 18px);
+  cursor: pointer;
+  accent-color: var(--nat-table-selection-accent, var(--accent, currentColor));
+}
