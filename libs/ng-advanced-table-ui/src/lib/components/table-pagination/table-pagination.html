@@ -1,12 +1,17 @@
 @if (controller(); as ctrl) {
   @if (ctrl.enablePagination()) {
-    <nat-table-action-bar>
+    <nat-table-toolbar class="pagination-toolbar" [accessibleName]="resolvedPagerAriaLabel()">
       <!-- Page Size Selection -->
-      <div class="chip-row compact" role="group" [attr.aria-label]="resolvedPageSizeAriaLabel()">
+      <div
+        class="chip-row compact"
+        natToolbarGroup="start"
+        [accessibleName]="resolvedPageSizeAriaLabel()"
+      >
         @for (option of resolvedPageSizeOptions(); track option.pageSize) {
           <button
             type="button"
             class="chip"
+            [natToolbarItem]="'page-size-' + option.pageSize"
             [class.is-active]="selectedPageSize() === option.pageSize"
             [attr.aria-controls]="tableElementId()"
             [attr.aria-label]="option.ariaLabel"
@@ -19,10 +24,11 @@
       </div>
 
       <!-- Pager Navigation -->
-      <div class="pager" role="group" [attr.aria-label]="resolvedPagerAriaLabel()">
+      <div class="pager" natToolbarGroup="end" [accessibleName]="resolvedPagerAriaLabel()">
         <button
           type="button"
           class="pager-button"
+          natToolbarItem="previous-page"
           [attr.aria-label]="previousPageAriaLabel()"
           [attr.aria-controls]="tableElementId()"
           [disabled]="!canPreviousPage()"
@@ -36,6 +42,7 @@
         <button
           type="button"
           class="pager-button"
+          natToolbarItem="next-page"
           [attr.aria-label]="nextPageAriaLabel()"
           [attr.aria-controls]="tableElementId()"
           [disabled]="!canNextPage()"
@@ -46,6 +53,6 @@
           </svg>
         </button>
       </div>
-    </nat-table-action-bar>
+    </nat-table-toolbar>
   }
 }

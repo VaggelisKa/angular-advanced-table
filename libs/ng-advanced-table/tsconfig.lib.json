@@ -11,10 +11,6 @@
       "ng-advanced-table-locales": [
         "../../dist/libs/ng-advanced-table-locales",
         "../../libs/ng-advanced-table-locales/src/public-api.ts"
-      ],
-      "ng-advanced-table-ui": [
-        "../../dist/libs/ng-advanced-table-ui",
-        "../../libs/ng-advanced-table-ui/src/public-api.ts"
       ]
     }
   },

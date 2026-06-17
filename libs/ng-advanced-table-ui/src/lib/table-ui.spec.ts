@@ -8,8 +8,8 @@ import { NatTableColumnVisibility } from './components/table-column-visibility/t
 import { withNatTableHeaderActions } from './components/table-header-actions/with-table-header-actions';
 import { NatTablePageSize } from './components/table-page-size/table-page-size';
 import { NatTablePager } from './components/table-pager/table-pager';
+import { NatTablePagination } from './components/table-pagination/table-pagination';
 import { NatTableScrollControl } from './components/table-scroll-control/table-scroll-control';
-import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableSurface } from './components/table-surface/table-surface';
 import { provideNatTableUiIntl } from './shared/table-ui-intl';
 import type {
@@ -88,7 +88,6 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
     NatTableColumnVisibility,
     NatTablePageSize,
     NatTablePager,
-    NatTableSearch,
     NatTableScrollControl,
     NatTableSurface,
   ],
@@ -98,7 +97,6 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       [initialState]="initialState"
       (stateChange)="onTableStateChange($event)"
     >
-      <nat-table-search />
       <nat-table-column-visibility />
       <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
       <nat-table-pager />
@@ -284,7 +282,6 @@ class CustomAccessibilityLabelsHost {
     NatTableColumnVisibility,
     NatTablePageSize,
     NatTablePager,
-    NatTableSearch,
     NatTableScrollControl,
     NatTableSurface,
   ],
@@ -353,7 +350,6 @@ class CustomAccessibilityLabelsHost {
         [getRowId]="getRowId"
         accessibleName="Operations table"
       />
-      <nat-table-search [label]="searchLabel()" />
       <nat-table-column-visibility />
       <nat-table-page-size
         [groupAriaLabel]="pageSizeGroupAriaLabel()"
@@ -376,7 +372,6 @@ class ProviderAccessibilityLabelsHost {
       pageSize: 2,
     },
   };
-  readonly searchLabel = signal<string | undefined>(undefined);
   readonly pageSizeGroupAriaLabel = signal<string | undefined>(undefined);
 
   onTableStateChange(state: Partial<NatTableState>): void {
@@ -385,7 +380,7 @@ class ProviderAccessibilityLabelsHost {
 }
 
 @Component({
-  imports: [NatTable, NatTablePageSize, NatTablePager, NatTableSearch, NatTableSurface],
+  imports: [NatTable, NatTablePageSize, NatTablePager, NatTableSurface],
   providers: [
     provideNatTableIntl({
       locales: {
@@ -429,7 +424,6 @@ class ProviderAccessibilityLabelsHost {
     <nat-table-surface [locale]="locale()">
       <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
 
-      <nat-table-search />
       <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
       <nat-table-pager />
     </nat-table-surface>
@@ -499,6 +493,27 @@ class MultiSortHost {
   }
 }
 
+@Component({
+  imports: [NatTable, NatTablePagination, NatTableSurface],
+  template: `
+    <nat-table-surface [initialState]="initialState">
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
+    </nat-table-surface>
+  `,
+})
+class PaginationToolbarHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = baseColumns;
+  readonly pageSizeOptions = [2, 3, 5] as const;
+  readonly initialState: Partial<NatTableState> = {
+    pagination: {
+      pageIndex: 0,
+      pageSize: 2,
+    },
+  };
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
@@ -514,6 +529,7 @@ describe('ng-advanced-table-ui', () => {
         LocaleSwitchingHost,
         HeaderActionCompositionHost,
         MultiSortHost,
+        PaginationToolbarHost,
       ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
@@ -534,7 +550,6 @@ describe('ng-advanced-table-ui', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('nat-table-surface .surface')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('.search-input')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('.column-chip').length).toBe(4);
   });
 
@@ -547,25 +562,10 @@ describe('ng-advanced-table-ui', () => {
     expect(newHost.stateChangeCalls).toBe(0);
   });
 
-  it('updates the global filter and resets pagination through NatTableSearch', () => {
-    fixture.detectChanges();
-
-    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
-
-    searchInput.value = 'gamma';
-    searchInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-
-    expect(host.tableState().globalFilter).toBe('gamma');
-    expect(host.tableState().pagination?.pageIndex).toBe(0);
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
-  });
-
   it('associates companion controls with the table element', () => {
     fixture.detectChanges();
 
     const table = fixture.nativeElement.querySelector('nat-table table') as HTMLTableElement;
-    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
     const columnChip = fixture.nativeElement.querySelector('.column-chip') as HTMLButtonElement;
     const pageSizeButton = fixture.nativeElement.querySelector(
       'nat-table-page-size .chip',
@@ -580,7 +580,6 @@ describe('ng-advanced-table-ui', () => {
       'nat-table-scroll-control .scroll-range',
     ) as HTMLInputElement;
 
-    expect(searchInput.getAttribute('aria-controls')).toBe(table.id);
     expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
     expect(columnChip.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Service Shown');
     expect(columnChip.getAttribute('aria-label')).toBe('Service shown. Hide column');
@@ -689,6 +688,30 @@ describe('ng-advanced-table-ui', () => {
       pageIndex: 1,
       pageSize: 3,
     });
+  });
+
+  it('renders NatTablePagination as a toolbar with grouped controls', () => {
+    fixture.destroy();
+    const paginationFixture = TestBed.createComponent(PaginationToolbarHost);
+    paginationFixture.detectChanges();
+
+    const toolbar = paginationFixture.nativeElement.querySelector(
+      'nat-table-pagination nat-table-toolbar',
+    ) as HTMLElement;
+    const groups = paginationFixture.nativeElement.querySelectorAll(
+      'nat-table-pagination [natToolbarGroup]',
+    );
+
+    expect(toolbar).toBeTruthy();
+    expect(toolbar.getAttribute('role')).toBe('toolbar');
+    expect(toolbar.getAttribute('aria-label')).toBe('Table pagination');
+    expect(groups.length).toBe(2);
+    expect(
+      paginationFixture.nativeElement.querySelectorAll('nat-table-pagination .chip').length,
+    ).toBe(3);
+    expect(
+      paginationFixture.nativeElement.querySelectorAll('nat-table-pagination .pager-button').length,
+    ).toBe(2);
   });
 
   it('wraps headers with sort and pin actions without losing the original label', async () => {
@@ -936,24 +959,15 @@ describe('ng-advanced-table-ui', () => {
     ).toBe(true);
   });
 
-  it('announces sort and filter updates through the table live region', async () => {
+  it('announces sort updates through the table live region', async () => {
     fixture.detectChanges();
 
-    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
     const sortButton = fixture.nativeElement.querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
     const liveRegion = fixture.nativeElement.querySelector(
       'nat-table p[aria-live="polite"]',
     ) as HTMLElement;
-
-    searchInput.value = 'gamma';
-    searchInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(liveRegion.textContent?.trim()).toBe('Showing 1 matching row for "gamma".');
 
     sortButton.click();
     fixture.detectChanges();
@@ -1128,12 +1142,6 @@ describe('ng-advanced-table-ui', () => {
     providerFixture.detectChanges();
 
     const nativeElement = providerFixture.nativeElement as HTMLElement;
-    const searchLabel = nativeElement.querySelector(
-      'nat-table-search .control-label',
-    ) as HTMLElement;
-    const searchInput = nativeElement.querySelector(
-      'nat-table-search .search-input',
-    ) as HTMLInputElement;
     const visibilityHeading = nativeElement.querySelector(
       'nat-table-column-visibility .control-label',
     ) as HTMLElement;
@@ -1170,8 +1178,6 @@ describe('ng-advanced-table-ui', () => {
       'thead th[data-column-id="name"] .menu-button',
     ) as HTMLButtonElement;
 
-    expect(searchLabel.textContent?.trim()).toBe('Provider search');
-    expect(searchInput.placeholder).toBe('Provider placeholder');
     expect(visibilityHeading.textContent?.trim()).toBe('Provider columns');
     expect(visibilityCaption.textContent?.trim()).toBe('Provider n4/n4');
     expect(visibilityGroup.getAttribute('aria-label')).toBe('Provider column visibility');
@@ -1195,12 +1201,9 @@ describe('ng-advanced-table-ui', () => {
     expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Provider menu for Service');
     expect(getOpenMenuItem('left').textContent).toContain('Provider left');
 
-    providerHost.searchLabel.set('Input search');
     providerHost.pageSizeGroupAriaLabel.set('Input page size');
     providerFixture.detectChanges();
 
-    expect(searchLabel.textContent?.trim()).toBe('Input search');
-    expect(searchInput.placeholder).toBe('Provider placeholder');
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Input page size');
 
     providerFixture.destroy();
@@ -1215,12 +1218,6 @@ describe('ng-advanced-table-ui', () => {
     const nativeElement = localeFixture.nativeElement as HTMLElement;
     const emptyState = nativeElement.querySelector('.empty-state') as HTMLElement;
     const tableSummary = nativeElement.querySelector('p.sr-only') as HTMLElement;
-    const searchLabel = nativeElement.querySelector(
-      'nat-table-search .control-label',
-    ) as HTMLElement;
-    const searchInput = nativeElement.querySelector(
-      'nat-table-search .search-input',
-    ) as HTMLInputElement;
     const pageSizeGroup = nativeElement.querySelector(
       'nat-table-page-size .chip-row',
     ) as HTMLElement;
@@ -1237,8 +1234,6 @@ describe('ng-advanced-table-ui', () => {
     expect(tableSummary.textContent?.trim()).toBe(
       'No rows are currently shown. 4 visible columns. Page 1 of 1.',
     );
-    expect(searchLabel.textContent?.trim()).toBe('Search rows');
-    expect(searchInput.placeholder).toBe('Search rows');
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rows per page');
     expect(pageSizeButton.textContent?.trim()).toBe('2 rows');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
@@ -1251,8 +1246,6 @@ describe('ng-advanced-table-ui', () => {
 
     expect(emptyState.textContent?.trim()).toBe('Ingen rækker matcher visningen.');
     expect(tableSummary.textContent?.trim()).toBe('0 rækker og 4 kolonner.');
-    expect(searchLabel.textContent?.trim()).toBe('Søg i rækker');
-    expect(searchInput.placeholder).toBe('Søg i rækker');
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
     expect(pageSizeButton.textContent?.trim()).toBe('2 / side');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker pr. side');

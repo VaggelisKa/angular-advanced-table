@@ -76,7 +76,7 @@ const showcaseExamples = [
   },
   {
     label: 'Sorting with pinned columns',
-    description: 'Fixed owner and total columns',
+    description: 'Fixed company and total columns',
     path: '/examples/simple-sorting',
   },
 ];

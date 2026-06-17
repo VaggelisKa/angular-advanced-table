@@ -4,13 +4,15 @@
     <p class="description">
       Composable toolbar shell with static start/center/end slots and roving keyboard focus. Items
       pick their slot with the <code>natToolbarItemPosition</code> attribute — DOM, screen-reader
-      and keyboard order always match what you see.
+      and keyboard order always match what you see. The toolbar is a generic host: drop in your own
+      components — a search field, a dropdown — and they join the same roving focus.
     </p>
   </header>
 
+  <!-- Example 1: slots & roving focus -->
   <div class="grid-layout grid-layout-with-panel">
     <div class="card">
-      <h2 class="card-title">Toolbar Grid</h2>
+      <h2 class="card-title">Slots &amp; roving focus</h2>
 
       <nat-table-surface
         [state]="tableState()"
@@ -87,11 +89,7 @@
           </button>
         </nat-table-toolbar>
 
-        <nat-table
-          [data]="data"
-          [columns]="columns"
-          accessibleName="Toolbar demo table"
-        />
+        <nat-table [data]="data" [columns]="columns" accessibleName="Toolbar demo table" />
       </nat-table-surface>
     </div>
 
@@ -108,6 +106,100 @@
           Share are at the end. Activate an item to record the last action. Keyboard: Tab into the
           toolbar, Left/Right + Home/End move across all items, Up/Down cycle inside the density
           group.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 2: user-defined search + filter menu sharing one toolbar -->
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card card--overflow-visible">
+      <h2 class="card-title">Search &amp; filter menu (user components)</h2>
+      <p class="description">
+        Two consumer-built components share one toolbar — neither is shipped by the library. The
+        <code>&lt;app-table-search toolbar&gt;</code> drives the real global filter; the
+        <code>Actions</code> button is a hand-wired disclosure of preset filters (the ARIA menu
+        directive can't share a <code>natToolbarItem</code>). Pick a preset to filter the table — it
+        composes with the free-text search. Both controls join the toolbar's roving focus.
+      </p>
+
+      <nat-table-surface>
+        <nat-table-toolbar accessibleName="Table actions toolbar">
+          <app-table-search
+            toolbar
+            natToolbarItemPosition="start"
+            label="Search by name, category or status"
+            placeholder="Search e.g. Security, Active, Delta…"
+          />
+
+          <div
+            #menuRoot
+            class="toolbar-menu"
+            natToolbarItemPosition="end"
+            (keydown.escape)="closeMenu(true)"
+          >
+            <button
+              #menuTrigger
+              type="button"
+              class="toolbar-button toolbar-menu-trigger"
+              natToolbarItem
+              data-testid="menu-trigger"
+              aria-haspopup="true"
+              [attr.aria-expanded]="menuOpen()"
+              aria-controls="toolbar-overflow-menu"
+              (click)="toggleMenu()"
+            >
+              Actions
+              <span class="toolbar-menu-caret" aria-hidden="true">▾</span>
+            </button>
+
+            <div
+              id="toolbar-overflow-menu"
+              class="toolbar-menu-panel"
+              role="group"
+              aria-label="Quick filters"
+              [hidden]="!menuOpen()"
+            >
+              @for (preset of filterPresets; track preset.key) {
+                <button
+                  type="button"
+                  class="toolbar-menu-item"
+                  [attr.data-testid]="'filter-' + preset.key"
+                  [attr.aria-current]="preset.key === activePresetKey() ? 'true' : null"
+                  (click)="applyPreset(preset.key)"
+                >
+                  {{ preset.label }}
+                </button>
+              }
+            </div>
+          </div>
+        </nat-table-toolbar>
+
+        <nat-table
+          [data]="filteredData()"
+          [columns]="columns"
+          accessibleName="Search and filter table"
+        />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Active filter</h2>
+      <div class="control-panel">
+        <dl class="demo-state">
+          <dt class="demo-state-term">Preset</dt>
+          <dd class="demo-state-value" data-testid="active-filter">{{ activeFilterLabel() }}</dd>
+          <dt class="demo-state-term">Rows</dt>
+          <dd class="demo-state-value" data-testid="filter-row-count">
+            {{ visibleCount() }} of {{ data.length }}
+          </dd>
+        </dl>
+
+        <div class="tip">
+          The trigger reflects open state with <code>aria-expanded</code>; the active preset is
+          marked with <code>aria-current</code>. Selecting a preset filters the table and closes the
+          menu, returning focus to the trigger. The free-text search narrows whatever the preset
+          leaves.
         </div>
       </div>
     </div>
