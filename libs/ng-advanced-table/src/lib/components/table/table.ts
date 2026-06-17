@@ -437,7 +437,11 @@ export class NatTable<TData extends RowData = RowData> {
     () => this.table.getHeaderGroups().at(-1)?.id ?? null,
   );
   protected readonly ariaDescribedBy = computed(() => {
-    const ids: string[] = [this.tableSummaryId()];
+    const ids: string[] = [];
+
+    if (this.tableSummary().trim()) {
+      ids.push(this.tableSummaryId());
+    }
 
     if (this.resolvedDescription().trim()) {
       ids.push(this.tableDescriptionId());
@@ -447,7 +451,7 @@ export class NatTable<TData extends RowData = RowData> {
       ids.push(this.tableKeyboardInstructionsId());
     }
 
-    return ids.join(' ');
+    return ids.length ? ids.join(' ') : null;
   });
   readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.readRequiredInput(this.data, []) as TData[],
@@ -570,7 +574,7 @@ export class NatTable<TData extends RowData = RowData> {
 
       const primarySortEntry =
         primarySortColumnId === column.id
-          ? state.sorting.find((entry) => entry.id === column.id) ?? null
+          ? (state.sorting.find((entry) => entry.id === column.id) ?? null)
           : null;
       const meta = column.columnDef.meta;
       const label = resolveColumnLabel(column);
@@ -607,9 +611,7 @@ export class NatTable<TData extends RowData = RowData> {
         headerMinWidth,
         headerMaxWidth,
         headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
-        ariaSort: primarySortEntry
-          ? (primarySortEntry.desc ? 'descending' : 'ascending')
-          : null,
+        ariaSort: primarySortEntry ? (primarySortEntry.desc ? 'descending' : 'ascending') : null,
         rowHeader: !!meta?.rowHeader,
       };
     }

@@ -33,6 +33,80 @@ describe('UI locale toolbar slice', () => {
     expect(toolbar?.toolbarLabel).toBe('Table toolbar');
   });
 
+  it('locks English companion-control accessibility copy', () => {
+    const english = NAT_TABLE_BUILT_IN_UI_LOCALES['en'];
+    const pageSizeContext = {
+      pageSizeValue: 25,
+      pageSizeText: '25',
+      selectionState: 'not-selected' as const,
+    };
+    const pagerContext = {
+      pageValue: 2,
+      pageText: '2',
+      pageCountValue: 5,
+      pageCountText: '5',
+    };
+    const visibilityContext = {
+      columnLabel: 'Service',
+      visibilityState: 'visible' as const,
+      toggleAction: 'hide' as const,
+    };
+    const sortedHeaderContext = {
+      label: 'Service',
+      sortState: 'ascending' as const,
+      sortPriority: 1,
+      sortCount: 2,
+    };
+    const unpinnedHeaderContext = {
+      label: 'Service',
+      pinState: 'unpinned' as const,
+      toggleAction: 'pin' as const,
+      pinSide: 'left' as const,
+      pinnedSide: null,
+    };
+    const pinnedHeaderContext = {
+      label: 'Service',
+      pinState: 'pinned' as const,
+      toggleAction: 'unpin' as const,
+      pinSide: 'left' as const,
+      pinnedSide: 'left' as const,
+    };
+
+    expect(
+      english.columnVisibility?.accessibilityLabels?.toggleColumnAriaLabel?.(visibilityContext),
+    ).toBe('Service shown. Hide column');
+    expect(english.pageSize?.accessibilityLabels?.pageSizeOptionText?.(pageSizeContext)).toBe(
+      '25 rows',
+    );
+    expect(english.pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe(
+      '25 rows per page',
+    );
+    expect(english.pager?.accessibilityLabels?.pageIndicator?.(pagerContext)).toBe('Page 2 of 5');
+    expect(
+      english.headerActions?.accessibilityLabels?.sortButton?.({
+        ...sortedHeaderContext,
+        sortState: 'none',
+        sortPriority: null,
+        sortCount: 0,
+      }),
+    ).toBe('Sort by Service');
+    expect(english.headerActions?.accessibilityLabels?.sortButton?.(sortedHeaderContext)).toBe(
+      'Service sorted in ascending order, sort priority 1 of 2. Change sorting',
+    );
+    expect(english.headerActions?.accessibilityLabels?.menuButton?.({ label: 'Service' })).toBe(
+      'Open pinning options for Service column',
+    );
+    expect(english.headerActions?.accessibilityLabels?.menuLabel?.({ label: 'Service' })).toBe(
+      'Pinning options for Service column',
+    );
+    expect(english.headerActions?.accessibilityLabels?.pinButton?.(unpinnedHeaderContext)).toBe(
+      'Pin left: Service column',
+    );
+    expect(english.headerActions?.accessibilityLabels?.pinButtonText?.(pinnedHeaderContext)).toBe(
+      'Unpin left',
+    );
+  });
+
   it('keeps the toolbar slice through provideNatTableUiLocales()', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()],

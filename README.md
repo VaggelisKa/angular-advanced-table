@@ -343,7 +343,7 @@ Attach metadata through `columnDef.meta`:
 | `headerMinSize`     | `number \| string`                                                        | Optional header-only minimum width in pixels                                   |
 | `headerMaxSize`     | `number \| string`                                                        | Optional header-only maximum width in pixels                                   |
 
-Set `hiddenHeaderLabel: 'Row actions'` for compact utility columns whose title would be redundant visually, such as row actions or menu columns. Primitive string/number headers render that value as screen-reader-only text. When the column is wrapped with `withNatTableHeaderActions(...)`, only the header label is visually hidden; sort buttons and the three-dot pin menu stay visible and use `hiddenHeaderLabel` for their generated accessible labels.
+Set `hiddenHeaderLabel: 'Row actions'` for compact utility columns whose title would be redundant visually, such as row actions or menu columns. The table renders that value as screen-reader-only header text even when the header is supplied by a function or component. When the column is wrapped with `withNatTableHeaderActions(...)`, only the header label is visually hidden; sort buttons and the three-dot pin menu stay visible and use `hiddenHeaderLabel` for their generated accessible labels.
 
 ### Column sizing and pinned offsets
 

@@ -82,7 +82,7 @@ describe('provideNatTableLocales', () => {
     expect(pageSize?.groupAriaLabel).toBe('Invoices per page');
     expect(pageSize?.accessibilityLabels?.pageSizeOptionText?.(context)).toBe('25 invoices');
     expect(pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(context)).toBe(
-      'Show 25 rows per page',
+      '25 rows per page',
     );
   });
 
@@ -208,7 +208,7 @@ describe('provideNatTableLocales', () => {
         uiIntl.locales?.['en']?.pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(
           pageSizeContext,
         ),
-      ).toBe('Show 25 rows per page');
+      ).toBe('25 rows per page');
     } finally {
       childInjector.destroy();
     }

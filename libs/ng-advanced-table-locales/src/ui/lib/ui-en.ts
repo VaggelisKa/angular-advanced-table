@@ -20,16 +20,18 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
     accessibilityLabels: {
       visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
         `${visibleColumnCountText} / ${totalColumnCountText} visible`,
-      toggleColumnAriaLabel: ({ columnLabel, toggleAction }) =>
-        `${toggleAction === 'hide' ? 'Hide' : 'Show'} ${columnLabel} column`,
+      toggleColumnAriaLabel: ({ columnLabel, toggleAction, visibilityState }) =>
+        `${columnLabel} ${visibilityState === 'visible' ? 'shown' : 'hidden'}. ${
+          toggleAction === 'hide' ? 'Hide' : 'Show'
+        } column`,
       columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Shown' : 'Hidden'),
     },
   },
   pageSize: {
     groupAriaLabel: 'Rows per page',
     accessibilityLabels: {
-      pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} / page`,
-      pageSizeOptionAriaLabel: ({ pageSizeText }) => `Show ${pageSizeText} rows per page`,
+      pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rows`,
+      pageSizeOptionAriaLabel: ({ pageSizeText }) => `${pageSizeText} rows per page`,
     },
   },
   pager: {
@@ -37,7 +39,7 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
     accessibilityLabels: {
       previousPageAriaLabel: 'Previous page',
       nextPageAriaLabel: 'Next page',
-      pageIndicator: ({ pageText, pageCountText }) => `Page ${pageText} / ${pageCountText}`,
+      pageIndicator: ({ pageText, pageCountText }) => `Page ${pageText} of ${pageCountText}`,
     },
   },
   scrollControl: {
@@ -53,17 +55,23 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
     accessibilityLabels: {
       // The visible priority badge is aria-hidden, so fold the ordinal into the
       // accessible name; otherwise AT cannot tell primary from secondary sort.
-      sortButton: ({ label, sortState, sortPriority, sortCount }) =>
-        sortPriority !== null && sortCount > 1
-          ? `Change sorting for ${label}, sorted ${sortState}, ${sortPriority} of ${sortCount}`
-          : `Change sorting for ${label}`,
-      menuButton: ({ label }) => `Open column actions for ${label}`,
-      menuLabel: ({ label }) => `Column pinning options for ${label}`,
+      sortButton: ({ label, sortState, sortPriority, sortCount }) => {
+        if (sortState === 'none') {
+          return `Sort by ${label}`;
+        }
+
+        const sortDescription = `${label} sorted ${describeSortState(sortState)}`;
+
+        return sortPriority !== null && sortCount > 1
+          ? `${sortDescription}, sort priority ${sortPriority} of ${sortCount}. Change sorting`
+          : `${sortDescription}. Change sorting`;
+      },
+      menuButton: ({ label }) => `Open pinning options for ${label} column`,
+      menuLabel: ({ label }) => `Pinning options for ${label} column`,
       pinButton: ({ label, toggleAction, pinSide }) =>
-        `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${label} column ${
-          toggleAction === 'unpin' ? 'from' : 'to'
-        } the ${pinSide}`,
-      pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Pin left' : 'Pin right'),
+        `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${pinSide}: ${label} column`,
+      pinButtonText: ({ pinSide, toggleAction }) =>
+        `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${pinSide}`,
     },
   },
   toolbar: {
@@ -73,3 +81,7 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
 };
 
 export const NAT_TABLE_UI_ENGLISH_INTL = NAT_EN_UI_LOCALE_LABELS;
+
+function describeSortState(sortState: 'ascending' | 'descending'): string {
+  return sortState === 'ascending' ? 'in ascending order' : 'in descending order';
+}
