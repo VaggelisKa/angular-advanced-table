@@ -331,7 +331,7 @@ class TableHost {
   readonly state = signal<Partial<NatTableState>>({});
   readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   readonly error = signal<unknown>(null);
-  readonly columns = columns;
+  columns: ColumnDef<Row, unknown>[] = columns;
   readonly getRowId = (row: Row) => row.id;
   initialState: Partial<NatTableState> = {
     sorting: [{ id: 'throughput', desc: true }],
@@ -567,6 +567,7 @@ describe('NatTable', () => {
       state?: Partial<NatTableState>;
       mode?: NatTableMode | NatTableModeConfiguration;
       manualPageCount?: number;
+      columns?: ColumnDef<Row, unknown>[];
     } = {},
   ): Promise<void> {
     fixture.destroy();
@@ -583,6 +584,7 @@ describe('NatTable', () => {
     host.initialState = options.initialState ?? host.initialState;
     host.mode = options.mode ?? host.mode;
     host.manualPageCount = options.manualPageCount ?? host.manualPageCount;
+    host.columns = options.columns ?? host.columns;
 
     if (options.state) {
       host.state.set(options.state);
@@ -666,6 +668,50 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(host.columnSizingEvents.length).toBe(eventsAtMin);
+  });
+
+  it('seeds an unsized column from its measured width before the first controlled pointer resize', async () => {
+    // An unsized column resolves to TanStack's 150px default for column.getSize(), which
+    // getResizeHandler() captures synchronously as the drag start size. Under a controlled
+    // columnSizing binding the seed cannot round-trip before that capture, so the transient
+    // overlay must expose the measured width or the drag would start from the 150px default.
+    const unsizedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+      'accessorKey' in column && column.accessorKey === 'region'
+        ? { ...column, size: undefined }
+        : column,
+    );
+
+    await recreateHost({
+      enableColumnResizing: true,
+      state: { columnSizing: {} },
+      columns: unsizedColumns,
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const internal = getInternalTable(fixture);
+    // jsdom has no layout, so inject a measured width distinct from the 150px default.
+    (
+      internal as unknown as {
+        measuredHeaderWidths: { set(value: Record<string, number>): void };
+      }
+    ).measuredHeaderWidths.set({ region: 222 });
+
+    const regionHandle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .column-resize-handle',
+    ) as HTMLElement;
+    regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+    const start = internal.table
+      .getState()
+      .columnSizingInfo.columnSizingStart.find(([id]) => id === 'region');
+
+    // Captured start size must be the seeded 222px, not the stale 150px default.
+    expect(start?.[1]).toBe(222);
+
+    // End the drag so the document-level pointer listeners detach.
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
   });
 
   it('renders a bare table surface with no built-in controls', () => {

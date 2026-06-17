@@ -293,6 +293,13 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalColumnSizing = signal<ColumnSizingState>(
     DEFAULT_TABLE_STATE.columnSizing,
   );
+  /**
+   * Transient measured width staged for a column the resolved state hasn't
+   * sized yet, applied only during the synchronous pointer-down that starts a
+   * resize. `mergedState` overlays it so TanStack captures the real start size
+   * instead of the 150px default; `onResizeStart` clears it once captured.
+   */
+  private readonly resizeSeedSizing = signal<ColumnSizingState>({});
   private readonly internalRowSelection = signal<RowSelectionState>(
     DEFAULT_TABLE_STATE.rowSelection,
   );
@@ -335,6 +342,22 @@ export class NatTable<TData extends RowData = RowData> {
       this.allLeafColumnIds(),
     ),
   );
+  private readonly resolvedColumnSizing = computed<ColumnSizingState>(() => {
+    const resolved = this.state().columnSizing ?? this.internalColumnSizing();
+    const seed = this.resizeSeedSizing();
+
+    // Overlay seed widths only for columns the resolved state hasn't sized yet.
+    // Resolved entries always win, so the overlay self-shadows once a controlled
+    // binding (or the internal signal) catches up — and never blocks a reset.
+    let merged: ColumnSizingState | null = null;
+    for (const columnId of Object.keys(seed)) {
+      if (!(columnId in resolved)) {
+        (merged ??= { ...resolved })[columnId] = seed[columnId];
+      }
+    }
+
+    return merged ?? resolved;
+  });
   private readonly resolvedAccessibilityText = computed(() =>
     mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText()),
   );
@@ -393,7 +416,7 @@ export class NatTable<TData extends RowData = RowData> {
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnOrder: this.resolvedColumnOrder(),
     columnPinning: this.resolvedColumnPinning(),
-    columnSizing: this.state().columnSizing ?? this.internalColumnSizing(),
+    columnSizing: this.resolvedColumnSizing(),
     rowSelection: normalizeRowSelection(
       this.state().rowSelection ?? this.internalRowSelection(),
       this.selectionMode() === 'multiple',
@@ -945,6 +968,9 @@ export class NatTable<TData extends RowData = RowData> {
     this.seedColumnSizingFromMeasuredWidth(header.column);
     this.captureResizeGuideOrigin(event);
     header.getResizeHandler()(event);
+    // The start size is now captured into columnSizingInfo; drop the transient
+    // overlay so a later controlled reset of this column isn't blocked.
+    this.resizeSeedSizing.set({});
   }
 
   /**
@@ -971,6 +997,11 @@ export class NatTable<TData extends RowData = RowData> {
     this.updateState({
       columnSizing: (current) => ({ ...current, [column.id]: measuredWidth }),
     });
+
+    // A controlled `columnSizing` binding can't reflect this update within the
+    // synchronous pointer-down, so also stage it as a transient overlay that
+    // mergedState applies until the binding catches up (cleared in onResizeStart).
+    this.resizeSeedSizing.set({ [column.id]: measuredWidth });
 
     // The TanStack Angular adapter only applies state into the table options
     // when its table signal is pulled. Read state here to flush the seed
