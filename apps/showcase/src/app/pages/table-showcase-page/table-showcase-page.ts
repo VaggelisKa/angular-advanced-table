@@ -7,7 +7,6 @@ import {
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  NatTableActionBar,
   NatTableToolbar,
   withNatTableHeaderActions,
   type NatTableSortIndicatorContext,
@@ -341,7 +340,6 @@ class MarketSortIndicator {
   imports: [
     NatTable,
     NatTablePagination,
-    NatTableActionBar,
     NatTableScrollControl,
     NatTableSearch,
     NatTableSurface,

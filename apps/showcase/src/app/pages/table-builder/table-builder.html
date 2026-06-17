@@ -97,19 +97,15 @@
           [stickyHeader]="withStickyHeader()"
         >
           @if (withGlobalFilter() || showColumnVisibility()) {
-            <nat-table-action-bar>
+            <nat-table-toolbar accessibleName="Table controls">
               @if (withGlobalFilter()) {
-                <nat-table-search
-                  align-left
-                  label="Search rows"
-                  placeholder="Try 'Alpha' or 'Security'..."
-                />
+                <nat-table-search label="Search rows" placeholder="Try 'Alpha' or 'Security'..." />
               }
 
               @if (showColumnVisibility()) {
                 <nat-table-column-visibility />
               }
-            </nat-table-action-bar>
+            </nat-table-toolbar>
           }
 
           @if (withPagination()) {

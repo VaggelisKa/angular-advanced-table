@@ -147,15 +147,14 @@
         [stickyHeader]="true"
         [accessibilityText]="accessibilityText"
       >
-        <nat-table-action-bar>
+        <nat-table-toolbar class="kitchen-metrics-toolbar" accessibleName="Render metrics toolbar">
           <nat-render-metrics-filter [store]="metricsStore" />
           <nat-render-metrics-panel [store]="metricsStore" />
-        </nat-table-action-bar>
+        </nat-table-toolbar>
 
         <nat-table-toolbar class="kitchen-table-toolbar" accessibleName="Live movers table toolbar">
           <nat-table-search
             class="kitchen-table-search"
-            align-left
             label="Search symbol, company, exchange, desk, or id"
             placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
           />

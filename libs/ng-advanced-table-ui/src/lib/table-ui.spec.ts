@@ -8,6 +8,7 @@ import { NatTableColumnVisibility } from './components/table-column-visibility/t
 import { withNatTableHeaderActions } from './components/table-header-actions/with-table-header-actions';
 import { NatTablePageSize } from './components/table-page-size/table-page-size';
 import { NatTablePager } from './components/table-pager/table-pager';
+import { NatTablePagination } from './components/table-pagination/table-pagination';
 import { NatTableScrollControl } from './components/table-scroll-control/table-scroll-control';
 import { NatTableSearch } from './components/table-search/table-search';
 import { NatTableSurface } from './components/table-surface/table-surface';
@@ -138,11 +139,7 @@ class TableUiHost {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        accessibleName="Operations table"
-      />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
@@ -163,11 +160,7 @@ class CustomSortIndicatorHost {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        accessibleName="Operations table"
-      />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
@@ -435,11 +428,7 @@ class ProviderAccessibilityLabelsHost {
   ],
   template: `
     <nat-table-surface [locale]="locale()">
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        accessibleName="Operations table"
-      />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
 
       <nat-table-search />
       <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
@@ -458,11 +447,7 @@ class LocaleSwitchingHost {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        accessibleName="Operations table"
-      />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
@@ -515,6 +500,27 @@ class MultiSortHost {
   }
 }
 
+@Component({
+  imports: [NatTable, NatTablePagination, NatTableSurface],
+  template: `
+    <nat-table-surface [initialState]="initialState">
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
+    </nat-table-surface>
+  `,
+})
+class PaginationToolbarHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = baseColumns;
+  readonly pageSizeOptions = [2, 3, 5] as const;
+  readonly initialState: Partial<NatTableState> = {
+    pagination: {
+      pageIndex: 0,
+      pageSize: 2,
+    },
+  };
+}
+
 describe('ng-advanced-table-ui', () => {
   let fixture: ComponentFixture<TableUiHost>;
   let host: TableUiHost;
@@ -530,6 +536,7 @@ describe('ng-advanced-table-ui', () => {
         LocaleSwitchingHost,
         HeaderActionCompositionHost,
         MultiSortHost,
+        PaginationToolbarHost,
       ],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
@@ -701,6 +708,30 @@ describe('ng-advanced-table-ui', () => {
       pageIndex: 1,
       pageSize: 3,
     });
+  });
+
+  it('renders NatTablePagination as a toolbar with grouped controls', () => {
+    fixture.destroy();
+    const paginationFixture = TestBed.createComponent(PaginationToolbarHost);
+    paginationFixture.detectChanges();
+
+    const toolbar = paginationFixture.nativeElement.querySelector(
+      'nat-table-pagination nat-table-toolbar',
+    ) as HTMLElement;
+    const groups = paginationFixture.nativeElement.querySelectorAll(
+      'nat-table-pagination [natToolbarGroup]',
+    );
+
+    expect(toolbar).toBeTruthy();
+    expect(toolbar.getAttribute('role')).toBe('toolbar');
+    expect(toolbar.getAttribute('aria-label')).toBe('Table pagination');
+    expect(groups.length).toBe(2);
+    expect(
+      paginationFixture.nativeElement.querySelectorAll('nat-table-pagination .chip').length,
+    ).toBe(3);
+    expect(
+      paginationFixture.nativeElement.querySelectorAll('nat-table-pagination .pager-button').length,
+    ).toBe(2);
   });
 
   it('wraps headers with sort and pin actions without losing the original label', async () => {

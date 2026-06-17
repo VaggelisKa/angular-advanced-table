@@ -214,7 +214,12 @@ describe('TableShowcasePage', () => {
 
     expect(fixture.nativeElement.querySelector('[data-testid="open-table-options"]')).toBeFalsy();
     expect(document.querySelector('.feature-dialog')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('nat-table-toolbar')).toBeTruthy();
+    const tableSurfaceChildren = Array.from(
+      fixture.nativeElement.querySelector('nat-table-surface.table-shell > .surface').children,
+    ).map((element) => (element as HTMLElement).tagName.toLowerCase());
+    expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar').length).toBe(
+      2,
+    );
     expect(fixture.nativeElement.querySelector('.search-input')).toBeTruthy();
     expect(
       fixture.nativeElement.querySelector(
