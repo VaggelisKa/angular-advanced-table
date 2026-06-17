@@ -14,6 +14,7 @@ import {
   ElementRef,
   inject,
   input,
+  NgZone,
   output,
   signal,
   untracked,
@@ -216,6 +217,7 @@ export class NatTable<TData extends RowData = RowData> {
   readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
   private readonly natTableService = inject(NatTableService);
+  private readonly ngZone = inject(NgZone);
 
   protected readonly initialState = computed(() => this.natTableService.surfaceInitialState());
   protected readonly state = computed(() => this.natTableService.state());
@@ -699,10 +701,14 @@ export class NatTable<TData extends RowData = RowData> {
       }
     });
 
-    afterNextRender(() => this.initializeHeaderObservation());
+    afterNextRender(() => {
+      this.initializeHeaderObservation();
+      this.setupStickyHeaderScrollListener();
+    });
     afterRenderEffect(() => {
       this.visibleColumnIds();
       this.reattachHeaderObservers();
+      this.updateStickyHeaderPosition();
     });
 
     this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
@@ -1129,6 +1135,78 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     this.measuredHeaderWidths.set(next);
+  }
+
+  private setupStickyHeaderScrollListener(): void {
+    this.ngZone.runOutsideAngular(() => {
+      const region = this.tableRegionRef()?.nativeElement;
+      if (!region) {
+        return;
+      }
+
+      const listener = () => {
+        this.updateStickyHeaderPosition();
+      };
+
+      window.addEventListener('scroll', listener, { passive: true });
+      window.addEventListener('resize', listener, { passive: true });
+      region.addEventListener('scroll', listener, { passive: true });
+
+      this.destroyRef.onDestroy(() => {
+        window.removeEventListener('scroll', listener);
+        window.removeEventListener('resize', listener);
+        region.removeEventListener('scroll', listener);
+      });
+
+      this.updateStickyHeaderPosition();
+    });
+  }
+
+  private updateStickyHeaderPosition(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+    const tableEl = region?.querySelector('table');
+    const theadEl = tableEl?.querySelector('thead');
+
+    if (!region || !tableEl || !theadEl) {
+      return;
+    }
+
+    const headerCells = region.querySelectorAll<HTMLTableCellElement>('thead th');
+
+    if (!this.stickyHeader()) {
+      for (const cell of headerCells) {
+        cell.style.transform = '';
+      }
+      return;
+    }
+
+    const isRegionVerticallyScrollable = region.scrollHeight > region.clientHeight && 
+      (window.getComputedStyle(region).overflowY === 'auto' || window.getComputedStyle(region).overflowY === 'scroll');
+
+    if (isRegionVerticallyScrollable) {
+      for (const cell of headerCells) {
+        cell.style.transform = '';
+      }
+      return;
+    }
+
+    const rect = tableEl.getBoundingClientRect();
+    const theadHeight = theadEl.getBoundingClientRect().height;
+    
+    const firstCell = headerCells[0];
+    const computedTop = firstCell ? window.getComputedStyle(firstCell).top : '0';
+    const stickyTop = parseFloat(computedTop) || 0;
+
+    let translateY = 0;
+    if (rect.top < stickyTop) {
+      const maxTranslateY = rect.height - theadHeight;
+      translateY = Math.min(Math.max(0, stickyTop - rect.top), maxTranslateY);
+    }
+
+    const transformValue = translateY > 0 ? `translate3d(0, ${translateY}px, 0)` : '';
+    for (const cell of headerCells) {
+      cell.style.transform = transformValue;
+    }
   }
 
   private buildTableSummary(): string {

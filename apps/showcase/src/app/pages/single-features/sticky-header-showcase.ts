@@ -31,8 +31,11 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   styles: `
-    nat-table-surface {
+    .scrollable-grid-card nat-table-surface {
       --nat-table-max-height: 400px;
+    }
+    .table-stack nat-table-surface {
+      --nat-table-max-height: none;
     }
   `,
   template: `
@@ -46,7 +49,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
       </header>
 
       <div class="grid-layout grid-layout-with-panel">
-        <div class="card">
+        <div class="card scrollable-grid-card">
           <h2 class="card-title">Scrollable Grid</h2>
           <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
             <nat-table
@@ -74,6 +77,29 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
             </div>
           </div>
         </div>
+      </div>
+
+      <header class="header-section">
+        <h2 class="title">Viewport Sticky Tables (No Max Height)</h2>
+        <p class="description">
+          These 5 tables have no max height limit. As you scroll down the page, each table's header
+          will stick to the top of the viewport/window and push the previous one out of view.
+        </p>
+      </header>
+
+      <div class="table-stack">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="card" style="margin-bottom: 4rem;">
+            <h3 class="card-title">Table #{{ i }}</h3>
+            <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
+              <nat-table
+                [data]="data"
+                [columns]="columns"
+                [accessibleName]="'Viewport sticky table ' + i"
+              />
+            </nat-table-surface>
+          </div>
+        }
       </div>
     </div>
   `,
