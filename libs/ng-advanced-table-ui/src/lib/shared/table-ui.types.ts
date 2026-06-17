@@ -210,6 +210,20 @@ export interface NatTableAccessibilityColumnVisibilityLabels {
   columnState?: (context: NatTableAccessibilityColumnVisibilityStateContext) => string;
 }
 
+/** Context passed to per-row selection checkbox label formatters. */
+export type NatTableAccessibilitySelectionRowContext = {
+  /** Stable row id resolved through the table's `getRowId`. */
+  readonly rowId: string;
+};
+
+/** Optional accessibility label overrides for the generated selection column. */
+export type NatTableAccessibilitySelectionLabels = {
+  /** `aria-label` applied to the select-all header checkbox. */
+  readonly selectAllAriaLabel?: string;
+  /** `aria-label` applied to each per-row checkbox. */
+  readonly selectRowAriaLabel?: (context: NatTableAccessibilitySelectionRowContext) => string;
+};
+
 /** Context passed to sort-button label formatters. */
 export interface NatTableAccessibilityHeaderActionSortContext {
   /** Human-readable column label. */

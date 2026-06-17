@@ -11,6 +11,11 @@ export { NatToolbarGroup } from './lib/components/table-toolbar/toolbar-group/to
 export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item/toolbar-item.directive';
 export { NAT_TOOLBAR_ITEM } from './lib/components/table-toolbar/common/toolbar-tokens.const';
 export {
+  NatTableSelectionCheckbox,
+  withNatTableSelectionColumn,
+  type NatTableSelectionColumnOptions,
+} from './lib/components/table-selection/table-selection';
+export {
   NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_DEFAULT_INTL,
   NAT_TABLE_UI_INTL,
@@ -31,6 +36,7 @@ export type {
   NatTablePagerIntl,
   NatTableScrollControlIntl,
   NatTableSearchIntl,
+  NatTableSelectionIntl,
   NatTableToolbarIntl,
   NatTableUiIntl,
   NatTableUiIntlConfig,
@@ -52,6 +58,8 @@ export type {
   NatTableAccessibilityPageSizeOptionContext,
   NatTableAccessibilityScrollControlLabels,
   NatTableAccessibilityScrollControlPositionContext,
+  NatTableAccessibilitySelectionLabels,
+  NatTableAccessibilitySelectionRowContext,
   NatTableColumnMeta,
   NatTableHeaderActionsColumnOptions,
   NatTableSortDirection,

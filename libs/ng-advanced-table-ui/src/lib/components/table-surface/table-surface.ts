@@ -12,6 +12,7 @@ import type {
   ColumnOrderState,
   ColumnPinningState,
   PaginationState,
+  RowSelectionState,
   SortingState,
   VisibilityState,
 } from '@tanstack/angular-table';
@@ -65,6 +66,7 @@ export class NatTableSurface {
   readonly columnOrderChange = output<ColumnOrderState>();
   readonly columnPinningChange = output<ColumnPinningState>();
   readonly paginationChange = output<PaginationState>();
+  readonly rowSelectionChange = output<RowSelectionState>();
 
   private readonly natTableService = inject(NatTableService);
   constructor() {
@@ -106,6 +108,7 @@ export class NatTableSurface {
       columnVisibility: {},
       columnOrder: [],
       columnPinning: { left: [], right: [] },
+      rowSelection: {},
       pagination: { pageIndex: 0, pageSize: 10 },
     };
 
@@ -135,6 +138,8 @@ export class NatTableSurface {
         JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning);
       const paginationChanged =
         JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
+      const rowSelectionChanged =
+        JSON.stringify(prev.rowSelection) !== JSON.stringify(nextState.rowSelection);
 
       if (
         sortingChanged ||
@@ -143,7 +148,8 @@ export class NatTableSurface {
         columnVisibilityChanged ||
         columnOrderChanged ||
         columnPinningChanged ||
-        paginationChanged
+        paginationChanged ||
+        rowSelectionChanged
       ) {
         this.stateChange.emit(nextState);
       }
@@ -174,6 +180,9 @@ export class NatTableSurface {
 
       if (paginationChanged) {
         this.paginationChange.emit(nextState.pagination);
+      }
+      if (rowSelectionChanged) {
+        this.rowSelectionChange.emit(nextState.rowSelection);
       }
     });
   }

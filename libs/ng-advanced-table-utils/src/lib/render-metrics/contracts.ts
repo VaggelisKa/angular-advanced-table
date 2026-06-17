@@ -6,6 +6,7 @@ import type {
   ColumnPinningState,
   PaginationState,
   RowData,
+  RowSelectionState,
   SortingState,
   Table,
   Updater,
@@ -25,6 +26,7 @@ export interface NatTableRenderMetricsState {
   columnVisibility: VisibilityState;
   columnOrder: ColumnOrderState;
   columnPinning: ColumnPinningState;
+  rowSelection: RowSelectionState;
   pagination: PaginationState;
 }
 
