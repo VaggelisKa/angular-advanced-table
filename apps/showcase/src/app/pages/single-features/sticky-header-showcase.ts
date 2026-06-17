@@ -9,6 +9,16 @@ interface DemoItem {
   category: string;
   status: string;
   value: number;
+  region: string;
+  load: string;
+  memory: string;
+  connections: number;
+  uptime: string;
+  owner: string;
+  lastUpdated: string;
+  cost: number;
+  risk: string;
+  compliance: string;
 }
 
 // Generate 40 rows to ensure vertical scrollability
@@ -16,6 +26,10 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
   const id = index + 1;
   const categories = ['Analytics', 'Infrastructure', 'Data Science', 'Security'];
   const statuses = ['Active', 'Paused', 'Alert', 'Halted'];
+  const regions = ['us-east-1', 'us-west-2', 'eu-west-1', 'ap-southeast-1'];
+  const owners = ['Dev Team A', 'Dev Team B', 'Infra Team', 'SecOps'];
+  const risks = ['Low', 'Medium', 'High', 'Critical'];
+  const compliances = ['Passed', 'Failed', 'Pending', 'Warning'];
 
   return {
     id: `item-${id}`,
@@ -23,6 +37,16 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
     category: categories[id % categories.length]!,
     status: statuses[id % statuses.length]!,
     value: 1000 + ((id * 235) % 9000),
+    region: regions[id % regions.length]!,
+    load: `${(id * 17) % 100}%`,
+    memory: `${((id * 7) % 32) + 2} GB`,
+    connections: (id * 11) % 500,
+    uptime: `${99.0 + (id % 10) * 0.1}%`,
+    owner: owners[id % owners.length]!,
+    lastUpdated: `${id % 24} hours ago`,
+    cost: 50 + ((id * 15) % 450),
+    risk: risks[id % risks.length]!,
+    compliance: compliances[id % compliances.length]!,
   };
 });
 
@@ -36,6 +60,11 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
     }
     .table-stack nat-table-surface {
       --nat-table-max-height: none;
+    }
+    .table-stack {
+      display: block;
+      width: 100%;
+      min-width: 0;
     }
   `,
   template: `
@@ -123,6 +152,57 @@ export class StickyHeaderShowcasePage {
       accessorKey: 'status',
       header: 'Status',
       meta: { label: 'Status' },
+    },
+    {
+      accessorKey: 'region',
+      header: 'Region',
+      meta: { label: 'Region' },
+    },
+    {
+      accessorKey: 'load',
+      header: 'Load',
+      meta: { label: 'Load' },
+    },
+    {
+      accessorKey: 'memory',
+      header: 'Memory',
+      meta: { label: 'Memory' },
+    },
+    {
+      accessorKey: 'connections',
+      header: 'Connections',
+      meta: { label: 'Connections', align: 'end' },
+    },
+    {
+      accessorKey: 'uptime',
+      header: 'Uptime',
+      meta: { label: 'Uptime' },
+    },
+    {
+      accessorKey: 'owner',
+      header: 'Owner',
+      meta: { label: 'Owner' },
+    },
+    {
+      accessorKey: 'lastUpdated',
+      header: 'Last Updated',
+      meta: { label: 'Last Updated' },
+    },
+    {
+      accessorKey: 'cost',
+      header: 'Monthly Cost',
+      meta: { label: 'Monthly Cost', align: 'end' },
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
+    },
+    {
+      accessorKey: 'risk',
+      header: 'Risk Level',
+      meta: { label: 'Risk Level' },
+    },
+    {
+      accessorKey: 'compliance',
+      header: 'Compliance',
+      meta: { label: 'Compliance' },
     },
     {
       accessorKey: 'value',
