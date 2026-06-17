@@ -17,7 +17,6 @@ This package README is intentionally scoped to package entry-point information. 
 Use this package when you want optional companions around `NatTable`:
 
 - `NatTableSurface`
-- `NatTableSearch`
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
@@ -43,7 +42,6 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 ## Public Exports
 
 - `NatTableSurface`
-- `NatTableSearch`
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
@@ -98,7 +96,6 @@ import { NatTable } from 'ng-advanced-table';
 import {
   NatTablePager,
   NatTableScrollControl,
-  NatTableSearch,
   NatTableSurface,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
@@ -127,7 +124,7 @@ const columns = withNatTableHeaderActions<OrderRow>([
 @Component({
   selector: 'app-orders-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatTablePager, NatTableScrollControl, NatTableSearch, NatTableSurface],
+  imports: [NatTable, NatTablePager, NatTableScrollControl, NatTableSurface],
   template: `
     <nat-table-surface>
       <nat-table
@@ -139,7 +136,6 @@ const columns = withNatTableHeaderActions<OrderRow>([
       />
 
       <nat-table-scroll-control />
-      <nat-table-search />
       <nat-table-pager />
     </nat-table-surface>
   `,
