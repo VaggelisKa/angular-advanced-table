@@ -70,11 +70,17 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
-        <h1 class="title">Sticky Header</h1>
-        <p class="description">
-          Demonstrates vertical sticky header pinning. The header stays docked when scrolling down
-          the grid.
-        </p>
+        <div style="display: grid; gap: 4px;">
+          <h1 class="title">Sticky Header</h1>
+          <p class="description">
+            Demonstrates vertical sticky header pinning. The header stays docked when scrolling down
+            the grid.
+          </p>
+          <div class="tip" style="margin-top: 4px; font-size: 0.8rem; opacity: 0.85;">
+            <strong>Pro Tip:</strong> If your page has a sticky topbar/header, set the CSS custom property 
+            <code>--nat-table-sticky-top</code> (e.g. matching your topbar height) on the container/table to offset the stickiness vertical position.
+          </div>
+        </div>
       </header>
 
       <div class="grid-layout grid-layout-with-panel">
@@ -109,11 +115,17 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
       </div>
 
       <header class="header-section">
-        <h2 class="title">Viewport Sticky Tables (No Max Height)</h2>
-        <p class="description">
-          These 5 tables have no max height limit. As you scroll down the page, each table's header
-          will stick to the top of the viewport/window and push the previous one out of view.
-        </p>
+        <div style="display: grid; gap: 4px;">
+          <h2 class="title">Viewport Sticky Tables (No Max Height)</h2>
+          <p class="description">
+            These 5 tables have no max height limit. As you scroll down the page, each table's header
+            will stick to the top of the viewport/window and push the previous one out of view.
+          </p>
+          <div class="tip" style="margin-top: 4px; font-size: 0.8rem; opacity: 0.85;">
+            The sticky vertical position automatically reads and respects the computed <code>top</code> offset, 
+            making it fully compatible with sticky page-level headers/topbars.
+          </div>
+        </div>
       </header>
 
       <div class="table-stack">
