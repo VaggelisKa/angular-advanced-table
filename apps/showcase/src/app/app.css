@@ -394,6 +394,17 @@
   padding: 0 2px;
 }
 
+.showcase-repo-section {
+  display: grid;
+  gap: 8px;
+  padding: 14px 8px 0;
+  border-top: 1px solid var(--shell-border);
+}
+
+.showcase-repo-section .showcase-nav-caption {
+  padding: 0 2px;
+}
+
 .showcase-theme-toggle {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -439,6 +450,46 @@
   width: 14px;
   height: 14px;
   color: currentcolor;
+}
+
+.showcase-github-link {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-border);
+  border-radius: 8px;
+  background: var(--shell-nav-muted);
+  color: var(--shell-text-soft);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.showcase-github-link:hover {
+  border-color: var(--shell-border-strong);
+  background: var(--shell-nav-hover);
+  color: var(--shell-text);
+}
+
+.showcase-github-link:focus-visible {
+  outline: 3px solid var(--shell-focus);
+  outline-offset: 2px;
+}
+
+.showcase-github-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  color: currentcolor;
+  fill: currentcolor;
 }
 
 .showcase-content {
@@ -562,6 +613,10 @@
 
   .showcase-theme-toggle {
     width: 100%;
+  }
+
+  .showcase-repo-section {
+    padding: 12px 0 0;
   }
 }
 
