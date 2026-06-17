@@ -1,24 +1,13 @@
-import { Dialog, DialogRef } from '@angular/cdk/dialog';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  TemplateRef,
-  computed,
-  inject,
-  input,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
-  NatTableColumnVisibility,
   NatTablePagination,
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
-  NatTableActionBar,
+  NatTableToolbar,
   withNatTableHeaderActions,
   type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
@@ -249,32 +238,6 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   },
 ];
 
-type TableFeatureKey =
-  | 'enablePagination'
-  | 'enableGlobalFilter'
-  | 'showColumnVisibility'
-  | 'showScrollControl'
-  | 'showRenderMetrics'
-  | 'stickyHeader';
-
-interface TableFeatureConfig {
-  enablePagination: boolean;
-  enableGlobalFilter: boolean;
-  showColumnVisibility: boolean;
-  showScrollControl: boolean;
-  showRenderMetrics: boolean;
-  stickyHeader: boolean;
-}
-
-const defaultTableFeatures: TableFeatureConfig = {
-  enablePagination: true,
-  enableGlobalFilter: true,
-  showColumnVisibility: true,
-  showScrollControl: false,
-  showRenderMetrics: true,
-  stickyHeader: true,
-};
-
 const showcaseAccessibilityText = {
   emptyState:
     'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.',
@@ -376,12 +339,11 @@ class MarketSortIndicator {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTable,
-    NatTableColumnVisibility,
     NatTablePagination,
-    NatTableActionBar,
     NatTableScrollControl,
     NatTableSearch,
     NatTableSurface,
+    NatTableToolbar,
     NatRenderMetricsFilter,
     NatRenderMetricsPanel,
   ],
@@ -389,10 +351,7 @@ class MarketSortIndicator {
   styleUrl: './table-showcase-page.css',
 })
 export class TableShowcasePage {
-  private readonly dialog = inject(Dialog);
   private readonly themeStore = inject(ShowcaseThemeStore);
-  private readonly featureDialogTemplate =
-    viewChild.required<TemplateRef<unknown>>('featureDialog');
 
   protected readonly simulation = inject(TableSimulation);
   protected readonly datasetOptions = DATASET_OPTIONS;
@@ -411,14 +370,6 @@ export class TableShowcasePage {
   protected readonly getRowId = (row: SimulationRow) => row.id;
   protected readonly accessibilityText = showcaseAccessibilityText;
   protected readonly theme = this.themeStore.theme;
-  protected readonly tableFeatures = signal<TableFeatureConfig>(defaultTableFeatures);
-  protected readonly hasTopTableControls = computed(() => {
-    const features = this.tableFeatures();
-    return features.enableGlobalFilter || features.showColumnVisibility;
-  });
-  protected readonly hasTablePaginationControls = computed(
-    () => this.tableFeatures().enablePagination,
-  );
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],
   });
@@ -452,39 +403,6 @@ export class TableShowcasePage {
 
   protected runManualPulse(): void {
     this.simulation.pulse();
-  }
-
-  private featureDialogRef: DialogRef<unknown, unknown> | null = null;
-
-  protected openFeatureDialog(): void {
-    if (this.featureDialogRef) {
-      return;
-    }
-
-    this.featureDialogRef = this.dialog.open(this.featureDialogTemplate(), {
-      ariaLabelledBy: 'feature-dialog-title',
-      panelClass: ['feature-dialog-panel', `feature-dialog-panel--${this.theme()}`],
-    });
-
-    this.featureDialogRef.closed.subscribe(() => {
-      this.featureDialogRef = null;
-    });
-  }
-
-  protected closeFeatureDialog(): void {
-    this.featureDialogRef?.close();
-  }
-
-  protected toggleFeature(key: TableFeatureKey, enabled: boolean): void {
-    this.tableFeatures.update((current) => ({
-      ...current,
-      [key]: enabled,
-    }));
-  }
-
-  protected readChecked(event: Event): boolean {
-    const target = event.target;
-    return target instanceof HTMLInputElement ? target.checked : false;
   }
 
   protected toggleStatus(status: SimulationStatus): void {

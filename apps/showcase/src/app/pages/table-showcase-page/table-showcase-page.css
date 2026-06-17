@@ -438,7 +438,7 @@
   color: var(--warning);
 }
 
-nat-table-action-bar nat-render-metrics-filter {
+.kitchen-metrics-toolbar nat-render-metrics-filter {
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -594,24 +594,6 @@ nat-table-action-bar nat-render-metrics-filter {
   gap: 14px;
 }
 
-.table-action-bar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-
-.table-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-left: auto;
-}
-
 .table-shell nat-table-scroll-control {
   display: block;
   padding: 12px 20px;
@@ -633,6 +615,26 @@ nat-table-action-bar nat-render-metrics-filter {
   box-shadow: none;
   backdrop-filter: none;
   padding: 0;
+}
+
+.kitchen-metrics-toolbar,
+.kitchen-table-toolbar {
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.kitchen-table-search {
+  flex: 1 1 340px;
+  min-width: min(100%, 280px);
+  max-width: 520px;
+}
+
+.kitchen-table-pagination {
+  --nat-table-space-card-compact: 0;
+  --nat-table-color-border: transparent;
+  --nat-table-color-surface: transparent;
 }
 
 /*
@@ -674,9 +676,7 @@ nat-table-action-bar nat-render-metrics-filter {
   --nat-table-space-card-compact: 14px 16px;
   --nat-table-space-controls-gap: 16px;
   --nat-table-space-control-block-gap: 12px;
-  --nat-table-space-action-bar-gap: 14px;
-  --nat-table-space-action-bar-margin-bottom: 16px;
-  --nat-table-space-table-actions-gap: 14px;
+  --nat-table-space-toolbar-gap: 14px;
   --nat-table-space-pager-gap: 10px;
   --nat-table-space-chip-row-gap: 10px;
   --nat-table-space-header-content-gap: 6px;

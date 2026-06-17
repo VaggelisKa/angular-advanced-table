@@ -10,11 +10,11 @@ import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePagination,
-  NatTableActionBar,
   NatTableScrollControl,
   NatTableSearch,
   NatTableSurface,
   NatTableService,
+  NatTableToolbar,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
 
@@ -50,7 +50,7 @@ const DEMO_DATA: DemoItem[] = [
     NatTableColumnVisibility,
     NatTablePagination,
     NatTableScrollControl,
-    NatTableActionBar,
+    NatTableToolbar,
   ],
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css',
@@ -123,15 +123,14 @@ export class TableBuilderPage {
   readonly generatedHtml = computed(() => {
     let topControls = '';
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
-      topControls = '\n  <nat-table-action-bar>';
+      topControls = '\n  <nat-table-toolbar accessibleName="Table controls">';
       if (this.withGlobalFilter()) {
-        topControls +=
-          '\n    <nat-table-search align-left label="Search rows" placeholder="Type here..." />';
+        topControls += '\n    <nat-table-search label="Search rows" placeholder="Type here..." />';
       }
       if (this.showColumnVisibility()) {
         topControls += '\n    <nat-table-column-visibility />';
       }
-      topControls += '\n  </nat-table-action-bar>';
+      topControls += '\n  </nat-table-toolbar>';
     }
 
     let paginationControls = '';
@@ -167,7 +166,7 @@ export class TableBuilderPage {
     const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
 
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
-      uiImports.push('NatTableActionBar');
+      uiImports.push('NatTableToolbar');
     }
     if (this.withGlobalFilter()) uiImports.push('NatTableSearch');
     if (this.showColumnVisibility()) uiImports.push('NatTableColumnVisibility');
@@ -179,7 +178,12 @@ export class TableBuilderPage {
     const componentImports = ['NatTable', 'NatTableState'];
 
     const stateObj: Partial<NatTableState> = {
-      columnVisibility: this.tableState().columnVisibility ?? { name: true, category: true, status: true, value: true },
+      columnVisibility: this.tableState().columnVisibility ?? {
+        name: true,
+        category: true,
+        status: true,
+        value: true,
+      },
     };
     if (this.withPagination()) {
       stateObj.pagination = this.tableState().pagination ?? { pageIndex: 0, pageSize: 3 };
@@ -195,7 +199,7 @@ export class TableBuilderPage {
       .replace(/"([^"]+)":/g, '$1:')
       .replace(/"/g, "'")
       .split('\n')
-      .map((line, idx) => idx === 0 ? line : '    ' + line)
+      .map((line, idx) => (idx === 0 ? line : '    ' + line))
       .join('\n');
 
     return `import { ${imports.join(', ')} } from '@angular/core';
@@ -251,7 +255,6 @@ export class CustomTableComponent {
   }
 }`;
   });
-
 
   toggleColumnPinning(): void {
     const nextValue = !this.withColumnPinning();

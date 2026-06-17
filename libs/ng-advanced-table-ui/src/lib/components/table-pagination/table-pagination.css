@@ -2,6 +2,14 @@
   display: block;
 }
 
+.pagination-toolbar {
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--nat-table-color-border, #e4e7eb);
+  --nat-table-toolbar-gap: var(--nat-table-space-toolbar-gap, 14px);
+  --nat-table-toolbar-padding: var(--nat-table-space-card-compact, 10px 20px);
+  --nat-table-toolbar-background: var(--nat-table-color-surface, #ffffff);
+}
+
 /* Page Size Styles */
 .chip-row {
   display: flex;
