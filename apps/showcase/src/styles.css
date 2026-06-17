@@ -81,7 +81,8 @@ input {
   --showcase-page-bg: #f6f7f9;
   --showcase-page-text: #0f1419;
   --showcase-page-text-soft: #5b6672;
-  --showcase-page-text-muted: #8a94a0;
+  /* WCAG AA: >=4.5:1 on white and on --showcase-page-surface-muted (#f4f5f7). */
+  --showcase-page-text-muted: #646e7b;
   --showcase-page-surface: #ffffff;
   --showcase-page-surface-elevated: #ffffff;
   --showcase-page-surface-contrast: #fafbfc;
@@ -118,7 +119,8 @@ input {
   --showcase-page-bg: #0b0d10;
   --showcase-page-text: #e6eaef;
   --showcase-page-text-soft: #9aa4b1;
-  --showcase-page-text-muted: #6b7582;
+  /* WCAG AA: >=4.5:1 on dark surfaces (#14171c, #1a1e24). */
+  --showcase-page-text-muted: #7d8794;
   --showcase-page-surface: #14171c;
   --showcase-page-surface-elevated: #14171c;
   --showcase-page-surface-contrast: #1a1e24;
@@ -547,7 +549,8 @@ input {
   border: 1px solid color-mix(in srgb, var(--showcase-page-accent) 45%, transparent);
   border-radius: var(--showcase-page-radius-sm);
   background: var(--showcase-page-accent-soft);
-  color: var(--showcase-page-accent);
+  /* WCAG AA: accent-strong keeps >=4.5:1 on accent-soft in both themes. */
+  color: var(--showcase-page-accent-strong);
   font-size: 0.78rem;
   font-weight: 500;
 }
