@@ -485,6 +485,11 @@ input {
     box-shadow 140ms ease;
 }
 
+.showcase-page .btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .showcase-page .btn-primary {
   border-color: var(--showcase-page-accent);
   background: var(--showcase-page-accent);

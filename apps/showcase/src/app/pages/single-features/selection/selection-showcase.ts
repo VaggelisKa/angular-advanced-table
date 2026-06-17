@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableSelectionColumn } from 'ng-advanced-table-ui';
+import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table-ui';
 
 type DemoItem = {
   readonly id: string;
@@ -30,7 +30,7 @@ const DEMO_DATA: DemoItem[] = [
 @Component({
   selector: 'app-selection-showcase',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatTableSurface],
+  imports: [NatTable, NatTableSurface, NatTableToolbar, NatToolbarItem],
   templateUrl: './selection-showcase.html',
 })
 export class SelectionShowcasePage {
