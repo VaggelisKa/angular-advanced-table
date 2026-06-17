@@ -25,6 +25,7 @@ interface MockOrderRow {
     :host {
       display: inline-flex;
       align-items: center;
+      max-inline-size: 100%;
       min-height: 1.75rem;
       padding-inline: 0.62rem;
       border: 1px solid color-mix(in srgb, var(--showcase-page-text) 12%, transparent);
@@ -37,6 +38,11 @@ interface MockOrderRow {
       font-weight: 650;
       line-height: 1;
       letter-spacing: 0;
+      overflow: hidden;
+      overflow-wrap: normal;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: normal;
     }
   `,
   template: `{{ code().toUpperCase() }}`,
@@ -169,6 +175,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     meta: {
       label: 'Order',
       rowHeader: true,
+      cellMaxLines: Infinity,
     },
     cell: (info) =>
       flexRenderComponent(OrderCode, {

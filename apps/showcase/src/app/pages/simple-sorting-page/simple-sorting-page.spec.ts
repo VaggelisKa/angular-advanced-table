@@ -70,6 +70,9 @@ describe('SimpleSortingPage', () => {
   it('should pin company left and row actions right without pin controls', () => {
     fixture.detectChanges();
 
+    const orderCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child th[data-column-id="id"]',
+    ) as HTMLTableCellElement;
     const companyHeader = fixture.nativeElement.querySelector(
       'thead th[data-column-id="owner"]',
     ) as HTMLTableCellElement;
@@ -83,6 +86,8 @@ describe('SimpleSortingPage', () => {
       'tbody tr:first-child td[data-column-id="actions"]',
     ) as HTMLTableCellElement;
 
+    expect(orderCell.classList.contains('is-cell-clamped')).toBe(false);
+    expect(orderCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
     expect(companyHeader.classList.contains('is-pinned-left')).toBe(true);
     expect(companyCell.classList.contains('is-pinned-left')).toBe(true);
     expect(companyCell.classList.contains('is-cell-clamped')).toBe(true);
