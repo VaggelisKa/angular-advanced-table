@@ -1223,6 +1223,8 @@ export class NatTable<TData extends RowData = RowData> {
 
       this.intersectionObserver.observe(region);
 
+      let ticking = false;
+
       const listener = (event: Event) => {
         if (!this.isTableVisible) {
           return;
@@ -1233,7 +1235,13 @@ export class NatTable<TData extends RowData = RowData> {
           this.measureTableDimensions();
         }
 
-        this.updateStickyHeaderPosition();
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            this.updateStickyHeaderPosition();
+            ticking = false;
+          });
+          ticking = true;
+        }
       };
 
       window.addEventListener('scroll', listener, { passive: true });
