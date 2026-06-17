@@ -12,6 +12,13 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Do not create Nx version plan files for changes that only affect the showcase app, because showcase-only changes do not affect the published libraries.
 - Do not reuse or edit unrelated existing version plan files unless the user asks for that.
 
+## Package Layering
+
+- `ng-advanced-table` is the core package. It must not import from or otherwise depend on `ng-advanced-table-ui` or `ng-advanced-table-utils`.
+- `ng-advanced-table-ui` and `ng-advanced-table-utils` are companion packages. They may depend on `ng-advanced-table` when they use its runtime services, injection tokens, components, or public contracts.
+- `ng-advanced-table-locales` must remain below the core and companion packages in the dependency graph. It may be consumed by `ng-advanced-table`, `ng-advanced-table-ui`, and `ng-advanced-table-utils`, but it must not import from them.
+- Do not add TypeScript path mappings, package dependencies, or re-exports that create a dependency from the core package back to a companion package. If a bundled experience is needed, create a separate wrapper package instead of making the core package depend on companions.
+
 ## TypeScript Best Practices
 
 - Use strict type checking
