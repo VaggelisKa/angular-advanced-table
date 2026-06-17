@@ -1172,8 +1172,30 @@ export class NatTable<TData extends RowData = RowData> {
     if (!region) {
       return;
     }
-    const computedVar = window.getComputedStyle(region).getPropertyValue('--nat-table-sticky-top');
-    this.cachedStickyTop = parseFloat(computedVar) || 0;
+    const computedVar = window.getComputedStyle(region).getPropertyValue('--nat-table-sticky-top').trim();
+    if (!computedVar) {
+      this.cachedStickyTop = 0;
+      return;
+    }
+
+    if (/^-?\d+(\.\d+)?(px)?$/.test(computedVar)) {
+      this.cachedStickyTop = parseFloat(computedVar) || 0;
+      return;
+    }
+
+    try {
+      const temp = document.createElement('div');
+      temp.style.position = 'absolute';
+      temp.style.visibility = 'hidden';
+      temp.style.pointerEvents = 'none';
+      temp.style.height = computedVar;
+      region.appendChild(temp);
+      const computedHeight = window.getComputedStyle(temp).height;
+      region.removeChild(temp);
+      this.cachedStickyTop = parseFloat(computedHeight) || 0;
+    } catch {
+      this.cachedStickyTop = parseFloat(computedVar) || 0;
+    }
   }
 
   private measureTableDimensions(): void {
@@ -1205,23 +1227,27 @@ export class NatTable<TData extends RowData = RowData> {
         return;
       }
 
-      this.intersectionObserver = new IntersectionObserver((entries) => {
-        const entry = entries[0];
-        if (entry) {
-          const wasVisible = this.isTableVisible;
-          this.isTableVisible = entry.isIntersecting;
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+          const entry = entries[0];
+          if (entry) {
+            const wasVisible = this.isTableVisible;
+            this.isTableVisible = entry.isIntersecting;
 
-          if (this.isTableVisible && !wasVisible) {
-            this.updateCachedStickyTop();
-            this.measureTableDimensions();
-            this.updateStickyHeaderPosition();
+            if (this.isTableVisible && !wasVisible) {
+              this.updateCachedStickyTop();
+              this.measureTableDimensions();
+              this.updateStickyHeaderPosition();
+            }
           }
-        }
-      }, {
-        rootMargin: '100px 0px 100px 0px'
-      });
+        }, {
+          rootMargin: '100px 0px 100px 0px'
+        });
 
-      this.intersectionObserver.observe(region);
+        this.intersectionObserver.observe(region);
+      } else {
+        this.isTableVisible = true;
+      }
 
       let ticking = false;
 
