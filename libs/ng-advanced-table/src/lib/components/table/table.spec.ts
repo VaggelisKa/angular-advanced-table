@@ -1360,7 +1360,7 @@ describe('NatTable', () => {
     expect(intrinsicCell.classList.contains('is-width-constrained')).toBe(false);
   });
 
-  it('clamps body cell content to two lines by default and applies column cell height metadata', async () => {
+  it('applies explicit cell height and line clamp metadata', async () => {
     @Component({
       imports: [NatTable, TestTableSurface],
       template: `
@@ -1406,6 +1406,15 @@ describe('NatTable', () => {
           meta: { label: 'Status' },
           cell: (info) => info.getValue<string>(),
         },
+        {
+          accessorKey: 'throughput',
+          header: 'Throughput',
+          meta: {
+            label: 'Throughput',
+            cellMaxLines: 0,
+          },
+          cell: (info) => `${info.getValue<number>()} req/s`,
+        },
       ];
     }
 
@@ -1423,14 +1432,19 @@ describe('NatTable', () => {
     const statusCell = cellHeightFixture.nativeElement.querySelector(
       'tbody td[data-column-id="status"]',
     ) as HTMLElement;
+    const throughputCell = cellHeightFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="throughput"]',
+    ) as HTMLElement;
 
     expect(serviceCell.style.height).toBe('72px');
     expect(serviceCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('3');
     expect(serviceCell.classList.contains('is-cell-clamped')).toBe(true);
     expect(regionCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
     expect(regionCell.classList.contains('is-cell-clamped')).toBe(false);
-    expect(statusCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
-    expect(statusCell.classList.contains('is-cell-clamped')).toBe(true);
+    expect(statusCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
+    expect(statusCell.classList.contains('is-cell-clamped')).toBe(false);
+    expect(throughputCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
+    expect(throughputCell.classList.contains('is-cell-clamped')).toBe(true);
   });
 
   it('reorders columns from the keyboard and announces the move', async () => {

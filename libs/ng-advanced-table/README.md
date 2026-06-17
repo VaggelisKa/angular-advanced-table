@@ -118,6 +118,6 @@ export class ServiceTableComponent {
 
 Use `meta.hiddenHeaderLabel: 'Row actions'` for compact utility columns where the visible title is redundant. The table renders that value as screen-reader-only text, and `withNatTableHeaderActions(...)` hides only the label while keeping sort and menu controls visible.
 
-Body cell content is clamped to two lines by default. Set `meta.cellHeight` to give a column's body cells a fixed height, set `meta.cellMaxLines` for a different clamp count, or set `meta.cellMaxLines: Infinity` for custom interactive renderers that should not be line-clamped.
+Body cell content is not line-clamped by default. Set `meta.cellHeight` to give a column's body cells a fixed height, set `meta.cellMaxLines` to a finite line count to truncate content, or omit it or set `meta.cellMaxLines: Infinity` for custom interactive renderers that should not be line-clamped. Invalid explicit `meta.cellMaxLines` values fall back to two lines.
 
 For Angular component-backed cells and more interactive cell UIs, see [Custom cell components](../../README.md#custom-cell-components) in the root README.

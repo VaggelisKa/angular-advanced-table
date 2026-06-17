@@ -1691,17 +1691,14 @@ function normalizeColumnDimension(value: number | string | undefined): string | 
 }
 
 function normalizeCellMaxLines(value: number | undefined): string | null {
-  if (value === undefined) {
-    return String(DEFAULT_CELL_MAX_LINES);
-  }
-
-  if (value === Infinity) {
+  if (value === undefined || value === Infinity) {
     return null;
   }
 
-  return Number.isFinite(value) && value >= 1
-    ? String(Math.floor(value))
-    : String(DEFAULT_CELL_MAX_LINES);
+  const resolvedMaxLines =
+    Number.isFinite(value) && value >= 1 ? Math.floor(value) : DEFAULT_CELL_MAX_LINES;
+
+  return String(resolvedMaxLines);
 }
 
 function getNumericColumnWidth(value: number | string | undefined): number | null {

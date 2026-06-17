@@ -83,7 +83,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.
 - `withNatTableHeaderActions(...)` is idempotent. Reapplying it to already-wrapped columns updates the wrapper options instead of nesting header controls.
 - Set `column.meta.hiddenHeaderLabel` to visually hide the header title while keeping the sort button and three-dot menu visible with generated accessible labels.
-- Core table body cells clamp content to two lines by default; use `column.meta.cellHeight`, `column.meta.cellMaxLines`, or `column.meta.cellMaxLines = Infinity` on shared column definitions when companion UI columns need specific body-cell sizing.
+- Core table body cells are not line-clamped by default; use `column.meta.cellHeight` and finite `column.meta.cellMaxLines` values on shared column definitions when companion UI columns need specific body-cell sizing.
 - Use `column.meta.headerActions = false` to opt out per column, or provide `{ sortIndicator, accessibilityLabels }` there to override the helper-level options for one column.
 - Apply other column helpers first, then wrap the final column list with `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.

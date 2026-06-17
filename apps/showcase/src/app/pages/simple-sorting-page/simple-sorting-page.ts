@@ -197,6 +197,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     meta: {
       label: 'Company',
       cellHeight: 72,
+      cellMaxLines: 2,
     },
     cell: (info) => info.getValue<string>(),
   },
