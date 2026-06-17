@@ -1819,6 +1819,70 @@ describe('NatTable', () => {
     expect(liveRegion.textContent?.trim()).toBe('1 row selected.');
   });
 
+  it('retains row selection across pagination changes', async () => {
+    await recreateHost({
+      enableRowSelection: true,
+      enablePagination: true,
+      initialState: { pagination: { pageIndex: 0, pageSize: 2 } },
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const table = getInternalTable(fixture);
+
+    // Select a row rendered on the first page.
+    table.patchState({ rowSelection: { 'svc-00001': true } });
+    fixture.detectChanges();
+
+    // Page past it so the selected row is no longer rendered.
+    table.patchState({ pagination: (pagination) => ({ ...pagination, pageIndex: 2 }) });
+    fixture.detectChanges();
+
+    expect(table.table.getState().rowSelection).toEqual({ 'svc-00001': true });
+
+    // Returning to the first page still shows the row selected.
+    table.patchState({ pagination: (pagination) => ({ ...pagination, pageIndex: 0 }) });
+    fixture.detectChanges();
+
+    const firstRow = fixture.nativeElement.querySelector('tbody tr.data-row') as HTMLElement;
+
+    expect(firstRow.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('retains row selection when a selected row is filtered out of view', async () => {
+    await recreateHost({ enableRowSelection: true });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const table = getInternalTable(fixture);
+
+    // Select Alpha (svc-00001).
+    table.patchState({ rowSelection: { 'svc-00001': true } });
+    fixture.detectChanges();
+
+    // Filter to "gamma" so Alpha is no longer rendered.
+    table.patchState({ globalFilter: 'gamma' });
+    fixture.detectChanges();
+
+    const visibleRows = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+
+    expect(visibleRows.length).toBe(1);
+    expect((visibleRows[0] as HTMLElement).textContent).toContain('Gamma');
+    // Selection is keyed by row id, so it survives the filter.
+    expect(table.table.getState().rowSelection).toEqual({ 'svc-00001': true });
+
+    // Clearing the filter brings Alpha back, still selected.
+    table.patchState({ globalFilter: '' });
+    fixture.detectChanges();
+
+    const selectedRows = Array.from(
+      fixture.nativeElement.querySelectorAll('tbody tr.data-row'),
+    ).filter((row) => (row as HTMLElement).getAttribute('aria-selected') === 'true');
+
+    expect(selectedRows.length).toBe(1);
+    expect((selectedRows[0] as HTMLElement).textContent).toContain('Alpha');
+  });
+
   it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {
     fixture.detectChanges();
 

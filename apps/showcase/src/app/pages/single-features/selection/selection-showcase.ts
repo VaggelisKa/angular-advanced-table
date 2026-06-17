@@ -34,7 +34,7 @@ const DEMO_DATA: DemoItem[] = [
   templateUrl: './selection-showcase.html',
 })
 export class SelectionShowcasePage {
-  protected readonly data = DEMO_DATA;
+  protected readonly data = signal<DemoItem[]>(DEMO_DATA);
   protected readonly selectionMode = signal<'single' | 'multiple'>('multiple');
   protected readonly tableState = signal<Partial<NatTableState>>({ rowSelection: {} });
   protected readonly getRowId = (row: DemoItem) => row.id;
@@ -73,7 +73,7 @@ export class SelectionShowcasePage {
   protected readonly selectedNames = computed(() => {
     const selection = this.tableState().rowSelection ?? {};
 
-    return this.data.filter((item) => selection[item.id]).map((item) => item.name);
+    return this.data().filter((item) => selection[item.id]).map((item) => item.name);
   });
 
   protected readonly selectedSummary = computed(() => {
@@ -93,6 +93,22 @@ export class SelectionShowcasePage {
   }
 
   protected clearSelection(): void {
+    this.tableState.update((current) => ({ ...current, rowSelection: {} }));
+  }
+
+  protected deleteSelected(): void {
+    const selectedIds = new Set(Object.keys(this.tableState().rowSelection ?? {}));
+
+    if (selectedIds.size === 0) {
+      return;
+    }
+
+    this.data.update((items) => items.filter((item) => !selectedIds.has(item.id)));
+    this.tableState.update((current) => ({ ...current, rowSelection: {} }));
+  }
+
+  protected restoreData(): void {
+    this.data.set(DEMO_DATA);
     this.tableState.update((current) => ({ ...current, rowSelection: {} }));
   }
 }

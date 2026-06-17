@@ -12,7 +12,7 @@
       <h2 class="card-title">Selectable Services Grid</h2>
       <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
         <nat-table
-          [data]="data"
+          [data]="data()"
           [columns]="columns"
           [enableRowSelection]="true"
           [selectionMode]="selectionMode()"
@@ -62,6 +62,21 @@
         </button>
         <button type="button" class="btn btn-secondary" (click)="clearSelection()">
           Clear selection
+        </button>
+      </div>
+
+      <h2 class="card-title">Bulk Actions</h2>
+      <div class="actions-panel" role="group" aria-label="Bulk actions for selected rows">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="selectedNames().length === 0"
+          (click)="deleteSelected()"
+        >
+          Delete selected ({{ selectedNames().length }})
+        </button>
+        <button type="button" class="btn btn-outline" (click)="restoreData()">
+          Reset data
         </button>
       </div>
 

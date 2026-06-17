@@ -9,7 +9,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | Package                     | Use it for                           | Main exports                                                                                                                                                    |
 | --------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ng-advanced-table`         | Core table primitive                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `NAT_TABLE_DATA_STATUS`                                                                                      |
-| `ng-advanced-table-ui`      | Optional controls and header actions | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)` |
+| `ng-advanced-table-ui`      | Optional controls, header actions, and row selection | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)` |
 | `ng-advanced-table-utils`   | Optional render-metrics tooling      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                 |
 | `ng-advanced-table-locales` | Built-in locale registry             | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                              |
 
@@ -219,6 +219,8 @@ Core exports:
 | `enableColumnPinning` | `true`      | Enables sticky pinning where columns allow it                                                                      |
 | `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering                                                                          |
 | `enablePagination`    | `false`     | Enables the pagination row model                                                                                   |
+| `enableRowSelection`  | `false`     | Enables row selection: `aria-selected`, the `rowSelection` state slice, and the companion checkbox column          |
+| `selectionMode`       | `'multiple'`| Selection cardinality when enabled: `'multiple'` or `'single'` (single keeps the first selected row by key order)   |
 | `globalFilterFn`      | built-in    | Replaces the generic global filter                                                                                 |
 | `initialState`        | `{}`        | Uncontrolled initial state, read once                                                                              |
 | `state`               | `{}`        | Controlled slices only; omitted slices stay internal                                                               |
@@ -241,6 +243,7 @@ A visible `caption` takes over the rendered grid label, while `accessibleName` r
 | `(columnOrderChange)`      | `ColumnOrderState`                | Emits when only the column order slice actually changed                                                                                              |
 | `(columnPinningChange)`    | `ColumnPinningState`              | Emits when only the column pinning slice actually changed                                                                                            |
 | `(paginationChange)`       | `PaginationState`                 | Emits when only the pagination slice actually changed                                                                                                |
+| `(rowSelectionChange)`     | `RowSelectionState`               | Emits when only the row selection slice actually changed                                                                                            |
 | `(rowActivate)`            | `NatTableRowActivateEvent<TData>` | Emits when a body row is activated through a primary click or `Enter` / `Space` key press; activations from interactive cell descendants are ignored |
 | `(rowRendered)`            | `NatTableRowRenderedEvent`        | Emits per-row timings when instrumentation is enabled                                                                                                |
 | `table`                    | `Table<TData>`                    | Raw TanStack instance for reads and advanced commands                                                                                                |
@@ -316,6 +319,7 @@ Use `(stateChange)` when you need a complete-state snapshot for logging, persist
 | `columnVisibility` | Visibility map for hideable columns                                                                                                                                                                             |
 | `columnOrder`      | Leaf-column order                                                                                                                                                                                               |
 | `columnPinning`    | Left and right pinned column ids                                                                                                                                                                                |
+| `rowSelection`     | Selected row ids keyed by `getRowId` as `Record<string, boolean>`; only populated when `enableRowSelection` is `true`                                                          |
 | `pagination`       | Page index and page size (still present in `NatTableState` when `enablePagination` is `false`; the client-side pagination row model is off, so only `stateChange` / UI that reads `pagination` will reflect it) |
 
 The `pagination` slice always exists so controlled and uncontrolled code paths stay stable. When `enablePagination` is `false`, `pageIndex` / `pageSize` still update with defaults and filter-driven resets, but the table body is not paginated until you opt in.
@@ -598,6 +602,128 @@ For navigation, use a custom link component only if it renders or hosts a real a
 
 If a consuming app builds a cell entirely from scratch rather than composing an existing component, the same rules apply. Plain buttons, anchors, form controls, and accessible menu primitives work fine. Angular CDK Menu is a good option for a from-scratch menu, but it is not required by `NatTable`.
 
+## Row Selection
+
+Row selection is a core capability: `NatTable` owns the selection state, `aria-selected`, `aria-multiselectable`, and live announcements, while `ng-advanced-table-ui` provides the optional checkbox column through `withNatTableSelectionColumn(...)`. Selection is keyed by `getRowId`, so it composes correctly with sorting, filtering, and pagination.
+
+Enable it with two core inputs plus the column helper:
+
+| Input                | Default      | Purpose                                                               |
+| -------------------- | ------------ | --------------------------------------------------------------------- |
+| `enableRowSelection` | `false`      | Turns on selection state, `aria-selected`, and `aria-multiselectable` |
+| `selectionMode`      | `'multiple'` | `'multiple'` for many rows, `'single'` to keep at most one selected   |
+
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { type RowSelectionState } from '@tanstack/angular-table';
+
+import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { NatTableSurface, withNatTableSelectionColumn } from 'ng-advanced-table-ui';
+
+interface ServiceRow {
+  id: string;
+  name: string;
+  category: string;
+}
+
+const columns = withNatTableSelectionColumn<ServiceRow>([
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    meta: { label: 'Name', rowHeader: true },
+    cell: (context) => context.getValue<string>(),
+  },
+  {
+    accessorKey: 'category',
+    header: 'Category',
+    meta: { label: 'Category' },
+    cell: (context) => context.getValue<string>(),
+  },
+]);
+
+@Component({
+  selector: 'app-selectable-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NatTable, NatTableSurface],
+  template: `
+    <nat-table-surface [state]="tableState()" (rowSelectionChange)="onSelectionChange($event)">
+      <nat-table
+        [data]="rows()"
+        [columns]="columns"
+        [enableRowSelection]="true"
+        selectionMode="multiple"
+        [getRowId]="getRowId"
+        accessibleName="Selectable services"
+      />
+    </nat-table-surface>
+  `,
+})
+export class SelectableTableComponent {
+  readonly rows = signal<ServiceRow[]>([]);
+  readonly columns = columns;
+  readonly tableState = signal<Partial<NatTableState>>({ rowSelection: {} });
+  readonly getRowId = (row: ServiceRow) => row.id;
+
+  protected onSelectionChange(rowSelection: RowSelectionState): void {
+    this.tableState.update((state) => ({ ...state, rowSelection }));
+  }
+}
+```
+
+### `withNatTableSelectionColumn(columns, options?)`
+
+Prepends a leading checkbox column. The header renders a select-all checkbox with an indeterminate partial state in multiple mode (or the plain column label in single mode); each body row renders a checkbox bound to that row's selection state.
+
+| Option               | Default                        | Purpose                                               |
+| -------------------- | ------------------------------ | ----------------------------------------------------- |
+| `columnId`           | `'__natSelect'`                | Id for the generated column                           |
+| `label`              | locale `selection.columnLabel` | Accessible and visible column label                   |
+| `size`               | `48`                           | Column width in pixels (`minSize` is `44`)            |
+| `enablePinning`      | `true`                         | Whether the column may be pinned                      |
+| `selectAllAriaLabel` | locale default                 | `aria-label` for the select-all checkbox              |
+| `selectRowAriaLabel` | locale formatter               | `(row) => string` `aria-label` for a per-row checkbox |
+
+Generated English copy lives in `ng-advanced-table-locales`; pass options only to override the active locale. Like the other column helpers, apply selection before `withNatTableHeaderActions(...)` when composing: `withNatTableHeaderActions(withNatTableSelectionColumn(columns), options)`.
+
+### Controlled, uncontrolled, and `getRowId`
+
+- **`getRowId` is strongly recommended.** Selection is stored as a `Record<rowId, boolean>`. Without `getRowId` the row id falls back to the array index, so selection follows positions rather than rows and breaks under sorting, filtering, pagination, and live data updates. Provide a stable `getRowId` for correct selection.
+- **Uncontrolled:** omit `rowSelection` from `[state]`; the table manages it internally and emits `(rowSelectionChange)`.
+- **Controlled:** include `rowSelection` in `[state]`, for example to persist it to the URL. The selection slice follows the same controlled/uncontrolled rule as every other slice — a slice is controlled only when it is present in `state`.
+- **Single mode** normalizes the selection to keep the first selected row by key order, so controlled callers can pass any selection map and read back a normalized one.
+
+### Interactions
+
+- **Pagination, sorting, and filtering:** selection is keyed by `getRowId`, not by visible position, so selected rows stay selected when you page, sort, or filter — even when they leave the current view. The header checkbox selects or clears all rows in the current row model.
+- **Row activation:** the checkbox cell stops click propagation, so toggling a checkbox never fires `(rowActivate)`. Wire `(rowActivate)` for "open the row" behavior independently of selection.
+- **Custom interactive cells:** selection only prepends one leading column and does not change how other cells render. Interactive descendants (links, buttons, menus) keep working, and `(rowActivate)` already ignores activations that originate inside interactive cell descendants.
+
+### Bulk actions
+
+There is no bundled bulk-action bar — build one from the emitted selection so labels, keyboard behavior, and disabled states stay under your control. Read the selected ids from `rowSelection`, map them back to rows through `getRowId`, and render your own count, clear, and action controls:
+
+```ts
+protected readonly selectedRows = computed(() => {
+  const selection = this.tableState().rowSelection ?? {};
+  return this.rows().filter((row) => selection[row.id]);
+});
+
+protected deleteSelected(): void {
+  const selectedIds = new Set(Object.keys(this.tableState().rowSelection ?? {}));
+  this.rows.update((rows) => rows.filter((row) => !selectedIds.has(row.id)));
+  this.tableState.update((state) => ({ ...state, rowSelection: {} }));
+}
+```
+
+The showcase `/selection` route demonstrates single and multiple modes, a live selected-row summary, and a bulk "delete selected" action.
+
+### Accessibility
+
+- Rows expose `aria-selected` only while `enableRowSelection` is `true`.
+- The grid sets `aria-multiselectable="true"` only in multiple mode.
+- Selection changes are announced through the table's polite live region.
+- Checkbox labels resolve from the active UI locale; override them per call through the helper options when needed.
+
 ## UI Package
 
 `ng-advanced-table-ui` provides small companion controls that compose around any `NatTableUiController<TData>`. `<nat-table #grid="natTable">` already satisfies that contract.
@@ -624,8 +750,8 @@ Example, add stock controls around an existing table:
 
 UI exports:
 
-- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`
-- Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
+- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`, `NatTableSelectionCheckbox`
+- Helpers and contracts: `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSelectionColumnOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
 
@@ -638,6 +764,7 @@ UI exports:
 | `NatTablePager`                  | Previous/next pagination control                               | `for`, `groupAriaLabel`, `accessibilityLabels`                    |
 | `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`      |
 | `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`, `meta.headerActions`      |
+| `withNatTableSelectionColumn(...)` | Prepends an accessible select-all and per-row checkbox column   | `label`, `size`, `enablePinning`, `selectAllAriaLabel`, `selectRowAriaLabel` |
 
 Controller contract required by the UI package:
 
@@ -661,6 +788,7 @@ Notes:
 - Applying `withNatTableHeaderActions(...)` repeatedly is safe. If a reactive column builder receives already-wrapped columns, the helper updates the wrapper options instead of nesting another header action surface.
 - For per-column behavior, set `column.meta.headerActions` to `false` to opt out, or provide `{ sortIndicator, accessibilityLabels }` to override the helper-level options for that column only.
 - When composing with column helpers that add or prepend columns, apply those helpers first and then call `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
+- `withNatTableSelectionColumn(...)` prepends a leading checkbox column (select-all header with an indeterminate partial state in multiple mode, plus per-row checkboxes) and renders the internal `NatTableSelectionCheckbox`. Enable selection on the core table with `[enableRowSelection]="true"`, and compose it before `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withNatTableSelectionColumn(columns), options)`. See [Row Selection](#row-selection) for the full guide.
 
 ## UI Accessibility Labels
 
