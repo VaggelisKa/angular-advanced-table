@@ -176,6 +176,7 @@ input {
 
 .showcase-page .description {
   margin: 0;
+  padding: 10px;
   color: var(--showcase-page-text-soft);
   font-size: 0.82rem;
   line-height: 1.45;
@@ -214,6 +215,13 @@ input {
   background: var(--showcase-page-surface);
   box-shadow: var(--showcase-page-shadow-sm);
   box-sizing: border-box;
+}
+
+/* The toolbar dropdown in this card must paint outside the card when the table
+   is short (e.g. filtered to one row); base .card clips it. Trade-off: this
+   card's bottom corners no longer clip to the radius. */
+.showcase-page .card.card--overflow-visible {
+  overflow: visible;
 }
 
 .showcase-page .config-card {

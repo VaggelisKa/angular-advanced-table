@@ -11,12 +11,12 @@ import {
   NatTableColumnVisibility,
   NatTablePagination,
   NatTableScrollControl,
-  NatTableSearch,
   NatTableSurface,
   NatTableService,
   NatTableToolbar,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
+import { TableSearch } from '../../components/table-search/table-search';
 
 interface DemoItem {
   id: string;
@@ -46,7 +46,7 @@ const DEMO_DATA: DemoItem[] = [
   imports: [
     NatTable,
     NatTableSurface,
-    NatTableSearch,
+    TableSearch,
     NatTableColumnVisibility,
     NatTablePagination,
     NatTableScrollControl,
@@ -125,7 +125,7 @@ export class TableBuilderPage {
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
       topControls = '\n  <nat-table-toolbar accessibleName="Table controls">';
       if (this.withGlobalFilter()) {
-        topControls += '\n    <nat-table-search label="Search rows" placeholder="Type here..." />';
+        topControls += '\n    <app-table-search label="Search rows" placeholder="Type here..." />';
       }
       if (this.showColumnVisibility()) {
         topControls += '\n    <nat-table-column-visibility />';
@@ -168,7 +168,7 @@ export class TableBuilderPage {
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
       uiImports.push('NatTableToolbar');
     }
-    if (this.withGlobalFilter()) uiImports.push('NatTableSearch');
+    // app-table-search is a user-defined component, not a library import
     if (this.showColumnVisibility()) uiImports.push('NatTableColumnVisibility');
     if (this.withPagination()) {
       uiImports.push('NatTablePagination');

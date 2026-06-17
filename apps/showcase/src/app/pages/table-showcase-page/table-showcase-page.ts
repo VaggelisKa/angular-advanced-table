@@ -5,12 +5,12 @@ import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTablePagination,
   NatTableScrollControl,
-  NatTableSearch,
   NatTableSurface,
   NatTableToolbar,
   withNatTableHeaderActions,
   type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
+import { TableSearch } from '../../components/table-search/table-search';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
@@ -341,7 +341,7 @@ class MarketSortIndicator {
     NatTable,
     NatTablePagination,
     NatTableScrollControl,
-    NatTableSearch,
+    TableSearch,
     NatTableSurface,
     NatTableToolbar,
     NatRenderMetricsFilter,

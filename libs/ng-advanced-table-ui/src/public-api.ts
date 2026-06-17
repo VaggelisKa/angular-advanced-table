@@ -1,6 +1,5 @@
 export { NatTableSurface } from './lib/components/table-surface/table-surface';
 export { NAT_TABLE_UI_CONTROLLER, NatTableService } from './lib/shared/table.service';
-export { NatTableSearch } from './lib/components/table-search/table-search';
 export { NatTableColumnVisibility } from './lib/components/table-column-visibility/table-column-visibility';
 export { NatTablePageSize } from './lib/components/table-page-size/table-page-size';
 export { NatTablePager } from './lib/components/table-pager/table-pager';
