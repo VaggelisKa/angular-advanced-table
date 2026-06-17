@@ -34,7 +34,7 @@ describe('SimpleSortingPage', () => {
     expect(fixture.nativeElement.querySelector('nat-table-surface')).toBeTruthy();
     expect(rows.length).toBe(5);
     expect(sortButtons.length).toBe(9);
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Owner');
+    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Company');
     expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Channel');
     expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Items');
     expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Updated');
@@ -67,13 +67,16 @@ describe('SimpleSortingPage', () => {
     expect(totalCell.classList.contains('is-align-end')).toBe(true);
   });
 
-  it('should pin owner left and row actions right without pin controls', () => {
+  it('should pin company left and row actions right without pin controls', () => {
     fixture.detectChanges();
 
-    const ownerHeader = fixture.nativeElement.querySelector(
+    const orderCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child th[data-column-id="id"]',
+    ) as HTMLTableCellElement;
+    const companyHeader = fixture.nativeElement.querySelector(
       'thead th[data-column-id="owner"]',
     ) as HTMLTableCellElement;
-    const ownerCell = fixture.nativeElement.querySelector(
+    const companyCell = fixture.nativeElement.querySelector(
       'tbody tr:first-child td[data-column-id="owner"]',
     ) as HTMLTableCellElement;
     const actionsHeader = fixture.nativeElement.querySelector(
@@ -83,8 +86,13 @@ describe('SimpleSortingPage', () => {
       'tbody tr:first-child td[data-column-id="actions"]',
     ) as HTMLTableCellElement;
 
-    expect(ownerHeader.classList.contains('is-pinned-left')).toBe(true);
-    expect(ownerCell.classList.contains('is-pinned-left')).toBe(true);
+    expect(orderCell.classList.contains('is-cell-clamped')).toBe(false);
+    expect(orderCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
+    expect(companyHeader.classList.contains('is-pinned-left')).toBe(true);
+    expect(companyCell.classList.contains('is-pinned-left')).toBe(true);
+    expect(companyCell.classList.contains('is-cell-clamped')).toBe(true);
+    expect(companyCell.style.height).toBe('72px');
+    expect(companyCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
     expect(actionsHeader.classList.contains('is-pinned-right')).toBe(true);
     expect(actionsCell.classList.contains('is-pinned-right')).toBe(true);
     expect(actionsHeader.querySelector('.sr-only')?.textContent?.trim()).toBe('Row actions');

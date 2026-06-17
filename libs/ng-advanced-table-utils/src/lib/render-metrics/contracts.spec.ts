@@ -32,6 +32,8 @@ describe('ng-advanced-table-utils public table contracts', () => {
       meta: {
         hiddenHeaderLabel: 'Duration',
         align: 'end',
+        cellHeight: '3rem',
+        cellMaxLines: 1,
         headerSize: 96,
         headerMinSize: '6rem',
         headerMaxSize: 144,
@@ -40,6 +42,8 @@ describe('ng-advanced-table-utils public table contracts', () => {
     };
 
     expect(column.meta?.hiddenHeaderLabel).toBe('Duration');
+    expect(column.meta?.cellHeight).toBe('3rem');
+    expect(column.meta?.cellMaxLines).toBe(1);
     expect(column.meta?.headerSize).toBe(96);
     expect(column.meta?.headerMinSize).toBe('6rem');
     expect(column.meta?.headerMaxSize).toBe(144);

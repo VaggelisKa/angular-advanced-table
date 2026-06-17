@@ -339,11 +339,15 @@ Attach metadata through `columnDef.meta`:
 | `align`             | `'start' \| 'end'`                                                        | Cell and header alignment                                                      |
 | `rowHeader`         | `boolean`                                                                 | Marks body cells in the column as row headers                                  |
 | `cellTone`          | `(context) => 'positive' \| 'negative' \| 'neutral' \| 'warning' \| null` | Maps a cell to a semantic tone                                                 |
+| `cellHeight`        | `number \| string`                                                        | Optional body-cell height in pixels or any CSS length                          |
+| `cellMaxLines`      | `number`                                                                  | Maximum body-cell content lines before truncation; defaults to `2`             |
 | `headerSize`        | `number \| string`                                                        | Optional header-only width in pixels                                           |
 | `headerMinSize`     | `number \| string`                                                        | Optional header-only minimum width in pixels                                   |
 | `headerMaxSize`     | `number \| string`                                                        | Optional header-only maximum width in pixels                                   |
 
 Set `hiddenHeaderLabel: 'Row actions'` for compact utility columns whose title would be redundant visually, such as row actions or menu columns. Primitive string/number headers render that value as screen-reader-only text. When the column is wrapped with `withNatTableHeaderActions(...)`, only the header label is visually hidden; sort buttons and the three-dot pin menu stay visible and use `hiddenHeaderLabel` for their generated accessible labels.
+
+Body cell content is clamped to two lines by default. Use `cellHeight` to make a column's body cells fixed-height, set `cellMaxLines` to a different line count, or set `cellMaxLines: Infinity` for columns with custom interactive renderers that should not be line-clamped. Invalid explicit `cellMaxLines` values fall back to two lines.
 
 ### Column sizing and pinned offsets
 
