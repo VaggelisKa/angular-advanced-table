@@ -22,7 +22,8 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
     resizeKeyboardInstructions:
       'When a column resize handle is focused, press Left or Right Arrow to resize, ' +
-      'Shift with an arrow for larger steps, and Home or End for the minimum or maximum width.',
+      'Shift with an arrow for larger steps, and Home or End for the minimum or maximum width. ' +
+      'You can also press Alt with Left or Right Arrow on a resizable column header to resize it.',
     tableSummary: ({
       filterState,
       pageCountText,

@@ -43,6 +43,7 @@ export class ResizingShowcasePage {
       size: 200,
       minSize: 120,
       maxSize: 320,
+      enableResizing: true,
       meta: { label: 'Name', rowHeader: true },
     },
     {
@@ -51,22 +52,22 @@ export class ResizingShowcasePage {
       size: 160,
       minSize: 100,
       maxSize: 260,
+      enableResizing: true,
       meta: { label: 'Category' },
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      size: 120,
-      minSize: 90,
-      maxSize: 200,
+      size: 60,
+      minSize: 50,
+      maxSize: 100,
+      enableResizing: true,
       meta: { label: 'Status' },
     },
     {
       accessorKey: 'value',
       header: 'Value',
-      size: 140,
-      minSize: 100,
-      maxSize: 240,
+      size: 50,
       meta: { label: 'Value', align: 'end' },
       cell: (context: CellContext<DemoItem, unknown>) =>
         `$${(context.getValue() as number).toLocaleString()}`,
@@ -77,7 +78,13 @@ export class ResizingShowcasePage {
     columnSizing: {},
   });
 
+  protected readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
+
   protected resetWidths(): void {
     this.tableState.update((current) => ({ ...current, columnSizing: {} }));
+  }
+
+  protected setColumnSizingMode(mode: 'fill' | 'fixed'): void {
+    this.columnSizingMode.set(mode);
   }
 }

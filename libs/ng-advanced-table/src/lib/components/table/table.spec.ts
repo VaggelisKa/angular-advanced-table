@@ -90,7 +90,6 @@ class TestTableSurface {
   readonly enableMultiSort = input(false, { transform: booleanAttribute });
   readonly locale = input<string | undefined>(undefined);
   readonly accessibilityText = input<NatTableAccessibilityText>({});
-  readonly enableColumnResizing = input(false, { transform: booleanAttribute });
   readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
   readonly direction = input<'ltr' | 'rtl'>();
@@ -134,9 +133,6 @@ class TestTableSurface {
     });
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
-    });
-    effect(() => {
-      this.natTableService.enableColumnResizing.set(this.enableColumnResizing());
     });
     effect(() => {
       this.natTableService.columnResizeMode.set(this.columnResizeMode());
@@ -286,6 +282,11 @@ const columns: ColumnDef<Row, unknown>[] = [
   },
 ];
 
+const resizableColumns: ColumnDef<Row, unknown>[] = columns.map((column) => ({
+  ...column,
+  enableResizing: true,
+}));
+
 @Component({
   imports: [NatTable, TestTableSurface, TestPager, TestSearch],
   template: `
@@ -297,7 +298,6 @@ const columns: ColumnDef<Row, unknown>[] = [
       [stickyHeader]="stickyHeader"
       [accessibilityText]="accessibilityText"
       [manualPageCount]="manualPageCount"
-      [enableColumnResizing]="enableColumnResizing"
       [direction]="direction"
       [columnSizingMode]="columnSizingMode"
       (stateChange)="onStateChange($event)"
@@ -355,7 +355,6 @@ class TableHost {
   enableRowSelection = false;
   selectionMode: 'single' | 'multiple' = 'multiple';
   stickyHeader = true;
-  enableColumnResizing = false;
   direction: 'ltr' | 'rtl' | undefined = undefined;
   columnSizingMode: 'fill' | 'fixed' = 'fill';
   accessibilityText: NatTableAccessibilityText = {};
@@ -566,7 +565,6 @@ describe('NatTable', () => {
       enableRowSelection?: boolean;
       selectionMode?: 'single' | 'multiple';
       stickyHeader?: boolean;
-      enableColumnResizing?: boolean;
       direction?: 'ltr' | 'rtl';
       columnSizingMode?: 'fill' | 'fixed';
       accessibilityText?: NatTableAccessibilityText;
@@ -585,7 +583,6 @@ describe('NatTable', () => {
     host.enableRowSelection = options.enableRowSelection ?? host.enableRowSelection;
     host.selectionMode = options.selectionMode ?? host.selectionMode;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
-    host.enableColumnResizing = options.enableColumnResizing ?? host.enableColumnResizing;
     host.direction = options.direction ?? host.direction;
     host.columnSizingMode = options.columnSizingMode ?? host.columnSizingMode;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
@@ -601,19 +598,58 @@ describe('NatTable', () => {
     await fixture.whenStable();
   }
 
-  it('renders resize handles only when column resizing is enabled', async () => {
+  it('renders resize handles only on columns that opt in with enableResizing', async () => {
+    // Default columns do not opt in, so no handles render.
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.column-resize-handle')).toBeNull();
 
-    await recreateHost({ enableColumnResizing: true });
+    // Every resizable column declares enableResizing: true on its def.
+    await recreateHost({ columns: resizableColumns });
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('.column-resize-handle').length).toBe(4);
   });
 
+  it('renders a handle and allows keyboard resize only on opted-in columns', async () => {
+    // Mirror the showcase: opt some columns in, leave others out. Resizing must be
+    // strictly per column, not all-or-nothing.
+    const mixedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+      'accessorKey' in column && column.accessorKey === 'name'
+        ? { ...column, enableResizing: true }
+        : column,
+    );
+    await recreateHost({ columns: mixedColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('thead th[data-column-id="name"] .column-resize-handle'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('thead th[data-column-id="region"] .column-resize-handle'),
+    ).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.column-resize-handle').length).toBe(1);
+
+    // The opted-out column ignores Alt+Arrow keyboard resize.
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    const sizingEventsBefore = host.columnSizingEvents.length;
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.length).toBe(sizingEventsBefore);
+  });
+
   it('resizes a column from the keyboard, updates width, and emits columnSizingChange', async () => {
-    await recreateHost({ enableColumnResizing: true });
+    await recreateHost({ columns: resizableColumns });
     fixture.detectChanges();
 
     const regionHandle = fixture.nativeElement.querySelector(
@@ -646,8 +682,29 @@ describe('NatTable', () => {
     expect(liveRegion.textContent?.trim()).toBe('Region column width 148 pixels.');
   });
 
+  it('shrinks on first ArrowLeft in LTR without an opposite-direction jump', async () => {
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const handle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .column-resize-handle',
+    ) as HTMLElement;
+    handle.focus();
+
+    // LTR: the resize edge is on the right, so ArrowLeft must shrink (region 140 → 132),
+    // never grow. Guards the first-keystroke direction reversal.
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 132 });
+  });
+
   it('inverts keyboard resize arrows in RTL and clamps to the min bound', async () => {
-    await recreateHost({ enableColumnResizing: true, direction: 'rtl' });
+    await recreateHost({ columns: resizableColumns, direction: 'rtl' });
     fixture.detectChanges();
 
     const handle = fixture.nativeElement.querySelector(
@@ -678,19 +735,81 @@ describe('NatTable', () => {
     expect(host.columnSizingEvents.length).toBe(eventsAtMin);
   });
 
+  it('resizes the focused header column with Alt+Arrow without focusing the handle', async () => {
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+
+    regionHeader.focus();
+    // Alt+ArrowRight grows the column one step (140 → 148), same as the separator handle.
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+
+    // Alt+ArrowLeft shrinks it back (148 → 140).
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 140 });
+  });
+
+  it('does not resize or reorder the focused header on Alt+Shift+Arrow', async () => {
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    const sizingEventsBefore = host.columnSizingEvents.length;
+    const orderBefore = getHeaderColumnIds(fixture);
+
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        altKey: true,
+        shiftKey: true,
+        bubbles: true,
+      }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Resize needs Alt without Shift; reorder uses Control/Command+Shift. Alt+Shift+Arrow
+    // matches neither, so column order and widths are both left untouched.
+    expect(getHeaderColumnIds(fixture)).toEqual(orderBefore);
+    expect(host.columnSizingEvents.length).toBe(sizingEventsBefore);
+  });
+
   it('seeds an unsized column from its measured width before the first controlled pointer resize', async () => {
     // An unsized column resolves to TanStack's 150px default for column.getSize(), which
     // getResizeHandler() captures synchronously as the drag start size. Under a controlled
     // columnSizing binding the seed cannot round-trip before that capture, so the transient
     // overlay must expose the measured width or the drag would start from the 150px default.
-    const unsizedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+    const unsizedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column && column.accessorKey === 'region'
         ? { ...column, size: undefined }
         : column,
     );
 
     await recreateHost({
-      enableColumnResizing: true,
       state: { columnSizing: {} },
       columns: unsizedColumns,
     });
@@ -726,7 +845,7 @@ describe('NatTable', () => {
     // A controlled binding can push columnSizing past the column's bounds (TanStack
     // only clamps in getSize(), not in stored state). aria-valuenow MUST stay within
     // [valuemin, valuemax] or the separator violates ARIA and announces a wrong width.
-    const boundedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+    const boundedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column && column.accessorKey === 'region'
         ? { ...column, maxSize: 200 }
         : column,
@@ -741,7 +860,6 @@ describe('NatTable', () => {
       ) as HTMLElement;
 
     await recreateHost({
-      enableColumnResizing: true,
       columns: boundedColumns,
       state: { columnSizing: { region: 9999 } },
     });
@@ -769,7 +887,7 @@ describe('NatTable', () => {
     // Resize is capped to "fit": a column can only grow into the space the other
     // columns leave, so the table never exceeds the visible region. A generous
     // maxSize makes the fit budget — not the column's own max — the binding limit.
-    const wideColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+    const wideColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column && column.accessorKey === 'region'
         ? { ...column, maxSize: 1000 }
         : column,
@@ -784,7 +902,6 @@ describe('NatTable', () => {
       ) as HTMLElement;
 
     await recreateHost({
-      enableColumnResizing: true,
       columns: wideColumns,
     });
     fixture.detectChanges();
@@ -825,12 +942,12 @@ describe('NatTable', () => {
     // The drag guide must stop where the column would fill the region (region minus
     // the other columns), even when the column's own maxSize is much larger. Every
     // column is sized 100 so the fit budget is deterministic without measured layout.
-    const sizedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+    const sizedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column
         ? { ...column, size: 100, minSize: 50, maxSize: column.accessorKey === 'region' ? 1000 : 100 }
         : column,
     );
-    await recreateHost({ enableColumnResizing: true, columns: sizedColumns });
+    await recreateHost({ columns: sizedColumns });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -859,8 +976,8 @@ describe('NatTable', () => {
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 1000 }));
   });
 
-  it('announces the final width once a pointer resize drag ends', async () => {
-    await recreateHost({ enableColumnResizing: true });
+  it('announces the final width once an actual pointer resize drag ends', async () => {
+    await recreateHost({ columns: resizableColumns });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -870,7 +987,7 @@ describe('NatTable', () => {
     ) as HTMLElement;
     const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
 
-    regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100 }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -878,7 +995,8 @@ describe('NatTable', () => {
     // Pointer-down alone must not announce — no per-frame chatter while dragging.
     expect(liveRegion.textContent?.trim()).toBe('');
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 132 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 132 }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -893,13 +1011,13 @@ describe('NatTable', () => {
   it('forwards the resolved text direction to TanStack column resizing', async () => {
     // TanStack mirrors the pointer-drag delta only when columnResizeDirection is 'rtl';
     // leaving it unset inverts resize in RTL (the width grows when it should shrink).
-    await recreateHost({ enableColumnResizing: true });
+    await recreateHost({ columns: resizableColumns });
     fixture.detectChanges();
     await fixture.whenStable();
 
     expect(getInternalTable(fixture).table.options.columnResizeDirection).toBe('ltr');
 
-    await recreateHost({ enableColumnResizing: true, direction: 'rtl' });
+    await recreateHost({ columns: resizableColumns, direction: 'rtl' });
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -907,7 +1025,7 @@ describe('NatTable', () => {
   });
 
   it('uses an authoritative fixed table layout when columnSizingMode is "fixed"', async () => {
-    await recreateHost({ enableColumnResizing: true, columnSizingMode: 'fixed' });
+    await recreateHost({ columns: resizableColumns, columnSizingMode: 'fixed' });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -929,12 +1047,12 @@ describe('NatTable', () => {
   });
 
   it('clamps the resize guide to the column bounds instead of overshooting the cursor', async () => {
-    const boundedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+    const boundedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column && column.accessorKey === 'region'
         ? { ...column, maxSize: 200 }
         : column,
     );
-    await recreateHost({ enableColumnResizing: true, columns: boundedColumns });
+    await recreateHost({ columns: boundedColumns });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();

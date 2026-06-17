@@ -272,9 +272,6 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly enableMultiSort = computed(() => this.natTableService.enableMultiSort());
   protected readonly locale = computed(() => this.natTableService.locale());
   protected readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
-  protected readonly enableColumnResizing = computed(() =>
-    this.natTableService.enableColumnResizing(),
-  );
   protected readonly columnResizeMode = computed(() => this.natTableService.columnResizeMode());
   protected readonly columnSizingMode = computed(() => this.natTableService.columnSizingMode());
   /** Fixed layout makes column widths authoritative (`table-layout: fixed`) so resizing is pixel-exact and the region scrolls; fill (default) stretches columns to the container. */
@@ -396,7 +393,7 @@ export class NatTable<TData extends RowData = RowData> {
       this.resolvedAccessibilityText().resizeKeyboardInstructions?.trim() ?? '';
     const parts = [instructions, reorderInstructions];
 
-    if (this.enableColumnResizing()) {
+    if (this.hasResizableColumns()) {
       parts.push(resizeInstructions);
     }
 
@@ -406,6 +403,9 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly headerGroups = computed(() => this.table.getHeaderGroups());
   protected readonly bodyRows = computed(() => this.table.getRowModel().rows);
   private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
+  private readonly hasResizableColumns = computed(() =>
+    this.allLeafColumns().some((column) => this.isColumnResizable(column)),
+  );
   protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   protected readonly mergedState = computed<NatTableState>(() => ({
     sorting: normalizeSortingState(
@@ -564,7 +564,7 @@ export class NatTable<TData extends RowData = RowData> {
       this.enableMultiSort() && (event as { shiftKey?: boolean })?.shiftKey === true,
     enableColumnPinning: true,
     enableColumnOrdering: true,
-    enableColumnResizing: this.enableColumnResizing(),
+    enableColumnResizing: true,
     columnResizeMode: this.columnResizeMode(),
     columnResizeDirection: this.resolvedDirection(),
     enableRowSelection: this.enableRowSelection(),
@@ -999,6 +999,15 @@ export class NatTable<TData extends RowData = RowData> {
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
     if (handleCellInteractionKeydown(event)) return;
 
+    const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
+
+    // Alt+Arrow resizes the focused header's column without tabbing to the separate
+    // resize handle. Column reordering uses Control/Command+Shift+Arrow (handled below).
+    if (event.altKey && !event.shiftKey && isHorizontalArrowKey) {
+      this.resizeColumnFromKey(event, column);
+      return;
+    }
+
     const directionDelta = getColumnReorderKeyboardDirection(event);
 
     if (directionDelta === null) return;
@@ -1023,8 +1032,13 @@ export class NatTable<TData extends RowData = RowData> {
     handleCellInteractionFocusIn(event);
   }
 
+  /** A column is resizable only when its definition opts in with `enableResizing: true`. */
+  private isColumnResizable(column: Column<TData, unknown>): boolean {
+    return column.columnDef.enableResizing === true;
+  }
+
   protected canResizeColumn(header: Header<TData, unknown>): boolean {
-    return this.enableColumnResizing() && !header.isPlaceholder && header.column.getCanResize();
+    return !header.isPlaceholder && this.isColumnResizable(header.column);
   }
 
   protected onResizeStart(event: MouseEvent | TouchEvent, header: Header<TData, unknown>): void {
@@ -1138,7 +1152,16 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onResizeKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (!this.enableColumnResizing() || !column.getCanResize()) return;
+    this.resizeColumnFromKey(event, column);
+  }
+
+  /**
+   * Resize `column` by one keyboard step from a horizontal arrow (Home/End jump to
+   * the min/max bound). Shared by the separator handle and Alt+Arrow on the header.
+   * RTL-aware and fit/min/max clamped; a no-op resize bails without emitting.
+   */
+  private resizeColumnFromKey(event: KeyboardEvent, column: Column<TData, unknown>): void {
+    if (!this.isColumnResizable(column)) return;
 
     const { min, max } = this.getResizeFitBounds(column);
     const current = this.getColumnEffectiveWidth(column);

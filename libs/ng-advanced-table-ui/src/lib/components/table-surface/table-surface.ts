@@ -58,8 +58,6 @@ export class NatTableSurface {
   readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
   readonly accessibilityText = input<NatTableAccessibilityText>({});
-  /** Enables interactive column resizing via a drag handle and keyboard separator. */
-  readonly enableColumnResizing = input(false, { transform: booleanAttribute });
   /** When to apply resize: `'onEnd'` (default, on pointer release) or `'onChange'` (live). */
   readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   /** Width model: `'fill'` (default — columns stretch to fill the container) or `'fixed'` (column widths are authoritative and the region scrolls horizontally, giving pixel-exact resizing). */
@@ -107,9 +105,6 @@ export class NatTableSurface {
     });
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
-    });
-    effect(() => {
-      this.natTableService.enableColumnResizing.set(this.enableColumnResizing());
     });
     effect(() => {
       this.natTableService.columnResizeMode.set(this.columnResizeMode());

@@ -4,13 +4,15 @@
     <p class="description">
       Demonstrates interactive column resizing with pointer drag and keyboard support. Every column
       declares a minimum and maximum size, and the table announces each new width to screen readers.
+      Switch the width mode to compare <strong>Fill</strong> (columns stretch to fill the container)
+      with <strong>Fixed</strong> (authoritative pixel widths; the region scrolls horizontally).
     </p>
   </header>
 
   <div class="grid-layout grid-layout-with-panel">
     <div class="card">
-      <h2 class="card-title">Interactive Resizing Grid</h2>
-      <nat-table-surface [(state)]="tableState" enableColumnResizing>
+      <h2 class="card-title">Interactive Resizing Grid ({{ columnSizingMode() }})</h2>
+      <nat-table-surface [(state)]="tableState" [columnSizingMode]="columnSizingMode()">
         <nat-table [data]="data" [columns]="columns" accessibleName="Column resizing demo table" />
       </nat-table-surface>
     </div>
@@ -36,6 +38,26 @@
       </div>
 
       <div class="actions-panel">
+        <div class="btn-group" role="group" aria-label="Column width mode">
+          <button
+            type="button"
+            class="btn-sm"
+            [class.active]="columnSizingMode() === 'fill'"
+            [attr.aria-pressed]="columnSizingMode() === 'fill'"
+            (click)="setColumnSizingMode('fill')"
+          >
+            Fill
+          </button>
+          <button
+            type="button"
+            class="btn-sm"
+            [class.active]="columnSizingMode() === 'fixed'"
+            [attr.aria-pressed]="columnSizingMode() === 'fixed'"
+            (click)="setColumnSizingMode('fixed')"
+          >
+            Fixed
+          </button>
+        </div>
         <button type="button" class="btn btn-outline" (click)="resetWidths()">Reset Widths</button>
       </div>
     </div>
