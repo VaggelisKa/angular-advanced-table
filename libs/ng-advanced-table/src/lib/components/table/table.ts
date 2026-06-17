@@ -499,6 +499,17 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly destroyRef = inject(DestroyRef);
   private headerResizeObserver: ResizeObserver | null = null;
 
+  private cachedStickyTop = 0;
+  private tablePageTop = 0;
+  private theadHeight = 0;
+  private tableHeight = 0;
+  private isRegionScrollable = false;
+  private isTableVisible = false;
+  private cachedHeaderCells: HTMLTableCellElement[] = [];
+  private cachedTableEl: HTMLTableElement | null = null;
+  private cachedTheadEl: HTMLTableSectionElement | null = null;
+  private intersectionObserver: IntersectionObserver | null = null;
+
   /**
    * Per-column widths for pinned sticky offsets. CSS width comes from TanStack
    * `size` / `minSize` / `maxSize`; this uses measured headers, then fixed
@@ -711,6 +722,14 @@ export class NatTable<TData extends RowData = RowData> {
       }
     });
 
+    effect(() => {
+      // Access columnRenderStates to react to column visibility/ordering changes and invalidate cache
+      this.columnRenderStates();
+      this.cachedHeaderCells = [];
+      this.cachedTableEl = null;
+      this.cachedTheadEl = null;
+    });
+
     afterNextRender(() => {
       this.initializeHeaderObservation();
       this.setupStickyHeaderScrollListener();
@@ -718,6 +737,7 @@ export class NatTable<TData extends RowData = RowData> {
     afterRenderEffect(() => {
       this.visibleColumnIds();
       this.reattachHeaderObservers();
+      this.measureTableDimensions();
       this.updateStickyHeaderPosition();
     });
 
@@ -1147,6 +1167,37 @@ export class NatTable<TData extends RowData = RowData> {
     this.measuredHeaderWidths.set(next);
   }
 
+  private updateCachedStickyTop(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+    if (!region) {
+      return;
+    }
+    const computedVar = window.getComputedStyle(region).getPropertyValue('--nat-table-sticky-top');
+    this.cachedStickyTop = parseFloat(computedVar) || 0;
+  }
+
+  private measureTableDimensions(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+    const tableEl = this.cachedTableEl || region?.querySelector('table');
+    const theadEl = this.cachedTheadEl || tableEl?.querySelector('thead');
+
+    if (!region || !tableEl || !theadEl) {
+      return;
+    }
+
+    this.cachedTableEl = tableEl as HTMLTableElement;
+    this.cachedTheadEl = theadEl as HTMLTableSectionElement;
+
+    const rect = tableEl.getBoundingClientRect();
+    this.tablePageTop = rect.top + window.scrollY;
+    this.theadHeight = theadEl.getBoundingClientRect().height;
+    this.tableHeight = rect.height;
+
+    // Check vertical scrollability of region
+    const overflowY = window.getComputedStyle(region).overflowY;
+    this.isRegionScrollable = region.scrollHeight > region.clientHeight && (overflowY === 'auto' || overflowY === 'scroll');
+  }
+
   private setupStickyHeaderScrollListener(): void {
     this.ngZone.runOutsideAngular(() => {
       const region = this.tableRegionRef()?.nativeElement;
@@ -1154,7 +1205,34 @@ export class NatTable<TData extends RowData = RowData> {
         return;
       }
 
-      const listener = () => {
+      this.intersectionObserver = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        if (entry) {
+          const wasVisible = this.isTableVisible;
+          this.isTableVisible = entry.isIntersecting;
+
+          if (this.isTableVisible && !wasVisible) {
+            this.updateCachedStickyTop();
+            this.measureTableDimensions();
+            this.updateStickyHeaderPosition();
+          }
+        }
+      }, {
+        rootMargin: '100px 0px 100px 0px'
+      });
+
+      this.intersectionObserver.observe(region);
+
+      const listener = (event: Event) => {
+        if (!this.isTableVisible) {
+          return;
+        }
+
+        if (event.type === 'resize') {
+          this.updateCachedStickyTop();
+          this.measureTableDimensions();
+        }
+
         this.updateStickyHeaderPosition();
       };
 
@@ -1163,53 +1241,49 @@ export class NatTable<TData extends RowData = RowData> {
       region.addEventListener('scroll', listener, { passive: true });
 
       this.destroyRef.onDestroy(() => {
+        this.intersectionObserver?.disconnect();
         window.removeEventListener('scroll', listener);
         window.removeEventListener('resize', listener);
         region.removeEventListener('scroll', listener);
       });
 
+      this.updateCachedStickyTop();
+      this.measureTableDimensions();
       this.updateStickyHeaderPosition();
     });
   }
 
   private updateStickyHeaderPosition(): void {
     const region = this.tableRegionRef()?.nativeElement;
-    const tableEl = region?.querySelector('table');
-    const theadEl = tableEl?.querySelector('thead');
-
-    if (!region || !tableEl || !theadEl) {
+    if (!region) {
       return;
     }
-
-    const headerCells = region.querySelectorAll<HTMLTableCellElement>('thead th');
 
     if (!this.stickyHeader()) {
+      const headerCells = this.cachedHeaderCells.length > 0 ? this.cachedHeaderCells : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
       for (const cell of headerCells) {
         cell.style.transform = '';
       }
       return;
     }
 
-    const isRegionVerticallyScrollable = region.scrollHeight > region.clientHeight && 
-      (window.getComputedStyle(region).overflowY === 'auto' || window.getComputedStyle(region).overflowY === 'scroll');
+    const headerCells = this.cachedHeaderCells.length > 0 ? this.cachedHeaderCells : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+    this.cachedHeaderCells = headerCells as HTMLTableCellElement[];
 
-    if (isRegionVerticallyScrollable) {
+    if (this.isRegionScrollable) {
       for (const cell of headerCells) {
         cell.style.transform = '';
       }
       return;
     }
 
-    const rect = tableEl.getBoundingClientRect();
-    const theadHeight = theadEl.getBoundingClientRect().height;
-    
-    const computedVar = window.getComputedStyle(region).getPropertyValue('--nat-table-sticky-top');
-    const stickyTop = parseFloat(computedVar) || 0;
+    const currentScrollY = window.scrollY;
+    const rectTop = this.tablePageTop - currentScrollY;
 
     let translateY = 0;
-    if (rect.top < stickyTop) {
-      const maxTranslateY = rect.height - theadHeight;
-      translateY = Math.min(Math.max(0, stickyTop - rect.top), maxTranslateY);
+    if (rectTop < this.cachedStickyTop) {
+      const maxTranslateY = this.tableHeight - this.theadHeight;
+      translateY = Math.min(Math.max(0, this.cachedStickyTop - rectTop), maxTranslateY);
     }
 
     const transformValue = translateY > 0 ? `translate3d(0, ${translateY}px, 0)` : '';
