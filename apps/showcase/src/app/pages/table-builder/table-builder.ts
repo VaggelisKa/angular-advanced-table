@@ -125,8 +125,7 @@ export class TableBuilderPage {
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
       topControls = '\n  <nat-table-toolbar accessibleName="Table controls">';
       if (this.withGlobalFilter()) {
-        topControls +=
-          '\n    <app-table-search align-left label="Search rows" placeholder="Type here..." />';
+        topControls += '\n    <app-table-search label="Search rows" placeholder="Type here..." />';
       }
       if (this.showColumnVisibility()) {
         topControls += '\n    <nat-table-column-visibility />';
