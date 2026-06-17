@@ -7,6 +7,7 @@ import type {
   FilterFn,
   Row,
   RowData,
+  RowSelectionState,
   SortingState,
 } from '@tanstack/angular-table';
 
@@ -383,6 +384,31 @@ export function serializeSorting(sorting: SortingState): string {
 
 export function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
   return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
+}
+
+/** Collapses a multi-row selection map to its first truthy key in single mode. */
+export function normalizeRowSelection(
+  selection: RowSelectionState,
+  allowMulti: boolean,
+): RowSelectionState {
+  if (allowMulti) {
+    return selection;
+  }
+
+  const selectedIds = Object.keys(selection).filter((id) => selection[id]);
+
+  if (selectedIds.length <= 1) {
+    return selection;
+  }
+
+  return { [selectedIds[0]]: true };
+}
+
+export function serializeRowSelection(selection: RowSelectionState): string {
+  return Object.keys(selection)
+    .filter((id) => selection[id])
+    .sort()
+    .join('|');
 }
 
 export function hasSameColumnVisibility(
