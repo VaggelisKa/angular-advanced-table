@@ -348,6 +348,7 @@ Decision rules for agents:
 - If `NatTableSearch` is rendered in a non-English product, localize both `label` and `placeholder` through `provideNatTableUiLocales()` or inputs.
 - If one `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, or `NatTableScrollControl` instance needs different wording from the active locale, pass its specific label input or `accessibilityLabels` bag.
 - If `withNatTableHeaderActions(...)` is used and one table/column needs wording different from the active locale, pass `NatTableAccessibilityHeaderActionLabels` through helper options or column metadata. This label surface covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin menu item text.
+- When a visible button also has an `aria-label`, keep the visible words inside the accessible name so speech-input users can activate the control by the text they see.
 
 ## Runtime Locale Changes
 

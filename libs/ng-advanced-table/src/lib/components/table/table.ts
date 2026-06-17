@@ -440,7 +440,11 @@ export class NatTable<TData extends RowData = RowData> {
     () => this.table.getHeaderGroups().at(-1)?.id ?? null,
   );
   protected readonly ariaDescribedBy = computed(() => {
-    const ids: string[] = [this.tableSummaryId()];
+    const ids: string[] = [];
+
+    if (this.tableSummary().trim()) {
+      ids.push(this.tableSummaryId());
+    }
 
     if (this.resolvedDescription().trim()) {
       ids.push(this.tableDescriptionId());
@@ -450,7 +454,7 @@ export class NatTable<TData extends RowData = RowData> {
       ids.push(this.tableKeyboardInstructionsId());
     }
 
-    return ids.join(' ');
+    return ids.length ? ids.join(' ') : null;
   });
   readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.readRequiredInput(this.data, []) as TData[],

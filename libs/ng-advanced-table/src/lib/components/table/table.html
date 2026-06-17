@@ -1,5 +1,7 @@
 <div class="table-region" #tableRegion>
-  <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
+  @if (tableSummary().trim()) {
+    <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
+  }
   @if (resolvedDescription().trim()) {
     <p class="sr-only" [id]="tableDescriptionId()">{{ resolvedDescription() }}</p>
   }
@@ -71,11 +73,13 @@
               @if (!header.isPlaceholder) {
                 @let headerContext = header.getContext();
                 @let hidePrimitiveHeaderLabel = shouldHidePrimitiveHeaderLabel(header, columnState);
+                @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
                 <div class="header-cell-content">
                   <span class="header-cell-primary">
-                    @if (hidePrimitiveHeaderLabel) {
-                      <span class="sr-only">{{ columnState?.hiddenHeaderLabel }}</span>
-                    } @else {
+                    @if (hiddenHeaderLabel) {
+                      <span class="sr-only">{{ hiddenHeaderLabel }}</span>
+                    }
+                    @if (!hidePrimitiveHeaderLabel) {
                       <ng-container
                         *flexRender="
                           header.column.columnDef.header;

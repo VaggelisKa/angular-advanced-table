@@ -597,6 +597,45 @@ describe('NatTable', () => {
     hiddenHeaderFixture.destroy();
   });
 
+  it('renders hidden header labels for non-primitive headers', async () => {
+    @Component({
+      imports: [NatTable, TestTableSurface],
+      template: `
+        <nat-table-surface>
+          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        </nat-table-surface>
+      `,
+    })
+    class NonPrimitiveHiddenHeaderLabelHost {
+      readonly rows = signal<Row[]>(buildRows(1));
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: () => '',
+          meta: {
+            hiddenHeaderLabel: 'Row actions',
+          },
+          cell: (info) => info.getValue<string>(),
+        },
+      ];
+    }
+
+    const hiddenHeaderFixture = TestBed.createComponent(NonPrimitiveHiddenHeaderLabelHost);
+
+    await hiddenHeaderFixture.whenStable();
+    hiddenHeaderFixture.detectChanges();
+
+    const header = hiddenHeaderFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const hiddenLabel = header.querySelector('.sr-only') as HTMLElement;
+
+    expect(hiddenLabel.textContent?.trim()).toBe('Row actions');
+    expect(header.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Row actions');
+
+    hiddenHeaderFixture.destroy();
+  });
+
   it('applies semantic tone attributes from column metadata', () => {
     fixture.detectChanges();
 
@@ -623,6 +662,23 @@ describe('NatTable', () => {
     expect(summary.textContent).toContain('Showing 6 rows across 4 visible columns.');
     expect(rowHeaderCell.getAttribute('role')).toBe('rowheader');
     expect(rowHeaderCell.getAttribute('data-column-id')).toBe('name');
+  });
+
+  it('omits aria-describedby when all hidden descriptions are suppressed', async () => {
+    await recreateHost({
+      accessibilityText: {
+        keyboardInstructions: '',
+        reorderKeyboardInstructions: '',
+        tableSummary: () => '',
+      },
+    });
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+
+    expect(table.getAttribute('aria-describedby')).toBeNull();
+    expect(fixture.nativeElement.querySelector('p[id$="-summary"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('p[id$="-instructions"]')).toBeNull();
   });
 
   it('accepts accessibleName as the preferred grid name input', () => {

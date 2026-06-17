@@ -581,7 +581,11 @@ describe('ng-advanced-table-ui', () => {
     ) as HTMLInputElement;
 
     expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
+    expect(columnChip.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Service Shown');
+    expect(columnChip.getAttribute('aria-label')).toBe('Service shown. Hide column');
     expect(pageSizeButton.getAttribute('aria-controls')).toBe(table.id);
+    expect(pageSizeButton.textContent?.trim()).toBe('2 rows');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
     expect(pagerButton.getAttribute('aria-controls')).toBe(table.id);
     expect(scrollButton.getAttribute('aria-controls')).toBe(table.id);
     expect(scrollRange.getAttribute('aria-controls')).toBe(table.id);
@@ -664,7 +668,7 @@ describe('ng-advanced-table-ui', () => {
       fixture.nativeElement.querySelectorAll('nat-table-page-size .chip'),
     )
       .map((button) => button as HTMLButtonElement)
-      .find((button) => button.textContent?.includes('3 / page')) as HTMLButtonElement;
+      .find((button) => button.textContent?.includes('3 rows')) as HTMLButtonElement;
     const nextButton = fixture.nativeElement.querySelector(
       'nat-table-pager .pager-button:last-child',
     ) as HTMLButtonElement;
@@ -745,7 +749,8 @@ describe('ng-advanced-table-ui', () => {
       'none',
     );
     expect(sortIcon.querySelector('.nat-default-sort__svg')).toBeTruthy();
-    expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Service');
+    expect(sortButton.getAttribute('aria-label')).toBe('Sort by Service');
+    expect(menuButton.getAttribute('aria-label')).toBe('Open pinning options for Service column');
     expect(menuButton.querySelector('.menu-button__icon')).toBeTruthy();
 
     sortButton.click();
@@ -763,6 +768,9 @@ describe('ng-advanced-table-ui', () => {
         .querySelector('thead th[data-column-id="name"] .nat-default-sort')
         ?.getAttribute('data-sort-state'),
     ).toBe('asc');
+    expect(sortButton.getAttribute('aria-label')).toBe(
+      'Service sorted in ascending order. Change sorting',
+    );
 
     menuButton.click();
     fixture.detectChanges();
@@ -775,7 +783,7 @@ describe('ng-advanced-table-ui', () => {
 
     expect(menuButton.getAttribute('aria-expanded')).toBe('true');
     expect(openMenu?.getAttribute('role')).toBe('menu');
-    expect(openMenu?.getAttribute('aria-label')).toBe('Column pinning options for Service');
+    expect(openMenu?.getAttribute('aria-label')).toBe('Pinning options for Service column');
     expect(leftPinMenuItem.getAttribute('role')).toBe('menuitem');
     expect(rightPinMenuItem.getAttribute('role')).toBe('menuitem');
     expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
@@ -811,6 +819,9 @@ describe('ng-advanced-table-ui', () => {
 
     expect(updatedLeftPinMenuItem.classList.contains('is-active')).toBe(true);
     expect(updatedRightPinMenuItem.classList.contains('is-active')).toBe(false);
+    expect(
+      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim(),
+    ).toBe('Unpin left');
 
     updatedRightPinMenuItem.click();
     fixture.detectChanges();
@@ -893,8 +904,10 @@ describe('ng-advanced-table-ui', () => {
     expect(headerLabel.textContent?.trim()).toBe('Row actions');
     expect(sortButton).toBeTruthy();
     expect(menuButton).toBeTruthy();
-    expect(sortButton.getAttribute('aria-label')).toBe('Change sorting for Row actions');
-    expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Row actions');
+    expect(sortButton.getAttribute('aria-label')).toBe('Sort by Row actions');
+    expect(menuButton.getAttribute('aria-label')).toBe(
+      'Open pinning options for Row actions column',
+    );
 
     hiddenFixture.destroy();
   });
@@ -1222,10 +1235,10 @@ describe('ng-advanced-table-ui', () => {
       'No rows are currently shown. 4 visible columns. Page 1 of 1.',
     );
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rows per page');
-    expect(pageSizeButton.textContent?.trim()).toBe('2 / page');
-    expect(pageSizeButton.getAttribute('aria-label')).toBe('Show 2 rows per page');
+    expect(pageSizeButton.textContent?.trim()).toBe('2 rows');
+    expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
     expect(pager.getAttribute('aria-label')).toBe('Table pagination');
-    expect(pagerLabel.textContent?.trim()).toBe('Page 1 / 1');
+    expect(pagerLabel.textContent?.trim()).toBe('Page 1 of 1');
     expect(nextButton.getAttribute('aria-label')).toBe('Next page');
 
     localeHost.locale.set('da');
