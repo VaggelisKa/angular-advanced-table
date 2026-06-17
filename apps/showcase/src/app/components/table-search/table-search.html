@@ -2,7 +2,7 @@
   @if (toolbar()) {
     <input
       type="search"
-      class="table-search__input table-search__input--toolbar"
+      class="table-search-input table-search-input--toolbar"
       natToolbarItem
       [attr.aria-label]="label()"
       [value]="value()"
@@ -11,11 +11,11 @@
     />
   } @else {
     <div class="table-search">
-      <label class="table-search__label" [attr.for]="inputId">{{ label() }}</label>
+      <label class="table-search-label" [attr.for]="inputId">{{ label() }}</label>
       <input
         [id]="inputId"
         type="search"
-        class="table-search__input"
+        class="table-search-input"
         [attr.aria-controls]="tableElementId()"
         [value]="value()"
         [placeholder]="placeholder()"

@@ -53,18 +53,18 @@
   display: inline-flex;
 }
 
-.toolbar-menu__trigger {
+.toolbar-menu-trigger {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.toolbar-menu__caret {
+.toolbar-menu-caret {
   font-size: 0.7em;
   line-height: 1;
 }
 
-.toolbar-menu__panel {
+.toolbar-menu-panel {
   position: absolute;
   top: calc(100% + 6px);
   inset-inline-end: 0;
@@ -81,11 +81,11 @@
 }
 
 /* `display: flex` above would otherwise beat the [hidden] UA rule. */
-.toolbar-menu__panel[hidden] {
+.toolbar-menu-panel[hidden] {
   display: none;
 }
 
-.toolbar-menu__item {
+.toolbar-menu-item {
   display: block;
   width: 100%;
   padding: 8px 12px;
@@ -97,18 +97,18 @@
   cursor: pointer;
 }
 
-.toolbar-menu__item:focus-visible {
+.toolbar-menu-item:focus-visible {
   outline: 2px solid currentcolor;
   outline-offset: -2px;
 }
 
-.toolbar-menu__item[aria-current='true'] {
+.toolbar-menu-item[aria-current='true'] {
   font-weight: 600;
   color: var(--showcase-page-accent);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .toolbar-menu__item:hover {
+  .toolbar-menu-item:hover {
     background: var(--showcase-page-surface-hover);
   }
 }

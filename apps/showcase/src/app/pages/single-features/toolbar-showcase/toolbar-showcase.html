@@ -141,7 +141,7 @@
             <button
               #menuTrigger
               type="button"
-              class="toolbar-button toolbar-menu__trigger"
+              class="toolbar-button toolbar-menu-trigger"
               natToolbarItem
               data-testid="menu-trigger"
               aria-haspopup="true"
@@ -150,12 +150,12 @@
               (click)="toggleMenu()"
             >
               Actions
-              <span class="toolbar-menu__caret" aria-hidden="true">▾</span>
+              <span class="toolbar-menu-caret" aria-hidden="true">▾</span>
             </button>
 
             <div
               id="toolbar-overflow-menu"
-              class="toolbar-menu__panel"
+              class="toolbar-menu-panel"
               role="group"
               aria-label="Quick filters"
               [hidden]="!menuOpen()"
@@ -163,7 +163,7 @@
               @for (preset of filterPresets; track preset.key) {
                 <button
                   type="button"
-                  class="toolbar-menu__item"
+                  class="toolbar-menu-item"
                   [attr.data-testid]="'filter-' + preset.key"
                   [attr.aria-current]="preset.key === activePresetKey() ? 'true' : null"
                   (click)="applyPreset(preset.key)"
