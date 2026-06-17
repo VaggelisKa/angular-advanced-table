@@ -13,6 +13,8 @@
     ngGrid
     class="data-table"
     [class.has-sticky-header]="stickyHeader()"
+    [class.is-fixed-layout]="isFixedLayout()"
+    [style.width.px]="isFixedLayout() ? fixedLayoutTableWidth() : null"
     [id]="tableElementId()"
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
@@ -31,6 +33,14 @@
     }
 
     @let columnStates = columnRenderStates();
+    @if (isFixedLayout()) {
+      @let layoutWidths = resolvedColumnWidths();
+      <colgroup>
+        @for (column of visibleColumns(); track column.id) {
+          <col [style.width.px]="layoutWidths[column.id]" />
+        }
+      </colgroup>
+    }
     <thead>
       @let tableHeaderGroups = headerGroups();
       @for (headerGroup of tableHeaderGroups; track headerGroup.id) {

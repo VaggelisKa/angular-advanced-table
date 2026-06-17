@@ -36,6 +36,7 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly accessibilityText = signal<NatTableAccessibilityText>({});
   public readonly enableColumnResizing = signal(false);
   public readonly columnResizeMode = signal<'onEnd' | 'onChange'>('onEnd');
+  public readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
   public readonly direction = signal<'ltr' | 'rtl' | undefined>(undefined);
 
   public readonly manualPagination = computed(() => {

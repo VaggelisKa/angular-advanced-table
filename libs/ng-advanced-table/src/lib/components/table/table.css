@@ -26,6 +26,16 @@
   min-width: 100%;
 }
 
+.data-table.is-fixed-layout {
+  /*
+   * Fixed layout makes the <colgroup> widths authoritative and the table exactly
+   * as wide as their sum, so the region scrolls instead of stretching columns —
+   * the precondition for pixel-exact column resizing.
+   */
+  table-layout: fixed;
+  min-width: 0;
+}
+
 .header-cell,
 .data-cell {
   box-sizing: border-box;

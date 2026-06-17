@@ -276,6 +276,9 @@ export class NatTable<TData extends RowData = RowData> {
     this.natTableService.enableColumnResizing(),
   );
   protected readonly columnResizeMode = computed(() => this.natTableService.columnResizeMode());
+  protected readonly columnSizingMode = computed(() => this.natTableService.columnSizingMode());
+  /** Fixed layout makes column widths authoritative (`table-layout: fixed`) so resizing is pixel-exact and the region scrolls; fill (default) stretches columns to the container. */
+  protected readonly isFixedLayout = computed(() => this.columnSizingMode() === 'fixed');
   protected readonly direction = computed(() => this.natTableService.direction());
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
@@ -563,6 +566,7 @@ export class NatTable<TData extends RowData = RowData> {
     enableColumnOrdering: true,
     enableColumnResizing: this.enableColumnResizing(),
     columnResizeMode: this.columnResizeMode(),
+    columnResizeDirection: this.resolvedDirection(),
     enableRowSelection: this.enableRowSelection(),
     enableMultiRowSelection: this.selectionMode() === 'multiple',
     meta: {
@@ -586,7 +590,7 @@ export class NatTable<TData extends RowData = RowData> {
     onColumnVisibilityChange: (updater) => this.updateState({ columnVisibility: updater }),
     onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
     onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
-    onColumnSizingChange: (updater) => this.updateState({ columnSizing: updater }),
+    onColumnSizingChange: (updater) => this.applyColumnSizingChange(updater),
     onRowSelectionChange: (updater) => this.updateState({ rowSelection: updater }),
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
   })) as Table<TData>;
@@ -597,6 +601,12 @@ export class NatTable<TData extends RowData = RowData> {
   );
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
   private readonly injector = inject(Injector);
+  /**
+   * Visible width of the scroll region (its `clientWidth`). Caps each column's
+   * maximum resize width so a single column can never be dragged wider than the
+   * viewport and scroll its content off-screen. 0 until first measured (no cap).
+   */
+  private readonly regionViewportWidth = signal<number>(0);
   private readonly destroyRef = inject(DestroyRef);
   private readonly directionality = inject(Directionality, { optional: true });
   /** Resolved text direction: explicit `direction` config → inherited CDK direction → `'ltr'`. */
@@ -606,11 +616,27 @@ export class NatTable<TData extends RowData = RowData> {
   private headerResizeObserver: ResizeObserver | null = null;
 
   /**
+   * TanStack id of the column whose pointer/touch resize drag is in progress.
+   * Tracked so a single announcement can fire when the drag ends (the keyboard
+   * path announces per step; pointer resize is otherwise silent).
+   */
+  private previousResizingColumnId: string | null = null;
+
+  /**
+   * Width and column committed by the in-progress pointer/touch resize drag,
+   * snapshotted while TanStack still reports the drag as active. A controlled
+   * `columnSizing` binding cannot round-trip back to this component before the
+   * resize-end effect runs, so the effect announces this snapshot instead of
+   * the (stale) resolved width.
+   */
+  private resizeCommit: { columnId: string; width: number } | null = null;
+
+  /**
    * Per-column widths for pinned sticky offsets. CSS width comes from TanStack
    * `size` / `minSize` / `maxSize`; this uses measured headers, then fixed
    * sizing, then `column.getSize()` as a fallback.
    */
-  private readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
+  protected readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
     const measured = this.measuredHeaderWidths();
     const columnSizing = this.mergedState().columnSizing;
     const result: Record<string, number> = {};
@@ -624,7 +650,7 @@ export class NatTable<TData extends RowData = RowData> {
       // Precedence: user-resized > measured header > fixed def size > getSize().
       result[column.id] =
         resizedWidth !== undefined
-          ? Math.max(Math.round(resizedWidth), 1)
+          ? this.clampColumnWidth(column, resizedWidth)
           : measuredWidth !== undefined && measuredWidth > 0
             ? measuredWidth
             : fixedWidth !== null
@@ -633,6 +659,16 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     return result;
+  });
+  /**
+   * Sum of all visible column widths, used as the table width in fixed-layout
+   * mode so columns render at exactly their resolved widths (`table-layout:
+   * fixed`) and the region scrolls once the total exceeds the viewport.
+   */
+  protected readonly fixedLayoutTableWidth = computed(() => {
+    const widths = this.resolvedColumnWidths();
+
+    return this.visibleColumns().reduce((total, column) => total + (widths[column.id] ?? 0), 0);
   });
   protected readonly columnRenderStates = computed<Record<string, TableColumnRenderState>>(() => {
     const visibleColumns = this.visibleColumns();
@@ -674,7 +710,11 @@ export class NatTable<TData extends RowData = RowData> {
       const sizing = userColumnSizing[column.id];
       const resizedWidth = state.columnSizing[column.id];
       const hasExplicitWidth = sizing?.hasSize === true || resizedWidth !== undefined;
-      const width = hasExplicitWidth ? normalizeColumnDimension(column.getSize()) : null;
+      const width = hasExplicitWidth
+        ? normalizeColumnDimension(
+            resizedWidth !== undefined ? (widths[column.id] ?? column.getSize()) : column.getSize(),
+          )
+        : null;
       const minWidth =
         sizing?.hasMinSize === true
           ? normalizeColumnDimension(column.columnDef.minSize)
@@ -836,6 +876,35 @@ export class NatTable<TData extends RowData = RowData> {
       if (message) {
         this.announce(message);
       }
+    });
+
+    // Announce the final width once a pointer/touch resize drag ends. Keyed off
+    // TanStack's `isResizingColumn`, which is set only for pointer drags (never
+    // keyboard), so this never double-announces with the keyboard path.
+    effect(() => {
+      const resizingColumnId = this.table.getState().columnSizingInfo.isResizingColumn || null;
+
+      untracked(() => {
+        const previous = this.previousResizingColumnId;
+        this.previousResizingColumnId = resizingColumnId;
+
+        if (!previous || resizingColumnId || !this.enableAnnouncements()) {
+          return;
+        }
+
+        const commit = this.resizeCommit;
+        this.resizeCommit = null;
+
+        if (!commit || commit.columnId !== previous) {
+          return;
+        }
+
+        const column = this.table.getColumn(previous);
+
+        if (column) {
+          this.announceColumnResize(column, commit.width);
+        }
+      });
     });
 
     afterNextRender(() => this.initializeHeaderObservation());
@@ -1020,10 +1089,31 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly columnResizeGuide = computed<{ left: number; offset: number } | null>(() => {
     const info = this.table.getState().columnSizingInfo;
     const origin = this.resizeGuideOrigin();
+    const resizingId = info.isResizingColumn;
 
-    if (info.isResizingColumn === false || origin === null) return null;
+    if (resizingId === false || origin === null) return null;
 
-    return { left: origin, offset: info.deltaOffset ?? 0 };
+    const widthDelta = info.deltaOffset ?? 0;
+    const column = this.table.getColumn(resizingId);
+
+    if (!column) return { left: origin, offset: widthDelta };
+
+    // deltaOffset is the column's WIDTH change (TanStack: newWidth = startSize +
+    // deltaOffset, already direction-adjusted via columnResizeDirection). Clamp it
+    // to the column's bounds so the guide never points past where the resize can
+    // land, then map the width delta to a screen offset — in RTL the visual edge
+    // moves opposite the column's growth.
+    const { min, max } = this.getResizeFitBounds(column);
+    const startSize = info.startSize ?? this.getColumnEffectiveWidth(column);
+    const clampedDelta = Math.max(
+      min - startSize,
+      max !== null ? Math.min(max - startSize, widthDelta) : widthDelta,
+    );
+
+    return {
+      left: origin,
+      offset: this.resolvedDirection() === 'rtl' ? -clampedDelta : clampedDelta,
+    };
   });
 
   /** True while a pointer/touch column-resize drag is in progress. */
@@ -1050,7 +1140,7 @@ export class NatTable<TData extends RowData = RowData> {
   protected onResizeKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
     if (!this.enableColumnResizing() || !column.getCanResize()) return;
 
-    const { min, max } = this.getResizeBounds(column);
+    const { min, max } = this.getResizeFitBounds(column);
     const current = this.getColumnEffectiveWidth(column);
     const step = event.shiftKey ? RESIZE_KEYBOARD_STEP_LARGE : RESIZE_KEYBOARD_STEP;
     // In RTL the resize edge sits on the column's left, so the arrow pointing at it
@@ -1095,7 +1185,7 @@ export class NatTable<TData extends RowData = RowData> {
     max: number | null;
     text: string;
   } {
-    const { min, max } = this.getResizeBounds(column);
+    const { min, max } = this.getResizeFitBounds(column);
     const now = this.getColumnEffectiveWidth(column);
     const formatter = this.resolvedAccessibilityText().columnResizeHandleValueText;
 
@@ -1132,6 +1222,108 @@ export class NatTable<TData extends RowData = RowData> {
         : null;
 
     return { min, max };
+  }
+
+  /**
+   * Resize bounds tightened to "fit": a drag can grow a column only into the
+   * space the other columns leave, so the table never gets wider than the
+   * visible region. Never reports below the column's current width (an
+   * already-overflowing table shrinks but does not jump) and never exceeds the
+   * column's own maxSize. Falls back to the plain bounds until the region is measured.
+   */
+  private getResizeFitBounds(column: Column<TData, unknown>): { min: number; max: number | null } {
+    const { min, max: ownMax } = this.getResizeBounds(column);
+    const region = this.regionViewportWidth();
+
+    if (region <= 0) {
+      return { min, max: ownMax };
+    }
+
+    const widths = this.resolvedColumnWidths();
+    let sumOthers = 0;
+
+    for (const other of this.visibleColumns()) {
+      if (other.id !== column.id) {
+        sumOthers += widths[other.id] ?? 0;
+      }
+    }
+
+    const current = widths[column.id] ?? this.getColumnEffectiveWidth(column);
+    const fitMax = Math.max(current, region - sumOthers);
+    const cappedMax = ownMax !== null ? Math.min(ownMax, fitMax) : fitMax;
+
+    return { min, max: Math.max(Math.round(cappedMax), min) };
+  }
+
+  /** Clamp a single width to a column's [minSize, maxSize] bounds, rounded to a positive integer. */
+  private clampColumnWidth(column: Column<TData, unknown>, width: number): number {
+    const { min, max } = this.getResizeBounds(column);
+    const clamped = Math.max(min, max !== null ? Math.min(max, width) : width);
+
+    return Math.max(Math.round(clamped), 1);
+  }
+
+  /**
+   * Clamp every entry of a column-sizing map to its column's resize bounds.
+   * TanStack's resize handler stores the raw drag width without honoring
+   * minSize/maxSize (only `column.getSize()` clamps on read), so a drag can
+   * persist an out-of-range width — and an out-of-range `aria-valuenow` that
+   * violates its own valuemin/valuemax. Clamping on commit keeps the stored
+   * state, the emitted `columnSizingChange`, and the separator value in range.
+   */
+  private clampColumnSizing(sizing: ColumnSizingState): ColumnSizingState {
+    let result: ColumnSizingState | null = null;
+
+    for (const columnId of Object.keys(sizing)) {
+      const column = this.table.getColumn(columnId);
+
+      if (!column) continue;
+
+      const clamped = this.clampColumnWidth(column, sizing[columnId]);
+
+      if (clamped !== sizing[columnId]) {
+        (result ??= { ...sizing })[columnId] = clamped;
+      }
+    }
+
+    return result ?? sizing;
+  }
+
+  /**
+   * Commit a column-sizing change from TanStack's pointer/touch resize handler.
+   * While the drag is still active (`isResizingColumn` is reset only AFTER the
+   * size commit in table-core), snapshot the clamped committed width so the
+   * resize-end effect can announce it without waiting for a controlled
+   * `columnSizing` binding to echo back a cycle later.
+   */
+  private applyColumnSizingChange(updater: Updater<ColumnSizingState>): void {
+    const resizingColumnId = this.table.getState().columnSizingInfo.isResizingColumn;
+
+    if (typeof resizingColumnId !== 'string') {
+      this.updateState({ columnSizing: updater });
+      return;
+    }
+
+    // Clamp the dragged column to its fit bounds so the table never grows past
+    // the visible region, then store the capped map (not the raw updater) so the
+    // committed/controlled width matches what renders and what is announced.
+    const next: ColumnSizingState = {
+      ...this.resolveUpdater(this.mergedState().columnSizing, updater),
+    };
+    const column = this.table.getColumn(resizingColumnId);
+    const raw = next[resizingColumnId];
+
+    if (column && raw !== undefined) {
+      const { min, max } = this.getResizeFitBounds(column);
+      const capped = Math.max(min, max !== null ? Math.min(max, raw) : raw);
+
+      next[resizingColumnId] = capped;
+      this.resizeCommit = { columnId: resizingColumnId, width: Math.round(capped) };
+    } else {
+      this.resizeCommit = null;
+    }
+
+    this.updateState({ columnSizing: next });
   }
 
   private getColumnEffectiveWidth(column: Column<TData, unknown>): number {
@@ -1237,7 +1429,9 @@ export class NatTable<TData extends RowData = RowData> {
         this.resolveUpdater(currentState.columnPinning, updaters.columnPinning),
         this.allLeafColumnIds(),
       ),
-      columnSizing: this.resolveUpdater(currentState.columnSizing, updaters.columnSizing),
+      columnSizing: this.clampColumnSizing(
+        this.resolveUpdater(currentState.columnSizing, updaters.columnSizing),
+      ),
       rowSelection: normalizeRowSelection(
         this.resolveUpdater(currentState.rowSelection, updaters.rowSelection),
         this.selectionMode() === 'multiple',
@@ -1529,11 +1723,12 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private initializeHeaderObservation(): void {
-    if (typeof ResizeObserver === 'undefined' || this.headerResizeObserver) {
-      return;
-    }
+    if (typeof ResizeObserver === 'undefined' || this.headerResizeObserver) return;
 
-    this.headerResizeObserver = new ResizeObserver(() => this.measureHeaderWidths());
+    this.headerResizeObserver = new ResizeObserver(() => {
+      this.measureHeaderWidths();
+      this.measureRegionViewportWidth();
+    });
     this.reattachHeaderObservers();
   }
 
@@ -1541,11 +1736,10 @@ export class NatTable<TData extends RowData = RowData> {
     const observer = this.headerResizeObserver;
     const region = this.tableRegionRef()?.nativeElement;
 
-    if (!observer || !region) {
-      return;
-    }
+    if (!observer || !region) return;
 
     observer.disconnect();
+    observer.observe(region);
 
     const headerCells = region.querySelectorAll<HTMLTableCellElement>('thead th[data-column-id]');
 
@@ -1554,6 +1748,7 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     this.measureHeaderWidths();
+    this.measureRegionViewportWidth();
   }
 
   private measureHeaderWidths(): void {
@@ -1581,6 +1776,20 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     this.measuredHeaderWidths.set(next);
+  }
+
+  private measureRegionViewportWidth(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (!region) {
+      return;
+    }
+
+    const width = region.clientWidth;
+
+    if (width > 0 && width !== this.regionViewportWidth()) {
+      this.regionViewportWidth.set(width);
+    }
   }
 
   private buildTableSummary(): string {
