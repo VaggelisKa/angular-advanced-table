@@ -369,12 +369,10 @@ export class NatTable<TData extends RowData = RowData> {
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnOrder: this.resolvedColumnOrder(),
     columnPinning: this.resolvedColumnPinning(),
-    rowSelection: this.enableRowSelection()
-      ? normalizeRowSelection(
-          this.state().rowSelection ?? this.internalRowSelection(),
-          this.selectionMode() === 'multiple',
-        )
-      : {},
+    rowSelection: normalizeRowSelection(
+      this.state().rowSelection ?? this.internalRowSelection(),
+      this.selectionMode() === 'multiple',
+    ),
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
   /**
@@ -708,12 +706,10 @@ export class NatTable<TData extends RowData = RowData> {
         initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning,
       );
       this.internalRowSelection.set(
-        this.enableRowSelection()
-          ? normalizeRowSelection(
-              initialState.rowSelection ?? DEFAULT_TABLE_STATE.rowSelection,
-              this.selectionMode() === 'multiple',
-            )
-          : DEFAULT_TABLE_STATE.rowSelection,
+        normalizeRowSelection(
+          initialState.rowSelection ?? DEFAULT_TABLE_STATE.rowSelection,
+          this.selectionMode() === 'multiple',
+        ),
       );
       this.internalPagination.set({
         pageIndex: initialState.pagination?.pageIndex ?? DEFAULT_PAGINATION.pageIndex,
@@ -1534,4 +1530,5 @@ export class NatTable<TData extends RowData = RowData> {
     }
   }
 }
+
 

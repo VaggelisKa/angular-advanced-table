@@ -139,7 +139,7 @@ export class NatTableSurface {
       const paginationChanged =
         JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
       const rowSelectionChanged =
-        JSON.stringify(prev.rowSelection) !== JSON.stringify(nextState.rowSelection);
+        serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(nextState.rowSelection);
 
       if (
         sortingChanged ||
@@ -186,4 +186,11 @@ export class NatTableSurface {
       }
     });
   }
+}
+
+function serializeSelectedRowIds(selection: NatTableState['rowSelection']): string {
+  return Object.keys(selection)
+    .filter((rowId) => selection[rowId])
+    .sort()
+    .join('|');
 }

@@ -192,5 +192,24 @@ describe('withNatTableSelectionColumn', () => {
     expect(selectedRowCount()).toBe(2);
     expect(headerCheckbox().indeterminate).toBe(true);
     expect(headerCheckbox().checked).toBe(false);
+
+    headerCheckbox().click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(selectedRowCount()).toBe(3);
+    expect(headerCheckbox().checked).toBe(true);
+    expect(headerCheckbox().indeterminate).toBe(false);
+
+    headerCheckbox().click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(selectedRowCount()).toBe(0);
+    expect(host.state().rowSelection).toEqual({});
+    expect(headerCheckbox().checked).toBe(false);
+    expect(headerCheckbox().indeterminate).toBe(false);
   });
 });

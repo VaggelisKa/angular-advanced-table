@@ -1786,7 +1786,7 @@ describe('NatTable', () => {
     await recreateHost({
       enableRowSelection: true,
       selectionMode: 'single',
-      state: { rowSelection: { 'svc-00001': true, 'svc-00002': true } },
+      state: { rowSelection: { 'svc-00002': true, 'svc-00001': true } },
     });
     fixture.detectChanges();
 
@@ -1795,7 +1795,19 @@ describe('NatTable', () => {
     );
 
     expect(selected.length).toBe(1);
-    // Deterministic: the collapse keeps the first key, not an arbitrary row.
+    // Deterministic by sort order: svc-00001 wins even though svc-00002 was inserted first.
+    expect(getInternalTable(fixture).table.getState().rowSelection).toEqual({ 'svc-00001': true });
+  });
+
+  it('preserves controlled rowSelection while selection is disabled', async () => {
+    await recreateHost({
+      enableRowSelection: false,
+      state: { rowSelection: { 'svc-00001': true } },
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // The disabled flag must not wipe the controlled slice (continuity for runtime toggles).
     expect(getInternalTable(fixture).table.getState().rowSelection).toEqual({ 'svc-00001': true });
   });
 

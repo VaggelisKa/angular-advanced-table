@@ -386,7 +386,7 @@ export function serializeColumnFilters(columnFilters: ColumnFiltersState): strin
   return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
 }
 
-/** Collapses a multi-row selection map to its first truthy key in single mode. */
+/** Collapses a multi-row selection map to its first selected key by sort order in single mode. */
 export function normalizeRowSelection(
   selection: RowSelectionState,
   allowMulti: boolean,
@@ -395,7 +395,9 @@ export function normalizeRowSelection(
     return selection;
   }
 
-  const selectedIds = Object.keys(selection).filter((id) => selection[id]);
+  const selectedIds = Object.keys(selection)
+    .filter((id) => selection[id])
+    .sort();
 
   if (selectedIds.length <= 1) {
     return selection;
