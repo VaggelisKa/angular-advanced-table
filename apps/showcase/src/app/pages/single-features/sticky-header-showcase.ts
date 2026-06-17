@@ -67,13 +67,19 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
       min-width: 0;
     }
     @keyframes slide-down {
-      from { transform: translateY(-100%); }
-      to { transform: translateY(0); }
+      from {
+        transform: translateY(-100%);
+      }
+      to {
+        transform: translateY(0);
+      }
     }
   `,
   template: `
     @if (simulateTopbar()) {
-      <div style="position: fixed; top: 0; left: 0; right: 0; height: 60px; background: var(--showcase-page-negative, #ea4335); color: #ffffff; display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: 600; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); font-size: 0.95rem; animation: slide-down 0.2s ease-out;">
+      <div
+        style="position: sticky; top: 0; left: 0; right: 0; height: 60px; background: var(--showcase-page-negative, #ea4335); color: #ffffff; display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: 600; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); font-size: 0.95rem; animation: slide-down 0.2s ease-out;"
+      >
         <span>Simulated Sticky Topbar Active (Height: 60px)</span>
       </div>
     }
@@ -91,17 +97,16 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
             Demonstrates vertical sticky header pinning. The header stays docked when scrolling down
             the grid.
           </p>
-          <div class="tip" style="margin-top: 4px; font-size: 0.8rem; opacity: 0.85;">
-            <strong>Pro Tip:</strong> If your page has a sticky topbar/header, set the CSS custom property 
-            <code>--nat-table-sticky-top</code> (e.g. matching your topbar height) on the container/table to offset the stickiness vertical position.
-          </div>
         </div>
       </header>
 
       <div class="grid-layout grid-layout-with-panel">
         <div class="card scrollable-grid-card">
           <h2 class="card-title">Scrollable Grid</h2>
-          <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
+          <nat-table-surface
+            [stickyHeader]="stickyHeaderEnabled()"
+            [style.--nat-table-sticky-top.px]="simulateTopbar() ? 60 : 0"
+          >
             <nat-table
               [data]="data"
               [columns]="columns"
@@ -141,13 +146,10 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
         <div style="display: grid; gap: 4px;">
           <h2 class="title">Viewport Sticky Tables (No Max Height)</h2>
           <p class="description">
-            These 5 tables have no max height limit. As you scroll down the page, each table's header
-            will stick to the top of the viewport/window and push the previous one out of view.
+            These 5 tables have no max height limit. As you scroll down the page, each table's
+            header will stick to the top of the viewport/window and push the previous one out of
+            view.
           </p>
-          <div class="tip" style="margin-top: 4px; font-size: 0.8rem; opacity: 0.85;">
-            The sticky vertical position automatically reads and respects the computed <code>top</code> offset, 
-            making it fully compatible with sticky page-level headers/topbars.
-          </div>
         </div>
       </header>
 
@@ -155,7 +157,10 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
         @for (i of [1, 2, 3, 4, 5]; track i) {
           <div class="card" style="margin-bottom: 4rem;">
             <h3 class="card-title">Table #{{ i }}</h3>
-            <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
+            <nat-table-surface
+              [stickyHeader]="stickyHeaderEnabled()"
+              [style.--nat-table-sticky-top.px]="simulateTopbar() ? 60 : 0"
+            >
               <nat-table
                 [data]="data"
                 [columns]="columns"
