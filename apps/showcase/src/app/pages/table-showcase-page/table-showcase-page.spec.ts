@@ -49,7 +49,9 @@ describe('TableShowcasePage', () => {
     ) as HTMLElement;
 
     expect(rows.length).toBe(10);
-    expect(firstMenuButton.getAttribute('aria-label')).toContain('Open column actions');
+    expect(firstMenuButton.getAttribute('aria-label')).toBe(
+      'Open pinning options for Symbol column',
+    );
     expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
     expect(firstReorderableHeader).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeFalsy();
