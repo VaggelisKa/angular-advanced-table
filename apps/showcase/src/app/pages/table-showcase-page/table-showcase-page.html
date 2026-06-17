@@ -20,14 +20,6 @@
       <button type="button" class="btn btn-ghost" (click)="runManualPulse()">Tick once</button>
       <button
         type="button"
-        class="btn btn-ghost"
-        data-testid="open-table-options"
-        (click)="openFeatureDialog()"
-      >
-        Table options
-      </button>
-      <button
-        type="button"
         class="btn btn-primary"
         [class.is-paused]="!simulation.isRunning()"
         (click)="toggleSimulation()"
@@ -152,124 +144,39 @@
       <nat-table-surface
         class="table-shell"
         [(state)]="tableState"
-        [stickyHeader]="tableFeatures().stickyHeader"
+        [stickyHeader]="true"
         [accessibilityText]="accessibilityText"
       >
-        @if (tableFeatures().showRenderMetrics) {
-          <nat-table-action-bar>
-            <nat-render-metrics-filter [store]="metricsStore" />
-            <nat-render-metrics-panel [store]="metricsStore" />
-          </nat-table-action-bar>
-        }
+        <nat-table-toolbar class="kitchen-metrics-toolbar" accessibleName="Render metrics toolbar">
+          <nat-render-metrics-filter [store]="metricsStore" />
+          <nat-render-metrics-panel [store]="metricsStore" />
+        </nat-table-toolbar>
 
-        @if (hasTopTableControls()) {
-          <nat-table-action-bar>
-            @if (tableFeatures().enableGlobalFilter) {
-              <nat-table-search
-                align-left
-                label="Search symbol, company, exchange, desk, or id"
-                placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
-              />
-            }
-            @if (tableFeatures().showColumnVisibility) {
-              <nat-table-column-visibility />
-            }
-          </nat-table-action-bar>
-        }
+        <nat-table-toolbar class="kitchen-table-toolbar" accessibleName="Live movers table toolbar">
+          <app-table-search
+            class="kitchen-table-search"
+            label="Search symbol, company, exchange, desk, or id"
+            placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
+          />
 
-        @if (hasTablePaginationControls()) {
-          <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
-        }
+          <nat-table-pagination
+            class="kitchen-table-pagination"
+            natToolbarItemPosition="end"
+            [pageSizeOptions]="pageSizeOptions"
+          />
+        </nat-table-toolbar>
 
         <nat-table
           [data]="simulation.rows()"
           [columns]="columns"
-          [emitRowRenderEvents]="tableFeatures().showRenderMetrics"
+          [emitRowRenderEvents]="true"
           [getRowId]="getRowId"
           accessibleName="Live market movers table"
           (rowRendered)="onRowRendered($event)"
         />
 
-        @if (tableFeatures().showScrollControl) {
-          <nat-table-scroll-control />
-        }
+        <nat-table-scroll-control />
       </nat-table-surface>
     </section>
   </main>
-
-  <ng-template #featureDialog>
-    <section class="feature-dialog" aria-labelledby="feature-dialog-title">
-      <header class="feature-dialog-header">
-        <h2 id="feature-dialog-title">Table options</h2>
-        <button
-          type="button"
-          class="btn btn-ghost"
-          (click)="closeFeatureDialog()"
-          aria-label="Close table options"
-        >
-          Close
-        </button>
-      </header>
-
-      <p class="feature-dialog-copy">
-        Toggle table capabilities to test a simpler or more advanced setup.
-      </p>
-
-      <div class="feature-toggle-list" role="group" aria-label="Table functionality toggles">
-        <label class="feature-toggle" data-feature="enablePagination">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().enablePagination"
-            (change)="toggleFeature('enablePagination', readChecked($event))"
-          />
-          <span>Pagination controls</span>
-        </label>
-
-        <label class="feature-toggle" data-feature="enableGlobalFilter">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().enableGlobalFilter"
-            (change)="toggleFeature('enableGlobalFilter', readChecked($event))"
-          />
-          <span>Search</span>
-        </label>
-
-        <label class="feature-toggle" data-feature="showColumnVisibility">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().showColumnVisibility"
-            (change)="toggleFeature('showColumnVisibility', readChecked($event))"
-          />
-          <span>Column visibility control</span>
-        </label>
-
-        <label class="feature-toggle" data-feature="showScrollControl">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().showScrollControl"
-            (change)="toggleFeature('showScrollControl', readChecked($event))"
-          />
-          <span>Scroll control</span>
-        </label>
-
-        <label class="feature-toggle" data-feature="showRenderMetrics">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().showRenderMetrics"
-            (change)="toggleFeature('showRenderMetrics', readChecked($event))"
-          />
-          <span>Render metrics panel</span>
-        </label>
-
-        <label class="feature-toggle" data-feature="stickyHeader">
-          <input
-            type="checkbox"
-            [checked]="tableFeatures().stickyHeader"
-            (change)="toggleFeature('stickyHeader', readChecked($event))"
-          />
-          <span>Sticky header</span>
-        </label>
-      </div>
-    </section>
-  </ng-template>
 </div>

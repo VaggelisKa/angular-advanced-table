@@ -25,6 +25,7 @@ interface MockOrderRow {
     :host {
       display: inline-flex;
       align-items: center;
+      max-inline-size: 100%;
       min-height: 1.75rem;
       padding-inline: 0.62rem;
       border: 1px solid color-mix(in srgb, var(--showcase-page-text) 12%, transparent);
@@ -37,6 +38,11 @@ interface MockOrderRow {
       font-weight: 650;
       line-height: 1;
       letter-spacing: 0;
+      overflow: hidden;
+      overflow-wrap: normal;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: normal;
     }
   `,
   template: `{{ code().toUpperCase() }}`,
@@ -105,7 +111,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
   {
     id: 'ord-1007',
     customer: 'Northstar Supply',
-    owner: 'Mina Chen',
+    owner: 'Northstar Global Distribution Cooperative',
     channel: 'Wholesale',
     region: 'West',
     status: 'Ready',
@@ -116,7 +122,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
   {
     id: 'ord-1002',
     customer: 'Juniper Foods',
-    owner: 'Ari Patel',
+    owner: 'Juniper Foods',
     channel: 'Online',
     region: 'Midwest',
     status: 'Queued',
@@ -127,7 +133,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
   {
     id: 'ord-1011',
     customer: 'Atlas Studio',
-    owner: 'Nora Vale',
+    owner: 'Atlas Studio International Design Group',
     channel: 'Retail',
     region: 'Northeast',
     status: 'Review',
@@ -138,7 +144,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
   {
     id: 'ord-1004',
     customer: 'Harbor Retail',
-    owner: 'Theo Grant',
+    owner: 'Harbor Retail',
     channel: 'Retail',
     region: 'South',
     status: 'Ready',
@@ -149,7 +155,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
   {
     id: 'ord-1009',
     customer: 'Pioneer Labs',
-    owner: 'Iris Stone',
+    owner: 'Pioneer Labs Advanced Fulfillment Partners',
     channel: 'Online',
     region: 'West',
     status: 'Review',
@@ -169,6 +175,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     meta: {
       label: 'Order',
       rowHeader: true,
+      cellMaxLines: Infinity,
     },
     cell: (info) =>
       flexRenderComponent(OrderCode, {
@@ -190,12 +197,13 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   },
   {
     accessorKey: 'owner',
-    header: 'Owner',
+    header: 'Company',
     enablePinning: false,
-    size: 150,
-    minSize: 120,
+    size: 230,
+    minSize: 190,
     meta: {
-      label: 'Owner',
+      label: 'Company',
+      cellHeight: 72,
     },
     cell: (info) => info.getValue<string>(),
   },

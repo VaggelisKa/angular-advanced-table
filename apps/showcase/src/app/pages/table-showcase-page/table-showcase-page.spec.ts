@@ -49,7 +49,9 @@ describe('TableShowcasePage', () => {
     ) as HTMLElement;
 
     expect(rows.length).toBe(10);
-    expect(firstMenuButton.getAttribute('aria-label')).toContain('Open column actions');
+    expect(firstMenuButton.getAttribute('aria-label')).toBe(
+      'Open pinning options for Symbol column',
+    );
     expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
     expect(firstReorderableHeader).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeFalsy();
@@ -90,24 +92,20 @@ describe('TableShowcasePage', () => {
     expect(statusCell.textContent).not.toContain('$');
   });
 
-  it('should keep search and column visibility working end to end', () => {
+  it('should keep search working end to end without rendering column visibility chips', () => {
     fixture.detectChanges();
 
-    const searchInput = fixture.nativeElement.querySelector('.search-input') as HTMLInputElement;
-    const exchangeToggle = fixture.nativeElement.querySelector(
-      '.column-chip[data-column-id="exchange"]',
-    ) as HTMLButtonElement;
+    const searchInput = fixture.nativeElement.querySelector(
+      'app-table-search input',
+    ) as HTMLInputElement;
 
     searchInput.value = 'eqt-00001';
     searchInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
-
-    exchangeToggle.click();
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Exchange');
+    expect(fixture.nativeElement.querySelector('nat-table-column-visibility')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.column-chip')).toBeFalsy();
   });
 
   it('should apply warning tones to halted move cells', () => {
@@ -215,41 +213,26 @@ describe('TableShowcasePage', () => {
     );
   });
 
-  it('should toggle table capabilities from the options dialog', () => {
+  it('should render the kitchen sink table features by default', () => {
     fixture.detectChanges();
 
-    const optionsButton = fixture.nativeElement.querySelector(
-      '[data-testid="open-table-options"]',
-    ) as HTMLButtonElement;
-
-    optionsButton.click();
-    fixture.detectChanges();
-
-    const searchToggle = document.querySelector(
-      '.feature-toggle[data-feature="enableGlobalFilter"] input',
-    ) as HTMLInputElement;
-    const visibilityToggle = document.querySelector(
-      '.feature-toggle[data-feature="showColumnVisibility"] input',
-    ) as HTMLInputElement;
-    const paginationToggle = document.querySelector(
-      '.feature-toggle[data-feature="enablePagination"] input',
-    ) as HTMLInputElement;
-    const scrollControlToggle = document.querySelector(
-      '.feature-toggle[data-feature="showScrollControl"] input',
-    ) as HTMLInputElement;
-
-    expect(fixture.nativeElement.querySelector('nat-table-scroll-control')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('nat-table-pagination')).toBeTruthy();
-
-    searchToggle.click();
-    visibilityToggle.click();
-    paginationToggle.click();
-    scrollControlToggle.click();
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('.search-input')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('nat-table-column-visibility')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('nat-table-pagination')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('[data-testid="open-table-options"]')).toBeFalsy();
+    expect(document.querySelector('.feature-dialog')).toBeFalsy();
+    const tableSurfaceChildren = Array.from(
+      fixture.nativeElement.querySelector('nat-table-surface.table-shell > .surface').children,
+    ).map((element) => (element as HTMLElement).tagName.toLowerCase());
+    expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar').length).toBe(
+      2,
+    );
+    expect(fixture.nativeElement.querySelector('app-table-search')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector(
+        'nat-table-toolbar nat-table-pagination[natToolbarItemPosition="end"]',
+      ),
+    ).toBeTruthy();
     expect(fixture.nativeElement.querySelector('nat-table-scroll-control')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('nat-render-metrics-filter')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('nat-render-metrics-panel')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('nat-table-column-visibility')).toBeFalsy();
   });
 });

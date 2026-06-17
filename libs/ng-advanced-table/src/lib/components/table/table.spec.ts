@@ -597,6 +597,45 @@ describe('NatTable', () => {
     hiddenHeaderFixture.destroy();
   });
 
+  it('renders hidden header labels for non-primitive headers', async () => {
+    @Component({
+      imports: [NatTable, TestTableSurface],
+      template: `
+        <nat-table-surface>
+          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        </nat-table-surface>
+      `,
+    })
+    class NonPrimitiveHiddenHeaderLabelHost {
+      readonly rows = signal<Row[]>(buildRows(1));
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: () => '',
+          meta: {
+            hiddenHeaderLabel: 'Row actions',
+          },
+          cell: (info) => info.getValue<string>(),
+        },
+      ];
+    }
+
+    const hiddenHeaderFixture = TestBed.createComponent(NonPrimitiveHiddenHeaderLabelHost);
+
+    await hiddenHeaderFixture.whenStable();
+    hiddenHeaderFixture.detectChanges();
+
+    const header = hiddenHeaderFixture.nativeElement.querySelector(
+      'thead th[data-column-id="name"]',
+    ) as HTMLElement;
+    const hiddenLabel = header.querySelector('.sr-only') as HTMLElement;
+
+    expect(hiddenLabel.textContent?.trim()).toBe('Row actions');
+    expect(header.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Row actions');
+
+    hiddenHeaderFixture.destroy();
+  });
+
   it('applies semantic tone attributes from column metadata', () => {
     fixture.detectChanges();
 
@@ -623,6 +662,23 @@ describe('NatTable', () => {
     expect(summary.textContent).toContain('Showing 6 rows across 4 visible columns.');
     expect(rowHeaderCell.getAttribute('role')).toBe('rowheader');
     expect(rowHeaderCell.getAttribute('data-column-id')).toBe('name');
+  });
+
+  it('omits aria-describedby when all hidden descriptions are suppressed', async () => {
+    await recreateHost({
+      accessibilityText: {
+        keyboardInstructions: '',
+        reorderKeyboardInstructions: '',
+        tableSummary: () => '',
+      },
+    });
+    fixture.detectChanges();
+
+    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+
+    expect(table.getAttribute('aria-describedby')).toBeNull();
+    expect(fixture.nativeElement.querySelector('p[id$="-summary"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('p[id$="-instructions"]')).toBeNull();
   });
 
   it('accepts accessibleName as the preferred grid name input', () => {
@@ -1358,6 +1414,93 @@ describe('NatTable', () => {
     expect(intrinsicHeader.style.minWidth).toBe('');
     expect(intrinsicHeader.style.maxWidth).toBe('');
     expect(intrinsicCell.classList.contains('is-width-constrained')).toBe(false);
+  });
+
+  it('clamps body cell content to two lines by default and applies column cell height metadata', async () => {
+    @Component({
+      imports: [NatTable, TestTableSurface],
+      template: `
+        <nat-table-surface>
+          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+        </nat-table-surface>
+      `,
+    })
+    class CellHeightHost {
+      readonly rows = signal<Row[]>([
+        {
+          id: 'svc-cell-height',
+          name: 'Very long service name that should wrap onto multiple visible lines',
+          region: 'eu-central-1 with additional routing detail',
+          status: 'Healthy',
+          throughput: 1000,
+        },
+      ]);
+      readonly columns: ColumnDef<Row, unknown>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Service',
+          meta: {
+            label: 'Service',
+            rowHeader: true,
+            cellHeight: 72,
+            cellMaxLines: 3,
+          },
+          cell: (info) => info.getValue<string>(),
+        },
+        {
+          accessorKey: 'region',
+          header: 'Region',
+          meta: {
+            label: 'Region',
+            cellMaxLines: Infinity,
+          },
+          cell: (info) => info.getValue<string>(),
+        },
+        {
+          accessorKey: 'status',
+          header: 'Status',
+          meta: { label: 'Status' },
+          cell: (info) => info.getValue<string>(),
+        },
+        {
+          accessorKey: 'throughput',
+          header: 'Throughput',
+          meta: {
+            label: 'Throughput',
+            cellMaxLines: 0,
+          },
+          cell: (info) => `${info.getValue<number>()} req/s`,
+        },
+      ];
+    }
+
+    const cellHeightFixture = TestBed.createComponent(CellHeightHost);
+
+    await cellHeightFixture.whenStable();
+    cellHeightFixture.detectChanges();
+
+    const serviceCell = cellHeightFixture.nativeElement.querySelector(
+      'tbody th[data-column-id="name"]',
+    ) as HTMLElement;
+    const regionCell = cellHeightFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="region"]',
+    ) as HTMLElement;
+    const statusCell = cellHeightFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="status"]',
+    ) as HTMLElement;
+    const throughputCell = cellHeightFixture.nativeElement.querySelector(
+      'tbody td[data-column-id="throughput"]',
+    ) as HTMLElement;
+
+    expect(serviceCell.style.height).toBe('72px');
+    expect(serviceCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('3');
+    expect(serviceCell.classList.contains('is-cell-clamped')).toBe(true);
+    expect(regionCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
+    expect(regionCell.classList.contains('is-cell-clamped')).toBe(false);
+    expect(statusCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
+    expect(statusCell.classList.contains('is-cell-clamped')).toBe(true);
+    expect(throughputCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
+    expect(throughputCell.classList.contains('is-cell-clamped')).toBe(true);
   });
 
   it('reorders columns from the keyboard and announces the move', async () => {

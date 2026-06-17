@@ -79,6 +79,13 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   cellTone?: (
     context: CellContext<TData, TValue>,
   ) => 'positive' | 'negative' | 'neutral' | 'warning' | null;
+  /** Optional body-cell height in pixels or any CSS length. Does not affect header cells. */
+  cellHeight?: number | string;
+  /**
+   * Maximum body-cell content lines before truncation. Defaults to 2; set to `Infinity` to disable.
+   * Invalid explicit values fall back to 2 lines.
+   */
+  cellMaxLines?: number;
   /** Optional header-only width in pixels. Does not affect body cells. */
   headerSize?: number | string;
   /** Optional header-only minimum width in pixels. Does not affect body cells. */

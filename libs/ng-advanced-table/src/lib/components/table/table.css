@@ -33,7 +33,6 @@
   padding: var(--nat-table-space-cell-y, 0) var(--nat-table-space-cell-x, 0);
   border-bottom: 1px solid var(--nat-table-cell-border-color, rgba(128, 128, 128, 0.24));
   text-align: start;
-  white-space: nowrap;
 }
 
 .header-cell.is-width-constrained,
@@ -50,6 +49,7 @@
   letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
   text-transform: var(--nat-table-text-transform-header, uppercase);
   border-bottom: 1px solid var(--nat-table-header-border-color, rgba(128, 128, 128, 0.3));
+  white-space: nowrap;
 }
 
 .header-cell-content {
@@ -81,6 +81,21 @@
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.data-cell {
+  line-height: var(--nat-table-line-height-cell, 1.4);
+  vertical-align: middle;
+  white-space: normal;
+}
+
+.data-cell.is-cell-clamped .data-cell-content {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--nat-table-cell-max-lines, 2);
+  line-clamp: var(--nat-table-cell-max-lines, 2);
 }
 
 .header-cell.is-reorderable {
