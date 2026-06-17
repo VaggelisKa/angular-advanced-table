@@ -21,6 +21,7 @@ export type {
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,
   NatTableAccessibilityPaginationAnnouncementContext,
+  NatTableAccessibilitySelectionAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
   NatTableAccessibilityText,
