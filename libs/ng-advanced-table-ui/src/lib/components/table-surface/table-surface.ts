@@ -38,42 +38,44 @@ import {
 })
 export class NatTableSurface {
   /** Two-way bindable state input representing the current table view state. */
-  public readonly state = input<Partial<NatTableState>>({});
+  readonly state = input<Partial<NatTableState>>({});
   /** Emits when the table state changes. */
-  public readonly stateChange = output<Partial<NatTableState>>();
+  readonly stateChange = output<Partial<NatTableState>>();
   /** One-time seed configuration for the table state. */
-  public readonly initialState = input<Partial<NatTableState>>({});
+  readonly initialState = input<Partial<NatTableState>>({});
   /** Operation mode: 'auto' (client-side) or 'manual' (server-side/external), or custom per-slice configuration. */
-  public readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
+  readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
 
   /** Total page count for manual (server-side) pagination. */
-  public readonly manualPageCount = input<number | undefined>(undefined);
+  readonly manualPageCount = input<number | undefined>(undefined);
   /** Enables polite live announcements for sort/filter/pagination changes. */
-  public readonly enableAnnouncements = input(true, { transform: booleanAttribute });
+  readonly enableAnnouncements = input(true, { transform: booleanAttribute });
   /** Enables sticky positioning for the table header row. */
-  public readonly stickyHeader = input(true, { transform: booleanAttribute });
+  readonly stickyHeader = input(true, { transform: booleanAttribute });
   /** Allows multiple simultaneous sort columns. Default false (single-column sort). */
   readonly enableMultiSort = input(false, { transform: booleanAttribute });
   /** Locale id used to resolve generated table accessibility copy. */
-  public readonly locale = input<string | undefined>(undefined);
+  readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
-  public readonly accessibilityText = input<NatTableAccessibilityText>({});
+  readonly accessibilityText = input<NatTableAccessibilityText>({});
   /** Enables interactive column resizing via a drag handle and keyboard separator. */
-  public readonly enableColumnResizing = input(false, { transform: booleanAttribute });
+  readonly enableColumnResizing = input(false, { transform: booleanAttribute });
   /** When to apply resize: `'onEnd'` (default, on pointer release) or `'onChange'` (live). */
-  public readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
+  readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
+  /** Width model: `'fill'` (default — columns stretch to fill the container) or `'fixed'` (column widths are authoritative and the region scrolls horizontally, giving pixel-exact resizing). */
+  readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
   /** Text direction. Falls back to the inherited CDK direction, then `'ltr'`. */
-  public readonly direction = input<'ltr' | 'rtl'>();
+  readonly direction = input<'ltr' | 'rtl'>();
 
   // Slice-specific change outputs
-  public readonly sortingChange = output<SortingState>();
-  public readonly globalFilterChange = output<string>();
-  public readonly columnFiltersChange = output<ColumnFiltersState>();
-  public readonly columnVisibilityChange = output<VisibilityState>();
-  public readonly columnOrderChange = output<ColumnOrderState>();
-  public readonly columnPinningChange = output<ColumnPinningState>();
-  public readonly columnSizingChange = output<ColumnSizingState>();
-  public readonly paginationChange = output<PaginationState>();
+  readonly sortingChange = output<SortingState>();
+  readonly globalFilterChange = output<string>();
+  readonly columnFiltersChange = output<ColumnFiltersState>();
+  readonly columnVisibilityChange = output<VisibilityState>();
+  readonly columnOrderChange = output<ColumnOrderState>();
+  readonly columnPinningChange = output<ColumnPinningState>();
+  readonly columnSizingChange = output<ColumnSizingState>();
+  readonly paginationChange = output<PaginationState>();
   readonly rowSelectionChange = output<RowSelectionState>();
 
   private readonly natTableService = inject(NatTableService);
@@ -111,6 +113,9 @@ export class NatTableSurface {
     });
     effect(() => {
       this.natTableService.columnResizeMode.set(this.columnResizeMode());
+    });
+    effect(() => {
+      this.natTableService.columnSizingMode.set(this.columnSizingMode());
     });
     effect(() => {
       this.natTableService.direction.set(this.direction());
