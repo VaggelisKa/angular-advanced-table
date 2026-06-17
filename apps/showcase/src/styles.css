@@ -547,6 +547,12 @@ input {
   font-weight: 500;
 }
 
+.showcase-page .info-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .showcase-page .column-control,
 .showcase-page .order-item,
 .showcase-page .toggle-control {
