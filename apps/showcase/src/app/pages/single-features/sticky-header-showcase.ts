@@ -66,9 +66,24 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
       width: 100%;
       min-width: 0;
     }
+    @keyframes slide-down {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
   `,
   template: `
-    <div class="showcase-page showcase-container">
+    @if (simulateTopbar()) {
+      <div style="position: fixed; top: 0; left: 0; right: 0; height: 60px; background: var(--showcase-page-negative, #ea4335); color: #ffffff; display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: 600; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); font-size: 0.95rem; animation: slide-down 0.2s ease-out;">
+        <span>Simulated Sticky Topbar Active (Height: 60px)</span>
+      </div>
+    }
+
+    <div
+      class="showcase-page showcase-container"
+      [style.--nat-table-sticky-top.px]="simulateTopbar() ? 60 : 0"
+      [style.margin-top.px]="simulateTopbar() ? 60 : 0"
+      style="transition: margin-top 0.2s ease-out;"
+    >
       <header class="header-section">
         <div style="display: grid; gap: 4px;">
           <h1 class="title">Sticky Header</h1>
@@ -105,6 +120,14 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
                 (change)="toggleStickyHeader($event)"
               />
               <span>Enable Sticky Header</span>
+            </label>
+            <label class="toggle-label">
+              <input
+                type="checkbox"
+                [checked]="simulateTopbar()"
+                (change)="toggleTopbarSimulation($event)"
+              />
+              <span>Simulate Sticky Topbar (60px)</span>
             </label>
             <div class="tip">
               Scroll down the table to verify the sticky behavior, then turn it off to observe
@@ -224,10 +247,19 @@ export class StickyHeaderShowcasePage {
     },
   ]);
 
+  readonly simulateTopbar = signal(false);
+
   toggleStickyHeader(event: Event): void {
     const target = event.target;
     if (target instanceof HTMLInputElement) {
       this.stickyHeaderEnabled.set(target.checked);
+    }
+  }
+
+  toggleTopbarSimulation(event: Event): void {
+    const target = event.target;
+    if (target instanceof HTMLInputElement) {
+      this.simulateTopbar.set(target.checked);
     }
   }
 }
