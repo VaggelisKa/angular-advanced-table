@@ -12,15 +12,16 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import {
-  type ColumnDef,
-  type ColumnFiltersState,
-  type ColumnOrderState,
-  type ColumnPinningState,
-  type FilterFn,
-  type PaginationState,
-  type SortingState,
-  type VisibilityState,
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  ColumnOrderState,
+  ColumnPinningState,
+  ColumnSizingState,
+  FilterFn,
+  PaginationState,
+  SortingState,
+  VisibilityState,
 } from '@tanstack/angular-table';
 
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction';
@@ -89,6 +90,9 @@ class TestTableSurface {
   readonly enableMultiSort = input(false, { transform: booleanAttribute });
   readonly locale = input<string | undefined>(undefined);
   readonly accessibilityText = input<NatTableAccessibilityText>({});
+  readonly enableColumnResizing = input(false, { transform: booleanAttribute });
+  readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
+  readonly direction = input<'ltr' | 'rtl'>();
 
   readonly sortingChange = output<SortingState>();
   readonly globalFilterChange = output<string>();
@@ -96,6 +100,7 @@ class TestTableSurface {
   readonly columnVisibilityChange = output<VisibilityState>();
   readonly columnOrderChange = output<ColumnOrderState>();
   readonly columnPinningChange = output<ColumnPinningState>();
+  readonly columnSizingChange = output<ColumnSizingState>();
   readonly paginationChange = output<PaginationState>();
   readonly rowSelectionChange = output<NatTableState['rowSelection']>();
 
@@ -129,6 +134,15 @@ class TestTableSurface {
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
     });
+    effect(() => {
+      this.natTableService.enableColumnResizing.set(this.enableColumnResizing());
+    });
+    effect(() => {
+      this.natTableService.columnResizeMode.set(this.columnResizeMode());
+    });
+    effect(() => {
+      this.natTableService.direction.set(this.direction());
+    });
 
     let isFirstChange = true;
     let previousState: NatTableState = {
@@ -138,6 +152,7 @@ class TestTableSurface {
       columnVisibility: {},
       columnOrder: [],
       columnPinning: { left: [], right: [] },
+      columnSizing: {},
       rowSelection: {},
       pagination: { pageIndex: 0, pageSize: 10 },
     };
@@ -158,6 +173,7 @@ class TestTableSurface {
           columnOrder: currentBound.columnOrder ?? initial.columnOrder ?? [],
           columnPinning: currentBound.columnPinning ??
             initial.columnPinning ?? { left: [], right: [] },
+          columnSizing: currentBound.columnSizing ?? initial.columnSizing ?? {},
           rowSelection: currentBound.rowSelection ?? initial.rowSelection ?? {},
           pagination: currentBound.pagination ??
             initial.pagination ?? { pageIndex: 0, pageSize: 10 },
@@ -187,6 +203,9 @@ class TestTableSurface {
       }
       if (JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning)) {
         this.columnPinningChange.emit(nextState.columnPinning);
+      }
+      if (JSON.stringify(prev.columnSizing) !== JSON.stringify(nextState.columnSizing)) {
+        this.columnSizingChange.emit(nextState.columnSizing);
       }
       if (JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination)) {
         this.paginationChange.emit(nextState.pagination);
@@ -274,6 +293,8 @@ const columns: ColumnDef<Row, unknown>[] = [
       [stickyHeader]="stickyHeader"
       [accessibilityText]="accessibilityText"
       [manualPageCount]="manualPageCount"
+      [enableColumnResizing]="enableColumnResizing"
+      [direction]="direction"
       (stateChange)="onStateChange($event)"
       (sortingChange)="onSortingChange($event)"
       (paginationChange)="onPaginationChange($event)"
@@ -282,6 +303,7 @@ const columns: ColumnDef<Row, unknown>[] = [
       (columnVisibilityChange)="onColumnVisibilityChange($event)"
       (columnOrderChange)="onColumnOrderChange($event)"
       (columnPinningChange)="onColumnPinningChange($event)"
+      (columnSizingChange)="onColumnSizingChange($event)"
       (rowSelectionChange)="onRowSelectionChange($event)"
     >
       @if (enablePagination) {
@@ -328,6 +350,8 @@ class TableHost {
   enableRowSelection = false;
   selectionMode: 'single' | 'multiple' = 'multiple';
   stickyHeader = true;
+  enableColumnResizing = false;
+  direction: 'ltr' | 'rtl' | undefined = undefined;
   accessibilityText: NatTableAccessibilityText = {};
   mode: NatTableMode | NatTableModeConfiguration = 'auto';
   manualPageCount: number | undefined = undefined;
@@ -340,6 +364,7 @@ class TableHost {
   readonly columnVisibilityEvents: NatTableState['columnVisibility'][] = [];
   readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
   readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
+  readonly columnSizingEvents: NatTableState['columnSizing'][] = [];
   readonly rowSelectionEvents: NatTableState['rowSelection'][] = [];
 
   onStateChange(state: Partial<NatTableState>): void {
@@ -372,6 +397,10 @@ class TableHost {
 
   onColumnPinningChange(columnPinning: NatTableState['columnPinning']): void {
     this.columnPinningEvents.push(columnPinning);
+  }
+
+  onColumnSizingChange(columnSizing: NatTableState['columnSizing']): void {
+    this.columnSizingEvents.push(columnSizing);
   }
 
   onRowSelectionChange(rowSelection: NatTableState['rowSelection']): void {
@@ -531,6 +560,8 @@ describe('NatTable', () => {
       enableRowSelection?: boolean;
       selectionMode?: 'single' | 'multiple';
       stickyHeader?: boolean;
+      enableColumnResizing?: boolean;
+      direction?: 'ltr' | 'rtl';
       accessibilityText?: NatTableAccessibilityText;
       initialState?: Partial<NatTableState>;
       state?: Partial<NatTableState>;
@@ -546,6 +577,8 @@ describe('NatTable', () => {
     host.enableRowSelection = options.enableRowSelection ?? host.enableRowSelection;
     host.selectionMode = options.selectionMode ?? host.selectionMode;
     host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
+    host.enableColumnResizing = options.enableColumnResizing ?? host.enableColumnResizing;
+    host.direction = options.direction ?? host.direction;
     host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
     host.initialState = options.initialState ?? host.initialState;
     host.mode = options.mode ?? host.mode;
@@ -557,6 +590,83 @@ describe('NatTable', () => {
 
     await fixture.whenStable();
   }
+
+  it('renders resize handles only when column resizing is enabled', async () => {
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.column-resize-handle')).toBeNull();
+
+    await recreateHost({ enableColumnResizing: true });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.column-resize-handle').length).toBe(4);
+  });
+
+  it('resizes a column from the keyboard, updates width, and emits columnSizingChange', async () => {
+    await recreateHost({ enableColumnResizing: true });
+    fixture.detectChanges();
+
+    const regionHandle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .column-resize-handle',
+    ) as HTMLElement;
+
+    expect(regionHandle.getAttribute('aria-label')).toBe('Resize Region column');
+
+    regionHandle.focus();
+    regionHandle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+
+    const regionCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="region"]',
+    ) as HTMLElement;
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLElement;
+
+    // The resize must drive BOTH body and header widths, or the column never visibly resizes.
+    expect(regionCell.style.width).toBe('148px');
+    expect(regionHeader.style.width).toBe('148px');
+    expect(regionHandle.getAttribute('aria-valuetext')).toBe('148 pixels');
+
+    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+    expect(liveRegion.textContent?.trim()).toBe('Region column width 148 pixels.');
+  });
+
+  it('inverts keyboard resize arrows in RTL and clamps to the min bound', async () => {
+    await recreateHost({ enableColumnResizing: true, direction: 'rtl' });
+    fixture.detectChanges();
+
+    const handle = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"] .column-resize-handle',
+    ) as HTMLElement;
+    handle.focus();
+
+    // RTL: the resize edge is on the left, so ArrowLeft grows (region 140 → 148).
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+
+    // Home jumps to the column's minSize (100).
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 100 });
+
+    // Already at min: ArrowRight (shrink in RTL) clamps to 100 and emits nothing new.
+    const eventsAtMin = host.columnSizingEvents.length;
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.length).toBe(eventsAtMin);
+  });
 
   it('renders a bare table surface with no built-in controls', () => {
     fixture.detectChanges();
