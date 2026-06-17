@@ -1193,9 +1193,8 @@ export class NatTable<TData extends RowData = RowData> {
     const rect = tableEl.getBoundingClientRect();
     const theadHeight = theadEl.getBoundingClientRect().height;
     
-    const firstCell = headerCells[0];
-    const computedTop = firstCell ? window.getComputedStyle(firstCell).top : '0';
-    const stickyTop = parseFloat(computedTop) || 0;
+    const computedVar = window.getComputedStyle(region).getPropertyValue('--nat-table-sticky-top');
+    const stickyTop = parseFloat(computedVar) || 0;
 
     let translateY = 0;
     if (rect.top < stickyTop) {

@@ -156,7 +156,7 @@
 
 .has-sticky-header .header-cell {
   position: sticky;
-  top: var(--nat-table-sticky-top, 0);
+  top: 0;
   z-index: 4;
   will-change: transform;
 }

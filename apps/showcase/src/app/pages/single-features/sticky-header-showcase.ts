@@ -84,12 +84,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
       </div>
     }
 
-    <div
-      class="showcase-page showcase-container"
-      [style.--nat-table-sticky-top.px]="simulateTopbar() ? 60 : 0"
-      [style.margin-top.px]="simulateTopbar() ? 60 : 0"
-      style="transition: margin-top 0.2s ease-out;"
-    >
+    <div class="showcase-page showcase-container" style="transition: margin-top 0.2s ease-out;">
       <header class="header-section">
         <div style="display: grid; gap: 4px;">
           <h1 class="title">Sticky Header</h1>
