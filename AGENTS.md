@@ -29,6 +29,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Keep workflow-specific controls such as global search inputs and filter menus consumer-owned unless they are generic table primitives. Showcase examples can implement `app-*` components against `NatTableService`; `ng-advanced-table-ui` should stay focused on generic shells, companion controls, and controller wiring.
 - Treat `dataStatus` as the table-owned switch for loading, empty, and error body rows. Keep data fetching, retry handling, and error classification in consuming containers, and render custom state UI through `natTableLoading`, `natTableEmpty`, or `natTableError` templates inside `<nat-table>`.
 - For `<nat-table-toolbar>`, projected interactive controls that participate in toolbar navigation must use `natToolbarItem` or `NatToolbarGroup`, with DOM order matching screen-reader and roving-keyboard order.
+- Do not use or reintroduce the removed `NatTableActionBar`/`<nat-table-action-bar>` API. Compose bundled control rows with `<nat-table-toolbar>`, `NatToolbarGroup`/`natToolbarItem`, and the pagination or scroll companion controls instead.
 
 ## TypeScript Best Practices
 
@@ -50,6 +51,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 - It MUST pass all AXE checks.
 - It MUST follow all WCAG AA minimums, including focus management, color contrast, and ARIA attributes.
+- When changing companion-control visible text, `aria-label` copy, or built-in UI locale dictionaries, keep visible words inside accessible names and update the locale specs plus UI component specs that lock that copy.
+- Keep `hiddenHeaderLabel` rendered as screen-reader-only header text for both primitive and non-primitive column headers, including columns wrapped with `withNatTableHeaderActions(...)`.
 
 ## Browser Compatibility
 
