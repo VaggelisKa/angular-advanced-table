@@ -113,7 +113,7 @@ interface TableColumnRenderState {
   headerMaxWidth: string | null;
   headerConstrainedWidth: boolean;
   cellHeight: string | null;
-  cellMaxLines: string | null;
+  cellMaxLines: number | null;
   ariaSort: 'ascending' | 'descending' | null;
   rowHeader: boolean;
 }
@@ -593,6 +593,7 @@ export class NatTable<TData extends RowData = RowData> {
             : null;
       const cellHeight =
         meta?.cellHeight !== undefined ? normalizeColumnDimension(meta.cellHeight) : null;
+      const cellMaxLines = normalizeCellMaxLines(meta?.cellMaxLines ?? DEFAULT_CELL_MAX_LINES);
 
       result[column.id] = {
         label,
@@ -613,7 +614,7 @@ export class NatTable<TData extends RowData = RowData> {
         headerMaxWidth,
         headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
         cellHeight,
-        cellMaxLines: normalizeCellMaxLines(meta?.cellMaxLines),
+        cellMaxLines,
         ariaSort: primarySortEntry ? (primarySortEntry.desc ? 'descending' : 'ascending') : null,
         rowHeader: !!meta?.rowHeader,
       };
@@ -1690,15 +1691,12 @@ function normalizeColumnDimension(value: number | string | undefined): string | 
   return null;
 }
 
-function normalizeCellMaxLines(value: number | undefined): string | null {
-  if (value === undefined || value === Infinity) {
+function normalizeCellMaxLines(value: number): number | null {
+  if (value === Infinity) {
     return null;
   }
 
-  const resolvedMaxLines =
-    Number.isFinite(value) && value >= 1 ? Math.floor(value) : DEFAULT_CELL_MAX_LINES;
-
-  return String(resolvedMaxLines);
+  return Number.isFinite(value) && value >= 1 ? Math.floor(value) : DEFAULT_CELL_MAX_LINES;
 }
 
 function getNumericColumnWidth(value: number | string | undefined): number | null {

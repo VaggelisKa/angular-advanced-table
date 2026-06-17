@@ -1360,7 +1360,7 @@ describe('NatTable', () => {
     expect(intrinsicCell.classList.contains('is-width-constrained')).toBe(false);
   });
 
-  it('applies explicit cell height and line clamp metadata', async () => {
+  it('clamps body cell content to two lines by default and applies column cell height metadata', async () => {
     @Component({
       imports: [NatTable, TestTableSurface],
       template: `
@@ -1441,8 +1441,8 @@ describe('NatTable', () => {
     expect(serviceCell.classList.contains('is-cell-clamped')).toBe(true);
     expect(regionCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
     expect(regionCell.classList.contains('is-cell-clamped')).toBe(false);
-    expect(statusCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
-    expect(statusCell.classList.contains('is-cell-clamped')).toBe(false);
+    expect(statusCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
+    expect(statusCell.classList.contains('is-cell-clamped')).toBe(true);
     expect(throughputCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
     expect(throughputCell.classList.contains('is-cell-clamped')).toBe(true);
   });

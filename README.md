@@ -347,7 +347,7 @@ Attach metadata through `columnDef.meta`:
 
 Set `hiddenHeaderLabel: 'Row actions'` for compact utility columns whose title would be redundant visually, such as row actions or menu columns. Primitive string/number headers render that value as screen-reader-only text. When the column is wrapped with `withNatTableHeaderActions(...)`, only the header label is visually hidden; sort buttons and the three-dot pin menu stay visible and use `hiddenHeaderLabel` for their generated accessible labels.
 
-Body cell content is not line-clamped by default. Use `cellHeight` to make a column's body cells fixed-height, set `cellMaxLines` to a finite line count to truncate content, or omit it or set `cellMaxLines: Infinity` for columns with custom interactive renderers that should not be line-clamped. Invalid explicit `cellMaxLines` values fall back to two lines.
+Body cell content is clamped to two lines by default. Use `cellHeight` to make a column's body cells fixed-height, set `cellMaxLines` to a different line count, or set `cellMaxLines: Infinity` for columns with custom interactive renderers that should not be line-clamped. Invalid explicit `cellMaxLines` values fall back to two lines.
 
 ### Column sizing and pinned offsets
 
