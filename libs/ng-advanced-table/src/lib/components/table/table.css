@@ -8,6 +8,7 @@
   position: relative;
   overflow-x: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto));
   overflow-y: var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
+  overscroll-behavior-x: contain;
   max-height: var(--nat-table-max-height, inherit);
   height: var(--nat-table-height, inherit);
   border: 1px solid var(--nat-table-region-border-color, rgba(128, 128, 128, 0.24));
