@@ -635,6 +635,25 @@ nat-table-action-bar nat-render-metrics-filter {
   padding: 0;
 }
 
+.kitchen-table-toolbar {
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.kitchen-table-search {
+  flex: 1 1 340px;
+  min-width: min(100%, 280px);
+  max-width: 520px;
+}
+
+.kitchen-table-pagination {
+  --nat-table-space-card-compact: 0;
+  --nat-table-color-border: transparent;
+  --nat-table-color-surface: transparent;
+}
+
 /*
  * Drive the `--nat-table-*` theming API. The library re-declares these on its
  * own :host, so we set them on <nat-table> and <nat-table-surface> to win specificity.
