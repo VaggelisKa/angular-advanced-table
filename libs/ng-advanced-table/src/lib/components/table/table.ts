@@ -1316,7 +1316,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     let translateY = 0;
     if (rectTop < this.cachedStickyTop) {
-      const maxTranslateY = this.tableHeight - this.theadHeight;
+      const maxTranslateY = Math.max(0, this.tableHeight - this.theadHeight);
       translateY = Math.min(Math.max(0, this.cachedStickyTop - rectTop), maxTranslateY);
     }
 
