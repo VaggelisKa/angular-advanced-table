@@ -736,6 +736,8 @@ export class NatTable<TData extends RowData = RowData> {
     });
     afterRenderEffect(() => {
       this.visibleColumnIds();
+      this.bodyRows();
+      this.bodyState();
       this.reattachHeaderObservers();
       this.measureTableDimensions();
       this.updateStickyHeaderPosition();

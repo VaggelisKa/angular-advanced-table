@@ -2094,6 +2094,42 @@ describe('NatTable', () => {
     expect((table as any).cachedStickyTop).toBe(64);
   });
 
+  it('refreshes cached sticky dimensions when rendered rows change', async () => {
+    await recreateHost({ stickyHeader: true, initialState: {} });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture) as unknown as {
+      measureTableDimensions(): void;
+      tableHeight: number;
+    };
+    const tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const thead = fixture.nativeElement.querySelector('thead') as HTMLTableSectionElement;
+    let measuredTableHeight = 80;
+
+    tableElement.getBoundingClientRect = () =>
+      ({
+        top: 20,
+        height: measuredTableHeight,
+      }) as DOMRect;
+    thead.getBoundingClientRect = () =>
+      ({
+        height: 24,
+      }) as DOMRect;
+
+    table.measureTableDimensions();
+    expect(table.tableHeight).toBe(80);
+
+    measuredTableHeight = 280;
+    host.rows.set(buildRows(12));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(table.tableHeight).toBe(280);
+  });
+
   describe('manual mode', () => {
     it('does not paginate, sort, or filter client-side, but still tracks and emits state changes', async () => {
       await recreateHost({
