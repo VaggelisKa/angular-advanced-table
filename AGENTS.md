@@ -19,6 +19,17 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - `ng-advanced-table-locales` must remain below the core and companion packages in the dependency graph. It may be consumed by `ng-advanced-table`, `ng-advanced-table-ui`, and `ng-advanced-table-utils`, but it must not import from them.
 - Do not add TypeScript path mappings, package dependencies, or re-exports that create a dependency from the core package back to a companion package. If a bundled experience is needed, create a separate wrapper package instead of making the core package depend on companions.
 
+## Package Boundaries
+
+- Keep `ng-advanced-table-types` internal. Published entry points must expose local public interfaces or aliases so generated declarations do not reference the private package.
+- When changing shared contracts such as `NatTableColumnMeta`, `NatTableState`, sort indicator context, or table controller state, update the core table package, companion UI package, utils package, internal types package, public API barrels, and matching contract/type specs in the same change.
+
+## Table Library Patterns
+
+- Keep workflow-specific controls such as global search inputs and filter menus consumer-owned unless they are generic table primitives. Showcase examples can implement `app-*` components against `NatTableService`; `ng-advanced-table-ui` should stay focused on generic shells, companion controls, and controller wiring.
+- Treat `dataStatus` as the table-owned switch for loading, empty, and error body rows. Keep data fetching, retry handling, and error classification in consuming containers, and render custom state UI through `natTableLoading`, `natTableEmpty`, or `natTableError` templates inside `<nat-table>`.
+- For `<nat-table-toolbar>`, projected interactive controls that participate in toolbar navigation must use `natToolbarItem` or `NatToolbarGroup`, with DOM order matching screen-reader and roving-keyboard order.
+
 ## TypeScript Best Practices
 
 - Use strict type checking
