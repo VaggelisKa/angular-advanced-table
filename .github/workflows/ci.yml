@@ -55,8 +55,11 @@ jobs:
         if: github.event_name == 'pull_request' && steps.package_changes.outputs.changed == 'true'
         run: npx nx release plan:check --base="$NX_BASE" --head="$NX_HEAD"
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - name: Verify workspace
-        run: npx nx affected -t test,build --base="$NX_BASE" --head="$NX_HEAD"
+        run: npx nx affected -t test,build,e2e --base="$NX_BASE" --head="$NX_HEAD"
 
       - name: Verify packages and release config
         run: npm run verify

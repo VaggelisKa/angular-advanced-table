@@ -69,6 +69,12 @@
           "options": {
             "tsConfig": "apps/showcase/tsconfig.spec.json"
           }
+        },
+        "e2e": {
+          "builder": "nx:run-commands",
+          "options": {
+            "command": "npx playwright test -c e2e"
+          }
         }
       }
     },

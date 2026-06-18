@@ -19,6 +19,10 @@
       "cache": true,
       "inputs": ["default", "^production"]
     },
+    "e2e": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    },
     "nx-release-publish": {
       "dependsOn": ["build"]
     }
