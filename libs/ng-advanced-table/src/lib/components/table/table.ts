@@ -13,6 +13,7 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   output,
   signal,
@@ -46,10 +47,7 @@ import {
   type VisibilityState,
 } from '@tanstack/angular-table';
 
-import {
-  handleCellInteractionFocusIn,
-  handleCellInteractionKeydown,
-} from './cell-interaction';
+import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from './cell-interaction';
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
@@ -78,6 +76,7 @@ import type {
   NatTableAccessibilityText,
   NatTableBodyState,
   NatTableCellTone,
+  NatTableColumnMoveDirection,
   NatTableDataStatus,
   NatTableEmptyTemplateContext,
   NatTableErrorTemplateContext,
@@ -98,6 +97,8 @@ import {
   normalizeColumnPinning,
   normalizeDataStatus,
   moveItemInArrayCopy,
+  getColumnReorderKeyboardDirection,
+  getColumnMoveTargetIndex,
   replaceIdsInSlots,
   hasSameStringOrder,
   matchesFilterQuery,
@@ -114,6 +115,7 @@ import {
   normalizeRowSelection,
   serializeRowSelection,
   hasSameColumnVisibility,
+  type ColumnReorderKeyboardDirection,
   type TableColumnAccessibilityState,
   type TableColumnSizingState,
 } from './table-utils';
@@ -517,6 +519,8 @@ export class NatTable<TData extends RowData = RowData> {
     enableMultiRowSelection: this.selectionMode() === 'multiple',
     meta: {
       natTableLocaleId: this.localeId(),
+      natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
+      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
     },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
@@ -541,6 +545,7 @@ export class NatTable<TData extends RowData = RowData> {
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
   readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
+  private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private headerResizeObserver: ResizeObserver | null = null;
 
@@ -854,31 +859,20 @@ export class NatTable<TData extends RowData = RowData> {
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
     if (handleCellInteractionKeydown(event)) return;
 
-    const isReorderModifierPressed = event.altKey && event.shiftKey;
+    const directionDelta = getColumnReorderKeyboardDirection(event);
 
-    if (!isReorderModifierPressed) return;
-
-    const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
-
-    if (!isHorizontalArrowKey) return;
+    if (directionDelta === null) return;
 
     const zone = this.getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(column.id);
 
-    if (currentIndex === -1) return;
-
-    const directionDelta = event.key === 'ArrowLeft' ? -1 : 1;
-    const nextIndex = currentIndex + directionDelta;
-
-    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
+    if (currentIndex === -1 || visibleZoneColumnIds.length < 2) return;
 
     event.preventDefault();
     event.stopPropagation();
 
-    const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
-
-    this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
+    this.moveColumnByDelta(column.id, directionDelta);
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
@@ -1088,6 +1082,7 @@ export class NatTable<TData extends RowData = RowData> {
 
       this.updateState({ columnOrder: nextColumnOrder });
       this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+      this.scrollColumnHeaderIntoView(movingColumnId);
       return;
     }
 
@@ -1110,6 +1105,100 @@ export class NatTable<TData extends RowData = RowData> {
       },
     });
     this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+    this.scrollColumnHeaderIntoView(movingColumnId);
+  }
+
+  private canMoveColumn(columnId: string, direction: NatTableColumnMoveDirection): boolean {
+    return this.canMoveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
+  }
+
+  private moveColumn(columnId: string, direction: NatTableColumnMoveDirection): void {
+    this.moveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
+  }
+
+  private canMoveColumnByDelta(
+    columnId: string,
+    directionDelta: ColumnReorderKeyboardDirection,
+  ): boolean {
+    const zone = this.getColumnZoneById(columnId);
+
+    if (!zone) return false;
+
+    const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+
+    return getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta) !== null;
+  }
+
+  private moveColumnByDelta(
+    columnId: string,
+    directionDelta: ColumnReorderKeyboardDirection,
+  ): void {
+    const zone = this.getColumnZoneById(columnId);
+
+    if (!zone) return;
+
+    const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+    const currentIndex = visibleZoneColumnIds.indexOf(columnId);
+    const nextIndex = getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta);
+
+    if (nextIndex === null) return;
+
+    const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
+
+    this.applyVisibleZoneReorder(zone, columnId, nextVisibleZoneOrder);
+  }
+
+  private scrollColumnHeaderIntoView(columnId: string): void {
+    afterNextRender(
+      {
+        write: () => {
+          const scrollContainer = this.tableScrollContainer();
+          const headerElement = this.getHeaderElement(columnId);
+
+          if (!scrollContainer || !headerElement) {
+            return;
+          }
+
+          this.scrollElementHorizontallyIntoView(scrollContainer, headerElement);
+        },
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private getHeaderElement(columnId: string): HTMLElement | null {
+    const tableRegion = this.tableRegionRef()?.nativeElement;
+
+    if (!tableRegion) {
+      return null;
+    }
+
+    const headers = tableRegion.querySelectorAll<HTMLElement>('thead th[data-column-id]');
+
+    for (const header of headers) {
+      if (header.getAttribute('data-column-id') === columnId) {
+        return header;
+      }
+    }
+
+    return null;
+  }
+
+  private scrollElementHorizontallyIntoView(
+    scrollContainer: HTMLElement,
+    element: HTMLElement,
+  ): void {
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+
+    if (elementRect.left < containerRect.left) {
+      scrollContainer.scrollLeft -= containerRect.left - elementRect.left;
+      return;
+    }
+
+    if (elementRect.right > containerRect.right) {
+      scrollContainer.scrollLeft += elementRect.right - containerRect.right;
+    }
   }
 
   private announceColumnReorder(
@@ -1530,5 +1619,3 @@ export class NatTable<TData extends RowData = RowData> {
     }
   }
 }
-
-

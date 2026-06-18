@@ -55,6 +55,10 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - When changing companion-control visible text, `aria-label` copy, or built-in UI locale dictionaries, keep visible words inside accessible names and update the locale specs plus UI component specs that lock that copy.
 - Keep `hiddenHeaderLabel` rendered as screen-reader-only header text for both primitive and non-primitive column headers, including columns wrapped with `withNatTableHeaderActions(...)`.
 
+## Testing
+
+- Prefer `data-testid` selectors for automated test hooks. Avoid coupling tests to CSS classes, DOM shape, or incidental implementation attributes when a stable `data-testid` can be added.
+
 ## Browser Compatibility
 
 - The project must support Safari 16.

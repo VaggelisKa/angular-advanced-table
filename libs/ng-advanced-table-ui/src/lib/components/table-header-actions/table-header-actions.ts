@@ -18,7 +18,9 @@ import {
 import type {
   NatTableAccessibilityHeaderActionLabels,
   NatTableAccessibilityHeaderActionMenuContext,
+  NatTableAccessibilityHeaderActionMoveContext,
   NatTableAccessibilityHeaderActionPinContext,
+  NatTableColumnMoveDirection,
   NatTableSortDirection,
   NatTableSortIndicatorContext,
   NatTableSortIndicatorContent,
@@ -44,16 +46,20 @@ export type { NatTableSortIndicatorContent } from '../../shared/table-ui.types';
 /**
  * Options for {@link withNatTableHeaderActions}.
  *
- * Use `sortIndicator` to replace the built-in unsorted/ascending/descending
- * glyphs while keeping the same sort and pin button behavior.
+ * Use `sortIndicator` to replace the built-in unsorted/ascending/descending glyphs
+ * while keeping the same sort, pin, and move-column menu behavior.
  */
 export interface NatTableHeaderActionsOptions {
   /** Custom content rendered inside the sort button for each sortable column. */
   sortIndicator?: NatTableSortIndicatorContent;
   /** Static locale override for generated action labels. Defaults to the hosting table locale. */
   locale?: string;
-  /** Optional accessibility label overrides for the built-in sort and pin actions. */
+  /** Optional accessibility label overrides for the built-in sort, pin, and move actions. */
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
+  /** Enables left/right pin menu items when the controlled table can pin this column. */
+  enableColumnPinActions?: boolean;
+  /** Enables Move left / Move right menu items when the controlled table can reorder this column. */
+  enableColumnReorderActions?: boolean;
 }
 
 @Component({
@@ -70,7 +76,8 @@ export class NatTableHeaderActions {
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
   protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
-  protected readonly pinMenu = viewChild<Menu<NatTablePinSide>>('pinMenu');
+  protected readonly moveDirections: readonly NatTableColumnMoveDirection[] = ['left', 'right'];
+  protected readonly pinMenu = viewChild<Menu<string>>('pinMenu');
   protected readonly pinMenuPositions: ConnectedPosition[] = [
     {
       originX: 'end',
@@ -103,13 +110,26 @@ export class NatTableHeaderActions {
   readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(
     undefined,
   );
+  readonly enableColumnPinActions = input(true);
+  readonly enableColumnReorderActions = input(false);
 
   protected canSort(): boolean {
     return this.column().getCanSort();
   }
 
   protected canPin(): boolean {
-    return this.column().getCanPin();
+    return this.enableColumnPinActions() && this.column().getCanPin();
+  }
+
+  protected canShowMenu(): boolean {
+    return this.canPin() || this.hasColumnMoveActions();
+  }
+
+  protected hasColumnMoveActions(): boolean {
+    return (
+      this.enableColumnReorderActions() &&
+      (this.canMoveColumn('left') || this.canMoveColumn('right'))
+    );
   }
 
   protected isPinned(side?: NatTablePinSide): boolean {
@@ -205,6 +225,35 @@ export class NatTableHeaderActions {
     return labels.pinButtonText?.(context) ?? '';
   }
 
+  protected canMoveColumn(direction: NatTableColumnMoveDirection): boolean {
+    return (
+      this.context().table.options.meta?.natTableCanMoveColumn?.(this.column().id, direction) ??
+      false
+    );
+  }
+
+  protected moveColumn(direction: NatTableColumnMoveDirection): void {
+    if (!this.canMoveColumn(direction)) {
+      return;
+    }
+
+    this.context().table.options.meta?.natTableMoveColumn?.(this.column().id, direction);
+  }
+
+  protected getMoveLabel(direction: NatTableColumnMoveDirection): string {
+    const context = this.getMoveContext(direction);
+    const labels = this.resolveAccessibilityLabels();
+
+    return labels.moveButton?.(context) ?? '';
+  }
+
+  protected getMoveText(direction: NatTableColumnMoveDirection): string {
+    const context = this.getMoveContext(direction);
+    const labels = this.resolveAccessibilityLabels();
+
+    return labels.moveButtonText?.(context) ?? '';
+  }
+
   protected getMenuButtonLabel(): string {
     const labels = this.resolveAccessibilityLabels();
 
@@ -236,6 +285,15 @@ export class NatTableHeaderActions {
       toggleAction: pinnedSide === side ? 'unpin' : 'pin',
       pinSide: side,
       pinnedSide,
+    };
+  }
+
+  private getMoveContext(
+    direction: NatTableColumnMoveDirection,
+  ): NatTableAccessibilityHeaderActionMoveContext {
+    return {
+      label: this.label(),
+      direction,
     };
   }
 
