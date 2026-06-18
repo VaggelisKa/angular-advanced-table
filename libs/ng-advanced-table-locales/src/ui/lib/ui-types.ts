@@ -153,18 +153,33 @@ export interface NatTableAccessibilityHeaderActionPinContext {
   pinnedSide: 'left' | 'right' | null;
 }
 
-/** Optional accessibility label overrides for header sort/pin actions. */
+/** Direction used by generated move-column labels. */
+export type NatTableColumnMoveDirection = 'left' | 'right';
+
+/** Context passed to move-column label formatters. */
+export interface NatTableAccessibilityHeaderActionMoveContext {
+  /** Human-readable column label. */
+  label: string;
+  /** Direction targeted by the current button. */
+  direction: NatTableColumnMoveDirection;
+}
+
+/** Optional accessibility label overrides for header sort, pin, and move actions. */
 export interface NatTableAccessibilityHeaderActionLabels {
   /** `aria-label` applied to the sort button. */
   sortButton?: (context: NatTableAccessibilityHeaderActionSortContext) => string;
   /** `aria-label` applied to the overflow menu trigger. */
   menuButton?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
-  /** `aria-label` applied to the opened pinning menu. */
+  /** `aria-label` applied to the opened column actions menu. */
   menuLabel?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
   /** `aria-label` applied to the pin button. */
   pinButton?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
-  /** Visible text rendered inside each pin menu item. */
+  /** Visible text rendered inside each pin action menu item. */
   pinButtonText?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
+  /** `aria-label` applied to the move-column button. */
+  moveButton?: (context: NatTableAccessibilityHeaderActionMoveContext) => string;
+  /** Visible text rendered inside each move-column menu item. */
+  moveButtonText?: (context: NatTableAccessibilityHeaderActionMoveContext) => string;
 }
 
 export interface NatTableSearchIntl {
@@ -205,7 +220,7 @@ export interface NatTableScrollControlIntl {
 }
 
 export interface NatTableHeaderActionsIntl {
-  /** Generated sort, menu, and pin labels for header action controls. */
+  /** Generated sort, menu, pin, and move labels for header action controls. */
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
 

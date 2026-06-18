@@ -65,6 +65,7 @@
               [style.min-width]="columnState?.headerMinWidth"
               [style.max-width]="columnState?.headerMaxWidth"
               [attr.data-column-id]="header.column.id"
+              [attr.data-testid]="'nat-table-header-' + header.column.id"
               [attr.aria-sort]="columnState?.ariaSort"
               (keydown)="onHeaderKeydown($event, header.column)"
               (focusin)="onCellFocusIn($event)"
@@ -252,5 +253,7 @@
     </tbody>
   </table>
 
-  <p class="sr-only" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</p>
+  <p class="sr-only" aria-live="polite" aria-atomic="true" data-testid="nat-table-live-region">
+    {{ liveMessage() }}
+  </p>
 </div>

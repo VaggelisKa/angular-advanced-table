@@ -114,7 +114,7 @@ Companion controls inherit the controlled table's `locale` through `[for]="grid"
 | `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                                |
 | `provideNatTableUiIntl(...)`     | Advanced UI-only override provider used by the locale registry           |
 
-Header action labels include the sort button, menu trigger, menu content, pin buttons, and visible pin menu item text.
+Header action labels include the sort button, menu trigger, menu content, pin buttons, move buttons, and visible menu item text. When column drag/drop is available, `withNatTableHeaderActions(..., { enableColumnPinActions: false, enableColumnReorderActions: true })` supplies a move-only menu so pointer users can reorder without dragging.
 
 ### Utils (`ng-advanced-table-utils`)
 
@@ -159,6 +159,12 @@ For every generated table, verify these items before considering the work comple
 - `<nat-table>` has a localized `accessibleName` or visible `caption`.
 - `accessibilityText.description` is present when users need extra context before navigating the grid.
 - `accessibilityText.keyboardInstructions` is localized when the product language is not English.
+- If column reordering is available, `accessibilityText.reorderKeyboardInstructions` describes
+  Control+Shift+Left Arrow and Control+Shift+Right Arrow movement in the product language.
+- If drag/drop column reordering is available, provide a non-drag pointer alternative. The built-in
+  `withNatTableHeaderActions(..., { enableColumnPinActions: false, enableColumnReorderActions: true })` dropdown satisfies this with Move left and Move right menu items;
+  custom header controls should expose equivalent click/tap actions and call the table meta
+  `natTableMoveColumn` callback.
 - `accessibilityText.emptyState`, `loadingState`, and `errorState` are localized when those states can render.
 - Each column has a stable localized `meta.label`.
 - `accessibilityText` is provided when summaries or live announcements need product-specific copy.
@@ -188,6 +194,8 @@ export const appConfig: ApplicationConfig = {
         accessibilityText: {
           keyboardInstructions:
             'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
+          reorderKeyboardInstructions:
+            'Tryk på Control+Shift+Venstre pil eller Control+Shift+Højre pil for at flytte kolonner.',
           emptyState: 'Ingen rækker matcher den aktuelle visning.',
           tableSummary: ({ visibleRowsText, totalRowsText, visibleColumnsText }) =>
             `${visibleRowsText} af ${totalRowsText} rækker vises på tværs af ${visibleColumnsText} kolonner.`,
@@ -295,7 +303,7 @@ Decision rules for agents:
 
 - If a table is localized, pass all table-level copy through the app's translation source.
 - If a header is a template, component, icon, function, or nonlocalized id, set `meta.label` to the translated human label.
-- If `allowColumnReorder` is enabled, include `reorderKeyboardInstructions` in `accessibilityText`.
+- If column reordering is available, include `reorderKeyboardInstructions` in `accessibilityText`.
 - If `enableAnnouncements` remains `true`, localize every announcement formatter that can be triggered by enabled table features.
 - If a feature is not enabled, do not invent labels for controls or announcements that the table cannot render.
 
@@ -347,7 +355,7 @@ Decision rules for agents:
 
 - If `NatTableSearch` is rendered in a non-English product, localize both `label` and `placeholder` through `provideNatTableUiLocales()` or inputs.
 - If one `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, or `NatTableScrollControl` instance needs different wording from the active locale, pass its specific label input or `accessibilityLabels` bag.
-- If `withNatTableHeaderActions(...)` is used and one table/column needs wording different from the active locale, pass `NatTableAccessibilityHeaderActionLabels` through helper options or column metadata. This label surface covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin menu item text.
+- If `withNatTableHeaderActions(...)` is used and one table/column needs wording different from the active locale, pass `NatTableAccessibilityHeaderActionLabels` through helper options or column metadata. This label surface covers the sort button, overflow trigger, opened column actions menu label, pin action labels, move action labels, and visible menu item text.
 - When a visible button also has an `aria-label`, keep the visible words inside the accessible name so speech-input users can activate the control by the text they see.
 
 ## Runtime Locale Changes

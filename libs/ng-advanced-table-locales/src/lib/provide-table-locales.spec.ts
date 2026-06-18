@@ -33,6 +33,18 @@ describe('provideNatTableLocales', () => {
     }
   });
 
+  it('uses Control+Shift+Arrow in the built-in English column reorder instructions', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection(), provideNatTableLocales()],
+    });
+
+    const tableIntl = TestBed.inject(NAT_TABLE_INTL);
+
+    expect(tableIntl.locales?.['en']?.accessibilityText?.reorderKeyboardInstructions).toBe(
+      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region.',
+    );
+  });
+
   it('registers companion UI and utils locales through explicit providers', () => {
     TestBed.configureTestingModule({
       providers: [

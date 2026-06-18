@@ -68,6 +68,9 @@ export interface NatTableRowActivateEvent<TData extends RowData = RowData> {
 /** Data lifecycle state rendered by `<nat-table>` when rows are unavailable. */
 export type NatTableDataStatus = 'loading' | 'error' | 'success';
 
+/** Horizontal direction used by built-in and custom column-reorder controls. */
+export type NatTableColumnMoveDirection = 'left' | 'right';
+
 /** Named data lifecycle states accepted by `<nat-table>`. */
 export const NAT_TABLE_DATA_STATUS = {
   loading: 'loading',
@@ -367,6 +370,15 @@ declare module '@tanstack/table-core' {
     TData extends import('@tanstack/angular-table').RowData,
     TValue,
   > extends NatTableColumnMeta<TData, TValue> {}
+
+  interface TableMeta<TData extends import('@tanstack/angular-table').RowData> {
+    /** Current table locale id exposed to companion header controls. */
+    natTableLocaleId?: string;
+    /** Returns whether a visible column can move within its current pinned region. */
+    natTableCanMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => boolean;
+    /** Moves a visible column within its current pinned region and announces the change. */
+    natTableMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => void;
+  }
 }
 
 export type NatTableMode = 'auto' | 'manual';

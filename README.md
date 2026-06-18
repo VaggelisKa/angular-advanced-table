@@ -217,7 +217,7 @@ Core exports:
 | `error`               | `null`      | Optional error payload passed to `natTableError` templates                                                         |
 | `enableGlobalFilter`  | `true`      | Enables the global filter pipeline                                                                                 |
 | `enableColumnPinning` | `true`      | Enables sticky pinning where columns allow it                                                                      |
-| `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering                                                                          |
+| `enableColumnReorder` | `false`     | Enables drag/drop and keyboard reordering with Ctrl+Shift+Left/Right Arrow                                         |
 | `enablePagination`    | `false`     | Enables the pagination row model                                                                                   |
 | `globalFilterFn`      | built-in    | Replaces the generic global filter                                                                                 |
 | `initialState`        | `{}`        | Uncontrolled initial state, read once                                                                              |
@@ -345,7 +345,7 @@ Attach metadata through `columnDef.meta`:
 | `headerMinSize`     | `number \| string`                                                        | Optional header-only minimum width in pixels                                   |
 | `headerMaxSize`     | `number \| string`                                                        | Optional header-only maximum width in pixels                                   |
 
-Set `hiddenHeaderLabel: 'Row actions'` for compact utility columns whose title would be redundant visually, such as row actions or menu columns. The table renders that value as screen-reader-only header text even when the header is supplied by a function or component. When the column is wrapped with `withNatTableHeaderActions(...)`, only the header label is visually hidden; sort buttons and the three-dot pin menu stay visible and use `hiddenHeaderLabel` for their generated accessible labels.
+Set `hiddenHeaderLabel: 'Row actions'` for compact utility columns whose title would be redundant visually, such as row actions or menu columns. The table renders that value as screen-reader-only header text even when the header is supplied by a function or component. When the column is wrapped with `withNatTableHeaderActions(...)`, only the header label is visually hidden; sort buttons and the three-dot column actions menu stay visible and use `hiddenHeaderLabel` for their generated accessible labels.
 
 Body cell content is clamped to two lines by default. Use `cellHeight` to make a column's body cells fixed-height, set `cellMaxLines` to a different line count, or set `cellMaxLines: Infinity` for columns with custom interactive renderers that should not be line-clamped. Invalid explicit `cellMaxLines` values fall back to two lines.
 
@@ -377,6 +377,8 @@ Pinned column offsets are based on measured header widths after layout. Before a
 - `initialState` is a one-time seed read on the first render; once a slice is also controlled through `state`, the seed for that slice is ignored.
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
+- Keyboard reordering uses Ctrl+Shift+Left Arrow and Ctrl+Shift+Right Arrow on the focused column header.
+- Drag/drop column reordering needs a non-drag pointer alternative for WCAG 2.2 AA. `withNatTableHeaderActions(..., { enableColumnPinActions: false, enableColumnReorderActions: true })` provides this through Move left and Move right menu items without pin actions. Custom header menus should expose equivalent click/tap controls and call `headerContext.table.options.meta?.natTableMoveColumn?.(column.id, 'left' | 'right')`, disabling unavailable actions with `natTableCanMoveColumn`.
 - `(rowActivate)` ignores activations whose target sits inside an interactive cell descendant — `<a href>`, `<button>`, form controls, `<summary>`, `contenteditable`, or elements with `role="button" | "link" | "checkbox" | "menuitem" | "tab" | "switch" | "combobox" | "textbox" | "searchbox"`. Use it for row-level navigation; keep cell-level controls inside cells.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
 - `enableAnnouncements` is on by default so sort, filter, visibility, and pagination changes are announced.
@@ -460,7 +462,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
   emptyState: 'No positions match the current filters.',
   loadingState: 'Loading positions.',
   errorState: 'Positions could not be loaded.',
-  reorderKeyboardInstructions: 'Use Alt+Shift+Arrow keys to move columns.',
+  reorderKeyboardInstructions: 'Use Control+Shift+Arrow keys to move columns.',
   tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
     `${visibleRowsText} of ${totalRowsText} rows visible. Page ${pageText} of ${pageCountText}.`,
   filteringChange: ({ query, visibleRowsText }) => `Filter ${query}. ${visibleRowsText} rows visible.`,
@@ -627,17 +629,17 @@ UI exports:
 - Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
-- Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionLabels`
+- Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionMoveContext`, `NatTableAccessibilityHeaderActionLabels`, `NatTableColumnMoveDirection`
 
-| API                              | Purpose                                                        | Key inputs or options                                             |
-| -------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `NatTableSurface`                | Layout wrapper and default `--nat-table-*` CSS variables       | none                                                              |
-| `NatTableSearch`                 | Global filter input                                            | `for`, `label`, `placeholder`                                     |
-| `NatTableColumnVisibility`       | Toggle hideable columns                                        | `for`, `label`, `groupAriaLabel`, `accessibilityLabels`           |
-| `NatTablePageSize`               | Chip-based page-size switcher                                  | `for`, `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels` |
-| `NatTablePager`                  | Previous/next pagination control                               | `for`, `groupAriaLabel`, `accessibilityLabels`                    |
-| `NatTableScrollControl`          | Horizontal scroll buttons and range control                    | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`      |
-| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and pin menu | `sortIndicator`, `accessibilityLabels`, `meta.headerActions`      |
+| API                              | Purpose                                                                   | Key inputs or options                                                                                                |
+| -------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `NatTableSurface`                | Layout wrapper and default `--nat-table-*` CSS variables                  | none                                                                                                                 |
+| `NatTableSearch`                 | Global filter input                                                       | `for`, `label`, `placeholder`                                                                                        |
+| `NatTableColumnVisibility`       | Toggle hideable columns                                                   | `for`, `label`, `groupAriaLabel`, `accessibilityLabels`                                                              |
+| `NatTablePageSize`               | Chip-based page-size switcher                                             | `for`, `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels`                                                    |
+| `NatTablePager`                  | Previous/next pagination control                                          | `for`, `groupAriaLabel`, `accessibilityLabels`                                                                       |
+| `NatTableScrollControl`          | Horizontal scroll buttons and range control                               | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`                                                         |
+| `withNatTableHeaderActions(...)` | Wraps header content with a built-in sort control and column actions menu | `sortIndicator`, `enableColumnPinActions`, `enableColumnReorderActions`, `accessibilityLabels`, `meta.headerActions` |
 
 Controller contract required by the UI package:
 
@@ -656,15 +658,15 @@ Notes:
 - `NatTableScrollControl` binds to the controller's `tableScrollContainer` when available and falls back to the rendered table's parent element.
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
-- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting or pinning, including a compact three-dot menu for left and right pin actions.
+- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting, pinning, or opt-in menu-based reordering. The compact three-dot menu includes left/right pin actions when `enableColumnPinActions` is not disabled and pinning is available, and Move left/Move right actions when `enableColumnReorderActions` is enabled and the column can reorder inside its current pinned region.
 - Set `column.meta.hiddenHeaderLabel` to visually hide a redundant header title while keeping that label available to assistive technology; wrapped header actions keep their controls visible.
 - Applying `withNatTableHeaderActions(...)` repeatedly is safe. If a reactive column builder receives already-wrapped columns, the helper updates the wrapper options instead of nesting another header action surface.
-- For per-column behavior, set `column.meta.headerActions` to `false` to opt out, or provide `{ sortIndicator, accessibilityLabels }` to override the helper-level options for that column only.
+- For per-column behavior, set `column.meta.headerActions` to `false` to opt out, or provide `{ sortIndicator, enableColumnPinActions, enableColumnReorderActions, accessibilityLabels }` to override the helper-level options for that column only.
 - When composing with column helpers that add or prepend columns, apply those helpers first and then call `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
 
 ## UI Accessibility Labels
 
-The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `groupAriaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort and pin labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened pin menu label, pin action labels, and visible pin item text.
+The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `groupAriaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort, pin, and move labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened column actions menu label, pin action labels, move action labels, and visible menu item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 

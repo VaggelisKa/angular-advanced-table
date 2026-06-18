@@ -275,8 +275,8 @@
     transform var(--nat-table-transition-fast, 120ms ease);
 }
 
-.column-menu-item[data-active='true'],
-.column-menu-item:focus-visible {
+.column-menu-item[data-active='true']:not([disabled]),
+.column-menu-item:focus-visible:not([disabled]) {
   background: color-mix(in srgb, currentColor 10%, transparent);
   outline: none;
 }
@@ -298,19 +298,24 @@
     fill: var(--nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent));
   }
 
-  .column-menu-item:hover {
+  .column-menu-item:hover:not([disabled]) {
     background: color-mix(in srgb, currentColor 10%, transparent);
     outline: none;
   }
 }
 
-.column-menu-item:focus-visible {
+.column-menu-item:focus-visible:not([disabled]) {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent);
 }
 
 .column-menu-item.is-active {
   color: var(--nat-table-pin-color-pinned, inherit);
   background: color-mix(in srgb, var(--nat-table-pin-color-pinned, currentColor) 12%, transparent);
+}
+
+.column-menu-item[disabled] {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .column-menu-item__check {
@@ -328,7 +333,8 @@
 }
 
 .column-menu-item__check svg,
-.column-menu-item__dock svg {
+.column-menu-item__dock svg,
+.column-menu-item__move svg {
   fill: none;
   display: block;
   overflow: visible;
@@ -355,11 +361,16 @@
   color: color-mix(in srgb, currentColor 50%, transparent);
 }
 
+.column-menu-item__move {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+}
+
 .column-menu-item.is-active .column-menu-item__dock {
   color: currentColor;
 }
 
-.column-menu-item__dock svg {
+.column-menu-item__dock svg,
+.column-menu-item__move svg {
   inline-size: 1rem;
   block-size: 1rem;
 }
@@ -380,6 +391,13 @@
   stroke: currentColor;
   stroke-width: 1.5;
   opacity: 0.84;
+}
+
+.column-menu-item__move path {
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.65;
 }
 
 @keyframes header-menu-enter {

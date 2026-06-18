@@ -36,27 +36,28 @@ const DEMO_DATA: DemoItem[] = [
       <header class="header-section">
         <h1 class="title">Column Reordering</h1>
         <p class="description">
-          Demonstrates drag-and-drop header reordering and accessible keyboard reordering.
+          Demonstrates drag-and-drop header reordering, menu-based move actions, and accessible
+          keyboard reordering.
         </p>
       </header>
 
       <div class="grid-layout grid-layout-with-panel">
         <div class="card">
           <h2 class="card-title">Drag & Reorder Grid</h2>
-          <nat-table-surface [(state)]="tableState">
-            <nat-table
-              [data]="data"
-              [columns]="columns"
-              accessibleName="Reordering demo table"
-            />
+          <nat-table-surface [(state)]="tableState" data-testid="reordering-demo-table">
+            <nat-table [data]="data" [columns]="columns" accessibleName="Reordering demo table" />
           </nat-table-surface>
         </div>
 
         <div class="card">
           <h2 class="card-title">Rendered Column Order</h2>
-          <div class="order-list">
+          <div class="order-list" data-testid="reordering-order-list">
             @for (colId of currentOrder(); track colId; let idx = $index) {
-              <div class="order-item">
+              <div
+                class="order-item"
+                data-testid="reordering-order-item"
+                [attr.data-column-id]="colId"
+              >
                 <span class="order-badge">{{ idx + 1 }}</span>
                 <span>{{ colId | titlecase }}</span>
               </div>
@@ -64,8 +65,12 @@ const DEMO_DATA: DemoItem[] = [
           </div>
           <div class="instructions">
             <strong>Keyboard usage:</strong> Focus a header cell, then press
-            <code>Alt + Shift + Left Arrow</code> or <code>Alt + Shift + Right Arrow</code> to swap
-            columns.
+            <code>Ctrl + Shift + Left Arrow</code> or <code>Ctrl + Shift + Right Arrow</code> to
+            swap columns.
+          </div>
+          <div class="instructions">
+            <strong>Pointer usage:</strong> Open a header actions menu and choose
+            <span>Move left</span> or <span>Move right</span> to reorder without dragging.
           </div>
         </div>
       </div>
@@ -75,29 +80,35 @@ const DEMO_DATA: DemoItem[] = [
 export class ReorderingShowcasePage {
   readonly data = DEMO_DATA;
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(
+    [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        meta: { label: 'Name', rowHeader: true },
+      },
+      {
+        accessorKey: 'category',
+        header: 'Category',
+        meta: { label: 'Category' },
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        meta: { label: 'Status' },
+      },
+      {
+        accessorKey: 'value',
+        header: 'Value',
+        meta: { label: 'Value', align: 'end' },
+        cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
+      },
+    ],
     {
-      accessorKey: 'name',
-      header: 'Name',
-      meta: { label: 'Name', rowHeader: true },
+      enableColumnPinActions: false,
+      enableColumnReorderActions: true,
     },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      meta: { label: 'Category' },
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      meta: { label: 'Status' },
-    },
-    {
-      accessorKey: 'value',
-      header: 'Value',
-      meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
-    },
-  ]);
+  );
 
   readonly tableState = signal<Partial<NatTableState>>({
     columnOrder: ['name', 'category', 'status', 'value'],

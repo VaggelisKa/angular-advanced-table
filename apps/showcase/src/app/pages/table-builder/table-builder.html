@@ -58,7 +58,10 @@
           <span class="slider"></span>
           <span class="toggle-label">Column Reordering</span>
         </label>
-        <span class="option-help">Enables drag-and-drop column header reordering.</span>
+        <span class="option-help">
+          Enables drag-and-drop, header-menu move actions, and Ctrl+Shift+Arrow keyboard column
+          reordering.
+        </span>
         <label class="toggle-control">
           <input
             type="checkbox"
@@ -99,10 +102,7 @@
           @if (withGlobalFilter() || showColumnVisibility()) {
             <nat-table-toolbar accessibleName="Table controls">
               @if (withGlobalFilter()) {
-                <app-table-search
-                  label="Search rows"
-                  placeholder="Try 'Alpha' or 'Security'..."
-                />
+                <app-table-search label="Search rows" placeholder="Try 'Alpha' or 'Security'..." />
               }
 
               @if (showColumnVisibility()) {

@@ -77,6 +77,7 @@ import type {
   NatTableAccessibilityText,
   NatTableBodyState,
   NatTableCellTone,
+  NatTableColumnMoveDirection,
   NatTableDataStatus,
   NatTableEmptyTemplateContext,
   NatTableErrorTemplateContext,
@@ -88,6 +89,7 @@ import type {
 } from './table.types';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './table.types';
 type ColumnReorderZone = 'left' | 'center' | 'right';
+type ColumnReorderKeyboardDirection = -1 | 1;
 interface TableColumnAccessibilityState {
   id: string;
   label: string;
@@ -156,6 +158,25 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   pagination: DEFAULT_PAGINATION,
 };
 let nextTableId = 0;
+
+const getColumnReorderKeyboardDirection = (
+  event: KeyboardEvent,
+): ColumnReorderKeyboardDirection | null => {
+  // `KeyboardEvent.key` uses platform-neutral arrow names. Only Ctrl+Shift+Arrow reorders.
+  if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey) {
+    return null;
+  }
+
+  if (event.key === 'ArrowLeft') {
+    return -1;
+  }
+
+  if (event.key === 'ArrowRight') {
+    return 1;
+  }
+
+  return null;
+};
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   const query = String(filterValue ?? '')
@@ -471,6 +492,8 @@ export class NatTable<TData extends RowData = RowData> {
     enableColumnOrdering: true,
     meta: {
       natTableLocaleId: this.localeId(),
+      natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
+      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
     },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
@@ -787,31 +810,20 @@ export class NatTable<TData extends RowData = RowData> {
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
     if (handleCellInteractionKeydown(event)) return;
 
-    const isReorderModifierPressed = event.altKey && event.shiftKey;
+    const directionDelta = getColumnReorderKeyboardDirection(event);
 
-    if (!isReorderModifierPressed) return;
-
-    const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
-
-    if (!isHorizontalArrowKey) return;
+    if (directionDelta === null) return;
 
     const zone = this.getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(column.id);
 
-    if (currentIndex === -1) return;
-
-    const directionDelta = event.key === 'ArrowLeft' ? -1 : 1;
-    const nextIndex = currentIndex + directionDelta;
-
-    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
+    if (currentIndex === -1 || visibleZoneColumnIds.length < 2) return;
 
     event.preventDefault();
     event.stopPropagation();
 
-    const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
-
-    this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
+    this.moveColumnByDelta(column.id, directionDelta);
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
@@ -1031,6 +1043,48 @@ export class NatTable<TData extends RowData = RowData> {
       },
     });
     this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+  }
+
+  private canMoveColumn(columnId: string, direction: NatTableColumnMoveDirection): boolean {
+    return this.canMoveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
+  }
+
+  private moveColumn(columnId: string, direction: NatTableColumnMoveDirection): void {
+    this.moveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
+  }
+
+  private canMoveColumnByDelta(
+    columnId: string,
+    directionDelta: ColumnReorderKeyboardDirection,
+  ): boolean {
+    const zone = this.getColumnZoneById(columnId);
+
+    if (!zone) return false;
+
+    const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+    const currentIndex = visibleZoneColumnIds.indexOf(columnId);
+    const nextIndex = currentIndex + directionDelta;
+
+    return currentIndex !== -1 && nextIndex >= 0 && nextIndex < visibleZoneColumnIds.length;
+  }
+
+  private moveColumnByDelta(
+    columnId: string,
+    directionDelta: ColumnReorderKeyboardDirection,
+  ): void {
+    const zone = this.getColumnZoneById(columnId);
+
+    if (!zone) return;
+
+    const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+    const currentIndex = visibleZoneColumnIds.indexOf(columnId);
+    const nextIndex = currentIndex + directionDelta;
+
+    if (currentIndex === -1 || nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
+
+    const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
+
+    this.applyVisibleZoneReorder(zone, columnId, nextVisibleZoneOrder);
   }
 
   private announceColumnReorder(

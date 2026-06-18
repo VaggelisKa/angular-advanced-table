@@ -891,7 +891,7 @@ describe('NatTable', () => {
 
   it('lets callers override accessibility summaries and live announcements', async () => {
     const accessibilityText: NatTableAccessibilityText = {
-      reorderKeyboardInstructions: 'Brug Alt+Shift til at flytte kolonner.',
+      reorderKeyboardInstructions: 'Brug Control+Shift+Piletaster til at flytte kolonner.',
       tableSummary: ({
         visibleRowsText,
         totalRowsText,
@@ -924,7 +924,9 @@ describe('NatTable', () => {
       .componentInstance as NatTable<Row>;
 
     expect(summary.textContent?.trim()).toBe('Oversigt 2/6/4/1/3');
-    expect(instructions.textContent).toContain('Brug Alt+Shift til at flytte kolonner.');
+    expect(instructions.textContent).toContain(
+      'Brug Control+Shift+Piletaster til at flytte kolonner.',
+    );
 
     tableComponent.table.nextPage();
     fixture.detectChanges();
@@ -971,7 +973,7 @@ describe('NatTable', () => {
     expect(summary.textContent?.trim()).toBe('Provider summary n0/n0');
     expect(emptyState.textContent?.trim()).toBe('Provider empty state');
     expect(instructions.textContent?.trim()).toBe(
-      'Provider keyboard instructions. Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region.',
     );
 
     providerHost.accessibilityText.set({
@@ -989,7 +991,7 @@ describe('NatTable', () => {
     expect(summary.textContent?.trim()).toBe('Input summary n0');
     expect(emptyState.textContent?.trim()).toBe('Input empty state');
     expect(instructions.textContent?.trim()).toBe(
-      'Provider keyboard instructions. Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region.',
     );
   });
 
@@ -1503,7 +1505,7 @@ describe('NatTable', () => {
     expect(throughputCell.classList.contains('is-cell-clamped')).toBe(true);
   });
 
-  it('reorders columns from the keyboard and announces the move', async () => {
+  it('reorders columns with Ctrl+Shift+Arrow from the keyboard and announces the move', async () => {
     await recreateHost();
     fixture.detectChanges();
 
@@ -1516,9 +1518,10 @@ describe('NatTable', () => {
     regionHeader.dispatchEvent(
       new KeyboardEvent('keydown', {
         key: 'ArrowRight',
-        altKey: true,
+        ctrlKey: true,
         shiftKey: true,
         bubbles: true,
+        cancelable: true,
       }),
     );
     fixture.detectChanges();
@@ -1529,6 +1532,63 @@ describe('NatTable', () => {
     expect(liveRegion.textContent?.trim()).toBe(
       'Moved Region column to position 2 of 3 in the unpinned region.',
     );
+  });
+
+  it('does not reorder columns unless Ctrl and Shift are the only modifiers', async () => {
+    await recreateHost();
+    fixture.detectChanges();
+
+    const statusHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="status"]',
+    ) as HTMLTableCellElement;
+    const expectedColumnIds = ['name', 'region', 'status', 'throughput'];
+
+    const blockedEvents: readonly KeyboardEventInit[] = [
+      { key: 'ArrowLeft', shiftKey: true },
+      { key: 'ArrowLeft', ctrlKey: true },
+      { key: 'ArrowLeft', ctrlKey: true, shiftKey: true, altKey: true },
+      { key: 'ArrowLeft', ctrlKey: true, shiftKey: true, metaKey: true },
+    ];
+
+    for (const eventInit of blockedEvents) {
+      statusHeader.focus();
+      statusHeader.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          ...eventInit,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      fixture.detectChanges();
+
+      expect(getHeaderColumnIds(fixture)).toEqual(expectedColumnIds);
+    }
+  });
+
+  it('consumes keyboard reorder shortcuts at region edges without moving focus', async () => {
+    await recreateHost();
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    const edgeEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowLeft',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    host.stateEvents.length = 0;
+    regionHeader.focus();
+    regionHeader.dispatchEvent(edgeEvent);
+    fixture.detectChanges();
+
+    expect(edgeEvent.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(regionHeader);
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'region', 'status', 'throughput']);
+    expect(host.stateEvents).toEqual([]);
   });
 
   it('uses the explicit pin order when computing sticky left offsets', () => {

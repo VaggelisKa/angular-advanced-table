@@ -238,6 +238,8 @@ export function mergeHeaderActionLabels(
     menuLabel: override?.menuLabel ?? parent?.menuLabel,
     pinButton: override?.pinButton ?? parent?.pinButton,
     pinButtonText: override?.pinButtonText ?? parent?.pinButtonText,
+    moveButton: override?.moveButton ?? parent?.moveButton,
+    moveButtonText: override?.moveButtonText ?? parent?.moveButtonText,
   };
 }
 

@@ -366,6 +366,7 @@ export class TableShowcasePage {
   protected readonly columns = withNatTableHeaderActions(
     withRenderMetricsColumn(simulationColumns, this.metricsStore),
     {
+      enableColumnReorderActions: true,
       sortIndicator: (context) =>
         flexRenderComponent(MarketSortIndicator, {
           inputs: { context },
