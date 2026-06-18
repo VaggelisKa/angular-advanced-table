@@ -1580,6 +1580,39 @@ describe('NatTable', () => {
     expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
   });
 
+  it('scrolls the reordered header into view when keyboard moving right past the viewport edge', async () => {
+    await recreateHost();
+    fixture.detectChanges();
+
+    const tableRegion = fixture.nativeElement.querySelector(
+      '[data-testid="nat-table-region"]',
+    ) as HTMLElement;
+    const regionHeader = fixture.nativeElement.querySelector(
+      '[data-testid="nat-table-header-region"]',
+    ) as HTMLTableCellElement;
+
+    mockClientRect(tableRegion, { left: 0, right: 300, width: 300, height: 200 });
+    mockClientRect(regionHeader, { left: 280, right: 420, width: 140, height: 40 });
+
+    tableRegion.scrollLeft = 10;
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        ctrlKey: true,
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(tableRegion.scrollLeft).toBe(130);
+  });
+
   it('does not reorder columns unless a single primary modifier and Shift are used', async () => {
     await recreateHost();
     fixture.detectChanges();
@@ -2466,6 +2499,28 @@ function getHeaderColumnIds(fixture: ComponentFixture<TableHost>): string[] {
   return Array.from(fixture.nativeElement.querySelectorAll('thead th[data-column-id]')).map(
     (header) => (header as HTMLElement).dataset['columnId'] ?? '',
   );
+}
+
+function mockClientRect(element: HTMLElement, rect: Partial<DOMRectReadOnly>): void {
+  const left = rect.left ?? 0;
+  const top = rect.top ?? 0;
+  const width = rect.width ?? (rect.right ?? left) - left;
+  const height = rect.height ?? (rect.bottom ?? top) - top;
+  const right = rect.right ?? left + width;
+  const bottom = rect.bottom ?? top + height;
+
+  element.getBoundingClientRect = () =>
+    ({
+      x: left,
+      y: top,
+      left,
+      top,
+      right,
+      bottom,
+      width,
+      height,
+      toJSON: () => ({}),
+    }) as DOMRect;
 }
 
 function buildRows(size: number): Row[] {

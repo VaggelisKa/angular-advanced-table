@@ -32,6 +32,48 @@ test('moves a focused column header with Ctrl+Shift+Arrow', async ({ page }) => 
   );
 });
 
+test('scrolls the table region when keyboard reordering moves a focused header right out of view', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 420, height: 760 });
+  await page.addStyleTag({
+    content: `
+      [data-testid^='nat-table-header-'],
+      tbody th[data-column-id],
+      tbody td[data-column-id] {
+        min-width: 220px !important;
+        width: 220px !important;
+      }
+    `,
+  });
+  await expect(page.getByRole('heading', { name: 'Column Reordering' })).toBeVisible();
+  await expect(page.getByTestId('reordering-demo-table')).toBeVisible();
+  await expect.poll(() => headerColumnIds(page)).toEqual(['name', 'category', 'status', 'value']);
+
+  const tableRegion = page.getByTestId('nat-table-region');
+  const categoryHeader = page.getByTestId('nat-table-header-category');
+
+  await expect
+    .poll(() => tableRegion.evaluate((element) => element.scrollWidth > element.clientWidth))
+    .toBe(true);
+
+  await categoryHeader.focus();
+  await expect(categoryHeader).toBeFocused();
+
+  await tableRegion.evaluate((element) => {
+    element.scrollLeft = 0;
+  });
+  const scrollLeftBefore = await tableRegion.evaluate((element) => element.scrollLeft);
+
+  await page.keyboard.press('Control+Shift+ArrowRight');
+
+  await expect.poll(() => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
+  await expect
+    .poll(() => tableRegion.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(scrollLeftBefore);
+  await expect(categoryHeader).toBeFocused();
+});
+
 test('moves a column with the header actions menu as a non-drag pointer alternative', async ({
   page,
 }) => {

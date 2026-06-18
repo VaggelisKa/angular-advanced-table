@@ -13,6 +13,7 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   output,
   signal,
@@ -544,6 +545,7 @@ export class NatTable<TData extends RowData = RowData> {
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
   readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
+  private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private headerResizeObserver: ResizeObserver | null = null;
 
@@ -1080,6 +1082,7 @@ export class NatTable<TData extends RowData = RowData> {
 
       this.updateState({ columnOrder: nextColumnOrder });
       this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+      this.scrollColumnHeaderIntoView(movingColumnId);
       return;
     }
 
@@ -1102,6 +1105,7 @@ export class NatTable<TData extends RowData = RowData> {
       },
     });
     this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+    this.scrollColumnHeaderIntoView(movingColumnId);
   }
 
   private canMoveColumn(columnId: string, direction: NatTableColumnMoveDirection): boolean {
@@ -1142,6 +1146,59 @@ export class NatTable<TData extends RowData = RowData> {
     const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
 
     this.applyVisibleZoneReorder(zone, columnId, nextVisibleZoneOrder);
+  }
+
+  private scrollColumnHeaderIntoView(columnId: string): void {
+    afterNextRender(
+      {
+        write: () => {
+          const scrollContainer = this.tableScrollContainer();
+          const headerElement = this.getHeaderElement(columnId);
+
+          if (!scrollContainer || !headerElement) {
+            return;
+          }
+
+          this.scrollElementHorizontallyIntoView(scrollContainer, headerElement);
+        },
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private getHeaderElement(columnId: string): HTMLElement | null {
+    const tableRegion = this.tableRegionRef()?.nativeElement;
+
+    if (!tableRegion) {
+      return null;
+    }
+
+    const headers = tableRegion.querySelectorAll<HTMLElement>('thead th[data-column-id]');
+
+    for (const header of headers) {
+      if (header.getAttribute('data-column-id') === columnId) {
+        return header;
+      }
+    }
+
+    return null;
+  }
+
+  private scrollElementHorizontallyIntoView(
+    scrollContainer: HTMLElement,
+    element: HTMLElement,
+  ): void {
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+
+    if (elementRect.left < containerRect.left) {
+      scrollContainer.scrollLeft -= containerRect.left - elementRect.left;
+      return;
+    }
+
+    if (elementRect.right > containerRect.right) {
+      scrollContainer.scrollLeft += elementRect.right - containerRect.right;
+    }
   }
 
   private announceColumnReorder(
@@ -1562,5 +1619,3 @@ export class NatTable<TData extends RowData = RowData> {
     }
   }
 }
-
-

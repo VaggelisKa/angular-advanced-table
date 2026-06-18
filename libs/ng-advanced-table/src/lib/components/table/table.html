@@ -1,4 +1,4 @@
-<div class="table-region" #tableRegion>
+<div class="table-region" data-testid="nat-table-region" #tableRegion>
   @if (tableSummary().trim()) {
     <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
   }
