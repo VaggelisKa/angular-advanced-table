@@ -76,31 +76,37 @@ export class TableBuilderPage {
   readonly data = DEMO_DATA;
 
   // Columns definition
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(
-    [
+  readonly columns = computed<ColumnDef<DemoItem, unknown>[]>(() =>
+    withNatTableHeaderActions(
+      [
+        {
+          accessorKey: 'name',
+          header: 'Name',
+          meta: { label: 'Name', rowHeader: true },
+        },
+        {
+          accessorKey: 'category',
+          header: 'Category',
+          meta: { label: 'Category' },
+        },
+        {
+          accessorKey: 'status',
+          header: 'Status',
+          meta: { label: 'Status' },
+        },
+        {
+          accessorKey: 'value',
+          header: 'Value',
+          meta: { label: 'Value', align: 'end' },
+          cell: (context: CellContext<DemoItem, number>) =>
+            `$${context.getValue().toLocaleString()}`,
+        },
+      ],
       {
-        accessorKey: 'name',
-        header: 'Name',
-        meta: { label: 'Name', rowHeader: true },
+        enableColumnPinActions: this.withColumnPinning(),
+        enableColumnReorderActions: this.withColumnReorder(),
       },
-      {
-        accessorKey: 'category',
-        header: 'Category',
-        meta: { label: 'Category' },
-      },
-      {
-        accessorKey: 'status',
-        header: 'Status',
-        meta: { label: 'Status' },
-      },
-      {
-        accessorKey: 'value',
-        header: 'Value',
-        meta: { label: 'Value', align: 'end' },
-        cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
-      },
-    ],
-    { enableColumnReorderActions: true },
+    ),
   );
 
   // Table State
@@ -250,10 +256,10 @@ export class CustomTableComponent {
       cell: (ctx) => \`\$\${ctx.getValue<number>().toLocaleString()}\`,
     },
   ]${
-    this.withColumnReorder()
+    this.withColumnReorder() || !this.withColumnPinning()
       ? `, {
     enableColumnPinActions: ${this.withColumnPinning() ? 'true' : 'false'},
-    enableColumnReorderActions: true,
+    enableColumnReorderActions: ${this.withColumnReorder() ? 'true' : 'false'},
   }`
       : ''
   });

@@ -86,7 +86,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - Core table body cells clamp content to two lines by default; use `column.meta.cellHeight`, finite `column.meta.cellMaxLines` values, or `column.meta.cellMaxLines = Infinity` on shared column definitions when companion UI columns need specific body-cell sizing.
 - Use `column.meta.headerActions = false` to opt out per column, or provide `{ sortIndicator, enableColumnPinActions, enableColumnReorderActions, accessibilityLabels }` there to override the helper-level options for one column.
 - Apply other column helpers first, then wrap the final column list with `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
-- If you enable drag/drop reordering without this helper, provide your own non-drag pointer controls. Custom header menus can call `headerContext.table.options.meta?.natTableMoveColumn?.(column.id, 'left' | 'right')` and read `natTableCanMoveColumn` to disable unavailable directions.
+- If you enable drag/drop reordering without this helper, provide your own non-drag pointer controls. Custom header menus can call `headerContext.table.options.meta?.natTableMoveColumn?.(column.id, direction)`, where `direction` is `'left'` or `'right'`, and read `natTableCanMoveColumn` to disable unavailable directions.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.
 - You can use any subset of this package or replace all of it with custom controls.
 

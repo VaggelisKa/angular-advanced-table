@@ -299,7 +299,7 @@
   }
 
   .column-menu-item:hover:not([disabled]) {
-    background: color-mix(in srgb, currentColor 10%, transparent);
+    background: color-mix(in srgb, currentcolor 10%, transparent);
     outline: none;
   }
 }
@@ -362,11 +362,11 @@
 }
 
 .column-menu-item__move {
-  color: color-mix(in srgb, currentColor 58%, transparent);
+  color: color-mix(in srgb, currentcolor 58%, transparent);
 }
 
 .column-menu-item.is-active .column-menu-item__dock {
-  color: currentColor;
+  color: currentcolor;
 }
 
 .column-menu-item__dock svg,
@@ -394,7 +394,7 @@
 }
 
 .column-menu-item__move path {
-  stroke: currentColor;
+  stroke: currentcolor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.65;
