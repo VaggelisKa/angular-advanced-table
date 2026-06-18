@@ -234,8 +234,11 @@ export function moveItemInArrayCopy(
 export function getColumnReorderKeyboardDirection(
   event: KeyboardEvent,
 ): ColumnReorderKeyboardDirection | null {
-  // `KeyboardEvent.key` uses platform-neutral arrow names. Only Ctrl+Shift+Arrow reorders.
-  if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey) {
+  // `KeyboardEvent.key` uses platform-neutral arrow names. Accept the platform
+  // primary modifier: Control on Windows/Linux, Command on macOS.
+  const hasSinglePrimaryModifier = event.ctrlKey !== event.metaKey;
+
+  if (!hasSinglePrimaryModifier || !event.shiftKey || event.altKey) {
     return null;
   }
 

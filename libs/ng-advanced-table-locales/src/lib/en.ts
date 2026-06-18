@@ -19,7 +19,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
     loadingState: 'Loading rows.',
     errorState: 'Rows could not be loaded.',
     reorderKeyboardInstructions:
-      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region.',
+      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
     tableSummary: ({
       filterState,
       pageCountText,

@@ -911,7 +911,8 @@ describe('NatTable', () => {
 
   it('lets callers override accessibility summaries and live announcements', async () => {
     const accessibilityText: NatTableAccessibilityText = {
-      reorderKeyboardInstructions: 'Brug Control+Shift+Piletaster til at flytte kolonner.',
+      reorderKeyboardInstructions:
+        'Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.',
       tableSummary: ({
         visibleRowsText,
         totalRowsText,
@@ -945,7 +946,7 @@ describe('NatTable', () => {
 
     expect(summary.textContent?.trim()).toBe('Oversigt 2/6/4/1/3');
     expect(instructions.textContent).toContain(
-      'Brug Control+Shift+Piletaster til at flytte kolonner.',
+      'Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.',
     );
 
     tableComponent.table.nextPage();
@@ -993,7 +994,7 @@ describe('NatTable', () => {
     expect(summary.textContent?.trim()).toBe('Provider summary n0/n0');
     expect(emptyState.textContent?.trim()).toBe('Provider empty state');
     expect(instructions.textContent?.trim()).toBe(
-      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region.',
+      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
     );
 
     providerHost.accessibilityText.set({
@@ -1011,7 +1012,7 @@ describe('NatTable', () => {
     expect(summary.textContent?.trim()).toBe('Input summary n0');
     expect(emptyState.textContent?.trim()).toBe('Input empty state');
     expect(instructions.textContent?.trim()).toBe(
-      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region.',
+      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
     );
   });
 
@@ -1554,7 +1555,32 @@ describe('NatTable', () => {
     );
   });
 
-  it('does not reorder columns unless Ctrl and Shift are the only modifiers', async () => {
+  it('reorders columns with Command+Shift+Arrow from the keyboard', async () => {
+    await recreateHost();
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        metaKey: true,
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+  });
+
+  it('does not reorder columns unless a single primary modifier and Shift are used', async () => {
     await recreateHost();
     fixture.detectChanges();
 
@@ -1566,8 +1592,10 @@ describe('NatTable', () => {
     const blockedEvents: readonly KeyboardEventInit[] = [
       { key: 'ArrowLeft', shiftKey: true },
       { key: 'ArrowLeft', ctrlKey: true },
+      { key: 'ArrowLeft', metaKey: true },
       { key: 'ArrowLeft', ctrlKey: true, shiftKey: true, altKey: true },
       { key: 'ArrowLeft', ctrlKey: true, shiftKey: true, metaKey: true },
+      { key: 'ArrowLeft', metaKey: true, shiftKey: true, altKey: true },
     ];
 
     for (const eventInit of blockedEvents) {

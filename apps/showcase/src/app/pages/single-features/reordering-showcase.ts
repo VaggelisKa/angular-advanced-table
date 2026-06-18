@@ -66,7 +66,8 @@ const DEMO_DATA: DemoItem[] = [
           <div class="instructions">
             <strong>Keyboard usage:</strong> Focus a header cell, then press
             <code>Ctrl + Shift + Left Arrow</code> or <code>Ctrl + Shift + Right Arrow</code> to
-            swap columns.
+            swap columns. On macOS, use <code>Command + Shift + Left Arrow</code> or
+            <code>Command + Shift + Right Arrow</code>.
           </div>
           <div class="instructions">
             <strong>Pointer usage:</strong> Open a header actions menu and choose

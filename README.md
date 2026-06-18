@@ -206,28 +206,28 @@ Core exports:
 
 ### Inputs
 
-| Input                 | Default      | Notes                                                                                                              |
-| --------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `data`                | required     | Row array rendered by the table                                                                                    |
-| `columns`             | required     | TanStack `ColumnDef<TData>[]`                                                                                      |
-| `accessibleName`      | required     | Accessible name for the grid when no visible `caption` is rendered                                                 |
-| `caption`             | `undefined`  | Visible table caption; when present, it provides the grid's accessible name                                        |
-| `accessibilityText`   | `{}`         | Overrides for description, keyboard instructions, state-row copy, and announcements                                |
-| `dataStatus`          | `'success'`  | Data lifecycle status: `'loading'`, `'error'`, or `'success'`                                                      |
-| `error`               | `null`       | Optional error payload passed to `natTableError` templates                                                         |
-| `enableGlobalFilter`  | `true`       | Enables the global filter pipeline                                                                                 |
-| `enableColumnPinning` | `true`       | Enables sticky pinning where columns allow it                                                                      |
-| `enableColumnReorder` | `false`      | Enables drag/drop and keyboard reordering with Ctrl+Shift+Left/Right Arrow                                         |
-| `enablePagination`    | `false`      | Enables the pagination row model                                                                                   |
-| `enableRowSelection`  | `false`      | Enables row selection: `aria-selected`, the `rowSelection` state slice, and the companion checkbox column          |
-| `selectionMode`       | `'multiple'` | Selection cardinality when enabled: `'multiple'` or `'single'` (single keeps the first selected row by key order)  |
-| `globalFilterFn`      | built-in     | Replaces the generic global filter                                                                                 |
-| `initialState`        | `{}`         | Uncontrolled initial state, read once                                                                              |
-| `state`               | `{}`         | Controlled slices only; omitted slices stay internal                                                               |
-| `getRowId`            | row index    | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present |
-| `emitRowRenderEvents` | `false`      | Enables `(rowRendered)` instrumentation                                                                            |
-| `enableAnnouncements` | `true`       | Enables polite live announcements                                                                                  |
-| `stickyHeader`        | `true`       | Enables vertical sticky positioning for the table header row                                                       |
+| Input                 | Default      | Notes                                                                                                                  |
+| --------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `data`                | required     | Row array rendered by the table                                                                                        |
+| `columns`             | required     | TanStack `ColumnDef<TData>[]`                                                                                          |
+| `accessibleName`      | required     | Accessible name for the grid when no visible `caption` is rendered                                                     |
+| `caption`             | `undefined`  | Visible table caption; when present, it provides the grid's accessible name                                            |
+| `accessibilityText`   | `{}`         | Overrides for description, keyboard instructions, state-row copy, and announcements                                    |
+| `dataStatus`          | `'success'`  | Data lifecycle status: `'loading'`, `'error'`, or `'success'`                                                          |
+| `error`               | `null`       | Optional error payload passed to `natTableError` templates                                                             |
+| `enableGlobalFilter`  | `true`       | Enables the global filter pipeline                                                                                     |
+| `enableColumnPinning` | `true`       | Enables sticky pinning where columns allow it                                                                          |
+| `enableColumnReorder` | `false`      | Enables drag/drop and keyboard reordering with Ctrl+Shift+Left/Right Arrow, or Command+Shift+Left/Right Arrow on macOS |
+| `enablePagination`    | `false`      | Enables the pagination row model                                                                                       |
+| `enableRowSelection`  | `false`      | Enables row selection: `aria-selected`, the `rowSelection` state slice, and the companion checkbox column              |
+| `selectionMode`       | `'multiple'` | Selection cardinality when enabled: `'multiple'` or `'single'` (single keeps the first selected row by key order)      |
+| `globalFilterFn`      | built-in     | Replaces the generic global filter                                                                                     |
+| `initialState`        | `{}`         | Uncontrolled initial state, read once                                                                                  |
+| `state`               | `{}`         | Controlled slices only; omitted slices stay internal                                                                   |
+| `getRowId`            | row index    | Stable row id resolver (`NatTableRowIdGetter`); optional third argument matches TanStack's parent row when present     |
+| `emitRowRenderEvents` | `false`      | Enables `(rowRendered)` instrumentation                                                                                |
+| `enableAnnouncements` | `true`       | Enables polite live announcements                                                                                      |
+| `stickyHeader`        | `true`       | Enables vertical sticky positioning for the table header row                                                           |
 
 A visible `caption` takes over the rendered grid label, while `accessibleName` remains the required captionless fallback.
 
@@ -381,7 +381,7 @@ Pinned column offsets are based on measured header widths after layout. Before a
 - `initialState` is a one-time seed read on the first render; once a slice is also controlled through `state`, the seed for that slice is ignored.
 - Global filter and column-filter updates reset `pagination.pageIndex` to `0`.
 - Reordering stays inside the current pinning zone. It does not move columns between left, center, and right groups.
-- Keyboard reordering uses Ctrl+Shift+Left Arrow and Ctrl+Shift+Right Arrow on the focused column header.
+- Keyboard reordering uses Ctrl+Shift+Left Arrow and Ctrl+Shift+Right Arrow on the focused column header. On macOS, use Command+Shift+Left Arrow and Command+Shift+Right Arrow.
 - Drag/drop column reordering needs a non-drag pointer alternative for WCAG 2.2 AA. `withNatTableHeaderActions(..., { enableColumnPinActions: false, enableColumnReorderActions: true })` provides this through Move left and Move right menu items without pin actions. Custom header menus should expose equivalent click/tap controls and call `headerContext.table.options.meta?.natTableMoveColumn?.(column.id, direction)`, where `direction` is `'left'` or `'right'`, disabling unavailable actions with `natTableCanMoveColumn`.
 - `(rowActivate)` ignores activations whose target sits inside an interactive cell descendant — `<a href>`, `<button>`, form controls, `<summary>`, `contenteditable`, or elements with `role="button" | "link" | "checkbox" | "menuitem" | "tab" | "switch" | "combobox" | "textbox" | "searchbox"`. Use it for row-level navigation; keep cell-level controls inside cells.
 - `emitRowRenderEvents` is opt-in because it installs per-row render instrumentation.
@@ -466,7 +466,8 @@ readonly accessibilityText: NatTableAccessibilityText = {
   emptyState: 'No positions match the current filters.',
   loadingState: 'Loading positions.',
   errorState: 'Positions could not be loaded.',
-  reorderKeyboardInstructions: 'Use Control+Shift+Arrow keys to move columns.',
+  reorderKeyboardInstructions:
+    'Use Control+Shift+Arrow keys to move columns. On macOS, use Command+Shift+Arrow keys.',
   tableSummary: ({ visibleRowsText, totalRowsText, pageText, pageCountText }) =>
     `${visibleRowsText} of ${totalRowsText} rows visible. Page ${pageText} of ${pageCountText}.`,
   filteringChange: ({ query, visibleRowsText }) => `Filter ${query}. ${visibleRowsText} rows visible.`,

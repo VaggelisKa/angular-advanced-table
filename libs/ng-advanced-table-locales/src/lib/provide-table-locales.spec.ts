@@ -33,7 +33,7 @@ describe('provideNatTableLocales', () => {
     }
   });
 
-  it('uses Control+Shift+Arrow in the built-in English column reorder instructions', () => {
+  it('uses platform primary modifier shortcuts in the built-in English column reorder instructions', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideNatTableLocales()],
     });
@@ -41,7 +41,7 @@ describe('provideNatTableLocales', () => {
     const tableIntl = TestBed.inject(NAT_TABLE_INTL);
 
     expect(tableIntl.locales?.['en']?.accessibilityText?.reorderKeyboardInstructions).toBe(
-      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region.',
+      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
     );
   });
 

@@ -160,7 +160,8 @@ For every generated table, verify these items before considering the work comple
 - `accessibilityText.description` is present when users need extra context before navigating the grid.
 - `accessibilityText.keyboardInstructions` is localized when the product language is not English.
 - If column reordering is available, `accessibilityText.reorderKeyboardInstructions` describes
-  Control+Shift+Left Arrow and Control+Shift+Right Arrow movement in the product language.
+  Control+Shift+Left Arrow and Control+Shift+Right Arrow movement, plus the Command+Shift
+  macOS equivalent, in the product language.
 - If drag/drop column reordering is available, provide a non-drag pointer alternative. The built-in
   `withNatTableHeaderActions(..., { enableColumnPinActions: false, enableColumnReorderActions: true })` dropdown satisfies this with Move left and Move right menu items;
   custom header controls should expose equivalent click/tap actions and call the table meta
@@ -195,7 +196,7 @@ export const appConfig: ApplicationConfig = {
           keyboardInstructions:
             'Brug piletasterne til at flytte mellem celler. Brug Tab til kontroller i en celle.',
           reorderKeyboardInstructions:
-            'Tryk på Control+Shift+Venstre pil eller Control+Shift+Højre pil for at flytte kolonner.',
+            'Tryk på Control+Shift+Venstre pil eller Control+Shift+Højre pil for at flytte kolonner. På macOS skal du bruge Command+Shift+Venstre pil eller Command+Shift+Højre pil.',
           emptyState: 'Ingen rækker matcher den aktuelle visning.',
           tableSummary: ({ visibleRowsText, totalRowsText, visibleColumnsText }) =>
             `${visibleRowsText} af ${totalRowsText} rækker vises på tværs af ${visibleColumnsText} kolonner.`,
