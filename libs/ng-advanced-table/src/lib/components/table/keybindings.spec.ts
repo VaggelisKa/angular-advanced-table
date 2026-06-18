@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+import * as keybindingsModule from './keybindings';
 import {
   parseShortcutString,
   normalizeShortcut,
@@ -47,6 +49,96 @@ describe('NatTable Keybindings Utilities', () => {
       const parsed = parseShortcutString('Ctrl++');
       expect(parsed).toEqual({
         key: '+',
+        ctrlKey: true,
+        altKey: false,
+        shiftKey: false,
+        metaKey: false,
+      });
+    });
+  });
+
+  describe('Mod / CmdOrCtrl key translation', () => {
+    let originalNavigator: any;
+
+    beforeEach(() => {
+      originalNavigator = globalThis.navigator;
+    });
+
+    afterEach(() => {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    it('should map Mod to metaKey on Mac', () => {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: {
+          userAgent: 'macintosh',
+          platform: 'macintel',
+        },
+        configurable: true,
+        writable: true,
+      });
+      const parsed = parseShortcutString('Mod+a');
+      expect(parsed).toEqual({
+        key: 'a',
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: false,
+        metaKey: true,
+      });
+    });
+
+    it('should map Mod to ctrlKey on Windows/Linux', () => {
+      Object.defineProperty(globalThis, 'navigator', {
+        value: {
+          userAgent: 'windows',
+          platform: 'win32',
+        },
+        configurable: true,
+        writable: true,
+      });
+      const parsed = parseShortcutString('Mod+a');
+      expect(parsed).toEqual({
+        key: 'a',
+        ctrlKey: true,
+        altKey: false,
+        shiftKey: false,
+        metaKey: false,
+      });
+    });
+
+    it('should map cmdOrCtrlKey object property correctly based on platform', () => {
+      // Mac
+      Object.defineProperty(globalThis, 'navigator', {
+        value: {
+          userAgent: 'macintosh',
+          platform: 'macintel',
+        },
+        configurable: true,
+        writable: true,
+      });
+      expect(normalizeShortcut({ key: 'ArrowLeft', cmdOrCtrlKey: true })).toEqual({
+        key: 'ArrowLeft',
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: false,
+        metaKey: true,
+      });
+
+      // Windows/Linux
+      Object.defineProperty(globalThis, 'navigator', {
+        value: {
+          userAgent: 'windows',
+          platform: 'win32',
+        },
+        configurable: true,
+        writable: true,
+      });
+      expect(normalizeShortcut({ key: 'ArrowLeft', cmdOrCtrlKey: true })).toEqual({
+        key: 'ArrowLeft',
         ctrlKey: true,
         altKey: false,
         shiftKey: false,

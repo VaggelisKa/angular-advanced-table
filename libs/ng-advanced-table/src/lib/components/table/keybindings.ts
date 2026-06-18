@@ -12,6 +12,8 @@ export interface NatTableShortcut {
   shiftKey?: boolean;
   /** Whether the Meta (Command/Windows) key is required to be pressed. */
   metaKey?: boolean;
+  /** Maps to Command (metaKey) on Mac/iOS, and Control (ctrlKey) on other platforms. */
+  cmdOrCtrlKey?: boolean;
 }
 
 /** Configurable value for a keybinding, either a string shorthand, a shortcut object, or a list of them. */
@@ -55,6 +57,23 @@ export const NAT_TABLE_KEYBINDINGS = new InjectionToken<NatTableKeybindings>(
   },
 );
 
+/** Detects if the current platform is macOS or iOS. Safe for SSR. */
+export function isMacPlatform(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false;
+  }
+  const userAgent = (navigator.userAgent || '').toLowerCase();
+  const platform = (navigator.platform || '').toLowerCase();
+  return (
+    userAgent.indexOf('mac') !== -1 ||
+    userAgent.indexOf('ipad') !== -1 ||
+    userAgent.indexOf('iphone') !== -1 ||
+    platform.indexOf('mac') !== -1 ||
+    platform.indexOf('ipad') !== -1 ||
+    platform.indexOf('iphone') !== -1
+  );
+}
+
 /** Parses a string shortcut (e.g. `'Alt+Shift+ArrowLeft'`) into a structured {@link NatTableShortcut}. */
 export function parseShortcutString(shortcut: string): NatTableShortcut {
   const parts = shortcut.split('+');
@@ -70,12 +89,22 @@ export function parseShortcutString(shortcut: string): NatTableShortcut {
 
   const modifiers = new Set(parts.slice(0, -1).map((m) => m.trim().toLowerCase()));
 
+  const isMac = isMacPlatform();
+  const hasMod =
+    modifiers.has('mod') ||
+    modifiers.has('cmdorctrl') ||
+    modifiers.has('commandorcontrol');
+
   return {
     key: resolvedKey,
-    ctrlKey: modifiers.has('ctrl') || modifiers.has('control'),
+    ctrlKey: modifiers.has('ctrl') || modifiers.has('control') || (hasMod && !isMac),
     altKey: modifiers.has('alt'),
     shiftKey: modifiers.has('shift'),
-    metaKey: modifiers.has('meta') || modifiers.has('cmd') || modifiers.has('win'),
+    metaKey:
+      modifiers.has('meta') ||
+      modifiers.has('cmd') ||
+      modifiers.has('win') ||
+      (hasMod && isMac),
   };
 }
 
@@ -84,12 +113,14 @@ export function normalizeShortcut(shortcut: string | NatTableShortcut): NatTable
   if (typeof shortcut === 'string') {
     return parseShortcutString(shortcut);
   }
+  const isMac = isMacPlatform();
+  const hasMod = !!shortcut.cmdOrCtrlKey;
   return {
     key: shortcut.key,
-    ctrlKey: !!shortcut.ctrlKey,
+    ctrlKey: !!shortcut.ctrlKey || (hasMod && !isMac),
     altKey: !!shortcut.altKey,
     shiftKey: !!shortcut.shiftKey,
-    metaKey: !!shortcut.metaKey,
+    metaKey: !!shortcut.metaKey || (hasMod && isMac),
   };
 }
 
