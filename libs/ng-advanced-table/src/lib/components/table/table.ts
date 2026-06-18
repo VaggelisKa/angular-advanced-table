@@ -186,6 +186,17 @@ const DEFAULT_TABLE_STATE: NatTableState = {
 };
 const RESIZE_KEYBOARD_STEP = 8;
 const RESIZE_KEYBOARD_STEP_LARGE = 40;
+/**
+ * Minimum resize width for a column that does not declare its own `minSize`.
+ * TanStack defaults `minSize` to 20px, which is narrower than the resize handle
+ * hit area (`--nat-table-resize-handle-hit`, 24px / the WCAG 2.5.8 AA target):
+ * a column dragged that small swallows its own handle (it overflows the cell and
+ * stops being grabbable) and, in fill layout, collapses every neighbour to the
+ * same sliver while the grown column overflows the region. Twice the hit target
+ * keeps the handle fully inside the column plus a grabbable header strip. An
+ * explicit `minSize` is always honoured as-is.
+ */
+const DEFAULT_MIN_COLUMN_WIDTH = 48;
 let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
@@ -1281,7 +1292,12 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private getResizeBounds(column: Column<TData, unknown>): { min: number; max: number | null } {
-    const min = Math.max(Math.round(column.columnDef.minSize ?? 0), 1);
+    // An explicit `minSize` wins; otherwise fall back to a usable default instead of
+    // TanStack's 20px (which is narrower than the resize handle). hasMinSize reads the
+    // original input def, so it is true only when the consumer set minSize themselves.
+    const explicitMin = this.userColumnSizing()[column.id]?.hasMinSize === true;
+    const rawMin = explicitMin ? column.columnDef.minSize : DEFAULT_MIN_COLUMN_WIDTH;
+    const min = Math.max(Math.round(rawMin ?? DEFAULT_MIN_COLUMN_WIDTH), 1);
     const rawMax = column.columnDef.maxSize;
     const max =
       typeof rawMax === 'number' && Number.isFinite(rawMax) && rawMax < Number.MAX_SAFE_INTEGER

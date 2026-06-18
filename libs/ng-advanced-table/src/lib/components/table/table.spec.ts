@@ -917,7 +917,8 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     // End grows region toward maxSize (1000), but fit caps it at the region minus the
-    // other columns' mins (name 120 + status 20 + throughput 20 = 160): 390 - 160 = 230.
+    // other columns' mins. status and throughput declare no minSize, so they fall back
+    // to the 48px default floor (name 120 + status 48 + throughput 48 = 216): 390 - 216 = 174.
     // The others collapse to their mins so the table fills the region exactly.
     regionHeader().focus();
     regionHeader().dispatchEvent(
@@ -927,13 +928,47 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(regionCell().style.width).toBe('230px');
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 230 });
+    expect(regionCell().style.width).toBe('174px');
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 174 });
 
     // The widths still sum to the region: the table fills it exactly, never overflows.
     const widths = internal.resolvedColumnWidths();
     const total = Object.values(widths).reduce((sum, width) => sum + width, 0);
     expect(total).toBe(390);
+
+    // Symptom guard: neighbours without an explicit minSize collapse only to the 48px
+    // default floor, never TanStack's 20px — so their resize handles stay grabbable.
+    expect(widths['status']).toBe(48);
+    expect(widths['throughput']).toBe(48);
+  });
+
+  it('floors a keyboard shrink at the default minimum for a column without minSize', async () => {
+    // status declares no minSize. Alt+Home jumps to the min bound, which must be the
+    // 48px default floor (>= the 24px resize handle), not TanStack's 20px default that
+    // would leave the handle wider than the column and effectively ungrabbable.
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const statusHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="status"]',
+    ) as HTMLTableCellElement;
+    statusHeader.focus();
+    statusHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.at(-1)).toEqual({ status: 48 });
+
+    const statusCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="status"]',
+    ) as HTMLElement;
+    expect(statusCell.style.width).toBe('48px');
+    expect(statusHeader.style.width).toBe('48px');
   });
 
   it('clamps the keyboard resize base when fill layout stretches a column past its maxSize', async () => {
