@@ -652,14 +652,14 @@ describe('NatTable', () => {
     await recreateHost({ columns: resizableColumns });
     fixture.detectChanges();
 
-    const regionHandle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"] .column-resize-handle',
-    ) as HTMLElement;
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
 
-    expect(regionHandle.getAttribute('aria-label')).toBe('Resize Region column');
-
-    regionHandle.focus();
-    regionHandle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -669,14 +669,10 @@ describe('NatTable', () => {
     const regionCell = fixture.nativeElement.querySelector(
       'tbody tr:first-child td[data-column-id="region"]',
     ) as HTMLElement;
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLElement;
 
     // The resize must drive BOTH body and header widths, or the column never visibly resizes.
     expect(regionCell.style.width).toBe('148px');
     expect(regionHeader.style.width).toBe('148px');
-    expect(regionHandle.getAttribute('aria-valuetext')).toBe('148 pixels');
 
     const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
     expect(liveRegion.textContent?.trim()).toBe('Region column width 148 pixels.');
@@ -688,14 +684,16 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const handle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"] .column-resize-handle',
-    ) as HTMLElement;
-    handle.focus();
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    regionHeader.focus();
 
-    // LTR: the resize edge is on the right, so ArrowLeft must shrink (region 140 → 132),
+    // LTR: the resize edge is on the right, so Alt+ArrowLeft must shrink (region 140 → 132),
     // never grow. Guards the first-keystroke direction reversal.
-    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -707,20 +705,24 @@ describe('NatTable', () => {
     await recreateHost({ columns: resizableColumns, direction: 'rtl' });
     fixture.detectChanges();
 
-    const handle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"] .column-resize-handle',
-    ) as HTMLElement;
-    handle.focus();
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    regionHeader.focus();
 
-    // RTL: the resize edge is on the left, so ArrowLeft grows (region 140 → 148).
-    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    // RTL: the resize edge is on the left, so Alt+ArrowLeft grows (region 140 → 148).
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
     expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
 
     // Home jumps to the column's minSize (100).
-    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -728,7 +730,9 @@ describe('NatTable', () => {
 
     // Already at min: ArrowRight (shrink in RTL) clamps to 100 and emits nothing new.
     const eventsAtMin = host.columnSizingEvents.length;
-    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -746,7 +750,7 @@ describe('NatTable', () => {
     ) as HTMLTableCellElement;
 
     regionHeader.focus();
-    // Alt+ArrowRight grows the column one step (140 → 148), same as the separator handle.
+    // Alt+ArrowRight grows the column one step (140 → 148).
     regionHeader.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
     );
@@ -841,19 +845,15 @@ describe('NatTable', () => {
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
   });
 
-  it('clamps an out-of-range controlled width so aria-valuenow stays within bounds', async () => {
+  it('clamps an out-of-range controlled width so rendered width stays within bounds', async () => {
     // A controlled binding can push columnSizing past the column's bounds (TanStack
-    // only clamps in getSize(), not in stored state). aria-valuenow MUST stay within
-    // [valuemin, valuemax] or the separator violates ARIA and announces a wrong width.
+    // only clamps in getSize(), not in stored state). Rendered widths must stay within
+    // [minSize, maxSize], never the raw controlled value.
     const boundedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column && column.accessorKey === 'region'
         ? { ...column, maxSize: 200 }
         : column,
     );
-    const regionHandle = () =>
-      fixture.nativeElement.querySelector(
-        'thead th[data-column-id="region"] .column-resize-handle',
-      ) as HTMLElement;
     const regionCell = () =>
       fixture.nativeElement.querySelector(
         'tbody tr:first-child td[data-column-id="region"]',
@@ -868,8 +868,6 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     // Above maxSize: clamped to the 200 bound, never the raw 9999.
-    expect(regionHandle().getAttribute('aria-valuemax')).toBe('200');
-    expect(regionHandle().getAttribute('aria-valuenow')).toBe('200');
     expect(regionCell().style.width).toBe('200px');
 
     // Below minSize: clamped up to the 100 bound.
@@ -878,24 +876,22 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(regionHandle().getAttribute('aria-valuemin')).toBe('100');
-    expect(regionHandle().getAttribute('aria-valuenow')).toBe('100');
     expect(regionCell().style.width).toBe('100px');
   });
 
   it('fits resize to the viewport so the table never grows past the visible region', async () => {
-    // Resize is capped to "fit": a column can only grow into the space the other
-    // columns leave, so the table never exceeds the visible region. A generous
-    // maxSize makes the fit budget — not the column's own max — the binding limit.
+    // Fill flex caps a resize to "fit": a column can only grow into the space the
+    // other columns can yield (down to their mins), so the table never exceeds the
+    // visible region. A generous maxSize makes the fit budget the binding limit.
     const wideColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column && column.accessorKey === 'region'
         ? { ...column, maxSize: 1000 }
         : column,
     );
-    const regionHandle = () =>
+    const regionHeader = () =>
       fixture.nativeElement.querySelector(
-        'thead th[data-column-id="region"] .column-resize-handle',
-      ) as HTMLElement;
+        'thead th[data-column-id="region"]',
+      ) as HTMLTableCellElement;
     const regionCell = () =>
       fixture.nativeElement.querySelector(
         'tbody tr:first-child td[data-column-id="region"]',
@@ -908,40 +904,92 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // jsdom has no layout: pin every column's width and the visible region width
-    // so the fit budget (region - other columns) is deterministic.
+    // jsdom has no layout, so set the region width directly. In fill flex the fit
+    // budget is the region minus the OTHER columns' minimums (the space they can
+    // yield); column widths come from intrinsic size, so measured headers are unused.
+    const internal = getInternalTable(fixture) as unknown as {
+      regionViewportWidth: { set(value: number): void };
+      resolvedColumnWidths(): Record<string, number>;
+    };
+    internal.regionViewportWidth.set(390);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // End grows region toward maxSize (1000), but fit caps it at the region minus the
+    // other columns' mins (name 120 + status 20 + throughput 20 = 160): 390 - 160 = 230.
+    // The others collapse to their mins so the table fills the region exactly.
+    regionHeader().focus();
+    regionHeader().dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(regionCell().style.width).toBe('230px');
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 230 });
+
+    // The widths still sum to the region: the table fills it exactly, never overflows.
+    const widths = internal.resolvedColumnWidths();
+    const total = Object.values(widths).reduce((sum, width) => sum + width, 0);
+    expect(total).toBe(390);
+  });
+
+  it('clamps the keyboard resize base when fill layout stretches a column past its maxSize', async () => {
+    // Cross-column keyboard jump repro: resizing one column in fill layout redistributes
+    // slack so a neighbour's measured width stretches past its own maxSize. The resize
+    // base must clamp to that bound — otherwise the first keystroke on the neighbour
+    // reads the over-max width and "grows" by clamping straight back down to the bound
+    // (a backwards jump) while announcing the wrong width.
+    const boundedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
+      'accessorKey' in column && column.accessorKey === 'region'
+        ? { ...column, maxSize: 200 }
+        : column,
+    );
+    await recreateHost({ columns: boundedColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Simulate fill-layout redistribution stretching region's measured width past maxSize.
     const internal = getInternalTable(fixture) as unknown as {
       measuredHeaderWidths: { set(value: Record<string, number>): void };
-      regionViewportWidth: { set(value: number): void };
-      visibleColumns(): readonly { id: string }[];
     };
-    const ids = internal.visibleColumns().map((column) => column.id);
-    const columnWidth = 80;
-    internal.measuredHeaderWidths.set(Object.fromEntries(ids.map((id) => [id, columnWidth])));
-    const otherColumnsWidth = (ids.length - 1) * columnWidth;
-    internal.regionViewportWidth.set(otherColumnsWidth + 150);
+    internal.measuredHeaderWidths.set({ region: 272 });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // End jumps toward maxSize (1000), but fit caps it at region - others = 150,
-    // so the table fills the region exactly instead of overflowing.
-    regionHandle().focus();
-    regionHandle().dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+
+    // Grow on a column already at its max is a no-op, not a down-clamp that jumps backwards.
+    const eventsBefore = host.columnSizingEvents.length;
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+    );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
+    expect(host.columnSizingEvents.length).toBe(eventsBefore);
 
-    expect(regionHandle().getAttribute('aria-valuemax')).toBe('150');
-    expect(regionHandle().getAttribute('aria-valuenow')).toBe('150');
-    expect(regionCell().style.width).toBe('150px');
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 150 });
+    // ArrowLeft steps down by exactly one keyboard step from the clamped base (200 → 192).
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 192 });
   });
 
   it('clamps the resize guide to the fit budget, not just the column maxSize', async () => {
     // The drag guide must stop where the column would fill the region (region minus
-    // the other columns), even when the column's own maxSize is much larger. Every
-    // column is sized 100 so the fit budget is deterministic without measured layout.
+    // the other columns' minimums), even when the column's own maxSize is much larger.
+    // Every column is sized 100 with min 50 so the fit budget is deterministic.
     const sizedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
       'accessorKey' in column
         ? { ...column, size: 100, minSize: 50, maxSize: column.accessorKey === 'region' ? 1000 : 100 }
@@ -970,10 +1018,51 @@ describe('NatTable', () => {
     expect(internal.table.getState().columnSizingInfo.isResizingColumn).toBe('region');
     document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1000 }));
 
-    // Offset clamps to fit budget 250 - startSize 100 = 150, not maxSize 1000 - 100.
-    expect(internal.columnResizeGuide()?.offset).toBe(150);
+    // Offset clamps to the fit budget: region's max (region 550 - other mins 150 = 400)
+    // minus the seeded start width (138) = 262 — not the column's own maxSize (1000).
+    expect(internal.columnResizeGuide()?.offset).toBe(262);
 
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 1000 }));
+  });
+
+  it('keeps the table filled in fill flex by reflowing the other columns on resize', async () => {
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const internal = getInternalTable(fixture) as unknown as {
+      regionViewportWidth: { set(value: number): void };
+      resolvedColumnWidths(): Record<string, number>;
+    };
+    internal.regionViewportWidth.set(600);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const widthsBefore = internal.resolvedColumnWidths();
+    const total = (widths: Record<string, number>) =>
+      Object.values(widths).reduce((sum, width) => sum + width, 0);
+
+    // Flex distribution fills the region exactly before any resize.
+    expect(total(widthsBefore)).toBe(600);
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // The resized column grows by exactly one step while the others absorb the delta,
+    // so the table still fills the region — no jump, no overflow.
+    const widthsAfter = internal.resolvedColumnWidths();
+    expect(widthsAfter['region']).toBe(widthsBefore['region'] + 8);
+    expect(total(widthsAfter)).toBe(600);
   });
 
   it('announces the final width once an actual pointer resize drag ends', async () => {
@@ -986,6 +1075,9 @@ describe('NatTable', () => {
       'thead th[data-column-id="region"] .column-resize-handle',
     ) as HTMLElement;
     const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+    const regionCell = fixture.nativeElement.querySelector(
+      'tbody tr:first-child td[data-column-id="region"]',
+    ) as HTMLElement;
 
     regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100 }));
     fixture.detectChanges();
@@ -1001,10 +1093,11 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // The announced width must match the separator's current value (not a stale
+    // The announced width must match the committed and rendered width (not a stale
     // pre-drag width), even though the showcase binds columnSizing controlled.
-    const announcedWidth = regionHandle.getAttribute('aria-valuenow');
-    expect(announcedWidth).toMatch(/^\d+$/);
+    const announcedWidth = host.columnSizingEvents.at(-1)?.['region'];
+    expect(announcedWidth).not.toBeUndefined();
+    expect(regionCell.style.width).toBe(`${announcedWidth}px`);
     expect(liveRegion.textContent?.trim()).toBe(`Region column width ${announcedWidth} pixels.`);
   });
 

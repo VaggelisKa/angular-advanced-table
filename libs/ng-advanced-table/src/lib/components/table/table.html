@@ -13,8 +13,8 @@
     ngGrid
     class="data-table"
     [class.has-sticky-header]="stickyHeader()"
-    [class.is-fixed-layout]="isFixedLayout()"
-    [style.width.px]="isFixedLayout() ? fixedLayoutTableWidth() : null"
+    [class.is-fixed-layout]="usesAuthoritativeLayout()"
+    [style.width.px]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null"
     [id]="tableElementId()"
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
@@ -33,7 +33,7 @@
     }
 
     @let columnStates = columnRenderStates();
-    @if (isFixedLayout()) {
+    @if (usesAuthoritativeLayout()) {
       @let layoutWidths = resolvedColumnWidths();
       <colgroup>
         @for (column of visibleColumns(); track column.id) {
@@ -105,22 +105,13 @@
                   </span>
                 </div>
                 @if (canResizeColumn(header)) {
-                  @let resizeState = getResizeState(header.column);
                   <span
                     class="column-resize-handle"
-                    role="separator"
-                    aria-orientation="vertical"
-                    tabindex="0"
+                    aria-hidden="true"
                     [class.is-resizing]="header.column.getIsResizing()"
-                    [attr.aria-label]="resizeHandleLabel(header.column)"
-                    [attr.aria-valuenow]="resizeState.now"
-                    [attr.aria-valuemin]="resizeState.min"
-                    [attr.aria-valuemax]="resizeState.max"
-                    [attr.aria-valuetext]="resizeState.text || null"
                     (pointerdown)="$event.stopPropagation()"
                     (mousedown)="onResizeStart($event, header)"
                     (touchstart)="onResizeStart($event, header)"
-                    (keydown)="onResizeKeydown($event, header.column)"
                     (click)="$event.stopPropagation()"
                   ></span>
                 }
