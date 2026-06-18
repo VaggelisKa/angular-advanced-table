@@ -19,6 +19,7 @@ Use this package when you want:
 - The `NatTable` component.
 - Controlled or uncontrolled `NatTableState`.
 - Sorting, filtering, visibility, pinning, ordering, and optional pagination state.
+- Optional row selection state through `enableRowSelection` and `selectionMode`.
 - Sticky headers and sticky pinned columns.
 - Optional `(rowRendered)` instrumentation.
 - Custom accessibility summaries and live announcements through `accessibilityText`.
