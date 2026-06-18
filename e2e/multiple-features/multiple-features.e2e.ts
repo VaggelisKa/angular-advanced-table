@@ -48,21 +48,18 @@ test('filters table using signal chips', async ({ page }) => {
   const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
   if (await page.locator('.session-label').textContent().then(t => t?.includes('Feed live'))) {
     await toggleBtn.click();
+    await expect(page.locator('.session-label')).toContainText('Feed paused');
   }
 
-  // Select Advancing signal chip by toggling off other chips
-  const watchingChip = page.locator('.status-chip[data-status="Watching"]');
-  const decliningChip = page.locator('.status-chip[data-status="Declining"]');
-  const haltedChip = page.locator('.status-chip[data-status="Halted"]');
+  // Select Advancing signal chip
+  const advancingChip = page.locator('.status-chip[data-status="Advancing"]');
+  await advancingChip.click();
 
-  // Clear other status chips by toggling off
-  await watchingChip.click();
-  await decliningChip.click();
-  await haltedChip.click();
-
-  // Verify that no other status rows are visible (only Advancing should remain)
-  const nonAdvancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: /^(Watching|Declining|Halted)$/ });
-  await expect(nonAdvancingRows).toHaveCount(0);
+  // Verify only Advancing status is visible
+  const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
+  const totalRows = await page.locator('tbody tr').count();
+  expect(totalRows).toBeGreaterThan(0);
+  await expect(advancingRows).toHaveCount(totalRows);
 });
 
 test('searches rows using global fuzzy search input', async ({ page }) => {
@@ -70,6 +67,7 @@ test('searches rows using global fuzzy search input', async ({ page }) => {
   const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
   if (await page.locator('.session-label').textContent().then(t => t?.includes('Feed live'))) {
     await toggleBtn.click();
+    await expect(page.locator('.session-label')).toContainText('Feed paused');
   }
 
   // Wait for table rows to be visible to ensure table is fully initialized
@@ -85,8 +83,9 @@ test('searches rows using global fuzzy search input', async ({ page }) => {
   await expect(page.locator('td[data-column-id="exchange"]').first()).toHaveText('NASDAQ');
 
   // Check that no non-NASDAQ exchange cells are displayed
-  const nonNasdaqCells = page.locator('td[data-column-id="exchange"]').filter({ hasText: /^(?!NASDAQ$).*$/ });
-  await expect(nonNasdaqCells).toHaveCount(0);
+  const nasdaqCells = page.locator('td[data-column-id="exchange"]').filter({ hasText: 'NASDAQ' });
+  const totalRows = await page.locator('tbody tr').count();
+  await expect(nasdaqCells).toHaveCount(totalRows);
 });
 
 test('navigates pagination page sizes and indices', async ({ page }) => {
@@ -97,9 +96,7 @@ test('navigates pagination page sizes and indices', async ({ page }) => {
   // Initially on page 1
   await expect(prevBtn).toBeDisabled();
   
-  // If next is enabled, we can click it
-  if (await nextBtn.isEnabled()) {
-    await nextBtn.click();
-    await expect(prevBtn).toBeEnabled();
-  }
+  await expect(nextBtn).toBeEnabled();
+  await nextBtn.click();
+  await expect(prevBtn).toBeEnabled();
 });

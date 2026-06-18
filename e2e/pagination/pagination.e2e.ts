@@ -41,6 +41,7 @@ test('supports manual/server-side pagination', async ({ page }) => {
 
   // Verify initial row count is 3
   await expect(manualTable.locator('tbody tr')).toHaveCount(3);
+  const firstRowBefore = await manualTable.locator('tbody tr').first().innerText();
 
   // Click next page
   const nextBtn = pager.getByRole('button', { name: 'Next page' });
@@ -48,4 +49,7 @@ test('supports manual/server-side pagination', async ({ page }) => {
 
   // Verify it changed pages and shows new rows (from our mock dataset index 3-5)
   await expect(manualTable.locator('tbody tr')).toHaveCount(3);
+  await expect(manualTable.locator('tbody tr').first()).not.toContainText('Alpha Searcher');
+  const firstRowAfter = await manualTable.locator('tbody tr').first().innerText();
+  expect(firstRowAfter).not.toEqual(firstRowBefore);
 });

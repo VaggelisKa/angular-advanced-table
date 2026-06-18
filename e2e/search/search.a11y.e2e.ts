@@ -24,7 +24,7 @@ test('filters table rows via global fuzzy search input using keyboard only', asy
 
   // Focus and clear search
   await searchInput.focus();
-  await page.keyboard.press('Meta+A'); // Select all (Mac)
+  await page.keyboard.press('ControlOrMeta+A'); // Select all
   await page.keyboard.press('Backspace');
   await page.keyboard.press('Enter');
 

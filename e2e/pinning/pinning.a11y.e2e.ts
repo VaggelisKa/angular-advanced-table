@@ -18,6 +18,7 @@ test('renders pinning controls and applies column pinning styles via keyboard', 
 
   // Unpin "Name" via keyboard
   await nameNoneBtn.focus();
+  await expect(nameNoneBtn).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(nameNoneBtn).toHaveClass(/active/);
   await expect(nameLeftBtn).not.toHaveClass(/active/);
@@ -25,6 +26,7 @@ test('renders pinning controls and applies column pinning styles via keyboard', 
   // Pin "Name" to the right via keyboard
   const nameRightBtn = nameControl.getByRole('button', { name: 'Right' });
   await nameRightBtn.focus();
+  await expect(nameRightBtn).toBeFocused();
   await page.keyboard.press('Space');
   await expect(nameRightBtn).toHaveClass(/active/);
 });

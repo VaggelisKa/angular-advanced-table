@@ -15,6 +15,7 @@ test('supports keyboard-based column reordering', async ({ page }) => {
   // Focus the "Name" column header's sort button
   const nameHeader = page.getByRole('grid', { name: 'Reordering demo table' }).getByRole('button', { name: 'Sort by Name' });
   await nameHeader.focus();
+  await expect(nameHeader).toBeFocused();
 
   // Press Alt + Shift + ArrowRight to swap with Category
   await page.keyboard.press('Alt+Shift+ArrowRight');

@@ -20,6 +20,7 @@ test('toggles column visibility via chips using keyboard only', async ({ page })
   await expect(statusChip).not.toHaveClass(/is-active/);
 
   await statusChip.focus();
+  await expect(statusChip).toBeFocused();
   await page.keyboard.press('Space');
   
   await expect(statusChip).toHaveClass(/is-active/);
@@ -30,6 +31,7 @@ test('toggles column visibility via chips using keyboard only', async ({ page })
   await expect(nameChip).toHaveClass(/is-active/);
   
   await nameChip.focus();
+  await expect(nameChip).toBeFocused();
   await page.keyboard.press('Enter');
   
   await expect(nameChip).not.toHaveClass(/is-active/);

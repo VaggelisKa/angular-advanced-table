@@ -22,4 +22,6 @@ test('supports keyboard-based column reordering', async ({ page }) => {
   // Order should now be: Category, Name, Status, Value
   await expect(orderItems.nth(0)).toContainText('Category');
   await expect(orderItems.nth(1)).toContainText('Name');
+  await expect(orderItems.nth(2)).toContainText('Status');
+  await expect(orderItems.nth(3)).toContainText('Value');
 });

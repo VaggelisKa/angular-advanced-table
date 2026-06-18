@@ -25,4 +25,6 @@ test('renders pinning controls and applies column pinning styles', async ({ page
   const nameRightBtn = nameControl.getByRole('button', { name: 'Right' });
   await nameRightBtn.click();
   await expect(nameRightBtn).toHaveClass(/active/);
+  await expect(nameLeftBtn).not.toHaveClass(/active/);
+  await expect(nameNoneBtn).not.toHaveClass(/active/);
 });
