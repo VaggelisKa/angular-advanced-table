@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
@@ -10,6 +10,11 @@ type DemoItem = {
   readonly category: string;
   readonly status: string;
   readonly value: number;
+};
+
+type ColumnToggle = {
+  readonly id: string;
+  readonly label: string;
 };
 
 const DEMO_DATA: DemoItem[] = [
@@ -32,59 +37,86 @@ const DEMO_DATA: DemoItem[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   templateUrl: './resizing-showcase.html',
+  styleUrl: './resizing-showcase.css',
 })
 export class ResizingShowcasePage {
   protected readonly data = DEMO_DATA;
 
-  protected readonly columns: ColumnDef<DemoItem, unknown>[] = [
+  // Base definitions never set enableResizing: resizing is opt-in per column, driven
+  // by the toggle list below — not switched on for the whole table.
+  private readonly baseColumns: ColumnDef<DemoItem, unknown>[] = [
     {
+      id: 'name',
       accessorKey: 'name',
       header: 'Name',
-      size: 200,
-      minSize: 120,
-      maxSize: 320,
-      enableResizing: true,
       meta: { label: 'Name', rowHeader: true },
     },
     {
+      id: 'category',
       accessorKey: 'category',
       header: 'Category',
-      size: 160,
-      minSize: 100,
-      maxSize: 260,
-      enableResizing: true,
       meta: { label: 'Category' },
     },
     {
+      id: 'status',
       accessorKey: 'status',
       header: 'Status',
-      size: 60,
-      minSize: 50,
-      maxSize: 100,
-      enableResizing: true,
       meta: { label: 'Status' },
     },
     {
+      id: 'value',
       accessorKey: 'value',
       header: 'Value',
-      size: 50,
       meta: { label: 'Value', align: 'end' },
       cell: (context: CellContext<DemoItem, unknown>) =>
         `$${(context.getValue() as number).toLocaleString()}`,
     },
   ];
 
+  protected readonly columnToggles: readonly ColumnToggle[] = [
+    { id: 'name', label: 'Name' },
+    { id: 'category', label: 'Category' },
+    { id: 'status', label: 'Status' },
+    { id: 'value', label: 'Value' },
+  ];
+
+  // Which columns expose a resize handle. Starts as a subset so the "some columns
+  // resize, some don't" per-column behaviour is visible immediately. Mutated at
+  // runtime as the user toggles columns, so a Set (not a static Record) fits.
+  protected readonly resizableColumnIds = signal<ReadonlySet<string>>(
+    new Set(['name', 'category', 'status']),
+  );
+
+  // enableResizing is derived per column from the toggle set, never set table-wide.
+  protected readonly columns = computed<ColumnDef<DemoItem, unknown>[]>(() => {
+    const resizable = this.resizableColumnIds();
+
+    return this.baseColumns.map((column) => ({
+      ...column,
+      enableResizing: resizable.has(column.id as string),
+    }));
+  });
+
   protected readonly tableState = signal<Partial<NatTableState>>({
     columnSizing: {},
   });
 
+  // Both modes resize pixel-exact. Fill reflows the other columns so the table stays
+  // filled; fixed keeps widths authoritative and scrolls the region. Default to fill
+  // (the library default) to demonstrate the reflow behaviour.
   protected readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
 
-  protected resetWidths(): void {
-    this.tableState.update((current) => ({ ...current, columnSizing: {} }));
-  }
+  protected toggleResizable(id: string, enabled: boolean): void {
+    this.resizableColumnIds.update((current) => {
+      const next = new Set(current);
 
-  protected setColumnSizingMode(mode: 'fill' | 'fixed'): void {
-    this.columnSizingMode.set(mode);
+      if (enabled) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+
+      return next;
+    });
   }
 }
