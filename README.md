@@ -470,6 +470,10 @@ readonly accessibilityText: NatTableAccessibilityText = {
 
 `description`, `keyboardInstructions`, `emptyState`, `loadingState`, and `errorState` accept any string (set `description` or `keyboardInstructions` to `''` to suppress them). Generated table copy has English defaults and can be localized through `provideNatTableLocales()` plus `<nat-table [locale]="localeId()">`. Formatter contexts expose locale-formatted numbers and semantic state labels. When you want explicit types for formatter arguments, import the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySortingAnnouncementContext`).
 
+### Keyboard Shortcuts (Keybindings)
+
+The table's keyboard interactions (such as row activation, column reordering, and cell control navigation) can be configured globally via dependency injection or locally via inputs. See the [Keybindings Configuration Guide](file:///Users/simon/Documents/dev/angular-advanced-table/libs/ng-advanced-table/src/lib/components/table/keybindings.md) for full configuration options, formats, and examples.
+
 ## Custom Cell Components
 
 Use `flexRenderComponent(...)` from `@tanstack/angular-table` when a cell should render an Angular component instead of plain text.
