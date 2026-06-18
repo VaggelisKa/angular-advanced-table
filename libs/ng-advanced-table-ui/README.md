@@ -22,6 +22,7 @@ Use this package when you want optional companions around `NatTable`:
 - `NatTablePager`
 - `NatTableScrollControl`
 - `withNatTableHeaderActions(...)`
+- `withNatTableSelectionColumn(...)`
 
 The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #grid="natTable">` satisfies that contract directly.
 
@@ -47,6 +48,9 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTablePager`
 - `NatTableScrollControl`
 - `withNatTableHeaderActions(...)`
+- `withNatTableSelectionColumn(...)`
+- `NatTableSelectionCheckbox`
+- `NatTableSelectionColumnOptions`
 - `NatTableHeaderActionsOptions`
 - `NatTableHeaderActionsColumnOptions`
 - `NatTableSortIndicatorContent`
@@ -88,6 +92,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - Apply other column helpers first, then wrap the final column list with `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
 - If you enable drag/drop reordering without this helper, provide your own non-drag pointer controls. Custom header menus can call `headerContext.table.options.meta?.natTableMoveColumn?.(column.id, direction)`, where `direction` is `'left'` or `'right'`, and read `natTableCanMoveColumn` to disable unavailable directions.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.
+- `withNatTableSelectionColumn(...)` prepends an accessible select-all and per-row checkbox column. Enable it with `[enableRowSelection]="true"` on the core table. See the root README [Row Selection](../../README.md#row-selection) guide for state, interactions, and bulk actions.
 - You can use any subset of this package or replace all of it with custom controls.
 
 ## Minimal Example

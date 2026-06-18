@@ -8,6 +8,7 @@ import type {
   PaginationState,
   Row,
   RowData,
+  RowSelectionState,
   SortingState,
   Table,
   Updater,
@@ -33,6 +34,8 @@ export interface NatTableState {
   columnOrder: ColumnOrderState;
   /** Left and right pinned column ids. */
   columnPinning: ColumnPinningState;
+  /** Selected row ids keyed by `getRowId`. */
+  rowSelection: RowSelectionState;
 }
 
 /**
@@ -249,6 +252,18 @@ export interface NatTableAccessibilityPaginationAnnouncementContext {
   visibleRowsText: string;
 }
 
+/** Context passed to custom row-selection announcement formatters. */
+export type NatTableAccessibilitySelectionAnnouncementContext = {
+  /** Number of currently selected rows. */
+  readonly selectedCountValue: number;
+  /** Browser-locale text for `selectedCountValue`. */
+  readonly selectedCountText: string;
+  /** Total rows supplied to the table. */
+  readonly totalRowsValue: number;
+  /** Browser-locale text for `totalRowsValue`. */
+  readonly totalRowsText: string;
+};
+
 /** Context passed to custom column-reorder announcement formatters. */
 export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   /** TanStack column id. */
@@ -313,6 +328,8 @@ export interface NatTableAccessibilityText {
   pageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when a column is reordered. */
   columnReorder?: (context: NatTableAccessibilityColumnReorderAnnouncementContext) => string;
+  /** Live announcement emitted when the row selection changes. */
+  selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
 }
 
 /** Semantic tone that can be applied to a rendered body cell. */

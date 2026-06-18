@@ -105,6 +105,17 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       `Moved ${label} column to position ${positionText} of ${totalText} in the ${describeColumnZone(
         zone,
       )} region.`,
+    selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {
+      if (selectedCountValue === 0) {
+        return 'Selection cleared.';
+      }
+
+      if (selectedCountValue >= totalRowsValue && totalRowsValue > 0) {
+        return `All ${totalRowsText} ${pluralize('row', totalRowsValue)} selected.`;
+      }
+
+      return `${selectedCountText} ${pluralize('row', selectedCountValue)} selected.`;
+    },
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };

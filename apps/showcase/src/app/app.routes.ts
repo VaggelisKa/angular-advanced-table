@@ -97,6 +97,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'selection',
+    title: 'Advanced Table - Row Selection',
+    loadComponent: () =>
+      import('./pages/single-features/selection/selection-showcase').then(
+        (module) => module.SelectionShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

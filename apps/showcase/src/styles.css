@@ -485,6 +485,11 @@ input {
     box-shadow 140ms ease;
 }
 
+.showcase-page .btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .showcase-page .btn-primary {
   border-color: var(--showcase-page-accent);
   background: var(--showcase-page-accent);
@@ -545,6 +550,12 @@ input {
   color: var(--showcase-page-accent);
   font-size: 0.78rem;
   font-weight: 500;
+}
+
+.showcase-page .info-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .showcase-page .column-control,
@@ -611,8 +622,6 @@ input {
 
 .showcase-page .instructions {
   margin: 16px 20px 20px;
-  padding-top: 14px;
-  border-top: 1px solid var(--showcase-page-border);
 }
 
 .showcase-page .tip {
