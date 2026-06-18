@@ -253,6 +253,7 @@
   position: sticky;
   top: 0;
   align-self: start;
+  box-sizing: border-box;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -305,6 +306,8 @@
 }
 
 .showcase-nav-list {
+  min-height: 0;
+  flex: 1 1 auto;
   display: grid;
   overflow-y: auto;
   overflow-x: hidden;
@@ -383,6 +386,7 @@
 }
 
 .showcase-theme-control {
+  flex: 0 0 auto;
   margin-top: auto;
   display: grid;
   gap: 8px;
@@ -395,6 +399,7 @@
 }
 
 .showcase-repo-section {
+  flex: 0 0 auto;
   display: grid;
   gap: 8px;
   padding: 14px 8px 0;
@@ -517,6 +522,7 @@
 
   .showcase-shell.is-nav-open {
     max-height: 100vh;
+    max-height: 100dvh;
     overflow: hidden;
   }
 
@@ -543,8 +549,11 @@
     z-index: 50;
     align-self: auto;
     height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
     gap: 12px;
-    padding: 16px 14px;
+    padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px));
     border-right: 1px solid var(--shell-border);
     border-bottom: 0;
     box-shadow: 20px 0 50px rgba(15, 20, 25, 0.2);
