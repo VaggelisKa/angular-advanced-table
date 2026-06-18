@@ -2216,6 +2216,64 @@ describe('NatTable', () => {
       customFixture.detectChanges();
       expect(customFixture.componentInstance.events.length).toBe(1);
     });
+
+    it('should fall back to default keybindings for non-overridden properties when keybindings are partially customized', async () => {
+      @Component({
+        imports: [NatTable, TestTableSurface],
+        template: `
+          <nat-table-surface [keybindings]="keybindings">
+            <nat-table
+              [data]="rows()"
+              [columns]="columns"
+              accessibleName="Operations table"
+            />
+          </nat-table-surface>
+        `,
+      })
+      class PartialKeybindingsHost {
+        readonly rows = signal<Row[]>(buildRows(3));
+        readonly columns: ColumnDef<Row, unknown>[] = [
+          {
+            accessorKey: 'region',
+            header: 'Region',
+            meta: { label: 'Region' },
+            cell: (info) => info.getValue<string>(),
+          },
+        ];
+        keybindings = {
+          rowActivate: 'a',
+        };
+      }
+
+      const partialFixture = TestBed.createComponent(PartialKeybindingsHost);
+      await partialFixture.whenStable();
+      partialFixture.detectChanges();
+
+      const cell = partialFixture.nativeElement.querySelector(
+        'tbody tr.data-row td[data-column-id="region"]',
+      ) as HTMLElement;
+
+      cell.innerHTML =
+        '<button type="button" class="first">First</button>' +
+        '<button type="button" class="second">Second</button>';
+      const firstButton = cell.querySelector('button.first') as HTMLButtonElement;
+
+      cell.focus();
+      expect(document.activeElement).toBe(cell);
+
+      // Trigger 'Enter' (default cellEnterControl) on the cell
+      const enterEvent = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+      cell.dispatchEvent(enterEvent);
+      partialFixture.detectChanges();
+
+      // Should focus the first button inside the cell because default cellEnterControl is Enter
+      expect(document.activeElement).toBe(firstButton);
+      expect(enterEvent.defaultPrevented).toBe(true);
+    });
   });
 });
 
