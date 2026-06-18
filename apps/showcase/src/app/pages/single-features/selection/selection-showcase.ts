@@ -1,8 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, linkedSignal, signal } from '@angular/core';
 import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table-ui';
+import {
+  NatTableSurface,
+  NatTableToolbar,
+  NatToolbarItem,
+  withNatTableSelectionColumn,
+} from 'ng-advanced-table-ui';
 
 type DemoItem = {
   readonly id: string;
@@ -10,7 +15,12 @@ type DemoItem = {
   readonly category: string;
   readonly status: string;
   readonly value: number;
-}
+};
+
+type RowSelectionSource = {
+  readonly rowIds: ReadonlySet<string>;
+  readonly multiple: boolean;
+};
 
 const DEMO_DATA: DemoItem[] = [
   { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
@@ -36,8 +46,26 @@ const DEMO_DATA: DemoItem[] = [
 export class SelectionShowcasePage {
   protected readonly data = signal<DemoItem[]>(DEMO_DATA);
   protected readonly selectionMode = signal<'single' | 'multiple'>('multiple');
-  protected readonly tableState = signal<Partial<NatTableState>>({ rowSelection: {} });
   protected readonly getRowId = (row: DemoItem) => row.id;
+
+  /**
+   * Row selection derived from the current data and cardinality. Using a
+   * `linkedSignal` keeps the selection self-healing: rows removed from `data`
+   * are pruned, switching selection mode clears the selection, and the user's
+   * other still-valid choices survive data changes. User toggles flow back in
+   * through `set()` (see `onRowSelectionChange`).
+   */
+  protected readonly rowSelection = linkedSignal<RowSelectionSource, RowSelectionState>({
+    source: () => ({
+      rowIds: new Set(this.data().map((item) => item.id)),
+      multiple: this.selectionMode() === 'multiple',
+    }),
+    computation: (source, previous) => this.computeRowSelection(source, previous),
+  });
+
+  protected readonly tableState = computed<Partial<NatTableState>>(() => ({
+    rowSelection: this.rowSelection(),
+  }));
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableSelectionColumn(
     [
@@ -71,9 +99,11 @@ export class SelectionShowcasePage {
   );
 
   protected readonly selectedNames = computed(() => {
-    const selection = this.tableState().rowSelection ?? {};
+    const selection = this.rowSelection();
 
-    return this.data().filter((item) => selection[item.id]).map((item) => item.name);
+    return this.data()
+      .filter((item) => selection[item.id])
+      .map((item) => item.name);
   });
 
   protected readonly selectedSummary = computed(() => {
@@ -83,32 +113,56 @@ export class SelectionShowcasePage {
   });
 
   protected onRowSelectionChange(rowSelection: RowSelectionState): void {
-    this.tableState.update((current) => ({ ...current, rowSelection }));
+    this.rowSelection.set(rowSelection);
   }
 
   protected setMode(mode: 'single' | 'multiple'): void {
-    // Clearing keeps the controlled state consistent with the new cardinality.
+    // The linkedSignal collapses any multi-selection to the new cardinality.
     this.selectionMode.set(mode);
-    this.clearSelection();
   }
 
   protected clearSelection(): void {
-    this.tableState.update((current) => ({ ...current, rowSelection: {} }));
+    this.rowSelection.set({});
   }
 
   protected deleteSelected(): void {
-    const selectedIds = new Set(Object.keys(this.tableState().rowSelection ?? {}));
+    const selection = this.rowSelection();
+    const selectedIds = new Set(Object.keys(selection).filter((id) => selection[id]));
 
     if (selectedIds.size === 0) {
       return;
     }
 
+    // Removing the rows from the data prunes their selection through the linkedSignal.
     this.data.update((items) => items.filter((item) => !selectedIds.has(item.id)));
-    this.tableState.update((current) => ({ ...current, rowSelection: {} }));
   }
 
   protected restoreData(): void {
     this.data.set(DEMO_DATA);
-    this.tableState.update((current) => ({ ...current, rowSelection: {} }));
+    this.rowSelection.set({});
+  }
+
+  private computeRowSelection(
+    source: RowSelectionSource,
+    previous:
+      | { readonly source: RowSelectionSource; readonly value: RowSelectionState }
+      | undefined,
+  ): RowSelectionState {
+    // Switching selection mode starts the new mode with an empty selection.
+    if (previous && previous.source.multiple !== source.multiple) {
+      return {};
+    }
+
+    // Same mode: keep rows that still exist so the selection self-heals after data changes.
+    const previousSelection = previous?.value ?? {};
+    const next: RowSelectionState = {};
+
+    for (const id of Object.keys(previousSelection)) {
+      if (previousSelection[id] && source.rowIds.has(id)) {
+        next[id] = true;
+      }
+    }
+
+    return next;
   }
 }
