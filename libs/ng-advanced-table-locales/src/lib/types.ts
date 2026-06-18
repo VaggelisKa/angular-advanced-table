@@ -149,14 +149,6 @@ export type NatTableAccessibilityColumnResizeAnnouncementContext = {
   readonly widthText: string;
 };
 
-/** Context passed to the column resize handle label formatter. */
-export type NatTableAccessibilityColumnResizeHandleContext = {
-  /** TanStack column id. */
-  readonly columnId: string;
-  /** Resolved human-readable column label. */
-  readonly label: string;
-};
-
 /** Context passed to custom row-selection announcement formatters. */
 export type NatTableAccessibilitySelectionAnnouncementContext = {
   /** Number of currently selected rows. */
@@ -168,7 +160,6 @@ export type NatTableAccessibilitySelectionAnnouncementContext = {
   /** Provider-formatted text for `totalRowsValue`. */
   readonly totalRowsText: string;
 };
-
 /** Optional overrides for built-in screen-reader summaries and announcements. */
 export interface NatTableAccessibilityText {
   /**
@@ -219,12 +210,6 @@ export interface NatTableAccessibilityText {
   columnReorder?: (context: NatTableAccessibilityColumnReorderAnnouncementContext) => string;
   /** Live announcement emitted when a column is resized. */
   columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
-  /** Accessible label for a column's resize handle separator. */
-  columnResizeHandleLabel?: (context: NatTableAccessibilityColumnResizeHandleContext) => string;
-  /** Unit-bearing `aria-valuetext` for a column's resize handle separator. */
-  columnResizeHandleValueText?: (
-    context: NatTableAccessibilityColumnResizeAnnouncementContext,
-  ) => string;
   /** Live announcement emitted when the row selection changes. */
   selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
 }

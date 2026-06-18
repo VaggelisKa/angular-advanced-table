@@ -18,7 +18,6 @@ export {
 export type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnResizeAnnouncementContext,
-  NatTableAccessibilityColumnResizeHandleContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,

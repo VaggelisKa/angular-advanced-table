@@ -159,7 +159,8 @@ export class NatTableSurface {
       const paginationChanged =
         JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
       const rowSelectionChanged =
-        serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(nextState.rowSelection);
+        serializeSelectedRowIds(prev.rowSelection) !==
+        serializeSelectedRowIds(nextState.rowSelection);
 
       if (
         sortingChanged ||

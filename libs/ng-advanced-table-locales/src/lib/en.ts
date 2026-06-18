@@ -21,9 +21,8 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
     reorderKeyboardInstructions:
       'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
     resizeKeyboardInstructions:
-      'When a column resize handle is focused, press Left or Right Arrow to resize, ' +
-      'Shift with an arrow for larger steps, and Home or End for the minimum or maximum width. ' +
-      'You can also press Alt with Left or Right Arrow on a resizable column header to resize it.',
+      'On a resizable column header, press Alt with Left or Right Arrow to resize the column, ' +
+      'and Alt with Home or End to jump to its minimum or maximum width.',
     tableSummary: ({
       filterState,
       pageCountText,
@@ -110,8 +109,6 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
         zone,
       )} region.`,
     columnResize: ({ label, widthText }) => `${label} column width ${widthText} pixels.`,
-    columnResizeHandleLabel: ({ label }) => `Resize ${label} column`,
-    columnResizeHandleValueText: ({ widthText }) => `${widthText} pixels`,
     selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {
       if (selectedCountValue === 0) {
         return 'Selection cleared.';
