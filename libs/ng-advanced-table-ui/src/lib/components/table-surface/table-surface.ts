@@ -1,4 +1,12 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, effect, inject, input, model, output } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import type {
   ColumnFiltersState,
   ColumnOrderState,
@@ -7,7 +15,13 @@ import type {
   SortingState,
   VisibilityState,
 } from '@tanstack/angular-table';
-import { NatTableService, type NatTableState, type NatTableMode, type NatTableModeConfiguration, type NatTableAccessibilityText } from 'ng-advanced-table';
+import {
+  NatTableService,
+  type NatTableAccessibilityText,
+  type NatTableMode,
+  type NatTableModeConfiguration,
+  type NatTableState,
+} from 'ng-advanced-table';
 
 @Component({
   selector: 'nat-table-surface',
@@ -53,14 +67,11 @@ export class NatTableSurface {
   readonly paginationChange = output<PaginationState>();
 
   private readonly natTableService = inject(NatTableService);
-
   constructor() {
-    // Sync state input property to the service
     effect(() => {
       this.natTableService.setState(this.state());
     });
 
-    // Sync input properties to the service
     effect(() => {
       this.natTableService.surfaceInitialState.set(this.initialState());
     });
@@ -114,11 +125,16 @@ export class NatTableSurface {
 
       const sortingChanged = JSON.stringify(prev.sorting) !== JSON.stringify(nextState.sorting);
       const globalFilterChanged = prev.globalFilter !== nextState.globalFilter;
-      const columnFiltersChanged = JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters);
-      const columnVisibilityChanged = JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility);
-      const columnOrderChanged = JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder);
-      const columnPinningChanged = JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning);
-      const paginationChanged = JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
+      const columnFiltersChanged =
+        JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters);
+      const columnVisibilityChanged =
+        JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility);
+      const columnOrderChanged =
+        JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder);
+      const columnPinningChanged =
+        JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning);
+      const paginationChanged =
+        JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
 
       if (
         sortingChanged ||
@@ -135,21 +151,27 @@ export class NatTableSurface {
       if (sortingChanged) {
         this.sortingChange.emit(nextState.sorting);
       }
+
       if (globalFilterChanged) {
         this.globalFilterChange.emit(nextState.globalFilter);
       }
+
       if (columnFiltersChanged) {
         this.columnFiltersChange.emit(nextState.columnFilters);
       }
+
       if (columnVisibilityChanged) {
         this.columnVisibilityChange.emit(nextState.columnVisibility);
       }
+
       if (columnOrderChanged) {
         this.columnOrderChange.emit(nextState.columnOrder);
       }
+
       if (columnPinningChanged) {
         this.columnPinningChange.emit(nextState.columnPinning);
       }
+
       if (paginationChanged) {
         this.paginationChange.emit(nextState.pagination);
       }
