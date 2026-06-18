@@ -112,13 +112,7 @@
   top: 0;
   bottom: 0;
   inset-inline-end: 0;
-  /*
-   * 16px wide is below the WCAG 2.5.8 (Target Size, Minimum) 24px ideal; it passes
-   * via the spacing exception: handles sit a full column width apart, so the 24px
-   * undisturbed-circle test is satisfied. Override --nat-table-resize-handle-hit to 24px
-   * if you place columns narrower than that.
-   */
-  inline-size: var(--nat-table-resize-handle-hit, 16px);
+  inline-size: var(--nat-table-resize-handle-hit, 24px);
   cursor: col-resize;
   touch-action: none;
   user-select: none;
