@@ -14,6 +14,9 @@
  * arrow-consuming control keep the Enter / Tab / Escape model above.
  */
 
+import { matchShortcutValue } from './keybindings';
+import type { NatTableKeybindings } from './table.types';
+
 export const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
   'a[href], button, input, select, textarea, summary, [contenteditable="true"], ' +
   '[role="button"], [role="link"], [role="checkbox"], [role="menuitem"], ' +
@@ -40,7 +43,10 @@ const DELEGATED_CONTROL_SELECTOR =
  * cell-interaction model. Returns `true` when it handled the event, so the
  * caller skips its own behavior (e.g. row activation).
  */
-export const handleCellInteractionKeydown = (event: KeyboardEvent): boolean => {
+export const handleCellInteractionKeydown = (
+  event: KeyboardEvent,
+  keybindings: Required<NatTableKeybindings>,
+): boolean => {
   if (event.defaultPrevented) return false;
 
   const target = event.target;
@@ -51,17 +57,22 @@ export const handleCellInteractionKeydown = (event: KeyboardEvent): boolean => {
 
   if (!cell) return false;
 
-  switch (event.key) {
-    case 'Enter':
-      return enterFirstCellControl(event, cell, target);
-    case 'Escape':
-      return escapeBackToCell(event, cell, target);
-    case 'Tab':
-      return tabBetweenCellControls(event, cell, target);
-    default:
-      return false;
+  if (matchShortcutValue(event, keybindings.cellEnterControl)) {
+    return enterFirstCellControl(event, cell, target);
   }
+  if (matchShortcutValue(event, keybindings.cellExitControl)) {
+    return escapeBackToCell(event, cell, target);
+  }
+  if (
+    matchShortcutValue(event, keybindings.cellTabNextControl) ||
+    matchShortcutValue(event, keybindings.cellTabPrevControl)
+  ) {
+    return tabBetweenCellControls(event, cell, target, keybindings);
+  }
+
+  return false;
 };
+
 
 /**
  * Routes a focusin on a grid cell through the single-control delegation rule:
@@ -115,11 +126,11 @@ const escapeBackToCell = (
   return focusAndConsume(event, cell);
 };
 
-/** Tab from a control walks the cell's other controls; Tab on the cell itself stays native. */
 const tabBetweenCellControls = (
   event: KeyboardEvent,
   cell: HTMLElement,
   target: HTMLElement,
+  keybindings: Required<NatTableKeybindings>,
 ): boolean => {
   // Tab on the cell itself is not intercepted so focus can leave the grid; Enter is the entry point.
   if (target === cell) return false;
@@ -129,7 +140,8 @@ const tabBetweenCellControls = (
 
   if (index === -1) return false;
 
-  const nextControl = controls[index + (event.shiftKey ? -1 : 1)];
+  const isPrev = matchShortcutValue(event, keybindings.cellTabPrevControl);
+  const nextControl = controls[index + (isPrev ? -1 : 1)];
 
   // Past the first/last control of the cell: let Tab leave the grid.
   if (!nextControl) return false;

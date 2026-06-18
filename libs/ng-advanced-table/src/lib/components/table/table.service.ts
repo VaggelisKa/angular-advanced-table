@@ -1,11 +1,13 @@
-import { computed, Injectable, InjectionToken, signal } from '@angular/core';
+import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
+import { NAT_TABLE_KEYBINDINGS, mergeNatTableKeybindings } from './keybindings';
 import type {
   NatTableMode,
   NatTableModeConfiguration,
   NatTableState,
   NatTableUiController,
   NatTableAccessibilityText,
+  NatTableKeybindings,
 } from './table.types';
 
 /** Injection token for the active table UI controller in the current DI scope. */
@@ -34,6 +36,21 @@ export class NatTableService<TData extends RowData = RowData> {
   readonly enableMultiSort = signal(false);
   readonly locale = signal<string | undefined>(undefined);
   readonly accessibilityText = signal<NatTableAccessibilityText>({});
+
+  private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
+  readonly surfaceKeybindings = signal<NatTableKeybindings>({});
+  readonly tableKeybindings = signal<NatTableKeybindings>({});
+
+  readonly keybindings = computed(() =>
+    mergeNatTableKeybindings(
+      this.tableKeybindings(),
+      mergeNatTableKeybindings(
+        this.surfaceKeybindings(),
+        this.globalKeybindings,
+      ),
+    ),
+  );
+
 
   readonly manualPagination = computed(() => {
     const mode = this.surfaceMode();

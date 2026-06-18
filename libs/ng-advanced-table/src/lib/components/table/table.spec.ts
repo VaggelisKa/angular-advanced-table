@@ -40,6 +40,7 @@ import type {
   NatTableModeConfiguration,
   NatTableRowActivateEvent,
   NatTableState,
+  NatTableKeybindings,
 } from './table.types';
 
 @Component({
@@ -89,6 +90,7 @@ class TestTableSurface {
   readonly enableMultiSort = input(false, { transform: booleanAttribute });
   readonly locale = input<string | undefined>(undefined);
   readonly accessibilityText = input<NatTableAccessibilityText>({});
+  readonly keybindings = input<NatTableKeybindings>({});
 
   readonly sortingChange = output<SortingState>();
   readonly globalFilterChange = output<string>();
@@ -127,6 +129,9 @@ class TestTableSurface {
     });
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
+    });
+    effect(() => {
+      this.natTableService.surfaceKeybindings.set(this.keybindings());
     });
 
     let isFirstChange = true;
@@ -2155,6 +2160,61 @@ describe('NatTable', () => {
       // Rows must still not be sliced client-side
       const rowsAfterPage = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
       expect(rowsAfterPage.length).toBe(6);
+    });
+  });
+
+  describe('custom keybindings', () => {
+    it('should allow overriding keybindings via the [keybindings] input', async () => {
+      @Component({
+        imports: [NatTable, TestTableSurface],
+        template: `
+          <nat-table-surface [keybindings]="keybindings">
+            <nat-table
+              [data]="rows()"
+              [columns]="columns"
+              accessibleName="Operations table"
+              (rowActivate)="onRowActivate($event)"
+            />
+          </nat-table-surface>
+        `,
+      })
+      class CustomKeybindingsHost {
+        readonly rows = signal<Row[]>(buildRows(3));
+        readonly columns: ColumnDef<Row, unknown>[] = [
+          {
+            accessorKey: 'name',
+            header: 'Service',
+            meta: { label: 'Service', rowHeader: true },
+            cell: (info) => info.getValue<string>(),
+          },
+        ];
+        keybindings = {
+          rowActivate: 'a',
+          columnReorderLeft: 'Ctrl+ArrowLeft',
+          columnReorderRight: 'Ctrl+ArrowRight',
+        };
+        readonly events: NatTableRowActivateEvent<Row>[] = [];
+
+        onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+          this.events.push(event);
+        }
+      }
+
+      const customFixture = TestBed.createComponent(CustomKeybindingsHost);
+      await customFixture.whenStable();
+      customFixture.detectChanges();
+
+      const firstRow = customFixture.nativeElement.querySelector('tbody tr.data-row') as HTMLTableRowElement;
+
+      // 1. Try default 'Enter' - should NOT activate
+      firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      customFixture.detectChanges();
+      expect(customFixture.componentInstance.events.length).toBe(0);
+
+      // 2. Press custom key 'a' - should activate
+      firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+      customFixture.detectChanges();
+      expect(customFixture.componentInstance.events.length).toBe(1);
     });
   });
 });

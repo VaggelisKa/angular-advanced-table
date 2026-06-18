@@ -21,6 +21,7 @@ import {
   type NatTableMode,
   type NatTableModeConfiguration,
   type NatTableState,
+  type NatTableKeybindings,
 } from 'ng-advanced-table';
 
 @Component({
@@ -56,6 +57,8 @@ export class NatTableSurface {
   readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
   readonly accessibilityText = input<NatTableAccessibilityText>({});
+  /** Optional overrides for keyboard interaction shortcuts. */
+  readonly keybindings = input<NatTableKeybindings>({});
 
   // Slice-specific change outputs
   readonly sortingChange = output<SortingState>();
@@ -95,6 +98,9 @@ export class NatTableSurface {
     });
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
+    });
+    effect(() => {
+      this.natTableService.surfaceKeybindings.set(this.keybindings());
     });
 
     // Detect internal state changes from the table and emit slice outputs

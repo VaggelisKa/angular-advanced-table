@@ -60,6 +60,7 @@ import {
 } from './table-intl';
 import { NatTableService } from './table.service';
 import { NatTableStateCell } from './table-state-cell.directive';
+import { matchShortcutValue } from './keybindings';
 import {
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
@@ -84,6 +85,7 @@ import type {
   NatTableRowIdGetter,
   NatTableState,
   NatTableUiController,
+  NatTableKeybindings,
 } from './table.types';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './table.types';
 import {
@@ -227,6 +229,8 @@ export class NatTable<TData extends RowData = RowData> {
   readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
+  /** Optional overrides for keyboard interaction shortcuts. */
+  readonly keybindings = input<NatTableKeybindings>({});
 
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
   readonly rowRendered = output<NatTableRowRenderedEvent>();
@@ -646,6 +650,10 @@ export class NatTable<TData extends RowData = RowData> {
     this.natTableService.setController(this as unknown as NatTableUiController<any>);
 
     effect(() => {
+      this.natTableService.tableKeybindings.set(this.keybindings());
+    });
+
+    effect(() => {
       if (this.hasSeededInitialState()) {
         return;
       }
@@ -800,15 +808,13 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (handleCellInteractionKeydown(event)) return;
+    if (handleCellInteractionKeydown(event, this.natTableService.keybindings())) return;
 
-    const isReorderModifierPressed = event.altKey && event.shiftKey;
+    const keybindings = this.natTableService.keybindings();
+    const isReorderLeft = matchShortcutValue(event, keybindings.columnReorderLeft);
+    const isReorderRight = matchShortcutValue(event, keybindings.columnReorderRight);
 
-    if (!isReorderModifierPressed) return;
-
-    const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
-
-    if (!isHorizontalArrowKey) return;
+    if (!isReorderLeft && !isReorderRight) return;
 
     const zone = this.getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
@@ -816,7 +822,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (currentIndex === -1) return;
 
-    const directionDelta = event.key === 'ArrowLeft' ? -1 : 1;
+    const directionDelta = isReorderLeft ? -1 : 1;
     const nextIndex = currentIndex + directionDelta;
 
     if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
@@ -830,7 +836,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
-    handleCellInteractionKeydown(event);
+    handleCellInteractionKeydown(event, this.natTableService.keybindings());
   }
 
   protected onCellFocusIn(event: FocusEvent): void {
@@ -865,11 +871,12 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onRowKeydown(event: KeyboardEvent, row: Row<TData>): void {
-    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+    if (event.defaultPrevented) {
       return;
     }
 
-    if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') {
+    const keybindings = this.natTableService.keybindings();
+    if (!matchShortcutValue(event, keybindings.rowActivate)) {
       return;
     }
 

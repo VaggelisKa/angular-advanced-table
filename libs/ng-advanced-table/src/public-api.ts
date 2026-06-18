@@ -40,3 +40,10 @@ export type {
   NatTableUiState,
 } from './lib/components/table/table.types';
 export type * as NatTableA11y from './lib/nat-table-a11y-public';
+export { NAT_TABLE_KEYBINDINGS } from './lib/components/table/table.types';
+export type {
+  NatTableShortcut,
+  NatTableShortcutValue,
+  NatTableKeybindings,
+} from './lib/components/table/table.types';
+
