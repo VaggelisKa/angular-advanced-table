@@ -375,6 +375,27 @@ Pinned column offsets are based on measured header widths after layout. Before a
 - `size` for fixed-width columns.
 - `column.getSize()` for `maxSize` columns, intrinsic columns, SSR, jsdom, and the first paint before `ResizeObserver` reports real widths.
 
+### Column resizing
+
+Resizing is **opt-in per column**, not table-wide. Set `enableResizing: true` on the columns that should expose a drag handle and leave it off (the default) for columns that should stay fixed — the same per-column model as sorting, filtering, and pinning.
+
+```ts
+const columns: ColumnDef<Row>[] = [
+  // resizable: handle + keyboard resize, bounded by minSize/maxSize
+  { accessorKey: 'name', header: 'Name', enableResizing: true, minSize: 120, maxSize: 320, meta: { label: 'Name' } },
+  // not resizable (no handle)
+  { accessorKey: 'id', header: 'ID', meta: { label: 'ID' } },
+];
+```
+
+Configure the width model with `columnSizingMode` on `<nat-table-surface>`:
+
+- `columnSizingMode="fill"` (the default) stretches columns to fill the container. Resizing a column is pixel-exact: the other columns reflow to absorb the change (down to their `minSize`), so the table stays exactly as wide as its region — it never overflows or leaves a gap, and a column can only grow into the space the others can yield.
+- `columnSizingMode="fixed"` makes column widths authoritative (`table-layout: fixed`) and scrolls the region horizontally once the columns overflow. Use it when columns should keep exact pixel widths independent of the container.
+- `columnResizeMode="onEnd"` (the default) commits the new width on pointer release; `"onChange"` updates live during the drag.
+
+`minSize`/`maxSize` bound how far a column can be resized in either mode, and a drag is additionally capped to the visible region so the table never overflows. Width changes flow through the `columnSizing` state slice and the granular `columnSizingChange` output, and are mirrored to body cells so headers and cells stay aligned. Keyboard resizing (RTL-aware) lives on the column header — there is no separate tab stop: focus a header, then `Alt`+Left/Right Arrow to step the width and `Alt`+Home/End to jump to its min/max bound.
+
 ### Behavior rules
 
 - A slice is controlled **only** when its property is _present_ in `state`, even if the value is an empty array or empty record. Omitted properties stay uncontrolled and are managed internally.
