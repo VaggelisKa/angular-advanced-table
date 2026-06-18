@@ -28,6 +28,8 @@ export interface TableColumnSizingState {
   hasMaxSize: boolean;
 }
 
+export type ColumnReorderKeyboardDirection = -1 | 1;
+
 export function getColumnDefLeafIds<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
 ): string[] {
@@ -226,6 +228,36 @@ export function moveItemInArrayCopy(
 
   nextValues.splice(toIndex, 0, movedValue);
   return nextValues;
+}
+
+export function getColumnReorderKeyboardDirection(
+  event: KeyboardEvent,
+): ColumnReorderKeyboardDirection | null {
+  // `KeyboardEvent.key` uses platform-neutral arrow names. Only Ctrl+Shift+Arrow reorders.
+  if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey) {
+    return null;
+  }
+
+  if (event.key === 'ArrowLeft') {
+    return -1;
+  }
+
+  if (event.key === 'ArrowRight') {
+    return 1;
+  }
+
+  return null;
+}
+
+export function getColumnMoveTargetIndex(
+  columnIds: readonly string[],
+  columnId: string,
+  directionDelta: ColumnReorderKeyboardDirection,
+): number | null {
+  const currentIndex = columnIds.indexOf(columnId);
+  const nextIndex = currentIndex + directionDelta;
+
+  return currentIndex !== -1 && nextIndex >= 0 && nextIndex < columnIds.length ? nextIndex : null;
 }
 
 export function replaceIdsInSlots(

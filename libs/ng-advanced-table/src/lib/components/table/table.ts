@@ -94,6 +94,8 @@ import {
   normalizeColumnPinning,
   normalizeDataStatus,
   moveItemInArrayCopy,
+  getColumnReorderKeyboardDirection,
+  getColumnMoveTargetIndex,
   replaceIdsInSlots,
   hasSameStringOrder,
   matchesFilterQuery,
@@ -108,12 +110,12 @@ import {
   serializeSorting,
   serializeColumnFilters,
   hasSameColumnVisibility,
+  type ColumnReorderKeyboardDirection,
   type TableColumnAccessibilityState,
   type TableColumnSizingState,
 } from './table-utils';
 
 type ColumnReorderZone = 'left' | 'center' | 'right';
-type ColumnReorderKeyboardDirection = -1 | 1;
 
 interface TableColumnRenderState {
   label: string;
@@ -170,25 +172,6 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   pagination: DEFAULT_PAGINATION,
 };
 let nextTableId = 0;
-
-const getColumnReorderKeyboardDirection = (
-  event: KeyboardEvent,
-): ColumnReorderKeyboardDirection | null => {
-  // `KeyboardEvent.key` uses platform-neutral arrow names. Only Ctrl+Shift+Arrow reorders.
-  if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey) {
-    return null;
-  }
-
-  if (event.key === 'ArrowLeft') {
-    return -1;
-  }
-
-  if (event.key === 'ArrowRight') {
-    return 1;
-  }
-
-  return null;
-};
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   const query = String(filterValue ?? '')
@@ -1074,10 +1057,8 @@ export class NatTable<TData extends RowData = RowData> {
     if (!zone) return false;
 
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
-    const currentIndex = visibleZoneColumnIds.indexOf(columnId);
-    const nextIndex = currentIndex + directionDelta;
 
-    return currentIndex !== -1 && nextIndex >= 0 && nextIndex < visibleZoneColumnIds.length;
+    return getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta) !== null;
   }
 
   private moveColumnByDelta(
@@ -1090,9 +1071,9 @@ export class NatTable<TData extends RowData = RowData> {
 
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(columnId);
-    const nextIndex = currentIndex + directionDelta;
+    const nextIndex = getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta);
 
-    if (currentIndex === -1 || nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
+    if (nextIndex === null) return;
 
     const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
 
