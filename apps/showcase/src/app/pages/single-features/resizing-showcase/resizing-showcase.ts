@@ -69,7 +69,7 @@ export class ResizingShowcasePage {
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
       cell: (context: CellContext<DemoItem, unknown>) =>
-        `$${(context.getValue() as number).toLocaleString()}`,
+        `$${context.getValue<number>().toLocaleString()}`,
     },
   ];
 

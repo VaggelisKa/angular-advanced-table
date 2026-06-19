@@ -242,6 +242,7 @@ A visible `caption` takes over the rendered grid label, while `accessibleName` r
 | `(columnVisibilityChange)` | `VisibilityState`                 | Emits when only the column visibility slice actually changed                                                                                         |
 | `(columnOrderChange)`      | `ColumnOrderState`                | Emits when only the column order slice actually changed                                                                                              |
 | `(columnPinningChange)`    | `ColumnPinningState`              | Emits when only the column pinning slice actually changed                                                                                            |
+| `(columnSizingChange)`     | `ColumnSizingState`               | Emits when only the column sizing slice actually changed                                                                                             |
 | `(paginationChange)`       | `PaginationState`                 | Emits when only the pagination slice actually changed                                                                                                |
 | `(rowSelectionChange)`     | `RowSelectionState`               | Emits when only the row selection slice actually changed                                                                                             |
 | `(rowActivate)`            | `NatTableRowActivateEvent<TData>` | Emits when a body row is activated through a primary click or `Enter` / `Space` key press; activations from interactive cell descendants are ignored |
@@ -319,6 +320,7 @@ Use `(stateChange)` when you need a complete-state snapshot for logging, persist
 | `columnVisibility` | Visibility map for hideable columns                                                                                                                                                                             |
 | `columnOrder`      | Leaf-column order                                                                                                                                                                                               |
 | `columnPinning`    | Left and right pinned column ids                                                                                                                                                                                |
+| `columnSizing`     | Per-column pixel widths keyed by column id; populated as columns with `enableResizing` are resized                                                                                                              |
 | `rowSelection`     | Selected row ids keyed by `getRowId` as `Record<string, boolean>`; only populated when `enableRowSelection` is `true`                                                                                           |
 | `pagination`       | Page index and page size (still present in `NatTableState` when `enablePagination` is `false`; the client-side pagination row model is off, so only `stateChange` / UI that reads `pagination` will reflect it) |
 
@@ -471,6 +473,7 @@ See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent che
 - `loadingState` — visible message rendered while initial rows are loading
 - `errorState` — visible message rendered when `dataStatus` is `'error'`
 - `reorderKeyboardInstructions` — extra reorder instructions when reordering is enabled
+- `resizeKeyboardInstructions` — keyboard instructions for resizing the focused column (`Alt`+Arrow / `Alt`+Home/End)
 - `tableSummary(...)`
 - `sortingChange(...)`
 - `filteringChange(...)`
@@ -478,6 +481,8 @@ See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent che
 - `pageSizeChange(...)`
 - `pageChange(...)`
 - `columnReorder(...)`
+- `columnResize(...)`
+- `selectionChange(...)`
 
 ```ts
 import type { NatTableAccessibilityText } from 'ng-advanced-table';
