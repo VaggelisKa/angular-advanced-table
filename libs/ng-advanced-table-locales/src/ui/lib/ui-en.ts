@@ -77,6 +77,13 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
   toolbar: {
     toolbarLabel: 'Table toolbar',
   },
+  selection: {
+    columnLabel: 'Selection',
+    accessibilityLabels: {
+      selectAllAriaLabel: 'Select all rows',
+      selectRowAriaLabel: ({ rowId }) => `Select row ${rowId}`,
+    },
+  },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };
 

@@ -40,6 +40,7 @@ import {
   type PaginationState,
   type Row,
   type RowData,
+  type RowSelectionState,
   type SortingState,
   type Table,
   type Updater,
@@ -73,6 +74,7 @@ import type {
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,
   NatTableAccessibilityPaginationAnnouncementContext,
+  NatTableAccessibilitySelectionAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
   NatTableAccessibilityText,
@@ -112,6 +114,8 @@ import {
   isPrimitiveHeaderContent,
   serializeSorting,
   serializeColumnFilters,
+  normalizeRowSelection,
+  serializeRowSelection,
   hasSameColumnVisibility,
   type TableColumnAccessibilityState,
   type TableColumnSizingState,
@@ -148,6 +152,8 @@ interface TableAccessibilitySnapshot {
   sortingKey: string;
   globalFilter: string;
   columnFiltersKey: string;
+  rowSelectionKey: string;
+  selectedRowCount: number;
   pagination: PaginationState;
   pageCount: number;
   visibleRows: number;
@@ -171,6 +177,7 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnVisibility: {},
   columnOrder: DEFAULT_COLUMN_ORDER,
   columnPinning: EMPTY_COLUMN_PINNING,
+  rowSelection: {},
   pagination: DEFAULT_PAGINATION,
 };
 let nextTableId = 0;
@@ -224,6 +231,10 @@ export class NatTable<TData extends RowData = RowData> {
   readonly dataStatus = input<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   /** Optional error payload passed through to `natTableError` templates. */
   readonly error = input<unknown>(null);
+  /** Enables row selection (`aria-selected`, selection state, companion checkbox column). */
+  readonly enableRowSelection = input(false, { transform: booleanAttribute });
+  /** Selection cardinality when enabled: `'multiple'` (default) or `'single'`. */
+  readonly selectionMode = input<'single' | 'multiple'>('multiple');
   /** Optional override for the global filter implementation. */
   readonly globalFilterFn = input<FilterFn<TData>>();
   /** Optional stable row id resolver used for selection, pinning, and events. */
@@ -268,6 +279,9 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalColumnOrder = signal<ColumnOrderState>(DEFAULT_TABLE_STATE.columnOrder);
   private readonly internalColumnPinning = signal<ColumnPinningState>(
     DEFAULT_TABLE_STATE.columnPinning,
+  );
+  private readonly internalRowSelection = signal<RowSelectionState>(
+    DEFAULT_TABLE_STATE.rowSelection,
   );
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   private readonly hasSeededInitialState = signal(false);
@@ -359,8 +373,23 @@ export class NatTable<TData extends RowData = RowData> {
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnOrder: this.resolvedColumnOrder(),
     columnPinning: this.resolvedColumnPinning(),
+    rowSelection: normalizeRowSelection(
+      this.state().rowSelection ?? this.internalRowSelection(),
+      this.selectionMode() === 'multiple',
+    ),
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
+  /**
+   * Grid-level `aria-multiselectable` for row selection. The `ngGrid` directive
+   * only manages this attribute for its own cell-selection model
+   * (`enableSelection`), which this table does not use — enabling it would turn
+   * on focus-follows cell selection that conflicts with TanStack row selection.
+   * The directive's host binding clobbers template bindings for the attribute,
+   * so the value is written imperatively after render (see constructor).
+   */
+  private readonly ariaMultiSelectable = computed(
+    () => this.enableRowSelection() && this.selectionMode() === 'multiple',
+  );
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   protected readonly visibleRowCount = computed(() => this.bodyRows().length);
   protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
@@ -488,6 +517,8 @@ export class NatTable<TData extends RowData = RowData> {
       this.enableMultiSort() && (event as { shiftKey?: boolean })?.shiftKey === true,
     enableColumnPinning: true,
     enableColumnOrdering: true,
+    enableRowSelection: this.enableRowSelection(),
+    enableMultiRowSelection: this.selectionMode() === 'multiple',
     meta: {
       natTableLocaleId: this.localeId(),
     },
@@ -507,6 +538,7 @@ export class NatTable<TData extends RowData = RowData> {
     onColumnVisibilityChange: (updater) => this.updateState({ columnVisibility: updater }),
     onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
     onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
+    onRowSelectionChange: (updater) => this.updateState({ rowSelection: updater }),
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
   })) as Table<TData>;
   private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
@@ -689,6 +721,12 @@ export class NatTable<TData extends RowData = RowData> {
       this.internalColumnPinning.set(
         initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning,
       );
+      this.internalRowSelection.set(
+        normalizeRowSelection(
+          initialState.rowSelection ?? DEFAULT_TABLE_STATE.rowSelection,
+          this.selectionMode() === 'multiple',
+        ),
+      );
       this.internalPagination.set({
         pageIndex: initialState.pagination?.pageIndex ?? DEFAULT_PAGINATION.pageIndex,
         pageSize: initialState.pagination?.pageSize ?? DEFAULT_PAGINATION.pageSize,
@@ -744,6 +782,20 @@ export class NatTable<TData extends RowData = RowData> {
     afterRenderEffect(() => {
       this.visibleColumnIds();
       this.reattachHeaderObservers();
+    });
+    afterRenderEffect(() => {
+      const multiSelectable = this.ariaMultiSelectable();
+      const table = this.tableRegionRef()?.nativeElement.querySelector('table');
+
+      if (!table) {
+        return;
+      }
+
+      if (multiSelectable) {
+        table.setAttribute('aria-multiselectable', 'true');
+      } else {
+        table.removeAttribute('aria-multiselectable');
+      }
     });
 
     this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
@@ -860,6 +912,10 @@ export class NatTable<TData extends RowData = RowData> {
     this.rowRendered.emit(event);
   }
 
+  protected rowAriaSelected(row: Row<TData>): boolean | null {
+    return this.enableRowSelection() ? row.getIsSelected() : null;
+  }
+
   protected onRowClick(event: MouseEvent, row: Row<TData>): void {
     if (event.button !== 0 || event.defaultPrevented) {
       return;
@@ -930,6 +986,10 @@ export class NatTable<TData extends RowData = RowData> {
         this.resolveUpdater(currentState.columnPinning, updaters.columnPinning),
         this.allLeafColumnIds(),
       ),
+      rowSelection: normalizeRowSelection(
+        this.resolveUpdater(currentState.rowSelection, updaters.rowSelection),
+        this.selectionMode() === 'multiple',
+      ),
       pagination: this.resolveUpdater(currentState.pagination, updaters.pagination),
     };
 
@@ -964,6 +1024,10 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (controlled.columnPinning === undefined) {
       this.internalColumnPinning.set(nextState.columnPinning);
+    }
+
+    if (controlled.rowSelection === undefined) {
+      this.internalRowSelection.set(nextState.rowSelection);
     }
 
     if (controlled.pagination === undefined) {
@@ -1230,6 +1294,8 @@ export class NatTable<TData extends RowData = RowData> {
       sortingKey: serializeSorting(state.sorting),
       globalFilter: state.globalFilter.trim(),
       columnFiltersKey: serializeColumnFilters(state.columnFilters),
+      rowSelectionKey: serializeRowSelection(state.rowSelection),
+      selectedRowCount: Object.values(state.rowSelection).filter(Boolean).length,
       pagination: {
         ...state.pagination,
         pageIndex: this.renderedPageIndex(),
@@ -1266,6 +1332,10 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (!hasSameColumnVisibility(previous.columns, next.columns)) {
       return this.describeColumnVisibilityChange(previous.columns, next.columns);
+    }
+
+    if (previous.rowSelectionKey !== next.rowSelectionKey) {
+      return this.describeSelectionChange(next);
     }
 
     if (previous.pagination.pageSize !== next.pagination.pageSize) {
@@ -1381,6 +1451,20 @@ export class NatTable<TData extends RowData = RowData> {
     return '';
   }
 
+  private describeSelectionChange(snapshot: TableAccessibilitySnapshot): string {
+    const formatter = this.resolvedAccessibilityText().selectionChange;
+    const count = snapshot.selectedRowCount;
+    const total = snapshot.totalRows;
+    const context: NatTableAccessibilitySelectionAnnouncementContext = {
+      selectedCountValue: count,
+      selectedCountText: this.formatAccessibilityNumber(count),
+      totalRowsValue: total,
+      totalRowsText: this.formatAccessibilityNumber(total),
+    };
+
+    return formatter?.(context) ?? '';
+  }
+
   private describePageSizeChange(snapshot: TableAccessibilitySnapshot): string {
     const formatter = this.resolvedAccessibilityText().pageSizeChange;
     const context = this.getPaginationAnnouncementContext(snapshot);
@@ -1458,3 +1542,5 @@ export class NatTable<TData extends RowData = RowData> {
     }
   }
 }
+
+
