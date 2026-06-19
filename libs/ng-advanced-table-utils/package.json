@@ -24,12 +24,12 @@
     "tanstack-table"
   ],
   "peerDependencies": {
-    "@angular/core": "^22.0.2",
-    "@tanstack/angular-table": "^8.21.4"
+    "@angular/core": "catalog:peers",
+    "@tanstack/angular-table": "catalog:peers"
   },
   "dependencies": {
     "ng-advanced-table-locales": "*",
-    "tslib": "^2.8.1"
+    "tslib": "catalog:shared"
   },
   "sideEffects": false
 }

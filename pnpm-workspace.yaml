@@ -10,6 +10,10 @@ nodeLinker: hoisted
 # `pnpm nx ...`) use the already-installed deps instead of triggering a
 # redundant reinstall on each invocation.
 verifyDepsBeforeRun: false
+# pnpm 11 ignores the .npmrc `link-workspace-packages` key, so it is set here
+# too. Links the internal `ng-advanced-table-locales: "*"` dep to local source
+# instead of resolving the published tarball during re-resolution.
+linkWorkspacePackages: true
 catalogs:
   # runtime: Angular + table/reactivity packages
   frontend:
@@ -23,6 +27,15 @@ catalogs:
     '@angular/router': '22.0.2'
     '@tanstack/angular-table': '^8.21.4'
     rxjs: '~7.8.2'
+  # published peer ranges for the libs. Decoupled from `frontend` so the app
+  # pins exact versions while published tarballs keep caret ranges (pnpm
+  # rewrites catalog: refs to these literals at publish time).
+  peers:
+    '@angular/aria': '^22.0.2'
+    '@angular/cdk': '^22.0.2'
+    '@angular/common': '^22.0.2'
+    '@angular/core': '^22.0.2'
+    '@tanstack/angular-table': '^8.21.4'
   # dev: Angular build/CLI, Nx Angular plugin, packaging, test runners
   frontend-dev:
     '@angular/build': '22.0.3'
