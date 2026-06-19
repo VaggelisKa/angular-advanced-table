@@ -277,4 +277,35 @@ export function validateKeybindings(bindings: Required<NatTableKeybindings>): st
   return warnings;
 }
 
+/** A compiled, functional keyboard shortcuts helper mapping KeyboardEvents to actions. */
+export interface NatTableKeyboard {
+  cellInteraction: {
+    enter: (event: KeyboardEvent) => boolean;
+    exit: (event: KeyboardEvent) => boolean;
+    next: (event: KeyboardEvent) => boolean;
+    previous: (event: KeyboardEvent) => boolean;
+  };
+  rowActivate: (event: KeyboardEvent) => boolean;
+  columnReorderDirection: (event: KeyboardEvent) => -1 | 1 | null;
+}
+
+/** Compiles a functional keyboard shortcuts helper from a keybindings configuration. */
+export function createNatTableKeyboard(keybindings: Required<NatTableKeybindings>): NatTableKeyboard {
+  return {
+    cellInteraction: {
+      enter: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellEnterControl),
+      exit: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellExitControl),
+      next: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellTabNextControl),
+      previous: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellTabPrevControl),
+    },
+    rowActivate: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.rowActivate),
+    columnReorderDirection: (event: KeyboardEvent): -1 | 1 | null => {
+      if (matchShortcutValue(event, keybindings.columnReorderLeft)) return -1;
+      if (matchShortcutValue(event, keybindings.columnReorderRight)) return 1;
+      return null;
+    },
+  };
+}
+
+
 

@@ -11,6 +11,7 @@ import {
   areShortcutsEqual,
   areShortcutValuesOverlapping,
   DEFAULT_NAT_TABLE_KEYBINDINGS,
+  createNatTableKeyboard,
   type NatTableShortcut,
   type NatTableKeybindings,
 } from './keybindings';
@@ -301,6 +302,33 @@ describe('NatTable Keybindings Utilities', () => {
       expect(warnings.length).toBe(1);
       expect(warnings[0]).toContain("columnReorderLeft");
       expect(warnings[0]).toContain("columnReorderRight");
+    });
+  });
+
+  describe('createNatTableKeyboard', () => {
+    it('should compile functional helper mapping matching KeyboardEvents', () => {
+      const keyboard = createNatTableKeyboard(DEFAULT_NAT_TABLE_KEYBINDINGS);
+
+      // Test enter
+      const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+      expect(keyboard.cellInteraction.enter(enterEvent)).toBe(true);
+      expect(keyboard.cellInteraction.enter(escapeEvent)).toBe(false);
+
+      // Test exit
+      expect(keyboard.cellInteraction.exit(escapeEvent)).toBe(true);
+
+      // Test rowActivate
+      expect(keyboard.rowActivate(enterEvent)).toBe(true);
+      const spaceEvent = new KeyboardEvent('keydown', { key: ' ' });
+      expect(keyboard.rowActivate(spaceEvent)).toBe(true);
+
+      // Test columnReorderDirection
+      const leftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, shiftKey: true });
+      const rightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, shiftKey: true });
+      expect(keyboard.columnReorderDirection(leftEvent)).toBe(-1);
+      expect(keyboard.columnReorderDirection(rightEvent)).toBe(1);
+      expect(keyboard.columnReorderDirection(enterEvent)).toBeNull();
     });
   });
 });

@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
-import { NAT_TABLE_KEYBINDINGS, mergeNatTableKeybindings } from './keybindings';
+import { NAT_TABLE_KEYBINDINGS, mergeNatTableKeybindings, createNatTableKeyboard } from './keybindings';
 import type {
   NatTableMode,
   NatTableModeConfiguration,
@@ -49,6 +49,10 @@ export class NatTableService<TData extends RowData = RowData> {
         this.globalKeybindings,
       ),
     ),
+  );
+
+  readonly keyboard = computed(() =>
+    createNatTableKeyboard(this.keybindings()),
   );
 
 

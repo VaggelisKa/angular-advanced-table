@@ -24,7 +24,7 @@ export class NatTableStateCell {
   }
 
   protected onKeydown(event: KeyboardEvent): void {
-    handleCellInteractionKeydown(event, this.natTableService.keybindings());
+    handleCellInteractionKeydown(event, this.natTableService.keyboard().cellInteraction);
   }
 
 

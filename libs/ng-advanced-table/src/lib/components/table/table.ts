@@ -819,13 +819,12 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (handleCellInteractionKeydown(event, this.natTableService.keybindings())) return;
+    const keyboard = this.natTableService.keyboard();
 
-    const keybindings = this.natTableService.keybindings();
-    const isReorderLeft = matchShortcutValue(event, keybindings.columnReorderLeft);
-    const isReorderRight = matchShortcutValue(event, keybindings.columnReorderRight);
+    if (handleCellInteractionKeydown(event, keyboard.cellInteraction)) return;
 
-    if (!isReorderLeft && !isReorderRight) return;
+    const directionDelta = keyboard.columnReorderDirection(event);
+    if (directionDelta === null) return;
 
     const zone = this.getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
@@ -833,7 +832,6 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (currentIndex === -1) return;
 
-    const directionDelta = isReorderLeft ? -1 : 1;
     const nextIndex = currentIndex + directionDelta;
 
     if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
@@ -847,7 +845,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
-    handleCellInteractionKeydown(event, this.natTableService.keybindings());
+    handleCellInteractionKeydown(event, this.natTableService.keyboard().cellInteraction);
   }
 
   protected onCellFocusIn(event: FocusEvent): void {
@@ -886,8 +884,7 @@ export class NatTable<TData extends RowData = RowData> {
       return;
     }
 
-    const keybindings = this.natTableService.keybindings();
-    if (!matchShortcutValue(event, keybindings.rowActivate)) {
+    if (!this.natTableService.keyboard().rowActivate(event)) {
       return;
     }
 

@@ -14,8 +14,7 @@
  * arrow-consuming control keep the Enter / Tab / Escape model above.
  */
 
-import { matchShortcutValue } from './keybindings';
-import type { NatTableKeybindings } from './table.types';
+import type { NatTableKeyboard } from './keybindings';
 
 export const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
   'a[href], button, input, select, textarea, summary, [contenteditable="true"], ' +
@@ -45,7 +44,7 @@ const DELEGATED_CONTROL_SELECTOR =
  */
 export const handleCellInteractionKeydown = (
   event: KeyboardEvent,
-  keybindings: Required<NatTableKeybindings>,
+  cellInteraction: NatTableKeyboard['cellInteraction'],
 ): boolean => {
   if (event.defaultPrevented) return false;
 
@@ -57,17 +56,14 @@ export const handleCellInteractionKeydown = (
 
   if (!cell) return false;
 
-  if (matchShortcutValue(event, keybindings.cellEnterControl)) {
+  if (cellInteraction.enter(event)) {
     return enterFirstCellControl(event, cell, target);
   }
-  if (matchShortcutValue(event, keybindings.cellExitControl)) {
+  if (cellInteraction.exit(event)) {
     return escapeBackToCell(event, cell, target);
   }
-  if (
-    matchShortcutValue(event, keybindings.cellTabNextControl) ||
-    matchShortcutValue(event, keybindings.cellTabPrevControl)
-  ) {
-    return tabBetweenCellControls(event, cell, target, keybindings);
+  if (cellInteraction.next(event) || cellInteraction.previous(event)) {
+    return tabBetweenCellControls(event, cell, target, cellInteraction);
   }
 
   return false;
@@ -130,7 +126,7 @@ const tabBetweenCellControls = (
   event: KeyboardEvent,
   cell: HTMLElement,
   target: HTMLElement,
-  keybindings: Required<NatTableKeybindings>,
+  cellInteraction: NatTableKeyboard['cellInteraction'],
 ): boolean => {
   // Tab on the cell itself is not intercepted so focus can leave the grid; Enter is the entry point.
   if (target === cell) return false;
@@ -140,7 +136,7 @@ const tabBetweenCellControls = (
 
   if (index === -1) return false;
 
-  const isPrev = matchShortcutValue(event, keybindings.cellTabPrevControl);
+  const isPrev = cellInteraction.previous(event);
   const nextControl = controls[index + (isPrev ? -1 : 1)];
 
   // Past the first/last control of the cell: let Tab leave the grid.
