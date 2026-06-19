@@ -22,6 +22,9 @@ export type {
   NatTableUtilsNumberFormatter,
 } from './lib/render-metrics/intl';
 export type {
+  NatTableColumnExportOptions,
+  NatTableColumnExportValue,
+  NatTableColumnExportValueContext,
   NatTableColumnMeta,
   NatTableRenderMetricsController,
   NatTableRenderMetricsEvent,

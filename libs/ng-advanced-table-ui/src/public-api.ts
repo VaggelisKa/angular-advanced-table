@@ -10,6 +10,11 @@ export { NatTableToolbar } from './lib/components/table-toolbar/table-toolbar';
 export { NatToolbarGroup } from './lib/components/table-toolbar/toolbar-group/toolbar-group';
 export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item/toolbar-item.directive';
 export { NAT_TOOLBAR_ITEM } from './lib/components/table-toolbar/common/toolbar-tokens.const';
+export { NatTableExportExcel } from './lib/components/table-export-excel/table-export-excel.directive';
+export {
+  NAT_TABLE_EXCEL_EXPORT,
+  provideNatTableExcelExport,
+} from './lib/components/table-export-excel/table-export-excel.provider';
 export { NatTableSelectionCheckbox } from './lib/components/table-selection/table-selection';
 export { withNatTableSelectionColumn } from './lib/components/table-selection/with-table-selection-column';
 export type { NatTableSelectionColumnOptions } from './lib/components/table-selection/common/selection-tokens.type';
@@ -23,6 +28,12 @@ export type {
   NatTableHeaderActionsOptions,
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
+export type {
+  NatTableExcelExportConfig,
+  NatTableExcelExportContext,
+  NatTableExcelExportHandler,
+  NatTableExcelExportProvider,
+} from './lib/components/table-export-excel/table-export-excel.types';
 export type {
   NatToolbarItemPosition,
   NatToolbarItemRef,
@@ -59,6 +70,9 @@ export type {
   NatTableAccessibilityScrollControlPositionContext,
   NatTableAccessibilitySelectionLabels,
   NatTableAccessibilitySelectionRowContext,
+  NatTableColumnExportOptions,
+  NatTableColumnExportValue,
+  NatTableColumnExportValueContext,
   NatTableColumnMoveDirection,
   NatTableColumnMeta,
   NatTableHeaderActionsColumnOptions,

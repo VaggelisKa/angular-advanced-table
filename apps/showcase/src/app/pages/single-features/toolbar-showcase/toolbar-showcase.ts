@@ -17,6 +17,7 @@ import type { NatTableState } from 'ng-advanced-table';
 import {
   NatTableSurface,
   NatTableToolbar,
+  NatTableExportExcel,
   NatToolbarGroup,
   NatToolbarItem,
   withNatTableHeaderActions,
@@ -68,6 +69,7 @@ const FILTER_PRESETS: readonly FilterPreset[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTable,
+    NatTableExportExcel,
     NatTableSurface,
     NatTableToolbar,
     NatToolbarGroup,

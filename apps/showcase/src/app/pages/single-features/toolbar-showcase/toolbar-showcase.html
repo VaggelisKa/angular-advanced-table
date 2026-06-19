@@ -24,9 +24,11 @@
             type="button"
             class="toolbar-button"
             natToolbarItem
+            natTableExportExcel
             natToolbarItemPosition="start"
+            exportFileName="toolbar-demo"
             data-testid="export-button"
-            (click)="recordAction('export-csv')"
+            (click)="recordAction('export-excel')"
           >
             Export
           </button>
