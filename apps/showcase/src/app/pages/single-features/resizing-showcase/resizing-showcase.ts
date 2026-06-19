@@ -106,6 +106,12 @@ export class ResizingShowcasePage {
   // (the library default) to demonstrate the reflow behaviour.
   protected readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
 
+  // Reset only the width slice — spread the rest so any other controlled state
+  // (sorting/filtering/etc.) survives. The button label promises widths only.
+  protected resetWidths(): void {
+    this.tableState.update((state) => ({ ...state, columnSizing: {} }));
+  }
+
   protected toggleResizable(id: string, enabled: boolean): void {
     this.resizableColumnIds.update((current) => {
       const next = new Set(current);
