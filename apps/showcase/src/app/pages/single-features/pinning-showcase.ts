@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { type CellContext, type ColumnDef, type ColumnPinningState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
@@ -28,7 +28,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-pinning-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   template: `
     <div class="showcase-page showcase-container">
@@ -43,11 +42,7 @@ const DEMO_DATA: DemoItem[] = [
         <div class="card">
           <h2 class="card-title">Scrollable Grid with Pinning</h2>
           <nat-table-surface [(state)]="tableState">
-            <nat-table
-              [data]="data"
-              [columns]="columns"
-              accessibleName="Pinning demo table"
-            />
+            <nat-table [data]="data" [columns]="columns" accessibleName="Pinning demo table" />
           </nat-table-surface>
         </div>
 

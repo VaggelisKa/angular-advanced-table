@@ -63,7 +63,7 @@ npm install ng-advanced-table ng-advanced-table-utils @tanstack/angular-table @a
 ## Minimal Example
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -79,7 +79,6 @@ interface MetricRow {
 
 @Component({
   selector: 'app-metric-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatRenderMetricsPanel],
   template: `
     <nat-table

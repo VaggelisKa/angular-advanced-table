@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { type CellContext, type ColumnDef, type ColumnOrderState } from '@tanstack/angular-table';
 import { TitleCasePipe } from '@angular/common';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -29,7 +29,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-reordering-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, TitleCasePipe],
   template: `
     <div class="showcase-page showcase-container">

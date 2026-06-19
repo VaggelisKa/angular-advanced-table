@@ -1,11 +1,7 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type CellContext, type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
-import {
-  NatTableSurface,
-  NatTableService,
-  withNatTableHeaderActions,
-} from 'ng-advanced-table-ui';
+import { NatTableSurface, NatTableService, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 import { TableSearch } from '../../components/table-search/table-search';
 
 interface DemoItem {
@@ -33,7 +29,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-search-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, TableSearch],
   template: `
     <div class="showcase-page showcase-container">
@@ -56,11 +51,7 @@ const DEMO_DATA: DemoItem[] = [
               />
             </div>
 
-            <nat-table
-              [data]="data"
-              [columns]="columns"
-              accessibleName="Search demo table"
-            />
+            <nat-table [data]="data" [columns]="columns" accessibleName="Search demo table" />
           </nat-table-surface>
         </div>
       </div>

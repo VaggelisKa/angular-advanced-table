@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type CellContext, type ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
@@ -28,7 +28,6 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
 
 @Component({
   selector: 'app-sticky-header-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   styles: `
     nat-table-surface {

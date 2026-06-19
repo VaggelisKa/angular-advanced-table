@@ -3,17 +3,14 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "../../",
     "outDir": "../../out-tsc/spec-locales",
     "types": ["vitest/globals"],
     "paths": {
       "ng-advanced-table-locales": [
-        "libs/ng-advanced-table-locales/src/public-api.ts",
-        "dist/libs/ng-advanced-table-locales"
+        "../../libs/ng-advanced-table-locales/src/public-api.ts",
+        "../../dist/libs/ng-advanced-table-locales"
       ],
-      "ng-advanced-table-types": [
-        "libs/ng-advanced-table-types/src/public-api.ts"
-      ]
+      "ng-advanced-table-types": ["../../libs/ng-advanced-table-types/src/public-api.ts"]
     }
   },
   "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]

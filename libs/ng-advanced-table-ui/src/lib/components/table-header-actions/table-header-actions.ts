@@ -1,12 +1,5 @@
 import { OverlayModule, type ConnectedPosition } from '@angular/cdk/overlay';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  viewChild,
-} from '@angular/core';
+import { Component, computed, inject, input, viewChild } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import {
@@ -64,7 +57,6 @@ export interface NatTableHeaderActionsOptions {
 
 @Component({
   selector: 'nat-table-header-actions',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FlexRender, GridCellWidget, Menu, MenuContent, MenuItem, MenuTrigger, OverlayModule],
   templateUrl: './table-header-actions.html',
   styleUrl: './table-header-actions.css',

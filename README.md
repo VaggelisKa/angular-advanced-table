@@ -65,7 +65,7 @@ npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils ng-ad
 ## Quick Start
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -112,7 +112,6 @@ const columns = withNatTableHeaderActions<PositionRow>([
 
 @Component({
   selector: 'app-positions-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTable,
     NatTableColumnVisibility,
@@ -161,7 +160,7 @@ It does not ship search UI, column visibility UI, page-size UI, pager UI, header
 Example, core only:
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -174,7 +173,6 @@ interface ServiceRow {
 
 @Component({
   selector: 'app-service-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable],
   template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Service latency" /> `,
 })
@@ -260,7 +258,7 @@ Most tables should start uncontrolled: omit `[state]`, pass `[initialState]` onl
 Use granular outputs when your application owns one slice. Pass only the slice you control back through `[state]`; omitted properties remain internal:
 
 ```ts
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { type ColumnDef, type ColumnFiltersState } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -273,7 +271,6 @@ interface OrderRow {
 
 @Component({
   selector: 'app-filtered-orders-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable],
   template: `
     <nat-table
@@ -512,7 +509,7 @@ The table's keyboard interactions (such as row activation, column reordering, an
 Use `flexRenderComponent(...)` from `@tanstack/angular-table` when a cell should render an Angular component instead of plain text.
 
 ```ts
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
 import { CustomTradeButton } from './custom-trade-button';
@@ -524,7 +521,6 @@ interface PositionRow {
 
 @Component({
   selector: 'app-position-actions-cell',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CustomTradeButton],
   template: `
     <custom-trade-button
@@ -583,12 +579,11 @@ Most consumers should keep existing design-system or app components and adapt th
 When the focusable element is inside the custom component, the component itself owns the grid widget marker:
 
 ```ts
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
 
 @Component({
   selector: 'custom-pay-button',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [GridCellWidget],
   template: `
     <button
@@ -647,7 +642,7 @@ Enable it with two core inputs plus the column helper:
 | `selectionMode`      | `'multiple'` | `'multiple'` for many rows, `'single'` to keep at most one selected   |
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type RowSelectionState } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -676,7 +671,6 @@ const columns = withNatTableSelectionColumn<ServiceRow>([
 
 @Component({
   selector: 'app-selectable-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (rowSelectionChange)="onSelectionChange($event)">

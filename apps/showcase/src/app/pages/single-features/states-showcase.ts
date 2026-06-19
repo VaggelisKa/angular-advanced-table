@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import {
   NAT_TABLE_DATA_STATUS,
   NatTable,
@@ -36,7 +29,6 @@ const ERROR_RETRY_DELAY_MS = 900;
 
 @Component({
   selector: 'app-states-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTable,
     NatTableSurface,

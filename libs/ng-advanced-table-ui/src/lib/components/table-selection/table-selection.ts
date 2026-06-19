@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import type { Row, RowData, Table } from '@tanstack/angular-table';
 
 import type { NatTableAccessibilitySelectionLabels } from '../../shared/table-ui.types';
@@ -18,7 +18,6 @@ import {
  */
 @Component({
   selector: 'nat-table-selection-checkbox',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-selection.html',
   styleUrl: './table-selection.css',
 })

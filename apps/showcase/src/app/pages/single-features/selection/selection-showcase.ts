@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, linkedSignal, signal } from '@angular/core';
+import { Component, computed, linkedSignal, signal } from '@angular/core';
 import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
@@ -39,7 +39,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-selection-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTableToolbar, NatToolbarItem],
   templateUrl: './selection-showcase.html',
 })

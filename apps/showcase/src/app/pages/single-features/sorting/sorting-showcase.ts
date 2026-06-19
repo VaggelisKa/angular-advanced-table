@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
@@ -29,7 +29,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-sorting-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   templateUrl: './sorting-showcase.html',
 })

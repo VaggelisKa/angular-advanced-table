@@ -1,12 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  input,
-  output,
-} from '@angular/core';
+import { booleanAttribute, Component, effect, inject, input, output } from '@angular/core';
 import type {
   ColumnFiltersState,
   ColumnOrderState,
@@ -28,7 +20,6 @@ import {
 
 @Component({
   selector: 'nat-table-surface',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<div class="surface">
     <ng-content name="table-pager" />
 
