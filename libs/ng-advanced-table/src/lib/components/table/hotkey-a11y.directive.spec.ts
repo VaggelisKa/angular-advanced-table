@@ -117,7 +117,7 @@ describe('NatTableHotkeyA11y', () => {
     });
 
     it('should update keybindings dynamically when service keybindings change', async () => {
-      service.tableKeybindings.set({ rowActivate: 'Ctrl+Enter' });
+      service.surfaceKeybindings.set({ rowActivate: 'Ctrl+Enter' });
       fixture.detectChanges();
       await fixture.whenStable();
 

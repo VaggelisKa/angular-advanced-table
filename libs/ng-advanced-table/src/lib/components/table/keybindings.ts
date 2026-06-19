@@ -150,39 +150,25 @@ export function matchShortcutValue(
   return matchShortcut(event, value);
 }
 
-/** Merges a local configuration with service/default configurations. */
+/** Merges multiple keybindings configurations in priority order, falling back to defaults. */
 export function mergeNatTableKeybindings(
-  local: NatTableKeybindings,
-  service: NatTableKeybindings,
+  ...configs: NatTableKeybindings[]
 ): Required<NatTableKeybindings> {
-  return {
-    rowActivate:
-      local.rowActivate ?? service.rowActivate ?? DEFAULT_NAT_TABLE_KEYBINDINGS.rowActivate,
-    columnReorderLeft:
-      local.columnReorderLeft ??
-      service.columnReorderLeft ??
-      DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderLeft,
-    columnReorderRight:
-      local.columnReorderRight ??
-      service.columnReorderRight ??
-      DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderRight,
-    cellEnterControl:
-      local.cellEnterControl ??
-      service.cellEnterControl ??
-      DEFAULT_NAT_TABLE_KEYBINDINGS.cellEnterControl,
-    cellExitControl:
-      local.cellExitControl ??
-      service.cellExitControl ??
-      DEFAULT_NAT_TABLE_KEYBINDINGS.cellExitControl,
-    cellTabNextControl:
-      local.cellTabNextControl ??
-      service.cellTabNextControl ??
-      DEFAULT_NAT_TABLE_KEYBINDINGS.cellTabNextControl,
-    cellTabPrevControl:
-      local.cellTabPrevControl ??
-      service.cellTabPrevControl ??
-      DEFAULT_NAT_TABLE_KEYBINDINGS.cellTabPrevControl,
-  };
+  const keys = Object.keys(DEFAULT_NAT_TABLE_KEYBINDINGS) as (keyof NatTableKeybindings)[];
+  const merged = {} as Required<NatTableKeybindings>;
+
+  for (const key of keys) {
+    let value: NatTableShortcutValue | undefined;
+    for (const config of configs) {
+      if (config && config[key] !== undefined) {
+        value = config[key];
+        break;
+      }
+    }
+    merged[key] = value ?? DEFAULT_NAT_TABLE_KEYBINDINGS[key];
+  }
+
+  return merged;
 }
 
 /** Serializes a keybinding shortcut value to a string representation suitable for ARIA attributes. */

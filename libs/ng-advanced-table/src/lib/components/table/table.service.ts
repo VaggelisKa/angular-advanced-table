@@ -39,15 +39,11 @@ export class NatTableService<TData extends RowData = RowData> {
 
   private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
   readonly surfaceKeybindings = signal<NatTableKeybindings>({});
-  readonly tableKeybindings = signal<NatTableKeybindings>({});
 
   readonly keybindings = computed(() =>
     mergeNatTableKeybindings(
-      this.tableKeybindings(),
-      mergeNatTableKeybindings(
-        this.surfaceKeybindings(),
-        this.globalKeybindings,
-      ),
+      this.surfaceKeybindings(),
+      this.globalKeybindings,
     ),
   );
 

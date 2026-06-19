@@ -230,8 +230,7 @@ export class NatTable<TData extends RowData = RowData> {
   readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
   readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
-  /** Optional overrides for keyboard interaction shortcuts. */
-  readonly keybindings = input<NatTableKeybindings>({});
+
 
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
   readonly rowRendered = output<NatTableRowRenderedEvent>();
@@ -650,9 +649,7 @@ export class NatTable<TData extends RowData = RowData> {
   constructor() {
     this.natTableService.setController(this as unknown as NatTableUiController<any>);
 
-    effect(() => {
-      this.natTableService.tableKeybindings.set(this.keybindings());
-    });
+
 
     effect(() => {
       const bindings = this.natTableService.keybindings();
