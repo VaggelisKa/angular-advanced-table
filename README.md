@@ -6,12 +6,12 @@ Signals-first Nx monorepo for composable Angular TanStack Table primitives.
 
 This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules. The `apps/showcase` project is the demo app, and publishable packages live under `libs/*`.
 
-| Package                     | Use it for                                                          | Main exports                                                                                                                                                                                                                                |
-| --------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`         | Core table primitive                                                | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `NAT_TABLE_DATA_STATUS`                                                                                                                                                                  |
-| `ng-advanced-table-ui`      | Optional controls, header actions, row selection, and table actions | `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `NatTableExportExcel`, `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `provideNatTableExcelExport(...)` |
-| `ng-advanced-table-utils`   | Optional render-metrics tooling                                     | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                                                                                             |
-| `ng-advanced-table-locales` | Built-in locale registry                                            | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                                                                                                          |
+| Package                     | Use it for                                                          | Main exports                                                                                                                                                                                                                      |
+| --------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ng-advanced-table`         | Core table primitive                                                | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `NAT_TABLE_DATA_STATUS`                                                                                                                                                        |
+| `ng-advanced-table-ui`      | Optional controls, header actions, row selection, and table actions | `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `NatTableExport`, `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `provideNatTableExport(...)` |
+| `ng-advanced-table-utils`   | Optional render-metrics tooling                                     | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                                                                                   |
+| `ng-advanced-table-locales` | Built-in locale registry                                            | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                                                                                                |
 
 The workspace keeps shared table contracts aligned through the private `ng-advanced-table-types` library. Consumers should import public contracts from published packages only; prefer `ng-advanced-table` for `NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` when column definitions or state move across package boundaries. The UI and utils packages keep compatibility exports for consumers already importing from those entry points.
 
@@ -752,8 +752,8 @@ Example, add stock controls around an existing table:
 
 UI exports:
 
-- Components and directives: `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`, `NatTableExportExcel`, `NatTableSelectionCheckbox`
-- Helpers and contracts: `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `provideNatTableExcelExport(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSelectionColumnOptions`, `NatTableExcelExportConfig`, `NatTableExcelExportContext`, `NatTableExcelExportHandler`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
+- Components and directives: `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`, `NatTableExport`, `NatTableSelectionCheckbox`
+- Helpers and contracts: `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `provideNatTableExport(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSelectionColumnOptions`, `NatTableExportCellValue`, `NatTableExportConfig`, `NatTableExportConfigFactory`, `NatTableExportContext`, `NatTableExportData`, `NatTableExportDataColumn`, `NatTableExportDataRow`, `NatTableExportHandler`, `NatTableExportProvider`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionMoveContext`, `NatTableAccessibilityHeaderActionLabels`, `NatTableColumnMoveDirection`
 
@@ -764,7 +764,7 @@ UI exports:
 | `NatTablePageSize`                 | Chip-based page-size switcher                                             | `for`, `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels`                                                    |
 | `NatTablePager`                    | Previous/next pagination control                                          | `for`, `groupAriaLabel`, `accessibilityLabels`                                                                       |
 | `NatTableScrollControl`            | Horizontal scroll buttons and range control                               | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`                                                         |
-| `NatTableExportExcel`              | Host directive that exports table data to an Excel workbook               | `for`, `exportFileName`, `exportHandler`, `trigger(...)`, `meta.export`                                              |
+| `NatTableExport`                   | Host directive that exports table data to CSV or a custom handler         | `for`, `exportFileName`, `exportHandler`, `trigger(...)`, `meta.export`                                              |
 | `withNatTableHeaderActions(...)`   | Wraps header content with a built-in sort control and column actions menu | `sortIndicator`, `enableColumnPinActions`, `enableColumnReorderActions`, `accessibilityLabels`, `meta.headerActions` |
 | `withNatTableSelectionColumn(...)` | Prepends an accessible select-all and per-row checkbox column             | `label`, `size`, `enablePinning`, `selectAllAriaLabel`, `selectRowAriaLabel`                                         |
 
@@ -785,7 +785,7 @@ Notes:
 - `NatTableScrollControl` binds to the controller's `tableScrollContainer` when available and falls back to the rendered table's parent element.
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
 - `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
-- `NatTableExportExcel` is a Table Action directive. It resolves the same controller as companion controls, exports all client-held rows by default, includes visible exportable leaf columns, and can delegate to app-provided handlers through `exportHandler` or `provideNatTableExcelExport(...)`.
+- `NatTableExport` is a Table Action directive. It resolves the same controller as companion controls, exports all client-held rows to CSV by default, includes visible exportable leaf columns, and can delegate to app-provided handlers through `exportHandler` or `provideNatTableExport(...)`.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting, pinning, or opt-in menu-based reordering. The compact three-dot menu includes left/right pin actions when `enableColumnPinActions` is not disabled and pinning is available, and Move left/Move right actions when `enableColumnReorderActions` is enabled and the column can reorder inside its current pinned region.
 - Set `column.meta.hiddenHeaderLabel` to visually hide a redundant header title while keeping that label available to assistive technology; wrapped header actions keep their controls visible.
 - Applying `withNatTableHeaderActions(...)` repeatedly is safe. If a reactive column builder receives already-wrapped columns, the helper updates the wrapper options instead of nesting another header action surface.
@@ -793,12 +793,12 @@ Notes:
 - When composing with column helpers that add or prepend columns, apply those helpers first and then call `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
 - `withNatTableSelectionColumn(...)` prepends a leading checkbox column (select-all header with an indeterminate partial state in multiple mode, plus per-row checkboxes) and renders the internal `NatTableSelectionCheckbox`. Enable selection on the core table with `[enableRowSelection]="true"`, and compose it before `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withNatTableSelectionColumn(columns), options)`. See [Row Selection](#row-selection) for the full guide.
 
-### Excel Export
+### Table Data Export
 
-Use `NatTableExportExcel` on a button or other interactive host. It composes with `natToolbarItem` but does not require a toolbar:
+Use `NatTableExport` on a button or other interactive host. It composes with `natToolbarItem` but does not require a toolbar:
 
 ```html
-<button natToolbarItem natTableExportExcel exportFileName="orders.xlsx">Export</button>
+<button natToolbarItem natTableExport exportFileName="orders">Export</button>
 ```
 
 For custom elements that emit a custom activation event instead of a DOM `click`, reference the directive and call `trigger(...)` from that event:
@@ -806,21 +806,21 @@ For custom elements that emit a custom activation event instead of a DOM `click`
 ```html
 <my-custom-button
   natToolbarItem
-  natTableExportExcel
-  #excelExport="natTableExportExcel"
-  exportFileName="orders.xlsx"
-  (pressed)="excelExport.trigger($event)"
+  natTableExport
+  #tableExport="natTableExport"
+  exportFileName="orders"
+  (pressed)="tableExport.trigger($event)"
 >
   Export
 </my-custom-button>
 ```
 
-By default it creates a client-side `.xlsx` file with all rows currently held by the table's client data, using visible exportable leaf columns in the current column order. Accessor columns export their raw values by default; display columns opt out unless `meta.export.enabled` is set.
+By default it creates a client-side `.csv` file. It exports all rows currently held by the table's client data, using visible exportable leaf columns in the current column order. Accessor columns export their raw values by default; display columns opt out unless `meta.export.enabled` is set. `meta.export.value` can return `null` or `undefined` to intentionally leave a cell blank.
 
 Replace the operation per button:
 
 ```ts
-readonly exportHandler: NatTableExcelExportHandler<OrderRow> = async (context) => {
+readonly exportHandler: NatTableExportHandler<OrderRow> = async (context) => {
   await this.api.exportOrders(context);
 };
 ```
@@ -829,18 +829,45 @@ or app-wide:
 
 ```ts
 providers: [
-  provideNatTableExcelExport({
+  provideNatTableExport({
     handler: async (context) => exportThroughApi(context),
   }),
 ];
 ```
 
-Custom handlers replace the export operation. Call `context.export()` when a custom handler needs to delegate back to the client-side export.
+If the app-wide handler needs injected services, pass a factory:
 
 ```ts
-readonly exportHandler: NatTableExcelExportHandler<OrderRow> = async (context) => {
+import { inject } from '@angular/core';
+
+providers: [
+  provideNatTableExport<OrderRow>(() => {
+    const exportApi = inject(OrderExportApi);
+
+    return {
+      handler: (context) => exportApi.exportOrders(context),
+    };
+  }),
+];
+```
+
+Custom handlers replace the export operation. Call `context.getData()` to receive normalized column and row values, or call `context.exportCsv()` when a custom handler needs to delegate back to the client-side CSV export.
+
+```ts
+readonly exportHandler: NatTableExportHandler<OrderRow> = async (context) => {
   await this.auditLog.recordExport(context.fileName);
-  await context.export();
+  await context.exportCsv();
+};
+```
+
+If an application wants Excel output, provide a custom handler that sends the normalized data to a backend or passes it to the application's workbook generator:
+
+```ts
+readonly exportHandler: NatTableExportHandler<OrderRow> = async (context) => {
+  await this.orderExportApi.exportExcel({
+    fileName: `${context.fileName}.xlsx`,
+    data: context.getData(),
+  });
 };
 ```
 

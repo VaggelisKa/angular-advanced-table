@@ -10,11 +10,11 @@ export { NatTableToolbar } from './lib/components/table-toolbar/table-toolbar';
 export { NatToolbarGroup } from './lib/components/table-toolbar/toolbar-group/toolbar-group';
 export { NatToolbarItem } from './lib/components/table-toolbar/toolbar-item/toolbar-item.directive';
 export { NAT_TOOLBAR_ITEM } from './lib/components/table-toolbar/common/toolbar-tokens.const';
-export { NatTableExportExcel } from './lib/components/table-export-excel/table-export-excel.directive';
+export { NatTableExport } from './lib/components/table-export/table-export.directive';
 export {
-  NAT_TABLE_EXCEL_EXPORT,
-  provideNatTableExcelExport,
-} from './lib/components/table-export-excel/table-export-excel.provider';
+  NAT_TABLE_EXPORT,
+  provideNatTableExport,
+} from './lib/components/table-export/table-export.provider';
 export { NatTableSelectionCheckbox } from './lib/components/table-selection/table-selection';
 export { withNatTableSelectionColumn } from './lib/components/table-selection/with-table-selection-column';
 export type { NatTableSelectionColumnOptions } from './lib/components/table-selection/common/selection-tokens.type';
@@ -29,11 +29,16 @@ export type {
   NatTableSortIndicatorContent,
 } from './lib/components/table-header-actions/table-header-actions';
 export type {
-  NatTableExcelExportConfig,
-  NatTableExcelExportContext,
-  NatTableExcelExportHandler,
-  NatTableExcelExportProvider,
-} from './lib/components/table-export-excel/table-export-excel.types';
+  NatTableExportCellValue,
+  NatTableExportConfig,
+  NatTableExportConfigFactory,
+  NatTableExportContext,
+  NatTableExportData,
+  NatTableExportDataColumn,
+  NatTableExportDataRow,
+  NatTableExportHandler,
+  NatTableExportProvider,
+} from './lib/components/table-export/table-export.types';
 export type {
   NatToolbarItemPosition,
   NatToolbarItemRef,

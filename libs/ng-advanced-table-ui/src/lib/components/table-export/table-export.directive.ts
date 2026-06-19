@@ -4,17 +4,19 @@ import type { RowData } from '@tanstack/angular-table';
 import { injectNatTableUiController } from '../../shared/resolve-ui-controller';
 import type { NatTableUiController } from '../../shared/table-ui.types';
 import {
-  exportNatTableExcel,
-  resolveNatTableExcelExportColumns,
-} from './table-export-excel-client';
-import { NAT_TABLE_EXCEL_EXPORT } from './table-export-excel.provider';
+  createNatTableExportData,
+  exportNatTableCsv,
+  resolveNatTableExportColumns,
+} from './table-export-client';
+import { NAT_TABLE_EXPORT } from './table-export.provider';
 import type {
-  NatTableExcelExportConfig,
-  NatTableExcelExportContext,
-  NatTableExcelExportHandler,
-} from './table-export-excel.types';
+  NatTableExportConfig,
+  NatTableExportContext,
+  NatTableExportData,
+  NatTableExportHandler,
+} from './table-export.types';
 
-const DEFAULT_EXCEL_FILE_NAME = 'table-export.xlsx';
+const DEFAULT_EXPORT_FILE_NAME = 'table-export';
 
 type NativeDisableableElement =
   | HTMLButtonElement
@@ -23,8 +25,8 @@ type NativeDisableableElement =
   | HTMLTextAreaElement;
 
 @Directive({
-  selector: '[natTableExportExcel]',
-  exportAs: 'natTableExportExcel',
+  selector: '[natTableExport]',
+  exportAs: 'natTableExport',
   host: {
     '[attr.aria-busy]': 'ariaBusy()',
     '[attr.aria-disabled]': 'ariaDisabled()',
@@ -32,13 +34,13 @@ type NativeDisableableElement =
     '(keydown)': 'onHostKeydown($event)',
   },
 })
-export class NatTableExportExcel<TData extends RowData = RowData> {
+export class NatTableExport<TData extends RowData = RowData> {
   /** Optional explicit controller for layouts outside a `NatTableService` scope. */
   public readonly for = input<NatTableUiController<TData>>();
-  /** Download file name. The `.xlsx` extension is appended when omitted. */
-  public readonly exportFileName = input(DEFAULT_EXCEL_FILE_NAME);
-  /** Per-instance export operation. Replaces provider or client-side handlers when present. */
-  public readonly exportHandler = input<NatTableExcelExportHandler<TData> | undefined>();
+  /** Base download file name. The built-in CSV handler appends `.csv` when omitted. */
+  public readonly exportFileName = input(DEFAULT_EXPORT_FILE_NAME);
+  /** Per-instance export operation. Replaces provider or built-in CSV handlers when present. */
+  public readonly exportHandler = input<NatTableExportHandler<TData> | undefined>();
 
   protected readonly isExporting = signal(false);
   protected readonly ariaBusy = computed(() => (this.isExporting() ? 'true' : null));
@@ -47,10 +49,8 @@ export class NatTableExportExcel<TData extends RowData = RowData> {
   );
 
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly controller = injectNatTableUiController(this.for, 'natTableExportExcel');
-  private readonly excelExportConfig = inject(
-    NAT_TABLE_EXCEL_EXPORT,
-  ) as NatTableExcelExportConfig<TData>;
+  private readonly controller = injectNatTableUiController(this.for, 'natTableExport');
+  private readonly exportConfig = inject(NAT_TABLE_EXPORT) as NatTableExportConfig<TData>;
 
   private previousDisabledAttribute: string | null | undefined;
 
@@ -95,7 +95,7 @@ export class NatTableExportExcel<TData extends RowData = RowData> {
     event?.preventDefault();
 
     const context = this.createExportContext(controller);
-    const handler = this.exportHandler() ?? this.excelExportConfig.handler ?? exportNatTableExcel;
+    const handler = this.exportHandler() ?? this.exportConfig.handler ?? exportNatTableCsv;
 
     this.isExporting.set(true);
     this.setNativeDisabled(true);
@@ -110,14 +110,20 @@ export class NatTableExportExcel<TData extends RowData = RowData> {
 
   private createExportContext(
     controller: NatTableUiController<TData>,
-  ): NatTableExcelExportContext<TData> {
+  ): NatTableExportContext<TData> {
     const table = controller.table;
-    const context: NatTableExcelExportContext<TData> = {
+    let data: NatTableExportData | undefined;
+    const context: NatTableExportContext<TData> = {
       table,
       rows: table.getCoreRowModel().rows,
-      columns: resolveNatTableExcelExportColumns(table.getVisibleLeafColumns()),
-      fileName: normalizeNatTableExcelFileName(this.exportFileName()),
-      export: () => exportNatTableExcel(context),
+      columns: resolveNatTableExportColumns(table.getVisibleLeafColumns()),
+      fileName: normalizeNatTableExportFileName(this.exportFileName()),
+      getData: () => {
+        data ??= createNatTableExportData(context);
+
+        return data;
+      },
+      exportCsv: () => exportNatTableCsv(context),
     };
 
     return context;
@@ -156,10 +162,8 @@ export class NatTableExportExcel<TData extends RowData = RowData> {
   }
 }
 
-export function normalizeNatTableExcelFileName(fileName: string | null | undefined): string {
-  const normalized = fileName?.trim() || DEFAULT_EXCEL_FILE_NAME;
-
-  return /\.xlsx$/i.test(normalized) ? normalized : `${normalized}.xlsx`;
+export function normalizeNatTableExportFileName(fileName: string | null | undefined): string {
+  return fileName?.trim() || DEFAULT_EXPORT_FILE_NAME;
 }
 
 function isActivationKey(event: KeyboardEvent): boolean {

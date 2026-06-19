@@ -21,7 +21,7 @@ Use this package when you want optional companions around `NatTable`:
 - `NatTablePageSize`
 - `NatTablePager`
 - `NatTableScrollControl`
-- `NatTableExportExcel`
+- `NatTableExport`
 - `withNatTableHeaderActions(...)`
 - `withNatTableSelectionColumn(...)`
 
@@ -48,16 +48,22 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTablePageSize`
 - `NatTablePager`
 - `NatTableScrollControl`
-- `NatTableExportExcel`
-- `provideNatTableExcelExport(...)`
-- `NAT_TABLE_EXCEL_EXPORT`
+- `NatTableExport`
+- `provideNatTableExport(...)`
+- `NAT_TABLE_EXPORT`
 - `withNatTableHeaderActions(...)`
 - `withNatTableSelectionColumn(...)`
 - `NatTableSelectionCheckbox`
 - `NatTableSelectionColumnOptions`
-- `NatTableExcelExportConfig`
-- `NatTableExcelExportContext`
-- `NatTableExcelExportHandler`
+- `NatTableExportCellValue`
+- `NatTableExportConfig`
+- `NatTableExportConfigFactory`
+- `NatTableExportContext`
+- `NatTableExportData`
+- `NatTableExportDataColumn`
+- `NatTableExportDataRow`
+- `NatTableExportHandler`
+- `NatTableExportProvider`
 - `NatTableHeaderActionsOptions`
 - `NatTableHeaderActionsColumnOptions`
 - `NatTableSortIndicatorContent`
@@ -94,7 +100,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), and optional `localeId`.
 - Companion controls inherit the controlled table locale and expose label inputs only for instance-specific overrides.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
-- `NatTableExportExcel` attaches to an interactive host and exports all client-held rows to an `.xlsx` file by default. It uses visible exportable leaf columns, respects `column.meta.export`, accepts `exportHandler` or `provideNatTableExcelExport(...)` for app-owned generation, and exposes `#excelExport="natTableExportExcel"` plus `trigger(...)` for custom activation events.
+- `NatTableExport` attaches to an interactive host and exports all client-held rows to CSV by default. It uses visible exportable leaf columns, respects `column.meta.export`, accepts `exportHandler` or `provideNatTableExport(...)` for app-owned generation such as Excel or API-backed exports, and exposes `#tableExport="natTableExport"` plus `trigger(...)` for custom activation events.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort, pin, or opt into reorder actions. Its compact three-dot menu includes pin actions unless `enableColumnPinActions` is disabled, and Move left/Move right actions when `enableColumnReorderActions` is enabled and those actions are available.
 - `withNatTableHeaderActions(...)` is idempotent. Reapplying it to already-wrapped columns updates the wrapper options instead of nesting header controls.
 - Set `column.meta.hiddenHeaderLabel` to visually hide the header title while keeping the sort button and three-dot menu visible with generated accessible labels.
