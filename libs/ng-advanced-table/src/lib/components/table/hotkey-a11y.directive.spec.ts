@@ -128,14 +128,25 @@ describe('NatTableHotkeyA11y', () => {
 
     it('should update aria-label reactively when inner text changes (MutationObserver)', async () => {
       fixture.detectChanges();
+      const button = fixture.nativeElement.querySelector('#service-btn') as HTMLButtonElement;
+
+      const mutationPromise = new Promise<void>((resolve) => {
+        const obs = new MutationObserver(() => {
+          const label = button.getAttribute('aria-label');
+          if (label && label.includes('Execute Row')) {
+            obs.disconnect();
+            resolve();
+          }
+        });
+        obs.observe(button, { childList: true, attributes: true, attributeFilter: ['aria-label'] });
+      });
+
       host.text.set('Execute Row');
       fixture.detectChanges();
       
-      // Wait for MutationObserver callback (microtask / next tick)
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await mutationPromise;
       fixture.detectChanges();
 
-      const button = fixture.nativeElement.querySelector('#service-btn') as HTMLButtonElement;
       expect(button.getAttribute('aria-label')).toBe('Execute Row (Shortcut: Enter Space)');
     });
   });
