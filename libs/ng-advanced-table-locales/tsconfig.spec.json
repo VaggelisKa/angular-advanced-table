@@ -11,10 +11,17 @@
         "libs/ng-advanced-table-locales/src/public-api.ts",
         "dist/libs/ng-advanced-table-locales"
       ],
-      "ng-advanced-table-types": [
-        "libs/ng-advanced-table-types/src/public-api.ts"
-      ]
-    }
+      "ng-advanced-table-types": ["libs/ng-advanced-table-types/src/public-api.ts"]
+    },
+    "ignoreDeprecations": "6.0"
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"],
+  "angularCompilerOptions": {
+    "extendedDiagnostics": {
+      "checks": {
+        "nullishCoalescingNotNullable": "suppress",
+        "optionalChainNotNullable": "suppress"
+      }
+    }
+  }
 }

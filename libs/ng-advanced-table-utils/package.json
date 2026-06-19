@@ -24,7 +24,7 @@
     "tanstack-table"
   ],
   "peerDependencies": {
-    "@angular/core": "^21.2.0",
+    "@angular/core": "^22.0.0",
     "@tanstack/angular-table": "^8.0.0"
   },
   "dependencies": {
