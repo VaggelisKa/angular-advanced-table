@@ -11,7 +11,13 @@ import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
     <nat-table-toolbar>
       <button natToolbarItem="end-a" natToolbarItemPosition="end" id="end-a">End A</button>
       <button natToolbarItem="start-a" natToolbarItemPosition="start" id="start-a">Start A</button>
-      <input natToolbarItem="text-entry" natToolbarItemPosition="start" type="text" id="text-entry" aria-label="Filter" />
+      <input
+        natToolbarItem="text-entry"
+        natToolbarItemPosition="start"
+        type="text"
+        id="text-entry"
+        aria-label="Filter"
+      />
       <button natToolbarItem="end-b" natToolbarItemPosition="end" id="end-b">End B</button>
     </nat-table-toolbar>
   `,

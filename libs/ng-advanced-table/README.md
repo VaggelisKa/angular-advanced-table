@@ -74,7 +74,7 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 ## Minimal Example
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -87,7 +87,6 @@ interface ServiceRow {
 
 @Component({
   selector: 'app-service-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable],
   template: `
     <nat-table

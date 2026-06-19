@@ -1,12 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  input,
-  output,
-} from '@angular/core';
+import { booleanAttribute, Component, effect, inject, input, output } from '@angular/core';
 import type {
   ColumnFiltersState,
   ColumnOrderState,
@@ -26,7 +18,6 @@ import {
 
 @Component({
   selector: 'nat-table-surface',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<div class="surface">
     <ng-content name="table-pager" />
 
@@ -139,7 +130,8 @@ export class NatTableSurface {
       const paginationChanged =
         JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
       const rowSelectionChanged =
-        serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(nextState.rowSelection);
+        serializeSelectedRowIds(prev.rowSelection) !==
+        serializeSelectedRowIds(nextState.rowSelection);
 
       if (
         sortingChanged ||

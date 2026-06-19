@@ -5,7 +5,6 @@ import {
   afterNextRender,
   afterRenderEffect,
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
@@ -202,7 +201,6 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
 @Component({
   selector: 'nat-table',
   exportAs: 'natTable',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgTemplateOutlet,
     Grid,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -20,7 +20,6 @@ interface MockOrderRow {
 
 @Component({
   selector: 'app-order-code',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
       display: inline-flex;
@@ -53,7 +52,6 @@ class OrderCode {
 
 @Component({
   selector: 'app-order-status-badge',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
       display: inline-flex;
@@ -311,7 +309,6 @@ const preconfiguredTableState: Partial<NatTableState> = {
 
 @Component({
   selector: 'app-simple-sorting-page',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   templateUrl: './simple-sorting-page.html',
   styleUrl: './simple-sorting-page.css',

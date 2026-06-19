@@ -44,7 +44,9 @@ class ToolbarShellHost {
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="alpha" natToolbarItemPosition="start" class="item-alpha">Alpha</button>
+      <button natToolbarItem="alpha" natToolbarItemPosition="start" class="item-alpha">
+        Alpha
+      </button>
       @if (showBeta()) {
         <button natToolbarItem="beta" class="item-beta">Beta</button>
       }
@@ -62,8 +64,12 @@ class ToolbarItemsHost {
     <nat-table-toolbar>
       <button natToolbarItem="end" natToolbarItemPosition="end" class="slot-end">End</button>
       <button natToolbarItem="bare" class="slot-bare">Bare</button>
-      <button natToolbarItem="center" natToolbarItemPosition="center" class="slot-center">Center</button>
-      <button natToolbarItem="start" natToolbarItemPosition="start" class="slot-start">Start</button>
+      <button natToolbarItem="center" natToolbarItemPosition="center" class="slot-center">
+        Center
+      </button>
+      <button natToolbarItem="start" natToolbarItemPosition="start" class="slot-start">
+        Start
+      </button>
     </nat-table-toolbar>
   `,
 })
@@ -74,7 +80,6 @@ function getItemRefs(fixture: ComponentFixture<unknown>): NatToolbarItemRef[] {
     .queryAll(By.directive(NatToolbarItem))
     .map((debugElement) => debugElement.injector.get(NAT_TOOLBAR_ITEM));
 }
-
 
 describe('NatTableToolbar', () => {
   beforeEach(async () => {

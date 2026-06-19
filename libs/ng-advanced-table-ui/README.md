@@ -98,7 +98,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 ## Minimal Example
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -132,7 +132,6 @@ const columns = withNatTableHeaderActions<OrderRow>([
 
 @Component({
   selector: 'app-orders-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTablePager, NatTableScrollControl, NatTableSurface],
   template: `
     <nat-table-surface>
