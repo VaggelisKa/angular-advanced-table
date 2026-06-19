@@ -277,20 +277,8 @@ export function validateKeybindings(bindings: Required<NatTableKeybindings>): st
   return warnings;
 }
 
-/** A compiled, functional keyboard shortcuts helper mapping KeyboardEvents to actions. */
-export interface NatTableKeyboard {
-  cellInteraction: {
-    enter: (event: KeyboardEvent) => boolean;
-    exit: (event: KeyboardEvent) => boolean;
-    next: (event: KeyboardEvent) => boolean;
-    previous: (event: KeyboardEvent) => boolean;
-  };
-  rowActivate: (event: KeyboardEvent) => boolean;
-  columnReorderDirection: (event: KeyboardEvent) => -1 | 1 | null;
-}
-
 /** Compiles a functional keyboard shortcuts helper from a keybindings configuration. */
-export function createNatTableKeyboard(keybindings: Required<NatTableKeybindings>): NatTableKeyboard {
+export function createNatTableKeyboard(keybindings: Required<NatTableKeybindings>) {
   return {
     cellInteraction: {
       enter: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellEnterControl),
@@ -306,6 +294,9 @@ export function createNatTableKeyboard(keybindings: Required<NatTableKeybindings
     },
   };
 }
+
+/** A compiled, functional keyboard shortcuts helper mapping KeyboardEvents to actions. */
+export type NatTableKeyboard = ReturnType<typeof createNatTableKeyboard>;
 
 
 
