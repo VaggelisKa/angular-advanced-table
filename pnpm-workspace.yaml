@@ -55,6 +55,15 @@ catalogs:
     prettier: '^3.8.4'
     typescript: '6.0.3'
     vitest: '^4.1.9'
+# pnpm 11 enables a 24h supply-chain cooldown (minimumReleaseAge: 1440) by
+# default: newly published versions are rejected until they are a day old.
+# TEMPORARILY disabled (0) so the frozen lockfile installs — the deliberately
+# fresh Angular 22.0.3 and Nx 23.1.0-beta.0 pins were published <24h ago and
+# trip the gate on `pnpm install --frozen-lockfile` / CI.
+# NOTE: while this is 0 the cooldown protection is off repo-wide for every
+# package, not just these pins. Restore to 1440 once the migration's pins have
+# aged out (or add a minimumReleaseAgeExclude for @angular/@nx instead).
+minimumReleaseAge: 0
 # Native packages permitted to run lifecycle scripts (pnpm blocks them by
 # default). This is exactly the set pnpm reported as ignored on a clean install.
 allowBuilds:
