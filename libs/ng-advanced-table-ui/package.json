@@ -24,15 +24,15 @@
     "tanstack-table"
   ],
   "peerDependencies": {
-    "@angular/cdk": "^22.0.0",
-    "@angular/aria": "^22.0.0",
-    "@angular/common": "^22.0.0",
-    "@angular/core": "^22.0.0",
-    "@tanstack/angular-table": "^8.0.0"
+    "@angular/cdk": "^22.0.2",
+    "@angular/aria": "^22.0.2",
+    "@angular/common": "^22.0.2",
+    "@angular/core": "^22.0.2",
+    "@tanstack/angular-table": "^8.21.4"
   },
   "dependencies": {
     "ng-advanced-table-locales": "*",
-    "tslib": "^2.3.0"
+    "tslib": "^2.8.1"
   },
   "sideEffects": false
 }
