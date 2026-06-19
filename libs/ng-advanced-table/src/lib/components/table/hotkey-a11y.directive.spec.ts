@@ -8,8 +8,8 @@ import type { NatTableKeybindings } from './table.types';
 @Component({
   imports: [NatTableHotkeyA11y],
   template: `
-    <button id="fallback-btn" [natHotkeyA11y]="actionKey()">Activate Row</button>
-    <button id="alias-btn" [natTableHotkeyA11y]="actionKey()">Alias Button</button>
+    <button data-testid="fallback-btn" [natHotkeyA11y]="actionKey()">Activate Row</button>
+    <button data-testid="alias-btn" [natTableHotkeyA11y]="actionKey()">Alias Button</button>
   `,
 })
 class FallbackHost {
@@ -20,7 +20,7 @@ class FallbackHost {
   imports: [NatTableHotkeyA11y],
   providers: [NatTableService],
   template: `
-    <button id="service-btn" [natHotkeyA11y]="actionKey()">
+    <button data-testid="service-btn" [natHotkeyA11y]="actionKey()">
       {{ text() }}
     </button>
   `,
@@ -57,7 +57,7 @@ describe('NatTableHotkeyA11y', () => {
 
     it('should fall back to global NAT_TABLE_KEYBINDINGS configuration', async () => {
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('#fallback-btn') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('[data-testid="fallback-btn"]') as HTMLButtonElement;
 
       expect(button.getAttribute('aria-keyshortcuts')).toBe('Space');
       expect(button.getAttribute('aria-label')).toBe('Activate Row (Shortcut: Space)');
@@ -65,7 +65,7 @@ describe('NatTableHotkeyA11y', () => {
 
     it('should support other input aliases like natTableHotkeyA11y', async () => {
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('#alias-btn') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('[data-testid="alias-btn"]') as HTMLButtonElement;
 
       expect(button.getAttribute('aria-keyshortcuts')).toBe('Space');
       expect(button.getAttribute('aria-label')).toBe('Alias Button (Shortcut: Space)');
@@ -76,7 +76,7 @@ describe('NatTableHotkeyA11y', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const button = fixture.nativeElement.querySelector('#fallback-btn') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('[data-testid="fallback-btn"]') as HTMLButtonElement;
       expect(button.getAttribute('aria-keyshortcuts')).toBe('Shift+ArrowLeft');
       expect(button.getAttribute('aria-label')).toBe('Activate Row (Shortcut: Shift+ArrowLeft)');
     });
@@ -86,7 +86,7 @@ describe('NatTableHotkeyA11y', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const button = fixture.nativeElement.querySelector('#fallback-btn') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('[data-testid="fallback-btn"]') as HTMLButtonElement;
       expect(button.getAttribute('aria-keyshortcuts')).toBe('Alt+Shift+ArrowRight');
     });
   });
@@ -110,7 +110,7 @@ describe('NatTableHotkeyA11y', () => {
 
     it('should resolve keybindings from NatTableService and default values', async () => {
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('#service-btn') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('[data-testid="service-btn"]') as HTMLButtonElement;
 
       expect(button.getAttribute('aria-keyshortcuts')).toBe('Enter Space');
       expect(button.getAttribute('aria-label')).toBe('Perform Action (Shortcut: Enter Space)');
@@ -121,14 +121,14 @@ describe('NatTableHotkeyA11y', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const button = fixture.nativeElement.querySelector('#service-btn') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('[data-testid="service-btn"]') as HTMLButtonElement;
       expect(button.getAttribute('aria-keyshortcuts')).toBe('Control+Enter');
       expect(button.getAttribute('aria-label')).toBe('Perform Action (Shortcut: Control+Enter)');
     });
 
     it('should update aria-label reactively when inner text changes (MutationObserver)', async () => {
       fixture.detectChanges();
-      const button = fixture.nativeElement.querySelector('#service-btn') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector('[data-testid="service-btn"]') as HTMLButtonElement;
 
       const mutationPromise = new Promise<void>((resolve) => {
         const obs = new MutationObserver(() => {
