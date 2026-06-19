@@ -26,6 +26,16 @@
   min-width: 100%;
 }
 
+.data-table.is-fixed-layout {
+  /*
+   * Fixed layout makes the <colgroup> widths authoritative and the table exactly
+   * as wide as their sum, so the region scrolls instead of stretching columns —
+   * the precondition for pixel-exact column resizing.
+   */
+  table-layout: fixed;
+  min-width: 0;
+}
+
 .header-cell,
 .data-cell {
   box-sizing: border-box;
@@ -97,6 +107,67 @@
   line-clamp: var(--nat-table-cell-max-lines, 2);
 }
 
+.column-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-end: 0;
+  inline-size: var(--nat-table-resize-handle-hit, 24px);
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  z-index: 8;
+}
+
+.column-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  inset-inline-end: calc(50% - 1px);
+  inline-size: 2px;
+  border-radius: 1px;
+  background: var(
+    --nat-table-resize-handle-color,
+    color-mix(in srgb, currentColor 24%, transparent)
+  );
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.header-cell:hover .column-resize-handle:not(.is-resizing)::after,
+.column-resize-handle:not(.is-resizing):hover::after,
+.column-resize-handle:not(.is-resizing):active::after {
+  opacity: 1;
+}
+
+/*
+ * During an active drag the full-height guide line takes over (.column-resize-guide).
+ * Hide the handle's header-only stub so it doesn't double up beside the guide.
+ */
+.column-resize-handle.is-resizing::after {
+  opacity: 0;
+}
+
+/*
+ * Drag guide: a full-table-height accent line marking where the column edge will
+ * land. The sticky `<th>` clips the handle's own line to header height, so this
+ * sits on .table-region instead and follows the pointer via translateX(delta).
+ */
+.column-resize-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inline-size: 2px;
+  margin-inline-start: -1px;
+  background: var(
+    --nat-table-resize-handle-active-color,
+    var(--nat-table-focus-ring-color, Highlight)
+  );
+  pointer-events: none;
+  z-index: 9;
+}
+
 .header-cell.is-reorderable {
   cursor: grab;
   touch-action: pan-y;
@@ -105,6 +176,20 @@
 
 .header-cell.is-reorderable:active {
   cursor: grabbing;
+}
+
+/*
+ * While a column resize drag is active, keep the resize cursor across the whole
+ * region — otherwise the cursor reverts to default the moment the pointer leaves
+ * the header and drops into the body.
+ */
+.table-region.is-resizing,
+.table-region.is-resizing * {
+  cursor: col-resize;
+}
+
+.table-region.is-resizing {
+  user-select: none;
 }
 
 .header-cell.cdk-drag-preview {

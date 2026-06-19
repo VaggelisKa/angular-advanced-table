@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type CellContext, type ColumnDef, type VisibilityState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
@@ -33,7 +33,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-visibility-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTableColumnVisibility],
   template: `
     <div class="showcase-page showcase-container">
@@ -53,11 +52,7 @@ const DEMO_DATA: DemoItem[] = [
               <nat-table-column-visibility />
             </div>
 
-            <nat-table
-              [data]="data"
-              [columns]="columns"
-              accessibleName="Visibility demo table"
-            />
+            <nat-table [data]="data" [columns]="columns" accessibleName="Visibility demo table" />
           </nat-table-surface>
         </div>
       </div>

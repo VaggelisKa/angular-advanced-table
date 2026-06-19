@@ -14,12 +14,14 @@ import type {
   VisibilityState,
 } from '@tanstack/angular-table';
 import type {
+  NatTableColumnMoveDirection as CoreNatTableColumnMoveDirection,
   NatTableUiController as CoreNatTableUiController,
   NatTableUiState as CoreNatTableUiState,
 } from 'ng-advanced-table';
 
 export type NatTableUiState = CoreNatTableUiState;
 export type NatTableUiController<TData extends RowData = RowData> = CoreNatTableUiController<TData>;
+export type NatTableColumnMoveDirection = CoreNatTableColumnMoveDirection;
 
 /** Current sort direction for a header cell. */
 export type NatTableSortDirection = 'asc' | 'desc' | false;
@@ -59,6 +61,10 @@ export interface NatTableHeaderActionsColumnOptions {
   sortIndicator?: NatTableSortIndicatorContent;
   /** Optional accessibility label overrides for this column's built-in actions. */
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
+  /** Enables left/right pin menu items for this column when the table can pin it. */
+  enableColumnPinActions?: boolean;
+  /** Enables Move left / Move right menu items for this column when the table can reorder it. */
+  enableColumnReorderActions?: boolean;
 }
 
 /**
@@ -210,6 +216,20 @@ export interface NatTableAccessibilityColumnVisibilityLabels {
   columnState?: (context: NatTableAccessibilityColumnVisibilityStateContext) => string;
 }
 
+/** Context passed to per-row selection checkbox label formatters. */
+export type NatTableAccessibilitySelectionRowContext = {
+  /** Stable row id resolved through the table's `getRowId`. */
+  readonly rowId: string;
+};
+
+/** Optional accessibility label overrides for the generated selection column. */
+export type NatTableAccessibilitySelectionLabels = {
+  /** `aria-label` applied to the select-all header checkbox. */
+  readonly selectAllAriaLabel?: string;
+  /** `aria-label` applied to each per-row checkbox. */
+  readonly selectRowAriaLabel?: (context: NatTableAccessibilitySelectionRowContext) => string;
+};
+
 /** Context passed to sort-button label formatters. */
 export interface NatTableAccessibilityHeaderActionSortContext {
   /** Human-readable column label. */
@@ -242,18 +262,30 @@ export interface NatTableAccessibilityHeaderActionPinContext {
   pinnedSide: 'left' | 'right' | null;
 }
 
-/** Optional accessibility label overrides for header sort/pin actions. */
+/** Context passed to move-column label formatters. */
+export interface NatTableAccessibilityHeaderActionMoveContext {
+  /** Human-readable column label. */
+  label: string;
+  /** Direction targeted by the current button. */
+  direction: NatTableColumnMoveDirection;
+}
+
+/** Optional accessibility label overrides for header sort, pin, and move actions. */
 export interface NatTableAccessibilityHeaderActionLabels {
   /** `aria-label` applied to the sort button. */
   sortButton?: (context: NatTableAccessibilityHeaderActionSortContext) => string;
   /** `aria-label` applied to the overflow menu trigger. */
   menuButton?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
-  /** `aria-label` applied to the opened pinning menu. */
+  /** `aria-label` applied to the opened column actions menu. */
   menuLabel?: (context: NatTableAccessibilityHeaderActionMenuContext) => string;
   /** `aria-label` applied to the pin button. */
   pinButton?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
-  /** Visible text rendered inside each pin menu item. */
+  /** Visible text rendered inside each pin action menu item. */
   pinButtonText?: (context: NatTableAccessibilityHeaderActionPinContext) => string;
+  /** `aria-label` applied to the move-column button. */
+  moveButton?: (context: NatTableAccessibilityHeaderActionMoveContext) => string;
+  /** Visible text rendered inside each move-column menu item. */
+  moveButtonText?: (context: NatTableAccessibilityHeaderActionMoveContext) => string;
 }
 
 declare module '@tanstack/table-core' {

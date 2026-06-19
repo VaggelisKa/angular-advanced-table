@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import type { ColumnFiltersState } from '@tanstack/angular-table';
 import { NatTableService } from 'ng-advanced-table';
 
@@ -21,7 +21,6 @@ import { RENDER_FILTER_OPTIONS, RENDER_METRIC_COLUMN_ID, type RowRenderFilterVal
  */
 @Component({
   selector: 'nat-render-metrics-filter',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './filter.html',
   styleUrl: './filter.css',
 })
@@ -36,7 +35,9 @@ export class NatRenderMetricsFilter<TData = unknown> {
   readonly labels = input<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
   private readonly natTableService = inject(NatTableService);
-  protected readonly controller = computed(() => this.natTableService.controller() as NatTableRenderMetricsController<TData> | null);
+  protected readonly controller = computed(
+    () => this.natTableService.controller() as NatTableRenderMetricsController<TData> | null,
+  );
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
   private readonly localeId = computed(

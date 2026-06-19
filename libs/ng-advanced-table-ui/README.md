@@ -22,6 +22,7 @@ Use this package when you want optional companions around `NatTable`:
 - `NatTablePager`
 - `NatTableScrollControl`
 - `withNatTableHeaderActions(...)`
+- `withNatTableSelectionColumn(...)`
 
 The package accepts any compatible `NatTableUiController<TData>`. `<nat-table #grid="natTable">` satisfies that contract directly.
 
@@ -47,6 +48,9 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTablePager`
 - `NatTableScrollControl`
 - `withNatTableHeaderActions(...)`
+- `withNatTableSelectionColumn(...)`
+- `NatTableSelectionCheckbox`
+- `NatTableSelectionColumnOptions`
 - `NatTableHeaderActionsOptions`
 - `NatTableHeaderActionsColumnOptions`
 - `NatTableSortIndicatorContent`
@@ -63,7 +67,9 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTableAccessibilityHeaderActionMenuContext`
 - `NatTableAccessibilityHeaderActionSortContext`
 - `NatTableAccessibilityHeaderActionPinContext`
+- `NatTableAccessibilityHeaderActionMoveContext`
 - `NatTableAccessibilityHeaderActionLabels`
+- `NatTableColumnMoveDirection`
 - `NatTableUiController`
 - `NatTableUiState`
 - `NatTableColumnMeta`
@@ -78,19 +84,21 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), and optional `localeId`.
 - Companion controls inherit the controlled table locale and expose label inputs only for instance-specific overrides.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
-- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort or pin, including a compact three-dot overflow menu for left and right pin actions.
+- `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort, pin, or opt into reorder actions. Its compact three-dot menu includes pin actions unless `enableColumnPinActions` is disabled, and Move left/Move right actions when `enableColumnReorderActions` is enabled and those actions are available.
 - `withNatTableHeaderActions(...)` is idempotent. Reapplying it to already-wrapped columns updates the wrapper options instead of nesting header controls.
 - Set `column.meta.hiddenHeaderLabel` to visually hide the header title while keeping the sort button and three-dot menu visible with generated accessible labels.
 - Core table body cells clamp content to two lines by default; use `column.meta.cellHeight`, finite `column.meta.cellMaxLines` values, or `column.meta.cellMaxLines = Infinity` on shared column definitions when companion UI columns need specific body-cell sizing.
-- Use `column.meta.headerActions = false` to opt out per column, or provide `{ sortIndicator, accessibilityLabels }` there to override the helper-level options for one column.
+- Use `column.meta.headerActions = false` to opt out per column, or provide `{ sortIndicator, enableColumnPinActions, enableColumnReorderActions, accessibilityLabels }` there to override the helper-level options for one column.
 - Apply other column helpers first, then wrap the final column list with `withNatTableHeaderActions(...)`, for example `withNatTableHeaderActions(withRenderMetricsColumn(columns, metricsStore), options)`.
+- If you enable drag/drop reordering without this helper, provide your own non-drag pointer controls. Custom header menus can call `headerContext.table.options.meta?.natTableMoveColumn?.(column.id, direction)`, where `direction` is `'left'` or `'right'`, and read `natTableCanMoveColumn` to disable unavailable directions.
 - Row-level action menus are intentionally not bundled. Build them as normal cell renderers, for example with an `Actions` column that renders a CDK menu trigger.
+- `withNatTableSelectionColumn(...)` prepends an accessible select-all and per-row checkbox column. Enable it with `[enableRowSelection]="true"` on the core table. See the root README [Row Selection](../../README.md#row-selection) guide for state, interactions, and bulk actions.
 - You can use any subset of this package or replace all of it with custom controls.
 
 ## Minimal Example
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -124,7 +132,6 @@ const columns = withNatTableHeaderActions<OrderRow>([
 
 @Component({
   selector: 'app-orders-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTablePager, NatTableScrollControl, NatTableSurface],
   template: `
     <nat-table-surface>

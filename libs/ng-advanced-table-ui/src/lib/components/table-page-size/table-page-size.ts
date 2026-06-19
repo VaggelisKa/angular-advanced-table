@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, DestroyRef } from '@angular/core';
+import { Component, computed, inject, input, DestroyRef } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from '../../shared/table.service';
@@ -27,7 +27,6 @@ interface PageSizeOption {
 
 @Component({
   selector: 'nat-table-page-size',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-page-size.html',
   styleUrl: './table-page-size.css',
 })
@@ -58,7 +57,9 @@ export class NatTablePageSize<TData extends RowData = RowData> {
   );
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly selectedPageSize = computed(() => this.table()?.getState().pagination.pageSize ?? 0);
+  protected readonly selectedPageSize = computed(
+    () => this.table()?.getState().pagination.pageSize ?? 0,
+  );
   private readonly resolvedAccessibilityLabels = computed(() =>
     mergePageSizeLabels(
       this.tableUiIntl().pageSize?.accessibilityLabels,

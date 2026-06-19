@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, effect, inject, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 import { Toolbar } from '@angular/aria/toolbar';
 
@@ -35,7 +35,6 @@ const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
 
 @Component({
   selector: 'nat-table-toolbar',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-toolbar.html',
   styleUrl: './table-toolbar.css',
   // Keyboard navigation (roving tabindex, RTL-aware arrows, wrap, Home/End)
@@ -95,7 +94,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
 
   /**
    * Instance-level patches on the @angular/aria toolbar pattern. Each one
-   * works around a behavior of the (developer-preview) stock pattern that
+   * works around a behavior of the stock pattern that
    * breaks this toolbar; the aria-integration spec is the tripwire.
    * Re-verify all four on every `@angular/aria` bump.
    */

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection } from '@angular/core';
+import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
@@ -6,7 +6,6 @@ import { App } from './app';
 
 @Component({
   selector: 'app-test-example',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: 'Example route',
 })
 class TestExamplePage {}

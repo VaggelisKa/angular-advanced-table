@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 import type { SparkTrend } from './table-simulation';
 
@@ -6,7 +6,6 @@ const VIEWBOX_HEIGHT = 100;
 
 @Component({
   selector: 'nat-sparkline',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <svg
       class="sparkline"

@@ -8,6 +8,7 @@ import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPagerLabels,
   NatTableAccessibilityScrollControlLabels,
+  NatTableAccessibilitySelectionLabels,
   NatTableUiIntl,
   NatTableUiIntlConfig,
   NatTableUiIntlProviderConfig,
@@ -98,6 +99,13 @@ export function mergeNatTableUiIntl(
       ),
     },
     toolbar: mergeDefined(parent?.toolbar, override.toolbar),
+    selection: {
+      ...mergeDefined(parent?.selection, override.selection),
+      accessibilityLabels: mergeSelectionLabels(
+        parent?.selection?.accessibilityLabels,
+        override.selection?.accessibilityLabels,
+      ),
+    },
     formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
   };
 }
@@ -227,6 +235,17 @@ export function mergeScrollControlLabels(
   };
 }
 
+/** Merges selection-column labels and formatters field by field. */
+export function mergeSelectionLabels(
+  parent?: NatTableAccessibilitySelectionLabels,
+  override?: NatTableAccessibilitySelectionLabels,
+): NatTableAccessibilitySelectionLabels {
+  return {
+    selectAllAriaLabel: override?.selectAllAriaLabel ?? parent?.selectAllAriaLabel,
+    selectRowAriaLabel: override?.selectRowAriaLabel ?? parent?.selectRowAriaLabel,
+  };
+}
+
 /** Merges header action labels and formatters field by field. */
 export function mergeHeaderActionLabels(
   parent?: NatTableAccessibilityHeaderActionLabels,
@@ -238,6 +257,8 @@ export function mergeHeaderActionLabels(
     menuLabel: override?.menuLabel ?? parent?.menuLabel,
     pinButton: override?.pinButton ?? parent?.pinButton,
     pinButtonText: override?.pinButtonText ?? parent?.pinButtonText,
+    moveButton: override?.moveButton ?? parent?.moveButton,
+    moveButtonText: override?.moveButtonText ?? parent?.moveButtonText,
   };
 }
 

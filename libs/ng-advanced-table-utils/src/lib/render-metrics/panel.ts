@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 
 import {
   formatNatTableUtilsNumber,
@@ -24,7 +24,6 @@ interface RenderHealthState {
  */
 @Component({
   selector: 'nat-render-metrics-panel',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './panel.html',
   styleUrl: './panel.css',
 })

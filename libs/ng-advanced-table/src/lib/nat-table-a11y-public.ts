@@ -6,10 +6,12 @@
  */
 export type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
+  NatTableAccessibilityColumnResizeAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,
   NatTableAccessibilityPaginationAnnouncementContext,
+  NatTableAccessibilitySelectionAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
   NatTableEmptyTemplateContext,

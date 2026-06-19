@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-keyboard-demo-status',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
       display: inline-flex;

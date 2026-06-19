@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-keyboard-demo-acknowledge',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button
       type="button"

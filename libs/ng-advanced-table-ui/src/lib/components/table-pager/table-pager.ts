@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, DestroyRef } from '@angular/core';
+import { Component, computed, inject, input, DestroyRef } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from '../../shared/table.service';
@@ -15,7 +15,6 @@ import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.typ
 
 @Component({
   selector: 'nat-table-pager',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-pager.html',
   styleUrl: './table-pager.css',
 })
@@ -27,9 +26,7 @@ export class NatTablePager<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly controller = computed(
-    () => this.natTableService.controller(),
-  );
+  protected readonly controller = computed(() => this.natTableService.controller());
 
   constructor() {
     this.natTableService.registerPagination();

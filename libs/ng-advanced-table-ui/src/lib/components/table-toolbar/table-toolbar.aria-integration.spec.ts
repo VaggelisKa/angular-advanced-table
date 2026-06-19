@@ -5,7 +5,7 @@ import { NatTableToolbar } from './table-toolbar';
 import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
 
 /**
- * Tripwire suite for the @angular/aria (developer preview) integration.
+ * Tripwire suite for the @angular/aria integration.
  * Every test here locks an internal Aria behavior the toolbar patches or
  * relies on — a failure after an @angular/aria bump means the pattern
  * contract changed and `patchAriaToolbarPattern` in table-toolbar.ts must be

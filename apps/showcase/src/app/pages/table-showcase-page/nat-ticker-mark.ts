@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'nat-ticker-mark',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span class="ticker-root">
       <span class="ticker-mark" aria-hidden="true">{{ initials() }}</span>

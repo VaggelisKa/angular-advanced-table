@@ -22,7 +22,7 @@ type NatTableHeaderActionsRenderer<TData extends RowData> = ((
 };
 
 /**
- * Wraps column headers with the shared sort/pin action UI from
+ * Wraps column headers with the shared sort and column action UI from
  * `ng-advanced-table-ui`.
  *
  * The helper preserves the original header content, applies the wrapper
@@ -34,7 +34,8 @@ type NatTableHeaderActionsRenderer<TData extends RowData> = ((
  * helper with other column helpers without nesting the generated controls.
  *
  * Set `column.meta.headerActions` to `false` to opt a column out, or provide an
- * object to override `sortIndicator` or `accessibilityLabels` for that column.
+ * object to override `sortIndicator`, `enableColumnPinActions`,
+ * `enableColumnReorderActions`, or `accessibilityLabels` for that column.
  */
 export function withNatTableHeaderActions<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
@@ -86,6 +87,8 @@ function wrapColumnHeader<TData extends RowData>(
         locale: actionOptions.locale ?? resolveTableLocale(context),
         accessibilityLabels: actionOptions.accessibilityLabels,
         sortIndicator: actionOptions.sortIndicator,
+        enableColumnPinActions: actionOptions.enableColumnPinActions,
+        enableColumnReorderActions: actionOptions.enableColumnReorderActions,
       },
     });
   }) as NatTableHeaderActionsRenderer<TData>;
@@ -132,6 +135,10 @@ function resolveHeaderActionsOptions<TData extends RowData>(
   return {
     sortIndicator: columnOptions?.sortIndicator ?? options.sortIndicator,
     locale: options.locale,
+    enableColumnPinActions:
+      columnOptions?.enableColumnPinActions ?? options.enableColumnPinActions ?? true,
+    enableColumnReorderActions:
+      columnOptions?.enableColumnReorderActions ?? options.enableColumnReorderActions ?? false,
     accessibilityLabels: mergeAccessibilityLabels(
       options.accessibilityLabels,
       columnOptions?.accessibilityLabels,

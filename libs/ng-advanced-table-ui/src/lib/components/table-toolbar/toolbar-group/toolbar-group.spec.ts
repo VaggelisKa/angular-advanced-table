@@ -9,7 +9,9 @@ import { NatToolbarGroup } from './toolbar-group';
   imports: [NatTableToolbar, NatToolbarItem, NatToolbarGroup],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="solo-start" natToolbarItemPosition="start" id="solo-start">Solo start</button>
+      <button natToolbarItem="solo-start" natToolbarItemPosition="start" id="solo-start">
+        Solo start
+      </button>
       <div
         natToolbarGroup="center"
         accessibleName="View density"

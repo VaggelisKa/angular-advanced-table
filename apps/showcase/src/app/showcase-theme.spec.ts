@@ -5,11 +5,42 @@ import { ShowcaseThemeStore } from './showcase-theme';
 const themeStorageKey = 'nat-showcase-theme';
 
 describe('ShowcaseThemeStore', () => {
+  let store: Record<string, string> = {};
+  let originalLocalStorage: typeof globalThis.localStorage;
+
   beforeEach(() => {
+    store = {};
+    originalLocalStorage = globalThis.localStorage;
+    const mockLocalStorage = {
+      getItem: (key: string) => store[key] || null,
+      setItem: (key: string, value: string) => {
+        store[key] = value;
+      },
+      removeItem: (key: string) => {
+        delete store[key];
+      },
+      clear: () => {
+        store = {};
+      },
+      length: 0,
+      key: () => null,
+    };
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true,
+      configurable: true,
+    });
     clearThemeState();
   });
 
   afterEach(() => {
+    if (originalLocalStorage) {
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: originalLocalStorage,
+        writable: true,
+        configurable: true,
+      });
+    }
     clearThemeState();
   });
 

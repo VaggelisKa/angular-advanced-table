@@ -4,8 +4,10 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnSizingState,
   PaginationState,
   RowData,
+  RowSelectionState,
   SortingState,
   VisibilityState,
 } from '@tanstack/angular-table';
@@ -22,6 +24,8 @@ export interface NatTableState {
   columnVisibility: VisibilityState;
   columnOrder: ColumnOrderState;
   columnPinning: ColumnPinningState;
+  columnSizing: ColumnSizingState;
+  rowSelection: RowSelectionState;
   pagination: PaginationState;
 }
 

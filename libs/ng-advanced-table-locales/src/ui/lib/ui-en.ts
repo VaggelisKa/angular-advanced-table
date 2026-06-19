@@ -66,16 +66,25 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
           ? `${sortDescription}, sort priority ${sortPriority} of ${sortCount}. Change sorting`
           : `${sortDescription}. Change sorting`;
       },
-      menuButton: ({ label }) => `Open pinning options for ${label} column`,
-      menuLabel: ({ label }) => `Pinning options for ${label} column`,
+      menuButton: ({ label }) => `Open column actions for ${label} column`,
+      menuLabel: ({ label }) => `Column actions for ${label} column`,
       pinButton: ({ label, toggleAction, pinSide }) =>
         `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${pinSide}: ${label} column`,
       pinButtonText: ({ pinSide, toggleAction }) =>
         `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${pinSide}`,
+      moveButton: ({ label, direction }) => `Move ${label} column ${direction}`,
+      moveButtonText: ({ direction }) => `Move ${direction}`,
     },
   },
   toolbar: {
     toolbarLabel: 'Table toolbar',
+  },
+  selection: {
+    columnLabel: 'Selection',
+    accessibilityLabels: {
+      selectAllAriaLabel: 'Select all rows',
+      selectRowAriaLabel: ({ rowId }) => `Select row ${rowId}`,
+    },
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };

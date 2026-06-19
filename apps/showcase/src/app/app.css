@@ -136,7 +136,8 @@
   --shell-border-strong: #d4d8dd;
   --shell-text: #0f1419;
   --shell-text-soft: #5b6672;
-  --shell-text-muted: #8a94a0;
+  /* WCAG AA: >=4.5:1 on --shell-nav (#ffffff) and --shell-nav-muted (#f4f5f7). */
+  --shell-text-muted: #646e7b;
   --shell-accent: #1f6feb;
   --shell-accent-strong: #1354c9;
   --shell-accent-soft: #e7f0fe;
@@ -163,7 +164,8 @@
   --shell-border-strong: #343b45;
   --shell-text: #e6eaef;
   --shell-text-soft: #9aa4b1;
-  --shell-text-muted: #6b7582;
+  /* WCAG AA: >=4.5:1 on dark nav surfaces (#111419, #171b21). */
+  --shell-text-muted: #7d8794;
   --shell-accent: #4f8bff;
   --shell-accent-strong: #6a9dff;
   --shell-accent-soft: #16243f;
@@ -253,6 +255,7 @@
   position: sticky;
   top: 0;
   align-self: start;
+  box-sizing: border-box;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -305,6 +308,8 @@
 }
 
 .showcase-nav-list {
+  min-height: 0;
+  flex: 1 1 auto;
   display: grid;
   overflow-y: auto;
   overflow-x: hidden;
@@ -383,6 +388,7 @@
 }
 
 .showcase-theme-control {
+  flex: 0 0 auto;
   margin-top: auto;
   display: grid;
   gap: 8px;
@@ -395,6 +401,7 @@
 }
 
 .showcase-repo-section {
+  flex: 0 0 auto;
   display: grid;
   gap: 8px;
   padding: 14px 8px 0;
@@ -517,6 +524,7 @@
 
   .showcase-shell.is-nav-open {
     max-height: 100vh;
+    max-height: 100dvh;
     overflow: hidden;
   }
 
@@ -543,8 +551,11 @@
     z-index: 50;
     align-self: auto;
     height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
     gap: 12px;
-    padding: 16px 14px;
+    padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px));
     border-right: 1px solid var(--shell-border);
     border-bottom: 0;
     box-shadow: 20px 0 50px rgba(15, 20, 25, 0.2);
