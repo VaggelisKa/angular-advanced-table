@@ -324,8 +324,24 @@ describe('NatTable Keybindings Utilities', () => {
       expect(keyboard.rowActivate(spaceEvent)).toBe(true);
 
       // Test columnReorderDirection
-      const leftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, shiftKey: true });
-      const rightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, shiftKey: true });
+      const leftVal = DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderLeft;
+      const rightVal = DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderRight;
+      const leftShortcut = normalizeShortcut(Array.isArray(leftVal) ? leftVal[0] : leftVal);
+      const rightShortcut = normalizeShortcut(Array.isArray(rightVal) ? rightVal[0] : rightVal);
+      const leftEvent = new KeyboardEvent('keydown', {
+        key: leftShortcut.key,
+        altKey: leftShortcut.altKey,
+        ctrlKey: leftShortcut.ctrlKey,
+        metaKey: leftShortcut.metaKey,
+        shiftKey: leftShortcut.shiftKey,
+      });
+      const rightEvent = new KeyboardEvent('keydown', {
+        key: rightShortcut.key,
+        altKey: rightShortcut.altKey,
+        ctrlKey: rightShortcut.ctrlKey,
+        metaKey: rightShortcut.metaKey,
+        shiftKey: rightShortcut.shiftKey,
+      });
       expect(keyboard.columnReorderDirection(leftEvent)).toBe(-1);
       expect(keyboard.columnReorderDirection(rightEvent)).toBe(1);
       expect(keyboard.columnReorderDirection(enterEvent)).toBeNull();

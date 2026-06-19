@@ -7,6 +7,7 @@ import type {
 } from 'ng-advanced-table-types';
 
 import type {
+  NatTableColumnMoveDirection,
   NatTableColumnMeta,
   NatTableSortIndicatorContext,
   NatTableState,
@@ -30,6 +31,7 @@ type _NatTableSortIndicatorContextMatchesInternalContract = Expect<
 describe('ng-advanced-table public table contracts', () => {
   it('keeps public table contracts aligned with the internal contract library', () => {
     const stateKey: keyof NatTableState = 'pagination';
+    const moveDirection: NatTableColumnMoveDirection = 'right';
     const meta: NatTableColumnMeta<ContractRow, number> = {
       hiddenHeaderLabel: 'Amount',
       align: 'end',
@@ -40,6 +42,7 @@ describe('ng-advanced-table public table contracts', () => {
     };
 
     expect(stateKey).toBe('pagination');
+    expect(moveDirection).toBe('right');
     expect(meta.hiddenHeaderLabel).toBe('Amount');
     expect(meta.cellHeight).toBe(48);
     expect(meta.cellMaxLines).toBe(3);

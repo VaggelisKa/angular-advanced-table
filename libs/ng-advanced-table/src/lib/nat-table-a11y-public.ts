@@ -6,6 +6,7 @@
  */
 export type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
+  NatTableAccessibilityColumnResizeAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,

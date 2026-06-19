@@ -1,4 +1,4 @@
-<div class="table-region" #tableRegion>
+<div class="table-region" data-testid="nat-table-region" #tableRegion [class.is-resizing]="isColumnResizing()">
   @if (tableSummary().trim()) {
     <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
   }
@@ -13,11 +13,14 @@
     ngGrid
     class="data-table"
     [class.has-sticky-header]="stickyHeader()"
+    [class.is-fixed-layout]="usesAuthoritativeLayout()"
+    [style.width.px]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null"
     [id]="tableElementId()"
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
     [attr.aria-describedby]="ariaDescribedBy()"
     [attr.aria-busy]="tableAriaBusy()"
+    [attr.dir]="resolvedDirection()"
     rowWrap="nowrap"
     colWrap="nowrap"
   >
@@ -30,6 +33,14 @@
     }
 
     @let columnStates = columnRenderStates();
+    @if (usesAuthoritativeLayout()) {
+      @let layoutWidths = resolvedColumnWidths();
+      <colgroup>
+        @for (column of visibleColumns(); track column.id) {
+          <col [style.width.px]="layoutWidths[column.id]" />
+        }
+      </colgroup>
+    }
     <thead>
       @let tableHeaderGroups = headerGroups();
       @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
@@ -65,6 +76,7 @@
               [style.min-width]="columnState?.headerMinWidth"
               [style.max-width]="columnState?.headerMaxWidth"
               [attr.data-column-id]="header.column.id"
+              [attr.data-testid]="'nat-table-header-' + header.column.id"
               [attr.aria-sort]="columnState?.ariaSort"
               (keydown)="onHeaderKeydown($event, header.column)"
               (focusin)="onCellFocusIn($event)"
@@ -92,6 +104,17 @@
                     }
                   </span>
                 </div>
+                @if (canResizeColumn(header)) {
+                  <span
+                    class="column-resize-handle"
+                    aria-hidden="true"
+                    [class.is-resizing]="header.column.getIsResizing()"
+                    (pointerdown)="$event.stopPropagation()"
+                    (mousedown)="onResizeStart($event, header)"
+                    (touchstart)="onResizeStart($event, header)"
+                    (click)="$event.stopPropagation()"
+                  ></span>
+                }
               }
             </th>
           }
@@ -253,5 +276,16 @@
     </tbody>
   </table>
 
-  <p class="sr-only" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</p>
+  @if (columnResizeGuide(); as guide) {
+    <div
+      class="column-resize-guide"
+      aria-hidden="true"
+      [style.left.px]="guide.left"
+      [style.transform]="'translateX(' + guide.offset + 'px)'"
+    ></div>
+  }
+
+  <p class="sr-only" aria-live="polite" aria-atomic="true" data-testid="nat-table-live-region">
+    {{ liveMessage() }}
+  </p>
 </div>

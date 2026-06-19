@@ -75,6 +75,11 @@ const showcaseExamples = [
     path: '/keyboard-interaction',
   },
   {
+    label: 'Column resizing',
+    description: 'Drag & keyboard widths',
+    path: '/resizing',
+  },
+  {
     label: 'Row selection',
     description: 'Checkbox row selection',
     path: '/selection',

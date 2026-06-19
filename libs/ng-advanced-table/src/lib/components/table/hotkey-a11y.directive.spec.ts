@@ -2,7 +2,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NatTableHotkeyA11y } from './hotkey-a11y.directive';
 import { NatTableService } from './table.service';
-import { NAT_TABLE_KEYBINDINGS } from './keybindings';
+import { NAT_TABLE_KEYBINDINGS, serializeShortcutValue, DEFAULT_NAT_TABLE_KEYBINDINGS } from './keybindings';
 import type { NatTableKeybindings } from './table.types';
 
 @Component({
@@ -87,7 +87,9 @@ describe('NatTableHotkeyA11y', () => {
       await fixture.whenStable();
 
       const button = fixture.nativeElement.querySelector('[data-testid="fallback-btn"]') as HTMLButtonElement;
-      expect(button.getAttribute('aria-keyshortcuts')).toBe('Alt+Shift+ArrowRight');
+      expect(button.getAttribute('aria-keyshortcuts')).toBe(
+        serializeShortcutValue(DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderRight),
+      );
     });
   });
 

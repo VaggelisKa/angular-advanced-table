@@ -23,9 +23,9 @@ export type NatTableShortcutValue = string | NatTableShortcut | (string | NatTab
 export interface NatTableKeybindings {
   /** Keys that activate a row. Default: `['Enter', ' ', 'Spacebar']` */
   rowActivate?: NatTableShortcutValue;
-  /** Key combination to reorder a column to the left. Default: `'Alt+Shift+ArrowLeft'` */
+  /** Key combination to reorder a column to the left. Default: `'Mod+Shift+ArrowLeft'` */
   columnReorderLeft?: NatTableShortcutValue;
-  /** Key combination to reorder a column to the right. Default: `'Alt+Shift+ArrowRight'` */
+  /** Key combination to reorder a column to the right. Default: `'Mod+Shift+ArrowRight'` */
   columnReorderRight?: NatTableShortcutValue;
   /** Key combination to step into a cell's first interactive control. Default: `'Enter'` */
   cellEnterControl?: NatTableShortcutValue;
@@ -40,8 +40,8 @@ export interface NatTableKeybindings {
 /** Default keyboard shortcuts adhering to standard WCAG cell-interaction and reordering behaviors. */
 export const DEFAULT_NAT_TABLE_KEYBINDINGS: Required<NatTableKeybindings> = {
   rowActivate: ['Enter', ' ', 'Spacebar'],
-  columnReorderLeft: 'Alt+Shift+ArrowLeft',
-  columnReorderRight: 'Alt+Shift+ArrowRight',
+  columnReorderLeft: 'Mod+Shift+ArrowLeft',
+  columnReorderRight: 'Mod+Shift+ArrowRight',
   cellEnterControl: 'Enter',
   cellExitControl: 'Escape',
   cellTabNextControl: 'Tab',

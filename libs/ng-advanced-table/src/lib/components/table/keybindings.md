@@ -11,7 +11,7 @@ By default, the table operates on standard WCAG-compliant interactions:
 | Feature / Action           | Default Key Combination              | Description                                                      |
 | :------------------------- | :----------------------------------- | :--------------------------------------------------------------- |
 | **Row Activation**         | `Enter`, `Space`, `Spacebar`         | Triggers the `(rowActivate)` output on the active row.           |
-| **Column Reordering**      | `Alt+Shift+ArrowLeft` / `ArrowRight` | Reorders columns left or right within their pinning zone.        |
+| **Column Reordering**      | `Mod+Shift+ArrowLeft` / `ArrowRight` | Reorders columns left or right within their pinning zone.        |
 | **Cell Interaction Entry** | `Enter`                              | Focuses the first interactive control inside the selected cell.  |
 | **Cell Interaction Exit**  | `Escape`                             | Returns focus from an inside control back to the parent cell.    |
 | **Next Control Walk**      | `Tab`                                | Moves focus to the next interactive control inside the cell.     |

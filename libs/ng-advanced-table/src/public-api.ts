@@ -23,6 +23,7 @@ export type {
   NatTableAccessibilityText,
   NatTableBodyState,
   NatTableCellTone,
+  NatTableColumnMoveDirection,
   NatTableColumnMeta,
   NatTableDataStatus,
   NatTableEmptyTemplateContext,

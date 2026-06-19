@@ -5,6 +5,7 @@ import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnSizingState,
   PaginationState,
   Row,
   RowData,
@@ -34,6 +35,8 @@ export interface NatTableState {
   columnOrder: ColumnOrderState;
   /** Left and right pinned column ids. */
   columnPinning: ColumnPinningState;
+  /** Per-column pixel widths keyed by column id, set by interactive resizing. */
+  columnSizing: ColumnSizingState;
   /** Selected row ids keyed by `getRowId`. */
   rowSelection: RowSelectionState;
 }
@@ -70,6 +73,9 @@ export interface NatTableRowActivateEvent<TData extends RowData = RowData> {
 
 /** Data lifecycle state rendered by `<nat-table>` when rows are unavailable. */
 export type NatTableDataStatus = 'loading' | 'error' | 'success';
+
+/** Horizontal direction used by built-in and custom column-reorder controls. */
+export type NatTableColumnMoveDirection = 'left' | 'right';
 
 /** Named data lifecycle states accepted by `<nat-table>`. */
 export const NAT_TABLE_DATA_STATUS = {
@@ -279,6 +285,22 @@ export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   totalText: string;
 }
 
+/** Context passed to custom column-resize announcement formatters. */
+export type NatTableAccessibilityColumnResizeAnnouncementContext = {
+  /** TanStack column id. */
+  readonly columnId: string;
+  /** Resolved human-readable column label. */
+  readonly label: string;
+  /** New column width in CSS pixels. */
+  readonly widthValue: number;
+  /** Provider-formatted text for `widthValue`. */
+  readonly widthText: string;
+  /** Whether the width sits on the column's minimum resize bound. */
+  readonly atMinimum?: boolean;
+  /** Whether the width sits on the column's maximum resize bound. */
+  readonly atMaximum?: boolean;
+};
+
 /** Optional overrides for built-in screen-reader summaries and announcements. */
 export interface NatTableAccessibilityText {
   /**
@@ -309,6 +331,8 @@ export interface NatTableAccessibilityText {
   errorState?: string;
   /** Extra reorder instructions appended when column reordering is enabled. */
   reorderKeyboardInstructions?: string;
+  /** Extra resize instructions appended when column resizing is enabled. */
+  resizeKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
   tableSummary?: (context: NatTableAccessibilitySummaryContext) => string;
   /** Live announcement emitted when sorting changes. */
@@ -325,6 +349,8 @@ export interface NatTableAccessibilityText {
   pageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when a column is reordered. */
   columnReorder?: (context: NatTableAccessibilityColumnReorderAnnouncementContext) => string;
+  /** Live announcement emitted when a column is resized. */
+  columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
   /** Live announcement emitted when the row selection changes. */
   selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
 }
@@ -384,6 +410,15 @@ declare module '@tanstack/table-core' {
     TData extends import('@tanstack/angular-table').RowData,
     TValue,
   > extends NatTableColumnMeta<TData, TValue> {}
+
+  interface TableMeta<TData extends import('@tanstack/angular-table').RowData> {
+    /** Current table locale id exposed to companion header controls. */
+    natTableLocaleId?: string;
+    /** Returns whether a visible column can move within its current pinned region. */
+    natTableCanMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => boolean;
+    /** Moves a visible column within its current pinned region and announces the change. */
+    natTableMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => void;
+  }
 }
 
 export type NatTableMode = 'auto' | 'manual';

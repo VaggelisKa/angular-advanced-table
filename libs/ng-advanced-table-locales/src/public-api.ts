@@ -17,6 +17,7 @@ export {
 } from './lib/provide-table-locales';
 export type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
+  NatTableAccessibilityColumnResizeAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,

@@ -5,7 +5,11 @@ import type {
   NatTableState,
 } from 'ng-advanced-table-types';
 
-import type { NatTableColumnMeta, NatTableUiState } from './table-ui.types';
+import type {
+  NatTableColumnMoveDirection,
+  NatTableColumnMeta,
+  NatTableUiState,
+} from './table-ui.types';
 
 interface ContractRow {
   amount: number;
@@ -41,8 +45,10 @@ describe('ng-advanced-table-ui public table contracts', () => {
         cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
       } satisfies NatTableColumnMeta<ContractRow, number>,
     };
+    const moveDirection: NatTableColumnMoveDirection = 'left';
 
     expect(column.meta?.hiddenHeaderLabel).toBe('Amount');
+    expect(moveDirection).toBe('left');
     expect(column.meta?.cellHeight).toBe(52);
     expect(column.meta?.cellMaxLines).toBe(Infinity);
     expect(column.meta?.headerSize).toBe(120);
