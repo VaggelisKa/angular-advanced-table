@@ -16,8 +16,8 @@ test('supports keyboard-based column reordering', async ({ page }) => {
   const nameHeader = page.getByRole('grid', { name: 'Reordering demo table' }).getByRole('button', { name: 'Sort by Name' });
   await nameHeader.focus();
 
-  // Press Alt + Shift + ArrowRight to swap with Category
-  await page.keyboard.press('Alt+Shift+ArrowRight');
+  // Press Control + Shift + ArrowRight to swap with Category
+  await page.keyboard.press('Control+Shift+ArrowRight');
 
   // Order should now be: Category, Name, Status, Value
   await expect(orderItems.nth(0)).toContainText('Category');

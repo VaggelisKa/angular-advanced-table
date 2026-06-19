@@ -17,8 +17,8 @@ test('supports keyboard-based column reordering', async ({ page }) => {
   await nameHeader.focus();
   await expect(nameHeader).toBeFocused();
 
-  // Press Alt + Shift + ArrowRight to swap with Category
-  await page.keyboard.press('Alt+Shift+ArrowRight');
+  // Press Control + Shift + ArrowRight to swap with Category
+  await page.keyboard.press('Control+Shift+ArrowRight');
 
   // Order should now be: Category, Name, Status, Value
   await expect(orderItems.nth(0)).toContainText('Category');
