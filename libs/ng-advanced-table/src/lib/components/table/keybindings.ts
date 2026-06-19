@@ -184,3 +184,97 @@ export function mergeNatTableKeybindings(
       DEFAULT_NAT_TABLE_KEYBINDINGS.cellTabPrevControl,
   };
 }
+
+/** Serializes a keybinding shortcut value to a string representation suitable for ARIA attributes. */
+export function serializeShortcutValue(value: NatTableShortcutValue | undefined): string {
+  if (!value) {
+    return '';
+  }
+  const values = Array.isArray(value) ? value : [value];
+  const serializedSet = new Set<string>();
+
+  for (const val of values) {
+    const norm = normalizeShortcut(val);
+    const parts: string[] = [];
+    if (norm.altKey) parts.push('Alt');
+    if (norm.ctrlKey) parts.push('Control');
+    if (norm.metaKey) parts.push('Meta');
+    if (norm.shiftKey) parts.push('Shift');
+    
+    let key = norm.key;
+    if (key === ' ' || key.toLowerCase() === 'spacebar' || key.toLowerCase() === 'space') {
+      key = 'Space';
+    }
+    parts.push(key);
+    serializedSet.add(parts.join('+'));
+  }
+
+  return Array.from(serializedSet).filter(Boolean).join(' ');
+}
+
+/** Checks if two shortcut definitions are equivalent. */
+export function areShortcutsEqual(
+  a: string | NatTableShortcut,
+  b: string | NatTableShortcut,
+): boolean {
+  const normA = normalizeShortcut(a);
+  const normB = normalizeShortcut(b);
+  return (
+    normA.key.toLowerCase() === normB.key.toLowerCase() &&
+    normA.altKey === normB.altKey &&
+    normA.ctrlKey === normB.ctrlKey &&
+    normA.shiftKey === normB.shiftKey &&
+    normA.metaKey === normB.metaKey
+  );
+}
+
+/** Checks if there is any overlap between two shortcut configurations. */
+export function areShortcutValuesOverlapping(
+  valA: NatTableShortcutValue | undefined,
+  valB: NatTableShortcutValue | undefined,
+): boolean {
+  if (!valA || !valB) {
+    return false;
+  }
+  const listA = Array.isArray(valA) ? valA : [valA];
+  const listB = Array.isArray(valB) ? valB : [valB];
+  for (const a of listA) {
+    for (const b of listB) {
+      if (areShortcutsEqual(a, b)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Validates keybindings configuration and returns warning messages for any conflicts. */
+export function validateKeybindings(bindings: Required<NatTableKeybindings>): string[] {
+  const warnings: string[] = [];
+  const keys = Object.keys(bindings) as (keyof NatTableKeybindings)[];
+
+  for (let i = 0; i < keys.length; i++) {
+    for (let j = i + 1; j < keys.length; j++) {
+      const keyA = keys[i];
+      const keyB = keys[j];
+      
+      // rowActivate and cellEnterControl operate at different focus contexts (row-level vs inside cell)
+      // and can safely share shortcuts (like 'Enter') by design.
+      if (
+        (keyA === 'rowActivate' && keyB === 'cellEnterControl') ||
+        (keyA === 'cellEnterControl' && keyB === 'rowActivate')
+      ) {
+        continue;
+      }
+
+      if (areShortcutValuesOverlapping(bindings[keyA], bindings[keyB])) {
+        warnings.push(
+          `Action '${keyA}' and Action '${keyB}' share overlapping shortcut combinations.`,
+        );
+      }
+    }
+  }
+  return warnings;
+}
+
+

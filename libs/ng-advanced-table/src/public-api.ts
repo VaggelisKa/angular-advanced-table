@@ -46,4 +46,7 @@ export type {
   NatTableShortcutValue,
   NatTableKeybindings,
 } from './lib/components/table/table.types';
+export { NatTableHotkeyA11y } from './lib/components/table/hotkey-a11y.directive';
+export { serializeShortcutValue } from './lib/components/table/keybindings';
+
 

@@ -6,8 +6,13 @@ import {
   matchShortcut,
   matchShortcutValue,
   mergeNatTableKeybindings,
+  serializeShortcutValue,
+  validateKeybindings,
+  areShortcutsEqual,
+  areShortcutValuesOverlapping,
   DEFAULT_NAT_TABLE_KEYBINDINGS,
   type NatTableShortcut,
+  type NatTableKeybindings,
 } from './keybindings';
 
 describe('NatTable Keybindings Utilities', () => {
@@ -228,4 +233,75 @@ describe('NatTable Keybindings Utilities', () => {
       expect(merged.columnReorderRight).toBe(DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderRight);
     });
   });
+
+  describe('serializeShortcutValue', () => {
+    it('should handle undefined and empty input', () => {
+      expect(serializeShortcutValue(undefined)).toBe('');
+    });
+
+    it('should serialize simple string shortcuts', () => {
+      expect(serializeShortcutValue('Enter')).toBe('Enter');
+      expect(serializeShortcutValue(' ')).toBe('Space');
+    });
+
+    it('should serialize single shortcut objects with modifiers alphabetically', () => {
+      const shortcut: NatTableShortcut = {
+        key: 'a',
+        ctrlKey: true,
+        altKey: true,
+        shiftKey: true,
+        metaKey: true,
+      };
+      // Alphabetical order: Alt, Control, Meta, Shift
+      expect(serializeShortcutValue(shortcut)).toBe('Alt+Control+Meta+Shift+a');
+    });
+
+    it('should serialize array shortcut values separated by spaces', () => {
+      const value = ['Enter', ' ', { key: 'ArrowLeft', altKey: true, shiftKey: true }];
+      expect(serializeShortcutValue(value)).toBe('Enter Space Alt+Shift+ArrowLeft');
+    });
+  });
+
+  describe('areShortcutsEqual', () => {
+    it('should return true for identical shortcuts in different formats', () => {
+      expect(areShortcutsEqual('Ctrl+Enter', { key: 'Enter', ctrlKey: true })).toBe(true);
+      expect(areShortcutsEqual('Alt+Shift+a', 'Alt+Shift+A')).toBe(true);
+    });
+
+    it('should return false for different key combinations', () => {
+      expect(areShortcutsEqual('Ctrl+Enter', 'Enter')).toBe(false);
+      expect(areShortcutsEqual('Ctrl+Enter', 'Alt+Enter')).toBe(false);
+    });
+  });
+
+  describe('areShortcutValuesOverlapping', () => {
+    it('should return true if there is any overlap between values', () => {
+      expect(areShortcutValuesOverlapping(['Enter', 'Space'], 'Space')).toBe(true);
+      expect(areShortcutValuesOverlapping(['Alt+ArrowLeft'], ['Alt+ArrowLeft', 'ArrowLeft'])).toBe(true);
+    });
+
+    it('should return false if there is no overlap', () => {
+      expect(areShortcutValuesOverlapping(['Enter', 'Space'], 'ArrowLeft')).toBe(false);
+    });
+  });
+
+  describe('validateKeybindings', () => {
+    it('should return no warnings for standard/default keybindings', () => {
+      const warnings = validateKeybindings(DEFAULT_NAT_TABLE_KEYBINDINGS);
+      expect(warnings).toEqual([]);
+    });
+
+    it('should return warnings when multiple actions register conflicting shortcuts', () => {
+      const conflicting: Required<NatTableKeybindings> = {
+        ...DEFAULT_NAT_TABLE_KEYBINDINGS,
+        columnReorderLeft: 'Alt+Shift+ArrowLeft',
+        columnReorderRight: 'Alt+Shift+ArrowLeft', // conflict!
+      };
+      const warnings = validateKeybindings(conflicting);
+      expect(warnings.length).toBe(1);
+      expect(warnings[0]).toContain("columnReorderLeft");
+      expect(warnings[0]).toContain("columnReorderRight");
+    });
+  });
 });
+

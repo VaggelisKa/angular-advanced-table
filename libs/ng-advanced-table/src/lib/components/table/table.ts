@@ -18,6 +18,7 @@ import {
   signal,
   untracked,
   viewChild,
+  isDevMode,
   type TemplateRef,
 } from '@angular/core';
 import {
@@ -60,7 +61,7 @@ import {
 } from './table-intl';
 import { NatTableService } from './table.service';
 import { NatTableStateCell } from './table-state-cell.directive';
-import { matchShortcutValue } from './keybindings';
+import { matchShortcutValue, validateKeybindings } from './keybindings';
 import {
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
@@ -651,6 +652,16 @@ export class NatTable<TData extends RowData = RowData> {
 
     effect(() => {
       this.natTableService.tableKeybindings.set(this.keybindings());
+    });
+
+    effect(() => {
+      const bindings = this.natTableService.keybindings();
+      if (isDevMode()) {
+        const warnings = validateKeybindings(bindings);
+        for (const warning of warnings) {
+          console.warn(`[ng-advanced-table] ${warning}`);
+        }
+      }
     });
 
     effect(() => {
