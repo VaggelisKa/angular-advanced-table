@@ -373,7 +373,7 @@ Use this pattern:
 - Rebuild static helpers such as `withRenderMetricsColumn(...)` when the locale changes, or pass their `locale` option when constructing columns.
 
 ```ts
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -392,7 +392,6 @@ const columnCopy = {
 
 @Component({
   selector: 'app-orders-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSearch, NatTablePageSize, NatTablePager],
   template: `
     <nat-table

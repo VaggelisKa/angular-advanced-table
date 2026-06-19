@@ -13,7 +13,9 @@ import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolba
     <nat-table-toolbar>
       <button natToolbarItem="export" id="default-start">Export</button>
       <button natToolbarItem="filter" natToolbarItemPosition="end" id="explicit-end">Filter</button>
-      <button natToolbarItem="dynamic" [natToolbarItemPosition]="dynamicPosition()" id="dynamic">Dynamic</button>
+      <button natToolbarItem="dynamic" [natToolbarItemPosition]="dynamicPosition()" id="dynamic">
+        Dynamic
+      </button>
       <div natToolbarItem="custom">Custom widget</div>
     </nat-table-toolbar>
   `,

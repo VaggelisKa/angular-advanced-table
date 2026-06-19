@@ -1,6 +1,5 @@
 import { DOCUMENT } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Injector,
@@ -93,7 +92,6 @@ const showcaseExamples = [
 
 @Component({
   selector: 'app-root',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',

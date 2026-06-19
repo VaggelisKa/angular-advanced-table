@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import {
   type CellContext,
   type ColumnDef,
@@ -54,7 +54,6 @@ const DEMO_DATA: DemoItem[] = [
   ],
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableBuilderPage {
   // Feature Toggles
@@ -171,7 +170,7 @@ export class TableBuilderPage {
 
   // Generated TS code
   readonly generatedTs = computed(() => {
-    const imports = ['ChangeDetectionStrategy', 'Component', 'signal'];
+    const imports = ['Component', 'signal'];
     const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
 
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
@@ -237,7 +236,6 @@ interface DemoItem {
   ],
   templateUrl: './custom-table.html',
   styleUrl: './custom-table.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomTableComponent {
   readonly data: DemoItem[] = [

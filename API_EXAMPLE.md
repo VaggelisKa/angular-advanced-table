@@ -35,7 +35,7 @@ The following showcase demonstrates the simplified, context-aware API implemente
 Below is the corresponding component class implementation demonstrating standalone setup, declarative data loading with `resource()`, and derived state using `computed()`:
 
 ```typescript
-import { ChangeDetectionStrategy, Component, computed, resource, signal } from '@angular/core';
+import { Component, computed, resource, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
@@ -58,7 +58,6 @@ interface DemoItem {
 
 @Component({
   selector: 'app-declarative-table-demo',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTableSurface,
     NatTableToolbar,

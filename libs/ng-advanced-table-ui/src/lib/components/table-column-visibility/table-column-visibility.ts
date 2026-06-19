@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import type { Column, RowData } from '@tanstack/angular-table';
 
 import {
@@ -30,7 +30,6 @@ interface ColumnVisibilityItem<TData extends RowData = RowData> {
 
 @Component({
   selector: 'nat-table-column-visibility',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-column-visibility.html',
   styleUrl: './table-column-visibility.css',
 })
@@ -43,9 +42,7 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
   );
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
-  protected readonly controller = computed(
-    () => this.natTableService.controller(),
-  );
+  protected readonly controller = computed(() => this.natTableService.controller());
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
   private readonly localeId = computed(
