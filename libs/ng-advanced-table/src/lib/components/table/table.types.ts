@@ -295,6 +295,10 @@ export type NatTableAccessibilityColumnResizeAnnouncementContext = {
   readonly widthValue: number;
   /** Provider-formatted text for `widthValue`. */
   readonly widthText: string;
+  /** Whether the width sits on the column's minimum resize bound. */
+  readonly atMinimum?: boolean;
+  /** Whether the width sits on the column's maximum resize bound. */
+  readonly atMaximum?: boolean;
 };
 
 /** Optional overrides for built-in screen-reader summaries and announcements. */

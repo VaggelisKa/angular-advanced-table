@@ -1054,8 +1054,10 @@ describe('NatTable', () => {
     document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1000 }));
 
     // Offset clamps to the fit budget: region's max (region 550 - other mins 150 = 400)
-    // minus the seeded start width (138) = 262 — not the column's own maxSize (1000).
-    expect(internal.columnResizeGuide()?.offset).toBe(262);
+    // minus the seeded start width (137) = 263 — not the column's own maxSize (1000).
+    // The flex surplus floors per-share (350/4 = 87 each, last absorbs the remainder),
+    // so region starts at min 50 + 87 = 137.
+    expect(internal.columnResizeGuide()?.offset).toBe(263);
 
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 1000 }));
   });
@@ -1172,6 +1174,211 @@ describe('NatTable', () => {
     // The table is exactly as wide as the sum of its columns (so the region scrolls).
     const total = colWidths.reduce((sum, width) => sum + width, 0);
     expect(Number.parseInt(table.style.width, 10)).toBe(total);
+  });
+
+  it('lets a fixed-mode resize grow past the viewport instead of capping at the fit budget', async () => {
+    // Fixed (authoritative) layout is designed to grow and scroll: the viewport "fit"
+    // cap that fill mode applies must NOT bind here. A generous maxSize on region makes
+    // Alt+End reach the column's own max, well past the fill-mode fit budget (174).
+    const wideColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
+      'accessorKey' in column && column.accessorKey === 'region'
+        ? { ...column, maxSize: 1000 }
+        : column,
+    );
+    await recreateHost({ columns: wideColumns, columnSizingMode: 'fixed' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Same viewport as the fill-mode fit test, where End capped region at 174.
+    const internal = getInternalTable(fixture) as unknown as {
+      regionViewportWidth: { set(value: number): void };
+    };
+    internal.regionViewportWidth.set(390);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Fixed mode ignores the fit cap, so region reaches its own maxSize (1000), far past
+    // the 174 the fill-mode cap would have allowed — the table grows and scrolls.
+    const emittedWidth = host.columnSizingEvents.at(-1)?.['region'];
+    expect(emittedWidth).toBe(1000);
+    expect(emittedWidth!).toBeGreaterThan(174);
+  });
+
+  it('resets a column width in fixed mode even after a stale measured width was recorded', async () => {
+    // Regression: "Reset Widths" clears columnSizing to {} but does nothing in fixed mode.
+    // Root cause: resolvedColumnWidths fell back to measuredHeaderWidths, which the
+    // ResizeObserver re-confirms each frame from the colgroup — so the column was pinned
+    // to its pre-reset colgroup width. The fix gates the measured fallback on
+    // !usesAuthoritativeLayout(), falling through to the def size instead.
+    await recreateHost({ columns: resizableColumns, columnSizingMode: 'fixed' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const internal = getInternalTable(fixture) as unknown as {
+      measuredHeaderWidths: { set(v: Record<string, number>): void };
+      resolvedColumnWidths(): Record<string, number>;
+    };
+
+    // Inject a stale measured width (300px) that differs from the region column's def size (140).
+    // This simulates the state after a resize: the ResizeObserver captured the colgroup-forced
+    // width. With the bug the reset below would leave region at 300; with the fix it returns
+    // to the def size because the measured fallback is skipped in authoritative layout.
+    internal.measuredHeaderWidths.set({ region: 300 });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // columnSizing is empty — region was never resized, so no entry exists.
+    // resolvedColumnWidths must resolve to the column's def size (140), not the stale 300.
+    // resizableColumns['region'] has size: 140 (confirmed from the fixture column defs above).
+    const widths = internal.resolvedColumnWidths();
+    expect(widths['region']).toBe(140);
+    expect(widths['region']).not.toBe(300);
+  });
+
+  it('announces the minimum bound on a keyboard shrink at the min without emitting a sizing change', async () => {
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+
+    // Alt+Home jumps region to its minSize (100).
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 100 });
+
+    // At the min, Alt+ArrowLeft (shrink in LTR) keeps the width and emits nothing new,
+    // but the live region still announces the bound so a SR user learns the range.
+    const eventsAtMin = host.columnSizingEvents.length;
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.length).toBe(eventsAtMin);
+    expect(liveRegion.textContent?.trim()).toBe('Region column width 100 pixels (minimum).');
+  });
+
+  it('announces the maximum bound on a keyboard grow at the max without emitting a sizing change', async () => {
+    // region declares no maxSize, so the fill-mode fit budget is the binding max.
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const internal = getInternalTable(fixture) as unknown as {
+      regionViewportWidth: { set(value: number): void };
+    };
+    internal.regionViewportWidth.set(390);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const regionHeader = fixture.nativeElement.querySelector(
+      'thead th[data-column-id="region"]',
+    ) as HTMLTableCellElement;
+    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+
+    // Alt+End jumps region to the fit-budget max (390 - other mins 216 = 174).
+    regionHeader.focus();
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 174 });
+
+    // At the max, Alt+ArrowRight (grow in LTR) keeps the width and emits nothing new,
+    // but the live region announces the maximum so a SR user learns the range.
+    const eventsAtMax = host.columnSizingEvents.length;
+    regionHeader.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(host.columnSizingEvents.length).toBe(eventsAtMax);
+    expect(liveRegion.textContent?.trim()).toBe('Region column width 174 pixels (maximum).');
+  });
+
+  it('caps a fill-flex column at its maxSize and never renders it wider', async () => {
+    // A small maxSize on a non-resized flex column must clamp its distributed share:
+    // even when its intrinsic-weight share is larger, it never renders past the cap.
+    const cappedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
+      'accessorKey' in column && column.accessorKey === 'status'
+        ? { ...column, maxSize: 90 }
+        : column,
+    );
+    await recreateHost({ columns: cappedColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const internal = getInternalTable(fixture) as unknown as {
+      regionViewportWidth: { set(value: number): void };
+      resolvedColumnWidths(): Record<string, number>;
+    };
+    // A wide region hands every flex column a generous surplus share; without the cap
+    // status would stretch well past 90.
+    internal.regionViewportWidth.set(900);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(internal.resolvedColumnWidths()['status']).toBe(90);
+  });
+
+  it('distributes the fill-flex surplus so the widths sum to the region exactly', async () => {
+    // With four flex columns the per-share rounding can drift; the surplus must split so
+    // the resolved widths sum to the region precisely — no 1–2px overflow.
+    await recreateHost({ columns: resizableColumns });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const internal = getInternalTable(fixture) as unknown as {
+      regionViewportWidth: { set(value: number): void };
+      resolvedColumnWidths(): Record<string, number>;
+      visibleColumns(): readonly { id: string }[];
+    };
+    // An odd region width forces non-integer per-share splits, exercising the rounding.
+    internal.regionViewportWidth.set(917);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(internal.visibleColumns().length).toBe(4);
+    const widths = internal.resolvedColumnWidths();
+    const total = Object.values(widths).reduce((sum, width) => sum + width, 0);
+    expect(total).toBe(917);
   });
 
   it('clamps the resize guide to the column bounds instead of overshooting the cursor', async () => {

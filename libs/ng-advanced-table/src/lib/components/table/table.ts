@@ -712,12 +712,22 @@ export class NatTable<TData extends RowData = RowData> {
       let distributedSurplus = 0;
 
       flex.forEach(({ id, weight, min }, index) => {
+        // Math.floor never over-allocates, so the running sum stays <= surplus and the
+        // last column gets the exact remainder (always >= 0) — the widths sum to the
+        // container with no sub-pixel overflow. (The old Math.round could over-allocate
+        // and leave the last column a negative share, pushing the total 1–2px past the
+        // region.)
         const extra =
           index === flex.length - 1
             ? surplus - distributedSurplus
-            : Math.round((surplus * weight) / totalWeight);
-        widths[id] = min + Math.max(0, extra);
+            : Math.floor((surplus * weight) / totalWeight);
         distributedSurplus += extra;
+        // Honor the column's own maxSize: a flex column never renders wider than its cap.
+        // ponytail: if every flex column is capped below its share the table may sit
+        // slightly under-filled (rare); we don't redistribute the capped remainder.
+        const flexMax = this.getResizeBounds(this.table.getColumn(id)!).max;
+        const width = min + Math.max(0, extra);
+        widths[id] = flexMax !== null ? Math.min(width, flexMax) : width;
       });
 
       return widths;
@@ -734,10 +744,15 @@ export class NatTable<TData extends RowData = RowData> {
       const resizedWidth = columnSizing[column.id];
 
       // Precedence: user-resized > measured header > fixed def size > getSize().
+      // The measured-header fallback applies only in intrinsic (auto) layout. Under an
+      // authoritative colgroup (fixed mode / fill-flex), the "measured" width is just the
+      // width the colgroup forced last frame — re-confirmed by the ResizeObserver — so
+      // using it as a fallback would pin a column to its pre-reset width and defeat a
+      // columnSizing reset. Fall straight through to the def size / getSize() instead.
       result[column.id] =
         resizedWidth !== undefined
           ? this.clampColumnWidth(column, resizedWidth)
-          : measuredWidth !== undefined && measuredWidth > 0
+          : !this.usesAuthoritativeLayout() && measuredWidth !== undefined && measuredWidth > 0
             ? measuredWidth
             : fixedWidth !== null
               ? fixedWidth
@@ -1255,7 +1270,9 @@ export class NatTable<TData extends RowData = RowData> {
 
     const { min, max } = this.getResizeFitBounds(column);
     const current = this.getColumnEffectiveWidth(column);
-    const step = event.shiftKey ? RESIZE_KEYBOARD_STEP_LARGE : RESIZE_KEYBOARD_STEP;
+    // Alt+Shift+Arrow never reaches this method (it matches neither resize nor reorder),
+    // so the large step is unreachable here; keep it for the End fallback below.
+    const step = RESIZE_KEYBOARD_STEP;
     // In RTL the resize edge sits on the column's left, so the arrow pointing at it
     // (ArrowLeft) must grow the column, mirroring the pointer-drag handle.
     const towardEdge = this.resolvedDirection() === 'rtl' ? -step : step;
@@ -1283,7 +1300,13 @@ export class NatTable<TData extends RowData = RowData> {
 
     const clamped = Math.max(min, max !== null ? Math.min(max, next) : next);
 
-    if (clamped === current) return;
+    // At a bound the press cannot change the width, but a keyboard/SR user still needs
+    // to learn the column's range — so announce the bound WITHOUT emitting a sizing
+    // change (announcing is not a state change; no columnSizing event fires here).
+    if (clamped === current) {
+      this.announceColumnResize(column, current);
+      return;
+    }
 
     this.updateState({
       columnSizing: (currentSizing) => ({ ...currentSizing, [column.id]: clamped }),
@@ -1317,6 +1340,13 @@ export class NatTable<TData extends RowData = RowData> {
   private getResizeFitBounds(column: Column<TData, unknown>): { min: number; max: number | null } {
     const { min, max: ownMax } = this.getResizeBounds(column);
     const region = this.regionViewportWidth();
+
+    // Fixed (authoritative) layout is designed to grow and scroll, so the "fit to
+    // viewport" cap must not apply: a resize can push the column past the region and
+    // the table widens. Only fill mode keeps the table inside the visible region.
+    if (this.isFixedLayout()) {
+      return { min, max: ownMax };
+    }
 
     if (region <= 0) {
       return { min, max: ownMax };
@@ -1429,11 +1459,19 @@ export class NatTable<TData extends RowData = RowData> {
   private announceColumnResize(column: Column<TData, unknown>, width: number): void {
     const label = resolveColumnLabel(column);
     const formatter = this.resolvedAccessibilityText().columnResize;
+    // Flag the bounds with the SAME limits the resize obeys: min from getResizeBounds,
+    // max from getResizeFitBounds (the fill-mode fit cap, or the plain ownMax in fixed
+    // mode). So a keyboard/SR user hears "(minimum)"/"(maximum)" exactly when a further
+    // press in that direction would be a no-op.
+    const { min } = this.getResizeBounds(column);
+    const { max } = this.getResizeFitBounds(column);
     const context: NatTableAccessibilityColumnResizeAnnouncementContext = {
       columnId: column.id,
       label,
       widthValue: width,
       widthText: this.formatAccessibilityNumber(width),
+      atMinimum: width <= min,
+      atMaximum: max !== null && width >= max,
     };
 
     this.announce(formatter?.(context) ?? '');
