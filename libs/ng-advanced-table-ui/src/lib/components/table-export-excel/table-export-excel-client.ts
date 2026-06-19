@@ -1,5 +1,6 @@
 import type { Column, Row, RowData } from '@tanstack/angular-table';
-import * as XLSX from 'xlsx';
+import writeExcelFile from 'write-excel-file/universal';
+import type { SheetData } from 'write-excel-file/universal';
 
 import type {
   NatTableColumnExportOptions,
@@ -8,6 +9,7 @@ import type {
 import type { NatTableExcelExportContext } from './table-export-excel.types';
 
 const EXCEL_SHEET_NAME = 'Table';
+const EXCEL_DATE_FORMAT = 'yyyy-mm-dd hh:mm:ss';
 
 export async function exportNatTableExcel<TData extends RowData>(
   context: NatTableExcelExportContext<TData>,
@@ -16,11 +18,13 @@ export async function exportNatTableExcel<TData extends RowData>(
   const bodyRows = context.rows.map((row) =>
     context.columns.map((column) => resolveNatTableExcelExportCellValue(row, column)),
   );
-  const worksheet = XLSX.utils.aoa_to_sheet([headerRow, ...bodyRows]);
-  const workbook = XLSX.utils.book_new();
+  const sheetData: SheetData = [headerRow, ...bodyRows];
+  const blob = await writeExcelFile(sheetData, {
+    dateFormat: EXCEL_DATE_FORMAT,
+    sheet: EXCEL_SHEET_NAME,
+  }).toBlob();
 
-  XLSX.utils.book_append_sheet(workbook, worksheet, EXCEL_SHEET_NAME);
-  XLSX.writeFile(workbook, context.fileName, { bookType: 'xlsx' });
+  downloadNatTableExcelBlob(blob, context.fileName);
 }
 
 export function resolveNatTableExcelExportColumns<TData extends RowData>(
@@ -125,4 +129,20 @@ function normalizeExcelCellValue(value: unknown): string | number | boolean | Da
   }
 
   return String(value);
+}
+
+function downloadNatTableExcelBlob(blob: Blob, fileName: string): void {
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+
+  anchor.href = objectUrl;
+  anchor.download = fileName;
+  anchor.style.display = 'none';
+
+  const anchorRoot = document.body ?? document.documentElement;
+  anchorRoot.append(anchor);
+  anchor.click();
+  anchor.remove();
+
+  setTimeout(() => URL.revokeObjectURL(objectUrl));
 }

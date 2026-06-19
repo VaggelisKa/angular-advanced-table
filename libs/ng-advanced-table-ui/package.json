@@ -33,7 +33,7 @@
   "dependencies": {
     "ng-advanced-table-locales": "*",
     "tslib": "^2.3.0",
-    "xlsx": "^0.18.5"
+    "write-excel-file": "^4.1.1"
   },
   "sideEffects": false
 }

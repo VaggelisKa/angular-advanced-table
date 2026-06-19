@@ -12,20 +12,19 @@ import { NatTableExportExcel } from './table-export-excel.directive';
 import { provideNatTableExcelExport } from './table-export-excel.provider';
 import type { NatTableExcelExportContext } from './table-export-excel.types';
 
-const xlsxMock = vi.hoisted(() => ({
-  aoaToSheet: vi.fn((data: unknown[][]) => ({ data })),
-  bookNew: vi.fn(() => ({ sheets: [] })),
-  bookAppendSheet: vi.fn(),
-  writeFile: vi.fn(),
-}));
+const excelFileMock = vi.hoisted(() => {
+  const toBlob = vi.fn(() => Promise.resolve(new Blob(['workbook'])));
 
-vi.mock('xlsx', () => ({
-  utils: {
-    aoa_to_sheet: xlsxMock.aoaToSheet,
-    book_new: xlsxMock.bookNew,
-    book_append_sheet: xlsxMock.bookAppendSheet,
-  },
-  writeFile: xlsxMock.writeFile,
+  return {
+    createObjectURL: vi.fn(() => 'blob:nat-table-export'),
+    revokeObjectURL: vi.fn(),
+    toBlob,
+    writeExcelFile: vi.fn(() => ({ toBlob })),
+  };
+});
+
+vi.mock('write-excel-file/universal', () => ({
+  default: excelFileMock.writeExcelFile,
 }));
 
 interface ExportRow {
@@ -67,6 +66,9 @@ const EXPORT_COLUMNS: ColumnDef<ExportRow, unknown>[] = [
     meta: { label: 'Actions' },
   },
 ];
+
+let anchorDownloads: string[];
+let anchorClickSpy: ReturnType<typeof vi.spyOn> | undefined;
 
 @Component({
   imports: [NatTable, NatTableExportExcel, NatTableSurface, NatTableToolbar, NatToolbarItem],
@@ -199,13 +201,42 @@ class BusyExportHost {
 describe('NatTableExportExcel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    anchorDownloads = [];
+    anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      anchorDownloads.push(this.download);
+    });
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: excelFileMock.createObjectURL,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: excelFileMock.revokeObjectURL,
+    });
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
   });
 
+  afterEach(() => {
+    anchorClickSpy?.mockRestore();
+    anchorClickSpy = undefined;
+  });
+
   function exportButton(): HTMLButtonElement {
     return document.querySelector('[data-testid="export-button"]') as HTMLButtonElement;
+  }
+
+  function expectClientWorkbookDownload(data: unknown[][], fileName: string): void {
+    expect(excelFileMock.writeExcelFile).toHaveBeenCalledWith(data, {
+      dateFormat: 'yyyy-mm-dd hh:mm:ss',
+      sheet: 'Table',
+    });
+    expect(excelFileMock.toBlob).toHaveBeenCalledTimes(1);
+    expect(excelFileMock.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    expect(anchorDownloads).toEqual([fileName]);
   }
 
   it('exports all client rows with visible exportable columns by default', async () => {
@@ -217,14 +248,14 @@ describe('NatTableExportExcel', () => {
     exportButton().click();
     await fixture.whenStable();
 
-    expect(xlsxMock.aoaToSheet).toHaveBeenCalledWith([
-      ['Risk profile', 'Name'],
-      ['{"risk":"low"}', 'Alpha'],
-      ['{"risk":"high"}', 'Beta'],
-    ]);
-    expect(xlsxMock.writeFile).toHaveBeenCalledWith(expect.anything(), 'orders.xlsx', {
-      bookType: 'xlsx',
-    });
+    expectClientWorkbookDownload(
+      [
+        ['Risk profile', 'Name'],
+        ['{"risk":"low"}', 'Alpha'],
+        ['{"risk":"high"}', 'Beta'],
+      ],
+      'orders.xlsx',
+    );
   });
 
   it('lets a directive-level handler replace provider and client-side handlers', async () => {
@@ -243,7 +274,7 @@ describe('NatTableExportExcel', () => {
 
     expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
     expect(providerHandler).not.toHaveBeenCalled();
-    expect(xlsxMock.writeFile).not.toHaveBeenCalled();
+    expect(excelFileMock.writeExcelFile).not.toHaveBeenCalled();
   });
 
   it('uses an app-level provider handler when no directive handler is present', async () => {
@@ -265,7 +296,7 @@ describe('NatTableExportExcel', () => {
     await fixture.whenStable();
 
     expect(providerHandler).toHaveBeenCalledTimes(1);
-    expect(xlsxMock.writeFile).not.toHaveBeenCalled();
+    expect(excelFileMock.writeExcelFile).not.toHaveBeenCalled();
   });
 
   it('supports explicit controller targeting outside nat-table-surface', async () => {
@@ -277,9 +308,14 @@ describe('NatTableExportExcel', () => {
     exportButton().click();
     await fixture.whenStable();
 
-    expect(xlsxMock.writeFile).toHaveBeenCalledWith(expect.anything(), 'table-export.xlsx', {
-      bookType: 'xlsx',
-    });
+    expectClientWorkbookDownload(
+      [
+        ['Name', 'Price', 'Risk profile'],
+        ['Alpha', 12, '{"risk":"low"}'],
+        ['Beta', 24, '{"risk":"high"}'],
+      ],
+      'table-export.xlsx',
+    );
   });
 
   it('supports custom activation events through the exported directive instance', async () => {
@@ -294,9 +330,14 @@ describe('NatTableExportExcel', () => {
 
     expect(dispatchResult).toBe(false);
     expect(event.defaultPrevented).toBe(true);
-    expect(xlsxMock.writeFile).toHaveBeenCalledWith(expect.anything(), 'custom-event.xlsx', {
-      bookType: 'xlsx',
-    });
+    expectClientWorkbookDownload(
+      [
+        ['Name', 'Price', 'Risk profile'],
+        ['Alpha', 12, '{"risk":"low"}'],
+        ['Beta', 24, '{"risk":"high"}'],
+      ],
+      'custom-event.xlsx',
+    );
   });
 
   it('marks native buttons busy and ignores duplicate activations while exporting', async () => {

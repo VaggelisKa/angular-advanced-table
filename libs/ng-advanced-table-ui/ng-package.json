@@ -1,7 +1,7 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/libs/ng-advanced-table-ui",
-  "allowedNonPeerDependencies": ["ng-advanced-table-locales", "xlsx"],
+  "allowedNonPeerDependencies": ["ng-advanced-table-locales", "write-excel-file"],
   "lib": {
     "entryFile": "src/public-api.ts"
   }
