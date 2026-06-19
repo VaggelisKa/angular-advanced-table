@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { type CellContext, type ColumnDef, type PaginationState } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
@@ -35,7 +35,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-pagination-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface, NatTablePagination],
   template: `
     <div class="showcase-page showcase-container">
@@ -135,6 +134,4 @@ export class PaginationShowcasePage {
     const pageState = this.manualTableState().pagination ?? { pageIndex: 0, pageSize: 3 };
     return Math.ceil(DEMO_DATA.length / pageState.pageSize);
   });
-
-
 }

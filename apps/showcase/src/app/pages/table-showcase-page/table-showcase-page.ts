@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -250,7 +250,6 @@ const showcaseAccessibilityText = {
 
 @Component({
   selector: 'app-market-sort-indicator',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
       display: inline-flex;
@@ -341,7 +340,6 @@ class MarketSortIndicator {
 
 @Component({
   selector: 'app-table-showcase-page',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTable,
     NatTablePagination,

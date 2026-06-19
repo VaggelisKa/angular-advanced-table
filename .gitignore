@@ -49,3 +49,4 @@ Thumbs.db
 
 # AI
 .omc
+.nx/migrate-runs

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { flexRenderComponent, type CellContext, type ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
@@ -30,7 +30,6 @@ const DEMO_DATA: DemoItem[] = [
 
 @Component({
   selector: 'app-keyboard-interaction-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   templateUrl: './keyboard-interaction-showcase.html',
 })

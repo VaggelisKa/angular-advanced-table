@@ -97,6 +97,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'resizing',
+    title: 'Advanced Table - Column Resizing',
+    loadComponent: () =>
+      import('./pages/single-features/resizing-showcase/resizing-showcase').then(
+        (module) => module.ResizingShowcasePage,
+      ),
+  },
+  {
     path: 'selection',
     title: 'Advanced Table - Row Selection',
     loadComponent: () =>

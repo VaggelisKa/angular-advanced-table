@@ -1,6 +1,5 @@
 import { DOCUMENT } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Injector,
@@ -75,6 +74,11 @@ const showcaseExamples = [
     path: '/keyboard-interaction',
   },
   {
+    label: 'Column resizing',
+    description: 'Drag & keyboard widths',
+    path: '/resizing',
+  },
+  {
     label: 'Row selection',
     description: 'Checkbox row selection',
     path: '/selection',
@@ -88,7 +92,6 @@ const showcaseExamples = [
 
 @Component({
   selector: 'app-root',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',

@@ -65,7 +65,7 @@ npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils ng-ad
 ## Quick Start
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -111,7 +111,6 @@ const columns = withNatTableHeaderActions<PositionRow>([
 
 @Component({
   selector: 'app-positions-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTable,
     NatTableColumnVisibility,
@@ -158,7 +157,7 @@ It does not ship search UI, column visibility UI, page-size UI, pager UI, header
 Example, core only:
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -171,7 +170,6 @@ interface ServiceRow {
 
 @Component({
   selector: 'app-service-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable],
   template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Service latency" /> `,
 })
@@ -239,6 +237,7 @@ A visible `caption` takes over the rendered grid label, while `accessibleName` r
 | `(columnVisibilityChange)` | `VisibilityState`                 | Emits when only the column visibility slice actually changed                                                                                         |
 | `(columnOrderChange)`      | `ColumnOrderState`                | Emits when only the column order slice actually changed                                                                                              |
 | `(columnPinningChange)`    | `ColumnPinningState`              | Emits when only the column pinning slice actually changed                                                                                            |
+| `(columnSizingChange)`     | `ColumnSizingState`               | Emits when only the column sizing slice actually changed                                                                                             |
 | `(paginationChange)`       | `PaginationState`                 | Emits when only the pagination slice actually changed                                                                                                |
 | `(rowSelectionChange)`     | `RowSelectionState`               | Emits when only the row selection slice actually changed                                                                                             |
 | `(rowActivate)`            | `NatTableRowActivateEvent<TData>` | Emits when a body row is activated through a primary click or `Enter` / `Space` key press; activations from interactive cell descendants are ignored |
@@ -256,7 +255,7 @@ Most tables should start uncontrolled: omit `[state]`, pass `[initialState]` onl
 Use granular outputs when your application owns one slice. Pass only the slice you control back through `[state]`; omitted properties remain internal:
 
 ```ts
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { type ColumnDef, type ColumnFiltersState } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -269,7 +268,6 @@ interface OrderRow {
 
 @Component({
   selector: 'app-filtered-orders-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable],
   template: `
     <nat-table
@@ -316,6 +314,7 @@ Use `(stateChange)` when you need a complete-state snapshot for logging, persist
 | `columnVisibility` | Visibility map for hideable columns                                                                                                                                                                             |
 | `columnOrder`      | Leaf-column order                                                                                                                                                                                               |
 | `columnPinning`    | Left and right pinned column ids                                                                                                                                                                                |
+| `columnSizing`     | Per-column pixel widths keyed by column id; populated as columns with `enableResizing` are resized                                                                                                              |
 | `rowSelection`     | Selected row ids keyed by `getRowId` as `Record<string, boolean>`; only populated when `enableRowSelection` is `true`                                                                                           |
 | `pagination`       | Page index and page size (still present in `NatTableState` when `enablePagination` is `false`; the client-side pagination row model is off, so only `stateChange` / UI that reads `pagination` will reflect it) |
 
@@ -374,6 +373,27 @@ Pinned column offsets are based on measured header widths after layout. Before a
 
 - `size` for fixed-width columns.
 - `column.getSize()` for `maxSize` columns, intrinsic columns, SSR, jsdom, and the first paint before `ResizeObserver` reports real widths.
+
+### Column resizing
+
+Resizing is **opt-in per column**, not table-wide. Set `enableResizing: true` on the columns that should expose a drag handle and leave it off (the default) for columns that should stay fixed — the same per-column model as sorting, filtering, and pinning.
+
+```ts
+const columns: ColumnDef<Row>[] = [
+  // resizable: handle + keyboard resize, bounded by minSize/maxSize
+  { accessorKey: 'name', header: 'Name', enableResizing: true, minSize: 120, maxSize: 320, meta: { label: 'Name' } },
+  // not resizable (no handle)
+  { accessorKey: 'id', header: 'ID', meta: { label: 'ID' } },
+];
+```
+
+Configure the width model with `columnSizingMode` on `<nat-table-surface>`:
+
+- `columnSizingMode="fill"` (the default) stretches columns to fill the container. Resizing a column is pixel-exact: the other columns reflow to absorb the change (down to their `minSize`), so the table stays exactly as wide as its region — it never overflows or leaves a gap, and a column can only grow into the space the others can yield.
+- `columnSizingMode="fixed"` makes column widths authoritative (`table-layout: fixed`) and scrolls the region horizontally once the columns overflow. Use it when columns should keep exact pixel widths independent of the container.
+- `columnResizeMode="onEnd"` (the default) commits the new width on pointer release; `"onChange"` updates live during the drag.
+
+`minSize`/`maxSize` bound how far a column can be resized in either mode, and a drag is additionally capped to the visible region so the table never overflows. A column that does not declare `minSize` cannot be resized below a 48px default floor (twice the resize-handle hit target), so the handle stays grabbable and neighbours never collapse to a sliver; set an explicit `minSize` to choose a different lower bound. Width changes flow through the `columnSizing` state slice and the granular `columnSizingChange` output, and are mirrored to body cells so headers and cells stay aligned. Keyboard resizing (RTL-aware) lives on the column header — there is no separate tab stop: focus a header, then `Alt`+Left/Right Arrow to step the width and `Alt`+Home/End to jump to its min/max bound.
 
 ### Behavior rules
 
@@ -450,6 +470,7 @@ See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent che
 - `loadingState` — visible message rendered while initial rows are loading
 - `errorState` — visible message rendered when `dataStatus` is `'error'`
 - `reorderKeyboardInstructions` — extra reorder instructions when reordering is enabled
+- `resizeKeyboardInstructions` — keyboard instructions for resizing the focused column (`Alt`+Arrow / `Alt`+Home/End)
 - `tableSummary(...)`
 - `sortingChange(...)`
 - `filteringChange(...)`
@@ -457,6 +478,8 @@ See [Accessibility and internationalization](ACCESSIBILITY.md) for the agent che
 - `pageSizeChange(...)`
 - `pageChange(...)`
 - `columnReorder(...)`
+- `columnResize(...)`
+- `selectionChange(...)`
 
 ```ts
 import type { NatTableAccessibilityText } from 'ng-advanced-table';
@@ -482,7 +505,7 @@ readonly accessibilityText: NatTableAccessibilityText = {
 Use `flexRenderComponent(...)` from `@tanstack/angular-table` when a cell should render an Angular component instead of plain text.
 
 ```ts
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
 import { CustomTradeButton } from './custom-trade-button';
@@ -494,7 +517,6 @@ interface PositionRow {
 
 @Component({
   selector: 'app-position-actions-cell',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CustomTradeButton],
   template: `
     <custom-trade-button
@@ -553,12 +575,11 @@ Most consumers should keep existing design-system or app components and adapt th
 When the focusable element is inside the custom component, the component itself owns the grid widget marker:
 
 ```ts
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
 
 @Component({
   selector: 'custom-pay-button',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [GridCellWidget],
   template: `
     <button
@@ -617,7 +638,7 @@ Enable it with two core inputs plus the column helper:
 | `selectionMode`      | `'multiple'` | `'multiple'` for many rows, `'single'` to keep at most one selected   |
 
 ```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { type RowSelectionState } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
@@ -646,7 +667,6 @@ const columns = withNatTableSelectionColumn<ServiceRow>([
 
 @Component({
   selector: 'app-selectable-table',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (rowSelectionChange)="onSelectionChange($event)">

@@ -20,6 +20,9 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
     errorState: 'Rows could not be loaded.',
     reorderKeyboardInstructions:
       'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
+    resizeKeyboardInstructions:
+      'On a resizable column header, press Alt with Left or Right Arrow to resize the column, ' +
+      'and Alt with Home or End to jump to its minimum or maximum width.',
     tableSummary: ({
       filterState,
       pageCountText,
@@ -105,6 +108,10 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       `Moved ${label} column to position ${positionText} of ${totalText} in the ${describeColumnZone(
         zone,
       )} region.`,
+    columnResize: ({ label, widthText, atMinimum, atMaximum }) =>
+      `${label} column width ${widthText} pixels${
+        atMinimum ? ' (minimum)' : atMaximum ? ' (maximum)' : ''
+      }.`,
     selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {
       if (selectedCountValue === 0) {
         return 'Selection cleared.';
