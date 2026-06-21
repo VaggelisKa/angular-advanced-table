@@ -9,7 +9,7 @@ This README is the canonical workspace reference. Package READMEs stay intention
 | Package                     | Use it for                                           | Main exports                                                                                                                                                                                        |
 | --------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ng-advanced-table`         | Core table primitive                                 | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `NAT_TABLE_DATA_STATUS`                                                                                                                          |
-| `ng-advanced-table-ui`      | Optional controls, header actions, and row selection | `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)` |
+| `ng-advanced-table-ui`      | Optional controls, header actions, and row selection | `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)` |
 | `ng-advanced-table-utils`   | Optional render-metrics tooling                      | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                                                     |
 | `ng-advanced-table-locales` | Built-in locale registry                             | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                                                                  |
 
@@ -34,7 +34,7 @@ Documentation maintenance checklist:
 - When accessibility or localization inputs change, update the machine-readable API map in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
 - When recommended composition changes, keep the examples in this README, package READMEs, and [`THEMING.md`](THEMING.md) in sync.
 
-Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
+Angular 22+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 
 ## Install
 
@@ -74,7 +74,6 @@ import {
   NatTablePageSize,
   NatTablePager,
   NatTableScrollControl,
-  NatTableSearch,
   NatTableSurface,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
@@ -118,7 +117,6 @@ const columns = withNatTableHeaderActions<PositionRow>([
     NatTablePageSize,
     NatTablePager,
     NatTableScrollControl,
-    NatTableSearch,
     NatTableSurface,
   ],
   template: `
@@ -134,7 +132,6 @@ const columns = withNatTableHeaderActions<PositionRow>([
       />
 
       <nat-table-scroll-control />
-      <nat-table-search />
       <nat-table-column-visibility />
       <nat-table-page-size [pageSizeOptions]="[25, 50, 100]" />
       <nat-table-pager />
@@ -196,8 +193,9 @@ export class ServiceTableComponent {
 
 Core exports:
 
-- Component: `NatTable`
-- Common constants and types: `NAT_TABLE_DATA_STATUS`, `NAT_TABLE_BODY_STATE`, `NatTableState`, `NatTableDataStatus`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Component and directives: `NatTable`, `NatTableLoadingTemplate`, `NatTableEmptyTemplate`, `NatTableErrorTemplate`
+- Controller: `NatTableService`, `NAT_TABLE_UI_CONTROLLER`, `NatTableUiController`, `NatTableUiState`
+- Common constants and types: `NAT_TABLE_DATA_STATUS`, `NAT_TABLE_BODY_STATE`, `NatTableState`, `NatTableMode`, `NatTableModeConfiguration`, `NatTableDataStatus`, `NatTableBodyState`, `NatTableStateTemplateContext`, `NatTableLoadingTemplateContext`, `NatTableEmptyTemplateContext`, `NatTableErrorTemplateContext`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableColumnMoveDirection`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
@@ -764,7 +762,6 @@ Example, add stock controls around an existing table:
   />
 
   <nat-table-scroll-control />
-  <nat-table-search />
   <nat-table-column-visibility />
   <nat-table-page-size [pageSizeOptions]="[25, 50, 100]" />
   <nat-table-pager />
@@ -773,19 +770,20 @@ Example, add stock controls around an existing table:
 
 UI exports:
 
-- Components: `NatTableSurface`, `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`, `NatTableSelectionCheckbox`
+- Components: `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`, `NatTableSelectionCheckbox`
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSelectionColumnOptions`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
-- Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionMoveContext`, `NatTableAccessibilityHeaderActionLabels`, `NatTableColumnMoveDirection`
+- Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionMoveContext`, `NatTableAccessibilityHeaderActionLabels`, `NatTableAccessibilitySelectionLabels`, `NatTableAccessibilitySelectionRowContext`, `NatTableColumnMoveDirection`
 
 | API                                | Purpose                                                                   | Key inputs or options                                                                                                |
 | ---------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `NatTableSurface`                  | Layout wrapper and default `--nat-table-*` CSS variables                  | none                                                                                                                 |
-| `NatTableSearch`                   | Global filter input                                                       | `for`, `label`, `placeholder`                                                                                        |
-| `NatTableColumnVisibility`         | Toggle hideable columns                                                   | `for`, `label`, `groupAriaLabel`, `accessibilityLabels`                                                              |
-| `NatTablePageSize`                 | Chip-based page-size switcher                                             | `for`, `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels`                                                    |
-| `NatTablePager`                    | Previous/next pagination control                                          | `for`, `groupAriaLabel`, `accessibilityLabels`                                                                       |
-| `NatTableScrollControl`            | Horizontal scroll buttons and range control                               | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`                                                         |
+| `NatTableColumnVisibility`         | Toggle hideable columns                                                   | `label`, `groupAriaLabel`, `accessibilityLabels`                                                                     |
+| `NatTablePageSize`                 | Chip-based page-size switcher                                             | `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels`                                                           |
+| `NatTablePager`                    | Previous/next pagination control                                          | `groupAriaLabel`, `accessibilityLabels`                                                                              |
+| `NatTableScrollControl`            | Horizontal scroll buttons and range control                               | `groupAriaLabel`, `scrollStep`, `accessibilityLabels`                                                                |
+| `NatTablePagination`               | Combined page-size and previous/next pagination toolbar                   | `pageSizeOptions`, `pageSizeGroupAriaLabel`, `pageSizeAccessibilityLabels`, `pagerGroupAriaLabel`, `pagerAccessibilityLabels` |
+| `NatTableToolbar`                  | Accessible roving-keyboard toolbar for custom table controls              | `for`, `accessibleName`, `locale`                                                                                    |
 | `withNatTableHeaderActions(...)`   | Wraps header content with a built-in sort control and column actions menu | `sortIndicator`, `enableColumnPinActions`, `enableColumnReorderActions`, `accessibilityLabels`, `meta.headerActions` |
 | `withNatTableSelectionColumn(...)` | Prepends an accessible select-all and per-row checkbox column             | `label`, `size`, `enablePinning`, `selectAllAriaLabel`, `selectRowAriaLabel`                                         |
 
@@ -801,11 +799,11 @@ Controller contract required by the UI package:
 
 Notes:
 
-- `NatTableSearch` is only useful when `enableGlobalFilter` is enabled. That is the core default.
 - `NatTablePageSize` and `NatTablePager` assume `enablePagination` is enabled.
+- Global search controls are consumer-owned. Render a native search input in `NatTableToolbar` with `natToolbarItem` and patch the table `globalFilter` state from your component.
 - `NatTableScrollControl` binds to the controller's `tableScrollContainer` when available and falls back to the rendered table's parent element.
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
-- `NatTableSearch`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
+- `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting, pinning, or opt-in menu-based reordering. The compact three-dot menu includes left/right pin actions when `enableColumnPinActions` is not disabled and pinning is available, and Move left/Move right actions when `enableColumnReorderActions` is enabled and the column can reorder inside its current pinned region.
 - Set `column.meta.hiddenHeaderLabel` to visually hide a redundant header title while keeping that label available to assistive technology; wrapped header actions keep their controls visible.
 - Applying `withNatTableHeaderActions(...)` repeatedly is safe. If a reactive column builder receives already-wrapped columns, the helper updates the wrapper options instead of nesting another header action surface.
@@ -815,7 +813,7 @@ Notes:
 
 ## UI Accessibility Labels
 
-The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `groupAriaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort, pin, and move labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened column actions menu label, pin action labels, move action labels, and visible menu item text.
+The optional UI controls inherit the controlled table locale from `<nat-table-surface>` and resolve generated labels from `provideNatTableUiLocales()`. `NatTableToolbar` can also receive an explicit `[for]="grid"` controller when it is rendered outside that surface. Use `label`, `groupAriaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort, pin, and move labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened column actions menu label, pin action labels, move action labels, and visible menu item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 
