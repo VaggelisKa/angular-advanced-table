@@ -20,7 +20,11 @@ Use this package when you want optional companions around `NatTable`:
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
+- `NatTablePagination`
 - `NatTableScrollControl`
+- `NatTableToolbar`
+- `NatToolbarGroup`
+- `NatToolbarItem`
 - `withNatTableHeaderActions(...)`
 - `withNatTableSelectionColumn(...)`
 
@@ -38,7 +42,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 ## Zoneless Compatibility
 
 - `ng-advanced-table-ui` is validated in a zoneless Angular `TestBed` configuration.
-- Angular 21+ consumers do not need `zone.js` to use this package.
+- Angular 22+ consumers do not need `zone.js` to use this package.
 
 ## Public Exports
 
@@ -46,9 +50,16 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
+- `NatTablePagination`
 - `NatTableScrollControl`
+- `NatTableToolbar`
+- `NatToolbarGroup`
+- `NatToolbarItem`
+- `NatToolbarItemPosition`
+- `NatToolbarItemRef`
 - `withNatTableHeaderActions(...)`
 - `withNatTableSelectionColumn(...)`
+- `NAT_TOOLBAR_ITEM`
 - `NatTableSelectionCheckbox`
 - `NatTableSelectionColumnOptions`
 - `NatTableHeaderActionsOptions`
@@ -69,6 +80,8 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTableAccessibilityHeaderActionPinContext`
 - `NatTableAccessibilityHeaderActionMoveContext`
 - `NatTableAccessibilityHeaderActionLabels`
+- `NatTableAccessibilitySelectionLabels`
+- `NatTableAccessibilitySelectionRowContext`
 - `NatTableColumnMoveDirection`
 - `NatTableUiController`
 - `NatTableUiState`
@@ -81,7 +94,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 ## Package Notes
 
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables.
-- The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), and optional `localeId`.
+- The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), optional `tableScrollContainer`, and optional `localeId`.
 - Companion controls inherit the controlled table locale and expose label inputs only for instance-specific overrides.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort, pin, or opt into reorder actions. Its compact three-dot menu includes pin actions unless `enableColumnPinActions` is disabled, and Move left/Move right actions when `enableColumnReorderActions` is enabled and those actions are available.
