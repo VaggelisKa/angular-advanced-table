@@ -1,28 +1,30 @@
-<div class="table-region" data-testid="nat-table-region" #tableRegion [class.is-resizing]="isColumnResizing()">
+<!-- eslint-disable max-lines -- single cohesive table template (header/body/state rows + resize guide); splitting into partials would fragment the grid structure. -->
+<div #tableRegion [class.is-resizing]="isColumnResizing()" class="table-region" data-testid="nat-table-region">
   @if (tableSummary().trim()) {
-    <p class="sr-only" [id]="tableSummaryId()">{{ tableSummary() }}</p>
+    <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
   }
   @if (resolvedDescription().trim()) {
-    <p class="sr-only" [id]="tableDescriptionId()">{{ resolvedDescription() }}</p>
+    <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
   }
   @if (resolvedKeyboardInstructions().trim()) {
-    <p class="sr-only" [id]="tableKeyboardInstructionsId()">{{ resolvedKeyboardInstructions() }}</p>
+    <p [id]="tableKeyboardInstructionsId()" class="sr-only">{{ resolvedKeyboardInstructions() }}</p>
   }
 
+  <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: table width is the computed authoritative-layout pixel width; no static class can express it. -->
   <table
-    ngGrid
-    class="data-table"
-    [class.has-sticky-header]="stickyHeader()"
-    [class.is-fixed-layout]="usesAuthoritativeLayout()"
-    [style.width.px]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null"
-    [id]="tableElementId()"
+    [attr.aria-busy]="tableAriaBusy()"
+    [attr.aria-describedby]="ariaDescribedBy()"
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
-    [attr.aria-describedby]="ariaDescribedBy()"
-    [attr.aria-busy]="tableAriaBusy()"
     [attr.dir]="resolvedDirection()"
-    rowWrap="nowrap"
+    [class.has-sticky-header]="stickyHeader()"
+    [class.is-fixed-layout]="usesAuthoritativeLayout()"
+    [id]="tableElementId()"
+    [style.width.px]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null"
+    class="data-table"
     colWrap="nowrap"
+    ngGrid
+    rowWrap="nowrap"
   >
     @if (resolvedCaption(); as caption) {
       <caption [id]="tableCaptionId()">
@@ -37,6 +39,7 @@
       @let layoutWidths = resolvedColumnWidths();
       <colgroup>
         @for (column of visibleColumns(); track column.id) {
+          <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: per-column resolved pixel width drives the colgroup; runtime value, no static class. -->
           <col [style.width.px]="layoutWidths[column.id]" />
         }
       </colgroup>
@@ -45,42 +48,43 @@
       @let tableHeaderGroups = headerGroups();
       @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
         <tr
-          ngGridRow
-          cdkDropList
-          cdkDropListOrientation="horizontal"
           [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
           [cdkDropListDisabled]="!isLeafHeaderRow(headerGroup)"
+          cdkDropList
+          cdkDropListOrientation="horizontal"
+          ngGridRow
           (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
         >
           @for (header of headerGroup.headers; track header.id) {
             @let columnState = columnStates[header.column.id];
+            <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: pinned offsets, header width/min/max are computed per column at runtime. -->
             <th
-              ngGridCell
-              cdkDrag
-              cdkDragLockAxis="x"
-              cdkDragPreviewContainer="parent"
-              role="columnheader"
-              class="header-cell"
+              [attr.aria-sort]="columnState?.ariaSort"
+              [attr.data-column-id]="header.column.id"
+              [attr.data-testid]="`nat-table-header-${header.column.id}`"
+              [cdkDragData]="header.column.id"
+              [cdkDragDisabled]="!canReorderHeader(header)"
+              [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+              [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
               [class.is-align-end]="columnState?.alignEnd"
               [class.is-pinned-left]="columnState?.pinnedLeft"
               [class.is-pinned-right]="columnState?.pinnedRight"
-              [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-              [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
               [class.is-reorderable]="canReorderHeader(header)"
               [class.is-width-constrained]="columnState?.headerConstrainedWidth"
-              [cdkDragData]="header.column.id"
-              [cdkDragDisabled]="!canReorderHeader(header)"
               [style.left.px]="columnState?.left"
+              [style.max-width]="columnState?.headerMaxWidth"
+              [style.min-width]="columnState?.headerMinWidth"
               [style.right.px]="columnState?.right"
               [style.width]="columnState?.headerWidth"
-              [style.min-width]="columnState?.headerMinWidth"
-              [style.max-width]="columnState?.headerMaxWidth"
-              [attr.data-column-id]="header.column.id"
-              [attr.data-testid]="'nat-table-header-' + header.column.id"
-              [attr.aria-sort]="columnState?.ariaSort"
-              (keydown)="onHeaderKeydown($event, header.column)"
-              (focusin)="onCellFocusIn($event)"
+              cdkDrag
+              cdkDragLockAxis="x"
+              cdkDragPreviewContainer="parent"
+              class="header-cell"
+              ngGridCell
+              role="columnheader"
               scope="col"
+              (focusin)="onCellFocusIn($event)"
+              (keydown)="onHeaderKeydown($event, header.column)"
             >
               @if (!header.isPlaceholder) {
                 @let headerContext = header.getContext();
@@ -106,13 +110,13 @@
                 </div>
                 @if (canResizeColumn(header)) {
                   <span
-                    class="column-resize-handle"
-                    aria-hidden="true"
                     [class.is-resizing]="header.column.getIsResizing()"
-                    (pointerdown)="$event.stopPropagation()"
-                    (mousedown)="onResizeStart($event, header)"
-                    (touchstart)="onResizeStart($event, header)"
+                    aria-hidden="true"
+                    class="column-resize-handle"
                     (click)="$event.stopPropagation()"
+                    (mousedown)="onResizeStart($event, header)"
+                    (pointerdown)="$event.stopPropagation()"
+                    (touchstart)="onResizeStart($event, header)"
                   ></span>
                 }
               }
@@ -128,45 +132,46 @@
           @for (row of rows; track row.id) {
             @let visibleCells = row.getVisibleCells();
             <tr
-              ngGridRow
-              class="data-row"
               [attr.aria-selected]="rowAriaSelected(row)"
               [natTableRowRenderEmitter]="row.id"
               [natTableRowRenderEnabled]="emitRowRenderEvents()"
-              [natTableRowRenderToken]="renderCycleToken()"
               [natTableRowRenderStartedAt]="renderCycleStartedAt()"
-              (natTableRowRendered)="onRowRendered($event)"
+              [natTableRowRenderToken]="renderCycleToken()"
+              class="data-row"
+              ngGridRow
               (click)="onRowClick($event, row)"
               (keydown)="onRowKeydown($event, row)"
+              (natTableRowRendered)="onRowRendered($event)"
             >
               @for (cell of visibleCells; track cell.id) {
                 @let columnState = columnStates[cell.column.id];
                 @let cellContext = cell.getContext();
                 @let cellTone = getCellTone(cell.column, cellContext);
                 @if (columnState?.rowHeader) {
+                  <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: pinned offsets, cell width/height, and the --nat-table-cell-max-lines custom property are computed per cell. -->
                   <th
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                    [class.is-align-end]="columnState?.alignEnd"
+                    [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
+                    [class.is-pinned-left]="columnState?.pinnedLeft"
+                    [class.is-pinned-right]="columnState?.pinnedRight"
+                    [class.is-width-constrained]="columnState?.constrainedWidth"
+                    [style.--nat-table-cell-max-lines]="columnState?.cellMaxLines"
+                    [style.height]="columnState?.cellHeight"
+                    [style.left.px]="columnState?.left"
+                    [style.max-width]="columnState?.maxWidth"
+                    [style.min-width]="columnState?.minWidth"
+                    [style.right.px]="columnState?.right"
+                    [style.width]="columnState?.width"
+                    class="data-cell data-row-header"
                     ngGridCell
                     role="rowheader"
                     scope="row"
-                    class="data-cell data-row-header"
-                    (keydown)="onCellKeydown($event)"
                     (focusin)="onCellFocusIn($event)"
-                    [class.is-align-end]="columnState?.alignEnd"
-                    [class.is-pinned-left]="columnState?.pinnedLeft"
-                    [class.is-pinned-right]="columnState?.pinnedRight"
-                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-                    [class.is-width-constrained]="columnState?.constrainedWidth"
-                    [class.is-cell-clamped]="columnState?.cellMaxLines != null"
-                    [style.left.px]="columnState?.left"
-                    [style.right.px]="columnState?.right"
-                    [style.width]="columnState?.width"
-                    [style.min-width]="columnState?.minWidth"
-                    [style.max-width]="columnState?.maxWidth"
-                    [style.height]="columnState?.cellHeight"
-                    [style.--nat-table-cell-max-lines]="columnState?.cellMaxLines"
-                    [attr.data-column-id]="cell.column.id"
-                    [attr.data-tone]="cellTone"
+                    (keydown)="onCellKeydown($event)"
                   >
                     <span class="data-cell-content">
                       <ng-container
@@ -177,27 +182,28 @@
                     </span>
                   </th>
                 } @else {
+                  <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: pinned offsets, cell width/height, and the --nat-table-cell-max-lines custom property are computed per cell. -->
                   <td
-                    ngGridCell
-                    class="data-cell"
-                    (keydown)="onCellKeydown($event)"
-                    (focusin)="onCellFocusIn($event)"
-                    [class.is-align-end]="columnState?.alignEnd"
-                    [class.is-pinned-left]="columnState?.pinnedLeft"
-                    [class.is-pinned-right]="columnState?.pinnedRight"
-                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-                    [class.is-width-constrained]="columnState?.constrainedWidth"
-                    [class.is-cell-clamped]="columnState?.cellMaxLines != null"
-                    [style.left.px]="columnState?.left"
-                    [style.right.px]="columnState?.right"
-                    [style.width]="columnState?.width"
-                    [style.min-width]="columnState?.minWidth"
-                    [style.max-width]="columnState?.maxWidth"
-                    [style.height]="columnState?.cellHeight"
-                    [style.--nat-table-cell-max-lines]="columnState?.cellMaxLines"
                     [attr.data-column-id]="cell.column.id"
                     [attr.data-tone]="cellTone"
+                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+                    [class.is-align-end]="columnState?.alignEnd"
+                    [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
+                    [class.is-pinned-left]="columnState?.pinnedLeft"
+                    [class.is-pinned-right]="columnState?.pinnedRight"
+                    [class.is-width-constrained]="columnState?.constrainedWidth"
+                    [style.--nat-table-cell-max-lines]="columnState?.cellMaxLines"
+                    [style.height]="columnState?.cellHeight"
+                    [style.left.px]="columnState?.left"
+                    [style.max-width]="columnState?.maxWidth"
+                    [style.min-width]="columnState?.minWidth"
+                    [style.right.px]="columnState?.right"
+                    [style.width]="columnState?.width"
+                    class="data-cell"
+                    ngGridCell
+                    (focusin)="onCellFocusIn($event)"
+                    (keydown)="onCellKeydown($event)"
                   >
                     <span class="data-cell-content">
                       <ng-container
@@ -215,16 +221,16 @@
         @case ('loading') {
           <tr ngGridRow>
             <td
-              ngGridCell
-              natTableStateCell
-              class="table-state loading-state"
               [colSpan]="emptyStateColSpan()"
+              class="table-state loading-state"
+              natTableStateCell
+              ngGridCell
             >
               @if (loadingTemplateRef(); as templateRef) {
                 <ng-container
                   [ngTemplateOutlet]="templateRef"
                   [ngTemplateOutletContext]="loadingTemplateContext()"
-                  [ngTemplateOutletInjector]="'outlet'"
+                  ngTemplateOutletInjector="outlet"
                 />
               } @else {
                 {{ resolvedLoadingState() }}
@@ -235,16 +241,16 @@
         @case ('error') {
           <tr ngGridRow>
             <td
-              ngGridCell
-              natTableStateCell
-              class="table-state error-state"
               [colSpan]="emptyStateColSpan()"
+              class="table-state error-state"
+              natTableStateCell
+              ngGridCell
             >
               @if (errorTemplateRef(); as templateRef) {
                 <ng-container
                   [ngTemplateOutlet]="templateRef"
                   [ngTemplateOutletContext]="errorTemplateContext()"
-                  [ngTemplateOutletInjector]="'outlet'"
+                  ngTemplateOutletInjector="outlet"
                 />
               } @else {
                 {{ resolvedErrorState() }}
@@ -255,16 +261,16 @@
         @case ('empty') {
           <tr ngGridRow>
             <td
-              ngGridCell
-              natTableStateCell
-              class="table-state empty-state"
               [colSpan]="emptyStateColSpan()"
+              class="table-state empty-state"
+              natTableStateCell
+              ngGridCell
             >
               @if (emptyTemplateRef(); as templateRef) {
                 <ng-container
                   [ngTemplateOutlet]="templateRef"
                   [ngTemplateOutletContext]="emptyTemplateContext()"
-                  [ngTemplateOutletInjector]="'outlet'"
+                  ngTemplateOutletInjector="outlet"
                 />
               } @else {
                 {{ resolvedEmptyState() }}
@@ -277,15 +283,16 @@
   </table>
 
   @if (columnResizeGuide(); as guide) {
+    <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: the drag-guide position and live translateX follow the pointer at runtime. -->
     <div
-      class="column-resize-guide"
-      aria-hidden="true"
       [style.left.px]="guide.left"
-      [style.transform]="'translateX(' + guide.offset + 'px)'"
+      [style.transform]="`translateX(${guide.offset}px)`"
+      aria-hidden="true"
+      class="column-resize-guide"
     ></div>
   }
 
-  <p class="sr-only" aria-live="polite" aria-atomic="true" data-testid="nat-table-live-region">
+  <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-table-live-region">
     {{ liveMessage() }}
   </p>
 </div>

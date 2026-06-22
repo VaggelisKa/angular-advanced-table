@@ -1,7 +1,8 @@
+/* eslint-disable max-lines -- cohesive keybinding parsing/matching module; the types and helpers are tightly coupled and splitting hurts readability. */
 import { InjectionToken } from '@angular/core';
 
 /** A keyboard shortcut definition matching properties of standard browser {@link KeyboardEvent}. */
-export interface NatTableShortcut {
+export type NatTableShortcut = {
   /** The value of the key property, e.g. `'ArrowLeft'`, `'Enter'`, `'a'`. */
   key: string;
   /** Whether the Ctrl key is required to be pressed. */
@@ -20,7 +21,7 @@ export interface NatTableShortcut {
 export type NatTableShortcutValue = string | NatTableShortcut | (string | NatTableShortcut)[];
 
 /** Keyboard interaction shortcuts configuration. */
-export interface NatTableKeybindings {
+export type NatTableKeybindings = {
   /** Keys that activate a row. Default: `['Enter', ' ', 'Spacebar']` */
   rowActivate?: NatTableShortcutValue;
   /** Key combination to reorder a column to the left. Default: `'Mod+Shift+ArrowLeft'` */
@@ -53,7 +54,7 @@ export const NAT_TABLE_KEYBINDINGS = new InjectionToken<NatTableKeybindings>(
   'NAT_TABLE_KEYBINDINGS',
   {
     providedIn: 'root',
-    factory: () => ({}),
+    factory: (): NatTableKeybindings => ({}),
   },
 );
 
@@ -64,14 +65,32 @@ export function isMacPlatform(): boolean {
   }
   const userAgent = (navigator.userAgent || '').toLowerCase();
   const platform = (navigator.platform || '').toLowerCase();
+
   return (
-    userAgent.indexOf('mac') !== -1 ||
-    userAgent.indexOf('ipad') !== -1 ||
-    userAgent.indexOf('iphone') !== -1 ||
-    platform.indexOf('mac') !== -1 ||
-    platform.indexOf('ipad') !== -1 ||
-    platform.indexOf('iphone') !== -1
+    userAgent.includes('mac') ||
+    userAgent.includes('ipad') ||
+    userAgent.includes('iphone') ||
+    platform.includes('mac') ||
+    platform.includes('ipad') ||
+    platform.includes('iphone')
   );
+}
+
+/** Resolves the ctrl/alt/shift/meta flags from a set of lowercased modifier tokens. */
+function resolveModifierFlags(
+  modifiers: ReadonlySet<string>,
+  isMac: boolean,
+): Pick<NatTableShortcut, 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'> {
+  const hasMod =
+    modifiers.has('mod') || modifiers.has('cmdorctrl') || modifiers.has('commandorcontrol');
+
+  return {
+    ctrlKey: modifiers.has('ctrl') || modifiers.has('control') || (hasMod && !isMac),
+    altKey: modifiers.has('alt'),
+    shiftKey: modifiers.has('shift'),
+    metaKey:
+      modifiers.has('meta') || modifiers.has('cmd') || modifiers.has('win') || (hasMod && isMac),
+  };
 }
 
 /** Parses a string shortcut (e.g. `'Alt+Shift+ArrowLeft'`) into a structured {@link NatTableShortcut}. */
@@ -86,25 +105,11 @@ export function parseShortcutString(shortcut: string): NatTableShortcut {
 
   const trimmedKey = key.trim();
   const resolvedKey = trimmedKey === '' && key.length > 0 ? key : trimmedKey;
-
   const modifiers = new Set(parts.slice(0, -1).map((m) => m.trim().toLowerCase()));
-
-  const isMac = isMacPlatform();
-  const hasMod =
-    modifiers.has('mod') ||
-    modifiers.has('cmdorctrl') ||
-    modifiers.has('commandorcontrol');
 
   return {
     key: resolvedKey,
-    ctrlKey: modifiers.has('ctrl') || modifiers.has('control') || (hasMod && !isMac),
-    altKey: modifiers.has('alt'),
-    shiftKey: modifiers.has('shift'),
-    metaKey:
-      modifiers.has('meta') ||
-      modifiers.has('cmd') ||
-      modifiers.has('win') ||
-      (hasMod && isMac),
+    ...resolveModifierFlags(modifiers, isMacPlatform()),
   };
 }
 
@@ -115,6 +120,7 @@ export function normalizeShortcut(shortcut: string | NatTableShortcut): NatTable
   }
   const isMac = isMacPlatform();
   const hasMod = !!shortcut.cmdOrCtrlKey;
+
   return {
     key: shortcut.key,
     ctrlKey: !!shortcut.ctrlKey || (hasMod && !isMac),
@@ -127,6 +133,7 @@ export function normalizeShortcut(shortcut: string | NatTableShortcut): NatTable
 /** Checks if a keyboard event matches a given shortcut. */
 export function matchShortcut(event: KeyboardEvent, shortcut: string | NatTableShortcut): boolean {
   const norm = normalizeShortcut(shortcut);
+
   return (
     event.key === norm.key &&
     event.altKey === norm.altKey &&
@@ -144,9 +151,11 @@ export function matchShortcutValue(
   if (!value) {
     return false;
   }
+
   if (Array.isArray(value)) {
     return value.some((val) => matchShortcut(event, val));
   }
+
   return matchShortcut(event, value);
 }
 
@@ -155,20 +164,38 @@ export function mergeNatTableKeybindings(
   ...configs: NatTableKeybindings[]
 ): Required<NatTableKeybindings> {
   const keys = Object.keys(DEFAULT_NAT_TABLE_KEYBINDINGS) as (keyof NatTableKeybindings)[];
-  const merged = {} as Required<NatTableKeybindings>;
 
-  for (const key of keys) {
-    let value: NatTableShortcutValue | undefined;
+  const entries = keys.map((key): [keyof NatTableKeybindings, NatTableShortcutValue] => {
     for (const config of configs) {
-      if (config && config[key] !== undefined) {
-        value = config[key];
-        break;
+      if (config[key] !== undefined) {
+        return [key, config[key]];
       }
     }
-    merged[key] = value ?? DEFAULT_NAT_TABLE_KEYBINDINGS[key];
-  }
 
-  return merged;
+    return [key, DEFAULT_NAT_TABLE_KEYBINDINGS[key]];
+  });
+
+  return Object.fromEntries(entries) as Required<NatTableKeybindings>;
+}
+
+/** Serializes one normalized shortcut to its `Alt+Control+...+Key` ARIA representation. */
+function serializeSingleShortcut(norm: NatTableShortcut): string {
+  const parts: string[] = [];
+
+  if (norm.altKey) parts.push('Alt');
+
+  if (norm.ctrlKey) parts.push('Control');
+
+  if (norm.metaKey) parts.push('Meta');
+
+  if (norm.shiftKey) parts.push('Shift');
+
+  const lowerKey = norm.key.toLowerCase();
+  const isSpace = norm.key === ' ' || lowerKey === 'spacebar' || lowerKey === 'space';
+
+  parts.push(isSpace ? 'Space' : norm.key);
+
+  return parts.join('+');
 }
 
 /** Serializes a keybinding shortcut value to a string representation suitable for ARIA attributes. */
@@ -180,19 +207,7 @@ export function serializeShortcutValue(value: NatTableShortcutValue | undefined)
   const serializedSet = new Set<string>();
 
   for (const val of values) {
-    const norm = normalizeShortcut(val);
-    const parts: string[] = [];
-    if (norm.altKey) parts.push('Alt');
-    if (norm.ctrlKey) parts.push('Control');
-    if (norm.metaKey) parts.push('Meta');
-    if (norm.shiftKey) parts.push('Shift');
-    
-    let key = norm.key;
-    if (key === ' ' || key.toLowerCase() === 'spacebar' || key.toLowerCase() === 'space') {
-      key = 'Space';
-    }
-    parts.push(key);
-    serializedSet.add(parts.join('+'));
+    serializedSet.add(serializeSingleShortcut(normalizeShortcut(val)));
   }
 
   return Array.from(serializedSet).filter(Boolean).join(' ');
@@ -205,6 +220,7 @@ export function areShortcutsEqual(
 ): boolean {
   const normA = normalizeShortcut(a);
   const normB = normalizeShortcut(b);
+
   return (
     normA.key.toLowerCase() === normB.key.toLowerCase() &&
     normA.altKey === normB.altKey &&
@@ -224,6 +240,7 @@ export function areShortcutValuesOverlapping(
   }
   const listA = Array.isArray(valA) ? valA : [valA];
   const listB = Array.isArray(valB) ? valB : [valB];
+
   for (const a of listA) {
     for (const b of listB) {
       if (areShortcutsEqual(a, b)) {
@@ -231,6 +248,7 @@ export function areShortcutValuesOverlapping(
       }
     }
   }
+
   return false;
 }
 
@@ -260,29 +278,46 @@ export function validateKeybindings(bindings: Required<NatTableKeybindings>): st
       }
     }
   }
+
   return warnings;
 }
 
+/** A compiled, functional keyboard shortcuts helper mapping KeyboardEvents to actions. */
+export type NatTableKeyboard = {
+  cellInteraction: {
+    enter: (event: KeyboardEvent) => boolean;
+    exit: (event: KeyboardEvent) => boolean;
+    next: (event: KeyboardEvent) => boolean;
+    previous: (event: KeyboardEvent) => boolean;
+  };
+  rowActivate: (event: KeyboardEvent) => boolean;
+  columnReorderDirection: (event: KeyboardEvent) => -1 | 1 | null;
+};
+
 /** Compiles a functional keyboard shortcuts helper from a keybindings configuration. */
-export function createNatTableKeyboard(keybindings: Required<NatTableKeybindings>) {
+export function createNatTableKeyboard(keybindings: Required<NatTableKeybindings>): NatTableKeyboard {
   return {
     cellInteraction: {
-      enter: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellEnterControl),
-      exit: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellExitControl),
-      next: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellTabNextControl),
-      previous: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.cellTabPrevControl),
+      enter: (event: KeyboardEvent): boolean =>
+        matchShortcutValue(event, keybindings.cellEnterControl),
+      exit: (event: KeyboardEvent): boolean =>
+        matchShortcutValue(event, keybindings.cellExitControl),
+      next: (event: KeyboardEvent): boolean =>
+        matchShortcutValue(event, keybindings.cellTabNextControl),
+      previous: (event: KeyboardEvent): boolean =>
+        matchShortcutValue(event, keybindings.cellTabPrevControl),
     },
-    rowActivate: (event: KeyboardEvent) => matchShortcutValue(event, keybindings.rowActivate),
+    rowActivate: (event: KeyboardEvent): boolean =>
+      matchShortcutValue(event, keybindings.rowActivate),
     columnReorderDirection: (event: KeyboardEvent): -1 | 1 | null => {
       if (matchShortcutValue(event, keybindings.columnReorderLeft)) return -1;
+
       if (matchShortcutValue(event, keybindings.columnReorderRight)) return 1;
+
       return null;
     },
   };
 }
-
-/** A compiled, functional keyboard shortcuts helper mapping KeyboardEvents to actions. */
-export type NatTableKeyboard = ReturnType<typeof createNatTableKeyboard>;
 
 
 

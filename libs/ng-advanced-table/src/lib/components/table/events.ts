@@ -2,7 +2,7 @@
  * Payload emitted by {@link NatTable.rowRendered} when row render
  * instrumentation is enabled.
  */
-export interface NatTableRowRenderedEvent {
+export type NatTableRowRenderedEvent = {
   /** Stable row identifier resolved from `getRowId` or the row index fallback. */
   rowId: string;
   /** Monotonic token for the render cycle that produced this row measurement. */

@@ -1,35 +1,50 @@
+/* eslint-disable max-lines -- cohesive table state/normalization helper module; splitting would scatter tightly-coupled utilities. */
 import type {
   Column,
   ColumnDef,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
-  FilterFn,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
 } from '@tanstack/angular-table';
 
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from './cell-interaction';
-import type { NatTableCellTone, NatTableDataStatus } from './table.types';
+import type { NatTableDataStatus } from './table.types';
 import { NAT_TABLE_DATA_STATUS } from './table.types';
 
 export const DEFAULT_CELL_MAX_LINES = 2;
 
-export interface TableColumnAccessibilityState {
+export type TableColumnAccessibilityState = {
   id: string;
   label: string;
   visible: boolean;
 }
 
-export interface TableColumnSizingState {
+export type TableColumnSizingState = {
   hasSize: boolean;
   hasMinSize: boolean;
   hasMaxSize: boolean;
 }
 
 export type ColumnReorderKeyboardDirection = -1 | 1;
+
+export function resolveColumnDefId<TData extends RowData>(
+  column: ColumnDef<TData, unknown>,
+): string | null {
+  if (column.id) {
+    return column.id;
+  }
+
+  const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
+
+  if (typeof accessorKey === 'string') {
+    return accessorKey;
+  }
+
+  return typeof column.header === 'string' ? column.header : null;
+}
 
 export function getColumnDefLeafIds<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
@@ -87,22 +102,6 @@ export function getUserColumnSizing<TData extends RowData>(
   return result;
 }
 
-export function resolveColumnDefId<TData extends RowData>(
-  column: ColumnDef<TData, unknown>,
-): string | null {
-  if (column.id) {
-    return column.id;
-  }
-
-  const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
-
-  if (typeof accessorKey === 'string') {
-    return accessorKey;
-  }
-
-  return typeof column.header === 'string' ? column.header : null;
-}
-
 export function originatesFromInteractiveDescendant(event: Event): boolean {
   const target = event.target;
   const currentTarget = event.currentTarget;
@@ -124,22 +123,29 @@ export function originatesFromInteractiveDescendant(event: Event): boolean {
  * Dedupes sort entries by id (first wins). Collapses to a single primary sort
  * column unless `allowMulti` is set, in which case all deduped entries are kept.
  */
-export function normalizeSortingState(sorting: SortingState, allowMulti: boolean): SortingState {
-  if (!sorting.length) {
-    return sorting;
-  }
-
+/** Removes duplicate sort entries by id, keeping the first occurrence. */
+function dedupeSortEntries(sorting: SortingState): SortingState {
   const seen = new Set<string>();
   const deduped: SortingState = [];
 
   for (const entry of sorting) {
-    if (!entry || seen.has(entry.id)) {
+    if (seen.has(entry.id)) {
       continue;
     }
 
     seen.add(entry.id);
     deduped.push(entry);
   }
+
+  return deduped;
+}
+
+export function normalizeSortingState(sorting: SortingState, allowMulti: boolean): SortingState {
+  if (!sorting.length) {
+    return sorting;
+  }
+
+  const deduped = dedupeSortEntries(sorting);
 
   if (allowMulti) {
     // No duplicates removed → preserve the original reference for change detection.
@@ -152,16 +158,33 @@ export function normalizeSortingState(sorting: SortingState, allowMulti: boolean
     return sorting;
   }
 
+  const single = normalized[0];
+  const original = sorting[0];
+
   if (
     normalized.length === 1 &&
     sorting.length === 1 &&
-    normalized[0]!.id === sorting[0]!.id &&
-    normalized[0]!.desc === sorting[0]!.desc
+    single.id === original.id &&
+    single.desc === original.desc
   ) {
     return sorting;
   }
 
   return normalized;
+}
+
+export function uniqueStringValues(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+
+  return values.filter((value) => {
+    if (seen.has(value)) {
+      return false;
+    }
+
+    seen.add(value);
+
+    return true;
+  });
 }
 
 export function normalizeColumnOrder(
@@ -202,19 +225,6 @@ export function normalizeDataStatus(status: NatTableDataStatus): NatTableDataSta
     : NAT_TABLE_DATA_STATUS.success;
 }
 
-export function uniqueStringValues(values: readonly string[]): string[] {
-  const seen = new Set<string>();
-
-  return values.filter((value) => {
-    if (seen.has(value)) {
-      return false;
-    }
-
-    seen.add(value);
-    return true;
-  });
-}
-
 export function moveItemInArrayCopy(
   values: readonly string[],
   fromIndex: number,
@@ -223,11 +233,13 @@ export function moveItemInArrayCopy(
   const nextValues = [...values];
   const [movedValue] = nextValues.splice(fromIndex, 1);
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: an out-of-range fromIndex makes splice return [], so movedValue is undefined at runtime despite the string type.
   if (movedValue === undefined) {
     return nextValues;
   }
 
   nextValues.splice(toIndex, 0, movedValue);
+
   return nextValues;
 }
 
@@ -381,6 +393,12 @@ export function hasSameWidths(
   return true;
 }
 
+export function normalizeColumnLabel(label: string | undefined): string | null {
+  const normalized = label?.trim() ?? '';
+
+  return normalized || null;
+}
+
 export function resolveColumnLabel<TData extends RowData>(column: Column<TData, unknown>): string {
   const hiddenHeaderLabel = normalizeColumnLabel(column.columnDef.meta?.hiddenHeaderLabel);
 
@@ -401,12 +419,6 @@ export function resolveColumnLabel<TData extends RowData>(column: Column<TData, 
   const accessorKey = (column.columnDef as { accessorKey?: unknown }).accessorKey;
 
   return typeof accessorKey === 'string' ? accessorKey : column.id || 'Column';
-}
-
-export function normalizeColumnLabel(label: string | undefined): string | null {
-  const normalized = label?.trim() ?? '';
-
-  return normalized || null;
 }
 
 export function isPrimitiveHeaderContent<TData extends RowData>(

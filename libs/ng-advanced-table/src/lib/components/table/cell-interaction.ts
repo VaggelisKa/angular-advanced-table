@@ -21,6 +21,7 @@ export const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
   '[role="button"], [role="link"], [role="checkbox"], [role="menuitem"], ' +
   '[role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="switch"], ' +
   '[role="combobox"], [role="textbox"], [role="searchbox"]';
+
 export const NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE = 'data-nat-table-managed-cell-widget';
 
 const GRID_CELL_SELECTOR = '[role="gridcell"], [role="columnheader"], [role="rowheader"]';
@@ -37,57 +38,67 @@ const DELEGATED_CONTROL_SELECTOR =
   'input[type="submit"], input[type="reset"], ' +
   '[role="button"], [role="link"], [role="checkbox"], [role="switch"]';
 
+const focusAndConsume = (event: KeyboardEvent, control: HTMLElement): true => {
+  event.preventDefault();
+  event.stopPropagation();
+  control.focus();
+
+  return true;
+};
+
 /**
- * Routes a keydown on a grid cell (or a control inside one) through the
- * cell-interaction model. Returns `true` when it handled the event, so the
- * caller skips its own behavior (e.g. row activation).
+ * Controls the model may focus: not disabled and not hidden on the element or an
+ * ancestor (`hidden`, `inert`, `aria-hidden`). Controls removed from the tab order
+ * (`tabindex="-1"`) are skipped — except grid-cell widgets, whose `tabindex="-1"`
+ * comes from `@angular/aria`'s roving model and not from an author opting them out
+ * (flexRender keeps them unregistered, so the grid never restores their tab stop).
+ * CSS-only visibility (display/clip) is not checked: jsdom reports no layout, and
+ * hidden columns leave the DOM entirely.
  */
-export const handleCellInteractionKeydown = (
-  event: KeyboardEvent,
-  cellInteraction: NatTableKeyboard['cellInteraction'],
-): boolean => {
-  if (event.defaultPrevented) return false;
+const isReachableControl = (element: HTMLElement): boolean =>
+  !element.hasAttribute('disabled') &&
+  (element.tabIndex >= 0 ||
+    element.hasAttribute('ngGridCellWidget') ||
+    element.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) &&
+  !element.closest('[hidden], [inert], [aria-hidden="true"]');
 
-  const target = event.target;
+/** The cell's action controls in document order — what Enter steps into and Tab walks. */
+const cellInteractiveControls = (cell: HTMLElement): HTMLElement[] =>
+  Array.from(cell.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR)).filter(
+    isReachableControl,
+  );
 
-  if (!(target instanceof HTMLElement)) return false;
+/** Whether the cell renders perceivable text outside the given control. */
+const hasContentOutsideControl = (cell: HTMLElement, control: HTMLElement): boolean => {
+  const walker = cell.ownerDocument.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
 
-  const cell = target.closest<HTMLElement>(GRID_CELL_SELECTOR);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (!node.textContent?.trim() || control.contains(node)) continue;
 
-  if (!cell) return false;
+    // Content hidden from assistive technology does not block delegation.
+    if (node.parentElement?.closest('[hidden], [inert], [aria-hidden="true"]')) continue;
 
-  if (cellInteraction.enter(event)) {
-    return enterFirstCellControl(event, cell, target);
-  }
-  if (cellInteraction.exit(event)) {
-    return escapeBackToCell(event, cell, target);
-  }
-  if (cellInteraction.next(event) || cellInteraction.previous(event)) {
-    return tabBetweenCellControls(event, cell, target, cellInteraction);
+    return true;
   }
 
   return false;
 };
 
-
 /**
- * Routes a focusin on a grid cell through the single-control delegation rule:
- * when the cell's whole content is one arrow-safe control, focus moves on to
- * that control so it activates with a single Enter (APG "Whether to Focus on
- * a Cell or an Element Inside It"). Returns `true` when it redirected focus.
+ * The control a cell delegates focus to: its only reachable control, arrow-safe,
+ * with no other perceivable content in the cell (text outside the control would be
+ * skipped by screen readers when focus lands on the control directly).
  */
-export const handleCellInteractionFocusIn = (event: FocusEvent): boolean => {
-  const target = event.target;
+const delegatedCellControl = (cell: HTMLElement): HTMLElement | null => {
+  const controls = cellInteractiveControls(cell);
 
-  if (!(target instanceof HTMLElement) || !target.matches(GRID_CELL_SELECTOR)) return false;
+  if (controls.length !== 1) return null;
 
-  const control = delegatedCellControl(target);
+  const [control] = controls;
 
-  if (!control) return false;
+  if (!control.matches(DELEGATED_CONTROL_SELECTOR)) return null;
 
-  control.focus();
-
-  return true;
+  return hasContentOutsideControl(cell, control) ? null : control;
 };
 
 /** Enter on a focused cell steps into the cell's first control. */
@@ -102,6 +113,7 @@ const enterFirstCellControl = (
   const [firstControl] = cellInteractiveControls(cell);
 
   // Let a control-less cell fall through to row activation.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: destructuring an empty controls array yields undefined despite the HTMLElement type.
   if (!firstControl) return false;
 
   return focusAndConsume(event, firstControl);
@@ -140,70 +152,62 @@ const tabBetweenCellControls = (
   const nextControl = controls[index + (isPrev ? -1 : 1)];
 
   // Past the first/last control of the cell: let Tab leave the grid.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: an out-of-range index yields undefined despite the HTMLElement type.
   if (!nextControl) return false;
 
   return focusAndConsume(event, nextControl);
 };
 
-const focusAndConsume = (event: KeyboardEvent, control: HTMLElement): true => {
-  event.preventDefault();
-  event.stopPropagation();
-  control.focus();
-
-  return true;
-};
-
 /**
- * The control a cell delegates focus to: its only reachable control, arrow-safe,
- * with no other perceivable content in the cell (text outside the control would be
- * skipped by screen readers when focus lands on the control directly).
+ * Routes a keydown on a grid cell (or a control inside one) through the
+ * cell-interaction model. Returns `true` when it handled the event, so the
+ * caller skips its own behavior (e.g. row activation).
  */
-const delegatedCellControl = (cell: HTMLElement): HTMLElement | null => {
-  const controls = cellInteractiveControls(cell);
+export const handleCellInteractionKeydown = (
+  event: KeyboardEvent,
+  cellInteraction: NatTableKeyboard['cellInteraction'],
+): boolean => {
+  if (event.defaultPrevented) return false;
 
-  if (controls.length !== 1) return null;
+  const target = event.target;
 
-  const [control] = controls;
+  if (!(target instanceof HTMLElement)) return false;
 
-  if (!control.matches(DELEGATED_CONTROL_SELECTOR)) return null;
+  const cell = target.closest<HTMLElement>(GRID_CELL_SELECTOR);
 
-  return hasContentOutsideControl(cell, control) ? null : control;
-};
+  if (!cell) return false;
 
-/** Whether the cell renders perceivable text outside the given control. */
-const hasContentOutsideControl = (cell: HTMLElement, control: HTMLElement): boolean => {
-  const walker = cell.ownerDocument.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+  if (cellInteraction.enter(event)) {
+    return enterFirstCellControl(event, cell, target);
+  }
 
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    if (!node.textContent?.trim() || control.contains(node)) continue;
+  if (cellInteraction.exit(event)) {
+    return escapeBackToCell(event, cell, target);
+  }
 
-    // Content hidden from assistive technology does not block delegation.
-    if (node.parentElement?.closest('[hidden], [inert], [aria-hidden="true"]')) continue;
-
-    return true;
+  if (cellInteraction.next(event) || cellInteraction.previous(event)) {
+    return tabBetweenCellControls(event, cell, target, cellInteraction);
   }
 
   return false;
 };
 
-/** The cell's action controls in document order — what Enter steps into and Tab walks. */
-const cellInteractiveControls = (cell: HTMLElement): HTMLElement[] =>
-  Array.from(cell.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR)).filter(
-    isReachableControl,
-  );
-
 /**
- * Controls the model may focus: not disabled and not hidden on the element or an
- * ancestor (`hidden`, `inert`, `aria-hidden`). Controls removed from the tab order
- * (`tabindex="-1"`) are skipped — except grid-cell widgets, whose `tabindex="-1"`
- * comes from `@angular/aria`'s roving model and not from an author opting them out
- * (flexRender keeps them unregistered, so the grid never restores their tab stop).
- * CSS-only visibility (display/clip) is not checked: jsdom reports no layout, and
- * hidden columns leave the DOM entirely.
+ * Routes a focusin on a grid cell through the single-control delegation rule:
+ * when the cell's whole content is one arrow-safe control, focus moves on to
+ * that control so it activates with a single Enter (APG "Whether to Focus on
+ * a Cell or an Element Inside It"). Returns `true` when it redirected focus.
  */
-const isReachableControl = (element: HTMLElement): boolean =>
-  !element.hasAttribute('disabled') &&
-  (element.tabIndex >= 0 ||
-    element.hasAttribute('ngGridCellWidget') ||
-    element.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) &&
-  !element.closest('[hidden], [inert], [aria-hidden="true"]');
+export const handleCellInteractionFocusIn = (event: FocusEvent): boolean => {
+  const target = event.target;
+
+  if (!(target instanceof HTMLElement) || !target.matches(GRID_CELL_SELECTOR)) return false;
+
+  const control = delegatedCellControl(target);
+
+  if (!control) return false;
+
+  control.focus();
+
+  return true;
+};

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- large integration spec */
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
   Component,
@@ -8,10 +9,12 @@ import {
   input,
   output,
   provideZonelessChangeDetection,
-  signal,
+  signal
 } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -21,37 +24,34 @@ import type {
   FilterFn,
   PaginationState,
   SortingState,
-  VisibilityState,
+  VisibilityState
 } from '@tanstack/angular-table';
 
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction';
 import { NatTable } from './table';
 import { provideNatTableIntl } from './table-intl';
+import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from './table-state-templates';
 import { NatTableService } from './table.service';
 import { NAT_TABLE_DATA_STATUS } from './table.types';
-import {
-  NatTableEmptyTemplate,
-  NatTableErrorTemplate,
-  NatTableLoadingTemplate,
-} from './table-state-templates';
 import type {
   NatTableAccessibilityText,
   NatTableDataStatus,
+  NatTableKeybindings,
   NatTableMode,
   NatTableModeConfiguration,
   NatTableRowActivateEvent,
-  NatTableState,
-  NatTableKeybindings,
+  NatTableState
 } from './table.types';
 
 @Component({
   selector: 'test-pager',
-  template: '',
+  template: ''
 })
 class TestPager {
   private readonly service = inject(NatTableService);
-  constructor() {
+  public constructor() {
     const destroyRef = inject(DestroyRef);
+
     this.service.registerPagination();
     destroyRef.onDestroy(() => {
       this.service.unregisterPagination();
@@ -61,12 +61,13 @@ class TestPager {
 
 @Component({
   selector: 'test-search',
-  template: '',
+  template: ''
 })
 class TestSearch {
   private readonly service = inject(NatTableService);
-  constructor() {
+  public constructor() {
     const destroyRef = inject(DestroyRef);
+
     this.service.registerSearch();
     destroyRef.onDestroy(() => {
       this.service.unregisterSearch();
@@ -77,38 +78,43 @@ class TestSearch {
 @Component({
   selector: 'nat-table-surface',
   template: `<ng-content />`,
-  providers: [NatTableService],
+  providers: [NatTableService]
 })
 class TestTableSurface {
-  readonly state = input<Partial<NatTableState>>({});
-  readonly stateChange = output<Partial<NatTableState>>();
-  readonly initialState = input<Partial<NatTableState>>({});
-  readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
+  // The surface takes a one-way controlled `state` input and emits a separately
+  // computed next-state through `stateChange`; a two-way model would feed the
+  // emitted value back into the binding and change the controlled-state semantics.
+  // eslint-disable-next-line @angular-eslint/prefer-signal-model -- one-way controlled input + computed change output, not two-way
+  public readonly state = input<Partial<NatTableState>>({});
 
-  readonly manualPageCount = input<number | undefined>(undefined);
-  readonly enableAnnouncements = input(true, { transform: booleanAttribute });
-  readonly stickyHeader = input(true, { transform: booleanAttribute });
-  readonly enableMultiSort = input(false, { transform: booleanAttribute });
-  readonly locale = input<string | undefined>(undefined);
-  readonly accessibilityText = input<NatTableAccessibilityText>({});
-  readonly keybindings = input<NatTableKeybindings>({});
-  readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
-  readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
-  readonly direction = input<'ltr' | 'rtl'>();
+  public readonly initialState = input<Partial<NatTableState>>({});
+  public readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
 
-  readonly sortingChange = output<SortingState>();
-  readonly globalFilterChange = output<string>();
-  readonly columnFiltersChange = output<ColumnFiltersState>();
-  readonly columnVisibilityChange = output<VisibilityState>();
-  readonly columnOrderChange = output<ColumnOrderState>();
-  readonly columnPinningChange = output<ColumnPinningState>();
-  readonly columnSizingChange = output<ColumnSizingState>();
-  readonly paginationChange = output<PaginationState>();
-  readonly rowSelectionChange = output<NatTableState['rowSelection']>();
+  public readonly manualPageCount = input<number | undefined>(undefined);
+  public readonly enableAnnouncements = input(true, { transform: booleanAttribute });
+  public readonly stickyHeader = input(true, { transform: booleanAttribute });
+  public readonly enableMultiSort = input(false, { transform: booleanAttribute });
+  public readonly locale = input<string | undefined>(undefined);
+  public readonly accessibilityText = input<NatTableAccessibilityText>({});
+  public readonly keybindings = input<NatTableKeybindings>({});
+  public readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
+  public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
+  public readonly direction = input<'ltr' | 'rtl'>();
+
+  public readonly stateChange = output<NatTableState>();
+  public readonly sortingChange = output<SortingState>();
+  public readonly globalFilterChange = output<string>();
+  public readonly columnFiltersChange = output<ColumnFiltersState>();
+  public readonly columnVisibilityChange = output<VisibilityState>();
+  public readonly columnOrderChange = output<ColumnOrderState>();
+  public readonly columnPinningChange = output<ColumnPinningState>();
+  public readonly columnSizingChange = output<ColumnSizingState>();
+  public readonly paginationChange = output<PaginationState>();
+  public readonly rowSelectionChange = output<NatTableState['rowSelection']>();
 
   private readonly natTableService = inject(NatTableService);
 
-  constructor() {
+  public constructor() {
     effect(() => {
       this.natTableService.setState(this.state());
     });
@@ -159,10 +165,13 @@ class TestTableSurface {
       columnPinning: { left: [], right: [] },
       columnSizing: {},
       rowSelection: {},
-      pagination: { pageIndex: 0, pageSize: 10 },
+      pagination: { pageIndex: 0, pageSize: 10 }
     };
+
+    // eslint-disable-next-line complexity
     effect(() => {
       const nextState = this.natTableService.stateChangeEvent();
+
       if (!nextState) {
         return;
       }
@@ -170,23 +179,23 @@ class TestTableSurface {
       if (isFirstChange) {
         const initial = this.natTableService.surfaceInitialState();
         const currentBound = this.state();
+
         previousState = {
           sorting: currentBound.sorting ?? initial.sorting ?? [],
           globalFilter: currentBound.globalFilter ?? initial.globalFilter ?? '',
           columnFilters: currentBound.columnFilters ?? initial.columnFilters ?? [],
           columnVisibility: currentBound.columnVisibility ?? initial.columnVisibility ?? {},
           columnOrder: currentBound.columnOrder ?? initial.columnOrder ?? [],
-          columnPinning: currentBound.columnPinning ??
-            initial.columnPinning ?? { left: [], right: [] },
+          columnPinning: currentBound.columnPinning ?? initial.columnPinning ?? { left: [], right: [] },
           columnSizing: currentBound.columnSizing ?? initial.columnSizing ?? {},
           rowSelection: currentBound.rowSelection ?? initial.rowSelection ?? {},
-          pagination: currentBound.pagination ??
-            initial.pagination ?? { pageIndex: 0, pageSize: 10 },
+          pagination: currentBound.pagination ?? initial.pagination ?? { pageIndex: 0, pageSize: 10 }
         };
         isFirstChange = false;
       }
 
       const prev = previousState;
+
       previousState = nextState;
 
       this.stateChange.emit(nextState);
@@ -194,27 +203,35 @@ class TestTableSurface {
       if (JSON.stringify(prev.sorting) !== JSON.stringify(nextState.sorting)) {
         this.sortingChange.emit(nextState.sorting);
       }
+
       if (prev.globalFilter !== nextState.globalFilter) {
         this.globalFilterChange.emit(nextState.globalFilter);
       }
+
       if (JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters)) {
         this.columnFiltersChange.emit(nextState.columnFilters);
       }
+
       if (JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility)) {
         this.columnVisibilityChange.emit(nextState.columnVisibility);
       }
+
       if (JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder)) {
         this.columnOrderChange.emit(nextState.columnOrder);
       }
+
       if (JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning)) {
         this.columnPinningChange.emit(nextState.columnPinning);
       }
+
       if (JSON.stringify(prev.columnSizing) !== JSON.stringify(nextState.columnSizing)) {
         this.columnSizingChange.emit(nextState.columnSizing);
       }
+
       if (JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination)) {
         this.paginationChange.emit(nextState.pagination);
       }
+
       if (JSON.stringify(prev.rowSelection) !== JSON.stringify(nextState.rowSelection)) {
         this.rowSelectionChange.emit(nextState.rowSelection);
       }
@@ -222,13 +239,13 @@ class TestTableSurface {
   }
 }
 
-interface Row {
+type Row = {
   id: string;
   name: string;
   region: string;
   status: 'Healthy' | 'Pending' | 'Alert';
   throughput: number;
-}
+};
 
 const statusFilter: FilterFn<Row> = (row, columnId, filterValue) => {
   const selectedStatuses = (filterValue ?? []) as Row['status'][];
@@ -248,10 +265,10 @@ const columns: ColumnDef<Row, unknown>[] = [
     minSize: 120,
     meta: {
       label: 'Service',
-      rowHeader: true,
+      rowHeader: true
     },
     enablePinning: true,
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'region',
@@ -259,20 +276,20 @@ const columns: ColumnDef<Row, unknown>[] = [
     size: 140,
     minSize: 100,
     meta: {
-      label: 'Region',
+      label: 'Region'
     },
     enablePinning: true,
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'status',
     header: 'Status',
     size: 120,
     meta: {
-      label: 'Status',
+      label: 'Status'
     },
     filterFn: statusFilter,
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'throughput',
@@ -281,41 +298,92 @@ const columns: ColumnDef<Row, unknown>[] = [
     meta: {
       label: 'Throughput',
       align: 'end',
-      cellTone: (context) => (context.getValue<number>() >= 4000 ? 'positive' : 'negative'),
+      cellTone: (context) => (context.getValue<number>() >= 4000 ? 'positive' : 'negative')
     },
-    cell: (info) => String(info.getValue<number>()),
-  },
+    cell: (info) => String(info.getValue<number>())
+  }
 ];
 
 const resizableColumns: ColumnDef<Row, unknown>[] = columns.map((column) => ({
   ...column,
-  enableResizing: true,
+  enableResizing: true
 }));
 
+const getRowIdValue = (row: Row): string => row.id;
+
+const formatErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : 'Request failed');
+
+const query = <T extends HTMLElement = HTMLElement>(f: ComponentFixture<unknown>, sel: string): T | null =>
+  (f.nativeElement as HTMLElement).querySelector<T>(sel);
+
+const queryRequired = <T extends HTMLElement = HTMLElement>(f: ComponentFixture<unknown>, sel: string): T => {
+  const element = (f.nativeElement as HTMLElement).querySelector<T>(sel);
+
+  if (!element) {
+    throw new Error(`Expected to find an element matching "${sel}".`);
+  }
+
+  return element;
+};
+
+const queryAll = <T extends HTMLElement = HTMLElement>(f: ComponentFixture<unknown>, sel: string): T[] =>
+  Array.from((f.nativeElement as HTMLElement).querySelectorAll<T>(sel));
+
+function buildRows(size: number): Row[] {
+  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
+
+  return Array.from({ length: size }, (_, index) => ({
+    id: `svc-${String(index + 1).padStart(5, '0')}`,
+    name: ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'][index] ?? `Service ${index + 1}`,
+    region: ['us-east-1', 'eu-west-3'][index % 2],
+    status: statuses[index % statuses.length],
+    throughput: 1000 + index * 1000
+  }));
+}
+
+function buildDynamicColumns(nameHeader: string): ColumnDef<Row, unknown>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: nameHeader,
+      size: 180,
+      meta: { label: nameHeader, rowHeader: true },
+      cell: (info) => info.getValue<string>()
+    },
+    {
+      accessorKey: 'region',
+      header: 'Region',
+      size: 140,
+      meta: { label: 'Region' },
+      cell: (info) => info.getValue<string>()
+    }
+  ];
+}
+
 @Component({
+  selector: 'test-table-host',
   imports: [NatTable, TestTableSurface, TestPager, TestSearch],
   template: `
     <nat-table-surface
-      [state]="state()"
-      [initialState]="initialState"
-      [mode]="mode"
-      [enableMultiSort]="enableMultiSort"
-      [stickyHeader]="stickyHeader"
       [accessibilityText]="accessibilityText"
-      [manualPageCount]="manualPageCount"
-      [direction]="direction"
       [columnSizingMode]="columnSizingMode"
-      (stateChange)="onStateChange($event)"
-      (sortingChange)="onSortingChange($event)"
-      (paginationChange)="onPaginationChange($event)"
-      (globalFilterChange)="onGlobalFilterChange($event)"
+      [direction]="direction"
+      [enableMultiSort]="enableMultiSort"
+      [initialState]="initialState"
+      [manualPageCount]="manualPageCount"
+      [mode]="mode"
+      [state]="state()"
+      [stickyHeader]="stickyHeader"
       (columnFiltersChange)="onColumnFiltersChange($event)"
-      (columnVisibilityChange)="onColumnVisibilityChange($event)"
       (columnOrderChange)="onColumnOrderChange($event)"
       (columnPinningChange)="onColumnPinningChange($event)"
       (columnSizingChange)="onColumnSizingChange($event)"
+      (columnVisibilityChange)="onColumnVisibilityChange($event)"
+      (globalFilterChange)="onGlobalFilterChange($event)"
+      (paginationChange)="onPaginationChange($event)"
       (rowSelectionChange)="onRowSelectionChange($event)"
-    >
+      (sortingChange)="onSortingChange($event)"
+      (stateChange)="onStateChange($event)">
       @if (enablePagination) {
         <test-pager />
       }
@@ -323,106 +391,107 @@ const resizableColumns: ColumnDef<Row, unknown>[] = columns.map((column) => ({
         <test-search />
       }
       <nat-table
-        [data]="rows()"
         [columns]="columns"
-        accessibleName="Operations table"
-        [getRowId]="getRowId"
+        [data]="rows()"
         [dataStatus]="dataStatus()"
-        [error]="error()"
         [enableRowSelection]="enableRowSelection"
+        [error]="error()"
+        [getRowId]="getRowId"
         [selectionMode]="selectionMode"
-        (rowActivate)="onRowActivate($event)"
-      />
+        accessibleName="Operations table"
+        (rowActivate)="onRowActivate($event)" />
     </nat-table-surface>
-  `,
+  `
 })
 class TableHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly state = signal<Partial<NatTableState>>({});
-  readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
-  readonly error = signal<unknown>(null);
-  columns: ColumnDef<Row, unknown>[] = columns;
-  readonly getRowId = (row: Row) => row.id;
-  initialState: Partial<NatTableState> = {
+  public readonly rows = signal<Row[]>(buildRows(6));
+  public readonly state = signal<Partial<NatTableState>>({});
+  public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  protected readonly error = signal<unknown>(null);
+  public columns: ColumnDef<Row, unknown>[] = columns;
+  protected readonly getRowId = getRowIdValue;
+  public initialState: Partial<NatTableState> = {
     sorting: [{ id: 'throughput', desc: true }],
     columnPinning: {
       left: ['name'],
-      right: [],
+      right: []
     },
     pagination: {
       pageIndex: 0,
-      pageSize: 2,
-    },
+      pageSize: 2
+    }
   };
-  enablePagination = false;
-  enableSearch = true;
-  enableMultiSort = false;
-  enableRowSelection = false;
-  selectionMode: 'single' | 'multiple' = 'multiple';
-  stickyHeader = true;
-  direction: 'ltr' | 'rtl' | undefined = undefined;
-  columnSizingMode: 'fill' | 'fixed' = 'fill';
-  accessibilityText: NatTableAccessibilityText = {};
-  mode: NatTableMode | NatTableModeConfiguration = 'auto';
-  manualPageCount: number | undefined = undefined;
-  readonly stateEvents: Partial<NatTableState>[] = [];
-  readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
-  readonly sortingEvents: NatTableState['sorting'][] = [];
-  readonly paginationEvents: NatTableState['pagination'][] = [];
-  readonly globalFilterEvents: NatTableState['globalFilter'][] = [];
-  readonly columnFiltersEvents: NatTableState['columnFilters'][] = [];
-  readonly columnVisibilityEvents: NatTableState['columnVisibility'][] = [];
-  readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
-  readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
-  readonly columnSizingEvents: NatTableState['columnSizing'][] = [];
-  readonly rowSelectionEvents: NatTableState['rowSelection'][] = [];
 
-  onStateChange(state: Partial<NatTableState>): void {
+  public enablePagination = false;
+  protected readonly enableSearch = true;
+  public enableMultiSort = false;
+  public enableRowSelection = false;
+  public selectionMode: 'single' | 'multiple' = 'multiple';
+  public stickyHeader = true;
+  public direction: 'ltr' | 'rtl' | undefined = undefined;
+  public columnSizingMode: 'fill' | 'fixed' = 'fill';
+  public accessibilityText: NatTableAccessibilityText = {};
+  public mode: NatTableMode | NatTableModeConfiguration = 'auto';
+  public manualPageCount: number | undefined = undefined;
+  public readonly stateEvents: Partial<NatTableState>[] = [];
+  public readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
+  public readonly sortingEvents: NatTableState['sorting'][] = [];
+  public readonly paginationEvents: NatTableState['pagination'][] = [];
+  public readonly globalFilterEvents: NatTableState['globalFilter'][] = [];
+  public readonly columnFiltersEvents: NatTableState['columnFilters'][] = [];
+  public readonly columnVisibilityEvents: NatTableState['columnVisibility'][] = [];
+  public readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
+  public readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
+  public readonly columnSizingEvents: NatTableState['columnSizing'][] = [];
+  public readonly rowSelectionEvents: NatTableState['rowSelection'][] = [];
+
+  protected onStateChange(state: Partial<NatTableState>): void {
     this.stateEvents.push(state);
   }
 
-  onSortingChange(sorting: NatTableState['sorting']): void {
+  protected onSortingChange(sorting: NatTableState['sorting']): void {
     this.sortingEvents.push(sorting);
   }
 
-  onPaginationChange(pagination: NatTableState['pagination']): void {
+  protected onPaginationChange(pagination: NatTableState['pagination']): void {
     this.paginationEvents.push(pagination);
   }
 
-  onGlobalFilterChange(globalFilter: NatTableState['globalFilter']): void {
+  protected onGlobalFilterChange(globalFilter: NatTableState['globalFilter']): void {
     this.globalFilterEvents.push(globalFilter);
   }
 
-  onColumnFiltersChange(columnFilters: NatTableState['columnFilters']): void {
+  protected onColumnFiltersChange(columnFilters: NatTableState['columnFilters']): void {
     this.columnFiltersEvents.push(columnFilters);
   }
 
-  onColumnVisibilityChange(columnVisibility: NatTableState['columnVisibility']): void {
+  protected onColumnVisibilityChange(columnVisibility: NatTableState['columnVisibility']): void {
     this.columnVisibilityEvents.push(columnVisibility);
   }
 
-  onColumnOrderChange(columnOrder: NatTableState['columnOrder']): void {
+  protected onColumnOrderChange(columnOrder: NatTableState['columnOrder']): void {
     this.columnOrderEvents.push(columnOrder);
   }
 
-  onColumnPinningChange(columnPinning: NatTableState['columnPinning']): void {
+  protected onColumnPinningChange(columnPinning: NatTableState['columnPinning']): void {
     this.columnPinningEvents.push(columnPinning);
   }
 
-  onColumnSizingChange(columnSizing: NatTableState['columnSizing']): void {
+  protected onColumnSizingChange(columnSizing: NatTableState['columnSizing']): void {
     this.columnSizingEvents.push(columnSizing);
   }
 
-  onRowSelectionChange(rowSelection: NatTableState['rowSelection']): void {
+  protected onRowSelectionChange(rowSelection: NatTableState['rowSelection']): void {
     this.rowSelectionEvents.push(rowSelection);
   }
 
-  onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+  protected onRowActivate(event: NatTableRowActivateEvent<Row>): void {
     this.rowActivateEvents.push(event);
   }
 }
 
 @Component({
+  selector: 'test-provider-accessibility-host',
   imports: [NatTable, TestTableSurface],
   providers: [
     provideNatTableIntl({
@@ -430,116 +499,135 @@ class TableHost {
       accessibilityText: {
         emptyState: 'Provider empty state',
         keyboardInstructions: 'Provider keyboard instructions.',
-        tableSummary: ({ visibleRowsText, totalRowsText }) =>
-          `Provider summary ${visibleRowsText}/${totalRowsText}`,
-      },
-    }),
+        tableSummary: ({ visibleRowsText, totalRowsText }) => `Provider summary ${visibleRowsText}/${totalRowsText}`
+      }
+    })
   ],
   template: `
     <nat-table-surface [accessibilityText]="accessibilityText()">
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Provider table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Provider table" />
     </nat-table-surface>
-  `,
+  `
 })
 class ProviderAccessibilityHost {
-  readonly rows = signal<Row[]>([]);
-  readonly columns = columns;
-  readonly accessibilityText = signal<NatTableAccessibilityText>({});
+  protected readonly rows = signal<Row[]>([]);
+  protected readonly columns = columns;
+  public readonly accessibilityText = signal<NatTableAccessibilityText>({});
 }
 
 @Component({
+  selector: 'test-accessible-name-host',
   imports: [NatTable, TestTableSurface],
   template: `
     <nat-table-surface>
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Latency table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Latency table" />
     </nat-table-surface>
-  `,
+  `
 })
 class AccessibleNameHost {
-  readonly rows = signal<Row[]>(buildRows(2));
-  readonly columns = columns;
+  protected readonly rows = signal<Row[]>(buildRows(2));
+  protected readonly columns = columns;
 }
 
 @Component({
+  selector: 'test-caption-host',
   imports: [NatTable, TestTableSurface],
   template: `
     <nat-table-surface>
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        accessibleName="Ignored accessible name"
-        caption="Visible operations"
-      />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Ignored accessible name" caption="Visible operations" />
     </nat-table-surface>
-  `,
+  `
 })
 class CaptionHost {
-  readonly rows = signal<Row[]>(buildRows(2));
-  readonly columns = columns;
+  protected readonly rows = signal<Row[]>(buildRows(2));
+  protected readonly columns = columns;
 }
 
 @Component({
-  imports: [
-    NatTable,
-    TestTableSurface,
-    TestSearch,
-    NatTableLoadingTemplate,
-    NatTableEmptyTemplate,
-    NatTableErrorTemplate,
-  ],
+  selector: 'test-state-templates-host',
+  imports: [NatTable, TestTableSurface, TestSearch, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
   template: `
-    <nat-table-surface [state]="state()" [accessibilityText]="accessibilityText">
+    <nat-table-surface [accessibilityText]="accessibilityText" [state]="state()">
       <test-search />
       <nat-table
-        [data]="rows()"
         [columns]="columns"
+        [data]="rows()"
         [dataStatus]="dataStatus()"
         [error]="error()"
-        accessibleName="State template table"
-      >
-        <ng-template natTableLoading let-status="status" let-totalRowsValue="totalRowsValue">
+        accessibleName="State template table">
+        <ng-template let-status="status" let-totalRowsValue="totalRowsValue" natTableLoading>
           <span class="custom-loading">{{ status }} {{ totalRowsValue }}</span>
         </ng-template>
 
-        <ng-template natTableEmpty let-filtered="filtered" let-columns="visibleColumnsValue">
-          <span class="custom-empty"
-            >{{ filtered ? 'Filtered empty' : 'Empty' }} {{ columns }}</span
-          >
+        <ng-template let-columns="visibleColumnsValue" let-filtered="filtered" natTableEmpty>
+          <span class="custom-empty">{{ filtered ? 'Filtered empty' : 'Empty' }} {{ columns }}</span>
         </ng-template>
 
-        <ng-template
-          natTableError
-          let-error
-          let-visibleRowsValue="visibleRowsValue"
-          let-totalRowsValue="totalRowsValue"
-        >
-          <button
-            type="button"
-            class="custom-error"
-            [attr.data-row-counts]="visibleRowsValue + '/' + totalRowsValue"
-          >
+        <ng-template let-error let-totalRowsValue="totalRowsValue" let-visibleRowsValue="visibleRowsValue" natTableError>
+          <button [attr.data-row-counts]="visibleRowsValue + '/' + totalRowsValue" class="custom-error" type="button">
             {{ formatError(error) }}
           </button>
         </ng-template>
       </nat-table>
     </nat-table-surface>
-  `,
+  `
 })
 class StateTemplatesHost {
-  readonly rows = signal<Row[]>([]);
-  readonly state = signal<Partial<NatTableState>>({});
-  readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
-  readonly error = signal<unknown>(new Error('Request failed'));
-  readonly columns = columns;
-  readonly accessibilityText: NatTableAccessibilityText = {
+  public readonly rows = signal<Row[]>([]);
+  public readonly state = signal<Partial<NatTableState>>({});
+  public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  public readonly error = signal<unknown>(new Error('Request failed'));
+  protected readonly columns = columns;
+  protected readonly accessibilityText: NatTableAccessibilityText = {
     loadingState: 'Loading operations.',
     emptyState: 'No operations.',
-    errorState: 'Operations failed.',
+    errorState: 'Operations failed.'
   };
 
-  formatError(error: unknown): string {
-    return error instanceof Error ? error.message : 'Request failed';
-  }
+  protected readonly formatError = formatErrorMessage;
+}
+
+type NatTableInternals = NatTable<Row> & {
+  onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number]): void;
+};
+
+function getInternalTable(fixture: ComponentFixture<TableHost>): NatTableInternals {
+  return fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTableInternals;
+}
+
+function createDropEvent(columnId: string, previousIndex: number, currentIndex: number): CdkDragDrop<string[]> {
+  return {
+    previousIndex,
+    currentIndex,
+    item: { data: columnId }
+  } as unknown as CdkDragDrop<string[]>;
+}
+
+function getHeaderColumnIds(fixture: ComponentFixture<TableHost>): string[] {
+  return queryAll(fixture, 'thead th[data-column-id]').map((header) => header.dataset['columnId'] ?? '');
+}
+
+// eslint-disable-next-line complexity
+function mockClientRect(element: HTMLElement, rect: Partial<DOMRectReadOnly>): void {
+  const left = rect.left ?? 0;
+  const top = rect.top ?? 0;
+  const width = rect.width ?? (rect.right ?? left) - left;
+  const height = rect.height ?? (rect.bottom ?? top) - top;
+  const right = rect.right ?? left + width;
+  const bottom = rect.bottom ?? top + height;
+
+  element.getBoundingClientRect = (): DOMRect =>
+    ({
+      x: left,
+      y: top,
+      left,
+      top,
+      right,
+      bottom,
+      width,
+      height,
+      toJSON: () => ({})
+    }) as DOMRect;
 }
 
 describe('NatTable', () => {
@@ -548,14 +636,8 @@ describe('NatTable', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        TableHost,
-        ProviderAccessibilityHost,
-        AccessibleNameHost,
-        CaptionHost,
-        StateTemplatesHost,
-      ],
-      providers: [provideZonelessChangeDetection()],
+      imports: [TableHost, ProviderAccessibilityHost, AccessibleNameHost, CaptionHost, StateTemplatesHost],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableHost);
@@ -563,6 +645,7 @@ describe('NatTable', () => {
     await fixture.whenStable();
   });
 
+  // eslint-disable-next-line complexity
   async function recreateHost(
     options: {
       enablePagination?: boolean;
@@ -578,7 +661,7 @@ describe('NatTable', () => {
       mode?: NatTableMode | NatTableModeConfiguration;
       manualPageCount?: number;
       columns?: ColumnDef<Row, unknown>[];
-    } = {},
+    } = {}
   ): Promise<void> {
     fixture.destroy();
     fixture = TestBed.createComponent(TableHost);
@@ -607,80 +690,67 @@ describe('NatTable', () => {
     // Default columns do not opt in, so no handles render.
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.column-resize-handle')).toBeNull();
+    expect(query(fixture, '.column-resize-handle')).toBeNull();
 
     // Every resizable column declares enableResizing: true on its def.
     await recreateHost({ columns: resizableColumns });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.column-resize-handle').length).toBe(4);
+    expect(queryAll(fixture, '.column-resize-handle')).toHaveLength(4);
   });
 
   it('renders a handle and allows keyboard resize only on opted-in columns', async () => {
     // Mirror the showcase: opt some columns in, leave others out. Resizing must be
     // strictly per column, not all-or-nothing.
     const mixedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'name'
-        ? { ...column, enableResizing: true }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'name' ? { ...column, enableResizing: true } : column
     );
+
     await recreateHost({ columns: mixedColumns });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(
-      fixture.nativeElement.querySelector('thead th[data-column-id="name"] .column-resize-handle'),
-    ).not.toBeNull();
-    expect(
-      fixture.nativeElement.querySelector('thead th[data-column-id="region"] .column-resize-handle'),
-    ).toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('.column-resize-handle').length).toBe(1);
+    expect(query(fixture, 'thead th[data-column-id="name"] .column-resize-handle')).not.toBeNull();
+    expect(query(fixture, 'thead th[data-column-id="region"] .column-resize-handle')).toBeNull();
+    expect(queryAll(fixture, '.column-resize-handle')).toHaveLength(1);
 
     // The opted-out column ignores Alt+Arrow keyboard resize.
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
     const sizingEventsBefore = host.columnSizingEvents.length;
+
     regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.length).toBe(sizingEventsBefore);
+    expect(host.columnSizingEvents).toHaveLength(sizingEventsBefore);
   });
 
   it('resizes a column from the keyboard, updates width, and emits columnSizingChange', async () => {
     await recreateHost({ columns: resizableColumns });
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
 
     regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 148 });
 
-    const regionCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child td[data-column-id="region"]',
-    ) as HTMLElement;
+    const regionCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td[data-column-id="region"]');
 
     // The resize must drive BOTH body and header widths, or the column never visibly resizes.
     expect(regionCell.style.width).toBe('148px');
     expect(regionHeader.style.width).toBe('148px');
 
-    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
-    expect(liveRegion.textContent?.trim()).toBe('Region column width 148 pixels.');
+    const liveRegion = queryRequired<HTMLElement>(fixture, '[aria-live="polite"]');
+
+    expect(liveRegion.textContent.trim()).toBe('Region column width 148 pixels.');
   });
 
   it('shrinks on first ArrowLeft in LTR without an opposite-direction jump', async () => {
@@ -689,59 +759,50 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+
     regionHeader.focus();
 
     // LTR: the resize edge is on the right, so Alt+ArrowLeft must shrink (region 140 → 132),
     // never grow. Guards the first-keystroke direction reversal.
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 132 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 132 });
   });
 
   it('inverts keyboard resize arrows in RTL and clamps to the min bound', async () => {
     await recreateHost({ columns: resizableColumns, direction: 'rtl' });
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+
     regionHeader.focus();
 
     // RTL: the resize edge is on the left, so Alt+ArrowLeft grows (region 140 → 148).
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 148 });
 
     // Home jumps to the column's minSize (100).
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 100 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 100 });
 
     // Already at min: ArrowRight (shrink in RTL) clamps to 100 and emits nothing new.
     const eventsAtMin = host.columnSizingEvents.length;
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
-    );
+
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(host.columnSizingEvents.length).toBe(eventsAtMin);
+    expect(host.columnSizingEvents).toHaveLength(eventsAtMin);
   });
 
   it('resizes the focused header column with Alt+Arrow without focusing the handle', async () => {
@@ -750,30 +811,24 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
 
     regionHeader.focus();
     // Alt+ArrowRight grows the column one step (140 → 148).
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 148 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 148 });
 
     // Alt+ArrowLeft shrinks it back (148 → 140).
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 140 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 140 });
   });
 
   it('does not resize or reorder the focused header on Alt+Shift+Arrow', async () => {
@@ -782,9 +837,7 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
     const sizingEventsBefore = host.columnSizingEvents.length;
     const orderBefore = getHeaderColumnIds(fixture);
 
@@ -794,8 +847,8 @@ describe('NatTable', () => {
         key: 'ArrowRight',
         altKey: true,
         shiftKey: true,
-        bubbles: true,
-      }),
+        bubbles: true
+      })
     );
     fixture.detectChanges();
     await fixture.whenStable();
@@ -803,8 +856,8 @@ describe('NatTable', () => {
 
     // Resize needs Alt without Shift; reorder uses Control/Command+Shift. Alt+Shift+Arrow
     // matches neither, so column order and widths are both left untouched.
-    expect(getHeaderColumnIds(fixture)).toEqual(orderBefore);
-    expect(host.columnSizingEvents.length).toBe(sizingEventsBefore);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(orderBefore);
+    expect(host.columnSizingEvents).toHaveLength(sizingEventsBefore);
   });
 
   it('seeds an unsized column from its measured width before the first controlled pointer resize', async () => {
@@ -813,20 +866,19 @@ describe('NatTable', () => {
     // columnSizing binding the seed cannot round-trip before that capture, so the transient
     // overlay must expose the measured width or the drag would start from the 150px default.
     const unsizedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'region'
-        ? { ...column, size: undefined }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'region' ? { ...column, size: undefined } : column
     );
 
     await recreateHost({
       state: { columnSizing: {} },
-      columns: unsizedColumns,
+      columns: unsizedColumns
     });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const internal = getInternalTable(fixture);
+
     // jsdom has no layout, so inject a measured width distinct from the 150px default.
     (
       internal as unknown as {
@@ -834,14 +886,11 @@ describe('NatTable', () => {
       }
     ).measuredHeaderWidths.set({ region: 222 });
 
-    const regionHandle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"] .column-resize-handle',
-    ) as HTMLElement;
+    const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
+
     regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
-    const start = internal.table
-      .getState()
-      .columnSizingInfo.columnSizingStart.find(([id]) => id === 'region');
+    const start = internal.table.getState().columnSizingInfo.columnSizingStart.find(([id]) => id === 'region');
 
     // Captured start size must be the seeded 222px, not the stale 150px default.
     expect(start?.[1]).toBe(222);
@@ -855,18 +904,13 @@ describe('NatTable', () => {
     // only clamps in getSize(), not in stored state). Rendered widths must stay within
     // [minSize, maxSize], never the raw controlled value.
     const boundedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'region'
-        ? { ...column, maxSize: 200 }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'region' ? { ...column, maxSize: 200 } : column
     );
-    const regionCell = () =>
-      fixture.nativeElement.querySelector(
-        'tbody tr:first-child td[data-column-id="region"]',
-      ) as HTMLElement;
+    const regionCell = (): HTMLElement => queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td[data-column-id="region"]');
 
     await recreateHost({
       columns: boundedColumns,
-      state: { columnSizing: { region: 9999 } },
+      state: { columnSizing: { region: 9999 } }
     });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -889,21 +933,13 @@ describe('NatTable', () => {
     // other columns can yield (down to their mins), so the table never exceeds the
     // visible region. A generous maxSize makes the fit budget the binding limit.
     const wideColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'region'
-        ? { ...column, maxSize: 1000 }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'region' ? { ...column, maxSize: 1000 } : column
     );
-    const regionHeader = () =>
-      fixture.nativeElement.querySelector(
-        'thead th[data-column-id="region"]',
-      ) as HTMLTableCellElement;
-    const regionCell = () =>
-      fixture.nativeElement.querySelector(
-        'tbody tr:first-child td[data-column-id="region"]',
-      ) as HTMLElement;
+    const regionHeader = (): HTMLTableCellElement => queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+    const regionCell = (): HTMLElement => queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td[data-column-id="region"]');
 
     await recreateHost({
-      columns: wideColumns,
+      columns: wideColumns
     });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -916,6 +952,7 @@ describe('NatTable', () => {
       regionViewportWidth: { set(value: number): void };
       resolvedColumnWidths(): Record<string, number>;
     };
+
     internal.regionViewportWidth.set(390);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -926,19 +963,18 @@ describe('NatTable', () => {
     // to the 48px default floor (name 120 + status 48 + throughput 48 = 216): 390 - 216 = 174.
     // The others collapse to their mins so the table fills the region exactly.
     regionHeader().focus();
-    regionHeader().dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }),
-    );
+    regionHeader().dispatchEvent(new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(regionCell().style.width).toBe('174px');
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 174 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 174 });
 
     // The widths still sum to the region: the table fills it exactly, never overflows.
     const widths = internal.resolvedColumnWidths();
     const total = Object.values(widths).reduce((sum, width) => sum + width, 0);
+
     expect(total).toBe(390);
 
     // Symptom guard: neighbours without an explicit minSize collapse only to the 48px
@@ -956,22 +992,18 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const statusHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="status"]',
-    ) as HTMLTableCellElement;
+    const statusHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="status"]');
+
     statusHeader.focus();
-    statusHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }),
-    );
+    statusHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.at(-1)).toEqual({ status: 48 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ status: 48 });
 
-    const statusCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child td[data-column-id="status"]',
-    ) as HTMLElement;
+    const statusCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td[data-column-id="status"]');
+
     expect(statusCell.style.width).toBe('48px');
     expect(statusHeader.style.width).toBe('48px');
   });
@@ -983,10 +1015,9 @@ describe('NatTable', () => {
     // reads the over-max width and "grows" by clamping straight back down to the bound
     // (a backwards jump) while announcing the wrong width.
     const boundedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'region'
-        ? { ...column, maxSize: 200 }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'region' ? { ...column, maxSize: 200 } : column
     );
+
     await recreateHost({ columns: boundedColumns });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -996,34 +1027,30 @@ describe('NatTable', () => {
     const internal = getInternalTable(fixture) as unknown as {
       measuredHeaderWidths: { set(value: Record<string, number>): void };
     };
+
     internal.measuredHeaderWidths.set({ region: 272 });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
 
     // Grow on a column already at its max is a no-op, not a down-clamp that jumps backwards.
     const eventsBefore = host.columnSizingEvents.length;
+
     regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(host.columnSizingEvents.length).toBe(eventsBefore);
+    expect(host.columnSizingEvents).toHaveLength(eventsBefore);
 
     // ArrowLeft steps down by exactly one keyboard step from the clamped base (200 → 192).
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 192 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 192 });
   });
 
   it('clamps the resize guide to the fit budget, not just the column maxSize', async () => {
@@ -1031,10 +1058,9 @@ describe('NatTable', () => {
     // the other columns' minimums), even when the column's own maxSize is much larger.
     // Every column is sized 100 with min 50 so the fit budget is deterministic.
     const sizedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column
-        ? { ...column, size: 100, minSize: 50, maxSize: column.accessorKey === 'region' ? 1000 : 100 }
-        : column,
+      'accessorKey' in column ? { ...column, size: 100, minSize: 50, maxSize: column.accessorKey === 'region' ? 1000 : 100 } : column
     );
+
     await recreateHost({ columns: sizedColumns });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1047,12 +1073,11 @@ describe('NatTable', () => {
       visibleColumns(): readonly { id: string }[];
     };
     const otherColumnsWidth = (internal.visibleColumns().length - 1) * 100;
+
     internal.regionViewportWidth.set(otherColumnsWidth + 250); // region fit budget = 250
     fixture.detectChanges();
 
-    const regionHandle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"] .column-resize-handle',
-    ) as HTMLElement;
+    const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
 
     regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
     expect(internal.table.getState().columnSizingInfo.isResizingColumn).toBe('region');
@@ -1077,25 +1102,22 @@ describe('NatTable', () => {
       regionViewportWidth: { set(value: number): void };
       resolvedColumnWidths(): Record<string, number>;
     };
+
     internal.regionViewportWidth.set(600);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const widthsBefore = internal.resolvedColumnWidths();
-    const total = (widths: Record<string, number>) =>
-      Object.values(widths).reduce((sum, width) => sum + width, 0);
+    const total = (widths: Record<string, number>): number => Object.values(widths).reduce((sum, width) => sum + width, 0);
 
     // Flex distribution fills the region exactly before any resize.
     expect(total(widthsBefore)).toBe(600);
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+
     regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -1103,6 +1125,7 @@ describe('NatTable', () => {
     // The resized column grows by exactly one step while the others absorb the delta,
     // so the table still fills the region — no jump, no overflow.
     const widthsAfter = internal.resolvedColumnWidths();
+
     expect(widthsAfter['region']).toBe(widthsBefore['region'] + 8);
     expect(total(widthsAfter)).toBe(600);
   });
@@ -1113,13 +1136,9 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHandle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"] .column-resize-handle',
-    ) as HTMLElement;
-    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
-    const regionCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child td[data-column-id="region"]',
-    ) as HTMLElement;
+    const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
+    const liveRegion = queryRequired<HTMLElement>(fixture, '[aria-live="polite"]');
+    const regionCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td[data-column-id="region"]');
 
     regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100 }));
     fixture.detectChanges();
@@ -1127,7 +1146,7 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     // Pointer-down alone must not announce — no per-frame chatter while dragging.
-    expect(liveRegion.textContent?.trim()).toBe('');
+    expect(liveRegion.textContent.trim()).toBe('');
 
     document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 132 }));
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 132 }));
@@ -1138,9 +1157,10 @@ describe('NatTable', () => {
     // The announced width must match the committed and rendered width (not a stale
     // pre-drag width), even though the showcase binds columnSizing controlled.
     const announcedWidth = host.columnSizingEvents.at(-1)?.['region'];
-    expect(announcedWidth).not.toBeUndefined();
+
+    expect(announcedWidth).toBeDefined();
     expect(regionCell.style.width).toBe(`${announcedWidth}px`);
-    expect(liveRegion.textContent?.trim()).toBe(`Region column width ${announcedWidth} pixels.`);
+    expect(liveRegion.textContent.trim()).toBe(`Region column width ${announcedWidth} pixels.`);
   });
 
   it('forwards the resolved text direction to TanStack column resizing', async () => {
@@ -1165,19 +1185,23 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('table.data-table') as HTMLElement;
+    const table = queryRequired<HTMLElement>(fixture, 'table.data-table');
+
     expect(table.classList.contains('is-fixed-layout')).toBe(true);
 
     // A <colgroup> drives column widths so the layout is exact, not stretched.
     const cols = Array.from(table.querySelectorAll('colgroup col')) as HTMLElement[];
-    const headers = fixture.nativeElement.querySelectorAll('thead th[data-column-id]');
-    expect(cols.length).toBe(headers.length);
+    const headers = queryAll(fixture, 'thead th[data-column-id]');
+
+    expect(cols).toHaveLength(headers.length);
 
     const colWidths = cols.map((col) => Number.parseInt(col.style.width, 10));
+
     expect(colWidths.every((width) => width > 0)).toBe(true);
 
     // The table is exactly as wide as the sum of its columns (so the region scrolls).
     const total = colWidths.reduce((sum, width) => sum + width, 0);
+
     expect(Number.parseInt(table.style.width, 10)).toBe(total);
   });
 
@@ -1186,10 +1210,9 @@ describe('NatTable', () => {
     // cap that fill mode applies must NOT bind here. A generous maxSize on region makes
     // Alt+End reach the column's own max, well past the fill-mode fit budget (174).
     const wideColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'region'
-        ? { ...column, maxSize: 1000 }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'region' ? { ...column, maxSize: 1000 } : column
     );
+
     await recreateHost({ columns: wideColumns, columnSizingMode: 'fixed' });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1199,18 +1222,16 @@ describe('NatTable', () => {
     const internal = getInternalTable(fixture) as unknown as {
       regionViewportWidth: { set(value: number): void };
     };
+
     internal.regionViewportWidth.set(390);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+
     regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -1218,8 +1239,14 @@ describe('NatTable', () => {
     // Fixed mode ignores the fit cap, so region reaches its own maxSize (1000), far past
     // the 174 the fill-mode cap would have allowed — the table grows and scrolls.
     const emittedWidth = host.columnSizingEvents.at(-1)?.['region'];
+
     expect(emittedWidth).toBe(1000);
-    expect(emittedWidth!).toBeGreaterThan(174);
+
+    if (emittedWidth === undefined) {
+      throw new Error('Expected an emitted width.');
+    }
+
+    expect(emittedWidth).toBeGreaterThan(174);
   });
 
   it('resets a column width in fixed mode even after a stale measured width was recorded', async () => {
@@ -1251,6 +1278,7 @@ describe('NatTable', () => {
     // resolvedColumnWidths must resolve to the column's def size (140), not the stale 300.
     // resizableColumns['region'] has size: 140 (confirmed from the fixture column defs above).
     const widths = internal.resolvedColumnWidths();
+
     expect(widths['region']).toBe(140);
     expect(widths['region']).not.toBe(300);
   });
@@ -1261,33 +1289,28 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
-    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+    const liveRegion = queryRequired<HTMLElement>(fixture, '[aria-live="polite"]');
 
     // Alt+Home jumps region to its minSize (100).
     regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 100 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 100 });
 
     // At the min, Alt+ArrowLeft (shrink in LTR) keeps the width and emits nothing new,
     // but the live region still announces the bound so a SR user learns the range.
     const eventsAtMin = host.columnSizingEvents.length;
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }),
-    );
+
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.length).toBe(eventsAtMin);
-    expect(liveRegion.textContent?.trim()).toBe('Region column width 100 pixels (minimum).');
+    expect(host.columnSizingEvents).toHaveLength(eventsAtMin);
+    expect(liveRegion.textContent.trim()).toBe('Region column width 100 pixels (minimum).');
   });
 
   it('announces the maximum bound on a keyboard grow at the max without emitting a sizing change', async () => {
@@ -1300,48 +1323,43 @@ describe('NatTable', () => {
     const internal = getInternalTable(fixture) as unknown as {
       regionViewportWidth: { set(value: number): void };
     };
+
     internal.regionViewportWidth.set(390);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
-    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]') as HTMLElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+    const liveRegion = queryRequired<HTMLElement>(fixture, '[aria-live="polite"]');
 
     // Alt+End jumps region to the fit-budget max (390 - other mins 216 = 174).
     regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }),
-    );
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(host.columnSizingEvents.at(-1)).toEqual({ region: 174 });
+    expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 174 });
 
     // At the max, Alt+ArrowRight (grow in LTR) keeps the width and emits nothing new,
     // but the live region announces the maximum so a SR user learns the range.
     const eventsAtMax = host.columnSizingEvents.length;
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }),
-    );
+
+    regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.columnSizingEvents.length).toBe(eventsAtMax);
-    expect(liveRegion.textContent?.trim()).toBe('Region column width 174 pixels (maximum).');
+    expect(host.columnSizingEvents).toHaveLength(eventsAtMax);
+    expect(liveRegion.textContent.trim()).toBe('Region column width 174 pixels (maximum).');
   });
 
   it('caps a fill-flex column at its maxSize and never renders it wider', async () => {
     // A small maxSize on a non-resized flex column must clamp its distributed share:
     // even when its intrinsic-weight share is larger, it never renders past the cap.
     const cappedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'status'
-        ? { ...column, maxSize: 90 }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'status' ? { ...column, maxSize: 90 } : column
     );
+
     await recreateHost({ columns: cappedColumns });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1351,6 +1369,7 @@ describe('NatTable', () => {
       regionViewportWidth: { set(value: number): void };
       resolvedColumnWidths(): Record<string, number>;
     };
+
     // A wide region hands every flex column a generous surplus share; without the cap
     // status would stretch well past 90.
     internal.regionViewportWidth.set(900);
@@ -1374,24 +1393,25 @@ describe('NatTable', () => {
       resolvedColumnWidths(): Record<string, number>;
       visibleColumns(): readonly { id: string }[];
     };
+
     // An odd region width forces non-integer per-share splits, exercising the rounding.
     internal.regionViewportWidth.set(917);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(internal.visibleColumns().length).toBe(4);
+    expect(internal.visibleColumns()).toHaveLength(4);
     const widths = internal.resolvedColumnWidths();
     const total = Object.values(widths).reduce((sum, width) => sum + width, 0);
+
     expect(total).toBe(917);
   });
 
   it('clamps the resize guide to the column bounds instead of overshooting the cursor', async () => {
     const boundedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-      'accessorKey' in column && column.accessorKey === 'region'
-        ? { ...column, maxSize: 200 }
-        : column,
+      'accessorKey' in column && column.accessorKey === 'region' ? { ...column, maxSize: 200 } : column
     );
+
     await recreateHost({ columns: boundedColumns });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1400,9 +1420,7 @@ describe('NatTable', () => {
     const internal = getInternalTable(fixture) as NatTableInternals & {
       columnResizeGuide(): { left: number; offset: number } | null;
     };
-    const regionHandle = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"] .column-resize-handle',
-    ) as HTMLElement;
+    const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
 
     // Begin the drag at region's start width (140), then drag far past maxSize (200).
     regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
@@ -1411,6 +1429,7 @@ describe('NatTable', () => {
     expect(internal.table.getState().columnSizingInfo.deltaOffset).toBe(1000);
 
     const guide = internal.columnResizeGuide();
+
     expect(guide).not.toBeNull();
     // Offset clamps to (maxSize 200 - startSize 140) = 60px, not the raw 1000px drag.
     expect(guide?.offset).toBe(60);
@@ -1421,42 +1440,41 @@ describe('NatTable', () => {
   it('renders a bare table surface with no built-in controls', () => {
     fixture.detectChanges();
 
-    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
-    const headerLabels = headers.map((header) =>
-      header.textContent?.replaceAll(/\s+/g, ' ').trim(),
-    );
+    const rows = queryAll(fixture, 'tbody tr');
+    const headers = queryAll<HTMLElement>(fixture, 'thead th');
+    const headerLabels = headers.map((header) => header.textContent.replaceAll(/\s+/g, ' ').trim());
 
-    expect(rows.length).toBe(6);
-    expect(headerLabels).toEqual(['Service', 'Region', 'Status', 'Throughput']);
-    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
-    expect(fixture.nativeElement.querySelector('#table-search')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.column-chip')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.pager')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.sort-button')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.pin-button')).toBeNull();
+    expect(rows).toHaveLength(6);
+    expect(headerLabels).toStrictEqual(['Service', 'Region', 'Status', 'Throughput']);
+    expect(query(fixture, 'tbody tr')?.textContent).toContain('Zeta');
+    expect(query(fixture, '#table-search')).toBeNull();
+    expect(query(fixture, '.column-chip')).toBeNull();
+    expect(query(fixture, '.pager')).toBeNull();
+    expect(query(fixture, '.sort-button')).toBeNull();
+    expect(query(fixture, '.pin-button')).toBeNull();
   });
 
   it('visually hides primitive header labels while keeping accessible text', async () => {
     @Component({
+      selector: 'test-hidden-header-label-host',
       imports: [NatTable, TestTableSurface],
       template: `
         <nat-table-surface>
-          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+          <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
         </nat-table-surface>
-      `,
+      `
     })
     class HiddenHeaderLabelHost {
-      readonly rows = signal<Row[]>(buildRows(1));
-      readonly columns: ColumnDef<Row, unknown>[] = [
+      protected readonly rows = signal<Row[]>(buildRows(1));
+      protected readonly columns: ColumnDef<Row, unknown>[] = [
         {
           accessorKey: 'name',
           header: 'Menu',
           meta: {
-            hiddenHeaderLabel: 'Row actions',
+            hiddenHeaderLabel: 'Row actions'
           },
-          cell: (info) => info.getValue<string>(),
-        },
+          cell: (info) => info.getValue<string>()
+        }
       ];
     }
 
@@ -1465,13 +1483,11 @@ describe('NatTable', () => {
     await hiddenHeaderFixture.whenStable();
     hiddenHeaderFixture.detectChanges();
 
-    const header = hiddenHeaderFixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"]',
-    ) as HTMLElement;
+    const header = queryRequired<HTMLElement>(hiddenHeaderFixture, 'thead th[data-column-id="name"]');
     const hiddenLabel = header.querySelector('.sr-only') as HTMLElement;
 
-    expect(hiddenLabel.textContent?.trim()).toBe('Row actions');
-    expect(header.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Row actions');
+    expect(hiddenLabel.textContent.trim()).toBe('Row actions');
+    expect(header.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Row actions');
     expect(header.textContent).not.toContain('Menu');
 
     hiddenHeaderFixture.destroy();
@@ -1479,24 +1495,25 @@ describe('NatTable', () => {
 
   it('renders hidden header labels for non-primitive headers', async () => {
     @Component({
+      selector: 'test-non-primitive-hidden-header-label-host',
       imports: [NatTable, TestTableSurface],
       template: `
         <nat-table-surface>
-          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+          <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
         </nat-table-surface>
-      `,
+      `
     })
     class NonPrimitiveHiddenHeaderLabelHost {
-      readonly rows = signal<Row[]>(buildRows(1));
-      readonly columns: ColumnDef<Row, unknown>[] = [
+      protected readonly rows = signal<Row[]>(buildRows(1));
+      protected readonly columns: ColumnDef<Row, unknown>[] = [
         {
           accessorKey: 'name',
           header: () => '',
           meta: {
-            hiddenHeaderLabel: 'Row actions',
+            hiddenHeaderLabel: 'Row actions'
           },
-          cell: (info) => info.getValue<string>(),
-        },
+          cell: (info) => info.getValue<string>()
+        }
       ];
     }
 
@@ -1505,13 +1522,11 @@ describe('NatTable', () => {
     await hiddenHeaderFixture.whenStable();
     hiddenHeaderFixture.detectChanges();
 
-    const header = hiddenHeaderFixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"]',
-    ) as HTMLElement;
+    const header = queryRequired<HTMLElement>(hiddenHeaderFixture, 'thead th[data-column-id="name"]');
     const hiddenLabel = header.querySelector('.sr-only') as HTMLElement;
 
-    expect(hiddenLabel.textContent?.trim()).toBe('Row actions');
-    expect(header.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Row actions');
+    expect(hiddenLabel.textContent.trim()).toBe('Row actions');
+    expect(header.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Row actions');
 
     hiddenHeaderFixture.destroy();
   });
@@ -1519,9 +1534,7 @@ describe('NatTable', () => {
   it('applies semantic tone attributes from column metadata', () => {
     fixture.detectChanges();
 
-    const throughputCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child td[data-column-id="throughput"]',
-    ) as HTMLTableCellElement;
+    const throughputCell = queryRequired<HTMLTableCellElement>(fixture, 'tbody tr:first-child td[data-column-id="throughput"]');
 
     expect(throughputCell.getAttribute('data-tone')).toBe('positive');
   });
@@ -1529,14 +1542,10 @@ describe('NatTable', () => {
   it('describes the current view and exposes the row header column to assistive technology', () => {
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const table = queryRequired<HTMLTableElement>(fixture, 'table');
     const describedBy = table.getAttribute('aria-describedby');
-    const summary = fixture.nativeElement.querySelector(
-      `#${describedBy?.split(' ').at(0) ?? ''}`,
-    ) as HTMLElement;
-    const rowHeaderCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child th[scope="row"]',
-    ) as HTMLTableCellElement;
+    const summary = queryRequired<HTMLElement>(fixture, `#${describedBy?.split(' ').at(0) ?? ''}`);
+    const rowHeaderCell = queryRequired<HTMLTableCellElement>(fixture, 'tbody tr:first-child th[scope="row"]');
 
     expect(describedBy).toContain('nat-table-');
     expect(summary.textContent).toContain('Showing 6 rows across 4 visible columns.');
@@ -1549,16 +1558,16 @@ describe('NatTable', () => {
       accessibilityText: {
         keyboardInstructions: '',
         reorderKeyboardInstructions: '',
-        tableSummary: () => '',
-      },
+        tableSummary: () => ''
+      }
     });
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const table = queryRequired<HTMLTableElement>(fixture, 'table');
 
     expect(table.getAttribute('aria-describedby')).toBeNull();
-    expect(fixture.nativeElement.querySelector('p[id$="-summary"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('p[id$="-instructions"]')).toBeNull();
+    expect(query(fixture, 'p[id$="-summary"]')).toBeNull();
+    expect(query(fixture, 'p[id$="-instructions"]')).toBeNull();
   });
 
   it('accepts accessibleName as the preferred grid name input', () => {
@@ -1566,7 +1575,7 @@ describe('NatTable', () => {
 
     nameFixture.detectChanges();
 
-    const table = nameFixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const table = queryRequired<HTMLTableElement>(nameFixture, 'table');
 
     expect(table.getAttribute('aria-label')).toBe('Latency table');
     expect(table.getAttribute('aria-labelledby')).toBeNull();
@@ -1579,12 +1588,10 @@ describe('NatTable', () => {
 
     captionFixture.detectChanges();
 
-    const table = captionFixture.nativeElement.querySelector('table') as HTMLTableElement;
-    const caption = captionFixture.nativeElement.querySelector(
-      'caption',
-    ) as HTMLTableCaptionElement;
+    const table = queryRequired<HTMLTableElement>(captionFixture, 'table');
+    const caption = queryRequired<HTMLTableCaptionElement>(captionFixture, 'caption');
 
-    expect(caption.textContent?.trim()).toBe('Visible operations');
+    expect(caption.textContent.trim()).toBe('Visible operations');
     expect(table.getAttribute('aria-label')).toBeNull();
     expect(table.getAttribute('aria-labelledby')).toBe(caption.id);
 
@@ -1594,12 +1601,8 @@ describe('NatTable', () => {
   it('only applies aria-sort to the actively sorted header', () => {
     fixture.detectChanges();
 
-    const sortedHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="throughput"]',
-    ) as HTMLTableCellElement;
-    const unsortedHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"]',
-    ) as HTMLTableCellElement;
+    const sortedHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="throughput"]');
+    const unsortedHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="name"]');
 
     expect(sortedHeader.getAttribute('aria-sort')).toBe('descending');
     expect(unsortedHeader.getAttribute('aria-sort')).toBeNull();
@@ -1609,46 +1612,45 @@ describe('NatTable', () => {
     await recreateHost({ enablePagination: true });
     fixture.detectChanges();
 
-    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+    const rows = queryAll(fixture, 'tbody tr');
 
-    expect(rows.length).toBe(2);
-    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Zeta');
+    expect(rows).toHaveLength(2);
+    expect(query(fixture, 'tbody tr')?.textContent).toContain('Zeta');
   });
 
-  it('renders reorder handles on headers by default', async () => {
+  it('renders reorder handles on headers by default', () => {
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.header-cell.is-reorderable').length).toBe(3);
+    expect(queryAll(fixture, '.header-cell.is-reorderable')).toHaveLength(3);
   });
 
+  // eslint-disable-next-line complexity
   it('lets callers patch state and emits the next state', () => {
     fixture.detectChanges();
 
-    const table = fixture.debugElement.query(By.directive(NatTable))
-      .componentInstance as NatTable<Row>;
+    const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
     table.patchState({
       globalFilter: 'gamma',
       pagination: (currentPagination) => ({
         ...currentPagination,
-        pageIndex: 0,
-      }),
+        pageIndex: 0
+      })
     });
     fixture.detectChanges();
 
     expect(host.stateEvents.at(-1)?.globalFilter).toBe('gamma');
     expect(host.stateEvents.at(-1)?.pagination?.pageIndex).toBe(0);
     expect(host.globalFilterEvents.at(-1)).toBe('gamma');
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
-    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
+    expect(queryAll(fixture, 'tbody tr')).toHaveLength(1);
+    expect(query(fixture, 'tbody tr')?.textContent).toContain('Gamma');
   });
 
   it('only emits granular slice outputs when the corresponding slice actually changed', async () => {
     await recreateHost({ enablePagination: true });
     fixture.detectChanges();
 
-    const table = fixture.debugElement.query(By.directive(NatTable))
-      .componentInstance as NatTable<Row>;
+    const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
     host.sortingEvents.length = 0;
     host.paginationEvents.length = 0;
@@ -1661,36 +1663,35 @@ describe('NatTable', () => {
     table.patchState({ sorting: [{ id: 'name', desc: false }] });
     fixture.detectChanges();
 
-    expect(host.sortingEvents).toEqual([[{ id: 'name', desc: false }]]);
-    expect(host.globalFilterEvents).toEqual([]);
-    expect(host.paginationEvents).toEqual([]);
-    expect(host.columnFiltersEvents).toEqual([]);
-    expect(host.columnVisibilityEvents).toEqual([]);
-    expect(host.columnOrderEvents).toEqual([]);
-    expect(host.columnPinningEvents).toEqual([]);
+    expect(host.sortingEvents).toStrictEqual([[{ id: 'name', desc: false }]]);
+    expect(host.globalFilterEvents).toStrictEqual([]);
+    expect(host.paginationEvents).toStrictEqual([]);
+    expect(host.columnFiltersEvents).toStrictEqual([]);
+    expect(host.columnVisibilityEvents).toStrictEqual([]);
+    expect(host.columnOrderEvents).toStrictEqual([]);
+    expect(host.columnPinningEvents).toStrictEqual([]);
 
     table.patchState({ sorting: [{ id: 'name', desc: false }] });
     fixture.detectChanges();
 
-    expect(host.sortingEvents.length).toBe(1);
+    expect(host.sortingEvents).toHaveLength(1);
 
     table.patchState({ globalFilter: 'gamma' });
     fixture.detectChanges();
 
-    expect(host.globalFilterEvents).toEqual(['gamma']);
-    expect(host.sortingEvents.length).toBe(1);
-    expect(host.columnVisibilityEvents).toEqual([]);
+    expect(host.globalFilterEvents).toStrictEqual(['gamma']);
+    expect(host.sortingEvents).toHaveLength(1);
+    expect(host.columnVisibilityEvents).toStrictEqual([]);
   });
 
   it('resets the page index and emits both globalFilterChange and paginationChange when the underlying TanStack filter changes', async () => {
     await recreateHost({ enablePagination: true });
     fixture.detectChanges();
 
-    const table = fixture.debugElement.query(By.directive(NatTable))
-      .componentInstance as NatTable<Row>;
+    const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
     table.patchState({
-      pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 1 }),
+      pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 1 })
     });
     fixture.detectChanges();
 
@@ -1700,7 +1701,7 @@ describe('NatTable', () => {
     table.table.setGlobalFilter('gamma');
     fixture.detectChanges();
 
-    expect(host.globalFilterEvents).toEqual(['gamma']);
+    expect(host.globalFilterEvents).toStrictEqual(['gamma']);
     expect(host.paginationEvents.at(-1)?.pageIndex).toBe(0);
   });
 
@@ -1711,132 +1712,114 @@ describe('NatTable', () => {
     const table = getInternalTable(fixture);
     const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
 
-    expect(leafHeaderGroup).toBeTruthy();
+    if (!leafHeaderGroup) {
+      throw new Error('Expected a leaf header group.');
+    }
 
-    table.onHeaderDrop(createDropEvent('region', 1, 2), leafHeaderGroup!);
+    table.onHeaderDrop(createDropEvent('region', 1, 2), leafHeaderGroup);
     fixture.detectChanges();
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
-      'name',
-      'status',
-      'region',
-      'throughput',
-    ]);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toStrictEqual(['name', 'status', 'region', 'throughput']);
   });
 
   it('matches the stable row id during global filtering without requiring an id column', () => {
     fixture.detectChanges();
 
-    const table = fixture.debugElement.query(By.directive(NatTable))
-      .componentInstance as NatTable<Row>;
+    const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
     table.patchState({
       globalFilter: 'svc-00003',
       pagination: (currentPagination) => ({
         ...currentPagination,
-        pageIndex: 0,
-      }),
+        pageIndex: 0
+      })
     });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
-    expect(fixture.nativeElement.querySelector('tbody tr')?.textContent).toContain('Gamma');
+    expect(queryAll(fixture, 'tbody tr')).toHaveLength(1);
+    expect(query(fixture, 'tbody tr')?.textContent).toContain('Gamma');
   });
 
   it('respects controlled state slices without mutating the rendered table', () => {
     host.state.set({
       columnVisibility: {
-        region: false,
-      },
+        region: false
+      }
     });
     fixture.detectChanges();
 
-    const table = fixture.debugElement.query(By.directive(NatTable))
-      .componentInstance as NatTable<Row>;
+    const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
+    expect(query(fixture, 'thead')?.textContent).not.toContain('Region');
 
     table.patchState({
       columnVisibility: (currentVisibility) => ({
         ...currentVisibility,
-        region: true,
-      }),
+        region: true
+      })
     });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).not.toContain('Region');
+    expect(query(fixture, 'thead')?.textContent).not.toContain('Region');
     expect(host.stateEvents.length).toBeGreaterThan(0);
   });
 
+  // eslint-disable-next-line complexity
   it('lets callers override accessibility summaries and live announcements', async () => {
     const accessibilityText: NatTableAccessibilityText = {
-      reorderKeyboardInstructions:
-        'Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.',
-      tableSummary: ({
-        visibleRowsText,
-        totalRowsText,
-        visibleColumnsText,
-        pageText,
-        pageCountText,
-      }) =>
+      reorderKeyboardInstructions: 'Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.',
+      tableSummary: ({ visibleRowsText, totalRowsText, visibleColumnsText, pageText, pageCountText }) =>
         `Oversigt ${visibleRowsText}/${totalRowsText}/${visibleColumnsText}/${pageText}/${pageCountText}`,
-      filteringChange: ({ query, visibleRowsText }) => `Filter ${query}:${visibleRowsText}`,
+      filteringChange: ({ query: searchQuery, visibleRowsText }) => `Filter ${searchQuery}:${visibleRowsText}`,
       sortingChange: ({ columnLabel, sortState }) => `Sortering ${columnLabel}:${sortState}`,
-      pageChange: ({ pageText, pageCountText, visibleRowsText }) =>
-        `Side ${pageText}/${pageCountText}:${visibleRowsText}`,
+      pageChange: ({ pageText, pageCountText, visibleRowsText }) => `Side ${pageText}/${pageCountText}:${visibleRowsText}`
     };
+
     await recreateHost({
       enablePagination: true,
-      accessibilityText,
+      accessibilityText
     });
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const table = queryRequired<HTMLTableElement>(fixture, 'table');
     const describedByIds = table.getAttribute('aria-describedby')?.split(' ') ?? [];
-    const summary = fixture.nativeElement.querySelector(
-      `#${describedByIds[0] ?? ''}`,
-    ) as HTMLElement;
-    const instructions = fixture.nativeElement.querySelector(
-      `#${describedByIds.at(-1) ?? ''}`,
-    ) as HTMLElement;
-    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
-    const tableComponent = fixture.debugElement.query(By.directive(NatTable))
-      .componentInstance as NatTable<Row>;
+    const summary = queryRequired<HTMLElement>(fixture, `#${describedByIds[0] ?? ''}`);
+    const instructions = queryRequired<HTMLElement>(fixture, `#${describedByIds.at(-1) ?? ''}`);
+    const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
+    const tableComponent = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
-    expect(summary.textContent?.trim()).toBe('Oversigt 2/6/4/1/3');
-    expect(instructions.textContent).toContain(
-      'Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.',
-    );
+    expect(summary.textContent.trim()).toBe('Oversigt 2/6/4/1/3');
+    expect(instructions.textContent).toContain('Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.');
 
     tableComponent.table.nextPage();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('Side 2/3:2');
+    expect(liveRegion.textContent.trim()).toBe('Side 2/3:2');
 
     tableComponent.patchState({
       globalFilter: 'gamma',
       pagination: (currentPagination) => ({
         ...currentPagination,
-        pageIndex: 0,
-      }),
+        pageIndex: 0
+      })
     });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('Filter gamma:1');
+    expect(liveRegion.textContent.trim()).toBe('Filter gamma:1');
 
     tableComponent.patchState({
-      sorting: [{ id: 'name', desc: false }],
+      sorting: [{ id: 'name', desc: false }]
     });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('Sortering Service:ascending');
+    expect(liveRegion.textContent.trim()).toBe('Sortering Service:ascending');
   });
 
   it('uses provider accessibility defaults and lets table inputs override them', () => {
@@ -1845,34 +1828,30 @@ describe('NatTable', () => {
 
     providerFixture.detectChanges();
 
-    let summary = providerFixture.nativeElement.querySelector('p[id$="-summary"]') as HTMLElement;
-    let emptyState = providerFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
-    let instructions = providerFixture.nativeElement.querySelector(
-      'p[id$="-instructions"]',
-    ) as HTMLElement;
+    let summary = queryRequired<HTMLElement>(providerFixture, 'p[id$="-summary"]');
+    let emptyState = queryRequired<HTMLElement>(providerFixture, '.empty-state');
+    let instructions = queryRequired<HTMLElement>(providerFixture, 'p[id$="-instructions"]');
 
-    expect(summary.textContent?.trim()).toBe('Provider summary n0/n0');
-    expect(emptyState.textContent?.trim()).toBe('Provider empty state');
-    expect(instructions.textContent?.trim()).toBe(
-      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
+    expect(summary.textContent.trim()).toBe('Provider summary n0/n0');
+    expect(emptyState.textContent.trim()).toBe('Provider empty state');
+    expect(instructions.textContent.trim()).toBe(
+      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
     );
 
     providerHost.accessibilityText.set({
       emptyState: 'Input empty state',
-      tableSummary: ({ visibleRowsText }) => `Input summary ${visibleRowsText}`,
+      tableSummary: ({ visibleRowsText }) => `Input summary ${visibleRowsText}`
     });
     providerFixture.detectChanges();
 
-    summary = providerFixture.nativeElement.querySelector('p[id$="-summary"]') as HTMLElement;
-    emptyState = providerFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
-    instructions = providerFixture.nativeElement.querySelector(
-      'p[id$="-instructions"]',
-    ) as HTMLElement;
+    summary = queryRequired<HTMLElement>(providerFixture, 'p[id$="-summary"]');
+    emptyState = queryRequired<HTMLElement>(providerFixture, '.empty-state');
+    instructions = queryRequired<HTMLElement>(providerFixture, 'p[id$="-instructions"]');
 
-    expect(summary.textContent?.trim()).toBe('Input summary n0');
-    expect(emptyState.textContent?.trim()).toBe('Input empty state');
-    expect(instructions.textContent?.trim()).toBe(
-      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
+    expect(summary.textContent.trim()).toBe('Input summary n0');
+    expect(emptyState.textContent.trim()).toBe('Input empty state');
+    expect(instructions.textContent.trim()).toBe(
+      'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
     );
   });
 
@@ -1880,34 +1859,32 @@ describe('NatTable', () => {
     host.rows.set([]);
     host.accessibilityText = {
       loadingState: 'Loading operations.',
-      errorState: 'Operations failed.',
+      errorState: 'Operations failed.'
     };
     host.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
-    const loadingCell = fixture.nativeElement.querySelector(
-      '.loading-state',
-    ) as HTMLTableCellElement;
+    const table = queryRequired<HTMLTableElement>(fixture, 'table');
+    const loadingCell = queryRequired<HTMLTableCellElement>(fixture, '.loading-state');
 
     expect(table.getAttribute('aria-busy')).toBe('true');
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(queryAll(fixture, 'tbody tr')).toHaveLength(1);
     expect(loadingCell.colSpan).toBe(4);
-    expect(loadingCell.textContent?.trim()).toBe('Loading operations.');
+    expect(loadingCell.textContent.trim()).toBe('Loading operations.');
 
     host.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const errorCell = fixture.nativeElement.querySelector('.error-state') as HTMLTableCellElement;
-    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+    const errorCell = queryRequired<HTMLTableCellElement>(fixture, '.error-state');
+    const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
 
     expect(table.getAttribute('aria-busy')).toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
+    expect(queryAll(fixture, 'tbody tr')).toHaveLength(1);
     expect(errorCell.colSpan).toBe(4);
-    expect(errorCell.textContent?.trim()).toBe('Operations failed.');
-    expect(liveRegion.textContent?.trim()).toBe('Operations failed.');
+    expect(errorCell.textContent.trim()).toBe('Operations failed.');
+    expect(liveRegion.textContent.trim()).toBe('Operations failed.');
   });
 
   it('keeps existing rows visible during background loading while exposing aria-busy', () => {
@@ -1916,11 +1893,11 @@ describe('NatTable', () => {
     host.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    const table = queryRequired<HTMLTableElement>(fixture, 'table');
 
     expect(table.getAttribute('aria-busy')).toBe('true');
-    expect(fixture.nativeElement.querySelector('.loading-state')).toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(6);
+    expect(query(fixture, '.loading-state')).toBeNull();
+    expect(queryAll(fixture, 'tbody tr')).toHaveLength(6);
   });
 
   it('reports rendered row counts when an error state hides cached rows', async () => {
@@ -1934,13 +1911,13 @@ describe('NatTable', () => {
     await stateFixture.whenStable();
     stateFixture.detectChanges();
 
-    const summary = stateFixture.nativeElement.querySelector('p[id$="-summary"]') as HTMLElement;
-    const errorCell = stateFixture.nativeElement.querySelector('.error-state') as HTMLElement;
+    const summary = queryRequired<HTMLElement>(stateFixture, 'p[id$="-summary"]');
+    const errorCell = queryRequired<HTMLElement>(stateFixture, '.error-state');
     const errorButton = errorCell.querySelector('.custom-error') as HTMLButtonElement;
 
-    expect(stateFixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
-    expect(stateFixture.nativeElement.querySelectorAll('tbody tr.data-row').length).toBe(0);
-    expect(summary.textContent?.trim()).toBe('No rows are currently shown. 4 visible columns.');
+    expect(queryAll(stateFixture, 'tbody tr')).toHaveLength(1);
+    expect(queryAll(stateFixture, 'tbody tr.data-row')).toHaveLength(0);
+    expect(summary.textContent.trim()).toBe('No rows are currently shown. 4 visible columns.');
     expect(errorButton.dataset['rowCounts']).toBe('0/0');
 
     stateFixture.destroy();
@@ -1953,9 +1930,9 @@ describe('NatTable', () => {
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
     stateFixture.detectChanges();
 
-    let stateCell = stateFixture.nativeElement.querySelector('.loading-state') as HTMLElement;
+    let stateCell = queryRequired<HTMLElement>(stateFixture, '.loading-state');
 
-    expect(stateCell.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('loading 0');
+    expect(stateCell.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('loading 0');
 
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.success);
     stateHost.state.set({ globalFilter: 'missing' });
@@ -1963,9 +1940,9 @@ describe('NatTable', () => {
     await stateFixture.whenStable();
     stateFixture.detectChanges();
 
-    stateCell = stateFixture.nativeElement.querySelector('.empty-state') as HTMLElement;
+    stateCell = queryRequired<HTMLElement>(stateFixture, '.empty-state');
 
-    expect(stateCell.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Filtered empty 4');
+    expect(stateCell.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Filtered empty 4');
 
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
     stateHost.error.set(new Error('API unavailable'));
@@ -1973,10 +1950,10 @@ describe('NatTable', () => {
     await stateFixture.whenStable();
     stateFixture.detectChanges();
 
-    stateCell = stateFixture.nativeElement.querySelector('.error-state') as HTMLElement;
+    stateCell = queryRequired<HTMLElement>(stateFixture, '.error-state');
     const errorButton = stateCell.querySelector('.custom-error') as HTMLButtonElement;
 
-    expect(stateCell.textContent?.trim()).toBe('API unavailable');
+    expect(stateCell.textContent.trim()).toBe('API unavailable');
     expect(errorButton.textContent).toContain('API unavailable');
     expect(errorButton.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
     expect(errorButton.tabIndex).toBe(-1);
@@ -1986,8 +1963,8 @@ describe('NatTable', () => {
       new KeyboardEvent('keydown', {
         key: 'Enter',
         bubbles: true,
-        cancelable: true,
-      }),
+        cancelable: true
+      })
     );
     stateFixture.detectChanges();
 
@@ -1999,28 +1976,22 @@ describe('NatTable', () => {
   it('keeps controlled columnOrder external while still emitting the requested next state', async () => {
     await recreateHost({
       state: {
-        columnOrder: ['throughput', 'name', 'region', 'status'],
-      },
+        columnOrder: ['throughput', 'name', 'region', 'status']
+      }
     });
     fixture.detectChanges();
 
-    const table = fixture.debugElement.query(By.directive(NatTable))
-      .componentInstance as NatTable<Row>;
+    const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'region', 'status']);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'throughput', 'region', 'status']);
 
     table.patchState({
-      columnOrder: ['name', 'region', 'status', 'throughput'],
+      columnOrder: ['name', 'region', 'status', 'throughput']
     });
     fixture.detectChanges();
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'region', 'status']);
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
-      'name',
-      'region',
-      'status',
-      'throughput',
-    ]);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'throughput', 'region', 'status']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toStrictEqual(['name', 'region', 'status', 'throughput']);
   });
 
   it('keeps hidden columns in their stored order when they are shown again', async () => {
@@ -2031,32 +2002,29 @@ describe('NatTable', () => {
 
     table.patchState({
       columnVisibility: {
-        status: false,
-      },
+        status: false
+      }
     });
     fixture.detectChanges();
 
     const updatedLeafHeaderGroup = table.table.getHeaderGroups().at(-1);
 
-    expect(updatedLeafHeaderGroup).toBeTruthy();
+    if (!updatedLeafHeaderGroup) {
+      throw new Error('Expected a leaf header group.');
+    }
 
-    table.onHeaderDrop(createDropEvent('throughput', 2, 1), updatedLeafHeaderGroup!);
+    table.onHeaderDrop(createDropEvent('throughput', 2, 1), updatedLeafHeaderGroup);
     fixture.detectChanges();
 
     table.patchState({
       columnVisibility: {
-        status: true,
-      },
+        status: true
+      }
     });
     fixture.detectChanges();
 
-    expect(host.stateEvents.at(-1)?.columnOrder).toEqual([
-      'name',
-      'throughput',
-      'status',
-      'region',
-    ]);
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'throughput', 'status', 'region']);
+    expect(host.stateEvents.at(-1)?.columnOrder).toStrictEqual(['name', 'throughput', 'status', 'region']);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'throughput', 'status', 'region']);
   });
 
   it('reorders pinned left and right columns within their own zones', async () => {
@@ -2065,27 +2033,29 @@ describe('NatTable', () => {
         ...host.initialState,
         columnPinning: {
           left: ['name', 'region'],
-          right: ['status', 'throughput'],
-        },
-      },
+          right: ['status', 'throughput']
+        }
+      }
     });
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
     const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
 
-    expect(leafHeaderGroup).toBeTruthy();
+    if (!leafHeaderGroup) {
+      throw new Error('Expected a leaf header group.');
+    }
 
-    table.onHeaderDrop(createDropEvent('name', 0, 1), leafHeaderGroup!);
+    table.onHeaderDrop(createDropEvent('name', 0, 1), leafHeaderGroup);
     fixture.detectChanges();
-    table.onHeaderDrop(createDropEvent('status', 2, 3), leafHeaderGroup!);
+    table.onHeaderDrop(createDropEvent('status', 2, 3), leafHeaderGroup);
     fixture.detectChanges();
 
-    expect(host.stateEvents.at(-1)?.columnPinning).toEqual({
+    expect(host.stateEvents.at(-1)?.columnPinning).toStrictEqual({
       left: ['region', 'name'],
-      right: ['throughput', 'status'],
+      right: ['throughput', 'status']
     });
-    expect(getHeaderColumnIds(fixture)).toEqual(['region', 'name', 'throughput', 'status']);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['region', 'name', 'throughput', 'status']);
   });
 
   it('ignores attempted cross-zone drops', async () => {
@@ -2094,41 +2064,42 @@ describe('NatTable', () => {
         ...host.initialState,
         columnPinning: {
           left: ['name'],
-          right: [],
-        },
-      },
+          right: []
+        }
+      }
     });
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
     const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
 
-    expect(leafHeaderGroup).toBeTruthy();
+    if (!leafHeaderGroup) {
+      throw new Error('Expected a leaf header group.');
+    }
 
     host.stateEvents.length = 0;
 
-    table.onHeaderDrop(createDropEvent('region', 1, 0), leafHeaderGroup!);
+    table.onHeaderDrop(createDropEvent('region', 1, 0), leafHeaderGroup);
     fixture.detectChanges();
 
-    expect(host.stateEvents.length).toBe(0);
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'region', 'status', 'throughput']);
+    expect(host.stateEvents).toHaveLength(0);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'region', 'status', 'throughput']);
   });
 
+  // eslint-disable-next-line complexity
   it('renders TanStack size hints and uses them for initial pin offsets', () => {
     host.state.set({
       columnPinning: {
         left: ['name', 'region'],
-        right: [],
-      },
+        right: []
+      }
     });
     fixture.detectChanges();
 
-    const headers = Array.from(fixture.nativeElement.querySelectorAll('thead th')) as HTMLElement[];
-    const bodyCells = Array.from(
-      fixture.nativeElement.querySelectorAll('tbody tr:first-child th, tbody tr:first-child td'),
-    ) as HTMLElement[];
+    const headers = queryAll<HTMLElement>(fixture, 'thead th');
+    const bodyCells = queryAll<HTMLElement>(fixture, 'tbody tr:first-child th, tbody tr:first-child td');
 
-    expect(fixture.nativeElement.querySelector('colgroup')).toBeNull();
+    expect(query(fixture, 'colgroup')).toBeNull();
     expect(headers[0]?.style.width).toBe('');
     expect(headers[0]?.style.minWidth).toBe('');
     expect(headers[0]?.style.maxWidth).toBe('');
@@ -2145,24 +2116,26 @@ describe('NatTable', () => {
 
   it('applies optional header sizing from column meta without affecting body cells', async () => {
     @Component({
+      selector: 'test-header-sizing-host',
       imports: [NatTable, TestTableSurface],
       template: `
         <nat-table-surface>
-          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+          <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
         </nat-table-surface>
-      `,
+      `
     })
     class HeaderSizingHost {
-      readonly rows = signal<Row[]>([
+      protected readonly rows = signal<Row[]>([
         {
           id: 'svc-header',
           name: 'Service',
           region: 'eu-central-1',
           status: 'Healthy',
-          throughput: 1000,
-        },
+          throughput: 1000
+        }
       ]);
-      readonly columns: ColumnDef<Row, unknown>[] = [
+
+      protected readonly columns: ColumnDef<Row, unknown>[] = [
         {
           accessorKey: 'name',
           header: 'Service',
@@ -2172,10 +2145,10 @@ describe('NatTable', () => {
             label: 'Service',
             rowHeader: true,
             headerSize: 140,
-            headerMinSize: 120,
+            headerMinSize: 120
           },
-          cell: (info) => info.getValue<string>(),
-        },
+          cell: (info) => info.getValue<string>()
+        }
       ];
     }
 
@@ -2184,12 +2157,8 @@ describe('NatTable', () => {
     await headerFixture.whenStable();
     headerFixture.detectChanges();
 
-    const header = headerFixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"]',
-    ) as HTMLElement;
-    const bodyCell = headerFixture.nativeElement.querySelector(
-      'tbody th[data-column-id="name"]',
-    ) as HTMLElement;
+    const header = queryRequired<HTMLElement>(headerFixture, 'thead th[data-column-id="name"]');
+    const bodyCell = queryRequired<HTMLElement>(headerFixture, 'tbody th[data-column-id="name"]');
 
     expect(header.style.width).toBe('140px');
     expect(header.style.minWidth).toBe('120px');
@@ -2202,30 +2171,33 @@ describe('NatTable', () => {
 
   it('applies fixed, maximum, and intrinsic column sizing from TanStack column definitions', async () => {
     @Component({
+      selector: 'test-column-width-host',
       imports: [NatTable, TestTableSurface],
       template: `
         <nat-table-surface [initialState]="initialState">
-          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+          <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
         </nat-table-surface>
-      `,
+      `
     })
     class ColumnWidthHost {
-      readonly rows = signal<Row[]>([
+      protected readonly rows = signal<Row[]>([
         {
           id: 'svc-width',
           name: 'Very long service name that should be truncated',
           region: 'eu-central-1 with extra routing detail',
           status: 'Healthy',
-          throughput: 1000,
-        },
+          throughput: 1000
+        }
       ]);
-      readonly initialState: Partial<NatTableState> = {
+
+      protected readonly initialState: Partial<NatTableState> = {
         columnPinning: {
           left: ['name', 'region', 'status'],
-          right: [],
-        },
+          right: []
+        }
       };
-      readonly columns: ColumnDef<Row, unknown>[] = [
+
+      protected readonly columns: ColumnDef<Row, unknown>[] = [
         {
           accessorKey: 'name',
           header: 'Service',
@@ -2233,7 +2205,7 @@ describe('NatTable', () => {
           minSize: 80,
           enablePinning: true,
           meta: { label: 'Service', rowHeader: true },
-          cell: (info) => info.getValue<string>(),
+          cell: (info) => info.getValue<string>()
         },
         {
           accessorKey: 'region',
@@ -2241,15 +2213,15 @@ describe('NatTable', () => {
           maxSize: 192,
           enablePinning: true,
           meta: { label: 'Region' },
-          cell: (info) => info.getValue<string>(),
+          cell: (info) => info.getValue<string>()
         },
         {
           accessorKey: 'status',
           header: 'Status',
           enablePinning: true,
           meta: { label: 'Status' },
-          cell: (info) => info.getValue<string>(),
-        },
+          cell: (info) => info.getValue<string>()
+        }
       ];
     }
 
@@ -2258,24 +2230,12 @@ describe('NatTable', () => {
     await widthFixture.whenStable();
     widthFixture.detectChanges();
 
-    const fixedHeader = widthFixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"]',
-    ) as HTMLElement;
-    const cappedHeader = widthFixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLElement;
-    const fixedCell = widthFixture.nativeElement.querySelector(
-      'tbody th[data-column-id="name"]',
-    ) as HTMLElement;
-    const cappedCell = widthFixture.nativeElement.querySelector(
-      'tbody td[data-column-id="region"]',
-    ) as HTMLElement;
-    const intrinsicHeader = widthFixture.nativeElement.querySelector(
-      'thead th[data-column-id="status"]',
-    ) as HTMLElement;
-    const intrinsicCell = widthFixture.nativeElement.querySelector(
-      'tbody td[data-column-id="status"]',
-    ) as HTMLElement;
+    const fixedHeader = queryRequired<HTMLElement>(widthFixture, 'thead th[data-column-id="name"]');
+    const cappedHeader = queryRequired<HTMLElement>(widthFixture, 'thead th[data-column-id="region"]');
+    const fixedCell = queryRequired<HTMLElement>(widthFixture, 'tbody th[data-column-id="name"]');
+    const cappedCell = queryRequired<HTMLElement>(widthFixture, 'tbody td[data-column-id="region"]');
+    const intrinsicHeader = queryRequired<HTMLElement>(widthFixture, 'thead th[data-column-id="status"]');
+    const intrinsicCell = queryRequired<HTMLElement>(widthFixture, 'tbody td[data-column-id="status"]');
 
     expect(fixedHeader.style.width).toBe('');
     expect(fixedHeader.style.minWidth).toBe('');
@@ -2301,24 +2261,26 @@ describe('NatTable', () => {
 
   it('clamps body cell content to two lines by default and applies column cell height metadata', async () => {
     @Component({
+      selector: 'test-cell-height-host',
       imports: [NatTable, TestTableSurface],
       template: `
         <nat-table-surface>
-          <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+          <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
         </nat-table-surface>
-      `,
+      `
     })
     class CellHeightHost {
-      readonly rows = signal<Row[]>([
+      protected readonly rows = signal<Row[]>([
         {
           id: 'svc-cell-height',
           name: 'Very long service name that should wrap onto multiple visible lines',
           region: 'eu-central-1 with additional routing detail',
           status: 'Healthy',
-          throughput: 1000,
-        },
+          throughput: 1000
+        }
       ]);
-      readonly columns: ColumnDef<Row, unknown>[] = [
+
+      protected readonly columns: ColumnDef<Row, unknown>[] = [
         {
           accessorKey: 'name',
           header: 'Service',
@@ -2326,34 +2288,34 @@ describe('NatTable', () => {
             label: 'Service',
             rowHeader: true,
             cellHeight: 72,
-            cellMaxLines: 3,
+            cellMaxLines: 3
           },
-          cell: (info) => info.getValue<string>(),
+          cell: (info) => info.getValue<string>()
         },
         {
           accessorKey: 'region',
           header: 'Region',
           meta: {
             label: 'Region',
-            cellMaxLines: Infinity,
+            cellMaxLines: Infinity
           },
-          cell: (info) => info.getValue<string>(),
+          cell: (info) => info.getValue<string>()
         },
         {
           accessorKey: 'status',
           header: 'Status',
           meta: { label: 'Status' },
-          cell: (info) => info.getValue<string>(),
+          cell: (info) => info.getValue<string>()
         },
         {
           accessorKey: 'throughput',
           header: 'Throughput',
           meta: {
             label: 'Throughput',
-            cellMaxLines: 0,
+            cellMaxLines: 0
           },
-          cell: (info) => `${info.getValue<number>()} req/s`,
-        },
+          cell: (info) => `${info.getValue<number>()} req/s`
+        }
       ];
     }
 
@@ -2362,18 +2324,10 @@ describe('NatTable', () => {
     await cellHeightFixture.whenStable();
     cellHeightFixture.detectChanges();
 
-    const serviceCell = cellHeightFixture.nativeElement.querySelector(
-      'tbody th[data-column-id="name"]',
-    ) as HTMLElement;
-    const regionCell = cellHeightFixture.nativeElement.querySelector(
-      'tbody td[data-column-id="region"]',
-    ) as HTMLElement;
-    const statusCell = cellHeightFixture.nativeElement.querySelector(
-      'tbody td[data-column-id="status"]',
-    ) as HTMLElement;
-    const throughputCell = cellHeightFixture.nativeElement.querySelector(
-      'tbody td[data-column-id="throughput"]',
-    ) as HTMLElement;
+    const serviceCell = queryRequired<HTMLElement>(cellHeightFixture, 'tbody th[data-column-id="name"]');
+    const regionCell = queryRequired<HTMLElement>(cellHeightFixture, 'tbody td[data-column-id="region"]');
+    const statusCell = queryRequired<HTMLElement>(cellHeightFixture, 'tbody td[data-column-id="status"]');
+    const throughputCell = queryRequired<HTMLElement>(cellHeightFixture, 'tbody td[data-column-id="throughput"]');
 
     expect(serviceCell.style.height).toBe('72px');
     expect(serviceCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('3');
@@ -2390,10 +2344,8 @@ describe('NatTable', () => {
     await recreateHost();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
-    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+    const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
 
     regionHeader.focus();
     regionHeader.dispatchEvent(
@@ -2402,39 +2354,37 @@ describe('NatTable', () => {
         ctrlKey: true,
         shiftKey: true,
         bubbles: true,
-        cancelable: true,
-      }),
+        cancelable: true
+      })
     );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
-    expect(liveRegion.textContent?.trim()).toBe(
-      'Moved Region column to position 2 of 3 in the unpinned region.',
-    );
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
+    expect(liveRegion.textContent.trim()).toBe('Moved Region column to position 2 of 3 in the unpinned region.');
   });
 
   it('reorders columns with Command+Shift+Arrow from the keyboard', async () => {
     const originalPlatform = navigator.platform;
     const originalUserAgent = navigator.userAgent;
+
     Object.defineProperty(navigator, 'platform', {
       value: 'MacIntel',
       writable: true,
-      configurable: true,
+      configurable: true
     });
     Object.defineProperty(navigator, 'userAgent', {
       value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
       writable: true,
-      configurable: true,
+      configurable: true
     });
+
     try {
       await recreateHost();
       fixture.detectChanges();
 
-      const regionHeader = fixture.nativeElement.querySelector(
-        'thead th[data-column-id="region"]',
-      ) as HTMLTableCellElement;
+      const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
 
       regionHeader.focus();
       regionHeader.dispatchEvent(
@@ -2443,22 +2393,22 @@ describe('NatTable', () => {
           metaKey: true,
           shiftKey: true,
           bubbles: true,
-          cancelable: true,
-        }),
+          cancelable: true
+        })
       );
       fixture.detectChanges();
       await fixture.whenStable();
       fixture.detectChanges();
 
-      expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+      expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
     } finally {
       Object.defineProperty(navigator, 'platform', {
         value: originalPlatform,
-        configurable: true,
+        configurable: true
       });
       Object.defineProperty(navigator, 'userAgent', {
         value: originalUserAgent,
-        configurable: true,
+        configurable: true
       });
     }
   });
@@ -2467,12 +2417,8 @@ describe('NatTable', () => {
     await recreateHost();
     fixture.detectChanges();
 
-    const tableRegion = fixture.nativeElement.querySelector(
-      '[data-testid="nat-table-region"]',
-    ) as HTMLElement;
-    const regionHeader = fixture.nativeElement.querySelector(
-      '[data-testid="nat-table-header-region"]',
-    ) as HTMLTableCellElement;
+    const tableRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, '[data-testid="nat-table-header-region"]');
 
     mockClientRect(tableRegion, { left: 0, right: 300, width: 300, height: 200 });
     mockClientRect(regionHeader, { left: 280, right: 420, width: 140, height: 40 });
@@ -2485,14 +2431,14 @@ describe('NatTable', () => {
         ctrlKey: true,
         shiftKey: true,
         bubbles: true,
-        cancelable: true,
-      }),
+        cancelable: true
+      })
     );
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
     expect(tableRegion.scrollLeft).toBe(130);
   });
 
@@ -2500,9 +2446,7 @@ describe('NatTable', () => {
     await recreateHost();
     fixture.detectChanges();
 
-    const statusHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="status"]',
-    ) as HTMLTableCellElement;
+    const statusHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="status"]');
     const expectedColumnIds = ['name', 'region', 'status', 'throughput'];
 
     const blockedEvents: readonly KeyboardEventInit[] = [
@@ -2511,7 +2455,7 @@ describe('NatTable', () => {
       { key: 'ArrowLeft', metaKey: true },
       { key: 'ArrowLeft', ctrlKey: true, shiftKey: true, altKey: true },
       { key: 'ArrowLeft', ctrlKey: true, shiftKey: true, metaKey: true },
-      { key: 'ArrowLeft', metaKey: true, shiftKey: true, altKey: true },
+      { key: 'ArrowLeft', metaKey: true, shiftKey: true, altKey: true }
     ];
 
     for (const eventInit of blockedEvents) {
@@ -2520,12 +2464,12 @@ describe('NatTable', () => {
         new KeyboardEvent('keydown', {
           ...eventInit,
           bubbles: true,
-          cancelable: true,
-        }),
+          cancelable: true
+        })
       );
       fixture.detectChanges();
 
-      expect(getHeaderColumnIds(fixture)).toEqual(expectedColumnIds);
+      expect(getHeaderColumnIds(fixture)).toStrictEqual(expectedColumnIds);
     }
   });
 
@@ -2533,15 +2477,13 @@ describe('NatTable', () => {
     await recreateHost();
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+    const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
     const edgeEvent = new KeyboardEvent('keydown', {
       key: 'ArrowLeft',
       ctrlKey: true,
       shiftKey: true,
       bubbles: true,
-      cancelable: true,
+      cancelable: true
     });
 
     host.stateEvents.length = 0;
@@ -2551,31 +2493,23 @@ describe('NatTable', () => {
 
     expect(edgeEvent.defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(regionHeader);
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'region', 'status', 'throughput']);
-    expect(host.stateEvents).toEqual([]);
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'region', 'status', 'throughput']);
+    expect(host.stateEvents).toStrictEqual([]);
   });
 
   it('uses the explicit pin order when computing sticky left offsets', () => {
     host.state.set({
       columnPinning: {
         left: ['region', 'name'],
-        right: [],
-      },
+        right: []
+      }
     });
     fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLElement;
-    const nameHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="name"]',
-    ) as HTMLElement;
-    const regionCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child td[data-column-id="region"]',
-    ) as HTMLElement;
-    const nameCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child th[data-column-id="name"]',
-    ) as HTMLElement;
+    const regionHeader = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"]');
+    const nameHeader = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="name"]');
+    const regionCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td[data-column-id="region"]');
+    const nameCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child th[data-column-id="name"]');
 
     expect(regionHeader.style.left).toBe('0px');
     expect(nameHeader.style.left).toBe('140px');
@@ -2586,9 +2520,7 @@ describe('NatTable', () => {
   it('moves focus with arrow keys and stops at the grid edge', () => {
     fixture.detectChanges();
 
-    const firstRowCells = Array.from(
-      fixture.nativeElement.querySelectorAll('tbody tr:first-child th, tbody tr:first-child td'),
-    ) as HTMLElement[];
+    const firstRowCells = queryAll<HTMLElement>(fixture, 'tbody tr:first-child th, tbody tr:first-child td');
     const [firstCell, secondCell] = firstRowCells;
     const lastCell = firstRowCells.at(-1) as HTMLElement;
 
@@ -2607,17 +2539,19 @@ describe('NatTable', () => {
 
   it('does not announce a visibility change when only column labels are swapped', async () => {
     const dynamicColumns = signal<ColumnDef<Row, unknown>[]>(buildDynamicColumns('Service'));
+
     @Component({
+      selector: 'test-dynamic-columns-host',
       imports: [NatTable, TestTableSurface],
       template: `
         <nat-table-surface>
-          <nat-table [data]="rows()" [columns]="columns()" accessibleName="Operations table" />
+          <nat-table [columns]="columns()" [data]="rows()" accessibleName="Operations table" />
         </nat-table-surface>
-      `,
+      `
     })
     class DynamicColumnsHost {
-      readonly rows = signal<Row[]>(buildRows(3));
-      readonly columns = dynamicColumns;
+      protected readonly rows = signal<Row[]>(buildRows(3));
+      protected readonly columns = dynamicColumns;
     }
 
     const dynamicFixture = TestBed.createComponent(DynamicColumnsHost);
@@ -2625,18 +2559,16 @@ describe('NatTable', () => {
     await dynamicFixture.whenStable();
     dynamicFixture.detectChanges();
 
-    const liveRegion = dynamicFixture.nativeElement.querySelector(
-      'p[aria-live="polite"]',
-    ) as HTMLElement;
+    const liveRegion = queryRequired<HTMLElement>(dynamicFixture, 'p[aria-live="polite"]');
 
-    expect(liveRegion.textContent?.trim()).toBe('');
+    expect(liveRegion.textContent.trim()).toBe('');
 
     dynamicColumns.set(buildDynamicColumns('Servicio'));
     dynamicFixture.detectChanges();
     await dynamicFixture.whenStable();
     dynamicFixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('');
+    expect(liveRegion.textContent.trim()).toBe('');
   });
 
   it('normalizes sorting state to a single column when multiple entries are supplied', async () => {
@@ -2644,21 +2576,19 @@ describe('NatTable', () => {
       state: {
         sorting: [
           { id: 'name', desc: false },
-          { id: 'region', desc: true },
-        ],
-      },
+          { id: 'region', desc: true }
+        ]
+      }
     });
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
 
-    expect(table.table.getState().sorting).toEqual([{ id: 'name', desc: false }]);
+    expect(table.table.getState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
 
-    const sortedHeaders = Array.from(
-      fixture.nativeElement.querySelectorAll('thead th[aria-sort]'),
-    ) as HTMLTableCellElement[];
+    const sortedHeaders = queryAll<HTMLTableCellElement>(fixture, 'thead th[aria-sort]');
 
-    expect(sortedHeaders.length).toBe(1);
+    expect(sortedHeaders).toHaveLength(1);
     expect(sortedHeaders[0].dataset['columnId']).toBe('name');
   });
 
@@ -2675,19 +2605,19 @@ describe('NatTable', () => {
         { id: 'name', desc: false },
         { id: 'region', desc: true },
         { id: 'status', desc: false },
-        { id: 'throughput', desc: true },
-      ],
+        { id: 'throughput', desc: true }
+      ]
     });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(table.table.getState().sorting).toEqual([{ id: 'name', desc: false }]);
-    expect(host.sortingEvents.at(-1)).toEqual([{ id: 'name', desc: false }]);
+    expect(table.table.getState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
+    expect(host.sortingEvents.at(-1)).toStrictEqual([{ id: 'name', desc: false }]);
 
-    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+    const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
 
-    expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
+    expect(liveRegion.textContent.trim()).toBe('Sorted by Service ascending.');
   });
 
   it('keeps multiple sort columns but only exposes aria-sort on the primary header', async () => {
@@ -2696,24 +2626,22 @@ describe('NatTable', () => {
       state: {
         sorting: [
           { id: 'name', desc: false },
-          { id: 'region', desc: true },
-        ],
-      },
+          { id: 'region', desc: true }
+        ]
+      }
     });
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
 
-    expect(table.table.getState().sorting).toEqual([
+    expect(table.table.getState().sorting).toStrictEqual([
       { id: 'name', desc: false },
-      { id: 'region', desc: true },
+      { id: 'region', desc: true }
     ]);
 
-    const sortedHeaders = Array.from(
-      fixture.nativeElement.querySelectorAll('thead th[aria-sort]'),
-    ) as HTMLTableCellElement[];
+    const sortedHeaders = queryAll<HTMLTableCellElement>(fixture, 'thead th[aria-sort]');
 
-    expect(sortedHeaders.map((header) => header.dataset['columnId'])).toEqual(['name']);
+    expect(sortedHeaders.map((header) => header.dataset['columnId'])).toStrictEqual(['name']);
   });
 
   it('emits the full sorting array and announces a multi-column sort when enableMultiSort is true', async () => {
@@ -2727,30 +2655,28 @@ describe('NatTable', () => {
     table.patchState({
       sorting: [
         { id: 'name', desc: false },
-        { id: 'region', desc: true },
-      ],
+        { id: 'region', desc: true }
+      ]
     });
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.sortingEvents.at(-1)).toEqual([
+    expect(host.sortingEvents.at(-1)).toStrictEqual([
       { id: 'name', desc: false },
-      { id: 'region', desc: true },
+      { id: 'region', desc: true }
     ]);
 
-    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+    const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
 
-    expect(liveRegion.textContent?.trim()).toBe(
-      'Sorted by Service ascending, then Region descending.',
-    );
+    expect(liveRegion.textContent.trim()).toBe('Sorted by Service ascending, then Region descending.');
   });
 
   it('does not expose aria-selected unless enableRowSelection is true', () => {
     fixture.detectChanges();
 
-    const row = fixture.nativeElement.querySelector('tbody tr.data-row') as HTMLElement;
-    const table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    const row = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row');
+    const table = queryRequired<HTMLElement>(fixture, 'table');
 
     expect(row.getAttribute('aria-selected')).toBeNull();
     expect(table.getAttribute('aria-multiselectable')).toBeNull();
@@ -2760,14 +2686,14 @@ describe('NatTable', () => {
     await recreateHost({ enableRowSelection: true });
     fixture.detectChanges();
 
-    let table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    let table = queryRequired<HTMLElement>(fixture, 'table');
 
     expect(table.getAttribute('aria-multiselectable')).toBe('true');
 
     await recreateHost({ enableRowSelection: true, selectionMode: 'single' });
     fixture.detectChanges();
 
-    table = fixture.nativeElement.querySelector('table') as HTMLElement;
+    table = queryRequired<HTMLElement>(fixture, 'table');
 
     expect(table.getAttribute('aria-multiselectable')).toBeNull();
   });
@@ -2775,44 +2701,44 @@ describe('NatTable', () => {
   it('reflects controlled rowSelection through aria-selected', async () => {
     await recreateHost({
       enableRowSelection: true,
-      state: { rowSelection: { 'svc-00002': true } },
+      state: { rowSelection: { 'svc-00002': true } }
     });
     fixture.detectChanges();
 
-    const selected = Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
-      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
+    const selected = queryAll(fixture, 'tbody tr.data-row').filter(
+      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true'
     );
 
-    expect(selected.length).toBe(1);
+    expect(selected).toHaveLength(1);
   });
 
   it('collapses to the first selected row (by key order) in single mode', async () => {
     await recreateHost({
       enableRowSelection: true,
       selectionMode: 'single',
-      state: { rowSelection: { 'svc-00002': true, 'svc-00001': true } },
+      state: { rowSelection: { 'svc-00002': true, 'svc-00001': true } }
     });
     fixture.detectChanges();
 
-    const selected = Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
-      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
+    const selected = queryAll(fixture, 'tbody tr.data-row').filter(
+      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true'
     );
 
-    expect(selected.length).toBe(1);
+    expect(selected).toHaveLength(1);
     // Deterministic by sort order: svc-00001 wins even though svc-00002 was inserted first.
-    expect(getInternalTable(fixture).table.getState().rowSelection).toEqual({ 'svc-00001': true });
+    expect(getInternalTable(fixture).table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
   });
 
   it('preserves controlled rowSelection while selection is disabled', async () => {
     await recreateHost({
       enableRowSelection: false,
-      state: { rowSelection: { 'svc-00001': true } },
+      state: { rowSelection: { 'svc-00001': true } }
     });
     fixture.detectChanges();
     await fixture.whenStable();
 
     // The disabled flag must not wipe the controlled slice (continuity for runtime toggles).
-    expect(getInternalTable(fixture).table.getState().rowSelection).toEqual({ 'svc-00001': true });
+    expect(getInternalTable(fixture).table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
   });
 
   it('emits rowSelectionChange and announces the selection', async () => {
@@ -2828,18 +2754,18 @@ describe('NatTable', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.rowSelectionEvents.at(-1)).toEqual({ 'svc-00001': true });
+    expect(host.rowSelectionEvents.at(-1)).toStrictEqual({ 'svc-00001': true });
 
-    const liveRegion = fixture.nativeElement.querySelector('p[aria-live="polite"]') as HTMLElement;
+    const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
 
-    expect(liveRegion.textContent?.trim()).toBe('1 row selected.');
+    expect(liveRegion.textContent.trim()).toBe('1 row selected.');
   });
 
   it('retains row selection across pagination changes', async () => {
     await recreateHost({
       enableRowSelection: true,
       enablePagination: true,
-      initialState: { pagination: { pageIndex: 0, pageSize: 2 } },
+      initialState: { pagination: { pageIndex: 0, pageSize: 2 } }
     });
     fixture.detectChanges();
     await fixture.whenStable();
@@ -2854,13 +2780,13 @@ describe('NatTable', () => {
     table.patchState({ pagination: (pagination) => ({ ...pagination, pageIndex: 2 }) });
     fixture.detectChanges();
 
-    expect(table.table.getState().rowSelection).toEqual({ 'svc-00001': true });
+    expect(table.table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
 
     // Returning to the first page still shows the row selected.
     table.patchState({ pagination: (pagination) => ({ ...pagination, pageIndex: 0 }) });
     fixture.detectChanges();
 
-    const firstRow = fixture.nativeElement.querySelector('tbody tr.data-row') as HTMLElement;
+    const firstRow = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row');
 
     expect(firstRow.getAttribute('aria-selected')).toBe('true');
   });
@@ -2880,32 +2806,29 @@ describe('NatTable', () => {
     table.patchState({ globalFilter: 'gamma' });
     fixture.detectChanges();
 
-    const visibleRows = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+    const visibleRows = queryAll(fixture, 'tbody tr.data-row');
 
-    expect(visibleRows.length).toBe(1);
+    expect(visibleRows).toHaveLength(1);
     expect((visibleRows[0] as HTMLElement).textContent).toContain('Gamma');
     // Selection is keyed by row id, so it survives the filter.
-    expect(table.table.getState().rowSelection).toEqual({ 'svc-00001': true });
+    expect(table.table.getState().rowSelection).toStrictEqual({ 'svc-00001': true });
 
     // Clearing the filter brings Alpha back, still selected.
     table.patchState({ globalFilter: '' });
     fixture.detectChanges();
 
-    const selectedRows = Array.from(
-      fixture.nativeElement.querySelectorAll('tbody tr.data-row'),
-    ).filter((row) => (row as HTMLElement).getAttribute('aria-selected') === 'true');
+    const selectedRows = queryAll(fixture, 'tbody tr.data-row').filter((row) => row.getAttribute('aria-selected') === 'true');
 
-    expect(selectedRows.length).toBe(1);
+    expect(selectedRows).toHaveLength(1);
     expect((selectedRows[0] as HTMLElement).textContent).toContain('Alpha');
   });
 
+  // eslint-disable-next-line complexity
   it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {
     fixture.detectChanges();
 
     const table = getInternalTable(fixture);
-    const firstRow = fixture.nativeElement.querySelector(
-      'tbody tr.data-row',
-    ) as HTMLTableRowElement;
+    const firstRow = queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row');
     const expectedRowId = table.table.getRowModel().rows[0]?.original.id;
 
     expect(expectedRowId).toBeDefined();
@@ -2913,14 +2836,14 @@ describe('NatTable', () => {
     firstRow.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
     fixture.detectChanges();
 
-    expect(host.rowActivateEvents.length).toBe(1);
+    expect(host.rowActivateEvents).toHaveLength(1);
     expect(host.rowActivateEvents.at(-1)?.rowData.id).toBe(expectedRowId);
     expect(host.rowActivateEvents.at(-1)?.originalEvent).toBeInstanceOf(MouseEvent);
 
     firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     fixture.detectChanges();
 
-    expect(host.rowActivateEvents.length).toBe(2);
+    expect(host.rowActivateEvents).toHaveLength(2);
     expect(host.rowActivateEvents.at(-1)?.originalEvent).toBeInstanceOf(KeyboardEvent);
 
     const spaceEvent = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
@@ -2928,44 +2851,41 @@ describe('NatTable', () => {
     firstRow.dispatchEvent(spaceEvent);
     fixture.detectChanges();
 
-    expect(host.rowActivateEvents.length).toBe(3);
+    expect(host.rowActivateEvents).toHaveLength(3);
     expect(spaceEvent.defaultPrevented).toBe(true);
   });
 
   it('does not emit rowActivate when activation originates from an interactive cell descendant', async () => {
     @Component({
+      selector: 'test-interactive-cell-host',
       imports: [NatTable, TestTableSurface],
       template: `
         <nat-table-surface>
-          <nat-table
-            [data]="rows()"
-            [columns]="columns"
-            accessibleName="Operations table"
-            (rowActivate)="onRowActivate($event)"
-          />
+          <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" (rowActivate)="onRowActivate($event)" />
         </nat-table-surface>
-      `,
+      `
     })
     class InteractiveCellHost {
-      readonly rows = signal<Row[]>(buildRows(2));
-      readonly columns: ColumnDef<Row, unknown>[] = [
+      protected readonly rows = signal<Row[]>(buildRows(2));
+      protected readonly columns: ColumnDef<Row, unknown>[] = [
         {
           id: 'select',
           header: 'Select',
           enableSorting: false,
           enableGlobalFilter: false,
-          cell: () => '<button type="button" class="row-action">Select</button>',
+          cell: () => '<button type="button" class="row-action">Select</button>'
         },
         {
           accessorKey: 'name',
           header: 'Service',
           meta: { label: 'Service', rowHeader: true },
-          cell: (info) => info.getValue<string>(),
-        },
+          cell: (info) => info.getValue<string>()
+        }
       ];
-      readonly events: NatTableRowActivateEvent<Row>[] = [];
 
-      onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+      public readonly events: NatTableRowActivateEvent<Row>[] = [];
+
+      protected onRowActivate(event: NatTableRowActivateEvent<Row>): void {
         this.events.push(event);
       }
     }
@@ -2975,9 +2895,7 @@ describe('NatTable', () => {
     await interactiveFixture.whenStable();
     interactiveFixture.detectChanges();
 
-    const cell = interactiveFixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="select"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(interactiveFixture, 'tbody tr.data-row td[data-column-id="select"]');
 
     cell.innerHTML = '<button type="button" class="row-action">Select</button>';
     interactiveFixture.detectChanges();
@@ -2987,19 +2905,16 @@ describe('NatTable', () => {
     button.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
     interactiveFixture.detectChanges();
 
-    expect(interactiveFixture.componentInstance.events.length).toBe(0);
+    expect(interactiveFixture.componentInstance.events).toHaveLength(0);
   });
 
   it('moves focus into a cell control with Enter and back to the cell with Escape', () => {
     fixture.detectChanges();
 
-    const cell = fixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="region"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row td[data-column-id="region"]');
 
     cell.innerHTML =
-      '<button type="button" class="cell-action">Edit</button>' +
-      '<button type="button" class="cell-action">Delete</button>';
+      '<button type="button" class="cell-action">Edit</button><button type="button" class="cell-action">Delete</button>';
 
     const [editButton] = Array.from(cell.querySelectorAll<HTMLButtonElement>('button.cell-action'));
 
@@ -3008,7 +2923,7 @@ describe('NatTable', () => {
     const enterEvent = new KeyboardEvent('keydown', {
       key: 'Enter',
       bubbles: true,
-      cancelable: true,
+      cancelable: true
     });
 
     cell.dispatchEvent(enterEvent);
@@ -3016,12 +2931,12 @@ describe('NatTable', () => {
 
     expect(document.activeElement).toBe(editButton);
     expect(enterEvent.defaultPrevented).toBe(true);
-    expect(host.rowActivateEvents.length).toBe(0);
+    expect(host.rowActivateEvents).toHaveLength(0);
 
     const escapeEvent = new KeyboardEvent('keydown', {
       key: 'Escape',
       bubbles: true,
-      cancelable: true,
+      cancelable: true
     });
 
     editButton.dispatchEvent(escapeEvent);
@@ -3034,29 +2949,21 @@ describe('NatTable', () => {
   it('lets Enter on a control-less cell fall through to row activation', () => {
     fixture.detectChanges();
 
-    const cell = fixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="region"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row td[data-column-id="region"]');
 
     cell.focus();
-    cell.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
-    );
+    cell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
     fixture.detectChanges();
 
-    expect(host.rowActivateEvents.length).toBe(1);
+    expect(host.rowActivateEvents).toHaveLength(1);
   });
 
   it("walks the cell's controls with Tab and Shift+Tab and releases Tab at the cell edges", () => {
     fixture.detectChanges();
 
-    const cell = fixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="region"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row td[data-column-id="region"]');
 
-    cell.innerHTML =
-      '<button type="button" class="first">First</button>' +
-      '<button type="button" class="second">Second</button>';
+    cell.innerHTML = '<button type="button" class="first">First</button><button type="button" class="second">Second</button>';
 
     const firstButton = cell.querySelector('button.first') as HTMLButtonElement;
     const secondButton = cell.querySelector('button.second') as HTMLButtonElement;
@@ -3067,7 +2974,7 @@ describe('NatTable', () => {
     const tabFromCell = new KeyboardEvent('keydown', {
       key: 'Tab',
       bubbles: true,
-      cancelable: true,
+      cancelable: true
     });
 
     cell.dispatchEvent(tabFromCell);
@@ -3077,17 +2984,13 @@ describe('NatTable', () => {
 
     // Tab from a control walks to the next control of the same cell.
     firstButton.focus();
-    firstButton.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
-    );
+    firstButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
     fixture.detectChanges();
 
     expect(document.activeElement).toBe(secondButton);
 
     // Shift+Tab walks back.
-    secondButton.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),
-    );
+    secondButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
     fixture.detectChanges();
 
     expect(document.activeElement).toBe(firstButton);
@@ -3096,7 +2999,7 @@ describe('NatTable', () => {
     const leaveEvent = new KeyboardEvent('keydown', {
       key: 'Tab',
       bubbles: true,
-      cancelable: true,
+      cancelable: true
     });
 
     secondButton.dispatchEvent(leaveEvent);
@@ -3108,9 +3011,7 @@ describe('NatTable', () => {
   it('skips non-tabbable controls but keeps roving grid-cell widgets reachable', () => {
     fixture.detectChanges();
 
-    const cell = fixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="region"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row td[data-column-id="region"]');
 
     cell.innerHTML =
       '<button type="button" class="first">First</button>' +
@@ -3125,9 +3026,7 @@ describe('NatTable', () => {
     // The roving widget sits at tabindex="-1" (flexRender keeps it unregistered),
     // but the model still treats it as the cell's next control.
     firstButton.focus();
-    firstButton.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
-    );
+    firstButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
     fixture.detectChanges();
 
     expect(document.activeElement).toBe(widgetButton);
@@ -3136,9 +3035,7 @@ describe('NatTable', () => {
   it('delegates focus to a header cell whose only content is its sort button', () => {
     fixture.detectChanges();
 
-    const headerCell = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLElement;
+    const headerCell = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"]');
 
     headerCell.innerHTML = '<button type="button" class="header-action">Sort by Region</button>';
 
@@ -3154,7 +3051,7 @@ describe('NatTable', () => {
     const escapeEvent = new KeyboardEvent('keydown', {
       key: 'Escape',
       bubbles: true,
-      cancelable: true,
+      cancelable: true
     });
 
     sortButton.dispatchEvent(escapeEvent);
@@ -3167,14 +3064,10 @@ describe('NatTable', () => {
   it('delegates focus to a body cell whose only perceivable content is one arrow-safe control', () => {
     fixture.detectChanges();
 
-    const cell = fixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="region"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row td[data-column-id="region"]');
 
     // Decorative content hidden from assistive technology does not block delegation.
-    cell.innerHTML =
-      '<span aria-hidden="true">icon</span>' +
-      '<button type="button" class="cell-action">Acknowledge</button>';
+    cell.innerHTML = '<span aria-hidden="true">icon</span><button type="button" class="cell-action">Acknowledge</button>';
 
     const button = cell.querySelector('button.cell-action') as HTMLButtonElement;
 
@@ -3187,9 +3080,7 @@ describe('NatTable', () => {
   it('keeps the Enter model when a single control sits next to other cell content', () => {
     fixture.detectChanges();
 
-    const cell = fixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="region"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row td[data-column-id="region"]');
 
     cell.innerHTML = 'EMEA <button type="button" class="cell-action">Edit</button>';
 
@@ -3201,9 +3092,7 @@ describe('NatTable', () => {
 
     expect(document.activeElement).toBe(cell);
 
-    cell.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
-    );
+    cell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
     fixture.detectChanges();
 
     expect(document.activeElement).toBe(button);
@@ -3212,13 +3101,11 @@ describe('NatTable', () => {
   it('keeps the Enter model for a single arrow-consuming control', () => {
     fixture.detectChanges();
 
-    const cell = fixture.nativeElement.querySelector(
-      'tbody tr.data-row td[data-column-id="region"]',
-    ) as HTMLElement;
+    const cell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row td[data-column-id="region"]');
 
     cell.innerHTML = '<input type="text" class="cell-input" aria-label="Region" />';
 
-    const input = cell.querySelector('input.cell-input') as HTMLInputElement;
+    const inputEl = cell.querySelector('input.cell-input') as HTMLInputElement;
 
     // A text input needs arrow keys for itself, so the grid keeps focus on the cell.
     cell.focus();
@@ -3226,22 +3113,21 @@ describe('NatTable', () => {
 
     expect(document.activeElement).toBe(cell);
 
-    cell.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
-    );
+    cell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
     fixture.detectChanges();
 
-    expect(document.activeElement).toBe(input);
+    expect(document.activeElement).toBe(inputEl);
   });
 
   it('applies sticky class and toggles vertical sticky header positioning', async () => {
     fixture.detectChanges();
-    let tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    let tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+
     expect(tableElement.classList.contains('has-sticky-header')).toBe(true);
 
     await recreateHost({ stickyHeader: false });
     fixture.detectChanges();
-    tableElement = fixture.nativeElement.querySelector('table') as HTMLTableElement;
+    tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
     expect(tableElement.classList.contains('has-sticky-header')).toBe(false);
   });
 
@@ -3252,45 +3138,49 @@ describe('NatTable', () => {
         enablePagination: true,
         initialState: {
           sorting: [{ id: 'throughput', desc: true }],
-          pagination: { pageIndex: 0, pageSize: 2 },
+          pagination: { pageIndex: 0, pageSize: 2 }
         },
-        manualPageCount: 3,
+        manualPageCount: 3
       });
 
       fixture.detectChanges();
 
       // In manual mode, all rows must be rendered since client-side pagination, sorting, and filtering are disabled.
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
-      expect(rows.length).toBe(6);
+      const rows = queryAll(fixture, 'tbody tr.data-row');
+
+      expect(rows).toHaveLength(6);
 
       // Verify the rendered order is the original order (Alpha first), not sorted by throughput descending
       expect(rows[0].textContent).toContain('Alpha');
 
       // Trigger pagination change
       const table = getInternalTable(fixture);
+
       table.patchState({
-        pagination: { pageIndex: 1, pageSize: 2 },
+        pagination: { pageIndex: 1, pageSize: 2 }
       });
       fixture.detectChanges();
 
       // State should have updated, raising the output event
-      expect(host.paginationEvents.at(-1)).toEqual({ pageIndex: 1, pageSize: 2 });
+      expect(host.paginationEvents.at(-1)).toStrictEqual({ pageIndex: 1, pageSize: 2 });
 
       // Rows must still not be sliced client-side
-      const rowsAfterPage = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
-      expect(rowsAfterPage.length).toBe(6);
+      const rowsAfterPage = queryAll(fixture, 'tbody tr.data-row');
+
+      expect(rowsAfterPage).toHaveLength(6);
 
       // Trigger sorting change
       table.patchState({
-        sorting: [{ id: 'name', desc: false }],
+        sorting: [{ id: 'name', desc: false }]
       });
       fixture.detectChanges();
 
       // State should have updated, raising the output event
-      expect(host.sortingEvents.at(-1)).toEqual([{ id: 'name', desc: false }]);
+      expect(host.sortingEvents.at(-1)).toStrictEqual([{ id: 'name', desc: false }]);
 
       // Rows must still not be sorted client-side (Alpha first)
-      const rowsAfterSort = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
+      const rowsAfterSort = queryAll(fixture, 'tbody tr.data-row');
+
       expect(rowsAfterSort[0].textContent).toContain('Alpha');
     });
 
@@ -3298,14 +3188,14 @@ describe('NatTable', () => {
       await recreateHost({
         mode: {
           pagination: 'manual',
-          sorting: 'auto',
+          sorting: 'auto'
         },
         enablePagination: true,
         initialState: {
           sorting: [{ id: 'throughput', desc: true }],
-          pagination: { pageIndex: 0, pageSize: 2 },
+          pagination: { pageIndex: 0, pageSize: 2 }
         },
-        manualPageCount: 3,
+        manualPageCount: 3
       });
 
       fixture.detectChanges();
@@ -3313,121 +3203,118 @@ describe('NatTable', () => {
       // In mixed mode: pagination is manual, sorting is auto.
       // So sorting should be applied client-side (throughput desc).
       // But pagination is manual, so data should NOT be sliced client-side (all 6 rows rendered).
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
-      expect(rows.length).toBe(6);
+      const rows = queryAll(fixture, 'tbody tr.data-row');
+
+      expect(rows).toHaveLength(6);
 
       // Verify the rendered order is sorted by throughput descending (Zeta has highest throughput)
       expect(rows[0].textContent).toContain('Zeta');
 
       // Trigger pagination change
       const table = getInternalTable(fixture);
+
       table.patchState({
-        pagination: { pageIndex: 1, pageSize: 2 },
+        pagination: { pageIndex: 1, pageSize: 2 }
       });
       fixture.detectChanges();
 
       // State should have updated, raising the output event
-      expect(host.paginationEvents.at(-1)).toEqual({ pageIndex: 1, pageSize: 2 });
+      expect(host.paginationEvents.at(-1)).toStrictEqual({ pageIndex: 1, pageSize: 2 });
 
       // Rows must still not be sliced client-side
-      const rowsAfterPage = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
-      expect(rowsAfterPage.length).toBe(6);
+      const rowsAfterPage = queryAll(fixture, 'tbody tr.data-row');
+
+      expect(rowsAfterPage).toHaveLength(6);
     });
   });
 
   describe('custom keybindings', () => {
     it('should allow overriding keybindings via the [keybindings] input', async () => {
       @Component({
+        selector: 'test-custom-keybindings-host',
         imports: [NatTable, TestTableSurface],
         template: `
           <nat-table-surface [keybindings]="keybindings">
-            <nat-table
-              [data]="rows()"
-              [columns]="columns"
-              accessibleName="Operations table"
-              (rowActivate)="onRowActivate($event)"
-            />
+            <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" (rowActivate)="onRowActivate($event)" />
           </nat-table-surface>
-        `,
+        `
       })
       class CustomKeybindingsHost {
-        readonly rows = signal<Row[]>(buildRows(3));
-        readonly columns: ColumnDef<Row, unknown>[] = [
+        protected readonly rows = signal<Row[]>(buildRows(3));
+        protected readonly columns: ColumnDef<Row, unknown>[] = [
           {
             accessorKey: 'name',
             header: 'Service',
             meta: { label: 'Service', rowHeader: true },
-            cell: (info) => info.getValue<string>(),
-          },
+            cell: (info) => info.getValue<string>()
+          }
         ];
-        keybindings = {
+
+        protected readonly keybindings = {
           rowActivate: 'a',
           columnReorderLeft: 'Ctrl+ArrowLeft',
-          columnReorderRight: 'Ctrl+ArrowRight',
+          columnReorderRight: 'Ctrl+ArrowRight'
         };
-        readonly events: NatTableRowActivateEvent<Row>[] = [];
 
-        onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+        public readonly events: NatTableRowActivateEvent<Row>[] = [];
+
+        protected onRowActivate(event: NatTableRowActivateEvent<Row>): void {
           this.events.push(event);
         }
       }
 
       const customFixture = TestBed.createComponent(CustomKeybindingsHost);
+
       await customFixture.whenStable();
       customFixture.detectChanges();
 
-      const firstRow = customFixture.nativeElement.querySelector('tbody tr.data-row') as HTMLTableRowElement;
+      const firstRow = queryRequired<HTMLTableRowElement>(customFixture, 'tbody tr.data-row');
 
       // 1. Try default 'Enter' - should NOT activate
       firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       customFixture.detectChanges();
-      expect(customFixture.componentInstance.events.length).toBe(0);
+      expect(customFixture.componentInstance.events).toHaveLength(0);
 
       // 2. Press custom key 'a' - should activate
       firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
       customFixture.detectChanges();
-      expect(customFixture.componentInstance.events.length).toBe(1);
+      expect(customFixture.componentInstance.events).toHaveLength(1);
     });
 
     it('should fall back to default keybindings for non-overridden properties when keybindings are partially customized', async () => {
       @Component({
+        selector: 'test-partial-keybindings-host',
         imports: [NatTable, TestTableSurface],
         template: `
           <nat-table-surface [keybindings]="keybindings">
-            <nat-table
-              [data]="rows()"
-              [columns]="columns"
-              accessibleName="Operations table"
-            />
+            <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
           </nat-table-surface>
-        `,
+        `
       })
       class PartialKeybindingsHost {
-        readonly rows = signal<Row[]>(buildRows(3));
-        readonly columns: ColumnDef<Row, unknown>[] = [
+        protected readonly rows = signal<Row[]>(buildRows(3));
+        protected readonly columns: ColumnDef<Row, unknown>[] = [
           {
             accessorKey: 'region',
             header: 'Region',
             meta: { label: 'Region' },
-            cell: (info) => info.getValue<string>(),
-          },
+            cell: (info) => info.getValue<string>()
+          }
         ];
-        keybindings = {
-          rowActivate: 'a',
+
+        protected readonly keybindings = {
+          rowActivate: 'a'
         };
       }
 
       const partialFixture = TestBed.createComponent(PartialKeybindingsHost);
+
       await partialFixture.whenStable();
       partialFixture.detectChanges();
 
-      const cell = partialFixture.nativeElement.querySelector(
-        'tbody tr.data-row td[data-column-id="region"]',
-      ) as HTMLElement;
+      const cell = queryRequired<HTMLElement>(partialFixture, 'tbody tr.data-row td[data-column-id="region"]');
 
-      cell.innerHTML =
-        '<button type="button" class="first">First</button>' +
-        '<button type="button" class="second">Second</button>';
+      cell.innerHTML = '<button type="button" class="first">First</button><button type="button" class="second">Second</button>';
       const firstButton = cell.querySelector('button.first') as HTMLButtonElement;
 
       cell.focus();
@@ -3437,8 +3324,9 @@ describe('NatTable', () => {
       const enterEvent = new KeyboardEvent('keydown', {
         key: 'Enter',
         bubbles: true,
-        cancelable: true,
+        cancelable: true
       });
+
       cell.dispatchEvent(enterEvent);
       partialFixture.detectChanges();
 
@@ -3448,85 +3336,3 @@ describe('NatTable', () => {
     });
   });
 });
-
-function buildDynamicColumns(nameHeader: string): ColumnDef<Row, unknown>[] {
-  return [
-    {
-      accessorKey: 'name',
-      header: nameHeader,
-      size: 180,
-      meta: { label: nameHeader, rowHeader: true },
-      cell: (info) => info.getValue<string>(),
-    },
-    {
-      accessorKey: 'region',
-      header: 'Region',
-      size: 140,
-      meta: { label: 'Region' },
-      cell: (info) => info.getValue<string>(),
-    },
-  ];
-}
-
-type NatTableInternals = NatTable<Row> & {
-  onHeaderDrop(
-    event: CdkDragDrop<string[]>,
-    headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number],
-  ): void;
-};
-
-function getInternalTable(fixture: ComponentFixture<TableHost>): NatTableInternals {
-  return fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTableInternals;
-}
-
-function createDropEvent(
-  columnId: string,
-  previousIndex: number,
-  currentIndex: number,
-): CdkDragDrop<string[]> {
-  return {
-    previousIndex,
-    currentIndex,
-    item: { data: columnId },
-  } as unknown as CdkDragDrop<string[]>;
-}
-
-function getHeaderColumnIds(fixture: ComponentFixture<TableHost>): string[] {
-  return Array.from(fixture.nativeElement.querySelectorAll('thead th[data-column-id]')).map(
-    (header) => (header as HTMLElement).dataset['columnId'] ?? '',
-  );
-}
-
-function mockClientRect(element: HTMLElement, rect: Partial<DOMRectReadOnly>): void {
-  const left = rect.left ?? 0;
-  const top = rect.top ?? 0;
-  const width = rect.width ?? (rect.right ?? left) - left;
-  const height = rect.height ?? (rect.bottom ?? top) - top;
-  const right = rect.right ?? left + width;
-  const bottom = rect.bottom ?? top + height;
-
-  element.getBoundingClientRect = () =>
-    ({
-      x: left,
-      y: top,
-      left,
-      top,
-      right,
-      bottom,
-      width,
-      height,
-      toJSON: () => ({}),
-    }) as DOMRect;
-}
-
-function buildRows(size: number): Row[] {
-  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
-
-  return Array.from({ length: size }, (_, index) => ({
-    id: `svc-${String(index + 1).padStart(5, '0')}`,
-    name: ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'][index] ?? `Service ${index + 1}`,
-    region: ['us-east-1', 'eu-west-3'][index % 2],
-    status: statuses[index % statuses.length],
-    throughput: 1000 + index * 1000,
-  }));
-}

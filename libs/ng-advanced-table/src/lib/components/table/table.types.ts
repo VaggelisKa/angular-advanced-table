@@ -1,4 +1,6 @@
+/* eslint-disable max-lines -- cohesive public type surface; splitting would scatter related contracts. */
 import type { Signal } from '@angular/core';
+
 import type {
   CellContext,
   Column,
@@ -20,7 +22,7 @@ import type {
  * Serializable view state exposed by {@link NatTable} and emitted through
  * `stateChange`.
  */
-export interface NatTableState {
+export type NatTableState = {
   /** Active single-column sort order. */
   sorting: SortingState;
   /** Current global search query. */
@@ -62,7 +64,7 @@ export type NatTableRowIdGetter<TData extends RowData = RowData> = (
  * from an interactive descendant (button, link, form control, menu item,
  * `contenteditable`), so cell-level controls keep their own behavior.
  */
-export interface NatTableRowActivateEvent<TData extends RowData = RowData> {
+export type NatTableRowActivateEvent<TData extends RowData = RowData> = {
   /** Original row object supplied in `data`. */
   rowData: TData;
   /** TanStack row instance for advanced interactions. */
@@ -96,7 +98,7 @@ export const NAT_TABLE_BODY_STATE = {
 } as const satisfies Record<NatTableBodyState, NatTableBodyState>;
 
 /** Shared context passed to custom table body state templates. */
-export interface NatTableStateTemplateContext<TData extends RowData = RowData> {
+export type NatTableStateTemplateContext<TData extends RowData = RowData> = {
   /** TanStack table instance for advanced reads. */
   table: Table<TData>;
   /** Rows currently rendered in the body. */
@@ -110,9 +112,9 @@ export interface NatTableStateTemplateContext<TData extends RowData = RowData> {
 }
 
 /** Context passed to `ng-template[natTableLoading]`. */
-export interface NatTableLoadingTemplateContext<
+export type NatTableLoadingTemplateContext<
   TData extends RowData = RowData,
-> extends NatTableStateTemplateContext<TData> {
+> = NatTableStateTemplateContext<TData> & {
   /** Alias for `status`, useful for `let-status` style template bindings. */
   $implicit: typeof NAT_TABLE_BODY_STATE.loading;
   /** Current state row status. */
@@ -120,9 +122,9 @@ export interface NatTableLoadingTemplateContext<
 }
 
 /** Context passed to `ng-template[natTableEmpty]`. */
-export interface NatTableEmptyTemplateContext<
+export type NatTableEmptyTemplateContext<
   TData extends RowData = RowData,
-> extends NatTableStateTemplateContext<TData> {
+> = NatTableStateTemplateContext<TData> & {
   /** Alias for `status`, useful for `let-status` style template bindings. */
   $implicit: typeof NAT_TABLE_BODY_STATE.empty;
   /** Current state row status. */
@@ -130,9 +132,9 @@ export interface NatTableEmptyTemplateContext<
 }
 
 /** Context passed to `ng-template[natTableError]`. */
-export interface NatTableErrorTemplateContext<
+export type NatTableErrorTemplateContext<
   TData extends RowData = RowData,
-> extends NatTableStateTemplateContext<TData> {
+> = NatTableStateTemplateContext<TData> & {
   /** Alias for `error`, useful for `let-error` style template bindings. */
   $implicit: unknown;
   /** Current state row status. */
@@ -142,7 +144,7 @@ export interface NatTableErrorTemplateContext<
 }
 
 /** Context passed to custom table summary formatters. */
-export interface NatTableAccessibilitySummaryContext {
+export type NatTableAccessibilitySummaryContext = {
   /** Rows currently rendered in the body. */
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
@@ -182,7 +184,7 @@ export type NatTableAccessibilitySortingAnnouncementEntry = {
 };
 
 /** Context passed to custom sort announcement formatters. */
-export interface NatTableAccessibilitySortingAnnouncementContext {
+export type NatTableAccessibilitySortingAnnouncementContext = {
   /** Sorted column id, or `null` when sorting is cleared. */
   columnId: string | null;
   /** Resolved human-readable column label, or `null`. */
@@ -194,7 +196,7 @@ export interface NatTableAccessibilitySortingAnnouncementContext {
 }
 
 /** Context passed to custom filtering announcement formatters. */
-export interface NatTableAccessibilityFilteringAnnouncementContext {
+export type NatTableAccessibilityFilteringAnnouncementContext = {
   /** Trimmed global filter query. */
   query: string;
   /** Which filtering inputs are currently active. */
@@ -210,7 +212,7 @@ export interface NatTableAccessibilityFilteringAnnouncementContext {
 }
 
 /** Single column change entry passed to visibility announcement formatters. */
-export interface NatTableAccessibilityColumnVisibilityAnnouncementChange {
+export type NatTableAccessibilityColumnVisibilityAnnouncementChange = {
   /** TanStack column id. */
   id: string;
   /** Resolved human-readable column label. */
@@ -220,7 +222,7 @@ export interface NatTableAccessibilityColumnVisibilityAnnouncementChange {
 }
 
 /** Context passed to custom column-visibility announcement formatters. */
-export interface NatTableAccessibilityColumnVisibilityAnnouncementContext {
+export type NatTableAccessibilityColumnVisibilityAnnouncementContext = {
   /** Columns whose visibility changed in the last update. */
   changedColumns: readonly NatTableAccessibilityColumnVisibilityAnnouncementChange[];
   /** Visible column count after the change. */
@@ -234,7 +236,7 @@ export interface NatTableAccessibilityColumnVisibilityAnnouncementContext {
 }
 
 /** Context passed to custom pagination announcement formatters. */
-export interface NatTableAccessibilityPaginationAnnouncementContext {
+export type NatTableAccessibilityPaginationAnnouncementContext = {
   /** Zero-based current page index. */
   pageIndex: number;
   /** One-based current page number. */
@@ -268,7 +270,7 @@ export type NatTableAccessibilitySelectionAnnouncementContext = {
 };
 
 /** Context passed to custom column-reorder announcement formatters. */
-export interface NatTableAccessibilityColumnReorderAnnouncementContext {
+export type NatTableAccessibilityColumnReorderAnnouncementContext = {
   /** TanStack column id. */
   columnId: string;
   /** Resolved human-readable column label. */
@@ -302,7 +304,7 @@ export type NatTableAccessibilityColumnResizeAnnouncementContext = {
 };
 
 /** Optional overrides for built-in screen-reader summaries and announcements. */
-export interface NatTableAccessibilityText {
+export type NatTableAccessibilityText = {
   /**
    * Supplemental description announced through `aria-describedby` when the
    * grid receives focus. Set to an empty string to suppress the description.
@@ -362,7 +364,7 @@ export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
 export type NatTableSortDirection = 'asc' | 'desc' | false;
 
 /** Context passed to companion sort-indicator renderers. */
-export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
+export type NatTableSortIndicatorContext<TData extends RowData = RowData> = {
   /** Alias for `sortState`, useful for `let-state` style template bindings. */
   $implicit: NatTableSortDirection;
   /** Current TanStack sort direction for the column. */
@@ -379,10 +381,10 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
 export type NatTableColumnExportValue = unknown;
 
 /** Context passed to column export value callbacks. */
-export interface NatTableColumnExportValueContext<
+export type NatTableColumnExportValueContext<
   TData extends RowData = RowData,
   TValue = unknown,
-> {
+> = {
   /** Row being exported. */
   readonly row: Row<TData>;
   /** Column being exported. */
@@ -392,7 +394,7 @@ export interface NatTableColumnExportValueContext<
 }
 
 /** Export behavior attached to a table column definition. */
-export interface NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> {
+export type NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> = {
   /** Whether the column participates in table export. Accessor columns opt in by default. */
   readonly enabled?: boolean;
   /** Header text used by export formats. Defaults to column labels and identifiers. */
@@ -407,7 +409,7 @@ export interface NatTableColumnExportOptions<TData extends RowData = RowData, TV
  * Extra metadata understood by `<nat-table>` when attached to a TanStack
  * column definition or optional companion UI.
  */
-export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
+export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> = {
   /** Accessible label used by companion controls when the header is not a string. */
   label?: string;
   /** Visually hidden header label for utility columns where a visible title would be redundant. */
@@ -436,12 +438,16 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
 }
 
 declare module '@tanstack/table-core' {
-  interface ColumnMeta<
-    TData extends import('@tanstack/angular-table').RowData,
-    TValue,
-  > extends NatTableColumnMeta<TData, TValue> {}
+  // Module augmentation must use `interface` (declaration merging); the empty
+  // body intentionally inherits every NatTableColumnMeta field.
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
+  interface ColumnMeta<TData extends RowData, TValue>
+    extends NatTableColumnMeta<TData, TValue> {}
 
-  interface TableMeta<TData extends import('@tanstack/angular-table').RowData> {
+  // Module augmentation must use `interface`; `TData` is required to match the
+  // upstream signature even though this augmentation does not reference it.
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
+  interface TableMeta<TData extends RowData> {
     /** Current table locale id exposed to companion header controls. */
     natTableLocaleId?: string;
     /** Returns whether a visible column can move within its current pinned region. */
@@ -453,7 +459,7 @@ declare module '@tanstack/table-core' {
 
 export type NatTableMode = 'auto' | 'manual';
 
-export interface NatTableModeConfiguration {
+export type NatTableModeConfiguration = {
   pagination?: NatTableMode;
   sorting?: NatTableMode;
   filtering?: NatTableMode;
@@ -465,7 +471,7 @@ export type NatTableUiState = NatTableState;
 /**
  * Minimal table-controller contract consumed by UI companion controls.
  */
-export interface NatTableUiController<TData extends RowData = RowData> {
+export type NatTableUiController<TData extends RowData = RowData> = {
   readonly table: Table<TData>;
   enableGlobalFilter(): boolean;
   enablePagination(): boolean;
@@ -483,6 +489,7 @@ export interface NatTableUiController<TData extends RowData = RowData> {
 }
 
 export { NAT_TABLE_KEYBINDINGS } from './keybindings';
+
 export type {
   NatTableShortcut,
   NatTableShortcutValue,

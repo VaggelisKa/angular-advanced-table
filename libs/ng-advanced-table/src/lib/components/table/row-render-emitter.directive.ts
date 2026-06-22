@@ -1,12 +1,14 @@
 import {
+  Directive,
   afterRenderEffect,
   booleanAttribute,
-  Directive,
   input,
   output,
 } from '@angular/core';
 
 import type { NatTableRowRenderedEvent } from './events';
+
+const roundToSingleDecimal = (value: number): number => Number(value.toFixed(1));
 
 /**
  * Internal directive attached to each body row when row-render events are
@@ -20,27 +22,39 @@ import type { NatTableRowRenderedEvent } from './events';
   selector: 'tr[natTableRowRenderEmitter]',
 })
 export class NatTableRowRenderEmitter {
-  readonly rowId = input.required<string>({
+  // Aliases are the directive's namespaced host-binding API on the shared
+  // `tr[natTableRowRenderEmitter]` selector; they are deliberately distinct from
+  // the property names, so the no-input-rename / no-output-rename guards are
+  // suppressed for each alias below.
+  // `rowId`'s alias equals the directive selector, which no-input-rename permits — no disable needed.
+  public readonly rowId = input.required<string>({
     alias: 'natTableRowRenderEmitter',
   });
-  readonly renderToken = input.required<number>({
+
+  public readonly renderToken = input.required<number>({
+    // eslint-disable-next-line @angular-eslint/no-input-rename -- namespaced binding on the shared host.
     alias: 'natTableRowRenderToken',
   });
-  readonly renderStartedAt = input.required<number>({
+
+  public readonly renderStartedAt = input.required<number>({
+    // eslint-disable-next-line @angular-eslint/no-input-rename -- namespaced binding on the shared host.
     alias: 'natTableRowRenderStartedAt',
   });
-  readonly enabled = input(false, {
+
+  public readonly enabled = input(false, {
+    // eslint-disable-next-line @angular-eslint/no-input-rename -- namespaced binding on the shared host.
     alias: 'natTableRowRenderEnabled',
     transform: booleanAttribute,
   });
 
-  readonly rendered = output<NatTableRowRenderedEvent>({
+  public readonly rendered = output<NatTableRowRenderedEvent>({
+    // eslint-disable-next-line @angular-eslint/no-output-rename -- namespaced output on the shared host.
     alias: 'natTableRowRendered',
   });
 
   private lastEmissionKey = '';
 
-  constructor() {
+  public constructor() {
     afterRenderEffect({
       read: () => {
         if (!this.enabled()) {
@@ -72,8 +86,4 @@ export class NatTableRowRenderEmitter {
       },
     });
   }
-}
-
-function roundToSingleDecimal(value: number): number {
-  return Number(value.toFixed(1));
 }

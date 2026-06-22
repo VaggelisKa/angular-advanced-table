@@ -1,4 +1,5 @@
 import { Directive, TemplateRef, inject } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
 import type {
@@ -16,10 +17,11 @@ import type {
   selector: 'ng-template[natTableLoading]',
 })
 export class NatTableLoadingTemplate<TData extends RowData = RowData> {
-  readonly templateRef = inject(TemplateRef<NatTableLoadingTemplateContext<TData>>);
+  public readonly templateRef = inject(TemplateRef<NatTableLoadingTemplateContext<TData>>);
 
-  static ngTemplateContextGuard<TData extends RowData>(
+  public static ngTemplateContextGuard<TData extends RowData>(
     _directive: NatTableLoadingTemplate<TData>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Angular template-type-check guard: `context` is the subject of the type predicate, required by the signature.
     context: unknown,
   ): context is NatTableLoadingTemplateContext<TData> {
     return true;
@@ -34,10 +36,11 @@ export class NatTableLoadingTemplate<TData extends RowData = RowData> {
   selector: 'ng-template[natTableEmpty]',
 })
 export class NatTableEmptyTemplate<TData extends RowData = RowData> {
-  readonly templateRef = inject(TemplateRef<NatTableEmptyTemplateContext<TData>>);
+  public readonly templateRef = inject(TemplateRef<NatTableEmptyTemplateContext<TData>>);
 
-  static ngTemplateContextGuard<TData extends RowData>(
+  public static ngTemplateContextGuard<TData extends RowData>(
     _directive: NatTableEmptyTemplate<TData>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Angular template-type-check guard: `context` is the subject of the type predicate, required by the signature.
     context: unknown,
   ): context is NatTableEmptyTemplateContext<TData> {
     return true;
@@ -52,10 +55,11 @@ export class NatTableEmptyTemplate<TData extends RowData = RowData> {
   selector: 'ng-template[natTableError]',
 })
 export class NatTableErrorTemplate<TData extends RowData = RowData> {
-  readonly templateRef = inject(TemplateRef<NatTableErrorTemplateContext<TData>>);
+  public readonly templateRef = inject(TemplateRef<NatTableErrorTemplateContext<TData>>);
 
-  static ngTemplateContextGuard<TData extends RowData>(
+  public static ngTemplateContextGuard<TData extends RowData>(
     _directive: NatTableErrorTemplate<TData>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Angular template-type-check guard: `context` is the subject of the type predicate, required by the signature.
     context: unknown,
   ): context is NatTableErrorTemplateContext<TData> {
     return true;

@@ -9,6 +9,7 @@ export {
   provideNatTableIntl,
   resolveNatTableIntl,
 } from 'ng-advanced-table-locales';
+
 export type {
   NatTableIntl,
   NatTableIntlConfig,
