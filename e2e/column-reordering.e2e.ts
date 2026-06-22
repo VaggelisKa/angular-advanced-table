@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 
 test.describe('Column reordering', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/reordering');
+    await page.goto('/examples/reordering');
   });
 
   const headerColumnIds = async (page: Page): Promise<string[]> =>

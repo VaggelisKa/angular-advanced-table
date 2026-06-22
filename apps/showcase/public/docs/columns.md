@@ -68,7 +68,7 @@ const priceMeta: PositionColumnMeta = {
     if (change < 0) return 'negative';
 
     return 'neutral';
-  },
+  }
 };
 ```
 
@@ -205,8 +205,7 @@ Use `(rowActivate)` for row-level navigation or primary actions. It fires on a p
   [columns]="columns"
   [getRowId]="getRowId"
   accessibleName="Open positions"
-  (rowActivate)="openPosition($event.rowData.id)"
-/>
+  (rowActivate)="openPosition($event.rowData.id)" />
 ```
 
 ```ts

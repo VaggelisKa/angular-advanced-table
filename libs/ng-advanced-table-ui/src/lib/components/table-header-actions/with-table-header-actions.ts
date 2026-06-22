@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef, HeaderContext, RowData } from '@tanstack/angular-table';
 

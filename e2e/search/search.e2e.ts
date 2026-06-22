@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Global search', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/search');
+    await page.goto('/examples/search');
   });
 
   test('filters table rows via global fuzzy search input', async ({ page }) => {

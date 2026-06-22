@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Keyboard interaction', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/keyboard-interaction');
+    await page.goto('/examples/keyboard-interaction');
   });
 
   test('handles interactive cell controls and reports actions', async ({ page }) => {

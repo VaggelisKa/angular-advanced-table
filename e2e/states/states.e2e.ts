@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Table states', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/states');
+    await page.goto('/examples/states');
   });
 
   test('displays initial states for loading, empty, and errored grids', async ({ page }) => {

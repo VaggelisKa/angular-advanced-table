@@ -6,16 +6,10 @@
     "outDir": "../../out-tsc/apps/showcase-spec",
     "paths": {
       "ng-advanced-table": ["../../libs/ng-advanced-table/src/public-api.ts"],
-      "ng-advanced-table-locales": [
-        "../../libs/ng-advanced-table-locales/src/public-api.ts"
-      ],
-      "ng-advanced-table-types": [
-        "../../libs/ng-advanced-table-types/src/public-api.ts"
-      ],
+      "ng-advanced-table-locales": ["../../libs/ng-advanced-table-locales/src/public-api.ts"],
+      "ng-advanced-table-types": ["../../libs/ng-advanced-table-types/src/public-api.ts"],
       "ng-advanced-table-ui": ["../../libs/ng-advanced-table-ui/src/public-api.ts"],
-      "ng-advanced-table-utils": [
-        "../../libs/ng-advanced-table-utils/src/public-api.ts"
-      ]
+      "ng-advanced-table-utils": ["../../libs/ng-advanced-table-utils/src/public-api.ts"]
     },
     "types": ["vitest/globals"]
   },
@@ -28,7 +22,5 @@
     "../../libs/ng-advanced-table-ui/src/**/*.ts",
     "../../libs/ng-advanced-table-utils/src/**/*.ts"
   ],
-  "exclude": [
-    "../../libs/**/*.spec.ts"
-  ]
+  "exclude": ["../../libs/**/*.spec.ts"]
 }

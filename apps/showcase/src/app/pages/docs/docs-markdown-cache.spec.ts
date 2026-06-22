@@ -10,7 +10,7 @@ describe('DocsMarkdownCache', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     });
 
     cache = TestBed.inject(DocsMarkdownCache);
@@ -24,21 +24,21 @@ describe('DocsMarkdownCache', () => {
   it('loads markdown and exposes the cached content synchronously', () => {
     expect(cache.getState('/docs/quick-start.md')).toEqual({
       status: 'idle',
-      content: '',
+      content: ''
     });
 
     cache.load('/docs/quick-start.md');
 
     expect(cache.getState('/docs/quick-start.md')).toEqual({
       status: 'loading',
-      content: '',
+      content: ''
     });
 
     http.expectOne('/docs/quick-start.md').flush('# Quick start');
 
     expect(cache.getState('/docs/quick-start.md')).toEqual({
       status: 'loaded',
-      content: '# Quick start',
+      content: '# Quick start'
     });
   });
 
@@ -46,10 +46,17 @@ describe('DocsMarkdownCache', () => {
     cache.load('/docs/quick-start.md');
     cache.load('/docs/quick-start.md');
 
-    http.expectOne('/docs/quick-start.md').flush('# Quick start');
+    const req = http.expectOne('/docs/quick-start.md');
+
+    expect(req.request.method).toBe('GET');
+    req.flush('# Quick start');
 
     cache.load('/docs/quick-start.md');
     http.expectNone('/docs/quick-start.md');
+    expect(cache.getState('/docs/quick-start.md')).toEqual({
+      status: 'loaded',
+      content: '# Quick start'
+    });
   });
 
   it('preloads each uncached markdown path', () => {
@@ -64,9 +71,7 @@ describe('DocsMarkdownCache', () => {
 
   it('records load failures and allows a later retry', () => {
     cache.load('/docs/quick-start.md');
-    http
-      .expectOne('/docs/quick-start.md')
-      .flush('Not found', { status: 404, statusText: 'Not Found' });
+    http.expectOne('/docs/quick-start.md').flush('Not found', { status: 404, statusText: 'Not Found' });
 
     expect(cache.getState('/docs/quick-start.md').status).toBe('error');
 
@@ -75,7 +80,7 @@ describe('DocsMarkdownCache', () => {
 
     expect(cache.getState('/docs/quick-start.md')).toEqual({
       status: 'loaded',
-      content: '# Quick start',
+      content: '# Quick start'
     });
   });
 });

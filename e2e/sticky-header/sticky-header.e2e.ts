@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Sticky header', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/sticky-header');
+    await page.goto('/examples/sticky-header');
   });
 
   test('toggles sticky header class on table', async ({ page }) => {

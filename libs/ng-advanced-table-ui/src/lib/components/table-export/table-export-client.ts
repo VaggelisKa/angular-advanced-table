@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import type { Column, Row, RowData } from '@tanstack/angular-table';
 
 import type { NatTableExportCellValue, NatTableExportContext, NatTableExportData } from './table-export.types';

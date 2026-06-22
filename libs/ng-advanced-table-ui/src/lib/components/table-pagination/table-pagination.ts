@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { Component, DestroyRef, computed, inject, input } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';

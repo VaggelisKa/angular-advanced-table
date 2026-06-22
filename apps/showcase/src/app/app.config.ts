@@ -1,16 +1,11 @@
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import type { ApplicationConfig } from '@angular/core';
-import {
-  provideBrowserGlobalErrorListeners,
-  provideZonelessChangeDetection,
-} from '@angular/core';
+import { provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+
 import { MARKED_OPTIONS, provideMarkdown } from 'ngx-markdown';
-import {
-  provideNatTableLocales,
-  provideNatTableUiLocales,
-  provideNatTableUtilsLocales,
-} from 'ng-advanced-table-locales';
+
+import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table-locales';
 
 import { routes } from './app.routes';
 
@@ -26,13 +21,13 @@ export const appConfig: ApplicationConfig = {
         useValue: {
           gfm: true,
           breaks: false,
-          pedantic: false,
-        },
-      },
+          pedantic: false
+        }
+      }
     }),
     provideNatTableLocales(),
     provideNatTableUiLocales(),
     provideNatTableUtilsLocales(),
-    provideRouter(routes),
-  ],
+    provideRouter(routes)
+  ]
 };

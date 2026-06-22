@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Table builder', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/builder');
+    await page.goto('/examples/builder');
   });
 
   test('renders the table builder page', async ({ page }) => {

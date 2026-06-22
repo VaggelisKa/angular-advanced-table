@@ -5,7 +5,7 @@ import { applyDocumentDirection } from '../support/document-direction';
 
 test.describe('Table toolbar', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/toolbar');
+    await page.goto('/examples/toolbar');
   });
 
   /**
@@ -164,7 +164,7 @@ test.describe('Table toolbar', () => {
 
   test('reverses arrow keys in RTL', async ({ page }) => {
     await applyDocumentDirection(page, 'rtl');
-    await page.goto('/toolbar');
+    await page.goto('/examples/toolbar');
     await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 
     const { exportButton, refreshButton } = buttons(page);

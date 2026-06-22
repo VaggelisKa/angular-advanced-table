@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Table builder accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/builder');
+    await page.goto('/examples/builder');
   });
 
   test('configures table builder using keyboard only', async ({ page }) => {

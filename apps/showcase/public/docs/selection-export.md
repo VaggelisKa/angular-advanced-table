@@ -28,10 +28,9 @@ interface ServiceRow {
         [columns]="columns"
         [enableRowSelection]="true"
         [getRowId]="getRowId"
-        accessibleName="Selectable services"
-      />
+        accessibleName="Selectable services" />
     </nat-table-surface>
-  `,
+  `
 })
 export class ServicesTable {
   readonly rows = signal<readonly ServiceRow[]>([]);
@@ -39,7 +38,7 @@ export class ServicesTable {
   readonly getRowId = (row: ServiceRow) => row.id;
 
   readonly tableState = computed<Partial<NatTableState>>(() => ({
-    rowSelection: this.rowSelection(),
+    rowSelection: this.rowSelection()
   }));
 
   readonly columns: ColumnDef<ServiceRow>[] = withNatTableSelectionColumn(
@@ -47,24 +46,24 @@ export class ServicesTable {
       {
         accessorKey: 'name',
         header: 'Name',
-        meta: { label: 'Name', rowHeader: true },
+        meta: { label: 'Name', rowHeader: true }
       },
       {
         accessorKey: 'owner',
         header: 'Owner',
-        meta: { label: 'Owner' },
+        meta: { label: 'Owner' }
       },
       {
         accessorKey: 'status',
         header: 'Status',
-        meta: { label: 'Status' },
-      },
+        meta: { label: 'Status' }
+      }
     ],
     {
       label: 'Selection',
       selectAllAriaLabel: 'Select all services',
-      selectRowAriaLabel: (row) => `Select ${row.original.name}`,
-    },
+      selectRowAriaLabel: (row) => `Select ${row.original.name}`
+    }
   );
 
   protected onRowSelectionChange(rowSelection: RowSelectionState): void {
@@ -86,8 +85,7 @@ The default selection mode is multiple. Use `selectionMode="single"` when only o
   [enableRowSelection]="true"
   selectionMode="single"
   [getRowId]="getRowId"
-  accessibleName="Selectable services"
-/>
+  accessibleName="Selectable services" />
 ```
 
 When switching between modes, clear or normalize app-owned selection so the UI and business rules stay obvious.
@@ -135,23 +133,11 @@ Bulk action bars belong to the consuming app. They need domain labels, permissio
 
 ```html
 <nat-table-toolbar accessibleName="Bulk actions">
-  <button
-    type="button"
-    natToolbarItem
-    [disabled]="selectedRows().length === 0"
-    (click)="archiveSelected()"
-  >
+  <button type="button" natToolbarItem [disabled]="selectedRows().length === 0" (click)="archiveSelected()">
     Archive selected ({{ selectedRows().length }})
   </button>
 
-  <button
-    type="button"
-    natToolbarItem
-    [disabled]="selectedRows().length === 0"
-    (click)="clearSelection()"
-  >
-    Clear selection
-  </button>
+  <button type="button" natToolbarItem [disabled]="selectedRows().length === 0" (click)="clearSelection()">Clear selection</button>
 </nat-table-toolbar>
 ```
 
@@ -181,9 +167,7 @@ Use `NatTableExport` on a button or another interactive host.
 ```html
 <nat-table-surface>
   <nat-table-toolbar accessibleName="Services toolbar">
-    <button type="button" natToolbarItem natTableExport exportFileName="services">
-      Export CSV
-    </button>
+    <button type="button" natToolbarItem natTableExport exportFileName="services">Export CSV</button>
   </nat-table-toolbar>
 
   <nat-table [data]="rows()" [columns]="columns" accessibleName="Services" />
@@ -257,13 +241,7 @@ readonly exportSelected: NatTableExportHandler<ServiceRow> = async (context) => 
 ```
 
 ```html
-<button
-  type="button"
-  natToolbarItem
-  natTableExport
-  exportFileName="selected-services"
-  [exportHandler]="exportSelected"
->
+<button type="button" natToolbarItem natTableExport exportFileName="selected-services" [exportHandler]="exportSelected">
   Export selected
 </button>
 ```
@@ -293,10 +271,10 @@ providers: [
       handler: (context) =>
         exportApi.exportCsv({
           fileName: context.fileName,
-          data: context.getData(),
-        }),
+          data: context.getData()
+        })
     };
-  }),
+  })
 ];
 ```
 

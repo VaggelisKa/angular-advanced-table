@@ -34,12 +34,7 @@ readonly initialState: Partial<NatTableState> = {
 <nat-table-surface [initialState]="initialState">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-  <nat-table
-    [data]="rows()"
-    [columns]="columns"
-    [getRowId]="getRowId"
-    accessibleName="Open positions"
-  />
+  <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
 </nat-table-surface>
 ```
 
@@ -59,7 +54,7 @@ export class PositionsTable {
   readonly sorting = signal<SortingState>([]);
 
   readonly tableState = computed<Partial<NatTableState>>(() => ({
-    sorting: this.sorting(),
+    sorting: this.sorting()
   }));
 
   protected onSortingChange(sorting: SortingState): void {
@@ -100,8 +95,7 @@ protected onColumnVisibilityChange(columnVisibility: VisibilityState): void {
 <nat-table-surface
   [state]="viewState()"
   (paginationChange)="onPaginationChange($event)"
-  (columnVisibilityChange)="onColumnVisibilityChange($event)"
->
+  (columnVisibilityChange)="onColumnVisibilityChange($event)">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
   <nat-table-column-visibility />
   <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
@@ -181,16 +175,9 @@ Use manual mode when the server owns sorting, filtering, or pagination. The tabl
   [mode]="{ pagination: 'manual', sorting: 'manual', filtering: 'manual' }"
   [manualPageCount]="pageCount()"
   [state]="tableState()"
-  (stateChange)="loadPage($event)"
->
+  (stateChange)="loadPage($event)">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
-  <nat-table
-    [data]="rows()"
-    [columns]="columns"
-    [dataStatus]="status()"
-    [error]="error()"
-    accessibleName="Server-side positions"
-  />
+  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Server-side positions" />
 </nat-table-surface>
 ```
 

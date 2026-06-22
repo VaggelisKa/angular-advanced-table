@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Pagination', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/pagination');
+    await page.goto('/examples/pagination');
   });
 
   test('supports client-side pagination and page size configuration', async ({ page }) => {

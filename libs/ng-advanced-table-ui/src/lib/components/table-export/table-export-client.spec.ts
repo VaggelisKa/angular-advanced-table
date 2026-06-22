@@ -28,7 +28,7 @@ describe('table export CSV client', () => {
 
     expect([...bytes.slice(0, 3)]).toStrictEqual([0xef, 0xbb, 0xbf]);
     await expect(blob.text()).resolves.toBe(
-      'Name,Amount,Created\r\n' + '"Alpha, ""Beta""",12.5,2026-01-02T03:04:05.000Z\r\n' + "'=SUM(A1:A2),,false"
+      `Name,Amount,Created\r\n"Alpha, ""Beta""",12.5,2026-01-02T03:04:05.000Z\r\n'=SUM(A1:A2),,false`
     );
   });
 

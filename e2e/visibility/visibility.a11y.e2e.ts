@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Column visibility accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/visibility');
+    await page.goto('/examples/visibility');
   });
 
   test('toggles column visibility via chips using keyboard only', async ({ page }) => {

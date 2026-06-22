@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Column pinning accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/pinning');
+    await page.goto('/examples/pinning');
   });
 
   test('renders pinning controls and applies column pinning styles via keyboard', async ({ page }) => {

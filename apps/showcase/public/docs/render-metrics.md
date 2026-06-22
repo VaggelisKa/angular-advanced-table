@@ -22,11 +22,7 @@ import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table-ui';
-import {
-  NatRenderMetricsPanel,
-  NatTableRenderMetricsStore,
-  type NatTableRenderMetricsEvent,
-} from 'ng-advanced-table-utils';
+import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderMetricsEvent } from 'ng-advanced-table-utils';
 
 @Component({
   selector: 'app-positions-table',
@@ -41,10 +37,9 @@ import {
         [emitRowRenderEvents]="true"
         [getRowId]="getRowId"
         accessibleName="Position render metrics"
-        (rowRendered)="onRowRendered($event)"
-      />
+        (rowRendered)="onRowRendered($event)" />
     </nat-table-surface>
-  `,
+  `
 })
 export class PositionsTable {
   readonly metricsStore = new NatTableRenderMetricsStore();
@@ -105,8 +100,7 @@ The panel summarizes the latest render cycle. The filter targets the synthetic m
     [emitRowRenderEvents]="true"
     [getRowId]="getRowId"
     accessibleName="Position render metrics"
-    (rowRendered)="metricsStore.record($event)"
-  />
+    (rowRendered)="metricsStore.record($event)" />
 </nat-table-surface>
 ```
 
@@ -153,18 +147,18 @@ providers: [
       renderMetrics: {
         column: {
           header: 'Render',
-          pendingLabel: 'Pending',
+          pendingLabel: 'Pending'
         },
         panel: {
-          ariaLabel: 'Row render timing',
+          ariaLabel: 'Row render timing'
         },
         filter: {
           heading: 'Render speed',
-          groupAriaLabel: 'Filter rows by render speed',
-        },
-      },
-    },
-  }),
+          groupAriaLabel: 'Filter rows by render speed'
+        }
+      }
+    }
+  })
 ];
 ```
 

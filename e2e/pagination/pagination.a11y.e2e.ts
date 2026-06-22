@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Pagination accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/pagination');
+    await page.goto('/examples/pagination');
   });
 
   test('navigates client-side pagination using keyboard only', async ({ page }) => {

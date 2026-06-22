@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { InjectionToken, Optional, SkipSelf } from '@angular/core';
 import type { Provider } from '@angular/core';
 

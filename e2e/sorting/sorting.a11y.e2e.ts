@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Sorting accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/sorting');
+    await page.goto('/examples/sorting');
   });
 
   test('renders sorting grids and handles programmatic single-column sort actions via keyboard', async ({ page }) => {
