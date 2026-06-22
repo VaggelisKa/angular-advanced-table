@@ -6,12 +6,12 @@ Signals-first Nx monorepo for composable Angular TanStack Table primitives.
 
 This README is the canonical workspace reference. Package READMEs stay intentionally small and point back here for behavior, API shape, and composition rules. The `apps/showcase` project is the demo app, and publishable packages live under `libs/*`.
 
-| Package                     | Use it for                                                          | Main exports                                                                                                                                                                                                                      |
-| --------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`         | Core table primitive                                                | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `NAT_TABLE_DATA_STATUS`                                                                                                                                                        |
-| `ng-advanced-table-ui`      | Optional controls, header actions, row selection, and table actions | `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTableScrollControl`, `NatTableExport`, `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `provideNatTableExport(...)` |
-| `ng-advanced-table-utils`   | Optional render-metrics tooling                                     | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                                                                                   |
-| `ng-advanced-table-locales` | Built-in locale registry                                            | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                                                                                                |
+| Package                     | Use it for                                                          | Main exports                                                                                                                                                                                                                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ng-advanced-table`         | Core table primitive                                                | `NatTable`, `NatTableState`, `NatTableColumnMeta`, `NAT_TABLE_DATA_STATUS`                                                                                                                                                                                                                                      |
+| `ng-advanced-table-ui`      | Optional controls, header actions, row selection, and table actions | `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`, `NatTableExport`, `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `provideNatTableExport(...)` |
+| `ng-advanced-table-utils`   | Optional render-metrics tooling                                     | `NatTableRenderMetricsStore`, `NatRenderMetricsPanel`, `NatRenderMetricsFilter`, `withRenderMetricsColumn(...)`                                                                                                                                                                                                 |
+| `ng-advanced-table-locales` | Built-in locale registry                                            | `provideNatTableLocales(...)`, `provideNatTableUiLocales(...)`, `provideNatTableUtilsLocales(...)`                                                                                                                                                                                                              |
 
 The workspace keeps shared table contracts aligned through the private `ng-advanced-table-types` library. Consumers should import public contracts from published packages only; prefer `ng-advanced-table` for `NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` when column definitions or state move across package boundaries. The UI and utils packages keep compatibility exports for consumers already importing from those entry points.
 
@@ -34,7 +34,7 @@ Documentation maintenance checklist:
 - When accessibility or localization inputs change, update the machine-readable API map in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
 - When recommended composition changes, keep the examples in this README, package READMEs, and [`THEMING.md`](THEMING.md) in sync.
 
-Angular 21+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
+Angular 22+ apps can consume these packages with or without `zone.js`. The workspace validates them in zoneless tests and in the showcase app.
 
 ## Install
 
@@ -193,8 +193,9 @@ export class ServiceTableComponent {
 
 Core exports:
 
-- Component: `NatTable`
-- Common constants and types: `NAT_TABLE_DATA_STATUS`, `NAT_TABLE_BODY_STATE`, `NatTableState`, `NatTableDataStatus`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableColumnExportOptions`, `NatTableColumnExportValueContext`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
+- Component and directives: `NatTable`, `NatTableLoadingTemplate`, `NatTableEmptyTemplate`, `NatTableErrorTemplate`
+- Controller: `NatTableService`, `NAT_TABLE_UI_CONTROLLER`, `NatTableUiController`, `NatTableUiState`
+- Common constants and types: `NAT_TABLE_DATA_STATUS`, `NAT_TABLE_BODY_STATE`, `NatTableState`, `NatTableMode`, `NatTableModeConfiguration`, `NatTableDataStatus`, `NatTableBodyState`, `NatTableStateTemplateContext`, `NatTableLoadingTemplateContext`, `NatTableEmptyTemplateContext`, `NatTableErrorTemplateContext`, `NatTableRowIdGetter`, `NatTableRowActivateEvent`, `NatTableColumnMeta`, `NatTableColumnExportOptions`, `NatTableColumnExportValue`, `NatTableColumnExportValueContext`, `NatTableColumnMoveDirection`, `NatTableRowRenderedEvent`, `NatTableCellTone`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
 - Accessibility: `NatTableAccessibilityText` at the package root; deep formatter context types live under the `NatTableA11y` namespace (for example `NatTableA11y.NatTableAccessibilitySummaryContext`).
 
 ## Core API
@@ -381,7 +382,14 @@ Resizing is **opt-in per column**, not table-wide. Set `enableResizing: true` on
 ```ts
 const columns: ColumnDef<Row>[] = [
   // resizable: handle + keyboard resize, bounded by minSize/maxSize
-  { accessorKey: 'name', header: 'Name', enableResizing: true, minSize: 120, maxSize: 320, meta: { label: 'Name' } },
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    enableResizing: true,
+    minSize: 120,
+    maxSize: 320,
+    meta: { label: 'Name' },
+  },
   // not resizable (no handle)
   { accessorKey: 'id', header: 'ID', meta: { label: 'ID' } },
 ];
@@ -775,18 +783,20 @@ UI exports:
 - Components and directives: `NatTableSurface`, `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, `NatTableScrollControl`, `NatTableToolbar`, `NatToolbarGroup`, `NatToolbarItem`, `NatTableExport`, `NatTableSelectionCheckbox`
 - Helpers and contracts: `withNatTableHeaderActions(...)`, `withNatTableSelectionColumn(...)`, `provideNatTableExport(...)`, `NatTableHeaderActionsOptions`, `NatTableHeaderActionsColumnOptions`, `NatTableSelectionColumnOptions`, `NatTableExportCellValue`, `NatTableExportConfig`, `NatTableExportConfigFactory`, `NatTableExportContext`, `NatTableExportData`, `NatTableExportDataColumn`, `NatTableExportDataRow`, `NatTableExportHandler`, `NatTableExportProvider`, `NatTableSortIndicatorContent`, `NatTableUiController`, `NatTableUiState`
 - Canonical aliases: `NatTableColumnMeta`, `NatTableSortDirection`, `NatTableSortIndicatorContext`
-- Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionMoveContext`, `NatTableAccessibilityHeaderActionLabels`, `NatTableColumnMoveDirection`
+- Shared UI types: `NatTableAccessibilityPageSizeOptionContext`, `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerContext`, `NatTableAccessibilityPagerLabels`, `NatTableAccessibilityScrollControlPositionContext`, `NatTableAccessibilityScrollControlLabels`, `NatTableAccessibilityColumnVisibilitySummaryContext`, `NatTableAccessibilityColumnVisibilityActionContext`, `NatTableAccessibilityColumnVisibilityStateContext`, `NatTableAccessibilityColumnVisibilityLabels`, `NatTableAccessibilityHeaderActionMenuContext`, `NatTableAccessibilityHeaderActionSortContext`, `NatTableAccessibilityHeaderActionPinContext`, `NatTableAccessibilityHeaderActionMoveContext`, `NatTableAccessibilityHeaderActionLabels`, `NatTableAccessibilitySelectionLabels`, `NatTableAccessibilitySelectionRowContext`, `NatTableColumnMoveDirection`
 
-| API                                | Purpose                                                                   | Key inputs or options                                                                                                |
-| ---------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `NatTableSurface`                  | Layout wrapper and default `--nat-table-*` CSS variables                  | none                                                                                                                 |
-| `NatTableColumnVisibility`         | Toggle hideable columns                                                   | `for`, `label`, `groupAriaLabel`, `accessibilityLabels`                                                              |
-| `NatTablePageSize`                 | Chip-based page-size switcher                                             | `for`, `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels`                                                    |
-| `NatTablePager`                    | Previous/next pagination control                                          | `for`, `groupAriaLabel`, `accessibilityLabels`                                                                       |
-| `NatTableScrollControl`            | Horizontal scroll buttons and range control                               | `for`, `groupAriaLabel`, `scrollStep`, `accessibilityLabels`                                                         |
-| `NatTableExport`                   | Host directive that exports table data to CSV or a custom handler         | `for`, `exportFileName`, `exportHandler`, `trigger(...)`, `meta.export`                                              |
-| `withNatTableHeaderActions(...)`   | Wraps header content with a built-in sort control and column actions menu | `sortIndicator`, `enableColumnPinActions`, `enableColumnReorderActions`, `accessibilityLabels`, `meta.headerActions` |
-| `withNatTableSelectionColumn(...)` | Prepends an accessible select-all and per-row checkbox column             | `label`, `size`, `enablePinning`, `selectAllAriaLabel`, `selectRowAriaLabel`                                         |
+| API                                | Purpose                                                                   | Key inputs or options                                                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `NatTableSurface`                  | Layout wrapper and default `--nat-table-*` CSS variables                  | none                                                                                                                          |
+| `NatTableColumnVisibility`         | Toggle hideable columns                                                   | `label`, `groupAriaLabel`, `accessibilityLabels`                                                                              |
+| `NatTablePageSize`                 | Chip-based page-size switcher                                             | `pageSizeOptions`, `groupAriaLabel`, `accessibilityLabels`                                                                    |
+| `NatTablePager`                    | Previous/next pagination control                                          | `groupAriaLabel`, `accessibilityLabels`                                                                                       |
+| `NatTableScrollControl`            | Horizontal scroll buttons and range control                               | `groupAriaLabel`, `scrollStep`, `accessibilityLabels`                                                                         |
+| `NatTablePagination`               | Combined page-size and previous/next pagination toolbar                   | `pageSizeOptions`, `pageSizeGroupAriaLabel`, `pageSizeAccessibilityLabels`, `pagerGroupAriaLabel`, `pagerAccessibilityLabels` |
+| `NatTableToolbar`                  | Accessible roving-keyboard toolbar for custom table controls              | `for`, `accessibleName`, `locale`                                                                                             |
+| `NatTableExport`                   | Host directive that exports table data to CSV or a custom handler         | `for`, `exportFileName`, `exportHandler`, `trigger(...)`, `meta.export`                                                       |
+| `withNatTableHeaderActions(...)`   | Wraps header content with a built-in sort control and column actions menu | `sortIndicator`, `enableColumnPinActions`, `enableColumnReorderActions`, `accessibilityLabels`, `meta.headerActions`          |
+| `withNatTableSelectionColumn(...)` | Prepends an accessible select-all and per-row checkbox column             | `label`, `size`, `enablePinning`, `selectAllAriaLabel`, `selectRowAriaLabel`                                                  |
 
 Controller contract required by the UI package:
 
@@ -800,11 +810,11 @@ Controller contract required by the UI package:
 
 Notes:
 
-- Global search UI is consumer-owned; the showcase app includes an `app-table-search` reference implementation backed by `NatTableService`.
 - `NatTablePageSize` and `NatTablePager` assume `enablePagination` is enabled.
+- Global search controls are consumer-owned. Render a native search input in `NatTableToolbar` with `natToolbarItem` and patch the table `globalFilter` state from your component.
 - `NatTableScrollControl` binds to the controller's `tableScrollContainer` when available and falls back to the rendered table's parent element.
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables that used to live in core.
-- `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
+- `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, `NatTablePagination`, and `NatTableScrollControl` are intentionally small wrappers over the controller contract.
 - `NatTableExport` is a Table Action directive. It resolves the same controller as companion controls, exports all client-held rows to CSV by default, includes visible exportable leaf columns, and can delegate to app-provided handlers through `exportHandler` or `provideNatTableExport(...)`.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the underlying column supports sorting, pinning, or opt-in menu-based reordering. The compact three-dot menu includes left/right pin actions when `enableColumnPinActions` is not disabled and pinning is available, and Move left/Move right actions when `enableColumnReorderActions` is enabled and the column can reorder inside its current pinned region.
 - Set `column.meta.hiddenHeaderLabel` to visually hide a redundant header title while keeping that label available to assistive technology; wrapped header actions keep their controls visible.
@@ -893,7 +903,7 @@ readonly exportHandler: NatTableExportHandler<OrderRow> = async (context) => {
 
 ## UI Accessibility Labels
 
-The optional UI controls inherit the controlled table locale through `[for]="grid"` and resolve generated labels from `provideNatTableUiLocales()`. Use `label`, `placeholder`, `groupAriaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort, pin, and move labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened column actions menu label, pin action labels, move action labels, and visible menu item text.
+The optional UI controls inherit the controlled table locale from `<nat-table-surface>` and resolve generated labels from `provideNatTableUiLocales()`. `NatTableToolbar` can also receive an explicit `[for]="grid"` controller when it is rendered outside that surface. Use `label`, `groupAriaLabel`, and `accessibilityLabels` inputs only for instance-specific copy. Header sort, pin, and move labels are configured through `withNatTableHeaderActions(...)`; `NatTableAccessibilityHeaderActionLabels` covers the sort button, overflow trigger, opened column actions menu label, pin action labels, move action labels, and visible menu item text.
 
 See [Accessibility and internationalization](ACCESSIBILITY.md#optional-ui-controls) for the full label surface.
 

@@ -49,11 +49,13 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 ## Zoneless Compatibility
 
 - `ng-advanced-table` is validated in a zoneless Angular `TestBed` configuration.
-- Angular 21+ consumers do not need `zone.js` to use this package.
+- Angular 22+ consumers do not need `zone.js` to use this package.
 
 ## Public Exports
 
 - `NatTable`
+- `NatTableService`
+- `NAT_TABLE_UI_CONTROLLER`
 - `NatTableLoadingTemplate`
 - `NatTableEmptyTemplate`
 - `NatTableErrorTemplate`
@@ -64,13 +66,23 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 - `NatTableAccessibilityText`
 - `NatTableA11y` (namespace of deep accessibility formatter context types)
 - `NatTableDataStatus`
+- `NatTableBodyState`
+- `NatTableStateTemplateContext`
+- `NatTableLoadingTemplateContext`
+- `NatTableEmptyTemplateContext`
+- `NatTableErrorTemplateContext`
 - `NatTableRowIdGetter`
 - `NatTableRowActivateEvent`
+- `NatTableMode`
+- `NatTableModeConfiguration`
 - `NatTableState`
+- `NatTableUiController`
+- `NatTableUiState`
 - `NatTableColumnMeta`
 - `NatTableColumnExportOptions`
 - `NatTableColumnExportValue`
 - `NatTableColumnExportValueContext`
+- `NatTableColumnMoveDirection`
 - `NatTableCellTone`
 - `NatTableSortDirection`
 - `NatTableSortIndicatorContext`

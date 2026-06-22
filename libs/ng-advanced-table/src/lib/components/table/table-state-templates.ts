@@ -8,6 +8,10 @@ import type {
 } from './table.types';
 
 // State slots must be templates because NatTable renders them inside its generated tbody row.
+/**
+ * Captures the custom loading body-row template rendered when
+ * `<nat-table dataStatus="loading">` has no visible rows.
+ */
 @Directive({
   selector: 'ng-template[natTableLoading]',
 })
@@ -22,6 +26,10 @@ export class NatTableLoadingTemplate<TData extends RowData = RowData> {
   }
 }
 
+/**
+ * Captures the custom empty body-row template rendered when a successful table
+ * view has no matching rows.
+ */
 @Directive({
   selector: 'ng-template[natTableEmpty]',
 })
@@ -36,6 +44,10 @@ export class NatTableEmptyTemplate<TData extends RowData = RowData> {
   }
 }
 
+/**
+ * Captures the custom error body-row template rendered when
+ * `<nat-table dataStatus="error">` is active.
+ */
 @Directive({
   selector: 'ng-template[natTableError]',
 })
