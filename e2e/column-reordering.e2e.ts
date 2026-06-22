@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/reordering');
 });
@@ -23,7 +25,7 @@ test('moves a focused column header with Ctrl+Shift+Arrow', async ({ page }) => 
   await categoryHeader.focus();
   await expect(categoryHeader).toBeFocused();
 
-  await page.keyboard.press('Control+Shift+ArrowRight');
+  await page.keyboard.press(`${modifier}+Shift+ArrowRight`);
 
   await expect.poll(() => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
   await expect(categoryHeader).toBeFocused();
@@ -65,7 +67,7 @@ test('scrolls the table region when keyboard reordering moves a focused header r
   });
   const scrollLeftBefore = await tableRegion.evaluate((element) => element.scrollLeft);
 
-  await page.keyboard.press('Control+Shift+ArrowRight');
+  await page.keyboard.press(`${modifier}+Shift+ArrowRight`);
 
   await expect.poll(() => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
   await expect

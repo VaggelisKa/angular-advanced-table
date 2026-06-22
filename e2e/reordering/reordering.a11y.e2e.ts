@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/reordering');
 });
@@ -18,7 +20,7 @@ test('supports keyboard-based column reordering', async ({ page }) => {
   await expect(nameHeader).toBeFocused();
 
   // Press Control + Shift + ArrowRight to swap with Category
-  await page.keyboard.press('Control+Shift+ArrowRight');
+  await page.keyboard.press(`${modifier}+Shift+ArrowRight`);
 
   // Order should now be: Category, Name, Status, Value
   await expect(orderItems.nth(0)).toContainText('Category');

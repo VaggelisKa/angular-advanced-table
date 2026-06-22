@@ -64,6 +64,11 @@ const showcaseExamples = [
     path: '/sticky-header',
   },
   {
+    label: 'Sticky header (CSS Grid)',
+    description: 'Fixed viewport grid headers',
+    path: '/sticky-header-grid-poc',
+  },
+  {
     label: 'Toolbar',
     description: 'Slot-based keyboard toolbar',
     path: '/toolbar',

@@ -81,6 +81,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'sticky-header-grid-poc',
+    title: 'Advanced Table - Sticky Header Grid PoC',
+    loadComponent: () =>
+      import('./pages/single-features/sticky-header-grid-poc').then(
+        (module) => module.StickyHeaderGridPocPage,
+      ),
+  },
+  {
     path: 'toolbar',
     title: 'Advanced Table - Table Toolbar',
     loadComponent: () =>
