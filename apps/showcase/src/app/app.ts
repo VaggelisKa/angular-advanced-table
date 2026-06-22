@@ -88,13 +88,11 @@ export class App {
     });
 
     afterNextRender(
-      {
-        read: () => {
-          globalThis.setTimeout(() => {
-            void loadDocsPage();
-            this.docsMarkdownCache.preload(showcaseDocs.map((doc) => doc.markdownPath));
-          });
-        },
+      () => {
+        globalThis.setTimeout(() => {
+          void loadDocsPage();
+          this.docsMarkdownCache.preload(showcaseDocs.map((doc) => doc.markdownPath));
+        });
       },
       { injector: this.injector },
     );

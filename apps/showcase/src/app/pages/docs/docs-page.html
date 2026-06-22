@@ -14,7 +14,9 @@
   <section
     class="docs-markdown"
     aria-labelledby="docs-page-title"
-    [attr.aria-busy]="markdownState().status === 'loading' ? 'true' : null"
+    [attr.aria-busy]="
+      markdownState().status === 'idle' || markdownState().status === 'loading' ? 'true' : null
+    "
   >
     @if (markdownState().status === 'loaded') {
       <markdown [data]="markdownState().content" />
