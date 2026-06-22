@@ -297,16 +297,6 @@
   line-height: 1.25;
 }
 
-.showcase-nav-caption {
-  padding: 0 10px;
-  color: var(--shell-text-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
 .showcase-nav-scroll {
   min-height: 0;
   flex: 1 1 auto;
@@ -516,34 +506,21 @@
   }
 }
 
-.showcase-theme-control {
+.showcase-nav-utilities {
   flex: 0 0 auto;
   margin-top: auto;
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  padding: 14px 8px 0;
+  padding: 10px 8px 0;
   border-top: 1px solid var(--shell-border);
-}
-
-.showcase-theme-control .showcase-nav-caption {
-  padding: 0 2px;
-}
-
-.showcase-repo-section {
-  flex: 0 0 auto;
-  display: grid;
-  gap: 8px;
-  padding: 14px 8px 0;
-  border-top: 1px solid var(--shell-border);
-}
-
-.showcase-repo-section .showcase-nav-caption {
-  padding: 0 2px;
 }
 
 .showcase-theme-toggle {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: auto;
+  display: inline-grid;
+  grid-template-columns: repeat(2, 30px);
   padding: 2px;
   border: 1px solid var(--shell-border);
   border-radius: 8px;
@@ -551,19 +528,16 @@
 }
 
 .showcase-theme-option {
-  min-width: 0;
+  width: 30px;
   height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 0 10px;
+  padding: 0;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--shell-text-soft);
-  font-size: 0.78rem;
-  font-weight: 600;
   cursor: pointer;
   transition:
     background-color 140ms ease,
@@ -583,25 +557,23 @@
 }
 
 .showcase-theme-icon {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   color: currentcolor;
 }
 
 .showcase-github-link {
-  min-height: 36px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
+  padding: 0;
   border: 1px solid var(--shell-border);
   border-radius: 8px;
   background: var(--shell-nav-muted);
   color: var(--shell-text-soft);
-  font-size: 0.8rem;
-  font-weight: 700;
-  line-height: 1.2;
   text-decoration: none;
   transition:
     background-color 140ms ease,
@@ -621,8 +593,8 @@
 }
 
 .showcase-github-icon {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   flex: 0 0 auto;
   color: currentcolor;
   fill: currentcolor;
@@ -739,22 +711,10 @@
     min-width: 0;
   }
 
-  .showcase-theme-control {
+  .showcase-nav-utilities {
     margin-top: 0;
     padding: 12px 0 0;
     border-top: 0;
-  }
-
-  .showcase-theme-control .showcase-nav-caption {
-    display: none;
-  }
-
-  .showcase-theme-toggle {
-    width: 100%;
-  }
-
-  .showcase-repo-section {
-    padding: 12px 0 0;
   }
 }
 

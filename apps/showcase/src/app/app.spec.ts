@@ -94,7 +94,28 @@ describe('App', () => {
       compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]'),
     ).not.toBeNull();
     expect(compiled.querySelector('.showcase-nav-count')).toBeNull();
-    expect(compiled.querySelector('.showcase-theme-toggle')).not.toBeNull();
+    expect(compiled.querySelector('.showcase-theme-control')).toBeNull();
+    expect(compiled.querySelector('.showcase-repo-section')).toBeNull();
+    expect(compiled.querySelector('.showcase-nav-caption')).toBeNull();
+
+    const utilities = compiled.querySelector('.showcase-nav-utilities') as HTMLElement;
+    const themeToggle = utilities.querySelector('.showcase-theme-toggle') as HTMLElement;
+    const themeOptions = Array.from(
+      utilities.querySelectorAll('.showcase-theme-option'),
+    ) as HTMLButtonElement[];
+    const githubLink = utilities.querySelector('.showcase-github-link') as HTMLAnchorElement;
+
+    expect(utilities.getAttribute('aria-label')).toBe('Showcase utilities');
+    expect(utilities.textContent?.trim()).toBe('');
+    expect(themeToggle.getAttribute('aria-label')).toBe('Color theme');
+    expect(themeOptions.map((option) => option.getAttribute('aria-label'))).toEqual([
+      'Use light theme',
+      'Use dark theme',
+    ]);
+    expect(githubLink.getAttribute('aria-label')).toBe(
+      'Open angular-advanced-table repository on GitHub',
+    );
+    expect(githubLink.getAttribute('title')).toBe('Open GitHub repository');
   });
 
   it('should collapse and expand top-level navigation tree branches', async () => {
