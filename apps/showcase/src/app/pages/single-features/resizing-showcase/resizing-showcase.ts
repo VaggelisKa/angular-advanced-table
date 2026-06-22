@@ -27,11 +27,11 @@ const DEMO_DATA: DemoItem[] = [
     name: 'Gamma Processor',
     category: 'Data Science',
     status: 'Paused',
-    value: 7800,
+    value: 7800
   },
   { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
   { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 },
+  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
 ];
 
 @Component({
@@ -39,7 +39,7 @@ const DEMO_DATA: DemoItem[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
   templateUrl: './resizing-showcase.html',
-  styleUrl: './resizing-showcase.css',
+  styleUrl: './resizing-showcase.css'
 })
 export class ResizingShowcasePage {
   protected readonly data = DEMO_DATA;
@@ -51,43 +51,40 @@ export class ResizingShowcasePage {
       id: 'name',
       accessorKey: 'name',
       header: 'Name',
-      meta: { label: 'Name', rowHeader: true },
+      meta: { label: 'Name', rowHeader: true }
     },
     {
       id: 'category',
       accessorKey: 'category',
       header: 'Category',
-      meta: { label: 'Category' },
+      meta: { label: 'Category' }
     },
     {
       id: 'status',
       accessorKey: 'status',
       header: 'Status',
-      meta: { label: 'Status' },
+      meta: { label: 'Status' }
     },
     {
       id: 'value',
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, unknown>) =>
-        `$${context.getValue<number>().toLocaleString()}`,
-    },
+      cell: (context: CellContext<DemoItem, unknown>) => `$${context.getValue<number>().toLocaleString()}`
+    }
   ];
 
   protected readonly columnToggles: readonly ColumnToggle[] = [
     { id: 'name', label: 'Name' },
     { id: 'category', label: 'Category' },
     { id: 'status', label: 'Status' },
-    { id: 'value', label: 'Value' },
+    { id: 'value', label: 'Value' }
   ];
 
   // Which columns expose a resize handle. Starts as a subset so the "some columns
   // resize, some don't" per-column behaviour is visible immediately. Mutated at
   // runtime as the user toggles columns, so a Set (not a static Record) fits.
-  protected readonly resizableColumnIds = signal<ReadonlySet<string>>(
-    new Set(['name', 'category', 'status']),
-  );
+  protected readonly resizableColumnIds = signal<ReadonlySet<string>>(new Set(['name', 'category', 'status']));
 
   // enableResizing is derived per column from the toggle set, never set table-wide.
   protected readonly columns = computed<ColumnDef<DemoItem, unknown>[]>(() => {
@@ -95,12 +92,12 @@ export class ResizingShowcasePage {
 
     return this.baseColumns.map((column) => ({
       ...column,
-      enableResizing: resizable.has(column.id as string),
+      enableResizing: resizable.has(column.id as string)
     }));
   });
 
   protected readonly tableState = signal<Partial<NatTableState>>({
-    columnSizing: {},
+    columnSizing: {}
   });
 
   // Both modes resize pixel-exact. Fill reflows the other columns so the table stays

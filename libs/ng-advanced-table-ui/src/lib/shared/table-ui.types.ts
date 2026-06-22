@@ -3,7 +3,7 @@ import type { CellContext, Column, FlexRenderContent, Row, RowData } from '@tans
 import type {
   NatTableColumnMoveDirection as CoreNatTableColumnMoveDirection,
   NatTableUiController as CoreNatTableUiController,
-  NatTableUiState as CoreNatTableUiState,
+  NatTableUiState as CoreNatTableUiState
 } from 'ng-advanced-table';
 
 export type NatTableUiState = CoreNatTableUiState;
@@ -27,7 +27,7 @@ export type NatTableSortIndicatorContext<TData extends RowData = RowData> = {
   column: Column<TData, unknown>;
   /** Resolved human-readable label for the column. */
   label: string;
-}
+};
 
 /**
  * Custom content accepted by `withNatTableHeaderActions(..., { sortIndicator })`.
@@ -38,9 +38,7 @@ export type NatTableSortIndicatorContext<TData extends RowData = RowData> = {
 export type NatTableSortIndicatorContent =
   | string
   | number
-  | ((
-      props: NatTableSortIndicatorContext<RowData>,
-    ) => FlexRenderContent<NatTableSortIndicatorContext<RowData>>)
+  | ((props: NatTableSortIndicatorContext<RowData>) => FlexRenderContent<NatTableSortIndicatorContext<RowData>>)
   | null
   | undefined;
 
@@ -48,17 +46,14 @@ export type NatTableSortIndicatorContent =
 export type NatTableColumnExportValue = unknown;
 
 /** Context passed to column export value callbacks. */
-export type NatTableColumnExportValueContext<
-  TData extends RowData = RowData,
-  TValue = unknown,
-> = {
+export type NatTableColumnExportValueContext<TData extends RowData = RowData, TValue = unknown> = {
   /** Row being exported. */
   readonly row: Row<TData>;
   /** Column being exported. */
   readonly column: Column<TData, TValue>;
   /** Raw value resolved from the row and column before export-specific normalization. */
   readonly value: TValue;
-}
+};
 
 /** Export behavior attached to a table column definition. */
 export type NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> = {
@@ -67,10 +62,8 @@ export type NatTableColumnExportOptions<TData extends RowData = RowData, TValue 
   /** Header text used by export formats. Defaults to column labels and identifiers. */
   readonly header?: string;
   /** Maps a row/column value into an export value. Defaults to the raw accessor value. */
-  readonly value?: (
-    context: NatTableColumnExportValueContext<TData, TValue>,
-  ) => NatTableColumnExportValue;
-}
+  readonly value?: (context: NatTableColumnExportValueContext<TData, TValue>) => NatTableColumnExportValue;
+};
 
 /** Per-column options for the header action wrapper. */
 export type NatTableHeaderActionsColumnOptions = {
@@ -82,7 +75,7 @@ export type NatTableHeaderActionsColumnOptions = {
   enableColumnPinActions?: boolean;
   /** Enables Move left / Move right menu items for this column when the table can reorder it. */
   enableColumnReorderActions?: boolean;
-}
+};
 
 /**
  * Extra metadata understood by companion UI when attached to a TanStack
@@ -99,9 +92,7 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   /** Marks the body cell for this column as the row header announced by screen readers. */
   rowHeader?: boolean;
   /** Optional callback that maps a cell to a semantic tone. */
-  cellTone?: (
-    context: CellContext<TData, TValue>,
-  ) => 'positive' | 'negative' | 'neutral' | 'warning' | null;
+  cellTone?: (context: CellContext<TData, TValue>) => 'positive' | 'negative' | 'neutral' | 'warning' | null;
   /** Optional body-cell height in pixels or any CSS length. Does not affect header cells. */
   cellHeight?: number | string;
   /**
@@ -117,7 +108,7 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   headerMaxSize?: number | string;
   /** Optional table export behavior for this column. */
   export?: NatTableColumnExportOptions<TData, TValue>;
-}
+};
 
 /** Context passed to page-size option label formatters. */
 export type NatTableAccessibilityPageSizeOptionContext = {
@@ -127,7 +118,7 @@ export type NatTableAccessibilityPageSizeOptionContext = {
   pageSizeText: string;
   /** Whether the option represents the currently selected value. */
   selectionState: 'selected' | 'not-selected';
-}
+};
 
 /** Optional accessibility label overrides for `NatTablePageSize`. */
 export type NatTableAccessibilityPageSizeLabels = {
@@ -137,7 +128,7 @@ export type NatTableAccessibilityPageSizeLabels = {
   pageSizeOptionText?: (context: NatTableAccessibilityPageSizeOptionContext) => string;
   /** `aria-label` applied to each page-size chip. */
   pageSizeOptionAriaLabel?: (context: NatTableAccessibilityPageSizeOptionContext) => string;
-}
+};
 
 /** Context passed to pager page-indicator formatters. */
 export type NatTableAccessibilityPagerContext = {
@@ -149,7 +140,7 @@ export type NatTableAccessibilityPagerContext = {
   pageCountValue: number;
   /** Provider-formatted text for `pageCountValue`. */
   pageCountText: string;
-}
+};
 
 /** Optional accessibility label overrides for `NatTablePager`. */
 export type NatTableAccessibilityPagerLabels = {
@@ -161,7 +152,7 @@ export type NatTableAccessibilityPagerLabels = {
   nextPageAriaLabel?: string;
   /** Visible page-indicator text between the pager buttons. */
   pageIndicator?: (context: NatTableAccessibilityPagerContext) => string;
-}
+};
 
 /** Context passed to horizontal scroll position label formatters. */
 export type NatTableAccessibilityScrollControlPositionContext = {
@@ -177,7 +168,7 @@ export type NatTableAccessibilityScrollControlPositionContext = {
   percentageValue: number;
   /** Provider-formatted text for `percentageValue`. */
   percentageText: string;
-}
+};
 
 /** Optional accessibility label overrides for `NatTableScrollControl`. */
 export type NatTableAccessibilityScrollControlLabels = {
@@ -191,7 +182,7 @@ export type NatTableAccessibilityScrollControlLabels = {
   scrollPositionAriaLabel?: string;
   /** Visible and screen-reader position text for the scroll slider. */
   scrollPositionText?: (context: NatTableAccessibilityScrollControlPositionContext) => string;
-}
+};
 
 /** Context passed to column-visibility summary formatters. */
 export type NatTableAccessibilityColumnVisibilitySummaryContext = {
@@ -203,7 +194,7 @@ export type NatTableAccessibilityColumnVisibilitySummaryContext = {
   totalColumnCountValue: number;
   /** Provider-formatted text for `totalColumnCountValue`. */
   totalColumnCountText: string;
-}
+};
 
 /** Context passed to column-visibility button label formatters. */
 export type NatTableAccessibilityColumnVisibilityActionContext = {
@@ -213,13 +204,13 @@ export type NatTableAccessibilityColumnVisibilityActionContext = {
   visibilityState: 'visible' | 'hidden';
   /** Action that activating the control will perform. */
   toggleAction: 'show' | 'hide';
-}
+};
 
 /** Context passed to column state label formatters. */
 export type NatTableAccessibilityColumnVisibilityStateContext = {
   /** Current visibility state. */
   visibilityState: 'visible' | 'hidden';
-}
+};
 
 /** Optional accessibility label overrides for `NatTableColumnVisibility`. */
 export type NatTableAccessibilityColumnVisibilityLabels = {
@@ -233,7 +224,7 @@ export type NatTableAccessibilityColumnVisibilityLabels = {
   toggleColumnAriaLabel?: (context: NatTableAccessibilityColumnVisibilityActionContext) => string;
   /** Visible state text rendered inside each chip. */
   columnState?: (context: NatTableAccessibilityColumnVisibilityStateContext) => string;
-}
+};
 
 /** Context passed to per-row selection checkbox label formatters. */
 export type NatTableAccessibilitySelectionRowContext = {
@@ -259,13 +250,13 @@ export type NatTableAccessibilityHeaderActionSortContext = {
   sortPriority: number | null;
   /** Total number of columns currently sorted. */
   sortCount: number;
-}
+};
 
 /** Context passed to the overflow menu trigger label formatter. */
 export type NatTableAccessibilityHeaderActionMenuContext = {
   /** Human-readable column label. */
   label: string;
-}
+};
 
 /** Context passed to pin-button label formatters. */
 export type NatTableAccessibilityHeaderActionPinContext = {
@@ -279,7 +270,7 @@ export type NatTableAccessibilityHeaderActionPinContext = {
   pinSide: 'left' | 'right';
   /** Currently active pin side for the column, if any. */
   pinnedSide: 'left' | 'right' | null;
-}
+};
 
 /** Context passed to move-column label formatters. */
 export type NatTableAccessibilityHeaderActionMoveContext = {
@@ -287,7 +278,7 @@ export type NatTableAccessibilityHeaderActionMoveContext = {
   label: string;
   /** Direction targeted by the current button. */
   direction: NatTableColumnMoveDirection;
-}
+};
 
 /** Optional accessibility label overrides for header sort, pin, and move actions. */
 export type NatTableAccessibilityHeaderActionLabels = {
@@ -305,7 +296,7 @@ export type NatTableAccessibilityHeaderActionLabels = {
   moveButton?: (context: NatTableAccessibilityHeaderActionMoveContext) => string;
   /** Visible text rendered inside each move-column menu item. */
   moveButtonText?: (context: NatTableAccessibilityHeaderActionMoveContext) => string;
-}
+};
 
 declare module '@tanstack/table-core' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- module augmentation requires interface merging, not a type alias

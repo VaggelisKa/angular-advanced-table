@@ -7,24 +7,24 @@ type DemoRowAction = {
   id: string;
   label: string;
   hint: string;
-}
+};
 
 const DEMO_ROW_ACTIONS: readonly DemoRowAction[] = [
   {
     id: 'inspect',
     label: 'Inspect tape',
-    hint: 'Open a deeper simulated view',
+    hint: 'Open a deeper simulated view'
   },
   {
     id: 'alert',
     label: 'Create alert',
-    hint: 'Pretend-notify the desk on movement',
+    hint: 'Pretend-notify the desk on movement'
   },
   {
     id: 'handoff',
     label: 'Send to blotter',
-    hint: 'Queue this row for a fake handoff',
-  },
+    hint: 'Queue this row for a fake handoff'
+  }
 ] as const;
 
 @Component({
@@ -149,8 +149,7 @@ const DEMO_ROW_ACTIONS: readonly DemoRowAction[] = [
       [cdkMenuTriggerFor]="menu"
       class="row-actions-trigger"
       ngGridCellWidget
-      type="button"
-    >
+      type="button">
       <svg aria-hidden="true" class="row-actions-icon" focusable="false" viewBox="0 0 16 16">
         <circle cx="3" cy="8" r="1.25" />
         <circle cx="8" cy="8" r="1.25" />
@@ -173,7 +172,7 @@ const DEMO_ROW_ACTIONS: readonly DemoRowAction[] = [
         }
       </div>
     </ng-template>
-  `,
+  `
 })
 export class NatRowActionsMenu {
   public readonly symbol = input.required<string>();

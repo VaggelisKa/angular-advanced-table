@@ -42,9 +42,7 @@ import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolba
   // selector attribute lets a bare `natToolbarItem` satisfy it with `''`. Bare
   // items then share value `''` (non-unique) — harmless while selection is
   // disabled; pass a string per item if Aria selection is ever re-enabled.
-  hostDirectives: [
-    { directive: ToolbarWidget, inputs: ['value: natToolbarItem', 'disabled', 'id'] },
-  ],
+  hostDirectives: [{ directive: ToolbarWidget, inputs: ['value: natToolbarItem', 'disabled', 'id'] }]
 })
 export class NatToolbarItem implements NatToolbarItemRef {
   public readonly natToolbarItemPosition = input<NatToolbarItemPosition>('start');

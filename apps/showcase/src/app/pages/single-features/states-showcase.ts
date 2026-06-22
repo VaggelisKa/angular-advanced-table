@@ -7,41 +7,34 @@ import {
   NatTable,
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
-  NatTableLoadingTemplate,
+  NatTableLoadingTemplate
 } from 'ng-advanced-table';
 import type { NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table-ui';
 
 import { formatError } from './states-showcase.util';
 
-
 type IncidentRow = {
   id: string;
   service: string;
   owner: string;
   severity: string;
-}
+};
 
 type TransitionPreviewState = 'loading' | 'empty' | 'error' | 'rows';
 
 const DEMO_DATA: IncidentRow[] = [
   { id: 'INC-1042', service: 'Checkout API', owner: 'Payments', severity: 'High' },
   { id: 'INC-1043', service: 'Search index', owner: 'Discovery', severity: 'Medium' },
-  { id: 'INC-1044', service: 'Notification worker', owner: 'Messaging', severity: 'Low' },
+  { id: 'INC-1044', service: 'Notification worker', owner: 'Messaging', severity: 'Low' }
 ];
 const ERROR_RETRY_DELAY_MS = 900;
 
 @Component({
   selector: 'app-states-showcase',
-  imports: [
-    NatTable,
-    NatTableSurface,
-    NatTableLoadingTemplate,
-    NatTableEmptyTemplate,
-    NatTableErrorTemplate,
-  ],
+  imports: [NatTable, NatTableSurface, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
   templateUrl: './states-showcase.html',
-  styleUrl: './states-showcase.css',
+  styleUrl: './states-showcase.css'
 })
 export class StatesShowcasePage {
   private readonly destroyRef = inject(DestroyRef);
@@ -55,9 +48,7 @@ export class StatesShowcasePage {
   protected readonly error = signal<unknown>(new Error('Incident service returned 503.'));
   private readonly transitionPreviewState = signal<TransitionPreviewState>('loading');
   protected readonly transitionPreviewError = new Error('Transition service returned 503.');
-  protected readonly transitionPreviewRows = computed(() =>
-    this.transitionPreviewState() === 'rows' ? DEMO_DATA : [],
-  );
+  protected readonly transitionPreviewRows = computed(() => (this.transitionPreviewState() === 'rows' ? DEMO_DATA : []));
 
   protected readonly transitionPreviewDataStatus = computed<NatTableDataStatus>(() => {
     const state = this.transitionPreviewState();
@@ -80,53 +71,53 @@ export class StatesShowcasePage {
     { state: 'loading', label: 'Loading' },
     { state: 'empty', label: 'Empty' },
     { state: 'error', label: 'Error' },
-    { state: 'rows', label: 'Rows' },
+    { state: 'rows', label: 'Rows' }
   ];
 
   protected readonly columns: ColumnDef<IncidentRow, unknown>[] = [
     {
       accessorKey: 'id',
       header: 'Incident',
-      meta: { label: 'Incident', rowHeader: true },
+      meta: { label: 'Incident', rowHeader: true }
     },
     {
       accessorKey: 'service',
       header: 'Service',
-      meta: { label: 'Service' },
+      meta: { label: 'Service' }
     },
     {
       accessorKey: 'owner',
       header: 'Owner',
-      meta: { label: 'Owner' },
+      meta: { label: 'Owner' }
     },
     {
       accessorKey: 'severity',
       header: 'Severity',
-      meta: { label: 'Severity' },
-    },
+      meta: { label: 'Severity' }
+    }
   ];
 
   protected readonly loadingTableAccessibilityCopy: NatTableAccessibilityText = {
-    loadingState: 'Loading incidents.',
+    loadingState: 'Loading incidents.'
   };
 
   protected readonly emptyTableAccessibilityCopy: NatTableAccessibilityText = {
-    emptyState: 'No incidents found.',
+    emptyState: 'No incidents found.'
   };
 
   protected readonly errorTableAccessibilityCopy: NatTableAccessibilityText = {
     loadingState: 'Retrying incident queue.',
-    errorState: 'Incident queue unavailable.',
+    errorState: 'Incident queue unavailable.'
   };
 
   protected readonly refreshTableAccessibilityCopy: NatTableAccessibilityText = {
-    loadingState: 'Refreshing incidents.',
+    loadingState: 'Refreshing incidents.'
   };
 
   protected readonly transitionPreviewAccessibilityCopy: NatTableAccessibilityText = {
     loadingState: 'Loading transition preview.',
     emptyState: 'No transition preview rows.',
-    errorState: 'Transition request failed.',
+    errorState: 'Transition request failed.'
   };
 
   public constructor() {

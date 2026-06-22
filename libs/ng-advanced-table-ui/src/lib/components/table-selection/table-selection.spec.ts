@@ -1,5 +1,5 @@
-import { Component, provideZonelessChangeDetection, signal  } from '@angular/core';
-import type { ComponentFixture} from '@angular/core/testing';
+import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
 import type { ColumnDef } from '@tanstack/angular-table';
@@ -21,8 +21,8 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
     accessorKey: 'name',
     header: 'Service',
     meta: { label: 'Service', rowHeader: true },
-    cell: (info) => info.getValue<string>(),
-  },
+    cell: (info) => info.getValue<string>()
+  }
 ];
 
 @Component({
@@ -36,16 +36,15 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
         [enableRowSelection]="true"
         [getRowId]="getRowId"
         [selectionMode]="selectionMode"
-        accessibleName="Selection table"
-      />
+        accessibleName="Selection table" />
     </nat-table-surface>
-  `,
+  `
 })
 class SelectionHost {
   protected readonly rows = signal<Row[]>([
     { id: 'r1', name: 'Alpha' },
     { id: 'r2', name: 'Beta' },
-    { id: 'r3', name: 'Gamma' },
+    { id: 'r3', name: 'Gamma' }
   ]);
 
   protected readonly columns = withNatTableSelectionColumn(baseColumns);
@@ -64,16 +63,15 @@ class SelectionHost {
         [data]="rows()"
         [enableRowSelection]="true"
         [getRowId]="getRowId"
-        accessibleName="Selection override table"
-      />
+        accessibleName="Selection override table" />
     </nat-table-surface>
-  `,
+  `
 })
 class SelectionOverrideHost {
   protected readonly rows = signal<Row[]>([{ id: 'r1', name: 'Alpha' }]);
   protected readonly columns = withNatTableSelectionColumn(baseColumns, {
     selectAllAriaLabel: 'Pick every service',
-    selectRowAriaLabel: (row): string => `Pick service ${row.id}`,
+    selectRowAriaLabel: (row): string => `Pick service ${row.id}`
   });
 
   protected readonly getRowId = getRowId;
@@ -86,7 +84,7 @@ describe('withNatTableSelectionColumn', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SelectionHost, SelectionOverrideHost],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectionHost);
@@ -95,32 +93,21 @@ describe('withNatTableSelectionColumn', () => {
     fixture.detectChanges();
   });
 
-  const root = (target: ComponentFixture<unknown> = fixture): HTMLElement =>
-    target.nativeElement as HTMLElement;
+  const root = (target: ComponentFixture<unknown> = fixture): HTMLElement => target.nativeElement as HTMLElement;
 
   const selectedRowCount = (): number =>
-    Array.from(root().querySelectorAll('tbody tr.data-row')).filter(
-      (row) => row.getAttribute('aria-selected') === 'true',
-    ).length;
+    Array.from(root().querySelectorAll('tbody tr.data-row')).filter((row) => row.getAttribute('aria-selected') === 'true').length;
 
   const headerCheckbox = (): HTMLInputElement =>
-    root().querySelector<HTMLInputElement>(
-      'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox',
-    ) as HTMLInputElement;
+    root().querySelector<HTMLInputElement>('thead th[data-column-id="__natSelect"] input.nat-selection-checkbox') as HTMLInputElement;
 
   const rowCheckbox = (index: number): HTMLInputElement =>
-    root().querySelectorAll<HTMLInputElement>(
-      'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
-    )[index];
+    root().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')[index];
 
   it('prepends a selection column with a header and per-row checkboxes', () => {
     expect(headerCheckbox()).toBeTruthy();
     expect(headerCheckbox().getAttribute('aria-label')).toBe('Select all rows');
-    expect(
-      root().querySelectorAll(
-        'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
-      ),
-    ).toHaveLength(3);
+    expect(root().querySelectorAll('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')).toHaveLength(3);
 
     const firstHeader = root().querySelector<HTMLElement>('thead th') as HTMLElement;
 
@@ -135,9 +122,7 @@ describe('withNatTableSelectionColumn', () => {
     await single.whenStable();
     single.detectChanges();
 
-    const selectHeader = root(single).querySelector<HTMLElement>(
-      'thead th[data-column-id="__natSelect"]',
-    ) as HTMLElement;
+    const selectHeader = root(single).querySelector<HTMLElement>('thead th[data-column-id="__natSelect"]') as HTMLElement;
 
     expect(selectHeader.querySelector('input.nat-selection-checkbox')).toBeNull();
     expect(selectHeader.textContent.trim()).toBe('Selection');
@@ -147,9 +132,7 @@ describe('withNatTableSelectionColumn', () => {
 
   it('gives each per-row checkbox a unique default aria-label derived from the row id', () => {
     const labels = Array.from(
-      root().querySelectorAll<HTMLInputElement>(
-        'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
-      ),
+      root().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')
     ).map((input) => input.getAttribute('aria-label'));
 
     expect(labels).toStrictEqual(['Select row r1', 'Select row r2', 'Select row r3']);
@@ -162,10 +145,10 @@ describe('withNatTableSelectionColumn', () => {
     overrideFixture.detectChanges();
 
     const header = root(overrideFixture).querySelector<HTMLInputElement>(
-      'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox',
+      'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox'
     ) as HTMLInputElement;
     const cell = root(overrideFixture).querySelector<HTMLInputElement>(
-      'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
+      'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox'
     ) as HTMLInputElement;
 
     expect(header.getAttribute('aria-label')).toBe('Pick every service');

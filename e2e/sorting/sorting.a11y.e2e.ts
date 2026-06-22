@@ -27,9 +27,7 @@ test.describe('Sorting accessibility', () => {
     await expect(stateTag).toContainText('name (desc)');
 
     // Focus and trigger Clear Sorting
-    const clearBtn = page
-      .locator('.card', { hasText: 'Programmatic Sort Actions' })
-      .getByRole('button', { name: 'Clear Sorting' });
+    const clearBtn = page.locator('.card', { hasText: 'Programmatic Sort Actions' }).getByRole('button', { name: 'Clear Sorting' });
 
     await clearBtn.focus();
     await page.keyboard.press('Enter');
@@ -67,9 +65,7 @@ test.describe('Sorting accessibility', () => {
     await expect(multiStateTag).toContainText('1. category (asc), 2. value (desc)');
 
     // Focus and trigger Clear button
-    const clearBtn = page
-      .locator('.card', { hasText: 'Sort Priority' })
-      .getByRole('button', { name: 'Clear Sorting' });
+    const clearBtn = page.locator('.card', { hasText: 'Sort Priority' }).getByRole('button', { name: 'Clear Sorting' });
 
     await clearBtn.focus();
     await page.keyboard.press('Space');

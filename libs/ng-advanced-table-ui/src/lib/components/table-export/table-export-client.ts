@@ -1,15 +1,8 @@
 /* eslint-disable max-lines */
 import type { Column, Row, RowData } from '@tanstack/angular-table';
 
-import type {
-  NatTableExportCellValue,
-  NatTableExportContext,
-  NatTableExportData,
-} from './table-export.types';
-import type {
-  NatTableColumnExportOptions,
-  NatTableColumnExportValueContext,
-} from '../../shared/table-ui.types';
+import type { NatTableExportCellValue, NatTableExportContext, NatTableExportData } from './table-export.types';
+import type { NatTableColumnExportOptions, NatTableColumnExportValueContext } from '../../shared/table-ui.types';
 
 const CSV_MIME_TYPE = 'text/csv;charset=utf-8';
 const CSV_UTF8_BOM = '﻿';
@@ -35,8 +28,7 @@ const serializeNatTableCsvCell = (value: NatTableExportCellValue): string => {
   return /[",\r\n]/.test(safeText) ? `"${safeText.replace(/"/g, '""')}"` : safeText;
 };
 
-const serializeNatTableCsvRow = (row: readonly NatTableExportCellValue[]): string =>
-  row.map(serializeNatTableCsvCell).join(',');
+const serializeNatTableCsvRow = (row: readonly NatTableExportCellValue[]): string => row.map(serializeNatTableCsvCell).join(',');
 
 const normalizeExportHeader = (value: string | undefined): string | null => {
   const normalized = value?.trim() ?? '';
@@ -84,9 +76,7 @@ const isAccessorColumn = <TData extends RowData>(column: Column<TData, unknown>)
   );
 };
 
-const isNatTableExportColumn = <TData extends RowData>(
-  column: Column<TData, unknown>,
-): boolean => {
+const isNatTableExportColumn = <TData extends RowData>(column: Column<TData, unknown>): boolean => {
   const exportOptions = column.columnDef.meta?.export;
 
   if (exportOptions?.enabled !== undefined) {
@@ -97,13 +87,9 @@ const isNatTableExportColumn = <TData extends RowData>(
 };
 
 const normalizePrimitiveHeader = (header: unknown): string | null =>
-  typeof header === 'string' || typeof header === 'number'
-    ? normalizeExportHeader(String(header))
-    : null;
+  typeof header === 'string' || typeof header === 'number' ? normalizeExportHeader(String(header)) : null;
 
-const resolveNatTableExportHeader = <TData extends RowData>(
-  column: Column<TData, unknown>,
-): string => {
+const resolveNatTableExportHeader = <TData extends RowData>(column: Column<TData, unknown>): string => {
   const meta = column.columnDef.meta;
   const resolvedHeader =
     normalizeExportHeader(meta?.export?.header) ??
@@ -120,18 +106,16 @@ const resolveNatTableExportHeader = <TData extends RowData>(
 
 const resolveNatTableExportCellValue = <TData extends RowData>(
   row: Row<TData>,
-  column: Column<TData, unknown>,
+  column: Column<TData, unknown>
 ): NatTableExportCellValue => {
   const value = row.getValue<unknown>(column.id);
-  const exportOptions = column.columnDef.meta?.export as
-    | NatTableColumnExportOptions<TData, unknown>
-    | undefined;
+  const exportOptions = column.columnDef.meta?.export as NatTableColumnExportOptions<TData, unknown> | undefined;
   const exportValue =
     typeof exportOptions?.value === 'function'
       ? exportOptions.value({
           row,
           column,
-          value,
+          value
         } satisfies NatTableColumnExportValueContext<TData, unknown>)
       : value;
 
@@ -157,16 +141,16 @@ const downloadNatTableExportBlob = (blob: Blob, fileName: string): void => {
 };
 
 export const createNatTableExportData = <TData extends RowData>(
-  context: Pick<NatTableExportContext<TData>, 'rows' | 'columns'>,
+  context: Pick<NatTableExportContext<TData>, 'rows' | 'columns'>
 ): NatTableExportData => ({
   columns: context.columns.map((column) => ({
     id: column.id,
-    header: resolveNatTableExportHeader(column),
+    header: resolveNatTableExportHeader(column)
   })),
   rows: context.rows.map((row) => ({
     id: row.id,
-    values: context.columns.map((column) => resolveNatTableExportCellValue(row, column)),
-  })),
+    values: context.columns.map((column) => resolveNatTableExportCellValue(row, column))
+  }))
 });
 
 export const createNatTableCsvBlob = (data: NatTableExportData): Blob => {
@@ -178,20 +162,16 @@ export const createNatTableCsvBlob = (data: NatTableExportData): Blob => {
 };
 
 export const resolveNatTableExportColumns = <TData extends RowData>(
-  columns: readonly Column<TData, unknown>[],
+  columns: readonly Column<TData, unknown>[]
 ): Column<TData, unknown>[] => columns.filter((column) => isNatTableExportColumn(column));
 
 export const normalizeNatTableCsvFileName = (fileName: string): string => {
   const normalized = fileName.trim();
 
-  return normalized.toLowerCase().endsWith(DEFAULT_CSV_EXTENSION)
-    ? normalized
-    : `${normalized}${DEFAULT_CSV_EXTENSION}`;
+  return normalized.toLowerCase().endsWith(DEFAULT_CSV_EXTENSION) ? normalized : `${normalized}${DEFAULT_CSV_EXTENSION}`;
 };
 
-export const exportNatTableCsv = <TData extends RowData>(
-  context: NatTableExportContext<TData>,
-): void => {
+export const exportNatTableCsv = <TData extends RowData>(context: NatTableExportContext<TData>): void => {
   const blob = createNatTableCsvBlob(context.getData());
 
   downloadNatTableExportBlob(blob, normalizeNatTableCsvFileName(context.fileName));

@@ -20,17 +20,16 @@ export const formatNatTableAccessibilityNumber = (
   value: number,
   formatter?: NatTableUiNumberFormatter,
   options?: Intl.NumberFormatOptions,
-  locale?: string,
+  locale?: string
 ): string =>
   (
     formatter ??
-    ((numberValue, numberOptions, numberLocale): string =>
-      new Intl.NumberFormat(numberLocale, numberOptions).format(numberValue))
+    ((numberValue, numberOptions, numberLocale): string => new Intl.NumberFormat(numberLocale, numberOptions).format(numberValue))
   )(value, options, locale);
 
 export const resolveNatTableColumnLabel = <TData extends RowData>(
   columnDef: ColumnDef<TData, unknown>,
-  fallbackId: string,
+  fallbackId: string
 ): string => {
   const hiddenHeaderLabel = normalizeColumnLabel(columnDef.meta?.hiddenHeaderLabel);
 
@@ -57,6 +56,5 @@ export const resolveNatTableColumnLabel = <TData extends RowData>(
   return fallbackId || 'Column';
 };
 
-export const getNatTableColumnLabel = <TData extends RowData>(
-  column: Column<TData, unknown>,
-): string => resolveNatTableColumnLabel(column.columnDef, column.id);
+export const getNatTableColumnLabel = <TData extends RowData>(column: Column<TData, unknown>): string =>
+  resolveNatTableColumnLabel(column.columnDef, column.id);

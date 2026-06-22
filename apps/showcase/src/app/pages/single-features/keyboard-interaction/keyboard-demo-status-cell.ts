@@ -21,10 +21,9 @@ import { Component, computed, input, output } from '@angular/core';
       [checked]="isActive()"
       class="status-toggle"
       type="checkbox"
-      (change)="toggled.emit()"
-    />
+      (change)="toggled.emit()" />
     <span class="status-text">{{ status() }}</span>
-  `,
+  `
 })
 export class KeyboardDemoStatusCell {
   public readonly name = input.required<string>();

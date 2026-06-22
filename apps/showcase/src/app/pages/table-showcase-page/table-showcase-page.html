@@ -10,21 +10,14 @@
 
     <div aria-live="polite" class="session">
       <span [class.is-live]="simulation.isRunning()" aria-hidden="true" class="session-dot"></span>
-      <span class="session-label">
-        {{ simulation.isRunning() ? 'Feed live' : 'Feed paused' }}
-      </span>
+      <span class="session-label"> {{ simulation.isRunning() ? 'Feed live' : 'Feed paused' }} </span>
       <span aria-hidden="true" class="session-sep">·</span>
       <span class="session-clock">{{ lastTickLabel() }}</span>
     </div>
 
     <div class="topbar-actions">
       <button class="btn btn-ghost" type="button" (click)="runManualPulse()">Tick once</button>
-      <button
-        [class.is-paused]="!simulation.isRunning()"
-        class="btn btn-primary"
-        type="button"
-        (click)="toggleSimulation()"
-      >
+      <button [class.is-paused]="!simulation.isRunning()" class="btn btn-primary" type="button" (click)="toggleSimulation()">
         {{ simulation.isRunning() ? 'Pause feed' : 'Resume feed' }}
       </button>
     </div>
@@ -42,33 +35,24 @@
         <span class="kpi-value">
           {{ formatInteger(simulation.profilePreset().mutationBatchSize) }}
           <span class="kpi-unit">rows</span>
-          /
-          {{ simulation.profilePreset().tickIntervalMs }}
+          / {{ simulation.profilePreset().tickIntervalMs }}
           <span class="kpi-unit">ms</span>
         </span>
-        <span class="kpi-meta">
-          Last tick: {{ formatInteger(simulation.lastMutationSize()) }} rows
-        </span>
+        <span class="kpi-meta"> Last tick: {{ formatInteger(simulation.lastMutationSize()) }} rows </span>
       </div>
       <div class="kpi">
         <span class="kpi-label">Market breadth</span>
-        <span
-          [attr.data-tone]="simulation.marketBreadth() >= 50 ? 'positive' : 'neutral'"
-          class="kpi-value"
-        >
+        <span [attr.data-tone]="simulation.marketBreadth() >= 50 ? 'positive' : 'neutral'" class="kpi-value">
           {{ simulation.marketBreadth() }}<span class="kpi-unit">%</span>
         </span>
         <span class="kpi-meta">
-          {{ formatInteger(simulation.positiveMoverCount()) }} advancers ·
-          {{ formatInteger(simulation.statusCounts().Halted) }} halted
+          {{ formatInteger(simulation.positiveMoverCount()) }} advancers · {{ formatInteger(simulation.statusCounts().Halted) }} halted
         </span>
       </div>
       <div class="kpi">
         <span class="kpi-label">Total ticks</span>
         <span class="kpi-value">{{ formatInteger(simulation.totalMutations()) }}</span>
-        <span class="kpi-meta">
-          {{ simulation.isRunning() ? 'Streaming now' : 'Awaiting resume' }}
-        </span>
+        <span class="kpi-meta"> {{ simulation.isRunning() ? 'Streaming now' : 'Awaiting resume' }} </span>
       </div>
     </section>
 
@@ -77,15 +61,14 @@
         <span class="toolbar-label">Rows</span>
         <div aria-label="Dataset size" class="segmented" role="group">
           @for (size of datasetOptions; track size) {
-            <button
-              [attr.aria-pressed]="simulation.datasetSize() === size"
-              [class.is-active]="simulation.datasetSize() === size"
-              class="segment"
-              type="button"
-              (click)="setDatasetSize(size)"
-            >
-              {{ formatCompact(size) }}
-            </button>
+          <button
+            [attr.aria-pressed]="simulation.datasetSize() === size"
+            [class.is-active]="simulation.datasetSize() === size"
+            class="segment"
+            type="button"
+            (click)="setDatasetSize(size)">
+            {{ formatCompact(size) }}
+          </button>
           }
         </div>
       </div>
@@ -94,16 +77,15 @@
         <span class="toolbar-label">Tempo</span>
         <div aria-label="Simulation profile" class="segmented" role="group">
           @for (profile of profiles; track profile.value) {
-            <button
-              [attr.aria-pressed]="simulation.profile() === profile.value"
-              [class.is-active]="simulation.profile() === profile.value"
-              [title]="profile.description"
-              class="segment"
-              type="button"
-              (click)="setProfile(profile.value)"
-            >
-              {{ profile.label }}
-            </button>
+          <button
+            [attr.aria-pressed]="simulation.profile() === profile.value"
+            [class.is-active]="simulation.profile() === profile.value"
+            [title]="profile.description"
+            class="segment"
+            type="button"
+            (click)="setProfile(profile.value)">
+            {{ profile.label }}
+          </button>
           }
         </div>
       </div>
@@ -112,20 +94,17 @@
         <span class="toolbar-label">Signal</span>
         <div aria-label="Signal filter" class="pill-row" role="group">
           @for (status of statuses; track status) {
-            <button
-              [attr.aria-pressed]="isStatusActive(status)"
-              [attr.data-status]="status"
-              [class.is-active]="isStatusActive(status)"
-              class="filter-pill status-chip"
-              type="button"
-              (click)="toggleStatus(status)"
-            >
-              <span aria-hidden="true" class="filter-pill-dot"></span>
-              <span>{{ status }}</span>
-              <span class="filter-pill-count">
-                {{ formatInteger(simulation.statusCounts()[status]) }}
-              </span>
-            </button>
+          <button
+            [attr.aria-pressed]="isStatusActive(status)"
+            [attr.data-status]="status"
+            [class.is-active]="isStatusActive(status)"
+            class="filter-pill status-chip"
+            type="button"
+            (click)="toggleStatus(status)">
+            <span aria-hidden="true" class="filter-pill-dot"></span>
+            <span>{{ status }}</span>
+            <span class="filter-pill-count"> {{ formatInteger(simulation.statusCounts()[status]) }} </span>
+          </button>
           }
         </div>
       </div>
@@ -136,18 +115,12 @@
         <div class="table-card-title">
           <h2>Live movers</h2>
           <span class="table-card-subtitle">
-            {{ formatInteger(simulation.rows().length) }} instruments · updated
-            {{ lastTickLabel() }}
+            {{ formatInteger(simulation.rows().length) }} instruments · updated {{ lastTickLabel() }}
           </span>
         </div>
       </div>
 
-      <nat-table-surface
-        [accessibilityText]="accessibilityText"
-        [stickyHeader]="true"
-        [(state)]="tableState"
-        class="table-shell"
-      >
+      <nat-table-surface [accessibilityText]="accessibilityText" [stickyHeader]="true" [(state)]="tableState" class="table-shell">
         <nat-table-toolbar accessibleName="Render metrics toolbar" class="kitchen-metrics-toolbar">
           <nat-render-metrics-filter [store]="metricsStore" />
           <nat-render-metrics-panel [store]="metricsStore" />
@@ -158,14 +131,9 @@
             [toolbar]="true"
             class="kitchen-table-search"
             label="Search symbol, company, exchange, desk, or id"
-            placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..."
-          />
+            placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..." />
 
-          <nat-table-pagination
-            [pageSizeOptions]="pageSizeOptions"
-            class="kitchen-table-pagination"
-            natToolbarItemPosition="end"
-          />
+          <nat-table-pagination [pageSizeOptions]="pageSizeOptions" class="kitchen-table-pagination" natToolbarItemPosition="end" />
         </nat-table-toolbar>
 
         <nat-table
@@ -174,8 +142,7 @@
           [emitRowRenderEvents]="true"
           [getRowId]="getRowId"
           accessibleName="Live market movers table"
-          (rowRendered)="onRowRendered($event)"
-        />
+          (rowRendered)="onRowRendered($event)" />
 
         <nat-table-scroll-control />
       </nat-table-surface>

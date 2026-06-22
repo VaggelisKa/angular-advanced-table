@@ -38,11 +38,7 @@
   --nat-table-region-background: var(--showcase-page-surface);
   --nat-table-region-border-color: var(--showcase-page-border);
   --nat-table-row-background-hover: color-mix(in srgb, var(--showcase-page-accent) 7%, transparent);
-  --nat-table-sort-icon-chip-background-active: color-mix(
-    in srgb,
-    var(--showcase-page-accent) 15%,
-    transparent
-  );
+  --nat-table-sort-icon-chip-background-active: color-mix(in srgb, var(--showcase-page-accent) 15%, transparent);
 }
 
 @media (min-width: 768px) {

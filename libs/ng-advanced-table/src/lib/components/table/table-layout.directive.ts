@@ -21,12 +21,12 @@ export type NatTableResizeGuideGeometry = {
     '[style.right.px]': 'state()?.right',
     '[style.width]': 'state()?.headerWidth',
     '[style.min-width]': 'state()?.headerMinWidth',
-    '[style.max-width]': 'state()?.headerMaxWidth',
-  },
+    '[style.max-width]': 'state()?.headerMaxWidth'
+  }
 })
 export class NatTableHeaderCellLayout {
   public readonly state = input.required<TableColumnRenderState | undefined>({
-    alias: 'natTableHeaderCellLayout',
+    alias: 'natTableHeaderCellLayout'
   });
 }
 
@@ -44,12 +44,12 @@ export class NatTableHeaderCellLayout {
     '[style.right.px]': 'state()?.right',
     '[style.width]': 'state()?.width',
     '[style.min-width]': 'state()?.minWidth',
-    '[style.max-width]': 'state()?.maxWidth',
-  },
+    '[style.max-width]': 'state()?.maxWidth'
+  }
 })
 export class NatTableBodyCellLayout {
   public readonly state = input.required<TableColumnRenderState | undefined>({
-    alias: 'natTableBodyCellLayout',
+    alias: 'natTableBodyCellLayout'
   });
 }
 
@@ -61,8 +61,8 @@ export class NatTableBodyCellLayout {
 @Directive({
   selector: '[natTablePxWidth]',
   host: {
-    '[style.width.px]': 'natTablePxWidth()',
-  },
+    '[style.width.px]': 'natTablePxWidth()'
+  }
 })
 export class NatTablePxWidth {
   public readonly natTablePxWidth = input.required<number | null | undefined>();
@@ -76,12 +76,12 @@ export class NatTablePxWidth {
   selector: '[natTableResizeGuide]',
   host: {
     '[style.left.px]': 'guide().left',
-    '[style.transform]': 'transform()',
-  },
+    '[style.transform]': 'transform()'
+  }
 })
 export class NatTableResizeGuide {
   public readonly guide = input.required<NatTableResizeGuideGeometry>({
-    alias: 'natTableResizeGuide',
+    alias: 'natTableResizeGuide'
   });
 
   protected readonly transform = computed(() => `translateX(${this.guide().offset}px)`);

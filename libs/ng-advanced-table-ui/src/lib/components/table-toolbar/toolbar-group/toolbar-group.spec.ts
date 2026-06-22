@@ -1,6 +1,6 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import {  TestBed } from '@angular/core/testing';
-import type {ComponentFixture} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
 
 import { NatTableToolbar } from '../table-toolbar';
 import { NatToolbarGroup } from './toolbar-group';
@@ -11,23 +11,14 @@ import { NatToolbarItem } from '../toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem, NatToolbarGroup],
   template: `
     <nat-table-toolbar>
-      <button id="solo-start" natToolbarItem="solo-start" natToolbarItemPosition="start" type="button">
-        Solo start
-      </button>
-      <div
-        [disabled]="groupDisabled()"
-        accessibleName="View density"
-        id="density-group"
-        natToolbarGroup="center"
-      >
+      <button id="solo-start" natToolbarItem="solo-start" natToolbarItemPosition="start" type="button">Solo start</button>
+      <div [disabled]="groupDisabled()" accessibleName="View density" id="density-group" natToolbarGroup="center">
         <button id="compact" natToolbarItem="compact" type="button">Compact</button>
         <button id="comfortable" natToolbarItem="comfortable" type="button">Comfortable</button>
       </div>
-      <button id="solo-end" natToolbarItem="solo-end" natToolbarItemPosition="end" type="button">
-        Solo end
-      </button>
+      <button id="solo-end" natToolbarItem="solo-end" natToolbarItemPosition="end" type="button">Solo end</button>
     </nat-table-toolbar>
-  `,
+  `
 })
 class GroupHost {
   public readonly groupDisabled = signal(false);
@@ -38,7 +29,7 @@ describe('NatToolbarGroup', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
     fixture = TestBed.createComponent(GroupHost);
     fixture.detectChanges();
@@ -76,12 +67,8 @@ describe('NatToolbarGroup', () => {
     const spacers = Array.from(toolbar.querySelectorAll('.nat-toolbar-spacer'));
 
     expect(spacers).toHaveLength(2);
-    expect(
-      Boolean(spacers[0].compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING),
-    ).toBe(true);
-    expect(
-      Boolean(group.compareDocumentPosition(spacers[1]) & Node.DOCUMENT_POSITION_FOLLOWING),
-    ).toBe(true);
+    expect(Boolean(spacers[0].compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(group.compareDocumentPosition(spacers[1]) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
   });
 
   it('keeps Left/Right linear across solo items and group members', async () => {

@@ -23,8 +23,7 @@ describe('TableShowcasePage', () => {
     return found;
   };
 
-  const queryAll = <T extends Element>(selector: string): NodeListOf<T> =>
-    host().querySelectorAll<T>(selector);
+  const queryAll = <T extends Element>(selector: string): NodeListOf<T> => host().querySelectorAll<T>(selector);
 
   beforeEach(async () => {
     try {
@@ -35,7 +34,7 @@ describe('TableShowcasePage', () => {
 
     await TestBed.configureTestingModule({
       imports: [TableShowcasePage],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TableShowcasePage);
@@ -67,9 +66,7 @@ describe('TableShowcasePage', () => {
     expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
     expect(firstReorderableHeader).toBeTruthy();
     expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeFalsy();
-    expect(
-      changeHeader.querySelector('.market-sort-indicator[data-sort-state="none"]'),
-    ).toBeTruthy();
+    expect(changeHeader.querySelector('.market-sort-indicator[data-sort-state="none"]')).toBeTruthy();
   });
 
   it('should update the status filter through controlled table state', () => {
@@ -83,17 +80,15 @@ describe('TableShowcasePage', () => {
     expect(component.tableState().columnFilters).toStrictEqual([
       {
         id: 'status',
-        value: ['Declining'],
-      },
+        value: ['Declining']
+      }
     ]);
   });
 
   it('should render only the trading signal in the signal cell', () => {
     fixture.detectChanges();
 
-    const statusCell = query<HTMLTableCellElement>(
-      'tbody tr:first-child td[data-column-id="status"]',
-    );
+    const statusCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="status"]');
 
     expect(statusCell.textContent).toMatch(/Advancing|Watching|Declining|Halted/);
     expect(statusCell.textContent).not.toContain('$');
@@ -116,9 +111,7 @@ describe('TableShowcasePage', () => {
   it('should apply warning tones to halted move cells', () => {
     fixture.detectChanges();
 
-    const changePercentCell = query<HTMLTableCellElement>(
-      'tbody tr:first-child td[data-column-id="changePercent"]',
-    );
+    const changePercentCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="changePercent"]');
 
     expect(changePercentCell.getAttribute('data-tone')).toBe('warning');
   });
@@ -161,9 +154,7 @@ describe('TableShowcasePage', () => {
   it('should render a three-dots actions menu in each visible row', async () => {
     fixture.detectChanges();
 
-    const actionTriggers = queryAll<HTMLButtonElement>(
-      'tbody td[data-column-id="actions"] .row-actions-trigger',
-    );
+    const actionTriggers = queryAll<HTMLButtonElement>('tbody td[data-column-id="actions"] .row-actions-trigger');
 
     expect(actionTriggers).toHaveLength(10);
 
@@ -173,9 +164,9 @@ describe('TableShowcasePage', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const actionLabels = Array.from(
-      document.body.querySelectorAll('.row-actions-item .row-actions-item-label'),
-    ).map((element) => element.textContent.trim());
+    const actionLabels = Array.from(document.body.querySelectorAll('.row-actions-item .row-actions-item-label')).map((element) =>
+      element.textContent.trim()
+    );
 
     expect(actionLabels).toStrictEqual(['Inspect tape', 'Create alert', 'Send to blotter']);
   });
@@ -196,13 +187,13 @@ describe('TableShowcasePage', () => {
       expect.arrayContaining([
         {
           id: '__rowRenderMetric',
-          value: 'slow',
+          value: 'slow'
         },
         {
           id: 'status',
-          value: ['Declining'],
-        },
-      ]),
+          value: ['Declining']
+        }
+      ])
     );
   });
 
@@ -211,17 +202,13 @@ describe('TableShowcasePage', () => {
 
     expect(host().querySelector('[data-testid="open-table-options"]')).toBeFalsy();
     expect(document.querySelector('.feature-dialog')).toBeFalsy();
-    const tableSurfaceChildren = Array.from(
-      query<HTMLElement>('nat-table-surface.table-shell > .surface').children,
-    ).map((element) => element.tagName.toLowerCase());
-
-    expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar')).toHaveLength(
-      2,
+    const tableSurfaceChildren = Array.from(query<HTMLElement>('nat-table-surface.table-shell > .surface').children).map((element) =>
+      element.tagName.toLowerCase()
     );
+
+    expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar')).toHaveLength(2);
     expect(host().querySelector('app-table-search')).toBeTruthy();
-    expect(
-      host().querySelector('nat-table-toolbar nat-table-pagination[natToolbarItemPosition="end"]'),
-    ).toBeTruthy();
+    expect(host().querySelector('nat-table-toolbar nat-table-pagination[natToolbarItemPosition="end"]')).toBeTruthy();
     expect(host().querySelector('nat-table-scroll-control')).toBeTruthy();
     expect(host().querySelector('nat-render-metrics-filter')).toBeTruthy();
     expect(host().querySelector('nat-render-metrics-panel')).toBeTruthy();

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
-import { InjectionToken, Optional,  SkipSelf } from '@angular/core';
-import type {Provider} from '@angular/core';
+import { InjectionToken, Optional, SkipSelf } from '@angular/core';
+import type { Provider } from '@angular/core';
 
 import { NAT_TABLE_BUILT_IN_UI_LOCALES } from './ui-built-in-locales';
 import { NAT_TABLE_UI_ENGLISH_INTL, NAT_TABLE_UI_ENGLISH_LOCALE } from './ui-en';
@@ -22,7 +22,7 @@ import type {
   NatTableUiIntlProviderConfig,
   NatTableUiLocaleLabels,
   NatTableUiLocaleLabelsMap,
-  NatTableUiNumberFormatter,
+  NatTableUiNumberFormatter
 } from './ui-types';
 
 const DEFAULT_NUMBER_FORMATTER: NatTableUiNumberFormatter = (value, options, locale) =>
@@ -30,19 +30,19 @@ const DEFAULT_NUMBER_FORMATTER: NatTableUiNumberFormatter = (value, options, loc
 
 /** Built-in locale defaults used when no UI locale provider is configured. */
 export const NAT_TABLE_UI_DEFAULT_INTL: NatTableUiIntlConfig = {
-  locales: NAT_TABLE_BUILT_IN_UI_LOCALES,
+  locales: NAT_TABLE_BUILT_IN_UI_LOCALES
 };
 
 /** Injection token backing `provideNatTableUiLocales(...)`. */
 export const NAT_TABLE_UI_INTL = new InjectionToken<NatTableUiIntlConfig>('NAT_TABLE_UI_INTL', {
   providedIn: 'root',
-  factory: (): NatTableUiIntlConfig => NAT_TABLE_UI_DEFAULT_INTL,
+  factory: (): NatTableUiIntlConfig => NAT_TABLE_UI_DEFAULT_INTL
 });
 
 const mergeDefined = <T extends object>(parent: T | undefined, override: T | undefined): T => {
   const merged = {
     ...parent,
-    ...override,
+    ...override
   };
 
   return merged as T;
@@ -51,213 +51,180 @@ const mergeDefined = <T extends object>(parent: T | undefined, override: T | und
 /** Merges the visible column-visibility labels, override values winning. */
 const mergeColumnVisibilityText = (
   parent?: NatTableAccessibilityColumnVisibilityLabels,
-  override?: NatTableAccessibilityColumnVisibilityLabels,
+  override?: NatTableAccessibilityColumnVisibilityLabels
 ): Partial<NatTableAccessibilityColumnVisibilityLabels> => ({
   heading: override?.heading ?? parent?.heading,
-  groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel,
+  groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel
 });
 
 /** Merges the column-visibility formatter callbacks, override values winning. */
 const mergeColumnVisibilityFormatters = (
   parent?: NatTableAccessibilityColumnVisibilityLabels,
-  override?: NatTableAccessibilityColumnVisibilityLabels,
+  override?: NatTableAccessibilityColumnVisibilityLabels
 ): Partial<NatTableAccessibilityColumnVisibilityLabels> => ({
   visibilitySummary: override?.visibilitySummary ?? parent?.visibilitySummary,
   toggleColumnAriaLabel: override?.toggleColumnAriaLabel ?? parent?.toggleColumnAriaLabel,
-  columnState: override?.columnState ?? parent?.columnState,
+  columnState: override?.columnState ?? parent?.columnState
 });
 
 /** Merges column visibility labels and formatters field by field. */
 export const mergeColumnVisibilityLabels = (
   parent?: NatTableAccessibilityColumnVisibilityLabels,
-  override?: NatTableAccessibilityColumnVisibilityLabels,
+  override?: NatTableAccessibilityColumnVisibilityLabels
 ): NatTableAccessibilityColumnVisibilityLabels => ({
   ...mergeColumnVisibilityText(parent, override),
-  ...mergeColumnVisibilityFormatters(parent, override),
+  ...mergeColumnVisibilityFormatters(parent, override)
 });
 
 /** Merges page-size labels and formatters field by field. */
 export const mergePageSizeLabels = (
   parent?: NatTableAccessibilityPageSizeLabels,
-  override?: NatTableAccessibilityPageSizeLabels,
+  override?: NatTableAccessibilityPageSizeLabels
 ): NatTableAccessibilityPageSizeLabels => ({
   groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel,
   pageSizeOptionText: override?.pageSizeOptionText ?? parent?.pageSizeOptionText,
-  pageSizeOptionAriaLabel: override?.pageSizeOptionAriaLabel ?? parent?.pageSizeOptionAriaLabel,
+  pageSizeOptionAriaLabel: override?.pageSizeOptionAriaLabel ?? parent?.pageSizeOptionAriaLabel
 });
 
 /** Merges the pager button labels, override values winning. */
 const mergePagerButtonLabels = (
   parent?: NatTableAccessibilityPagerLabels,
-  override?: NatTableAccessibilityPagerLabels,
+  override?: NatTableAccessibilityPagerLabels
 ): Partial<NatTableAccessibilityPagerLabels> => ({
   groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel,
-  previousPageAriaLabel: override?.previousPageAriaLabel ?? parent?.previousPageAriaLabel,
+  previousPageAriaLabel: override?.previousPageAriaLabel ?? parent?.previousPageAriaLabel
 });
 
 /** Merges the remaining pager labels and indicators, override values winning. */
 const mergePagerIndicatorLabels = (
   parent?: NatTableAccessibilityPagerLabels,
-  override?: NatTableAccessibilityPagerLabels,
+  override?: NatTableAccessibilityPagerLabels
 ): Partial<NatTableAccessibilityPagerLabels> => ({
   nextPageAriaLabel: override?.nextPageAriaLabel ?? parent?.nextPageAriaLabel,
-  pageIndicator: override?.pageIndicator ?? parent?.pageIndicator,
+  pageIndicator: override?.pageIndicator ?? parent?.pageIndicator
 });
 
 /** Merges pager labels and formatters field by field. */
 export const mergePagerLabels = (
   parent?: NatTableAccessibilityPagerLabels,
-  override?: NatTableAccessibilityPagerLabels,
+  override?: NatTableAccessibilityPagerLabels
 ): NatTableAccessibilityPagerLabels => ({
   ...mergePagerButtonLabels(parent, override),
-  ...mergePagerIndicatorLabels(parent, override),
+  ...mergePagerIndicatorLabels(parent, override)
 });
 
 /** Merges the scroll-control button labels, override values winning. */
 const mergeScrollControlButtonLabels = (
   parent?: NatTableAccessibilityScrollControlLabels,
-  override?: NatTableAccessibilityScrollControlLabels,
+  override?: NatTableAccessibilityScrollControlLabels
 ): Partial<NatTableAccessibilityScrollControlLabels> => ({
   groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel,
   scrollLeftAriaLabel: override?.scrollLeftAriaLabel ?? parent?.scrollLeftAriaLabel,
-  scrollRightAriaLabel: override?.scrollRightAriaLabel ?? parent?.scrollRightAriaLabel,
+  scrollRightAriaLabel: override?.scrollRightAriaLabel ?? parent?.scrollRightAriaLabel
 });
 
 /** Merges the scroll-position labels and formatters, override values winning. */
 const mergeScrollControlPositionLabels = (
   parent?: NatTableAccessibilityScrollControlLabels,
-  override?: NatTableAccessibilityScrollControlLabels,
+  override?: NatTableAccessibilityScrollControlLabels
 ): Partial<NatTableAccessibilityScrollControlLabels> => ({
   scrollPositionAriaLabel: override?.scrollPositionAriaLabel ?? parent?.scrollPositionAriaLabel,
-  scrollPositionText: override?.scrollPositionText ?? parent?.scrollPositionText,
+  scrollPositionText: override?.scrollPositionText ?? parent?.scrollPositionText
 });
 
 /** Merges horizontal scroll-control labels and formatters field by field. */
 export const mergeScrollControlLabels = (
   parent?: NatTableAccessibilityScrollControlLabels,
-  override?: NatTableAccessibilityScrollControlLabels,
+  override?: NatTableAccessibilityScrollControlLabels
 ): NatTableAccessibilityScrollControlLabels => ({
   ...mergeScrollControlButtonLabels(parent, override),
-  ...mergeScrollControlPositionLabels(parent, override),
+  ...mergeScrollControlPositionLabels(parent, override)
 });
 
 /** Merges selection-column labels and formatters field by field. */
 export const mergeSelectionLabels = (
   parent?: NatTableAccessibilitySelectionLabels,
-  override?: NatTableAccessibilitySelectionLabels,
+  override?: NatTableAccessibilitySelectionLabels
 ): NatTableAccessibilitySelectionLabels => ({
   selectAllAriaLabel: override?.selectAllAriaLabel ?? parent?.selectAllAriaLabel,
-  selectRowAriaLabel: override?.selectRowAriaLabel ?? parent?.selectRowAriaLabel,
+  selectRowAriaLabel: override?.selectRowAriaLabel ?? parent?.selectRowAriaLabel
 });
 
 /** Merges the header sort and menu labels, override values winning. */
 const mergeHeaderSortAndMenuLabels = (
   parent?: NatTableAccessibilityHeaderActionLabels,
-  override?: NatTableAccessibilityHeaderActionLabels,
+  override?: NatTableAccessibilityHeaderActionLabels
 ): Partial<NatTableAccessibilityHeaderActionLabels> => ({
   sortButton: override?.sortButton ?? parent?.sortButton,
   menuButton: override?.menuButton ?? parent?.menuButton,
-  menuLabel: override?.menuLabel ?? parent?.menuLabel,
+  menuLabel: override?.menuLabel ?? parent?.menuLabel
 });
 
 /** Merges the header pin labels, override values winning. */
 const mergeHeaderPinLabels = (
   parent?: NatTableAccessibilityHeaderActionLabels,
-  override?: NatTableAccessibilityHeaderActionLabels,
+  override?: NatTableAccessibilityHeaderActionLabels
 ): Partial<NatTableAccessibilityHeaderActionLabels> => ({
   pinButton: override?.pinButton ?? parent?.pinButton,
-  pinButtonText: override?.pinButtonText ?? parent?.pinButtonText,
+  pinButtonText: override?.pinButtonText ?? parent?.pinButtonText
 });
 
 /** Merges the header move labels, override values winning. */
 const mergeHeaderMoveLabels = (
   parent?: NatTableAccessibilityHeaderActionLabels,
-  override?: NatTableAccessibilityHeaderActionLabels,
+  override?: NatTableAccessibilityHeaderActionLabels
 ): Partial<NatTableAccessibilityHeaderActionLabels> => ({
   moveButton: override?.moveButton ?? parent?.moveButton,
-  moveButtonText: override?.moveButtonText ?? parent?.moveButtonText,
+  moveButtonText: override?.moveButtonText ?? parent?.moveButtonText
 });
 
 /** Merges header action labels and formatters field by field. */
 export const mergeHeaderActionLabels = (
   parent?: NatTableAccessibilityHeaderActionLabels,
-  override?: NatTableAccessibilityHeaderActionLabels,
+  override?: NatTableAccessibilityHeaderActionLabels
 ): NatTableAccessibilityHeaderActionLabels => ({
   ...mergeHeaderSortAndMenuLabels(parent, override),
   ...mergeHeaderPinLabels(parent, override),
-  ...mergeHeaderMoveLabels(parent, override),
+  ...mergeHeaderMoveLabels(parent, override)
 });
 
-const mergeColumnVisibilitySlice = (
-  parent: NatTableUiIntl | undefined,
-  override: NatTableUiIntl,
-): NatTableColumnVisibilityIntl => ({
+const mergeColumnVisibilitySlice = (parent: NatTableUiIntl | undefined, override: NatTableUiIntl): NatTableColumnVisibilityIntl => ({
   ...mergeDefined(parent?.columnVisibility, override.columnVisibility),
   accessibilityLabels: mergeColumnVisibilityLabels(
     parent?.columnVisibility?.accessibilityLabels,
-    override.columnVisibility?.accessibilityLabels,
-  ),
+    override.columnVisibility?.accessibilityLabels
+  )
 });
 
-const mergePageSizeSlice = (
-  parent: NatTableUiIntl | undefined,
-  override: NatTableUiIntl,
-): NatTablePageSizeIntl => ({
+const mergePageSizeSlice = (parent: NatTableUiIntl | undefined, override: NatTableUiIntl): NatTablePageSizeIntl => ({
   ...mergeDefined(parent?.pageSize, override.pageSize),
-  accessibilityLabels: mergePageSizeLabels(
-    parent?.pageSize?.accessibilityLabels,
-    override.pageSize?.accessibilityLabels,
-  ),
+  accessibilityLabels: mergePageSizeLabels(parent?.pageSize?.accessibilityLabels, override.pageSize?.accessibilityLabels)
 });
 
-const mergePagerSlice = (
-  parent: NatTableUiIntl | undefined,
-  override: NatTableUiIntl,
-): NatTablePagerIntl => ({
+const mergePagerSlice = (parent: NatTableUiIntl | undefined, override: NatTableUiIntl): NatTablePagerIntl => ({
   ...mergeDefined(parent?.pager, override.pager),
-  accessibilityLabels: mergePagerLabels(
-    parent?.pager?.accessibilityLabels,
-    override.pager?.accessibilityLabels,
-  ),
+  accessibilityLabels: mergePagerLabels(parent?.pager?.accessibilityLabels, override.pager?.accessibilityLabels)
 });
 
-const mergeScrollControlSlice = (
-  parent: NatTableUiIntl | undefined,
-  override: NatTableUiIntl,
-): NatTableScrollControlIntl => ({
+const mergeScrollControlSlice = (parent: NatTableUiIntl | undefined, override: NatTableUiIntl): NatTableScrollControlIntl => ({
   ...mergeDefined(parent?.scrollControl, override.scrollControl),
   accessibilityLabels: mergeScrollControlLabels(
     parent?.scrollControl?.accessibilityLabels,
-    override.scrollControl?.accessibilityLabels,
-  ),
+    override.scrollControl?.accessibilityLabels
+  )
 });
 
-const mergeHeaderActionsSlice = (
-  parent: NatTableUiIntl | undefined,
-  override: NatTableUiIntl,
-): NatTableHeaderActionsIntl => ({
-  accessibilityLabels: mergeHeaderActionLabels(
-    parent?.headerActions?.accessibilityLabels,
-    override.headerActions?.accessibilityLabels,
-  ),
+const mergeHeaderActionsSlice = (parent: NatTableUiIntl | undefined, override: NatTableUiIntl): NatTableHeaderActionsIntl => ({
+  accessibilityLabels: mergeHeaderActionLabels(parent?.headerActions?.accessibilityLabels, override.headerActions?.accessibilityLabels)
 });
 
-const mergeSelectionSlice = (
-  parent: NatTableUiIntl | undefined,
-  override: NatTableUiIntl,
-): NatTableSelectionIntl => ({
+const mergeSelectionSlice = (parent: NatTableUiIntl | undefined, override: NatTableUiIntl): NatTableSelectionIntl => ({
   ...mergeDefined(parent?.selection, override.selection),
-  accessibilityLabels: mergeSelectionLabels(
-    parent?.selection?.accessibilityLabels,
-    override.selection?.accessibilityLabels,
-  ),
+  accessibilityLabels: mergeSelectionLabels(parent?.selection?.accessibilityLabels, override.selection?.accessibilityLabels)
 });
 
 /** Merges companion UI locale dictionaries, with override values taking precedence. */
-export const mergeNatTableUiIntl = (
-  parent: NatTableUiIntl | undefined,
-  override: NatTableUiIntl,
-): NatTableUiIntl => ({
+export const mergeNatTableUiIntl = (parent: NatTableUiIntl | undefined, override: NatTableUiIntl): NatTableUiIntl => ({
   search: mergeDefined(parent?.search, override.search),
   columnVisibility: mergeColumnVisibilitySlice(parent, override),
   pageSize: mergePageSizeSlice(parent, override),
@@ -266,17 +233,15 @@ export const mergeNatTableUiIntl = (
   headerActions: mergeHeaderActionsSlice(parent, override),
   toolbar: mergeDefined(parent?.toolbar, override.toolbar),
   selection: mergeSelectionSlice(parent, override),
-  formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
+  formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER
 });
 
-const mergeNatTableUiLocaleIntl = (
-  parent?: NatTableUiLocaleLabels,
-  override?: NatTableUiLocaleLabels,
-): NatTableUiLocaleLabels => mergeNatTableUiIntl(parent, override ?? {});
+const mergeNatTableUiLocaleIntl = (parent?: NatTableUiLocaleLabels, override?: NatTableUiLocaleLabels): NatTableUiLocaleLabels =>
+  mergeNatTableUiIntl(parent, override ?? {});
 
 const mergeLocaleMaps = (
   parentLocales: NatTableUiLocaleLabelsMap,
-  overrideLocales: NatTableUiLocaleLabelsMap,
+  overrideLocales: NatTableUiLocaleLabelsMap
 ): NatTableUiLocaleLabelsMap => {
   const merged: NatTableUiLocaleLabelsMap = {};
 
@@ -291,31 +256,25 @@ const mergeLocaleMaps = (
   return merged;
 };
 
-const isUiIntlConfig = (config: NatTableUiIntlProviderConfig): config is NatTableUiIntlConfig =>
-  'locales' in config;
+const isUiIntlConfig = (config: NatTableUiIntlProviderConfig): config is NatTableUiIntlConfig => 'locales' in config;
 
-const normalizeUiIntlProviderConfig = (
-  config: NatTableUiIntlProviderConfig,
-): NatTableUiIntlConfig => {
+const normalizeUiIntlProviderConfig = (config: NatTableUiIntlProviderConfig): NatTableUiIntlConfig => {
   if (isUiIntlConfig(config)) {
     return config;
   }
 
   return {
     locales: {
-      [NAT_TABLE_UI_ENGLISH_LOCALE]: config,
-    },
+      [NAT_TABLE_UI_ENGLISH_LOCALE]: config
+    }
   };
 };
 
-const mergeNatTableUiIntlConfig = (
-  parent: NatTableUiIntlConfig,
-  override: NatTableUiIntlProviderConfig,
-): NatTableUiIntlConfig => {
+const mergeNatTableUiIntlConfig = (parent: NatTableUiIntlConfig, override: NatTableUiIntlProviderConfig): NatTableUiIntlConfig => {
   const overrideConfig = normalizeUiIntlProviderConfig(override);
 
   return {
-    locales: mergeLocaleMaps(parent.locales ?? {}, overrideConfig.locales ?? {}),
+    locales: mergeLocaleMaps(parent.locales ?? {}, overrideConfig.locales ?? {})
   };
 };
 
@@ -329,9 +288,8 @@ export const provideNatTableUiIntl = (intl: NatTableUiIntlProviderConfig): Provi
   {
     provide: NAT_TABLE_UI_INTL,
     deps: [[new Optional(), new SkipSelf(), NAT_TABLE_UI_INTL]],
-    useFactory: (parent: NatTableUiIntlConfig | null) =>
-      mergeNatTableUiIntlConfig(parent ?? NAT_TABLE_UI_DEFAULT_INTL, intl),
-  },
+    useFactory: (parent: NatTableUiIntlConfig | null) => mergeNatTableUiIntlConfig(parent ?? NAT_TABLE_UI_DEFAULT_INTL, intl)
+  }
 ];
 
 /**
@@ -339,28 +297,21 @@ export const provideNatTableUiIntl = (intl: NatTableUiIntlProviderConfig): Provi
  *
  * Call this only when using `ng-advanced-table-ui`.
  */
-export const provideNatTableUiLocales = (
-  overrides: NatTableUiLocaleLabelsMap = {},
-): Provider[] => provideNatTableUiIntl({ locales: overrides });
+export const provideNatTableUiLocales = (overrides: NatTableUiLocaleLabelsMap = {}): Provider[] =>
+  provideNatTableUiIntl({ locales: overrides });
 
 /** Formats generated companion UI numbers through the configured locale formatter. */
 export const formatNatTableUiNumber = (
   intl: NatTableUiIntl,
   value: number,
   options?: Intl.NumberFormatOptions,
-  locale?: string,
+  locale?: string
 ): string => (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 
 /** Resolves a companion UI locale dictionary, falling back to built-in English defaults. */
-export const resolveNatTableUiIntl = (
-  intl: NatTableUiIntlConfig,
-  locale: string,
-): NatTableUiIntl => {
+export const resolveNatTableUiIntl = (intl: NatTableUiIntlConfig, locale: string): NatTableUiIntl => {
   const englishIntl = intl.locales?.[NAT_TABLE_UI_ENGLISH_LOCALE] ?? NAT_TABLE_UI_ENGLISH_INTL;
-  const selectedIntl =
-    intl.locales?.[locale] ?? (locale === NAT_TABLE_UI_ENGLISH_LOCALE ? {} : null);
+  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_TABLE_UI_ENGLISH_LOCALE ? {} : null);
 
-  return selectedIntl
-    ? mergeNatTableUiIntl(englishIntl, selectedIntl)
-    : mergeNatTableUiIntl(englishIntl, {});
+  return selectedIntl ? mergeNatTableUiIntl(englishIntl, selectedIntl) : mergeNatTableUiIntl(englishIntl, {});
 };

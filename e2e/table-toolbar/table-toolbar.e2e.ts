@@ -1,5 +1,5 @@
-import {   expect, test } from '@playwright/test';
-import type {Locator, Page} from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { applyDocumentDirection } from '../support/document-direction';
 
@@ -17,16 +17,14 @@ test.describe('Table toolbar', () => {
     expect
       .poll(async () =>
         first.evaluate(
-          (element, other) =>
-            other !== null &&
-            Boolean(element.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING),
-          await second.elementHandle(),
-        ),
+          (element, other) => other !== null && Boolean(element.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING),
+          await second.elementHandle()
+        )
       )
       .toBe(true);
 
   const buttons = (
-    page: Page,
+    page: Page
   ): {
     exportButton: Locator;
     refreshButton: Locator;
@@ -38,7 +36,7 @@ test.describe('Table toolbar', () => {
     refreshButton: page.getByTestId('refresh-button'),
     compactButton: page.getByTestId('density-compact-button'),
     comfortableButton: page.getByTestId('density-comfortable-button'),
-    shareButton: page.getByTestId('share-button'),
+    shareButton: page.getByTestId('share-button')
   });
 
   type BoundingBox = { x: number; y: number; width: number; height: number };
@@ -93,12 +91,8 @@ test.describe('Table toolbar', () => {
     // The flex spacers sit between the slots: start | spacer | center | spacer | end.
     // Scope to the Products toolbar — the page now has several toolbars.
     // Each spacer carries a positional test id, so locate them semantically.
-    const firstSpacer = page
-      .getByRole('toolbar', { name: 'Products toolbar' })
-      .getByTestId('toolbar-spacer-start');
-    const secondSpacer = page
-      .getByRole('toolbar', { name: 'Products toolbar' })
-      .getByTestId('toolbar-spacer-end');
+    const firstSpacer = page.getByRole('toolbar', { name: 'Products toolbar' }).getByTestId('toolbar-spacer-start');
+    const secondSpacer = page.getByRole('toolbar', { name: 'Products toolbar' }).getByTestId('toolbar-spacer-end');
 
     await expectPrecedes(exportButton, firstSpacer);
     await expectPrecedes(firstSpacer, refreshButton);
@@ -126,11 +120,8 @@ test.describe('Table toolbar', () => {
     `);
   });
 
-  test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({
-    page,
-  }) => {
-    const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } =
-      buttons(page);
+  test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({ page }) => {
+    const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } = buttons(page);
 
     await exportButton.focus();
     await exportButton.press('ArrowRight');

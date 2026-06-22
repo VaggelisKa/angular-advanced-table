@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
 
-import type {CellContext, ColumnDef} from '@tanstack/angular-table';
+import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable  } from 'ng-advanced-table';
-import type {NatTableState} from 'ng-advanced-table';
+import { NatTable } from 'ng-advanced-table';
+import type { NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
 import { TableSearch } from '../../components/table-search/table-search';
@@ -14,7 +14,7 @@ type DemoItem = {
   category: string;
   status: string;
   value: number;
-}
+};
 
 const DEMO_DATA: DemoItem[] = [
   { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
@@ -24,11 +24,11 @@ const DEMO_DATA: DemoItem[] = [
     name: 'Gamma Processor',
     category: 'Data Science',
     status: 'Paused',
-    value: 7800,
+    value: 7800
   },
   { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
   { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 },
+  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
 ];
 
 @Component({
@@ -38,9 +38,7 @@ const DEMO_DATA: DemoItem[] = [
     <div class="showcase-page showcase-container">
       <header class="header-section">
         <h1 class="title">Global Search & Filter</h1>
-        <p class="description">
-          Demonstrates real-time fuzzy search filtering against all columns.
-        </p>
+        <p class="description">Demonstrates real-time fuzzy search filtering against all columns.</p>
       </header>
 
       <div class="grid-layout">
@@ -51,8 +49,7 @@ const DEMO_DATA: DemoItem[] = [
             <div class="search-panel">
               <app-table-search
                 label="Fuzzy search symbol, name, status, or category"
-                placeholder="Search e.g. Analytics, Active, Delta..."
-              />
+                placeholder="Search e.g. Analytics, Active, Delta..." />
             </div>
 
             <nat-table [columns]="columns" [data]="data" accessibleName="Search demo table" />
@@ -60,7 +57,7 @@ const DEMO_DATA: DemoItem[] = [
         </div>
       </div>
     </div>
-  `,
+  `
 })
 export class SearchShowcasePage {
   protected readonly data = DEMO_DATA;
@@ -69,31 +66,31 @@ export class SearchShowcasePage {
     {
       accessorKey: 'name',
       header: 'Name',
-      meta: { label: 'Name', rowHeader: true },
+      meta: { label: 'Name', rowHeader: true }
     },
     {
       accessorKey: 'category',
       header: 'Category',
-      meta: { label: 'Category' },
+      meta: { label: 'Category' }
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      meta: { label: 'Status' },
+      meta: { label: 'Status' }
     },
     {
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
-    },
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
+    }
   ]);
 
   protected readonly tableState = signal<Partial<NatTableState>>({
-    globalFilter: '',
+    globalFilter: ''
   });
 
-   private onGlobalFilterChange(globalFilter: string): void {
+  private onGlobalFilterChange(globalFilter: string): void {
     this.tableState.update((current) => ({ ...current, globalFilter }));
   }
 }

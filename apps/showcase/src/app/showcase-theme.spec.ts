@@ -33,13 +33,13 @@ describe('ShowcaseThemeStore', () => {
         store = {};
       },
       length: 0,
-      key: (): string | null => null,
+      key: (): string | null => null
     };
 
     Object.defineProperty(globalThis, 'localStorage', {
       value: mockLocalStorage,
       writable: true,
-      configurable: true,
+      configurable: true
     });
     clearThemeState();
   });
@@ -48,7 +48,7 @@ describe('ShowcaseThemeStore', () => {
     Object.defineProperty(globalThis, 'localStorage', {
       value: originalLocalStorage,
       writable: true,
-      configurable: true,
+      configurable: true
     });
     clearThemeState();
   });

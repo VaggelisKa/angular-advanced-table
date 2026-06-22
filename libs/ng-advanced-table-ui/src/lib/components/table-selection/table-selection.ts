@@ -2,11 +2,7 @@ import { Component, inject, input } from '@angular/core';
 
 import type { Row, RowData, Table } from '@tanstack/angular-table';
 
-import {
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  NAT_TABLE_UI_INTL,
-  resolveNatTableUiIntl,
-} from '../../shared/table-ui-intl';
+import { NAT_TABLE_UI_ENGLISH_LOCALE, NAT_TABLE_UI_INTL, resolveNatTableUiIntl } from '../../shared/table-ui-intl';
 import type { NatTableAccessibilitySelectionLabels } from '../../shared/table-ui.types';
 
 /**
@@ -20,7 +16,7 @@ import type { NatTableAccessibilitySelectionLabels } from '../../shared/table-ui
 @Component({
   selector: 'nat-table-selection-checkbox',
   templateUrl: './table-selection.html',
-  styleUrl: './table-selection.css',
+  styleUrl: './table-selection.css'
 })
 export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
@@ -33,9 +29,7 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
   public readonly label = input('');
 
   protected checked(): boolean {
-    return this.mode() === 'all'
-      ? this.table().getIsAllRowsSelected()
-      : (this.row()?.getIsSelected() ?? false);
+    return this.mode() === 'all' ? this.table().getIsAllRowsSelected() : (this.row()?.getIsSelected() ?? false);
   }
 
   protected indeterminate(): boolean {
@@ -63,8 +57,7 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
 
     if (explicit) return explicit;
 
-    const labels: NatTableAccessibilitySelectionLabels =
-      this.tableUiIntl().selection?.accessibilityLabels ?? {};
+    const labels: NatTableAccessibilitySelectionLabels = this.tableUiIntl().selection?.accessibilityLabels ?? {};
 
     if (this.mode() === 'all') {
       return labels.selectAllAriaLabel ?? '';
@@ -74,10 +67,7 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
   }
 
   protected onChange(event: Event): void {
-    const handler =
-      this.mode() === 'all'
-        ? this.table().getToggleAllRowsSelectedHandler()
-        : this.row()?.getToggleSelectedHandler();
+    const handler = this.mode() === 'all' ? this.table().getToggleAllRowsSelectedHandler() : this.row()?.getToggleSelectedHandler();
 
     handler?.(event);
   }
@@ -89,8 +79,6 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
   private localeId(): string {
     const tableMeta = this.table().options.meta as { natTableLocaleId?: unknown } | undefined;
 
-    return typeof tableMeta?.natTableLocaleId === 'string'
-      ? tableMeta.natTableLocaleId
-      : NAT_TABLE_UI_ENGLISH_LOCALE;
+    return typeof tableMeta?.natTableLocaleId === 'string' ? tableMeta.natTableLocaleId : NAT_TABLE_UI_ENGLISH_LOCALE;
   }
 }

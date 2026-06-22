@@ -21,10 +21,7 @@ test.describe('Sorting', () => {
     await expect(stateTag).toContainText('name (desc)');
 
     // Clear Sorting
-    await page
-      .locator('.card', { hasText: 'Programmatic Sort Actions' })
-      .getByRole('button', { name: 'Clear Sorting' })
-      .click();
+    await page.locator('.card', { hasText: 'Programmatic Sort Actions' }).getByRole('button', { name: 'Clear Sorting' }).click();
     await expect(stateTag).toContainText('None');
   });
 
@@ -55,10 +52,7 @@ test.describe('Sorting', () => {
     await expect(multiStateTag).toContainText('1. category (asc), 2. value (desc)');
 
     // Clear
-    await page
-      .locator('.card', { hasText: 'Sort Priority' })
-      .getByRole('button', { name: 'Clear Sorting' })
-      .click();
+    await page.locator('.card', { hasText: 'Sort Priority' }).getByRole('button', { name: 'Clear Sorting' }).click();
     await expect(multiStateTag).toContainText('None');
   });
 });

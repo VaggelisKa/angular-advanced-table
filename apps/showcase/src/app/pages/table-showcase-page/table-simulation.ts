@@ -43,32 +43,27 @@ type InstrumentSeed = {
   company: string;
 };
 
-export const SIMULATION_STATUSES = [
-  'Advancing',
-  'Watching',
-  'Declining',
-  'Halted',
-] as const satisfies readonly SimulationStatus[];
+export const SIMULATION_STATUSES = ['Advancing', 'Watching', 'Declining', 'Halted'] as const satisfies readonly SimulationStatus[];
 
 export const SIMULATION_PROFILES = {
   steady: {
     label: 'Steady',
     description: 'A calmer tape that emphasizes individual movers.',
     tickIntervalMs: 1200,
-    mutationBatchSize: 18,
+    mutationBatchSize: 18
   },
   balanced: {
     label: 'Balanced',
     description: 'A live market pace with realistic turnover shifts.',
     tickIntervalMs: 450,
-    mutationBatchSize: 60,
+    mutationBatchSize: 60
   },
   burst: {
     label: 'Burst',
     description: 'A fast tape that stress-tests sorting and filtering.',
     tickIntervalMs: 180,
-    mutationBatchSize: 140,
-  },
+    mutationBatchSize: 140
+  }
 } satisfies Record<SimulationProfile, SimulationProfilePreset>;
 
 export const DATASET_OPTIONS = [2000, 12000, 25000] as const;
@@ -85,7 +80,7 @@ const INSTRUMENTS = [
   { symbol: 'ECHO', company: 'Echo Mobility' },
   { symbol: 'FLUX', company: 'Flux Energy' },
   { symbol: 'GLDN', company: 'Golden Vertex' },
-  { symbol: 'HYPR', company: 'Hyper Grid' },
+  { symbol: 'HYPR', company: 'Hyper Grid' }
 ] as const satisfies readonly InstrumentSeed[];
 
 const roundToSingleDecimal = (value: number): number => Number(value.toFixed(1));
@@ -96,8 +91,7 @@ const roundToCents = (value: number): number => Number(value.toFixed(2));
 
 const jitter = (span: number): number => (Math.random() - 0.5) * span * 2;
 
-const clamp = (value: number, min: number, max: number): number =>
-  Math.max(min, Math.min(max, value));
+const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
 
 const computeSparkTrend = (history: readonly number[]): SparkTrend => {
   if (history.length < 2) {
@@ -148,11 +142,7 @@ const statusFromChangePercent = (changePercent: number, isHalted = false): Simul
   return 'Watching';
 };
 
-const seedPriceHistory = (
-  index: number,
-  previousClose: number,
-  currentPrice: number,
-): number[] => {
+const seedPriceHistory = (index: number, previousClose: number, currentPrice: number): number[] => {
   const amplitude = Math.max(previousClose * 0.025, 0.3);
   const phase = (index % 11) * 0.41;
   const drift = (currentPrice - previousClose) / Math.max(SPARK_HISTORY_LENGTH - 1, 1);
@@ -172,21 +162,14 @@ const seedPriceHistory = (
 };
 
 const mutateRow = (row: SimulationRow, now: number): SimulationRow => {
-  const staysHalted =
-    row.status === 'Halted' ? Math.random() < 0.72 : Math.random() < 0.018;
+  const staysHalted = row.status === 'Halted' ? Math.random() < 0.72 : Math.random() < 0.018;
   const priceStep = Math.max(row.previousClose * 0.035, 0.18);
   const price = staysHalted
     ? row.price
-    : roundToCents(
-        clamp(row.price + jitter(priceStep), row.previousClose * 0.78, row.previousClose * 1.22),
-      );
+    : roundToCents(clamp(row.price + jitter(priceStep), row.previousClose * 0.78, row.previousClose * 1.22));
   const change = roundToCents(price - row.previousClose);
   const changePercent = roundToHundredths((change / row.previousClose) * 100);
-  const volume = clamp(
-    Math.round(row.volume + jitter(Math.max(row.volume * 0.08, 150_000))),
-    40_000,
-    32_000_000,
-  );
+  const volume = clamp(Math.round(row.volume + jitter(Math.max(row.volume * 0.08, 150_000))), 40_000, 32_000_000);
   const priceHistory = pushPriceHistory(row.priceHistory, price);
 
   return {
@@ -199,14 +182,14 @@ const mutateRow = (row: SimulationRow, now: number): SimulationRow => {
     turnoverMillions: roundToSingleDecimal((price * volume) / 1_000_000),
     updatedAt: now,
     priceHistory,
-    sparkTrend: computeSparkTrend(priceHistory),
+    sparkTrend: computeSparkTrend(priceHistory)
   };
 };
 
 const mutateRows = (
   rows: readonly SimulationRow[],
   batchSize: number,
-  now: number,
+  now: number
 ): { rows: SimulationRow[]; updatedCount: number } => {
   const nextRows = rows.slice();
   const pickedIndexes = new Set<number>();
@@ -228,8 +211,8 @@ const buildDataset = (size: number): SimulationRow[] => {
   return Array.from({ length: size }, (_, index) => {
     const instrument = INSTRUMENTS[index % INSTRUMENTS.length];
     const seriesNumber = Math.floor(index / INSTRUMENTS.length) + 1;
-    const previousClose = roundToCents(18 + ((index * 19) % 380) + ((index % 7) * 0.37));
-    const changePercent = roundToHundredths((((index * 37) % 1400) / 100) - 7);
+    const previousClose = roundToCents(18 + ((index * 19) % 380) + (index % 7) * 0.37);
+    const changePercent = roundToHundredths(((index * 37) % 1400) / 100 - 7);
     const price = roundToCents(previousClose * (1 + changePercent / 100));
     const change = roundToCents(price - previousClose);
     const volume = 150_000 + ((index * 91_713) % 22_000_000);
@@ -252,13 +235,13 @@ const buildDataset = (size: number): SimulationRow[] => {
       turnoverMillions: roundToSingleDecimal((price * volume) / 1_000_000),
       updatedAt: baseTimestamp - (index % 180) * 1000,
       priceHistory,
-      sparkTrend: computeSparkTrend(priceHistory),
+      sparkTrend: computeSparkTrend(priceHistory)
     };
   });
 };
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class TableSimulation {
   private readonly datasetSizeSignal = signal<number>(12000);
@@ -285,7 +268,7 @@ export class TableSimulation {
       Advancing: 0,
       Watching: 0,
       Declining: 0,
-      Halted: 0,
+      Halted: 0
     };
     let positiveMoverCount = 0;
     const rows = this.rowsSignal();
@@ -305,13 +288,11 @@ export class TableSimulation {
     return {
       counts,
       positiveMoverCount,
-      marketBreadth,
+      marketBreadth
     };
   });
 
-  public readonly statusCounts = computed<SimulationStatusCounts>(
-    () => this.marketSnapshot().counts,
-  );
+  public readonly statusCounts = computed<SimulationStatusCounts>(() => this.marketSnapshot().counts);
 
   public readonly marketBreadth = computed(() => this.marketSnapshot().marketBreadth);
   public readonly positiveMoverCount = computed(() => this.marketSnapshot().positiveMoverCount);
@@ -322,10 +303,7 @@ export class TableSimulation {
         return;
       }
 
-      const timer = globalThis.setInterval(
-        () => this.pulse(),
-        this.profilePreset().tickIntervalMs,
-      );
+      const timer = globalThis.setInterval(() => this.pulse(), this.profilePreset().tickIntervalMs);
 
       onCleanup(() => globalThis.clearInterval(timer));
     });
@@ -362,11 +340,7 @@ export class TableSimulation {
 
     const now = Date.now();
     const startedAt = performance.now();
-    const { rows, updatedCount } = mutateRows(
-      currentRows,
-      this.profilePreset().mutationBatchSize,
-      now,
-    );
+    const { rows, updatedCount } = mutateRows(currentRows, this.profilePreset().mutationBatchSize, now);
 
     this.rowsSignal.set(rows);
     this.lastMutationSizeSignal.set(updatedCount);

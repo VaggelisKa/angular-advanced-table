@@ -8,10 +8,7 @@ import type { NatTableUiController } from 'ng-advanced-table';
 
 import { NatRenderMetricsFilter } from './filter';
 import { provideNatTableUtilsIntl } from './intl';
-import type {
-  NatTableRenderMetricsFilterIntl,
-  NatTableRenderMetricsPanelIntl,
-} from './intl';
+import type { NatTableRenderMetricsFilterIntl, NatTableRenderMetricsPanelIntl } from './intl';
 import { NatRenderMetricsPanel } from './panel';
 import { NatTableRenderMetricsStore } from './store';
 import type { RowRenderFilterOption } from './types';
@@ -19,29 +16,29 @@ import type { RowRenderFilterOption } from './types';
 type Row = {
   id: string;
   name: string;
-}
+};
 
 const providerOptions: readonly RowRenderFilterOption[] = [
   {
     value: 'all',
     label: 'Provider all',
-    description: 'Provider latest',
+    description: 'Provider latest'
   },
   {
     value: 'fast',
     label: 'Provider fast',
-    description: 'Provider under',
+    description: 'Provider under'
   },
   {
     value: 'watch',
     label: 'Provider watch',
-    description: 'Provider middle',
+    description: 'Provider middle'
   },
   {
     value: 'slow',
     label: 'Provider slow',
-    description: 'Provider over',
-  },
+    description: 'Provider over'
+  }
 ];
 
 @Component({
@@ -56,32 +53,32 @@ const providerOptions: readonly RowRenderFilterOption[] = [
           ariaLabel: 'Provider row render sample',
           toneLabel: (tone) => `Provider ${tone}`,
           rowSampleSummary: ({ rowCountText }) => `Provider ${rowCountText} rows sampled`,
-          duration: ({ durationMsText }) => `Provider ${durationMsText} ms`,
+          duration: ({ durationMsText }) => `Provider ${durationMsText} ms`
         },
         filter: {
           heading: 'Provider render speed',
           groupAriaLabel: 'Provider row render speed',
           rowSampleCaption: ({ rowCountText }) => `Provider ${rowCountText} visible rows`,
-          options: providerOptions,
-        },
-      },
-    }),
+          options: providerOptions
+        }
+      }
+    })
   ],
   template: `
     <nat-render-metrics-panel [labels]="panelLabels()" [store]="store" />
     <nat-render-metrics-filter [labels]="filterLabels()" [store]="store" />
-  `,
+  `
 })
 class RenderMetricsIntlHost {
   protected readonly store = new NatTableRenderMetricsStore();
   private readonly controller: NatTableUiController<Row> = {
     table: {
-      getState: () => ({ columnFilters: [] }),
+      getState: () => ({ columnFilters: [] })
     } as unknown as Table<Row>,
     tableElementId: signal('nat-table-mock'),
     enableGlobalFilter: () => true,
     enablePagination: () => true,
-    patchState: () => undefined,
+    patchState: () => undefined
   };
 
   public readonly panelLabels = signal<NatTableRenderMetricsPanelIntl | undefined>(undefined);
@@ -94,7 +91,7 @@ class RenderMetricsIntlHost {
     this.store.record({
       rowId: 'row-1',
       renderToken: 1,
-      durationMs: 5.5,
+      durationMs: 5.5
     });
   }
 }
@@ -106,7 +103,7 @@ describe('render metrics intl components', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [RenderMetricsIntlHost],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
 
     fixture = TestBed.createComponent(RenderMetricsIntlHost);
@@ -136,10 +133,10 @@ describe('render metrics intl components', () => {
 
     host.panelLabels.set({
       ariaLabel: 'Input row render sample',
-      toneLabel: () => 'Input tone',
+      toneLabel: () => 'Input tone'
     });
     host.filterLabels.set({
-      heading: 'Input render speed',
+      heading: 'Input render speed'
     });
     fixture.detectChanges();
 

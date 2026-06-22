@@ -88,7 +88,6 @@
   - **`commitInternalState`:** reads `this.state()` once per update instead of eight separate signal reads.
   - **Docs:** root README documents pagination slice behavior when `enablePagination` is `false`, updates the controller contract and core export list; package README drops the obsolete migration anchor.
 
-
 ### 🩹 Fixes
 
 - Document consumer and agent responsibilities for localizing accessibility labels, summaries, announcements, and optional UI control copy. ([#51](https://github.com/VaggelisKa/angular-advanced-table/pull/51))
@@ -97,7 +96,7 @@
 - Add a machine-readable API map to the accessibility internationalization guide for agent consumers. ([#51](https://github.com/VaggelisKa/angular-advanced-table/pull/51))
 - Extract accessibility customization guides into root-level `ACCESSIBILITY.md` and update package README links for discoverability. ([5690475](https://github.com/VaggelisKa/angular-advanced-table/commit/5690475))
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - **Breaking (`ng-advanced-table`):** Remove multi-column sorting (`enableMultiSort`, TanStack `maxMultiSortColCount`). Sorting is always single-column: merged state normalizes to one entry, TanStack is configured with `enableMultiSort: false` and `isMultiSortEvent` never true. Remove `NatTableAccessibilitySortingEntry` and the `sortings` field from `NatTableAccessibilitySortingAnnouncementContext`. ([#53](https://github.com/VaggelisKa/angular-advanced-table/pull/53))
 

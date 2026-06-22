@@ -3,11 +3,10 @@
     <h1 class="title">Column Resizing Feature</h1>
     <p class="description">
       Demonstrates interactive column resizing with pointer drag and keyboard support. Resizing is
-      <strong>opt-in per column</strong> via <code>enableResizing</code> — toggle the columns below to
-      add or remove their resize handles. Resizing is pixel-exact in both width modes. Under
-      <strong>Fill</strong> (the default), columns stretch to fill the container and resizing a
-      column reflows the others so the table stays filled. Under <strong>Fixed</strong>, column
-      widths are authoritative and the region scrolls horizontally.
+      <strong>opt-in per column</strong> via <code>enableResizing</code> — toggle the columns below to add or remove their resize
+      handles. Resizing is pixel-exact in both width modes. Under <strong>Fill</strong> (the default), columns stretch to fill the
+      container and resizing a column reflows the others so the table stays filled. Under <strong>Fixed</strong>, column widths are
+      authoritative and the region scrolls horizontally.
     </p>
   </header>
 
@@ -15,11 +14,7 @@
     <div class="card">
       <h2 class="card-title">Interactive Resizing Grid ({{ columnSizingMode() }})</h2>
       <nat-table-surface [columnSizingMode]="columnSizingMode()" [(state)]="tableState">
-        <nat-table
-          [columns]="columns()"
-          [data]="data"
-          accessibleName="Column resizing demo table"
-        />
+        <nat-table [columns]="columns()" [data]="data" accessibleName="Column resizing demo table" />
       </nat-table-surface>
     </div>
 
@@ -29,35 +24,27 @@
       <fieldset class="resize-toggles">
         <legend>Resizable columns</legend>
         @for (toggle of columnToggles; track toggle.id) {
-          <label class="resize-toggle">
-            <input
-              #resizeToggle
-              [checked]="resizableColumnIds().has(toggle.id)"
-              type="checkbox"
-              (change)="toggleResizable(toggle.id, resizeToggle.checked)"
-            />
-            <span>{{ toggle.label }}</span>
-          </label>
+        <label class="resize-toggle">
+          <input
+            #resizeToggle
+            [checked]="resizableColumnIds().has(toggle.id)"
+            type="checkbox"
+            (change)="toggleResizable(toggle.id, resizeToggle.checked)" />
+          <span>{{ toggle.label }}</span>
+        </label>
         }
       </fieldset>
 
       <h3 class="card-title">How To Resize A Column</h3>
       <div class="instructions">
-        <p>
-          <strong>Drag:</strong> grab the thin handle on a header's edge and drag to resize the
-          column.
-        </p>
+        <p><strong>Drag:</strong> grab the thin handle on a header's edge and drag to resize the column.</p>
         <p><strong>Keyboard:</strong></p>
         <ol>
           <li><strong>Tab</strong> to a column's header.</li>
           <li>
-            Hold <code>Alt</code> and press <code>Left Arrow</code> / <code>Right Arrow</code> to
-            resize the column in small steps.
+            Hold <code>Alt</code> and press <code>Left Arrow</code> / <code>Right Arrow</code> to resize the column in small steps.
           </li>
-          <li>
-            Press <code>Alt</code> + <code>Home</code> / <code>End</code> to jump to the minimum or
-            maximum width.
-          </li>
+          <li>Press <code>Alt</code> + <code>Home</code> / <code>End</code> to jump to the minimum or maximum width.</li>
         </ol>
       </div>
 
@@ -68,8 +55,7 @@
             [class.active]="columnSizingMode() === 'fill'"
             class="btn-sm"
             type="button"
-            (click)="columnSizingMode.set('fill')"
-          >
+            (click)="columnSizingMode.set('fill')">
             Fill
           </button>
           <button
@@ -77,14 +63,11 @@
             [class.active]="columnSizingMode() === 'fixed'"
             class="btn-sm"
             type="button"
-            (click)="columnSizingMode.set('fixed')"
-          >
+            (click)="columnSizingMode.set('fixed')">
             Fixed
           </button>
         </div>
-        <button class="btn btn-outline" type="button" (click)="resetWidths()">
-          Reset Widths
-        </button>
+        <button class="btn btn-outline" type="button" (click)="resetWidths()">Reset Widths</button>
       </div>
     </div>
   </div>

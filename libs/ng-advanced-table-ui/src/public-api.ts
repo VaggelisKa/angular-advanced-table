@@ -24,10 +24,7 @@ export { NAT_TOOLBAR_ITEM } from './lib/components/table-toolbar/common/toolbar-
 
 export { NatTableExport } from './lib/components/table-export/table-export.directive';
 
-export {
-  NAT_TABLE_EXPORT,
-  provideNatTableExport,
-} from './lib/components/table-export/table-export.provider';
+export { NAT_TABLE_EXPORT, provideNatTableExport } from './lib/components/table-export/table-export.provider';
 
 export { NatTableSelectionCheckbox } from './lib/components/table-selection/table-selection';
 
@@ -39,12 +36,12 @@ export {
   NAT_TABLE_UI_ENGLISH_INTL,
   NAT_TABLE_UI_DEFAULT_INTL,
   NAT_TABLE_UI_INTL,
-  provideNatTableUiIntl,
+  provideNatTableUiIntl
 } from './lib/shared/table-ui-intl';
 
 export type {
   NatTableHeaderActionsOptions,
-  NatTableSortIndicatorContent,
+  NatTableSortIndicatorContent
 } from './lib/components/table-header-actions/table-header-actions';
 
 export type {
@@ -56,13 +53,10 @@ export type {
   NatTableExportDataColumn,
   NatTableExportDataRow,
   NatTableExportHandler,
-  NatTableExportProvider,
+  NatTableExportProvider
 } from './lib/components/table-export/table-export.types';
 
-export type {
-  NatToolbarItemPosition,
-  NatToolbarItemRef,
-} from './lib/components/table-toolbar/common/toolbar-tokens.type';
+export type { NatToolbarItemPosition, NatToolbarItemRef } from './lib/components/table-toolbar/common/toolbar-tokens.type';
 
 export type {
   NatTableColumnVisibilityIntl,
@@ -76,7 +70,7 @@ export type {
   NatTableUiIntl,
   NatTableUiIntlConfig,
   NatTableUiIntlProviderConfig,
-  NatTableUiNumberFormatter,
+  NatTableUiNumberFormatter
 } from './lib/shared/table-ui-intl';
 
 export type {
@@ -106,5 +100,5 @@ export type {
   NatTableSortDirection,
   NatTableSortIndicatorContext,
   NatTableUiController,
-  NatTableUiState,
+  NatTableUiState
 } from './lib/shared/table-ui.types';

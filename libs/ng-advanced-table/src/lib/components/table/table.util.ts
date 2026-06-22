@@ -1,17 +1,7 @@
 /* eslint-disable max-lines -- colocated pure helpers for the table component (render-state builders, updaters, geometry); kept together so the component stays this-less and small. */
-import type {
-  CdkDragDrop,
-} from '@angular/cdk/drag-drop';
+import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 
-import type {
-  CellContext,
-  Column,
-  Header,
-  HeaderGroup,
-  PaginationState,
-  RowData,
-  Updater,
-} from '@tanstack/angular-table';
+import type { CellContext, Column, Header, HeaderGroup, PaginationState, RowData, Updater } from '@tanstack/angular-table';
 
 import {
   DEFAULT_CELL_MAX_LINES,
@@ -21,7 +11,7 @@ import {
   normalizeColumnDimension,
   normalizeColumnLabel,
   readColumnEntry,
-  resolveColumnLabel,
+  resolveColumnLabel
 } from './table-utils';
 import type { TableColumnSizingState } from './table-utils';
 import type { NatTableCellTone, NatTableState } from './table.types';
@@ -74,7 +64,7 @@ export type ColumnRenderStateContext<TData extends RowData> = {
 /** Accumulates sticky pinned offsets in iteration order: each column's offset is the running width sum before it. */
 export const accumulatePinnedOffsets = <TData extends RowData>(
   columns: readonly Column<TData, unknown>[],
-  widths: Record<string, number>,
+  widths: Record<string, number>
 ): Record<string, number> => {
   const offsets: Record<string, number> = {};
   let offset = 0;
@@ -95,7 +85,7 @@ export const resolveColumnRenderWidth = <TData extends RowData>(
   column: Column<TData, unknown>,
   sizing: TableColumnSizingState | undefined,
   resizedWidth: number | undefined,
-  widths: Record<string, number>,
+  widths: Record<string, number>
 ): string | null => {
   const hasExplicitWidth = sizing?.hasSize === true || resizedWidth !== undefined;
 
@@ -109,11 +99,7 @@ export const resolveColumnRenderWidth = <TData extends RowData>(
 };
 
 /** A min/max dimension: the explicit def value when the column declares it, else the resolved width. */
-export const resolveSizedDimension = (
-  hasBound: boolean,
-  boundValue: number | undefined,
-  width: string | null,
-): string | null => {
+export const resolveSizedDimension = (hasBound: boolean, boundValue: number | undefined, width: string | null): string | null => {
   if (hasBound) {
     return normalizeColumnDimension(boundValue);
   }
@@ -126,10 +112,7 @@ export const normalizeMetaDimension = (value: number | string | undefined): stri
   value !== undefined ? normalizeColumnDimension(value) : null;
 
 /** A header min/max bound: the explicit meta value when set, else the resolved header width. */
-export const resolveHeaderBound = (
-  metaValue: number | string | undefined,
-  headerWidth: string | null,
-): string | null => {
+export const resolveHeaderBound = (metaValue: number | string | undefined, headerWidth: string | null): string | null => {
   if (metaValue !== undefined) {
     return normalizeColumnDimension(metaValue);
   }
@@ -138,9 +121,7 @@ export const resolveHeaderBound = (
 };
 
 /** Maps the primary sort entry to its aria-sort value. */
-export const resolveAriaSort = (
-  primarySortEntry: ColumnSortEntry | null,
-): 'ascending' | 'descending' | null => {
+export const resolveAriaSort = (primarySortEntry: ColumnSortEntry | null): 'ascending' | 'descending' | null => {
   if (!primarySortEntry) {
     return null;
   }
@@ -149,13 +130,12 @@ export const resolveAriaSort = (
 };
 
 /** Maps a `desc` flag to its sort-direction announcement value. */
-export const sortDirection = (desc: boolean): 'ascending' | 'descending' =>
-  desc ? 'descending' : 'ascending';
+export const sortDirection = (desc: boolean): 'ascending' | 'descending' => (desc ? 'descending' : 'ascending');
 
 /** Maps active filter sources to the announcement filter-state value. */
 export const resolveFilterState = (
   hasGlobalFilter: boolean,
-  hasColumnFilters: boolean,
+  hasColumnFilters: boolean
 ): 'global-and-column' | 'global' | 'column' | 'none' => {
   if (hasGlobalFilter) {
     return hasColumnFilters ? 'global-and-column' : 'global';
@@ -165,17 +145,14 @@ export const resolveFilterState = (
 };
 
 /** Leaf column ids of a header row, skipping placeholder headers. */
-export const getHeaderRowColumnIds = <TData extends RowData>(
-  headerGroup: HeaderGroup<TData>,
-): string[] =>
+export const getHeaderRowColumnIds = <TData extends RowData>(headerGroup: HeaderGroup<TData>): string[] =>
   headerGroup.headers.filter((header) => !header.isPlaceholder).map((header) => header.column.id);
 
 /** Whether the primitive header label should be hidden in favour of the screen-reader-only label. */
 export const shouldHidePrimitiveHeaderLabel = <TData extends RowData>(
   header: Header<TData, unknown>,
-  columnState: { hiddenHeaderLabel: string | null } | undefined,
-): boolean =>
-  !!columnState?.hiddenHeaderLabel && isPrimitiveHeaderContent(header.column.columnDef.header);
+  columnState: { hiddenHeaderLabel: string | null } | undefined
+): boolean => !!columnState?.hiddenHeaderLabel && isPrimitiveHeaderContent(header.column.columnDef.header);
 
 /** Keyboard keys that drive a column resize (Alt+Arrow steps; Alt+Home/End jump to bounds). */
 const RESIZE_KEYS: ReadonlySet<string> = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End']);
@@ -184,26 +161,21 @@ const RESIZE_KEYS: ReadonlySet<string> = new Set(['ArrowLeft', 'ArrowRight', 'Ho
 export const isResizeKey = (event: KeyboardEvent): boolean => RESIZE_KEYS.has(event.key);
 
 /** A column is resizable only when its definition opts in with `enableResizing: true`. */
-export const isColumnResizable = <TData extends RowData>(
-  column: Column<TData, unknown>,
-): boolean => column.columnDef.enableResizing === true;
+export const isColumnResizable = <TData extends RowData>(column: Column<TData, unknown>): boolean =>
+  column.columnDef.enableResizing === true;
 
 /** A non-placeholder header whose column opts into resizing. */
-export const canResizeColumn = <TData extends RowData>(
-  header: Header<TData, unknown>,
-): boolean => !header.isPlaceholder && isColumnResizable(header.column);
+export const canResizeColumn = <TData extends RowData>(header: Header<TData, unknown>): boolean =>
+  !header.isPlaceholder && isColumnResizable(header.column);
 
 /** Resolves the per-cell tone from the column's `meta.cellTone` callback. */
 export const getCellTone = <TData extends RowData>(
   column: Column<TData, unknown>,
-  context: CellContext<TData, unknown>,
+  context: CellContext<TData, unknown>
 ): NatTableCellTone | null => column.columnDef.meta?.cellTone?.(context) ?? null;
 
 /** Resolves which column id a header drag moved, falling back to the source row slot. */
-export const resolveDraggedColumnId = (
-  event: CdkDragDrop<string[]>,
-  rowColumnIds: readonly string[],
-): string | null => {
+export const resolveDraggedColumnId = (event: CdkDragDrop<string[]>, rowColumnIds: readonly string[]): string | null => {
   const draggedColumnId: unknown = event.item.data;
 
   if (typeof draggedColumnId === 'string' && rowColumnIds.includes(draggedColumnId)) {
@@ -214,9 +186,7 @@ export const resolveDraggedColumnId = (
 };
 
 /** Maps a column's pin state to its reorder zone. */
-export const getColumnZone = <TData extends RowData>(
-  column: Column<TData, unknown>,
-): ColumnReorderZone => {
+export const getColumnZone = <TData extends RowData>(column: Column<TData, unknown>): ColumnReorderZone => {
   const pinnedState = column.getIsPinned();
 
   if (pinnedState === 'left') {
@@ -231,10 +201,7 @@ export const getColumnZone = <TData extends RowData>(
 };
 
 /** Scrolls `element` just into view horizontally within `scrollContainer`. */
-export const scrollElementHorizontallyIntoView = (
-  scrollContainer: HTMLElement,
-  element: HTMLElement,
-): void => {
+export const scrollElementHorizontallyIntoView = (scrollContainer: HTMLElement, element: HTMLElement): void => {
   const containerRect = scrollContainer.getBoundingClientRect();
   const elementRect = element.getBoundingClientRect();
 
@@ -261,7 +228,7 @@ export const resolveUpdater = <T>(currentValue: T, updater: Updater<T> | undefin
 /** Resets pagination to the first page while preserving page size. */
 export const firstPageUpdater: Updater<PaginationState> = (currentPagination) => ({
   ...currentPagination,
-  pageIndex: 0,
+  pageIndex: 0
 });
 
 /**
@@ -287,10 +254,7 @@ const orDefault = <T>(value: T | undefined, fallback: T): T => value ?? fallback
  * Fills every slice of a partial initial state from `defaults`, leaving the caller to
  * apply `this`-dependent normalization (sorting/selection) and the globalFilter gate.
  */
-export const resolveSeedState = (
-  initialState: Partial<NatTableState>,
-  defaults: NatTableState,
-): NatTableState => ({
+export const resolveSeedState = (initialState: Partial<NatTableState>, defaults: NatTableState): NatTableState => ({
   sorting: orDefault(initialState.sorting, defaults.sorting),
   globalFilter: orDefault(initialState.globalFilter, defaults.globalFilter),
   columnFilters: orDefault(initialState.columnFilters, defaults.columnFilters),
@@ -301,14 +265,14 @@ export const resolveSeedState = (
   rowSelection: orDefault(initialState.rowSelection, defaults.rowSelection),
   pagination: {
     pageIndex: orDefault(initialState.pagination?.pageIndex, defaults.pagination.pageIndex),
-    pageSize: orDefault(initialState.pagination?.pageSize, defaults.pagination.pageSize),
-  },
+    pageSize: orDefault(initialState.pagination?.pageSize, defaults.pagination.pageSize)
+  }
 });
 
 /** Resolves a pinning zone's column ids to their visible Column objects, preserving order. */
 export const resolvePinnedZoneColumns = <TData extends RowData>(
   zoneColumnIds: readonly string[] | undefined,
-  visibleColumnsById: ReadonlyMap<string, Column<TData, unknown>>,
+  visibleColumnsById: ReadonlyMap<string, Column<TData, unknown>>
 ): Column<TData, unknown>[] =>
   (zoneColumnIds ?? [])
     .map((columnId) => visibleColumnsById.get(columnId))
@@ -319,35 +283,35 @@ const buildColumnWidths = <TData extends RowData>(
   column: Column<TData, unknown>,
   sizing: TableColumnSizingState | undefined,
   resizedWidth: number | undefined,
-  widths: Record<string, number>,
+  widths: Record<string, number>
 ): { width: string | null; minWidth: string | null; maxWidth: string | null } => {
   const width = resolveColumnRenderWidth(column, sizing, resizedWidth, widths);
 
   return {
     width,
     minWidth: resolveSizedDimension(sizing?.hasMinSize === true, column.columnDef.minSize, width),
-    maxWidth: resolveSizedDimension(sizing?.hasMaxSize === true, column.columnDef.maxSize, width),
+    maxWidth: resolveSizedDimension(sizing?.hasMaxSize === true, column.columnDef.maxSize, width)
   };
 };
 
 /** Header width trio. A user-resized column drives the header too; otherwise header-only meta sizing applies. */
 const buildHeaderWidths = <TData extends RowData>(
   meta: Column<TData, unknown>['columnDef']['meta'],
-  resizedDimension: string | null,
+  resizedDimension: string | null
 ): { headerWidth: string | null; headerMinWidth: string | null; headerMaxWidth: string | null } => {
   const headerWidth = resizedDimension ?? normalizeMetaDimension(meta?.headerSize);
 
   return {
     headerWidth,
     headerMinWidth: resizedDimension ?? resolveHeaderBound(meta?.headerMinSize, headerWidth),
-    headerMaxWidth: resizedDimension ?? resolveHeaderBound(meta?.headerMaxSize, headerWidth),
+    headerMaxWidth: resizedDimension ?? resolveHeaderBound(meta?.headerMaxSize, headerWidth)
   };
 };
 
 /** Pinned-edge flags and sticky offsets for a column within its zone. */
 const buildPinnedEdges = <TData extends RowData>(
   column: Column<TData, unknown>,
-  context: ColumnRenderStateContext<TData>,
+  context: ColumnRenderStateContext<TData>
 ): {
   pinnedLeft: boolean;
   pinnedRight: boolean;
@@ -365,14 +329,14 @@ const buildPinnedEdges = <TData extends RowData>(
     hasPinnedEdgeLeft: pinnedLeft && context.leftVisibleColumns.at(-1)?.id === column.id,
     hasPinnedEdgeRight: pinnedRight && context.rightVisibleColumns.at(0)?.id === column.id,
     left: pinnedLeft ? (context.leftOffsets[column.id] ?? 0) : null,
-    right: pinnedRight ? (context.rightOffsets[column.id] ?? 0) : null,
+    right: pinnedRight ? (context.rightOffsets[column.id] ?? 0) : null
   };
 };
 
 /** The primary (first) sort entry for a column, or null when it is not the primary sort. */
 const findPrimarySortEntry = <TData extends RowData>(
   context: ColumnRenderStateContext<TData>,
-  columnId: string,
+  columnId: string
 ): ColumnSortEntry | null => {
   if (context.primarySortColumnId !== columnId) {
     return null;
@@ -384,7 +348,7 @@ const findPrimarySortEntry = <TData extends RowData>(
 /** Builds one column's full render state from the shared context. */
 export const buildColumnRenderState = <TData extends RowData>(
   column: Column<TData, unknown>,
-  context: ColumnRenderStateContext<TData>,
+  context: ColumnRenderStateContext<TData>
 ): TableColumnRenderState => {
   const { state, userColumnSizing, widths } = context;
   const sizing = userColumnSizing[column.id];
@@ -412,6 +376,6 @@ export const buildColumnRenderState = <TData extends RowData>(
     cellHeight: normalizeMetaDimension(meta?.cellHeight),
     cellMaxLines: normalizeCellMaxLines(meta?.cellMaxLines ?? DEFAULT_CELL_MAX_LINES),
     ariaSort: resolveAriaSort(primarySortEntry),
-    rowHeader: !!meta?.rowHeader,
+    rowHeader: !!meta?.rowHeader
   };
 };

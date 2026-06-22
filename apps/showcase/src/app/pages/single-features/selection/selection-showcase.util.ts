@@ -17,9 +17,7 @@ export const getDemoItemRowId = (row: DemoItem): string => row.id;
 
 export const computeRowSelection = (
   source: RowSelectionSource,
-  previous:
-    | { readonly source: RowSelectionSource; readonly value: RowSelectionState }
-    | undefined,
+  previous: { readonly source: RowSelectionSource; readonly value: RowSelectionState } | undefined
 ): RowSelectionState => {
   // Switching selection mode starts the new mode with an empty selection.
   if (previous && previous.source.multiple !== source.multiple) {

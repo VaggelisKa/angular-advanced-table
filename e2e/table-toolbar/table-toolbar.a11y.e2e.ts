@@ -1,5 +1,5 @@
-import {   expect, test } from '@playwright/test';
-import type {Locator, Page} from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { applyDocumentDirection } from '../support/document-direction';
 
@@ -9,7 +9,7 @@ test.describe('Table toolbar accessibility', () => {
   });
 
   const buttons = (
-    page: Page,
+    page: Page
   ): {
     exportButton: Locator;
     refreshButton: Locator;
@@ -21,7 +21,7 @@ test.describe('Table toolbar accessibility', () => {
     refreshButton: page.getByTestId('refresh-button'),
     compactButton: page.getByTestId('density-compact-button'),
     comfortableButton: page.getByTestId('density-comfortable-button'),
-    shareButton: page.getByTestId('share-button'),
+    shareButton: page.getByTestId('share-button')
   });
 
   test('activates items and reports the action via keyboard only', async ({ page }) => {
@@ -50,11 +50,8 @@ test.describe('Table toolbar accessibility', () => {
     await expect(page.getByTestId('last-action')).toHaveText('density-compact');
   });
 
-  test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({
-    page,
-  }) => {
-    const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } =
-      buttons(page);
+  test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({ page }) => {
+    const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } = buttons(page);
 
     await exportButton.focus();
     await exportButton.press('ArrowRight');

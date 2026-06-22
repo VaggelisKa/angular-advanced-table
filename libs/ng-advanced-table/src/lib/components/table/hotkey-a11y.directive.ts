@@ -1,25 +1,10 @@
-import {
-  DestroyRef,
-  Directive,
-  ElementRef,
-  Renderer2,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { DestroyRef, Directive, ElementRef, Renderer2, computed, effect, inject, input, signal } from '@angular/core';
 
-import {
-  NAT_TABLE_KEYBINDINGS,
-  mergeNatTableKeybindings,
-  serializeShortcutValue,
-} from './keybindings';
+import { NAT_TABLE_KEYBINDINGS, mergeNatTableKeybindings, serializeShortcutValue } from './keybindings';
 import { NatTableService } from './table.service';
 import type { NatTableKeybindings } from './table.types';
 
-const readTrimmedText = (nativeEl: HTMLElement): string =>
-  (nativeEl.textContent || nativeEl.innerText || '').trim();
+const readTrimmedText = (nativeEl: HTMLElement): string => (nativeEl.textContent || nativeEl.innerText || '').trim();
 
 /**
  * Directive to manage keyboard shortcut screen reader readouts and ARIA attributes.
@@ -27,7 +12,7 @@ const readTrimmedText = (nativeEl: HTMLElement): string =>
  * without losing the element's base text.
  */
 @Directive({
-  selector: '[natHotkeyA11y], [natTableHotkeyA11y], [appHotkeyA11y]',
+  selector: '[natHotkeyA11y], [natTableHotkeyA11y], [appHotkeyA11y]'
 })
 export class NatTableHotkeyA11y {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -97,7 +82,7 @@ export class NatTableHotkeyA11y {
       attributeFilter: ['aria-label'],
       childList: true,
       characterData: true,
-      subtree: true,
+      subtree: true
     });
 
     this.destroyRef.onDestroy(() => {
@@ -125,8 +110,7 @@ export class NatTableHotkeyA11y {
 
     const isAriaLabel = (mutation: MutationRecord): boolean =>
       mutation.type === 'attributes' && mutation.attributeName === 'aria-label';
-    const isTextMutation = (mutation: MutationRecord): boolean =>
-      mutation.type === 'childList' || mutation.type === 'characterData';
+    const isTextMutation = (mutation: MutationRecord): boolean => mutation.type === 'childList' || mutation.type === 'characterData';
 
     if (mutations.some(isAriaLabel)) {
       this.syncExternalAriaLabel(nativeEl);
@@ -156,11 +140,7 @@ export class NatTableHotkeyA11y {
   }
 
   /** Writes aria-keyshortcuts and the shortcut-suffixed aria-label, or restores the originals when no shortcut applies. */
-  private writeAriaAttributes(
-    nativeEl: HTMLElement,
-    currentShortcut: string,
-    base: string,
-  ): void {
+  private writeAriaAttributes(nativeEl: HTMLElement, currentShortcut: string, base: string): void {
     if (!currentShortcut) {
       this.renderer.removeAttribute(nativeEl, 'aria-keyshortcuts');
       const original = this.originalAriaLabel();

@@ -9,4 +9,4 @@ export type NatTableRowRenderedEvent = {
   renderToken: number;
   /** Time, in milliseconds, between cycle start and this row becoming painted. */
   durationMs: number;
-}
+};

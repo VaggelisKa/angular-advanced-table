@@ -6,7 +6,7 @@ export type {
   NatTableColumnMeta,
   NatTableSortDirection,
   NatTableSortIndicatorContext,
-  NatTableState,
+  NatTableState
 } from './lib/table-contracts';
 
 export type { Equal, Expect } from './testing/type-assertions';

@@ -5,7 +5,7 @@ import {
   formatNatTableUtilsNumber,
   injectNatTableUtilsIntl,
   mergeRenderMetricsColumnIntl,
-  resolveNatTableUtilsIntl,
+  resolveNatTableUtilsIntl
 } from './intl';
 import type { NatTableRenderMetricsColumnIntl } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
@@ -26,7 +26,7 @@ export type WithRenderMetricsColumnOptions = {
   minSize?: number;
   /** Optional TanStack max-size override. */
   maxSize?: number;
-} & NatTableRenderMetricsColumnIntl
+} & NatTableRenderMetricsColumnIntl;
 
 /**
  * Builds the metrics column filter predicate that keeps rows whose latest
@@ -34,9 +34,7 @@ export type WithRenderMetricsColumnOptions = {
  *
  * @param store Shared metrics store used to look up per-row tone.
  */
-function createMetricsFilterFn<TData extends RowData>(
-  store: NatTableRenderMetricsStore,
-): FilterFn<TData> {
+function createMetricsFilterFn<TData extends RowData>(store: NatTableRenderMetricsStore): FilterFn<TData> {
   return (row, _columnId, filterValue) => {
     const activeFilter = isRenderFilterValue(filterValue) ? filterValue : 'all';
 
@@ -73,9 +71,7 @@ type MetricsCellConfig = {
  * Builds the metrics column cell renderer that formats the latest per-row
  * render duration, falling back to the pending label when no metric exists.
  */
-function createMetricsCell<TData extends RowData>(
-  config: MetricsCellConfig,
-): (info: CellContext<TData, unknown>) => unknown {
+function createMetricsCell<TData extends RowData>(config: MetricsCellConfig): (info: CellContext<TData, unknown>) => unknown {
   const { store, utilsIntl, columnIntl, locale, pendingLabel, unitSuffix } = config;
 
   return (info) => {
@@ -90,15 +86,15 @@ function createMetricsCell<TData extends RowData>(
       metric.durationMs,
       {
         minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
+        maximumFractionDigits: 1
       },
-      locale,
+      locale
     );
 
     return (
       columnIntl.duration?.({
         durationMsValue: metric.durationMs,
-        durationMsText,
+        durationMsText
       }) ?? `${durationMsText}${unitSuffix}`
     );
   };
@@ -124,7 +120,7 @@ function createMetricsCell<TData extends RowData>(
 export function withRenderMetricsColumn<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
   store: NatTableRenderMetricsStore,
-  options: WithRenderMetricsColumnOptions = {},
+  options: WithRenderMetricsColumnOptions = {}
 ): ColumnDef<TData, unknown>[] {
   const utilsIntlConfig = injectNatTableUtilsIntl();
   const locale = options.locale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE;
@@ -143,14 +139,14 @@ export function withRenderMetricsColumn<TData extends RowData>(
     maxSize: options.maxSize,
     meta: {
       label: header,
-      align: 'end',
+      align: 'end'
     },
     enableGlobalFilter: false,
     enableHiding: false,
     enablePinning: false,
     enableSorting: false,
     filterFn: createMetricsFilterFn(store),
-    cell: createMetricsCell({ store, utilsIntl, columnIntl, locale, pendingLabel, unitSuffix }),
+    cell: createMetricsCell({ store, utilsIntl, columnIntl, locale, pendingLabel, unitSuffix })
   };
 
   return [...columns, metricsColumn];

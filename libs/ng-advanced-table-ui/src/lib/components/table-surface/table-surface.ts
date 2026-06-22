@@ -9,7 +9,7 @@ import type {
   PaginationState,
   RowSelectionState,
   SortingState,
-  VisibilityState,
+  VisibilityState
 } from '@tanstack/angular-table';
 import { NatTableService } from 'ng-advanced-table';
 import type {
@@ -17,7 +17,7 @@ import type {
   NatTableKeybindings,
   NatTableMode,
   NatTableModeConfiguration,
-  NatTableState,
+  NatTableState
 } from 'ng-advanced-table';
 
 const serializeSelectedRowIds = (selection: NatTableState['rowSelection']): string =>
@@ -43,10 +43,7 @@ type SliceEmitter = readonly [changed: boolean, emit: () => void];
 
 const jsonChanged = (a: unknown, b: unknown): boolean => JSON.stringify(a) !== JSON.stringify(b);
 
-const computeNatTableStateDiff = (
-  prev: NatTableState,
-  next: NatTableState,
-): NatTableStateDiff => ({
+const computeNatTableStateDiff = (prev: NatTableState, next: NatTableState): NatTableStateDiff => ({
   sortingChanged: jsonChanged(prev.sorting, next.sorting),
   globalFilterChanged: prev.globalFilter !== next.globalFilter,
   columnFiltersChanged: jsonChanged(prev.columnFilters, next.columnFilters),
@@ -55,8 +52,7 @@ const computeNatTableStateDiff = (
   columnPinningChanged: jsonChanged(prev.columnPinning, next.columnPinning),
   columnSizingChanged: jsonChanged(prev.columnSizing, next.columnSizing),
   paginationChanged: jsonChanged(prev.pagination, next.pagination),
-  rowSelectionChanged:
-    serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(next.rowSelection),
+  rowSelectionChanged: serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(next.rowSelection)
 });
 
 @Component({
@@ -67,7 +63,7 @@ const computeNatTableStateDiff = (
     <ng-content />
   </div>`,
   styleUrl: './table-surface.css',
-  providers: [NatTableService],
+  providers: [NatTableService]
 })
 export class NatTableSurface {
   /** Two-way bindable state representing the current table view state. */
@@ -120,7 +116,7 @@ export class NatTableSurface {
     columnPinning: { left: [], right: [] },
     columnSizing: {},
     rowSelection: {},
-    pagination: { pageIndex: 0, pageSize: 10 },
+    pagination: { pageIndex: 0, pageSize: 10 }
   };
 
   private firstStateChange = true;
@@ -204,22 +200,13 @@ export class NatTableSurface {
     const sliceEmitters: readonly SliceEmitter[] = [
       [diff.sortingChanged, (): void => this.sortingChange.emit(nextState.sorting)],
       [diff.globalFilterChanged, (): void => this.globalFilterChange.emit(nextState.globalFilter)],
-      [
-        diff.columnFiltersChanged,
-        (): void => this.columnFiltersChange.emit(nextState.columnFilters),
-      ],
-      [
-        diff.columnVisibilityChanged,
-        (): void => this.columnVisibilityChange.emit(nextState.columnVisibility),
-      ],
+      [diff.columnFiltersChanged, (): void => this.columnFiltersChange.emit(nextState.columnFilters)],
+      [diff.columnVisibilityChanged, (): void => this.columnVisibilityChange.emit(nextState.columnVisibility)],
       [diff.columnOrderChanged, (): void => this.columnOrderChange.emit(nextState.columnOrder)],
-      [
-        diff.columnPinningChanged,
-        (): void => this.columnPinningChange.emit(nextState.columnPinning),
-      ],
+      [diff.columnPinningChanged, (): void => this.columnPinningChange.emit(nextState.columnPinning)],
       [diff.columnSizingChanged, (): void => this.columnSizingChange.emit(nextState.columnSizing)],
       [diff.paginationChanged, (): void => this.paginationChange.emit(nextState.pagination)],
-      [diff.rowSelectionChanged, (): void => this.rowSelectionChange.emit(nextState.rowSelection)],
+      [diff.rowSelectionChanged, (): void => this.rowSelectionChange.emit(nextState.rowSelection)]
     ];
 
     for (const [changed, emit] of sliceEmitters) {

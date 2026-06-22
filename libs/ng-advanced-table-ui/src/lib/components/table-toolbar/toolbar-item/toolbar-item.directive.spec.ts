@@ -1,6 +1,6 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import {  TestBed } from '@angular/core/testing';
-import type {ComponentFixture} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { NatTableToolbar } from '../table-toolbar';
@@ -14,20 +14,11 @@ import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolba
   template: `
     <nat-table-toolbar>
       <button id="default-start" natToolbarItem="export" type="button">Export</button>
-      <button id="explicit-end" natToolbarItem="filter" natToolbarItemPosition="end" type="button">
-        Filter
-      </button>
-      <button
-        [natToolbarItemPosition]="dynamicPosition()"
-        id="dynamic"
-        natToolbarItem="dynamic"
-        type="button"
-      >
-        Dynamic
-      </button>
+      <button id="explicit-end" natToolbarItem="filter" natToolbarItemPosition="end" type="button">Filter</button>
+      <button [natToolbarItemPosition]="dynamicPosition()" id="dynamic" natToolbarItem="dynamic" type="button">Dynamic</button>
       <div natToolbarItem="custom">Custom widget</div>
     </nat-table-toolbar>
-  `,
+  `
 })
 class DirectiveHost {
   public readonly dynamicPosition = signal<NatToolbarItemPosition>('center');
@@ -36,7 +27,7 @@ class DirectiveHost {
 @Component({
   selector: 'nat-toolbarless-host',
   imports: [NatToolbarItem],
-  template: `<button natToolbarItem="orphan" type="button">Orphan</button>`,
+  template: `<button natToolbarItem="orphan" type="button">Orphan</button>`
 })
 class ToolbarlessHost {}
 
@@ -45,7 +36,7 @@ describe('NatToolbarItem', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
     fixture = TestBed.createComponent(DirectiveHost);
     fixture.detectChanges();

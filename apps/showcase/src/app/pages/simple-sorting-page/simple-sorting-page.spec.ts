@@ -19,8 +19,7 @@ describe('SimpleSortingPage', () => {
     return found;
   };
 
-  const queryAll = <T extends Element>(selector: string): NodeListOf<T> =>
-    host().querySelectorAll<T>(selector);
+  const queryAll = <T extends Element>(selector: string): NodeListOf<T> => host().querySelectorAll<T>(selector);
 
   beforeEach(async () => {
     try {
@@ -31,7 +30,7 @@ describe('SimpleSortingPage', () => {
 
     await TestBed.configureTestingModule({
       imports: [SimpleSortingPage],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SimpleSortingPage);
@@ -77,13 +76,9 @@ describe('SimpleSortingPage', () => {
     fixture.detectChanges();
 
     const itemsHeader = query<HTMLTableCellElement>('thead th[data-column-id="items"]');
-    const itemsCell = query<HTMLTableCellElement>(
-      'tbody tr:first-child td[data-column-id="items"]',
-    );
+    const itemsCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="items"]');
     const totalHeader = query<HTMLTableCellElement>('thead th[data-column-id="total"]');
-    const totalCell = query<HTMLTableCellElement>(
-      'tbody tr:first-child td[data-column-id="total"]',
-    );
+    const totalCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="total"]');
 
     expect(itemsHeader.classList.contains('is-align-end')).toBe(true);
     expect(itemsCell.classList.contains('is-align-end')).toBe(true);
@@ -96,13 +91,9 @@ describe('SimpleSortingPage', () => {
 
     const orderCell = query<HTMLTableCellElement>('tbody tr:first-child th[data-column-id="id"]');
     const companyHeader = query<HTMLTableCellElement>('thead th[data-column-id="owner"]');
-    const companyCell = query<HTMLTableCellElement>(
-      'tbody tr:first-child td[data-column-id="owner"]',
-    );
+    const companyCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="owner"]');
     const actionsHeader = query<HTMLTableCellElement>('thead th[data-column-id="actions"]');
-    const actionsCell = query<HTMLTableCellElement>(
-      'tbody tr:first-child td[data-column-id="actions"]',
-    );
+    const actionsCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="actions"]');
 
     expect(orderCell.classList.contains('is-cell-clamped')).toBe(false);
     expect(orderCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
@@ -121,9 +112,7 @@ describe('SimpleSortingPage', () => {
   it('should render a right-pinned three-dots actions menu for each row', async () => {
     fixture.detectChanges();
 
-    const actionTriggers = queryAll<HTMLButtonElement>(
-      'tbody td[data-column-id="actions"] .row-actions-trigger',
-    );
+    const actionTriggers = queryAll<HTMLButtonElement>('tbody td[data-column-id="actions"] .row-actions-trigger');
 
     expect(actionTriggers).toHaveLength(5);
 
@@ -135,9 +124,9 @@ describe('SimpleSortingPage', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const actionLabels = Array.from(
-      document.body.querySelectorAll('.row-actions-item .row-actions-item-label'),
-    ).map((element) => element.textContent.trim());
+    const actionLabels = Array.from(document.body.querySelectorAll('.row-actions-item .row-actions-item-label')).map((element) =>
+      element.textContent.trim()
+    );
 
     expect(actionLabels).toStrictEqual(['Inspect tape', 'Create alert', 'Send to blotter']);
   });
@@ -146,9 +135,7 @@ describe('SimpleSortingPage', () => {
     fixture.detectChanges();
 
     const sortButtons = queryAll<HTMLButtonElement>('.sort-button');
-    const customerSortButton = Array.from(sortButtons).find((button) =>
-      button.textContent.includes('Customer'),
-    );
+    const customerSortButton = Array.from(sortButtons).find((button) => button.textContent.includes('Customer'));
 
     if (!customerSortButton) {
       throw new Error('Expected the Customer sort button to render.');
@@ -157,9 +144,7 @@ describe('SimpleSortingPage', () => {
     customerSortButton.click();
     fixture.detectChanges();
 
-    const firstRowHeader = query<HTMLTableCellElement>(
-      'tbody tr:first-child th[data-column-id="id"]',
-    );
+    const firstRowHeader = query<HTMLTableCellElement>('tbody tr:first-child th[data-column-id="id"]');
 
     expect(firstRowHeader.textContent.trim()).toBe('ORD-1011');
   });

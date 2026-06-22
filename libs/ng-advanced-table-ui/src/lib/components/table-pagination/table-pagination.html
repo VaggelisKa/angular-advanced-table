@@ -1,58 +1,49 @@
-@if (controller(); as ctrl) {
-  @if (ctrl.enablePagination()) {
-    <nat-table-toolbar [accessibleName]="resolvedPagerAriaLabel()" class="pagination-toolbar">
-      <!-- Page Size Selection -->
-      <div
-        [accessibleName]="resolvedPageSizeAriaLabel()"
-        class="chip-row compact"
-        natToolbarGroup="start"
-      >
-        @for (option of resolvedPageSizeOptions(); track option.pageSize) {
-          <button
-            [attr.aria-controls]="tableElementId()"
-            [attr.aria-label]="option.ariaLabel"
-            [attr.aria-pressed]="selectedPageSize() === option.pageSize"
-            [class.is-active]="selectedPageSize() === option.pageSize"
-            [natToolbarItem]="`page-size-${option.pageSize}`"
-            class="chip"
-            type="button"
-            (click)="setPageSize(option.pageSize)"
-          >
-            {{ option.text }}
-          </button>
-        }
-      </div>
+@if (controller(); as ctrl) { @if (ctrl.enablePagination()) {
+<nat-table-toolbar [accessibleName]="resolvedPagerAriaLabel()" class="pagination-toolbar">
+  <!-- Page Size Selection -->
+  <div [accessibleName]="resolvedPageSizeAriaLabel()" class="chip-row compact" natToolbarGroup="start">
+    @for (option of resolvedPageSizeOptions(); track option.pageSize) {
+    <button
+      [attr.aria-controls]="tableElementId()"
+      [attr.aria-label]="option.ariaLabel"
+      [attr.aria-pressed]="selectedPageSize() === option.pageSize"
+      [class.is-active]="selectedPageSize() === option.pageSize"
+      [natToolbarItem]="`page-size-${option.pageSize}`"
+      class="chip"
+      type="button"
+      (click)="setPageSize(option.pageSize)">
+      {{ option.text }}
+    </button>
+    }
+  </div>
 
-      <!-- Pager Navigation -->
-      <div [accessibleName]="resolvedPagerAriaLabel()" class="pager" natToolbarGroup="end">
-        <button
-          [attr.aria-controls]="tableElementId()"
-          [attr.aria-label]="previousPageAriaLabel()"
-          [disabled]="!canPreviousPage()"
-          class="pager-button"
-          natToolbarItem="previous-page"
-          type="button"
-          (click)="previousPage()"
-        >
-          <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
-            <path d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" fill="currentColor" />
-          </svg>
-        </button>
-        <span class="pager-label">{{ pageIndicator() }}</span>
-        <button
-          [attr.aria-controls]="tableElementId()"
-          [attr.aria-label]="nextPageAriaLabel()"
-          [disabled]="!canNextPage()"
-          class="pager-button"
-          natToolbarItem="next-page"
-          type="button"
-          (click)="nextPage()"
-        >
-          <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
-            <path d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z" fill="currentColor" />
-          </svg>
-        </button>
-      </div>
-    </nat-table-toolbar>
-  }
-}
+  <!-- Pager Navigation -->
+  <div [accessibleName]="resolvedPagerAriaLabel()" class="pager" natToolbarGroup="end">
+    <button
+      [attr.aria-controls]="tableElementId()"
+      [attr.aria-label]="previousPageAriaLabel()"
+      [disabled]="!canPreviousPage()"
+      class="pager-button"
+      natToolbarItem="previous-page"
+      type="button"
+      (click)="previousPage()">
+      <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
+        <path d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" fill="currentColor" />
+      </svg>
+    </button>
+    <span class="pager-label">{{ pageIndicator() }}</span>
+    <button
+      [attr.aria-controls]="tableElementId()"
+      [attr.aria-label]="nextPageAriaLabel()"
+      [disabled]="!canNextPage()"
+      class="pager-button"
+      natToolbarItem="next-page"
+      type="button"
+      (click)="nextPage()">
+      <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
+        <path d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z" fill="currentColor" />
+      </svg>
+    </button>
+  </div>
+</nat-table-toolbar>
+} }

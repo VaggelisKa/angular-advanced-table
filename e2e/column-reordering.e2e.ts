@@ -1,5 +1,5 @@
-import {  expect, test } from '@playwright/test';
-import type {Page} from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 test.describe('Column reordering', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,11 +9,7 @@ test.describe('Column reordering', () => {
   const headerColumnIds = async (page: Page): Promise<string[]> =>
     page
       .getByTestId('reordering-order-item')
-      .evaluateAll((items) =>
-        items
-          .map((item) => item.getAttribute('data-column-id'))
-          .filter((id): id is string => id !== null),
-      );
+      .evaluateAll((items) => items.map((item) => item.getAttribute('data-column-id')).filter((id): id is string => id !== null));
 
   test('moves a focused column header with Ctrl+Shift+Arrow', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Column Reordering' })).toBeVisible();
@@ -30,13 +26,11 @@ test.describe('Column reordering', () => {
     await expect.poll(async () => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
     await expect(categoryHeader).toBeFocused();
     await expect(page.getByTestId('nat-table-live-region')).toContainText(
-      'Moved Category column to position 3 of 4 in the unpinned region.',
+      'Moved Category column to position 3 of 4 in the unpinned region.'
     );
   });
 
-  test('scrolls the table region when keyboard reordering moves a focused header right out of view', async ({
-    page,
-  }) => {
+  test('scrolls the table region when keyboard reordering moves a focused header right out of view', async ({ page }) => {
     await page.setViewportSize({ width: 420, height: 760 });
     await page.addStyleTag({
       content: `
@@ -46,7 +40,7 @@ test.describe('Column reordering', () => {
           min-width: 220px !important;
           width: 220px !important;
         }
-      `,
+      `
     });
     await expect(page.getByRole('heading', { name: 'Column Reordering' })).toBeVisible();
     await expect(page.getByTestId('reordering-demo-table')).toBeVisible();
@@ -55,9 +49,7 @@ test.describe('Column reordering', () => {
     const tableRegion = page.getByTestId('nat-table-region');
     const categoryHeader = page.getByTestId('nat-table-header-category');
 
-    await expect
-      .poll(async () => tableRegion.evaluate((element) => element.scrollWidth > element.clientWidth))
-      .toBe(true);
+    await expect.poll(async () => tableRegion.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
 
     await categoryHeader.focus();
     await expect(categoryHeader).toBeFocused();
@@ -70,15 +62,11 @@ test.describe('Column reordering', () => {
     await page.keyboard.press('Control+Shift+ArrowRight');
 
     await expect.poll(async () => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
-    await expect
-      .poll(async () => tableRegion.evaluate((element) => element.scrollLeft))
-      .toBeGreaterThan(scrollLeftBefore);
+    await expect.poll(async () => tableRegion.evaluate((element) => element.scrollLeft)).toBeGreaterThan(scrollLeftBefore);
     await expect(categoryHeader).toBeFocused();
   });
 
-  test('moves a column with the header actions menu as a non-drag pointer alternative', async ({
-    page,
-  }) => {
+  test('moves a column with the header actions menu as a non-drag pointer alternative', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Column Reordering' })).toBeVisible();
     await expect(page.getByTestId('reordering-demo-table')).toBeVisible();
     await expect.poll(async () => headerColumnIds(page)).toEqual(['name', 'category', 'status', 'value']);
@@ -90,7 +78,7 @@ test.describe('Column reordering', () => {
 
     await expect.poll(async () => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
     await expect(page.getByTestId('nat-table-live-region')).toContainText(
-      'Moved Category column to position 3 of 4 in the unpinned region.',
+      'Moved Category column to position 3 of 4 in the unpinned region.'
     );
   });
 });

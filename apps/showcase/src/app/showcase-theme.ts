@@ -37,7 +37,7 @@ const readInitialTheme = (): ShowcaseTheme => {
 };
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ShowcaseThemeStore {
   private readonly themeState = signal<ShowcaseTheme>(readInitialTheme());

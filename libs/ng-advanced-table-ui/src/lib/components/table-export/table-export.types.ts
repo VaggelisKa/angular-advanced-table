@@ -11,7 +11,7 @@ export type NatTableExportDataColumn = {
   readonly id: string;
   /** Export header resolved from column metadata or column definition. */
   readonly header: string;
-}
+};
 
 /** Row values in the resolved table export snapshot. */
 export type NatTableExportDataRow = {
@@ -19,7 +19,7 @@ export type NatTableExportDataRow = {
   readonly id: string;
   /** Values aligned with `NatTableExportData.columns`. */
   readonly values: readonly NatTableExportCellValue[];
-}
+};
 
 /** Structured table data resolved for export handlers. */
 export type NatTableExportData = {
@@ -27,7 +27,7 @@ export type NatTableExportData = {
   readonly columns: readonly NatTableExportDataColumn[];
   /** Exportable row values in their resolved order. */
   readonly rows: readonly NatTableExportDataRow[];
-}
+};
 
 /** Context passed to table export handlers. */
 export type NatTableExportContext<TData extends RowData = RowData> = {
@@ -43,21 +43,18 @@ export type NatTableExportContext<TData extends RowData = RowData> = {
   getData(): NatTableExportData;
   /** Runs the built-in CSV export for the same resolved context. */
   exportCsv(): Promise<void>;
-}
+};
 
 /** Operation that performs a table export. */
-export type NatTableExportHandler<TData extends RowData = RowData> = (
-  context: NatTableExportContext<TData>,
-) => void | Promise<void>;
+export type NatTableExportHandler<TData extends RowData = RowData> = (context: NatTableExportContext<TData>) => void | Promise<void>;
 
 /** App-level table export configuration. */
 export type NatTableExportConfig<TData extends RowData = RowData> = {
   /** Replaces the built-in CSV export handler for all matching directives. */
   readonly handler?: NatTableExportHandler<TData>;
-}
+};
 
 /** Factory used when app-level table export configuration needs Angular DI. */
-export type NatTableExportConfigFactory<TData extends RowData = RowData> =
-  () => NatTableExportConfig<TData>;
+export type NatTableExportConfigFactory<TData extends RowData = RowData> = () => NatTableExportConfig<TData>;
 
 export type NatTableExportProvider = Provider[];

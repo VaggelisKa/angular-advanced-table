@@ -50,7 +50,7 @@ import { Component, computed, input } from '@angular/core';
       overflow: hidden;
       text-overflow: ellipsis;
     }
-  `,
+  `
 })
 export class NatTickerMark {
   public readonly symbol = input.required<string>();

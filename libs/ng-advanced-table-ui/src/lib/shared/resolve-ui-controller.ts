@@ -26,7 +26,7 @@ type InjectNatTableUiControllerOptions = {
 export const injectNatTableUiController = <TData extends RowData = RowData>(
   forInput: Signal<NatTableUiController<TData> | undefined>,
   debugName: string,
-  options?: InjectNatTableUiControllerOptions,
+  options?: InjectNatTableUiControllerOptions
 ): Signal<NatTableUiController<TData> | null> => {
   assertInInjectionContext(injectNatTableUiController);
 
@@ -42,7 +42,7 @@ export const injectNatTableUiController = <TData extends RowData = RowData>(
       hasWarned = true;
       console.warn(
         `[ng-advanced-table-ui] ${debugName}: no controller resolved. ` +
-          `Pass [for]="grid" explicitly or wrap the table in <nat-table-surface>.`,
+          `Pass [for]="grid" explicitly or wrap the table in <nat-table-surface>.`
       );
     }
 

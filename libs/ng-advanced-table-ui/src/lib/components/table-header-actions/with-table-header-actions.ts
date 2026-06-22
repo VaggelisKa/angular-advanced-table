@@ -3,18 +3,13 @@ import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef, HeaderContext, RowData } from '@tanstack/angular-table';
 
 import { NatTableHeaderActions } from './table-header-actions';
-import type {
-  NatTableHeaderActionsOptions,
-  NatTableHeaderRenderContent,
-} from './table-header-actions';
+import type { NatTableHeaderActionsOptions, NatTableHeaderRenderContent } from './table-header-actions';
 import { resolveNatTableColumnLabel } from '../../shared/table-ui.helpers';
 import type { NatTableAccessibilityHeaderActionLabels } from '../../shared/table-ui.types';
 
 const NAT_TABLE_HEADER_ACTIONS_CONTENT = Symbol('NatTableHeaderActionsContent');
 
-type NatTableHeaderActionsRenderer<TData extends RowData> = ((
-  context: HeaderContext<TData, unknown>,
-) => unknown) & {
+type NatTableHeaderActionsRenderer<TData extends RowData> = ((context: HeaderContext<TData, unknown>) => unknown) & {
   [NAT_TABLE_HEADER_ACTIONS_CONTENT]?: NatTableHeaderRenderContent;
 };
 
@@ -29,14 +24,11 @@ const resolveColumnId = <TData extends RowData>(column: ColumnDef<TData, unknown
 };
 
 const isNatTableHeaderActionsRenderer = <TData extends RowData>(
-  header: ColumnDef<TData, unknown>['header'],
+  header: ColumnDef<TData, unknown>['header']
 ): header is NatTableHeaderActionsRenderer<TData> =>
-  typeof header === 'function' &&
-  NAT_TABLE_HEADER_ACTIONS_CONTENT in (header as NatTableHeaderActionsRenderer<TData>);
+  typeof header === 'function' && NAT_TABLE_HEADER_ACTIONS_CONTENT in (header as NatTableHeaderActionsRenderer<TData>);
 
-const resolveOriginalHeader = <TData extends RowData>(
-  column: ColumnDef<TData, unknown>,
-): NatTableHeaderRenderContent => {
+const resolveOriginalHeader = <TData extends RowData>(column: ColumnDef<TData, unknown>): NatTableHeaderRenderContent => {
   const header = column.header;
 
   if (isNatTableHeaderActionsRenderer(header)) {
@@ -48,7 +40,7 @@ const resolveOriginalHeader = <TData extends RowData>(
 
 const mergeAccessibilityLabels = (
   globalLabels: NatTableAccessibilityHeaderActionLabels | undefined,
-  columnLabels: NatTableAccessibilityHeaderActionLabels | undefined,
+  columnLabels: NatTableAccessibilityHeaderActionLabels | undefined
 ): NatTableAccessibilityHeaderActionLabels | undefined => {
   if (!globalLabels) {
     return columnLabels;
@@ -60,19 +52,16 @@ const mergeAccessibilityLabels = (
 
   return {
     ...globalLabels,
-    ...columnLabels,
+    ...columnLabels
   };
 };
 
-const resolveBooleanOption = (
-  columnValue: boolean | undefined,
-  helperValue: boolean | undefined,
-  fallback: boolean,
-): boolean => columnValue ?? helperValue ?? fallback;
+const resolveBooleanOption = (columnValue: boolean | undefined, helperValue: boolean | undefined, fallback: boolean): boolean =>
+  columnValue ?? helperValue ?? fallback;
 
 const resolveHeaderActionsOptions = <TData extends RowData>(
   column: ColumnDef<TData, unknown>,
-  options: NatTableHeaderActionsOptions,
+  options: NatTableHeaderActionsOptions
 ): false | NatTableHeaderActionsOptions => {
   const columnOptions = column.meta?.headerActions;
 
@@ -83,26 +72,17 @@ const resolveHeaderActionsOptions = <TData extends RowData>(
   return {
     sortIndicator: columnOptions?.sortIndicator ?? options.sortIndicator,
     locale: options.locale,
-    enableColumnPinActions: resolveBooleanOption(
-      columnOptions?.enableColumnPinActions,
-      options.enableColumnPinActions,
-      true,
-    ),
+    enableColumnPinActions: resolveBooleanOption(columnOptions?.enableColumnPinActions, options.enableColumnPinActions, true),
     enableColumnReorderActions: resolveBooleanOption(
       columnOptions?.enableColumnReorderActions,
       options.enableColumnReorderActions,
-      false,
+      false
     ),
-    accessibilityLabels: mergeAccessibilityLabels(
-      options.accessibilityLabels,
-      columnOptions?.accessibilityLabels,
-    ),
+    accessibilityLabels: mergeAccessibilityLabels(options.accessibilityLabels, columnOptions?.accessibilityLabels)
   };
 };
 
-const resolveTableLocale = <TData extends RowData>(
-  context: HeaderContext<TData, unknown>,
-): string | undefined => {
+const resolveTableLocale = <TData extends RowData>(context: HeaderContext<TData, unknown>): string | undefined => {
   const tableMeta = context.table.options.meta as { natTableLocaleId?: unknown } | undefined;
 
   return typeof tableMeta?.natTableLocaleId === 'string' ? tableMeta.natTableLocaleId : undefined;
@@ -111,7 +91,7 @@ const resolveTableLocale = <TData extends RowData>(
 const resolveHeaderActionLabel = <TData extends RowData>(
   context: HeaderContext<TData, unknown>,
   content: NatTableHeaderRenderContent,
-  fallbackId: string,
+  fallbackId: string
 ): string => {
   const label = resolveNatTableColumnLabel(context.column.columnDef, context.column.id);
 
@@ -121,7 +101,7 @@ const resolveHeaderActionLabel = <TData extends RowData>(
 
   const columnDef: ColumnDef<TData, unknown> = {
     ...context.column.columnDef,
-    header: content,
+    header: content
   };
 
   return resolveNatTableColumnLabel(columnDef, fallbackId);
@@ -129,7 +109,7 @@ const resolveHeaderActionLabel = <TData extends RowData>(
 
 const flexRenderOriginalHeader = <TData extends RowData>(
   content: NatTableHeaderRenderContent,
-  context: HeaderContext<TData, unknown>,
+  context: HeaderContext<TData, unknown>
 ): unknown => {
   if (typeof content !== 'function') {
     return content;
@@ -140,18 +120,16 @@ const flexRenderOriginalHeader = <TData extends RowData>(
 
 const wrapColumnHeader = <TData extends RowData>(
   column: ColumnDef<TData, unknown>,
-  options: NatTableHeaderActionsOptions,
+  options: NatTableHeaderActionsOptions
 ): ColumnDef<TData, unknown> => {
   const nextColumn: ColumnDef<TData, unknown> & {
     columns?: ColumnDef<TData, unknown>[];
   } = {
-    ...column,
+    ...column
   };
 
   if (nextColumn.columns) {
-    nextColumn.columns = nextColumn.columns.map((child: ColumnDef<TData, unknown>) =>
-      wrapColumnHeader(child, options),
-    );
+    nextColumn.columns = nextColumn.columns.map((child: ColumnDef<TData, unknown>) => wrapColumnHeader(child, options));
   }
 
   const fallbackId = resolveColumnId(nextColumn);
@@ -161,7 +139,7 @@ const wrapColumnHeader = <TData extends RowData>(
   if (nextColumn.meta?.headerActions === false) {
     const optedOutColumn = {
       ...nextColumn,
-      header: fallbackContent,
+      header: fallbackContent
     };
 
     return optedOutColumn as ColumnDef<TData, unknown>;
@@ -184,8 +162,8 @@ const wrapColumnHeader = <TData extends RowData>(
         accessibilityLabels: actionOptions.accessibilityLabels,
         sortIndicator: actionOptions.sortIndicator,
         enableColumnPinActions: actionOptions.enableColumnPinActions,
-        enableColumnReorderActions: actionOptions.enableColumnReorderActions,
-      },
+        enableColumnReorderActions: actionOptions.enableColumnReorderActions
+      }
     });
   }) as NatTableHeaderActionsRenderer<TData>;
 
@@ -193,7 +171,7 @@ const wrapColumnHeader = <TData extends RowData>(
 
   const wrappedColumn = {
     ...nextColumn,
-    header,
+    header
   };
 
   return wrappedColumn as ColumnDef<TData, unknown>;
@@ -217,5 +195,5 @@ const wrapColumnHeader = <TData extends RowData>(
  */
 export const withNatTableHeaderActions = <TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
-  options: NatTableHeaderActionsOptions = {},
+  options: NatTableHeaderActionsOptions = {}
 ): ColumnDef<TData, unknown>[] => columns.map((column) => wrapColumnHeader(column, options));

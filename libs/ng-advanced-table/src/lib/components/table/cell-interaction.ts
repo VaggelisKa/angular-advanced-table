@@ -64,9 +64,7 @@ const isReachableControl = (element: HTMLElement): boolean =>
 
 /** The cell's action controls in document order — what Enter steps into and Tab walks. */
 const cellInteractiveControls = (cell: HTMLElement): HTMLElement[] =>
-  Array.from(cell.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR)).filter(
-    isReachableControl,
-  );
+  Array.from(cell.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR)).filter(isReachableControl);
 
 /** Whether the cell renders perceivable text outside the given control. */
 const hasContentOutsideControl = (cell: HTMLElement, control: HTMLElement): boolean => {
@@ -102,11 +100,7 @@ const delegatedCellControl = (cell: HTMLElement): HTMLElement | null => {
 };
 
 /** Enter on a focused cell steps into the cell's first control. */
-const enterFirstCellControl = (
-  event: KeyboardEvent,
-  cell: HTMLElement,
-  target: HTMLElement,
-): boolean => {
+const enterFirstCellControl = (event: KeyboardEvent, cell: HTMLElement, target: HTMLElement): boolean => {
   // Enter on a control keeps its native behavior.
   if (target !== cell) return false;
 
@@ -120,11 +114,7 @@ const enterFirstCellControl = (
 };
 
 /** Escape inside a control returns focus to the owning cell. */
-const escapeBackToCell = (
-  event: KeyboardEvent,
-  cell: HTMLElement,
-  target: HTMLElement,
-): boolean => {
+const escapeBackToCell = (event: KeyboardEvent, cell: HTMLElement, target: HTMLElement): boolean => {
   if (target === cell) return false;
 
   // A delegated control is the cell's focus stop; refocusing the cell would only
@@ -138,7 +128,7 @@ const tabBetweenCellControls = (
   event: KeyboardEvent,
   cell: HTMLElement,
   target: HTMLElement,
-  cellInteraction: NatTableKeyboard['cellInteraction'],
+  cellInteraction: NatTableKeyboard['cellInteraction']
 ): boolean => {
   // Tab on the cell itself is not intercepted so focus can leave the grid; Enter is the entry point.
   if (target === cell) return false;
@@ -163,10 +153,7 @@ const tabBetweenCellControls = (
  * cell-interaction model. Returns `true` when it handled the event, so the
  * caller skips its own behavior (e.g. row activation).
  */
-export const handleCellInteractionKeydown = (
-  event: KeyboardEvent,
-  cellInteraction: NatTableKeyboard['cellInteraction'],
-): boolean => {
+export const handleCellInteractionKeydown = (event: KeyboardEvent, cellInteraction: NatTableKeyboard['cellInteraction']): boolean => {
   if (event.defaultPrevented) return false;
 
   const target = event.target;

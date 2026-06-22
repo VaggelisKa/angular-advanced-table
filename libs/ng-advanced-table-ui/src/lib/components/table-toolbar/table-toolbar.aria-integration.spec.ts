@@ -1,5 +1,5 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import type { ComponentFixture} from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { NatTableToolbar } from './table-toolbar';
@@ -25,15 +25,9 @@ import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
       @if (showD()) {
         <button id="item-d" natToolbarItem="d" type="button">D</button>
       }
-      <input
-        aria-label="Filter"
-        id="search"
-        natToolbarItem="search"
-        natToolbarItemPosition="start"
-        type="search"
-      />
+      <input aria-label="Filter" id="search" natToolbarItem="search" natToolbarItemPosition="start" type="search" />
     </nat-table-toolbar>
-  `,
+  `
 })
 class AriaIntegrationHost {
   public readonly showD = signal(true);
@@ -44,7 +38,7 @@ describe('NatTableToolbar @angular/aria integration', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
     fixture = TestBed.createComponent(AriaIntegrationHost);
     fixture.detectChanges();

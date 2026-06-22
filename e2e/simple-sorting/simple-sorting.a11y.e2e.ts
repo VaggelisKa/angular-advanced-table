@@ -22,25 +22,13 @@ test.describe('Simple sorting accessibility', () => {
     // Customer cells in DOM/row order. Initial (unsorted) order:
     const customerCells = table.locator('td[data-column-id="customer"]');
 
-    await expect(customerCells).toContainText([
-      'Northstar Supply',
-      'Juniper Foods',
-      'Atlas Studio',
-      'Harbor Retail',
-      'Pioneer Labs',
-    ]);
+    await expect(customerCells).toContainText(['Northstar Supply', 'Juniper Foods', 'Atlas Studio', 'Harbor Retail', 'Pioneer Labs']);
 
     // Focus and trigger sort via keyboard
     await customerHeaderBtn.focus();
     await page.keyboard.press('Enter');
 
     // Now sorted ascending by customer:
-    await expect(customerCells).toContainText([
-      'Atlas Studio',
-      'Harbor Retail',
-      'Juniper Foods',
-      'Northstar Supply',
-      'Pioneer Labs',
-    ]);
+    await expect(customerCells).toContainText(['Atlas Studio', 'Harbor Retail', 'Juniper Foods', 'Northstar Supply', 'Pioneer Labs']);
   });
 });

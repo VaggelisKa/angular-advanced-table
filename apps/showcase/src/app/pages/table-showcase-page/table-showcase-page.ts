@@ -11,14 +11,14 @@ import {
   NatTableScrollControl,
   NatTableSurface,
   NatTableToolbar,
-  withNatTableHeaderActions,
+  withNatTableHeaderActions
 } from 'ng-advanced-table-ui';
 import type { NatTableSortIndicatorContext } from 'ng-advanced-table-ui';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
   NatTableRenderMetricsStore,
-  withRenderMetricsColumn,
+  withRenderMetricsColumn
 } from 'ng-advanced-table-utils';
 import type { NatTableRenderMetricsEvent } from 'ng-advanced-table-utils';
 
@@ -36,15 +36,9 @@ import {
   getSimulationRowId,
   numberTone,
   statusTone,
-  upsertColumnFilter,
+  upsertColumnFilter
 } from './table-showcase-page.util';
-import {
-  DATASET_OPTIONS,
-  PAGE_SIZE_OPTIONS,
-  SIMULATION_PROFILES,
-  SIMULATION_STATUSES,
-  TableSimulation,
-} from './table-simulation';
+import { DATASET_OPTIONS, PAGE_SIZE_OPTIONS, SIMULATION_PROFILES, SIMULATION_STATUSES, TableSimulation } from './table-simulation';
 import type { SimulationProfile, SimulationRow, SimulationStatus } from './table-simulation';
 import { TableSearch } from '../../components/table-search/table-search';
 import { ShowcaseThemeStore } from '../../showcase-theme';
@@ -69,12 +63,11 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     minSize: 100,
     meta: { label: 'Symbol', rowHeader: true },
     enablePinning: true,
-    sortingFn: (left, right) =>
-      compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
+    sortingFn: (left, right) => compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
     cell: (info) =>
       flexRenderComponent(NatTickerMark, {
-        inputs: { symbol: info.getValue<string>() },
-      }),
+        inputs: { symbol: info.getValue<string>() }
+      })
   },
   {
     accessorKey: 'company',
@@ -84,13 +77,11 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     meta: {
       label: 'Company',
       cellHeight: 72,
-      cellMaxLines: 2,
+      cellMaxLines: 2
     },
     enablePinning: true,
-    sortingFn: (left, right) =>
-      compareSortKeys(left.original.companySortKey, right.original.companySortKey),
-    cell: (info) =>
-      `${info.getValue<string>()} liquidity review with multi-venue routing notes for ${info.row.original.symbol}`,
+    sortingFn: (left, right) => compareSortKeys(left.original.companySortKey, right.original.companySortKey),
+    cell: (info) => `${info.getValue<string>()} liquidity review with multi-venue routing notes for ${info.row.original.symbol}`
   },
   {
     accessorKey: 'exchange',
@@ -99,7 +90,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     minSize: 100,
     meta: { label: 'Exchange' },
     enablePinning: true,
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'desk',
@@ -107,7 +98,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 130,
     minSize: 100,
     meta: { label: 'Desk' },
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'status',
@@ -116,11 +107,11 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     minSize: 100,
     meta: {
       label: 'Signal',
-      cellTone: (context) => statusTone(context.getValue<SimulationStatus>()),
+      cellTone: (context) => statusTone(context.getValue<SimulationStatus>())
     },
     enablePinning: true,
     filterFn: statusFilter,
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'price',
@@ -130,10 +121,10 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     meta: {
       label: 'Last',
       align: 'end',
-      cellTone: (context) => numberTone(context.row.original.changePercent),
+      cellTone: (context) => numberTone(context.row.original.changePercent)
     },
     enablePinning: true,
-    cell: (info) => formatCurrency(info.getValue<number>()),
+    cell: (info) => formatCurrency(info.getValue<number>())
   },
   {
     accessorKey: 'change',
@@ -143,13 +134,10 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     meta: {
       label: 'Chg $',
       align: 'end',
-      cellTone: (context) =>
-        context.row.original.status === 'Halted'
-          ? 'warning'
-          : numberTone(context.getValue<number>()),
+      cellTone: (context) => (context.row.original.status === 'Halted' ? 'warning' : numberTone(context.getValue<number>()))
     },
     enablePinning: true,
-    cell: (info) => formatSignedCurrency(info.getValue<number>()),
+    cell: (info) => formatSignedCurrency(info.getValue<number>())
   },
   {
     accessorKey: 'changePercent',
@@ -159,13 +147,10 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     meta: {
       label: 'Chg %',
       align: 'end',
-      cellTone: (context) =>
-        context.row.original.status === 'Halted'
-          ? 'warning'
-          : numberTone(context.getValue<number>()),
+      cellTone: (context) => (context.row.original.status === 'Halted' ? 'warning' : numberTone(context.getValue<number>()))
     },
     enablePinning: true,
-    cell: (info) => formatSignedPercent(info.getValue<number>()),
+    cell: (info) => formatSignedPercent(info.getValue<number>())
   },
   {
     id: 'spark',
@@ -180,9 +165,9 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       flexRenderComponent(NatSparkline, {
         inputs: {
           points: info.row.original.priceHistory,
-          trend: info.row.original.sparkTrend,
-        },
-      }),
+          trend: info.row.original.sparkTrend
+        }
+      })
   },
   {
     accessorKey: 'volume',
@@ -191,7 +176,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     minSize: 100,
     meta: { label: 'Volume', align: 'end' },
     enablePinning: true,
-    cell: (info) => formatCompact(info.getValue<number>()),
+    cell: (info) => formatCompact(info.getValue<number>())
   },
   {
     accessorKey: 'turnoverMillions',
@@ -199,7 +184,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 130,
     minSize: 100,
     meta: { label: 'Turnover', align: 'end' },
-    cell: (info) => `${formatCurrency(info.getValue<number>())}M`,
+    cell: (info) => `${formatCurrency(info.getValue<number>())}M`
   },
   {
     accessorKey: 'updatedAt',
@@ -208,7 +193,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     minSize: 100,
     meta: { label: 'Updated', align: 'end' },
     enablePinning: true,
-    cell: (info) => formatTime(info.getValue<number>()),
+    cell: (info) => formatTime(info.getValue<number>())
   },
   {
     id: 'actions',
@@ -223,15 +208,14 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     cell: (info) =>
       flexRenderComponent(NatRowActionsMenu, {
         inputs: {
-          symbol: info.row.original.symbol,
-        },
-      }),
-  },
+          symbol: info.row.original.symbol
+        }
+      })
+  }
 ];
 
 const showcaseAccessibilityText = {
-  emptyState:
-    'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.',
+  emptyState: 'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.'
 };
 
 @Component({
@@ -318,7 +302,7 @@ const showcaseAccessibilityText = {
         <path class="sort-chevron sort-chevron--down" d="M6 14 2 10 H10z" />
       </svg>
     </span>
-  `,
+  `
 })
 class MarketSortIndicator {
   public readonly context = input.required<NatTableSortIndicatorContext>();
@@ -334,10 +318,10 @@ class MarketSortIndicator {
     NatTableSurface,
     NatTableToolbar,
     NatRenderMetricsFilter,
-    NatRenderMetricsPanel,
+    NatRenderMetricsPanel
   ],
   templateUrl: './table-showcase-page.html',
-  styleUrl: './table-showcase-page.css',
+  styleUrl: './table-showcase-page.css'
 })
 export class TableShowcasePage {
   private readonly themeStore = inject(ShowcaseThemeStore);
@@ -347,28 +331,23 @@ export class TableShowcasePage {
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
   protected readonly metricsStore = new NatTableRenderMetricsStore();
-  protected readonly columns = withNatTableHeaderActions(
-    withRenderMetricsColumn(simulationColumns, this.metricsStore),
-    {
-      enableColumnReorderActions: true,
-      sortIndicator: (context) =>
-        flexRenderComponent(MarketSortIndicator, {
-          inputs: { context },
-        }),
-    },
-  );
+  protected readonly columns = withNatTableHeaderActions(withRenderMetricsColumn(simulationColumns, this.metricsStore), {
+    enableColumnReorderActions: true,
+    sortIndicator: (context) =>
+      flexRenderComponent(MarketSortIndicator, {
+        inputs: { context }
+      })
+  });
 
   protected readonly getRowId = getSimulationRowId;
   protected readonly accessibilityText = showcaseAccessibilityText;
   protected readonly theme = this.themeStore.theme;
   public readonly tableState = signal<Partial<NatTableState>>({
-    columnFilters: [],
+    columnFilters: []
   });
 
   protected readonly selectedStatuses = computed(() => {
-    const activeFilter = this.tableState().columnFilters?.find(
-      (entry) => entry.id === STATUS_FILTER_ID,
-    );
+    const activeFilter = this.tableState().columnFilters?.find((entry) => entry.id === STATUS_FILTER_ID);
 
     return Array.isArray(activeFilter?.value) ? (activeFilter.value as SimulationStatus[]) : [];
   });
@@ -376,7 +355,7 @@ export class TableShowcasePage {
   protected readonly activeStatuses = computed(() => new Set(this.selectedStatuses()));
   protected readonly profiles = Object.entries(SIMULATION_PROFILES).map(([value, config]) => ({
     value: value as SimulationProfile,
-    ...config,
+    ...config
   }));
 
   protected readonly lastTickLabel = computed(() => formatTime(this.simulation.lastTickAt()));
@@ -408,10 +387,7 @@ export class TableShowcasePage {
 
     const nextStatuses = this.statuses.filter((value) => currentStatuses.has(value));
 
-    this.updateColumnFilter(
-      STATUS_FILTER_ID,
-      nextStatuses.length === this.statuses.length ? null : [...nextStatuses],
-    );
+    this.updateColumnFilter(STATUS_FILTER_ID, nextStatuses.length === this.statuses.length ? null : [...nextStatuses]);
   }
 
   protected isStatusActive(status: SimulationStatus): boolean {
@@ -432,7 +408,7 @@ export class TableShowcasePage {
 
   private updateColumnFilter(columnId: string, value: unknown | null): void {
     this.tableState.update((currentState) => ({
-      columnFilters: upsertColumnFilter(currentState.columnFilters ?? [], columnId, value),
+      columnFilters: upsertColumnFilter(currentState.columnFilters ?? [], columnId, value)
     }));
   }
 }

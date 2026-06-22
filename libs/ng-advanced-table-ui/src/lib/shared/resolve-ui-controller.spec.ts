@@ -14,7 +14,7 @@ const createControllerStub = (): NatTableUiController => {
     enablePagination: () => true,
     patchState: () => undefined,
     tableElementId: signal('nat-table-el-1'),
-    localeId: signal('en'),
+    localeId: signal('en')
   };
 };
 
@@ -32,9 +32,7 @@ describe('injectNatTableUiController', () => {
   it('resolves the explicit [for] controller and reacts to input changes', () => {
     const stub = createControllerStub();
     const forInput = signal<NatTableUiController | undefined>(stub);
-    const controller = TestBed.runInInjectionContext(() =>
-      injectNatTableUiController(forInput, 'spec-control'),
-    );
+    const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
 
     expect(controller()).toBe(stub);
 
@@ -48,9 +46,7 @@ describe('injectNatTableUiController', () => {
   it('returns null with a single dev-mode warning while unresolved', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const forInput = signal<NatTableUiController | undefined>(undefined);
-    const controller = TestBed.runInInjectionContext(() =>
-      injectNatTableUiController(forInput, 'spec-control'),
-    );
+    const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
 
     expect(controller()).toBeNull();
 
@@ -61,9 +57,7 @@ describe('injectNatTableUiController', () => {
     forInput.set(undefined);
     expect(controller()).toBeNull();
 
-    const guardCalls = warnSpy.mock.calls.filter((call) =>
-      String(call[0]).includes('spec-control: no controller resolved'),
-    );
+    const guardCalls = warnSpy.mock.calls.filter((call) => String(call[0]).includes('spec-control: no controller resolved'));
 
     expect(guardCalls).toHaveLength(1);
   });
@@ -74,9 +68,7 @@ describe('injectNatTableUiController', () => {
     TestBed.configureTestingModule({ providers: [NatTableService] });
     const service = TestBed.inject(NatTableService);
     const forInput = signal<NatTableUiController | undefined>(undefined);
-    const controller = TestBed.runInInjectionContext(() =>
-      injectNatTableUiController(forInput, 'spec-control'),
-    );
+    const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
 
     expect(controller()).toBeNull();
 
@@ -95,9 +87,7 @@ describe('injectNatTableUiController', () => {
     TestBed.inject(NatTableService).setController(serviceStub);
     const forInput = signal<NatTableUiController | undefined>(forStub);
 
-    const controller = TestBed.runInInjectionContext(() =>
-      injectNatTableUiController(forInput, 'spec-control'),
-    );
+    const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
 
     expect(controller()).toBe(forStub);
 
@@ -109,7 +99,7 @@ describe('injectNatTableUiController', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const forInput = signal<NatTableUiController | undefined>(undefined);
     const controller = TestBed.runInInjectionContext(() =>
-      injectNatTableUiController(forInput, 'spec-control', { optionalUsage: true }),
+      injectNatTableUiController(forInput, 'spec-control', { optionalUsage: true })
     );
 
     expect(controller()).toBeNull();
@@ -119,9 +109,7 @@ describe('injectNatTableUiController', () => {
   it('does not warn when the controller resolves on first read', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const forInput = signal<NatTableUiController | undefined>(createControllerStub());
-    const controller = TestBed.runInInjectionContext(() =>
-      injectNatTableUiController(forInput, 'spec-control'),
-    );
+    const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
 
     expect(controller()).not.toBeNull();
     expect(warnSpy).not.toHaveBeenCalled();

@@ -14,7 +14,7 @@ const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   category: true,
   status: true,
-  value: true,
+  value: true
 } as const;
 
 export const buildUiImports = (flags: TableBuilderFlags): string[] => {
@@ -40,12 +40,9 @@ export const buildUiImports = (flags: TableBuilderFlags): string[] => {
   return uiImports;
 };
 
-export const buildStateObject = (
-  flags: TableBuilderFlags,
-  currentState: Partial<NatTableState>,
-): Partial<NatTableState> => {
+export const buildStateObject = (flags: TableBuilderFlags, currentState: Partial<NatTableState>): Partial<NatTableState> => {
   const stateObj: Partial<NatTableState> = {
-    columnVisibility: currentState.columnVisibility ?? { ...DEFAULT_COLUMN_VISIBILITY },
+    columnVisibility: currentState.columnVisibility ?? { ...DEFAULT_COLUMN_VISIBILITY }
   };
 
   if (flags.withPagination) {

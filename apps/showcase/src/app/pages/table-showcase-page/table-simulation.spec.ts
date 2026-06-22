@@ -8,7 +8,7 @@ describe('TableSimulation', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
     service = TestBed.inject(TableSimulation);
     service.pause();

@@ -9,7 +9,7 @@ import {
   NAT_TABLE_UTILS_INTL,
   formatNatTableUtilsNumber,
   mergeRenderMetricsFilterIntl,
-  resolveNatTableUtilsIntl,
+  resolveNatTableUtilsIntl
 } from './intl';
 import type { NatTableRenderMetricsFilterIntl } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
@@ -17,11 +17,7 @@ import { isRenderFilterValue } from './tone';
 import { RENDER_FILTER_OPTIONS, RENDER_METRIC_COLUMN_ID } from './types';
 import type { RowRenderFilterValue } from './types';
 
-function upsertColumnFilter(
-  currentFilters: ColumnFiltersState,
-  columnId: string,
-  value: unknown | null,
-): ColumnFiltersState {
+function upsertColumnFilter(currentFilters: ColumnFiltersState, columnId: string, value: unknown | null): ColumnFiltersState {
   const nextFilters = currentFilters.filter((filter) => filter.id !== columnId);
 
   if (value === null) {
@@ -38,7 +34,7 @@ function upsertColumnFilter(
 @Component({
   selector: 'nat-render-metrics-filter',
   templateUrl: './filter.html',
-  styleUrl: './filter.css',
+  styleUrl: './filter.css'
 })
 export class NatRenderMetricsFilter<TData = unknown> {
   /** Shared store — used only so the panel/filter can react to measurement changes. */
@@ -51,28 +47,20 @@ export class NatRenderMetricsFilter<TData = unknown> {
   public readonly labels = input<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
   private readonly natTableService = inject(NatTableService);
-  protected readonly controller = computed(
-    () => this.natTableService.controller() as NatTableRenderMetricsController<TData> | null,
-  );
+  protected readonly controller = computed(() => this.natTableService.controller() as NatTableRenderMetricsController<TData> | null);
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
-  private readonly localeId = computed(
-    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE,
-  );
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
 
-  private readonly utilsIntl = computed(() =>
-    resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
-  );
+  private readonly utilsIntl = computed(() => resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()));
 
   private readonly resolvedLabels = computed(() =>
-    mergeRenderMetricsFilterIntl(this.utilsIntl().renderMetrics?.filter, this.labels()),
+    mergeRenderMetricsFilterIntl(this.utilsIntl().renderMetrics?.filter, this.labels())
   );
 
   protected readonly heading = computed(() => this.resolvedLabels().heading ?? '');
   protected readonly groupAriaLabel = computed(() => this.resolvedLabels().groupAriaLabel ?? '');
-  protected readonly options = computed(
-    () => this.resolvedLabels().options ?? RENDER_FILTER_OPTIONS,
-  );
+  protected readonly options = computed(() => this.resolvedLabels().options ?? RENDER_FILTER_OPTIONS);
 
   protected readonly selected = computed<RowRenderFilterValue>(() => {
     const controller = this.controller();
@@ -95,17 +83,12 @@ export class NatRenderMetricsFilter<TData = unknown> {
       return labels.idleCaption ?? '';
     }
 
-    const rowCountText = formatNatTableUtilsNumber(
-      this.utilsIntl(),
-      measurement.rowCount,
-      undefined,
-      this.localeId(),
-    );
+    const rowCountText = formatNatTableUtilsNumber(this.utilsIntl(), measurement.rowCount, undefined, this.localeId());
 
     return (
       labels.rowSampleCaption?.({
         rowCountValue: measurement.rowCount,
-        rowCountText,
+        rowCountText
       }) ?? ''
     );
   });
@@ -121,7 +104,7 @@ export class NatRenderMetricsFilter<TData = unknown> {
 
     controller.patchState({
       columnFilters: (currentFilters) => upsertColumnFilter(currentFilters, columnId, nextValue),
-      pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 0 }),
+      pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 0 })
     });
   }
 }

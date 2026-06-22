@@ -10,7 +10,7 @@ describe('SelectionShowcasePage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SelectionShowcasePage],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectionShowcasePage);
@@ -21,25 +21,21 @@ describe('SelectionShowcasePage', () => {
   const element = (): HTMLElement => fixture.nativeElement as HTMLElement;
 
   const headerCheckbox = (): HTMLInputElement | null =>
-    element().querySelector<HTMLInputElement>(
-      'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox',
-    );
+    element().querySelector<HTMLInputElement>('thead th[data-column-id="__natSelect"] input.nat-selection-checkbox');
 
   const rowCheckbox = (index: number): HTMLInputElement =>
-    element().querySelectorAll<HTMLInputElement>(
-      'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
-    )[index];
+    element().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')[index];
 
   const dataRowCount = (): number => element().querySelectorAll('tbody tr.data-row').length;
 
   const selectedRowCount = (): number =>
     Array.from(element().querySelectorAll<HTMLElement>('tbody tr.data-row')).filter(
-      (row) => row.getAttribute('aria-selected') === 'true',
+      (row) => row.getAttribute('aria-selected') === 'true'
     ).length;
 
   const clickButton = (label: string): void => {
     const button = Array.from(element().querySelectorAll('button')).find((candidate) =>
-      candidate.textContent.trim().startsWith(label),
+      candidate.textContent.trim().startsWith(label)
     );
 
     if (!button) {

@@ -55,13 +55,7 @@ const buildAreaPath = (points: readonly number[]): string => {
 @Component({
   selector: 'nat-sparkline',
   template: `
-    <svg
-      [attr.viewBox]="viewBox()"
-      aria-hidden="true"
-      class="sparkline"
-      focusable="false"
-      preserveAspectRatio="none"
-    >
+    <svg [attr.viewBox]="viewBox()" aria-hidden="true" class="sparkline" focusable="false" preserveAspectRatio="none">
       <path [attr.d]="areaPath()" class="sparkline-area" />
       <path [attr.d]="linePath()" class="sparkline-line" />
     </svg>
@@ -103,8 +97,8 @@ const buildAreaPath = (points: readonly number[]): string => {
     }
   `,
   host: {
-    '[attr.data-trend]': 'trend()',
-  },
+    '[attr.data-trend]': 'trend()'
+  }
 })
 export class NatSparkline {
   public readonly points = input.required<readonly number[]>();

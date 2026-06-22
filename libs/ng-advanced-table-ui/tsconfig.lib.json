@@ -12,14 +12,9 @@
         "../../dist/libs/ng-advanced-table-locales",
         "../../libs/ng-advanced-table-locales/src/public-api.ts"
       ],
-      "ng-advanced-table": [
-        "../../dist/libs/ng-advanced-table",
-        "../../libs/ng-advanced-table/src/public-api.ts"
-      ]
+      "ng-advanced-table": ["../../dist/libs/ng-advanced-table", "../../libs/ng-advanced-table/src/public-api.ts"]
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": [
-    "**/*.spec.ts"
-  ]
+  "exclude": ["**/*.spec.ts"]
 }

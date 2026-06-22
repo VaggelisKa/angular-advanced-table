@@ -1,13 +1,11 @@
 <!-- eslint-disable max-lines -- single cohesive table template (header/body/state rows + resize guide); splitting into partials would fragment the grid structure. -->
 <div #tableRegion [class.is-resizing]="isColumnResizing()" class="table-region" data-testid="nat-table-region">
   @if (tableSummary().trim()) {
-    <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
-  }
-  @if (resolvedDescription().trim()) {
-    <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
-  }
-  @if (resolvedKeyboardInstructions().trim()) {
-    <p [id]="tableKeyboardInstructionsId()" class="sr-only">{{ resolvedKeyboardInstructions() }}</p>
+  <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
+  } @if (resolvedDescription().trim()) {
+  <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
+  } @if (resolvedKeyboardInstructions().trim()) {
+  <p [id]="tableKeyboardInstructionsId()" class="sr-only">{{ resolvedKeyboardInstructions() }}</p>
   }
 
   <table
@@ -23,253 +21,183 @@
     class="data-table"
     colWrap="nowrap"
     ngGrid
-    rowWrap="nowrap"
-  >
+    rowWrap="nowrap">
     @if (resolvedCaption(); as caption) {
-      <caption [id]="tableCaptionId()">
-        {{
-          caption
-        }}
-      </caption>
-    }
-
-    @let columnStates = columnRenderStates();
-    @if (usesAuthoritativeLayout()) {
-      @let layoutWidths = resolvedColumnWidths();
-      <colgroup>
-        @for (column of visibleColumns(); track column.id) {
-          <col [natTablePxWidth]="layoutWidths[column.id]" />
-        }
-      </colgroup>
+    <caption [id]="tableCaptionId()">
+      {{ caption }}
+    </caption>
+    } @let columnStates = columnRenderStates(); @if (usesAuthoritativeLayout()) { @let layoutWidths = resolvedColumnWidths();
+    <colgroup>
+      @for (column of visibleColumns(); track column.id) {
+      <col [natTablePxWidth]="layoutWidths[column.id]" />
+      }
+    </colgroup>
     }
     <thead>
-      @let tableHeaderGroups = headerGroups();
-      @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
-        <tr
-          [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
-          [cdkDropListDisabled]="!isLeafHeaderRow(headerGroup)"
-          cdkDropList
-          cdkDropListOrientation="horizontal"
-          ngGridRow
-          (cdkDropListDropped)="onHeaderDrop($event, headerGroup)"
-        >
-          @for (header of headerGroup.headers; track header.id) {
-            @let columnState = columnStates[header.column.id];
-            <th
-              [attr.aria-sort]="columnState?.ariaSort"
-              [attr.data-column-id]="header.column.id"
-              [attr.data-testid]="`nat-table-header-${header.column.id}`"
-              [cdkDragData]="header.column.id"
-              [cdkDragDisabled]="!canReorderHeader(header)"
-              [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-              [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-              [class.is-align-end]="columnState?.alignEnd"
-              [class.is-pinned-left]="columnState?.pinnedLeft"
-              [class.is-pinned-right]="columnState?.pinnedRight"
-              [class.is-reorderable]="canReorderHeader(header)"
-              [class.is-width-constrained]="columnState?.headerConstrainedWidth"
-              [natTableHeaderCellLayout]="columnState"
-              cdkDrag
-              cdkDragLockAxis="x"
-              cdkDragPreviewContainer="parent"
-              class="header-cell"
-              ngGridCell
-              role="columnheader"
-              scope="col"
-              (focusin)="onCellFocusIn($event)"
-              (keydown)="onHeaderKeydown($event, header.column)"
-            >
-              @if (!header.isPlaceholder) {
-                @let headerContext = header.getContext();
-                @let hidePrimitiveHeaderLabel = shouldHidePrimitiveHeaderLabel(header, columnState);
-                @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
-                <div class="header-cell-content">
-                  <span class="header-cell-primary">
-                    @if (hiddenHeaderLabel) {
-                      <span class="sr-only">{{ hiddenHeaderLabel }}</span>
-                    }
-                    @if (!hidePrimitiveHeaderLabel) {
-                      <ng-container
-                        *flexRender="
+      @let tableHeaderGroups = headerGroups(); @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
+      <tr
+        [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
+        [cdkDropListDisabled]="!isLeafHeaderRow(headerGroup)"
+        cdkDropList
+        cdkDropListOrientation="horizontal"
+        ngGridRow
+        (cdkDropListDropped)="onHeaderDrop($event, headerGroup)">
+        @for (header of headerGroup.headers; track header.id) { @let columnState = columnStates[header.column.id];
+        <th
+          [attr.aria-sort]="columnState?.ariaSort"
+          [attr.data-column-id]="header.column.id"
+          [attr.data-testid]="`nat-table-header-${header.column.id}`"
+          [cdkDragData]="header.column.id"
+          [cdkDragDisabled]="!canReorderHeader(header)"
+          [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+          [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+          [class.is-align-end]="columnState?.alignEnd"
+          [class.is-pinned-left]="columnState?.pinnedLeft"
+          [class.is-pinned-right]="columnState?.pinnedRight"
+          [class.is-reorderable]="canReorderHeader(header)"
+          [class.is-width-constrained]="columnState?.headerConstrainedWidth"
+          [natTableHeaderCellLayout]="columnState"
+          cdkDrag
+          cdkDragLockAxis="x"
+          cdkDragPreviewContainer="parent"
+          class="header-cell"
+          ngGridCell
+          role="columnheader"
+          scope="col"
+          (focusin)="onCellFocusIn($event)"
+          (keydown)="onHeaderKeydown($event, header.column)">
+          @if (!header.isPlaceholder) { @let headerContext = header.getContext(); @let hidePrimitiveHeaderLabel =
+          shouldHidePrimitiveHeaderLabel(header, columnState); @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
+          <div class="header-cell-content">
+            <span class="header-cell-primary">
+              @if (hiddenHeaderLabel) {
+              <span class="sr-only">{{ hiddenHeaderLabel }}</span>
+              } @if (!hidePrimitiveHeaderLabel) {
+              <ng-container
+                *flexRender="
                           header.column.columnDef.header;
                           props: headerContext;
                           let rendered
-                        "
-                      >
-                        {{ rendered }}
-                      </ng-container>
-                    }
-                  </span>
-                </div>
-                @if (canResizeColumn(header)) {
-                  <span
-                    [class.is-resizing]="header.column.getIsResizing()"
-                    aria-hidden="true"
-                    class="column-resize-handle"
-                    (click)="$event.stopPropagation()"
-                    (mousedown)="onResizeStart($event, header)"
-                    (pointerdown)="$event.stopPropagation()"
-                    (touchstart)="onResizeStart($event, header)"
-                  ></span>
-                }
+                        ">
+                {{ rendered }}
+              </ng-container>
               }
-            </th>
-          }
-        </tr>
+            </span>
+          </div>
+          @if (canResizeColumn(header)) {
+          <span
+            [class.is-resizing]="header.column.getIsResizing()"
+            aria-hidden="true"
+            class="column-resize-handle"
+            (click)="$event.stopPropagation()"
+            (mousedown)="onResizeStart($event, header)"
+            (pointerdown)="$event.stopPropagation()"
+            (touchstart)="onResizeStart($event, header)"></span>
+          } }
+        </th>
+        }
+      </tr>
       }
     </thead>
     <tbody>
-      @let rows = bodyRows();
-      @switch (bodyState()) {
-        @case ('rows') {
-          @for (row of rows; track row.id) {
-            @let visibleCells = row.getVisibleCells();
-            <tr
-              [attr.aria-selected]="rowAriaSelected(row)"
-              [natTableRowRenderEmitter]="row.id"
-              [natTableRowRenderEnabled]="emitRowRenderEvents()"
-              [natTableRowRenderStartedAt]="renderCycleStartedAt()"
-              [natTableRowRenderToken]="renderCycleToken()"
-              class="data-row"
-              ngGridRow
-              (click)="onRowClick($event, row)"
-              (keydown)="onRowKeydown($event, row)"
-              (natTableRowRendered)="onRowRendered($event)"
-            >
-              @for (cell of visibleCells; track cell.id) {
-                @let columnState = columnStates[cell.column.id];
-                @let cellContext = cell.getContext();
-                @let cellTone = getCellTone(cell.column, cellContext);
-                @if (columnState?.rowHeader) {
-                  <th
-                    [attr.data-column-id]="cell.column.id"
-                    [attr.data-tone]="cellTone"
-                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-                    [class.is-align-end]="columnState?.alignEnd"
-                    [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
-                    [class.is-pinned-left]="columnState?.pinnedLeft"
-                    [class.is-pinned-right]="columnState?.pinnedRight"
-                    [class.is-width-constrained]="columnState?.constrainedWidth"
-                    [natTableBodyCellLayout]="columnState"
-                    class="data-cell data-row-header"
-                    ngGridCell
-                    role="rowheader"
-                    scope="row"
-                    (focusin)="onCellFocusIn($event)"
-                    (keydown)="onCellKeydown($event)"
-                  >
-                    <span class="data-cell-content">
-                      <ng-container
-                        *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                      >
-                        {{ rendered }}
-                      </ng-container>
-                    </span>
-                  </th>
-                } @else {
-                  <td
-                    [attr.data-column-id]="cell.column.id"
-                    [attr.data-tone]="cellTone"
-                    [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-                    [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-                    [class.is-align-end]="columnState?.alignEnd"
-                    [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
-                    [class.is-pinned-left]="columnState?.pinnedLeft"
-                    [class.is-pinned-right]="columnState?.pinnedRight"
-                    [class.is-width-constrained]="columnState?.constrainedWidth"
-                    [natTableBodyCellLayout]="columnState"
-                    class="data-cell"
-                    ngGridCell
-                    (focusin)="onCellFocusIn($event)"
-                    (keydown)="onCellKeydown($event)"
-                  >
-                    <span class="data-cell-content">
-                      <ng-container
-                        *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"
-                      >
-                        {{ rendered }}
-                      </ng-container>
-                    </span>
-                  </td>
-                }
-              }
-            </tr>
-          }
-        }
-        @case ('loading') {
-          <tr ngGridRow>
-            <td
-              [colSpan]="emptyStateColSpan()"
-              class="table-state loading-state"
-              natTableStateCell
-              ngGridCell
-            >
-              @if (loadingTemplateRef(); as templateRef) {
-                <ng-container
-                  [ngTemplateOutlet]="templateRef"
-                  [ngTemplateOutletContext]="loadingTemplateContext()"
-                  ngTemplateOutletInjector="outlet"
-                />
-              } @else {
-                {{ resolvedLoadingState() }}
-              }
-            </td>
-          </tr>
-        }
-        @case ('error') {
-          <tr ngGridRow>
-            <td
-              [colSpan]="emptyStateColSpan()"
-              class="table-state error-state"
-              natTableStateCell
-              ngGridCell
-            >
-              @if (errorTemplateRef(); as templateRef) {
-                <ng-container
-                  [ngTemplateOutlet]="templateRef"
-                  [ngTemplateOutletContext]="errorTemplateContext()"
-                  ngTemplateOutletInjector="outlet"
-                />
-              } @else {
-                {{ resolvedErrorState() }}
-              }
-            </td>
-          </tr>
-        }
-        @case ('empty') {
-          <tr ngGridRow>
-            <td
-              [colSpan]="emptyStateColSpan()"
-              class="table-state empty-state"
-              natTableStateCell
-              ngGridCell
-            >
-              @if (emptyTemplateRef(); as templateRef) {
-                <ng-container
-                  [ngTemplateOutlet]="templateRef"
-                  [ngTemplateOutletContext]="emptyTemplateContext()"
-                  ngTemplateOutletInjector="outlet"
-                />
-              } @else {
-                {{ resolvedEmptyState() }}
-              }
-            </td>
-          </tr>
-        }
-      }
+      @let rows = bodyRows(); @switch (bodyState()) { @case ('rows') { @for (row of rows; track row.id) { @let visibleCells =
+      row.getVisibleCells();
+      <tr
+        [attr.aria-selected]="rowAriaSelected(row)"
+        [natTableRowRenderEmitter]="row.id"
+        [natTableRowRenderEnabled]="emitRowRenderEvents()"
+        [natTableRowRenderStartedAt]="renderCycleStartedAt()"
+        [natTableRowRenderToken]="renderCycleToken()"
+        class="data-row"
+        ngGridRow
+        (click)="onRowClick($event, row)"
+        (keydown)="onRowKeydown($event, row)"
+        (natTableRowRendered)="onRowRendered($event)">
+        @for (cell of visibleCells; track cell.id) { @let columnState = columnStates[cell.column.id]; @let cellContext =
+        cell.getContext(); @let cellTone = getCellTone(cell.column, cellContext); @if (columnState?.rowHeader) {
+        <th
+          [attr.data-column-id]="cell.column.id"
+          [attr.data-tone]="cellTone"
+          [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+          [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+          [class.is-align-end]="columnState?.alignEnd"
+          [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
+          [class.is-pinned-left]="columnState?.pinnedLeft"
+          [class.is-pinned-right]="columnState?.pinnedRight"
+          [class.is-width-constrained]="columnState?.constrainedWidth"
+          [natTableBodyCellLayout]="columnState"
+          class="data-cell data-row-header"
+          ngGridCell
+          role="rowheader"
+          scope="row"
+          (focusin)="onCellFocusIn($event)"
+          (keydown)="onCellKeydown($event)">
+          <span class="data-cell-content">
+            <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"> {{ rendered }} </ng-container>
+          </span>
+        </th>
+        } @else {
+        <td
+          [attr.data-column-id]="cell.column.id"
+          [attr.data-tone]="cellTone"
+          [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
+          [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
+          [class.is-align-end]="columnState?.alignEnd"
+          [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
+          [class.is-pinned-left]="columnState?.pinnedLeft"
+          [class.is-pinned-right]="columnState?.pinnedRight"
+          [class.is-width-constrained]="columnState?.constrainedWidth"
+          [natTableBodyCellLayout]="columnState"
+          class="data-cell"
+          ngGridCell
+          (focusin)="onCellFocusIn($event)"
+          (keydown)="onCellKeydown($event)">
+          <span class="data-cell-content">
+            <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"> {{ rendered }} </ng-container>
+          </span>
+        </td>
+        } }
+      </tr>
+      } } @case ('loading') {
+      <tr ngGridRow>
+        <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableStateCell ngGridCell>
+          @if (loadingTemplateRef(); as templateRef) {
+          <ng-container
+            [ngTemplateOutlet]="templateRef"
+            [ngTemplateOutletContext]="loadingTemplateContext()"
+            ngTemplateOutletInjector="outlet" />
+          } @else { {{ resolvedLoadingState() }} }
+        </td>
+      </tr>
+      } @case ('error') {
+      <tr ngGridRow>
+        <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableStateCell ngGridCell>
+          @if (errorTemplateRef(); as templateRef) {
+          <ng-container
+            [ngTemplateOutlet]="templateRef"
+            [ngTemplateOutletContext]="errorTemplateContext()"
+            ngTemplateOutletInjector="outlet" />
+          } @else { {{ resolvedErrorState() }} }
+        </td>
+      </tr>
+      } @case ('empty') {
+      <tr ngGridRow>
+        <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableStateCell ngGridCell>
+          @if (emptyTemplateRef(); as templateRef) {
+          <ng-container
+            [ngTemplateOutlet]="templateRef"
+            [ngTemplateOutletContext]="emptyTemplateContext()"
+            ngTemplateOutletInjector="outlet" />
+          } @else { {{ resolvedEmptyState() }} }
+        </td>
+      </tr>
+      } }
     </tbody>
   </table>
 
   @if (columnResizeGuide(); as guide) {
-    <div
-      [natTableResizeGuide]="guide"
-      aria-hidden="true"
-      class="column-resize-guide"
-    ></div>
+  <div [natTableResizeGuide]="guide" aria-hidden="true" class="column-resize-guide"></div>
   }
 
-  <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-table-live-region">
-    {{ liveMessage() }}
-  </p>
+  <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-table-live-region">{{ liveMessage() }}</p>
 </div>

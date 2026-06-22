@@ -1,11 +1,6 @@
 export { NAT_TABLE_BUILT_IN_LOCALES } from './lib/built-in-locales';
 
-export {
-  NAT_EN_LOCALE_ID,
-  NAT_EN_LOCALE_LABELS,
-  NAT_TABLE_ENGLISH_INTL,
-  NAT_TABLE_ENGLISH_LOCALE,
-} from './lib/en';
+export { NAT_EN_LOCALE_ID, NAT_EN_LOCALE_LABELS, NAT_TABLE_ENGLISH_INTL, NAT_TABLE_ENGLISH_LOCALE } from './lib/en';
 
 export {
   formatNatTableIntlNumber,
@@ -15,7 +10,7 @@ export {
   NAT_TABLE_INTL,
   provideNatTableIntl,
   provideNatTableLocales,
-  resolveNatTableIntl,
+  resolveNatTableIntl
 } from './lib/provide-table-locales';
 
 export type {
@@ -34,7 +29,7 @@ export type {
   NatTableIntlProviderConfig,
   NatTableLocaleLabels,
   NatTableLocaleLabelsMap,
-  NatTableNumberFormatter,
+  NatTableNumberFormatter
 } from './lib/types';
 
 export * from './ui/public-api';

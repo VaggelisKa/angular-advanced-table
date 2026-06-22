@@ -3,8 +3,7 @@
   <header class="header-section">
     <h1 class="title">Table Builder</h1>
     <p class="description">
-      Visually configure your table primitives, preview the grid interactively, and copy the clean
-      Angular code.
+      Visually configure your table primitives, preview the grid interactively, and copy the clean Angular code.
     </p>
   </header>
 
@@ -14,39 +13,25 @@
       <h2 class="card-title">Configure Features</h2>
       <div class="config-options">
         <label class="toggle-control">
-          <input
-            [checked]="withGlobalFilter()"
-            type="checkbox"
-            (change)="withGlobalFilter.set(!withGlobalFilter())"
-          />
+          <input [checked]="withGlobalFilter()" type="checkbox" (change)="withGlobalFilter.set(!withGlobalFilter())" />
           <span class="slider"></span>
           <span class="toggle-label">Global Search</span>
         </label>
         <span class="option-help">Adds fuzzy-search inputs to query row content globally.</span>
 
         <label class="toggle-control">
-          <input
-            [checked]="showColumnVisibility()"
-            type="checkbox"
-            (change)="showColumnVisibility.set(!showColumnVisibility())"
-          />
+          <input [checked]="showColumnVisibility()" type="checkbox" (change)="showColumnVisibility.set(!showColumnVisibility())" />
           <span class="slider"></span>
           <span class="toggle-label">Column Visibility</span>
         </label>
         <span class="option-help">Renders interactive visibility chips to toggle columns.</span>
 
         <label class="toggle-control">
-          <input
-            [checked]="withPagination()"
-            type="checkbox"
-            (change)="withPagination.set(!withPagination())"
-          />
+          <input [checked]="withPagination()" type="checkbox" (change)="withPagination.set(!withPagination())" />
           <span class="slider"></span>
           <span class="toggle-label">Pagination</span>
         </label>
-        <span class="option-help"
-          >Enables paging logic with page-size chips and pager navigation.</span
-        >
+        <span class="option-help">Enables paging logic with page-size chips and pager navigation.</span>
         <label class="toggle-control">
           <input [checked]="withColumnPinning()" type="checkbox" (change)="toggleColumnPinning()" />
           <span class="slider"></span>
@@ -60,32 +45,22 @@
           <span class="toggle-label">Column Reordering</span>
         </label>
         <span class="option-help">
-          Enables drag-and-drop, header-menu move actions, and Ctrl+Shift+Arrow keyboard column
-          reordering (Command+Shift+Arrow on macOS).
+          Enables drag-and-drop, header-menu move actions, and Ctrl+Shift+Arrow keyboard column reordering (Command+Shift+Arrow on
+          macOS).
         </span>
         <label class="toggle-control">
-          <input
-            [checked]="showScrollControl()"
-            type="checkbox"
-            (change)="showScrollControl.set(!showScrollControl())"
-          />
+          <input [checked]="showScrollControl()" type="checkbox" (change)="showScrollControl.set(!showScrollControl())" />
           <span class="slider"></span>
           <span class="toggle-label">Scroll Control</span>
         </label>
         <span class="option-help">Renders a horizontal scrolling slider for wide tables.</span>
 
         <label class="toggle-control">
-          <input
-            [checked]="withStickyHeader()"
-            type="checkbox"
-            (change)="withStickyHeader.set(!withStickyHeader())"
-          />
+          <input [checked]="withStickyHeader()" type="checkbox" (change)="withStickyHeader.set(!withStickyHeader())" />
           <span class="slider"></span>
           <span class="toggle-label">Sticky Header</span>
         </label>
-        <span class="option-help"
-          >Pins the table header to the top of the viewport during scroll.</span
-        >
+        <span class="option-help">Pins the table header to the top of the viewport during scroll.</span>
       </div>
     </aside>
 
@@ -95,35 +70,23 @@
       <section class="card preview-card">
         <h2 class="card-title">Live Preview</h2>
 
-        <nat-table-surface
-          [stickyHeader]="withStickyHeader()"
-          [(state)]="tableState"
-          class="table-shell"
-        >
+        <nat-table-surface [stickyHeader]="withStickyHeader()" [(state)]="tableState" class="table-shell">
           @if (withGlobalFilter() || showColumnVisibility()) {
-            <nat-table-toolbar accessibleName="Table controls">
-              @if (withGlobalFilter()) {
-                <app-table-search label="Search rows" placeholder="Try 'Alpha' or 'Security'..." />
-              }
-
-              @if (showColumnVisibility()) {
-                <nat-table-column-visibility />
-              }
-            </nat-table-toolbar>
+          <nat-table-toolbar accessibleName="Table controls">
+            @if (withGlobalFilter()) {
+            <app-table-search label="Search rows" placeholder="Try 'Alpha' or 'Security'..." />
+            } @if (showColumnVisibility()) {
+            <nat-table-column-visibility />
+            }
+          </nat-table-toolbar>
+          } @if (withPagination()) {
+          <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
           }
 
-          @if (withPagination()) {
-            <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
-          }
-
-          <nat-table
-            [columns]="columns()"
-            [data]="data"
-            accessibleName="Custom configured table preview"
-          />
+          <nat-table [columns]="columns()" [data]="data" accessibleName="Custom configured table preview" />
 
           @if (showScrollControl()) {
-            <nat-table-scroll-control />
+          <nat-table-scroll-control />
           }
         </nat-table-surface>
       </section>
@@ -132,39 +95,24 @@
       <section class="card code-card">
         <header class="code-card-header">
           <div class="tab-group">
-            <button
-              [class.is-active]="activeTab() === 'html'"
-              class="tab-btn"
-              type="button"
-              (click)="setTab('html')"
-            >
+            <button [class.is-active]="activeTab() === 'html'" class="tab-btn" type="button" (click)="setTab('html')">
               custom-table.html
             </button>
-            <button
-              [class.is-active]="activeTab() === 'ts'"
-              class="tab-btn"
-              type="button"
-              (click)="setTab('ts')"
-            >
+            <button [class.is-active]="activeTab() === 'ts'" class="tab-btn" type="button" (click)="setTab('ts')">
               custom-table.ts
             </button>
           </div>
 
-          <button
-            [class.is-copied]="copied()"
-            class="btn btn-primary btn-copy"
-            type="button"
-            (click)="copyCode()"
-          >
+          <button [class.is-copied]="copied()" class="btn btn-primary btn-copy" type="button" (click)="copyCode()">
             {{ copied() ? 'Copied' : 'Copy code' }}
           </button>
         </header>
 
         <div class="code-editor">
           @if (activeTab() === 'html') {
-            <pre class="code-content"><code>{{ generatedHtml() }}</code></pre>
+          <pre class="code-content"><code>{{ generatedHtml() }}</code></pre>
           } @else {
-            <pre class="code-content"><code>{{ generatedTs() }}</code></pre>
+          <pre class="code-content"><code>{{ generatedTs() }}</code></pre>
           }
         </div>
       </section>

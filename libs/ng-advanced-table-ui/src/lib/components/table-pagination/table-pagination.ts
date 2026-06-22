@@ -8,17 +8,13 @@ import {
   NAT_TABLE_UI_INTL,
   mergePageSizeLabels,
   mergePagerLabels,
-  resolveNatTableUiIntl,
+  resolveNatTableUiIntl
 } from '../../shared/table-ui-intl';
-import {
-  DEFAULT_PAGE_SIZE_OPTIONS,
-  formatNatTableAccessibilityNumber,
-  sanitizePageSizeOptions,
-} from '../../shared/table-ui.helpers';
+import { DEFAULT_PAGE_SIZE_OPTIONS, formatNatTableAccessibilityNumber, sanitizePageSizeOptions } from '../../shared/table-ui.helpers';
 import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPageSizeOptionContext,
-  NatTableAccessibilityPagerLabels,
+  NatTableAccessibilityPagerLabels
 } from '../../shared/table-ui.types';
 import { NatTableService } from '../../shared/table.service';
 import { NatTableToolbar } from '../table-toolbar/table-toolbar';
@@ -29,26 +25,22 @@ type PageSizeOption = {
   pageSize: number;
   text: string;
   ariaLabel: string;
-}
+};
 
 @Component({
   selector: 'nat-table-pagination',
   imports: [NatTableToolbar, NatToolbarGroup, NatToolbarItem],
   templateUrl: './table-pagination.html',
-  styleUrl: './table-pagination.css',
+  styleUrl: './table-pagination.css'
 })
 export class NatTablePagination<TData extends RowData = RowData> {
   public readonly locale = input<string | undefined>(undefined);
   public readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
   public readonly pageSizeGroupAriaLabel = input<string | undefined>(undefined);
-  public readonly pageSizeAccessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(
-    undefined,
-  );
+  public readonly pageSizeAccessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
   public readonly pagerGroupAriaLabel = input<string | undefined>(undefined);
-  public readonly pagerAccessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(
-    undefined,
-  );
+  public readonly pagerAccessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(undefined);
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
@@ -63,38 +55,24 @@ export class NatTablePagination<TData extends RowData = RowData> {
   }
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  private readonly localeId = computed(
-    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
-  );
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
 
-  private readonly tableUiIntl = computed(() =>
-    resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
-  );
+  private readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
 
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
 
   // Page Size Logic
-  protected readonly selectedPageSize = computed(
-    () => this.table()?.getState().pagination.pageSize ?? 0,
-  );
+  protected readonly selectedPageSize = computed(() => this.table()?.getState().pagination.pageSize ?? 0);
 
   private readonly resolvedPageSizeAccessibilityLabels = computed(() =>
-    mergePageSizeLabels(
-      this.tableUiIntl().pageSize?.accessibilityLabels,
-      this.pageSizeAccessibilityLabels(),
-    ),
+    mergePageSizeLabels(this.tableUiIntl().pageSize?.accessibilityLabels, this.pageSizeAccessibilityLabels())
   );
 
   protected readonly resolvedPageSizeAriaLabel = computed(() => {
     const labels = this.resolvedPageSizeAccessibilityLabels();
 
-    return (
-      this.pageSizeGroupAriaLabel() ??
-      labels.groupAriaLabel ??
-      this.tableUiIntl().pageSize?.groupAriaLabel ??
-      ''
-    );
+    return this.pageSizeGroupAriaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().pageSize?.groupAriaLabel ?? '';
   });
 
   protected readonly resolvedPageSizeOptions = computed<PageSizeOption[]>(() => {
@@ -102,22 +80,17 @@ export class NatTablePagination<TData extends RowData = RowData> {
     const selectedPageSize = this.selectedPageSize();
 
     return sanitizePageSizeOptions(this.pageSizeOptions()).map((pageSize) => {
-      const pageSizeText = formatNatTableAccessibilityNumber(
-        pageSize,
-        this.tableUiIntl().formatNumber,
-        undefined,
-        this.localeId(),
-      );
+      const pageSizeText = formatNatTableAccessibilityNumber(pageSize, this.tableUiIntl().formatNumber, undefined, this.localeId());
       const context: NatTableAccessibilityPageSizeOptionContext = {
         pageSizeValue: pageSize,
         pageSizeText,
-        selectionState: selectedPageSize === pageSize ? 'selected' : 'not-selected',
+        selectionState: selectedPageSize === pageSize ? 'selected' : 'not-selected'
       };
 
       return {
         pageSize,
         text: labels.pageSizeOptionText?.(context) ?? '',
-        ariaLabel: labels.pageSizeOptionAriaLabel?.(context) ?? '',
+        ariaLabel: labels.pageSizeOptionAriaLabel?.(context) ?? ''
       };
     });
   });
@@ -130,8 +103,8 @@ export class NatTablePagination<TData extends RowData = RowData> {
     this.controller()?.patchState({
       pagination: () => ({
         pageIndex: 0,
-        pageSize,
-      }),
+        pageSize
+      })
     });
   }
 
@@ -142,21 +115,13 @@ export class NatTablePagination<TData extends RowData = RowData> {
   protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);
   protected readonly canNextPage = computed(() => this.table()?.getCanNextPage() ?? false);
   private readonly resolvedPagerAccessibilityLabels = computed(() =>
-    mergePagerLabels(
-      this.tableUiIntl().pager?.accessibilityLabels,
-      this.pagerAccessibilityLabels(),
-    ),
+    mergePagerLabels(this.tableUiIntl().pager?.accessibilityLabels, this.pagerAccessibilityLabels())
   );
 
   protected readonly resolvedPagerAriaLabel = computed(() => {
     const labels = this.resolvedPagerAccessibilityLabels();
 
-    return (
-      this.pagerGroupAriaLabel() ??
-      labels.groupAriaLabel ??
-      this.tableUiIntl().pager?.groupAriaLabel ??
-      ''
-    );
+    return this.pagerGroupAriaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().pager?.groupAriaLabel ?? '';
   });
 
   protected readonly previousPageAriaLabel = computed(() => {
@@ -177,19 +142,9 @@ export class NatTablePagination<TData extends RowData = RowData> {
     const pageCount = this.pageCount();
     const context = {
       pageValue: page,
-      pageText: formatNatTableAccessibilityNumber(
-        page,
-        this.tableUiIntl().formatNumber,
-        undefined,
-        this.localeId(),
-      ),
+      pageText: formatNatTableAccessibilityNumber(page, this.tableUiIntl().formatNumber, undefined, this.localeId()),
       pageCountValue: pageCount,
-      pageCountText: formatNatTableAccessibilityNumber(
-        pageCount,
-        this.tableUiIntl().formatNumber,
-        undefined,
-        this.localeId(),
-      ),
+      pageCountText: formatNatTableAccessibilityNumber(pageCount, this.tableUiIntl().formatNumber, undefined, this.localeId())
     };
 
     return labels.pageIndicator?.(context) ?? '';

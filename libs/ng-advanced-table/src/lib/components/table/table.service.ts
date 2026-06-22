@@ -9,13 +9,11 @@ import type {
   NatTableMode,
   NatTableModeConfiguration,
   NatTableState,
-  NatTableUiController,
+  NatTableUiController
 } from './table.types';
 
 /** Injection token for the active table UI controller in the current DI scope. */
-export const NAT_TABLE_UI_CONTROLLER = new InjectionToken<NatTableUiController<RowData>>(
-  'NAT_TABLE_UI_CONTROLLER',
-);
+export const NAT_TABLE_UI_CONTROLLER = new InjectionToken<NatTableUiController<RowData>>('NAT_TABLE_UI_CONTROLLER');
 
 /**
  * Scoped service to share the active table controller instance within a DI hierarchy.
@@ -46,16 +44,9 @@ export class NatTableService<TData extends RowData = RowData> {
   private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
   public readonly surfaceKeybindings = signal<NatTableKeybindings>({});
 
-  public readonly keybindings = computed(() =>
-    mergeNatTableKeybindings(
-      this.surfaceKeybindings(),
-      this.globalKeybindings,
-    ),
-  );
+  public readonly keybindings = computed(() => mergeNatTableKeybindings(this.surfaceKeybindings(), this.globalKeybindings));
 
-  public readonly keyboard = computed(() =>
-    createNatTableKeyboard(this.keybindings()),
-  );
+  public readonly keyboard = computed(() => createNatTableKeyboard(this.keybindings()));
 
   public readonly manualPagination = computed(() => {
     const mode = this.surfaceMode();

@@ -12,7 +12,7 @@ export type RowRenderMetric = {
   measuredAt: number;
   /** Derived health band for `durationMs`. */
   tone: RowRenderTone;
-}
+};
 
 /** Aggregate view of the latest render cycle across the current page. */
 export type RowRenderMeasurement = {
@@ -24,7 +24,7 @@ export type RowRenderMeasurement = {
   rowCount: number;
   /** Approximate rows rendered per second for the sample. */
   rowsPerSecond: number;
-}
+};
 
 /** Metadata used to render the filter chip options in the metrics companion UI. */
 export type { RowRenderFilterOption } from 'ng-advanced-table-locales';

@@ -78,11 +78,7 @@
   --nat-table-disabled-opacity: 0.45;
 
   --nat-table-card-background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--nat-table-color-accent) 11%, transparent),
-      transparent 24%
-    ),
+    linear-gradient(180deg, color-mix(in srgb, var(--nat-table-color-accent) 11%, transparent), transparent 24%),
     var(--nat-table-color-surface);
   --nat-table-card-border-color: var(--nat-table-color-border);
   --nat-table-card-border-color-hover: color-mix(
@@ -106,66 +102,27 @@
     var(--nat-table-color-accent) 8%
   );
   --nat-table-search-color: var(--nat-table-color-text);
-  --nat-table-search-placeholder-color: color-mix(
-    in srgb,
-    var(--nat-table-color-text-muted) 78%,
-    transparent
-  );
+  --nat-table-search-placeholder-color: color-mix(in srgb, var(--nat-table-color-text-muted) 78%, transparent);
   --nat-table-search-border-color: color-mix(in srgb, var(--nat-table-color-text) 14%, transparent);
-  --nat-table-search-border-color-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 22%,
-    transparent
-  );
-  --nat-table-search-border-color-focus: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 44%,
-    transparent
-  );
-  --nat-table-search-focus-ring: 0 0 0 3px
-    color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
+  --nat-table-search-border-color-hover: color-mix(in srgb, var(--nat-table-color-text) 22%, transparent);
+  --nat-table-search-border-color-focus: color-mix(in srgb, var(--nat-table-color-accent) 44%, transparent);
+  --nat-table-search-focus-ring: 0 0 0 3px color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
 
   --nat-table-chip-color: inherit;
   --nat-table-chip-background: color-mix(in srgb, var(--nat-table-color-text) 5%, transparent);
-  --nat-table-chip-background-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 8%,
-    transparent
-  );
-  --nat-table-chip-background-active: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 18%,
-    transparent
-  );
+  --nat-table-chip-background-hover: color-mix(in srgb, var(--nat-table-color-text) 8%, transparent);
+  --nat-table-chip-background-active: color-mix(in srgb, var(--nat-table-color-accent) 18%, transparent);
   --nat-table-chip-border-color: color-mix(in srgb, var(--nat-table-color-text) 14%, transparent);
-  --nat-table-chip-border-color-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 20%,
-    transparent
-  );
-  --nat-table-chip-border-color-active: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 34%,
-    transparent
-  );
-  --nat-table-chip-shadow-active: 0 0 16px
-    color-mix(in srgb, var(--nat-table-color-accent) 14%, transparent);
+  --nat-table-chip-border-color-hover: color-mix(in srgb, var(--nat-table-color-text) 20%, transparent);
+  --nat-table-chip-border-color-active: color-mix(in srgb, var(--nat-table-color-accent) 34%, transparent);
+  --nat-table-chip-shadow-active: 0 0 16px color-mix(in srgb, var(--nat-table-color-accent) 14%, transparent);
   --nat-table-chip-count-color: var(--nat-table-color-text-muted);
 
   --nat-table-pager-color: inherit;
   --nat-table-pager-background: color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
-  --nat-table-pager-background-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 22%,
-    transparent
-  );
-  --nat-table-pager-border-color: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 28%,
-    transparent
-  );
-  --nat-table-pager-shadow-hover: 0 4px 16px
-    color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
+  --nat-table-pager-background-hover: color-mix(in srgb, var(--nat-table-color-accent) 22%, transparent);
+  --nat-table-pager-border-color: color-mix(in srgb, var(--nat-table-color-accent) 28%, transparent);
+  --nat-table-pager-shadow-hover: 0 4px 16px color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
   --nat-table-pager-label-color: var(--nat-table-color-text-muted);
   --nat-table-pager-disabled-opacity: var(--nat-table-disabled-opacity);
 
@@ -181,11 +138,7 @@
 
   --nat-table-header-background: var(--nat-table-color-surface-sticky);
   --nat-table-header-color: var(--nat-table-color-text-muted);
-  --nat-table-header-border-color: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 16%,
-    transparent
-  );
+  --nat-table-header-border-color: color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
   --nat-table-header-border-width: 1px;
 
   --nat-table-sort-icon-color: var(--nat-table-color-accent);
@@ -194,37 +147,17 @@
    * Blend primary text into the sticky header fill so chevrons stay readable
    * in both light (pale header) and dark (near-black header) themes.
    */
-  --nat-table-sort-icon-color-idle: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 58%,
-    var(--nat-table-header-background) 42%
-  );
-  --nat-table-sort-icon-color-muted: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 28%,
-    var(--nat-table-header-background) 72%
-  );
-  --nat-table-sort-icon-color-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 88%,
-    var(--nat-table-header-background) 12%
-  );
+  --nat-table-sort-icon-color-idle: color-mix(in srgb, var(--nat-table-color-text) 58%, var(--nat-table-header-background) 42%);
+  --nat-table-sort-icon-color-muted: color-mix(in srgb, var(--nat-table-color-text) 28%, var(--nat-table-header-background) 72%);
+  --nat-table-sort-icon-color-hover: color-mix(in srgb, var(--nat-table-color-text) 88%, var(--nat-table-header-background) 12%);
   --nat-table-sort-icon-color-disabled: color-mix(
     in srgb,
     var(--nat-table-color-text-muted) 40%,
     var(--nat-table-header-background) 60%
   );
   --nat-table-sort-icon-chip-background: transparent;
-  --nat-table-sort-icon-chip-background-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 10%,
-    transparent
-  );
-  --nat-table-sort-icon-chip-background-active: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 16%,
-    transparent
-  );
+  --nat-table-sort-icon-chip-background-hover: color-mix(in srgb, var(--nat-table-color-text) 10%, transparent);
+  --nat-table-sort-icon-chip-background-active: color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent);
   --nat-table-sort-icon-muted-opacity: 0.7;
   --nat-table-sort-button-color-sorted: var(--nat-table-color-text);
 
@@ -232,30 +165,13 @@
   --nat-table-pin-border-color: color-mix(in srgb, var(--nat-table-color-text) 18%, transparent);
   --nat-table-pin-color: inherit;
   --nat-table-pin-color-pinned: var(--nat-table-color-accent);
-  --nat-table-pin-border-color-pinned: color-mix(
-    in srgb,
-    var(--nat-table-color-accent) 42%,
-    transparent
-  );
-  --nat-table-pin-shadow-pinned: 0 0 12px
-    color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
+  --nat-table-pin-border-color-pinned: color-mix(in srgb, var(--nat-table-color-accent) 42%, transparent);
+  --nat-table-pin-shadow-pinned: 0 0 12px color-mix(in srgb, var(--nat-table-color-accent) 12%, transparent);
 
   --nat-table-row-background: transparent;
-  --nat-table-row-background-focus: color-mix(
-    in srgb,
-    var(--nat-table-region-background, canvas) 88%,
-    currentColor 12%
-  );
-  --nat-table-row-background-focus-pinned: color-mix(
-    in srgb,
-    var(--nat-table-pinned-background, canvas) 84%,
-    currentColor 16%
-  );
-  --nat-table-row-background-hover: color-mix(
-    in srgb,
-    var(--nat-table-color-surface-sticky) 78%,
-    var(--nat-table-color-accent) 22%
-  );
+  --nat-table-row-background-focus: color-mix(in srgb, var(--nat-table-region-background, canvas) 88%, currentColor 12%);
+  --nat-table-row-background-focus-pinned: color-mix(in srgb, var(--nat-table-pinned-background, canvas) 84%, currentColor 16%);
+  --nat-table-row-background-hover: color-mix(in srgb, var(--nat-table-color-surface-sticky) 78%, var(--nat-table-color-accent) 22%);
   --nat-table-row-background-hover-pinned: color-mix(
     in srgb,
     var(--nat-table-color-surface-sticky) 84%,
@@ -268,11 +184,7 @@
   --nat-table-cell-color-neutral: var(--nat-table-color-text-muted);
 
   --nat-table-pinned-background: var(--nat-table-color-surface-sticky);
-  --nat-table-pinned-divider-color: color-mix(
-    in srgb,
-    var(--nat-table-color-text) 18%,
-    transparent
-  );
+  --nat-table-pinned-divider-color: color-mix(in srgb, var(--nat-table-color-text) 18%, transparent);
 
   --nat-table-empty-state-color: var(--nat-table-color-text-muted);
 

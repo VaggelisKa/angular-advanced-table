@@ -5,30 +5,30 @@ import type { SimulationRow, SimulationStatus } from './table-simulation';
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {
   notation: 'compact',
-  maximumFractionDigits: 1,
+  maximumFractionDigits: 1
 });
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
   minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 2
 });
 const signedCurrencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
   signDisplay: 'exceptZero',
   minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 2
 });
 const signedPercentFormatter = new Intl.NumberFormat('en-US', {
   signDisplay: 'exceptZero',
   minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 2
 });
 const timeFormatter = new Intl.DateTimeFormat('en-US', {
   hour: '2-digit',
   minute: '2-digit',
-  second: '2-digit',
+  second: '2-digit'
 });
 
 export const formatInteger = (value: number): string => integerFormatter.format(value);
@@ -37,11 +37,9 @@ export const formatCompact = (value: number): string => compactFormatter.format(
 
 export const formatCurrency = (value: number): string => currencyFormatter.format(value);
 
-export const formatSignedCurrency = (value: number): string =>
-  signedCurrencyFormatter.format(value);
+export const formatSignedCurrency = (value: number): string => signedCurrencyFormatter.format(value);
 
-export const formatSignedPercent = (value: number): string =>
-  `${signedPercentFormatter.format(value)}%`;
+export const formatSignedPercent = (value: number): string => `${signedPercentFormatter.format(value)}%`;
 
 export const formatTime = (value: number): string => timeFormatter.format(value);
 
@@ -67,9 +65,7 @@ export const numberTone = (value: number): 'positive' | 'negative' | 'neutral' =
   return 'neutral';
 };
 
-export const statusTone = (
-  status: SimulationStatus,
-): 'positive' | 'negative' | 'neutral' | 'warning' => {
+export const statusTone = (status: SimulationStatus): 'positive' | 'negative' | 'neutral' | 'warning' => {
   switch (status) {
     case 'Advancing':
       return 'positive';
@@ -85,7 +81,7 @@ export const statusTone = (
 export const upsertColumnFilter = (
   currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
   columnId: string,
-  value: unknown,
+  value: unknown
 ): NonNullable<Partial<NatTableState>['columnFilters']> => {
   const nextFilters = currentFilters.filter((filter) => filter.id !== columnId);
 
@@ -97,7 +93,7 @@ export const upsertColumnFilter = (
     ...nextFilters,
     {
       id: columnId,
-      value,
-    },
+      value
+    }
   ];
 };

@@ -10,7 +10,7 @@ export {
   NAT_TABLE_UTILS_ENGLISH_INTL,
   NAT_TABLE_UTILS_DEFAULT_INTL,
   NAT_TABLE_UTILS_INTL,
-  provideNatTableUtilsIntl,
+  provideNatTableUtilsIntl
 } from './lib/render-metrics/intl';
 
 export type { WithRenderMetricsColumnOptions } from './lib/render-metrics/column';
@@ -25,7 +25,7 @@ export type {
   NatTableUtilsIntl,
   NatTableUtilsIntlConfig,
   NatTableUtilsIntlProviderConfig,
-  NatTableUtilsNumberFormatter,
+  NatTableUtilsNumberFormatter
 } from './lib/render-metrics/intl';
 
 export type {
@@ -35,14 +35,10 @@ export type {
   NatTableColumnMeta,
   NatTableRenderMetricsController,
   NatTableRenderMetricsEvent,
-  NatTableRenderMetricsState,
+  NatTableRenderMetricsState
 } from './lib/render-metrics/contracts';
 
-export {
-  getRowRenderTone,
-  getRenderToneLabel,
-  isRenderFilterValue,
-} from './lib/render-metrics/tone';
+export { getRowRenderTone, getRenderToneLabel, isRenderFilterValue } from './lib/render-metrics/tone';
 
 export {
   RENDER_FILTER_OPTIONS,
@@ -51,5 +47,5 @@ export {
   type RowRenderFilterValue,
   type RowRenderMeasurement,
   type RowRenderMetric,
-  type RowRenderTone,
+  type RowRenderTone
 } from './lib/render-metrics/types';

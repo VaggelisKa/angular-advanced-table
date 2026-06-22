@@ -37,8 +37,7 @@
   border-color: var(--nat-table-search-border-color-focus, currentColor);
   box-shadow: var(--nat-table-search-focus-ring, none);
   background: var(--nat-table-search-background-focus, var(--nat-table-search-background));
-  outline: var(--nat-table-focus-ring-width, 2px) solid
-    var(--nat-table-focus-ring-color, currentColor);
+  outline: var(--nat-table-focus-ring-width, 2px) solid var(--nat-table-focus-ring-color, currentColor);
   outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }
 

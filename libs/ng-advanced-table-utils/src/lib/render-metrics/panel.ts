@@ -5,7 +5,7 @@ import {
   NAT_TABLE_UTILS_INTL,
   formatNatTableUtilsNumber,
   mergeRenderMetricsPanelIntl,
-  resolveNatTableUtilsIntl,
+  resolveNatTableUtilsIntl
 } from './intl';
 import type { NatTableRenderMetricsPanelIntl } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
@@ -16,7 +16,7 @@ type RenderHealthTone = 'idle' | 'fast' | 'watch' | 'slow';
 type RenderHealthState = {
   label: string;
   tone: RenderHealthTone;
-}
+};
 
 /**
  * Compact KPI panel that summarizes the latest render measurement collected by
@@ -25,7 +25,7 @@ type RenderHealthState = {
 @Component({
   selector: 'nat-render-metrics-panel',
   templateUrl: './panel.html',
-  styleUrl: './panel.css',
+  styleUrl: './panel.css'
 })
 export class NatRenderMetricsPanel {
   /** Shared store. */
@@ -37,13 +37,9 @@ export class NatRenderMetricsPanel {
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
   private readonly localeId = computed(() => this.locale() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
-  private readonly utilsIntl = computed(() =>
-    resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
-  );
+  private readonly utilsIntl = computed(() => resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()));
 
-  private readonly resolvedLabels = computed(() =>
-    mergeRenderMetricsPanelIntl(this.utilsIntl().renderMetrics?.panel, this.labels()),
-  );
+  private readonly resolvedLabels = computed(() => mergeRenderMetricsPanelIntl(this.utilsIntl().renderMetrics?.panel, this.labels()));
 
   protected readonly measurement = computed(() => this.store().measurement());
   protected readonly ariaLabel = computed(() => this.resolvedLabels().ariaLabel ?? '');
@@ -69,17 +65,12 @@ export class NatRenderMetricsPanel {
       return labels.idleSummary ?? '';
     }
 
-    const rowCountText = formatNatTableUtilsNumber(
-      this.utilsIntl(),
-      measurement.rowCount,
-      undefined,
-      this.localeId(),
-    );
+    const rowCountText = formatNatTableUtilsNumber(this.utilsIntl(), measurement.rowCount, undefined, this.localeId());
 
     return (
       labels.rowSampleSummary?.({
         rowCountValue: measurement.rowCount,
-        rowCountText,
+        rowCountText
       }) ?? ''
     );
   });
@@ -91,15 +82,15 @@ export class NatRenderMetricsPanel {
       value,
       {
         minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
+        maximumFractionDigits: 1
       },
-      this.localeId(),
+      this.localeId()
     );
 
     return (
       labels.duration?.({
         durationMsValue: value,
-        durationMsText,
+        durationMsText
       }) ?? ''
     );
   }

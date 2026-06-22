@@ -1,12 +1,9 @@
 /* eslint-disable max-lines */
-import { InjectionToken, Optional,  SkipSelf, inject } from '@angular/core';
-import type {Provider} from '@angular/core';
+import { InjectionToken, Optional, SkipSelf, inject } from '@angular/core';
+import type { Provider } from '@angular/core';
 
 import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './utils-built-in-locales';
-import {
-  NAT_TABLE_UTILS_ENGLISH_INTL,
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
-} from './utils-en';
+import { NAT_TABLE_UTILS_ENGLISH_INTL, NAT_TABLE_UTILS_ENGLISH_LOCALE } from './utils-en';
 import type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsFilterIntl,
@@ -17,7 +14,7 @@ import type {
   NatTableUtilsIntlProviderConfig,
   NatTableUtilsLocaleLabels,
   NatTableUtilsLocaleLabelsMap,
-  NatTableUtilsNumberFormatter,
+  NatTableUtilsNumberFormatter
 } from './utils-types';
 
 const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options, locale) =>
@@ -25,127 +22,121 @@ const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options, 
 
 /** Built-in locale defaults used when no utils locale provider is configured. */
 export const NAT_TABLE_UTILS_DEFAULT_INTL: NatTableUtilsIntlConfig = {
-  locales: NAT_TABLE_BUILT_IN_UTILS_LOCALES,
+  locales: NAT_TABLE_BUILT_IN_UTILS_LOCALES
 };
 
 /** Injection token backing `provideNatTableUtilsLocales(...)`. */
-export const NAT_TABLE_UTILS_INTL = new InjectionToken<NatTableUtilsIntlConfig>(
-  'NAT_TABLE_UTILS_INTL',
-  {
-    providedIn: 'root',
-    factory: (): NatTableUtilsIntlConfig => NAT_TABLE_UTILS_DEFAULT_INTL,
-  },
-);
+export const NAT_TABLE_UTILS_INTL = new InjectionToken<NatTableUtilsIntlConfig>('NAT_TABLE_UTILS_INTL', {
+  providedIn: 'root',
+  factory: (): NatTableUtilsIntlConfig => NAT_TABLE_UTILS_DEFAULT_INTL
+});
 
 /** Merges the render-metrics filter text fields, override values winning. */
 const mergeRenderMetricsFilterText = (
   parent?: NatTableRenderMetricsFilterIntl,
-  override?: NatTableRenderMetricsFilterIntl,
+  override?: NatTableRenderMetricsFilterIntl
 ): Partial<NatTableRenderMetricsFilterIntl> => ({
   heading: override?.heading ?? parent?.heading,
   groupAriaLabel: override?.groupAriaLabel ?? parent?.groupAriaLabel,
-  idleCaption: override?.idleCaption ?? parent?.idleCaption,
+  idleCaption: override?.idleCaption ?? parent?.idleCaption
 });
 
 /** Merges the render-metrics filter callbacks and options, override values winning. */
 const mergeRenderMetricsFilterFormatters = (
   parent?: NatTableRenderMetricsFilterIntl,
-  override?: NatTableRenderMetricsFilterIntl,
+  override?: NatTableRenderMetricsFilterIntl
 ): Partial<NatTableRenderMetricsFilterIntl> => ({
   rowSampleCaption: override?.rowSampleCaption ?? parent?.rowSampleCaption,
-  options: override?.options ?? parent?.options,
+  options: override?.options ?? parent?.options
 });
 
 /** Merges render-metrics filter labels and options field by field. */
 export const mergeRenderMetricsFilterIntl = (
   parent?: NatTableRenderMetricsFilterIntl,
-  override?: NatTableRenderMetricsFilterIntl,
+  override?: NatTableRenderMetricsFilterIntl
 ): NatTableRenderMetricsFilterIntl => ({
   ...mergeRenderMetricsFilterText(parent, override),
-  ...mergeRenderMetricsFilterFormatters(parent, override),
+  ...mergeRenderMetricsFilterFormatters(parent, override)
 });
 
 /** Merges the render-metrics panel text fields, override values winning. */
 const mergeRenderMetricsPanelText = (
   parent?: NatTableRenderMetricsPanelIntl,
-  override?: NatTableRenderMetricsPanelIntl,
+  override?: NatTableRenderMetricsPanelIntl
 ): Partial<NatTableRenderMetricsPanelIntl> => ({
   ariaLabel: override?.ariaLabel ?? parent?.ariaLabel,
   toneLabel: override?.toneLabel ?? parent?.toneLabel,
-  idleSummary: override?.idleSummary ?? parent?.idleSummary,
+  idleSummary: override?.idleSummary ?? parent?.idleSummary
 });
 
 /** Merges the render-metrics panel callbacks, override values winning. */
 const mergeRenderMetricsPanelFormatters = (
   parent?: NatTableRenderMetricsPanelIntl,
-  override?: NatTableRenderMetricsPanelIntl,
+  override?: NatTableRenderMetricsPanelIntl
 ): Partial<NatTableRenderMetricsPanelIntl> => ({
   rowSampleSummary: override?.rowSampleSummary ?? parent?.rowSampleSummary,
-  duration: override?.duration ?? parent?.duration,
+  duration: override?.duration ?? parent?.duration
 });
 
 /** Merges render-metrics panel labels and formatters field by field. */
 export const mergeRenderMetricsPanelIntl = (
   parent?: NatTableRenderMetricsPanelIntl,
-  override?: NatTableRenderMetricsPanelIntl,
+  override?: NatTableRenderMetricsPanelIntl
 ): NatTableRenderMetricsPanelIntl => ({
   ...mergeRenderMetricsPanelText(parent, override),
-  ...mergeRenderMetricsPanelFormatters(parent, override),
+  ...mergeRenderMetricsPanelFormatters(parent, override)
 });
 
 /** Merges the render-metrics column text fields, override values winning. */
 const mergeRenderMetricsColumnText = (
   parent?: NatTableRenderMetricsColumnIntl,
-  override?: NatTableRenderMetricsColumnIntl,
+  override?: NatTableRenderMetricsColumnIntl
 ): Partial<NatTableRenderMetricsColumnIntl> => ({
   header: override?.header ?? parent?.header,
-  pendingLabel: override?.pendingLabel ?? parent?.pendingLabel,
+  pendingLabel: override?.pendingLabel ?? parent?.pendingLabel
 });
 
 /** Merges the render-metrics column suffix and formatters, override values winning. */
 const mergeRenderMetricsColumnFormatters = (
   parent?: NatTableRenderMetricsColumnIntl,
-  override?: NatTableRenderMetricsColumnIntl,
+  override?: NatTableRenderMetricsColumnIntl
 ): Partial<NatTableRenderMetricsColumnIntl> => ({
   unitSuffix: override?.unitSuffix ?? parent?.unitSuffix,
-  duration: override?.duration ?? parent?.duration,
+  duration: override?.duration ?? parent?.duration
 });
 
 /** Merges render-metrics column labels and formatters field by field. */
 export const mergeRenderMetricsColumnIntl = (
   parent?: NatTableRenderMetricsColumnIntl,
-  override?: NatTableRenderMetricsColumnIntl,
+  override?: NatTableRenderMetricsColumnIntl
 ): NatTableRenderMetricsColumnIntl => ({
   ...mergeRenderMetricsColumnText(parent, override),
-  ...mergeRenderMetricsColumnFormatters(parent, override),
+  ...mergeRenderMetricsColumnFormatters(parent, override)
 });
 
 const mergeRenderMetricsIntl = (
   parent: NatTableRenderMetricsIntl | undefined,
-  override: NatTableRenderMetricsIntl | undefined,
+  override: NatTableRenderMetricsIntl | undefined
 ): NatTableRenderMetricsIntl => ({
   filter: mergeRenderMetricsFilterIntl(parent?.filter, override?.filter),
   panel: mergeRenderMetricsPanelIntl(parent?.panel, override?.panel),
-  column: mergeRenderMetricsColumnIntl(parent?.column, override?.column),
+  column: mergeRenderMetricsColumnIntl(parent?.column, override?.column)
 });
 
 /** Merges utility locale dictionaries, with override values taking precedence. */
-export const mergeNatTableUtilsIntl = (
-  parent: NatTableUtilsIntl | undefined,
-  override: NatTableUtilsIntl,
-): NatTableUtilsIntl => ({
+export const mergeNatTableUtilsIntl = (parent: NatTableUtilsIntl | undefined, override: NatTableUtilsIntl): NatTableUtilsIntl => ({
   renderMetrics: mergeRenderMetricsIntl(parent?.renderMetrics, override.renderMetrics),
-  formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
+  formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER
 });
 
 const mergeNatTableUtilsLocaleIntl = (
   parent?: NatTableUtilsLocaleLabels,
-  override?: NatTableUtilsLocaleLabels,
+  override?: NatTableUtilsLocaleLabels
 ): NatTableUtilsLocaleLabels => mergeNatTableUtilsIntl(parent, override ?? {});
 
 const mergeLocaleMaps = (
   parentLocales: NatTableUtilsLocaleLabelsMap,
-  overrideLocales: NatTableUtilsLocaleLabelsMap,
+  overrideLocales: NatTableUtilsLocaleLabelsMap
 ): NatTableUtilsLocaleLabelsMap => {
   const merged: NatTableUtilsLocaleLabelsMap = {};
 
@@ -160,40 +151,33 @@ const mergeLocaleMaps = (
   return merged;
 };
 
-const isUtilsIntlConfig = (
-  config: NatTableUtilsIntlProviderConfig,
-): config is NatTableUtilsIntlConfig => 'locales' in config;
+const isUtilsIntlConfig = (config: NatTableUtilsIntlProviderConfig): config is NatTableUtilsIntlConfig => 'locales' in config;
 
-const normalizeUtilsIntlProviderConfig = (
-  config: NatTableUtilsIntlProviderConfig,
-): NatTableUtilsIntlConfig => {
+const normalizeUtilsIntlProviderConfig = (config: NatTableUtilsIntlProviderConfig): NatTableUtilsIntlConfig => {
   if (isUtilsIntlConfig(config)) {
     return config;
   }
 
   return {
     locales: {
-      [NAT_TABLE_UTILS_ENGLISH_LOCALE]: config,
-    },
+      [NAT_TABLE_UTILS_ENGLISH_LOCALE]: config
+    }
   };
 };
 
 const mergeNatTableUtilsIntlConfig = (
   parent: NatTableUtilsIntlConfig,
-  override: NatTableUtilsIntlProviderConfig,
+  override: NatTableUtilsIntlProviderConfig
 ): NatTableUtilsIntlConfig => {
   const overrideConfig = normalizeUtilsIntlProviderConfig(override);
 
   return {
-    locales: mergeLocaleMaps(parent.locales ?? {}, overrideConfig.locales ?? {}),
+    locales: mergeLocaleMaps(parent.locales ?? {}, overrideConfig.locales ?? {})
   };
 };
 
 const isMissingInjectionContextError = (error: unknown): boolean =>
-  typeof error === 'object' &&
-  error !== null &&
-  'code' in error &&
-  (error as { code: unknown }).code === -203;
+  typeof error === 'object' && error !== null && 'code' in error && (error as { code: unknown }).code === -203;
 
 /**
  * Provides default labels and number formatting for optional utility helpers.
@@ -205,9 +189,8 @@ export const provideNatTableUtilsIntl = (intl: NatTableUtilsIntlProviderConfig):
   {
     provide: NAT_TABLE_UTILS_INTL,
     deps: [[new Optional(), new SkipSelf(), NAT_TABLE_UTILS_INTL]],
-    useFactory: (parent: NatTableUtilsIntlConfig | null) =>
-      mergeNatTableUtilsIntlConfig(parent ?? NAT_TABLE_UTILS_DEFAULT_INTL, intl),
-  },
+    useFactory: (parent: NatTableUtilsIntlConfig | null) => mergeNatTableUtilsIntlConfig(parent ?? NAT_TABLE_UTILS_DEFAULT_INTL, intl)
+  }
 ];
 
 /**
@@ -215,16 +198,15 @@ export const provideNatTableUtilsIntl = (intl: NatTableUtilsIntlProviderConfig):
  *
  * Call this only when using `ng-advanced-table-utils`.
  */
-export const provideNatTableUtilsLocales = (
-  overrides: NatTableUtilsLocaleLabelsMap = {},
-): Provider[] => provideNatTableUtilsIntl({ locales: overrides });
+export const provideNatTableUtilsLocales = (overrides: NatTableUtilsLocaleLabelsMap = {}): Provider[] =>
+  provideNatTableUtilsIntl({ locales: overrides });
 
 /** Formats generated utility numbers through the configured locale formatter. */
 export const formatNatTableUtilsNumber = (
   intl: NatTableUtilsIntl,
   value: number,
   options?: Intl.NumberFormatOptions,
-  locale?: string,
+  locale?: string
 ): string => (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 
 /**
@@ -245,16 +227,9 @@ export const injectNatTableUtilsIntl = (): NatTableUtilsIntlConfig => {
 };
 
 /** Resolves a utility locale dictionary, falling back to built-in English defaults. */
-export const resolveNatTableUtilsIntl = (
-  intl: NatTableUtilsIntlConfig,
-  locale: string,
-): NatTableUtilsIntl => {
-  const englishIntl =
-    intl.locales?.[NAT_TABLE_UTILS_ENGLISH_LOCALE] ?? NAT_TABLE_UTILS_ENGLISH_INTL;
-  const selectedIntl =
-    intl.locales?.[locale] ?? (locale === NAT_TABLE_UTILS_ENGLISH_LOCALE ? {} : null);
+export const resolveNatTableUtilsIntl = (intl: NatTableUtilsIntlConfig, locale: string): NatTableUtilsIntl => {
+  const englishIntl = intl.locales?.[NAT_TABLE_UTILS_ENGLISH_LOCALE] ?? NAT_TABLE_UTILS_ENGLISH_INTL;
+  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_TABLE_UTILS_ENGLISH_LOCALE ? {} : null);
 
-  return selectedIntl
-    ? mergeNatTableUtilsIntl(englishIntl, selectedIntl)
-    : mergeNatTableUtilsIntl(englishIntl, {});
+  return selectedIntl ? mergeNatTableUtilsIntl(englishIntl, selectedIntl) : mergeNatTableUtilsIntl(englishIntl, {});
 };

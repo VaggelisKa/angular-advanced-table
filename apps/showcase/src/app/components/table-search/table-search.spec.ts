@@ -18,7 +18,7 @@ type Row = {
 
 const columns: ColumnDef<Row, unknown>[] = [
   { accessorKey: 'name', header: 'Name', meta: { label: 'Name', rowHeader: true } },
-  { accessorKey: 'region', header: 'Region', meta: { label: 'Region' } },
+  { accessorKey: 'region', header: 'Region', meta: { label: 'Region' } }
 ];
 
 const getRowId = (row: Row): string => row.id;
@@ -27,23 +27,14 @@ const getRowId = (row: Row): string => row.id;
   selector: 'app-table-search-host',
   imports: [NatTable, NatTableSurface, NatTablePageSize, NatTablePager, TableSearch],
   template: `
-    <nat-table-surface
-      [initialState]="initialState"
-      [state]="tableState()"
-      (stateChange)="onTableStateChange($event)"
-    >
+    <nat-table-surface [initialState]="initialState" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <app-table-search label="Search rows" placeholder="Search rows" />
       <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
       <nat-table-pager />
 
-      <nat-table
-        [columns]="columns"
-        [data]="rows()"
-        [getRowId]="getRowId"
-        accessibleName="Demo table"
-      />
+      <nat-table [columns]="columns" [data]="rows()" [getRowId]="getRowId" accessibleName="Demo table" />
     </nat-table-surface>
-  `,
+  `
 })
 class Host {
   protected readonly rows = signal<Row[]>([
@@ -52,7 +43,7 @@ class Host {
     { id: 'r3', name: 'Gamma', region: 'us-east-1' },
     { id: 'r4', name: 'Delta', region: 'eu-west-3' },
     { id: 'r5', name: 'Epsilon', region: 'us-east-1' },
-    { id: 'r6', name: 'Zeta', region: 'eu-west-3' },
+    { id: 'r6', name: 'Zeta', region: 'eu-west-3' }
   ]);
 
   protected readonly columns = columns;
@@ -60,7 +51,7 @@ class Host {
   protected readonly pageSizeOptions = [2, 3, 5] as const;
   public readonly tableState = signal<Partial<NatTableState>>({});
   protected readonly initialState: Partial<NatTableState> = {
-    pagination: { pageIndex: 1, pageSize: 2 },
+    pagination: { pageIndex: 1, pageSize: 2 }
   };
 
   protected onTableStateChange(state: Partial<NatTableState>): void {
@@ -86,7 +77,7 @@ describe('TableSearch (user-defined)', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Host],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Host);

@@ -10,7 +10,7 @@ import type {
   RowData,
   RowSelectionState,
   SortingState,
-  VisibilityState,
+  VisibilityState
 } from '@tanstack/angular-table';
 
 /**
@@ -28,7 +28,7 @@ export type NatTableState = {
   columnSizing: ColumnSizingState;
   rowSelection: RowSelectionState;
   pagination: PaginationState;
-}
+};
 
 /** Semantic tone that can be applied to a rendered body cell. */
 export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
@@ -43,29 +43,24 @@ export type NatTableSortIndicatorContext<TData extends RowData = RowData> = {
   ariaSort: 'ascending' | 'descending' | 'none';
   column: Column<TData, unknown>;
   label: string;
-}
+};
 
 /** Value returned by table export metadata before format-specific normalization. */
 export type NatTableColumnExportValue = unknown;
 
 /** Context passed to column export value callbacks. */
-export type NatTableColumnExportValueContext<
-  TData extends RowData = RowData,
-  TValue = unknown,
-> = {
+export type NatTableColumnExportValueContext<TData extends RowData = RowData, TValue = unknown> = {
   readonly row: Row<TData>;
   readonly column: Column<TData, TValue>;
   readonly value: TValue;
-}
+};
 
 /** Export behavior attached to a table column definition. */
 export type NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> = {
   readonly enabled?: boolean;
   readonly header?: string;
-  readonly value?: (
-    context: NatTableColumnExportValueContext<TData, TValue>,
-  ) => NatTableColumnExportValue;
-}
+  readonly value?: (context: NatTableColumnExportValueContext<TData, TValue>) => NatTableColumnExportValue;
+};
 
 /**
  * Shared canonical metadata contract understood by the table, companion UI,
@@ -83,4 +78,4 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   headerMinSize?: number | string;
   headerMaxSize?: number | string;
   export?: NatTableColumnExportOptions<TData, TValue>;
-}
+};

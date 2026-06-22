@@ -1,14 +1,11 @@
 import type { ColumnDef } from '@tanstack/angular-table';
-import type {
-  NatTableColumnMeta as InternalNatTableColumnMeta,
-  NatTableState,
-} from 'ng-advanced-table-types';
+import type { NatTableColumnMeta as InternalNatTableColumnMeta, NatTableState } from 'ng-advanced-table-types';
 
 import type { NatTableColumnMeta, NatTableRenderMetricsState } from './contracts';
 
 type ContractRow = {
   durationMs: number;
-}
+};
 
 type Expect<T extends true> = T;
 
@@ -34,10 +31,7 @@ function requireDefined<T>(value: T | undefined): T {
 
 describe('ng-advanced-table-utils public table contracts', () => {
   it('matches the core render-metrics type contracts', () => {
-    const typeContracts: [
-      RenderMetricsStateMatchesCore,
-      RenderMetricsColumnMetaMatchesCore,
-    ] = [true, true];
+    const typeContracts: [RenderMetricsStateMatchesCore, RenderMetricsColumnMetaMatchesCore] = [true, true];
 
     expect(typeContracts).toHaveLength(2);
   });
@@ -56,10 +50,10 @@ describe('ng-advanced-table-utils public table contracts', () => {
         export: {
           enabled: true,
           header: 'Render duration',
-          value: ({ value }) => value,
+          value: ({ value }) => value
         },
-        cellTone: (context) => (context.getValue() > 16 ? 'warning' : 'neutral'),
-      } satisfies NatTableColumnMeta<ContractRow, number>,
+        cellTone: (context) => (context.getValue() > 16 ? 'warning' : 'neutral')
+      } satisfies NatTableColumnMeta<ContractRow, number>
     };
 
     const meta = requireDefined(column.meta);

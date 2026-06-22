@@ -1,30 +1,25 @@
-@if (controller()) {
-  @if (columns().length) {
-    <div class="control-block">
-      <div class="control-heading">
-        <span class="control-label">{{ resolvedHeading() }}</span>
-        <span class="control-caption">
-          {{ visibilitySummary() }}
-        </span>
-      </div>
-      <div [attr.aria-label]="resolvedAriaLabel()" class="chip-row" role="group">
-        @for (column of columns(); track column.column.id) {
-          <button
-            [attr.aria-controls]="tableElementId()"
-            [attr.aria-label]="column.actionLabel"
-            [attr.aria-pressed]="column.visible"
-            [attr.data-column-id]="column.column.id"
-            [class.is-active]="column.visible"
-            [disabled]="!column.canToggle"
-            class="chip column-chip"
-            type="button"
-            (click)="toggleColumnVisibility(column)"
-          >
-            <span>{{ column.label }}</span>
-            <span class="chip-count"> {{ column.stateLabel }}</span>
-          </button>
-        }
-      </div>
-    </div>
-  }
-}
+@if (controller()) { @if (columns().length) {
+<div class="control-block">
+  <div class="control-heading">
+    <span class="control-label">{{ resolvedHeading() }}</span>
+    <span class="control-caption"> {{ visibilitySummary() }} </span>
+  </div>
+  <div [attr.aria-label]="resolvedAriaLabel()" class="chip-row" role="group">
+    @for (column of columns(); track column.column.id) {
+    <button
+      [attr.aria-controls]="tableElementId()"
+      [attr.aria-label]="column.actionLabel"
+      [attr.aria-pressed]="column.visible"
+      [attr.data-column-id]="column.column.id"
+      [class.is-active]="column.visible"
+      [disabled]="!column.canToggle"
+      class="chip column-chip"
+      type="button"
+      (click)="toggleColumnVisibility(column)">
+      <span>{{ column.label }}</span>
+      <span class="chip-count"> {{ column.stateLabel }}</span>
+    </button>
+    }
+  </div>
+</div>
+} }

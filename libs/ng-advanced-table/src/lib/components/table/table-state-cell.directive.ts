@@ -4,7 +4,7 @@ import {
   NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE,
   ROW_ACTIVATE_INTERACTIVE_SELECTOR,
   handleCellInteractionFocusIn,
-  handleCellInteractionKeydown,
+  handleCellInteractionKeydown
 } from './cell-interaction';
 import { NatTableService } from './table.service';
 
@@ -12,8 +12,8 @@ import { NatTableService } from './table.service';
   selector: '[natTableStateCell]',
   host: {
     '(keydown)': 'onKeydown($event)',
-    '(focusin)': 'onFocusIn($event)',
-  },
+    '(focusin)': 'onFocusIn($event)'
+  }
 })
 export class NatTableStateCell {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -33,9 +33,7 @@ export class NatTableStateCell {
   protected readonly onFocusIn = handleCellInteractionFocusIn;
 
   private prepareControls(): void {
-    const controls = this.elementRef.nativeElement.querySelectorAll<HTMLElement>(
-      ROW_ACTIVATE_INTERACTIVE_SELECTOR,
-    );
+    const controls = this.elementRef.nativeElement.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR);
 
     for (const control of controls) {
       if (control.hasAttribute('ngGridCellWidget') || control.hasAttribute('disabled')) {

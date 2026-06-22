@@ -4,11 +4,7 @@ import { Component, computed, effect, inject, input } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
 
 import { injectNatTableUiController } from '../../shared/resolve-ui-controller';
-import {
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  NAT_TABLE_UI_INTL,
-  resolveNatTableUiIntl,
-} from '../../shared/table-ui-intl';
+import { NAT_TABLE_UI_ENGLISH_LOCALE, NAT_TABLE_UI_INTL, resolveNatTableUiIntl } from '../../shared/table-ui-intl';
 import type { NatTableUiController } from '../../shared/table-ui.types';
 
 const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
@@ -23,7 +19,7 @@ const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
   'datetime-local',
   'month',
   'time',
-  'week',
+  'week'
 ]);
 
 /** True when the event target owns caret/arrow-key editing — toolbar keys must not steal it. */
@@ -46,8 +42,8 @@ const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
   host: {
     '[attr.aria-label]': 'resolvedAccessibleName()',
     '[attr.aria-controls]': 'ariaControls()',
-    '(focusin)': 'syncActiveItemFromFocus($event)',
-  },
+    '(focusin)': 'syncActiveItemFromFocus($event)'
+  }
 })
 export class NatTableToolbar<TData extends RowData = RowData> {
   public readonly for = input<NatTableUiController<TData>>();
@@ -68,16 +64,12 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     return pattern;
   }
 
-  protected readonly localeId = computed(
-    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
-  );
+  protected readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
 
-  protected readonly tableUiIntl = computed(() =>
-    resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
-  );
+  protected readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
 
   protected readonly resolvedAccessibleName = computed(
-    () => this.accessibleName() ?? this.tableUiIntl().toolbar?.toolbarLabel ?? null,
+    () => this.accessibleName() ?? this.tableUiIntl().toolbar?.toolbarLabel ?? null
   );
 
   protected readonly ariaControls = computed(() => this.controller()?.tableElementId() ?? null);

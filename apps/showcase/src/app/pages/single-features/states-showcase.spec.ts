@@ -6,7 +6,7 @@ import { StatesShowcasePage } from './states-showcase';
 
 const clickCardButton = (card: HTMLElement, label: string): void => {
   const button = Array.from(card.querySelectorAll('button')).find(
-    (candidate) => candidate.textContent.trim() === label,
+    (candidate) => candidate.textContent.trim() === label
   ) as HTMLButtonElement;
 
   button.click();
@@ -18,7 +18,7 @@ describe('StatesShowcasePage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [StatesShowcasePage],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(StatesShowcasePage);
@@ -34,18 +34,10 @@ describe('StatesShowcasePage', () => {
     fixture.detectChanges();
 
     const page = fixture.nativeElement as HTMLElement;
-    const cards = Array.from(page.querySelectorAll('.card-title')).map((title) =>
-      title.textContent.trim(),
-    );
+    const cards = Array.from(page.querySelectorAll('.card-title')).map((title) => title.textContent.trim());
     const busyTables = page.querySelectorAll('table[aria-busy="true"]');
 
-    expect(cards).toStrictEqual([
-      'Loading state',
-      'Empty state',
-      'Error state',
-      'Transition preview',
-      'Background refresh',
-    ]);
+    expect(cards).toStrictEqual(['Loading state', 'Empty state', 'Error state', 'Transition preview', 'Background refresh']);
     expect(page.textContent).toContain('Loading incidents');
     expect(page.textContent).toContain('No incidents found');
     expect(page.textContent).toContain('Incident queue unavailable');
@@ -58,7 +50,7 @@ describe('StatesShowcasePage', () => {
 
     const page = fixture.nativeElement as HTMLElement;
     const transitionCard = Array.from(page.querySelectorAll('.card')).find(
-      (card) => card.querySelector('.card-title')?.textContent.trim() === 'Transition preview',
+      (card) => card.querySelector('.card-title')?.textContent.trim() === 'Transition preview'
     ) as HTMLElement;
 
     clickCardButton(transitionCard, 'Empty');
@@ -88,7 +80,7 @@ describe('StatesShowcasePage', () => {
     const page = fixture.nativeElement as HTMLElement;
     const errorCell = page.querySelector('.error-state') as HTMLTableCellElement;
     const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
-      button.textContent.includes('Retry'),
+      button.textContent.includes('Retry')
     ) as HTMLButtonElement;
 
     errorCell.focus();
@@ -96,8 +88,8 @@ describe('StatesShowcasePage', () => {
       new KeyboardEvent('keydown', {
         key: 'Enter',
         bubbles: true,
-        cancelable: true,
-      }),
+        cancelable: true
+      })
     );
     fixture.detectChanges();
 
@@ -110,7 +102,7 @@ describe('StatesShowcasePage', () => {
 
     const page = fixture.nativeElement as HTMLElement;
     const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
-      button.textContent.includes('Retry'),
+      button.textContent.includes('Retry')
     ) as HTMLButtonElement;
 
     retryButton.click();

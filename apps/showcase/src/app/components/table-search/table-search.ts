@@ -18,7 +18,7 @@ let nextSearchFieldId = 0;
   selector: 'app-table-search',
   imports: [NatToolbarItem],
   templateUrl: './table-search.html',
-  styleUrl: './table-search.css',
+  styleUrl: './table-search.css'
 })
 export class TableSearch<TData extends RowData = RowData> {
   public readonly label = input('Search table');
@@ -33,9 +33,7 @@ export class TableSearch<TData extends RowData = RowData> {
   protected readonly controller = computed(() => this.natTableService.controller());
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly value = computed<string>(() =>
-    String(this.table()?.getState().globalFilter ?? ''),
-  );
+  protected readonly value = computed<string>(() => String(this.table()?.getState().globalFilter ?? ''));
 
   public constructor() {
     this.natTableService.registerSearch();
@@ -50,7 +48,7 @@ export class TableSearch<TData extends RowData = RowData> {
 
     this.controller()?.patchState({
       globalFilter: target.value,
-      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 }),
+      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 })
     });
   }
 }

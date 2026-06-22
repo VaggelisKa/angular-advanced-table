@@ -1,18 +1,11 @@
 import type { ColumnDef } from '@tanstack/angular-table';
-import type {
-  NatTableColumnMeta as InternalNatTableColumnMeta,
-  NatTableState,
-} from 'ng-advanced-table-types';
+import type { NatTableColumnMeta as InternalNatTableColumnMeta, NatTableState } from 'ng-advanced-table-types';
 
-import type {
-  NatTableColumnMeta,
-  NatTableColumnMoveDirection,
-  NatTableUiState,
-} from './table-ui.types';
+import type { NatTableColumnMeta, NatTableColumnMoveDirection, NatTableUiState } from './table-ui.types';
 
 type ContractRow = {
   amount: number;
-}
+};
 
 type Expect<T extends true> = T;
 
@@ -24,9 +17,7 @@ type Equal<T, U> =
     : false;
 
 type UiStateMatchesCore = Expect<Equal<NatTableUiState, NatTableState>>;
-type UiColumnMetaMatchesCore = Expect<
-  Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
->;
+type UiColumnMetaMatchesCore = Expect<Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>>;
 
 describe('ng-advanced-table-ui public table contracts', () => {
   it('reuses the core column metadata contract for TanStack column definitions', () => {
@@ -46,13 +37,13 @@ describe('ng-advanced-table-ui public table contracts', () => {
       export: {
         enabled: true,
         header: 'Exported amount',
-        value: ({ value }) => value,
+        value: ({ value }) => value
       },
-      cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
+      cellTone: (context) => (context.getValue() > 0 ? 'positive' : null)
     };
     const column: ColumnDef<ContractRow, number> = {
       accessorKey: 'amount',
-      meta,
+      meta
     };
     const moveDirection: NatTableColumnMoveDirection = 'left';
 

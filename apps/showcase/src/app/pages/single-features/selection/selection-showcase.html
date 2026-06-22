@@ -18,17 +18,10 @@
             natToolbarItem
             natToolbarItemPosition="start"
             type="button"
-            (click)="deleteSelected()"
-          >
+            (click)="deleteSelected()">
             Delete selected ({{ selectedNames().length }})
           </button>
-          <button
-            class="btn btn-outline"
-            natToolbarItem
-            natToolbarItemPosition="start"
-            type="button"
-            (click)="restoreData()"
-          >
+          <button class="btn btn-outline" natToolbarItem natToolbarItemPosition="start" type="button" (click)="restoreData()">
             Reset data
           </button>
         </nat-table-toolbar>
@@ -38,8 +31,7 @@
           [enableRowSelection]="true"
           [getRowId]="getRowId"
           [selectionMode]="selectionMode()"
-          accessibleName="Row selection demo table"
-        />
+          accessibleName="Row selection demo table" />
       </nat-table-surface>
     </div>
 
@@ -47,17 +39,13 @@
       <h2 class="card-title">How To Use The Keyboard</h2>
       <div class="instructions">
         <ol>
+          <li><strong>Tab</strong> to the grid, then move between cells with the <code>Arrow</code> keys.</li>
           <li>
-            <strong>Tab</strong> to the grid, then move between cells with the
-            <code>Arrow</code> keys.
+            Press <code>Enter</code> on a checkbox cell to move focus into its checkbox, then press <code>Space</code> to toggle the
+            row.
           </li>
           <li>
-            Press <code>Enter</code> on a checkbox cell to move focus into its checkbox, then press
-            <code>Space</code> to toggle the row.
-          </li>
-          <li>
-            In multiple mode, the header checkbox selects or clears all rows and shows an
-            indeterminate state for partial selections.
+            In multiple mode, the header checkbox selects or clears all rows and shows an indeterminate state for partial selections.
           </li>
           <li>Press <code>Escape</code> to return focus from the checkbox to the cell.</li>
           <li>Selection changes are announced through the table's polite live region.</li>
@@ -69,21 +57,13 @@
           [attr.aria-pressed]="selectionMode() === 'multiple'"
           class="btn btn-outline"
           type="button"
-          (click)="setMode('multiple')"
-        >
+          (click)="setMode('multiple')">
           Multiple mode
         </button>
-        <button
-          [attr.aria-pressed]="selectionMode() === 'single'"
-          class="btn btn-outline"
-          type="button"
-          (click)="setMode('single')"
-        >
+        <button [attr.aria-pressed]="selectionMode() === 'single'" class="btn btn-outline" type="button" (click)="setMode('single')">
           Single mode
         </button>
-        <button class="btn btn-secondary" type="button" (click)="clearSelection()">
-          Clear selection
-        </button>
+        <button class="btn btn-secondary" type="button" (click)="clearSelection()">Clear selection</button>
       </div>
 
       <div class="info-tags">

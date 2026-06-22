@@ -32,8 +32,8 @@ import type { NatToolbarItemPosition } from '../common/toolbar-tokens.type';
   hostDirectives: [{ directive: ToolbarWidgetGroup, inputs: ['disabled'] }],
   host: {
     role: 'group',
-    '[attr.aria-label]': 'accessibleName() ?? null',
-  },
+    '[attr.aria-label]': 'accessibleName() ?? null'
+  }
 })
 export class NatToolbarGroup {
   public readonly natToolbarGroup = input<NatToolbarItemPosition>('start');

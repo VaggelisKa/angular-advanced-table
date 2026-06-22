@@ -27,24 +27,12 @@ test.describe('Simple sorting', () => {
     // ord-1009: Pioneer Labs
     const customerCells = table.locator('td[data-column-id="customer"]');
 
-    await expect(customerCells).toContainText([
-      'Northstar Supply',
-      'Juniper Foods',
-      'Atlas Studio',
-      'Harbor Retail',
-      'Pioneer Labs',
-    ]);
+    await expect(customerCells).toContainText(['Northstar Supply', 'Juniper Foods', 'Atlas Studio', 'Harbor Retail', 'Pioneer Labs']);
 
     // Click sorting
     await customerHeaderBtn.click();
 
     // Now sorted ascending by customer:
-    await expect(customerCells).toContainText([
-      'Atlas Studio',
-      'Harbor Retail',
-      'Juniper Foods',
-      'Northstar Supply',
-      'Pioneer Labs',
-    ]);
+    await expect(customerCells).toContainText(['Atlas Studio', 'Harbor Retail', 'Juniper Foods', 'Northstar Supply', 'Pioneer Labs']);
   });
 });

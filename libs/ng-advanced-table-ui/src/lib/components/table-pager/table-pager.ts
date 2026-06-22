@@ -2,12 +2,7 @@ import { Component, DestroyRef, computed, inject, input } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
-import {
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  NAT_TABLE_UI_INTL,
-  mergePagerLabels,
-  resolveNatTableUiIntl,
-} from '../../shared/table-ui-intl';
+import { NAT_TABLE_UI_ENGLISH_LOCALE, NAT_TABLE_UI_INTL, mergePagerLabels, resolveNatTableUiIntl } from '../../shared/table-ui-intl';
 import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import type { NatTableAccessibilityPagerLabels } from '../../shared/table-ui.types';
 import { NatTableService } from '../../shared/table.service';
@@ -15,7 +10,7 @@ import { NatTableService } from '../../shared/table.service';
 @Component({
   selector: 'nat-table-pager',
   templateUrl: './table-pager.html',
-  styleUrl: './table-pager.css',
+  styleUrl: './table-pager.css'
 })
 export class NatTablePager<TData extends RowData = RowData> {
   public readonly locale = input<string | undefined>(undefined);
@@ -35,13 +30,9 @@ export class NatTablePager<TData extends RowData = RowData> {
   }
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  private readonly localeId = computed(
-    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
-  );
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
 
-  private readonly tableUiIntl = computed(() =>
-    resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
-  );
+  private readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
 
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
@@ -51,18 +42,13 @@ export class NatTablePager<TData extends RowData = RowData> {
   protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);
   protected readonly canNextPage = computed(() => this.table()?.getCanNextPage() ?? false);
   private readonly resolvedAccessibilityLabels = computed(() =>
-    mergePagerLabels(this.tableUiIntl().pager?.accessibilityLabels, this.accessibilityLabels()),
+    mergePagerLabels(this.tableUiIntl().pager?.accessibilityLabels, this.accessibilityLabels())
   );
 
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return (
-      this.groupAriaLabel() ??
-      labels.groupAriaLabel ??
-      this.tableUiIntl().pager?.groupAriaLabel ??
-      ''
-    );
+    return this.groupAriaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().pager?.groupAriaLabel ?? '';
   });
 
   protected readonly previousPageAriaLabel = computed(() => {
@@ -83,19 +69,9 @@ export class NatTablePager<TData extends RowData = RowData> {
     const pageCount = this.pageCount();
     const context = {
       pageValue: page,
-      pageText: formatNatTableAccessibilityNumber(
-        page,
-        this.tableUiIntl().formatNumber,
-        undefined,
-        this.localeId(),
-      ),
+      pageText: formatNatTableAccessibilityNumber(page, this.tableUiIntl().formatNumber, undefined, this.localeId()),
       pageCountValue: pageCount,
-      pageCountText: formatNatTableAccessibilityNumber(
-        pageCount,
-        this.tableUiIntl().formatNumber,
-        undefined,
-        this.localeId(),
-      ),
+      pageCountText: formatNatTableAccessibilityNumber(pageCount, this.tableUiIntl().formatNumber, undefined, this.localeId())
     };
 
     return labels.pageIndicator?.(context) ?? '';

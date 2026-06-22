@@ -6,7 +6,7 @@ import {
   NAT_TABLE_UI_INTL,
   provideNatTableUiIntl,
   provideNatTableUiLocales,
-  resolveNatTableUiIntl,
+  resolveNatTableUiIntl
 } from './provide-ui-locales';
 import { NAT_TABLE_BUILT_IN_UI_LOCALES } from './ui-built-in-locales';
 import type {
@@ -15,11 +15,10 @@ import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPagerLabels,
   NatTableUiIntl,
-  NatTableUiIntlConfig,
+  NatTableUiIntlConfig
 } from './ui-types';
 
-const localeOf = (uiIntl: NatTableUiIntlConfig, localeId: string): NatTableUiIntl | undefined =>
-  uiIntl.locales?.[localeId];
+const localeOf = (uiIntl: NatTableUiIntlConfig, localeId: string): NatTableUiIntl | undefined => uiIntl.locales?.[localeId];
 
 describe('UI locale toolbar slice', () => {
   afterEach(() => {
@@ -48,16 +47,13 @@ describe('UI locale toolbar slice', () => {
     'keeps the toolbar slice for %s through provideNatTableUiLocales()',
     (localeId) => {
       TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()],
+        providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()]
       });
 
       const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
 
-      expect(
-        localeOf(uiIntl, localeId)?.toolbar?.toolbarLabel,
-        `${localeId}: toolbarLabel`,
-      ).toBeTruthy();
-    },
+      expect(localeOf(uiIntl, localeId)?.toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
+    }
   );
 
   it('falls back to English toolbar copy for unknown locales', () => {
@@ -73,11 +69,11 @@ describe('UI locale toolbar slice', () => {
         provideNatTableUiLocales({
           da: {
             toolbar: {
-              toolbarLabel: 'Tabel værktøjslinje',
-            },
-          },
-        }),
-      ],
+              toolbarLabel: 'Tabel værktøjslinje'
+            }
+          }
+        })
+      ]
     });
 
     const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'da');
@@ -91,10 +87,10 @@ describe('UI locale toolbar slice', () => {
         provideZonelessChangeDetection(),
         provideNatTableUiIntl({
           toolbar: {
-            toolbarLabel: 'Provider toolbar',
-          },
-        }),
-      ],
+            toolbarLabel: 'Provider toolbar'
+          }
+        })
+      ]
     });
 
     const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'en');
@@ -108,38 +104,38 @@ describe('English companion-control accessibility copy', () => {
   const pageSizeContext = {
     pageSizeValue: 25,
     pageSizeText: '25',
-    selectionState: 'not-selected' as const,
+    selectionState: 'not-selected' as const
   };
   const pagerContext = {
     pageValue: 2,
     pageText: '2',
     pageCountValue: 5,
-    pageCountText: '5',
+    pageCountText: '5'
   };
   const visibilityContext = {
     columnLabel: 'Service',
     visibilityState: 'visible' as const,
-    toggleAction: 'hide' as const,
+    toggleAction: 'hide' as const
   };
   const sortedHeaderContext = {
     label: 'Service',
     sortState: 'ascending' as const,
     sortPriority: 1,
-    sortCount: 2,
+    sortCount: 2
   };
   const unpinnedHeaderContext = {
     label: 'Service',
     pinState: 'unpinned' as const,
     toggleAction: 'pin' as const,
     pinSide: 'left' as const,
-    pinnedSide: null,
+    pinnedSide: null
   };
   const pinnedHeaderContext = {
     label: 'Service',
     pinState: 'pinned' as const,
     toggleAction: 'unpin' as const,
     pinSide: 'left' as const,
-    pinnedSide: 'left' as const,
+    pinnedSide: 'left' as const
   };
 
   describe('column visibility', () => {
@@ -195,21 +191,19 @@ describe('English companion-control accessibility copy', () => {
           ...sortedHeaderContext,
           sortState: 'none',
           sortPriority: null,
-          sortCount: 0,
-        }),
+          sortCount: 0
+        })
       ).toBe('Sort by Service');
     });
 
     it('locks the sorted sort-button label', () => {
       expect(labels?.sortButton?.(sortedHeaderContext)).toBe(
-        'Service sorted in ascending order, sort priority 1 of 2. Change sorting',
+        'Service sorted in ascending order, sort priority 1 of 2. Change sorting'
       );
     });
 
     it('locks the menu-button label', () => {
-      expect(labels?.menuButton?.({ label: 'Service' })).toBe(
-        'Open column actions for Service column',
-      );
+      expect(labels?.menuButton?.({ label: 'Service' })).toBe('Open column actions for Service column');
     });
 
     it('locks the menu label', () => {
@@ -225,9 +219,7 @@ describe('English companion-control accessibility copy', () => {
     });
 
     it('locks the move-button label', () => {
-      expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe(
-        'Move Service column right',
-      );
+      expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe('Move Service column right');
     });
 
     it('locks the move-button text', () => {

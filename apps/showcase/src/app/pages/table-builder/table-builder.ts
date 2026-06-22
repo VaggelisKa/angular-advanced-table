@@ -11,15 +11,10 @@ import {
   NatTableScrollControl,
   NatTableSurface,
   NatTableToolbar,
-  withNatTableHeaderActions,
+  withNatTableHeaderActions
 } from 'ng-advanced-table-ui';
 
-import {
-  buildComponentSource,
-  buildStateObject,
-  formatStateLiteral,
-  omitColumnOrder,
-} from './table-builder.util';
+import { buildComponentSource, buildStateObject, formatStateLiteral, omitColumnOrder } from './table-builder.util';
 import type { TableBuilderFlags } from './table-builder.util';
 import { TableSearch } from '../../components/table-search/table-search';
 
@@ -29,7 +24,7 @@ type DemoItem = {
   category: string;
   status: string;
   value: number;
-}
+};
 
 const DEMO_DATA: DemoItem[] = [
   { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
@@ -39,11 +34,11 @@ const DEMO_DATA: DemoItem[] = [
     name: 'Gamma Processor',
     category: 'Data Science',
     status: 'Paused',
-    value: 7800,
+    value: 7800
   },
   { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
   { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 },
+  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
 ];
 
 @Component({
@@ -55,10 +50,10 @@ const DEMO_DATA: DemoItem[] = [
     NatTableColumnVisibility,
     NatTablePagination,
     NatTableScrollControl,
-    NatTableToolbar,
+    NatTableToolbar
   ],
   templateUrl: './table-builder.html',
-  styleUrl: './table-builder.css',
+  styleUrl: './table-builder.css'
 })
 export class TableBuilderPage {
   // Feature Toggles
@@ -77,7 +72,7 @@ export class TableBuilderPage {
     withColumnPinning: this.withColumnPinning(),
     withColumnReorder: this.withColumnReorder(),
     showScrollControl: this.showScrollControl(),
-    withStickyHeader: this.withStickyHeader(),
+    withStickyHeader: this.withStickyHeader()
   }));
 
   // Active Code Tab ('html' | 'ts')
@@ -96,31 +91,30 @@ export class TableBuilderPage {
         {
           accessorKey: 'name',
           header: 'Name',
-          meta: { label: 'Name', rowHeader: true },
+          meta: { label: 'Name', rowHeader: true }
         },
         {
           accessorKey: 'category',
           header: 'Category',
-          meta: { label: 'Category' },
+          meta: { label: 'Category' }
         },
         {
           accessorKey: 'status',
           header: 'Status',
-          meta: { label: 'Status' },
+          meta: { label: 'Status' }
         },
         {
           accessorKey: 'value',
           header: 'Value',
           meta: { label: 'Value', align: 'end' },
-          cell: (context: CellContext<DemoItem, number>): string =>
-            `$${context.getValue().toLocaleString()}`,
-        },
+          cell: (context: CellContext<DemoItem, number>): string => `$${context.getValue().toLocaleString()}`
+        }
       ],
       {
         enableColumnPinActions: this.withColumnPinning(),
-        enableColumnReorderActions: this.withColumnReorder(),
-      },
-    ),
+        enableColumnReorderActions: this.withColumnReorder()
+      }
+    )
   );
 
   // Table State
@@ -129,17 +123,17 @@ export class TableBuilderPage {
       name: true,
       category: true,
       status: true,
-      value: true,
+      value: true
     },
     pagination: {
       pageIndex: 0,
-      pageSize: 3,
+      pageSize: 3
     },
     columnPinning: {
       left: ['name'],
-      right: [],
+      right: []
     },
-    columnOrder: ['name', 'category', 'status', 'value'],
+    columnOrder: ['name', 'category', 'status', 'value']
   });
 
   // Generated HTML code
@@ -192,10 +186,7 @@ export class TableBuilderPage {
 
   // Generated TS code
   protected readonly generatedTs = computed(() =>
-    buildComponentSource(
-      this.flags(),
-      formatStateLiteral(buildStateObject(this.flags(), this.tableState())),
-    ),
+    buildComponentSource(this.flags(), formatStateLiteral(buildStateObject(this.flags(), this.tableState())))
   );
 
   protected toggleColumnPinning(): void {
@@ -206,12 +197,12 @@ export class TableBuilderPage {
     if (nextValue) {
       this.tableState.update((current) => ({
         ...current,
-        columnPinning: { left: ['name'], right: [] },
+        columnPinning: { left: ['name'], right: [] }
       }));
     } else {
       this.tableState.update((current) => ({
         ...current,
-        columnPinning: { left: [], right: [] },
+        columnPinning: { left: [], right: [] }
       }));
     }
   }
@@ -224,7 +215,7 @@ export class TableBuilderPage {
     if (nextValue) {
       this.tableState.update((current) => ({
         ...current,
-        columnOrder: ['name', 'category', 'status', 'value'],
+        columnOrder: ['name', 'category', 'status', 'value']
       }));
     } else {
       this.tableState.update((current) => omitColumnOrder(current));

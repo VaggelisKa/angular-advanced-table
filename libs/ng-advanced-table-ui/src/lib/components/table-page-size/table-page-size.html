@@ -1,19 +1,16 @@
-@if (controller(); as ctrl) {
-  @if (ctrl.enablePagination()) {
-    <div [attr.aria-label]="resolvedAriaLabel()" class="chip-row compact" role="group">
-      @for (option of resolvedPageSizeOptions(); track option.pageSize) {
-        <button
-          [attr.aria-controls]="tableElementId()"
-          [attr.aria-label]="option.ariaLabel"
-          [attr.aria-pressed]="selectedPageSize() === option.pageSize"
-          [class.is-active]="selectedPageSize() === option.pageSize"
-          class="chip"
-          type="button"
-          (click)="setPageSize(option.pageSize)"
-        >
-          {{ option.text }}
-        </button>
-      }
-    </div>
+@if (controller(); as ctrl) { @if (ctrl.enablePagination()) {
+<div [attr.aria-label]="resolvedAriaLabel()" class="chip-row compact" role="group">
+  @for (option of resolvedPageSizeOptions(); track option.pageSize) {
+  <button
+    [attr.aria-controls]="tableElementId()"
+    [attr.aria-label]="option.ariaLabel"
+    [attr.aria-pressed]="selectedPageSize() === option.pageSize"
+    [class.is-active]="selectedPageSize() === option.pageSize"
+    class="chip"
+    type="button"
+    (click)="setPageSize(option.pageSize)">
+    {{ option.text }}
+  </button>
   }
-}
+</div>
+} }

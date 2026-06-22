@@ -1,45 +1,42 @@
 @if (controller()) {
-  <div [attr.aria-label]="resolvedAriaLabel()" class="scroll-control" role="group">
-    <button
-      [attr.aria-controls]="tableElementId()"
-      [attr.aria-label]="scrollLeftAriaLabel()"
-      [disabled]="!canScrollLeft()"
-      class="scroll-button scroll-button-left"
-      type="button"
-      (click)="scrollByStep(-1)"
-    >
-      <svg aria-hidden="true" class="scroll-icon" focusable="false" viewBox="0 0 16 16">
-        <path d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" fill="currentColor" />
-      </svg>
-    </button>
+<div [attr.aria-label]="resolvedAriaLabel()" class="scroll-control" role="group">
+  <button
+    [attr.aria-controls]="tableElementId()"
+    [attr.aria-label]="scrollLeftAriaLabel()"
+    [disabled]="!canScrollLeft()"
+    class="scroll-button scroll-button-left"
+    type="button"
+    (click)="scrollByStep(-1)">
+    <svg aria-hidden="true" class="scroll-icon" focusable="false" viewBox="0 0 16 16">
+      <path d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" fill="currentColor" />
+    </svg>
+  </button>
 
-    <label class="scroll-range-label">
-      <span class="scroll-range-copy">{{ positionText() }}</span>
-      <input
-        [attr.aria-controls]="tableElementId()"
-        [attr.aria-label]="scrollPositionAriaLabel()"
-        [attr.aria-valuetext]="positionText()"
-        [disabled]="!canScroll()"
-        [max]="maxScrollLeft()"
-        [value]="scrollLeft()"
-        class="scroll-range"
-        min="0"
-        type="range"
-        (input)="onRangeInput($event)"
-      />
-    </label>
-
-    <button
+  <label class="scroll-range-label">
+    <span class="scroll-range-copy">{{ positionText() }}</span>
+    <input
       [attr.aria-controls]="tableElementId()"
-      [attr.aria-label]="scrollRightAriaLabel()"
-      [disabled]="!canScrollRight()"
-      class="scroll-button scroll-button-right"
-      type="button"
-      (click)="scrollByStep(1)"
-    >
-      <svg aria-hidden="true" class="scroll-icon" focusable="false" viewBox="0 0 16 16">
-        <path d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z" fill="currentColor" />
-      </svg>
-    </button>
-  </div>
+      [attr.aria-label]="scrollPositionAriaLabel()"
+      [attr.aria-valuetext]="positionText()"
+      [disabled]="!canScroll()"
+      [max]="maxScrollLeft()"
+      [value]="scrollLeft()"
+      class="scroll-range"
+      min="0"
+      type="range"
+      (input)="onRangeInput($event)" />
+  </label>
+
+  <button
+    [attr.aria-controls]="tableElementId()"
+    [attr.aria-label]="scrollRightAriaLabel()"
+    [disabled]="!canScrollRight()"
+    class="scroll-button scroll-button-right"
+    type="button"
+    (click)="scrollByStep(1)">
+    <svg aria-hidden="true" class="scroll-icon" focusable="false" viewBox="0 0 16 16">
+      <path d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z" fill="currentColor" />
+    </svg>
+  </button>
+</div>
 }

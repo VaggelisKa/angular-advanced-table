@@ -2,8 +2,7 @@
   <header class="header-section">
     <h1 class="title">Table States</h1>
     <p class="description">
-      Loading, empty, and error rows stay inside the table body while callers provide the lifecycle
-      and custom UI.
+      Loading, empty, and error rows stay inside the table body while callers provide the lifecycle and custom UI.
     </p>
   </header>
 
@@ -11,12 +10,7 @@
     <div class="card">
       <h2 class="card-title">Loading state</h2>
       <nat-table-surface [accessibilityText]="loadingTableAccessibilityCopy">
-        <nat-table
-          [columns]="columns"
-          [data]="loadingRows"
-          accessibleName="Loading incidents table"
-          dataStatus="loading"
-        >
+        <nat-table [columns]="columns" [data]="loadingRows" accessibleName="Loading incidents table" dataStatus="loading">
           <ng-template natTableLoading>
             <div class="state-template">
               <strong>Loading incidents</strong>
@@ -35,9 +29,7 @@
           <ng-template let-filtered="filtered" natTableEmpty>
             <div class="state-template">
               <strong>No incidents found</strong>
-              <span>
-                {{ filtered ? 'No rows match the active filters.' : 'The queue is clear.' }}
-              </span>
+              <span> {{ filtered ? 'No rows match the active filters.' : 'The queue is clear.' }} </span>
             </div>
           </ng-template>
         </nat-table>
@@ -52,15 +44,12 @@
           [data]="errorRows"
           [dataStatus]="errorStatus()"
           [error]="error()"
-          accessibleName="Errored incidents table"
-        >
+          accessibleName="Errored incidents table">
           <ng-template let-error natTableError>
             <div class="state-template state-template-error">
               <strong>Incident queue unavailable</strong>
               <span>{{ formatError(error) }}</span>
-              <button class="btn btn-outline" type="button" (click)="retryErrorExample()">
-                Retry
-              </button>
+              <button class="btn btn-outline" type="button" (click)="retryErrorExample()">Retry</button>
             </div>
           </ng-template>
 
@@ -79,29 +68,24 @@
       <div class="transition-controls">
         <div aria-label="Preview table state" class="btn-group">
           @for (option of transitionPreviewOptions; track option.state) {
-            <button
-              [attr.aria-pressed]="isTransitionPreviewState(option.state)"
-              [class.active]="isTransitionPreviewState(option.state)"
-              class="btn-sm"
-              type="button"
-              (click)="showTransitionPreviewState(option.state)"
-            >
-              {{ option.label }}
-            </button>
+          <button
+            [attr.aria-pressed]="isTransitionPreviewState(option.state)"
+            [class.active]="isTransitionPreviewState(option.state)"
+            class="btn-sm"
+            type="button"
+            (click)="showTransitionPreviewState(option.state)">
+            {{ option.label }}
+          </button>
           }
         </div>
       </div>
-      <nat-table-surface
-        [accessibilityText]="transitionPreviewAccessibilityCopy"
-        class="transition-preview-surface"
-      >
+      <nat-table-surface [accessibilityText]="transitionPreviewAccessibilityCopy" class="transition-preview-surface">
         <nat-table
           [columns]="columns"
           [data]="transitionPreviewRows()"
           [dataStatus]="transitionPreviewDataStatus()"
           [error]="transitionPreviewError"
-          accessibleName="State transition preview table"
-        >
+          accessibleName="State transition preview table">
           <ng-template natTableLoading>
             <div class="state-template">
               <strong>Loading queue</strong>
@@ -130,12 +114,7 @@
     <div class="card state-reference-card">
       <h2 class="card-title">Background refresh</h2>
       <nat-table-surface [accessibilityText]="refreshTableAccessibilityCopy">
-        <nat-table
-          [columns]="columns"
-          [data]="successRows"
-          accessibleName="Refreshing incidents table"
-          dataStatus="loading"
-        />
+        <nat-table [columns]="columns" [data]="successRows" accessibleName="Refreshing incidents table" dataStatus="loading" />
       </nat-table-surface>
     </div>
   </div>
