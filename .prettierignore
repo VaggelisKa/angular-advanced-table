@@ -1,0 +1,11 @@
+# Add files here to ignore them from prettier formatting
+/dist
+/coverage
+/node_modules
+/.nx/cache
+/.nx/workspace-data
+/.angular
+
+# Lockfiles are managed by their package managers, not Prettier
+package-lock.json
+pnpm-lock.yaml

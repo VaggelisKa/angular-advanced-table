@@ -38,6 +38,11 @@ describe('ng-advanced-table public table contracts', () => {
       cellHeight: 48,
       cellMaxLines: 3,
       headerSize: 120,
+      export: {
+        enabled: true,
+        header: 'Exported amount',
+        value: ({ value }) => value,
+      },
       cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
     };
 
@@ -47,6 +52,8 @@ describe('ng-advanced-table public table contracts', () => {
     expect(meta.cellHeight).toBe(48);
     expect(meta.cellMaxLines).toBe(3);
     expect(meta.headerSize).toBe(120);
+    expect(meta.export?.header).toBe('Exported amount');
+    expect(meta.export?.value).toEqual(expect.any(Function));
     expect(meta.cellTone).toEqual(expect.any(Function));
   });
 });

@@ -270,8 +270,8 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly manualPagination = computed(() => this.natTableService.manualPagination());
   protected readonly manualSorting = computed(() => this.natTableService.manualSorting());
   protected readonly manualFiltering = computed(() => this.natTableService.manualFiltering());
-  protected readonly enablePagination = computed(() => this.natTableService.hasPagination());
-  protected readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
+  readonly enablePagination = computed(() => this.natTableService.hasPagination());
+  readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
 
   protected readonly manualPageCount = computed(() => this.natTableService.manualPageCount());
   protected readonly enableAnnouncements = computed(() =>

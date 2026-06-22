@@ -20,7 +20,12 @@ Use this package when you want optional companions around `NatTable`:
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
+- `NatTablePagination`
 - `NatTableScrollControl`
+- `NatTableExport`
+- `NatTableToolbar`
+- `NatToolbarGroup`
+- `NatToolbarItem`
 - `withNatTableHeaderActions(...)`
 - `withNatTableSelectionColumn(...)`
 
@@ -38,7 +43,7 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 ## Zoneless Compatibility
 
 - `ng-advanced-table-ui` is validated in a zoneless Angular `TestBed` configuration.
-- Angular 21+ consumers do not need `zone.js` to use this package.
+- Angular 22+ consumers do not need `zone.js` to use this package.
 
 ## Public Exports
 
@@ -46,11 +51,30 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTableColumnVisibility`
 - `NatTablePageSize`
 - `NatTablePager`
+- `NatTablePagination`
 - `NatTableScrollControl`
+- `NatTableExport`
+- `provideNatTableExport(...)`
+- `NAT_TABLE_EXPORT`
+- `NatTableToolbar`
+- `NatToolbarGroup`
+- `NatToolbarItem`
+- `NatToolbarItemPosition`
+- `NatToolbarItemRef`
 - `withNatTableHeaderActions(...)`
 - `withNatTableSelectionColumn(...)`
+- `NAT_TOOLBAR_ITEM`
 - `NatTableSelectionCheckbox`
 - `NatTableSelectionColumnOptions`
+- `NatTableExportCellValue`
+- `NatTableExportConfig`
+- `NatTableExportConfigFactory`
+- `NatTableExportContext`
+- `NatTableExportData`
+- `NatTableExportDataColumn`
+- `NatTableExportDataRow`
+- `NatTableExportHandler`
+- `NatTableExportProvider`
 - `NatTableHeaderActionsOptions`
 - `NatTableHeaderActionsColumnOptions`
 - `NatTableSortIndicatorContent`
@@ -69,21 +93,27 @@ For app-level UI localization through `provideNatTableUiLocales()`, also install
 - `NatTableAccessibilityHeaderActionPinContext`
 - `NatTableAccessibilityHeaderActionMoveContext`
 - `NatTableAccessibilityHeaderActionLabels`
+- `NatTableAccessibilitySelectionLabels`
+- `NatTableAccessibilitySelectionRowContext`
 - `NatTableColumnMoveDirection`
 - `NatTableUiController`
 - `NatTableUiState`
 - `NatTableColumnMeta`
+- `NatTableColumnExportOptions`
+- `NatTableColumnExportValue`
+- `NatTableColumnExportValueContext`
 - `NatTableSortDirection`
 - `NatTableSortIndicatorContext`
 
-`NatTableColumnMeta`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` are kept aligned with the workspace's internal contract checks. Prefer importing shared contracts from `ng-advanced-table` when a column definition is used by multiple packages.
+`NatTableColumnMeta`, `NatTableColumnExportOptions`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` are kept aligned with the workspace's internal contract checks. Prefer importing shared contracts from `ng-advanced-table` when a column definition is used by multiple packages.
 
 ## Package Notes
 
 - `NatTableSurface` owns the default `--nat-table-*` CSS variables.
-- The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), and optional `localeId`.
+- The controller contract is intentionally small: `table`, `enableGlobalFilter()`, `enablePagination()`, `patchState(...)`, `tableElementId` (`Signal<string>` — call `tableElementId()` for the DOM id string), optional `tableScrollContainer`, and optional `localeId`.
 - Companion controls inherit the controlled table locale and expose label inputs only for instance-specific overrides.
 - `NatTableScrollControl` connects to the table scroll container and provides horizontal scroll buttons plus a range control.
+- `NatTableExport` attaches to an interactive host and exports all client-held rows to CSV by default. It uses visible exportable leaf columns, respects `column.meta.export`, accepts `exportHandler` or `provideNatTableExport(...)` for app-owned generation such as Excel or API-backed exports, and exposes `#tableExport="natTableExport"` plus `trigger(...)` for custom activation events.
 - `withNatTableHeaderActions(...)` preserves the original header content and only adds controls when the column can sort, pin, or opt into reorder actions. Its compact three-dot menu includes pin actions unless `enableColumnPinActions` is disabled, and Move left/Move right actions when `enableColumnReorderActions` is enabled and those actions are available.
 - `withNatTableHeaderActions(...)` is idempotent. Reapplying it to already-wrapped columns updates the wrapper options instead of nesting header controls.
 - Set `column.meta.hiddenHeaderLabel` to visually hide the header title while keeping the sort button and three-dot menu visible with generated accessible labels.

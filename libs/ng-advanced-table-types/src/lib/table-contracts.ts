@@ -6,6 +6,7 @@ import type {
   ColumnPinningState,
   ColumnSizingState,
   PaginationState,
+  Row,
   RowData,
   RowSelectionState,
   SortingState,
@@ -44,6 +45,28 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
   label: string;
 }
 
+/** Value returned by table export metadata before format-specific normalization. */
+export type NatTableColumnExportValue = unknown;
+
+/** Context passed to column export value callbacks. */
+export interface NatTableColumnExportValueContext<
+  TData extends RowData = RowData,
+  TValue = unknown,
+> {
+  readonly row: Row<TData>;
+  readonly column: Column<TData, TValue>;
+  readonly value: TValue;
+}
+
+/** Export behavior attached to a table column definition. */
+export interface NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> {
+  readonly enabled?: boolean;
+  readonly header?: string;
+  readonly value?: (
+    context: NatTableColumnExportValueContext<TData, TValue>,
+  ) => NatTableColumnExportValue;
+}
+
 /**
  * Shared canonical metadata contract understood by the table, companion UI,
  * and optional utilities.
@@ -59,4 +82,5 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerSize?: number | string;
   headerMinSize?: number | string;
   headerMaxSize?: number | string;
+  export?: NatTableColumnExportOptions<TData, TValue>;
 }
