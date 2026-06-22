@@ -48,12 +48,16 @@ catalogs:
   # runtime: cross-cutting helpers
   shared:
     tslib: '^2.8.1'
-  # dev: Nx core, TypeScript, formatter/test tooling
+  # dev: Nx core, TypeScript, lint/format/test tooling
   shared-dev:
     '@nx/js': '23.1.0-beta.0'
+    eslint: '^10.5.0'
+    eslint-config-prettier: '^10.1.8'
+    lint-suite: '^1.4.0'
     nx: '23.1.0-beta.0'
     prettier: '^3.8.4'
     typescript: '6.0.3'
+    typescript-eslint: '^8.61.1'
     vitest: '^4.1.9'
 # pnpm 11 enables a 24h supply-chain cooldown (minimumReleaseAge: 1440) by
 # default: newly published versions are rejected until they are a day old.
@@ -73,5 +77,6 @@ allowBuilds:
   lmdb: true
   msgpackr-extract: true
   nx: true
+  unrs-resolver: true
 auditConfig:
   ignoreCves: []
