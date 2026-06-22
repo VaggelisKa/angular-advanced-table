@@ -121,6 +121,13 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
       overflow: visible;
     }
 
+    /* Declare animation outside @supports so Angular compiler can scope the animation-name correctly */
+    .grid-header {
+      animation-name: sync-scroll;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+    }
+
     /* Support for native CSS scroll-driven animations (jank-free horizontal sync) */
     @supports (scroll-timeline-axis: inline) and (timeline-scope: --foo) {
       .grid-table {
@@ -134,9 +141,6 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
         scroll-timeline-axis: inline;
       }
       .grid-header {
-        animation-name: sync-scroll;
-        animation-timing-function: linear;
-        animation-fill-mode: both;
         animation-timeline: --body-scroll;
       }
     }
