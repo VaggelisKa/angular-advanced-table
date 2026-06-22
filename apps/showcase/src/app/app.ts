@@ -17,11 +17,16 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { filter, map, startWith } from 'rxjs';
 
 import {
+  type ShowcaseDoc,
+  type ShowcaseNavItem,
   type ShowcaseNavGroup,
   type ShowcaseNavSection,
+  showcaseDocs,
   showcaseNavSections,
 } from './showcase-navigation';
 import { ShowcaseThemeStore, type ShowcaseTheme } from './showcase-theme';
+import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
+import { loadDocsPage } from './app.routes';
 
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 const SHOWCASE_NAV_BRANCH_IDS = getShowcaseNavBranchIds(showcaseNavSections);
@@ -38,6 +43,7 @@ export class App {
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
+  private readonly docsMarkdownCache = inject(DocsMarkdownCache);
   private readonly themeStore = inject(ShowcaseThemeStore);
   private readonly mobileMenuButton = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuButton');
   private readonly mobileNavCloseButton =
@@ -80,6 +86,16 @@ export class App {
 
       untracked(() => this.setNavTreeBranchesExpanded(activeBranchIds, true));
     });
+
+    afterNextRender(
+      () => {
+        globalThis.setTimeout(() => {
+          void loadDocsPage();
+          this.docsMarkdownCache.preload(showcaseDocs.map((doc) => doc.markdownPath));
+        });
+      },
+      { injector: this.injector },
+    );
   }
 
   protected setTheme(theme: ShowcaseTheme): void {
@@ -100,6 +116,12 @@ export class App {
 
   protected setNavTreeBranchExpanded(branchId: string, expanded: boolean): void {
     this.setNavTreeBranchesExpanded([branchId], expanded);
+  }
+
+  protected prefetchNavItem(item: ShowcaseNavItem): void {
+    if (isShowcaseDoc(item)) {
+      this.docsMarkdownCache.load(item.markdownPath);
+    }
   }
 
   private setNavTreeBranchesExpanded(branchIds: readonly string[], expanded: boolean): void {
@@ -286,4 +308,8 @@ function branchContainsRoute(
   }
 
   return branch.items.some((item) => item.path === routePath);
+}
+
+function isShowcaseDoc(item: ShowcaseNavItem): item is ShowcaseDoc {
+  return 'markdownPath' in item;
 }

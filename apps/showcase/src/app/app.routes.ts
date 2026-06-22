@@ -2,7 +2,8 @@ import { Routes } from '@angular/router';
 
 import { showcaseDocs } from './showcase-navigation';
 
-const loadDocsPage = () => import('./pages/docs/docs-page').then((module) => module.DocsPage);
+export const loadDocsPage = () =>
+  import('./pages/docs/docs-page').then((module) => module.DocsPage);
 
 export const routes: Routes = [
   {

@@ -11,11 +11,15 @@
     <p class="docs-error" role="alert">Documentation could not be loaded.</p>
   }
 
-  <section class="docs-markdown" aria-labelledby="docs-page-title">
-    <markdown
-      [src]="doc().markdownPath"
-      (load)="clearMarkdownError()"
-      (error)="markMarkdownError($event)"
-    />
+  <section
+    class="docs-markdown"
+    aria-labelledby="docs-page-title"
+    [attr.aria-busy]="
+      markdownState().status === 'idle' || markdownState().status === 'loading' ? 'true' : null
+    "
+  >
+    @if (markdownState().status === 'loaded') {
+      <markdown [data]="markdownState().content" />
+    }
   </section>
 </article>

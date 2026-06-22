@@ -2,6 +2,7 @@ import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
+import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
 import { App } from './app';
 
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
@@ -14,6 +15,8 @@ class TestExamplePage {}
 
 describe('App', () => {
   beforeEach(async () => {
+    vi.stubGlobal('localStorage', createTestStorage());
+
     try {
       globalThis.localStorage?.removeItem('nat-showcase-theme');
       globalThis.localStorage?.removeItem('nat-showcase-collapsed-nav-sections');
@@ -26,6 +29,13 @@ describe('App', () => {
       imports: [App],
       providers: [
         provideZonelessChangeDetection(),
+        {
+          provide: DocsMarkdownCache,
+          useValue: {
+            load: () => undefined,
+            preload: () => undefined,
+          },
+        },
         provideRouter([
           {
             path: '',
@@ -43,6 +53,10 @@ describe('App', () => {
         ]),
       ],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('should create the app', () => {
@@ -316,6 +330,10 @@ describe('App', () => {
 
   it('should close the mobile drawer after choosing a navigation link', async () => {
     const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/docs/quick-start');
+    fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -331,9 +349,11 @@ describe('App', () => {
 
     expect(nav.classList.contains('is-open')).toBe(true);
 
-    docsFoundationsBranch.click();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    if (compiled.querySelector('[data-testid="showcase-nav-link-quick-start"]') === null) {
+      docsFoundationsBranch.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    }
 
     const firstLink = getElement<HTMLAnchorElement>(
       compiled,
@@ -384,4 +404,29 @@ function readStoredExpandedNavTreeIds(): string[] {
   return Array.isArray(parsed)
     ? parsed.filter((sectionId): sectionId is string => typeof sectionId === 'string')
     : [];
+}
+
+function createTestStorage(): Storage {
+  const values = new Map<string, string>();
+
+  return {
+    get length(): number {
+      return values.size;
+    },
+    clear(): void {
+      values.clear();
+    },
+    getItem(key: string): string | null {
+      return values.get(key) ?? null;
+    },
+    key(index: number): string | null {
+      return Array.from(values.keys())[index] ?? null;
+    },
+    removeItem(key: string): void {
+      values.delete(key);
+    },
+    setItem(key: string, value: string): void {
+      values.set(key, value);
+    },
+  };
 }
