@@ -90,13 +90,13 @@ test.describe('Table toolbar', () => {
 
     // The flex spacers sit between the slots: start | spacer | center | spacer | end.
     // Scope to the Products toolbar — the page now has several toolbars.
-    const spacers = page.getByRole('toolbar', { name: 'Products toolbar' }).locator('.nat-toolbar-spacer');
-    // The two spacers are bare structural <div>s with no distinguishing attribute;
-    // the assertion is inherently positional (first spacer vs second spacer).
-    // eslint-disable-next-line playwright/no-nth-methods
-    const firstSpacer = spacers.first();
-    // eslint-disable-next-line playwright/no-nth-methods
-    const secondSpacer = spacers.last();
+    // Each spacer carries a positional modifier class, so locate them semantically.
+    const firstSpacer = page
+      .getByRole('toolbar', { name: 'Products toolbar' })
+      .locator('.nat-toolbar-spacer--start');
+    const secondSpacer = page
+      .getByRole('toolbar', { name: 'Products toolbar' })
+      .locator('.nat-toolbar-spacer--end');
 
     await expectPrecedes(exportButton, firstSpacer);
     await expectPrecedes(firstSpacer, refreshButton);

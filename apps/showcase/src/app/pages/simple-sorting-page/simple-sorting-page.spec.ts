@@ -38,8 +38,7 @@ describe('SimpleSortingPage', () => {
     await fixture.whenStable();
   });
 
-  // eslint-disable-next-line complexity
-  it('should create a single mock table with sorting and fixed pins', () => {
+  it('should render the mock table surface with sorting and status badges', () => {
     fixture.detectChanges();
 
     const table = query<HTMLElement>('nat-table');
@@ -51,15 +50,27 @@ describe('SimpleSortingPage', () => {
     expect(host().querySelector('nat-table-surface')).toBeTruthy();
     expect(rows).toHaveLength(5);
     expect(sortButtons).toHaveLength(9);
-    expect(host().querySelector('thead')?.textContent).toContain('Company');
-    expect(host().querySelector('thead')?.textContent).toContain('Channel');
-    expect(host().querySelector('thead')?.textContent).toContain('Items');
-    expect(host().querySelector('thead')?.textContent).toContain('Updated');
+    expect(host().querySelector('app-order-status-badge')).toBeTruthy();
+  });
+
+  it('should render the expected header labels', () => {
+    fixture.detectChanges();
+
+    const headerText = host().querySelector('thead')?.textContent;
+
+    expect(headerText).toContain('Company');
+    expect(headerText).toContain('Channel');
+    expect(headerText).toContain('Items');
+    expect(headerText).toContain('Updated');
+  });
+
+  it('should omit search, column chips, paging, and pin controls', () => {
+    fixture.detectChanges();
+
     expect(host().querySelector('app-table-search')).toBeFalsy();
     expect(host().querySelector('.column-chip')).toBeFalsy();
     expect(host().querySelector('.pager')).toBeFalsy();
     expect(host().querySelector('.pin-button')).toBeFalsy();
-    expect(host().querySelector('app-order-status-badge')).toBeTruthy();
   });
 
   it('should right-align numeric columns', () => {
