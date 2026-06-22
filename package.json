@@ -35,6 +35,9 @@
     "@angular/platform-browser": "catalog:frontend",
     "@angular/router": "catalog:frontend",
     "@tanstack/angular-table": "catalog:frontend",
+    "marked": "^18.0.5",
+    "ngx-markdown": "22.0.0",
+    "prismjs": "^1.30.0",
     "rxjs": "catalog:frontend",
     "tslib": "catalog:shared"
   },

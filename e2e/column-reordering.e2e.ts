@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/reordering');
+  await page.goto('/examples/reordering');
 });
 
 const headerColumnIds = (page: Page) =>

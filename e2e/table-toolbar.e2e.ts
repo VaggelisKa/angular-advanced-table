@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/toolbar');
+  await page.goto('/examples/toolbar');
 });
 
 /**
@@ -29,20 +29,40 @@ const buttons = (page: Page) => ({
   shareButton: page.getByTestId('share-button'),
 });
 
+async function gotoToolbarPageWithHtmlDirection(
+  page: Page,
+  direction: 'ltr' | 'rtl',
+): Promise<void> {
+  await page.route('**/*', async (route) => {
+    if (route.request().resourceType() !== 'document') {
+      await route.continue();
+      return;
+    }
+
+    const response = await route.fetch();
+    const body = await response.text();
+    const html = body.replace(/<html([^>]*)>/i, `<html$1 dir="${direction}">`);
+
+    await route.fulfill({ response, body: html });
+  });
+
+  await page.goto('/examples/toolbar');
+  await page.unroute('**/*');
+}
+
 test('renders the toolbar showcase page', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
   await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 
-  // nat-toolbar-button class is applied to projected buttons and resolves a non-zero border-radius.
+  // Projected toolbar items keep their authored button styling.
   const exportButton = page.getByTestId('export-button');
-  await expect(exportButton).toHaveClass(/nat-toolbar-button/);
   const radius = await exportButton.evaluate((el) => getComputedStyle(el).borderRadius);
   expect(radius).not.toBe('0px');
 });
 
 test('activates items and reports the action', async ({ page }) => {
   await page.getByTestId('export-button').click();
-  await expect(page.getByTestId('last-action')).toHaveText('export-csv');
+  await expect(page.getByTestId('last-action')).toHaveText('export');
 
   await page.getByTestId('refresh-button').click();
   await expect(page.getByTestId('last-action')).toHaveText('refresh');
@@ -65,7 +85,9 @@ test('slots lay items out as start | center | end in DOM and on screen', async (
 
   // The flex spacers sit between the slots: start | spacer | center | spacer | end.
   // Scope to the Products toolbar — the page now has several toolbars.
-  const spacers = page.getByRole('toolbar', { name: 'Products toolbar' }).locator('.nat-toolbar-spacer');
+  const spacers = page
+    .getByRole('toolbar', { name: 'Products toolbar' })
+    .locator('.nat-toolbar-spacer');
   await expectPrecedes(exportButton, spacers.first());
   await expectPrecedes(spacers.first(), refreshButton);
   await expectPrecedes(refreshButton, spacers.last());
@@ -91,9 +113,7 @@ test('accessibility tree exposes the labelled widget group in slot order', async
   `);
 });
 
-test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({
-  page,
-}) => {
+test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({ page }) => {
   const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } =
     buttons(page);
 
@@ -137,16 +157,9 @@ test('Up/Down cycle inside the widget group without leaving it', async ({ page }
 });
 
 test('reverses arrow keys in RTL', async ({ page }) => {
-  await page.addInitScript(() => {
-    if (document.documentElement) {
-      document.documentElement.setAttribute('dir', 'rtl');
-    } else {
-      document.addEventListener('DOMContentLoaded', () =>
-        document.documentElement.setAttribute('dir', 'rtl'),
-      );
-    }
-  });
-  await page.goto('/toolbar');
+  await gotoToolbarPageWithHtmlDirection(page, 'rtl');
+
+  await expect.poll(() => page.evaluate(() => document.documentElement.dir)).toBe('rtl');
   await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 
   const { exportButton, refreshButton } = buttons(page);

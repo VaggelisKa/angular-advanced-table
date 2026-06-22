@@ -3,7 +3,7 @@
     <span class="showcase-mobile-brand">
       <span class="showcase-brand-copy">
         <span class="showcase-eyebrow">Showcase</span>
-        <span class="showcase-mobile-title">Table examples</span>
+        <span class="showcase-mobile-title">Docs and examples</span>
       </span>
     </span>
 
@@ -13,8 +13,8 @@
       class="showcase-menu-button"
       aria-controls="showcase-navigation"
       [attr.aria-expanded]="mobileNavOpen()"
-      aria-label="Open examples navigation"
-      title="Open examples navigation"
+      aria-label="Open showcase navigation"
+      title="Open showcase navigation"
       (click)="toggleMobileNav()"
     >
       <svg class="showcase-menu-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
@@ -41,14 +41,14 @@
     <div class="showcase-nav-header">
       <span class="showcase-brand-copy">
         <span class="showcase-eyebrow">Showcase</span>
-        <h1 id="showcase-nav-title">Table examples</h1>
+        <h1 id="showcase-nav-title">Docs and examples</h1>
       </span>
       <button
         #mobileNavCloseButton
         type="button"
         class="showcase-nav-close"
-        aria-label="Close examples navigation"
-        title="Close examples navigation"
+        aria-label="Close showcase navigation"
+        title="Close showcase navigation"
         (click)="closeMobileNav()"
       >
         <svg class="showcase-menu-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
@@ -57,22 +57,116 @@
       </button>
     </div>
 
-    <span class="showcase-nav-caption">Example variants</span>
+    <nav class="showcase-nav-scroll" aria-label="Showcase pages">
+      <div
+        #showcaseTree="ngTree"
+        ngTree
+        nav
+        currentType="page"
+        focusMode="roving"
+        class="showcase-nav-tree"
+        aria-label="Docs and examples"
+        [value]="activeNavTreeValues()"
+        data-testid="showcase-nav-tree"
+      >
+        @for (section of navSections; track section.id) {
+          <div
+            #sectionTreeItem="ngTreeItem"
+            ngTreeItem
+            class="showcase-nav-tree-branch"
+            [class.has-current-route]="navTreeBranchContainsCurrentRoute(section)"
+            [value]="section.id"
+            [parent]="showcaseTree"
+            [selectable]="false"
+            [expanded]="isNavTreeBranchExpanded(section.id)"
+            [label]="section.label"
+            [attr.aria-label]="section.label"
+            [attr.data-testid]="'showcase-nav-branch-' + section.id"
+            (expandedChange)="setNavTreeBranchExpanded(section.id, $event)"
+          >
+            <span class="showcase-nav-tree-row">
+              <span class="showcase-nav-tree-label">{{ section.label }}</span>
+              <svg
+                class="showcase-nav-tree-chevron"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M6 3.75 10.25 8 6 12.25" />
+              </svg>
+            </span>
 
-    <nav class="showcase-nav-list" aria-label="Example variants">
-      @for (example of examples; track example.path) {
-        <a
-          class="showcase-nav-link"
-          [routerLink]="example.path"
-          routerLinkActive="is-active"
-          [routerLinkActiveOptions]="exactLinkMatch"
-          ariaCurrentWhenActive="page"
-          (click)="closeMobileNav(false)"
-        >
-          <span class="showcase-nav-link-label">{{ example.label }}</span>
-          <span class="showcase-nav-link-description">{{ example.description }}</span>
-        </a>
-      }
+            <div
+              class="showcase-nav-tree-group showcase-nav-tree-branch-group"
+              role="group"
+              [attr.aria-label]="section.ariaLabel"
+            >
+              <ng-template
+                ngTreeItemGroup
+                #sectionTreeGroup="ngTreeItemGroup"
+                [ownedBy]="sectionTreeItem"
+              >
+                @for (group of section.groups; track group.id) {
+                  <div
+                    #navGroupTreeItem="ngTreeItem"
+                    ngTreeItem
+                    class="showcase-nav-tree-branch showcase-nav-tree-subbranch"
+                    [class.has-current-route]="navTreeBranchContainsCurrentRoute(group)"
+                    [value]="group.id"
+                    [parent]="sectionTreeGroup"
+                    [selectable]="false"
+                    [expanded]="isNavTreeBranchExpanded(group.id)"
+                    [label]="group.label"
+                    [attr.aria-label]="group.label"
+                    [attr.data-testid]="'showcase-nav-branch-' + group.id"
+                    (expandedChange)="setNavTreeBranchExpanded(group.id, $event)"
+                  >
+                    <span class="showcase-nav-tree-row">
+                      <span class="showcase-nav-tree-label">{{ group.label }}</span>
+                      <svg
+                        class="showcase-nav-tree-chevron"
+                        viewBox="0 0 16 16"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path d="M6 3.75 10.25 8 6 12.25" />
+                      </svg>
+                    </span>
+
+                    <div
+                      class="showcase-nav-tree-group showcase-nav-tree-link-group"
+                      role="group"
+                      [attr.aria-label]="group.ariaLabel"
+                    >
+                      <ng-template
+                        ngTreeItemGroup
+                        #navGroupTreeGroup="ngTreeItemGroup"
+                        [ownedBy]="navGroupTreeItem"
+                      >
+                        @for (item of group.items; track item.path) {
+                          <a
+                            ngTreeItem
+                            class="showcase-nav-tree-link"
+                            [routerLink]="item.path"
+                            [value]="item.path"
+                            [parent]="navGroupTreeGroup"
+                            [label]="item.label"
+                            [attr.data-testid]="'showcase-nav-link-' + item.id"
+                            (click)="closeMobileNav(false)"
+                          >
+                            <span class="showcase-nav-tree-connector" aria-hidden="true"></span>
+                            <span class="showcase-nav-tree-label">{{ item.label }}</span>
+                          </a>
+                        }
+                      </ng-template>
+                    </div>
+                  </div>
+                }
+              </ng-template>
+            </div>
+          </div>
+        }
+      </div>
     </nav>
 
     <div class="showcase-theme-control">

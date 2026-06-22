@@ -1,0 +1,21 @@
+<article class="showcase-page showcase-container docs-page">
+  <header class="header-section docs-header">
+    <div class="docs-title-group">
+      <span class="docs-eyebrow">Docs</span>
+      <h1 id="docs-page-title" class="title">{{ doc().label }}</h1>
+    </div>
+    <p class="description">{{ doc().description }}</p>
+  </header>
+
+  @if (loadFailed()) {
+    <p class="docs-error" role="alert">Documentation could not be loaded.</p>
+  }
+
+  <section class="docs-markdown" aria-labelledby="docs-page-title">
+    <markdown
+      [src]="doc().markdownPath"
+      (load)="clearMarkdownError()"
+      (error)="markMarkdownError($event)"
+    />
+  </section>
+</article>
