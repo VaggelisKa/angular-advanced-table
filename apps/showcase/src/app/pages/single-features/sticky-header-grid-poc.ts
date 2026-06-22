@@ -134,7 +134,9 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
         scroll-timeline-axis: inline;
       }
       .grid-header {
-        animation: sync-scroll linear both;
+        animation-name: sync-scroll;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
         animation-timeline: --body-scroll;
       }
     }
