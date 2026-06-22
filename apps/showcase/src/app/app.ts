@@ -64,6 +64,11 @@ const showcaseExamples = [
     path: '/sticky-header',
   },
   {
+    label: 'Sticky header (Grid PoC)',
+    description: 'Solution B demonstration',
+    path: '/sticky-header-grid-poc',
+  },
+  {
     label: 'Toolbar',
     description: 'Slot-based keyboard toolbar',
     path: '/toolbar',
