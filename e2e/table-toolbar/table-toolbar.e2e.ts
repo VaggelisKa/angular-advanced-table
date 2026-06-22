@@ -33,16 +33,16 @@ test('renders the toolbar showcase page', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
   await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 
-  // nat-toolbar-button class is applied to projected buttons and resolves a non-zero border-radius.
+  // toolbar-button class is applied to projected buttons and resolves a non-zero border-radius.
   const exportButton = page.getByTestId('export-button');
-  await expect(exportButton).toHaveClass(/nat-toolbar-button/);
+  await expect(exportButton).toHaveClass(/toolbar-button/);
   const radius = await exportButton.evaluate((el) => getComputedStyle(el).borderRadius);
   expect(radius).not.toBe('0px');
 });
 
 test('activates items and reports the action', async ({ page }) => {
   await page.getByTestId('export-button').click();
-  await expect(page.getByTestId('last-action')).toHaveText('export-csv');
+  await expect(page.getByTestId('last-action')).toHaveText('export');
 
   await page.getByTestId('refresh-button').click();
   await expect(page.getByTestId('last-action')).toHaveText('refresh');
