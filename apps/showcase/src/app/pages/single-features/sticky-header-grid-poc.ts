@@ -13,10 +13,15 @@ interface DemoItem {
 // Generate 50 items to ensure long vertical scrollability
 const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
   const id = index + 1;
-  const categories = ['Cloud Compute', 'Storage Bucket', 'Serverless Function', 'Database Instance'];
+  const categories = [
+    'Cloud Compute',
+    'Storage Bucket',
+    'Serverless Function',
+    'Database Instance',
+  ];
   const statuses = ['Healthy', 'Degraded', 'Maintenance', 'Provisioning'];
   const regions = ['us-east-1', 'us-west-2', 'eu-central-1', 'ap-northeast-1'];
-  
+
   return {
     id: `node-${id}`,
     name: `Resource Node ${id}`,
@@ -36,16 +41,16 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
         <h1 class="title">Sticky Header (CSS Grid)</h1>
         <p class="description">
           Demonstrates a sticky table header with horizontal scroll using CSS Grid and ARIA roles.
-          The header sticks to the browser viewport without container height restrictions while the body scrolls horizontally.
+          The header sticks to the browser viewport without container height restrictions while the
+          body scrolls horizontally.
         </p>
       </header>
 
       <div class="grid-layout grid-layout-with-panel">
         <div class="card">
           <h2 class="card-title">Grid Table</h2>
-          
+
           <div role="table" aria-label="Resource Node Utilization" class="grid-table">
-            
             <!-- Header scroll container. Horizontally synced, vertically sticky. -->
             <div #headerScroll class="grid-header-scroll-wrapper">
               <div role="rowgroup" class="grid-header">
@@ -74,12 +79,13 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
                     </div>
                     <div role="cell" class="grid-cell code-font">{{ item.region }}</div>
                     <div role="cell" class="grid-cell">{{ item.utilization }}</div>
-                    <div role="cell" class="grid-cell cost-cell">\${{ item.value.toLocaleString() }}</div>
+                    <div role="cell" class="grid-cell cost-cell">
+                      \${{ item.value.toLocaleString() }}
+                    </div>
                   </div>
                 }
               </div>
             </div>
-
           </div>
         </div>
 
@@ -87,10 +93,13 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
           <h2 class="card-title">Grid Table Layout</h2>
           <div class="control-panel">
             <p>
-              This implementation uses CSS Grid and explicit ARIA roles to allow the header to stick to the viewport (without a parent height limit) while the table body scrolls horizontally.
+              This implementation uses CSS Grid and explicit ARIA roles to allow the header to stick
+              to the viewport (without a parent height limit) while the table body scrolls
+              horizontally.
             </p>
             <div class="tip">
-              Scroll the page vertically to see the header stay pinned, and scroll the table body horizontally to see columns align.
+              Scroll the page vertically to see the header stay pinned, and scroll the table body
+              horizontally to see columns align.
             </div>
           </div>
         </div>
@@ -136,32 +145,11 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Support for native CSS scroll-driven animations (jank-free horizontal sync) */
-    @supports (scroll-timeline-axis: inline) and (timeline-scope: --foo) {
-      .grid-header-scroll-wrapper {
-        container-type: inline-size;
-      }
-      .grid-body-scroll-wrapper {
-        scroll-timeline-name: --body-scroll;
-        scroll-timeline-axis: inline;
-      }
-      .grid-header {
-        animation: sync-scroll linear both;
-        animation-timeline: --body-scroll;
-      }
-    }
 
-    @keyframes sync-scroll {
-      from {
-        transform: translateX(0);
-      }
-      to {
-        transform: translateX(calc(-100% + 100cqw));
-      }
-    }
 
     /* Ensure both header and body scroll elements have the same content width */
-    .grid-header, .grid-body {
+    .grid-header,
+    .grid-body {
       min-width: max-content;
     }
 
@@ -257,7 +245,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
 })
 export class StickyHeaderGridPocPage {
   protected readonly data = DEMO_DATA;
-  
+
   private readonly headerScroll = viewChild<ElementRef<HTMLElement>>('headerScroll');
   private readonly bodyScroll = viewChild<ElementRef<HTMLElement>>('bodyScroll');
 
@@ -267,30 +255,24 @@ export class StickyHeaderGridPocPage {
       const headerEl = this.headerScroll()?.nativeElement;
 
       if (bodyEl && headerEl) {
-        // Detect native CSS scroll-timeline and timeline-scope support
-        const supportsScrollTimeline = 
-          CSS.supports('timeline-scope', '--foo') && 
-          (CSS.supports('(scroll-timeline-axis: inline)') || 
-           CSS.supports('(scroll-timeline: --foo inline)'));
-
-        if (supportsScrollTimeline) {
-          return; // Skip JS syncing if native CSS scroll-timeline is supported
-        }
-
         let ticking = false;
         let lastKnownScrollLeft = 0;
 
-        bodyEl.addEventListener('scroll', () => {
-          lastKnownScrollLeft = bodyEl.scrollLeft;
-          
-          if (!ticking) {
-            window.requestAnimationFrame(() => {
-              headerEl.scrollLeft = lastKnownScrollLeft;
-              ticking = false;
-            });
-            ticking = true;
-          }
-        }, { passive: true });
+        bodyEl.addEventListener(
+          'scroll',
+          () => {
+            lastKnownScrollLeft = bodyEl.scrollLeft;
+
+            if (!ticking) {
+              window.requestAnimationFrame(() => {
+                headerEl.scrollLeft = lastKnownScrollLeft;
+                ticking = false;
+              });
+              ticking = true;
+            }
+          },
+          { passive: true },
+        );
       }
     });
   }
