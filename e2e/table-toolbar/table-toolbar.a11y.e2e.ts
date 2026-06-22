@@ -1,78 +1,109 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import {   expect, test } from '@playwright/test';
+import type {Locator, Page} from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/examples/toolbar');
-});
+test.describe('Table toolbar accessibility', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/toolbar');
+  });
 
-const buttons = (page: Page) => ({
-  exportButton: page.getByTestId('export-button'),
-  refreshButton: page.getByTestId('refresh-button'),
-  compactButton: page.getByTestId('density-compact-button'),
-  comfortableButton: page.getByTestId('density-comfortable-button'),
-  shareButton: page.getByTestId('share-button'),
-});
+  const buttons = (
+    page: Page,
+  ): {
+    exportButton: Locator;
+    refreshButton: Locator;
+    compactButton: Locator;
+    comfortableButton: Locator;
+    shareButton: Locator;
+  } => ({
+    exportButton: page.getByTestId('export-button'),
+    refreshButton: page.getByTestId('refresh-button'),
+    compactButton: page.getByTestId('density-compact-button'),
+    comfortableButton: page.getByTestId('density-comfortable-button'),
+    shareButton: page.getByTestId('share-button'),
+  });
 
-test('activates items and reports the action via keyboard only', async ({ page }) => {
-  const exportBtn = page.getByTestId('export-button');
-  await exportBtn.focus();
-  await page.keyboard.press('Enter');
-  await expect(page.getByTestId('last-action')).toHaveText('export');
+  test('activates items and reports the action via keyboard only', async ({ page }) => {
+    const exportBtn = page.getByTestId('export-button');
 
-  const refreshBtn = page.getByTestId('refresh-button');
-  await refreshBtn.focus();
-  await page.keyboard.press('Space');
-  await expect(page.getByTestId('last-action')).toHaveText('refresh');
+    await exportBtn.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('last-action')).toHaveText('export');
 
-  const shareBtn = page.getByTestId('share-button');
-  await shareBtn.focus();
-  await page.keyboard.press('Enter');
-  await expect(page.getByTestId('last-action')).toHaveText('share');
+    const refreshBtn = page.getByTestId('refresh-button');
 
-  const compactBtn = page.getByTestId('density-compact-button');
-  await compactBtn.focus();
-  await page.keyboard.press('Space');
-  await expect(page.getByTestId('last-action')).toHaveText('density-compact');
-});
+    await refreshBtn.focus();
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('last-action')).toHaveText('refresh');
 
-test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({ page }) => {
-  const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } =
-    buttons(page);
+    const shareBtn = page.getByTestId('share-button');
 
-  await exportButton.focus();
-  await exportButton.press('ArrowRight');
-  await expect(refreshButton).toBeFocused();
+    await shareBtn.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('last-action')).toHaveText('share');
 
-  // Left/Right traverse group members linearly, like any other item.
-  await refreshButton.press('ArrowRight');
-  await expect(compactButton).toBeFocused();
+    const compactBtn = page.getByTestId('density-compact-button');
 
-  await compactButton.press('ArrowRight');
-  await expect(comfortableButton).toBeFocused();
+    await compactBtn.focus();
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('last-action')).toHaveText('density-compact');
+  });
 
-  await comfortableButton.press('ArrowRight');
-  await expect(shareButton).toBeFocused();
+  test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({
+    page,
+  }) => {
+    const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } =
+      buttons(page);
 
-  await shareButton.press('ArrowLeft');
-  await expect(comfortableButton).toBeFocused();
+    await exportButton.focus();
+    await exportButton.press('ArrowRight');
+    await expect(refreshButton).toBeFocused();
 
-  await comfortableButton.press('Home');
-  await expect(exportButton).toBeFocused();
+    // Left/Right traverse group members linearly, like any other item.
+    await refreshButton.press('ArrowRight');
+    await expect(compactButton).toBeFocused();
 
-  await exportButton.press('End');
-  await expect(shareButton).toBeFocused();
-});
+    await compactButton.press('ArrowRight');
+    await expect(comfortableButton).toBeFocused();
 
-test('Up/Down cycle inside the widget group without leaving it', async ({ page }) => {
-  const { compactButton, comfortableButton } = buttons(page);
+    await comfortableButton.press('ArrowRight');
+    await expect(shareButton).toBeFocused();
 
-  await compactButton.focus();
-  await compactButton.press('ArrowDown');
-  await expect(comfortableButton).toBeFocused();
+    await shareButton.press('ArrowLeft');
+    await expect(comfortableButton).toBeFocused();
 
-  // Next widget (Share) is outside the group — Down wraps to its first member.
-  await comfortableButton.press('ArrowDown');
-  await expect(compactButton).toBeFocused();
+    await comfortableButton.press('Home');
+    await expect(exportButton).toBeFocused();
 
-  await compactButton.press('ArrowUp');
-  await expect(comfortableButton).toBeFocused();
+    await exportButton.press('End');
+    await expect(shareButton).toBeFocused();
+  });
+
+  test('Up/Down cycle inside the widget group without leaving it', async ({ page }) => {
+    const { compactButton, comfortableButton } = buttons(page);
+
+    await compactButton.focus();
+    await compactButton.press('ArrowDown');
+    await expect(comfortableButton).toBeFocused();
+
+    // Next widget (Share) is outside the group — Down wraps to its first member.
+    await comfortableButton.press('ArrowDown');
+    await expect(compactButton).toBeFocused();
+
+    await compactButton.press('ArrowUp');
+    await expect(comfortableButton).toBeFocused();
+  });
+
+  test('reverses arrow keys in RTL', async ({ page }) => {
+    await page.addInitScript(() => {
+      document.documentElement.setAttribute('dir', 'rtl');
+    });
+    await page.goto('/toolbar');
+    await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+
+    const { exportButton, refreshButton } = buttons(page);
+
+    await exportButton.focus();
+    await exportButton.press('ArrowLeft');
+    await expect(refreshButton).toBeFocused();
+  });
 });

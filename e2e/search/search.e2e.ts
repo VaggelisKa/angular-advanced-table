@@ -1,30 +1,33 @@
 import { expect, test } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/examples/search');
-});
+test.describe('Global search', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/search');
+  });
 
-test('filters table rows via global fuzzy search input', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: 'Global Search & Filter' })).toBeVisible();
+  test('filters table rows via global fuzzy search input', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Global Search & Filter' })).toBeVisible();
 
-  const table = page.getByRole('grid', { name: 'Search demo table' });
-  const searchInput = page.locator('app-table-search input');
-  await expect(searchInput).toBeVisible();
+    const table = page.getByRole('grid', { name: 'Search demo table' });
+    const searchInput = page.locator('app-table-search input');
 
-  // Initially we should have 6 rows (DEMO_DATA size)
-  await expect(table.locator('tbody tr')).toHaveCount(6);
+    await expect(searchInput).toBeVisible();
 
-  // Type "Security"
-  await searchInput.fill('Security');
-  await searchInput.press('Enter');
+    // Initially we should have 6 rows (DEMO_DATA size)
+    await expect(table.locator('tbody tr')).toHaveCount(6);
 
-  // Verify only 2 rows matching "Security" are visible (Delta Watcher and Epsilon Shield)
-  await expect(table.locator('tbody tr')).toHaveCount(2);
+    // Type "Security"
+    await searchInput.fill('Security');
+    await searchInput.press('Enter');
 
-  // Clear search
-  await searchInput.fill('');
-  await searchInput.press('Enter');
+    // Verify only 2 rows matching "Security" are visible (Delta Watcher and Epsilon Shield)
+    await expect(table.locator('tbody tr')).toHaveCount(2);
 
-  // Verify all 6 rows are back
-  await expect(table.locator('tbody tr')).toHaveCount(6);
+    // Clear search
+    await searchInput.fill('');
+    await searchInput.press('Enter');
+
+    // Verify all 6 rows are back
+    await expect(table.locator('tbody tr')).toHaveCount(6);
+  });
 });

@@ -1,51 +1,53 @@
 import { expect, test } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/examples/states');
-});
+test.describe('Table states', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/states');
+  });
 
-test('displays initial states for loading, empty, and errored grids', async ({ page }) => {
-  await expect(page.getByRole('heading', { name: 'Table States' })).toBeVisible();
+  test('displays initial states for loading, empty, and errored grids', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'Table States' })).toBeVisible();
 
-  // Loading state table
-  const loadingTable = page.getByRole('grid', { name: 'Loading incidents table' });
-  await expect(loadingTable.locator('.state-template')).toContainText('Loading incidents');
+    // Loading state table
+    const loadingTable = page.getByRole('grid', { name: 'Loading incidents table' });
 
-  // Empty state table
-  const emptyTable = page.getByRole('grid', { name: 'Empty incidents table' });
-  await expect(emptyTable.locator('.state-template')).toContainText('No incidents found');
+    await expect(loadingTable.locator('.state-template')).toContainText('Loading incidents');
 
-  // Error state table
-  const errorTable = page.getByRole('grid', { name: 'Errored incidents table' });
-  await expect(errorTable.locator('.state-template-error')).toContainText(
-    'Incident queue unavailable',
-  );
+    // Empty state table
+    const emptyTable = page.getByRole('grid', { name: 'Empty incidents table' });
 
-  // Test retry inside error table
-  const retryBtn = errorTable.getByRole('button', { name: 'Retry' });
-  await retryBtn.click();
-  // Status should change to loading
-  await expect(errorTable.locator('.state-template')).toContainText('Retrying incident queue');
-});
+    await expect(emptyTable.locator('.state-template')).toContainText('No incidents found');
 
-test('handles transition preview state switching', async ({ page }) => {
-  const transitionCard = page.locator('.card', { hasText: 'Transition preview' });
-  const previewTable = transitionCard.getByRole('grid', { name: 'State transition preview table' });
+    // Error state table
+    const errorTable = page.getByRole('grid', { name: 'Errored incidents table' });
 
-  // Initial state should be loading
-  await expect(previewTable.locator('.state-template')).toContainText('Loading queue');
+    await expect(errorTable.locator('.state-template-error')).toContainText('Incident queue unavailable');
 
-  // Click "Empty" option
-  await transitionCard.getByRole('button', { name: 'Empty' }).click();
-  await expect(previewTable.locator('.state-template')).toContainText('No transition rows');
+    // Test retry inside error table
+    const retryBtn = errorTable.getByRole('button', { name: 'Retry' });
 
-  // Click "Error" option
-  await transitionCard.getByRole('button', { name: 'Error' }).click();
-  await expect(previewTable.locator('.state-template-error')).toContainText(
-    'Transition request failed',
-  );
+    await retryBtn.click();
+    // Status should change to loading
+    await expect(errorTable.locator('.state-template')).toContainText('Retrying incident queue');
+  });
 
-  // Click "Rows" option
-  await transitionCard.getByRole('button', { name: 'Rows' }).click();
-  await expect(previewTable.locator('tbody tr')).toHaveCount(3);
+  test('handles transition preview state switching', async ({ page }) => {
+    const transitionCard = page.locator('.card', { hasText: 'Transition preview' });
+    const previewTable = transitionCard.getByRole('grid', { name: 'State transition preview table' });
+
+    // Initial state should be loading
+    await expect(previewTable.locator('.state-template')).toContainText('Loading queue');
+
+    // Click "Empty" option
+    await transitionCard.getByRole('button', { name: 'Empty' }).click();
+    await expect(previewTable.locator('.state-template')).toContainText('No transition rows');
+
+    // Click "Error" option
+    await transitionCard.getByRole('button', { name: 'Error' }).click();
+    await expect(previewTable.locator('.state-template-error')).toContainText('Transition request failed');
+
+    // Click "Rows" option
+    await transitionCard.getByRole('button', { name: 'Rows' }).click();
+    await expect(previewTable.locator('tbody tr')).toHaveCount(3);
+  });
 });
