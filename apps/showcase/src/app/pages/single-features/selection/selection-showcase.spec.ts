@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { SelectionShowcasePage } from './selection-showcase';
 
@@ -9,7 +10,7 @@ describe('SelectionShowcasePage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SelectionShowcasePage],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectionShowcasePage);
@@ -17,35 +18,32 @@ describe('SelectionShowcasePage', () => {
     fixture.detectChanges();
   });
 
-  function headerCheckbox(): HTMLInputElement | null {
-    return fixture.nativeElement.querySelector(
-      'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox',
-    ) as HTMLInputElement | null;
-  }
+  const element = (): HTMLElement => fixture.nativeElement as HTMLElement;
 
-  function rowCheckbox(index: number): HTMLInputElement {
-    return fixture.nativeElement.querySelectorAll(
-      'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
-    )[index] as HTMLInputElement;
-  }
+  const headerCheckbox = (): HTMLInputElement | null =>
+    element().querySelector<HTMLInputElement>('thead th[data-column-id="__natSelect"] input.nat-selection-checkbox');
 
-  function dataRowCount(): number {
-    return fixture.nativeElement.querySelectorAll('tbody tr.data-row').length;
-  }
+  const rowCheckbox = (index: number): HTMLInputElement =>
+    element().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')[index];
 
-  function selectedRowCount(): number {
-    return Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
-      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
+  const dataRowCount = (): number => element().querySelectorAll('tbody tr.data-row').length;
+
+  const selectedRowCount = (): number =>
+    Array.from(element().querySelectorAll<HTMLElement>('tbody tr.data-row')).filter(
+      (row) => row.getAttribute('aria-selected') === 'true'
     ).length;
-  }
 
-  function clickButton(label: string): void {
-    const button = Array.from(fixture.nativeElement.querySelectorAll('button')).find((candidate) =>
-      (candidate as HTMLElement).textContent?.trim().startsWith(label),
-    ) as HTMLButtonElement;
+  const clickButton = (label: string): void => {
+    const button = Array.from(element().querySelectorAll('button')).find((candidate) =>
+      candidate.textContent.trim().startsWith(label)
+    );
+
+    if (!button) {
+      throw new Error(`Expected a button starting with "${label}".`);
+    }
 
     button.click();
-  }
+  };
 
   async function flush(): Promise<void> {
     fixture.detectChanges();
@@ -85,7 +83,13 @@ describe('SelectionShowcasePage', () => {
   });
 
   it('prunes the selection when selected rows are deleted', async () => {
-    headerCheckbox()!.click();
+    const header = headerCheckbox();
+
+    if (!header) {
+      throw new Error('Expected the header checkbox to render.');
+    }
+
+    header.click();
     await flush();
     expect(selectedRowCount()).toBe(6);
 
@@ -93,7 +97,7 @@ describe('SelectionShowcasePage', () => {
     await flush();
 
     expect(dataRowCount()).toBe(0);
-    expect(fixture.nativeElement.textContent).toContain('Selected (0): None');
+    expect(element().textContent).toContain('Selected (0): None');
   });
 
   it('drops a deleted row from a partial selection without leaving a stale id', async () => {
@@ -111,7 +115,7 @@ describe('SelectionShowcasePage', () => {
     expect(selectedRowCount()).toBe(0);
     expect(headerCheckbox()?.checked).toBe(false);
     expect(headerCheckbox()?.indeterminate).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('Selected (0): None');
+    expect(element().textContent).toContain('Selected (0): None');
   });
 
   it('clears every checkbox when selection is cleared', async () => {

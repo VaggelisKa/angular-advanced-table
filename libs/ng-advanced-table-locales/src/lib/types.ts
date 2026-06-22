@@ -1,12 +1,8 @@
 /** Formats numbers used in generated table accessibility copy. */
-export type NatTableNumberFormatter = (
-  value: number,
-  options?: Intl.NumberFormatOptions,
-  locale?: string,
-) => string;
+export type NatTableNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
 
 /** Context passed to custom table summary formatters. */
-export interface NatTableAccessibilitySummaryContext {
+export type NatTableAccessibilitySummaryContext = {
   /** Rows currently rendered in the body. */
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
@@ -33,7 +29,7 @@ export interface NatTableAccessibilitySummaryContext {
   filterState: 'filtered' | 'unfiltered';
   /** Whether client-side pagination is enabled. */
   paginationState: 'enabled' | 'disabled';
-}
+};
 
 /** Single active sort entry passed to sort announcement formatters. */
 export type NatTableAccessibilitySortingAnnouncementEntry = {
@@ -46,7 +42,7 @@ export type NatTableAccessibilitySortingAnnouncementEntry = {
 };
 
 /** Context passed to custom sort announcement formatters. */
-export interface NatTableAccessibilitySortingAnnouncementContext {
+export type NatTableAccessibilitySortingAnnouncementContext = {
   /** Sorted column id, or `null` when sorting is cleared. */
   columnId: string | null;
   /** Resolved human-readable column label, or `null`. */
@@ -55,10 +51,10 @@ export interface NatTableAccessibilitySortingAnnouncementContext {
   sortState: 'ascending' | 'descending' | 'none';
   /** All active sort entries in priority order; more than one during a multi-sort. */
   sortedColumns: readonly NatTableAccessibilitySortingAnnouncementEntry[];
-}
+};
 
 /** Context passed to custom filtering announcement formatters. */
-export interface NatTableAccessibilityFilteringAnnouncementContext {
+export type NatTableAccessibilityFilteringAnnouncementContext = {
   /** Trimmed global filter query. */
   query: string;
   /** Which filtering inputs are currently active. */
@@ -71,20 +67,20 @@ export interface NatTableAccessibilityFilteringAnnouncementContext {
   totalRowsValue: number;
   /** Provider-formatted text for `totalRowsValue`. */
   totalRowsText: string;
-}
+};
 
 /** Single column change entry passed to visibility announcement formatters. */
-export interface NatTableAccessibilityColumnVisibilityAnnouncementChange {
+export type NatTableAccessibilityColumnVisibilityAnnouncementChange = {
   /** TanStack column id. */
   id: string;
   /** Resolved human-readable column label. */
   label: string;
   /** Next visibility state for the column. */
   visibilityState: 'visible' | 'hidden';
-}
+};
 
 /** Context passed to custom column-visibility announcement formatters. */
-export interface NatTableAccessibilityColumnVisibilityAnnouncementContext {
+export type NatTableAccessibilityColumnVisibilityAnnouncementContext = {
   /** Columns whose visibility changed in the last update. */
   changedColumns: readonly NatTableAccessibilityColumnVisibilityAnnouncementChange[];
   /** Visible column count after the change. */
@@ -95,10 +91,10 @@ export interface NatTableAccessibilityColumnVisibilityAnnouncementContext {
   totalColumnsValue: number;
   /** Provider-formatted text for `totalColumnsValue`. */
   totalColumnsText: string;
-}
+};
 
 /** Context passed to custom pagination announcement formatters. */
-export interface NatTableAccessibilityPaginationAnnouncementContext {
+export type NatTableAccessibilityPaginationAnnouncementContext = {
   /** Zero-based current page index. */
   pageIndex: number;
   /** One-based current page number. */
@@ -117,10 +113,10 @@ export interface NatTableAccessibilityPaginationAnnouncementContext {
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
   visibleRowsText: string;
-}
+};
 
 /** Context passed to custom column-reorder announcement formatters. */
-export interface NatTableAccessibilityColumnReorderAnnouncementContext {
+export type NatTableAccessibilityColumnReorderAnnouncementContext = {
   /** TanStack column id. */
   columnId: string;
   /** Resolved human-readable column label. */
@@ -135,7 +131,7 @@ export interface NatTableAccessibilityColumnReorderAnnouncementContext {
   totalValue: number;
   /** Provider-formatted text for `totalValue`. */
   totalText: string;
-}
+};
 
 /** Context passed to custom column-resize announcement formatters. */
 export type NatTableAccessibilityColumnResizeAnnouncementContext = {
@@ -164,8 +160,9 @@ export type NatTableAccessibilitySelectionAnnouncementContext = {
   /** Provider-formatted text for `totalRowsValue`. */
   readonly totalRowsText: string;
 };
+
 /** Optional overrides for built-in screen-reader summaries and announcements. */
-export interface NatTableAccessibilityText {
+export type NatTableAccessibilityText = {
   /**
    * Supplemental description announced through `aria-describedby` when the
    * grid receives focus. Set to an empty string to suppress the description.
@@ -203,9 +200,7 @@ export interface NatTableAccessibilityText {
   /** Live announcement emitted when filtering changes. */
   filteringChange?: (context: NatTableAccessibilityFilteringAnnouncementContext) => string;
   /** Live announcement emitted when column visibility changes. */
-  columnVisibilityChange?: (
-    context: NatTableAccessibilityColumnVisibilityAnnouncementContext,
-  ) => string;
+  columnVisibilityChange?: (context: NatTableAccessibilityColumnVisibilityAnnouncementContext) => string;
   /** Live announcement emitted when the page size changes. */
   pageSizeChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when the page index changes. */
@@ -216,20 +211,20 @@ export interface NatTableAccessibilityText {
   columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
   /** Live announcement emitted when the row selection changes. */
   selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
-}
+};
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */
-export interface NatTableIntl {
+export type NatTableIntl = {
   /** Default accessibility copy and announcement formatters for every table in scope. */
   accessibilityText?: NatTableAccessibilityText;
   /** Number formatter used for `...Text` fields passed to generated copy formatters. */
   formatNumber?: NatTableNumberFormatter;
-}
+};
 
-export interface NatTableIntlConfig {
+export type NatTableIntlConfig = {
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableIntl>;
-}
+};
 
 export type NatTableIntlProviderConfig = NatTableIntl | NatTableIntlConfig;
 

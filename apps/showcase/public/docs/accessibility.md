@@ -115,14 +115,10 @@ Generated copy resolves from locale providers. Add only the providers for packag
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
-import {
-  provideNatTableLocales,
-  provideNatTableUiLocales,
-  provideNatTableUtilsLocales,
-} from 'ng-advanced-table-locales';
+import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table-locales';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideNatTableLocales(), provideNatTableUiLocales(), provideNatTableUtilsLocales()],
+  providers: [provideNatTableLocales(), provideNatTableUiLocales(), provideNatTableUtilsLocales()]
 };
 ```
 
@@ -163,13 +159,7 @@ Do not rely on placeholder text as a search input's only accessible label. Do no
 Use `dataStatus` and state templates for loading, empty, and error rows. The table owns row placement; your app owns fetching, retrying, and error classification.
 
 ```html
-<nat-table
-  [data]="rows()"
-  [columns]="columns"
-  [dataStatus]="status()"
-  [error]="error()"
-  accessibleName="Open positions"
->
+<nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Open positions">
   <ng-template natTableLoading>
     <strong>Loading positions</strong>
     <span>Fetching the latest open positions.</span>
@@ -177,9 +167,7 @@ Use `dataStatus` and state templates for loading, empty, and error rows. The tab
 
   <ng-template natTableEmpty let-filtered="filtered">
     <strong>No positions found</strong>
-    <span>
-      {{ filtered ? 'No rows match the active filters.' : 'There are no open positions.' }}
-    </span>
+    <span> {{ filtered ? 'No rows match the active filters.' : 'There are no open positions.' }} </span>
   </ng-template>
 
   <ng-template natTableError let-error>
@@ -202,16 +190,7 @@ import { GridCellWidget } from '@angular/aria/grid';
 @Component({
   selector: 'app-trade-button',
   imports: [GridCellWidget],
-  template: `
-    <button
-      type="button"
-      ngGridCellWidget
-      [attr.aria-label]="accessibleName()"
-      (click)="pressed.emit()"
-    >
-      Trade
-    </button>
-  `,
+  template: ` <button type="button" ngGridCellWidget [attr.aria-label]="accessibleName()" (click)="pressed.emit()">Trade</button> `
 })
 export class TradeButton {
   readonly accessibleName = input.required<string>();
@@ -259,8 +238,7 @@ readonly columns = withNatTableSelectionColumn(baseColumns, {
     [columns]="columns"
     [enableRowSelection]="true"
     [getRowId]="getRowId"
-    accessibleName="Selectable positions"
-  />
+    accessibleName="Selectable positions" />
 </nat-table-surface>
 ```
 

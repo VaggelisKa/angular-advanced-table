@@ -26,13 +26,13 @@ import {
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
   NatTableLoadingTemplate,
-  type NatTableDataStatus,
+  type NatTableDataStatus
 } from 'ng-advanced-table';
 
 @Component({
   selector: 'app-positions-table',
   imports: [NatTable, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
-  templateUrl: './positions-table.html',
+  templateUrl: './positions-table.html'
 })
 export class PositionsTable {
   readonly rows = signal<readonly PositionRow[]>([]);
@@ -51,20 +51,14 @@ export class PositionsTable {
       error: (error: unknown) => {
         this.error.set(error);
         this.status.set(NAT_TABLE_DATA_STATUS.error);
-      },
+      }
     });
   }
 }
 ```
 
 ```html
-<nat-table
-  [data]="rows()"
-  [columns]="columns"
-  [dataStatus]="status()"
-  [error]="error()"
-  accessibleName="Open positions"
->
+<nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Open positions">
   <ng-template natTableLoading>
     <strong>Loading positions</strong>
     <span>Fetching the latest open positions.</span>
@@ -72,9 +66,7 @@ export class PositionsTable {
 
   <ng-template natTableEmpty let-filtered="filtered">
     <strong>No positions found</strong>
-    <span>
-      {{ filtered ? 'No rows match the active filters.' : 'There are no open positions.' }}
-    </span>
+    <span> {{ filtered ? 'No rows match the active filters.' : 'There are no open positions.' }} </span>
   </ng-template>
 
   <ng-template natTableError let-error>
@@ -159,8 +151,7 @@ Use manual modes when a backend owns pagination, sorting, or filtering. The surf
   [mode]="{ pagination: 'manual', sorting: 'manual', filtering: 'manual' }"
   [manualPageCount]="pageCount()"
   [state]="tableState()"
-  (stateChange)="onTableStateChange($event)"
->
+  (stateChange)="onTableStateChange($event)">
   <nat-table-toolbar accessibleName="Positions toolbar">
     <app-table-search label="Search positions" />
     <button type="button" natToolbarItem (click)="reload()">Refresh</button>
@@ -174,8 +165,7 @@ Use manual modes when a backend owns pagination, sorting, or filtering. The surf
     [dataStatus]="status()"
     [error]="error()"
     [getRowId]="getRowId"
-    accessibleName="Server-side positions"
-  >
+    accessibleName="Server-side positions">
     <ng-template natTableLoading>Loading positions</ng-template>
     <ng-template natTableEmpty>No positions match the current request</ng-template>
     <ng-template natTableError>Positions could not be loaded</ng-template>

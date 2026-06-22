@@ -1,12 +1,9 @@
 import { Component, inject, input } from '@angular/core';
+
 import type { Row, RowData, Table } from '@tanstack/angular-table';
 
+import { NAT_TABLE_UI_ENGLISH_LOCALE, NAT_TABLE_UI_INTL, resolveNatTableUiIntl } from '../../shared/table-ui-intl';
 import type { NatTableAccessibilitySelectionLabels } from '../../shared/table-ui.types';
-import {
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  NAT_TABLE_UI_INTL,
-  resolveNatTableUiIntl,
-} from '../../shared/table-ui-intl';
 
 /**
  * Accessible selection checkbox rendered by {@link withNatTableSelectionColumn}.
@@ -19,22 +16,20 @@ import {
 @Component({
   selector: 'nat-table-selection-checkbox',
   templateUrl: './table-selection.html',
-  styleUrl: './table-selection.css',
+  styleUrl: './table-selection.css'
 })
 export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  readonly mode = input.required<'row' | 'all'>();
-  readonly table = input.required<Table<TData>>();
-  readonly row = input<Row<TData>>();
+  public readonly mode = input.required<'row' | 'all'>();
+  public readonly table = input.required<Table<TData>>();
+  public readonly row = input<Row<TData>>();
   /** Explicit `aria-label` override; falls back to the active UI locale. */
-  readonly ariaLabel = input('');
+  public readonly ariaLabel = input('');
   /** Explicit column label override; falls back to the active UI locale. */
-  readonly label = input('');
+  public readonly label = input('');
 
   protected checked(): boolean {
-    return this.mode() === 'all'
-      ? this.table().getIsAllRowsSelected()
-      : (this.row()?.getIsSelected() ?? false);
+    return this.mode() === 'all' ? this.table().getIsAllRowsSelected() : (this.row()?.getIsSelected() ?? false);
   }
 
   protected indeterminate(): boolean {
@@ -62,8 +57,7 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
 
     if (explicit) return explicit;
 
-    const labels: NatTableAccessibilitySelectionLabels =
-      this.tableUiIntl().selection?.accessibilityLabels ?? {};
+    const labels: NatTableAccessibilitySelectionLabels = this.tableUiIntl().selection?.accessibilityLabels ?? {};
 
     if (this.mode() === 'all') {
       return labels.selectAllAriaLabel ?? '';
@@ -73,23 +67,18 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
   }
 
   protected onChange(event: Event): void {
-    const handler =
-      this.mode() === 'all'
-        ? this.table().getToggleAllRowsSelectedHandler()
-        : this.row()?.getToggleSelectedHandler();
+    const handler = this.mode() === 'all' ? this.table().getToggleAllRowsSelectedHandler() : this.row()?.getToggleSelectedHandler();
 
     handler?.(event);
   }
 
-  private tableUiIntl() {
+  private tableUiIntl(): ReturnType<typeof resolveNatTableUiIntl> {
     return resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId());
   }
 
   private localeId(): string {
     const tableMeta = this.table().options.meta as { natTableLocaleId?: unknown } | undefined;
 
-    return typeof tableMeta?.natTableLocaleId === 'string'
-      ? tableMeta.natTableLocaleId
-      : NAT_TABLE_UI_ENGLISH_LOCALE;
+    return typeof tableMeta?.natTableLocaleId === 'string' ? tableMeta.natTableLocaleId : NAT_TABLE_UI_ENGLISH_LOCALE;
   }
 }

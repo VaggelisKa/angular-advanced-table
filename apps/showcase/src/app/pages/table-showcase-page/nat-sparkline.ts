@@ -4,18 +4,60 @@ import type { SparkTrend } from './table-simulation';
 
 const VIEWBOX_HEIGHT = 100;
 
+const pointBounds = (points: readonly number[]): { min: number; range: number } => {
+  let min = points[0];
+  let max = points[0];
+
+  for (const point of points) {
+    if (point < min) {
+      min = point;
+    }
+
+    if (point > max) {
+      max = point;
+    }
+  }
+
+  const range = max - min || Math.abs(max) * 0.01 || 1;
+
+  return { min, range };
+};
+
+const buildLinePath = (points: readonly number[]): string => {
+  if (!points.length) {
+    return '';
+  }
+
+  const { min, range } = pointBounds(points);
+  let path = '';
+
+  for (let index = 0; index < points.length; index += 1) {
+    const x = index;
+    const y = VIEWBOX_HEIGHT - ((points[index] - min) / range) * VIEWBOX_HEIGHT;
+
+    path += `${index === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
+  }
+
+  return path;
+};
+
+const buildAreaPath = (points: readonly number[]): string => {
+  if (!points.length) {
+    return '';
+  }
+
+  const line = buildLinePath(points);
+  const endX = points.length - 1;
+
+  return `${line}L${endX.toFixed(2)} ${VIEWBOX_HEIGHT}L0 ${VIEWBOX_HEIGHT}Z`;
+};
+
 @Component({
   selector: 'nat-sparkline',
   template: `
-    <svg
-      class="sparkline"
-      [attr.viewBox]="viewBox()"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path class="sparkline-area" [attr.d]="areaPath()" />
-      <path class="sparkline-line" [attr.d]="linePath()" />
+    <svg [attr.viewBox]="viewBox()" aria-hidden="true" class="sparkline" focusable="false" preserveAspectRatio="none">
+      <path [attr.d]="areaPath()" class="sparkline-area" />
+      <path [attr.d]="linePath()" class="sparkline-line" />
     </svg>
   `,
   styles: `
@@ -55,62 +97,19 @@ const VIEWBOX_HEIGHT = 100;
     }
   `,
   host: {
-    '[attr.data-trend]': 'trend()',
-  },
+    '[attr.data-trend]': 'trend()'
+  }
 })
 export class NatSparkline {
-  readonly points = input.required<readonly number[]>();
-  readonly trend = input<SparkTrend>('flat');
+  public readonly points = input.required<readonly number[]>();
+  public readonly trend = input<SparkTrend>('flat');
 
   protected readonly viewBox = computed(() => {
     const width = Math.max(this.points().length - 1, 1);
+
     return `0 0 ${width} ${VIEWBOX_HEIGHT}`;
   });
 
   protected readonly linePath = computed(() => buildLinePath(this.points()));
   protected readonly areaPath = computed(() => buildAreaPath(this.points()));
-}
-
-function buildLinePath(points: readonly number[]): string {
-  if (!points.length) {
-    return '';
-  }
-
-  const { min, range } = pointBounds(points);
-  let path = '';
-
-  for (let index = 0; index < points.length; index += 1) {
-    const x = index;
-    const y = VIEWBOX_HEIGHT - ((points[index] - min) / range) * VIEWBOX_HEIGHT;
-    path += `${index === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
-  }
-
-  return path;
-}
-
-function buildAreaPath(points: readonly number[]): string {
-  if (!points.length) {
-    return '';
-  }
-
-  const line = buildLinePath(points);
-  const endX = points.length - 1;
-  return `${line}L${endX.toFixed(2)} ${VIEWBOX_HEIGHT}L0 ${VIEWBOX_HEIGHT}Z`;
-}
-
-function pointBounds(points: readonly number[]): { min: number; range: number } {
-  let min = points[0];
-  let max = points[0];
-
-  for (const point of points) {
-    if (point < min) {
-      min = point;
-    }
-    if (point > max) {
-      max = point;
-    }
-  }
-
-  const range = max - min || Math.abs(max) * 0.01 || 1;
-  return { min, range };
 }

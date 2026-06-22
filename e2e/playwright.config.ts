@@ -13,12 +13,12 @@ export default defineConfig({
     baseURL: 'http://localhost:4201',
     ...devices['Desktop Chrome'],
     channel: 'chrome',
-    viewport: { width: 1600, height: 900 },
+    viewport: { width: 1600, height: 900 }
   },
   webServer: {
     command: 'pnpm exec nx run showcase:serve-e2e --port 4201',
     url: 'http://localhost:4201',
     reuseExistingServer: !process.env['CI'],
-    timeout: 180_000,
-  },
+    timeout: 180_000
+  }
 });

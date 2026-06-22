@@ -19,12 +19,7 @@ Most companion controls should live inside `NatTableSurface`. The surface create
 <nat-table-surface [initialState]="initialState">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-  <nat-table
-    [data]="rows()"
-    [columns]="columns"
-    [getRowId]="getRowId"
-    accessibleName="Open positions"
-  />
+  <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
 
   <nat-table-scroll-control />
   <nat-table-column-visibility />
@@ -145,9 +140,8 @@ import { NatTableService, NatToolbarItem } from 'ng-advanced-table-ui';
       [attr.aria-label]="label()"
       [value]="value()"
       [placeholder]="placeholder()"
-      (input)="onInput($event)"
-    />
-  `,
+      (input)="onInput($event)" />
+  `
 })
 export class TableSearch<TData extends RowData = RowData> {
   readonly label = input('Search table');
@@ -173,7 +167,7 @@ export class TableSearch<TData extends RowData = RowData> {
 
     this.controller()?.patchState({
       globalFilter: target.value,
-      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 }),
+      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 })
     });
   }
 }

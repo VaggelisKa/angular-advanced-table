@@ -1,36 +1,32 @@
 /** Formats numbers used in render-metrics labels and values. */
-export type NatTableUtilsNumberFormatter = (
-  value: number,
-  options?: Intl.NumberFormatOptions,
-  locale?: string,
-) => string;
+export type NatTableUtilsNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
 
 export type RowRenderTone = 'fast' | 'watch' | 'slow';
 
-export interface RowRenderFilterOption {
+export type RowRenderFilterOption = {
   readonly value: RowRenderTone | 'all';
   readonly label: string;
   readonly description: string;
-}
+};
 
 /** Context passed to row-count label formatters. */
-export interface NatTableRenderMetricsRowCountContext {
+export type NatTableRenderMetricsRowCountContext = {
   /** Numeric row count. */
   rowCountValue: number;
   /** Provider-formatted text for `rowCountValue`. */
   rowCountText: string;
-}
+};
 
 /** Context passed to duration label formatters. */
-export interface NatTableRenderMetricsDurationContext {
+export type NatTableRenderMetricsDurationContext = {
   /** Duration in milliseconds. */
   durationMsValue: number;
   /** Provider-formatted text for `durationMsValue`. */
   durationMsText: string;
-}
+};
 
 /** Labels used by render-metrics filters. */
-export interface NatTableRenderMetricsFilterIntl {
+export type NatTableRenderMetricsFilterIntl = {
   /** Visible label for the filter control. */
   heading?: string;
   /** Group label for the filter chips. */
@@ -41,10 +37,10 @@ export interface NatTableRenderMetricsFilterIntl {
   rowSampleCaption?: (context: NatTableRenderMetricsRowCountContext) => string;
   /** Filter chip labels and descriptions. */
   options?: readonly RowRenderFilterOption[];
-}
+};
 
 /** Labels used by render-metrics panels. */
-export interface NatTableRenderMetricsPanelIntl {
+export type NatTableRenderMetricsPanelIntl = {
   /** Label applied to the KPI panel. */
   ariaLabel?: string;
   /** Visible label for the current tone. */
@@ -55,10 +51,10 @@ export interface NatTableRenderMetricsPanelIntl {
   rowSampleSummary?: (context: NatTableRenderMetricsRowCountContext) => string;
   /** Visible duration text. */
   duration?: (context: NatTableRenderMetricsDurationContext) => string;
-}
+};
 
 /** Defaults used by render-metrics columns. */
-export interface NatTableRenderMetricsColumnIntl {
+export type NatTableRenderMetricsColumnIntl = {
   /** Static header label. */
   header?: string;
   /** Cell label when no metric has been recorded yet. */
@@ -67,26 +63,26 @@ export interface NatTableRenderMetricsColumnIntl {
   unitSuffix?: string;
   /** Visible cell duration text. */
   duration?: (context: NatTableRenderMetricsDurationContext) => string;
-}
+};
 
 /** App or feature-level defaults for render-metrics helper copy. */
-export interface NatTableRenderMetricsIntl {
+export type NatTableRenderMetricsIntl = {
   filter?: NatTableRenderMetricsFilterIntl;
   panel?: NatTableRenderMetricsPanelIntl;
   column?: NatTableRenderMetricsColumnIntl;
-}
+};
 
 /** Locale-specific defaults for `ng-advanced-table-utils`. */
-export interface NatTableUtilsIntl {
+export type NatTableUtilsIntl = {
   renderMetrics?: NatTableRenderMetricsIntl;
   /** Number formatter used for row counts and durations. */
   formatNumber?: NatTableUtilsNumberFormatter;
-}
+};
 
-export interface NatTableUtilsIntlConfig {
+export type NatTableUtilsIntlConfig = {
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableUtilsIntl>;
-}
+};
 
 export type NatTableUtilsIntlProviderConfig = NatTableUtilsIntl | NatTableUtilsIntlConfig;
 

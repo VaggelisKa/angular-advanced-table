@@ -8,7 +8,7 @@ describe('TableSimulation', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
     service = TestBed.inject(TableSimulation);
     service.pause();
@@ -19,7 +19,7 @@ describe('TableSimulation', () => {
   });
 
   it('should create a dataset that matches the default size', () => {
-    expect(service.rows().length).toBe(service.datasetSize());
+    expect(service.rows()).toHaveLength(service.datasetSize());
   });
 
   it('should seed rows with trading metrics', () => {
@@ -33,7 +33,7 @@ describe('TableSimulation', () => {
   it('should seed every row with a full sparkline history', () => {
     const rows = service.rows();
 
-    expect(rows[0].priceHistory.length).toBe(SPARK_HISTORY_LENGTH);
+    expect(rows[0].priceHistory).toHaveLength(SPARK_HISTORY_LENGTH);
     expect(rows[0].priceHistory[SPARK_HISTORY_LENGTH - 1]).toBeCloseTo(rows[0].price, 2);
     expect(['up', 'down', 'flat']).toContain(rows[0].sparkTrend);
   });
@@ -45,8 +45,11 @@ describe('TableSimulation', () => {
 
     const row = service.rows().find((candidate) => candidate.priceHistory.length > 0);
 
-    expect(row).toBeDefined();
-    expect(row!.priceHistory.length).toBeLessThanOrEqual(SPARK_HISTORY_LENGTH);
+    if (!row) {
+      throw new Error('Expected at least one row with sparkline history.');
+    }
+
+    expect(row.priceHistory.length).toBeLessThanOrEqual(SPARK_HISTORY_LENGTH);
   });
 
   it('should mutate rows when a pulse runs', () => {

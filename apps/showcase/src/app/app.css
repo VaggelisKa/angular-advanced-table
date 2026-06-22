@@ -400,9 +400,7 @@
   transition: transform 140ms ease;
 }
 
-.showcase-nav-tree-branch[aria-expanded='true']
-  > .showcase-nav-tree-row
-  .showcase-nav-tree-chevron {
+.showcase-nav-tree-branch[aria-expanded='true'] > .showcase-nav-tree-row .showcase-nav-tree-chevron {
   transform: rotate(90deg);
 }
 

@@ -37,38 +37,33 @@ interface PositionRow {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface>
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        [getRowId]="getRowId"
-        accessibleName="Open positions"
-      />
+      <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
     </nat-table-surface>
-  `,
+  `
 })
 export class PositionsTable {
   readonly rows = signal<readonly PositionRow[]>([
     { id: 'pos-1', symbol: 'AAPL', desk: 'Momentum', price: 214.3 },
-    { id: 'pos-2', symbol: 'MSFT', desk: 'Core', price: 489.1 },
+    { id: 'pos-2', symbol: 'MSFT', desk: 'Core', price: 489.1 }
   ]);
 
   readonly columns: ColumnDef<PositionRow>[] = [
     {
       accessorKey: 'symbol',
       header: 'Symbol',
-      meta: { label: 'Symbol', rowHeader: true },
+      meta: { label: 'Symbol', rowHeader: true }
     },
     {
       accessorKey: 'desk',
       header: 'Desk',
-      meta: { label: 'Desk' },
+      meta: { label: 'Desk' }
     },
     {
       accessorKey: 'price',
       header: 'Price',
       meta: { label: 'Price', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toFixed(2)}`,
-    },
+      cell: (context) => `$${context.getValue<number>().toFixed(2)}`
+    }
   ];
 
   readonly getRowId = (row: PositionRow) => row.id;
@@ -105,14 +100,7 @@ interface PositionRow {
   selector: 'app-core-only-table',
   imports: [NatTable],
   providers: [NatTableService],
-  template: `
-    <nat-table
-      [data]="rows()"
-      [columns]="columns"
-      [getRowId]="getRowId"
-      accessibleName="Core-only positions"
-    />
-  `,
+  template: ` <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Core-only positions" /> `
 })
 export class CoreOnlyTable {
   readonly rows = signal<readonly PositionRow[]>([]);
@@ -120,8 +108,8 @@ export class CoreOnlyTable {
     {
       accessorKey: 'symbol',
       header: 'Symbol',
-      meta: { label: 'Symbol', rowHeader: true },
-    },
+      meta: { label: 'Symbol', rowHeader: true }
+    }
   ];
   readonly getRowId = (row: PositionRow) => row.id;
 }
@@ -141,7 +129,7 @@ import {
   NatTablePagination,
   NatTableScrollControl,
   NatTableSurface,
-  withNatTableHeaderActions,
+  withNatTableHeaderActions
 } from 'ng-advanced-table-ui';
 
 interface PositionRow {
@@ -153,53 +141,42 @@ interface PositionRow {
 
 @Component({
   selector: 'app-positions-table',
-  imports: [
-    NatTable,
-    NatTableColumnVisibility,
-    NatTablePagination,
-    NatTableScrollControl,
-    NatTableSurface,
-  ],
+  imports: [NatTable, NatTableColumnVisibility, NatTablePagination, NatTableScrollControl, NatTableSurface],
   template: `
     <nat-table-surface [initialState]="initialState">
       <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        [getRowId]="getRowId"
-        accessibleName="Open positions"
-      />
+      <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
 
       <nat-table-scroll-control />
       <nat-table-column-visibility />
     </nat-table-surface>
-  `,
+  `
 })
 export class PositionsTable {
   readonly rows = signal<readonly PositionRow[]>([]);
   readonly getRowId = (row: PositionRow) => row.id;
   readonly initialState: Partial<NatTableState> = {
-    pagination: { pageIndex: 0, pageSize: 25 },
+    pagination: { pageIndex: 0, pageSize: 25 }
   };
 
   readonly columns: ColumnDef<PositionRow>[] = withNatTableHeaderActions([
     {
       accessorKey: 'symbol',
       header: 'Symbol',
-      meta: { label: 'Symbol', rowHeader: true },
+      meta: { label: 'Symbol', rowHeader: true }
     },
     {
       accessorKey: 'desk',
       header: 'Desk',
-      meta: { label: 'Desk' },
+      meta: { label: 'Desk' }
     },
     {
       accessorKey: 'price',
       header: 'Price',
       meta: { label: 'Price', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toFixed(2)}`,
-    },
+      cell: (context) => `$${context.getValue<number>().toFixed(2)}`
+    }
   ]);
 }
 ```

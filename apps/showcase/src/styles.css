@@ -114,8 +114,7 @@ input {
   --showcase-page-radius: 10px;
   --showcase-page-radius-sm: 6px;
   --showcase-page-radius-xs: 4px;
-  --showcase-page-mono-font:
-    'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
+  --showcase-page-mono-font: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
   --showcase-page-shadow: 0 1px 2px rgba(15, 20, 25, 0.04), 0 8px 24px rgba(15, 20, 25, 0.06);
   --showcase-page-shadow-sm: 0 1px 2px rgba(15, 20, 25, 0.04);
 
@@ -331,8 +330,7 @@ input {
   --nat-table-color-divider: var(--showcase-page-border);
   --nat-table-color-divider-subtle: var(--showcase-page-border);
 
-  --nat-table-font-family:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --nat-table-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --nat-table-font-size-header: 0.7rem;
   --nat-table-font-size-label: 0.7rem;
   --nat-table-font-size-caption: 0.78rem;
@@ -407,8 +405,7 @@ input {
   --nat-table-search-border-color: var(--showcase-page-border);
   --nat-table-search-border-color-hover: var(--showcase-page-border-strong);
   --nat-table-search-border-color-focus: var(--showcase-page-accent);
-  --nat-table-search-focus-ring: 0 0 0 3px
-    color-mix(in srgb, var(--showcase-page-accent) 22%, transparent);
+  --nat-table-search-focus-ring: 0 0 0 3px color-mix(in srgb, var(--showcase-page-accent) 22%, transparent);
 
   --nat-table-chip-color: var(--showcase-page-text-soft);
   --nat-table-chip-background: var(--showcase-page-surface);
@@ -416,11 +413,7 @@ input {
   --nat-table-chip-background-active: var(--showcase-page-accent-soft);
   --nat-table-chip-border-color: var(--showcase-page-border);
   --nat-table-chip-border-color-hover: var(--showcase-page-border-strong);
-  --nat-table-chip-border-color-active: color-mix(
-    in srgb,
-    var(--showcase-page-accent) 45%,
-    transparent
-  );
+  --nat-table-chip-border-color-active: color-mix(in srgb, var(--showcase-page-accent) 45%, transparent);
   --nat-table-chip-shadow-active: none;
   --nat-table-chip-count-color: var(--showcase-page-text-muted);
 
@@ -444,16 +437,8 @@ input {
   --nat-table-sort-icon-color-active: var(--showcase-page-accent);
   --nat-table-sort-icon-color-idle: var(--showcase-page-text-soft);
   --nat-table-sort-icon-color-hover: var(--showcase-page-text);
-  --nat-table-sort-icon-color-muted: color-mix(
-    in srgb,
-    var(--showcase-page-text-muted) 60%,
-    transparent
-  );
-  --nat-table-sort-icon-color-disabled: color-mix(
-    in srgb,
-    var(--showcase-page-text-muted) 45%,
-    transparent
-  );
+  --nat-table-sort-icon-color-muted: color-mix(in srgb, var(--showcase-page-text-muted) 60%, transparent);
+  --nat-table-sort-icon-color-disabled: color-mix(in srgb, var(--showcase-page-text-muted) 45%, transparent);
   --nat-table-sort-icon-chip-background: transparent;
   --nat-table-sort-icon-chip-background-hover: var(--showcase-page-surface-hover);
   --nat-table-sort-icon-chip-background-active: var(--showcase-page-accent-soft);
@@ -464,11 +449,7 @@ input {
   --nat-table-pin-border-color: transparent;
   --nat-table-pin-color: var(--showcase-page-text-muted);
   --nat-table-pin-color-pinned: var(--showcase-page-accent);
-  --nat-table-pin-border-color-pinned: color-mix(
-    in srgb,
-    var(--showcase-page-accent) 40%,
-    transparent
-  );
+  --nat-table-pin-border-color-pinned: color-mix(in srgb, var(--showcase-page-accent) 40%, transparent);
   --nat-table-pin-shadow-pinned: none;
 
   --nat-table-row-background: transparent;

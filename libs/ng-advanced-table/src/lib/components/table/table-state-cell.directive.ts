@@ -1,10 +1,10 @@
-import { afterEveryRender, Directive, ElementRef, inject } from '@angular/core';
+import { Directive, ElementRef, afterEveryRender, inject } from '@angular/core';
 
 import {
-  handleCellInteractionFocusIn,
-  handleCellInteractionKeydown,
   NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE,
   ROW_ACTIVATE_INTERACTIVE_SELECTOR,
+  handleCellInteractionFocusIn,
+  handleCellInteractionKeydown
 } from './cell-interaction';
 import { NatTableService } from './table.service';
 
@@ -12,14 +12,14 @@ import { NatTableService } from './table.service';
   selector: '[natTableStateCell]',
   host: {
     '(keydown)': 'onKeydown($event)',
-    '(focusin)': 'onFocusIn($event)',
-  },
+    '(focusin)': 'onFocusIn($event)'
+  }
 })
 export class NatTableStateCell {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly natTableService = inject(NatTableService);
 
-  constructor() {
+  public constructor() {
     afterEveryRender(() => this.prepareControls());
   }
 
@@ -27,15 +27,13 @@ export class NatTableStateCell {
     handleCellInteractionKeydown(event, this.natTableService.keyboard().cellInteraction);
   }
 
-
-  protected onFocusIn(event: FocusEvent): void {
-    handleCellInteractionFocusIn(event);
-  }
+  // Host (focusin) handler. Bound to the imported helper directly — the cell
+  // delegation rule needs no instance state, so this is a function reference,
+  // not a method (keeps it off `class-methods-use-this`).
+  protected readonly onFocusIn = handleCellInteractionFocusIn;
 
   private prepareControls(): void {
-    const controls = this.elementRef.nativeElement.querySelectorAll<HTMLElement>(
-      ROW_ACTIVATE_INTERACTIVE_SELECTOR,
-    );
+    const controls = this.elementRef.nativeElement.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR);
 
     for (const control of controls) {
       if (control.hasAttribute('ngGridCellWidget') || control.hasAttribute('disabled')) {

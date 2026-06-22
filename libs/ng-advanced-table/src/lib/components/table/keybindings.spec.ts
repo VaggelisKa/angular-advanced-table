@@ -1,70 +1,72 @@
-import { vi } from 'vitest';
-import * as keybindingsModule from './keybindings';
+/* eslint-disable max-lines -- large integration spec */
 import {
-  parseShortcutString,
-  normalizeShortcut,
+  DEFAULT_NAT_TABLE_KEYBINDINGS,
+  areShortcutValuesOverlapping,
+  areShortcutsEqual,
+  createNatTableKeyboard,
   matchShortcut,
   matchShortcutValue,
   mergeNatTableKeybindings,
+  normalizeShortcut,
+  parseShortcutString,
   serializeShortcutValue,
-  validateKeybindings,
-  areShortcutsEqual,
-  areShortcutValuesOverlapping,
-  DEFAULT_NAT_TABLE_KEYBINDINGS,
-  createNatTableKeyboard,
-  type NatTableShortcut,
-  type NatTableKeybindings,
+  validateKeybindings
 } from './keybindings';
+import type { NatTableKeybindings, NatTableShortcut } from './keybindings';
 
 describe('NatTable Keybindings Utilities', () => {
   describe('parseShortcutString', () => {
     it('should parse single keys with no modifiers', () => {
       const parsed = parseShortcutString('Enter');
-      expect(parsed).toEqual({
+
+      expect(parsed).toStrictEqual({
         key: 'Enter',
         ctrlKey: false,
         altKey: false,
         shiftKey: false,
-        metaKey: false,
+        metaKey: false
       });
     });
 
     it('should parse key combinations with modifiers', () => {
       const parsed = parseShortcutString('Alt+Shift+ArrowLeft');
-      expect(parsed).toEqual({
+
+      expect(parsed).toStrictEqual({
         key: 'ArrowLeft',
         ctrlKey: false,
         altKey: true,
         shiftKey: true,
-        metaKey: false,
+        metaKey: false
       });
     });
 
     it('should support alternative modifier names like Control/Cmd/Win', () => {
       const parsed = parseShortcutString('Control+Cmd+a');
-      expect(parsed).toEqual({
+
+      expect(parsed).toStrictEqual({
         key: 'a',
         ctrlKey: true,
         altKey: false,
         shiftKey: false,
-        metaKey: true,
+        metaKey: true
       });
     });
 
     it('should correctly handle the plus (+) key when used with modifiers', () => {
       const parsed = parseShortcutString('Ctrl++');
-      expect(parsed).toEqual({
+
+      expect(parsed).toStrictEqual({
         key: '+',
         ctrlKey: true,
         altKey: false,
         shiftKey: false,
-        metaKey: false,
+        metaKey: false
       });
     });
   });
 
   describe('Mod / CmdOrCtrl key translation', () => {
-    let originalNavigator: any;
+    let originalNavigator: Navigator;
 
     beforeEach(() => {
       originalNavigator = globalThis.navigator;
@@ -74,7 +76,7 @@ describe('NatTable Keybindings Utilities', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: originalNavigator,
         configurable: true,
-        writable: true,
+        writable: true
       });
     });
 
@@ -82,18 +84,19 @@ describe('NatTable Keybindings Utilities', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: {
           userAgent: 'macintosh',
-          platform: 'macintel',
+          platform: 'macintel'
         },
         configurable: true,
-        writable: true,
+        writable: true
       });
       const parsed = parseShortcutString('Mod+a');
-      expect(parsed).toEqual({
+
+      expect(parsed).toStrictEqual({
         key: 'a',
         ctrlKey: false,
         altKey: false,
         shiftKey: false,
-        metaKey: true,
+        metaKey: true
       });
     });
 
@@ -101,18 +104,19 @@ describe('NatTable Keybindings Utilities', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: {
           userAgent: 'windows',
-          platform: 'win32',
+          platform: 'win32'
         },
         configurable: true,
-        writable: true,
+        writable: true
       });
       const parsed = parseShortcutString('Mod+a');
-      expect(parsed).toEqual({
+
+      expect(parsed).toStrictEqual({
         key: 'a',
         ctrlKey: true,
         altKey: false,
         shiftKey: false,
-        metaKey: false,
+        metaKey: false
       });
     });
 
@@ -121,34 +125,34 @@ describe('NatTable Keybindings Utilities', () => {
       Object.defineProperty(globalThis, 'navigator', {
         value: {
           userAgent: 'macintosh',
-          platform: 'macintel',
+          platform: 'macintel'
         },
         configurable: true,
-        writable: true,
+        writable: true
       });
-      expect(normalizeShortcut({ key: 'ArrowLeft', cmdOrCtrlKey: true })).toEqual({
+      expect(normalizeShortcut({ key: 'ArrowLeft', cmdOrCtrlKey: true })).toStrictEqual({
         key: 'ArrowLeft',
         ctrlKey: false,
         altKey: false,
         shiftKey: false,
-        metaKey: true,
+        metaKey: true
       });
 
       // Windows/Linux
       Object.defineProperty(globalThis, 'navigator', {
         value: {
           userAgent: 'windows',
-          platform: 'win32',
+          platform: 'win32'
         },
         configurable: true,
-        writable: true,
+        writable: true
       });
-      expect(normalizeShortcut({ key: 'ArrowLeft', cmdOrCtrlKey: true })).toEqual({
+      expect(normalizeShortcut({ key: 'ArrowLeft', cmdOrCtrlKey: true })).toStrictEqual({
         key: 'ArrowLeft',
         ctrlKey: true,
         altKey: false,
         shiftKey: false,
-        metaKey: false,
+        metaKey: false
       });
     });
   });
@@ -156,6 +160,7 @@ describe('NatTable Keybindings Utilities', () => {
   describe('normalizeShortcut', () => {
     it('should parse a string representation', () => {
       const parsed = normalizeShortcut('Ctrl+Alt+Delete');
+
       expect(parsed.key).toBe('Delete');
       expect(parsed.ctrlKey).toBe(true);
       expect(parsed.altKey).toBe(true);
@@ -164,12 +169,13 @@ describe('NatTable Keybindings Utilities', () => {
     it('should normalize a partial shortcut object, filling in missing modifiers with false', () => {
       const partial: NatTableShortcut = { key: 'ArrowDown', ctrlKey: true };
       const normalized = normalizeShortcut(partial);
-      expect(normalized).toEqual({
+
+      expect(normalized).toStrictEqual({
         key: 'ArrowDown',
         ctrlKey: true,
         altKey: false,
         shiftKey: false,
-        metaKey: false,
+        metaKey: false
       });
     });
   });
@@ -179,8 +185,9 @@ describe('NatTable Keybindings Utilities', () => {
       const event = new KeyboardEvent('keydown', {
         key: 'ArrowLeft',
         altKey: true,
-        shiftKey: true,
+        shiftKey: true
       });
+
       expect(matchShortcut(event, 'Alt+Shift+ArrowLeft')).toBe(true);
     });
 
@@ -188,15 +195,17 @@ describe('NatTable Keybindings Utilities', () => {
       const event = new KeyboardEvent('keydown', {
         key: 'ArrowLeft',
         altKey: true,
-        shiftKey: false, // missing Shift
+        shiftKey: false // missing Shift
       });
+
       expect(matchShortcut(event, 'Alt+Shift+ArrowLeft')).toBe(false);
     });
 
     it('should match a KeyboardEvent against a shortcut object', () => {
       const event = new KeyboardEvent('keydown', {
-        key: 'Enter',
+        key: 'Enter'
       });
+
       expect(matchShortcut(event, { key: 'Enter' })).toBe(true);
     });
   });
@@ -204,16 +213,19 @@ describe('NatTable Keybindings Utilities', () => {
   describe('matchShortcutValue', () => {
     it('should match against a single value', () => {
       const event = new KeyboardEvent('keydown', { key: 'Escape' });
+
       expect(matchShortcutValue(event, 'Escape')).toBe(true);
     });
 
     it('should match against an array of values', () => {
       const event = new KeyboardEvent('keydown', { key: 'Spacebar' });
+
       expect(matchShortcutValue(event, ['Enter', ' ', 'Spacebar'])).toBe(true);
     });
 
     it('should return false if value is undefined', () => {
       const event = new KeyboardEvent('keydown', { key: 'Enter' });
+
       expect(matchShortcutValue(event, undefined)).toBe(false);
     });
   });
@@ -221,14 +233,13 @@ describe('NatTable Keybindings Utilities', () => {
   describe('mergeNatTableKeybindings', () => {
     it('should fall back to defaults when empty overrides are provided', () => {
       const merged = mergeNatTableKeybindings({}, {});
-      expect(merged).toEqual(DEFAULT_NAT_TABLE_KEYBINDINGS);
+
+      expect(merged).toStrictEqual(DEFAULT_NAT_TABLE_KEYBINDINGS);
     });
 
     it('should merge and prioritize overrides', () => {
-      const merged = mergeNatTableKeybindings(
-        { rowActivate: 'Space' },
-        { columnReorderLeft: 'Ctrl+ArrowLeft' },
-      );
+      const merged = mergeNatTableKeybindings({ rowActivate: 'Space' }, { columnReorderLeft: 'Ctrl+ArrowLeft' });
+
       expect(merged.rowActivate).toBe('Space');
       expect(merged.columnReorderLeft).toBe('Ctrl+ArrowLeft');
       expect(merged.columnReorderRight).toBe(DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderRight);
@@ -251,14 +262,16 @@ describe('NatTable Keybindings Utilities', () => {
         ctrlKey: true,
         altKey: true,
         shiftKey: true,
-        metaKey: true,
+        metaKey: true
       };
+
       // Alphabetical order: Alt, Control, Meta, Shift
       expect(serializeShortcutValue(shortcut)).toBe('Alt+Control+Meta+Shift+a');
     });
 
     it('should serialize array shortcut values separated by spaces', () => {
       const value = ['Enter', ' ', { key: 'ArrowLeft', altKey: true, shiftKey: true }];
+
       expect(serializeShortcutValue(value)).toBe('Enter Space Alt+Shift+ArrowLeft');
     });
   });
@@ -289,19 +302,21 @@ describe('NatTable Keybindings Utilities', () => {
   describe('validateKeybindings', () => {
     it('should return no warnings for standard/default keybindings', () => {
       const warnings = validateKeybindings(DEFAULT_NAT_TABLE_KEYBINDINGS);
-      expect(warnings).toEqual([]);
+
+      expect(warnings).toStrictEqual([]);
     });
 
     it('should return warnings when multiple actions register conflicting shortcuts', () => {
       const conflicting: Required<NatTableKeybindings> = {
         ...DEFAULT_NAT_TABLE_KEYBINDINGS,
         columnReorderLeft: 'Alt+Shift+ArrowLeft',
-        columnReorderRight: 'Alt+Shift+ArrowLeft', // conflict!
+        columnReorderRight: 'Alt+Shift+ArrowLeft' // conflict!
       };
       const warnings = validateKeybindings(conflicting);
-      expect(warnings.length).toBe(1);
-      expect(warnings[0]).toContain("columnReorderLeft");
-      expect(warnings[0]).toContain("columnReorderRight");
+
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain('columnReorderLeft');
+      expect(warnings[0]).toContain('columnReorderRight');
     });
   });
 
@@ -312,6 +327,7 @@ describe('NatTable Keybindings Utilities', () => {
       // Test enter
       const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
       const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+
       expect(keyboard.cellInteraction.enter(enterEvent)).toBe(true);
       expect(keyboard.cellInteraction.enter(escapeEvent)).toBe(false);
 
@@ -321,6 +337,7 @@ describe('NatTable Keybindings Utilities', () => {
       // Test rowActivate
       expect(keyboard.rowActivate(enterEvent)).toBe(true);
       const spaceEvent = new KeyboardEvent('keydown', { key: ' ' });
+
       expect(keyboard.rowActivate(spaceEvent)).toBe(true);
 
       // Test columnReorderDirection
@@ -333,19 +350,19 @@ describe('NatTable Keybindings Utilities', () => {
         altKey: leftShortcut.altKey,
         ctrlKey: leftShortcut.ctrlKey,
         metaKey: leftShortcut.metaKey,
-        shiftKey: leftShortcut.shiftKey,
+        shiftKey: leftShortcut.shiftKey
       });
       const rightEvent = new KeyboardEvent('keydown', {
         key: rightShortcut.key,
         altKey: rightShortcut.altKey,
         ctrlKey: rightShortcut.ctrlKey,
         metaKey: rightShortcut.metaKey,
-        shiftKey: rightShortcut.shiftKey,
+        shiftKey: rightShortcut.shiftKey
       });
+
       expect(keyboard.columnReorderDirection(leftEvent)).toBe(-1);
       expect(keyboard.columnReorderDirection(rightEvent)).toBe(1);
       expect(keyboard.columnReorderDirection(enterEvent)).toBeNull();
     });
   });
 });
-

@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 
 import { withRenderMetricsColumn } from './column';
@@ -8,10 +8,10 @@ import { provideNatTableUtilsIntl } from './intl';
 import { NatTableRenderMetricsStore } from './store';
 import { RENDER_METRIC_COLUMN_ID } from './types';
 
-interface Row {
+type Row = {
   id: string;
   name: string;
-}
+};
 
 @Component({
   providers: [
@@ -21,32 +21,53 @@ interface Row {
         column: {
           header: 'Provider paint',
           pendingLabel: 'Provider pending',
-          duration: ({ durationMsText }) => `Provider ${durationMsText}`,
-        },
-      },
-    }),
+          duration: ({ durationMsText }) => `Provider ${durationMsText}`
+        }
+      }
+    })
   ],
-  template: '',
+  selector: 'nat-test-host',
+  template: ''
 })
 class ProviderColumnHost {
-  readonly store = new NatTableRenderMetricsStore();
-  readonly columns = withRenderMetricsColumn<Row>([], this.store);
-  readonly columnsWithOptions = withRenderMetricsColumn<Row>([], this.store, {
+  public readonly store = new NatTableRenderMetricsStore();
+  public readonly columns = withRenderMetricsColumn<Row>([], this.store);
+  public readonly columnsWithOptions = withRenderMetricsColumn<Row>([], this.store, {
     header: 'Input paint',
     pendingLabel: 'Input pending',
-    duration: ({ durationMsText }) => `Input ${durationMsText}`,
+    duration: ({ durationMsText }) => `Input ${durationMsText}`
   });
 }
+
+const requireDefined = <T>(value: T | undefined): T => {
+  if (value === undefined) {
+    throw new Error('Expected value to be defined.');
+  }
+
+  return value;
+};
+
+const renderMetricsCell = (column: ColumnDef<Row, unknown> | undefined, rowId: string): unknown => {
+  if (!column || typeof column.cell !== 'function') {
+    throw new Error('Expected metrics column cell renderer.');
+  }
+
+  return column.cell({
+    row: {
+      id: rowId
+    }
+  } as CellContext<Row, unknown>);
+};
 
 describe('withRenderMetricsColumn', () => {
   it('sets TanStack sizing defaults', () => {
     const columns = withRenderMetricsColumn<Row>([], new NatTableRenderMetricsStore());
-    const metricsColumn = columns.at(-1);
+    const metricsColumn = requireDefined(columns.at(-1));
 
-    expect(metricsColumn?.id).toBe(RENDER_METRIC_COLUMN_ID);
-    expect(metricsColumn?.size).toBe(110);
-    expect(metricsColumn?.minSize).toBe(80);
-    expect(metricsColumn?.maxSize).toBeUndefined();
+    expect(metricsColumn.id).toBe(RENDER_METRIC_COLUMN_ID);
+    expect(metricsColumn.size).toBe(110);
+    expect(metricsColumn.minSize).toBe(80);
+    expect(metricsColumn.maxSize).toBeUndefined();
   });
 
   it('keeps TanStack sizing options on the metrics column', () => {
@@ -54,62 +75,52 @@ describe('withRenderMetricsColumn', () => {
       {
         accessorKey: 'name',
         header: 'Name',
-        meta: { label: 'Name' },
-      },
+        meta: { label: 'Name' }
+      }
     ];
     const columns = withRenderMetricsColumn<Row>(baseColumns, new NatTableRenderMetricsStore(), {
       header: 'Paint',
       size: 144,
       minSize: 96,
-      maxSize: 180,
+      maxSize: 180
     });
-    const metricsColumn = columns.at(-1);
+    const metricsColumn = requireDefined(columns.at(-1));
+    const meta = requireDefined(metricsColumn.meta);
 
     expect(columns[0]).toBe(baseColumns[0]);
-    expect(metricsColumn?.header).toBe('Paint');
-    expect(metricsColumn?.size).toBe(144);
-    expect(metricsColumn?.minSize).toBe(96);
-    expect(metricsColumn?.maxSize).toBe(180);
-    expect(metricsColumn?.meta?.label).toBe('Paint');
-    expect(metricsColumn?.meta?.align).toBe('end');
+    expect(metricsColumn.header).toBe('Paint');
+    expect(metricsColumn.size).toBe(144);
+    expect(metricsColumn.minSize).toBe(96);
+    expect(metricsColumn.maxSize).toBe(180);
+    expect(meta.label).toBe('Paint');
+    expect(meta.align).toBe('end');
   });
 
   it('uses provider column defaults and lets per-call options override them', () => {
     TestBed.configureTestingModule({
       imports: [ProviderColumnHost],
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
     const fixture = TestBed.createComponent(ProviderColumnHost);
     const host = fixture.componentInstance;
 
-    const providerColumn = host.columns.at(-1);
-    const optionsColumn = host.columnsWithOptions.at(-1);
+    const providerColumn = requireDefined(host.columns.at(-1));
+    const optionsColumn = requireDefined(host.columnsWithOptions.at(-1));
+    const providerMeta = requireDefined(providerColumn.meta);
 
-    expect(providerColumn?.header).toBe('Provider paint');
-    expect(providerColumn?.meta?.label).toBe('Provider paint');
+    expect(providerColumn.header).toBe('Provider paint');
+    expect(providerMeta.label).toBe('Provider paint');
     expect(renderMetricsCell(providerColumn, 'row-1')).toBe('Provider pending');
 
     host.store.record({
       rowId: 'row-1',
       renderToken: 1,
-      durationMs: 12.3,
+      durationMs: 12.3
     });
 
     expect(renderMetricsCell(providerColumn, 'row-1')).toBe('Provider n12.3');
-    expect(optionsColumn?.header).toBe('Input paint');
+    expect(optionsColumn.header).toBe('Input paint');
     expect(renderMetricsCell(optionsColumn, 'missing')).toBe('Input pending');
     expect(renderMetricsCell(optionsColumn, 'row-1')).toBe('Input n12.3');
   });
 });
-
-function renderMetricsCell(column: ColumnDef<Row, unknown> | undefined, rowId: string): unknown {
-  if (!column || typeof column.cell !== 'function') {
-    throw new Error('Expected metrics column cell renderer.');
-  }
-
-  return column.cell({
-    row: {
-      id: rowId,
-    },
-  } as CellContext<Row, unknown>);
-}

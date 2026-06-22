@@ -1,37 +1,36 @@
 import type { Column, ColumnDef, RowData } from '@tanstack/angular-table';
+
 import type { NatTableUiNumberFormatter } from './table-ui-intl';
 
 export const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 
-export function sanitizePageSizeOptions(options: readonly number[]): number[] {
+const normalizeColumnLabel = (label: string | undefined): string | null => {
+  const normalized = label?.trim() ?? '';
+
+  return normalized || null;
+};
+
+export const sanitizePageSizeOptions = (options: readonly number[]): number[] => {
   const sanitized = options.map((value) => Math.trunc(value)).filter((value) => value > 0);
 
   return sanitized.length ? sanitized : [...DEFAULT_PAGE_SIZE_OPTIONS];
-}
+};
 
-export function formatNatTableAccessibilityNumber(
+export const formatNatTableAccessibilityNumber = (
   value: number,
   formatter?: NatTableUiNumberFormatter,
   options?: Intl.NumberFormatOptions,
-  locale?: string,
-): string {
-  return (
+  locale?: string
+): string =>
+  (
     formatter ??
-    ((numberValue, numberOptions, numberLocale) =>
-      new Intl.NumberFormat(numberLocale, numberOptions).format(numberValue))
+    ((numberValue, numberOptions, numberLocale): string => new Intl.NumberFormat(numberLocale, numberOptions).format(numberValue))
   )(value, options, locale);
-}
 
-export function getNatTableColumnLabel<TData extends RowData>(
-  column: Column<TData, unknown>,
-): string {
-  return resolveNatTableColumnLabel(column.columnDef, column.id);
-}
-
-export function resolveNatTableColumnLabel<TData extends RowData>(
+export const resolveNatTableColumnLabel = <TData extends RowData>(
   columnDef: ColumnDef<TData, unknown>,
-  fallbackId: string,
-): string {
+  fallbackId: string
+): string => {
   const hiddenHeaderLabel = normalizeColumnLabel(columnDef.meta?.hiddenHeaderLabel);
 
   if (hiddenHeaderLabel) {
@@ -55,10 +54,7 @@ export function resolveNatTableColumnLabel<TData extends RowData>(
   }
 
   return fallbackId || 'Column';
-}
+};
 
-function normalizeColumnLabel(label: string | undefined): string | null {
-  const normalized = label?.trim() ?? '';
-
-  return normalized || null;
-}
+export const getNatTableColumnLabel = <TData extends RowData>(column: Column<TData, unknown>): string =>
+  resolveNatTableColumnLabel(column.columnDef, column.id);

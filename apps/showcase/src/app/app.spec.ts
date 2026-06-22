@@ -1,26 +1,72 @@
+/* eslint-disable max-lines -- comprehensive app-shell unit spec */
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
-import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
 import { App } from './app';
+import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
 
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 
 @Component({
   selector: 'app-test-example',
-  template: 'Example route',
+  template: 'Example route'
 })
 class TestExamplePage {}
+
+function createTestStorage(): Storage {
+  const values = new Map<string, string>();
+
+  return {
+    get length(): number {
+      return values.size;
+    },
+    clear(): void {
+      values.clear();
+    },
+    getItem(key: string): string | null {
+      return values.get(key) ?? null;
+    },
+    key(index: number): string | null {
+      return Array.from(values.keys())[index] ?? null;
+    },
+    removeItem(key: string): void {
+      values.delete(key);
+    },
+    setItem(key: string, value: string): void {
+      values.set(key, value);
+    }
+  };
+}
+
+function readStoredExpandedNavTreeIds(): string[] {
+  const parsed: unknown = JSON.parse(globalThis.localStorage.getItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY) ?? '[]');
+
+  return Array.isArray(parsed) ? parsed.filter((sectionId): sectionId is string => typeof sectionId === 'string') : [];
+}
+
+async function waitForFocusHandoff(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve));
+}
+
+function getElement<T extends Element>(container: HTMLElement, selector: string): T {
+  const element = container.querySelector<T>(selector);
+
+  if (element === null) {
+    throw new Error(`Element not found: ${selector}`);
+  }
+
+  return element;
+}
 
 describe('App', () => {
   beforeEach(async () => {
     vi.stubGlobal('localStorage', createTestStorage());
 
     try {
-      globalThis.localStorage?.removeItem('nat-showcase-theme');
-      globalThis.localStorage?.removeItem('nat-showcase-collapsed-nav-sections');
-      globalThis.localStorage?.removeItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY);
+      globalThis.localStorage.removeItem('nat-showcase-theme');
+      globalThis.localStorage.removeItem('nat-showcase-collapsed-nav-sections');
+      globalThis.localStorage.removeItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY);
     } catch {
       // ignore
     }
@@ -32,26 +78,26 @@ describe('App', () => {
         {
           provide: DocsMarkdownCache,
           useValue: {
-            load: () => undefined,
-            preload: () => undefined,
-          },
+            load: (): undefined => undefined,
+            preload: (): undefined => undefined
+          }
         },
         provideRouter([
           {
             path: '',
             pathMatch: 'full',
-            redirectTo: 'docs/quick-start',
+            redirectTo: 'docs/quick-start'
           },
           {
             path: 'docs/quick-start',
-            component: TestExamplePage,
+            component: TestExamplePage
           },
           {
             path: 'examples/multiple-features',
-            component: TestExamplePage,
-          },
-        ]),
-      ],
+            component: TestExamplePage
+          }
+        ])
+      ]
     }).compileComponents();
   });
 
@@ -62,11 +108,13 @@ describe('App', () => {
   it('should create the app', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
+
     expect(app).toBeTruthy();
   });
 
   it('should render the docs and examples navigation shell', async () => {
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -76,32 +124,21 @@ describe('App', () => {
     expect(compiled.querySelector('.showcase-nav')?.textContent).toContain('Docs');
     expect(compiled.querySelector('.showcase-nav')?.textContent).toContain('Examples');
     const tree = compiled.querySelector('[data-testid="showcase-nav-tree"]') as HTMLElement;
-    const docsBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-docs"]',
-    ) as HTMLElement;
-    const examplesBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-examples"]',
-    ) as HTMLElement;
+    const docsBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs"]') as HTMLElement;
+    const examplesBranch = compiled.querySelector('[data-testid="showcase-nav-branch-examples"]') as HTMLElement;
 
     expect(tree.getAttribute('role')).toBe('tree');
     expect(tree.getAttribute('aria-label')).toBe('Docs and examples');
     expect(docsBranch.getAttribute('aria-expanded')).toBe('true');
     expect(examplesBranch.getAttribute('aria-expanded')).toBe('true');
-    expect(
-      compiled.querySelector('[data-testid="showcase-nav-branch-docs-foundations"]'),
-    ).not.toBeNull();
-    const docsCompositionBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-docs-composition"]',
-    ) as HTMLElement;
+    expect(compiled.querySelector('[data-testid="showcase-nav-branch-docs-foundations"]')).not.toBeNull();
+    const docsCompositionBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs-composition"]') as HTMLElement;
+
     expect(docsCompositionBranch.getAttribute('aria-label')).toBe('Composition');
-    expect(
-      docsCompositionBranch.querySelector(':scope > .showcase-nav-tree-row')?.textContent,
-    ).toContain('Composition');
+    expect(docsCompositionBranch.querySelector(':scope > .showcase-nav-tree-row')?.textContent).toContain('Composition');
     expect(docsCompositionBranch.getAttribute('aria-expanded')).toBe('false');
     expect(compiled.querySelector('[data-testid="showcase-nav-link-composition"]')).toBeNull();
-    expect(
-      compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]'),
-    ).not.toBeNull();
+    expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
     expect(compiled.querySelector('.showcase-nav-count')).toBeNull();
     expect(compiled.querySelector('.showcase-theme-control')).toBeNull();
@@ -110,39 +147,29 @@ describe('App', () => {
 
     const utilities = compiled.querySelector('.showcase-nav-utilities') as HTMLElement;
     const themeToggle = utilities.querySelector('.showcase-theme-toggle') as HTMLElement;
-    const themeOptions = Array.from(
-      utilities.querySelectorAll('.showcase-theme-option'),
-    ) as HTMLButtonElement[];
+    const themeOptions = Array.from(utilities.querySelectorAll('.showcase-theme-option')) as HTMLButtonElement[];
     const githubLink = utilities.querySelector('.showcase-github-link') as HTMLAnchorElement;
 
     expect(utilities.getAttribute('aria-label')).toBe('Showcase utilities');
-    expect(utilities.textContent?.trim()).toBe('');
+    expect(utilities.textContent.trim()).toBe('');
     expect(themeToggle.getAttribute('aria-label')).toBe('Color theme');
-    expect(themeOptions.map((option) => option.getAttribute('aria-label'))).toEqual([
-      'Use light theme',
-      'Use dark theme',
-    ]);
-    expect(githubLink.getAttribute('aria-label')).toBe(
-      'Open angular-advanced-table repository on GitHub',
-    );
+    expect(themeOptions.map((option) => option.getAttribute('aria-label'))).toEqual(['Use light theme', 'Use dark theme']);
+    expect(githubLink.getAttribute('aria-label')).toBe('Open angular-advanced-table repository on GitHub');
     expect(githubLink.getAttribute('title')).toBe('Open GitHub repository');
   });
 
   it('should collapse and expand top-level navigation tree branches', async () => {
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const examplesBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-examples"]',
-    ) as HTMLElement;
+    const examplesBranch = compiled.querySelector('[data-testid="showcase-nav-branch-examples"]') as HTMLElement;
 
     expect(examplesBranch.getAttribute('role')).toBe('treeitem');
     expect(examplesBranch.getAttribute('aria-expanded')).toBe('true');
     expect(examplesBranch.getAttribute('aria-current')).toBeNull();
-    expect(
-      compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]'),
-    ).not.toBeNull();
+    expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
 
     examplesBranch.click();
@@ -150,9 +177,7 @@ describe('App', () => {
     fixture.detectChanges();
 
     expect(examplesBranch.getAttribute('aria-expanded')).toBe('false');
-    expect(
-      compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]'),
-    ).toBeNull();
+    expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]')).toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
     expect(readStoredExpandedNavTreeIds()).toContain('docs');
     expect(readStoredExpandedNavTreeIds()).not.toContain('examples');
@@ -163,21 +188,18 @@ describe('App', () => {
     fixture.detectChanges();
 
     expect(examplesBranch.getAttribute('aria-expanded')).toBe('true');
-    expect(
-      compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]'),
-    ).not.toBeNull();
+    expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
     expect(readStoredExpandedNavTreeIds()).toContain('examples');
   });
 
   it('should expand and collapse nested navigation tree groups', async () => {
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const examplesColumnsBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-examples-columns"]',
-    ) as HTMLElement;
+    const examplesColumnsBranch = compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]') as HTMLElement;
 
     expect(examplesColumnsBranch.getAttribute('role')).toBe('treeitem');
     expect(examplesColumnsBranch.getAttribute('aria-expanded')).toBe('false');
@@ -202,21 +224,18 @@ describe('App', () => {
   });
 
   it('should restore persisted expanded top-level navigation tree branches', async () => {
-    globalThis.localStorage?.setItem(
+    globalThis.localStorage.setItem(
       EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY,
-      JSON.stringify(['docs', 'docs-foundations', 'removed-branch']),
+      JSON.stringify(['docs', 'docs-foundations', 'removed-branch'])
     );
 
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const docsBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-docs"]',
-    ) as HTMLElement;
-    const examplesBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-examples"]',
-    ) as HTMLElement;
+    const docsBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs"]') as HTMLElement;
+    const examplesBranch = compiled.querySelector('[data-testid="showcase-nav-branch-examples"]') as HTMLElement;
 
     expect(docsBranch.getAttribute('aria-expanded')).toBe('true');
     expect(compiled.querySelector('[data-testid="showcase-nav-link-quick-start"]')).not.toBeNull();
@@ -229,18 +248,13 @@ describe('App', () => {
 
     await router.navigateByUrl('/docs/quick-start');
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const docsBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-docs"]',
-    ) as HTMLElement;
-    const foundationsBranch = compiled.querySelector(
-      '[data-testid="showcase-nav-branch-docs-foundations"]',
-    ) as HTMLElement;
-    const quickStartLink = compiled.querySelector(
-      '[data-testid="showcase-nav-link-quick-start"]',
-    ) as HTMLAnchorElement;
+    const docsBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs"]') as HTMLElement;
+    const foundationsBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs-foundations"]') as HTMLElement;
+    const quickStartLink = compiled.querySelector('[data-testid="showcase-nav-link-quick-start"]') as HTMLAnchorElement;
 
     expect(docsBranch.classList.contains('has-current-route')).toBe(true);
     expect(docsBranch.getAttribute('aria-current')).toBeNull();
@@ -253,6 +267,7 @@ describe('App', () => {
 
   it('should toggle the showcase theme from the sidenav', async () => {
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -276,6 +291,7 @@ describe('App', () => {
 
   it('should open and close the mobile navigation drawer from the trigger', async () => {
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -296,6 +312,7 @@ describe('App', () => {
     expect(compiled.querySelector('.showcase-nav-backdrop')).not.toBeNull();
 
     const closeButton = compiled.querySelector('.showcase-nav-close') as HTMLButtonElement;
+
     closeButton.click();
     await fixture.whenStable();
 
@@ -308,6 +325,7 @@ describe('App', () => {
 
   it('should move focus into the mobile drawer and restore it on close', async () => {
     const fixture = TestBed.createComponent(App);
+
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -339,10 +357,7 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const trigger = compiled.querySelector('.showcase-menu-button') as HTMLButtonElement;
     const nav = compiled.querySelector('.showcase-nav') as HTMLElement;
-    const docsFoundationsBranch = getElement<HTMLElement>(
-      compiled,
-      '[data-testid="showcase-nav-branch-docs-foundations"]',
-    );
+    const docsFoundationsBranch = getElement<HTMLElement>(compiled, '[data-testid="showcase-nav-branch-docs-foundations"]');
 
     trigger.click();
     await fixture.whenStable();
@@ -355,10 +370,7 @@ describe('App', () => {
       fixture.detectChanges();
     }
 
-    const firstLink = getElement<HTMLAnchorElement>(
-      compiled,
-      '[data-testid="showcase-nav-link-quick-start"]',
-    );
+    const firstLink = getElement<HTMLAnchorElement>(compiled, '[data-testid="showcase-nav-link-quick-start"]');
 
     firstLink.click();
     await fixture.whenStable();
@@ -381,52 +393,3 @@ describe('App', () => {
     expect(compiled.textContent).toContain('Example route');
   });
 });
-
-function waitForFocusHandoff(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve));
-}
-
-function getElement<T extends Element>(container: HTMLElement, selector: string): T {
-  const element = container.querySelector<T>(selector);
-
-  if (element === null) {
-    throw new Error(`Element not found: ${selector}`);
-  }
-
-  return element;
-}
-
-function readStoredExpandedNavTreeIds(): string[] {
-  const parsed: unknown = JSON.parse(
-    globalThis.localStorage?.getItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY) ?? '[]',
-  );
-
-  return Array.isArray(parsed)
-    ? parsed.filter((sectionId): sectionId is string => typeof sectionId === 'string')
-    : [];
-}
-
-function createTestStorage(): Storage {
-  const values = new Map<string, string>();
-
-  return {
-    get length(): number {
-      return values.size;
-    },
-    clear(): void {
-      values.clear();
-    },
-    getItem(key: string): string | null {
-      return values.get(key) ?? null;
-    },
-    key(index: number): string | null {
-      return Array.from(values.keys())[index] ?? null;
-    },
-    removeItem(key: string): void {
-      values.delete(key);
-    },
-    setItem(key: string, value: string): void {
-      values.set(key, value);
-    },
-  };
-}

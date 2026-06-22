@@ -1,23 +1,24 @@
-import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
+import { Injectable, InjectionToken, computed, inject, signal } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
-import { NAT_TABLE_KEYBINDINGS, mergeNatTableKeybindings, createNatTableKeyboard } from './keybindings';
+
+import { NAT_TABLE_KEYBINDINGS, createNatTableKeyboard, mergeNatTableKeybindings } from './keybindings';
 import type {
+  NatTableAccessibilityText,
+  NatTableKeybindings,
   NatTableMode,
   NatTableModeConfiguration,
   NatTableState,
-  NatTableUiController,
-  NatTableAccessibilityText,
-  NatTableKeybindings,
+  NatTableUiController
 } from './table.types';
 
 /** Injection token for the active table UI controller in the current DI scope. */
-export const NAT_TABLE_UI_CONTROLLER = new InjectionToken<NatTableUiController<any>>(
-  'NAT_TABLE_UI_CONTROLLER',
-);
+export const NAT_TABLE_UI_CONTROLLER = new InjectionToken<NatTableUiController<RowData>>('NAT_TABLE_UI_CONTROLLER');
 
 /**
  * Scoped service to share the active table controller instance within a DI hierarchy.
  */
+// eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table-instance state, provided by NatTable / table-surface (providers: [NatTableService]), not root.
 @Injectable()
 export class NatTableService<TData extends RowData = RowData> {
   private readonly controllerSignal = signal<NatTableUiController<TData> | null>(null);
@@ -43,38 +44,37 @@ export class NatTableService<TData extends RowData = RowData> {
   private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
   public readonly surfaceKeybindings = signal<NatTableKeybindings>({});
 
-  public readonly keybindings = computed(() =>
-    mergeNatTableKeybindings(
-      this.surfaceKeybindings(),
-      this.globalKeybindings,
-    ),
-  );
+  public readonly keybindings = computed(() => mergeNatTableKeybindings(this.surfaceKeybindings(), this.globalKeybindings));
 
-  public readonly keyboard = computed(() =>
-    createNatTableKeyboard(this.keybindings()),
-  );
+  public readonly keyboard = computed(() => createNatTableKeyboard(this.keybindings()));
 
   public readonly manualPagination = computed(() => {
     const mode = this.surfaceMode();
+
     if (typeof mode === 'string') {
       return mode === 'manual';
     }
+
     return mode.pagination === 'manual';
   });
 
   public readonly manualSorting = computed(() => {
     const mode = this.surfaceMode();
+
     if (typeof mode === 'string') {
       return mode === 'manual';
     }
+
     return mode.sorting === 'manual';
   });
 
   public readonly manualFiltering = computed(() => {
     const mode = this.surfaceMode();
+
     if (typeof mode === 'string') {
       return mode === 'manual';
     }
+
     return mode.filtering === 'manual';
   });
 

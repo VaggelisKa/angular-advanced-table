@@ -35,7 +35,7 @@ A virtual modifier **`Mod`** (or **`CmdOrCtrl`** / **`CommandOrControl`**) is su
 ```typescript
 const keybindings = {
   columnReorderLeft: 'Mod+ArrowLeft',
-  columnReorderRight: 'Mod+ArrowRight',
+  columnReorderRight: 'Mod+ArrowRight'
 };
 ```
 
@@ -45,7 +45,7 @@ If you need precise modifier matching, you can pass a `NatTableShortcut` object 
 
 ```typescript
 const keybindings = {
-  rowActivate: { key: 'Space', cmdOrCtrlKey: true },
+  rowActivate: { key: 'Space', cmdOrCtrlKey: true }
 };
 ```
 
@@ -55,7 +55,7 @@ You can provide an array of shortcuts to allow multiple triggers for the same ac
 
 ```typescript
 const keybindings = {
-  rowActivate: ['Enter', { key: 'a', ctrlKey: true }],
+  rowActivate: ['Enter', { key: 'a', ctrlKey: true }]
 };
 ```
 
@@ -83,10 +83,10 @@ import { NAT_TABLE_KEYBINDINGS } from 'ng-advanced-table';
       useValue: {
         rowActivate: 'Space', // Activate rows using ONLY the Space key
         columnReorderLeft: 'Mod+ArrowLeft',
-        columnReorderRight: 'Mod+ArrowRight',
-      },
-    },
-  ],
+        columnReorderRight: 'Mod+ArrowRight'
+      }
+    }
+  ]
 })
 export class AppModule {}
 ```

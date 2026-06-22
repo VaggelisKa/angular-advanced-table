@@ -38,8 +38,7 @@
 }
 
 .pager-button:focus-visible {
-  outline: var(--nat-table-focus-ring-width, 2px) solid
-    var(--nat-table-focus-ring-color, currentColor);
+  outline: var(--nat-table-focus-ring-width, 2px) solid var(--nat-table-focus-ring-color, currentColor);
   outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }
 

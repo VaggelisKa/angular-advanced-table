@@ -3,9 +3,17 @@
   "defaultBase": "main",
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/tsconfig.spec.json"],
+    "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/eslint.config.mjs"],
     "sharedGlobals": []
   },
+  "plugins": [
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    }
+  ],
   "targetDefaults": {
     "build": {
       "cache": true,
@@ -29,12 +37,7 @@
     }
   },
   "release": {
-    "projects": [
-      "ng-advanced-table",
-      "ng-advanced-table-ui",
-      "ng-advanced-table-utils",
-      "ng-advanced-table-locales"
-    ],
+    "projects": ["ng-advanced-table", "ng-advanced-table-ui", "ng-advanced-table-utils", "ng-advanced-table-locales"],
     "projectsRelationship": "independent",
     "versionPlans": true,
     "releaseTag": {

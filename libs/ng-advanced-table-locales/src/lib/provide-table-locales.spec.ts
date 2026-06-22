@@ -1,30 +1,51 @@
-import {
-  createEnvironmentInjector,
-  EnvironmentInjector,
-  provideZonelessChangeDetection,
-} from '@angular/core';
+import { EnvironmentInjector, createEnvironmentInjector, provideZonelessChangeDetection } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import {
   NAT_TABLE_BUILT_IN_UI_LOCALES,
   NAT_TABLE_BUILT_IN_UTILS_LOCALES,
   NAT_TABLE_UI_INTL,
   NAT_TABLE_UTILS_INTL,
   provideNatTableUiLocales,
-  provideNatTableUtilsLocales,
+  provideNatTableUtilsLocales
 } from 'ng-advanced-table-locales';
 
 import { NAT_TABLE_BUILT_IN_LOCALES } from './built-in-locales';
 import { NAT_TABLE_INTL, provideNatTableLocales } from './provide-table-locales';
+import type { NatTableAccessibilityText, NatTableIntlConfig } from './types';
+import type { NatTableAccessibilityPageSizeLabels, NatTableUiIntl, NatTableUiIntlConfig } from '../ui/lib/ui-types';
+import type { NatTableRenderMetricsIntl, NatTableUtilsIntlConfig } from '../utils/lib/utils-types';
+
+const configure = (...providers: Provider[]): void => {
+  TestBed.configureTestingModule({
+    providers: [provideZonelessChangeDetection(), ...providers]
+  });
+};
+
+const tableAccess = (intl: NatTableIntlConfig, localeId: string): NatTableAccessibilityText | undefined =>
+  intl.locales?.[localeId]?.accessibilityText;
+
+const uiLocale = (intl: NatTableUiIntlConfig, localeId: string): NatTableUiIntl | undefined => intl.locales?.[localeId];
+
+const pageSizeLabels = (ui?: NatTableUiIntl): NatTableAccessibilityPageSizeLabels | undefined => ui?.pageSize?.accessibilityLabels;
+
+const utilsMetrics = (intl: NatTableUtilsIntlConfig, localeId: string): NatTableRenderMetricsIntl | undefined =>
+  intl.locales?.[localeId]?.renderMetrics;
+
+const pageSizeContext = {
+  pageSizeValue: 25,
+  pageSizeText: '25',
+  selectionState: 'not-selected' as const
+};
+
+afterEach(() => {
+  TestBed.resetTestingModule();
+});
 
 describe('provideNatTableLocales', () => {
-  afterEach(() => {
-    TestBed.resetTestingModule();
-  });
-
   it('registers every built-in table locale with no configuration', () => {
-    TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideNatTableLocales()],
-    });
+    configure(provideNatTableLocales());
 
     const tableIntl = TestBed.inject(NAT_TABLE_INTL);
 
@@ -34,239 +55,187 @@ describe('provideNatTableLocales', () => {
   });
 
   it('uses platform primary modifier shortcuts in the built-in English column reorder instructions', () => {
-    TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideNatTableLocales()],
-    });
+    configure(provideNatTableLocales());
 
-    const tableIntl = TestBed.inject(NAT_TABLE_INTL);
+    expect(tableAccess(TestBed.inject(NAT_TABLE_INTL), 'en')?.reorderKeyboardInstructions).toBe(
+      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
+    );
+  });
+});
 
-    expect(tableIntl.locales?.['en']?.accessibilityText?.reorderKeyboardInstructions).toBe(
-      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
+describe('companion UI and utils locale registration', () => {
+  let uiIntl: NatTableUiIntlConfig;
+  let utilsIntl: NatTableUtilsIntlConfig;
+
+  beforeEach(() => {
+    configure(provideNatTableUiLocales(), provideNatTableUtilsLocales());
+    uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
+    utilsIntl = TestBed.inject(NAT_TABLE_UTILS_INTL);
+  });
+
+  it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))('registers companion UI locale %s', (localeId) => {
+    expect(uiLocale(uiIntl, localeId)).toBeDefined();
+  });
+
+  it.each(Object.keys(NAT_TABLE_BUILT_IN_UTILS_LOCALES))('registers companion utils locale %s', (localeId) => {
+    expect(utilsIntl.locales?.[localeId]).toBeDefined();
+  });
+});
+
+describe('partial built-in UI locale overrides', () => {
+  let en: NatTableUiIntl | undefined;
+
+  beforeEach(() => {
+    configure(
+      provideNatTableUiLocales({
+        en: {
+          pageSize: {
+            groupAriaLabel: 'Invoices per page',
+            accessibilityLabels: {
+              pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} invoices`
+            }
+          }
+        }
+      })
+    );
+    en = uiLocale(TestBed.inject(NAT_TABLE_UI_INTL), 'en');
+  });
+
+  it('keeps the overridden group aria label', () => {
+    expect(en?.pageSize?.groupAriaLabel).toBe('Invoices per page');
+  });
+
+  it('keeps the overridden option text', () => {
+    expect(pageSizeLabels(en)?.pageSizeOptionText?.(pageSizeContext)).toBe('25 invoices');
+  });
+
+  it('preserves the nested default option aria label', () => {
+    expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+  });
+});
+
+describe('custom locale ids through overrides', () => {
+  beforeEach(() => {
+    configure(
+      provideNatTableLocales({ qa: { accessibilityText: { emptyState: 'QA empty state' } } }),
+      provideNatTableUiLocales({ qa: { search: { label: 'QA search' } } }),
+      provideNatTableUtilsLocales({ qa: { renderMetrics: { panel: { ariaLabel: 'QA render panel' } } } })
     );
   });
 
-  it('registers companion UI and utils locales through explicit providers', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableUiLocales(),
-        provideNatTableUtilsLocales(),
-      ],
-    });
-
-    const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
-    const utilsIntl = TestBed.inject(NAT_TABLE_UTILS_INTL);
-
-    for (const localeId of Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES)) {
-      expect(uiIntl.locales?.[localeId]).toBeDefined();
-    }
-
-    for (const localeId of Object.keys(NAT_TABLE_BUILT_IN_UTILS_LOCALES)) {
-      expect(utilsIntl.locales?.[localeId]).toBeDefined();
-    }
+  it('adds the custom table locale', () => {
+    expect(tableAccess(TestBed.inject(NAT_TABLE_INTL), 'qa')?.emptyState).toBe('QA empty state');
   });
 
-  it('merges partial built-in locale overrides without dropping nested defaults', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableUiLocales({
-          en: {
-            pageSize: {
-              groupAriaLabel: 'Invoices per page',
-              accessibilityLabels: {
-                pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} invoices`,
-              },
-            },
-          },
-        }),
-      ],
-    });
-
-    const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
-    const pageSize = uiIntl.locales?.['en']?.pageSize;
-    const context = {
-      pageSizeValue: 25,
-      pageSizeText: '25',
-      selectionState: 'not-selected' as const,
-    };
-
-    expect(pageSize?.groupAriaLabel).toBe('Invoices per page');
-    expect(pageSize?.accessibilityLabels?.pageSizeOptionText?.(context)).toBe('25 invoices');
-    expect(pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(context)).toBe(
-      '25 rows per page',
-    );
+  it('adds the custom UI locale', () => {
+    expect(uiLocale(TestBed.inject(NAT_TABLE_UI_INTL), 'qa')?.search?.label).toBe('QA search');
   });
 
-  it('adds custom locale ids through overrides', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableLocales({
-          qa: {
-            accessibilityText: {
-              emptyState: 'QA empty state',
-            },
-          },
-        }),
-        provideNatTableUiLocales({
-          qa: {
-            search: {
-              label: 'QA search',
-            },
-          },
-        }),
-        provideNatTableUtilsLocales({
-          qa: {
-            renderMetrics: {
-              panel: {
-                ariaLabel: 'QA render panel',
-              },
-            },
-          },
-        }),
-      ],
-    });
-
-    const tableIntl = TestBed.inject(NAT_TABLE_INTL);
-    const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
-    const utilsIntl = TestBed.inject(NAT_TABLE_UTILS_INTL);
-
-    expect(tableIntl.locales?.['qa']?.accessibilityText?.emptyState).toBe('QA empty state');
-    expect(uiIntl.locales?.['qa']?.search?.label).toBe('QA search');
-    expect(utilsIntl.locales?.['qa']?.renderMetrics?.panel?.ariaLabel).toBe('QA render panel');
+  it('adds the custom utils locale', () => {
+    expect(utilsMetrics(TestBed.inject(NAT_TABLE_UTILS_INTL), 'qa')?.panel?.ariaLabel).toBe('QA render panel');
   });
+});
 
-  it('preserves parent table locale overrides in nested providers', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableLocales({
-          en: {
-            accessibilityText: {
-              emptyState: 'Parent empty state',
-              loadingState: 'Parent loading state',
-            },
-          },
-        }),
-      ],
-    });
+describe('parent table locale overrides in nested providers', () => {
+  let childInjector: EnvironmentInjector;
+  let accessibilityText: NatTableAccessibilityText | undefined;
 
-    const childInjector = createEnvironmentInjector(
-      [
-        provideNatTableLocales({
-          en: {
-            accessibilityText: {
-              description: 'Child table description',
-            },
-          },
-        }),
-      ],
-      TestBed.inject(EnvironmentInjector),
+  beforeEach(() => {
+    configure(
+      provideNatTableLocales({
+        en: {
+          accessibilityText: { emptyState: 'Parent empty state', loadingState: 'Parent loading state' }
+        }
+      })
     );
 
-    try {
-      const tableIntl = childInjector.get(NAT_TABLE_INTL);
-      const accessibilityText = tableIntl.locales?.['en']?.accessibilityText;
-
-      expect(accessibilityText?.emptyState).toBe('Parent empty state');
-      expect(accessibilityText?.loadingState).toBe('Parent loading state');
-      expect(accessibilityText?.errorState).toBe('Rows could not be loaded.');
-      expect(accessibilityText?.description).toBe('Child table description');
-      expect(accessibilityText?.keyboardInstructions).toContain('Use arrow keys');
-    } finally {
-      childInjector.destroy();
-    }
-  });
-
-  it('preserves parent UI locale overrides in nested providers', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableUiLocales({
-          en: {
-            pageSize: {
-              groupAriaLabel: 'Parent page size',
-            },
-          },
-        }),
-      ],
-    });
-
-    const childInjector = createEnvironmentInjector(
-      [
-        provideNatTableUiLocales({
-          en: {
-            search: {
-              label: 'Child search',
-            },
-          },
-        }),
-      ],
-      TestBed.inject(EnvironmentInjector),
+    childInjector = createEnvironmentInjector(
+      [provideNatTableLocales({ en: { accessibilityText: { description: 'Child table description' } } })],
+      TestBed.inject(EnvironmentInjector)
     );
 
-    try {
-      const uiIntl = childInjector.get(NAT_TABLE_UI_INTL);
-      const pageSizeContext = {
-        pageSizeValue: 25,
-        pageSizeText: '25',
-        selectionState: 'not-selected' as const,
-      };
-
-      expect(uiIntl.locales?.['en']?.pageSize?.groupAriaLabel).toBe('Parent page size');
-      expect(uiIntl.locales?.['en']?.search?.label).toBe('Child search');
-      expect(
-        uiIntl.locales?.['en']?.pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(
-          pageSizeContext,
-        ),
-      ).toBe('25 rows per page');
-    } finally {
-      childInjector.destroy();
-    }
+    accessibilityText = tableAccess(childInjector.get(NAT_TABLE_INTL), 'en');
   });
 
-  it('preserves parent utils locale overrides in nested providers', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableUtilsLocales({
-          en: {
-            renderMetrics: {
-              panel: {
-                ariaLabel: 'Parent render panel',
-              },
-            },
-          },
-        }),
-      ],
-    });
+  afterEach(() => {
+    childInjector.destroy();
+  });
 
-    const childInjector = createEnvironmentInjector(
-      [
-        provideNatTableUtilsLocales({
-          en: {
-            renderMetrics: {
-              column: {
-                header: 'Child render column',
-              },
-            },
-          },
-        }),
-      ],
-      TestBed.inject(EnvironmentInjector),
+  it('keeps the parent empty and loading state', () => {
+    expect(accessibilityText?.emptyState).toBe('Parent empty state');
+    expect(accessibilityText?.loadingState).toBe('Parent loading state');
+  });
+
+  it('keeps the built-in error state and child description', () => {
+    expect(accessibilityText?.errorState).toBe('Rows could not be loaded.');
+    expect(accessibilityText?.description).toBe('Child table description');
+  });
+
+  it('keeps the built-in keyboard instructions', () => {
+    expect(accessibilityText?.keyboardInstructions).toContain('Use arrow keys');
+  });
+});
+
+describe('parent UI locale overrides in nested providers', () => {
+  let childInjector: EnvironmentInjector;
+  let en: NatTableUiIntl | undefined;
+
+  beforeEach(() => {
+    configure(provideNatTableUiLocales({ en: { pageSize: { groupAriaLabel: 'Parent page size' } } }));
+
+    childInjector = createEnvironmentInjector(
+      [provideNatTableUiLocales({ en: { search: { label: 'Child search' } } })],
+      TestBed.inject(EnvironmentInjector)
     );
 
-    try {
-      const utilsIntl = childInjector.get(NAT_TABLE_UTILS_INTL);
+    en = uiLocale(childInjector.get(NAT_TABLE_UI_INTL), 'en');
+  });
 
-      expect(utilsIntl.locales?.['en']?.renderMetrics?.panel?.ariaLabel).toBe(
-        'Parent render panel',
-      );
-      expect(utilsIntl.locales?.['en']?.renderMetrics?.column?.header).toBe('Child render column');
-      expect(utilsIntl.locales?.['en']?.renderMetrics?.column?.unitSuffix).toBe(' ms');
-    } finally {
-      childInjector.destroy();
-    }
+  afterEach(() => {
+    childInjector.destroy();
+  });
+
+  it('keeps the parent page-size group aria label', () => {
+    expect(en?.pageSize?.groupAriaLabel).toBe('Parent page size');
+  });
+
+  it('keeps the child search label', () => {
+    expect(en?.search?.label).toBe('Child search');
+  });
+
+  it('preserves the nested default page-size option aria label', () => {
+    expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+  });
+});
+
+describe('parent utils locale overrides in nested providers', () => {
+  let childInjector: EnvironmentInjector;
+  let renderMetrics: NatTableRenderMetricsIntl | undefined;
+
+  beforeEach(() => {
+    configure(provideNatTableUtilsLocales({ en: { renderMetrics: { panel: { ariaLabel: 'Parent render panel' } } } }));
+
+    childInjector = createEnvironmentInjector(
+      [provideNatTableUtilsLocales({ en: { renderMetrics: { column: { header: 'Child render column' } } } })],
+      TestBed.inject(EnvironmentInjector)
+    );
+
+    renderMetrics = utilsMetrics(childInjector.get(NAT_TABLE_UTILS_INTL), 'en');
+  });
+
+  afterEach(() => {
+    childInjector.destroy();
+  });
+
+  it('keeps the parent panel aria label', () => {
+    expect(renderMetrics?.panel?.ariaLabel).toBe('Parent render panel');
+  });
+
+  it('keeps the child column header', () => {
+    expect(renderMetrics?.column?.header).toBe('Child render column');
+  });
+
+  it('preserves the nested default column unit suffix', () => {
+    expect(renderMetrics?.column?.unitSuffix).toBe(' ms');
   });
 });

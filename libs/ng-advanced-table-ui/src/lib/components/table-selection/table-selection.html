@@ -1,16 +1,14 @@
 @if (isSingleSelectHeader()) {
-  <!-- Select-all only makes sense in multi-select mode. In single mode the
+<!-- Select-all only makes sense in multi-select mode. In single mode the
        toggle-all handler is a no-op (or selects all then collapses to one),
        so render the plain column label instead of a dead checkbox. -->
-  {{ resolvedColumnLabel() }}
-} @else {
-  <input
-    type="checkbox"
-    class="nat-selection-checkbox"
-    [checked]="checked()"
-    [indeterminate]="indeterminate()"
-    [attr.aria-label]="resolvedAriaLabel()"
-    (change)="onChange($event)"
-    (click)="$event.stopPropagation()"
-  />
+{{ resolvedColumnLabel() }} } @else {
+<input
+  [attr.aria-label]="resolvedAriaLabel()"
+  [checked]="checked()"
+  [indeterminate]="indeterminate()"
+  class="nat-selection-checkbox"
+  type="checkbox"
+  (change)="onChange($event)"
+  (click)="$event.stopPropagation()" />
 }

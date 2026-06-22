@@ -9,7 +9,6 @@
 - Replace ambiguous accessibility naming inputs for table and companion UI controls. `NatTable` now uses `accessibleName` for hidden grid names and supports a semantic visible `caption`; companion UI controls and UI locale dictionaries now use `groupAriaLabel` for group names. This intentionally removes the previous `ariaLabel` public inputs for these surfaces while keeping the release plan at `minor` per current project policy. ([#97](https://github.com/VaggelisKa/angular-advanced-table/pull/97))
 - Rename `NatTableUiService` to `NatTableService` and move to `table.service.ts` ([f36c2b4](https://github.com/VaggelisKa/angular-advanced-table/commit/f36c2b4))
 
-
 - Make header actions safe to compose repeatedly, add per-column header action metadata for opt-out and overrides, and expand header action localization to include the opened pin menu label. ([#87](https://github.com/VaggelisKa/angular-advanced-table/pull/87))
 - Add `hiddenHeaderLabel` column metadata so compact utility columns can suppress redundant visible titles while preserving accessible labels. ([#99](https://github.com/VaggelisKa/angular-advanced-table/pull/99))
 - Add locale dictionaries with reactive table locale switching for generated accessibility labels. ([#90](https://github.com/VaggelisKa/angular-advanced-table/pull/90))
@@ -68,7 +67,6 @@
   - **`NatTableA11y` namespace.** Deep accessibility formatter context types (`NatTableAccessibilitySummaryContext`, sorting/filtering/visibility/pagination/reorder contexts, and the column-visibility change entry) are re-exported only under `import type { NatTableA11y } from 'ng-advanced-table'`. `NatTableAccessibilityText` and all non-a11y types stay at the package root. **Breaking:** remove top-level imports of the former `NatTableAccessibility*` context symbols; use `NatTableA11y.*` instead.
   - **`commitInternalState`:** reads `this.state()` once per update instead of eight separate signal reads.
   - **Docs:** root README documents pagination slice behavior when `enablePagination` is `false`, updates the controller contract and core export list; package README drops the obsolete migration anchor.
-
 
 ### 🩹 Fixes
 

@@ -1,4 +1,13 @@
 import { NatTableRenderMetricsStore } from './store';
+import type { RowRenderMetric } from './types';
+
+function requireMetric(metric: RowRenderMetric | undefined): RowRenderMetric {
+  if (metric === undefined) {
+    throw new Error('Expected a recorded metric for the row.');
+  }
+
+  return metric;
+}
 
 describe('NatTableRenderMetricsStore', () => {
   let store: NatTableRenderMetricsStore;
@@ -10,7 +19,7 @@ describe('NatTableRenderMetricsStore', () => {
   it('starts with no measurement and no recorded metrics', () => {
     expect(store.measurement()).toBeNull();
     expect(store.rowMetric('missing')).toBeUndefined();
-    expect(store.rowMetrics()).toEqual({});
+    expect(store.rowMetrics()).toStrictEqual({});
   });
 
   it('aggregates durations across rows in the same render cycle', () => {
@@ -21,10 +30,15 @@ describe('NatTableRenderMetricsStore', () => {
     const measurement = store.measurement();
 
     expect(measurement).not.toBeNull();
-    expect(measurement!.rowCount).toBe(3);
-    expect(measurement!.durationMs).toBe(12);
-    expect(measurement!.averageRowDurationMs).toBeCloseTo(7.1, 1);
-    expect(measurement!.rowsPerSecond).toBeGreaterThan(0);
+
+    if (measurement === null) {
+      throw new Error('Expected a measurement after recording rows.');
+    }
+
+    expect(measurement.rowCount).toBe(3);
+    expect(measurement.durationMs).toBe(12);
+    expect(measurement.averageRowDurationMs).toBeCloseTo(7.1, 1);
+    expect(measurement.rowsPerSecond).toBeGreaterThan(0);
   });
 
   it('resets the cycle aggregate when a new render token arrives while keeping per-row history', () => {
@@ -34,10 +48,16 @@ describe('NatTableRenderMetricsStore', () => {
 
     const measurement = store.measurement();
 
-    expect(measurement!.rowCount).toBe(1);
-    expect(measurement!.durationMs).toBe(10);
-    expect(store.rowMetric('row-1')?.durationMs).toBe(2);
-    expect(store.rowMetric('row-3')?.tone).toBe('slow');
+    expect(measurement).not.toBeNull();
+
+    if (measurement === null) {
+      throw new Error('Expected a measurement after recording rows.');
+    }
+
+    expect(measurement.rowCount).toBe(1);
+    expect(measurement.durationMs).toBe(10);
+    expect(requireMetric(store.rowMetric('row-1')).durationMs).toBe(2);
+    expect(requireMetric(store.rowMetric('row-3')).tone).toBe('slow');
   });
 
   it('classifies durations into render tones', () => {
@@ -45,9 +65,9 @@ describe('NatTableRenderMetricsStore', () => {
     store.record({ rowId: 'watch', renderToken: 1, durationMs: 6 });
     store.record({ rowId: 'slow', renderToken: 1, durationMs: 15 });
 
-    expect(store.rowMetric('fast')?.tone).toBe('fast');
-    expect(store.rowMetric('watch')?.tone).toBe('watch');
-    expect(store.rowMetric('slow')?.tone).toBe('slow');
+    expect(requireMetric(store.rowMetric('fast')).tone).toBe('fast');
+    expect(requireMetric(store.rowMetric('watch')).tone).toBe('watch');
+    expect(requireMetric(store.rowMetric('slow')).tone).toBe('slow');
   });
 
   it('clears all state on reset', () => {

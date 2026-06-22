@@ -1,60 +1,56 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+
+import type { ColumnDef } from '@tanstack/angular-table';
+
 import {
   NAT_TABLE_DATA_STATUS,
   NatTable,
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
-  NatTableLoadingTemplate,
+  NatTableLoadingTemplate
 } from 'ng-advanced-table';
+import type { NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table-ui';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-import type { NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
+import { formatError } from './states-showcase.util';
 
-interface IncidentRow {
+type IncidentRow = {
   id: string;
   service: string;
   owner: string;
   severity: string;
-}
+};
 
 type TransitionPreviewState = 'loading' | 'empty' | 'error' | 'rows';
 
 const DEMO_DATA: IncidentRow[] = [
   { id: 'INC-1042', service: 'Checkout API', owner: 'Payments', severity: 'High' },
   { id: 'INC-1043', service: 'Search index', owner: 'Discovery', severity: 'Medium' },
-  { id: 'INC-1044', service: 'Notification worker', owner: 'Messaging', severity: 'Low' },
+  { id: 'INC-1044', service: 'Notification worker', owner: 'Messaging', severity: 'Low' }
 ];
 const ERROR_RETRY_DELAY_MS = 900;
 
 @Component({
   selector: 'app-states-showcase',
-  imports: [
-    NatTable,
-    NatTableSurface,
-    NatTableLoadingTemplate,
-    NatTableEmptyTemplate,
-    NatTableErrorTemplate,
-  ],
+  imports: [NatTable, NatTableSurface, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
   templateUrl: './states-showcase.html',
-  styleUrl: './states-showcase.css',
+  styleUrl: './states-showcase.css'
 })
 export class StatesShowcasePage {
   private readonly destroyRef = inject(DestroyRef);
   private retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  readonly loadingRows: IncidentRow[] = [];
-  readonly emptyRows: IncidentRow[] = [];
-  readonly errorRows: IncidentRow[] = [];
-  readonly successRows = DEMO_DATA;
-  readonly errorStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.error);
-  readonly error = signal<unknown>(new Error('Incident service returned 503.'));
-  readonly transitionPreviewState = signal<TransitionPreviewState>('loading');
-  readonly transitionPreviewError = new Error('Transition service returned 503.');
-  readonly transitionPreviewRows = computed(() =>
-    this.transitionPreviewState() === 'rows' ? DEMO_DATA : [],
-  );
-  readonly transitionPreviewDataStatus = computed<NatTableDataStatus>(() => {
+  protected readonly loadingRows: IncidentRow[] = [];
+  protected readonly emptyRows: IncidentRow[] = [];
+  protected readonly errorRows: IncidentRow[] = [];
+  protected readonly successRows = DEMO_DATA;
+  protected readonly errorStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.error);
+  protected readonly error = signal<unknown>(new Error('Incident service returned 503.'));
+  private readonly transitionPreviewState = signal<TransitionPreviewState>('loading');
+  protected readonly transitionPreviewError = new Error('Transition service returned 503.');
+  protected readonly transitionPreviewRows = computed(() => (this.transitionPreviewState() === 'rows' ? DEMO_DATA : []));
+
+  protected readonly transitionPreviewDataStatus = computed<NatTableDataStatus>(() => {
     const state = this.transitionPreviewState();
 
     if (state === 'loading') {
@@ -67,59 +63,64 @@ export class StatesShowcasePage {
 
     return NAT_TABLE_DATA_STATUS.success;
   });
-  readonly transitionPreviewOptions: readonly {
+
+  protected readonly transitionPreviewOptions: readonly {
     state: TransitionPreviewState;
     label: string;
   }[] = [
     { state: 'loading', label: 'Loading' },
     { state: 'empty', label: 'Empty' },
     { state: 'error', label: 'Error' },
-    { state: 'rows', label: 'Rows' },
+    { state: 'rows', label: 'Rows' }
   ];
 
-  readonly columns: ColumnDef<IncidentRow, unknown>[] = [
+  protected readonly columns: ColumnDef<IncidentRow, unknown>[] = [
     {
       accessorKey: 'id',
       header: 'Incident',
-      meta: { label: 'Incident', rowHeader: true },
+      meta: { label: 'Incident', rowHeader: true }
     },
     {
       accessorKey: 'service',
       header: 'Service',
-      meta: { label: 'Service' },
+      meta: { label: 'Service' }
     },
     {
       accessorKey: 'owner',
       header: 'Owner',
-      meta: { label: 'Owner' },
+      meta: { label: 'Owner' }
     },
     {
       accessorKey: 'severity',
       header: 'Severity',
-      meta: { label: 'Severity' },
-    },
+      meta: { label: 'Severity' }
+    }
   ];
 
-  readonly loadingTableAccessibilityCopy: NatTableAccessibilityText = {
-    loadingState: 'Loading incidents.',
-  };
-  readonly emptyTableAccessibilityCopy: NatTableAccessibilityText = {
-    emptyState: 'No incidents found.',
-  };
-  readonly errorTableAccessibilityCopy: NatTableAccessibilityText = {
-    loadingState: 'Retrying incident queue.',
-    errorState: 'Incident queue unavailable.',
-  };
-  readonly refreshTableAccessibilityCopy: NatTableAccessibilityText = {
-    loadingState: 'Refreshing incidents.',
-  };
-  readonly transitionPreviewAccessibilityCopy: NatTableAccessibilityText = {
-    loadingState: 'Loading transition preview.',
-    emptyState: 'No transition preview rows.',
-    errorState: 'Transition request failed.',
+  protected readonly loadingTableAccessibilityCopy: NatTableAccessibilityText = {
+    loadingState: 'Loading incidents.'
   };
 
-  constructor() {
+  protected readonly emptyTableAccessibilityCopy: NatTableAccessibilityText = {
+    emptyState: 'No incidents found.'
+  };
+
+  protected readonly errorTableAccessibilityCopy: NatTableAccessibilityText = {
+    loadingState: 'Retrying incident queue.',
+    errorState: 'Incident queue unavailable.'
+  };
+
+  protected readonly refreshTableAccessibilityCopy: NatTableAccessibilityText = {
+    loadingState: 'Refreshing incidents.'
+  };
+
+  protected readonly transitionPreviewAccessibilityCopy: NatTableAccessibilityText = {
+    loadingState: 'Loading transition preview.',
+    emptyState: 'No transition preview rows.',
+    errorState: 'Transition request failed.'
+  };
+
+  public constructor() {
     this.destroyRef.onDestroy(() => {
       if (this.retryTimeoutId !== null) {
         clearTimeout(this.retryTimeoutId);
@@ -127,7 +128,7 @@ export class StatesShowcasePage {
     });
   }
 
-  retryErrorExample(): void {
+  protected retryErrorExample(): void {
     if (this.retryTimeoutId !== null) {
       clearTimeout(this.retryTimeoutId);
     }
@@ -140,15 +141,13 @@ export class StatesShowcasePage {
     }, ERROR_RETRY_DELAY_MS);
   }
 
-  showTransitionPreviewState(state: TransitionPreviewState): void {
+  protected showTransitionPreviewState(state: TransitionPreviewState): void {
     this.transitionPreviewState.set(state);
   }
 
-  isTransitionPreviewState(state: TransitionPreviewState): boolean {
+  protected isTransitionPreviewState(state: TransitionPreviewState): boolean {
     return this.transitionPreviewState() === state;
   }
 
-  formatError(error: unknown): string {
-    return error instanceof Error ? error.message : 'The request failed.';
-  }
+  protected readonly formatError = formatError;
 }
