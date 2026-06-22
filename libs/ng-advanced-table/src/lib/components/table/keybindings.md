@@ -68,7 +68,6 @@ Keybindings resolve through a hierarchical merging process (lowest priority to h
 1. **Default Settings:** `DEFAULT_NAT_TABLE_KEYBINDINGS`
 2. **Injection Token:** Providing the `NAT_TABLE_KEYBINDINGS` token at the module or application level.
 3. **Surface Input:** Binding the `[keybindings]` input on `<nat-table-surface>`.
-4. **Table Input:** Binding the `[keybindings]` input directly on `<nat-table>`.
 
 ### Global/DI Setup Example
 
