@@ -26,6 +26,7 @@ import { ShowcaseThemeStore, type ShowcaseTheme } from './showcase-theme';
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 const SHOWCASE_NAV_BRANCH_IDS = getShowcaseNavBranchIds(showcaseNavSections);
 const SHOWCASE_NAV_BRANCH_ID_SET = new Set(SHOWCASE_NAV_BRANCH_IDS);
+const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = showcaseNavSections.map((section) => section.id);
 
 @Component({
   selector: 'app-root',
@@ -197,13 +198,13 @@ function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
     const stored = globalThis.localStorage?.getItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY);
 
     if (!stored) {
-      return new Set(SHOWCASE_NAV_BRANCH_IDS);
+      return new Set(DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS);
     }
 
     const parsed: unknown = JSON.parse(stored);
 
     if (!Array.isArray(parsed)) {
-      return new Set(SHOWCASE_NAV_BRANCH_IDS);
+      return new Set(DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS);
     }
 
     return new Set(
@@ -213,8 +214,8 @@ function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
       ),
     );
   } catch {
-    // Storage access can throw in private/sandboxed contexts; default to expanded branches.
-    return new Set(SHOWCASE_NAV_BRANCH_IDS);
+    // Storage access can throw in private/sandboxed contexts; default to top-level branches.
+    return new Set(DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS);
   }
 }
 
