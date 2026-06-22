@@ -1,5 +1,6 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { NatTableToolbar } from './table-toolbar';
 import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
@@ -14,21 +15,22 @@ import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
  * Slot DOM order: A, search (start) | B (center) | C, D (end).
  */
 @Component({
+  selector: 'nat-aria-integration-host',
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="a" natToolbarItemPosition="start" id="item-a">A</button>
-      <button natToolbarItem="b" natToolbarItemPosition="center" id="item-b">B</button>
-      <button natToolbarItem="c" id="item-c">C</button>
+      <button id="item-a" natToolbarItem="a" natToolbarItemPosition="start" type="button">A</button>
+      <button id="item-b" natToolbarItem="b" natToolbarItemPosition="center" type="button">B</button>
+      <button id="item-c" natToolbarItem="c" type="button">C</button>
       @if (showD()) {
-        <button natToolbarItem="d" id="item-d">D</button>
+        <button id="item-d" natToolbarItem="d" type="button">D</button>
       }
       <input
+        aria-label="Filter"
+        id="search"
         natToolbarItem="search"
         natToolbarItemPosition="start"
         type="search"
-        id="search"
-        aria-label="Filter"
       />
     </nat-table-toolbar>
   `,
@@ -50,7 +52,7 @@ describe('NatTableToolbar @angular/aria integration', () => {
   });
 
   function element(domId: string): HTMLElement {
-    return fixture.nativeElement.querySelector(`#${domId}`) as HTMLElement;
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
   async function focusItem(domId: string): Promise<void> {
@@ -61,7 +63,9 @@ describe('NatTableToolbar @angular/aria integration', () => {
 
   function dispatchKeydown(target: HTMLElement, key: string): KeyboardEvent {
     const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+
     target.dispatchEvent(event);
+
     return event;
   }
 
@@ -69,7 +73,9 @@ describe('NatTableToolbar @angular/aria integration', () => {
     // jsdom has no PointerEvent constructor; Aria's handler only needs the
     // event target and preventDefault, so a MouseEvent stands in.
     const event = new MouseEvent('pointerdown', { bubbles: true, cancelable: true });
+
     target.dispatchEvent(event);
+
     return event;
   }
 

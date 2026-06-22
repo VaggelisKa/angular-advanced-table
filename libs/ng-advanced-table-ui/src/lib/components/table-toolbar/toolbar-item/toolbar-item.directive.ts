@@ -1,5 +1,5 @@
-import { Directive, inject, input } from '@angular/core';
 import { ToolbarWidget } from '@angular/aria/toolbar';
+import { Directive, inject, input } from '@angular/core';
 
 import { NAT_TOOLBAR_ITEM } from '../common/toolbar-tokens.const';
 import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolbar-tokens.type';

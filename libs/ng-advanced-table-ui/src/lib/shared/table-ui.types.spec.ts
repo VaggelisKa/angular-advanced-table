@@ -1,17 +1,16 @@
 import type { ColumnDef } from '@tanstack/angular-table';
-
 import type {
   NatTableColumnMeta as InternalNatTableColumnMeta,
   NatTableState,
 } from 'ng-advanced-table-types';
 
 import type {
-  NatTableColumnMoveDirection,
   NatTableColumnMeta,
+  NatTableColumnMoveDirection,
   NatTableUiState,
 } from './table-ui.types';
 
-interface ContractRow {
+type ContractRow = {
   amount: number;
 }
 
@@ -24,13 +23,18 @@ type Equal<T, U> =
       : false
     : false;
 
-type _UiStateMatchesCore = Expect<Equal<NatTableUiState, NatTableState>>;
-type _UiColumnMetaMatchesCore = Expect<
+type UiStateMatchesCore = Expect<Equal<NatTableUiState, NatTableState>>;
+type UiColumnMetaMatchesCore = Expect<
   Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
 >;
 
 describe('ng-advanced-table-ui public table contracts', () => {
+  // eslint-disable-next-line complexity -- linear chain of independent contract assertions
   it('reuses the core column metadata contract for TanStack column definitions', () => {
+    const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore] = [true, true];
+
+    expect(contractsHold).toStrictEqual([true, true]);
+
     const column: ColumnDef<ContractRow, number> = {
       accessorKey: 'amount',
       meta: {
@@ -60,7 +64,7 @@ describe('ng-advanced-table-ui public table contracts', () => {
     expect(column.meta?.headerMinSize).toBe('8rem');
     expect(column.meta?.headerMaxSize).toBe(180);
     expect(column.meta?.export?.header).toBe('Exported amount');
-    expect(column.meta?.export?.value).toEqual(expect.any(Function));
-    expect(column.meta?.cellTone).toEqual(expect.any(Function));
+    expect(column.meta?.export?.value).toStrictEqual(expect.any(Function));
+    expect(column.meta?.cellTone).toStrictEqual(expect.any(Function));
   });
 });

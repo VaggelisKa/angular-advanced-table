@@ -1,29 +1,31 @@
-import { Component, computed, inject, input, DestroyRef } from '@angular/core';
+/* eslint-disable max-lines */
+import { Component, DestroyRef, computed, inject, input } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableToolbar } from '../table-toolbar/table-toolbar';
-import { NatToolbarGroup } from '../table-toolbar/toolbar-group/toolbar-group';
-import { NatToolbarItem } from '../table-toolbar/toolbar-item/toolbar-item.directive';
-import { NatTableService } from '../../shared/table.service';
+import {
+  NAT_TABLE_UI_ENGLISH_LOCALE,
+  NAT_TABLE_UI_INTL,
+  mergePageSizeLabels,
+  mergePagerLabels,
+  resolveNatTableUiIntl,
+} from '../../shared/table-ui-intl';
 import {
   DEFAULT_PAGE_SIZE_OPTIONS,
   formatNatTableAccessibilityNumber,
   sanitizePageSizeOptions,
 } from '../../shared/table-ui.helpers';
-import {
-  mergePageSizeLabels,
-  mergePagerLabels,
-  NAT_TABLE_UI_INTL,
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  resolveNatTableUiIntl,
-} from '../../shared/table-ui-intl';
 import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPageSizeOptionContext,
   NatTableAccessibilityPagerLabels,
 } from '../../shared/table-ui.types';
+import { NatTableService } from '../../shared/table.service';
+import { NatTableToolbar } from '../table-toolbar/table-toolbar';
+import { NatToolbarGroup } from '../table-toolbar/toolbar-group/toolbar-group';
+import { NatToolbarItem } from '../table-toolbar/toolbar-item/toolbar-item.directive';
 
-interface PageSizeOption {
+type PageSizeOption = {
   pageSize: number;
   text: string;
   ariaLabel: string;
@@ -36,14 +38,15 @@ interface PageSizeOption {
   styleUrl: './table-pagination.css',
 })
 export class NatTablePagination<TData extends RowData = RowData> {
-  readonly locale = input<string | undefined>(undefined);
-  readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
-  readonly pageSizeGroupAriaLabel = input<string | undefined>(undefined);
-  readonly pageSizeAccessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(
+  public readonly locale = input<string | undefined>(undefined);
+  public readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
+  public readonly pageSizeGroupAriaLabel = input<string | undefined>(undefined);
+  public readonly pageSizeAccessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(
     undefined,
   );
-  readonly pagerGroupAriaLabel = input<string | undefined>(undefined);
-  readonly pagerAccessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(
+
+  public readonly pagerGroupAriaLabel = input<string | undefined>(undefined);
+  public readonly pagerAccessibilityLabels = input<NatTableAccessibilityPagerLabels | undefined>(
     undefined,
   );
 
@@ -52,7 +55,7 @@ export class NatTablePagination<TData extends RowData = RowData> {
 
   protected readonly controller = computed(() => this.natTableService.controller());
 
-  constructor() {
+  public constructor() {
     this.natTableService.registerPagination();
     this.destroyRef.onDestroy(() => {
       this.natTableService.unregisterPagination();
@@ -63,9 +66,11 @@ export class NatTablePagination<TData extends RowData = RowData> {
   private readonly localeId = computed(
     () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
+
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
+
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
 
@@ -73,14 +78,17 @@ export class NatTablePagination<TData extends RowData = RowData> {
   protected readonly selectedPageSize = computed(
     () => this.table()?.getState().pagination.pageSize ?? 0,
   );
+
   private readonly resolvedPageSizeAccessibilityLabels = computed(() =>
     mergePageSizeLabels(
       this.tableUiIntl().pageSize?.accessibilityLabels,
       this.pageSizeAccessibilityLabels(),
     ),
   );
+
   protected readonly resolvedPageSizeAriaLabel = computed(() => {
     const labels = this.resolvedPageSizeAccessibilityLabels();
+
     return (
       this.pageSizeGroupAriaLabel() ??
       labels.groupAriaLabel ??
@@ -88,6 +96,7 @@ export class NatTablePagination<TData extends RowData = RowData> {
       ''
     );
   });
+
   protected readonly resolvedPageSizeOptions = computed<PageSizeOption[]>(() => {
     const labels = this.resolvedPageSizeAccessibilityLabels();
     const selectedPageSize = this.selectedPageSize();
@@ -128,6 +137,7 @@ export class NatTablePagination<TData extends RowData = RowData> {
 
   // Pager Logic
   protected readonly pageIndex = computed(() => this.table()?.getState().pagination.pageIndex ?? 0);
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- a zero page count must display as 1
   protected readonly pageCount = computed(() => this.table()?.getPageCount() || 1);
   protected readonly currentPage = computed(() => this.pageIndex() + 1);
   protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);
@@ -138,8 +148,10 @@ export class NatTablePagination<TData extends RowData = RowData> {
       this.pagerAccessibilityLabels(),
     ),
   );
+
   protected readonly resolvedPagerAriaLabel = computed(() => {
     const labels = this.resolvedPagerAccessibilityLabels();
+
     return (
       this.pagerGroupAriaLabel() ??
       labels.groupAriaLabel ??
@@ -147,14 +159,19 @@ export class NatTablePagination<TData extends RowData = RowData> {
       ''
     );
   });
+
   protected readonly previousPageAriaLabel = computed(() => {
     const labels = this.resolvedPagerAccessibilityLabels();
+
     return labels.previousPageAriaLabel ?? '';
   });
+
   protected readonly nextPageAriaLabel = computed(() => {
     const labels = this.resolvedPagerAccessibilityLabels();
+
     return labels.nextPageAriaLabel ?? '';
   });
+
   protected readonly pageIndicator = computed(() => {
     const labels = this.resolvedPagerAccessibilityLabels();
     const page = this.currentPage();

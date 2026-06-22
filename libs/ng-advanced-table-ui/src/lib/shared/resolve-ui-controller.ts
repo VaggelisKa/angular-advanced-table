@@ -1,9 +1,10 @@
 import { assertInInjectionContext, computed, inject, isDevMode } from '@angular/core';
 import type { Signal } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableService } from './table.service';
 import type { NatTableUiController } from './table-ui.types';
+import { NatTableService } from './table.service';
 
 type InjectNatTableUiControllerOptions = {
   /**

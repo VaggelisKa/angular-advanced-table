@@ -14,6 +14,7 @@ export {
   provideNatTableUiIntl,
   resolveNatTableUiIntl,
 } from 'ng-advanced-table-locales';
+
 export type {
   NatTableColumnVisibilityIntl,
   NatTableHeaderActionsIntl,

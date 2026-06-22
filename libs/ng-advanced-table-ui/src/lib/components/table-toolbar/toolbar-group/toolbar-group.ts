@@ -1,5 +1,5 @@
-import { Component, input } from '@angular/core';
 import { ToolbarWidgetGroup } from '@angular/aria/toolbar';
+import { Component, input } from '@angular/core';
 
 import type { NatToolbarItemPosition } from '../common/toolbar-tokens.type';
 

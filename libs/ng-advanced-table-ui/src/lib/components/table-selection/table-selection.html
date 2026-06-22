@@ -5,11 +5,11 @@
   {{ resolvedColumnLabel() }}
 } @else {
   <input
-    type="checkbox"
-    class="nat-selection-checkbox"
+    [attr.aria-label]="resolvedAriaLabel()"
     [checked]="checked()"
     [indeterminate]="indeterminate()"
-    [attr.aria-label]="resolvedAriaLabel()"
+    class="nat-selection-checkbox"
+    type="checkbox"
     (change)="onChange($event)"
     (click)="$event.stopPropagation()"
   />

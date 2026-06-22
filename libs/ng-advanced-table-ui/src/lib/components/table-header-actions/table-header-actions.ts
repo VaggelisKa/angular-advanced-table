@@ -1,13 +1,24 @@
-import { OverlayModule, type ConnectedPosition } from '@angular/cdk/overlay';
-import { Component, computed, inject, input, viewChild } from '@angular/core';
+/* eslint-disable max-lines */
 import { GridCellWidget } from '@angular/aria/grid';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
+import {  OverlayModule } from '@angular/cdk/overlay';
+import type {ConnectedPosition} from '@angular/cdk/overlay';
+import { Component, computed, inject, input, viewChild } from '@angular/core';
+
 import {
-  FlexRender,
-  type FlexRenderContent,
-  type HeaderContext,
-  type RowData,
+  FlexRender
+  
+  
+  
 } from '@tanstack/angular-table';
+import type {FlexRenderContent, HeaderContext, RowData} from '@tanstack/angular-table';
+
+import {
+  NAT_TABLE_UI_ENGLISH_LOCALE,
+  NAT_TABLE_UI_INTL,
+  mergeHeaderActionLabels,
+  resolveNatTableUiIntl,
+} from '../../shared/table-ui-intl';
 import type {
   NatTableAccessibilityHeaderActionLabels,
   NatTableAccessibilityHeaderActionMenuContext,
@@ -15,15 +26,9 @@ import type {
   NatTableAccessibilityHeaderActionPinContext,
   NatTableColumnMoveDirection,
   NatTableSortDirection,
-  NatTableSortIndicatorContext,
   NatTableSortIndicatorContent,
+  NatTableSortIndicatorContext,
 } from '../../shared/table-ui.types';
-import {
-  mergeHeaderActionLabels,
-  NAT_TABLE_UI_INTL,
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  resolveNatTableUiIntl,
-} from '../../shared/table-ui-intl';
 
 type NatTablePinSide = 'left' | 'right';
 
@@ -42,7 +47,7 @@ export type { NatTableSortIndicatorContent } from '../../shared/table-ui.types';
  * Use `sortIndicator` to replace the built-in unsorted/ascending/descending glyphs
  * while keeping the same sort, pin, and move-column menu behavior.
  */
-export interface NatTableHeaderActionsOptions {
+export type NatTableHeaderActionsOptions = {
   /** Custom content rendered inside the sort button for each sortable column. */
   sortIndicator?: NatTableSortIndicatorContent;
   /** Static locale override for generated action labels. Defaults to the hosting table locale. */
@@ -67,6 +72,7 @@ export class NatTableHeaderActions {
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
+
   protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
   protected readonly moveDirections: readonly NatTableColumnMoveDirection[] = ['left', 'right'];
   protected readonly pinMenu = viewChild<Menu<string>>('pinMenu');
@@ -93,17 +99,19 @@ export class NatTableHeaderActions {
       offsetY: -6,
     },
   ];
-  readonly context = input.required<HeaderContext<RowData, unknown>>();
-  readonly content = input.required<NatTableHeaderRenderContent>();
-  readonly label = input.required<string>();
-  readonly hideLabel = input(false);
-  readonly locale = input<string | undefined>(undefined);
-  readonly sortIndicator = input<NatTableSortIndicatorContent>(undefined);
-  readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(
+
+  public readonly context = input.required<HeaderContext<RowData, unknown>>();
+  public readonly content = input.required<NatTableHeaderRenderContent>();
+  public readonly label = input.required<string>();
+  public readonly hideLabel = input(false);
+  public readonly locale = input<string | undefined>(undefined);
+  public readonly sortIndicator = input<NatTableSortIndicatorContent>(undefined);
+  public readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(
     undefined,
   );
-  readonly enableColumnPinActions = input(true);
-  readonly enableColumnReorderActions = input(false);
+
+  public readonly enableColumnPinActions = input(true);
+  public readonly enableColumnReorderActions = input(false);
 
   protected canSort(): boolean {
     return this.column().getCanSort();
@@ -258,7 +266,7 @@ export class NatTableHeaderActions {
     return labels.menuLabel?.(this.getMenuContext()) ?? '';
   }
 
-  protected column() {
+  protected column(): HeaderContext<RowData, unknown>['column'] {
     return this.context().column;
   }
 

@@ -1,29 +1,29 @@
 @if (controller(); as ctrl) {
   @if (ctrl.enablePagination()) {
-    <div class="pager" role="group" [attr.aria-label]="resolvedAriaLabel()">
+    <div [attr.aria-label]="resolvedAriaLabel()" class="pager" role="group">
       <button
-        type="button"
-        class="pager-button"
-        [attr.aria-label]="previousPageAriaLabel()"
         [attr.aria-controls]="tableElementId()"
+        [attr.aria-label]="previousPageAriaLabel()"
         [disabled]="!canPreviousPage()"
+        class="pager-button"
+        type="button"
         (click)="previousPage()"
       >
-        <svg class="pager-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" />
+        <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
+          <path d="M10.5 3.5 5 8l5.5 4.5-1 1.2L2.8 8l6.7-5.7 1 1.2Z" fill="currentColor" />
         </svg>
       </button>
       <span class="pager-label">{{ pageIndicator() }}</span>
       <button
-        type="button"
-        class="pager-button"
-        [attr.aria-label]="nextPageAriaLabel()"
         [attr.aria-controls]="tableElementId()"
+        [attr.aria-label]="nextPageAriaLabel()"
         [disabled]="!canNextPage()"
+        class="pager-button"
+        type="button"
         (click)="nextPage()"
       >
-        <svg class="pager-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z" />
+        <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
+          <path d="m5.5 3.5 1-1.2L13.2 8l-6.7 5.7-1-1.2L10 8 5.5 3.5Z" fill="currentColor" />
         </svg>
       </button>
     </div>

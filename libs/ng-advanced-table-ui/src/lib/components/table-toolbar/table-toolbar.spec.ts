@@ -1,15 +1,18 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+
 import { vi } from 'vitest';
 
-import { NatTableToolbar } from './table-toolbar';
-import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
 import { NAT_TOOLBAR_ITEM } from './common/toolbar-tokens.const';
 import type { NatToolbarItemRef } from './common/toolbar-tokens.type';
+import { NatTableToolbar } from './table-toolbar';
+import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
 import type { NatTableUiController } from '../../shared/table-ui.types';
 
 @Component({
+  selector: 'nat-toolbar-controller-host',
   imports: [NatTableToolbar],
   template: `<nat-table-toolbar [for]="controller()" />`,
 })
@@ -29,6 +32,7 @@ function createControllerStub(): NatTableUiController {
 }
 
 @Component({
+  selector: 'nat-toolbar-shell-host',
   imports: [NatTableToolbar],
   template: `
     <nat-table-toolbar [accessibleName]="accessibleName()">
@@ -41,16 +45,17 @@ class ToolbarShellHost {
 }
 
 @Component({
+  selector: 'nat-toolbar-items-host',
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="alpha" natToolbarItemPosition="start" class="item-alpha">
+      <button class="item-alpha" natToolbarItem="alpha" natToolbarItemPosition="start" type="button">
         Alpha
       </button>
       @if (showBeta()) {
-        <button natToolbarItem="beta" class="item-beta">Beta</button>
+        <button class="item-beta" natToolbarItem="beta" type="button">Beta</button>
       }
-      <button natToolbarItem="gamma" class="item-gamma">Gamma</button>
+      <button class="item-gamma" natToolbarItem="gamma" type="button">Gamma</button>
     </nat-table-toolbar>
   `,
 })
@@ -59,15 +64,18 @@ class ToolbarItemsHost {
 }
 
 @Component({
+  selector: 'nat-toolbar-slots-host',
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="end" natToolbarItemPosition="end" class="slot-end">End</button>
-      <button natToolbarItem="bare" class="slot-bare">Bare</button>
-      <button natToolbarItem="center" natToolbarItemPosition="center" class="slot-center">
+      <button class="slot-end" natToolbarItem="end" natToolbarItemPosition="end" type="button">
+        End
+      </button>
+      <button class="slot-bare" natToolbarItem="bare" type="button">Bare</button>
+      <button class="slot-center" natToolbarItem="center" natToolbarItemPosition="center" type="button">
         Center
       </button>
-      <button natToolbarItem="start" natToolbarItemPosition="start" class="slot-start">
+      <button class="slot-start" natToolbarItem="start" natToolbarItemPosition="start" type="button">
         Start
       </button>
     </nat-table-toolbar>
@@ -90,7 +98,9 @@ describe('NatTableToolbar', () => {
   });
 
   function getToolbarElement(fixture: ComponentFixture<unknown>): HTMLElement {
-    return fixture.nativeElement.querySelector('nat-table-toolbar') as HTMLElement;
+    return (fixture.nativeElement as HTMLElement).querySelector(
+      'nat-table-toolbar',
+    ) as HTMLElement;
   }
 
   it('renders a horizontal toolbar landmark around projected content', () => {
@@ -102,7 +112,7 @@ describe('NatTableToolbar', () => {
 
     expect(toolbar.getAttribute('role')).toBe('toolbar');
     expect(toolbar.getAttribute('aria-orientation')).toBe('horizontal');
-    expect(toolbar.querySelector('.projected')?.textContent?.trim()).toBe('Projected content');
+    expect(toolbar.querySelector('.projected')?.textContent.trim()).toBe('Projected content');
   });
 
   it('labels the toolbar from intl defaults and lets accessibleName win', () => {
@@ -144,9 +154,10 @@ describe('NatTableToolbar', () => {
     const spacers = children.flatMap((el, i) =>
       el.classList.contains('nat-toolbar-spacer') ? [i] : [],
     );
-    const indexOf = (cls: string) => children.findIndex((el) => el.classList.contains(cls));
+    const indexOf = (cls: string): number =>
+      children.findIndex((el) => el.classList.contains(cls));
 
-    expect(spacers.length).toBe(2);
+    expect(spacers).toHaveLength(2);
     // start and the position-less item share the leading (start) slot
     expect(indexOf('slot-start')).toBeLessThan(spacers[0]);
     expect(indexOf('slot-bare')).toBeLessThan(spacers[0]);
@@ -164,7 +175,7 @@ describe('NatTableToolbar', () => {
 
     const [alpha, beta, gamma] = getItemRefs(fixture);
 
-    expect(getItemRefs(fixture).length).toBe(3);
+    expect(getItemRefs(fixture)).toHaveLength(3);
     expect(alpha.element.getAttribute('tabindex')).toBe('0');
     expect(beta.element.getAttribute('tabindex')).toBe('-1');
     expect(gamma.element.getAttribute('tabindex')).toBe('-1');
@@ -173,8 +184,8 @@ describe('NatTableToolbar', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(getItemRefs(fixture).length).toBe(2);
-    expect(getItemRefs(fixture).map((item) => item.id)).toEqual([alpha.id, gamma.id]);
+    expect(getItemRefs(fixture)).toHaveLength(2);
+    expect(getItemRefs(fixture).map((item) => item.id)).toStrictEqual([alpha.id, gamma.id]);
   });
 });
 
@@ -190,20 +201,21 @@ describe('NatTableToolbar no-controller dev warning', () => {
       providers: [provideZonelessChangeDetection()],
     });
     const fixture = TestBed.createComponent(ToolbarShellHost);
+
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const guardCalls = () =>
+    const guardCalls = (): unknown[][] =>
       warnSpy.mock.calls.filter((call) =>
         String(call[0]).includes('nat-table-toolbar: no controller resolved'),
       );
 
-    expect(guardCalls().length).toBe(1);
+    expect(guardCalls()).toHaveLength(1);
 
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(guardCalls().length).toBe(1);
+    expect(guardCalls()).toHaveLength(1);
   });
 
   it('does not warn when [for] is bound before the first render', async () => {
@@ -213,6 +225,7 @@ describe('NatTableToolbar no-controller dev warning', () => {
       providers: [provideZonelessChangeDetection()],
     });
     const fixture = TestBed.createComponent(ToolbarControllerHost);
+
     fixture.componentInstance.controller.set(createControllerStub());
     fixture.detectChanges();
     await fixture.whenStable();
@@ -221,6 +234,6 @@ describe('NatTableToolbar no-controller dev warning', () => {
       String(call[0]).includes('nat-table-toolbar: no controller resolved'),
     );
 
-    expect(guardCalls.length).toBe(0);
+    expect(guardCalls).toHaveLength(0);
   });
 });

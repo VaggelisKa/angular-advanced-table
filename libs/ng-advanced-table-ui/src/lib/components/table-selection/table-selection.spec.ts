@@ -1,8 +1,8 @@
-import { Component, signal } from '@angular/core';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import type { ColumnDef } from '@tanstack/angular-table';
+import { Component, provideZonelessChangeDetection, signal  } from '@angular/core';
+import type { ComponentFixture} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
+import type { ColumnDef } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 
@@ -14,6 +14,8 @@ type Row = {
   readonly name: string;
 };
 
+const getRowId = (row: Row): string => row.id;
+
 const baseColumns: ColumnDef<Row, unknown>[] = [
   {
     accessorKey: 'name',
@@ -24,39 +26,42 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
 ];
 
 @Component({
+  selector: 'nat-selection-host',
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="state()" (stateChange)="state.set($event)">
       <nat-table
-        [data]="rows()"
         [columns]="columns"
+        [data]="rows()"
         [enableRowSelection]="true"
-        [selectionMode]="selectionMode"
         [getRowId]="getRowId"
+        [selectionMode]="selectionMode"
         accessibleName="Selection table"
       />
     </nat-table-surface>
   `,
 })
 class SelectionHost {
-  readonly rows = signal<Row[]>([
+  protected readonly rows = signal<Row[]>([
     { id: 'r1', name: 'Alpha' },
     { id: 'r2', name: 'Beta' },
     { id: 'r3', name: 'Gamma' },
   ]);
-  readonly columns = withNatTableSelectionColumn(baseColumns);
-  readonly getRowId = (row: Row) => row.id;
-  selectionMode: 'single' | 'multiple' = 'multiple';
-  readonly state = signal<Partial<NatTableState>>({});
+
+  protected readonly columns = withNatTableSelectionColumn(baseColumns);
+  protected readonly getRowId = getRowId;
+  public selectionMode: 'single' | 'multiple' = 'multiple';
+  public readonly state = signal<Partial<NatTableState>>({});
 }
 
 @Component({
+  selector: 'nat-selection-override-host',
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface>
       <nat-table
-        [data]="rows()"
         [columns]="columns"
+        [data]="rows()"
         [enableRowSelection]="true"
         [getRowId]="getRowId"
         accessibleName="Selection override table"
@@ -65,12 +70,13 @@ class SelectionHost {
   `,
 })
 class SelectionOverrideHost {
-  readonly rows = signal<Row[]>([{ id: 'r1', name: 'Alpha' }]);
-  readonly columns = withNatTableSelectionColumn(baseColumns, {
+  protected readonly rows = signal<Row[]>([{ id: 'r1', name: 'Alpha' }]);
+  protected readonly columns = withNatTableSelectionColumn(baseColumns, {
     selectAllAriaLabel: 'Pick every service',
-    selectRowAriaLabel: (row) => `Pick service ${row.id}`,
+    selectRowAriaLabel: (row): string => `Pick service ${row.id}`,
   });
-  readonly getRowId = (row: Row) => row.id;
+
+  protected readonly getRowId = getRowId;
 }
 
 describe('withNatTableSelectionColumn', () => {
@@ -89,61 +95,64 @@ describe('withNatTableSelectionColumn', () => {
     fixture.detectChanges();
   });
 
-  function selectedRowCount(): number {
-    return Array.from(fixture.nativeElement.querySelectorAll('tbody tr.data-row')).filter(
-      (row) => (row as HTMLElement).getAttribute('aria-selected') === 'true',
-    ).length;
-  }
+  const root = (target: ComponentFixture<unknown> = fixture): HTMLElement =>
+    target.nativeElement as HTMLElement;
 
-  function headerCheckbox(): HTMLInputElement {
-    return fixture.nativeElement.querySelector(
+  const selectedRowCount = (): number =>
+    Array.from(root().querySelectorAll('tbody tr.data-row')).filter(
+      (row) => row.getAttribute('aria-selected') === 'true',
+    ).length;
+
+  const headerCheckbox = (): HTMLInputElement =>
+    root().querySelector<HTMLInputElement>(
       'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox',
     ) as HTMLInputElement;
-  }
 
-  function rowCheckbox(index: number): HTMLInputElement {
-    return fixture.nativeElement.querySelectorAll(
+  const rowCheckbox = (index: number): HTMLInputElement =>
+    root().querySelectorAll<HTMLInputElement>(
       'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
-    )[index] as HTMLInputElement;
-  }
+    )[index];
 
   it('prepends a selection column with a header and per-row checkboxes', () => {
     expect(headerCheckbox()).toBeTruthy();
     expect(headerCheckbox().getAttribute('aria-label')).toBe('Select all rows');
     expect(
-      fixture.nativeElement.querySelectorAll(
+      root().querySelectorAll(
         'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
-      ).length,
-    ).toBe(3);
+      ),
+    ).toHaveLength(3);
 
-    const firstHeader = fixture.nativeElement.querySelector('thead th') as HTMLElement;
+    const firstHeader = root().querySelector<HTMLElement>('thead th') as HTMLElement;
+
     expect(firstHeader.dataset['columnId']).toBe('__natSelect');
   });
 
   it('renders the plain column label instead of a select-all checkbox in single mode', async () => {
     // Set single mode before the first change detection to avoid NG0100.
     const single = TestBed.createComponent(SelectionHost);
+
     single.componentInstance.selectionMode = 'single';
     await single.whenStable();
     single.detectChanges();
 
-    const selectHeader = single.nativeElement.querySelector(
+    const selectHeader = root(single).querySelector<HTMLElement>(
       'thead th[data-column-id="__natSelect"]',
     ) as HTMLElement;
+
     expect(selectHeader.querySelector('input.nat-selection-checkbox')).toBeNull();
-    expect(selectHeader.textContent?.trim()).toBe('Selection');
+    expect(selectHeader.textContent.trim()).toBe('Selection');
 
     single.destroy();
   });
 
   it('gives each per-row checkbox a unique default aria-label derived from the row id', () => {
     const labels = Array.from(
-      fixture.nativeElement.querySelectorAll(
+      root().querySelectorAll<HTMLInputElement>(
         'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
       ),
-    ).map((input) => (input as HTMLInputElement).getAttribute('aria-label'));
+    ).map((input) => input.getAttribute('aria-label'));
 
-    expect(labels).toEqual(['Select row r1', 'Select row r2', 'Select row r3']);
+    expect(labels).toStrictEqual(['Select row r1', 'Select row r2', 'Select row r3']);
   });
 
   it('prefers explicit label overrides over the locale defaults', async () => {
@@ -152,10 +161,10 @@ describe('withNatTableSelectionColumn', () => {
     await overrideFixture.whenStable();
     overrideFixture.detectChanges();
 
-    const header = overrideFixture.nativeElement.querySelector(
+    const header = root(overrideFixture).querySelector<HTMLInputElement>(
       'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox',
     ) as HTMLInputElement;
-    const cell = overrideFixture.nativeElement.querySelector(
+    const cell = root(overrideFixture).querySelector<HTMLInputElement>(
       'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox',
     ) as HTMLInputElement;
 
@@ -171,7 +180,7 @@ describe('withNatTableSelectionColumn', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.state().rowSelection).toEqual({ r1: true });
+    expect(host.state().rowSelection).toStrictEqual({ r1: true });
     expect(selectedRowCount()).toBe(1);
   });
 
@@ -208,7 +217,7 @@ describe('withNatTableSelectionColumn', () => {
     fixture.detectChanges();
 
     expect(selectedRowCount()).toBe(0);
-    expect(host.state().rowSelection).toEqual({});
+    expect(host.state().rowSelection).toStrictEqual({});
     expect(headerCheckbox().checked).toBe(false);
     expect(headerCheckbox().indeterminate).toBe(false);
   });

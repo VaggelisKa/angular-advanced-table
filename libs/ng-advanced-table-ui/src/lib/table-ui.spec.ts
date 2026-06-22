@@ -1,8 +1,11 @@
+/* eslint-disable max-lines */
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { type ColumnDef, type FilterFn } from '@tanstack/angular-table';
+import type { ComponentFixture} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
-import { NatTable, provideNatTableIntl, type NatTableState } from 'ng-advanced-table';
+import type {ColumnDef, FilterFn} from '@tanstack/angular-table';
+import { NatTable,  provideNatTableIntl } from 'ng-advanced-table';
+import type {NatTableState} from 'ng-advanced-table';
 
 import { NatTableColumnVisibility } from './components/table-column-visibility/table-column-visibility';
 import { withNatTableHeaderActions } from './components/table-header-actions/with-table-header-actions';
@@ -20,13 +23,27 @@ import type {
   NatTableAccessibilityScrollControlLabels,
 } from './shared/table-ui.types';
 
-interface Row {
+type Row = {
   id: string;
   name: string;
   region: string;
   status: 'Healthy' | 'Pending' | 'Alert';
   throughput: number;
 }
+
+const getRowId = (row: Row): string => row.id;
+
+const sortIndicatorGlyph = (sortState: 'asc' | 'desc' | false): string => {
+  if (sortState === 'asc') {
+    return 'A';
+  }
+
+  if (sortState === 'desc') {
+    return 'D';
+  }
+
+  return '-';
+};
 
 const statusFilter: FilterFn<Row> = (row, columnId, filterValue) => {
   const selectedStatuses = (filterValue ?? []) as Row['status'][];
@@ -82,7 +99,152 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
   },
 ];
 
+const root = (fixture: ComponentFixture<unknown>): HTMLElement =>
+  fixture.nativeElement as HTMLElement;
+
+const buildRows = (size: number): Row[] => {
+  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
+
+  return Array.from({ length: size }, (_, index) => ({
+    id: `svc-${String(index + 1).padStart(5, '0')}`,
+    name: ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'][index] ?? `Service ${index + 1}`,
+    region: ['us-east-1', 'eu-west-3'][index % 2],
+    status: statuses[index % statuses.length],
+    throughput: 1000 + index * 1000,
+  }));
+};
+
+const buildHeaderActionCompositionColumns = (): ColumnDef<Row, unknown>[] =>
+  baseColumns.map((column) => {
+    const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
+
+    if (accessorKey === 'region') {
+      return {
+        ...column,
+        meta: {
+          ...column.meta,
+          headerActions: false,
+        },
+      };
+    }
+
+    if (accessorKey === 'status') {
+      return {
+        ...column,
+        meta: {
+          ...column.meta,
+          headerActions: {
+            sortIndicator: 'Column',
+            accessibilityLabels: {
+              sortButton: ({ label }): string => `Column override for ${label}`,
+            },
+          },
+        },
+      };
+    }
+
+    return column;
+  });
+
+const queryByTestId = <TElement extends HTMLElement = HTMLElement>(
+  testId: string,
+  parent: ParentNode = document,
+): TElement | null => parent.querySelector<TElement>(`[data-testid="${testId}"]`);
+
+const getByTestId = <TElement extends HTMLElement = HTMLElement>(
+  testId: string,
+  parent: ParentNode = document,
+): TElement => {
+  const element = queryByTestId<TElement>(testId, parent);
+
+  if (!element) {
+    throw new Error(`Expected an element with data-testid="${testId}".`);
+  }
+
+  return element;
+};
+
+const getHeaderActionsMenuButton = (
+  fixture: ComponentFixture<unknown>,
+  columnId: string,
+): HTMLButtonElement =>
+  getByTestId(`nat-table-header-actions-menu-${columnId}`, fixture.nativeElement as ParentNode);
+
+const getHeaderColumnIds = (fixture: ComponentFixture<TableUiHost>): string[] =>
+  Array.from(
+    (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(
+      'thead th[data-column-id]',
+    ),
+  ).map((header) => header.dataset['columnId'] ?? '');
+
+const getOpenPinMenu = (): HTMLElement | null => {
+  const menus = Array.from(document.querySelectorAll<HTMLElement>('.column-menu'));
+
+  return menus.at(-1) ?? null;
+};
+
+// eslint-disable-next-line complexity -- guard-and-fallback lookup of an open menu item
+const getOpenMenuItem = (side: 'left' | 'right', columnId = 'name'): HTMLButtonElement => {
+  const menu = getOpenPinMenu();
+
+  if (!menu) {
+    throw new Error('Expected the column actions menu to be open.');
+  }
+
+  const item =
+    queryByTestId<HTMLButtonElement>(`nat-table-header-pin-${side}-${columnId}`) ??
+    menu.querySelector<HTMLButtonElement>(`.column-menu-item[data-pin-side="${side}"]`);
+
+  if (!item) {
+    throw new Error(`Expected a menu item for pin side "${side}".`);
+  }
+
+  return item;
+};
+
+const getOpenMoveMenuItem = (
+  direction: 'left' | 'right',
+  columnId = 'name',
+  // eslint-disable-next-line complexity -- guard-and-fallback lookup of an open menu item
+): HTMLButtonElement => {
+  const menu = getOpenPinMenu();
+
+  if (!menu) {
+    throw new Error('Expected the column actions menu to be open.');
+  }
+
+  const item =
+    queryByTestId<HTMLButtonElement>(`nat-table-header-move-${direction}-${columnId}`) ??
+    menu.querySelector<HTMLButtonElement>(
+      `.column-menu-item[data-move-direction="${direction}"]`,
+    );
+
+  if (!item) {
+    throw new Error(`Expected a menu item for move direction "${direction}".`);
+  }
+
+  return item;
+};
+
+const setScrollMetrics = (
+  element: HTMLElement,
+  metrics: {
+    clientWidth: number;
+    scrollWidth: number;
+  },
+): void => {
+  Object.defineProperty(element, 'clientWidth', {
+    configurable: true,
+    value: metrics.clientWidth,
+  });
+  Object.defineProperty(element, 'scrollWidth', {
+    configurable: true,
+    value: metrics.scrollWidth,
+  });
+};
+
 @Component({
+  selector: 'nat-table-ui-host',
   imports: [
     NatTable,
     NatTableColumnVisibility,
@@ -93,8 +255,8 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
   ],
   template: `
     <nat-table-surface
-      [state]="tableState()"
       [initialState]="initialState"
+      [state]="tableState()"
       (stateChange)="onTableStateChange($event)"
     >
       <nat-table-column-visibility />
@@ -102,8 +264,8 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
       <nat-table-pager />
 
       <nat-table
-        [data]="rows()"
         [columns]="columns"
+        [data]="rows()"
         [getRowId]="getRowId"
         accessibleName="Operations table"
       />
@@ -113,80 +275,85 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
   `,
 })
 class TableUiHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(baseColumns, {
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(baseColumns, {
     enableColumnReorderActions: true,
   });
-  readonly getRowId = (row: Row) => row.id;
-  readonly pageSizeOptions = [2, 3, 5] as const;
-  readonly tableState = signal<Partial<NatTableState>>({});
-  readonly initialState: Partial<NatTableState> = {
+
+  protected readonly getRowId = getRowId;
+  protected readonly pageSizeOptions = [2, 3, 5] as const;
+  public readonly tableState = signal<Partial<NatTableState>>({});
+  protected readonly initialState: Partial<NatTableState> = {
     pagination: {
       pageIndex: 1,
       pageSize: 2,
     },
   };
 
-  stateChangeCalls = 0;
-  onTableStateChange(state: Partial<NatTableState>): void {
+  public stateChangeCalls = 0;
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.stateChangeCalls++;
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-custom-sort-indicator-host',
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
 class CustomSortIndicatorHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(baseColumns, {
-    sortIndicator: ({ sortState }) =>
-      sortState === 'asc' ? 'A' : sortState === 'desc' ? 'D' : '-',
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(baseColumns, {
+    sortIndicator: ({ sortState }) => sortIndicatorGlyph(sortState),
   });
-  readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: Partial<NatTableState>): void {
+  public readonly tableState = signal<Partial<NatTableState>>({});
+
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-move-only-header-actions-host',
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
 class MoveOnlyHeaderActionsHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(baseColumns, {
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(baseColumns, {
     enableColumnPinActions: false,
     enableColumnReorderActions: true,
   });
-  readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: Partial<NatTableState>): void {
+  public readonly tableState = signal<Partial<NatTableState>>({});
+
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-hidden-header-action-label-host',
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
 class HiddenHeaderActionLabelHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(
     baseColumns.map((column) => {
       const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
 
@@ -203,14 +370,16 @@ class HiddenHeaderActionLabelHost {
       };
     }),
   );
-  readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: Partial<NatTableState>): void {
+  public readonly tableState = signal<Partial<NatTableState>>({});
+
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-custom-accessibility-labels-host',
   imports: [
     NatTable,
     NatTableColumnVisibility,
@@ -221,21 +390,21 @@ class HiddenHeaderActionLabelHost {
   ],
   template: `
     <nat-table-surface
-      [state]="tableState()"
       [initialState]="initialState"
+      [state]="tableState()"
       (stateChange)="onTableStateChange($event)"
     >
       <nat-table
         #grid="natTable"
-        [data]="rows()"
         [columns]="columns"
+        [data]="rows()"
         [getRowId]="getRowId"
         accessibleName="Operations table"
       />
       <nat-table-column-visibility [accessibilityLabels]="columnVisibilityLabels" />
       <nat-table-page-size
-        [pageSizeOptions]="pageSizeOptions"
         [accessibilityLabels]="pageSizeLabels"
+        [pageSizeOptions]="pageSizeOptions"
       />
       <nat-table-pager [accessibilityLabels]="pagerLabels" />
       <nat-table-scroll-control [accessibilityLabels]="scrollControlLabels" />
@@ -243,26 +412,29 @@ class HiddenHeaderActionLabelHost {
   `,
 })
 class CustomAccessibilityLabelsHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly pageSizeLabels: NatTableAccessibilityPageSizeLabels = {
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly pageSizeLabels: NatTableAccessibilityPageSizeLabels = {
     groupAriaLabel: 'Rækker pr. side',
     pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
     pageSizeOptionAriaLabel: ({ pageSizeText }) => `Vis ${pageSizeText} rækker`,
   };
-  readonly pagerLabels: NatTableAccessibilityPagerLabels = {
+
+  protected readonly pagerLabels: NatTableAccessibilityPagerLabels = {
     groupAriaLabel: 'Sideskift',
     previousPageAriaLabel: 'Forrige side',
     nextPageAriaLabel: 'Næste side',
     pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`,
   };
-  readonly scrollControlLabels: NatTableAccessibilityScrollControlLabels = {
+
+  protected readonly scrollControlLabels: NatTableAccessibilityScrollControlLabels = {
     groupAriaLabel: 'Vandret tabelrulning',
     scrollLeftAriaLabel: 'Rul tabel til venstre',
     scrollRightAriaLabel: 'Rul tabel til højre',
     scrollPositionAriaLabel: 'Vandret rulleposition',
     scrollPositionText: ({ percentageText }) => `${percentageText} procent`,
   };
-  readonly columnVisibilityLabels: NatTableAccessibilityColumnVisibilityLabels = {
+
+  protected readonly columnVisibilityLabels: NatTableAccessibilityColumnVisibilityLabels = {
     heading: 'Kolonner',
     groupAriaLabel: 'Kolonnesynlighed',
     visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
@@ -271,10 +443,12 @@ class CustomAccessibilityLabelsHost {
       `${toggleAction === 'hide' ? 'Skjul' : 'Vis'} kolonne ${columnLabel}`,
     columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Skjult'),
   };
-  readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
+
+  protected readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
     sortButton: ({ label }) => `Sorter ${label}`,
     menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
     menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
+    // eslint-disable-next-line complexity -- localized label interpolates several independent ternaries
     pinButton: ({ label, toggleAction, pinSide }) =>
       `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
         toggleAction === 'unpin' ? 'fra' : 'til'
@@ -285,26 +459,29 @@ class CustomAccessibilityLabelsHost {
     moveButtonText: ({ direction }) =>
       direction === 'left' ? 'Flyt til venstre' : 'Flyt til højre',
   };
-  readonly columns = withNatTableHeaderActions(baseColumns, {
+
+  protected readonly columns = withNatTableHeaderActions(baseColumns, {
     enableColumnReorderActions: true,
     accessibilityLabels: this.headerActionLabels,
   });
-  readonly getRowId = (row: Row) => row.id;
-  readonly pageSizeOptions = [2, 3, 5] as const;
-  readonly tableState = signal<Partial<NatTableState>>({});
-  readonly initialState: Partial<NatTableState> = {
+
+  protected readonly getRowId = getRowId;
+  protected readonly pageSizeOptions = [2, 3, 5] as const;
+  public readonly tableState = signal<Partial<NatTableState>>({});
+  protected readonly initialState: Partial<NatTableState> = {
     pagination: {
       pageIndex: 1,
       pageSize: 2,
     },
   };
 
-  onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-provider-accessibility-labels-host',
   imports: [
     NatTable,
     NatTableColumnVisibility,
@@ -369,14 +546,14 @@ class CustomAccessibilityLabelsHost {
   ],
   template: `
     <nat-table-surface
-      [state]="tableState()"
       [initialState]="initialState"
+      [state]="tableState()"
       (stateChange)="onTableStateChange($event)"
     >
       <nat-table
         #grid="natTable"
-        [data]="rows()"
         [columns]="columns"
+        [data]="rows()"
         [getRowId]="getRowId"
         accessibleName="Operations table"
       />
@@ -391,27 +568,30 @@ class CustomAccessibilityLabelsHost {
   `,
 })
 class ProviderAccessibilityLabelsHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(baseColumns, {
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(baseColumns, {
     enableColumnReorderActions: true,
   });
-  readonly getRowId = (row: Row) => row.id;
-  readonly pageSizeOptions = [2, 3, 5] as const;
-  readonly tableState = signal<Partial<NatTableState>>({});
-  readonly initialState: Partial<NatTableState> = {
+
+  protected readonly getRowId = getRowId;
+  protected readonly pageSizeOptions = [2, 3, 5] as const;
+  public readonly tableState = signal<Partial<NatTableState>>({});
+  protected readonly initialState: Partial<NatTableState> = {
     pagination: {
       pageIndex: 1,
       pageSize: 2,
     },
   };
-  readonly pageSizeGroupAriaLabel = signal<string | undefined>(undefined);
 
-  onTableStateChange(state: Partial<NatTableState>): void {
+  public readonly pageSizeGroupAriaLabel = signal<string | undefined>(undefined);
+
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-locale-switching-host',
   imports: [NatTable, NatTablePageSize, NatTablePager, NatTableSurface],
   providers: [
     provideNatTableIntl({
@@ -454,7 +634,7 @@ class ProviderAccessibilityLabelsHost {
   ],
   template: `
     <nat-table-surface [locale]="locale()">
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
 
       <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
       <nat-table-pager />
@@ -462,23 +642,24 @@ class ProviderAccessibilityLabelsHost {
   `,
 })
 class LocaleSwitchingHost {
-  readonly locale = signal('en');
-  readonly rows = signal<Row[]>([]);
-  readonly columns = baseColumns;
-  readonly pageSizeOptions = [2, 3] as const;
+  public readonly locale = signal('en');
+  protected readonly rows = signal<Row[]>([]);
+  protected readonly columns = baseColumns;
+  protected readonly pageSizeOptions = [2, 3] as const;
 }
 
 @Component({
+  selector: 'nat-header-action-composition-host',
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
 class HeaderActionCompositionHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(
     withNatTableHeaderActions(buildHeaderActionCompositionColumns(), {
       sortIndicator: 'F',
       accessibilityLabels: {
@@ -496,49 +677,52 @@ class HeaderActionCompositionHost {
       },
     },
   );
-  readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: Partial<NatTableState>): void {
+  public readonly tableState = signal<Partial<NatTableState>>({});
+
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-multi-sort-host',
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface
-      [state]="tableState()"
       [enableMultiSort]="true"
+      [state]="tableState()"
       (stateChange)="onTableStateChange($event)"
     >
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `,
 })
 class MultiSortHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(baseColumns);
-  readonly tableState = signal<Partial<NatTableState>>({});
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(baseColumns);
+  public readonly tableState = signal<Partial<NatTableState>>({});
 
-  onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableState>): void {
     this.tableState.set(state);
   }
 }
 
 @Component({
+  selector: 'nat-pagination-toolbar-host',
   imports: [NatTable, NatTablePagination, NatTableSurface],
   template: `
     <nat-table-surface [initialState]="initialState">
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
       <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
     </nat-table-surface>
   `,
 })
 class PaginationToolbarHost {
-  readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = baseColumns;
-  readonly pageSizeOptions = [2, 3, 5] as const;
-  readonly initialState: Partial<NatTableState> = {
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = baseColumns;
+  protected readonly pageSizeOptions = [2, 3, 5] as const;
+  protected readonly initialState: Partial<NatTableState> = {
     pagination: {
       pageIndex: 0,
       pageSize: 2,
@@ -582,14 +766,15 @@ describe('ng-advanced-table-ui', () => {
   it('renders projected controls inside the themed surface', () => {
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('nat-table-surface .surface')).toBeTruthy();
-    expect(fixture.nativeElement.querySelectorAll('.column-chip').length).toBe(4);
+    expect(root(fixture).querySelector('nat-table-surface .surface')).toBeTruthy();
+    expect(root(fixture).querySelectorAll('.column-chip')).toHaveLength(4);
   });
 
   it('does not emit stateChange on initialization', async () => {
     fixture.destroy();
     const newFixture = TestBed.createComponent(TableUiHost);
     const newHost = newFixture.componentInstance;
+
     newFixture.detectChanges();
     await newFixture.whenStable();
     expect(newHost.stateChangeCalls).toBe(0);
@@ -598,26 +783,26 @@ describe('ng-advanced-table-ui', () => {
   it('associates companion controls with the table element', () => {
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('nat-table table') as HTMLTableElement;
-    const columnChip = fixture.nativeElement.querySelector('.column-chip') as HTMLButtonElement;
-    const pageSizeButton = fixture.nativeElement.querySelector(
+    const table = root(fixture).querySelector('nat-table table') as HTMLTableElement;
+    const columnChip = root(fixture).querySelector('.column-chip') as HTMLButtonElement;
+    const pageSizeButton = root(fixture).querySelector(
       'nat-table-page-size .chip',
     ) as HTMLButtonElement;
-    const pagerButton = fixture.nativeElement.querySelector(
+    const pagerButton = root(fixture).querySelector(
       'nat-table-pager .pager-button',
     ) as HTMLButtonElement;
-    const scrollButton = fixture.nativeElement.querySelector(
+    const scrollButton = root(fixture).querySelector(
       'nat-table-scroll-control .scroll-button',
     ) as HTMLButtonElement;
-    const scrollRange = fixture.nativeElement.querySelector(
+    const scrollRange = root(fixture).querySelector(
       'nat-table-scroll-control .scroll-range',
     ) as HTMLInputElement;
 
     expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
-    expect(columnChip.textContent?.replaceAll(/\s+/g, ' ').trim()).toBe('Service Shown');
+    expect(columnChip.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Service Shown');
     expect(columnChip.getAttribute('aria-label')).toBe('Service shown. Hide column');
     expect(pageSizeButton.getAttribute('aria-controls')).toBe(table.id);
-    expect(pageSizeButton.textContent?.trim()).toBe('2 rows');
+    expect(pageSizeButton.textContent.trim()).toBe('2 rows');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
     expect(pagerButton.getAttribute('aria-controls')).toBe(table.id);
     expect(scrollButton.getAttribute('aria-controls')).toBe(table.id);
@@ -628,19 +813,19 @@ describe('ng-advanced-table-ui', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const tableRegion = fixture.nativeElement.querySelector(
+    const tableRegion = root(fixture).querySelector(
       'nat-table .table-region',
     ) as HTMLElement;
-    const leftButton = fixture.nativeElement.querySelector(
+    const leftButton = root(fixture).querySelector(
       'nat-table-scroll-control .scroll-button-left',
     ) as HTMLButtonElement;
-    const rightButton = fixture.nativeElement.querySelector(
+    const rightButton = root(fixture).querySelector(
       'nat-table-scroll-control .scroll-button-right',
     ) as HTMLButtonElement;
-    const range = fixture.nativeElement.querySelector(
+    const range = root(fixture).querySelector(
       'nat-table-scroll-control .scroll-range',
     ) as HTMLInputElement;
-    const position = fixture.nativeElement.querySelector(
+    const position = root(fixture).querySelector(
       'nat-table-scroll-control .scroll-range-copy',
     ) as HTMLElement;
 
@@ -655,7 +840,7 @@ describe('ng-advanced-table-ui', () => {
     expect(rightButton.disabled).toBe(false);
     expect(range.max).toBe('600');
     expect(range.value).toBe('0');
-    expect(position.textContent?.trim()).toBe('0% scrolled');
+    expect(position.textContent.trim()).toBe('0% scrolled');
 
     rightButton.click();
     fixture.detectChanges();
@@ -671,14 +856,14 @@ describe('ng-advanced-table-ui', () => {
 
     expect(tableRegion.scrollLeft).toBe(600);
     expect(rightButton.disabled).toBe(true);
-    expect(position.textContent?.trim()).toBe('100% scrolled');
+    expect(position.textContent.trim()).toBe('100% scrolled');
   });
 
   it('toggles column visibility and keeps the last visible column enabled', () => {
     fixture.detectChanges();
 
     for (const columnId of ['region', 'status', 'throughput']) {
-      const chip = fixture.nativeElement.querySelector(
+      const chip = root(fixture).querySelector(
         `.column-chip[data-column-id="${columnId}"]`,
       ) as HTMLButtonElement;
 
@@ -686,30 +871,30 @@ describe('ng-advanced-table-ui', () => {
       fixture.detectChanges();
     }
 
-    const lastVisibleChip = fixture.nativeElement.querySelector(
+    const lastVisibleChip = root(fixture).querySelector(
       '.column-chip[data-column-id="name"]',
     ) as HTMLButtonElement;
 
     expect(lastVisibleChip.disabled).toBe(true);
-    expect(fixture.nativeElement.querySelectorAll('thead th').length).toBe(1);
+    expect(root(fixture).querySelectorAll('thead th')).toHaveLength(1);
   });
 
   it('updates page size and pager state through the UI controls', () => {
     fixture.detectChanges();
 
     const pageSizeButton = Array.from(
-      fixture.nativeElement.querySelectorAll('nat-table-page-size .chip'),
+      root(fixture).querySelectorAll('nat-table-page-size .chip'),
     )
       .map((button) => button as HTMLButtonElement)
-      .find((button) => button.textContent?.includes('3 rows')) as HTMLButtonElement;
-    const nextButton = fixture.nativeElement.querySelector(
+      .find((button) => button.textContent.includes('3 rows')) as HTMLButtonElement;
+    const nextButton = root(fixture).querySelector(
       'nat-table-pager .pager-button:last-child',
     ) as HTMLButtonElement;
 
     pageSizeButton.click();
     fixture.detectChanges();
 
-    expect(host.tableState().pagination).toEqual({
+    expect(host.tableState().pagination).toStrictEqual({
       pageIndex: 0,
       pageSize: 3,
     });
@@ -717,7 +902,7 @@ describe('ng-advanced-table-ui', () => {
     nextButton.click();
     fixture.detectChanges();
 
-    expect(host.tableState().pagination).toEqual({
+    expect(host.tableState().pagination).toStrictEqual({
       pageIndex: 1,
       pageSize: 3,
     });
@@ -726,55 +911,57 @@ describe('ng-advanced-table-ui', () => {
   it('renders NatTablePagination as a toolbar with grouped controls', () => {
     fixture.destroy();
     const paginationFixture = TestBed.createComponent(PaginationToolbarHost);
+
     paginationFixture.detectChanges();
 
-    const toolbar = paginationFixture.nativeElement.querySelector(
+    const toolbar = root(paginationFixture).querySelector(
       'nat-table-pagination nat-table-toolbar',
     ) as HTMLElement;
-    const groups = paginationFixture.nativeElement.querySelectorAll(
+    const groups = root(paginationFixture).querySelectorAll(
       'nat-table-pagination [natToolbarGroup]',
     );
 
     expect(toolbar).toBeTruthy();
     expect(toolbar.getAttribute('role')).toBe('toolbar');
     expect(toolbar.getAttribute('aria-label')).toBe('Table pagination');
-    expect(groups.length).toBe(2);
+    expect(groups).toHaveLength(2);
     expect(
-      paginationFixture.nativeElement.querySelectorAll('nat-table-pagination .chip').length,
-    ).toBe(3);
+      root(paginationFixture).querySelectorAll('nat-table-pagination .chip'),
+    ).toHaveLength(3);
     expect(
-      paginationFixture.nativeElement.querySelectorAll('nat-table-pagination .pager-button').length,
-    ).toBe(2);
+      root(paginationFixture).querySelectorAll('nat-table-pagination .pager-button'),
+    ).toHaveLength(2);
   });
 
+  // eslint-disable-next-line complexity -- end-to-end UI assertion walks many independent controls
   it('wraps headers with sort and column actions without losing the original label', async () => {
     await recreateHost();
     fixture.detectChanges();
 
-    const headerLabel = fixture.nativeElement.querySelector(
+    const headerLabel = root(fixture).querySelector(
       'thead th[data-column-id="name"] .header-label',
     ) as HTMLElement;
-    const sortButton = fixture.nativeElement.querySelector(
+    const sortButton = root(fixture).querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
-    const menuButton = fixture.nativeElement.querySelector(
+    const menuButton = root(fixture).querySelector(
       'thead th[data-column-id="name"] .menu-button',
     ) as HTMLButtonElement;
-    const sortIcon = fixture.nativeElement.querySelector(
+    const sortIcon = root(fixture).querySelector(
       'thead th[data-column-id="name"] .sort-icon',
     ) as HTMLElement;
-    const reorderableHeader = fixture.nativeElement.querySelector(
+    const reorderableHeader = root(fixture).querySelector(
       'thead th[data-column-id="name"]',
     ) as HTMLTableCellElement;
 
-    expect(headerLabel.textContent?.trim()).toBe('Service');
+    expect(headerLabel.textContent.trim()).toBe('Service');
     expect(reorderableHeader.classList.contains('is-reorderable')).toBe(true);
     expect(reorderableHeader.classList.contains('cdk-drag')).toBe(true);
     expect(reorderableHeader.querySelector('.column-reorder-handle')).toBeNull();
     expect(sortButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(menuButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(
-      fixture.nativeElement
+      root(fixture)
         .querySelector('thead th[data-column-id="name"]')
         ?.getAttribute('aria-sort'),
     ).toBeNull();
@@ -789,15 +976,15 @@ describe('ng-advanced-table-ui', () => {
     sortButton.click();
     fixture.detectChanges();
 
-    expect(host.tableState().sorting).toEqual([{ id: 'name', desc: false }]);
+    expect(host.tableState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
     expect(sortButton.classList.contains('is-sorted')).toBe(true);
     expect(
-      fixture.nativeElement
+      root(fixture)
         .querySelector('thead th[data-column-id="name"]')
         ?.getAttribute('aria-sort'),
     ).toBe('ascending');
     expect(
-      fixture.nativeElement
+      root(fixture)
         .querySelector('thead th[data-column-id="name"] .nat-default-sort')
         ?.getAttribute('data-sort-state'),
     ).toBe('asc');
@@ -819,10 +1006,10 @@ describe('ng-advanced-table-ui', () => {
     expect(openMenu?.getAttribute('aria-label')).toBe('Column actions for Service column');
     expect(leftPinMenuItem.getAttribute('role')).toBe('menuitem');
     expect(rightPinMenuItem.getAttribute('role')).toBe('menuitem');
-    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
       'Pin left',
     );
-    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
       'Pin right',
     );
     expect(
@@ -838,7 +1025,7 @@ describe('ng-advanced-table-ui', () => {
     expect(rightMoveMenuItem.disabled).toBe(false);
     expect(leftMoveMenuItem.getAttribute('aria-label')).toBe('Move Service column left');
     expect(rightMoveMenuItem.getAttribute('aria-label')).toBe('Move Service column right');
-    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
       'Move right',
     );
 
@@ -847,7 +1034,7 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.tableState().columnPinning).toEqual({
+    expect(host.tableState().columnPinning).toStrictEqual({
       left: ['name'],
       right: [],
     });
@@ -863,7 +1050,7 @@ describe('ng-advanced-table-ui', () => {
     expect(updatedLeftPinMenuItem.classList.contains('is-active')).toBe(true);
     expect(updatedRightPinMenuItem.classList.contains('is-active')).toBe(false);
     expect(
-      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim(),
+      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim(),
     ).toBe('Unpin left');
 
     updatedRightPinMenuItem.click();
@@ -871,25 +1058,25 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.tableState().columnPinning).toEqual({
+    expect(host.tableState().columnPinning).toStrictEqual({
       left: [],
       right: ['name'],
     });
-    expect(getHeaderColumnIds(fixture)).toEqual(['region', 'status', 'throughput', 'name']);
-    const rightPinnedHeaderActions = fixture.nativeElement.querySelector(
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['region', 'status', 'throughput', 'name']);
+    const rightPinnedHeaderActions = root(fixture).querySelector(
       'thead th[data-column-id="name"] .header-actions-row',
     ) as HTMLElement;
 
     expect(rightPinnedHeaderActions.lastElementChild?.classList.contains('header-controls')).toBe(
       true,
     );
-    expect(headerLabel.textContent?.trim()).toBe('Service');
+    expect(headerLabel.textContent.trim()).toBe('Service');
   });
 
   it('wraps the header controls in one grid-cell widget and keeps them keyboard-reachable', () => {
     fixture.detectChanges();
 
-    const header = fixture.nativeElement.querySelector(
+    const header = root(fixture).querySelector(
       'thead th[data-column-id="name"]',
     ) as HTMLTableCellElement;
     const widgets = header.querySelectorAll('[ngGridCellWidget]');
@@ -897,7 +1084,7 @@ describe('ng-advanced-table-ui', () => {
     const menuButton = header.querySelector('.menu-button') as HTMLButtonElement;
 
     // One complex widget per cell wraps both controls, per the aria grid pattern.
-    expect(widgets.length).toBe(1);
+    expect(widgets).toHaveLength(1);
     expect(widgets[0].classList.contains('header-content')).toBe(true);
     expect(sortButton.tabIndex).toBe(0);
     expect(menuButton.tabIndex).toBe(0);
@@ -936,7 +1123,7 @@ describe('ng-advanced-table-ui', () => {
 
     hiddenFixture.detectChanges();
 
-    const nameHeader = hiddenFixture.nativeElement.querySelector(
+    const nameHeader = root(hiddenFixture).querySelector(
       'thead th[data-column-id="name"]',
     ) as HTMLElement;
     const headerLabel = nameHeader.querySelector('.header-label') as HTMLElement;
@@ -944,7 +1131,7 @@ describe('ng-advanced-table-ui', () => {
     const menuButton = nameHeader.querySelector('.menu-button') as HTMLButtonElement;
 
     expect(headerLabel.classList.contains('sr-only')).toBe(true);
-    expect(headerLabel.textContent?.trim()).toBe('Row actions');
+    expect(headerLabel.textContent.trim()).toBe('Row actions');
     expect(sortButton).toBeTruthy();
     expect(menuButton).toBeTruthy();
     expect(sortButton.getAttribute('aria-label')).toBe('Sort by Row actions');
@@ -958,10 +1145,10 @@ describe('ng-advanced-table-ui', () => {
   it('keeps the column actions menu on the right for end-aligned headers', () => {
     fixture.detectChanges();
 
-    const endAlignedHeaderContent = fixture.nativeElement.querySelector(
+    const endAlignedHeaderContent = root(fixture).querySelector(
       'thead th[data-column-id="throughput"] .header-content',
     ) as HTMLElement;
-    const endAlignedHeaderActions = fixture.nativeElement.querySelector(
+    const endAlignedHeaderActions = root(fixture).querySelector(
       'thead th[data-column-id="throughput"] .header-actions-row',
     ) as HTMLElement;
 
@@ -974,7 +1161,7 @@ describe('ng-advanced-table-ui', () => {
   it('keeps the column actions menu on the right for right-pinned end-aligned headers', async () => {
     fixture.detectChanges();
 
-    const throughputMenuButton = fixture.nativeElement.querySelector(
+    const throughputMenuButton = root(fixture).querySelector(
       'thead th[data-column-id="throughput"] .menu-button',
     ) as HTMLButtonElement;
 
@@ -988,12 +1175,12 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(host.tableState().columnPinning).toEqual({
+    expect(host.tableState().columnPinning).toStrictEqual({
       left: [],
       right: ['throughput'],
     });
 
-    const rightPinnedEndAlignedHeaderActions = fixture.nativeElement.querySelector(
+    const rightPinnedEndAlignedHeaderActions = root(fixture).querySelector(
       'thead th[data-column-id="throughput"] .header-actions-row',
     ) as HTMLElement;
 
@@ -1005,10 +1192,10 @@ describe('ng-advanced-table-ui', () => {
   it('announces sort updates through the table live region', async () => {
     fixture.detectChanges();
 
-    const sortButton = fixture.nativeElement.querySelector(
+    const sortButton = root(fixture).querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
-    const liveRegion = fixture.nativeElement.querySelector(
+    const liveRegion = root(fixture).querySelector(
       'nat-table p[aria-live="polite"]',
     ) as HTMLElement;
 
@@ -1017,14 +1204,14 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
+    expect(liveRegion.textContent.trim()).toBe('Sorted by Service ascending.');
   });
 
   it('moves columns through the header actions menu and announces the move', async () => {
     fixture.detectChanges();
 
     const regionMenuButton = getHeaderActionsMenuButton(fixture, 'region');
-    const liveRegion = fixture.nativeElement.querySelector(
+    const liveRegion = root(fixture).querySelector(
       'nat-table p[aria-live="polite"]',
     ) as HTMLElement;
 
@@ -1042,9 +1229,9 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
-    expect(host.tableState().columnOrder).toEqual(['name', 'status', 'region', 'throughput']);
-    expect(liveRegion.textContent?.trim()).toBe(
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
+    expect(host.tableState().columnOrder).toStrictEqual(['name', 'status', 'region', 'throughput']);
+    expect(liveRegion.textContent.trim()).toBe(
       'Moved Region column to position 3 of 4 in the unpinned region.',
     );
   });
@@ -1070,8 +1257,8 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['region', 'name', 'status', 'throughput']);
-    expect(host.tableState().columnPinning).toEqual({
+    expect(getHeaderColumnIds(fixture)).toStrictEqual(['region', 'name', 'status', 'throughput']);
+    expect(host.tableState().columnPinning).toStrictEqual({
       left: ['region', 'name'],
       right: [],
     });
@@ -1102,26 +1289,27 @@ describe('ng-advanced-table-ui', () => {
 
     customFixture.detectChanges();
 
-    let sortIcon = customFixture.nativeElement.querySelector(
+    let sortIcon = root(customFixture).querySelector(
       'thead th[data-column-id="name"] .sort-icon',
     ) as HTMLElement;
-    const sortButton = customFixture.nativeElement.querySelector(
+    const sortButton = root(customFixture).querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
 
-    expect(sortIcon.textContent?.trim()).toBe('-');
+    expect(sortIcon.textContent.trim()).toBe('-');
 
     sortButton.click();
     customFixture.detectChanges();
 
-    sortIcon = customFixture.nativeElement.querySelector(
+    sortIcon = root(customFixture).querySelector(
       'thead th[data-column-id="name"] .sort-icon',
     ) as HTMLElement;
 
-    expect(sortIcon.textContent?.trim()).toBe('A');
+    expect(sortIcon.textContent.trim()).toBe('A');
     expect(sortIcon.textContent).not.toContain('↕');
   });
 
+  // eslint-disable-next-line complexity -- end-to-end UI assertion walks many independent controls
   it('renders caller-provided accessibility labels across the UI controls', async () => {
     const customFixture = TestBed.createComponent(CustomAccessibilityLabelsHost);
 
@@ -1177,18 +1365,18 @@ describe('ng-advanced-table-ui', () => {
       'thead th[data-column-id="name"] .menu-button',
     ) as HTMLButtonElement;
 
-    expect(visibilityHeading.textContent?.trim()).toBe('Kolonner');
-    expect(visibilityCaption.textContent?.trim()).toBe('4 af 4 synlige');
+    expect(visibilityHeading.textContent.trim()).toBe('Kolonner');
+    expect(visibilityCaption.textContent.trim()).toBe('4 af 4 synlige');
     expect(visibilityGroup.getAttribute('aria-label')).toBe('Kolonnesynlighed');
     expect(firstColumnChip.getAttribute('aria-label')).toBe('Skjul kolonne Service');
-    expect(firstColumnState.textContent?.trim()).toBe('Synlig');
+    expect(firstColumnState.textContent.trim()).toBe('Synlig');
 
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
-    expect(pageSizeButton.textContent?.trim()).toBe('2 rækker');
+    expect(pageSizeButton.textContent.trim()).toBe('2 rækker');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker');
 
     expect(pager.getAttribute('aria-label')).toBe('Sideskift');
-    expect(pagerLabel.textContent?.trim()).toBe('Side 2 af 3');
+    expect(pagerLabel.textContent.trim()).toBe('Side 2 af 3');
     expect(previousButton.getAttribute('aria-label')).toBe('Forrige side');
     expect(nextButton.getAttribute('aria-label')).toBe('Næste side');
 
@@ -1196,7 +1384,7 @@ describe('ng-advanced-table-ui', () => {
     expect(scrollLeftButton.getAttribute('aria-label')).toBe('Rul tabel til venstre');
     expect(scrollRightButton.getAttribute('aria-label')).toBe('Rul tabel til højre');
     expect(scrollRange.getAttribute('aria-label')).toBe('Vandret rulleposition');
-    expect(scrollPosition.textContent?.trim()).toBe('0 procent');
+    expect(scrollPosition.textContent.trim()).toBe('0 procent');
 
     expect(sortButton.getAttribute('aria-label')).toBe('Sorter Service');
     expect(menuButton.getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
@@ -1214,16 +1402,16 @@ describe('ng-advanced-table-ui', () => {
     const rightMoveMenuItem = getOpenMoveMenuItem('right');
 
     expect(leftPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til venstre');
-    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
       'Venstre',
     );
     expect(rightPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til højre');
-    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
       'Højre',
     );
     expect(leftMoveMenuItem.getAttribute('aria-label')).toBe('Flyt kolonne Service til venstre');
     expect(rightMoveMenuItem.getAttribute('aria-label')).toBe('Flyt kolonne Service til højre');
-    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
       'Flyt til højre',
     );
 
@@ -1244,20 +1432,20 @@ describe('ng-advanced-table-ui', () => {
       'Frigør kolonne Service fra venstre',
     );
     expect(
-      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim(),
+      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim(),
     ).toBe('Venstre');
     expect(updatedRightPinMenuItem.getAttribute('aria-label')).toBe(
       'Fastgør kolonne Service til højre',
     );
     expect(
-      updatedRightPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim(),
+      updatedRightPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim(),
     ).toBe('Højre');
 
     firstColumnChip.click();
     customFixture.detectChanges();
 
     expect(firstColumnChip.getAttribute('aria-label')).toBe('Vis kolonne Service');
-    expect(firstColumnState.textContent?.trim()).toBe('Skjult');
+    expect(firstColumnState.textContent.trim()).toBe('Skjult');
 
     customFixture.destroy();
   });
@@ -1305,18 +1493,18 @@ describe('ng-advanced-table-ui', () => {
       'thead th[data-column-id="name"] .menu-button',
     ) as HTMLButtonElement;
 
-    expect(visibilityHeading.textContent?.trim()).toBe('Provider columns');
-    expect(visibilityCaption.textContent?.trim()).toBe('Provider n4/n4');
+    expect(visibilityHeading.textContent.trim()).toBe('Provider columns');
+    expect(visibilityCaption.textContent.trim()).toBe('Provider n4/n4');
     expect(visibilityGroup.getAttribute('aria-label')).toBe('Provider column visibility');
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Provider page size group');
-    expect(pageSizeButton.textContent?.trim()).toBe('n2 provider rows');
+    expect(pageSizeButton.textContent.trim()).toBe('n2 provider rows');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('Provider show n2 rows');
     expect(pager.getAttribute('aria-label')).toBe('Provider pager');
-    expect(pagerLabel.textContent?.trim()).toBe('Provider page n2/n3');
+    expect(pagerLabel.textContent.trim()).toBe('Provider page n2/n3');
     expect(previousButton.getAttribute('aria-label')).toBe('Provider previous');
     expect(nextButton.getAttribute('aria-label')).toBe('Provider next');
     expect(scrollControl.getAttribute('aria-label')).toBe('Provider horizontal scroll');
-    expect(scrollPosition.textContent?.trim()).toBe('Provider n0 percent');
+    expect(scrollPosition.textContent.trim()).toBe('Provider n0 percent');
     expect(sortButton.getAttribute('aria-label')).toBe('Provider sort Service');
     expect(menuButton.getAttribute('aria-label')).toBe('Provider actions for Service');
 
@@ -1358,32 +1546,33 @@ describe('ng-advanced-table-ui', () => {
       'nat-table-pager .pager-button:last-child',
     ) as HTMLButtonElement;
 
-    expect(emptyState.textContent?.trim()).toBe('No rows match the current view.');
-    expect(tableSummary.textContent?.trim()).toBe(
+    expect(emptyState.textContent.trim()).toBe('No rows match the current view.');
+    expect(tableSummary.textContent.trim()).toBe(
       'No rows are currently shown. 4 visible columns. Page 1 of 1.',
     );
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rows per page');
-    expect(pageSizeButton.textContent?.trim()).toBe('2 rows');
+    expect(pageSizeButton.textContent.trim()).toBe('2 rows');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
     expect(pager.getAttribute('aria-label')).toBe('Table pagination');
-    expect(pagerLabel.textContent?.trim()).toBe('Page 1 of 1');
+    expect(pagerLabel.textContent.trim()).toBe('Page 1 of 1');
     expect(nextButton.getAttribute('aria-label')).toBe('Next page');
 
     localeHost.locale.set('da');
     localeFixture.detectChanges();
 
-    expect(emptyState.textContent?.trim()).toBe('Ingen rækker matcher visningen.');
-    expect(tableSummary.textContent?.trim()).toBe('0 rækker og 4 kolonner.');
+    expect(emptyState.textContent.trim()).toBe('Ingen rækker matcher visningen.');
+    expect(tableSummary.textContent.trim()).toBe('0 rækker og 4 kolonner.');
     expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
-    expect(pageSizeButton.textContent?.trim()).toBe('2 / side');
+    expect(pageSizeButton.textContent.trim()).toBe('2 / side');
     expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker pr. side');
     expect(pager.getAttribute('aria-label')).toBe('Tabelsider');
-    expect(pagerLabel.textContent?.trim()).toBe('Side 1 af 1');
+    expect(pagerLabel.textContent.trim()).toBe('Side 1 af 1');
     expect(nextButton.getAttribute('aria-label')).toBe('Næste side');
 
     localeFixture.destroy();
   });
 
+  // eslint-disable-next-line complexity -- end-to-end UI assertion walks many independent controls
   it('applies header actions idempotently and honors per-column metadata', async () => {
     const compositionFixture = TestBed.createComponent(HeaderActionCompositionHost);
 
@@ -1403,19 +1592,19 @@ describe('ng-advanced-table-ui', () => {
     const statusSortButton = statusHeader.querySelector('.sort-button') as HTMLButtonElement;
     const nameMenuButton = nameHeader.querySelector('.menu-button') as HTMLButtonElement;
 
-    expect(nameHeader.querySelectorAll('.header-actions-row').length).toBe(1);
-    expect(nameHeader.querySelectorAll('.sort-button').length).toBe(1);
-    expect(nameHeader.querySelector('.header-label')?.textContent?.trim()).toBe('Service');
-    expect(nameHeader.querySelector('.sort-icon')?.textContent?.trim()).toBe('S');
+    expect(nameHeader.querySelectorAll('.header-actions-row')).toHaveLength(1);
+    expect(nameHeader.querySelectorAll('.sort-button')).toHaveLength(1);
+    expect(nameHeader.querySelector('.header-label')?.textContent.trim()).toBe('Service');
+    expect(nameHeader.querySelector('.sort-icon')?.textContent.trim()).toBe('S');
     expect(nameSortButton.getAttribute('aria-label')).toBe('Second sort Service');
     expect(nameMenuButton.getAttribute('aria-label')).toBe('Second menu Service');
 
     expect(regionHeader.querySelector('.sort-button')).toBeNull();
     expect(regionHeader.querySelector('.menu-button')).toBeNull();
-    expect(regionHeader.textContent?.trim()).toBe('Region');
+    expect(regionHeader.textContent.trim()).toBe('Region');
 
-    expect(statusHeader.querySelectorAll('.header-actions-row').length).toBe(1);
-    expect(statusHeader.querySelector('.sort-icon')?.textContent?.trim()).toBe('Column');
+    expect(statusHeader.querySelectorAll('.header-actions-row')).toHaveLength(1);
+    expect(statusHeader.querySelector('.sort-icon')?.textContent.trim()).toBe('Column');
     expect(statusSortButton.getAttribute('aria-label')).toBe('Column override for Status');
 
     nameMenuButton.click();
@@ -1433,10 +1622,10 @@ describe('ng-advanced-table-ui', () => {
 
     multiSortFixture.detectChanges();
 
-    const nameSort = multiSortFixture.nativeElement.querySelector(
+    const nameSort = root(multiSortFixture).querySelector(
       'thead th[data-column-id="name"] .sort-button',
     ) as HTMLButtonElement;
-    const regionSort = multiSortFixture.nativeElement.querySelector(
+    const regionSort = root(multiSortFixture).querySelector(
       'thead th[data-column-id="region"] .sort-button',
     ) as HTMLButtonElement;
 
@@ -1446,11 +1635,11 @@ describe('ng-advanced-table-ui', () => {
     regionSort.dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
     multiSortFixture.detectChanges();
 
-    expect(multiSortFixture.componentInstance.tableState().sorting).toEqual([
+    expect(multiSortFixture.componentInstance.tableState().sorting).toStrictEqual([
       { id: 'name', desc: false },
       { id: 'region', desc: false },
     ]);
-    expect(multiSortFixture.nativeElement.querySelectorAll('.sort-priority').length).toBe(2);
+    expect(root(multiSortFixture).querySelectorAll('.sort-priority')).toHaveLength(2);
 
     // The visible priority badge is aria-hidden, so the ordinal must also reach AT
     // through the sort button's accessible name.
@@ -1461,141 +1650,3 @@ describe('ng-advanced-table-ui', () => {
   });
 });
 
-function buildRows(size: number): Row[] {
-  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
-
-  return Array.from({ length: size }, (_, index) => ({
-    id: `svc-${String(index + 1).padStart(5, '0')}`,
-    name: ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'][index] ?? `Service ${index + 1}`,
-    region: ['us-east-1', 'eu-west-3'][index % 2],
-    status: statuses[index % statuses.length],
-    throughput: 1000 + index * 1000,
-  }));
-}
-
-function buildHeaderActionCompositionColumns(): ColumnDef<Row, unknown>[] {
-  return baseColumns.map((column) => {
-    const accessorKey = (column as { accessorKey?: unknown }).accessorKey;
-
-    if (accessorKey === 'region') {
-      return {
-        ...column,
-        meta: {
-          ...column.meta,
-          headerActions: false,
-        },
-      };
-    }
-
-    if (accessorKey === 'status') {
-      return {
-        ...column,
-        meta: {
-          ...column.meta,
-          headerActions: {
-            sortIndicator: 'Column',
-            accessibilityLabels: {
-              sortButton: ({ label }) => `Column override for ${label}`,
-            },
-          },
-        },
-      };
-    }
-
-    return column;
-  });
-}
-
-function getHeaderColumnIds(fixture: ComponentFixture<TableUiHost>): string[] {
-  return Array.from(fixture.nativeElement.querySelectorAll('thead th[data-column-id]')).map(
-    (header) => (header as HTMLElement).dataset['columnId'] ?? '',
-  );
-}
-
-function getOpenPinMenu(): HTMLElement | null {
-  const menus = Array.from(document.querySelectorAll('.column-menu')) as HTMLElement[];
-
-  return menus.at(-1) ?? null;
-}
-
-function getHeaderActionsMenuButton(
-  fixture: ComponentFixture<unknown>,
-  columnId: string,
-): HTMLButtonElement {
-  return getByTestId(`nat-table-header-actions-menu-${columnId}`, fixture.nativeElement);
-}
-
-function getByTestId<TElement extends HTMLElement = HTMLElement>(
-  testId: string,
-  root: ParentNode = document,
-): TElement {
-  const element = queryByTestId<TElement>(testId, root);
-
-  if (!element) {
-    throw new Error(`Expected an element with data-testid="${testId}".`);
-  }
-
-  return element;
-}
-
-function queryByTestId<TElement extends HTMLElement = HTMLElement>(
-  testId: string,
-  root: ParentNode = document,
-): TElement | null {
-  return root.querySelector(`[data-testid="${testId}"]`) as TElement | null;
-}
-
-function getOpenMenuItem(side: 'left' | 'right', columnId = 'name'): HTMLButtonElement {
-  const menu = getOpenPinMenu();
-
-  if (!menu) {
-    throw new Error('Expected the column actions menu to be open.');
-  }
-
-  const item =
-    queryByTestId<HTMLButtonElement>(`nat-table-header-pin-${side}-${columnId}`) ??
-    (menu.querySelector(`.column-menu-item[data-pin-side="${side}"]`) as HTMLButtonElement | null);
-
-  if (!item) {
-    throw new Error(`Expected a menu item for pin side "${side}".`);
-  }
-
-  return item;
-}
-
-function getOpenMoveMenuItem(direction: 'left' | 'right', columnId = 'name'): HTMLButtonElement {
-  const menu = getOpenPinMenu();
-
-  if (!menu) {
-    throw new Error('Expected the column actions menu to be open.');
-  }
-
-  const item =
-    queryByTestId<HTMLButtonElement>(`nat-table-header-move-${direction}-${columnId}`) ??
-    (menu.querySelector(
-      `.column-menu-item[data-move-direction="${direction}"]`,
-    ) as HTMLButtonElement | null);
-
-  if (!item) {
-    throw new Error(`Expected a menu item for move direction "${direction}".`);
-  }
-
-  return item;
-}
-
-function setScrollMetrics(
-  element: HTMLElement,
-  metrics: {
-    clientWidth: number;
-    scrollWidth: number;
-  },
-): void {
-  Object.defineProperty(element, 'clientWidth', {
-    configurable: true,
-    value: metrics.clientWidth,
-  });
-  Object.defineProperty(element, 'scrollWidth', {
-    configurable: true,
-    value: metrics.scrollWidth,
-  });
-}

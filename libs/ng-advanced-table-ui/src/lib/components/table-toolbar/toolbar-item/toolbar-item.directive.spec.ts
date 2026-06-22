@@ -1,5 +1,6 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import {  TestBed } from '@angular/core/testing';
+import type {ComponentFixture} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { NatTableToolbar } from '../table-toolbar';
@@ -8,12 +9,20 @@ import { NAT_TOOLBAR_ITEM } from '../common/toolbar-tokens.const';
 import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolbar-tokens.type';
 
 @Component({
+  selector: 'nat-toolbar-item-host',
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="export" id="default-start">Export</button>
-      <button natToolbarItem="filter" natToolbarItemPosition="end" id="explicit-end">Filter</button>
-      <button natToolbarItem="dynamic" [natToolbarItemPosition]="dynamicPosition()" id="dynamic">
+      <button id="default-start" natToolbarItem="export" type="button">Export</button>
+      <button id="explicit-end" natToolbarItem="filter" natToolbarItemPosition="end" type="button">
+        Filter
+      </button>
+      <button
+        [natToolbarItemPosition]="dynamicPosition()"
+        id="dynamic"
+        natToolbarItem="dynamic"
+        type="button"
+      >
         Dynamic
       </button>
       <div natToolbarItem="custom">Custom widget</div>
@@ -25,8 +34,9 @@ class DirectiveHost {
 }
 
 @Component({
+  selector: 'nat-toolbarless-host',
   imports: [NatToolbarItem],
-  template: `<button natToolbarItem="orphan">Orphan</button>`,
+  template: `<button natToolbarItem="orphan" type="button">Orphan</button>`,
 })
 class ToolbarlessHost {}
 
@@ -44,7 +54,7 @@ describe('NatToolbarItem', () => {
   });
 
   function element(domId: string): HTMLElement {
-    return fixture.nativeElement.querySelector(`#${domId}`) as HTMLElement;
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
   function itemRef(domId: string): NatToolbarItemRef {
@@ -58,6 +68,7 @@ describe('NatToolbarItem', () => {
     expect(element('default-start').id).toBe('default-start');
   });
 
+  // eslint-disable-next-line complexity -- optional-chained assertions on a possibly-missing ref
   it('generates a unique aria widget id when the host declares none', () => {
     const unnamed = fixture.debugElement
       .queryAll(By.directive(NatToolbarItem))
@@ -90,6 +101,7 @@ describe('NatToolbarItem', () => {
   it('throws outside a toolbar — the ToolbarWidget host directive requires a parent ngToolbar', () => {
     expect(() => {
       const orphanFixture = TestBed.createComponent(ToolbarlessHost);
+
       orphanFixture.detectChanges();
     }).toThrow(/Toolbar/);
   });

@@ -1,14 +1,14 @@
 @if (controller(); as ctrl) {
   @if (ctrl.enablePagination()) {
-    <div class="chip-row compact" role="group" [attr.aria-label]="resolvedAriaLabel()">
+    <div [attr.aria-label]="resolvedAriaLabel()" class="chip-row compact" role="group">
       @for (option of resolvedPageSizeOptions(); track option.pageSize) {
         <button
-          type="button"
-          class="chip"
-          [class.is-active]="selectedPageSize() === option.pageSize"
           [attr.aria-controls]="tableElementId()"
           [attr.aria-label]="option.ariaLabel"
           [attr.aria-pressed]="selectedPageSize() === option.pageSize"
+          [class.is-active]="selectedPageSize() === option.pageSize"
+          class="chip"
+          type="button"
           (click)="setPageSize(option.pageSize)"
         >
           {{ option.text }}

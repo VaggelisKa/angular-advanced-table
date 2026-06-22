@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -9,23 +10,26 @@ import {
   numberAttribute,
   signal,
 } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableService } from '../../shared/table.service';
-import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import {
-  mergeScrollControlLabels,
-  NAT_TABLE_UI_INTL,
   NAT_TABLE_UI_ENGLISH_LOCALE,
+  NAT_TABLE_UI_INTL,
+  mergeScrollControlLabels,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
+import { formatNatTableAccessibilityNumber } from '../../shared/table-ui.helpers';
 import type {
   NatTableAccessibilityScrollControlLabels,
   NatTableAccessibilityScrollControlPositionContext,
-  NatTableUiController,
 } from '../../shared/table-ui.types';
+import { NatTableService } from '../../shared/table.service';
 
 const DEFAULT_SCROLL_STEP = 240;
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(Math.max(value, min), max);
 
 @Component({
   selector: 'nat-table-scroll-control',
@@ -33,10 +37,10 @@ const DEFAULT_SCROLL_STEP = 240;
   styleUrl: './table-scroll-control.css',
 })
 export class NatTableScrollControl<TData extends RowData = RowData> {
-  readonly locale = input<string | undefined>(undefined);
-  readonly groupAriaLabel = input<string | undefined>(undefined);
-  readonly scrollStep = input(DEFAULT_SCROLL_STEP, { transform: numberAttribute });
-  readonly accessibilityLabels = input<NatTableAccessibilityScrollControlLabels | undefined>(
+  public readonly locale = input<string | undefined>(undefined);
+  public readonly groupAriaLabel = input<string | undefined>(undefined);
+  public readonly scrollStep = input(DEFAULT_SCROLL_STEP, { transform: numberAttribute });
+  public readonly accessibilityLabels = input<NatTableAccessibilityScrollControlLabels | undefined>(
     undefined,
   );
 
@@ -50,9 +54,11 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
   private readonly localeId = computed(
     () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
+
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
+
   private readonly scrollContainer = signal<HTMLElement | null>(null);
   private cleanupScrollTarget: (() => void) | null = null;
 
@@ -68,6 +74,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
       this.accessibilityLabels(),
     ),
   );
+
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
@@ -78,21 +85,25 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
       ''
     );
   });
+
   protected readonly scrollLeftAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
     return labels.scrollLeftAriaLabel ?? '';
   });
+
   protected readonly scrollRightAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
     return labels.scrollRightAriaLabel ?? '';
   });
+
   protected readonly scrollPositionAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
     return labels.scrollPositionAriaLabel ?? '';
   });
+
   protected readonly positionText = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
     const scrollLeft = this.scrollLeft();
@@ -124,17 +135,20 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
 
     return labels.scrollPositionText?.(context) ?? '';
   });
+
   private readonly sanitizedScrollStep = computed(() => {
     const step = Math.trunc(this.scrollStep());
 
     return step > 0 ? step : DEFAULT_SCROLL_STEP;
   });
 
-  constructor() {
+  public constructor() {
     afterRenderEffect(() => {
       const controller = this.controller();
+
       if (!controller) {
         this.setScrollContainer(null);
+
         return;
       }
       const container =
@@ -167,6 +181,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
   private setScrollContainer(container: HTMLElement | null): void {
     if (container === this.scrollContainer()) {
       this.updateMetrics();
+
       return;
     }
 
@@ -177,20 +192,22 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     if (!container) {
       this.scrollLeft.set(0);
       this.maxScrollLeft.set(0);
+
       return;
     }
 
-    const update = () => this.updateMetrics();
+    const update = (): void => this.updateMetrics();
     const resizeObserver =
       typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
 
     container.addEventListener('scroll', update, { passive: true });
     resizeObserver?.observe(container);
+
     if (container.firstElementChild instanceof HTMLElement) {
       resizeObserver?.observe(container.firstElementChild);
     }
 
-    this.cleanupScrollTarget = () => {
+    this.cleanupScrollTarget = (): void => {
       container.removeEventListener('scroll', update);
       resizeObserver?.disconnect();
     };
@@ -221,6 +238,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     if (!container) {
       this.scrollLeft.set(0);
       this.maxScrollLeft.set(0);
+
       return;
     }
 
@@ -236,8 +254,4 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
 
     return table?.parentElement ?? null;
   }
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
 }

@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
 import type {
@@ -9,7 +10,7 @@ import type {
 
 export const NAT_TABLE_EXPORT = new InjectionToken<NatTableExportConfig>('NAT_TABLE_EXPORT', {
   providedIn: 'root',
-  factory: () => ({}),
+  factory: (): NatTableExportConfig => ({}),
 });
 
 export function provideNatTableExport<TData extends RowData = RowData>(

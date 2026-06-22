@@ -1,12 +1,13 @@
 import { Component, inject, input } from '@angular/core';
+
 import type { Row, RowData, Table } from '@tanstack/angular-table';
 
-import type { NatTableAccessibilitySelectionLabels } from '../../shared/table-ui.types';
 import {
   NAT_TABLE_UI_ENGLISH_LOCALE,
   NAT_TABLE_UI_INTL,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
+import type { NatTableAccessibilitySelectionLabels } from '../../shared/table-ui.types';
 
 /**
  * Accessible selection checkbox rendered by {@link withNatTableSelectionColumn}.
@@ -23,13 +24,13 @@ import {
 })
 export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  readonly mode = input.required<'row' | 'all'>();
-  readonly table = input.required<Table<TData>>();
-  readonly row = input<Row<TData>>();
+  public readonly mode = input.required<'row' | 'all'>();
+  public readonly table = input.required<Table<TData>>();
+  public readonly row = input<Row<TData>>();
   /** Explicit `aria-label` override; falls back to the active UI locale. */
-  readonly ariaLabel = input('');
+  public readonly ariaLabel = input('');
   /** Explicit column label override; falls back to the active UI locale. */
-  readonly label = input('');
+  public readonly label = input('');
 
   protected checked(): boolean {
     return this.mode() === 'all'
@@ -81,7 +82,7 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
     handler?.(event);
   }
 
-  private tableUiIntl() {
+  private tableUiIntl(): ReturnType<typeof resolveNatTableUiIntl> {
     return resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId());
   }
 

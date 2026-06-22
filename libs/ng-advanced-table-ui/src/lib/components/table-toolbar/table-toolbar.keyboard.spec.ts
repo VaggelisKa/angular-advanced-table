@@ -1,24 +1,29 @@
+import {  Directionality } from '@angular/cdk/bidi';
+import type {Direction} from '@angular/cdk/bidi';
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Directionality, type Direction } from '@angular/cdk/bidi';
+import type { ComponentFixture} from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { NatTableToolbar } from './table-toolbar';
 import { NatToolbarItem } from './toolbar-item/toolbar-item.directive';
 
 @Component({
+  selector: 'nat-roving-toolbar-host',
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="end-a" natToolbarItemPosition="end" id="end-a">End A</button>
-      <button natToolbarItem="start-a" natToolbarItemPosition="start" id="start-a">Start A</button>
+      <button id="end-a" natToolbarItem="end-a" natToolbarItemPosition="end" type="button">End A</button>
+      <button id="start-a" natToolbarItem="start-a" natToolbarItemPosition="start" type="button">
+        Start A
+      </button>
       <input
+        aria-label="Filter"
+        id="text-entry"
         natToolbarItem="text-entry"
         natToolbarItemPosition="start"
         type="text"
-        id="text-entry"
-        aria-label="Filter"
       />
-      <button natToolbarItem="end-b" natToolbarItemPosition="end" id="end-b">End B</button>
+      <button id="end-b" natToolbarItem="end-b" natToolbarItemPosition="end" type="button">End B</button>
     </nat-table-toolbar>
   `,
 })
@@ -35,7 +40,9 @@ function pressKey(
     cancelable: true,
     ...modifiers,
   });
+
   target.dispatchEvent(event);
+
   return event;
 }
 
@@ -52,7 +59,7 @@ describe('NatTableToolbar roving tabindex', () => {
   });
 
   function element(domId: string): HTMLElement {
-    return fixture.nativeElement.querySelector(`#${domId}`) as HTMLElement;
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
   it('gives the first VISUAL stop the tab stop (start group before end group)', () => {
@@ -85,7 +92,7 @@ describe('NatTableToolbar keyboard navigation', () => {
   });
 
   function element(domId: string): HTMLElement {
-    return fixture.nativeElement.querySelector(`#${domId}`) as HTMLElement;
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
   async function focusItem(domId: string): Promise<void> {
@@ -138,10 +145,12 @@ describe('NatTableToolbar keyboard navigation', () => {
     await focusItem('text-entry');
 
     const arrowEvent = pressKey(element('text-entry'), 'ArrowRight');
+
     expect(document.activeElement).toBe(element('text-entry'));
     expect(arrowEvent.defaultPrevented).toBe(false);
 
     const homeEvent = pressKey(element('text-entry'), 'Home');
+
     expect(document.activeElement).toBe(element('text-entry'));
     expect(homeEvent.defaultPrevented).toBe(false);
   });
@@ -171,7 +180,7 @@ describe('NatTableToolbar keyboard navigation (RTL)', () => {
   });
 
   function element(domId: string): HTMLElement {
-    return fixture.nativeElement.querySelector(`#${domId}`) as HTMLElement;
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
   it('ArrowLeft moves to the NEXT visual stop in RTL', async () => {

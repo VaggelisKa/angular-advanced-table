@@ -1,10 +1,11 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import { vi } from 'vitest';
 
 import { injectNatTableUiController } from './resolve-ui-controller';
-import { NatTableService } from './table.service';
 import type { NatTableUiController } from './table-ui.types';
+import { NatTableService } from './table.service';
 
 const createControllerStub = (): NatTableUiController => {
   return {
@@ -64,11 +65,12 @@ describe('injectNatTableUiController', () => {
       String(call[0]).includes('spec-control: no controller resolved'),
     );
 
-    expect(guardCalls.length).toBe(1);
+    expect(guardCalls).toHaveLength(1);
   });
 
   it('falls back to the NatTableService controller when [for] is not set', () => {
     const stub = createControllerStub();
+
     TestBed.configureTestingModule({ providers: [NatTableService] });
     const service = TestBed.inject(NatTableService);
     const forInput = signal<NatTableUiController | undefined>(undefined);

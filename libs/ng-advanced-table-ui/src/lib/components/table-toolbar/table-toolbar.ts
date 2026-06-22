@@ -1,13 +1,14 @@
-import { Component, computed, effect, inject, input } from '@angular/core';
-import type { RowData } from '@tanstack/angular-table';
 import { Toolbar } from '@angular/aria/toolbar';
+import { Component, computed, effect, inject, input } from '@angular/core';
 
+import type { RowData } from '@tanstack/angular-table';
+
+import { injectNatTableUiController } from '../../shared/resolve-ui-controller';
 import {
   NAT_TABLE_UI_ENGLISH_LOCALE,
   NAT_TABLE_UI_INTL,
   resolveNatTableUiIntl,
 } from '../../shared/table-ui-intl';
-import { injectNatTableUiController } from '../../shared/resolve-ui-controller';
 import type { NatTableUiController } from '../../shared/table-ui.types';
 
 const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
@@ -28,6 +29,7 @@ const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
 /** True when the event target owns caret/arrow-key editing — toolbar keys must not steal it. */
 const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
   if (target instanceof HTMLTextAreaElement) return true;
+
   if (target instanceof HTMLElement && target.isContentEditable) return true;
 
   return target instanceof HTMLInputElement && NAT_TOOLBAR_TEXT_INPUT_TYPES.has(target.type);
@@ -60,22 +62,26 @@ export class NatTableToolbar<TData extends RowData = RowData> {
   private readonly ariaToolbar = inject(Toolbar, { self: true }) as Toolbar<unknown>;
 
   /** Single touch point for Aria's private `_pattern` API — fix here if it ever renames. */
-  private get pattern() {
+  private get pattern(): Toolbar<unknown>['_pattern'] {
+    // eslint-disable-next-line no-underscore-dangle -- @angular/aria exposes the pattern only via `_pattern`
     return this.ariaToolbar._pattern;
   }
 
   protected readonly localeId = computed(
     () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
+
   protected readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
+
   protected readonly resolvedAccessibleName = computed(
     () => this.accessibleName() ?? this.tableUiIntl().toolbar?.toolbarLabel ?? null,
   );
+
   protected readonly ariaControls = computed(() => this.controller()?.tableElementId() ?? null);
 
-  constructor() {
+  public constructor() {
     this.patchAriaToolbarPattern();
 
     // @angular/aria never clears activeItem when a widget unregisters (items
@@ -102,10 +108,12 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     const pattern = this.pattern;
 
     const originalOnKeydown = pattern.onKeydown.bind(pattern);
+
     pattern.onKeydown = (event: KeyboardEvent): void => {
       // Aria preventDefaults Enter/Space for its selection model (unused
       // here) — that would kill native button activation and Space typing.
       if (event.key === 'Enter' || event.key === ' ') return;
+
       // Text-entry widgets keep their caret keys (arrows, Home/End).
       if (isNatToolbarTextEntryElement(event.target)) return;
 
@@ -113,6 +121,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     };
 
     const originalOnPointerdown = pattern.onPointerdown.bind(pattern);
+
     pattern.onPointerdown = (event: PointerEvent): void => {
       // Aria preventDefaults every pointerdown — on text-entry widgets that
       // kills caret placement and drag selection.
@@ -122,6 +131,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     };
 
     const originalOnClick = pattern.onClick.bind(pattern);
+
     pattern.onClick = (event: MouseEvent): void => {
       // Aria's click handler re-focuses the resolved widget element — on
       // text-entry widgets that would steal the caret the user just placed.
@@ -133,7 +143,9 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     // Disable the selection model: select() would mutate the toolbar `values`
     // model on Enter/Space/click — widget values exist only for Aria's
     // registry, never as selection state.
-    pattern.select = (): void => {};
+    pattern.select = (): void => {
+      // intentional no-op: selection model is disabled for this toolbar
+    };
   }
 
   /**
@@ -143,6 +155,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
    */
   protected syncActiveItemFromFocus(event: FocusEvent): void {
     const target = event.target;
+
     if (!(target instanceof Element)) return;
 
     const pattern = this.pattern;

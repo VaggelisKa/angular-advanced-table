@@ -7,17 +7,17 @@
           {{ visibilitySummary() }}
         </span>
       </div>
-      <div class="chip-row" role="group" [attr.aria-label]="resolvedAriaLabel()">
+      <div [attr.aria-label]="resolvedAriaLabel()" class="chip-row" role="group">
         @for (column of columns(); track column.column.id) {
           <button
-            type="button"
-            class="chip column-chip"
+            [attr.aria-controls]="tableElementId()"
+            [attr.aria-label]="column.actionLabel"
+            [attr.aria-pressed]="column.visible"
+            [attr.data-column-id]="column.column.id"
             [class.is-active]="column.visible"
             [disabled]="!column.canToggle"
-            [attr.aria-controls]="tableElementId()"
-            [attr.aria-pressed]="column.visible"
-            [attr.aria-label]="column.actionLabel"
-            [attr.data-column-id]="column.column.id"
+            class="chip column-chip"
+            type="button"
             (click)="toggleColumnVisibility(column)"
           >
             <span>{{ column.label }}</span>

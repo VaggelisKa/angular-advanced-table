@@ -1,25 +1,25 @@
-import { Component, computed, inject, input, DestroyRef } from '@angular/core';
+import { Component, DestroyRef, computed, inject, input } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableService } from '../../shared/table.service';
+import {
+  NAT_TABLE_UI_ENGLISH_LOCALE,
+  NAT_TABLE_UI_INTL,
+  mergePageSizeLabels,
+  resolveNatTableUiIntl,
+} from '../../shared/table-ui-intl';
 import {
   DEFAULT_PAGE_SIZE_OPTIONS,
   formatNatTableAccessibilityNumber,
   sanitizePageSizeOptions,
 } from '../../shared/table-ui.helpers';
-import {
-  mergePageSizeLabels,
-  NAT_TABLE_UI_INTL,
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  resolveNatTableUiIntl,
-} from '../../shared/table-ui-intl';
 import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPageSizeOptionContext,
-  NatTableUiController,
 } from '../../shared/table-ui.types';
+import { NatTableService } from '../../shared/table.service';
 
-interface PageSizeOption {
+type PageSizeOption = {
   pageSize: number;
   text: string;
   ariaLabel: string;
@@ -31,17 +31,17 @@ interface PageSizeOption {
   styleUrl: './table-page-size.css',
 })
 export class NatTablePageSize<TData extends RowData = RowData> {
-  readonly locale = input<string | undefined>(undefined);
-  readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
-  readonly groupAriaLabel = input<string | undefined>(undefined);
-  readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
+  public readonly locale = input<string | undefined>(undefined);
+  public readonly pageSizeOptions = input<readonly number[]>(DEFAULT_PAGE_SIZE_OPTIONS);
+  public readonly groupAriaLabel = input<string | undefined>(undefined);
+  public readonly accessibilityLabels = input<NatTableAccessibilityPageSizeLabels | undefined>(undefined);
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly controller = computed(() => this.natTableService.controller());
 
-  constructor() {
+  public constructor() {
     this.natTableService.registerPagination();
     this.destroyRef.onDestroy(() => {
       this.natTableService.unregisterPagination();
@@ -52,20 +52,24 @@ export class NatTablePageSize<TData extends RowData = RowData> {
   private readonly localeId = computed(
     () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
   );
+
   private readonly tableUiIntl = computed(() =>
     resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
   );
+
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
   protected readonly selectedPageSize = computed(
     () => this.table()?.getState().pagination.pageSize ?? 0,
   );
+
   private readonly resolvedAccessibilityLabels = computed(() =>
     mergePageSizeLabels(
       this.tableUiIntl().pageSize?.accessibilityLabels,
       this.accessibilityLabels(),
     ),
   );
+
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
@@ -76,6 +80,7 @@ export class NatTablePageSize<TData extends RowData = RowData> {
       ''
     );
   });
+
   protected readonly resolvedPageSizeOptions = computed<PageSizeOption[]>(() => {
     const labels = this.resolvedAccessibilityLabels();
     const selectedPageSize = this.selectedPageSize();
