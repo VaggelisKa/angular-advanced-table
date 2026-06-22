@@ -1,11 +1,13 @@
-import { computed, Injectable, InjectionToken, signal } from '@angular/core';
+import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import type { RowData } from '@tanstack/angular-table';
+import { NAT_TABLE_KEYBINDINGS, mergeNatTableKeybindings, createNatTableKeyboard } from './keybindings';
 import type {
   NatTableMode,
   NatTableModeConfiguration,
   NatTableState,
   NatTableUiController,
   NatTableAccessibilityText,
+  NatTableKeybindings,
 } from './table.types';
 
 /** Injection token for the active table UI controller in the current DI scope. */
@@ -37,6 +39,20 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly columnResizeMode = signal<'onEnd' | 'onChange'>('onEnd');
   public readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
   public readonly direction = signal<'ltr' | 'rtl' | undefined>(undefined);
+
+  private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
+  public readonly surfaceKeybindings = signal<NatTableKeybindings>({});
+
+  public readonly keybindings = computed(() =>
+    mergeNatTableKeybindings(
+      this.surfaceKeybindings(),
+      this.globalKeybindings,
+    ),
+  );
+
+  public readonly keyboard = computed(() =>
+    createNatTableKeyboard(this.keybindings()),
+  );
 
   public readonly manualPagination = computed(() => {
     const mode = this.surfaceMode();
