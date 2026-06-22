@@ -1,11 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { Directionality } from '@angular/cdk/bidi';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import {
   afterNextRender,
   afterRenderEffect,
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
@@ -13,6 +13,7 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   NgZone,
   output,
@@ -34,22 +35,21 @@ import {
   type ColumnFiltersState,
   type ColumnOrderState,
   type ColumnPinningState,
+  type ColumnSizingState,
   type FilterFn,
   type Header,
   type HeaderGroup,
   type PaginationState,
   type Row,
   type RowData,
+  type RowSelectionState,
   type SortingState,
   type Table,
   type Updater,
   type VisibilityState,
 } from '@tanstack/angular-table';
 
-import {
-  handleCellInteractionFocusIn,
-  handleCellInteractionKeydown,
-} from './cell-interaction';
+import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from './cell-interaction';
 import type { NatTableRowRenderedEvent } from './events';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
@@ -68,15 +68,18 @@ import {
 } from './table-state-templates';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
+  NatTableAccessibilityColumnResizeAnnouncementContext,
   NatTableAccessibilityColumnVisibilityAnnouncementChange,
   NatTableAccessibilityColumnVisibilityAnnouncementContext,
   NatTableAccessibilityFilteringAnnouncementContext,
   NatTableAccessibilityPaginationAnnouncementContext,
+  NatTableAccessibilitySelectionAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
   NatTableAccessibilityText,
   NatTableBodyState,
   NatTableCellTone,
+  NatTableColumnMoveDirection,
   NatTableDataStatus,
   NatTableEmptyTemplateContext,
   NatTableErrorTemplateContext,
@@ -97,6 +100,8 @@ import {
   normalizeColumnPinning,
   normalizeDataStatus,
   moveItemInArrayCopy,
+  getColumnReorderKeyboardDirection,
+  getColumnMoveTargetIndex,
   replaceIdsInSlots,
   hasSameStringOrder,
   matchesFilterQuery,
@@ -110,7 +115,10 @@ import {
   isPrimitiveHeaderContent,
   serializeSorting,
   serializeColumnFilters,
+  normalizeRowSelection,
+  serializeRowSelection,
   hasSameColumnVisibility,
+  type ColumnReorderKeyboardDirection,
   type TableColumnAccessibilityState,
   type TableColumnSizingState,
 } from './table-utils';
@@ -146,6 +154,8 @@ interface TableAccessibilitySnapshot {
   sortingKey: string;
   globalFilter: string;
   columnFiltersKey: string;
+  rowSelectionKey: string;
+  selectedRowCount: number;
   pagination: PaginationState;
   pageCount: number;
   visibleRows: number;
@@ -162,6 +172,7 @@ const DEFAULT_PAGINATION: PaginationState = {
   pageSize: 10,
 };
 const DEFAULT_COLUMN_ORDER: ColumnOrderState = [];
+const EMPTY_COLUMN_SIZING: ColumnSizingState = {};
 const DEFAULT_TABLE_STATE: NatTableState = {
   sorting: [],
   globalFilter: '',
@@ -169,8 +180,23 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnVisibility: {},
   columnOrder: DEFAULT_COLUMN_ORDER,
   columnPinning: EMPTY_COLUMN_PINNING,
+  columnSizing: EMPTY_COLUMN_SIZING,
+  rowSelection: {},
   pagination: DEFAULT_PAGINATION,
 };
+const RESIZE_KEYBOARD_STEP = 8;
+const RESIZE_KEYBOARD_STEP_LARGE = 40;
+/**
+ * Minimum resize width for a column that does not declare its own `minSize`.
+ * TanStack defaults `minSize` to 20px, which is narrower than the resize handle
+ * hit area (`--nat-table-resize-handle-hit`, 24px / the WCAG 2.5.8 AA target):
+ * a column dragged that small swallows its own handle (it overflows the cell and
+ * stops being grabbable) and, in fill layout, collapses every neighbour to the
+ * same sliver while the grown column overflows the region. Twice the hit target
+ * keeps the handle fully inside the column plus a grabbable header strip. An
+ * explicit `minSize` is always honoured as-is.
+ */
+const DEFAULT_MIN_COLUMN_WIDTH = 48;
 let nextTableId = 0;
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
@@ -194,7 +220,6 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
 @Component({
   selector: 'nat-table',
   exportAs: 'natTable',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgTemplateOutlet,
     Grid,
@@ -211,28 +236,32 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
 })
 export class NatTable<TData extends RowData = RowData> {
   /** Row data rendered by the table. */
-  readonly data = input.required<readonly TData[]>();
+  public readonly data = input.required<readonly TData[]>();
   /** TanStack column definitions for the current row type. */
-  readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
+  public readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
   /** Required accessible name announced for the grid when no visible caption is rendered. */
-  readonly accessibleName = input.required<string>();
+  public readonly accessibleName = input.required<string>();
   /** Visible table caption. When present, it provides the grid's accessible name. */
-  readonly caption = input<string | undefined>(undefined);
+  public readonly caption = input<string | undefined>(undefined);
   /** Data lifecycle status. The table renders state rows; consumers still own loading, retry, and error handling. */
-  readonly dataStatus = input<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  public readonly dataStatus = input<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   /** Optional error payload passed through to `natTableError` templates. */
-  readonly error = input<unknown>(null);
+  public readonly error = input<unknown>(null);
+  /** Enables row selection (`aria-selected`, selection state, companion checkbox column). */
+  readonly enableRowSelection = input(false, { transform: booleanAttribute });
+  /** Selection cardinality when enabled: `'multiple'` (default) or `'single'`. */
+  readonly selectionMode = input<'single' | 'multiple'>('multiple');
   /** Optional override for the global filter implementation. */
-  readonly globalFilterFn = input<FilterFn<TData>>();
+  public readonly globalFilterFn = input<FilterFn<TData>>();
   /** Optional stable row id resolver used for selection, pinning, and events. */
-  readonly getRowId = input<NatTableRowIdGetter<TData>>();
+  public readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
-  readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
+  public readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
 
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */
-  readonly rowRendered = output<NatTableRowRenderedEvent>();
+  public readonly rowRendered = output<NatTableRowRenderedEvent>();
   /** Emits on row click or Enter/Space unless the event started on an interactive descendant. */
-  readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
+  public readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
   private readonly natTableService = inject(NatTableService);
   private readonly ngZone = inject(NgZone);
@@ -243,8 +272,8 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly manualPagination = computed(() => this.natTableService.manualPagination());
   protected readonly manualSorting = computed(() => this.natTableService.manualSorting());
   protected readonly manualFiltering = computed(() => this.natTableService.manualFiltering());
-  protected readonly enablePagination = computed(() => this.natTableService.hasPagination());
-  protected readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
+  readonly enablePagination = computed(() => this.natTableService.hasPagination());
+  readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
 
   protected readonly manualPageCount = computed(() => this.natTableService.manualPageCount());
   protected readonly enableAnnouncements = computed(() =>
@@ -254,6 +283,11 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly enableMultiSort = computed(() => this.natTableService.enableMultiSort());
   protected readonly locale = computed(() => this.natTableService.locale());
   protected readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
+  protected readonly columnResizeMode = computed(() => this.natTableService.columnResizeMode());
+  protected readonly columnSizingMode = computed(() => this.natTableService.columnSizingMode());
+  /** Fixed layout makes column widths authoritative (`table-layout: fixed`) so resizing is pixel-exact and the region scrolls; fill (default) stretches columns to the container. */
+  protected readonly isFixedLayout = computed(() => this.columnSizingMode() === 'fixed');
+  protected readonly direction = computed(() => this.natTableService.direction());
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
   private readonly internalGlobalFilter = signal(DEFAULT_TABLE_STATE.globalFilter);
@@ -267,11 +301,24 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly internalColumnPinning = signal<ColumnPinningState>(
     DEFAULT_TABLE_STATE.columnPinning,
   );
+  private readonly internalColumnSizing = signal<ColumnSizingState>(
+    DEFAULT_TABLE_STATE.columnSizing,
+  );
+  /**
+   * Transient measured width staged for a column the resolved state hasn't
+   * sized yet, applied only during the synchronous pointer-down that starts a
+   * resize. `mergedState` overlays it so TanStack captures the real start size
+   * instead of the 150px default; `onResizeStart` clears it once captured.
+   */
+  private readonly resizeSeedSizing = signal<ColumnSizingState>({});
+  private readonly internalRowSelection = signal<RowSelectionState>(
+    DEFAULT_TABLE_STATE.rowSelection,
+  );
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   private readonly hasSeededInitialState = signal(false);
   protected readonly liveMessage = signal('');
   /** Stable DOM id for the rendered `<table>` element. */
-  readonly tableElementId = signal(`nat-table-${nextTableId++}`);
+  public readonly tableElementId = signal(`nat-table-${nextTableId++}`);
   protected readonly tableCaptionId = computed(() => `${this.tableElementId()}-caption`);
   protected readonly tableSummaryId = computed(() => `${this.tableElementId()}-summary`);
   protected readonly tableDescriptionId = computed(() => `${this.tableElementId()}-description`);
@@ -281,7 +328,7 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
   /** Current locale id resolved from the `locale` input or built-in English default. */
-  readonly localeId = computed(() => this.locale() ?? NAT_TABLE_ENGLISH_LOCALE);
+  public readonly localeId = computed(() => this.locale() ?? NAT_TABLE_ENGLISH_LOCALE);
   private readonly tableIntl = computed(() =>
     resolveNatTableIntl(this.tableIntlConfig, this.localeId()),
   );
@@ -306,6 +353,22 @@ export class NatTable<TData extends RowData = RowData> {
       this.allLeafColumnIds(),
     ),
   );
+  private readonly resolvedColumnSizing = computed<ColumnSizingState>(() => {
+    const resolved = this.state().columnSizing ?? this.internalColumnSizing();
+    const seed = this.resizeSeedSizing();
+
+    // Overlay seed widths only for columns the resolved state hasn't sized yet.
+    // Resolved entries always win, so the overlay self-shadows once a controlled
+    // binding (or the internal signal) catches up — and never blocks a reset.
+    let merged: ColumnSizingState | null = null;
+    for (const columnId of Object.keys(seed)) {
+      if (!(columnId in resolved)) {
+        (merged ??= { ...resolved })[columnId] = seed[columnId];
+      }
+    }
+
+    return merged ?? resolved;
+  });
   private readonly resolvedAccessibilityText = computed(() =>
     mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText()),
   );
@@ -337,13 +400,23 @@ export class NatTable<TData extends RowData = RowData> {
     const instructions = (this.resolvedAccessibilityText().keyboardInstructions ?? '').trim();
     const reorderInstructions =
       this.resolvedAccessibilityText().reorderKeyboardInstructions?.trim() ?? '';
+    const resizeInstructions =
+      this.resolvedAccessibilityText().resizeKeyboardInstructions?.trim() ?? '';
+    const parts = [instructions, reorderInstructions];
 
-    return [instructions, reorderInstructions].filter((value) => !!value).join(' ');
+    if (this.hasResizableColumns()) {
+      parts.push(resizeInstructions);
+    }
+
+    return parts.filter((value) => !!value).join(' ');
   });
 
   protected readonly headerGroups = computed(() => this.table.getHeaderGroups());
   protected readonly bodyRows = computed(() => this.table.getRowModel().rows);
   private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
+  private readonly hasResizableColumns = computed(() =>
+    this.allLeafColumns().some((column) => this.isColumnResizable(column)),
+  );
   protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   protected readonly mergedState = computed<NatTableState>(() => ({
     sorting: normalizeSortingState(
@@ -357,8 +430,24 @@ export class NatTable<TData extends RowData = RowData> {
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnOrder: this.resolvedColumnOrder(),
     columnPinning: this.resolvedColumnPinning(),
+    columnSizing: this.resolvedColumnSizing(),
+    rowSelection: normalizeRowSelection(
+      this.state().rowSelection ?? this.internalRowSelection(),
+      this.selectionMode() === 'multiple',
+    ),
     pagination: this.state().pagination ?? this.internalPagination(),
   }));
+  /**
+   * Grid-level `aria-multiselectable` for row selection. The `ngGrid` directive
+   * only manages this attribute for its own cell-selection model
+   * (`enableSelection`), which this table does not use — enabling it would turn
+   * on focus-follows cell selection that conflicts with TanStack row selection.
+   * The directive's host binding clobbers template bindings for the attribute,
+   * so the value is written imperatively after render (see constructor).
+   */
+  private readonly ariaMultiSelectable = computed(
+    () => this.enableRowSelection() && this.selectionMode() === 'multiple',
+  );
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   protected readonly visibleRowCount = computed(() => this.bodyRows().length);
   protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
@@ -473,7 +562,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     return ids.length ? ids.join(' ') : null;
   });
-  readonly table: Table<TData> = createAngularTable<TData>(() => ({
+  public readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.readRequiredInput(this.data, []) as TData[],
     columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
     state: this.mergedState(),
@@ -486,8 +575,15 @@ export class NatTable<TData extends RowData = RowData> {
       this.enableMultiSort() && (event as { shiftKey?: boolean })?.shiftKey === true,
     enableColumnPinning: true,
     enableColumnOrdering: true,
+    enableColumnResizing: true,
+    columnResizeMode: this.columnResizeMode(),
+    columnResizeDirection: this.resolvedDirection(),
+    enableRowSelection: this.enableRowSelection(),
+    enableMultiRowSelection: this.selectionMode() === 'multiple',
     meta: {
       natTableLocaleId: this.localeId(),
+      natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
+      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
     },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
@@ -505,13 +601,29 @@ export class NatTable<TData extends RowData = RowData> {
     onColumnVisibilityChange: (updater) => this.updateState({ columnVisibility: updater }),
     onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
     onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
+    onColumnSizingChange: (updater) => this.applyColumnSizingChange(updater),
+    onRowSelectionChange: (updater) => this.updateState({ rowSelection: updater }),
     onPaginationChange: (updater) => this.updateState({ pagination: updater }),
   })) as Table<TData>;
   private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
-  readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
+  public readonly tableScrollContainer = computed(
+    () => this.tableRegionRef()?.nativeElement ?? null,
+  );
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
+  private readonly injector = inject(Injector);
+  /**
+   * Visible width of the scroll region (its `clientWidth`). Caps each column's
+   * maximum resize width so a single column can never be dragged wider than the
+   * viewport and scroll its content off-screen. 0 until first measured (no cap).
+   */
+  private readonly regionViewportWidth = signal<number>(0);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly directionality = inject(Directionality, { optional: true });
+  /** Resolved text direction: explicit `direction` config → inherited CDK direction → `'ltr'`. */
+  protected readonly resolvedDirection = computed<'ltr' | 'rtl'>(
+    () => this.direction() ?? this.directionality?.value ?? 'ltr',
+  );
   private headerResizeObserver: ResizeObserver | null = null;
 
   private cachedStickyTop = 0;
@@ -526,28 +638,149 @@ export class NatTable<TData extends RowData = RowData> {
   private intersectionObserver: IntersectionObserver | null = null;
 
   /**
-   * Per-column widths for pinned sticky offsets. CSS width comes from TanStack
-   * `size` / `minSize` / `maxSize`; this uses measured headers, then fixed
-   * sizing, then `column.getSize()` as a fallback.
+   * TanStack id of the column whose pointer/touch resize drag is in progress.
+   * Tracked so a single announcement can fire when the drag ends (the keyboard
+   * path announces per step; pointer resize is otherwise silent).
    */
-  private readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
+  private previousResizingColumnId: string | null = null;
+
+  /**
+   * Width and column committed by the in-progress pointer/touch resize drag,
+   * snapshotted while TanStack still reports the drag as active. A controlled
+   * `columnSizing` binding cannot round-trip back to this component before the
+   * resize-end effect runs, so the effect announces this snapshot instead of
+   * the (stale) resolved width.
+   */
+  private resizeCommit: { columnId: string; width: number } | null = null;
+
+  /**
+   * Fill layout with at least one resizable column and a measured region. The table
+   * then renders authoritative widths (a colgroup under `table-layout: fixed`) that
+   * sum to the region, so resizing a column is pixel-exact while the other columns
+   * flex to keep the table filled. Falls back to intrinsic auto layout before the
+   * region is measured or when no column opts into resizing.
+   */
+  private readonly isFillFlexLayout = computed(
+    () => !this.isFixedLayout() && this.hasResizableColumns() && this.regionViewportWidth() > 0,
+  );
+  /**
+   * Authoritative widths drive the layout: either explicit `fixed` sizing mode or
+   * fill flex. Renders the colgroup and switches the table to `table-layout: fixed`.
+   */
+  protected readonly usesAuthoritativeLayout = computed(
+    () => this.isFixedLayout() || this.isFillFlexLayout(),
+  );
+
+  /**
+   * Per-column widths used for sticky pinned offsets, the colgroup, and the keyboard
+   * resize base. Fill flex distributes the region across columns (see below); fixed
+   * mode and non-resizable fill use measured headers, then fixed sizing, then
+   * `column.getSize()`.
+   */
+  protected readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
+    const visibleColumns = this.visibleColumns();
+    const columnSizing = this.mergedState().columnSizing;
+
+    // Fill flex: resized columns keep their exact width; the rest share the remaining
+    // region width in proportion to their intrinsic size (never below their min), so
+    // the widths sum to the region and the table stays filled while each resize is
+    // pixel-exact under table-layout: fixed.
+    if (this.isFillFlexLayout()) {
+      const container = this.regionViewportWidth();
+      const widths: Record<string, number> = {};
+      const flex: { id: string; weight: number; min: number }[] = [];
+      let sumPinned = 0;
+      let totalWeight = 0;
+      let sumFlexMins = 0;
+
+      for (const column of visibleColumns) {
+        const resizedWidth = columnSizing[column.id];
+
+        if (resizedWidth !== undefined) {
+          const width = this.clampColumnWidth(column, resizedWidth);
+          widths[column.id] = width;
+          sumPinned += width;
+        } else {
+          const weight = Math.max(Math.round(column.getSize()), 1);
+          const min = this.getResizeBounds(column).min;
+          flex.push({ id: column.id, weight, min });
+          totalWeight += weight;
+          sumFlexMins += min;
+        }
+      }
+
+      // Every column pinned: authoritative widths, region scrolls if they overflow.
+      if (flex.length === 0) {
+        return widths;
+      }
+
+      // Each flex column gets its min plus a share of the leftover space (in
+      // proportion to intrinsic size); the last absorbs the exact remainder so the
+      // widths sum to the region — no gap, no overflow — and no flex column drops
+      // below its min. When the pinned columns leave no surplus, the flex columns
+      // sit at their mins and the region scrolls.
+      const surplus = Math.max(0, container - sumPinned - sumFlexMins);
+      let distributedSurplus = 0;
+
+      flex.forEach(({ id, weight, min }, index) => {
+        // Math.floor never over-allocates, so the running sum stays <= surplus and the
+        // last column gets the exact remainder (always >= 0) — the widths sum to the
+        // container with no sub-pixel overflow. (The old Math.round could over-allocate
+        // and leave the last column a negative share, pushing the total 1–2px past the
+        // region.)
+        const extra =
+          index === flex.length - 1
+            ? surplus - distributedSurplus
+            : Math.floor((surplus * weight) / totalWeight);
+        distributedSurplus += extra;
+        // Honor the column's own maxSize: a flex column never renders wider than its cap.
+        // ponytail: if every flex column is capped below its share the table may sit
+        // slightly under-filled (rare); we don't redistribute the capped remainder.
+        const flexMax = this.getResizeBounds(this.table.getColumn(id)!).max;
+        const width = min + Math.max(0, extra);
+        widths[id] = flexMax !== null ? Math.min(width, flexMax) : width;
+      });
+
+      return widths;
+    }
+
     const measured = this.measuredHeaderWidths();
+    const userColumnSizing = this.userColumnSizing();
     const result: Record<string, number> = {};
 
-    for (const column of this.visibleColumns()) {
+    for (const column of visibleColumns) {
       const measuredWidth = measured[column.id];
-      const sizing = this.userColumnSizing()[column.id];
+      const sizing = userColumnSizing[column.id];
       const fixedWidth = sizing?.hasSize === true ? getNumericColumnWidth(column.getSize()) : null;
+      const resizedWidth = columnSizing[column.id];
 
+      // Precedence: user-resized > measured header > fixed def size > getSize().
+      // The measured-header fallback applies only in intrinsic (auto) layout. Under an
+      // authoritative colgroup (fixed mode / fill-flex), the "measured" width is just the
+      // width the colgroup forced last frame — re-confirmed by the ResizeObserver — so
+      // using it as a fallback would pin a column to its pre-reset width and defeat a
+      // columnSizing reset. Fall straight through to the def size / getSize() instead.
       result[column.id] =
-        measuredWidth !== undefined && measuredWidth > 0
-          ? measuredWidth
-          : fixedWidth !== null
-            ? fixedWidth
-            : Math.max(Math.round(column.getSize()), 1);
+        resizedWidth !== undefined
+          ? this.clampColumnWidth(column, resizedWidth)
+          : !this.usesAuthoritativeLayout() && measuredWidth !== undefined && measuredWidth > 0
+            ? measuredWidth
+            : fixedWidth !== null
+              ? fixedWidth
+              : Math.max(Math.round(column.getSize()), 1);
     }
 
     return result;
+  });
+  /**
+   * Sum of all visible column widths, used as the table width in fixed-layout
+   * mode so columns render at exactly their resolved widths (`table-layout:
+   * fixed`) and the region scrolls once the total exceeds the viewport.
+   */
+  protected readonly fixedLayoutTableWidth = computed(() => {
+    const widths = this.resolvedColumnWidths();
+
+    return this.visibleColumns().reduce((total, column) => total + (widths[column.id] ?? 0), 0);
   });
   protected readonly columnRenderStates = computed<Record<string, TableColumnRenderState>>(() => {
     const visibleColumns = this.visibleColumns();
@@ -587,7 +820,13 @@ export class NatTable<TData extends RowData = RowData> {
 
     for (const column of visibleColumns) {
       const sizing = userColumnSizing[column.id];
-      const width = sizing?.hasSize === true ? normalizeColumnDimension(column.getSize()) : null;
+      const resizedWidth = state.columnSizing[column.id];
+      const hasExplicitWidth = sizing?.hasSize === true || resizedWidth !== undefined;
+      const width = hasExplicitWidth
+        ? normalizeColumnDimension(
+            resizedWidth !== undefined ? (widths[column.id] ?? column.getSize()) : column.getSize(),
+          )
+        : null;
       const minWidth =
         sizing?.hasMinSize === true
           ? normalizeColumnDimension(column.columnDef.minSize)
@@ -608,21 +847,28 @@ export class NatTable<TData extends RowData = RowData> {
           ? (state.sorting.find((entry) => entry.id === column.id) ?? null)
           : null;
       const meta = column.columnDef.meta;
+      // A user-resized column drives BOTH header and body widths, so the whole
+      // column visibly resizes; otherwise headers stay intrinsic unless the
+      // column opts into header-only sizing via meta.headerSize.
+      const resizedDimension = resizedWidth !== undefined ? width : null;
       const label = resolveColumnLabel(column);
       const headerWidth =
-        meta?.headerSize !== undefined ? normalizeColumnDimension(meta.headerSize) : null;
+        resizedDimension ??
+        (meta?.headerSize !== undefined ? normalizeColumnDimension(meta.headerSize) : null);
       const headerMinWidth =
-        meta?.headerMinSize !== undefined
+        resizedDimension ??
+        (meta?.headerMinSize !== undefined
           ? normalizeColumnDimension(meta.headerMinSize)
           : headerWidth !== null
             ? headerWidth
-            : null;
+            : null);
       const headerMaxWidth =
-        meta?.headerMaxSize !== undefined
+        resizedDimension ??
+        (meta?.headerMaxSize !== undefined
           ? normalizeColumnDimension(meta.headerMaxSize)
           : headerWidth !== null
             ? headerWidth
-            : null;
+            : null);
       const cellHeight =
         meta?.cellHeight !== undefined ? normalizeColumnDimension(meta.cellHeight) : null;
       const cellMaxLines = normalizeCellMaxLines(meta?.cellMaxLines ?? DEFAULT_CELL_MAX_LINES);
@@ -686,6 +932,13 @@ export class NatTable<TData extends RowData = RowData> {
       this.internalColumnPinning.set(
         initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning,
       );
+      this.internalColumnSizing.set(initialState.columnSizing ?? DEFAULT_TABLE_STATE.columnSizing);
+      this.internalRowSelection.set(
+        normalizeRowSelection(
+          initialState.rowSelection ?? DEFAULT_TABLE_STATE.rowSelection,
+          this.selectionMode() === 'multiple',
+        ),
+      );
       this.internalPagination.set({
         pageIndex: initialState.pagination?.pageIndex ?? DEFAULT_PAGINATION.pageIndex,
         pageSize: initialState.pagination?.pageSize ?? DEFAULT_PAGINATION.pageSize,
@@ -745,6 +998,35 @@ export class NatTable<TData extends RowData = RowData> {
       this.cachedTheadEl = null;
     });
 
+    // Announce the final width once a pointer/touch resize drag ends. Keyed off
+    // TanStack's `isResizingColumn`, which is set only for pointer drags (never
+    // keyboard), so this never double-announces with the keyboard path.
+    effect(() => {
+      const resizingColumnId = this.table.getState().columnSizingInfo.isResizingColumn || null;
+
+      untracked(() => {
+        const previous = this.previousResizingColumnId;
+        this.previousResizingColumnId = resizingColumnId;
+
+        if (!previous || resizingColumnId || !this.enableAnnouncements()) {
+          return;
+        }
+
+        const commit = this.resizeCommit;
+        this.resizeCommit = null;
+
+        if (!commit || commit.columnId !== previous) {
+          return;
+        }
+
+        const column = this.table.getColumn(previous);
+
+        if (column) {
+          this.announceColumnResize(column, commit.width);
+        }
+      });
+    });
+
     afterNextRender(() => {
       this.initializeHeaderObservation();
       this.setupStickyHeaderScrollListener();
@@ -757,12 +1039,26 @@ export class NatTable<TData extends RowData = RowData> {
       this.measureTableDimensions();
       this.updateStickyHeaderPosition();
     });
+    afterRenderEffect(() => {
+      const multiSelectable = this.ariaMultiSelectable();
+      const table = this.tableRegionRef()?.nativeElement.querySelector('table');
+
+      if (!table) {
+        return;
+      }
+
+      if (multiSelectable) {
+        table.setAttribute('aria-multiselectable', 'true');
+      } else {
+        table.removeAttribute('aria-multiselectable');
+      }
+    });
 
     this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
   }
 
   /** Apply a partial state update from companion controls (search, pager, filters). Respects controlled and uncontrolled slices. */
-  patchState(
+  public patchState(
     updaters: Partial<{
       [K in keyof NatTableState]: Updater<NatTableState[K]>;
     }>,
@@ -830,31 +1126,34 @@ export class NatTable<TData extends RowData = RowData> {
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
     if (handleCellInteractionKeydown(event)) return;
 
-    const isReorderModifierPressed = event.altKey && event.shiftKey;
+    const isResizeKey =
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Home' ||
+      event.key === 'End';
 
-    if (!isReorderModifierPressed) return;
+    // Alt+Arrow steps the focused header's column; Alt+Home/End jump to its min/max
+    // width. This is the keyboard resize path — the handle itself is mouse-only.
+    // Column reordering uses Control/Command+Shift+Arrow (handled below).
+    if (event.altKey && !event.shiftKey && isResizeKey) {
+      this.resizeColumnFromKey(event, column);
+      return;
+    }
 
-    const isHorizontalArrowKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
+    const directionDelta = getColumnReorderKeyboardDirection(event);
 
-    if (!isHorizontalArrowKey) return;
+    if (directionDelta === null) return;
 
     const zone = this.getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(column.id);
 
-    if (currentIndex === -1) return;
-
-    const directionDelta = event.key === 'ArrowLeft' ? -1 : 1;
-    const nextIndex = currentIndex + directionDelta;
-
-    if (nextIndex < 0 || nextIndex >= visibleZoneColumnIds.length) return;
+    if (currentIndex === -1 || visibleZoneColumnIds.length < 2) return;
 
     event.preventDefault();
     event.stopPropagation();
 
-    const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
-
-    this.applyVisibleZoneReorder(zone, column.id, nextVisibleZoneOrder);
+    this.moveColumnByDelta(column.id, directionDelta);
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
@@ -863,6 +1162,345 @@ export class NatTable<TData extends RowData = RowData> {
 
   protected onCellFocusIn(event: FocusEvent): void {
     handleCellInteractionFocusIn(event);
+  }
+
+  /** A column is resizable only when its definition opts in with `enableResizing: true`. */
+  private isColumnResizable(column: Column<TData, unknown>): boolean {
+    return column.columnDef.enableResizing === true;
+  }
+
+  protected canResizeColumn(header: Header<TData, unknown>): boolean {
+    return !header.isPlaceholder && this.isColumnResizable(header.column);
+  }
+
+  protected onResizeStart(event: MouseEvent | TouchEvent, header: Header<TData, unknown>): void {
+    if (!this.canResizeColumn(header)) {
+      return;
+    }
+
+    // Stop the pointer gesture from also starting a cdkDrag column reorder.
+    event.stopPropagation();
+    this.seedColumnSizingFromMeasuredWidth(header.column);
+    this.captureResizeGuideOrigin(event);
+    header.getResizeHandler()(event);
+    // The start size is now captured into columnSizingInfo; drop the transient
+    // overlay so a later controlled reset of this column isn't blocked.
+    this.resizeSeedSizing.set({});
+  }
+
+  /**
+   * Seed an auto-sized column's `columnSizing` entry with its real rendered
+   * width before a pointer resize begins.
+   *
+   * TanStack's `getResizeHandler` captures `startSize = column.getSize()`
+   * synchronously at pointer-down, and `getSize()` returns the default size
+   * (150) for columns that were never explicitly sized — not the width the
+   * user actually sees. Without this, a mouse drag (and the resize guide)
+   * starts from 150 while keyboard resizing starts from the measured width,
+   * so the two disagree and keyboard resizes overshoot the table bounds.
+   */
+  private seedColumnSizingFromMeasuredWidth(column: Column<TData, unknown>): void {
+    const alreadyResized = this.mergedState().columnSizing[column.id] !== undefined;
+    const explicitlySized = this.userColumnSizing()[column.id]?.hasSize === true;
+
+    // In fill flex layout the rendered width is the flex-distributed width, not the
+    // column's `size`, so an explicitly-sized column must still be seeded from its
+    // effective width or a pointer drag would start from `getSize()` and jump.
+    if (alreadyResized || (explicitlySized && !this.isFillFlexLayout())) {
+      return;
+    }
+
+    const measuredWidth = this.getColumnEffectiveWidth(column);
+
+    this.updateState({
+      columnSizing: (current) => ({ ...current, [column.id]: measuredWidth }),
+    });
+
+    // A controlled `columnSizing` binding can't reflect this update within the
+    // synchronous pointer-down, so also stage it as a transient overlay that
+    // mergedState applies until the binding catches up (cleared in onResizeStart).
+    this.resizeSeedSizing.set({ [column.id]: measuredWidth });
+
+    // The TanStack Angular adapter only applies state into the table options
+    // when its table signal is pulled. Read state here to flush the seed
+    // synchronously, so the resize handler (called next) reads the seeded
+    // width instead of the stale default. Do not remove — the bare read is the
+    // flush. See createAngularTable in @tanstack/angular-table.
+    this.table.getState();
+  }
+
+  // Pixel offset of the dragged column's resize edge within the scrollable
+  // region content box. The sticky-header `<th>` clips the handle's own line to
+  // header height, so a separate full-height guide is anchored here instead.
+  private readonly resizeGuideOrigin = signal<number | null>(null);
+
+  /** Full-height drag guide position: column edge + live drag delta, or null when idle. */
+  protected readonly columnResizeGuide = computed<{ left: number; offset: number } | null>(() => {
+    const info = this.table.getState().columnSizingInfo;
+    const origin = this.resizeGuideOrigin();
+    const resizingId = info.isResizingColumn;
+
+    if (resizingId === false || origin === null) return null;
+
+    const widthDelta = info.deltaOffset ?? 0;
+    const column = this.table.getColumn(resizingId);
+
+    if (!column) return { left: origin, offset: widthDelta };
+
+    // deltaOffset is the column's WIDTH change (TanStack: newWidth = startSize +
+    // deltaOffset, already direction-adjusted via columnResizeDirection). Clamp it
+    // to the column's bounds so the guide never points past where the resize can
+    // land, then map the width delta to a screen offset — in RTL the visual edge
+    // moves opposite the column's growth.
+    const { min, max } = this.getResizeFitBounds(column);
+    const startSize = info.startSize ?? this.getColumnEffectiveWidth(column);
+    const clampedDelta = Math.max(
+      min - startSize,
+      max !== null ? Math.min(max - startSize, widthDelta) : widthDelta,
+    );
+
+    return {
+      left: origin,
+      offset: this.resolvedDirection() === 'rtl' ? -clampedDelta : clampedDelta,
+    };
+  });
+
+  /** True while a pointer/touch column-resize drag is in progress. */
+  protected readonly isColumnResizing = computed(
+    () => this.table.getState().columnSizingInfo.isResizingColumn !== false,
+  );
+
+  private captureResizeGuideOrigin(event: MouseEvent | TouchEvent): void {
+    const region = this.tableRegionRef()?.nativeElement;
+    const handle = event.currentTarget as HTMLElement | null;
+
+    if (!region || !handle) {
+      this.resizeGuideOrigin.set(null);
+      return;
+    }
+
+    const regionRect = region.getBoundingClientRect();
+    const handleRect = handle.getBoundingClientRect();
+    // The resize edge sits on the column's trailing side: right in LTR, left in RTL.
+    const edge = this.resolvedDirection() === 'rtl' ? handleRect.left : handleRect.right;
+    this.resizeGuideOrigin.set(edge - regionRect.left + region.scrollLeft);
+  }
+
+  /**
+   * Resize `column` by one keyboard step from a horizontal arrow (Home/End jump to
+   * the min/max bound). Driven by Alt+Arrow / Alt+Home/End on the focused header.
+   * RTL-aware and fit/min/max clamped; a no-op resize bails without emitting.
+   */
+  private resizeColumnFromKey(event: KeyboardEvent, column: Column<TData, unknown>): void {
+    if (!this.isColumnResizable(column)) return;
+
+    const { min, max } = this.getResizeFitBounds(column);
+    const current = this.getColumnEffectiveWidth(column);
+    // Alt+Shift+Arrow never reaches this method (it matches neither resize nor reorder),
+    // so the large step is unreachable here; keep it for the End fallback below.
+    const step = RESIZE_KEYBOARD_STEP;
+    // In RTL the resize edge sits on the column's left, so the arrow pointing at it
+    // (ArrowLeft) must grow the column, mirroring the pointer-drag handle.
+    const towardEdge = this.resolvedDirection() === 'rtl' ? -step : step;
+    let next: number;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        next = current - towardEdge;
+        break;
+      case 'ArrowRight':
+        next = current + towardEdge;
+        break;
+      case 'Home':
+        next = min;
+        break;
+      case 'End':
+        next = max ?? current + RESIZE_KEYBOARD_STEP_LARGE;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const clamped = Math.max(min, max !== null ? Math.min(max, next) : next);
+
+    // At a bound the press cannot change the width, but a keyboard/SR user still needs
+    // to learn the column's range — so announce the bound WITHOUT emitting a sizing
+    // change (announcing is not a state change; no columnSizing event fires here).
+    if (clamped === current) {
+      this.announceColumnResize(column, current);
+      return;
+    }
+
+    this.updateState({
+      columnSizing: (currentSizing) => ({ ...currentSizing, [column.id]: clamped }),
+    });
+    this.announceColumnResize(column, clamped);
+  }
+
+  private getResizeBounds(column: Column<TData, unknown>): { min: number; max: number | null } {
+    // An explicit `minSize` wins; otherwise fall back to a usable default instead of
+    // TanStack's 20px (which is narrower than the resize handle). hasMinSize reads the
+    // original input def, so it is true only when the consumer set minSize themselves.
+    const explicitMin = this.userColumnSizing()[column.id]?.hasMinSize === true;
+    const rawMin = explicitMin ? column.columnDef.minSize : DEFAULT_MIN_COLUMN_WIDTH;
+    const min = Math.max(Math.round(rawMin ?? DEFAULT_MIN_COLUMN_WIDTH), 1);
+    const rawMax = column.columnDef.maxSize;
+    const max =
+      typeof rawMax === 'number' && Number.isFinite(rawMax) && rawMax < Number.MAX_SAFE_INTEGER
+        ? Math.round(rawMax)
+        : null;
+
+    return { min, max };
+  }
+
+  /**
+   * Resize bounds tightened to "fit": a drag can grow a column only into the
+   * space the other columns leave, so the table never gets wider than the
+   * visible region. Never reports below the column's current width (an
+   * already-overflowing table shrinks but does not jump) and never exceeds the
+   * column's own maxSize. Falls back to the plain bounds until the region is measured.
+   */
+  private getResizeFitBounds(column: Column<TData, unknown>): { min: number; max: number | null } {
+    const { min, max: ownMax } = this.getResizeBounds(column);
+    const region = this.regionViewportWidth();
+
+    // Fixed (authoritative) layout is designed to grow and scroll, so the "fit to
+    // viewport" cap must not apply: a resize can push the column past the region and
+    // the table widens. Only fill mode keeps the table inside the visible region.
+    if (this.isFixedLayout()) {
+      return { min, max: ownMax };
+    }
+
+    if (region <= 0) {
+      return { min, max: ownMax };
+    }
+
+    const widths = this.resolvedColumnWidths();
+    const columnSizing = this.mergedState().columnSizing;
+    let sumOthers = 0;
+
+    for (const other of this.visibleColumns()) {
+      if (other.id === column.id) continue;
+
+      // In fill flex layout, growing this column shrinks the non-resized (flex)
+      // columns down to their mins to keep the table filled, while resized columns
+      // stay put; elsewhere the other columns hold their current widths. So the most
+      // this column can take is the region minus every other column's floor.
+      sumOthers +=
+        this.isFillFlexLayout() && columnSizing[other.id] === undefined
+          ? this.getResizeBounds(other).min
+          : (widths[other.id] ?? 0);
+    }
+
+    const current = widths[column.id] ?? this.getColumnEffectiveWidth(column);
+    const fitMax = Math.max(current, region - sumOthers);
+    const cappedMax = ownMax !== null ? Math.min(ownMax, fitMax) : fitMax;
+
+    return { min, max: Math.max(Math.round(cappedMax), min) };
+  }
+
+  /** Clamp a single width to a column's [minSize, maxSize] bounds, rounded to a positive integer. */
+  private clampColumnWidth(column: Column<TData, unknown>, width: number): number {
+    const { min, max } = this.getResizeBounds(column);
+    const clamped = Math.max(min, max !== null ? Math.min(max, width) : width);
+
+    return Math.max(Math.round(clamped), 1);
+  }
+
+  /**
+   * Clamp every entry of a column-sizing map to its column's resize bounds.
+   * TanStack's resize handler stores the raw drag width without honoring
+   * minSize/maxSize (only `column.getSize()` clamps on read), so a drag can
+   * persist an out-of-range width. Clamping on commit keeps the stored state, the
+   * emitted `columnSizingChange`, and the rendered column width in range.
+   */
+  private clampColumnSizing(sizing: ColumnSizingState): ColumnSizingState {
+    let result: ColumnSizingState | null = null;
+
+    for (const columnId of Object.keys(sizing)) {
+      const column = this.table.getColumn(columnId);
+
+      if (!column) continue;
+
+      const clamped = this.clampColumnWidth(column, sizing[columnId]);
+
+      if (clamped !== sizing[columnId]) {
+        (result ??= { ...sizing })[columnId] = clamped;
+      }
+    }
+
+    return result ?? sizing;
+  }
+
+  /**
+   * Commit a column-sizing change from TanStack's pointer/touch resize handler.
+   * While the drag is still active (`isResizingColumn` is reset only AFTER the
+   * size commit in table-core), snapshot the clamped committed width so the
+   * resize-end effect can announce it without waiting for a controlled
+   * `columnSizing` binding to echo back a cycle later.
+   */
+  private applyColumnSizingChange(updater: Updater<ColumnSizingState>): void {
+    const resizingColumnId = this.table.getState().columnSizingInfo.isResizingColumn;
+
+    if (typeof resizingColumnId !== 'string') {
+      this.updateState({ columnSizing: updater });
+      return;
+    }
+
+    // Clamp the dragged column to its fit bounds so the table never grows past
+    // the visible region, then store the capped map (not the raw updater) so the
+    // committed/controlled width matches what renders and what is announced.
+    const next: ColumnSizingState = {
+      ...this.resolveUpdater(this.mergedState().columnSizing, updater),
+    };
+    const column = this.table.getColumn(resizingColumnId);
+    const raw = next[resizingColumnId];
+
+    if (column && raw !== undefined) {
+      const { min, max } = this.getResizeFitBounds(column);
+      const capped = Math.max(min, max !== null ? Math.min(max, raw) : raw);
+
+      next[resizingColumnId] = capped;
+      this.resizeCommit = { columnId: resizingColumnId, width: Math.round(capped) };
+    } else {
+      this.resizeCommit = null;
+    }
+
+    this.updateState({ columnSizing: next });
+  }
+
+  private getColumnEffectiveWidth(column: Column<TData, unknown>): number {
+    // Clamp to the column's own resize bounds. In fill layout the measured width
+    // can stretch a column past its maxSize (or below minSize), so seeding the
+    // resize base from the raw measurement would make the first keystroke after a
+    // neighbouring resize jump: a "grow" press would clamp straight down to the bound
+    // instead of stepping by one. clampColumnWidth also rounds and floors at 1px so the
+    // committed and announced width stays a whole number of pixels.
+    return this.clampColumnWidth(column, this.resolvedColumnWidths()[column.id] ?? column.getSize());
+  }
+
+  private announceColumnResize(column: Column<TData, unknown>, width: number): void {
+    const label = resolveColumnLabel(column);
+    const formatter = this.resolvedAccessibilityText().columnResize;
+    // Flag the bounds with the SAME limits the resize obeys: min from getResizeBounds,
+    // max from getResizeFitBounds (the fill-mode fit cap, or the plain ownMax in fixed
+    // mode). So a keyboard/SR user hears "(minimum)"/"(maximum)" exactly when a further
+    // press in that direction would be a no-op.
+    const { min } = this.getResizeBounds(column);
+    const { max } = this.getResizeFitBounds(column);
+    const context: NatTableAccessibilityColumnResizeAnnouncementContext = {
+      columnId: column.id,
+      label,
+      widthValue: width,
+      widthText: this.formatAccessibilityNumber(width),
+      atMinimum: width <= min,
+      atMaximum: max !== null && width >= max,
+    };
+
+    this.announce(formatter?.(context) ?? '');
   }
 
   protected getCellTone(
@@ -874,6 +1512,10 @@ export class NatTable<TData extends RowData = RowData> {
 
   protected onRowRendered(event: NatTableRowRenderedEvent): void {
     this.rowRendered.emit(event);
+  }
+
+  protected rowAriaSelected(row: Row<TData>): boolean | null {
+    return this.enableRowSelection() ? row.getIsSelected() : null;
   }
 
   protected onRowClick(event: MouseEvent, row: Row<TData>): void {
@@ -946,6 +1588,13 @@ export class NatTable<TData extends RowData = RowData> {
         this.resolveUpdater(currentState.columnPinning, updaters.columnPinning),
         this.allLeafColumnIds(),
       ),
+      columnSizing: this.clampColumnSizing(
+        this.resolveUpdater(currentState.columnSizing, updaters.columnSizing),
+      ),
+      rowSelection: normalizeRowSelection(
+        this.resolveUpdater(currentState.rowSelection, updaters.rowSelection),
+        this.selectionMode() === 'multiple',
+      ),
       pagination: this.resolveUpdater(currentState.pagination, updaters.pagination),
     };
 
@@ -980,6 +1629,14 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (controlled.columnPinning === undefined) {
       this.internalColumnPinning.set(nextState.columnPinning);
+    }
+
+    if (controlled.columnSizing === undefined) {
+      this.internalColumnSizing.set(nextState.columnSizing);
+    }
+
+    if (controlled.rowSelection === undefined) {
+      this.internalRowSelection.set(nextState.rowSelection);
     }
 
     if (controlled.pagination === undefined) {
@@ -1052,6 +1709,7 @@ export class NatTable<TData extends RowData = RowData> {
 
       this.updateState({ columnOrder: nextColumnOrder });
       this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+      this.scrollColumnHeaderIntoView(movingColumnId);
       return;
     }
 
@@ -1074,6 +1732,100 @@ export class NatTable<TData extends RowData = RowData> {
       },
     });
     this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
+    this.scrollColumnHeaderIntoView(movingColumnId);
+  }
+
+  private canMoveColumn(columnId: string, direction: NatTableColumnMoveDirection): boolean {
+    return this.canMoveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
+  }
+
+  private moveColumn(columnId: string, direction: NatTableColumnMoveDirection): void {
+    this.moveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
+  }
+
+  private canMoveColumnByDelta(
+    columnId: string,
+    directionDelta: ColumnReorderKeyboardDirection,
+  ): boolean {
+    const zone = this.getColumnZoneById(columnId);
+
+    if (!zone) return false;
+
+    const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+
+    return getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta) !== null;
+  }
+
+  private moveColumnByDelta(
+    columnId: string,
+    directionDelta: ColumnReorderKeyboardDirection,
+  ): void {
+    const zone = this.getColumnZoneById(columnId);
+
+    if (!zone) return;
+
+    const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+    const currentIndex = visibleZoneColumnIds.indexOf(columnId);
+    const nextIndex = getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta);
+
+    if (nextIndex === null) return;
+
+    const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
+
+    this.applyVisibleZoneReorder(zone, columnId, nextVisibleZoneOrder);
+  }
+
+  private scrollColumnHeaderIntoView(columnId: string): void {
+    afterNextRender(
+      {
+        write: () => {
+          const scrollContainer = this.tableScrollContainer();
+          const headerElement = this.getHeaderElement(columnId);
+
+          if (!scrollContainer || !headerElement) {
+            return;
+          }
+
+          this.scrollElementHorizontallyIntoView(scrollContainer, headerElement);
+        },
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private getHeaderElement(columnId: string): HTMLElement | null {
+    const tableRegion = this.tableRegionRef()?.nativeElement;
+
+    if (!tableRegion) {
+      return null;
+    }
+
+    const headers = tableRegion.querySelectorAll<HTMLElement>('thead th[data-column-id]');
+
+    for (const header of headers) {
+      if (header.getAttribute('data-column-id') === columnId) {
+        return header;
+      }
+    }
+
+    return null;
+  }
+
+  private scrollElementHorizontallyIntoView(
+    scrollContainer: HTMLElement,
+    element: HTMLElement,
+  ): void {
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+
+    if (elementRect.left < containerRect.left) {
+      scrollContainer.scrollLeft -= containerRect.left - elementRect.left;
+      return;
+    }
+
+    if (elementRect.right > containerRect.right) {
+      scrollContainer.scrollLeft += elementRect.right - containerRect.right;
+    }
   }
 
   private announceColumnReorder(
@@ -1130,11 +1882,12 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   private initializeHeaderObservation(): void {
-    if (typeof ResizeObserver === 'undefined' || this.headerResizeObserver) {
-      return;
-    }
+    if (typeof ResizeObserver === 'undefined' || this.headerResizeObserver) return;
 
-    this.headerResizeObserver = new ResizeObserver(() => this.measureHeaderWidths());
+    this.headerResizeObserver = new ResizeObserver(() => {
+      this.measureHeaderWidths();
+      this.measureRegionViewportWidth();
+    });
     this.reattachHeaderObservers();
   }
 
@@ -1142,11 +1895,10 @@ export class NatTable<TData extends RowData = RowData> {
     const observer = this.headerResizeObserver;
     const region = this.tableRegionRef()?.nativeElement;
 
-    if (!observer || !region) {
-      return;
-    }
+    if (!observer || !region) return;
 
     observer.disconnect();
+    observer.observe(region);
 
     const headerCells = region.querySelectorAll<HTMLTableCellElement>('thead th[data-column-id]');
 
@@ -1155,6 +1907,7 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     this.measureHeaderWidths();
+    this.measureRegionViewportWidth();
   }
 
   private measureHeaderWidths(): void {
@@ -1306,6 +2059,7 @@ export class NatTable<TData extends RowData = RowData> {
 
   private updateStickyHeaderPosition(): void {
     const region = this.tableRegionRef()?.nativeElement;
+
     if (!region) {
       return;
     }
@@ -1340,6 +2094,20 @@ export class NatTable<TData extends RowData = RowData> {
     const transformValue = translateY > 0 ? `translate3d(0, ${translateY}px, 0)` : '';
     for (const cell of headerCells) {
       cell.style.transform = transformValue;
+    }
+  }
+
+  private measureRegionViewportWidth(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (!region) {
+      return;
+    }
+
+    const width = region.clientWidth;
+
+    if (width > 0 && width !== this.regionViewportWidth()) {
+      this.regionViewportWidth.set(width);
     }
   }
 
@@ -1405,6 +2173,8 @@ export class NatTable<TData extends RowData = RowData> {
       sortingKey: serializeSorting(state.sorting),
       globalFilter: state.globalFilter.trim(),
       columnFiltersKey: serializeColumnFilters(state.columnFilters),
+      rowSelectionKey: serializeRowSelection(state.rowSelection),
+      selectedRowCount: Object.values(state.rowSelection).filter(Boolean).length,
       pagination: {
         ...state.pagination,
         pageIndex: this.renderedPageIndex(),
@@ -1441,6 +2211,10 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (!hasSameColumnVisibility(previous.columns, next.columns)) {
       return this.describeColumnVisibilityChange(previous.columns, next.columns);
+    }
+
+    if (previous.rowSelectionKey !== next.rowSelectionKey) {
+      return this.describeSelectionChange(next);
     }
 
     if (previous.pagination.pageSize !== next.pagination.pageSize) {
@@ -1554,6 +2328,20 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     return '';
+  }
+
+  private describeSelectionChange(snapshot: TableAccessibilitySnapshot): string {
+    const formatter = this.resolvedAccessibilityText().selectionChange;
+    const count = snapshot.selectedRowCount;
+    const total = snapshot.totalRows;
+    const context: NatTableAccessibilitySelectionAnnouncementContext = {
+      selectedCountValue: count,
+      selectedCountText: this.formatAccessibilityNumber(count),
+      totalRowsValue: total,
+      totalRowsText: this.formatAccessibilityNumber(total),
+    };
+
+    return formatter?.(context) ?? '';
   }
 
   private describePageSizeChange(snapshot: TableAccessibilitySnapshot): string {

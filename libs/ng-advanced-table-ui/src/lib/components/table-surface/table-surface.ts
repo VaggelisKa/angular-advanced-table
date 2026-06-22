@@ -1,17 +1,11 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  input,
-  output,
-} from '@angular/core';
+import { booleanAttribute, Component, effect, inject, input, output } from '@angular/core';
 import type {
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnSizingState,
   PaginationState,
+  RowSelectionState,
   SortingState,
   VisibilityState,
 } from '@tanstack/angular-table';
@@ -25,7 +19,6 @@ import {
 
 @Component({
   selector: 'nat-table-surface',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<div class="surface">
     <ng-content name="table-pager" />
 
@@ -56,6 +49,12 @@ export class NatTableSurface {
   readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
   readonly accessibilityText = input<NatTableAccessibilityText>({});
+  /** When to apply resize: `'onEnd'` (default, on pointer release) or `'onChange'` (live). */
+  readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
+  /** Width model: `'fill'` (default — columns stretch to fill the container) or `'fixed'` (column widths are authoritative and the region scrolls horizontally, giving pixel-exact resizing). */
+  readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
+  /** Text direction. Falls back to the inherited CDK direction, then `'ltr'`. */
+  readonly direction = input<'ltr' | 'rtl'>();
 
   // Slice-specific change outputs
   readonly sortingChange = output<SortingState>();
@@ -64,7 +63,9 @@ export class NatTableSurface {
   readonly columnVisibilityChange = output<VisibilityState>();
   readonly columnOrderChange = output<ColumnOrderState>();
   readonly columnPinningChange = output<ColumnPinningState>();
+  readonly columnSizingChange = output<ColumnSizingState>();
   readonly paginationChange = output<PaginationState>();
+  readonly rowSelectionChange = output<RowSelectionState>();
 
   private readonly natTableService = inject(NatTableService);
   constructor() {
@@ -96,6 +97,15 @@ export class NatTableSurface {
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
     });
+    effect(() => {
+      this.natTableService.columnResizeMode.set(this.columnResizeMode());
+    });
+    effect(() => {
+      this.natTableService.columnSizingMode.set(this.columnSizingMode());
+    });
+    effect(() => {
+      this.natTableService.direction.set(this.direction());
+    });
 
     // Detect internal state changes from the table and emit slice outputs
     let isFirstChange = true;
@@ -106,6 +116,8 @@ export class NatTableSurface {
       columnVisibility: {},
       columnOrder: [],
       columnPinning: { left: [], right: [] },
+      columnSizing: {},
+      rowSelection: {},
       pagination: { pageIndex: 0, pageSize: 10 },
     };
 
@@ -133,8 +145,13 @@ export class NatTableSurface {
         JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder);
       const columnPinningChanged =
         JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning);
+      const columnSizingChanged =
+        JSON.stringify(prev.columnSizing) !== JSON.stringify(nextState.columnSizing);
       const paginationChanged =
         JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
+      const rowSelectionChanged =
+        serializeSelectedRowIds(prev.rowSelection) !==
+        serializeSelectedRowIds(nextState.rowSelection);
 
       if (
         sortingChanged ||
@@ -143,7 +160,9 @@ export class NatTableSurface {
         columnVisibilityChanged ||
         columnOrderChanged ||
         columnPinningChanged ||
-        paginationChanged
+        columnSizingChanged ||
+        paginationChanged ||
+        rowSelectionChanged
       ) {
         this.stateChange.emit(nextState);
       }
@@ -172,9 +191,22 @@ export class NatTableSurface {
         this.columnPinningChange.emit(nextState.columnPinning);
       }
 
+      if (columnSizingChanged) {
+        this.columnSizingChange.emit(nextState.columnSizing);
+      }
       if (paginationChanged) {
         this.paginationChange.emit(nextState.pagination);
       }
+      if (rowSelectionChanged) {
+        this.rowSelectionChange.emit(nextState.rowSelection);
+      }
     });
   }
+}
+
+function serializeSelectedRowIds(selection: NatTableState['rowSelection']): string {
+  return Object.keys(selection)
+    .filter((rowId) => selection[rowId])
+    .sort()
+    .join('|');
 }

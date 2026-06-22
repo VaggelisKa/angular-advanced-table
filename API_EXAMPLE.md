@@ -15,7 +15,14 @@ The following showcase demonstrates the simplified, context-aware API implemente
   </nat-table-toolbar>
 
   <nat-table-toolbar accessibleName="Table controls">
-    <nat-table-search placeholder="Search e.g. Analytics, Active, Delta..." />
+    <input
+      natToolbarItem="search"
+      type="search"
+      aria-label="Search table"
+      placeholder="Search e.g. Analytics, Active, Delta..."
+      [value]="tableState().globalFilter ?? ''"
+      (input)="setGlobalFilter($event)"
+    />
 
     <nat-table-column-visibility />
 
@@ -35,14 +42,13 @@ The following showcase demonstrates the simplified, context-aware API implemente
 Below is the corresponding component class implementation demonstrating standalone setup, declarative data loading with `resource()`, and derived state using `computed()`:
 
 ```typescript
-import { ChangeDetectionStrategy, Component, computed, resource, signal } from '@angular/core';
+import { Component, computed, resource, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, type NatTableState } from 'ng-advanced-table';
 import {
   NatTableSurface,
   NatTableToolbar,
   NatToolbarItem,
-  NatTableSearch,
   NatTablePagination,
   NatTableColumnVisibility,
   NatTableScrollControl,
@@ -58,12 +64,10 @@ interface DemoItem {
 
 @Component({
   selector: 'app-declarative-table-demo',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTableSurface,
     NatTableToolbar,
     NatToolbarItem,
-    NatTableSearch,
     NatTableColumnVisibility,
     NatTableScrollControl,
     NatTable,
@@ -77,6 +81,17 @@ export class DeclarativeTableDemoComponent {
     pagination: { pageIndex: 0, pageSize: 10 },
     sorting: [{ id: 'name', desc: false }],
   });
+
+  setGlobalFilter(event: Event): void {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+
+    this.tableState.update((state) => ({
+      ...state,
+      pagination: { ...(state.pagination ?? { pageIndex: 0, pageSize: 10 }), pageIndex: 0 },
+      globalFilter: target.value,
+    }));
+  }
 
   // Reactively fetch data from the server whenever the tableState changes
   readonly serverResponse = resource({

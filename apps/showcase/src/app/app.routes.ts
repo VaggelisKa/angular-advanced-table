@@ -97,6 +97,22 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'resizing',
+    title: 'Advanced Table - Column Resizing',
+    loadComponent: () =>
+      import('./pages/single-features/resizing-showcase/resizing-showcase').then(
+        (module) => module.ResizingShowcasePage,
+      ),
+  },
+  {
+    path: 'selection',
+    title: 'Advanced Table - Row Selection',
+    loadComponent: () =>
+      import('./pages/single-features/selection/selection-showcase').then(
+        (module) => module.SelectionShowcasePage,
+      ),
+  },
+  {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
     loadComponent: () =>

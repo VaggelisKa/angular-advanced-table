@@ -3,7 +3,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "paths": {
       "ng-advanced-table": [
         "./dist/libs/ng-advanced-table",
@@ -13,9 +12,7 @@
         "./dist/libs/ng-advanced-table-locales",
         "./libs/ng-advanced-table-locales/src/public-api.ts"
       ],
-      "ng-advanced-table-types": [
-        "./libs/ng-advanced-table-types/src/public-api.ts"
-      ],
+      "ng-advanced-table-types": ["./libs/ng-advanced-table-types/src/public-api.ts"],
       "ng-advanced-table-ui": [
         "./dist/libs/ng-advanced-table-ui",
         "./libs/ng-advanced-table-ui/src/public-api.ts"

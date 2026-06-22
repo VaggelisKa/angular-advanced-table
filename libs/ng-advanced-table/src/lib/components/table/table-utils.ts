@@ -7,14 +7,12 @@ import type {
   FilterFn,
   Row,
   RowData,
+  RowSelectionState,
   SortingState,
 } from '@tanstack/angular-table';
 
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from './cell-interaction';
-import type {
-  NatTableCellTone,
-  NatTableDataStatus,
-} from './table.types';
+import type { NatTableCellTone, NatTableDataStatus } from './table.types';
 import { NAT_TABLE_DATA_STATUS } from './table.types';
 
 export const DEFAULT_CELL_MAX_LINES = 2;
@@ -30,6 +28,8 @@ export interface TableColumnSizingState {
   hasMinSize: boolean;
   hasMaxSize: boolean;
 }
+
+export type ColumnReorderKeyboardDirection = -1 | 1;
 
 export function getColumnDefLeafIds<TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
@@ -231,6 +231,39 @@ export function moveItemInArrayCopy(
   return nextValues;
 }
 
+export function getColumnReorderKeyboardDirection(
+  event: KeyboardEvent,
+): ColumnReorderKeyboardDirection | null {
+  // `KeyboardEvent.key` uses platform-neutral arrow names. Accept the platform
+  // primary modifier: Control on Windows/Linux, Command on macOS.
+  const hasSinglePrimaryModifier = event.ctrlKey !== event.metaKey;
+
+  if (!hasSinglePrimaryModifier || !event.shiftKey || event.altKey) {
+    return null;
+  }
+
+  if (event.key === 'ArrowLeft') {
+    return -1;
+  }
+
+  if (event.key === 'ArrowRight') {
+    return 1;
+  }
+
+  return null;
+}
+
+export function getColumnMoveTargetIndex(
+  columnIds: readonly string[],
+  columnId: string,
+  directionDelta: ColumnReorderKeyboardDirection,
+): number | null {
+  const currentIndex = columnIds.indexOf(columnId);
+  const nextIndex = currentIndex + directionDelta;
+
+  return currentIndex !== -1 && nextIndex >= 0 && nextIndex < columnIds.length ? nextIndex : null;
+}
+
 export function replaceIdsInSlots(
   currentOrder: readonly string[],
   nextVisibleOrder: readonly string[],
@@ -322,11 +355,16 @@ export function getNumericColumnWidth(value: number | string | undefined): numbe
   return Number.isFinite(width) && width >= 0 ? Math.round(width) : null;
 }
 
-export function isUnavailableRequiredInputError(error: unknown): error is Error & { code?: number } {
+export function isUnavailableRequiredInputError(
+  error: unknown,
+): error is Error & { code?: number } {
   return error instanceof Error && Math.abs((error as { code?: number }).code ?? 0) === 950;
 }
 
-export function hasSameWidths(left: Record<string, number>, right: Record<string, number>): boolean {
+export function hasSameWidths(
+  left: Record<string, number>,
+  right: Record<string, number>,
+): boolean {
   const leftKeys = Object.keys(left);
   const rightKeys = Object.keys(right);
 
@@ -383,6 +421,33 @@ export function serializeSorting(sorting: SortingState): string {
 
 export function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
   return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
+}
+
+/** Collapses a multi-row selection map to its first selected key by sort order in single mode. */
+export function normalizeRowSelection(
+  selection: RowSelectionState,
+  allowMulti: boolean,
+): RowSelectionState {
+  if (allowMulti) {
+    return selection;
+  }
+
+  const selectedIds = Object.keys(selection)
+    .filter((id) => selection[id])
+    .sort();
+
+  if (selectedIds.length <= 1) {
+    return selection;
+  }
+
+  return { [selectedIds[0]]: true };
+}
+
+export function serializeRowSelection(selection: RowSelectionState): string {
+  return Object.keys(selection)
+    .filter((id) => selection[id])
+    .sort()
+    .join('|');
 }
 
 export function hasSameColumnVisibility(

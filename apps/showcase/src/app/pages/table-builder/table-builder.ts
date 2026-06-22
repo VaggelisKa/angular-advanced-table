@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import {
   type CellContext,
   type ColumnDef,
@@ -54,7 +54,6 @@ const DEMO_DATA: DemoItem[] = [
   ],
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableBuilderPage {
   // Feature Toggles
@@ -76,29 +75,38 @@ export class TableBuilderPage {
   readonly data = DEMO_DATA;
 
   // Columns definition
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
-    {
-      accessorKey: 'name',
-      header: 'Name',
-      meta: { label: 'Name', rowHeader: true },
-    },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      meta: { label: 'Category' },
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      meta: { label: 'Status' },
-    },
-    {
-      accessorKey: 'value',
-      header: 'Value',
-      meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
-    },
-  ]);
+  readonly columns = computed<ColumnDef<DemoItem, unknown>[]>(() =>
+    withNatTableHeaderActions(
+      [
+        {
+          accessorKey: 'name',
+          header: 'Name',
+          meta: { label: 'Name', rowHeader: true },
+        },
+        {
+          accessorKey: 'category',
+          header: 'Category',
+          meta: { label: 'Category' },
+        },
+        {
+          accessorKey: 'status',
+          header: 'Status',
+          meta: { label: 'Status' },
+        },
+        {
+          accessorKey: 'value',
+          header: 'Value',
+          meta: { label: 'Value', align: 'end' },
+          cell: (context: CellContext<DemoItem, number>) =>
+            `$${context.getValue().toLocaleString()}`,
+        },
+      ],
+      {
+        enableColumnPinActions: this.withColumnPinning(),
+        enableColumnReorderActions: this.withColumnReorder(),
+      },
+    ),
+  );
 
   // Table State
   readonly tableState = signal<Partial<NatTableState>>({
@@ -162,7 +170,7 @@ export class TableBuilderPage {
 
   // Generated TS code
   readonly generatedTs = computed(() => {
-    const imports = ['ChangeDetectionStrategy', 'Component', 'signal'];
+    const imports = ['Component', 'signal'];
     const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
 
     if (this.withGlobalFilter() || this.showColumnVisibility()) {
@@ -228,7 +236,6 @@ interface DemoItem {
   ],
   templateUrl: './custom-table.html',
   styleUrl: './custom-table.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomTableComponent {
   readonly data: DemoItem[] = [
@@ -246,7 +253,14 @@ export class CustomTableComponent {
       meta: { label: 'Value', align: 'end' },
       cell: (ctx) => \`\$\${ctx.getValue<number>().toLocaleString()}\`,
     },
-  ]);
+  ]${
+    this.withColumnReorder() || !this.withColumnPinning()
+      ? `, {
+    enableColumnPinActions: ${this.withColumnPinning() ? 'true' : 'false'},
+    enableColumnReorderActions: ${this.withColumnReorder() ? 'true' : 'false'},
+  }`
+      : ''
+  });
 
   readonly tableState = signal<Partial<NatTableState>>(${formattedState});
 

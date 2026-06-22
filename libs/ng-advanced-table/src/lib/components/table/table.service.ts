@@ -19,23 +19,26 @@ export const NAT_TABLE_UI_CONTROLLER = new InjectionToken<NatTableUiController<a
 @Injectable()
 export class NatTableService<TData extends RowData = RowData> {
   private readonly controllerSignal = signal<NatTableUiController<TData> | null>(null);
-  readonly controller = this.controllerSignal.asReadonly();
+  public readonly controller = this.controllerSignal.asReadonly();
 
   // Model state bound from the surface component
   private readonly stateSignal = signal<Partial<NatTableState>>({});
-  readonly state = this.stateSignal.asReadonly();
+  public readonly state = this.stateSignal.asReadonly();
 
-  readonly surfaceInitialState = signal<Partial<NatTableState>>({});
-  readonly surfaceMode = signal<NatTableMode | NatTableModeConfiguration>('auto');
+  public readonly surfaceInitialState = signal<Partial<NatTableState>>({});
+  public readonly surfaceMode = signal<NatTableMode | NatTableModeConfiguration>('auto');
 
-  readonly manualPageCount = signal<number | undefined>(undefined);
-  readonly enableAnnouncements = signal(true);
-  readonly stickyHeader = signal(true);
-  readonly enableMultiSort = signal(false);
-  readonly locale = signal<string | undefined>(undefined);
-  readonly accessibilityText = signal<NatTableAccessibilityText>({});
+  public readonly manualPageCount = signal<number | undefined>(undefined);
+  public readonly enableAnnouncements = signal(true);
+  public readonly stickyHeader = signal(true);
+  public readonly enableMultiSort = signal(false);
+  public readonly locale = signal<string | undefined>(undefined);
+  public readonly accessibilityText = signal<NatTableAccessibilityText>({});
+  public readonly columnResizeMode = signal<'onEnd' | 'onChange'>('onEnd');
+  public readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
+  public readonly direction = signal<'ltr' | 'rtl' | undefined>(undefined);
 
-  readonly manualPagination = computed(() => {
+  public readonly manualPagination = computed(() => {
     const mode = this.surfaceMode();
     if (typeof mode === 'string') {
       return mode === 'manual';
@@ -43,7 +46,7 @@ export class NatTableService<TData extends RowData = RowData> {
     return mode.pagination === 'manual';
   });
 
-  readonly manualSorting = computed(() => {
+  public readonly manualSorting = computed(() => {
     const mode = this.surfaceMode();
     if (typeof mode === 'string') {
       return mode === 'manual';
@@ -51,7 +54,7 @@ export class NatTableService<TData extends RowData = RowData> {
     return mode.sorting === 'manual';
   });
 
-  readonly manualFiltering = computed(() => {
+  public readonly manualFiltering = computed(() => {
     const mode = this.surfaceMode();
     if (typeof mode === 'string') {
       return mode === 'manual';
@@ -61,43 +64,43 @@ export class NatTableService<TData extends RowData = RowData> {
 
   // Self-registrations for components
   private readonly paginationRegistrations = signal(0);
-  readonly hasPagination = computed(() => this.paginationRegistrations() > 0);
+  public readonly hasPagination = computed(() => this.paginationRegistrations() > 0);
 
   private readonly searchRegistrations = signal(0);
-  readonly hasSearch = computed(() => this.searchRegistrations() > 0);
+  public readonly hasSearch = computed(() => this.searchRegistrations() > 0);
 
   // Writable signal to emit state updates from NatTable back to NatTableSurface
-  readonly stateChangeEvent = signal<NatTableState | null>(null);
+  public readonly stateChangeEvent = signal<NatTableState | null>(null);
 
-  setController(controller: NatTableUiController<TData> | null): void {
+  public setController(controller: NatTableUiController<TData> | null): void {
     this.controllerSignal.set(controller);
   }
 
-  notifyStateChange(state: NatTableState): void {
+  public notifyStateChange(state: NatTableState): void {
     this.stateChangeEvent.set(state);
   }
 
-  updateState(updater: (current: Partial<NatTableState>) => Partial<NatTableState>): void {
+  public updateState(updater: (current: Partial<NatTableState>) => Partial<NatTableState>): void {
     this.stateSignal.update(updater);
   }
 
-  setState(value: Partial<NatTableState>): void {
+  public setState(value: Partial<NatTableState>): void {
     this.stateSignal.set(value);
   }
 
-  registerPagination(): void {
+  public registerPagination(): void {
     this.paginationRegistrations.update((count) => count + 1);
   }
 
-  unregisterPagination(): void {
+  public unregisterPagination(): void {
     this.paginationRegistrations.update((count) => Math.max(0, count - 1));
   }
 
-  registerSearch(): void {
+  public registerSearch(): void {
     this.searchRegistrations.update((count) => count + 1);
   }
 
-  unregisterSearch(): void {
+  public unregisterSearch(): void {
     this.searchRegistrations.update((count) => Math.max(0, count - 1));
   }
 }

@@ -94,10 +94,10 @@ describe('UI locale toolbar slice', () => {
       'Service sorted in ascending order, sort priority 1 of 2. Change sorting',
     );
     expect(english.headerActions?.accessibilityLabels?.menuButton?.({ label: 'Service' })).toBe(
-      'Open pinning options for Service column',
+      'Open column actions for Service column',
     );
     expect(english.headerActions?.accessibilityLabels?.menuLabel?.({ label: 'Service' })).toBe(
-      'Pinning options for Service column',
+      'Column actions for Service column',
     );
     expect(english.headerActions?.accessibilityLabels?.pinButton?.(unpinnedHeaderContext)).toBe(
       'Pin left: Service column',
@@ -105,6 +105,18 @@ describe('UI locale toolbar slice', () => {
     expect(english.headerActions?.accessibilityLabels?.pinButtonText?.(pinnedHeaderContext)).toBe(
       'Unpin left',
     );
+    expect(
+      english.headerActions?.accessibilityLabels?.moveButton?.({
+        label: 'Service',
+        direction: 'right',
+      }),
+    ).toBe('Move Service column right');
+    expect(
+      english.headerActions?.accessibilityLabels?.moveButtonText?.({
+        label: 'Service',
+        direction: 'right',
+      }),
+    ).toBe('Move right');
   });
 
   it('keeps the toolbar slice through provideNatTableUiLocales()', () => {

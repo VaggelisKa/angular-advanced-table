@@ -1,11 +1,15 @@
 import type { Signal } from '@angular/core';
 import type {
   CellContext,
+  Column,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
+  ColumnSizingState,
   PaginationState,
+  Row,
   RowData,
+  RowSelectionState,
   SortingState,
   Table,
   Updater,
@@ -25,6 +29,8 @@ export interface NatTableRenderMetricsState {
   columnVisibility: VisibilityState;
   columnOrder: ColumnOrderState;
   columnPinning: ColumnPinningState;
+  columnSizing: ColumnSizingState;
+  rowSelection: RowSelectionState;
   pagination: PaginationState;
 }
 
@@ -54,6 +60,34 @@ export interface NatTableRenderMetricsEvent {
   renderToken: number;
   /** Elapsed render duration for the row, in milliseconds. */
   durationMs: number;
+}
+
+/** Value returned by table export metadata before format-specific normalization. */
+export type NatTableColumnExportValue = unknown;
+
+/** Context passed to column export value callbacks. */
+export interface NatTableColumnExportValueContext<
+  TData extends RowData = RowData,
+  TValue = unknown,
+> {
+  /** Row being exported. */
+  readonly row: Row<TData>;
+  /** Column being exported. */
+  readonly column: Column<TData, TValue>;
+  /** Raw value resolved from the row and column before export-specific normalization. */
+  readonly value: TValue;
+}
+
+/** Export behavior attached to a table column definition. */
+export interface NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> {
+  /** Whether the column participates in table export. Accessor columns opt in by default. */
+  readonly enabled?: boolean;
+  /** Header text used by export formats. Defaults to column labels and identifiers. */
+  readonly header?: string;
+  /** Maps a row/column value into an export value. Defaults to the raw accessor value. */
+  readonly value?: (
+    context: NatTableColumnExportValueContext<TData, TValue>,
+  ) => NatTableColumnExportValue;
 }
 
 /**
@@ -87,6 +121,8 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerMinSize?: number | string;
   /** Optional header-only maximum width in pixels. Does not affect body cells. */
   headerMaxSize?: number | string;
+  /** Optional table export behavior for this column. */
+  export?: NatTableColumnExportOptions<TData, TValue>;
 }
 
 declare module '@tanstack/table-core' {

@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  booleanAttribute,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { Component, DestroyRef, booleanAttribute, computed, inject, input } from '@angular/core';
 import type { PaginationState, RowData } from '@tanstack/angular-table';
 import { NatTableService, NatToolbarItem } from 'ng-advanced-table-ui';
 
@@ -22,7 +14,6 @@ let nextSearchFieldId = 0;
  */
 @Component({
   selector: 'app-table-search',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatToolbarItem],
   templateUrl: './table-search.html',
   styleUrl: './table-search.css',

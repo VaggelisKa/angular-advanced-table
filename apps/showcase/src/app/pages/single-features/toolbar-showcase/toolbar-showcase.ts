@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  computed,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, ElementRef, computed, signal, viewChild } from '@angular/core';
 import {
   type CellContext,
   type ColumnDef,
@@ -15,6 +8,7 @@ import {
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import {
+  NatTableExport,
   NatTableSurface,
   NatTableToolbar,
   NatToolbarGroup,
@@ -65,9 +59,9 @@ const FILTER_PRESETS: readonly FilterPreset[] = [
 
 @Component({
   selector: 'app-toolbar-showcase',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NatTable,
+    NatTableExport,
     NatTableSurface,
     NatTableToolbar,
     NatToolbarGroup,

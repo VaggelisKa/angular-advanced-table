@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { ToolbarWidgetGroup } from '@angular/aria/toolbar';
 
 import type { NatToolbarItemPosition } from '../common/toolbar-tokens.type';
@@ -27,7 +27,6 @@ import type { NatToolbarItemPosition } from '../common/toolbar-tokens.type';
  */
 @Component({
   selector: 'div[natToolbarGroup], section[natToolbarGroup]',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<ng-content />`,
   styleUrl: './toolbar-group.css',
   hostDirectives: [{ directive: ToolbarWidgetGroup, inputs: ['disabled'] }],

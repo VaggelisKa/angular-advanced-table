@@ -1,0 +1,7 @@
+# Table Data Export Uses a Pluggable Table Action With CSV Defaults
+
+Table data export is a Table Action in `ng-advanced-table-ui`, not a core table feature, because it composes with toolbar controls but remains optional companion behavior. The `natTableExport` directive resolves its table controller through the shared UI control pattern, exports all client-held rows and visible exportable leaf columns by default, lets applications replace the operation with an `exportHandler`, and exposes `exportCsv()` so custom handlers can still delegate to the built-in CSV export. The directive listens for DOM `click` and keyboard activation by default, and exposes `#tableExport="natTableExport"` plus `trigger(...)` so custom elements can bridge custom activation events explicitly.
+
+The default handler writes a client-side CSV file. CSV keeps the library dependency-free for this feature while still providing an automatic export path. Applications that require Excel workbooks, server-generated files, audit logging, or custom serialization provide their own handler through the directive input or `provideNatTableExport(...)`. Handlers can call `context.getData()` to lazily resolve normalized column and row values for their own generation flow.
+
+The directive is intentionally not backed by an Angular `resource`. Data export is a user-triggered side effect, not reactive async data fetching, and the directive should not own retained value/error/status state for consumer-provided handlers. It only guards duplicate activation while the handler promise is pending.

@@ -7,9 +7,11 @@
 /bazel-out
 
 # Node
-/node_modules
+node_modules
 npm-debug.log
 yarn-error.log
+# This workspace uses pnpm; ignore the npm lockfile to catch an accidental `npm install`
+package-lock.json
 
 # IDEs and editors
 .idea/
@@ -49,3 +51,4 @@ Thumbs.db
 
 # AI
 .omc
+.nx/migrate-runs

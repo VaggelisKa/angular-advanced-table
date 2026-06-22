@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { CdkMenuModule } from '@angular/cdk/menu';
 import { GridCellWidget } from '@angular/aria/grid';
 
@@ -28,7 +28,6 @@ const DEMO_ROW_ACTIONS: readonly DemoRowAction[] = [
 
 @Component({
   selector: 'app-row-actions-menu',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CdkMenuModule, GridCellWidget],
   styles: `
     :host {

@@ -30,6 +30,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Treat `dataStatus` as the table-owned switch for loading, empty, and error body rows. Keep data fetching, retry handling, and error classification in consuming containers, and render custom state UI through `natTableLoading`, `natTableEmpty`, or `natTableError` templates inside `<nat-table>`.
 - For `<nat-table-toolbar>`, projected interactive controls that participate in toolbar navigation must use `natToolbarItem` or `NatToolbarGroup`, with DOM order matching screen-reader and roving-keyboard order.
 - Do not use or reintroduce the removed `NatTableActionBar`/`<nat-table-action-bar>` API. Compose bundled control rows with `<nat-table-toolbar>`, `NatToolbarGroup`/`natToolbarItem`, and the pagination or scroll companion controls instead.
+- Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/lib/components/table/table-utils.ts`; keep `table.ts` focused on Angular wiring, signals, and DOM behavior.
 
 ## TypeScript Best Practices
 
@@ -54,6 +55,11 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - When changing companion-control visible text, `aria-label` copy, or built-in UI locale dictionaries, keep visible words inside accessible names and update the locale specs plus UI component specs that lock that copy.
 - Keep `hiddenHeaderLabel` rendered as screen-reader-only header text for both primitive and non-primitive column headers, including columns wrapped with `withNatTableHeaderActions(...)`.
 
+## Testing
+
+- Prefer `data-testid` selectors for automated test hooks. Avoid coupling tests to CSS classes, DOM shape, or incidental implementation attributes when a stable `data-testid` can be added.
+- For showcase Playwright coverage, group specs by feature under `e2e/<feature>/`, pair pointer/workflow specs with keyboard accessibility specs named `<feature>.a11y.e2e.ts`, and keep the showcase `e2e` Nx target wired into CI when those files are added or moved.
+
 ## Browser Compatibility
 
 - The project must support Safari 16.
@@ -65,7 +71,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Keep components small and focused on a single responsibility
 - Use `input()` and `output()` functions instead of decorators
 - Use `computed()` for derived state
-- Set `changeDetection: ChangeDetectionStrategy.OnPush` in `@Component` decorator
+- Do NOT set `changeDetection` explicitly; rely on the Angular v22 default (`OnPush`). Only add `changeDetection: ChangeDetectionStrategy.Eager` when a component genuinely requires eager checking
 - Prefer inline templates for small components
 - Prefer Reactive forms instead of Template-driven ones
 - Do NOT use `ngClass`, use `class` bindings instead

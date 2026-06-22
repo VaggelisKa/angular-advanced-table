@@ -1,6 +1,5 @@
 import { DOCUMENT } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   afterRenderEffect,
@@ -30,7 +29,6 @@ const DEFAULT_SCROLL_STEP = 240;
 
 @Component({
   selector: 'nat-table-scroll-control',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './table-scroll-control.html',
   styleUrl: './table-scroll-control.css',
 })

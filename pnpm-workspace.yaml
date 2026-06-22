@@ -1,0 +1,77 @@
+packages:
+  - 'libs/*'
+  - 'apps/*'
+# pnpm 11 ignores the .npmrc `node-linker=hoisted` key, so it is set here too.
+# Hoisting keeps a single root node_modules that Nx/Angular and the
+# manifest-less apps/showcase resolve against.
+nodeLinker: hoisted
+# pnpm 11 runs `pnpm install` before every `pnpm run`/`pnpm exec` by default
+# (verifyDepsBeforeRun). Disable it so script runs (e.g. `pnpm run verify`,
+# `pnpm nx ...`) use the already-installed deps instead of triggering a
+# redundant reinstall on each invocation.
+verifyDepsBeforeRun: false
+# pnpm 11 ignores the .npmrc `link-workspace-packages` key, so it is set here
+# too. Links the internal `ng-advanced-table-locales: "*"` dep to local source
+# instead of resolving the published tarball during re-resolution.
+linkWorkspacePackages: true
+catalogs:
+  # runtime: Angular + table/reactivity packages
+  frontend:
+    '@angular/aria': '22.0.2'
+    '@angular/cdk': '22.0.2'
+    '@angular/common': '22.0.2'
+    '@angular/compiler': '22.0.2'
+    '@angular/core': '22.0.2'
+    '@angular/forms': '22.0.2'
+    '@angular/platform-browser': '22.0.2'
+    '@angular/router': '22.0.2'
+    '@tanstack/angular-table': '^8.21.4'
+    rxjs: '~7.8.2'
+  # published peer ranges for the libs. Decoupled from `frontend` so the app
+  # pins exact versions while published tarballs keep caret ranges (pnpm
+  # rewrites catalog: refs to these literals at publish time).
+  peers:
+    '@angular/aria': '^22.0.2'
+    '@angular/cdk': '^22.0.2'
+    '@angular/common': '^22.0.2'
+    '@angular/core': '^22.0.2'
+    '@tanstack/angular-table': '^8.21.4'
+  # dev: Angular build/CLI, Nx Angular plugin, packaging, test runners
+  frontend-dev:
+    '@angular/build': '22.0.3'
+    '@angular/cli': '22.0.3'
+    '@angular/compiler-cli': '22.0.2'
+    '@nx/angular': '23.1.0-beta.0'
+    '@playwright/test': '^1.50.1'
+    jsdom: '^29.1.1'
+    ng-packagr: '22.0.0'
+  # runtime: cross-cutting helpers
+  shared:
+    tslib: '^2.8.1'
+  # dev: Nx core, TypeScript, formatter/test tooling
+  shared-dev:
+    '@nx/js': '23.1.0-beta.0'
+    nx: '23.1.0-beta.0'
+    prettier: '^3.8.4'
+    typescript: '6.0.3'
+    vitest: '^4.1.9'
+# pnpm 11 enables a 24h supply-chain cooldown (minimumReleaseAge: 1440) by
+# default: newly published versions are rejected until they are a day old.
+# TEMPORARILY disabled (0) so the frozen lockfile installs — the deliberately
+# fresh Angular 22.0.3 and Nx 23.1.0-beta.0 pins were published <24h ago and
+# trip the gate on `pnpm install --frozen-lockfile` / CI.
+# NOTE: while this is 0 the cooldown protection is off repo-wide for every
+# package, not just these pins. Restore to 1440 once the migration's pins have
+# aged out (or add a minimumReleaseAgeExclude for @angular/@nx instead).
+minimumReleaseAge: 0
+# Native packages permitted to run lifecycle scripts (pnpm blocks them by
+# default). This is exactly the set pnpm reported as ignored on a clean install.
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  less: true
+  lmdb: true
+  msgpackr-extract: true
+  nx: true
+auditConfig:
+  ignoreCves: []

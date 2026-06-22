@@ -19,7 +19,10 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
     loadingState: 'Loading rows.',
     errorState: 'Rows could not be loaded.',
     reorderKeyboardInstructions:
-      'Press Alt+Shift+Left Arrow or Alt+Shift+Right Arrow to reorder columns within their current pinned region.',
+      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
+    resizeKeyboardInstructions:
+      'On a resizable column header, press Alt with Left or Right Arrow to resize the column, ' +
+      'and Alt with Home or End to jump to its minimum or maximum width.',
     tableSummary: ({
       filterState,
       pageCountText,
@@ -105,6 +108,21 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       `Moved ${label} column to position ${positionText} of ${totalText} in the ${describeColumnZone(
         zone,
       )} region.`,
+    columnResize: ({ label, widthText, atMinimum, atMaximum }) =>
+      `${label} column width ${widthText} pixels${
+        atMinimum ? ' (minimum)' : atMaximum ? ' (maximum)' : ''
+      }.`,
+    selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {
+      if (selectedCountValue === 0) {
+        return 'Selection cleared.';
+      }
+
+      if (selectedCountValue >= totalRowsValue && totalRowsValue > 0) {
+        return `All ${totalRowsText} ${pluralize('row', totalRowsValue)} selected.`;
+      }
+
+      return `${selectedCountText} ${pluralize('row', selectedCountValue)} selected.`;
+    },
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER,
 };

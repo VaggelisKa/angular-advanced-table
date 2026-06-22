@@ -24,10 +24,10 @@
     "accessibility"
   ],
   "peerDependencies": {
-    "@angular/core": "^21.2.0"
+    "@angular/core": "catalog:peers"
   },
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "catalog:shared"
   },
   "sideEffects": false
 }

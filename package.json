@@ -17,41 +17,43 @@
     "release:check": "nx release plan:check --base=${NX_BASE:-main} --head=${NX_HEAD:-HEAD} && nx release --dry-run",
     "release": "nx release",
     "pack:dry-run": "npm pack --dry-run ./dist/libs/ng-advanced-table && npm pack --dry-run ./dist/libs/ng-advanced-table-ui && npm pack --dry-run ./dist/libs/ng-advanced-table-utils && npm pack --dry-run ./dist/libs/ng-advanced-table-locales",
-    "verify": "npm run test:packages && npm run build:packages && npm run build:showcase && npm run release:check && npm run pack:dry-run"
+    "verify": "pnpm run test:packages && pnpm run build:packages && pnpm run build:showcase && pnpm run release:check && pnpm run pack:dry-run"
   },
   "private": true,
-  "packageManager": "npm@11.11.0",
-  "workspaces": [
-    "libs/ng-advanced-table",
-    "libs/ng-advanced-table-ui",
-    "libs/ng-advanced-table-utils",
-    "libs/ng-advanced-table-locales"
-  ],
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "engineStrict": true,
   "dependencies": {
-    "@angular/cdk": "^21.2.6",
-    "@angular/aria": "^21.2.6",
-    "@angular/common": "^21.2.8",
-    "@angular/compiler": "^21.2.8",
-    "@angular/core": "^21.2.8",
-    "@angular/forms": "^21.2.8",
-    "@angular/platform-browser": "^21.2.8",
-    "@angular/router": "^21.2.8",
-    "@tanstack/angular-table": "^8.21.4",
-    "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "@angular/aria": "catalog:frontend",
+    "@angular/cdk": "catalog:frontend",
+    "@angular/common": "catalog:frontend",
+    "@angular/compiler": "catalog:frontend",
+    "@angular/core": "catalog:frontend",
+    "@angular/forms": "catalog:frontend",
+    "@angular/platform-browser": "catalog:frontend",
+    "@angular/router": "catalog:frontend",
+    "@tanstack/angular-table": "catalog:frontend",
+    "rxjs": "catalog:frontend",
+    "tslib": "catalog:shared"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.8",
-    "@angular/cli": "^21.2.8",
-    "@angular/compiler-cli": "^21.2.8",
-    "@nx/angular": "^22.7.0",
-    "@nx/js": "^22.7.0",
-    "@playwright/test": "^1.50.1",
-    "jsdom": "^28.0.0",
-    "ng-packagr": "^21.2.0",
-    "nx": "^22.7.0",
-    "prettier": "^3.8.1",
-    "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "@angular/build": "catalog:frontend-dev",
+    "@angular/cli": "catalog:frontend-dev",
+    "@angular/compiler-cli": "catalog:frontend-dev",
+    "@nx/angular": "catalog:frontend-dev",
+    "@nx/js": "catalog:shared-dev",
+    "@playwright/test": "catalog:frontend-dev",
+    "jsdom": "catalog:frontend-dev",
+    "ng-advanced-table": "workspace:*",
+    "ng-advanced-table-locales": "workspace:*",
+    "ng-advanced-table-ui": "workspace:*",
+    "ng-advanced-table-utils": "workspace:*",
+    "ng-packagr": "catalog:frontend-dev",
+    "nx": "catalog:shared-dev",
+    "prettier": "catalog:shared-dev",
+    "typescript": "catalog:shared-dev",
+    "vitest": "catalog:shared-dev"
   }
 }

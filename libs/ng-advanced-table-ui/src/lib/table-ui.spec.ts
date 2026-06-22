@@ -114,7 +114,9 @@ const baseColumns: ColumnDef<Row, unknown>[] = [
 })
 class TableUiHost {
   readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(baseColumns);
+  readonly columns = withNatTableHeaderActions(baseColumns, {
+    enableColumnReorderActions: true,
+  });
   readonly getRowId = (row: Row) => row.id;
   readonly pageSizeOptions = [2, 3, 5] as const;
   readonly tableState = signal<Partial<NatTableState>>({});
@@ -145,6 +147,27 @@ class CustomSortIndicatorHost {
   readonly columns = withNatTableHeaderActions(baseColumns, {
     sortIndicator: ({ sortState }) =>
       sortState === 'asc' ? 'A' : sortState === 'desc' ? 'D' : '-',
+  });
+  readonly tableState = signal<Partial<NatTableState>>({});
+
+  onTableStateChange(state: Partial<NatTableState>): void {
+    this.tableState.set(state);
+  }
+}
+
+@Component({
+  imports: [NatTable, NatTableSurface],
+  template: `
+    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Operations table" />
+    </nat-table-surface>
+  `,
+})
+class MoveOnlyHeaderActionsHost {
+  readonly rows = signal<Row[]>(buildRows(6));
+  readonly columns = withNatTableHeaderActions(baseColumns, {
+    enableColumnPinActions: false,
+    enableColumnReorderActions: true,
   });
   readonly tableState = signal<Partial<NatTableState>>({});
 
@@ -251,14 +274,19 @@ class CustomAccessibilityLabelsHost {
   readonly headerActionLabels: NatTableAccessibilityHeaderActionLabels = {
     sortButton: ({ label }) => `Sorter ${label}`,
     menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
-    menuLabel: ({ label }) => `Fastgørelsesmuligheder for ${label}`,
+    menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
     pinButton: ({ label, toggleAction, pinSide }) =>
       `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
         toggleAction === 'unpin' ? 'fra' : 'til'
       } ${pinSide === 'left' ? 'venstre' : 'højre'}`,
     pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Venstre' : 'Højre'),
+    moveButton: ({ label, direction }) =>
+      `Flyt kolonne ${label} ${direction === 'left' ? 'til venstre' : 'til højre'}`,
+    moveButtonText: ({ direction }) =>
+      direction === 'left' ? 'Flyt til venstre' : 'Flyt til højre',
   };
   readonly columns = withNatTableHeaderActions(baseColumns, {
+    enableColumnReorderActions: true,
     accessibilityLabels: this.headerActionLabels,
   });
   readonly getRowId = (row: Row) => row.id;
@@ -333,6 +361,8 @@ class CustomAccessibilityLabelsHost {
           menuLabel: ({ label }) => `Provider menu for ${label}`,
           pinButton: ({ label, pinSide }) => `Provider pin ${label} ${pinSide}`,
           pinButtonText: ({ pinSide }) => `Provider ${pinSide}`,
+          moveButton: ({ label, direction }) => `Provider move ${label} ${direction}`,
+          moveButtonText: ({ direction }) => `Provider move ${direction}`,
         },
       },
     }),
@@ -362,7 +392,9 @@ class CustomAccessibilityLabelsHost {
 })
 class ProviderAccessibilityLabelsHost {
   readonly rows = signal<Row[]>(buildRows(6));
-  readonly columns = withNatTableHeaderActions(baseColumns);
+  readonly columns = withNatTableHeaderActions(baseColumns, {
+    enableColumnReorderActions: true,
+  });
   readonly getRowId = (row: Row) => row.id;
   readonly pageSizeOptions = [2, 3, 5] as const;
   readonly tableState = signal<Partial<NatTableState>>({});
@@ -452,7 +484,7 @@ class HeaderActionCompositionHost {
       accessibilityLabels: {
         sortButton: ({ label }) => `First sort ${label}`,
         menuButton: ({ label }) => `First menu ${label}`,
-        menuLabel: ({ label }) => `First pin menu ${label}`,
+        menuLabel: ({ label }) => `First column menu ${label}`,
       },
     }),
     {
@@ -460,7 +492,7 @@ class HeaderActionCompositionHost {
       accessibilityLabels: {
         sortButton: ({ label }) => `Second sort ${label}`,
         menuButton: ({ label }) => `Second menu ${label}`,
-        menuLabel: ({ label }) => `Second pin menu ${label}`,
+        menuLabel: ({ label }) => `Second column menu ${label}`,
       },
     },
   );
@@ -523,6 +555,7 @@ describe('ng-advanced-table-ui', () => {
       imports: [
         TableUiHost,
         CustomSortIndicatorHost,
+        MoveOnlyHeaderActionsHost,
         HiddenHeaderActionLabelHost,
         CustomAccessibilityLabelsHost,
         ProviderAccessibilityLabelsHost,
@@ -714,7 +747,7 @@ describe('ng-advanced-table-ui', () => {
     ).toBe(2);
   });
 
-  it('wraps headers with sort and pin actions without losing the original label', async () => {
+  it('wraps headers with sort and column actions without losing the original label', async () => {
     await recreateHost();
     fixture.detectChanges();
 
@@ -750,7 +783,7 @@ describe('ng-advanced-table-ui', () => {
     );
     expect(sortIcon.querySelector('.nat-default-sort__svg')).toBeTruthy();
     expect(sortButton.getAttribute('aria-label')).toBe('Sort by Service');
-    expect(menuButton.getAttribute('aria-label')).toBe('Open pinning options for Service column');
+    expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Service column');
     expect(menuButton.querySelector('.menu-button__icon')).toBeTruthy();
 
     sortButton.click();
@@ -783,7 +816,7 @@ describe('ng-advanced-table-ui', () => {
 
     expect(menuButton.getAttribute('aria-expanded')).toBe('true');
     expect(openMenu?.getAttribute('role')).toBe('menu');
-    expect(openMenu?.getAttribute('aria-label')).toBe('Pinning options for Service column');
+    expect(openMenu?.getAttribute('aria-label')).toBe('Column actions for Service column');
     expect(leftPinMenuItem.getAttribute('role')).toBe('menuitem');
     expect(rightPinMenuItem.getAttribute('role')).toBe('menuitem');
     expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
@@ -798,6 +831,16 @@ describe('ng-advanced-table-ui', () => {
     expect(
       rightPinMenuItem.querySelector('.column-menu-item__dock[data-pin-side="right"]'),
     ).toBeTruthy();
+
+    const leftMoveMenuItem = getOpenMoveMenuItem('left');
+    const rightMoveMenuItem = getOpenMoveMenuItem('right');
+
+    expect(rightMoveMenuItem.disabled).toBe(false);
+    expect(leftMoveMenuItem.getAttribute('aria-label')).toBe('Move Service column left');
+    expect(rightMoveMenuItem.getAttribute('aria-label')).toBe('Move Service column right');
+    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+      'Move right',
+    );
 
     leftPinMenuItem.click();
     fixture.detectChanges();
@@ -906,7 +949,7 @@ describe('ng-advanced-table-ui', () => {
     expect(menuButton).toBeTruthy();
     expect(sortButton.getAttribute('aria-label')).toBe('Sort by Row actions');
     expect(menuButton.getAttribute('aria-label')).toBe(
-      'Open pinning options for Row actions column',
+      'Open column actions for Row actions column',
     );
 
     hiddenFixture.destroy();
@@ -975,6 +1018,83 @@ describe('ng-advanced-table-ui', () => {
     fixture.detectChanges();
 
     expect(liveRegion.textContent?.trim()).toBe('Sorted by Service ascending.');
+  });
+
+  it('moves columns through the header actions menu and announces the move', async () => {
+    fixture.detectChanges();
+
+    const regionMenuButton = getHeaderActionsMenuButton(fixture, 'region');
+    const liveRegion = fixture.nativeElement.querySelector(
+      'nat-table p[aria-live="polite"]',
+    ) as HTMLElement;
+
+    regionMenuButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const moveRightMenuItem = getOpenMoveMenuItem('right', 'region');
+
+    expect(moveRightMenuItem.disabled).toBe(false);
+
+    moveRightMenuItem.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(host.tableState().columnOrder).toEqual(['name', 'status', 'region', 'throughput']);
+    expect(liveRegion.textContent?.trim()).toBe(
+      'Moved Region column to position 3 of 4 in the unpinned region.',
+    );
+  });
+
+  it('moves pinned columns through the header actions menu inside the pinned region', async () => {
+    host.tableState.set({
+      columnPinning: {
+        left: ['name', 'region'],
+        right: [],
+      },
+    });
+    fixture.detectChanges();
+
+    const regionMenuButton = getHeaderActionsMenuButton(fixture, 'region');
+
+    regionMenuButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    getOpenMoveMenuItem('left', 'region').click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(getHeaderColumnIds(fixture)).toEqual(['region', 'name', 'status', 'throughput']);
+    expect(host.tableState().columnPinning).toEqual({
+      left: ['region', 'name'],
+      right: [],
+    });
+  });
+
+  it('can render move-only header action menus without pin actions', async () => {
+    const moveOnlyFixture = TestBed.createComponent(MoveOnlyHeaderActionsHost);
+
+    moveOnlyFixture.detectChanges();
+
+    const menuButton = getHeaderActionsMenuButton(moveOnlyFixture, 'region');
+
+    menuButton.click();
+    moveOnlyFixture.detectChanges();
+    await moveOnlyFixture.whenStable();
+    moveOnlyFixture.detectChanges();
+
+    expect(queryByTestId('nat-table-header-pin-left-region')).toBeNull();
+    expect(queryByTestId('nat-table-header-pin-right-region')).toBeNull();
+    expect(getOpenMoveMenuItem('left', 'region')).toBeTruthy();
+    expect(getOpenMoveMenuItem('right', 'region')).toBeTruthy();
+
+    moveOnlyFixture.destroy();
   });
 
   it('renders caller-provided sort indicator content through header actions', () => {
@@ -1086,10 +1206,12 @@ describe('ng-advanced-table-ui', () => {
     await customFixture.whenStable();
     customFixture.detectChanges();
 
-    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Fastgørelsesmuligheder for Service');
+    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
 
     const leftPinMenuItem = getOpenMenuItem('left');
     const rightPinMenuItem = getOpenMenuItem('right');
+    const leftMoveMenuItem = getOpenMoveMenuItem('left');
+    const rightMoveMenuItem = getOpenMoveMenuItem('right');
 
     expect(leftPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til venstre');
     expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
@@ -1098,6 +1220,11 @@ describe('ng-advanced-table-ui', () => {
     expect(rightPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til højre');
     expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
       'Højre',
+    );
+    expect(leftMoveMenuItem.getAttribute('aria-label')).toBe('Flyt kolonne Service til venstre');
+    expect(rightMoveMenuItem.getAttribute('aria-label')).toBe('Flyt kolonne Service til højre');
+    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent?.trim()).toBe(
+      'Flyt til højre',
     );
 
     leftPinMenuItem.click();
@@ -1200,6 +1327,7 @@ describe('ng-advanced-table-ui', () => {
 
     expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Provider menu for Service');
     expect(getOpenMenuItem('left').textContent).toContain('Provider left');
+    expect(getOpenMoveMenuItem('right').textContent).toContain('Provider move right');
 
     providerHost.pageSizeGroupAriaLabel.set('Input page size');
     providerFixture.detectChanges();
@@ -1295,7 +1423,7 @@ describe('ng-advanced-table-ui', () => {
     await compositionFixture.whenStable();
     compositionFixture.detectChanges();
 
-    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Second pin menu Service');
+    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Second column menu Service');
 
     compositionFixture.destroy();
   });
@@ -1390,19 +1518,66 @@ function getOpenPinMenu(): HTMLElement | null {
   return menus.at(-1) ?? null;
 }
 
-function getOpenMenuItem(side: 'left' | 'right'): HTMLButtonElement {
+function getHeaderActionsMenuButton(
+  fixture: ComponentFixture<unknown>,
+  columnId: string,
+): HTMLButtonElement {
+  return getByTestId(`nat-table-header-actions-menu-${columnId}`, fixture.nativeElement);
+}
+
+function getByTestId<TElement extends HTMLElement = HTMLElement>(
+  testId: string,
+  root: ParentNode = document,
+): TElement {
+  const element = queryByTestId<TElement>(testId, root);
+
+  if (!element) {
+    throw new Error(`Expected an element with data-testid="${testId}".`);
+  }
+
+  return element;
+}
+
+function queryByTestId<TElement extends HTMLElement = HTMLElement>(
+  testId: string,
+  root: ParentNode = document,
+): TElement | null {
+  return root.querySelector(`[data-testid="${testId}"]`) as TElement | null;
+}
+
+function getOpenMenuItem(side: 'left' | 'right', columnId = 'name'): HTMLButtonElement {
   const menu = getOpenPinMenu();
 
   if (!menu) {
-    throw new Error('Expected the pin menu to be open.');
+    throw new Error('Expected the column actions menu to be open.');
   }
 
-  const item = menu.querySelector(
-    `.column-menu-item[data-pin-side="${side}"]`,
-  ) as HTMLButtonElement | null;
+  const item =
+    queryByTestId<HTMLButtonElement>(`nat-table-header-pin-${side}-${columnId}`) ??
+    (menu.querySelector(`.column-menu-item[data-pin-side="${side}"]`) as HTMLButtonElement | null);
 
   if (!item) {
     throw new Error(`Expected a menu item for pin side "${side}".`);
+  }
+
+  return item;
+}
+
+function getOpenMoveMenuItem(direction: 'left' | 'right', columnId = 'name'): HTMLButtonElement {
+  const menu = getOpenPinMenu();
+
+  if (!menu) {
+    throw new Error('Expected the column actions menu to be open.');
+  }
+
+  const item =
+    queryByTestId<HTMLButtonElement>(`nat-table-header-move-${direction}-${columnId}`) ??
+    (menu.querySelector(
+      `.column-menu-item[data-move-direction="${direction}"]`,
+    ) as HTMLButtonElement | null);
+
+  if (!item) {
+    throw new Error(`Expected a menu item for move direction "${direction}".`);
   }
 
   return item;
