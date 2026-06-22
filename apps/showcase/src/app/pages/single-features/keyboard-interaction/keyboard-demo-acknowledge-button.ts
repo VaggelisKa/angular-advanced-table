@@ -4,9 +4,9 @@ import { Component, input, output } from '@angular/core';
   selector: 'app-keyboard-demo-acknowledge',
   template: `
     <button
-      type="button"
-      class="btn btn-outline"
       [attr.aria-label]="'Acknowledge ' + name()"
+      class="btn btn-outline"
+      type="button"
       (click)="pressed.emit(name())"
     >
       Acknowledge
@@ -14,6 +14,6 @@ import { Component, input, output } from '@angular/core';
   `,
 })
 export class KeyboardDemoAcknowledgeButton {
-  readonly name = input.required<string>();
-  readonly pressed = output<string>();
+  public readonly name = input.required<string>();
+  public readonly pressed = output<string>();
 }

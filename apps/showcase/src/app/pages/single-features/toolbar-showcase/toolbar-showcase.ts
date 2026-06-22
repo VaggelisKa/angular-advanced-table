@@ -1,10 +1,8 @@
-import { Component, ElementRef, computed, signal, viewChild } from '@angular/core';
-import {
-  type CellContext,
-  type ColumnDef,
-  type SortingState,
-  type VisibilityState,
-} from '@tanstack/angular-table';
+import type { ElementRef} from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
+
+import type {CellContext, ColumnDef, SortingState, VisibilityState} from '@tanstack/angular-table';
+
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import {
@@ -117,11 +115,14 @@ export class ToolbarShowcasePage {
     () =>
       FILTER_PRESETS.find((preset) => preset.key === this.activePresetKey()) ?? FILTER_PRESETS[0],
   );
+
   protected readonly activeFilterLabel = computed(() => this.activePreset().label);
   protected readonly filteredData = computed(() => {
     const predicate = this.activePreset().predicate;
+
     return predicate ? DEMO_DATA.filter(predicate) : DEMO_DATA;
   });
+
   protected readonly visibleCount = computed(() => this.filteredData().length);
 
   // --- overflow disclosure menu ---

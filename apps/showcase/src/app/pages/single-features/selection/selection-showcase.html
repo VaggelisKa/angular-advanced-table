@@ -13,31 +13,31 @@
       <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
         <nat-table-toolbar accessibleName="Bulk actions">
           <button
-            type="button"
+            [disabled]="selectedNames().length === 0"
             class="btn btn-secondary"
             natToolbarItem
             natToolbarItemPosition="start"
-            [disabled]="selectedNames().length === 0"
+            type="button"
             (click)="deleteSelected()"
           >
             Delete selected ({{ selectedNames().length }})
           </button>
           <button
-            type="button"
             class="btn btn-outline"
             natToolbarItem
             natToolbarItemPosition="start"
+            type="button"
             (click)="restoreData()"
           >
             Reset data
           </button>
         </nat-table-toolbar>
         <nat-table
-          [data]="data()"
           [columns]="columns"
+          [data]="data()"
           [enableRowSelection]="true"
-          [selectionMode]="selectionMode()"
           [getRowId]="getRowId"
+          [selectionMode]="selectionMode()"
           accessibleName="Row selection demo table"
         />
       </nat-table-surface>
@@ -66,22 +66,22 @@
       <h2 class="card-title">Selection Controls</h2>
       <div class="actions-panel">
         <button
-          type="button"
-          class="btn btn-outline"
           [attr.aria-pressed]="selectionMode() === 'multiple'"
+          class="btn btn-outline"
+          type="button"
           (click)="setMode('multiple')"
         >
           Multiple mode
         </button>
         <button
-          type="button"
-          class="btn btn-outline"
           [attr.aria-pressed]="selectionMode() === 'single'"
+          class="btn btn-outline"
+          type="button"
           (click)="setMode('single')"
         >
           Single mode
         </button>
-        <button type="button" class="btn btn-secondary" (click)="clearSelection()">
+        <button class="btn btn-secondary" type="button" (click)="clearSelection()">
           Clear selection
         </button>
       </div>

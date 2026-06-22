@@ -1,5 +1,7 @@
 import { Component, computed, linkedSignal, signal } from '@angular/core';
+
 import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
+
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 import {
@@ -9,18 +11,8 @@ import {
   withNatTableSelectionColumn,
 } from 'ng-advanced-table-ui';
 
-type DemoItem = {
-  readonly id: string;
-  readonly name: string;
-  readonly category: string;
-  readonly status: string;
-  readonly value: number;
-};
-
-type RowSelectionSource = {
-  readonly rowIds: ReadonlySet<string>;
-  readonly multiple: boolean;
-};
+import { computeRowSelection, getDemoItemRowId } from './selection-showcase.util';
+import type { DemoItem, RowSelectionSource } from './selection-showcase.util';
 
 const DEMO_DATA: DemoItem[] = [
   { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
@@ -45,7 +37,7 @@ const DEMO_DATA: DemoItem[] = [
 export class SelectionShowcasePage {
   protected readonly data = signal<DemoItem[]>(DEMO_DATA);
   protected readonly selectionMode = signal<'single' | 'multiple'>('multiple');
-  protected readonly getRowId = (row: DemoItem) => row.id;
+  protected readonly getRowId = getDemoItemRowId;
 
   /**
    * Row selection derived from the current data and cardinality. Using a
@@ -59,7 +51,7 @@ export class SelectionShowcasePage {
       rowIds: new Set(this.data().map((item) => item.id)),
       multiple: this.selectionMode() === 'multiple',
     }),
-    computation: (source, previous) => this.computeRowSelection(source, previous),
+    computation: (source, previous) => computeRowSelection(source, previous),
   });
 
   protected readonly tableState = computed<Partial<NatTableState>>(() => ({
@@ -139,29 +131,5 @@ export class SelectionShowcasePage {
   protected restoreData(): void {
     this.data.set(DEMO_DATA);
     this.rowSelection.set({});
-  }
-
-  private computeRowSelection(
-    source: RowSelectionSource,
-    previous:
-      | { readonly source: RowSelectionSource; readonly value: RowSelectionState }
-      | undefined,
-  ): RowSelectionState {
-    // Switching selection mode starts the new mode with an empty selection.
-    if (previous && previous.source.multiple !== source.multiple) {
-      return {};
-    }
-
-    // Same mode: keep rows that still exist so the selection self-heals after data changes.
-    const previousSelection = previous?.value ?? {};
-    const next: RowSelectionState = {};
-
-    for (const id of Object.keys(previousSelection)) {
-      if (previousSelection[id] && source.rowIds.has(id)) {
-        next[id] = true;
-      }
-    }
-
-    return next;
   }
 }

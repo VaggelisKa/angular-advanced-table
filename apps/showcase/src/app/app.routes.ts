@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import type { Routes } from '@angular/router';
 
 import { showcaseDocs } from './showcase-navigation';
 
@@ -30,7 +30,7 @@ export const routes: Routes = [
   {
     path: 'examples/multiple-features',
     title: 'Multiple features | Angular Advanced Table',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/table-showcase-page/table-showcase-page').then(
         (module) => module.TableShowcasePage,
       ),
@@ -38,13 +38,13 @@ export const routes: Routes = [
   {
     path: 'examples/builder',
     title: 'Table builder | Angular Advanced Table',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/table-builder/table-builder').then((module) => module.TableBuilderPage),
   },
   {
     path: 'examples/sorting',
     title: 'Advanced Table - Sorting',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/sorting/sorting-showcase').then(
         (module) => module.SortingShowcasePage,
       ),
@@ -52,7 +52,7 @@ export const routes: Routes = [
   {
     path: 'examples/pinning',
     title: 'Advanced Table - Column Pinning',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/pinning-showcase').then(
         (module) => module.PinningShowcasePage,
       ),
@@ -60,7 +60,7 @@ export const routes: Routes = [
   {
     path: 'examples/reordering',
     title: 'Advanced Table - Column Reordering',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/reordering-showcase').then(
         (module) => module.ReorderingShowcasePage,
       ),
@@ -68,7 +68,7 @@ export const routes: Routes = [
   {
     path: 'examples/pagination',
     title: 'Advanced Table - Table Pagination',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/pagination-showcase').then(
         (module) => module.PaginationShowcasePage,
       ),
@@ -76,7 +76,7 @@ export const routes: Routes = [
   {
     path: 'examples/visibility',
     title: 'Advanced Table - Column Visibility',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/visibility-showcase').then(
         (module) => module.VisibilityShowcasePage,
       ),
@@ -84,19 +84,19 @@ export const routes: Routes = [
   {
     path: 'examples/search',
     title: 'Advanced Table - Global Search',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/search-showcase').then((module) => module.SearchShowcasePage),
   },
   {
     path: 'examples/states',
     title: 'Advanced Table - Table States',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/states-showcase').then((module) => module.StatesShowcasePage),
   },
   {
     path: 'examples/sticky-header',
     title: 'Advanced Table - Sticky Header',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/sticky-header-showcase').then(
         (module) => module.StickyHeaderShowcasePage,
       ),
@@ -104,7 +104,7 @@ export const routes: Routes = [
   {
     path: 'examples/toolbar',
     title: 'Advanced Table - Table Toolbar',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/toolbar-showcase/toolbar-showcase').then(
         (module) => module.ToolbarShowcasePage,
       ),
@@ -112,7 +112,7 @@ export const routes: Routes = [
   {
     path: 'examples/keyboard-interaction',
     title: 'Advanced Table - Keyboard Interaction',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/keyboard-interaction/keyboard-interaction-showcase').then(
         (module) => module.KeyboardInteractionShowcasePage,
       ),
@@ -120,7 +120,7 @@ export const routes: Routes = [
   {
     path: 'examples/resizing',
     title: 'Advanced Table - Column Resizing',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/resizing-showcase/resizing-showcase').then(
         (module) => module.ResizingShowcasePage,
       ),
@@ -128,7 +128,7 @@ export const routes: Routes = [
   {
     path: 'examples/selection',
     title: 'Advanced Table - Row Selection',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/single-features/selection/selection-showcase').then(
         (module) => module.SelectionShowcasePage,
       ),
@@ -136,7 +136,7 @@ export const routes: Routes = [
   {
     path: 'examples/simple-sorting',
     title: 'Sorting with pinned columns | Angular Advanced Table',
-    loadComponent: () =>
+    loadComponent: async () =>
       import('./pages/simple-sorting-page/simple-sorting-page').then(
         (module) => module.SimpleSortingPage,
       ),

@@ -1,9 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { type CellContext, type ColumnDef } from '@tanstack/angular-table';
+
+import type {CellContext, ColumnDef} from '@tanstack/angular-table';
+
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
-interface DemoItem {
+type DemoItem = {
   id: string;
   name: string;
   category: string;
@@ -11,17 +13,18 @@ interface DemoItem {
   value: number;
 }
 
+const CATEGORIES = ['Analytics', 'Infrastructure', 'Data Science', 'Security'] as const;
+const STATUSES = ['Active', 'Paused', 'Alert', 'Halted'] as const;
+
 // Generate 40 rows to ensure vertical scrollability
 const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
   const id = index + 1;
-  const categories = ['Analytics', 'Infrastructure', 'Data Science', 'Security'];
-  const statuses = ['Active', 'Paused', 'Alert', 'Halted'];
 
   return {
     id: `item-${id}`,
     name: `Resource Node ${id}`,
-    category: categories[id % categories.length]!,
-    status: statuses[id % statuses.length]!,
+    category: CATEGORIES[id % CATEGORIES.length],
+    status: STATUSES[id % STATUSES.length],
     value: 1000 + ((id * 235) % 9000),
   };
 });
@@ -49,8 +52,8 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
           <h2 class="card-title">Scrollable Grid</h2>
           <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
             <nat-table
-              [data]="data"
               [columns]="columns"
+              [data]="data"
               accessibleName="Sticky header demo table"
             />
           </nat-table-surface>
@@ -61,8 +64,8 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
           <div class="control-panel">
             <label class="toggle-label">
               <input
-                type="checkbox"
                 [checked]="stickyHeaderEnabled()"
+                type="checkbox"
                 (change)="toggleStickyHeader($event)"
               />
               <span>Enable Sticky Header</span>
@@ -78,10 +81,10 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
   `,
 })
 export class StickyHeaderShowcasePage {
-  readonly data = DEMO_DATA;
-  readonly stickyHeaderEnabled = signal(true);
+  protected readonly data = DEMO_DATA;
+  protected readonly stickyHeaderEnabled = signal(true);
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
       accessorKey: 'name',
       header: 'Name',
@@ -105,8 +108,9 @@ export class StickyHeaderShowcasePage {
     },
   ]);
 
-  toggleStickyHeader(event: Event): void {
+  protected toggleStickyHeader(event: Event): void {
     const target = event.target;
+
     if (target instanceof HTMLInputElement) {
       this.stickyHeaderEnabled.set(target.checked);
     }

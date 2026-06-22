@@ -10,20 +10,20 @@
     <div class="card">
       <h2 class="card-title">Interactive Sorting Grid</h2>
       <nat-table-surface [(state)]="tableState">
-        <nat-table [data]="data" [columns]="columns" accessibleName="Sorting demo table" />
+        <nat-table [columns]="columns" [data]="data" accessibleName="Sorting demo table" />
       </nat-table-surface>
     </div>
 
     <div class="card">
       <h2 class="card-title">Programmatic Sort Actions</h2>
       <div class="actions-panel">
-        <button type="button" class="btn btn-outline" (click)="sortBy('value', 'asc')">
+        <button class="btn btn-outline" type="button" (click)="sortBy('value', 'asc')">
           Sort by Value (Asc)
         </button>
-        <button type="button" class="btn btn-outline" (click)="sortBy('name', 'desc')">
+        <button class="btn btn-outline" type="button" (click)="sortBy('name', 'desc')">
           Sort by Name (Desc)
         </button>
-        <button type="button" class="btn btn-secondary" (click)="clearSort()">Clear Sorting</button>
+        <button class="btn btn-secondary" type="button" (click)="clearSort()">Clear Sorting</button>
       </div>
 
       <div class="info-tag">Current state: {{ currentSortLabel() }}</div>
@@ -33,10 +33,10 @@
   <div class="grid-layout grid-layout-with-panel">
     <div class="card">
       <h2 class="card-title">Multi-Column Sorting Grid</h2>
-      <nat-table-surface [(state)]="multiSortState" [enableMultiSort]="true">
+      <nat-table-surface [enableMultiSort]="true" [(state)]="multiSortState">
         <nat-table
-          [data]="data"
           [columns]="columns"
+          [data]="data"
           accessibleName="Multi-column sorting demo table"
         />
       </nat-table-surface>
@@ -58,10 +58,10 @@
       <div class="info-tag">Current sorting (priority order): {{ multiSortLabel() }}</div>
 
       <div class="actions-panel">
-        <button type="button" class="btn btn-outline" (click)="applyMultiPreset()">
+        <button class="btn btn-outline" type="button" (click)="applyMultiPreset()">
           Sort by Category, then Value
         </button>
-        <button type="button" class="btn btn-secondary" (click)="clearMultiSort()">
+        <button class="btn btn-secondary" type="button" (click)="clearMultiSort()">
           Clear Sorting
         </button>
       </div>

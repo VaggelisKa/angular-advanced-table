@@ -1,69 +1,55 @@
+/* eslint-disable max-lines */
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { flexRenderComponent, type ColumnDef, type FilterFn } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { flexRenderComponent } from '@tanstack/angular-table';
+import type { ColumnDef, FilterFn } from '@tanstack/angular-table';
+
+import { NatTable } from 'ng-advanced-table';
+import type { NatTableState } from 'ng-advanced-table';
 import {
   NatTablePagination,
   NatTableScrollControl,
   NatTableSurface,
   NatTableToolbar,
   withNatTableHeaderActions,
-  type NatTableSortIndicatorContext,
 } from 'ng-advanced-table-ui';
-import { TableSearch } from '../../components/table-search/table-search';
+import type { NatTableSortIndicatorContext } from 'ng-advanced-table-ui';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
   NatTableRenderMetricsStore,
   withRenderMetricsColumn,
-  type NatTableRenderMetricsEvent,
 } from 'ng-advanced-table-utils';
+import type { NatTableRenderMetricsEvent } from 'ng-advanced-table-utils';
 
-import { ShowcaseThemeStore } from '../../showcase-theme';
 import { NatRowActionsMenu } from './nat-row-actions-menu';
 import { NatSparkline } from './nat-sparkline';
 import { NatTickerMark } from './nat-ticker-mark';
+import {
+  compareSortKeys,
+  formatCompact,
+  formatCurrency,
+  formatInteger,
+  formatSignedCurrency,
+  formatSignedPercent,
+  formatTime,
+  getSimulationRowId,
+  numberTone,
+  statusTone,
+  upsertColumnFilter,
+} from './table-showcase-page.util';
 import {
   DATASET_OPTIONS,
   PAGE_SIZE_OPTIONS,
   SIMULATION_PROFILES,
   SIMULATION_STATUSES,
   TableSimulation,
-  type SimulationProfile,
-  type SimulationRow,
-  type SimulationStatus,
 } from './table-simulation';
+import type { SimulationProfile, SimulationRow, SimulationStatus } from './table-simulation';
+import { TableSearch } from '../../components/table-search/table-search';
+import { ShowcaseThemeStore } from '../../showcase-theme';
 
 const STATUS_FILTER_ID = 'status';
-
-const integerFormatter = new Intl.NumberFormat('en-US');
-const compactFormatter = new Intl.NumberFormat('en-US', {
-  notation: 'compact',
-  maximumFractionDigits: 1,
-});
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-const signedCurrencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  signDisplay: 'exceptZero',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-const signedPercentFormatter = new Intl.NumberFormat('en-US', {
-  signDisplay: 'exceptZero',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-const timeFormatter = new Intl.DateTimeFormat('en-US', {
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-});
 
 const statusFilter: FilterFn<SimulationRow> = (row, columnId, filterValue) => {
   const selectedStatuses = (filterValue ?? []) as SimulationStatus[];
@@ -147,7 +133,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       cellTone: (context) => numberTone(context.row.original.changePercent),
     },
     enablePinning: true,
-    cell: (info) => currencyFormatter.format(info.getValue<number>()),
+    cell: (info) => formatCurrency(info.getValue<number>()),
   },
   {
     accessorKey: 'change',
@@ -163,7 +149,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
           : numberTone(context.getValue<number>()),
     },
     enablePinning: true,
-    cell: (info) => signedCurrencyFormatter.format(info.getValue<number>()),
+    cell: (info) => formatSignedCurrency(info.getValue<number>()),
   },
   {
     accessorKey: 'changePercent',
@@ -179,7 +165,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
           : numberTone(context.getValue<number>()),
     },
     enablePinning: true,
-    cell: (info) => `${signedPercentFormatter.format(info.getValue<number>())}%`,
+    cell: (info) => formatSignedPercent(info.getValue<number>()),
   },
   {
     id: 'spark',
@@ -205,7 +191,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     minSize: 100,
     meta: { label: 'Volume', align: 'end' },
     enablePinning: true,
-    cell: (info) => compactFormatter.format(info.getValue<number>()),
+    cell: (info) => formatCompact(info.getValue<number>()),
   },
   {
     accessorKey: 'turnoverMillions',
@@ -213,7 +199,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 130,
     minSize: 100,
     meta: { label: 'Turnover', align: 'end' },
-    cell: (info) => `${currencyFormatter.format(info.getValue<number>())}M`,
+    cell: (info) => `${formatCurrency(info.getValue<number>())}M`,
   },
   {
     accessorKey: 'updatedAt',
@@ -222,7 +208,7 @@ const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     minSize: 100,
     meta: { label: 'Updated', align: 'end' },
     enablePinning: true,
-    cell: (info) => timeFormatter.format(info.getValue<number>()),
+    cell: (info) => formatTime(info.getValue<number>()),
   },
   {
     id: 'actions',
@@ -326,8 +312,8 @@ const showcaseAccessibilityText = {
     }
   `,
   template: `
-    <span class="market-sort-indicator" [attr.data-sort-state]="context().sortState || 'none'">
-      <svg class="sort-stack" viewBox="0 0 12 16" aria-hidden="true">
+    <span [attr.data-sort-state]="context().sortState || 'none'" class="market-sort-indicator">
+      <svg aria-hidden="true" class="sort-stack" viewBox="0 0 12 16">
         <path class="sort-chevron sort-chevron--up" d="M6 2 10 6 H2z" />
         <path class="sort-chevron sort-chevron--down" d="M6 14 2 10 H10z" />
       </svg>
@@ -335,7 +321,7 @@ const showcaseAccessibilityText = {
   `,
 })
 class MarketSortIndicator {
-  readonly context = input.required<NatTableSortIndicatorContext>();
+  public readonly context = input.required<NatTableSortIndicatorContext>();
 }
 
 @Component({
@@ -371,12 +357,14 @@ export class TableShowcasePage {
         }),
     },
   );
-  protected readonly getRowId = (row: SimulationRow) => row.id;
+
+  protected readonly getRowId = getSimulationRowId;
   protected readonly accessibilityText = showcaseAccessibilityText;
   protected readonly theme = this.themeStore.theme;
-  protected readonly tableState = signal<Partial<NatTableState>>({
+  public readonly tableState = signal<Partial<NatTableState>>({
     columnFilters: [],
   });
+
   protected readonly selectedStatuses = computed(() => {
     const activeFilter = this.tableState().columnFilters?.find(
       (entry) => entry.id === STATUS_FILTER_ID,
@@ -384,14 +372,14 @@ export class TableShowcasePage {
 
     return Array.isArray(activeFilter?.value) ? (activeFilter.value as SimulationStatus[]) : [];
   });
+
   protected readonly activeStatuses = computed(() => new Set(this.selectedStatuses()));
   protected readonly profiles = Object.entries(SIMULATION_PROFILES).map(([value, config]) => ({
     value: value as SimulationProfile,
     ...config,
   }));
-  protected readonly lastTickLabel = computed(() =>
-    timeFormatter.format(this.simulation.lastTickAt()),
-  );
+
+  protected readonly lastTickLabel = computed(() => formatTime(this.simulation.lastTickAt()));
 
   protected setDatasetSize(size: number): void {
     this.simulation.setDatasetSize(size);
@@ -436,82 +424,15 @@ export class TableShowcasePage {
     this.metricsStore.record(event);
   }
 
-  protected formatInteger(value: number): string {
-    return integerFormatter.format(value);
-  }
-
-  protected formatCompact(value: number): string {
-    return compactFormatter.format(value);
-  }
-
-  protected formatCurrency(value: number): string {
-    return currencyFormatter.format(value);
-  }
-
-  protected formatSignedPercent(value: number): string {
-    return `${signedPercentFormatter.format(value)}%`;
-  }
-
-  protected formatTime(value: number): string {
-    return timeFormatter.format(value);
-  }
+  protected readonly formatInteger = formatInteger;
+  protected readonly formatCompact = formatCompact;
+  protected readonly formatCurrency = formatCurrency;
+  protected readonly formatSignedPercent = formatSignedPercent;
+  protected readonly formatTime = formatTime;
 
   private updateColumnFilter(columnId: string, value: unknown | null): void {
     this.tableState.update((currentState) => ({
       columnFilters: upsertColumnFilter(currentState.columnFilters ?? [], columnId, value),
     }));
-  }
-}
-
-function upsertColumnFilter(
-  currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
-  columnId: string,
-  value: unknown | null,
-) {
-  const nextFilters = currentFilters.filter((filter) => filter.id !== columnId);
-
-  if (value === null) {
-    return nextFilters;
-  }
-
-  return [
-    ...nextFilters,
-    {
-      id: columnId,
-      value,
-    },
-  ];
-}
-
-function compareSortKeys(left: string, right: string): number {
-  if (left === right) {
-    return 0;
-  }
-
-  return left < right ? -1 : 1;
-}
-
-function numberTone(value: number): 'positive' | 'negative' | 'neutral' {
-  if (value > 0) {
-    return 'positive';
-  }
-
-  if (value < 0) {
-    return 'negative';
-  }
-
-  return 'neutral';
-}
-
-function statusTone(status: SimulationStatus): 'positive' | 'negative' | 'neutral' | 'warning' {
-  switch (status) {
-    case 'Advancing':
-      return 'positive';
-    case 'Declining':
-      return 'negative';
-    case 'Halted':
-      return 'warning';
-    case 'Watching':
-      return 'neutral';
   }
 }

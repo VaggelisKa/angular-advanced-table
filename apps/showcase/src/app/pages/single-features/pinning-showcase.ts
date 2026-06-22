@@ -1,9 +1,13 @@
-import { Component, signal, computed } from '@angular/core';
-import { type CellContext, type ColumnDef, type ColumnPinningState } from '@tanstack/angular-table';
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+/* eslint-disable max-lines */
+import { Component, signal } from '@angular/core';
+
+import type {CellContext, ColumnDef, ColumnPinningState} from '@tanstack/angular-table';
+
+import { NatTable  } from 'ng-advanced-table';
+import type {NatTableState} from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
-interface DemoItem {
+type DemoItem = {
   id: string;
   name: string;
   category: string;
@@ -42,7 +46,7 @@ const DEMO_DATA: DemoItem[] = [
         <div class="card">
           <h2 class="card-title">Scrollable Grid with Pinning</h2>
           <nat-table-surface [(state)]="tableState">
-            <nat-table [data]="data" [columns]="columns" accessibleName="Pinning demo table" />
+            <nat-table [columns]="columns" [data]="data" accessibleName="Pinning demo table" />
           </nat-table-surface>
         </div>
 
@@ -54,25 +58,25 @@ const DEMO_DATA: DemoItem[] = [
                 <span class="column-name">{{ col.label }}</span>
                 <div class="btn-group">
                   <button
-                    type="button"
-                    class="btn-sm"
                     [class.active]="getPinnedSide(col.id) === 'left'"
+                    class="btn-sm"
+                    type="button"
                     (click)="pinColumn(col.id, 'left')"
                   >
                     Left
                   </button>
                   <button
-                    type="button"
-                    class="btn-sm"
                     [class.active]="getPinnedSide(col.id) === null"
+                    class="btn-sm"
+                    type="button"
                     (click)="pinColumn(col.id, null)"
                   >
                     None
                   </button>
                   <button
-                    type="button"
-                    class="btn-sm"
                     [class.active]="getPinnedSide(col.id) === 'right'"
+                    class="btn-sm"
+                    type="button"
                     (click)="pinColumn(col.id, 'right')"
                   >
                     Right
@@ -87,16 +91,16 @@ const DEMO_DATA: DemoItem[] = [
   `,
 })
 export class PinningShowcasePage {
-  readonly data = DEMO_DATA;
+  protected readonly data = DEMO_DATA;
 
-  readonly targetColumns = [
+  protected readonly targetColumns = [
     { id: 'name', label: 'Name' },
     { id: 'category', label: 'Category' },
     { id: 'status', label: 'Status' },
     { id: 'value', label: 'Value' },
   ];
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
       accessorKey: 'name',
       header: 'Name',
@@ -128,29 +132,32 @@ export class PinningShowcasePage {
     },
   ]);
 
-  readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableState>>({
     columnPinning: {
       left: ['name'],
       right: ['value'],
     },
   });
 
-  getPinnedSide(id: string): 'left' | 'right' | null {
+  protected getPinnedSide(id: string): 'left' | 'right' | null {
     const pinning = this.tableState().columnPinning;
+
     if (pinning?.left?.includes(id)) {
       return 'left';
     }
+
     if (pinning?.right?.includes(id)) {
       return 'right';
     }
+
     return null;
   }
 
-  onColumnPinningChange(columnPinning: ColumnPinningState): void {
+  private onColumnPinningChange(columnPinning: ColumnPinningState): void {
     this.tableState.update((current) => ({ ...current, columnPinning }));
   }
 
-  pinColumn(id: string, side: 'left' | 'right' | null): void {
+  protected pinColumn(id: string, side: 'left' | 'right' | null): void {
     this.tableState.update((current) => {
       const pinning = current.columnPinning ?? { left: [], right: [] };
       const left = (pinning.left ?? []).filter((x) => x !== id);

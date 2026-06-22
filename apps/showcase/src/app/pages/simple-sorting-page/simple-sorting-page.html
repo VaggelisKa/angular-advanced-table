@@ -1,11 +1,11 @@
 <main class="showcase-page simple-sorting-page">
   <nat-table-surface [state]="tableState">
     <nat-table
-      class="simple-table"
-      [data]="rows"
       [columns]="columns"
+      [data]="rows"
       [getRowId]="getRowId"
       accessibleName="Sortable order table with pinned company and row action columns"
+      class="simple-table"
     />
   </nat-table-surface>
 </main>

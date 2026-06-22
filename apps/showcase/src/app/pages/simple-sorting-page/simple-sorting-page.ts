@@ -1,22 +1,17 @@
+/* eslint-disable max-lines */
+import { UpperCasePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
-import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
-import { withNatTableHeaderActions, NatTableSurface } from 'ng-advanced-table-ui';
+import { flexRenderComponent } from '@tanstack/angular-table';
+import type { ColumnDef } from '@tanstack/angular-table';
 
+import { NatTable } from 'ng-advanced-table';
+import type { NatTableState } from 'ng-advanced-table';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+
+import { getMockOrderRowId } from './simple-sorting-page.util';
+import type { MockOrderRow } from './simple-sorting-page.util';
 import { NatRowActionsMenu } from '../table-showcase-page/nat-row-actions-menu';
-
-interface MockOrderRow {
-  id: string;
-  customer: string;
-  owner: string;
-  channel: 'Online' | 'Retail' | 'Wholesale';
-  region: string;
-  status: 'Ready' | 'Review' | 'Queued';
-  items: number;
-  updatedAt: number;
-  total: number;
-}
 
 @Component({
   selector: 'app-order-code',
@@ -44,10 +39,11 @@ interface MockOrderRow {
       word-break: normal;
     }
   `,
-  template: `{{ code().toUpperCase() }}`,
+  imports: [UpperCasePipe],
+  template: `{{ code() | uppercase }}`,
 })
 class OrderCode {
-  readonly code = input.required<string>();
+  public readonly code = input.required<string>();
 }
 
 @Component({
@@ -91,7 +87,7 @@ class OrderCode {
   },
 })
 class OrderStatusBadge {
-  readonly status = input.required<MockOrderRow['status']>();
+  public readonly status = input.required<MockOrderRow['status']>();
 }
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -317,5 +313,5 @@ export class SimpleSortingPage {
   protected readonly rows = mockOrderRows;
   protected readonly columns = mockOrderColumns;
   protected readonly tableState = preconfiguredTableState;
-  protected readonly getRowId = (row: MockOrderRow) => row.id;
+  protected readonly getRowId = getMockOrderRowId;
 }

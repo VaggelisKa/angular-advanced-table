@@ -1,7 +1,16 @@
 import { provideZonelessChangeDetection } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { StatesShowcasePage } from './states-showcase';
+
+const clickCardButton = (card: HTMLElement, label: string): void => {
+  const button = Array.from(card.querySelectorAll('button')).find(
+    (candidate) => candidate.textContent.trim() === label,
+  ) as HTMLButtonElement;
+
+  button.click();
+};
 
 describe('StatesShowcasePage', () => {
   let fixture: ComponentFixture<StatesShowcasePage>;
@@ -26,11 +35,11 @@ describe('StatesShowcasePage', () => {
 
     const page = fixture.nativeElement as HTMLElement;
     const cards = Array.from(page.querySelectorAll('.card-title')).map((title) =>
-      title.textContent?.trim(),
+      title.textContent.trim(),
     );
     const busyTables = page.querySelectorAll('table[aria-busy="true"]');
 
-    expect(cards).toEqual([
+    expect(cards).toStrictEqual([
       'Loading state',
       'Empty state',
       'Error state',
@@ -41,7 +50,7 @@ describe('StatesShowcasePage', () => {
     expect(page.textContent).toContain('No incidents found');
     expect(page.textContent).toContain('Incident queue unavailable');
     expect(page.textContent).toContain('Loading queue');
-    expect(busyTables.length).toBe(3);
+    expect(busyTables).toHaveLength(3);
   });
 
   it('switches the transition preview between table states', () => {
@@ -49,7 +58,7 @@ describe('StatesShowcasePage', () => {
 
     const page = fixture.nativeElement as HTMLElement;
     const transitionCard = Array.from(page.querySelectorAll('.card')).find(
-      (card) => card.querySelector('.card-title')?.textContent?.trim() === 'Transition preview',
+      (card) => card.querySelector('.card-title')?.textContent.trim() === 'Transition preview',
     ) as HTMLElement;
 
     clickCardButton(transitionCard, 'Empty');
@@ -79,7 +88,7 @@ describe('StatesShowcasePage', () => {
     const page = fixture.nativeElement as HTMLElement;
     const errorCell = page.querySelector('.error-state') as HTMLTableCellElement;
     const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Retry'),
+      button.textContent.includes('Retry'),
     ) as HTMLButtonElement;
 
     errorCell.focus();
@@ -101,7 +110,7 @@ describe('StatesShowcasePage', () => {
 
     const page = fixture.nativeElement as HTMLElement;
     const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Retry'),
+      button.textContent.includes('Retry'),
     ) as HTMLButtonElement;
 
     retryButton.click();
@@ -117,11 +126,3 @@ describe('StatesShowcasePage', () => {
     expect(page.textContent).toContain('Incident service returned 503 after retry.');
   });
 });
-
-function clickCardButton(card: HTMLElement, label: string): void {
-  const button = Array.from(card.querySelectorAll('button')).find(
-    (candidate) => candidate.textContent?.trim() === label,
-  ) as HTMLButtonElement;
-
-  button.click();
-}

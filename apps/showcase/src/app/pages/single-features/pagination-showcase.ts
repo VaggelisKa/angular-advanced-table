@@ -1,13 +1,16 @@
 import { Component, computed, signal } from '@angular/core';
-import { type CellContext, type ColumnDef, type PaginationState } from '@tanstack/angular-table';
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+
+import type { CellContext, ColumnDef } from '@tanstack/angular-table';
+
+import { NatTable  } from 'ng-advanced-table';
+import type {NatTableState} from 'ng-advanced-table';
 import {
   NatTablePagination,
   NatTableSurface,
   withNatTableHeaderActions,
 } from 'ng-advanced-table-ui';
 
-interface DemoItem {
+type DemoItem = {
   id: string;
   name: string;
   category: string;
@@ -36,6 +39,11 @@ const DEMO_DATA: DemoItem[] = [
 @Component({
   selector: 'app-pagination-showcase',
   imports: [NatTable, NatTableSurface, NatTablePagination],
+  styles: `
+    .description-spaced {
+      margin-bottom: 1rem;
+    }
+  `,
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
@@ -53,27 +61,27 @@ const DEMO_DATA: DemoItem[] = [
           <nat-table-surface [(state)]="tableState">
             <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
 
-            <nat-table [data]="data" [columns]="columns" accessibleName="Pagination demo table" />
+            <nat-table [columns]="columns" [data]="data" accessibleName="Pagination demo table" />
           </nat-table-surface>
         </div>
 
         <div class="card">
           <h2 class="card-title">Manual / Server-Side Pagination (Mixed Mode)</h2>
-          <p class="description" style="margin-bottom: 1rem;">
+          <p class="description description-spaced">
             Pagination is handled externally (simulated server-side slicing), while sorting remains
             automatic client-side.
           </p>
 
           <nat-table-surface
-            [mode]="{ pagination: 'manual', sorting: 'auto' }"
             [manualPageCount]="manualPageCount()"
+            [mode]="{ pagination: 'manual', sorting: 'auto' }"
             [(state)]="manualTableState"
           >
             <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
 
             <nat-table
-              [data]="manualData()"
               [columns]="columns"
+              [data]="manualData()"
               accessibleName="Manual pagination demo table"
             />
           </nat-table-surface>
@@ -83,9 +91,9 @@ const DEMO_DATA: DemoItem[] = [
   `,
 })
 export class PaginationShowcasePage {
-  readonly data = DEMO_DATA;
+  protected readonly data = DEMO_DATA;
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
       accessorKey: 'name',
       header: 'Name',
@@ -109,7 +117,7 @@ export class PaginationShowcasePage {
     },
   ]);
 
-  readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableState>>({
     pagination: {
       pageIndex: 0,
       pageSize: 3,
@@ -117,21 +125,23 @@ export class PaginationShowcasePage {
   });
 
   // Mixed Mode State & Computing
-  readonly manualTableState = signal<Partial<NatTableState>>({
+  protected readonly manualTableState = signal<Partial<NatTableState>>({
     pagination: {
       pageIndex: 0,
       pageSize: 3,
     },
   });
 
-  readonly manualData = computed(() => {
+  protected readonly manualData = computed(() => {
     const pageState = this.manualTableState().pagination ?? { pageIndex: 0, pageSize: 3 };
     const start = pageState.pageIndex * pageState.pageSize;
+
     return DEMO_DATA.slice(start, start + pageState.pageSize);
   });
 
-  readonly manualPageCount = computed(() => {
+  protected readonly manualPageCount = computed(() => {
     const pageState = this.manualTableState().pagination ?? { pageIndex: 0, pageSize: 3 };
+
     return Math.ceil(DEMO_DATA.length / pageState.pageSize);
   });
 }

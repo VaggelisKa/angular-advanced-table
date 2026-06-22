@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <div class="showcase-page showcase-container table-builder-page">
   <header class="header-section">
     <h1 class="title">Table Builder</h1>
@@ -14,8 +15,8 @@
       <div class="config-options">
         <label class="toggle-control">
           <input
-            type="checkbox"
             [checked]="withGlobalFilter()"
+            type="checkbox"
             (change)="withGlobalFilter.set(!withGlobalFilter())"
           />
           <span class="slider"></span>
@@ -25,8 +26,8 @@
 
         <label class="toggle-control">
           <input
-            type="checkbox"
             [checked]="showColumnVisibility()"
+            type="checkbox"
             (change)="showColumnVisibility.set(!showColumnVisibility())"
           />
           <span class="slider"></span>
@@ -36,8 +37,8 @@
 
         <label class="toggle-control">
           <input
-            type="checkbox"
             [checked]="withPagination()"
+            type="checkbox"
             (change)="withPagination.set(!withPagination())"
           />
           <span class="slider"></span>
@@ -47,14 +48,14 @@
           >Enables paging logic with page-size chips and pager navigation.</span
         >
         <label class="toggle-control">
-          <input type="checkbox" [checked]="withColumnPinning()" (change)="toggleColumnPinning()" />
+          <input [checked]="withColumnPinning()" type="checkbox" (change)="toggleColumnPinning()" />
           <span class="slider"></span>
           <span class="toggle-label">Column Pinning</span>
         </label>
         <span class="option-help">Allows columns to be stuck to the left/right boundaries.</span>
 
         <label class="toggle-control">
-          <input type="checkbox" [checked]="withColumnReorder()" (change)="toggleColumnReorder()" />
+          <input [checked]="withColumnReorder()" type="checkbox" (change)="toggleColumnReorder()" />
           <span class="slider"></span>
           <span class="toggle-label">Column Reordering</span>
         </label>
@@ -64,8 +65,8 @@
         </span>
         <label class="toggle-control">
           <input
-            type="checkbox"
             [checked]="showScrollControl()"
+            type="checkbox"
             (change)="showScrollControl.set(!showScrollControl())"
           />
           <span class="slider"></span>
@@ -75,8 +76,8 @@
 
         <label class="toggle-control">
           <input
-            type="checkbox"
             [checked]="withStickyHeader()"
+            type="checkbox"
             (change)="withStickyHeader.set(!withStickyHeader())"
           />
           <span class="slider"></span>
@@ -95,9 +96,9 @@
         <h2 class="card-title">Live Preview</h2>
 
         <nat-table-surface
-          class="table-shell"
-          [(state)]="tableState"
           [stickyHeader]="withStickyHeader()"
+          [(state)]="tableState"
+          class="table-shell"
         >
           @if (withGlobalFilter() || showColumnVisibility()) {
             <nat-table-toolbar accessibleName="Table controls">
@@ -116,8 +117,8 @@
           }
 
           <nat-table
-            [data]="data"
             [columns]="columns()"
+            [data]="data"
             accessibleName="Custom configured table preview"
           />
 
@@ -132,17 +133,17 @@
         <header class="code-card-header">
           <div class="tab-group">
             <button
-              type="button"
-              class="tab-btn"
               [class.is-active]="activeTab() === 'html'"
+              class="tab-btn"
+              type="button"
               (click)="setTab('html')"
             >
               custom-table.html
             </button>
             <button
-              type="button"
-              class="tab-btn"
               [class.is-active]="activeTab() === 'ts'"
+              class="tab-btn"
+              type="button"
               (click)="setTab('ts')"
             >
               custom-table.ts
@@ -150,9 +151,9 @@
           </div>
 
           <button
-            type="button"
-            class="btn btn-primary btn-copy"
             [class.is-copied]="copied()"
+            class="btn btn-primary btn-copy"
+            type="button"
             (click)="copyCode()"
           >
             {{ copied() ? 'Copied' : 'Copy code' }}

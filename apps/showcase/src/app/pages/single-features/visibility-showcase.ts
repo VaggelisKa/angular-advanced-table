@@ -1,14 +1,16 @@
 import { Component, signal } from '@angular/core';
-import { type CellContext, type ColumnDef, type VisibilityState } from '@tanstack/angular-table';
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+
+import type {CellContext, ColumnDef, VisibilityState} from '@tanstack/angular-table';
+
+import { NatTable  } from 'ng-advanced-table';
+import type {NatTableState} from 'ng-advanced-table';
 import {
-  NatTableSurface,
   NatTableColumnVisibility,
+  NatTableSurface,
   withNatTableHeaderActions,
-  NatTableService,
 } from 'ng-advanced-table-ui';
 
-interface DemoItem {
+type DemoItem = {
   id: string;
   name: string;
   category: string;
@@ -52,7 +54,7 @@ const DEMO_DATA: DemoItem[] = [
               <nat-table-column-visibility />
             </div>
 
-            <nat-table [data]="data" [columns]="columns" accessibleName="Visibility demo table" />
+            <nat-table [columns]="columns" [data]="data" accessibleName="Visibility demo table" />
           </nat-table-surface>
         </div>
       </div>
@@ -60,9 +62,9 @@ const DEMO_DATA: DemoItem[] = [
   `,
 })
 export class VisibilityShowcasePage {
-  readonly data = DEMO_DATA;
+  protected readonly data = DEMO_DATA;
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
       accessorKey: 'name',
       header: 'Name',
@@ -86,7 +88,7 @@ export class VisibilityShowcasePage {
     },
   ]);
 
-  readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableState>>({
     columnVisibility: {
       name: true,
       category: true,
@@ -95,7 +97,7 @@ export class VisibilityShowcasePage {
     },
   });
 
-  onColumnVisibilityChange(columnVisibility: VisibilityState): void {
+   private onColumnVisibilityChange(columnVisibility: VisibilityState): void {
     this.tableState.update((current) => ({ ...current, columnVisibility }));
   }
 }

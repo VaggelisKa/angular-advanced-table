@@ -13,8 +13,8 @@
       <h2 class="card-title">Interactive Cells Grid</h2>
       <nat-table-surface>
         <nat-table
-          [data]="data()"
           [columns]="columns"
+          [data]="data()"
           accessibleName="Keyboard interaction demo table"
         />
       </nat-table-surface>
@@ -50,7 +50,7 @@
         </ol>
       </div>
 
-      <div class="info-tag" aria-live="polite">Last action: {{ lastAction() }}</div>
+      <div aria-live="polite" class="info-tag">Last action: {{ lastAction() }}</div>
     </div>
   </div>
 </div>

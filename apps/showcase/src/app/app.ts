@@ -27,6 +27,7 @@ import {
 import { ShowcaseThemeStore, type ShowcaseTheme } from './showcase-theme';
 import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
 import { loadDocsPage } from './app.routes';
+import { resolveFocusTrapTarget } from './app.util';
 
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 const SHOWCASE_NAV_BRANCH_IDS = getShowcaseNavBranchIds(showcaseNavSections);
@@ -176,38 +177,12 @@ export class App {
       return;
     }
 
-    const focusableElements = this.getFocusableElements(panel);
-    const firstElement = focusableElements.at(0);
-    const lastElement = focusableElements.at(-1);
+    const target = resolveFocusTrapTarget(panel, this.document.activeElement, event.shiftKey);
 
-    if (!firstElement || !lastElement) {
-      return;
-    }
-
-    const activeElement = this.document.activeElement;
-
-    if (!(activeElement instanceof HTMLElement) || !panel.contains(activeElement)) {
+    if (target) {
       event.preventDefault();
-      firstElement.focus();
-      return;
+      target.focus();
     }
-
-    if (event.shiftKey && activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-      return;
-    }
-
-    if (!event.shiftKey && activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  }
-
-  private getFocusableElements(container: HTMLElement): HTMLElement[] {
-    return Array.from(
-      container.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]'),
-    ).filter((element) => element.tabIndex >= 0 && !element.closest('[hidden]'));
   }
 
   private focusAfterRender(getElement: () => HTMLElement | undefined): void {

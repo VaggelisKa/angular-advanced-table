@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -->
 <div class="showcase-page showcase-container">
   <header class="header-section">
     <h1 class="title">Table Toolbar</h1>
@@ -16,49 +17,49 @@
 
       <nat-table-surface
         [state]="tableState()"
-        (sortingChange)="onSortingChange($event)"
         (columnVisibilityChange)="onColumnVisibilityChange($event)"
+        (sortingChange)="onSortingChange($event)"
       >
         <nat-table-toolbar accessibleName="Products toolbar">
           <button
-            type="button"
             class="toolbar-button"
-            natToolbarItem
-            natTableExport
-            natToolbarItemPosition="start"
-            exportFileName="toolbar-demo"
             data-testid="export-button"
+            exportFileName="toolbar-demo"
+            natTableExport
+            natToolbarItem
+            natToolbarItemPosition="start"
+            type="button"
             (click)="recordAction('export')"
           >
             Export
           </button>
 
           <button
-            type="button"
             class="toolbar-button"
+            data-testid="refresh-button"
             natToolbarItem
             natToolbarItemPosition="center"
-            data-testid="refresh-button"
+            type="button"
             (click)="recordAction('refresh')"
           >
             Refresh
           </button>
 
-          <div natToolbarGroup="end" accessibleName="View density">
+          <div accessibleName="View density" natToolbarGroup="end">
             <button
-              type="button"
               class="toolbar-button"
-              natToolbarItem
               data-testid="density-compact-button"
+              natToolbarItem
+              type="button"
               (click)="recordAction('density-compact')"
             >
               Compact
             </button>
             <button
-              type="button"
               class="toolbar-button"
-              natToolbarItem
               data-testid="density-comfortable-button"
+              natToolbarItem
+              type="button"
               (click)="recordAction('density-comfortable')"
             >
               Comfortable
@@ -66,22 +67,22 @@
           </div>
 
           <button
-            type="button"
+            aria-label="Share"
             class="toolbar-button toolbar-button--icon"
+            data-testid="share-button"
             natToolbarItem
             natToolbarItemPosition="end"
-            aria-label="Share"
-            data-testid="share-button"
+            type="button"
             (click)="recordAction('share')"
           >
             <svg
               aria-hidden="true"
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
               fill="none"
+              height="16"
               stroke="currentColor"
               stroke-width="1.5"
+              viewBox="0 0 16 16"
+              width="16"
             >
               <circle cx="12" cy="3.5" r="2" />
               <circle cx="4" cy="8" r="2" />
@@ -91,7 +92,7 @@
           </button>
         </nat-table-toolbar>
 
-        <nat-table [data]="data" [columns]="columns" accessibleName="Toolbar demo table" />
+        <nat-table [columns]="columns" [data]="data" accessibleName="Toolbar demo table" />
       </nat-table-surface>
     </div>
 
@@ -128,46 +129,47 @@
       <nat-table-surface>
         <nat-table-toolbar accessibleName="Table actions toolbar">
           <app-table-search
-            toolbar
-            natToolbarItemPosition="start"
             label="Search by name, category or status"
+            natToolbarItemPosition="start"
             placeholder="Search e.g. Security, Active, Delta…"
+            toolbar
           />
 
           <div
             #menuRoot
             class="toolbar-menu"
             natToolbarItemPosition="end"
+            tabindex="-1"
             (keydown.escape)="closeMenu(true)"
           >
             <button
               #menuTrigger
-              type="button"
-              class="toolbar-button toolbar-menu-trigger"
-              natToolbarItem
-              data-testid="menu-trigger"
-              aria-haspopup="true"
               [attr.aria-expanded]="menuOpen()"
               aria-controls="toolbar-overflow-menu"
+              aria-haspopup="true"
+              class="toolbar-button toolbar-menu-trigger"
+              data-testid="menu-trigger"
+              natToolbarItem
+              type="button"
               (click)="toggleMenu()"
             >
               Actions
-              <span class="toolbar-menu-caret" aria-hidden="true">▾</span>
+              <span aria-hidden="true" class="toolbar-menu-caret">▾</span>
             </button>
 
             <div
-              id="toolbar-overflow-menu"
-              class="toolbar-menu-panel"
-              role="group"
-              aria-label="Quick filters"
               [hidden]="!menuOpen()"
+              aria-label="Quick filters"
+              class="toolbar-menu-panel"
+              id="toolbar-overflow-menu"
+              role="group"
             >
               @for (preset of filterPresets; track preset.key) {
                 <button
-                  type="button"
-                  class="toolbar-menu-item"
-                  [attr.data-testid]="'filter-' + preset.key"
                   [attr.aria-current]="preset.key === activePresetKey() ? 'true' : null"
+                  [attr.data-testid]="`filter-${preset.key}`"
+                  class="toolbar-menu-item"
+                  type="button"
                   (click)="applyPreset(preset.key)"
                 >
                   {{ preset.label }}
@@ -178,8 +180,8 @@
         </nat-table-toolbar>
 
         <nat-table
-          [data]="filteredData()"
           [columns]="columns"
+          [data]="filteredData()"
           accessibleName="Search and filter table"
         />
       </nat-table-surface>

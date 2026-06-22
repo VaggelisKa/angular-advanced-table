@@ -4,7 +4,7 @@ import { Component, computed, input } from '@angular/core';
   selector: 'nat-ticker-mark',
   template: `
     <span class="ticker-root">
-      <span class="ticker-mark" aria-hidden="true">{{ initials() }}</span>
+      <span aria-hidden="true" class="ticker-mark">{{ initials() }}</span>
       <span class="ticker-symbol">{{ symbol() }}</span>
     </span>
   `,
@@ -53,7 +53,7 @@ import { Component, computed, input } from '@angular/core';
   `,
 })
 export class NatTickerMark {
-  readonly symbol = input.required<string>();
+  public readonly symbol = input.required<string>();
 
   protected readonly initials = computed(() => {
     const raw = this.symbol().trim();
@@ -68,6 +68,7 @@ export class NatTickerMark {
     }
 
     const fallback = raw.slice(0, 2).trim();
+
     return fallback ? fallback.toUpperCase() : '—';
   });
 }

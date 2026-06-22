@@ -1,10 +1,14 @@
 import { Component, signal } from '@angular/core';
-import { type CellContext, type ColumnDef } from '@tanstack/angular-table';
-import { NatTable, type NatTableState } from 'ng-advanced-table';
-import { NatTableSurface, NatTableService, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+
+import type {CellContext, ColumnDef} from '@tanstack/angular-table';
+
+import { NatTable  } from 'ng-advanced-table';
+import type {NatTableState} from 'ng-advanced-table';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+
 import { TableSearch } from '../../components/table-search/table-search';
 
-interface DemoItem {
+type DemoItem = {
   id: string;
   name: string;
   category: string;
@@ -51,7 +55,7 @@ const DEMO_DATA: DemoItem[] = [
               />
             </div>
 
-            <nat-table [data]="data" [columns]="columns" accessibleName="Search demo table" />
+            <nat-table [columns]="columns" [data]="data" accessibleName="Search demo table" />
           </nat-table-surface>
         </div>
       </div>
@@ -59,9 +63,9 @@ const DEMO_DATA: DemoItem[] = [
   `,
 })
 export class SearchShowcasePage {
-  readonly data = DEMO_DATA;
+  protected readonly data = DEMO_DATA;
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
       accessorKey: 'name',
       header: 'Name',
@@ -85,11 +89,11 @@ export class SearchShowcasePage {
     },
   ]);
 
-  readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableState>>({
     globalFilter: '',
   });
 
-  onGlobalFilterChange(globalFilter: string): void {
+   private onGlobalFilterChange(globalFilter: string): void {
     this.tableState.update((current) => ({ ...current, globalFilter }));
   }
 }

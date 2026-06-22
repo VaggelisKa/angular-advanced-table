@@ -1,14 +1,30 @@
 import { provideZonelessChangeDetection } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { SimpleSortingPage } from './simple-sorting-page';
 
 describe('SimpleSortingPage', () => {
   let fixture: ComponentFixture<SimpleSortingPage>;
 
+  const host = (): HTMLElement => fixture.nativeElement as HTMLElement;
+
+  const query = <T extends Element>(selector: string): T => {
+    const found = host().querySelector<T>(selector);
+
+    if (!found) {
+      throw new Error(`Expected element "${selector}" to render.`);
+    }
+
+    return found;
+  };
+
+  const queryAll = <T extends Element>(selector: string): NodeListOf<T> =>
+    host().querySelectorAll<T>(selector);
+
   beforeEach(async () => {
     try {
-      globalThis.localStorage?.removeItem('nat-showcase-theme');
+      globalThis.localStorage.removeItem('nat-showcase-theme');
     } catch {
       // ignore
     }
@@ -22,44 +38,41 @@ describe('SimpleSortingPage', () => {
     await fixture.whenStable();
   });
 
+  // eslint-disable-next-line complexity
   it('should create a single mock table with sorting and fixed pins', () => {
     fixture.detectChanges();
 
-    const table = fixture.nativeElement.querySelector('nat-table') as HTMLElement;
-    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    const sortButtons = fixture.nativeElement.querySelectorAll('.sort-button');
+    const table = query<HTMLElement>('nat-table');
+    const rows = queryAll('tbody tr');
+    const sortButtons = queryAll('.sort-button');
 
     expect(table).toBeTruthy();
     expect(table.classList.contains('simple-table')).toBe(true);
-    expect(fixture.nativeElement.querySelector('nat-table-surface')).toBeTruthy();
-    expect(rows.length).toBe(5);
-    expect(sortButtons.length).toBe(9);
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Company');
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Channel');
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Items');
-    expect(fixture.nativeElement.querySelector('thead')?.textContent).toContain('Updated');
-    expect(fixture.nativeElement.querySelector('app-table-search')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.column-chip')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.pager')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('app-order-status-badge')).toBeTruthy();
+    expect(host().querySelector('nat-table-surface')).toBeTruthy();
+    expect(rows).toHaveLength(5);
+    expect(sortButtons).toHaveLength(9);
+    expect(host().querySelector('thead')?.textContent).toContain('Company');
+    expect(host().querySelector('thead')?.textContent).toContain('Channel');
+    expect(host().querySelector('thead')?.textContent).toContain('Items');
+    expect(host().querySelector('thead')?.textContent).toContain('Updated');
+    expect(host().querySelector('app-table-search')).toBeFalsy();
+    expect(host().querySelector('.column-chip')).toBeFalsy();
+    expect(host().querySelector('.pager')).toBeFalsy();
+    expect(host().querySelector('.pin-button')).toBeFalsy();
+    expect(host().querySelector('app-order-status-badge')).toBeTruthy();
   });
 
   it('should right-align numeric columns', () => {
     fixture.detectChanges();
 
-    const itemsHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="items"]',
-    ) as HTMLTableCellElement;
-    const itemsCell = fixture.nativeElement.querySelector(
+    const itemsHeader = query<HTMLTableCellElement>('thead th[data-column-id="items"]');
+    const itemsCell = query<HTMLTableCellElement>(
       'tbody tr:first-child td[data-column-id="items"]',
-    ) as HTMLTableCellElement;
-    const totalHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="total"]',
-    ) as HTMLTableCellElement;
-    const totalCell = fixture.nativeElement.querySelector(
+    );
+    const totalHeader = query<HTMLTableCellElement>('thead th[data-column-id="total"]');
+    const totalCell = query<HTMLTableCellElement>(
       'tbody tr:first-child td[data-column-id="total"]',
-    ) as HTMLTableCellElement;
+    );
 
     expect(itemsHeader.classList.contains('is-align-end')).toBe(true);
     expect(itemsCell.classList.contains('is-align-end')).toBe(true);
@@ -70,21 +83,15 @@ describe('SimpleSortingPage', () => {
   it('should pin company left and row actions right without pin controls', () => {
     fixture.detectChanges();
 
-    const orderCell = fixture.nativeElement.querySelector(
-      'tbody tr:first-child th[data-column-id="id"]',
-    ) as HTMLTableCellElement;
-    const companyHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="owner"]',
-    ) as HTMLTableCellElement;
-    const companyCell = fixture.nativeElement.querySelector(
+    const orderCell = query<HTMLTableCellElement>('tbody tr:first-child th[data-column-id="id"]');
+    const companyHeader = query<HTMLTableCellElement>('thead th[data-column-id="owner"]');
+    const companyCell = query<HTMLTableCellElement>(
       'tbody tr:first-child td[data-column-id="owner"]',
-    ) as HTMLTableCellElement;
-    const actionsHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="actions"]',
-    ) as HTMLTableCellElement;
-    const actionsCell = fixture.nativeElement.querySelector(
+    );
+    const actionsHeader = query<HTMLTableCellElement>('thead th[data-column-id="actions"]');
+    const actionsCell = query<HTMLTableCellElement>(
       'tbody tr:first-child td[data-column-id="actions"]',
-    ) as HTMLTableCellElement;
+    );
 
     expect(orderCell.classList.contains('is-cell-clamped')).toBe(false);
     expect(orderCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('');
@@ -95,40 +102,41 @@ describe('SimpleSortingPage', () => {
     expect(companyCell.style.getPropertyValue('--nat-table-cell-max-lines')).toBe('2');
     expect(actionsHeader.classList.contains('is-pinned-right')).toBe(true);
     expect(actionsCell.classList.contains('is-pinned-right')).toBe(true);
-    expect(actionsHeader.querySelector('.sr-only')?.textContent?.trim()).toBe('Row actions');
-    expect(fixture.nativeElement.querySelector('.pin-button')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.menu-button')).toBeFalsy();
+    expect(actionsHeader.querySelector('.sr-only')?.textContent.trim()).toBe('Row actions');
+    expect(host().querySelector('.pin-button')).toBeFalsy();
+    expect(host().querySelector('.menu-button')).toBeFalsy();
   });
 
   it('should render a right-pinned three-dots actions menu for each row', async () => {
     fixture.detectChanges();
 
-    const actionTriggers = fixture.nativeElement.querySelectorAll(
+    const actionTriggers = queryAll<HTMLButtonElement>(
       'tbody td[data-column-id="actions"] .row-actions-trigger',
-    ) as NodeListOf<HTMLButtonElement>;
+    );
 
-    expect(actionTriggers.length).toBe(5);
-    expect(actionTriggers[0]?.getAttribute('aria-label')).toBe('Open demo actions for ord-1007');
+    expect(actionTriggers).toHaveLength(5);
 
-    actionTriggers[0]!.click();
+    const firstTrigger = actionTriggers[0];
+
+    expect(firstTrigger.getAttribute('aria-label')).toBe('Open demo actions for ord-1007');
+
+    firstTrigger.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     const actionLabels = Array.from(
       document.body.querySelectorAll('.row-actions-item .row-actions-item-label'),
-    ).map((element) => element.textContent?.trim());
+    ).map((element) => element.textContent.trim());
 
-    expect(actionLabels).toEqual(['Inspect tape', 'Create alert', 'Send to blotter']);
+    expect(actionLabels).toStrictEqual(['Inspect tape', 'Create alert', 'Send to blotter']);
   });
 
   it('should sort the mock rows from a header action', () => {
     fixture.detectChanges();
 
-    const sortButtons = fixture.nativeElement.querySelectorAll(
-      '.sort-button',
-    ) as NodeListOf<HTMLButtonElement>;
+    const sortButtons = queryAll<HTMLButtonElement>('.sort-button');
     const customerSortButton = Array.from(sortButtons).find((button) =>
-      button.textContent?.includes('Customer'),
+      button.textContent.includes('Customer'),
     );
 
     if (!customerSortButton) {
@@ -138,17 +146,17 @@ describe('SimpleSortingPage', () => {
     customerSortButton.click();
     fixture.detectChanges();
 
-    const firstRowHeader = fixture.nativeElement.querySelector(
+    const firstRowHeader = query<HTMLTableCellElement>(
       'tbody tr:first-child th[data-column-id="id"]',
-    ) as HTMLTableCellElement;
+    );
 
-    expect(firstRowHeader.textContent?.trim()).toBe('ORD-1011');
+    expect(firstRowHeader.textContent.trim()).toBe('ORD-1011');
   });
 
   it('should use the shared showcase page layout', () => {
     fixture.detectChanges();
 
-    const page = fixture.nativeElement.querySelector('.simple-sorting-page') as HTMLDivElement;
+    const page = query<HTMLDivElement>('.simple-sorting-page');
 
     expect(page.classList.contains('showcase-page')).toBe(true);
     expect(page.getAttribute('data-theme')).toBeNull();

@@ -1,7 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { flexRenderComponent, type CellContext, type ColumnDef } from '@tanstack/angular-table';
+
+import {   flexRenderComponent } from '@tanstack/angular-table';
+import type {CellContext, ColumnDef} from '@tanstack/angular-table';
+
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+
 import { KeyboardDemoAcknowledgeButton } from './keyboard-demo-acknowledge-button';
 import { KeyboardDemoStatusCell } from './keyboard-demo-status-cell';
 
@@ -34,10 +38,10 @@ const DEMO_DATA: DemoItem[] = [
   templateUrl: './keyboard-interaction-showcase.html',
 })
 export class KeyboardInteractionShowcasePage {
-  readonly data = signal<DemoItem[]>(DEMO_DATA);
-  readonly lastAction = signal('None yet');
+  protected readonly data = signal<DemoItem[]>(DEMO_DATA);
+  protected readonly lastAction = signal('None yet');
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
       accessorKey: 'name',
       header: 'Name',
@@ -83,11 +87,11 @@ export class KeyboardInteractionShowcasePage {
     },
   ]);
 
-  onAcknowledge(name: string): void {
+   private onAcknowledge(name: string): void {
     this.lastAction.set(`Acknowledged ${name}`);
   }
 
-  onToggleStatus(id: string): void {
+   private onToggleStatus(id: string): void {
     this.data.update((items) =>
       items.map((item) => {
         if (item.id !== id) return item;

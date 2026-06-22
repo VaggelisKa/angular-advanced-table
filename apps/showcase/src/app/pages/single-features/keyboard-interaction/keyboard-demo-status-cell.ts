@@ -17,19 +17,19 @@ import { Component, computed, input, output } from '@angular/core';
   `,
   template: `
     <input
-      type="checkbox"
-      class="status-toggle"
-      [checked]="isActive()"
       [attr.aria-label]="'Active ' + name()"
+      [checked]="isActive()"
+      class="status-toggle"
+      type="checkbox"
       (change)="toggled.emit()"
     />
     <span class="status-text">{{ status() }}</span>
   `,
 })
 export class KeyboardDemoStatusCell {
-  readonly name = input.required<string>();
-  readonly status = input.required<string>();
-  readonly toggled = output<void>();
+  public readonly name = input.required<string>();
+  public readonly status = input.required<string>();
+  public readonly toggled = output();
 
   protected readonly isActive = computed(() => this.status() === 'Active');
 }

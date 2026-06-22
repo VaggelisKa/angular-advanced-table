@@ -1,5 +1,7 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
+
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
+
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
@@ -65,9 +67,11 @@ export class SortingShowcasePage {
 
   protected readonly currentSortLabel = computed(() => {
     const sorting = this.tableState().sorting;
+
     if (!sorting?.length) return 'None';
 
-    const entry = sorting[0]!;
+    const entry = sorting[0];
+
     return `${entry.id} (${entry.desc ? 'desc' : 'asc'})`;
   });
 
@@ -91,6 +95,7 @@ export class SortingShowcasePage {
 
   protected readonly multiSortLabel = computed(() => {
     const sorting = this.multiSortState().sorting;
+
     if (!sorting?.length) return 'None';
 
     return sorting

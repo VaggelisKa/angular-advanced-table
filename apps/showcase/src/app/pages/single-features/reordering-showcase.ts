@@ -1,10 +1,13 @@
-import { Component, signal, computed } from '@angular/core';
-import { type CellContext, type ColumnDef, type ColumnOrderState } from '@tanstack/angular-table';
 import { TitleCasePipe } from '@angular/common';
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { Component, computed, signal } from '@angular/core';
+
+import type {CellContext, ColumnDef, ColumnOrderState} from '@tanstack/angular-table';
+
+import { NatTable  } from 'ng-advanced-table';
+import type {NatTableState} from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
 
-interface DemoItem {
+type DemoItem = {
   id: string;
   name: string;
   category: string;
@@ -44,20 +47,20 @@ const DEMO_DATA: DemoItem[] = [
         <div class="card">
           <h2 class="card-title">Drag & Reorder Grid</h2>
           <nat-table-surface [(state)]="tableState" data-testid="reordering-demo-table">
-            <nat-table [data]="data" [columns]="columns" accessibleName="Reordering demo table" />
+            <nat-table [columns]="columns" [data]="data" accessibleName="Reordering demo table" />
           </nat-table-surface>
         </div>
 
         <div class="card">
           <h2 class="card-title">Rendered Column Order</h2>
           <div class="order-list" data-testid="reordering-order-list">
-            @for (colId of currentOrder(); track colId; let idx = $index) {
+            @for (colId of currentOrder(); track colId) {
               <div
+                [attr.data-column-id]="colId"
                 class="order-item"
                 data-testid="reordering-order-item"
-                [attr.data-column-id]="colId"
               >
-                <span class="order-badge">{{ idx + 1 }}</span>
+                <span class="order-badge">{{ $index + 1 }}</span>
                 <span>{{ colId | titlecase }}</span>
               </div>
             }
@@ -78,9 +81,9 @@ const DEMO_DATA: DemoItem[] = [
   `,
 })
 export class ReorderingShowcasePage {
-  readonly data = DEMO_DATA;
+  protected readonly data = DEMO_DATA;
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(
     [
       {
         accessorKey: 'name',
@@ -110,16 +113,17 @@ export class ReorderingShowcasePage {
     },
   );
 
-  readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableState>>({
     columnOrder: ['name', 'category', 'status', 'value'],
   });
 
-  readonly currentOrder = computed(() => {
+  protected readonly currentOrder = computed(() => {
     return this.tableState().columnOrder ?? ['name', 'category', 'status', 'value'];
   });
 
-  onColumnOrderChange(columnOrder: ColumnOrderState): void {
+   private onColumnOrderChange(columnOrder: ColumnOrderState): void {
     this.tableState.update((current) => ({ ...current, columnOrder }));
   }
 }
+
 export { ColumnOrderState };

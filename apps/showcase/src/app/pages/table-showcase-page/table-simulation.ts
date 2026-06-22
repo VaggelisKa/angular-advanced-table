@@ -1,10 +1,13 @@
-import { computed, effect, Injectable, signal } from '@angular/core';
+/* eslint-disable max-lines */
+import { Injectable, computed, effect, signal } from '@angular/core';
 
 export type SimulationStatus = 'Advancing' | 'Watching' | 'Declining' | 'Halted';
+
 export type SimulationProfile = 'steady' | 'balanced' | 'burst';
+
 export type SparkTrend = 'up' | 'down' | 'flat';
 
-export interface SimulationRow {
+export type SimulationRow = {
   id: string;
   symbol: string;
   symbolSortKey: string;
@@ -22,23 +25,23 @@ export interface SimulationRow {
   updatedAt: number;
   priceHistory: readonly number[];
   sparkTrend: SparkTrend;
-}
+};
 
 export const SPARK_HISTORY_LENGTH = 24;
 
 export type SimulationStatusCounts = Record<SimulationStatus, number>;
 
-interface SimulationProfilePreset {
+type SimulationProfilePreset = {
   label: string;
   description: string;
   tickIntervalMs: number;
   mutationBatchSize: number;
-}
+};
 
-interface InstrumentSeed {
+type InstrumentSeed = {
   symbol: string;
   company: string;
-}
+};
 
 export const SIMULATION_STATUSES = [
   'Advancing',
@@ -69,6 +72,7 @@ export const SIMULATION_PROFILES = {
 } satisfies Record<SimulationProfile, SimulationProfilePreset>;
 
 export const DATASET_OPTIONS = [2000, 12000, 25000] as const;
+
 export const PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
 
 const EXCHANGES = ['NASDAQ', 'NYSE', 'IEX', 'CBOE'] as const;
@@ -84,127 +88,141 @@ const INSTRUMENTS = [
   { symbol: 'HYPR', company: 'Hyper Grid' },
 ] as const satisfies readonly InstrumentSeed[];
 
-@Injectable({
-  providedIn: 'root',
-})
-export class TableSimulation {
-  private readonly _datasetSize = signal<number>(12000);
-  private readonly _profile = signal<SimulationProfile>('balanced');
-  private readonly _isRunning = signal(true);
-  private readonly _rows = signal<SimulationRow[]>(buildDataset(this._datasetSize()));
-  private readonly _lastMutationSize = signal(0);
-  private readonly _lastCycleDurationMs = signal(0);
-  private readonly _lastTickAt = signal(Date.now());
-  private readonly _totalMutations = signal(0);
+const roundToSingleDecimal = (value: number): number => Number(value.toFixed(1));
 
-  readonly datasetSize = this._datasetSize.asReadonly();
-  readonly profile = this._profile.asReadonly();
-  readonly isRunning = this._isRunning.asReadonly();
-  readonly rows = this._rows.asReadonly();
-  readonly lastMutationSize = this._lastMutationSize.asReadonly();
-  readonly lastCycleDurationMs = this._lastCycleDurationMs.asReadonly();
-  readonly lastTickAt = this._lastTickAt.asReadonly();
-  readonly totalMutations = this._totalMutations.asReadonly();
-  readonly profilePreset = computed(() => SIMULATION_PROFILES[this._profile()]);
-  private readonly marketSnapshot = computed(() => {
-    const counts: SimulationStatusCounts = {
-      Advancing: 0,
-      Watching: 0,
-      Declining: 0,
-      Halted: 0,
-    };
-    let positiveMoverCount = 0;
-    const rows = this._rows();
+const roundToHundredths = (value: number): number => Number(value.toFixed(2));
 
-    for (const row of rows) {
-      counts[row.status] += 1;
-      if (row.changePercent > 0) {
-        positiveMoverCount += 1;
-      }
-    }
+const roundToCents = (value: number): number => Number(value.toFixed(2));
 
-    const total = rows.length || 1;
-    const weightedPositive = counts.Advancing + counts.Watching * 0.5;
-    const marketBreadth = Math.round((weightedPositive / total) * 100);
+const jitter = (span: number): number => (Math.random() - 0.5) * span * 2;
 
-    return {
-      counts,
-      positiveMoverCount,
-      marketBreadth,
-    };
-  });
-  readonly statusCounts = computed<SimulationStatusCounts>(() => this.marketSnapshot().counts);
-  readonly marketBreadth = computed(() => this.marketSnapshot().marketBreadth);
-  readonly positiveMoverCount = computed(() => this.marketSnapshot().positiveMoverCount);
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value));
 
-  constructor() {
-    effect((onCleanup) => {
-      if (!this._isRunning()) {
-        return;
-      }
+const computeSparkTrend = (history: readonly number[]): SparkTrend => {
+  if (history.length < 2) {
+    return 'flat';
+  }
 
-      const timer = globalThis.setInterval(
-        () => this.pulse(),
-        this.profilePreset().tickIntervalMs,
+  const first = history[0];
+  const last = history[history.length - 1];
+  const threshold = Math.max(first * 0.001, 0.01);
+
+  if (last - first > threshold) {
+    return 'up';
+  }
+
+  if (first - last > threshold) {
+    return 'down';
+  }
+
+  return 'flat';
+};
+
+const pushPriceHistory = (history: readonly number[], nextPrice: number): number[] => {
+  const next: number[] = [];
+  const start = Math.max(history.length - (SPARK_HISTORY_LENGTH - 1), 0);
+
+  for (let index = start; index < history.length; index += 1) {
+    next.push(history[index]);
+  }
+
+  next.push(nextPrice);
+
+  return next;
+};
+
+const statusFromChangePercent = (changePercent: number, isHalted = false): SimulationStatus => {
+  if (isHalted) {
+    return 'Halted';
+  }
+
+  if (changePercent >= 1.25) {
+    return 'Advancing';
+  }
+
+  if (changePercent <= -1.25) {
+    return 'Declining';
+  }
+
+  return 'Watching';
+};
+
+const seedPriceHistory = (
+  index: number,
+  previousClose: number,
+  currentPrice: number,
+): number[] => {
+  const amplitude = Math.max(previousClose * 0.025, 0.3);
+  const phase = (index % 11) * 0.41;
+  const drift = (currentPrice - previousClose) / Math.max(SPARK_HISTORY_LENGTH - 1, 1);
+  const history: number[] = [];
+
+  for (let step = 0; step < SPARK_HISTORY_LENGTH; step += 1) {
+    const wave = Math.sin(phase + step * 0.55) * amplitude * 0.6;
+    const micro = Math.sin(phase * 2 + step * 1.3) * amplitude * 0.2;
+    const value = previousClose + drift * step + wave + micro;
+
+    history.push(roundToCents(Math.max(value, previousClose * 0.75)));
+  }
+
+  history[history.length - 1] = currentPrice;
+
+  return history;
+};
+
+const mutateRow = (row: SimulationRow, now: number): SimulationRow => {
+  const staysHalted =
+    row.status === 'Halted' ? Math.random() < 0.72 : Math.random() < 0.018;
+  const priceStep = Math.max(row.previousClose * 0.035, 0.18);
+  const price = staysHalted
+    ? row.price
+    : roundToCents(
+        clamp(row.price + jitter(priceStep), row.previousClose * 0.78, row.previousClose * 1.22),
       );
+  const change = roundToCents(price - row.previousClose);
+  const changePercent = roundToHundredths((change / row.previousClose) * 100);
+  const volume = clamp(
+    Math.round(row.volume + jitter(Math.max(row.volume * 0.08, 150_000))),
+    40_000,
+    32_000_000,
+  );
+  const priceHistory = pushPriceHistory(row.priceHistory, price);
 
-      onCleanup(() => globalThis.clearInterval(timer));
-    });
+  return {
+    ...row,
+    status: statusFromChangePercent(changePercent, staysHalted),
+    price,
+    change,
+    changePercent,
+    volume,
+    turnoverMillions: roundToSingleDecimal((price * volume) / 1_000_000),
+    updatedAt: now,
+    priceHistory,
+    sparkTrend: computeSparkTrend(priceHistory),
+  };
+};
+
+const mutateRows = (
+  rows: readonly SimulationRow[],
+  batchSize: number,
+  now: number,
+): { rows: SimulationRow[]; updatedCount: number } => {
+  const nextRows = rows.slice();
+  const pickedIndexes = new Set<number>();
+
+  while (pickedIndexes.size < Math.min(batchSize, rows.length)) {
+    pickedIndexes.add(Math.floor(Math.random() * rows.length));
   }
 
-  setDatasetSize(size: number): void {
-    if (size === this._datasetSize()) {
-      return;
-    }
-
-    this._datasetSize.set(size);
-    this._rows.set(buildDataset(size));
-    this.resetMutationStats();
+  for (const index of pickedIndexes) {
+    nextRows[index] = mutateRow(nextRows[index], now);
   }
 
-  setProfile(profile: SimulationProfile): void {
-    this._profile.set(profile);
-  }
+  return { rows: nextRows, updatedCount: pickedIndexes.size };
+};
 
-  toggleRunning(): void {
-    this._isRunning.update((value) => !value);
-  }
-
-  pause(): void {
-    this._isRunning.set(false);
-  }
-
-  pulse(): void {
-    const currentRows = this._rows();
-
-    if (!currentRows.length) {
-      return;
-    }
-
-    const now = Date.now();
-    const startedAt = performance.now();
-    const { rows, updatedCount } = mutateRows(
-      currentRows,
-      this.profilePreset().mutationBatchSize,
-      now,
-    );
-
-    this._rows.set(rows);
-    this._lastMutationSize.set(updatedCount);
-    this._lastTickAt.set(now);
-    this._lastCycleDurationMs.set(roundToSingleDecimal(performance.now() - startedAt));
-    this._totalMutations.update((total) => total + updatedCount);
-  }
-
-  private resetMutationStats(): void {
-    this._lastMutationSize.set(0);
-    this._lastCycleDurationMs.set(0);
-    this._lastTickAt.set(Date.now());
-    this._totalMutations.set(0);
-  }
-}
-
-function buildDataset(size: number): SimulationRow[] {
+const buildDataset = (size: number): SimulationRow[] => {
   const baseTimestamp = Date.now();
 
   return Array.from({ length: size }, (_, index) => {
@@ -237,147 +255,130 @@ function buildDataset(size: number): SimulationRow[] {
       sparkTrend: computeSparkTrend(priceHistory),
     };
   });
-}
+};
 
-function seedPriceHistory(
-  index: number,
-  previousClose: number,
-  currentPrice: number,
-): number[] {
-  const amplitude = Math.max(previousClose * 0.025, 0.3);
-  const phase = (index % 11) * 0.41;
-  const drift = (currentPrice - previousClose) / Math.max(SPARK_HISTORY_LENGTH - 1, 1);
-  const history: number[] = [];
+@Injectable({
+  providedIn: 'root',
+})
+export class TableSimulation {
+  private readonly datasetSizeSignal = signal<number>(12000);
+  private readonly profileSignal = signal<SimulationProfile>('balanced');
+  private readonly isRunningSignal = signal(true);
+  private readonly rowsSignal = signal<SimulationRow[]>(buildDataset(this.datasetSizeSignal()));
+  private readonly lastMutationSizeSignal = signal(0);
+  private readonly lastCycleDurationMsSignal = signal(0);
+  private readonly lastTickAtSignal = signal(Date.now());
+  private readonly totalMutationsSignal = signal(0);
 
-  for (let step = 0; step < SPARK_HISTORY_LENGTH; step += 1) {
-    const wave = Math.sin(phase + step * 0.55) * amplitude * 0.6;
-    const micro = Math.sin(phase * 2 + step * 1.3) * amplitude * 0.2;
-    const value = previousClose + drift * step + wave + micro;
-    history.push(roundToCents(Math.max(value, previousClose * 0.75)));
-  }
+  public readonly datasetSize = this.datasetSizeSignal.asReadonly();
+  public readonly profile = this.profileSignal.asReadonly();
+  public readonly isRunning = this.isRunningSignal.asReadonly();
+  public readonly rows = this.rowsSignal.asReadonly();
+  public readonly lastMutationSize = this.lastMutationSizeSignal.asReadonly();
+  public readonly lastCycleDurationMs = this.lastCycleDurationMsSignal.asReadonly();
+  public readonly lastTickAt = this.lastTickAtSignal.asReadonly();
+  public readonly totalMutations = this.totalMutationsSignal.asReadonly();
+  public readonly profilePreset = computed(() => SIMULATION_PROFILES[this.profileSignal()]);
 
-  history[history.length - 1] = currentPrice;
-  return history;
-}
+  private readonly marketSnapshot = computed(() => {
+    const counts: SimulationStatusCounts = {
+      Advancing: 0,
+      Watching: 0,
+      Declining: 0,
+      Halted: 0,
+    };
+    let positiveMoverCount = 0;
+    const rows = this.rowsSignal();
 
-function computeSparkTrend(history: readonly number[]): SparkTrend {
-  if (history.length < 2) {
-    return 'flat';
-  }
+    for (const row of rows) {
+      counts[row.status] += 1;
 
-  const first = history[0];
-  const last = history[history.length - 1];
-  const threshold = Math.max(first * 0.001, 0.01);
+      if (row.changePercent > 0) {
+        positiveMoverCount += 1;
+      }
+    }
 
-  if (last - first > threshold) {
-    return 'up';
-  }
+    const total = rows.length || 1;
+    const weightedPositive = counts.Advancing + counts.Watching * 0.5;
+    const marketBreadth = Math.round((weightedPositive / total) * 100);
 
-  if (first - last > threshold) {
-    return 'down';
-  }
+    return {
+      counts,
+      positiveMoverCount,
+      marketBreadth,
+    };
+  });
 
-  return 'flat';
-}
-
-function mutateRows(
-  rows: readonly SimulationRow[],
-  batchSize: number,
-  now: number,
-): { rows: SimulationRow[]; updatedCount: number } {
-  const nextRows = rows.slice();
-  const pickedIndexes = new Set<number>();
-
-  while (pickedIndexes.size < Math.min(batchSize, rows.length)) {
-    pickedIndexes.add(Math.floor(Math.random() * rows.length));
-  }
-
-  for (const index of pickedIndexes) {
-    nextRows[index] = mutateRow(nextRows[index], now);
-  }
-
-  return { rows: nextRows, updatedCount: pickedIndexes.size };
-}
-
-function mutateRow(row: SimulationRow, now: number): SimulationRow {
-  const staysHalted =
-    row.status === 'Halted' ? Math.random() < 0.72 : Math.random() < 0.018;
-  const priceStep = Math.max(row.previousClose * 0.035, 0.18);
-  const price = staysHalted
-    ? row.price
-    : roundToCents(
-        clamp(row.price + jitter(priceStep), row.previousClose * 0.78, row.previousClose * 1.22),
-      );
-  const change = roundToCents(price - row.previousClose);
-  const changePercent = roundToHundredths((change / row.previousClose) * 100);
-  const volume = clamp(
-    Math.round(row.volume + jitter(Math.max(row.volume * 0.08, 150_000))),
-    40_000,
-    32_000_000,
+  public readonly statusCounts = computed<SimulationStatusCounts>(
+    () => this.marketSnapshot().counts,
   );
-  const priceHistory = pushPriceHistory(row.priceHistory, price);
 
-  return {
-    ...row,
-    status: statusFromChangePercent(changePercent, staysHalted),
-    price,
-    change,
-    changePercent,
-    volume,
-    turnoverMillions: roundToSingleDecimal((price * volume) / 1_000_000),
-    updatedAt: now,
-    priceHistory,
-    sparkTrend: computeSparkTrend(priceHistory),
-  };
-}
+  public readonly marketBreadth = computed(() => this.marketSnapshot().marketBreadth);
+  public readonly positiveMoverCount = computed(() => this.marketSnapshot().positiveMoverCount);
 
-function pushPriceHistory(history: readonly number[], nextPrice: number): number[] {
-  const next: number[] = [];
-  const start = Math.max(history.length - (SPARK_HISTORY_LENGTH - 1), 0);
+  public constructor() {
+    effect((onCleanup) => {
+      if (!this.isRunningSignal()) {
+        return;
+      }
 
-  for (let index = start; index < history.length; index += 1) {
-    next.push(history[index]);
+      const timer = globalThis.setInterval(
+        () => this.pulse(),
+        this.profilePreset().tickIntervalMs,
+      );
+
+      onCleanup(() => globalThis.clearInterval(timer));
+    });
   }
 
-  next.push(nextPrice);
-  return next;
-}
+  public setDatasetSize(size: number): void {
+    if (size === this.datasetSizeSignal()) {
+      return;
+    }
 
-function statusFromChangePercent(
-  changePercent: number,
-  isHalted: boolean = false,
-): SimulationStatus {
-  if (isHalted) {
-    return 'Halted';
+    this.datasetSizeSignal.set(size);
+    this.rowsSignal.set(buildDataset(size));
+    this.resetMutationStats();
   }
 
-  if (changePercent >= 1.25) {
-    return 'Advancing';
+  public setProfile(profile: SimulationProfile): void {
+    this.profileSignal.set(profile);
   }
 
-  if (changePercent <= -1.25) {
-    return 'Declining';
+  public toggleRunning(): void {
+    this.isRunningSignal.update((value) => !value);
   }
 
-  return 'Watching';
-}
+  public pause(): void {
+    this.isRunningSignal.set(false);
+  }
 
-function jitter(span: number): number {
-  return (Math.random() - 0.5) * span * 2;
-}
+  public pulse(): void {
+    const currentRows = this.rowsSignal();
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
+    if (!currentRows.length) {
+      return;
+    }
 
-function roundToSingleDecimal(value: number): number {
-  return Number(value.toFixed(1));
-}
+    const now = Date.now();
+    const startedAt = performance.now();
+    const { rows, updatedCount } = mutateRows(
+      currentRows,
+      this.profilePreset().mutationBatchSize,
+      now,
+    );
 
-function roundToHundredths(value: number): number {
-  return Number(value.toFixed(2));
-}
+    this.rowsSignal.set(rows);
+    this.lastMutationSizeSignal.set(updatedCount);
+    this.lastTickAtSignal.set(now);
+    this.lastCycleDurationMsSignal.set(roundToSingleDecimal(performance.now() - startedAt));
+    this.totalMutationsSignal.update((total) => total + updatedCount);
+  }
 
-function roundToCents(value: number): number {
-  return Number(value.toFixed(2));
+  private resetMutationStats(): void {
+    this.lastMutationSizeSignal.set(0);
+    this.lastCycleDurationMsSignal.set(0);
+    this.lastTickAtSignal.set(Date.now());
+    this.totalMutationsSignal.set(0);
+  }
 }

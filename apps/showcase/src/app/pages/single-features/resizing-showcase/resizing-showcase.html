@@ -14,10 +14,10 @@
   <div class="grid-layout grid-layout-with-panel">
     <div class="card">
       <h2 class="card-title">Interactive Resizing Grid ({{ columnSizingMode() }})</h2>
-      <nat-table-surface [(state)]="tableState" [columnSizingMode]="columnSizingMode()">
+      <nat-table-surface [columnSizingMode]="columnSizingMode()" [(state)]="tableState">
         <nat-table
-          [data]="data"
           [columns]="columns()"
+          [data]="data"
           accessibleName="Column resizing demo table"
         />
       </nat-table-surface>
@@ -31,9 +31,9 @@
         @for (toggle of columnToggles; track toggle.id) {
           <label class="resize-toggle">
             <input
-              type="checkbox"
               #resizeToggle
               [checked]="resizableColumnIds().has(toggle.id)"
+              type="checkbox"
               (change)="toggleResizable(toggle.id, resizeToggle.checked)"
             />
             <span>{{ toggle.label }}</span>
@@ -62,27 +62,27 @@
       </div>
 
       <div class="actions-panel">
-        <div class="btn-group" role="group" aria-label="Column width mode">
+        <div aria-label="Column width mode" class="btn-group" role="group">
           <button
-            type="button"
-            class="btn-sm"
-            [class.active]="columnSizingMode() === 'fill'"
             [attr.aria-pressed]="columnSizingMode() === 'fill'"
+            [class.active]="columnSizingMode() === 'fill'"
+            class="btn-sm"
+            type="button"
             (click)="columnSizingMode.set('fill')"
           >
             Fill
           </button>
           <button
-            type="button"
-            class="btn-sm"
-            [class.active]="columnSizingMode() === 'fixed'"
             [attr.aria-pressed]="columnSizingMode() === 'fixed'"
+            [class.active]="columnSizingMode() === 'fixed'"
+            class="btn-sm"
+            type="button"
             (click)="columnSizingMode.set('fixed')"
           >
             Fixed
           </button>
         </div>
-        <button type="button" class="btn btn-outline" (click)="resetWidths()">
+        <button class="btn btn-outline" type="button" (click)="resetWidths()">
           Reset Widths
         </button>
       </div>
