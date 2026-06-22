@@ -166,6 +166,12 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
+    @media (max-width: 820px) {
+      .grid-header-scroll-wrapper {
+        top: 58px; /* Offset by the height of the sticky mobile showcase header */
+      }
+    }
+
     /* Body scroll container - normal vertical flow, horizontal scrollable */
     .grid-body-scroll-wrapper {
       overflow-x: auto;
