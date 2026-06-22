@@ -32,12 +32,13 @@ This package does not include:
 - Page-size UI.
 - Pager UI.
 - Header action buttons.
+- Table Action directives such as Excel export.
 - Surface styling.
 
 Use [`ng-advanced-table-ui`](../ng-advanced-table-ui/README.md) for optional UI and [`ng-advanced-table-utils`](../ng-advanced-table-utils/README.md) for render-metrics tooling.
 
 Body cell sizing is controlled by TanStack `ColumnDef.size`, `minSize`, and `maxSize`. Headers are intrinsic unless `meta.headerSize`, `meta.headerMinSize`, or `meta.headerMaxSize` are set.
-`NatTableColumnMeta`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` are the preferred public imports when table contracts are shared across companion UI and utils usage.
+`NatTableColumnMeta`, `NatTableColumnExportOptions`, `NatTableState`, `NatTableSortDirection`, and `NatTableSortIndicatorContext` are the preferred public imports when table contracts are shared across companion UI and utils usage.
 
 ## Install
 
@@ -48,11 +49,13 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 ## Zoneless Compatibility
 
 - `ng-advanced-table` is validated in a zoneless Angular `TestBed` configuration.
-- Angular 21+ consumers do not need `zone.js` to use this package.
+- Angular 22+ consumers do not need `zone.js` to use this package.
 
 ## Public Exports
 
 - `NatTable`
+- `NatTableService`
+- `NAT_TABLE_UI_CONTROLLER`
 - `NatTableLoadingTemplate`
 - `NatTableEmptyTemplate`
 - `NatTableErrorTemplate`
@@ -63,10 +66,23 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 - `NatTableAccessibilityText`
 - `NatTableA11y` (namespace of deep accessibility formatter context types)
 - `NatTableDataStatus`
+- `NatTableBodyState`
+- `NatTableStateTemplateContext`
+- `NatTableLoadingTemplateContext`
+- `NatTableEmptyTemplateContext`
+- `NatTableErrorTemplateContext`
 - `NatTableRowIdGetter`
 - `NatTableRowActivateEvent`
+- `NatTableMode`
+- `NatTableModeConfiguration`
 - `NatTableState`
+- `NatTableUiController`
+- `NatTableUiState`
 - `NatTableColumnMeta`
+- `NatTableColumnExportOptions`
+- `NatTableColumnExportValue`
+- `NatTableColumnExportValueContext`
+- `NatTableColumnMoveDirection`
 - `NatTableCellTone`
 - `NatTableSortDirection`
 - `NatTableSortIndicatorContext`
@@ -119,5 +135,7 @@ export class ServiceTableComponent {
 Use `meta.hiddenHeaderLabel: 'Row actions'` for compact utility columns where the visible title is redundant. The table renders that value as screen-reader-only text, and `withNatTableHeaderActions(...)` hides only the label while keeping sort and menu controls visible.
 
 Body cell content is clamped to two lines by default. Set `meta.cellHeight` to give a column's body cells a fixed height, set `meta.cellMaxLines` to a different line count, or set `meta.cellMaxLines: Infinity` for custom interactive renderers that should not be line-clamped. Invalid explicit `meta.cellMaxLines` values fall back to two lines.
+
+Set `meta.export` to control how optional table-export actions include a column. Accessor columns export by default, display columns opt out by default, and `meta.export.value` can map raw row values into export-specific values.
 
 For Angular component-backed cells and more interactive cell UIs, see [Custom cell components](../../README.md#custom-cell-components) in the root README.

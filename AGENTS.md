@@ -58,6 +58,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 ## Testing
 
 - Prefer `data-testid` selectors for automated test hooks. Avoid coupling tests to CSS classes, DOM shape, or incidental implementation attributes when a stable `data-testid` can be added.
+- For showcase Playwright coverage, group specs by feature under `e2e/<feature>/`, pair pointer/workflow specs with keyboard accessibility specs named `<feature>.a11y.e2e.ts`, and keep the showcase `e2e` Nx target wired into CI when those files are added or moved.
 
 ## Browser Compatibility
 
