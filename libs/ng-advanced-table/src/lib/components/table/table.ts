@@ -1,7 +1,7 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import { Directionality } from '@angular/cdk/bidi';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-import { Grid, GridCell, GridRow } from '@angular/aria/grid';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -15,6 +15,7 @@ import {
   inject,
   Injector,
   input,
+  isDevMode,
   output,
   signal,
   untracked,
@@ -50,6 +51,7 @@ import {
 
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from './cell-interaction';
 import type { NatTableRowRenderedEvent } from './events';
+import { validateKeybindings } from './keybindings';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
   formatNatTableIntlNumber,
@@ -58,13 +60,43 @@ import {
   NAT_TABLE_INTL,
   resolveNatTableIntl,
 } from './table-intl';
-import { NatTableService } from './table.service';
 import { NatTableStateCell } from './table-state-cell.directive';
 import {
   NatTableEmptyTemplate,
   NatTableErrorTemplate,
   NatTableLoadingTemplate,
 } from './table-state-templates';
+import {
+  DEFAULT_CELL_MAX_LINES,
+  getColumnDefLeafIds,
+  getColumnMoveTargetIndex,
+  getNumericColumnWidth,
+  getUserColumnSizing,
+  hasSameColumnVisibility,
+  hasSameStringOrder,
+  hasSameWidths,
+  isPrimitiveHeaderContent,
+  isUnavailableRequiredInputError,
+  matchesFilterQuery,
+  moveItemInArrayCopy,
+  normalizeCellMaxLines,
+  normalizeColumnDimension,
+  normalizeColumnLabel,
+  normalizeColumnOrder,
+  normalizeColumnPinning,
+  normalizeDataStatus,
+  normalizeRowSelection,
+  normalizeSortingState,
+  originatesFromInteractiveDescendant,
+  replaceIdsInSlots,
+  resolveColumnLabel,
+  serializeColumnFilters,
+  serializeRowSelection,
+  serializeSorting,
+  type ColumnReorderKeyboardDirection,
+  type TableColumnAccessibilityState,
+} from './table-utils';
+import { NatTableService } from './table.service';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnResizeAnnouncementContext,
@@ -75,7 +107,6 @@ import type {
   NatTableAccessibilitySelectionAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
-  NatTableAccessibilityText,
   NatTableBodyState,
   NatTableCellTone,
   NatTableColumnMoveDirection,
@@ -89,38 +120,6 @@ import type {
   NatTableUiController,
 } from './table.types';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './table.types';
-import {
-  DEFAULT_CELL_MAX_LINES,
-  getColumnDefLeafIds,
-  getUserColumnSizing,
-  originatesFromInteractiveDescendant,
-  normalizeSortingState,
-  normalizeColumnOrder,
-  normalizeColumnPinning,
-  normalizeDataStatus,
-  moveItemInArrayCopy,
-  getColumnReorderKeyboardDirection,
-  getColumnMoveTargetIndex,
-  replaceIdsInSlots,
-  hasSameStringOrder,
-  matchesFilterQuery,
-  normalizeColumnDimension,
-  normalizeCellMaxLines,
-  getNumericColumnWidth,
-  isUnavailableRequiredInputError,
-  hasSameWidths,
-  resolveColumnLabel,
-  normalizeColumnLabel,
-  isPrimitiveHeaderContent,
-  serializeSorting,
-  serializeColumnFilters,
-  normalizeRowSelection,
-  serializeRowSelection,
-  hasSameColumnVisibility,
-  type ColumnReorderKeyboardDirection,
-  type TableColumnAccessibilityState,
-  type TableColumnSizingState,
-} from './table-utils';
 
 type ColumnReorderZone = 'left' | 'center' | 'right';
 
@@ -892,6 +891,16 @@ export class NatTable<TData extends RowData = RowData> {
     this.natTableService.setController(this as unknown as NatTableUiController<any>);
 
     effect(() => {
+      const bindings = this.natTableService.keybindings();
+      if (isDevMode()) {
+        const warnings = validateKeybindings(bindings);
+        for (const warning of warnings) {
+          console.warn(`[ng-advanced-table] ${warning}`);
+        }
+      }
+    });
+
+    effect(() => {
       if (this.hasSeededInitialState()) {
         return;
       }
@@ -1096,7 +1105,9 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (handleCellInteractionKeydown(event)) return;
+    const keyboard = this.natTableService.keyboard();
+
+    if (handleCellInteractionKeydown(event, keyboard.cellInteraction)) return;
 
     const isResizeKey =
       event.key === 'ArrowLeft' ||
@@ -1112,7 +1123,7 @@ export class NatTable<TData extends RowData = RowData> {
       return;
     }
 
-    const directionDelta = getColumnReorderKeyboardDirection(event);
+    const directionDelta = keyboard.columnReorderDirection(event);
 
     if (directionDelta === null) return;
 
@@ -1129,7 +1140,7 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
-    handleCellInteractionKeydown(event);
+    handleCellInteractionKeydown(event, this.natTableService.keyboard().cellInteraction);
   }
 
   protected onCellFocusIn(event: FocusEvent): void {
@@ -1451,7 +1462,10 @@ export class NatTable<TData extends RowData = RowData> {
     // neighbouring resize jump: a "grow" press would clamp straight down to the bound
     // instead of stepping by one. clampColumnWidth also rounds and floors at 1px so the
     // committed and announced width stays a whole number of pixels.
-    return this.clampColumnWidth(column, this.resolvedColumnWidths()[column.id] ?? column.getSize());
+    return this.clampColumnWidth(
+      column,
+      this.resolvedColumnWidths()[column.id] ?? column.getSize(),
+    );
   }
 
   private announceColumnResize(column: Column<TData, unknown>, width: number): void {
@@ -1507,11 +1521,11 @@ export class NatTable<TData extends RowData = RowData> {
   }
 
   protected onRowKeydown(event: KeyboardEvent, row: Row<TData>): void {
-    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+    if (event.defaultPrevented) {
       return;
     }
 
-    if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') {
+    if (!this.natTableService.keyboard().rowActivate(event)) {
       return;
     }
 

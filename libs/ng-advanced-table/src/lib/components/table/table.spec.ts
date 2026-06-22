@@ -41,6 +41,7 @@ import type {
   NatTableModeConfiguration,
   NatTableRowActivateEvent,
   NatTableState,
+  NatTableKeybindings,
 } from './table.types';
 
 @Component({
@@ -90,6 +91,7 @@ class TestTableSurface {
   readonly enableMultiSort = input(false, { transform: booleanAttribute });
   readonly locale = input<string | undefined>(undefined);
   readonly accessibilityText = input<NatTableAccessibilityText>({});
+  readonly keybindings = input<NatTableKeybindings>({});
   readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
   readonly direction = input<'ltr' | 'rtl'>();
@@ -133,6 +135,9 @@ class TestTableSurface {
     });
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
+    });
+    effect(() => {
+      this.natTableService.surfaceKeybindings.set(this.keybindings());
     });
     effect(() => {
       this.natTableService.columnResizeMode.set(this.columnResizeMode());
@@ -2411,28 +2416,51 @@ describe('NatTable', () => {
   });
 
   it('reorders columns with Command+Shift+Arrow from the keyboard', async () => {
-    await recreateHost();
-    fixture.detectChanges();
+    const originalPlatform = navigator.platform;
+    const originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, 'platform', {
+      value: 'MacIntel',
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      writable: true,
+      configurable: true,
+    });
+    try {
+      await recreateHost();
+      fixture.detectChanges();
 
-    const regionHeader = fixture.nativeElement.querySelector(
-      'thead th[data-column-id="region"]',
-    ) as HTMLTableCellElement;
+      const regionHeader = fixture.nativeElement.querySelector(
+        'thead th[data-column-id="region"]',
+      ) as HTMLTableCellElement;
 
-    regionHeader.focus();
-    regionHeader.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'ArrowRight',
-        metaKey: true,
-        shiftKey: true,
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+      regionHeader.focus();
+      regionHeader.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowRight',
+          metaKey: true,
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
 
-    expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+      expect(getHeaderColumnIds(fixture)).toEqual(['name', 'status', 'region', 'throughput']);
+    } finally {
+      Object.defineProperty(navigator, 'platform', {
+        value: originalPlatform,
+        configurable: true,
+      });
+      Object.defineProperty(navigator, 'userAgent', {
+        value: originalUserAgent,
+        configurable: true,
+      });
+    }
   });
 
   it('scrolls the reordered header into view when keyboard moving right past the viewport edge', async () => {
@@ -3304,6 +3332,119 @@ describe('NatTable', () => {
       // Rows must still not be sliced client-side
       const rowsAfterPage = fixture.nativeElement.querySelectorAll('tbody tr.data-row');
       expect(rowsAfterPage.length).toBe(6);
+    });
+  });
+
+  describe('custom keybindings', () => {
+    it('should allow overriding keybindings via the [keybindings] input', async () => {
+      @Component({
+        imports: [NatTable, TestTableSurface],
+        template: `
+          <nat-table-surface [keybindings]="keybindings">
+            <nat-table
+              [data]="rows()"
+              [columns]="columns"
+              accessibleName="Operations table"
+              (rowActivate)="onRowActivate($event)"
+            />
+          </nat-table-surface>
+        `,
+      })
+      class CustomKeybindingsHost {
+        readonly rows = signal<Row[]>(buildRows(3));
+        readonly columns: ColumnDef<Row, unknown>[] = [
+          {
+            accessorKey: 'name',
+            header: 'Service',
+            meta: { label: 'Service', rowHeader: true },
+            cell: (info) => info.getValue<string>(),
+          },
+        ];
+        keybindings = {
+          rowActivate: 'a',
+          columnReorderLeft: 'Ctrl+ArrowLeft',
+          columnReorderRight: 'Ctrl+ArrowRight',
+        };
+        readonly events: NatTableRowActivateEvent<Row>[] = [];
+
+        onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+          this.events.push(event);
+        }
+      }
+
+      const customFixture = TestBed.createComponent(CustomKeybindingsHost);
+      await customFixture.whenStable();
+      customFixture.detectChanges();
+
+      const firstRow = customFixture.nativeElement.querySelector('tbody tr.data-row') as HTMLTableRowElement;
+
+      // 1. Try default 'Enter' - should NOT activate
+      firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      customFixture.detectChanges();
+      expect(customFixture.componentInstance.events.length).toBe(0);
+
+      // 2. Press custom key 'a' - should activate
+      firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+      customFixture.detectChanges();
+      expect(customFixture.componentInstance.events.length).toBe(1);
+    });
+
+    it('should fall back to default keybindings for non-overridden properties when keybindings are partially customized', async () => {
+      @Component({
+        imports: [NatTable, TestTableSurface],
+        template: `
+          <nat-table-surface [keybindings]="keybindings">
+            <nat-table
+              [data]="rows()"
+              [columns]="columns"
+              accessibleName="Operations table"
+            />
+          </nat-table-surface>
+        `,
+      })
+      class PartialKeybindingsHost {
+        readonly rows = signal<Row[]>(buildRows(3));
+        readonly columns: ColumnDef<Row, unknown>[] = [
+          {
+            accessorKey: 'region',
+            header: 'Region',
+            meta: { label: 'Region' },
+            cell: (info) => info.getValue<string>(),
+          },
+        ];
+        keybindings = {
+          rowActivate: 'a',
+        };
+      }
+
+      const partialFixture = TestBed.createComponent(PartialKeybindingsHost);
+      await partialFixture.whenStable();
+      partialFixture.detectChanges();
+
+      const cell = partialFixture.nativeElement.querySelector(
+        'tbody tr.data-row td[data-column-id="region"]',
+      ) as HTMLElement;
+
+      cell.innerHTML =
+        '<button type="button" class="first">First</button>' +
+        '<button type="button" class="second">Second</button>';
+      const firstButton = cell.querySelector('button.first') as HTMLButtonElement;
+
+      cell.focus();
+      expect(document.activeElement).toBe(cell);
+
+      // Trigger 'Enter' (default cellEnterControl) on the cell
+      const enterEvent = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+      cell.dispatchEvent(enterEvent);
+      partialFixture.detectChanges();
+
+      // Should focus the first button inside the cell because default cellEnterControl is Enter
+      expect(document.activeElement).toBe(firstButton);
+      expect(enterEvent.defaultPrevented).toBe(true);
     });
   });
 });

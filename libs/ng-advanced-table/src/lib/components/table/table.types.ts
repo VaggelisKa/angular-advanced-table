@@ -481,3 +481,11 @@ export interface NatTableUiController<TData extends RowData = RowData> {
   /** Locale id used by generated companion-control labels, when available. */
   readonly localeId?: Signal<string>;
 }
+
+export { NAT_TABLE_KEYBINDINGS } from './keybindings';
+export type {
+  NatTableShortcut,
+  NatTableShortcutValue,
+  NatTableKeybindings,
+} from './keybindings';
+

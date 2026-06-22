@@ -56,6 +56,7 @@ test('renders the toolbar showcase page', async ({ page }) => {
 
   // Projected toolbar items keep their authored button styling.
   const exportButton = page.getByTestId('export-button');
+  await expect(exportButton).toHaveClass(/toolbar-button/);
   const radius = await exportButton.evaluate((el) => getComputedStyle(el).borderRadius);
   expect(radius).not.toBe('0px');
 });

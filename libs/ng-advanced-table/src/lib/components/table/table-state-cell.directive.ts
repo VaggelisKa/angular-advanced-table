@@ -6,6 +6,7 @@ import {
   NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE,
   ROW_ACTIVATE_INTERACTIVE_SELECTOR,
 } from './cell-interaction';
+import { NatTableService } from './table.service';
 
 @Directive({
   selector: '[natTableStateCell]',
@@ -16,14 +17,16 @@ import {
 })
 export class NatTableStateCell {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly natTableService = inject(NatTableService);
 
   constructor() {
     afterEveryRender(() => this.prepareControls());
   }
 
   protected onKeydown(event: KeyboardEvent): void {
-    handleCellInteractionKeydown(event);
+    handleCellInteractionKeydown(event, this.natTableService.keyboard().cellInteraction);
   }
+
 
   protected onFocusIn(event: FocusEvent): void {
     handleCellInteractionFocusIn(event);
