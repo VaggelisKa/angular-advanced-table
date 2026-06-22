@@ -263,6 +263,7 @@ export const showcaseNavSections: readonly ShowcaseNavSection[] = [
   },
 ];
 
+/** Returns the requested doc, or the first hardcoded doc when the route data is missing/invalid. */
 export function findShowcaseDoc(docId: string | undefined): ShowcaseDoc {
   return showcaseDocs.find((doc) => doc.id === docId) ?? showcaseDocs[0]!;
 }

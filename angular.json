@@ -34,6 +34,8 @@
             "scripts": [
               "node_modules/prismjs/prism.js",
               "node_modules/prismjs/components/prism-bash.min.js",
+              "node_modules/prismjs/components/prism-css.min.js",
+              "node_modules/prismjs/components/prism-markup.min.js",
               "node_modules/prismjs/components/prism-typescript.min.js",
               "node_modules/prismjs/components/prism-json.min.js"
             ]

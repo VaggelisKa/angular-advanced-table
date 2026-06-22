@@ -41,12 +41,13 @@ test('can tick manually when feed is paused', async ({ page }) => {
 
   const tickBtn = page.getByRole('button', { name: 'Tick once' });
   const totalTicksBefore = await page.locator('.kpi').last().locator('.kpi-value').textContent();
+  expect(totalTicksBefore).not.toBeNull();
 
   await tickBtn.click();
 
   // The total ticks count should increment or update
   await expect(page.locator('.kpi').last().locator('.kpi-value')).not.toHaveText(
-    totalTicksBefore || '',
+    totalTicksBefore as string,
   );
 });
 
