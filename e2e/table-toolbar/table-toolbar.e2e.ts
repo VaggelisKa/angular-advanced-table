@@ -42,7 +42,7 @@ test('renders the toolbar showcase page', async ({ page }) => {
 
 test('activates items and reports the action', async ({ page }) => {
   await page.getByTestId('export-button').click();
-  await expect(page.getByTestId('last-action')).toHaveText('export-csv');
+  await expect(page.getByTestId('last-action')).toHaveText('export');
 
   await page.getByTestId('refresh-button').click();
   await expect(page.getByTestId('last-action')).toHaveText('refresh');

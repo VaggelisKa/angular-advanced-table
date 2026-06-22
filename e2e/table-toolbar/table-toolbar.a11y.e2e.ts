@@ -16,7 +16,7 @@ test('activates items and reports the action via keyboard only', async ({ page }
   const exportBtn = page.getByTestId('export-button');
   await exportBtn.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByTestId('last-action')).toHaveText('export-csv');
+  await expect(page.getByTestId('last-action')).toHaveText('export');
 
   const refreshBtn = page.getByTestId('refresh-button');
   await refreshBtn.focus();
