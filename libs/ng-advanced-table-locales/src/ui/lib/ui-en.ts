@@ -8,6 +8,9 @@ export const NAT_TABLE_UI_ENGLISH_LOCALE = NAT_EN_LOCALE_ID;
 const DEFAULT_NUMBER_FORMATTER: NatTableUiNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
 
+const describeSortState = (sortState: 'ascending' | 'descending'): string =>
+  sortState === 'ascending' ? 'in ascending order' : 'in descending order';
+
 /** Built-in English labels shipped with `ng-advanced-table-locales`. */
 export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
   search: {
@@ -90,7 +93,3 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
 };
 
 export const NAT_TABLE_UI_ENGLISH_INTL = NAT_EN_UI_LOCALE_LABELS;
-
-function describeSortState(sortState: 'ascending' | 'descending'): string {
-  return sortState === 'ascending' ? 'in ascending order' : 'in descending order';
-}

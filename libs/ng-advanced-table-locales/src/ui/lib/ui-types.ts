@@ -6,7 +6,7 @@ export type NatTableUiNumberFormatter = (
 ) => string;
 
 /** Context passed to page-size option label formatters. */
-export interface NatTableAccessibilityPageSizeOptionContext {
+export type NatTableAccessibilityPageSizeOptionContext = {
   /** Candidate page size. */
   pageSizeValue: number;
   /** Provider-formatted text for `pageSizeValue`. */
@@ -16,7 +16,7 @@ export interface NatTableAccessibilityPageSizeOptionContext {
 }
 
 /** Optional accessibility label overrides for page-size controls. */
-export interface NatTableAccessibilityPageSizeLabels {
+export type NatTableAccessibilityPageSizeLabels = {
   /** `aria-label` applied to the chip group. */
   groupAriaLabel?: string;
   /** Visible text rendered inside each page-size chip. */
@@ -26,7 +26,7 @@ export interface NatTableAccessibilityPageSizeLabels {
 }
 
 /** Context passed to pager page-indicator formatters. */
-export interface NatTableAccessibilityPagerContext {
+export type NatTableAccessibilityPagerContext = {
   /** One-based current page number. */
   pageValue: number;
   /** Provider-formatted text for `pageValue`. */
@@ -38,7 +38,7 @@ export interface NatTableAccessibilityPagerContext {
 }
 
 /** Optional accessibility label overrides for pager controls. */
-export interface NatTableAccessibilityPagerLabels {
+export type NatTableAccessibilityPagerLabels = {
   /** `aria-label` applied to the pager group. */
   groupAriaLabel?: string;
   /** `aria-label` for the previous-page button. */
@@ -50,7 +50,7 @@ export interface NatTableAccessibilityPagerLabels {
 }
 
 /** Context passed to horizontal scroll position label formatters. */
-export interface NatTableAccessibilityScrollControlPositionContext {
+export type NatTableAccessibilityScrollControlPositionContext = {
   /** Current horizontal scroll offset in CSS pixels. */
   scrollLeftValue: number;
   /** Provider-formatted text for `scrollLeftValue`. */
@@ -66,7 +66,7 @@ export interface NatTableAccessibilityScrollControlPositionContext {
 }
 
 /** Optional accessibility label overrides for horizontal scroll controls. */
-export interface NatTableAccessibilityScrollControlLabels {
+export type NatTableAccessibilityScrollControlLabels = {
   /** `aria-label` applied to the scroll control group. */
   groupAriaLabel?: string;
   /** `aria-label` for the scroll-left button. */
@@ -80,7 +80,7 @@ export interface NatTableAccessibilityScrollControlLabels {
 }
 
 /** Context passed to column-visibility summary formatters. */
-export interface NatTableAccessibilityColumnVisibilitySummaryContext {
+export type NatTableAccessibilityColumnVisibilitySummaryContext = {
   /** Number of currently visible leaf columns. */
   visibleColumnCountValue: number;
   /** Provider-formatted text for `visibleColumnCountValue`. */
@@ -92,7 +92,7 @@ export interface NatTableAccessibilityColumnVisibilitySummaryContext {
 }
 
 /** Context passed to column-visibility button label formatters. */
-export interface NatTableAccessibilityColumnVisibilityActionContext {
+export type NatTableAccessibilityColumnVisibilityActionContext = {
   /** Human-readable column label. */
   columnLabel: string;
   /** Current visibility state before toggling. */
@@ -102,13 +102,13 @@ export interface NatTableAccessibilityColumnVisibilityActionContext {
 }
 
 /** Context passed to column state label formatters. */
-export interface NatTableAccessibilityColumnVisibilityStateContext {
+export type NatTableAccessibilityColumnVisibilityStateContext = {
   /** Current visibility state. */
   visibilityState: 'visible' | 'hidden';
 }
 
 /** Optional accessibility label overrides for column-visibility controls. */
-export interface NatTableAccessibilityColumnVisibilityLabels {
+export type NatTableAccessibilityColumnVisibilityLabels = {
   /** Visible heading rendered above the chip group. */
   heading?: string;
   /** `aria-label` applied to the chip group. */
@@ -136,7 +136,7 @@ export type NatTableAccessibilitySelectionLabels = {
 };
 
 /** Context passed to sort-button label formatters. */
-export interface NatTableAccessibilityHeaderActionSortContext {
+export type NatTableAccessibilityHeaderActionSortContext = {
   /** Human-readable column label. */
   label: string;
   /** Current sort state before toggling. */
@@ -148,13 +148,13 @@ export interface NatTableAccessibilityHeaderActionSortContext {
 }
 
 /** Context passed to the overflow menu trigger label formatter. */
-export interface NatTableAccessibilityHeaderActionMenuContext {
+export type NatTableAccessibilityHeaderActionMenuContext = {
   /** Human-readable column label. */
   label: string;
 }
 
 /** Context passed to pin-button label formatters. */
-export interface NatTableAccessibilityHeaderActionPinContext {
+export type NatTableAccessibilityHeaderActionPinContext = {
   /** Human-readable column label. */
   label: string;
   /** Whether the column is pinned at all before toggling. */
@@ -171,7 +171,7 @@ export interface NatTableAccessibilityHeaderActionPinContext {
 export type NatTableColumnMoveDirection = 'left' | 'right';
 
 /** Context passed to move-column label formatters. */
-export interface NatTableAccessibilityHeaderActionMoveContext {
+export type NatTableAccessibilityHeaderActionMoveContext = {
   /** Human-readable column label. */
   label: string;
   /** Direction targeted by the current button. */
@@ -179,7 +179,7 @@ export interface NatTableAccessibilityHeaderActionMoveContext {
 }
 
 /** Optional accessibility label overrides for header sort, pin, and move actions. */
-export interface NatTableAccessibilityHeaderActionLabels {
+export type NatTableAccessibilityHeaderActionLabels = {
   /** `aria-label` applied to the sort button. */
   sortButton?: (context: NatTableAccessibilityHeaderActionSortContext) => string;
   /** `aria-label` applied to the overflow menu trigger. */
@@ -196,14 +196,14 @@ export interface NatTableAccessibilityHeaderActionLabels {
   moveButtonText?: (context: NatTableAccessibilityHeaderActionMoveContext) => string;
 }
 
-export interface NatTableSearchIntl {
+export type NatTableSearchIntl = {
   /** Visible label for the global search field. */
   label?: string;
   /** Placeholder for the global search field. */
   placeholder?: string;
 }
 
-export interface NatTableColumnVisibilityIntl {
+export type NatTableColumnVisibilityIntl = {
   /** Visible heading above the column visibility chips. */
   label?: string;
   /** `aria-label` applied to the column visibility chip group. */
@@ -212,33 +212,33 @@ export interface NatTableColumnVisibilityIntl {
   accessibilityLabels?: NatTableAccessibilityColumnVisibilityLabels;
 }
 
-export interface NatTablePageSizeIntl {
+export type NatTablePageSizeIntl = {
   /** `aria-label` applied to the page-size chip group. */
   groupAriaLabel?: string;
   /** Generated labels for page-size options. */
   accessibilityLabels?: NatTableAccessibilityPageSizeLabels;
 }
 
-export interface NatTablePagerIntl {
+export type NatTablePagerIntl = {
   /** `aria-label` applied to the pager control group. */
   groupAriaLabel?: string;
   /** Generated pager button and indicator labels. */
   accessibilityLabels?: NatTableAccessibilityPagerLabels;
 }
 
-export interface NatTableScrollControlIntl {
+export type NatTableScrollControlIntl = {
   /** `aria-label` applied to the horizontal scroll control group. */
   groupAriaLabel?: string;
   /** Generated scroll button, slider, and position labels. */
   accessibilityLabels?: NatTableAccessibilityScrollControlLabels;
 }
 
-export interface NatTableHeaderActionsIntl {
+export type NatTableHeaderActionsIntl = {
   /** Generated sort, menu, pin, and move labels for header action controls. */
   accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
 }
 
-export interface NatTableToolbarIntl {
+export type NatTableToolbarIntl = {
   /** Default `aria-label` for the toolbar container; the `accessibleName` input wins. */
   toolbarLabel?: string;
 }
@@ -251,7 +251,7 @@ export type NatTableSelectionIntl = {
 };
 
 /** Locale-specific defaults for generated `ng-advanced-table-ui` copy. */
-export interface NatTableUiIntl {
+export type NatTableUiIntl = {
   search?: NatTableSearchIntl;
   columnVisibility?: NatTableColumnVisibilityIntl;
   pageSize?: NatTablePageSizeIntl;
@@ -264,7 +264,7 @@ export interface NatTableUiIntl {
   formatNumber?: NatTableUiNumberFormatter;
 }
 
-export interface NatTableUiIntlConfig {
+export type NatTableUiIntlConfig = {
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableUiIntl>;
 }

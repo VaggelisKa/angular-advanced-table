@@ -1,9 +1,10 @@
 import {
-  createEnvironmentInjector,
   EnvironmentInjector,
+  createEnvironmentInjector,
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import {
   NAT_TABLE_BUILT_IN_UI_LOCALES,
   NAT_TABLE_BUILT_IN_UTILS_LOCALES,
@@ -33,6 +34,7 @@ describe('provideNatTableLocales', () => {
     }
   });
 
+  // eslint-disable-next-line complexity
   it('uses platform primary modifier shortcuts in the built-in English column reorder instructions', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideNatTableLocales()],
@@ -45,6 +47,7 @@ describe('provideNatTableLocales', () => {
     );
   });
 
+  // eslint-disable-next-line complexity
   it('registers companion UI and utils locales through explicit providers', () => {
     TestBed.configureTestingModule({
       providers: [
@@ -66,6 +69,7 @@ describe('provideNatTableLocales', () => {
     }
   });
 
+  // eslint-disable-next-line complexity
   it('merges partial built-in locale overrides without dropping nested defaults', () => {
     TestBed.configureTestingModule({
       providers: [
@@ -98,6 +102,7 @@ describe('provideNatTableLocales', () => {
     );
   });
 
+  // eslint-disable-next-line complexity
   it('adds custom locale ids through overrides', () => {
     TestBed.configureTestingModule({
       providers: [
@@ -137,6 +142,7 @@ describe('provideNatTableLocales', () => {
     expect(utilsIntl.locales?.['qa']?.renderMetrics?.panel?.ariaLabel).toBe('QA render panel');
   });
 
+  // eslint-disable-next-line complexity
   it('preserves parent table locale overrides in nested providers', () => {
     TestBed.configureTestingModule({
       providers: [
@@ -179,6 +185,7 @@ describe('provideNatTableLocales', () => {
     }
   });
 
+  // eslint-disable-next-line complexity
   it('preserves parent UI locale overrides in nested providers', () => {
     TestBed.configureTestingModule({
       providers: [
@@ -226,6 +233,7 @@ describe('provideNatTableLocales', () => {
     }
   });
 
+  // eslint-disable-next-line complexity
   it('preserves parent utils locale overrides in nested providers', () => {
     TestBed.configureTestingModule({
       providers: [

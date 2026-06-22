@@ -7,14 +7,14 @@ export type NatTableUtilsNumberFormatter = (
 
 export type RowRenderTone = 'fast' | 'watch' | 'slow';
 
-export interface RowRenderFilterOption {
+export type RowRenderFilterOption = {
   readonly value: RowRenderTone | 'all';
   readonly label: string;
   readonly description: string;
 }
 
 /** Context passed to row-count label formatters. */
-export interface NatTableRenderMetricsRowCountContext {
+export type NatTableRenderMetricsRowCountContext = {
   /** Numeric row count. */
   rowCountValue: number;
   /** Provider-formatted text for `rowCountValue`. */
@@ -22,7 +22,7 @@ export interface NatTableRenderMetricsRowCountContext {
 }
 
 /** Context passed to duration label formatters. */
-export interface NatTableRenderMetricsDurationContext {
+export type NatTableRenderMetricsDurationContext = {
   /** Duration in milliseconds. */
   durationMsValue: number;
   /** Provider-formatted text for `durationMsValue`. */
@@ -30,7 +30,7 @@ export interface NatTableRenderMetricsDurationContext {
 }
 
 /** Labels used by render-metrics filters. */
-export interface NatTableRenderMetricsFilterIntl {
+export type NatTableRenderMetricsFilterIntl = {
   /** Visible label for the filter control. */
   heading?: string;
   /** Group label for the filter chips. */
@@ -44,7 +44,7 @@ export interface NatTableRenderMetricsFilterIntl {
 }
 
 /** Labels used by render-metrics panels. */
-export interface NatTableRenderMetricsPanelIntl {
+export type NatTableRenderMetricsPanelIntl = {
   /** Label applied to the KPI panel. */
   ariaLabel?: string;
   /** Visible label for the current tone. */
@@ -58,7 +58,7 @@ export interface NatTableRenderMetricsPanelIntl {
 }
 
 /** Defaults used by render-metrics columns. */
-export interface NatTableRenderMetricsColumnIntl {
+export type NatTableRenderMetricsColumnIntl = {
   /** Static header label. */
   header?: string;
   /** Cell label when no metric has been recorded yet. */
@@ -70,20 +70,20 @@ export interface NatTableRenderMetricsColumnIntl {
 }
 
 /** App or feature-level defaults for render-metrics helper copy. */
-export interface NatTableRenderMetricsIntl {
+export type NatTableRenderMetricsIntl = {
   filter?: NatTableRenderMetricsFilterIntl;
   panel?: NatTableRenderMetricsPanelIntl;
   column?: NatTableRenderMetricsColumnIntl;
 }
 
 /** Locale-specific defaults for `ng-advanced-table-utils`. */
-export interface NatTableUtilsIntl {
+export type NatTableUtilsIntl = {
   renderMetrics?: NatTableRenderMetricsIntl;
   /** Number formatter used for row counts and durations. */
   formatNumber?: NatTableUtilsNumberFormatter;
 }
 
-export interface NatTableUtilsIntlConfig {
+export type NatTableUtilsIntlConfig = {
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableUtilsIntl>;
 }

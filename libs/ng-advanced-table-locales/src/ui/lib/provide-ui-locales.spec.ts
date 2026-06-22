@@ -33,6 +33,7 @@ describe('UI locale toolbar slice', () => {
     expect(toolbar?.toolbarLabel).toBe('Table toolbar');
   });
 
+  // eslint-disable-next-line complexity
   it('locks English companion-control accessibility copy', () => {
     const english = NAT_TABLE_BUILT_IN_UI_LOCALES['en'];
     const pageSizeContext = {
@@ -119,6 +120,7 @@ describe('UI locale toolbar slice', () => {
     ).toBe('Move right');
   });
 
+  // eslint-disable-next-line complexity
   it('keeps the toolbar slice through provideNatTableUiLocales()', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()],

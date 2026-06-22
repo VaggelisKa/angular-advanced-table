@@ -1,4 +1,6 @@
-import { InjectionToken, Optional, SkipSelf, type Provider } from '@angular/core';
+/* eslint-disable max-lines */
+import { InjectionToken, Optional,  SkipSelf } from '@angular/core';
+import type {Provider} from '@angular/core';
 
 import { NAT_TABLE_BUILT_IN_LOCALES } from './built-in-locales';
 import { NAT_TABLE_ENGLISH_INTL, NAT_TABLE_ENGLISH_LOCALE } from './en';
@@ -23,127 +25,106 @@ export const NAT_TABLE_DEFAULT_INTL: NatTableIntlConfig = {
 /** Injection token backing `provideNatTableLocales(...)`. */
 export const NAT_TABLE_INTL = new InjectionToken<NatTableIntlConfig>('NAT_TABLE_INTL', {
   providedIn: 'root',
-  factory: () => NAT_TABLE_DEFAULT_INTL,
+  factory: (): NatTableIntlConfig => NAT_TABLE_DEFAULT_INTL,
 });
 
-/**
- * Registers every table locale shipped by `ng-advanced-table-locales`.
- *
- * Pass `overrides` only when adding custom locale ids or overriding built-in
- * generated table labels. Instance-specific copy such as table names,
- * captions, descriptions, and column labels should stay on component inputs or
- * column definitions.
- */
-export function provideNatTableLocales(overrides: NatTableLocaleLabelsMap = {}): Provider[] {
-  return provideNatTableIntl({ locales: overrides });
-}
-
-/**
- * Provides default table labels, announcement formatters, and number formatting.
- *
- * Nested providers merge with parent defaults, so feature-level providers can
- * override a subset of app-level copy without replacing the entire bag.
- */
-export function provideNatTableIntl(intl: NatTableIntlProviderConfig): Provider[] {
-  return [
-    {
-      provide: NAT_TABLE_INTL,
-      deps: [[new Optional(), new SkipSelf(), NAT_TABLE_INTL]],
-      useFactory: (parent: NatTableIntlConfig | null) =>
-        mergeNatTableIntlConfig(parent ?? NAT_TABLE_DEFAULT_INTL, intl),
-    },
-  ];
-}
-
-/** Merges table locale dictionaries, with override values taking precedence. */
-export function mergeNatTableIntl(parent: NatTableIntl, override: NatTableIntl): NatTableIntl {
-  return {
-    accessibilityText: mergeNatTableAccessibilityText(
-      parent.accessibilityText,
-      override.accessibilityText,
-    ),
-    formatNumber: override.formatNumber ?? parent.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
-  };
-}
-
-/** Merges table accessibility copy and formatter callbacks field by field. */
-export function mergeNatTableAccessibilityText(
+/** Merges the description and keyboard instruction text, override values winning. */
+const mergeAccessibilityInstructions = (
   parent?: NatTableAccessibilityText,
   override?: NatTableAccessibilityText,
-): NatTableAccessibilityText {
-  return {
-    description: override?.description ?? parent?.description,
-    keyboardInstructions: override?.keyboardInstructions ?? parent?.keyboardInstructions,
-    emptyState: override?.emptyState ?? parent?.emptyState,
-    loadingState: override?.loadingState ?? parent?.loadingState,
-    errorState: override?.errorState ?? parent?.errorState,
-    reorderKeyboardInstructions:
-      override?.reorderKeyboardInstructions ?? parent?.reorderKeyboardInstructions,
-    resizeKeyboardInstructions:
-      override?.resizeKeyboardInstructions ?? parent?.resizeKeyboardInstructions,
-    tableSummary: override?.tableSummary ?? parent?.tableSummary,
-    sortingChange: override?.sortingChange ?? parent?.sortingChange,
-    filteringChange: override?.filteringChange ?? parent?.filteringChange,
-    columnVisibilityChange: override?.columnVisibilityChange ?? parent?.columnVisibilityChange,
-    pageSizeChange: override?.pageSizeChange ?? parent?.pageSizeChange,
-    pageChange: override?.pageChange ?? parent?.pageChange,
-    columnReorder: override?.columnReorder ?? parent?.columnReorder,
-    columnResize: override?.columnResize ?? parent?.columnResize,
-    selectionChange: override?.selectionChange ?? parent?.selectionChange,
-  };
-}
+): Partial<NatTableAccessibilityText> => ({
+  description: override?.description ?? parent?.description,
+  keyboardInstructions: override?.keyboardInstructions ?? parent?.keyboardInstructions,
+});
 
-/** Formats generated table accessibility numbers through the configured locale formatter. */
-export function formatNatTableIntlNumber(
-  intl: NatTableIntl,
-  value: number,
-  options?: Intl.NumberFormatOptions,
-  locale?: string,
-): string {
-  return (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
-}
+/** Merges the body state messages, override values winning. */
+const mergeAccessibilityStateText = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText,
+): Partial<NatTableAccessibilityText> => ({
+  emptyState: override?.emptyState ?? parent?.emptyState,
+  loadingState: override?.loadingState ?? parent?.loadingState,
+  errorState: override?.errorState ?? parent?.errorState,
+});
 
-/** Resolves a locale dictionary, falling back to built-in English defaults. */
-export function resolveNatTableIntl(intl: NatTableIntlConfig, locale: string): NatTableIntl {
-  const englishIntl = intl.locales?.[NAT_TABLE_ENGLISH_LOCALE] ?? NAT_TABLE_ENGLISH_INTL;
-  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_TABLE_ENGLISH_LOCALE ? {} : null);
+/** Merges the reorder and resize instruction text, override values winning. */
+const mergeAccessibilityGestureText = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText,
+): Partial<NatTableAccessibilityText> => ({
+  reorderKeyboardInstructions:
+    override?.reorderKeyboardInstructions ?? parent?.reorderKeyboardInstructions,
+  resizeKeyboardInstructions:
+    override?.resizeKeyboardInstructions ?? parent?.resizeKeyboardInstructions,
+});
 
-  return selectedIntl
-    ? mergeNatTableLocaleIntl(englishIntl, selectedIntl)
-    : mergeNatTableLocaleIntl(englishIntl, {});
-}
+/** Merges the summary and sort/filter announcement formatters, override values winning. */
+const mergeAccessibilitySummaryAnnouncers = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText,
+): Partial<NatTableAccessibilityText> => ({
+  tableSummary: override?.tableSummary ?? parent?.tableSummary,
+  sortingChange: override?.sortingChange ?? parent?.sortingChange,
+  filteringChange: override?.filteringChange ?? parent?.filteringChange,
+});
 
-function mergeNatTableIntlConfig(
-  parent: NatTableIntlConfig,
-  override: NatTableIntlProviderConfig,
-): NatTableIntlConfig {
-  const overrideConfig = normalizeIntlProviderConfig(override);
+/** Merges the visibility and pagination announcement formatters, override values winning. */
+const mergeAccessibilityPaginationAnnouncers = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText,
+): Partial<NatTableAccessibilityText> => ({
+  columnVisibilityChange: override?.columnVisibilityChange ?? parent?.columnVisibilityChange,
+  pageSizeChange: override?.pageSizeChange ?? parent?.pageSizeChange,
+  pageChange: override?.pageChange ?? parent?.pageChange,
+});
 
-  return {
-    locales: mergeLocaleMaps(parent.locales ?? {}, overrideConfig.locales ?? {}),
-  };
-}
+/** Merges the column and selection announcement formatters, override values winning. */
+const mergeAccessibilityColumnAnnouncers = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText,
+): Partial<NatTableAccessibilityText> => ({
+  columnReorder: override?.columnReorder ?? parent?.columnReorder,
+  columnResize: override?.columnResize ?? parent?.columnResize,
+  selectionChange: override?.selectionChange ?? parent?.selectionChange,
+});
 
-function normalizeIntlProviderConfig(config: NatTableIntlProviderConfig): NatTableIntlConfig {
-  if (isIntlConfig(config)) {
-    return config;
-  }
+/** Merges table accessibility copy and formatter callbacks field by field. */
+export const mergeNatTableAccessibilityText = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText,
+): NatTableAccessibilityText => ({
+  ...mergeAccessibilityInstructions(parent, override),
+  ...mergeAccessibilityStateText(parent, override),
+  ...mergeAccessibilityGestureText(parent, override),
+  ...mergeAccessibilitySummaryAnnouncers(parent, override),
+  ...mergeAccessibilityPaginationAnnouncers(parent, override),
+  ...mergeAccessibilityColumnAnnouncers(parent, override),
+});
 
-  return {
-    locales: {
-      [NAT_TABLE_ENGLISH_LOCALE]: config,
-    },
-  };
-}
+/** Merges table locale dictionaries, with override values taking precedence. */
+export const mergeNatTableIntl = (parent: NatTableIntl, override: NatTableIntl): NatTableIntl => ({
+  accessibilityText: mergeNatTableAccessibilityText(
+    parent.accessibilityText,
+    override.accessibilityText,
+  ),
+  formatNumber: override.formatNumber ?? parent.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
+});
 
-function isIntlConfig(config: NatTableIntlProviderConfig): config is NatTableIntlConfig {
-  return 'locales' in config;
-}
+const mergeNatTableLocaleIntl = (
+  parent?: NatTableLocaleLabels,
+  override?: NatTableLocaleLabels,
+): NatTableLocaleLabels => ({
+  accessibilityText: mergeNatTableAccessibilityText(
+    parent?.accessibilityText,
+    override?.accessibilityText,
+  ),
+  formatNumber: override?.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
+});
 
-function mergeLocaleMaps(
+const mergeLocaleMaps = (
   parentLocales: NatTableLocaleLabelsMap,
   overrideLocales: NatTableLocaleLabelsMap,
-): NatTableLocaleLabelsMap {
+): NatTableLocaleLabelsMap => {
   const merged: NatTableLocaleLabelsMap = {};
 
   for (const [localeId, labels] of Object.entries(parentLocales)) {
@@ -155,17 +136,75 @@ function mergeLocaleMaps(
   }
 
   return merged;
-}
+};
 
-function mergeNatTableLocaleIntl(
-  parent?: NatTableLocaleLabels,
-  override?: NatTableLocaleLabels,
-): NatTableLocaleLabels {
+const isIntlConfig = (config: NatTableIntlProviderConfig): config is NatTableIntlConfig =>
+  'locales' in config;
+
+const normalizeIntlProviderConfig = (config: NatTableIntlProviderConfig): NatTableIntlConfig => {
+  if (isIntlConfig(config)) {
+    return config;
+  }
+
   return {
-    accessibilityText: mergeNatTableAccessibilityText(
-      parent?.accessibilityText,
-      override?.accessibilityText,
-    ),
-    formatNumber: override?.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER,
+    locales: {
+      [NAT_TABLE_ENGLISH_LOCALE]: config,
+    },
   };
-}
+};
+
+const mergeNatTableIntlConfig = (
+  parent: NatTableIntlConfig,
+  override: NatTableIntlProviderConfig,
+): NatTableIntlConfig => {
+  const overrideConfig = normalizeIntlProviderConfig(override);
+
+  return {
+    locales: mergeLocaleMaps(parent.locales ?? {}, overrideConfig.locales ?? {}),
+  };
+};
+
+/**
+ * Provides default table labels, announcement formatters, and number formatting.
+ *
+ * Nested providers merge with parent defaults, so feature-level providers can
+ * override a subset of app-level copy without replacing the entire bag.
+ */
+export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[] => [
+  {
+    provide: NAT_TABLE_INTL,
+    deps: [[new Optional(), new SkipSelf(), NAT_TABLE_INTL]],
+    useFactory: (parent: NatTableIntlConfig | null) =>
+      mergeNatTableIntlConfig(parent ?? NAT_TABLE_DEFAULT_INTL, intl),
+  },
+];
+
+/**
+ * Registers every table locale shipped by `ng-advanced-table-locales`.
+ *
+ * Pass `overrides` only when adding custom locale ids or overriding built-in
+ * generated table labels. Instance-specific copy such as table names,
+ * captions, descriptions, and column labels should stay on component inputs or
+ * column definitions.
+ */
+export const provideNatTableLocales = (
+  overrides: NatTableLocaleLabelsMap = {},
+): Provider[] => provideNatTableIntl({ locales: overrides });
+
+/** Formats generated table accessibility numbers through the configured locale formatter. */
+export const formatNatTableIntlNumber = (
+  intl: NatTableIntl,
+  value: number,
+  options?: Intl.NumberFormatOptions,
+  locale?: string,
+): string => (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
+
+/** Resolves a locale dictionary, falling back to built-in English defaults. */
+export const resolveNatTableIntl = (intl: NatTableIntlConfig, locale: string): NatTableIntl => {
+  const englishIntl = intl.locales?.[NAT_TABLE_ENGLISH_LOCALE] ?? NAT_TABLE_ENGLISH_INTL;
+  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_TABLE_ENGLISH_LOCALE ? {} : null);
+
+  return selectedIntl
+    ? mergeNatTableLocaleIntl(englishIntl, selectedIntl)
+    : mergeNatTableLocaleIntl(englishIntl, {});
+};

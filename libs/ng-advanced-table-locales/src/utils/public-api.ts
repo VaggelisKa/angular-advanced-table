@@ -5,7 +5,9 @@ export {
   NAT_TABLE_UTILS_ENGLISH_LOCALE,
   RENDER_FILTER_OPTIONS,
 } from './lib/utils-en';
+
 export { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './lib/utils-built-in-locales';
+
 export {
   formatNatTableUtilsNumber,
   injectNatTableUtilsIntl,
@@ -19,6 +21,7 @@ export {
   provideNatTableUtilsLocales,
   resolveNatTableUtilsIntl,
 } from './lib/provide-utils-locales';
+
 export type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,

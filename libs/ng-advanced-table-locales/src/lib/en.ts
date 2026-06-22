@@ -8,6 +8,33 @@ export const NAT_TABLE_ENGLISH_LOCALE = NAT_EN_LOCALE_ID;
 const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
 
+const pluralize = (label: string, count: number): string =>
+  count === 1 ? label : `${label}s`;
+
+const describeColumnZone = (zone: 'left' | 'center' | 'right'): string => {
+  if (zone === 'left') {
+    return 'left pinned';
+  }
+
+  if (zone === 'right') {
+    return 'right pinned';
+  }
+
+  return 'unpinned';
+};
+
+const resizeBoundSuffix = (atMinimum?: boolean, atMaximum?: boolean): string => {
+  if (atMinimum) {
+    return ' (minimum)';
+  }
+
+  if (atMaximum) {
+    return ' (maximum)';
+  }
+
+  return '';
+};
+
 /** Built-in English labels shipped with the table locale package. */
 export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
   accessibilityText: {
@@ -35,21 +62,24 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
       visibleRowsValue,
       visibleRowsText,
     }) => {
-      let summary =
-        visibleRowsValue === 0
-          ? `No rows are currently shown. ${visibleColumnsText} visible ${pluralize(
-              'column',
-              visibleColumnsValue,
-            )}.`
-          : filterState === 'filtered' && totalRowsValue !== visibleRowsValue
-            ? `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
-                'row',
-                totalRowsValue,
-              )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`
-            : `Showing ${visibleRowsText} ${pluralize(
-                'row',
-                visibleRowsValue,
-              )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+      let summary: string;
+
+      if (visibleRowsValue === 0) {
+        summary = `No rows are currently shown. ${visibleColumnsText} visible ${pluralize(
+          'column',
+          visibleColumnsValue,
+        )}.`;
+      } else if (filterState === 'filtered' && totalRowsValue !== visibleRowsValue) {
+        summary = `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
+          'row',
+          totalRowsValue,
+        )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+      } else {
+        summary = `Showing ${visibleRowsText} ${pluralize(
+          'row',
+          visibleRowsValue,
+        )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+      }
 
       if (paginationState === 'enabled') {
         summary += ` Page ${pageText} of ${pageCountText}.`;
@@ -109,9 +139,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
         zone,
       )} region.`,
     columnResize: ({ label, widthText, atMinimum, atMaximum }) =>
-      `${label} column width ${widthText} pixels${
-        atMinimum ? ' (minimum)' : atMaximum ? ' (maximum)' : ''
-      }.`,
+      `${label} column width ${widthText} pixels${resizeBoundSuffix(atMinimum, atMaximum)}.`,
     selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {
       if (selectedCountValue === 0) {
         return 'Selection cleared.';
@@ -128,19 +156,3 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
 };
 
 export const NAT_TABLE_ENGLISH_INTL = NAT_EN_LOCALE_LABELS;
-
-function pluralize(label: string, count: number): string {
-  return count === 1 ? label : `${label}s`;
-}
-
-function describeColumnZone(zone: 'left' | 'center' | 'right'): string {
-  if (zone === 'left') {
-    return 'left pinned';
-  }
-
-  if (zone === 'right') {
-    return 'right pinned';
-  }
-
-  return 'unpinned';
-}

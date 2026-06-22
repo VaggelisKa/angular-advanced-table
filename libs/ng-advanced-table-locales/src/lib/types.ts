@@ -6,7 +6,7 @@ export type NatTableNumberFormatter = (
 ) => string;
 
 /** Context passed to custom table summary formatters. */
-export interface NatTableAccessibilitySummaryContext {
+export type NatTableAccessibilitySummaryContext = {
   /** Rows currently rendered in the body. */
   visibleRowsValue: number;
   /** Provider-formatted text for `visibleRowsValue`. */
@@ -46,7 +46,7 @@ export type NatTableAccessibilitySortingAnnouncementEntry = {
 };
 
 /** Context passed to custom sort announcement formatters. */
-export interface NatTableAccessibilitySortingAnnouncementContext {
+export type NatTableAccessibilitySortingAnnouncementContext = {
   /** Sorted column id, or `null` when sorting is cleared. */
   columnId: string | null;
   /** Resolved human-readable column label, or `null`. */
@@ -58,7 +58,7 @@ export interface NatTableAccessibilitySortingAnnouncementContext {
 }
 
 /** Context passed to custom filtering announcement formatters. */
-export interface NatTableAccessibilityFilteringAnnouncementContext {
+export type NatTableAccessibilityFilteringAnnouncementContext = {
   /** Trimmed global filter query. */
   query: string;
   /** Which filtering inputs are currently active. */
@@ -74,7 +74,7 @@ export interface NatTableAccessibilityFilteringAnnouncementContext {
 }
 
 /** Single column change entry passed to visibility announcement formatters. */
-export interface NatTableAccessibilityColumnVisibilityAnnouncementChange {
+export type NatTableAccessibilityColumnVisibilityAnnouncementChange = {
   /** TanStack column id. */
   id: string;
   /** Resolved human-readable column label. */
@@ -84,7 +84,7 @@ export interface NatTableAccessibilityColumnVisibilityAnnouncementChange {
 }
 
 /** Context passed to custom column-visibility announcement formatters. */
-export interface NatTableAccessibilityColumnVisibilityAnnouncementContext {
+export type NatTableAccessibilityColumnVisibilityAnnouncementContext = {
   /** Columns whose visibility changed in the last update. */
   changedColumns: readonly NatTableAccessibilityColumnVisibilityAnnouncementChange[];
   /** Visible column count after the change. */
@@ -98,7 +98,7 @@ export interface NatTableAccessibilityColumnVisibilityAnnouncementContext {
 }
 
 /** Context passed to custom pagination announcement formatters. */
-export interface NatTableAccessibilityPaginationAnnouncementContext {
+export type NatTableAccessibilityPaginationAnnouncementContext = {
   /** Zero-based current page index. */
   pageIndex: number;
   /** One-based current page number. */
@@ -120,7 +120,7 @@ export interface NatTableAccessibilityPaginationAnnouncementContext {
 }
 
 /** Context passed to custom column-reorder announcement formatters. */
-export interface NatTableAccessibilityColumnReorderAnnouncementContext {
+export type NatTableAccessibilityColumnReorderAnnouncementContext = {
   /** TanStack column id. */
   columnId: string;
   /** Resolved human-readable column label. */
@@ -164,8 +164,9 @@ export type NatTableAccessibilitySelectionAnnouncementContext = {
   /** Provider-formatted text for `totalRowsValue`. */
   readonly totalRowsText: string;
 };
+
 /** Optional overrides for built-in screen-reader summaries and announcements. */
-export interface NatTableAccessibilityText {
+export type NatTableAccessibilityText = {
   /**
    * Supplemental description announced through `aria-describedby` when the
    * grid receives focus. Set to an empty string to suppress the description.
@@ -219,14 +220,14 @@ export interface NatTableAccessibilityText {
 }
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */
-export interface NatTableIntl {
+export type NatTableIntl = {
   /** Default accessibility copy and announcement formatters for every table in scope. */
   accessibilityText?: NatTableAccessibilityText;
   /** Number formatter used for `...Text` fields passed to generated copy formatters. */
   formatNumber?: NatTableNumberFormatter;
 }
 
-export interface NatTableIntlConfig {
+export type NatTableIntlConfig = {
   /** Locale dictionaries keyed by locale id. */
   locales?: Record<string, NatTableIntl>;
 }
