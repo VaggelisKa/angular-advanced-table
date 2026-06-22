@@ -126,7 +126,28 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
       .grid-table {
         timeline-scope: --body-scroll;
       }
+      .grid-header-scroll-wrapper {
+        container-type: inline-size;
+      }
+      .grid-body-scroll-wrapper {
+        scroll-timeline-name: --body-scroll;
+        scroll-timeline-axis: inline;
+      }
+      .grid-header {
+        animation: sync-scroll linear both;
+        animation-timeline: --body-scroll;
+      }
     }
+
+    @keyframes sync-scroll {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(calc(-100% + 100cqw));
+      }
+    }
+
 
     /* Header Container - sticky vertically, hides scrollbar horizontally */
     .grid-header-scroll-wrapper {
@@ -255,6 +276,16 @@ export class StickyHeaderGridPocPage {
       const headerEl = this.headerScroll()?.nativeElement;
 
       if (bodyEl && headerEl) {
+        // Detect native CSS scroll-timeline and timeline-scope support
+        const supportsScrollTimeline =
+          CSS.supports('timeline-scope', '--foo') &&
+          (CSS.supports('(scroll-timeline-axis: inline)') ||
+            CSS.supports('(scroll-timeline: --foo inline)'));
+
+        if (supportsScrollTimeline) {
+          return; // Skip JS syncing if native CSS scroll-timeline is supported
+        }
+
         let ticking = false;
         let lastKnownScrollLeft = 0;
 
