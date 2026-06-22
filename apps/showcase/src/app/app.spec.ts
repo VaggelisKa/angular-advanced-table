@@ -369,9 +369,11 @@ function waitForFocusHandoff(): Promise<void> {
 function getElement<T extends Element>(container: HTMLElement, selector: string): T {
   const element = container.querySelector<T>(selector);
 
-  expect(element).not.toBeNull();
+  if (element === null) {
+    throw new Error(`Element not found: ${selector}`);
+  }
 
-  return element as T;
+  return element;
 }
 
 function readStoredExpandedNavTreeIds(): string[] {
