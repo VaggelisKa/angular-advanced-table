@@ -321,12 +321,24 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const trigger = compiled.querySelector('.showcase-menu-button') as HTMLButtonElement;
     const nav = compiled.querySelector('.showcase-nav') as HTMLElement;
-    const firstLink = compiled.querySelector('.showcase-nav-tree-link') as HTMLAnchorElement;
+    const docsFoundationsBranch = getElement<HTMLElement>(
+      compiled,
+      '[data-testid="showcase-nav-branch-docs-foundations"]',
+    );
 
     trigger.click();
     await fixture.whenStable();
 
     expect(nav.classList.contains('is-open')).toBe(true);
+
+    docsFoundationsBranch.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const firstLink = getElement<HTMLAnchorElement>(
+      compiled,
+      '[data-testid="showcase-nav-link-quick-start"]',
+    );
 
     firstLink.click();
     await fixture.whenStable();
@@ -352,6 +364,14 @@ describe('App', () => {
 
 function waitForFocusHandoff(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve));
+}
+
+function getElement<T extends Element>(container: HTMLElement, selector: string): T {
+  const element = container.querySelector<T>(selector);
+
+  expect(element).not.toBeNull();
+
+  return element as T;
 }
 
 function readStoredExpandedNavTreeIds(): string[] {

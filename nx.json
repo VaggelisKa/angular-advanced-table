@@ -12,15 +12,14 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
-    "serve": {
-      "dependsOn": ["^build"]
-    },
     "test": {
       "cache": true,
+      "dependsOn": ["^build"],
       "inputs": ["default", "^production"]
     },
     "e2e": {
       "cache": true,
+      "dependsOn": ["^build"],
       "inputs": ["default", "^production"]
     },
     "nx-release-publish": {
