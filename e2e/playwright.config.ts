@@ -16,7 +16,7 @@ export default defineConfig({
     viewport: { width: 1600, height: 900 },
   },
   webServer: {
-    command: 'pnpm exec nx serve showcase --port 4201',
+    command: 'pnpm exec nx run showcase:serve-e2e --port 4201',
     url: 'http://localhost:4201',
     reuseExistingServer: !process.env['CI'],
     timeout: 180_000,

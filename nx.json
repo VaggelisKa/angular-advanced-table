@@ -21,6 +21,7 @@
     },
     "e2e": {
       "cache": true,
+      "dependsOn": ["^build"],
       "inputs": ["default", "^production"]
     },
     "nx-release-publish": {
