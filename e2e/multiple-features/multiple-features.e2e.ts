@@ -30,23 +30,36 @@ test('can pause and resume live feed simulation', async ({ page }) => {
 test('can tick manually when feed is paused', async ({ page }) => {
   const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
   // Ensure paused
-  if (await page.locator('.session-label').textContent().then(t => t?.includes('Feed live'))) {
+  if (
+    await page
+      .locator('.session-label')
+      .textContent()
+      .then((t) => t?.includes('Feed live'))
+  ) {
     await toggleBtn.click();
   }
-  
+
   const tickBtn = page.getByRole('button', { name: 'Tick once' });
   const totalTicksBefore = await page.locator('.kpi').last().locator('.kpi-value').textContent();
-  
+  expect(totalTicksBefore).not.toBeNull();
+
   await tickBtn.click();
-  
+
   // The total ticks count should increment or update
-  await expect(page.locator('.kpi').last().locator('.kpi-value')).not.toHaveText(totalTicksBefore || '');
+  await expect(page.locator('.kpi').last().locator('.kpi-value')).not.toHaveText(
+    totalTicksBefore as string,
+  );
 });
 
 test('filters table using signal chips', async ({ page }) => {
   // Pause simulation to prevent rows from mutating dynamically
   const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
-  if (await page.locator('.session-label').textContent().then(t => t?.includes('Feed live'))) {
+  if (
+    await page
+      .locator('.session-label')
+      .textContent()
+      .then((t) => t?.includes('Feed live'))
+  ) {
     await toggleBtn.click();
     await expect(page.locator('.session-label')).toContainText('Feed paused');
   }
@@ -56,7 +69,9 @@ test('filters table using signal chips', async ({ page }) => {
   await advancingChip.click();
 
   // Verify only Advancing status is visible
-  const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
+  const advancingRows = page
+    .locator('td[data-column-id="status"]')
+    .filter({ hasText: 'Advancing' });
   const totalRows = await page.locator('tbody tr').count();
   expect(totalRows).toBeGreaterThan(0);
   await expect(advancingRows).toHaveCount(totalRows);
@@ -65,7 +80,12 @@ test('filters table using signal chips', async ({ page }) => {
 test('searches rows using global fuzzy search input', async ({ page }) => {
   // Pause simulation to prevent rows from mutating dynamically
   const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
-  if (await page.locator('.session-label').textContent().then(t => t?.includes('Feed live'))) {
+  if (
+    await page
+      .locator('.session-label')
+      .textContent()
+      .then((t) => t?.includes('Feed live'))
+  ) {
     await toggleBtn.click();
     await expect(page.locator('.session-label')).toContainText('Feed paused');
   }
@@ -95,7 +115,7 @@ test('navigates pagination page sizes and indices', async ({ page }) => {
 
   // Initially on page 1
   await expect(prevBtn).toBeDisabled();
-  
+
   await expect(nextBtn).toBeEnabled();
   await nextBtn.click();
   await expect(prevBtn).toBeEnabled();

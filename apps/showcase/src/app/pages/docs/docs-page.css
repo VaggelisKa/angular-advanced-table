@@ -1,0 +1,33 @@
+.docs-page.showcase-container {
+  width: min(920px, 100%);
+  gap: 22px;
+}
+
+.docs-header {
+  align-items: end;
+}
+
+.docs-title-group {
+  display: grid;
+  gap: 4px;
+}
+
+.docs-eyebrow {
+  color: var(--showcase-page-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.docs-error {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--showcase-page-negative) 42%, transparent);
+  border-radius: var(--showcase-page-radius-sm);
+  background: color-mix(in srgb, var(--showcase-page-negative) 10%, var(--showcase-page-surface));
+  color: var(--showcase-page-negative);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}

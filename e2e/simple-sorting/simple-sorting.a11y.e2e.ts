@@ -5,7 +5,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('renders simple sorting page with pinned columns and sorts via keyboard', async ({ page }) => {
-  const table = page.getByRole('grid', { name: 'Sortable order table with pinned company and row action columns' });
+  const table = page.getByRole('grid', {
+    name: 'Sortable order table with pinned company and row action columns',
+  });
   await expect(table).toBeVisible();
 
   // Verify headers

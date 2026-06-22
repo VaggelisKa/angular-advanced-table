@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/search');
+  await page.goto('/examples/search');
 });
 
 test('filters table rows via global fuzzy search input using keyboard only', async ({ page }) => {

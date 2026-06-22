@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/pagination');
+  await page.goto('/examples/pagination');
 });
 
 test('navigates client-side pagination using keyboard only', async ({ page }) => {
@@ -31,6 +31,6 @@ test('navigates client-side pagination using keyboard only', async ({ page }) =>
 
   await nextBtn.focus();
   await page.keyboard.press('Enter');
-  
+
   await expect(prevBtn).toBeEnabled();
 });

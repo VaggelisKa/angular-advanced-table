@@ -35,6 +35,11 @@
     "@angular/platform-browser": "catalog:frontend",
     "@angular/router": "catalog:frontend",
     "@tanstack/angular-table": "catalog:frontend",
+    "katex": "^0.16.47",
+    "marked": "^18.0.5",
+    "marked-katex-extension": "^5.1.10",
+    "ngx-markdown": "22.0.0",
+    "prismjs": "^1.30.0",
     "rxjs": "catalog:frontend",
     "tslib": "catalog:shared"
   },

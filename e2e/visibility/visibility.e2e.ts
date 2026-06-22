@@ -1,14 +1,14 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/visibility');
+  await page.goto('/examples/visibility');
 });
 
 test('toggles column visibility via chips', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Column Visibility' })).toBeVisible();
 
   const table = page.getByRole('grid', { name: 'Visibility demo table' });
-  
+
   // Columns initially defined in tableState:
   // name: true, category: true, status: false, value: true
   // Let's verify "Status" header is not visible initially, and "Name" is.

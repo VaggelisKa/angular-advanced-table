@@ -17,7 +17,9 @@ test('navigates live tape features using keyboard only', async ({ page }) => {
   await page.keyboard.press('Space');
 
   // Verify only Advancing status is visible
-  const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
+  const advancingRows = page
+    .locator('td[data-column-id="status"]')
+    .filter({ hasText: 'Advancing' });
   const totalRows = await page.locator('tbody tr').count();
   expect(totalRows).toBeGreaterThan(0);
   await expect(advancingRows).toHaveCount(totalRows);

@@ -32,6 +32,13 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Do not use or reintroduce the removed `NatTableActionBar`/`<nat-table-action-bar>` API. Compose bundled control rows with `<nat-table-toolbar>`, `NatToolbarGroup`/`natToolbarItem`, and the pagination or scroll companion controls instead.
 - Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/lib/components/table/table-utils.ts`; keep `table.ts` focused on Angular wiring, signals, and DOM behavior.
 
+## Documentation Ownership
+
+- Keep "how to use the table" guidance in the showcase app docs. Author those pages as GitHub-flavored Markdown under `apps/showcase/public/docs/`, register them in `apps/showcase/src/app/showcase-navigation.ts`, and serve them under `/docs/*`.
+- Keep live behavior demos under `/examples/*`. Showcase routes must use either the `/docs` or `/examples` base path; do not add new top-level showcase routes such as `/sorting` or `/toolbar`.
+- Do not keep root or package README placeholders that only link back to showcase docs. Remove duplicated usage/reference markdown instead of replacing it with link-only docs.
+- Keep repository markdown only when it is technical maintainer material: contribution rules, package boundaries, architectural decisions, terminology, changelogs, internal package notes, or "how the table is built" explanations.
+
 ## TypeScript Best Practices
 
 - Use strict type checking

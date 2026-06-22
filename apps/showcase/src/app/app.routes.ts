@@ -1,8 +1,28 @@
 import { Routes } from '@angular/router';
 
+import { showcaseDocs } from './showcase-navigation';
+
+const loadDocsPage = () => import('./pages/docs/docs-page').then((module) => module.DocsPage);
+
 export const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full',
+    redirectTo: 'docs/quick-start',
+  },
+  {
+    path: 'docs',
+    pathMatch: 'full',
+    redirectTo: 'docs/quick-start',
+  },
+  ...showcaseDocs.map((doc) => ({
+    path: doc.path.slice(1),
+    title: `${doc.label} | Angular Advanced Table Docs`,
+    data: { docId: doc.id },
+    loadComponent: loadDocsPage,
+  })),
+  {
+    path: 'examples',
     pathMatch: 'full',
     redirectTo: 'examples/multiple-features',
   },
@@ -15,13 +35,13 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'builder',
+    path: 'examples/builder',
     title: 'Table builder | Angular Advanced Table',
     loadComponent: () =>
       import('./pages/table-builder/table-builder').then((module) => module.TableBuilderPage),
   },
   {
-    path: 'sorting',
+    path: 'examples/sorting',
     title: 'Advanced Table - Sorting',
     loadComponent: () =>
       import('./pages/single-features/sorting/sorting-showcase').then(
@@ -29,7 +49,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'pinning',
+    path: 'examples/pinning',
     title: 'Advanced Table - Column Pinning',
     loadComponent: () =>
       import('./pages/single-features/pinning-showcase').then(
@@ -37,7 +57,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'reordering',
+    path: 'examples/reordering',
     title: 'Advanced Table - Column Reordering',
     loadComponent: () =>
       import('./pages/single-features/reordering-showcase').then(
@@ -45,7 +65,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'pagination',
+    path: 'examples/pagination',
     title: 'Advanced Table - Table Pagination',
     loadComponent: () =>
       import('./pages/single-features/pagination-showcase').then(
@@ -53,7 +73,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'visibility',
+    path: 'examples/visibility',
     title: 'Advanced Table - Column Visibility',
     loadComponent: () =>
       import('./pages/single-features/visibility-showcase').then(
@@ -61,19 +81,19 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'search',
+    path: 'examples/search',
     title: 'Advanced Table - Global Search',
     loadComponent: () =>
       import('./pages/single-features/search-showcase').then((module) => module.SearchShowcasePage),
   },
   {
-    path: 'states',
+    path: 'examples/states',
     title: 'Advanced Table - Table States',
     loadComponent: () =>
       import('./pages/single-features/states-showcase').then((module) => module.StatesShowcasePage),
   },
   {
-    path: 'sticky-header',
+    path: 'examples/sticky-header',
     title: 'Advanced Table - Sticky Header',
     loadComponent: () =>
       import('./pages/single-features/sticky-header-showcase').then(
@@ -81,7 +101,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'toolbar',
+    path: 'examples/toolbar',
     title: 'Advanced Table - Table Toolbar',
     loadComponent: () =>
       import('./pages/single-features/toolbar-showcase/toolbar-showcase').then(
@@ -89,7 +109,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'keyboard-interaction',
+    path: 'examples/keyboard-interaction',
     title: 'Advanced Table - Keyboard Interaction',
     loadComponent: () =>
       import('./pages/single-features/keyboard-interaction/keyboard-interaction-showcase').then(
@@ -97,7 +117,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'resizing',
+    path: 'examples/resizing',
     title: 'Advanced Table - Column Resizing',
     loadComponent: () =>
       import('./pages/single-features/resizing-showcase/resizing-showcase').then(
@@ -105,7 +125,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'selection',
+    path: 'examples/selection',
     title: 'Advanced Table - Row Selection',
     loadComponent: () =>
       import('./pages/single-features/selection/selection-showcase').then(
@@ -122,6 +142,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'examples/multiple-features',
+    redirectTo: 'docs/quick-start',
   },
 ];

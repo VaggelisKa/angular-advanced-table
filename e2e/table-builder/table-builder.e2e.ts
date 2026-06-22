@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/builder');
+  await page.goto('/examples/builder');
 });
 
 test('renders the table builder page', async ({ page }) => {
@@ -12,7 +12,9 @@ test('renders the table builder page', async ({ page }) => {
 });
 
 test('can toggle config features and update the code preview', async ({ page }) => {
-  const globalSearchToggle = page.locator('.toggle-control', { hasText: 'Global Search' }).locator('input');
+  const globalSearchToggle = page
+    .locator('.toggle-control', { hasText: 'Global Search' })
+    .locator('input');
   const codeContent = page.locator('.code-content');
 
   // Verify search is initially active

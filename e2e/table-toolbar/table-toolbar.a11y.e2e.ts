@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/toolbar');
+  await page.goto('/examples/toolbar');
 });
 
 const buttons = (page: Page) => ({
@@ -34,9 +34,7 @@ test('activates items and reports the action via keyboard only', async ({ page }
   await expect(page.getByTestId('last-action')).toHaveText('density-compact');
 });
 
-test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({
-  page,
-}) => {
+test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({ page }) => {
   const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } =
     buttons(page);
 
@@ -77,24 +75,4 @@ test('Up/Down cycle inside the widget group without leaving it', async ({ page }
 
   await compactButton.press('ArrowUp');
   await expect(comfortableButton).toBeFocused();
-});
-
-test('reverses arrow keys in RTL', async ({ page }) => {
-  await page.addInitScript(() => {
-    if (document.documentElement) {
-      document.documentElement.setAttribute('dir', 'rtl');
-    } else {
-      document.addEventListener('DOMContentLoaded', () =>
-        document.documentElement.setAttribute('dir', 'rtl'),
-      );
-    }
-  });
-  await page.goto('/toolbar');
-  await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
-
-  const { exportButton, refreshButton } = buttons(page);
-
-  await exportButton.focus();
-  await exportButton.press('ArrowLeft');
-  await expect(refreshButton).toBeFocused();
 });

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/states');
+  await page.goto('/examples/states');
 });
 
 test('displays initial states for loading, empty, and errored grids', async ({ page }) => {
@@ -17,8 +17,10 @@ test('displays initial states for loading, empty, and errored grids', async ({ p
 
   // Error state table
   const errorTable = page.getByRole('grid', { name: 'Errored incidents table' });
-  await expect(errorTable.locator('.state-template-error')).toContainText('Incident queue unavailable');
-  
+  await expect(errorTable.locator('.state-template-error')).toContainText(
+    'Incident queue unavailable',
+  );
+
   // Test retry inside error table
   const retryBtn = errorTable.getByRole('button', { name: 'Retry' });
   await retryBtn.click();
@@ -39,7 +41,9 @@ test('handles transition preview state switching', async ({ page }) => {
 
   // Click "Error" option
   await transitionCard.getByRole('button', { name: 'Error' }).click();
-  await expect(previewTable.locator('.state-template-error')).toContainText('Transition request failed');
+  await expect(previewTable.locator('.state-template-error')).toContainText(
+    'Transition request failed',
+  );
 
   // Click "Rows" option
   await transitionCard.getByRole('button', { name: 'Rows' }).click();

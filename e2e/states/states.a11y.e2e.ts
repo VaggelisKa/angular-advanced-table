@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/states');
+  await page.goto('/examples/states');
 });
 
-test('displays initial states for loading, empty, and errored grids and tests retry via keyboard', async ({ page }) => {
+test('displays initial states for loading, empty, and errored grids and tests retry via keyboard', async ({
+  page,
+}) => {
   await expect(page.getByRole('heading', { name: 'Table States' })).toBeVisible();
 
   // Loading state table
@@ -17,13 +19,15 @@ test('displays initial states for loading, empty, and errored grids and tests re
 
   // Error state table
   const errorTable = page.getByRole('grid', { name: 'Errored incidents table' });
-  await expect(errorTable.locator('.state-template-error')).toContainText('Incident queue unavailable');
-  
+  await expect(errorTable.locator('.state-template-error')).toContainText(
+    'Incident queue unavailable',
+  );
+
   // Test retry inside error table via keyboard
   const retryBtn = errorTable.getByRole('button', { name: 'Retry' });
   await retryBtn.focus();
   await page.keyboard.press('Enter');
-  
+
   // Status should change to loading
   await expect(errorTable.locator('.state-template')).toContainText('Retrying incident queue');
 });
@@ -45,7 +49,9 @@ test('handles transition preview state switching via keyboard', async ({ page })
   const errorBtn = transitionCard.getByRole('button', { name: 'Error' });
   await errorBtn.focus();
   await page.keyboard.press('Enter');
-  await expect(previewTable.locator('.state-template-error')).toContainText('Transition request failed');
+  await expect(previewTable.locator('.state-template-error')).toContainText(
+    'Transition request failed',
+  );
 
   // Focus and trigger "Rows" option via Space
   const rowsBtn = transitionCard.getByRole('button', { name: 'Rows' });

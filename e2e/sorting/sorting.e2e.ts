@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/sorting');
+  await page.goto('/examples/sorting');
 });
 
-test('renders sorting grids and handles programmatic single-column sort actions', async ({ page }) => {
+test('renders sorting grids and handles programmatic single-column sort actions', async ({
+  page,
+}) => {
   await expect(page.getByRole('heading', { name: 'Sorting Feature' })).toBeVisible();
 
   const stateTag = page.locator('.info-tag').first();
@@ -25,7 +27,9 @@ test('renders sorting grids and handles programmatic single-column sort actions'
 
 test('handles interactive sorting on column headers', async ({ page }) => {
   const table = page.getByRole('grid', { name: 'Sorting demo table' });
-  const categoryHeaderBtn = table.locator('th[data-column-id="category"] button.sort-button').first();
+  const categoryHeaderBtn = table
+    .locator('th[data-column-id="category"] button.sort-button')
+    .first();
   const stateTag = page.locator('.info-tag').first();
 
   // Initially name (asc)
