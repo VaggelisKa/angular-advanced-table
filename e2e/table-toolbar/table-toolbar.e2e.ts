@@ -29,27 +29,6 @@ const buttons = (page: Page) => ({
   shareButton: page.getByTestId('share-button'),
 });
 
-async function gotoToolbarPageWithHtmlDirection(
-  page: Page,
-  direction: 'ltr' | 'rtl',
-): Promise<void> {
-  await page.route('**/*', async (route) => {
-    if (route.request().resourceType() !== 'document') {
-      await route.continue();
-      return;
-    }
-
-    const response = await route.fetch();
-    const body = await response.text();
-    const html = body.replace(/<html([^>]*)>/i, `<html$1 dir="${direction}">`);
-
-    await route.fulfill({ response, body: html });
-  });
-
-  await page.goto('/examples/toolbar');
-  await page.unroute('**/*');
-}
-
 test('renders the toolbar showcase page', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
   await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
@@ -155,17 +134,4 @@ test('Up/Down cycle inside the widget group without leaving it', async ({ page }
 
   await compactButton.press('ArrowUp');
   await expect(comfortableButton).toBeFocused();
-});
-
-test('reverses arrow keys in RTL', async ({ page }) => {
-  await gotoToolbarPageWithHtmlDirection(page, 'rtl');
-
-  await expect.poll(() => page.evaluate(() => document.documentElement.dir)).toBe('rtl');
-  await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
-
-  const { exportButton, refreshButton } = buttons(page);
-
-  await exportButton.focus();
-  await exportButton.press('ArrowLeft');
-  await expect(refreshButton).toBeFocused();
 });

@@ -1,11 +1,13 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/builder');
+  await page.goto('/examples/builder');
 });
 
 test('configures table builder using keyboard only', async ({ page }) => {
-  const globalSearchToggle = page.locator('.toggle-control', { hasText: 'Global Search' }).locator('input');
+  const globalSearchToggle = page
+    .locator('.toggle-control', { hasText: 'Global Search' })
+    .locator('input');
   const codeContent = page.locator('.code-content');
 
   // Verify search is initially active

@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/pinning');
+  await page.goto('/examples/pinning');
 });
 
-test('renders pinning controls and applies column pinning styles via keyboard', async ({ page }) => {
+test('renders pinning controls and applies column pinning styles via keyboard', async ({
+  page,
+}) => {
   await expect(page.getByRole('heading', { name: 'Column Pinning' })).toBeVisible();
 
   // Find the controls for Name column
