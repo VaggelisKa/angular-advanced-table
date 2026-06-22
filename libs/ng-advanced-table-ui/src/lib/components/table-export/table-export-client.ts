@@ -129,7 +129,11 @@ const downloadNatTableExportBlob = (blob: Blob, fileName: string): void => {
   anchor.download = fileName;
   anchor.style.display = 'none';
 
-  document.body.append(anchor);
+  // `document.body` is typed non-null but is absent before <body> is parsed or in
+  // non-standard document hosts; query it so the nullable fallback stays type-honest.
+  const anchorRoot = document.querySelector('body') ?? document.documentElement;
+
+  anchorRoot.append(anchor);
 
   try {
     anchor.click();
