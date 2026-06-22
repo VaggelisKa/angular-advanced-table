@@ -18,7 +18,7 @@ import type {
  * packages. Published entry points must expose local public interfaces so
  * package declarations do not reference this private library.
  */
-export interface NatTableState {
+export type NatTableState = {
   sorting: SortingState;
   globalFilter: string;
   columnFilters: ColumnFiltersState;
@@ -37,7 +37,7 @@ export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
 export type NatTableSortDirection = 'asc' | 'desc' | false;
 
 /** Context passed to companion sort-indicator renderers. */
-export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
+export type NatTableSortIndicatorContext<TData extends RowData = RowData> = {
   $implicit: NatTableSortDirection;
   sortState: NatTableSortDirection;
   ariaSort: 'ascending' | 'descending' | 'none';
@@ -49,17 +49,17 @@ export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
 export type NatTableColumnExportValue = unknown;
 
 /** Context passed to column export value callbacks. */
-export interface NatTableColumnExportValueContext<
+export type NatTableColumnExportValueContext<
   TData extends RowData = RowData,
   TValue = unknown,
-> {
+> = {
   readonly row: Row<TData>;
   readonly column: Column<TData, TValue>;
   readonly value: TValue;
 }
 
 /** Export behavior attached to a table column definition. */
-export interface NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> {
+export type NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> = {
   readonly enabled?: boolean;
   readonly header?: string;
   readonly value?: (
@@ -71,7 +71,7 @@ export interface NatTableColumnExportOptions<TData extends RowData = RowData, TV
  * Shared canonical metadata contract understood by the table, companion UI,
  * and optional utilities.
  */
-export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
+export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> = {
   label?: string;
   hiddenHeaderLabel?: string;
   align?: 'start' | 'end';
