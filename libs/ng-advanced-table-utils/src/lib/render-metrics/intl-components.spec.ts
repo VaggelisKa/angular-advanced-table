@@ -1,20 +1,22 @@
-import { Component, inject, signal } from '@angular/core';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component, inject, provideZonelessChangeDetection, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
+
 import type { Table } from '@tanstack/angular-table';
-import { NatTableService, type NatTableUiController } from 'ng-advanced-table';
+import { NatTableService } from 'ng-advanced-table';
+import type { NatTableUiController } from 'ng-advanced-table';
 
 import { NatRenderMetricsFilter } from './filter';
-import {
-  provideNatTableUtilsIntl,
-  type NatTableRenderMetricsFilterIntl,
-  type NatTableRenderMetricsPanelIntl,
+import { provideNatTableUtilsIntl } from './intl';
+import type {
+  NatTableRenderMetricsFilterIntl,
+  NatTableRenderMetricsPanelIntl,
 } from './intl';
 import { NatRenderMetricsPanel } from './panel';
 import { NatTableRenderMetricsStore } from './store';
 import type { RowRenderFilterOption } from './types';
 
-interface Row {
+type Row = {
   id: string;
   name: string;
 }
@@ -43,6 +45,7 @@ const providerOptions: readonly RowRenderFilterOption[] = [
 ];
 
 @Component({
+  selector: 'nat-test-host',
   imports: [NatRenderMetricsFilter, NatRenderMetricsPanel],
   providers: [
     NatTableService,
@@ -65,13 +68,13 @@ const providerOptions: readonly RowRenderFilterOption[] = [
     }),
   ],
   template: `
-    <nat-render-metrics-panel [store]="store" [labels]="panelLabels()" />
-    <nat-render-metrics-filter [store]="store" [labels]="filterLabels()" />
+    <nat-render-metrics-panel [labels]="panelLabels()" [store]="store" />
+    <nat-render-metrics-filter [labels]="filterLabels()" [store]="store" />
   `,
 })
 class RenderMetricsIntlHost {
-  readonly store = new NatTableRenderMetricsStore();
-  readonly controller: NatTableUiController<Row> = {
+  protected readonly store = new NatTableRenderMetricsStore();
+  private readonly controller: NatTableUiController<Row> = {
     table: {
       getState: () => ({ columnFilters: [] }),
     } as unknown as Table<Row>,
@@ -80,12 +83,13 @@ class RenderMetricsIntlHost {
     enablePagination: () => true,
     patchState: () => undefined,
   };
-  readonly panelLabels = signal<NatTableRenderMetricsPanelIntl | undefined>(undefined);
-  readonly filterLabels = signal<NatTableRenderMetricsFilterIntl | undefined>(undefined);
+
+  public readonly panelLabels = signal<NatTableRenderMetricsPanelIntl | undefined>(undefined);
+  public readonly filterLabels = signal<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
   private readonly natTableService = inject(NatTableService);
 
-  constructor() {
+  public constructor() {
     this.natTableService.setController(this.controller);
     this.store.record({
       rowId: 'row-1',
@@ -122,10 +126,10 @@ describe('render metrics intl components', () => {
     const firstChip = nativeElement.querySelector('.render-chip') as HTMLButtonElement;
 
     expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
-    expect(duration.textContent?.trim()).toBe('Provider n5.5 ms');
-    expect(detail.textContent?.trim()).toBe('Provider watch · Provider n1 rows sampled');
-    expect(filterHeading.textContent?.trim()).toBe('Provider render speed');
-    expect(filterCaption.textContent?.trim()).toBe('Provider n1 visible rows');
+    expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
+    expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
+    expect(filterHeading.textContent.trim()).toBe('Provider render speed');
+    expect(filterCaption.textContent.trim()).toBe('Provider n1 visible rows');
     expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
     expect(firstChip.textContent).toContain('Provider all');
     expect(firstChip.textContent).toContain('Provider latest');
@@ -140,8 +144,8 @@ describe('render metrics intl components', () => {
     fixture.detectChanges();
 
     expect(panel.getAttribute('aria-label')).toBe('Input row render sample');
-    expect(detail.textContent?.trim()).toBe('Input tone · Provider n1 rows sampled');
-    expect(filterHeading.textContent?.trim()).toBe('Input render speed');
+    expect(detail.textContent.trim()).toBe('Input tone · Provider n1 rows sampled');
+    expect(filterHeading.textContent.trim()).toBe('Input render speed');
     expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
   });
 });

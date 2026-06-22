@@ -1,4 +1,5 @@
 import type { RowRenderFilterValue, RowRenderTone } from './types';
+
 export { getRenderToneLabel } from 'ng-advanced-table-locales';
 
 /**

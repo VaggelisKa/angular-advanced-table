@@ -1,10 +1,11 @@
 /** Tone assigned to a row based on its latest measured render duration. */
 export type RowRenderTone = 'fast' | 'watch' | 'slow';
+
 /** Filter values understood by the render-metrics column and filter component. */
 export type RowRenderFilterValue = RowRenderTone | 'all';
 
 /** Latest render metric captured for a single row. */
-export interface RowRenderMetric {
+export type RowRenderMetric = {
   /** Render duration in milliseconds. */
   durationMs: number;
   /** Epoch timestamp for when the metric was recorded. */
@@ -14,7 +15,7 @@ export interface RowRenderMetric {
 }
 
 /** Aggregate view of the latest render cycle across the current page. */
-export interface RowRenderMeasurement {
+export type RowRenderMeasurement = {
   /** Total visible render duration in milliseconds. */
   durationMs: number;
   /** Mean row duration for the latest sampled cycle. */

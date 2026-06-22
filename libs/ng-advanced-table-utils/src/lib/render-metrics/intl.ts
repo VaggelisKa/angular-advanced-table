@@ -12,6 +12,7 @@ export {
   provideNatTableUtilsIntl,
   resolveNatTableUtilsIntl,
 } from 'ng-advanced-table-locales';
+
 export type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,

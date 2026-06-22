@@ -1,13 +1,13 @@
-import type { ColumnDef, RowData } from '@tanstack/angular-table';
+import type { CellContext, ColumnDef, FilterFn, RowData } from '@tanstack/angular-table';
 
 import {
+  NAT_TABLE_UTILS_ENGLISH_LOCALE,
   formatNatTableUtilsNumber,
   injectNatTableUtilsIntl,
   mergeRenderMetricsColumnIntl,
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
   resolveNatTableUtilsIntl,
-  type NatTableRenderMetricsColumnIntl,
 } from './intl';
+import type { NatTableRenderMetricsColumnIntl } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
 import { isRenderFilterValue } from './tone';
 import { RENDER_METRIC_COLUMN_ID } from './types';
@@ -15,7 +15,7 @@ import { RENDER_METRIC_COLUMN_ID } from './types';
 /**
  * Configuration for {@link withRenderMetricsColumn}.
  */
-export interface WithRenderMetricsColumnOptions extends NatTableRenderMetricsColumnIntl {
+export type WithRenderMetricsColumnOptions = {
   /** Locale id used when resolving provider defaults at helper-call time. */
   locale?: string;
   /** Column identifier. Defaults to `__rowRenderMetric`. */
@@ -26,6 +26,82 @@ export interface WithRenderMetricsColumnOptions extends NatTableRenderMetricsCol
   minSize?: number;
   /** Optional TanStack max-size override. */
   maxSize?: number;
+} & NatTableRenderMetricsColumnIntl
+
+/**
+ * Builds the metrics column filter predicate that keeps rows whose latest
+ * render tone matches the active filter value.
+ *
+ * @param store Shared metrics store used to look up per-row tone.
+ */
+function createMetricsFilterFn<TData extends RowData>(
+  store: NatTableRenderMetricsStore,
+): FilterFn<TData> {
+  return (row, _columnId, filterValue) => {
+    const activeFilter = isRenderFilterValue(filterValue) ? filterValue : 'all';
+
+    if (activeFilter === 'all') {
+      return true;
+    }
+
+    const metric = store.rowMetric(row.id);
+
+    if (!metric) {
+      return true;
+    }
+
+    return metric.tone === activeFilter;
+  };
+}
+
+/** Resolved render-metrics intl bundle used when rendering metric cells. */
+type ResolvedUtilsIntl = ReturnType<typeof resolveNatTableUtilsIntl>;
+/** Resolved render-metrics column intl used when rendering metric cells. */
+type ResolvedColumnIntl = ReturnType<typeof mergeRenderMetricsColumnIntl>;
+
+/** Resolved configuration passed to the metrics column cell renderer. */
+type MetricsCellConfig = {
+  store: NatTableRenderMetricsStore;
+  utilsIntl: ResolvedUtilsIntl;
+  columnIntl: ResolvedColumnIntl;
+  locale: string;
+  pendingLabel: string;
+  unitSuffix: string;
+};
+
+/**
+ * Builds the metrics column cell renderer that formats the latest per-row
+ * render duration, falling back to the pending label when no metric exists.
+ */
+function createMetricsCell<TData extends RowData>(
+  config: MetricsCellConfig,
+): (info: CellContext<TData, unknown>) => unknown {
+  const { store, utilsIntl, columnIntl, locale, pendingLabel, unitSuffix } = config;
+
+  return (info) => {
+    const metric = store.rowMetric(info.row.id);
+
+    if (!metric) {
+      return pendingLabel;
+    }
+
+    const durationMsText = formatNatTableUtilsNumber(
+      utilsIntl,
+      metric.durationMs,
+      {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      },
+      locale,
+    );
+
+    return (
+      columnIntl.duration?.({
+        durationMsValue: metric.durationMs,
+        durationMsText,
+      }) ?? `${durationMsText}${unitSuffix}`
+    );
+  };
 }
 
 /**
@@ -73,45 +149,8 @@ export function withRenderMetricsColumn<TData extends RowData>(
     enableHiding: false,
     enablePinning: false,
     enableSorting: false,
-    filterFn: (row, _columnId, filterValue) => {
-      const activeFilter = isRenderFilterValue(filterValue) ? filterValue : 'all';
-
-      if (activeFilter === 'all') {
-        return true;
-      }
-
-      const metric = store.rowMetric(row.id);
-
-      if (!metric) {
-        return true;
-      }
-
-      return metric.tone === activeFilter;
-    },
-    cell: (info) => {
-      const metric = store.rowMetric(info.row.id);
-
-      if (!metric) {
-        return pendingLabel;
-      }
-
-      const durationMsText = formatNatTableUtilsNumber(
-        utilsIntl,
-        metric.durationMs,
-        {
-          minimumFractionDigits: 1,
-          maximumFractionDigits: 1,
-        },
-        locale,
-      );
-
-      return (
-        columnIntl.duration?.({
-          durationMsValue: metric.durationMs,
-          durationMsText,
-        }) ?? `${durationMsText}${unitSuffix}`
-      );
-    },
+    filterFn: createMetricsFilterFn(store),
+    cell: createMetricsCell({ store, utilsIntl, columnIntl, locale, pendingLabel, unitSuffix }),
   };
 
   return [...columns, metricsColumn];

@@ -1,19 +1,19 @@
 import { Component, computed, inject, input } from '@angular/core';
 
 import {
+  NAT_TABLE_UTILS_ENGLISH_LOCALE,
+  NAT_TABLE_UTILS_INTL,
   formatNatTableUtilsNumber,
   mergeRenderMetricsPanelIntl,
-  NAT_TABLE_UTILS_INTL,
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
   resolveNatTableUtilsIntl,
-  type NatTableRenderMetricsPanelIntl,
 } from './intl';
+import type { NatTableRenderMetricsPanelIntl } from './intl';
 import type { NatTableRenderMetricsStore } from './store';
 import { getRowRenderTone } from './tone';
 
 type RenderHealthTone = 'idle' | 'fast' | 'watch' | 'slow';
 
-interface RenderHealthState {
+type RenderHealthState = {
   label: string;
   tone: RenderHealthTone;
 }
@@ -29,17 +29,18 @@ interface RenderHealthState {
 })
 export class NatRenderMetricsPanel {
   /** Shared store. */
-  readonly store = input.required<NatTableRenderMetricsStore>();
+  public readonly store = input.required<NatTableRenderMetricsStore>();
   /** Locale id override for generated render-metrics labels. */
-  readonly locale = input<string | undefined>(undefined);
+  public readonly locale = input<string | undefined>(undefined);
   /** Per-instance label overrides. */
-  readonly labels = input<NatTableRenderMetricsPanelIntl | undefined>(undefined);
+  public readonly labels = input<NatTableRenderMetricsPanelIntl | undefined>(undefined);
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
   private readonly localeId = computed(() => this.locale() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
   private readonly utilsIntl = computed(() =>
     resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()),
   );
+
   private readonly resolvedLabels = computed(() =>
     mergeRenderMetricsPanelIntl(this.utilsIntl().renderMetrics?.panel, this.labels()),
   );
@@ -51,7 +52,7 @@ export class NatRenderMetricsPanel {
     const measurement = this.measurement();
     const labels = this.resolvedLabels();
 
-    if (!measurement || !measurement.rowCount) {
+    if (!measurement?.rowCount) {
       return { label: labels.toneLabel?.('idle') ?? '', tone: 'idle' };
     }
 
@@ -64,7 +65,7 @@ export class NatRenderMetricsPanel {
     const measurement = this.measurement();
     const labels = this.resolvedLabels();
 
-    if (!measurement || !measurement.rowCount) {
+    if (!measurement?.rowCount) {
       return labels.idleSummary ?? '';
     }
 
