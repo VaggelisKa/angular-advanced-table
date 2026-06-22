@@ -7,7 +7,7 @@ import type {
   ColumnPinningState,
   RowData,
   RowSelectionState,
-  SortingState,
+  SortingState
 } from '@tanstack/angular-table';
 
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from './cell-interaction';
@@ -20,19 +20,24 @@ export type TableColumnAccessibilityState = {
   id: string;
   label: string;
   visible: boolean;
-}
+};
 
 export type TableColumnSizingState = {
   hasSize: boolean;
   hasMinSize: boolean;
   hasMaxSize: boolean;
-}
+};
 
 export type ColumnReorderKeyboardDirection = -1 | 1;
 
-export function resolveColumnDefId<TData extends RowData>(
-  column: ColumnDef<TData, unknown>,
-): string | null {
+/**
+ * Reads a column-keyed record entry, honestly typed `T | undefined`: a column id
+ * absent from the record is `undefined` at runtime despite the value type. Lets
+ * callers guard the result without a `no-unnecessary-condition` suppression.
+ */
+export const readColumnEntry = <T>(record: Record<string, T>, columnId: string): T | undefined => record[columnId];
+
+export function resolveColumnDefId<TData extends RowData>(column: ColumnDef<TData, unknown>): string | null {
   if (column.id) {
     return column.id;
   }
@@ -46,9 +51,7 @@ export function resolveColumnDefId<TData extends RowData>(
   return typeof column.header === 'string' ? column.header : null;
 }
 
-export function getColumnDefLeafIds<TData extends RowData>(
-  columns: readonly ColumnDef<TData, unknown>[],
-): string[] {
+export function getColumnDefLeafIds<TData extends RowData>(columns: readonly ColumnDef<TData, unknown>[]): string[] {
   return columns.flatMap((column) => {
     const childColumns = (
       column as ColumnDef<TData, unknown> & {
@@ -67,7 +70,7 @@ export function getColumnDefLeafIds<TData extends RowData>(
 }
 
 export function getUserColumnSizing<TData extends RowData>(
-  columns: readonly ColumnDef<TData, unknown>[],
+  columns: readonly ColumnDef<TData, unknown>[]
 ): Record<string, TableColumnSizingState> {
   const result: Record<string, TableColumnSizingState> = {};
 
@@ -95,7 +98,7 @@ export function getUserColumnSizing<TData extends RowData>(
     result[columnId] = {
       hasSize: column.size !== undefined,
       hasMinSize: column.minSize !== undefined,
-      hasMaxSize: column.maxSize !== undefined,
+      hasMaxSize: column.maxSize !== undefined
     };
   }
 
@@ -161,12 +164,7 @@ export function normalizeSortingState(sorting: SortingState, allowMulti: boolean
   const single = normalized[0];
   const original = sorting[0];
 
-  if (
-    normalized.length === 1 &&
-    sorting.length === 1 &&
-    single.id === original.id &&
-    single.desc === original.desc
-  ) {
+  if (normalized.length === 1 && sorting.length === 1 && single.id === original.id && single.desc === original.desc) {
     return sorting;
   }
 
@@ -187,14 +185,9 @@ export function uniqueStringValues(values: readonly string[]): string[] {
   });
 }
 
-export function normalizeColumnOrder(
-  columnOrder: readonly string[],
-  allLeafColumnIds: readonly string[],
-): ColumnOrderState {
+export function normalizeColumnOrder(columnOrder: readonly string[], allLeafColumnIds: readonly string[]): ColumnOrderState {
   const validColumnIds = new Set(allLeafColumnIds);
-  const nextOrder = uniqueStringValues(
-    columnOrder.filter((columnId) => validColumnIds.has(columnId)),
-  );
+  const nextOrder = uniqueStringValues(columnOrder.filter((columnId) => validColumnIds.has(columnId)));
 
   for (const columnId of allLeafColumnIds) {
     if (!nextOrder.includes(columnId)) {
@@ -205,47 +198,35 @@ export function normalizeColumnOrder(
   return nextOrder;
 }
 
-export function normalizeColumnPinning(
-  columnPinning: ColumnPinningState,
-  allLeafColumnIds: readonly string[],
-): ColumnPinningState {
+export function normalizeColumnPinning(columnPinning: ColumnPinningState, allLeafColumnIds: readonly string[]): ColumnPinningState {
   const validColumnIds = new Set(allLeafColumnIds);
   const leftColumnIds = columnPinning.left ?? [];
   const rightColumnIds = columnPinning.right ?? [];
 
   return {
     left: uniqueStringValues(leftColumnIds.filter((columnId) => validColumnIds.has(columnId))),
-    right: uniqueStringValues(rightColumnIds.filter((columnId) => validColumnIds.has(columnId))),
+    right: uniqueStringValues(rightColumnIds.filter((columnId) => validColumnIds.has(columnId)))
   };
 }
 
 export function normalizeDataStatus(status: NatTableDataStatus): NatTableDataStatus {
-  return status === NAT_TABLE_DATA_STATUS.loading || status === NAT_TABLE_DATA_STATUS.error
-    ? status
-    : NAT_TABLE_DATA_STATUS.success;
+  return status === NAT_TABLE_DATA_STATUS.loading || status === NAT_TABLE_DATA_STATUS.error ? status : NAT_TABLE_DATA_STATUS.success;
 }
 
-export function moveItemInArrayCopy(
-  values: readonly string[],
-  fromIndex: number,
-  toIndex: number,
-): string[] {
+export function moveItemInArrayCopy(values: readonly string[], fromIndex: number, toIndex: number): string[] {
   const nextValues = [...values];
-  const [movedValue] = nextValues.splice(fromIndex, 1);
+  // `.at(0)` on the removed-elements array is honestly typed `string | undefined`:
+  // an out-of-range fromIndex makes splice return [], so movedValue is undefined.
+  const movedValue = nextValues.splice(fromIndex, 1).at(0);
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: an out-of-range fromIndex makes splice return [], so movedValue is undefined at runtime despite the string type.
-  if (movedValue === undefined) {
-    return nextValues;
-  }
+  if (movedValue === undefined) return nextValues;
 
   nextValues.splice(toIndex, 0, movedValue);
 
   return nextValues;
 }
 
-export function getColumnReorderKeyboardDirection(
-  event: KeyboardEvent,
-): ColumnReorderKeyboardDirection | null {
+export function getColumnReorderKeyboardDirection(event: KeyboardEvent): ColumnReorderKeyboardDirection | null {
   // `KeyboardEvent.key` uses platform-neutral arrow names. Accept the platform
   // primary modifier: Control on Windows/Linux, Command on macOS.
   const hasSinglePrimaryModifier = event.ctrlKey !== event.metaKey;
@@ -268,7 +249,7 @@ export function getColumnReorderKeyboardDirection(
 export function getColumnMoveTargetIndex(
   columnIds: readonly string[],
   columnId: string,
-  directionDelta: ColumnReorderKeyboardDirection,
+  directionDelta: ColumnReorderKeyboardDirection
 ): number | null {
   const currentIndex = columnIds.indexOf(columnId);
   const nextIndex = currentIndex + directionDelta;
@@ -279,7 +260,7 @@ export function getColumnMoveTargetIndex(
 export function replaceIdsInSlots(
   currentOrder: readonly string[],
   nextVisibleOrder: readonly string[],
-  movableIds: ReadonlySet<string>,
+  movableIds: ReadonlySet<string>
 ): string[] {
   const nextValues = [...nextVisibleOrder];
 
@@ -305,12 +286,7 @@ export function matchesFilterQuery(value: unknown, query: string): boolean {
     return false;
   }
 
-  if (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean' ||
-    typeof value === 'bigint'
-  ) {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
     return String(value).toLowerCase().includes(query);
   }
 
@@ -367,16 +343,11 @@ export function getNumericColumnWidth(value: number | string | undefined): numbe
   return Number.isFinite(width) && width >= 0 ? Math.round(width) : null;
 }
 
-export function isUnavailableRequiredInputError(
-  error: unknown,
-): error is Error & { code?: number } {
+export function isUnavailableRequiredInputError(error: unknown): error is Error & { code?: number } {
   return error instanceof Error && Math.abs((error as { code?: number }).code ?? 0) === 950;
 }
 
-export function hasSameWidths(
-  left: Record<string, number>,
-  right: Record<string, number>,
-): boolean {
+export function hasSameWidths(left: Record<string, number>, right: Record<string, number>): boolean {
   const leftKeys = Object.keys(left);
   const rightKeys = Object.keys(right);
 
@@ -421,9 +392,7 @@ export function resolveColumnLabel<TData extends RowData>(column: Column<TData, 
   return typeof accessorKey === 'string' ? accessorKey : column.id || 'Column';
 }
 
-export function isPrimitiveHeaderContent<TData extends RowData>(
-  header: ColumnDef<TData, unknown>['header'],
-): boolean {
+export function isPrimitiveHeaderContent<TData extends RowData>(header: ColumnDef<TData, unknown>['header']): boolean {
   return typeof header === 'string' || typeof header === 'number';
 }
 
@@ -436,10 +405,7 @@ export function serializeColumnFilters(columnFilters: ColumnFiltersState): strin
 }
 
 /** Collapses a multi-row selection map to its first selected key by sort order in single mode. */
-export function normalizeRowSelection(
-  selection: RowSelectionState,
-  allowMulti: boolean,
-): RowSelectionState {
+export function normalizeRowSelection(selection: RowSelectionState, allowMulti: boolean): RowSelectionState {
   if (allowMulti) {
     return selection;
   }
@@ -464,7 +430,7 @@ export function serializeRowSelection(selection: RowSelectionState): string {
 
 export function hasSameColumnVisibility(
   current: readonly TableColumnAccessibilityState[],
-  next: readonly TableColumnAccessibilityState[],
+  next: readonly TableColumnAccessibilityState[]
 ): boolean {
   if (current.length !== next.length) {
     return false;

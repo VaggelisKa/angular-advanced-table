@@ -21,9 +21,12 @@ export class NatTableLoadingTemplate<TData extends RowData = RowData> {
 
   public static ngTemplateContextGuard<TData extends RowData>(
     _directive: NatTableLoadingTemplate<TData>,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Angular template-type-check guard: `context` is the subject of the type predicate, required by the signature.
     context: unknown,
   ): context is NatTableLoadingTemplateContext<TData> {
+    // `context` is the subject of this type predicate; the runtime guard always
+    // narrows. `void` marks it intentionally unused without an eslint-disable.
+    void context;
+
     return true;
   }
 }
@@ -40,9 +43,12 @@ export class NatTableEmptyTemplate<TData extends RowData = RowData> {
 
   public static ngTemplateContextGuard<TData extends RowData>(
     _directive: NatTableEmptyTemplate<TData>,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Angular template-type-check guard: `context` is the subject of the type predicate, required by the signature.
     context: unknown,
   ): context is NatTableEmptyTemplateContext<TData> {
+    // `context` is the subject of this type predicate; the runtime guard always
+    // narrows. `void` marks it intentionally unused without an eslint-disable.
+    void context;
+
     return true;
   }
 }
@@ -59,9 +65,12 @@ export class NatTableErrorTemplate<TData extends RowData = RowData> {
 
   public static ngTemplateContextGuard<TData extends RowData>(
     _directive: NatTableErrorTemplate<TData>,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Angular template-type-check guard: `context` is the subject of the type predicate, required by the signature.
     context: unknown,
   ): context is NatTableErrorTemplateContext<TData> {
+    // `context` is the subject of this type predicate; the runtime guard always
+    // narrows. `void` marks it intentionally unused without an eslint-disable.
+    void context;
+
     return true;
   }
 }

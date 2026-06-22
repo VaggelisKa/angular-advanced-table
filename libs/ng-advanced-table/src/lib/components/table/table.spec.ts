@@ -75,6 +75,38 @@ class TestSearch {
   }
 }
 
+// Resolves a single state slice from the controlled binding, then the initial
+// state, then a hard default. Kept tiny so the seed below stays branch-free.
+const pickSlice = <T>(bound: T | undefined, initial: T | undefined, fallback: T): T => bound ?? initial ?? fallback;
+
+// Seeds the "previous state" baseline from whichever slices the host controls,
+// falling back to the surface's initial state and then to empty defaults.
+const seedPreviousState = (bound: Partial<NatTableState>, initial: Partial<NatTableState>): NatTableState => ({
+  sorting: pickSlice(bound.sorting, initial.sorting, []),
+  globalFilter: pickSlice(bound.globalFilter, initial.globalFilter, ''),
+  columnFilters: pickSlice(bound.columnFilters, initial.columnFilters, []),
+  columnVisibility: pickSlice(bound.columnVisibility, initial.columnVisibility, {}),
+  columnOrder: pickSlice(bound.columnOrder, initial.columnOrder, []),
+  columnPinning: pickSlice(bound.columnPinning, initial.columnPinning, { left: [], right: [] }),
+  columnSizing: pickSlice(bound.columnSizing, initial.columnSizing, {}),
+  rowSelection: pickSlice(bound.rowSelection, initial.rowSelection, {}),
+  pagination: pickSlice(bound.pagination, initial.pagination, { pageIndex: 0, pageSize: 10 })
+});
+
+const sliceChanged = (a: unknown, b: unknown): boolean => JSON.stringify(a) !== JSON.stringify(b);
+
+// Emits `next[slice]` on `emitter` only when that slice differs from `prev`.
+const emitIfChanged = <K extends keyof NatTableState>(
+  prev: NatTableState,
+  next: NatTableState,
+  slice: K,
+  emitter: (value: NatTableState[K]) => void
+): void => {
+  if (sliceChanged(prev[slice], next[slice])) {
+    emitter(next[slice]);
+  }
+};
+
 @Component({
   selector: 'nat-table-surface',
   template: `<ng-content />`,
@@ -168,7 +200,6 @@ class TestTableSurface {
       pagination: { pageIndex: 0, pageSize: 10 }
     };
 
-    // eslint-disable-next-line complexity
     effect(() => {
       const nextState = this.natTableService.stateChangeEvent();
 
@@ -177,20 +208,7 @@ class TestTableSurface {
       }
 
       if (isFirstChange) {
-        const initial = this.natTableService.surfaceInitialState();
-        const currentBound = this.state();
-
-        previousState = {
-          sorting: currentBound.sorting ?? initial.sorting ?? [],
-          globalFilter: currentBound.globalFilter ?? initial.globalFilter ?? '',
-          columnFilters: currentBound.columnFilters ?? initial.columnFilters ?? [],
-          columnVisibility: currentBound.columnVisibility ?? initial.columnVisibility ?? {},
-          columnOrder: currentBound.columnOrder ?? initial.columnOrder ?? [],
-          columnPinning: currentBound.columnPinning ?? initial.columnPinning ?? { left: [], right: [] },
-          columnSizing: currentBound.columnSizing ?? initial.columnSizing ?? {},
-          rowSelection: currentBound.rowSelection ?? initial.rowSelection ?? {},
-          pagination: currentBound.pagination ?? initial.pagination ?? { pageIndex: 0, pageSize: 10 }
-        };
+        previousState = seedPreviousState(this.state(), this.natTableService.surfaceInitialState());
         isFirstChange = false;
       }
 
@@ -199,43 +217,21 @@ class TestTableSurface {
       previousState = nextState;
 
       this.stateChange.emit(nextState);
-
-      if (JSON.stringify(prev.sorting) !== JSON.stringify(nextState.sorting)) {
-        this.sortingChange.emit(nextState.sorting);
-      }
-
-      if (prev.globalFilter !== nextState.globalFilter) {
-        this.globalFilterChange.emit(nextState.globalFilter);
-      }
-
-      if (JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters)) {
-        this.columnFiltersChange.emit(nextState.columnFilters);
-      }
-
-      if (JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility)) {
-        this.columnVisibilityChange.emit(nextState.columnVisibility);
-      }
-
-      if (JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder)) {
-        this.columnOrderChange.emit(nextState.columnOrder);
-      }
-
-      if (JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning)) {
-        this.columnPinningChange.emit(nextState.columnPinning);
-      }
-
-      if (JSON.stringify(prev.columnSizing) !== JSON.stringify(nextState.columnSizing)) {
-        this.columnSizingChange.emit(nextState.columnSizing);
-      }
-
-      if (JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination)) {
-        this.paginationChange.emit(nextState.pagination);
-      }
-
-      if (JSON.stringify(prev.rowSelection) !== JSON.stringify(nextState.rowSelection)) {
-        this.rowSelectionChange.emit(nextState.rowSelection);
-      }
+      this.emitSliceChanges(prev, nextState);
     });
+  }
+
+  // Emits one granular slice output per slice that differs between prev and next.
+  private emitSliceChanges(prev: NatTableState, next: NatTableState): void {
+    emitIfChanged(prev, next, 'sorting', (value) => this.sortingChange.emit(value));
+    emitIfChanged(prev, next, 'globalFilter', (value) => this.globalFilterChange.emit(value));
+    emitIfChanged(prev, next, 'columnFilters', (value) => this.columnFiltersChange.emit(value));
+    emitIfChanged(prev, next, 'columnVisibility', (value) => this.columnVisibilityChange.emit(value));
+    emitIfChanged(prev, next, 'columnOrder', (value) => this.columnOrderChange.emit(value));
+    emitIfChanged(prev, next, 'columnPinning', (value) => this.columnPinningChange.emit(value));
+    emitIfChanged(prev, next, 'columnSizing', (value) => this.columnSizingChange.emit(value));
+    emitIfChanged(prev, next, 'pagination', (value) => this.paginationChange.emit(value));
+    emitIfChanged(prev, next, 'rowSelection', (value) => this.rowSelectionChange.emit(value));
   }
 }
 
@@ -607,28 +603,73 @@ function getHeaderColumnIds(fixture: ComponentFixture<TableHost>): string[] {
   return queryAll(fixture, 'thead th[data-column-id]').map((header) => header.dataset['columnId'] ?? '');
 }
 
-// eslint-disable-next-line complexity
+// Derives the size of one axis from its start and (optional) end.
+function resolveAxisSize(start: number, size: number | undefined, end: number | undefined): number {
+  return size ?? (end ?? start) - start;
+}
+
+// Resolves one axis (start/size/end) from any subset of its three values.
+function resolveAxis(
+  start: number | undefined,
+  size: number | undefined,
+  end: number | undefined
+): { start: number; size: number; end: number } {
+  const resolvedStart = start ?? 0;
+  const resolvedSize = resolveAxisSize(resolvedStart, size, end);
+
+  return { start: resolvedStart, size: resolvedSize, end: end ?? resolvedStart + resolvedSize };
+}
+
 function mockClientRect(element: HTMLElement, rect: Partial<DOMRectReadOnly>): void {
-  const left = rect.left ?? 0;
-  const top = rect.top ?? 0;
-  const width = rect.width ?? (rect.right ?? left) - left;
-  const height = rect.height ?? (rect.bottom ?? top) - top;
-  const right = rect.right ?? left + width;
-  const bottom = rect.bottom ?? top + height;
+  const horizontal = resolveAxis(rect.left, rect.width, rect.right);
+  const vertical = resolveAxis(rect.top, rect.height, rect.bottom);
 
   element.getBoundingClientRect = (): DOMRect =>
     ({
-      x: left,
-      y: top,
-      left,
-      top,
-      right,
-      bottom,
-      width,
-      height,
+      x: horizontal.start,
+      y: vertical.start,
+      left: horizontal.start,
+      top: vertical.start,
+      right: horizontal.end,
+      bottom: vertical.end,
+      width: horizontal.size,
+      height: vertical.size,
       toJSON: () => ({})
     }) as DOMRect;
 }
+
+// Returns the last element of a recorded-events array, throwing if empty. Lets
+// assertions read the latest event without optional chaining on `.at(-1)`.
+const requireLast = <T>(values: readonly T[]): T => {
+  const last = values.at(-1);
+
+  if (last === undefined) {
+    throw new Error('Expected at least one recorded event.');
+  }
+
+  return last;
+};
+
+// Returns the element at an array index, throwing if absent. Lets assertions
+// read element properties without optional chaining on each indexed access.
+const requireAt = <T>(values: readonly T[], index: number): T => {
+  const value = values.at(index);
+
+  if (value === undefined) {
+    throw new Error(`Expected an element at index ${index}.`);
+  }
+
+  return value;
+};
+
+const idSelector = (id: string | undefined): string => `#${id ?? ''}`;
+
+// `#`-prefixed id selectors for a table's first and last aria-describedby targets.
+const describedBySelectors = (table: HTMLElement): { first: string; last: string } => {
+  const ids = table.getAttribute('aria-describedby')?.split(' ') ?? [];
+
+  return { first: idSelector(ids[0]), last: idSelector(ids.at(-1)) };
+};
 
 describe('NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
@@ -645,42 +686,37 @@ describe('NatTable', () => {
     await fixture.whenStable();
   });
 
-  // eslint-disable-next-line complexity
-  async function recreateHost(
-    options: {
-      enablePagination?: boolean;
-      enableMultiSort?: boolean;
-      enableRowSelection?: boolean;
-      selectionMode?: 'single' | 'multiple';
-      stickyHeader?: boolean;
-      direction?: 'ltr' | 'rtl';
-      columnSizingMode?: 'fill' | 'fixed';
-      accessibilityText?: NatTableAccessibilityText;
-      initialState?: Partial<NatTableState>;
-      state?: Partial<NatTableState>;
-      mode?: NatTableMode | NatTableModeConfiguration;
-      manualPageCount?: number;
-      columns?: ColumnDef<Row, unknown>[];
-    } = {}
-  ): Promise<void> {
+  type RecreateHostOptions = {
+    enablePagination?: boolean;
+    enableMultiSort?: boolean;
+    enableRowSelection?: boolean;
+    selectionMode?: 'single' | 'multiple';
+    stickyHeader?: boolean;
+    direction?: 'ltr' | 'rtl';
+    columnSizingMode?: 'fill' | 'fixed';
+    accessibilityText?: NatTableAccessibilityText;
+    initialState?: Partial<NatTableState>;
+    state?: Partial<NatTableState>;
+    mode?: NatTableMode | NatTableModeConfiguration;
+    manualPageCount?: number;
+    columns?: ColumnDef<Row, unknown>[];
+  };
+
+  async function recreateHost(options: RecreateHostOptions = {}): Promise<void> {
     fixture.destroy();
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
-    host.enablePagination = options.enablePagination ?? host.enablePagination;
-    host.enableMultiSort = options.enableMultiSort ?? host.enableMultiSort;
-    host.enableRowSelection = options.enableRowSelection ?? host.enableRowSelection;
-    host.selectionMode = options.selectionMode ?? host.selectionMode;
-    host.stickyHeader = options.stickyHeader ?? host.stickyHeader;
-    host.direction = options.direction ?? host.direction;
-    host.columnSizingMode = options.columnSizingMode ?? host.columnSizingMode;
-    host.accessibilityText = options.accessibilityText ?? host.accessibilityText;
-    host.initialState = options.initialState ?? host.initialState;
-    host.mode = options.mode ?? host.mode;
-    host.manualPageCount = options.manualPageCount ?? host.manualPageCount;
-    host.columns = options.columns ?? host.columns;
 
-    if (options.state) {
-      host.state.set(options.state);
+    // `state` drives a signal, the rest are plain fields. Apply only the keys the
+    // caller supplied so omitted options keep the host's defaults.
+    const { state, ...fieldOverrides } = options;
+    const entries = Object.entries(fieldOverrides) as [string, unknown][];
+    const providedFields = Object.fromEntries(entries.filter(([, value]) => value !== undefined));
+
+    Object.assign(host, providedFields);
+
+    if (state) {
+      host.state.set(state);
     }
 
     await fixture.whenStable();
@@ -1624,7 +1660,6 @@ describe('NatTable', () => {
     expect(queryAll(fixture, '.header-cell.is-reorderable')).toHaveLength(3);
   });
 
-  // eslint-disable-next-line complexity
   it('lets callers patch state and emits the next state', () => {
     fixture.detectChanges();
 
@@ -1639,8 +1674,10 @@ describe('NatTable', () => {
     });
     fixture.detectChanges();
 
-    expect(host.stateEvents.at(-1)?.globalFilter).toBe('gamma');
-    expect(host.stateEvents.at(-1)?.pagination?.pageIndex).toBe(0);
+    const lastState = requireLast(host.stateEvents);
+
+    expect(lastState.globalFilter).toBe('gamma');
+    expect(lastState.pagination?.pageIndex).toBe(0);
     expect(host.globalFilterEvents.at(-1)).toBe('gamma');
     expect(queryAll(fixture, 'tbody tr')).toHaveLength(1);
     expect(query(fixture, 'tbody tr')?.textContent).toContain('Gamma');
@@ -1765,7 +1802,6 @@ describe('NatTable', () => {
     expect(host.stateEvents.length).toBeGreaterThan(0);
   });
 
-  // eslint-disable-next-line complexity
   it('lets callers override accessibility summaries and live announcements', async () => {
     const accessibilityText: NatTableAccessibilityText = {
       reorderKeyboardInstructions: 'Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.',
@@ -1783,9 +1819,9 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     const table = queryRequired<HTMLTableElement>(fixture, 'table');
-    const describedByIds = table.getAttribute('aria-describedby')?.split(' ') ?? [];
-    const summary = queryRequired<HTMLElement>(fixture, `#${describedByIds[0] ?? ''}`);
-    const instructions = queryRequired<HTMLElement>(fixture, `#${describedByIds.at(-1) ?? ''}`);
+    const describedBy = describedBySelectors(table);
+    const summary = queryRequired<HTMLElement>(fixture, describedBy.first);
+    const instructions = queryRequired<HTMLElement>(fixture, describedBy.last);
     const liveRegion = queryRequired<HTMLElement>(fixture, 'p[aria-live="polite"]');
     const tableComponent = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
@@ -2086,7 +2122,6 @@ describe('NatTable', () => {
     expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'region', 'status', 'throughput']);
   });
 
-  // eslint-disable-next-line complexity
   it('renders TanStack size hints and uses them for initial pin offsets', () => {
     host.state.set({
       columnPinning: {
@@ -2098,20 +2133,24 @@ describe('NatTable', () => {
 
     const headers = queryAll<HTMLElement>(fixture, 'thead th');
     const bodyCells = queryAll<HTMLElement>(fixture, 'tbody tr:first-child th, tbody tr:first-child td');
+    const firstHeader = requireAt(headers, 0);
+    const secondHeader = requireAt(headers, 1);
+    const firstBodyCell = requireAt(bodyCells, 0);
+    const secondBodyCell = requireAt(bodyCells, 1);
 
     expect(query(fixture, 'colgroup')).toBeNull();
-    expect(headers[0]?.style.width).toBe('');
-    expect(headers[0]?.style.minWidth).toBe('');
-    expect(headers[0]?.style.maxWidth).toBe('');
-    expect(headers[1]?.style.width).toBe('');
-    expect(headers[1]?.style.minWidth).toBe('');
-    expect(headers[1]?.style.maxWidth).toBe('');
-    expect(bodyCells[0]?.style.width).toBe('180px');
-    expect(bodyCells[0]?.style.minWidth).toBe('120px');
-    expect(headers[0]?.style.left).toBe('0px');
-    expect(headers[1]?.style.left).toBe('180px');
-    expect(bodyCells[1]?.style.left).toBe('180px');
-    expect(headers[0]?.dataset['columnId']).toBe('name');
+    expect(firstHeader.style.width).toBe('');
+    expect(firstHeader.style.minWidth).toBe('');
+    expect(firstHeader.style.maxWidth).toBe('');
+    expect(secondHeader.style.width).toBe('');
+    expect(secondHeader.style.minWidth).toBe('');
+    expect(secondHeader.style.maxWidth).toBe('');
+    expect(firstBodyCell.style.width).toBe('180px');
+    expect(firstBodyCell.style.minWidth).toBe('120px');
+    expect(firstHeader.style.left).toBe('0px');
+    expect(secondHeader.style.left).toBe('180px');
+    expect(secondBodyCell.style.left).toBe('180px');
+    expect(firstHeader.dataset['columnId']).toBe('name');
   });
 
   it('applies optional header sizing from column meta without affecting body cells', async () => {
@@ -2823,7 +2862,6 @@ describe('NatTable', () => {
     expect((selectedRows[0] as HTMLElement).textContent).toContain('Alpha');
   });
 
-  // eslint-disable-next-line complexity
   it('emits rowActivate for primary clicks and Enter / Space presses on the row', () => {
     fixture.detectChanges();
 
@@ -2837,14 +2875,17 @@ describe('NatTable', () => {
     fixture.detectChanges();
 
     expect(host.rowActivateEvents).toHaveLength(1);
-    expect(host.rowActivateEvents.at(-1)?.rowData.id).toBe(expectedRowId);
-    expect(host.rowActivateEvents.at(-1)?.originalEvent).toBeInstanceOf(MouseEvent);
+
+    const clickEvent = requireLast(host.rowActivateEvents);
+
+    expect(clickEvent.rowData.id).toBe(expectedRowId);
+    expect(clickEvent.originalEvent).toBeInstanceOf(MouseEvent);
 
     firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     fixture.detectChanges();
 
     expect(host.rowActivateEvents).toHaveLength(2);
-    expect(host.rowActivateEvents.at(-1)?.originalEvent).toBeInstanceOf(KeyboardEvent);
+    expect(requireLast(host.rowActivateEvents).originalEvent).toBeInstanceOf(KeyboardEvent);
 
     const spaceEvent = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
 

@@ -6,16 +6,13 @@ import {
   NAT_TABLE_UI_ENGLISH_LOCALE,
   NAT_TABLE_UI_INTL,
   mergeColumnVisibilityLabels,
-  resolveNatTableUiIntl,
+  resolveNatTableUiIntl
 } from '../../shared/table-ui-intl';
-import {
-  formatNatTableAccessibilityNumber,
-  getNatTableColumnLabel,
-} from '../../shared/table-ui.helpers';
+import { formatNatTableAccessibilityNumber, getNatTableColumnLabel } from '../../shared/table-ui.helpers';
 import type {
   NatTableAccessibilityColumnVisibilityActionContext,
   NatTableAccessibilityColumnVisibilityLabels,
-  NatTableAccessibilityColumnVisibilityStateContext,
+  NatTableAccessibilityColumnVisibilityStateContext
 } from '../../shared/table-ui.types';
 import { NatTableService } from '../../shared/table.service';
 
@@ -26,49 +23,42 @@ type ColumnVisibilityItem<TData extends RowData = RowData> = {
   canToggle: boolean;
   actionLabel: string;
   stateLabel: string;
-}
+};
+
+const applyColumnVisibilityToggle = <TData extends RowData = RowData>(column: ColumnVisibilityItem<TData>): void => {
+  if (!column.canToggle) return;
+
+  column.column.toggleVisibility(!column.visible);
+};
 
 @Component({
   selector: 'nat-table-column-visibility',
   templateUrl: './table-column-visibility.html',
-  styleUrl: './table-column-visibility.css',
+  styleUrl: './table-column-visibility.css'
 })
 export class NatTableColumnVisibility<TData extends RowData = RowData> {
   public readonly locale = input<string | undefined>(undefined);
   public readonly label = input<string | undefined>(undefined);
   public readonly groupAriaLabel = input<string | undefined>(undefined);
-  public readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(
-    undefined,
-  );
+  public readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(undefined);
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   protected readonly controller = computed(() => this.natTableService.controller());
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  private readonly localeId = computed(
-    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
-  );
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
 
-  private readonly tableUiIntl = computed(() =>
-    resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
-  );
+  private readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
 
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
 
-  private readonly allLeafColumns = computed(
-    () => this.controller()?.table.getAllLeafColumns() ?? [],
-  );
+  private readonly allLeafColumns = computed(() => this.controller()?.table.getAllLeafColumns() ?? []);
 
-  protected readonly visibleColumnCount = computed(
-    () => this.controller()?.table.getVisibleLeafColumns().length ?? 0,
-  );
+  protected readonly visibleColumnCount = computed(() => this.controller()?.table.getVisibleLeafColumns().length ?? 0);
 
   protected readonly totalColumnCount = computed(() => this.allLeafColumns().length);
   private readonly resolvedAccessibilityLabels = computed(() =>
-    mergeColumnVisibilityLabels(
-      this.tableUiIntl().columnVisibility?.accessibilityLabels,
-      this.accessibilityLabels(),
-    ),
+    mergeColumnVisibilityLabels(this.tableUiIntl().columnVisibility?.accessibilityLabels, this.accessibilityLabels())
   );
 
   protected readonly resolvedHeading = computed(() => {
@@ -80,12 +70,7 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return (
-      this.groupAriaLabel() ??
-      labels.groupAriaLabel ??
-      this.tableUiIntl().columnVisibility?.groupAriaLabel ??
-      ''
-    );
+    return this.groupAriaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().columnVisibility?.groupAriaLabel ?? '';
   });
 
   protected readonly visibilitySummary = computed(() => {
@@ -98,15 +83,15 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
         visibleColumnCount,
         this.tableUiIntl().formatNumber,
         undefined,
-        this.localeId(),
+        this.localeId()
       ),
       totalColumnCountValue: totalColumnCount,
       totalColumnCountText: formatNatTableAccessibilityNumber(
         totalColumnCount,
         this.tableUiIntl().formatNumber,
         undefined,
-        this.localeId(),
-      ),
+        this.localeId()
+      )
     };
 
     return labels.visibilitySummary?.(context) ?? '';
@@ -124,10 +109,10 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
         const actionContext: NatTableAccessibilityColumnVisibilityActionContext = {
           columnLabel: label,
           visibilityState: visible ? 'visible' : 'hidden',
-          toggleAction: visible ? 'hide' : 'show',
+          toggleAction: visible ? 'hide' : 'show'
         };
         const stateContext: NatTableAccessibilityColumnVisibilityStateContext = {
-          visibilityState: visible ? 'visible' : 'hidden',
+          visibilityState: visible ? 'visible' : 'hidden'
         };
 
         return {
@@ -136,17 +121,10 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
           visible,
           canToggle: !visible || visibleColumnCount > 1,
           actionLabel: labels.toggleColumnAriaLabel?.(actionContext) ?? '',
-          stateLabel: labels.columnState?.(stateContext) ?? '',
+          stateLabel: labels.columnState?.(stateContext) ?? ''
         };
       });
   });
 
-  // eslint-disable-next-line class-methods-use-this -- template-bound click handler; operates on the passed item, not instance state
-  protected toggleColumnVisibility(column: ColumnVisibilityItem<TData>): void {
-    if (!column.canToggle) {
-      return;
-    }
-
-    column.column.toggleVisibility(!column.visible);
-  }
+  protected readonly toggleColumnVisibility = applyColumnVisibilityToggle<TData>;
 }

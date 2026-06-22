@@ -1,6 +1,8 @@
 import {   expect, test } from '@playwright/test';
 import type {Locator, Page} from '@playwright/test';
 
+import { applyDocumentDirection } from '../support/document-direction';
+
 test.describe('Table toolbar accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/toolbar');
@@ -94,9 +96,7 @@ test.describe('Table toolbar accessibility', () => {
   });
 
   test('reverses arrow keys in RTL', async ({ page }) => {
-    await page.addInitScript(() => {
-      document.documentElement.setAttribute('dir', 'rtl');
-    });
+    await applyDocumentDirection(page, 'rtl');
     await page.goto('/toolbar');
     await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 

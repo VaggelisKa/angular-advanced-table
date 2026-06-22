@@ -9,6 +9,17 @@ import {
   resolveNatTableUiIntl,
 } from './provide-ui-locales';
 import { NAT_TABLE_BUILT_IN_UI_LOCALES } from './ui-built-in-locales';
+import type {
+  NatTableAccessibilityColumnVisibilityLabels,
+  NatTableAccessibilityHeaderActionLabels,
+  NatTableAccessibilityPageSizeLabels,
+  NatTableAccessibilityPagerLabels,
+  NatTableUiIntl,
+  NatTableUiIntlConfig,
+} from './ui-types';
+
+const localeOf = (uiIntl: NatTableUiIntlConfig, localeId: string): NatTableUiIntl | undefined =>
+  uiIntl.locales?.[localeId];
 
 describe('UI locale toolbar slice', () => {
   afterEach(() => {
@@ -33,107 +44,21 @@ describe('UI locale toolbar slice', () => {
     expect(toolbar?.toolbarLabel).toBe('Table toolbar');
   });
 
-  // eslint-disable-next-line complexity
-  it('locks English companion-control accessibility copy', () => {
-    const english = NAT_TABLE_BUILT_IN_UI_LOCALES['en'];
-    const pageSizeContext = {
-      pageSizeValue: 25,
-      pageSizeText: '25',
-      selectionState: 'not-selected' as const,
-    };
-    const pagerContext = {
-      pageValue: 2,
-      pageText: '2',
-      pageCountValue: 5,
-      pageCountText: '5',
-    };
-    const visibilityContext = {
-      columnLabel: 'Service',
-      visibilityState: 'visible' as const,
-      toggleAction: 'hide' as const,
-    };
-    const sortedHeaderContext = {
-      label: 'Service',
-      sortState: 'ascending' as const,
-      sortPriority: 1,
-      sortCount: 2,
-    };
-    const unpinnedHeaderContext = {
-      label: 'Service',
-      pinState: 'unpinned' as const,
-      toggleAction: 'pin' as const,
-      pinSide: 'left' as const,
-      pinnedSide: null,
-    };
-    const pinnedHeaderContext = {
-      label: 'Service',
-      pinState: 'pinned' as const,
-      toggleAction: 'unpin' as const,
-      pinSide: 'left' as const,
-      pinnedSide: 'left' as const,
-    };
+  it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))(
+    'keeps the toolbar slice for %s through provideNatTableUiLocales()',
+    (localeId) => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()],
+      });
 
-    expect(
-      english.columnVisibility?.accessibilityLabels?.toggleColumnAriaLabel?.(visibilityContext),
-    ).toBe('Service shown. Hide column');
-    expect(english.pageSize?.accessibilityLabels?.pageSizeOptionText?.(pageSizeContext)).toBe(
-      '25 rows',
-    );
-    expect(english.pageSize?.accessibilityLabels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe(
-      '25 rows per page',
-    );
-    expect(english.pager?.accessibilityLabels?.pageIndicator?.(pagerContext)).toBe('Page 2 of 5');
-    expect(
-      english.headerActions?.accessibilityLabels?.sortButton?.({
-        ...sortedHeaderContext,
-        sortState: 'none',
-        sortPriority: null,
-        sortCount: 0,
-      }),
-    ).toBe('Sort by Service');
-    expect(english.headerActions?.accessibilityLabels?.sortButton?.(sortedHeaderContext)).toBe(
-      'Service sorted in ascending order, sort priority 1 of 2. Change sorting',
-    );
-    expect(english.headerActions?.accessibilityLabels?.menuButton?.({ label: 'Service' })).toBe(
-      'Open column actions for Service column',
-    );
-    expect(english.headerActions?.accessibilityLabels?.menuLabel?.({ label: 'Service' })).toBe(
-      'Column actions for Service column',
-    );
-    expect(english.headerActions?.accessibilityLabels?.pinButton?.(unpinnedHeaderContext)).toBe(
-      'Pin left: Service column',
-    );
-    expect(english.headerActions?.accessibilityLabels?.pinButtonText?.(pinnedHeaderContext)).toBe(
-      'Unpin left',
-    );
-    expect(
-      english.headerActions?.accessibilityLabels?.moveButton?.({
-        label: 'Service',
-        direction: 'right',
-      }),
-    ).toBe('Move Service column right');
-    expect(
-      english.headerActions?.accessibilityLabels?.moveButtonText?.({
-        label: 'Service',
-        direction: 'right',
-      }),
-    ).toBe('Move right');
-  });
+      const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
 
-  // eslint-disable-next-line complexity
-  it('keeps the toolbar slice through provideNatTableUiLocales()', () => {
-    TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()],
-    });
-
-    const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
-
-    for (const localeId of Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES)) {
-      const toolbar = uiIntl.locales?.[localeId]?.toolbar;
-
-      expect(toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
-    }
-  });
+      expect(
+        localeOf(uiIntl, localeId)?.toolbar?.toolbarLabel,
+        `${localeId}: toolbarLabel`,
+      ).toBeTruthy();
+    },
+  );
 
   it('falls back to English toolbar copy for unknown locales', () => {
     const resolved = resolveNatTableUiIntl(NAT_TABLE_UI_DEFAULT_INTL, 'zz');
@@ -175,5 +100,138 @@ describe('UI locale toolbar slice', () => {
     const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'en');
 
     expect(resolved.toolbar?.toolbarLabel).toBe('Provider toolbar');
+  });
+});
+
+describe('English companion-control accessibility copy', () => {
+  const english = NAT_TABLE_BUILT_IN_UI_LOCALES['en'];
+  const pageSizeContext = {
+    pageSizeValue: 25,
+    pageSizeText: '25',
+    selectionState: 'not-selected' as const,
+  };
+  const pagerContext = {
+    pageValue: 2,
+    pageText: '2',
+    pageCountValue: 5,
+    pageCountText: '5',
+  };
+  const visibilityContext = {
+    columnLabel: 'Service',
+    visibilityState: 'visible' as const,
+    toggleAction: 'hide' as const,
+  };
+  const sortedHeaderContext = {
+    label: 'Service',
+    sortState: 'ascending' as const,
+    sortPriority: 1,
+    sortCount: 2,
+  };
+  const unpinnedHeaderContext = {
+    label: 'Service',
+    pinState: 'unpinned' as const,
+    toggleAction: 'pin' as const,
+    pinSide: 'left' as const,
+    pinnedSide: null,
+  };
+  const pinnedHeaderContext = {
+    label: 'Service',
+    pinState: 'pinned' as const,
+    toggleAction: 'unpin' as const,
+    pinSide: 'left' as const,
+    pinnedSide: 'left' as const,
+  };
+
+  describe('column visibility', () => {
+    let labels: NatTableAccessibilityColumnVisibilityLabels | undefined;
+
+    beforeEach(() => {
+      labels = english.columnVisibility?.accessibilityLabels;
+    });
+
+    it('locks the toggle-column aria label', () => {
+      expect(labels?.toggleColumnAriaLabel?.(visibilityContext)).toBe('Service shown. Hide column');
+    });
+  });
+
+  describe('page size', () => {
+    let labels: NatTableAccessibilityPageSizeLabels | undefined;
+
+    beforeEach(() => {
+      labels = english.pageSize?.accessibilityLabels;
+    });
+
+    it('locks the page-size option text', () => {
+      expect(labels?.pageSizeOptionText?.(pageSizeContext)).toBe('25 rows');
+    });
+
+    it('locks the page-size option aria label', () => {
+      expect(labels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+    });
+  });
+
+  describe('pager', () => {
+    let labels: NatTableAccessibilityPagerLabels | undefined;
+
+    beforeEach(() => {
+      labels = english.pager?.accessibilityLabels;
+    });
+
+    it('locks the page indicator', () => {
+      expect(labels?.pageIndicator?.(pagerContext)).toBe('Page 2 of 5');
+    });
+  });
+
+  describe('header actions', () => {
+    let labels: NatTableAccessibilityHeaderActionLabels | undefined;
+
+    beforeEach(() => {
+      labels = english.headerActions?.accessibilityLabels;
+    });
+
+    it('locks the unsorted sort-button label', () => {
+      expect(
+        labels?.sortButton?.({
+          ...sortedHeaderContext,
+          sortState: 'none',
+          sortPriority: null,
+          sortCount: 0,
+        }),
+      ).toBe('Sort by Service');
+    });
+
+    it('locks the sorted sort-button label', () => {
+      expect(labels?.sortButton?.(sortedHeaderContext)).toBe(
+        'Service sorted in ascending order, sort priority 1 of 2. Change sorting',
+      );
+    });
+
+    it('locks the menu-button label', () => {
+      expect(labels?.menuButton?.({ label: 'Service' })).toBe(
+        'Open column actions for Service column',
+      );
+    });
+
+    it('locks the menu label', () => {
+      expect(labels?.menuLabel?.({ label: 'Service' })).toBe('Column actions for Service column');
+    });
+
+    it('locks the pin-button label', () => {
+      expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe('Pin left: Service column');
+    });
+
+    it('locks the pin-button text', () => {
+      expect(labels?.pinButtonText?.(pinnedHeaderContext)).toBe('Unpin left');
+    });
+
+    it('locks the move-button label', () => {
+      expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe(
+        'Move Service column right',
+      );
+    });
+
+    it('locks the move-button text', () => {
+      expect(labels?.moveButtonText?.({ label: 'Service', direction: 'right' })).toBe('Move right');
+    });
   });
 });

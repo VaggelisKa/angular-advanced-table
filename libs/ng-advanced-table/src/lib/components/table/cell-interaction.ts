@@ -110,10 +110,10 @@ const enterFirstCellControl = (
   // Enter on a control keeps its native behavior.
   if (target !== cell) return false;
 
-  const [firstControl] = cellInteractiveControls(cell);
+  // `.at(0)` is honestly typed `HTMLElement | undefined`, so a control-less cell
+  // falls through to row activation.
+  const firstControl = cellInteractiveControls(cell).at(0);
 
-  // Let a control-less cell fall through to row activation.
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: destructuring an empty controls array yields undefined despite the HTMLElement type.
   if (!firstControl) return false;
 
   return focusAndConsume(event, firstControl);
@@ -149,13 +149,13 @@ const tabBetweenCellControls = (
   if (index === -1) return false;
 
   const isPrev = cellInteraction.previous(event);
-  const nextControl = controls[index + (isPrev ? -1 : 1)];
+  const nextIndex = index + (isPrev ? -1 : 1);
 
-  // Past the first/last control of the cell: let Tab leave the grid.
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: an out-of-range index yields undefined despite the HTMLElement type.
-  if (!nextControl) return false;
+  // Past the first/last control of the cell: let Tab leave the grid. An explicit
+  // bounds check (the `-1` index rules out `.at()`, which would wrap to the last control).
+  if (nextIndex < 0 || nextIndex >= controls.length) return false;
 
-  return focusAndConsume(event, nextControl);
+  return focusAndConsume(event, controls[nextIndex]);
 };
 
 /**

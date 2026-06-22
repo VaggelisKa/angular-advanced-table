@@ -1,10 +1,4 @@
-import {
-  Directive,
-  afterRenderEffect,
-  booleanAttribute,
-  input,
-  output,
-} from '@angular/core';
+import { Directive, afterRenderEffect, booleanAttribute, input, output } from '@angular/core';
 
 import type { NatTableRowRenderedEvent } from './events';
 
@@ -19,71 +13,50 @@ const roundToSingleDecimal = (value: number): number => Number(value.toFixed(1))
  * `(rowRendered)` output on `<nat-table>` instead.
  */
 @Directive({
-  selector: 'tr[natTableRowRenderEmitter]',
+  selector: 'tr[natTableRowRenderEmitter]'
 })
 export class NatTableRowRenderEmitter {
-  // Aliases are the directive's namespaced host-binding API on the shared
-  // `tr[natTableRowRenderEmitter]` selector; they are deliberately distinct from
-  // the property names, so the no-input-rename / no-output-rename guards are
-  // suppressed for each alias below.
-  // `rowId`'s alias equals the directive selector, which no-input-rename permits — no disable needed.
+  // Property names equal their binding names: each input/output is named for the
+  // namespaced host binding on the shared `tr[natTableRowRenderEmitter]` selector,
+  // so no alias is needed. `rowId`'s alias equals the directive selector, which
+  // no-input-rename permits — it stays aliased.
   public readonly rowId = input.required<string>({
-    alias: 'natTableRowRenderEmitter',
+    alias: 'natTableRowRenderEmitter'
   });
 
-  public readonly renderToken = input.required<number>({
-    // eslint-disable-next-line @angular-eslint/no-input-rename -- namespaced binding on the shared host.
-    alias: 'natTableRowRenderToken',
+  public readonly natTableRowRenderToken = input.required<number>();
+
+  public readonly natTableRowRenderStartedAt = input.required<number>();
+
+  public readonly natTableRowRenderEnabled = input(false, {
+    transform: booleanAttribute
   });
 
-  public readonly renderStartedAt = input.required<number>({
-    // eslint-disable-next-line @angular-eslint/no-input-rename -- namespaced binding on the shared host.
-    alias: 'natTableRowRenderStartedAt',
-  });
-
-  public readonly enabled = input(false, {
-    // eslint-disable-next-line @angular-eslint/no-input-rename -- namespaced binding on the shared host.
-    alias: 'natTableRowRenderEnabled',
-    transform: booleanAttribute,
-  });
-
-  public readonly rendered = output<NatTableRowRenderedEvent>({
-    // eslint-disable-next-line @angular-eslint/no-output-rename -- namespaced output on the shared host.
-    alias: 'natTableRowRendered',
-  });
+  public readonly natTableRowRendered = output<NatTableRowRenderedEvent>();
 
   private lastEmissionKey = '';
 
   public constructor() {
     afterRenderEffect({
       read: () => {
-        if (!this.enabled()) {
-          return;
-        }
+        if (!this.natTableRowRenderEnabled()) return;
 
         const rowId = this.rowId();
-        const renderToken = this.renderToken();
-        const renderStartedAt = this.renderStartedAt();
+        const renderToken = this.natTableRowRenderToken();
+        const renderStartedAt = this.natTableRowRenderStartedAt();
 
-        if (renderToken <= 0 || renderStartedAt <= 0) {
-          return;
-        }
+        if (renderToken <= 0 || renderStartedAt <= 0) return;
 
         const emissionKey = `${renderToken}:${rowId}`;
 
-        if (this.lastEmissionKey === emissionKey) {
-          return;
-        }
-
+        if (this.lastEmissionKey === emissionKey) return;
         this.lastEmissionKey = emissionKey;
-        this.rendered.emit({
+        this.natTableRowRendered.emit({
           rowId,
           renderToken,
-          durationMs: roundToSingleDecimal(
-            Math.max(performance.now() - renderStartedAt, 0.1),
-          ),
+          durationMs: roundToSingleDecimal(Math.max(performance.now() - renderStartedAt, 0.1))
         });
-      },
+      }
     });
   }
 }

@@ -29,7 +29,7 @@ test.describe('Sorting', () => {
   });
 
   test('handles interactive sorting on column headers', async ({ page }) => {
-    const table = page.getByRole('grid', { name: 'Sorting demo table' });
+    const table = page.getByRole('grid', { name: 'Sorting demo table', exact: true });
     const categoryHeaderBtn = table.locator('th[data-column-id="category"] button.sort-button');
     const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
 

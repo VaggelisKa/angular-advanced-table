@@ -10,7 +10,6 @@
     <p [id]="tableKeyboardInstructionsId()" class="sr-only">{{ resolvedKeyboardInstructions() }}</p>
   }
 
-  <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: table width is the computed authoritative-layout pixel width; no static class can express it. -->
   <table
     [attr.aria-busy]="tableAriaBusy()"
     [attr.aria-describedby]="ariaDescribedBy()"
@@ -20,7 +19,7 @@
     [class.has-sticky-header]="stickyHeader()"
     [class.is-fixed-layout]="usesAuthoritativeLayout()"
     [id]="tableElementId()"
-    [style.width.px]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null"
+    [natTablePxWidth]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null"
     class="data-table"
     colWrap="nowrap"
     ngGrid
@@ -39,8 +38,7 @@
       @let layoutWidths = resolvedColumnWidths();
       <colgroup>
         @for (column of visibleColumns(); track column.id) {
-          <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: per-column resolved pixel width drives the colgroup; runtime value, no static class. -->
-          <col [style.width.px]="layoutWidths[column.id]" />
+          <col [natTablePxWidth]="layoutWidths[column.id]" />
         }
       </colgroup>
     }
@@ -57,7 +55,6 @@
         >
           @for (header of headerGroup.headers; track header.id) {
             @let columnState = columnStates[header.column.id];
-            <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: pinned offsets, header width/min/max are computed per column at runtime. -->
             <th
               [attr.aria-sort]="columnState?.ariaSort"
               [attr.data-column-id]="header.column.id"
@@ -71,11 +68,7 @@
               [class.is-pinned-right]="columnState?.pinnedRight"
               [class.is-reorderable]="canReorderHeader(header)"
               [class.is-width-constrained]="columnState?.headerConstrainedWidth"
-              [style.left.px]="columnState?.left"
-              [style.max-width]="columnState?.headerMaxWidth"
-              [style.min-width]="columnState?.headerMinWidth"
-              [style.right.px]="columnState?.right"
-              [style.width]="columnState?.headerWidth"
+              [natTableHeaderCellLayout]="columnState"
               cdkDrag
               cdkDragLockAxis="x"
               cdkDragPreviewContainer="parent"
@@ -148,7 +141,6 @@
                 @let cellContext = cell.getContext();
                 @let cellTone = getCellTone(cell.column, cellContext);
                 @if (columnState?.rowHeader) {
-                  <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: pinned offsets, cell width/height, and the --nat-table-cell-max-lines custom property are computed per cell. -->
                   <th
                     [attr.data-column-id]="cell.column.id"
                     [attr.data-tone]="cellTone"
@@ -159,13 +151,7 @@
                     [class.is-pinned-left]="columnState?.pinnedLeft"
                     [class.is-pinned-right]="columnState?.pinnedRight"
                     [class.is-width-constrained]="columnState?.constrainedWidth"
-                    [style.--nat-table-cell-max-lines]="columnState?.cellMaxLines"
-                    [style.height]="columnState?.cellHeight"
-                    [style.left.px]="columnState?.left"
-                    [style.max-width]="columnState?.maxWidth"
-                    [style.min-width]="columnState?.minWidth"
-                    [style.right.px]="columnState?.right"
-                    [style.width]="columnState?.width"
+                    [natTableBodyCellLayout]="columnState"
                     class="data-cell data-row-header"
                     ngGridCell
                     role="rowheader"
@@ -182,7 +168,6 @@
                     </span>
                   </th>
                 } @else {
-                  <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: pinned offsets, cell width/height, and the --nat-table-cell-max-lines custom property are computed per cell. -->
                   <td
                     [attr.data-column-id]="cell.column.id"
                     [attr.data-tone]="cellTone"
@@ -193,13 +178,7 @@
                     [class.is-pinned-left]="columnState?.pinnedLeft"
                     [class.is-pinned-right]="columnState?.pinnedRight"
                     [class.is-width-constrained]="columnState?.constrainedWidth"
-                    [style.--nat-table-cell-max-lines]="columnState?.cellMaxLines"
-                    [style.height]="columnState?.cellHeight"
-                    [style.left.px]="columnState?.left"
-                    [style.max-width]="columnState?.maxWidth"
-                    [style.min-width]="columnState?.minWidth"
-                    [style.right.px]="columnState?.right"
-                    [style.width]="columnState?.width"
+                    [natTableBodyCellLayout]="columnState"
                     class="data-cell"
                     ngGridCell
                     (focusin)="onCellFocusIn($event)"
@@ -283,10 +262,8 @@
   </table>
 
   @if (columnResizeGuide(); as guide) {
-    <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -- dynamic: the drag-guide position and live translateX follow the pointer at runtime. -->
     <div
-      [style.left.px]="guide.left"
-      [style.transform]="`translateX(${guide.offset}px)`"
+      [natTableResizeGuide]="guide"
       aria-hidden="true"
       class="column-resize-guide"
     ></div>

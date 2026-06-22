@@ -26,8 +26,7 @@ type NativeDisableableElement =
   | HTMLTextAreaElement;
 
 export const normalizeNatTableExportFileName = (fileName: string | null | undefined): string =>
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty/whitespace name must fall back to the default
-  fileName?.trim() || DEFAULT_EXPORT_FILE_NAME;
+  fileName?.trim() ? fileName.trim() : DEFAULT_EXPORT_FILE_NAME;
 
 const isActivationKey = (event: KeyboardEvent): boolean =>
   event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar';

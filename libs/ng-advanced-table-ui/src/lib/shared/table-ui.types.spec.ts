@@ -29,42 +29,43 @@ type UiColumnMetaMatchesCore = Expect<
 >;
 
 describe('ng-advanced-table-ui public table contracts', () => {
-  // eslint-disable-next-line complexity -- linear chain of independent contract assertions
   it('reuses the core column metadata contract for TanStack column definitions', () => {
     const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore] = [true, true];
 
     expect(contractsHold).toStrictEqual([true, true]);
 
+    const meta: NatTableColumnMeta<ContractRow, number> = {
+      hiddenHeaderLabel: 'Amount',
+      align: 'end',
+      rowHeader: true,
+      cellHeight: 52,
+      cellMaxLines: Infinity,
+      headerSize: 120,
+      headerMinSize: '8rem',
+      headerMaxSize: 180,
+      export: {
+        enabled: true,
+        header: 'Exported amount',
+        value: ({ value }) => value,
+      },
+      cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
+    };
     const column: ColumnDef<ContractRow, number> = {
       accessorKey: 'amount',
-      meta: {
-        hiddenHeaderLabel: 'Amount',
-        align: 'end',
-        rowHeader: true,
-        cellHeight: 52,
-        cellMaxLines: Infinity,
-        headerSize: 120,
-        headerMinSize: '8rem',
-        headerMaxSize: 180,
-        export: {
-          enabled: true,
-          header: 'Exported amount',
-          value: ({ value }) => value,
-        },
-        cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
-      } satisfies NatTableColumnMeta<ContractRow, number>,
+      meta,
     };
     const moveDirection: NatTableColumnMoveDirection = 'left';
 
-    expect(column.meta?.hiddenHeaderLabel).toBe('Amount');
+    expect(column.meta).toBe(meta);
+    expect(meta.hiddenHeaderLabel).toBe('Amount');
     expect(moveDirection).toBe('left');
-    expect(column.meta?.cellHeight).toBe(52);
-    expect(column.meta?.cellMaxLines).toBe(Infinity);
-    expect(column.meta?.headerSize).toBe(120);
-    expect(column.meta?.headerMinSize).toBe('8rem');
-    expect(column.meta?.headerMaxSize).toBe(180);
-    expect(column.meta?.export?.header).toBe('Exported amount');
-    expect(column.meta?.export?.value).toStrictEqual(expect.any(Function));
-    expect(column.meta?.cellTone).toStrictEqual(expect.any(Function));
+    expect(meta.cellHeight).toBe(52);
+    expect(meta.cellMaxLines).toBe(Infinity);
+    expect(meta.headerSize).toBe(120);
+    expect(meta.headerMinSize).toBe('8rem');
+    expect(meta.headerMaxSize).toBe(180);
+    expect(meta.export?.header).toBe('Exported amount');
+    expect(meta.export?.value).toStrictEqual(expect.any(Function));
+    expect(meta.cellTone).toStrictEqual(expect.any(Function));
   });
 });

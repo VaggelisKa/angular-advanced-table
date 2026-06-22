@@ -68,16 +68,21 @@ describe('NatToolbarItem', () => {
     expect(element('default-start').id).toBe('default-start');
   });
 
-  // eslint-disable-next-line complexity -- optional-chained assertions on a possibly-missing ref
   it('generates a unique aria widget id when the host declares none', () => {
     const unnamed = fixture.debugElement
       .queryAll(By.directive(NatToolbarItem))
       .map((debugElement) => debugElement.injector.get(NAT_TOOLBAR_ITEM))
       .find((ref) => ref.element.tagName === 'DIV');
 
+    expect(unnamed).toBeDefined();
+
+    if (!unnamed) {
+      throw new Error('Expected an unnamed toolbar item ref on a DIV host.');
+    }
+
     // cdk _IdGenerator format: ng-toolbar-widget-<appId>-<n>.
-    expect(unnamed?.id).toMatch(/^ng-toolbar-widget-/);
-    expect(unnamed?.element.id).toBe(unnamed?.id);
+    expect(unnamed.id).toMatch(/^ng-toolbar-widget-/);
+    expect(unnamed.element.id).toBe(unnamed.id);
   });
 
   it("defaults the position to 'start' and passes explicit values through", () => {

@@ -20,6 +20,7 @@ import {
   normalizeCellMaxLines,
   normalizeColumnDimension,
   normalizeColumnLabel,
+  readColumnEntry,
   resolveColumnLabel,
 } from './table-utils';
 import type { TableColumnSizingState } from './table-utils';
@@ -387,10 +388,9 @@ export const buildColumnRenderState = <TData extends RowData>(
 ): TableColumnRenderState => {
   const { state, userColumnSizing, widths } = context;
   const sizing = userColumnSizing[column.id];
-  const resizedWidth = state.columnSizing[column.id];
+  const resizedWidth = readColumnEntry(state.columnSizing, column.id);
   const meta = column.columnDef.meta;
   const { width, minWidth, maxWidth } = buildColumnWidths(column, sizing, resizedWidth, widths);
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: a column id absent from the sizing record is undefined at runtime despite the value type.
   const resizedDimension = resizedWidth !== undefined ? width : null;
   const { headerWidth, headerMinWidth, headerMaxWidth } = buildHeaderWidths(meta, resizedDimension);
   const edges = buildPinnedEdges(column, context);

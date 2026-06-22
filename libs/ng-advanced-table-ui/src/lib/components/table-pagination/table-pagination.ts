@@ -137,8 +137,7 @@ export class NatTablePagination<TData extends RowData = RowData> {
 
   // Pager Logic
   protected readonly pageIndex = computed(() => this.table()?.getState().pagination.pageIndex ?? 0);
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- a zero page count must display as 1
-  protected readonly pageCount = computed(() => this.table()?.getPageCount() || 1);
+  protected readonly pageCount = computed(() => Math.max(1, this.table()?.getPageCount() ?? 0));
   protected readonly currentPage = computed(() => this.pageIndex() + 1);
   protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);
   protected readonly canNextPage = computed(() => this.table()?.getCanNextPage() ?? false);

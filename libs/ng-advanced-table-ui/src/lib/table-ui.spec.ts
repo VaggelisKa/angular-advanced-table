@@ -45,6 +45,18 @@ const sortIndicatorGlyph = (sortState: 'asc' | 'desc' | false): string => {
   return '-';
 };
 
+const danishPinLabel = (params: {
+  label: string;
+  toggleAction: 'pin' | 'unpin';
+  pinSide: 'left' | 'right';
+}): string => {
+  const verb = { pin: 'Fastgør', unpin: 'Frigør' }[params.toggleAction];
+  const preposition = { pin: 'til', unpin: 'fra' }[params.toggleAction];
+  const side = { left: 'venstre', right: 'højre' }[params.pinSide];
+
+  return `${verb} kolonne ${params.label} ${preposition} ${side}`;
+};
+
 const statusFilter: FilterFn<Row> = (row, columnId, filterValue) => {
   const selectedStatuses = (filterValue ?? []) as Row['status'][];
 
@@ -164,6 +176,31 @@ const getByTestId = <TElement extends HTMLElement = HTMLElement>(
   return element;
 };
 
+const requireElement = <TElement extends Element = Element>(
+  element: TElement | null,
+  description: string,
+): TElement => {
+  if (!element) {
+    throw new Error(`Expected an element: ${description}.`);
+  }
+
+  return element;
+};
+
+const findIn = (parent: ParentNode, selector: string): Element =>
+  requireElement(parent.querySelector(selector), selector);
+
+const attrOf = (parent: ParentNode, selector: string, name: string): string | null =>
+  findIn(parent, selector).getAttribute(name);
+
+const textOf = (parent: ParentNode, selector: string): string =>
+  findIn(parent, selector).textContent.trim();
+
+const lastChildHasClass = (parent: Element, className: string): boolean =>
+  requireElement(parent.lastElementChild, `last child of ${parent.tagName}`).classList.contains(
+    className,
+  );
+
 const getHeaderActionsMenuButton = (
   fixture: ComponentFixture<unknown>,
   columnId: string,
@@ -183,47 +220,48 @@ const getOpenPinMenu = (): HTMLElement | null => {
   return menus.at(-1) ?? null;
 };
 
-// eslint-disable-next-line complexity -- guard-and-fallback lookup of an open menu item
-const getOpenMenuItem = (side: 'left' | 'right', columnId = 'name'): HTMLButtonElement => {
+const requireOpenMenu = (): HTMLElement => {
   const menu = getOpenPinMenu();
 
   if (!menu) {
     throw new Error('Expected the column actions menu to be open.');
   }
 
-  const item =
-    queryByTestId<HTMLButtonElement>(`nat-table-header-pin-${side}-${columnId}`) ??
-    menu.querySelector<HTMLButtonElement>(`.column-menu-item[data-pin-side="${side}"]`);
+  return menu;
+};
 
+const requireMenuItem = (
+  item: HTMLButtonElement | null,
+  missingDescription: string,
+): HTMLButtonElement => {
   if (!item) {
-    throw new Error(`Expected a menu item for pin side "${side}".`);
+    throw new Error(`Expected a menu item for ${missingDescription}.`);
   }
 
   return item;
 };
 
+const getOpenMenuItem = (side: 'left' | 'right', columnId = 'name'): HTMLButtonElement => {
+  const menu = requireOpenMenu();
+  const item =
+    queryByTestId<HTMLButtonElement>(`nat-table-header-pin-${side}-${columnId}`) ??
+    menu.querySelector<HTMLButtonElement>(`.column-menu-item[data-pin-side="${side}"]`);
+
+  return requireMenuItem(item, `pin side "${side}"`);
+};
+
 const getOpenMoveMenuItem = (
   direction: 'left' | 'right',
   columnId = 'name',
-  // eslint-disable-next-line complexity -- guard-and-fallback lookup of an open menu item
 ): HTMLButtonElement => {
-  const menu = getOpenPinMenu();
-
-  if (!menu) {
-    throw new Error('Expected the column actions menu to be open.');
-  }
-
+  const menu = requireOpenMenu();
   const item =
     queryByTestId<HTMLButtonElement>(`nat-table-header-move-${direction}-${columnId}`) ??
     menu.querySelector<HTMLButtonElement>(
       `.column-menu-item[data-move-direction="${direction}"]`,
     );
 
-  if (!item) {
-    throw new Error(`Expected a menu item for move direction "${direction}".`);
-  }
-
-  return item;
+  return requireMenuItem(item, `move direction "${direction}"`);
 };
 
 const setScrollMetrics = (
@@ -448,11 +486,8 @@ class CustomAccessibilityLabelsHost {
     sortButton: ({ label }) => `Sorter ${label}`,
     menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
     menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
-    // eslint-disable-next-line complexity -- localized label interpolates several independent ternaries
     pinButton: ({ label, toggleAction, pinSide }) =>
-      `${toggleAction === 'unpin' ? 'Frigør' : 'Fastgør'} kolonne ${label} ${
-        toggleAction === 'unpin' ? 'fra' : 'til'
-      } ${pinSide === 'left' ? 'venstre' : 'højre'}`,
+      danishPinLabel({ label, toggleAction, pinSide }),
     pinButtonText: ({ pinSide }) => (pinSide === 'left' ? 'Venstre' : 'Højre'),
     moveButton: ({ label, direction }) =>
       `Flyt kolonne ${label} ${direction === 'left' ? 'til venstre' : 'til højre'}`,
@@ -933,7 +968,6 @@ describe('ng-advanced-table-ui', () => {
     ).toHaveLength(2);
   });
 
-  // eslint-disable-next-line complexity -- end-to-end UI assertion walks many independent controls
   it('wraps headers with sort and column actions without losing the original label', async () => {
     await recreateHost();
     fixture.detectChanges();
@@ -960,14 +994,8 @@ describe('ng-advanced-table-ui', () => {
     expect(reorderableHeader.querySelector('.column-reorder-handle')).toBeNull();
     expect(sortButton.classList.contains('cdk-drag-handle')).toBe(false);
     expect(menuButton.classList.contains('cdk-drag-handle')).toBe(false);
-    expect(
-      root(fixture)
-        .querySelector('thead th[data-column-id="name"]')
-        ?.getAttribute('aria-sort'),
-    ).toBeNull();
-    expect(sortIcon.querySelector('.nat-default-sort')?.getAttribute('data-sort-state')).toBe(
-      'none',
-    );
+    expect(attrOf(root(fixture), 'thead th[data-column-id="name"]', 'aria-sort')).toBeNull();
+    expect(attrOf(sortIcon, '.nat-default-sort', 'data-sort-state')).toBe('none');
     expect(sortIcon.querySelector('.nat-default-sort__svg')).toBeTruthy();
     expect(sortButton.getAttribute('aria-label')).toBe('Sort by Service');
     expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Service column');
@@ -978,15 +1006,11 @@ describe('ng-advanced-table-ui', () => {
 
     expect(host.tableState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
     expect(sortButton.classList.contains('is-sorted')).toBe(true);
+    expect(attrOf(root(fixture), 'thead th[data-column-id="name"]', 'aria-sort')).toBe(
+      'ascending',
+    );
     expect(
-      root(fixture)
-        .querySelector('thead th[data-column-id="name"]')
-        ?.getAttribute('aria-sort'),
-    ).toBe('ascending');
-    expect(
-      root(fixture)
-        .querySelector('thead th[data-column-id="name"] .nat-default-sort')
-        ?.getAttribute('data-sort-state'),
+      attrOf(root(fixture), 'thead th[data-column-id="name"] .nat-default-sort', 'data-sort-state'),
     ).toBe('asc');
     expect(sortButton.getAttribute('aria-label')).toBe(
       'Service sorted in ascending order. Change sorting',
@@ -997,21 +1021,17 @@ describe('ng-advanced-table-ui', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const openMenu = getOpenPinMenu();
+    const openMenu = requireOpenMenu();
     const leftPinMenuItem = getOpenMenuItem('left');
     const rightPinMenuItem = getOpenMenuItem('right');
 
     expect(menuButton.getAttribute('aria-expanded')).toBe('true');
-    expect(openMenu?.getAttribute('role')).toBe('menu');
-    expect(openMenu?.getAttribute('aria-label')).toBe('Column actions for Service column');
+    expect(openMenu.getAttribute('role')).toBe('menu');
+    expect(openMenu.getAttribute('aria-label')).toBe('Column actions for Service column');
     expect(leftPinMenuItem.getAttribute('role')).toBe('menuitem');
     expect(rightPinMenuItem.getAttribute('role')).toBe('menuitem');
-    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
-      'Pin left',
-    );
-    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
-      'Pin right',
-    );
+    expect(textOf(leftPinMenuItem, '.column-menu-item__label')).toBe('Pin left');
+    expect(textOf(rightPinMenuItem, '.column-menu-item__label')).toBe('Pin right');
     expect(
       leftPinMenuItem.querySelector('.column-menu-item__dock[data-pin-side="left"]'),
     ).toBeTruthy();
@@ -1025,9 +1045,7 @@ describe('ng-advanced-table-ui', () => {
     expect(rightMoveMenuItem.disabled).toBe(false);
     expect(leftMoveMenuItem.getAttribute('aria-label')).toBe('Move Service column left');
     expect(rightMoveMenuItem.getAttribute('aria-label')).toBe('Move Service column right');
-    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
-      'Move right',
-    );
+    expect(textOf(rightMoveMenuItem, '.column-menu-item__label')).toBe('Move right');
 
     leftPinMenuItem.click();
     fixture.detectChanges();
@@ -1049,9 +1067,7 @@ describe('ng-advanced-table-ui', () => {
 
     expect(updatedLeftPinMenuItem.classList.contains('is-active')).toBe(true);
     expect(updatedRightPinMenuItem.classList.contains('is-active')).toBe(false);
-    expect(
-      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim(),
-    ).toBe('Unpin left');
+    expect(textOf(updatedLeftPinMenuItem, '.column-menu-item__label')).toBe('Unpin left');
 
     updatedRightPinMenuItem.click();
     fixture.detectChanges();
@@ -1067,9 +1083,7 @@ describe('ng-advanced-table-ui', () => {
       'thead th[data-column-id="name"] .header-actions-row',
     ) as HTMLElement;
 
-    expect(rightPinnedHeaderActions.lastElementChild?.classList.contains('header-controls')).toBe(
-      true,
-    );
+    expect(lastChildHasClass(rightPinnedHeaderActions, 'header-controls')).toBe(true);
     expect(headerLabel.textContent.trim()).toBe('Service');
   });
 
@@ -1309,7 +1323,6 @@ describe('ng-advanced-table-ui', () => {
     expect(sortIcon.textContent).not.toContain('↕');
   });
 
-  // eslint-disable-next-line complexity -- end-to-end UI assertion walks many independent controls
   it('renders caller-provided accessibility labels across the UI controls', async () => {
     const customFixture = TestBed.createComponent(CustomAccessibilityLabelsHost);
 
@@ -1394,7 +1407,7 @@ describe('ng-advanced-table-ui', () => {
     await customFixture.whenStable();
     customFixture.detectChanges();
 
-    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
+    expect(requireOpenMenu().getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
 
     const leftPinMenuItem = getOpenMenuItem('left');
     const rightPinMenuItem = getOpenMenuItem('right');
@@ -1402,18 +1415,12 @@ describe('ng-advanced-table-ui', () => {
     const rightMoveMenuItem = getOpenMoveMenuItem('right');
 
     expect(leftPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til venstre');
-    expect(leftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
-      'Venstre',
-    );
+    expect(textOf(leftPinMenuItem, '.column-menu-item__label')).toBe('Venstre');
     expect(rightPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til højre');
-    expect(rightPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
-      'Højre',
-    );
+    expect(textOf(rightPinMenuItem, '.column-menu-item__label')).toBe('Højre');
     expect(leftMoveMenuItem.getAttribute('aria-label')).toBe('Flyt kolonne Service til venstre');
     expect(rightMoveMenuItem.getAttribute('aria-label')).toBe('Flyt kolonne Service til højre');
-    expect(rightMoveMenuItem.querySelector('.column-menu-item__label')?.textContent.trim()).toBe(
-      'Flyt til højre',
-    );
+    expect(textOf(rightMoveMenuItem, '.column-menu-item__label')).toBe('Flyt til højre');
 
     leftPinMenuItem.click();
     customFixture.detectChanges();
@@ -1431,15 +1438,11 @@ describe('ng-advanced-table-ui', () => {
     expect(updatedLeftPinMenuItem.getAttribute('aria-label')).toBe(
       'Frigør kolonne Service fra venstre',
     );
-    expect(
-      updatedLeftPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim(),
-    ).toBe('Venstre');
+    expect(textOf(updatedLeftPinMenuItem, '.column-menu-item__label')).toBe('Venstre');
     expect(updatedRightPinMenuItem.getAttribute('aria-label')).toBe(
       'Fastgør kolonne Service til højre',
     );
-    expect(
-      updatedRightPinMenuItem.querySelector('.column-menu-item__label')?.textContent.trim(),
-    ).toBe('Højre');
+    expect(textOf(updatedRightPinMenuItem, '.column-menu-item__label')).toBe('Højre');
 
     firstColumnChip.click();
     customFixture.detectChanges();
@@ -1572,7 +1575,6 @@ describe('ng-advanced-table-ui', () => {
     localeFixture.destroy();
   });
 
-  // eslint-disable-next-line complexity -- end-to-end UI assertion walks many independent controls
   it('applies header actions idempotently and honors per-column metadata', async () => {
     const compositionFixture = TestBed.createComponent(HeaderActionCompositionHost);
 
@@ -1594,8 +1596,8 @@ describe('ng-advanced-table-ui', () => {
 
     expect(nameHeader.querySelectorAll('.header-actions-row')).toHaveLength(1);
     expect(nameHeader.querySelectorAll('.sort-button')).toHaveLength(1);
-    expect(nameHeader.querySelector('.header-label')?.textContent.trim()).toBe('Service');
-    expect(nameHeader.querySelector('.sort-icon')?.textContent.trim()).toBe('S');
+    expect(textOf(nameHeader, '.header-label')).toBe('Service');
+    expect(textOf(nameHeader, '.sort-icon')).toBe('S');
     expect(nameSortButton.getAttribute('aria-label')).toBe('Second sort Service');
     expect(nameMenuButton.getAttribute('aria-label')).toBe('Second menu Service');
 
@@ -1604,7 +1606,7 @@ describe('ng-advanced-table-ui', () => {
     expect(regionHeader.textContent.trim()).toBe('Region');
 
     expect(statusHeader.querySelectorAll('.header-actions-row')).toHaveLength(1);
-    expect(statusHeader.querySelector('.sort-icon')?.textContent.trim()).toBe('Column');
+    expect(textOf(statusHeader, '.sort-icon')).toBe('Column');
     expect(statusSortButton.getAttribute('aria-label')).toBe('Column override for Status');
 
     nameMenuButton.click();
@@ -1612,7 +1614,7 @@ describe('ng-advanced-table-ui', () => {
     await compositionFixture.whenStable();
     compositionFixture.detectChanges();
 
-    expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Second column menu Service');
+    expect(requireOpenMenu().getAttribute('aria-label')).toBe('Second column menu Service');
 
     compositionFixture.destroy();
   });

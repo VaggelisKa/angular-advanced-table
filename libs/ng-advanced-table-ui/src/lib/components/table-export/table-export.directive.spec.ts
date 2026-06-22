@@ -293,8 +293,7 @@ class BusyExportHost {
   protected readonly rows = EXPORT_ROWS;
   protected readonly columns = EXPORT_COLUMNS;
   public readonly exportHandler = vi.fn(
-    // eslint-disable-next-line @typescript-eslint/promise-function-async -- returns the controllable promise directly so the test resolves it deterministically
-    () =>
+    async () =>
       new Promise<void>((resolve) => {
         this.resolveExport = resolve;
       }),
@@ -523,6 +522,11 @@ describe('NatTableExport', () => {
     expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
 
     fixture.componentInstance.resolveExport?.();
+    // Drain the async handler's promise-adoption microtasks past a macrotask
+    // boundary, then settle + render so the directive's `finally` clears busy.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     await fixture.whenStable();
     fixture.detectChanges();
 

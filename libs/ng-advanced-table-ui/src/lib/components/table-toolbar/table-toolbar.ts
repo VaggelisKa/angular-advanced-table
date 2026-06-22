@@ -63,8 +63,9 @@ export class NatTableToolbar<TData extends RowData = RowData> {
 
   /** Single touch point for Aria's private `_pattern` API — fix here if it ever renames. */
   private get pattern(): Toolbar<unknown>['_pattern'] {
-    // eslint-disable-next-line no-underscore-dangle -- @angular/aria exposes the pattern only via `_pattern`
-    return this.ariaToolbar._pattern;
+    const { _pattern: pattern } = this.ariaToolbar;
+
+    return pattern;
   }
 
   protected readonly localeId = computed(

@@ -19,9 +19,7 @@ type Equal<T, U> =
       : false
     : false;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type RenderMetricsStateMatchesCore = Expect<Equal<NatTableRenderMetricsState, NatTableState>>;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type RenderMetricsColumnMetaMatchesCore = Expect<
   Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
 >;
@@ -35,6 +33,15 @@ function requireDefined<T>(value: T | undefined): T {
 }
 
 describe('ng-advanced-table-utils public table contracts', () => {
+  it('matches the core render-metrics type contracts', () => {
+    const typeContracts: [
+      RenderMetricsStateMatchesCore,
+      RenderMetricsColumnMetaMatchesCore,
+    ] = [true, true];
+
+    expect(typeContracts).toHaveLength(2);
+  });
+
   it('reuses the core column metadata contract for TanStack column definitions', () => {
     const column: ColumnDef<ContractRow, number> = {
       accessorKey: 'durationMs',

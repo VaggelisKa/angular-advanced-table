@@ -1,6 +1,8 @@
 import {   expect, test } from '@playwright/test';
 import type {Locator, Page} from '@playwright/test';
 
+import { applyDocumentDirection } from '../support/document-direction';
+
 test.describe('Table toolbar', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/toolbar');
@@ -90,13 +92,13 @@ test.describe('Table toolbar', () => {
 
     // The flex spacers sit between the slots: start | spacer | center | spacer | end.
     // Scope to the Products toolbar — the page now has several toolbars.
-    // Each spacer carries a positional modifier class, so locate them semantically.
+    // Each spacer carries a positional test id, so locate them semantically.
     const firstSpacer = page
       .getByRole('toolbar', { name: 'Products toolbar' })
-      .locator('.nat-toolbar-spacer--start');
+      .getByTestId('toolbar-spacer-start');
     const secondSpacer = page
       .getByRole('toolbar', { name: 'Products toolbar' })
-      .locator('.nat-toolbar-spacer--end');
+      .getByTestId('toolbar-spacer-end');
 
     await expectPrecedes(exportButton, firstSpacer);
     await expectPrecedes(firstSpacer, refreshButton);
@@ -170,9 +172,7 @@ test.describe('Table toolbar', () => {
   });
 
   test('reverses arrow keys in RTL', async ({ page }) => {
-    await page.addInitScript(() => {
-      document.documentElement.setAttribute('dir', 'rtl');
-    });
+    await applyDocumentDirection(page, 'rtl');
     await page.goto('/toolbar');
     await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 
