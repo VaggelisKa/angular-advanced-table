@@ -8,6 +8,7 @@ import {
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import {
+  NatTableExport,
   NatTableSurface,
   NatTableToolbar,
   NatToolbarGroup,
@@ -60,6 +61,7 @@ const FILTER_PRESETS: readonly FilterPreset[] = [
   selector: 'app-toolbar-showcase',
   imports: [
     NatTable,
+    NatTableExport,
     NatTableSurface,
     NatTableToolbar,
     NatToolbarGroup,

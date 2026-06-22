@@ -42,6 +42,11 @@ describe('ng-advanced-table-ui public table contracts', () => {
         headerSize: 120,
         headerMinSize: '8rem',
         headerMaxSize: 180,
+        export: {
+          enabled: true,
+          header: 'Exported amount',
+          value: ({ value }) => value,
+        },
         cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
       } satisfies NatTableColumnMeta<ContractRow, number>,
     };
@@ -54,6 +59,8 @@ describe('ng-advanced-table-ui public table contracts', () => {
     expect(column.meta?.headerSize).toBe(120);
     expect(column.meta?.headerMinSize).toBe('8rem');
     expect(column.meta?.headerMaxSize).toBe(180);
+    expect(column.meta?.export?.header).toBe('Exported amount');
+    expect(column.meta?.export?.value).toEqual(expect.any(Function));
     expect(column.meta?.cellTone).toEqual(expect.any(Function));
   });
 });

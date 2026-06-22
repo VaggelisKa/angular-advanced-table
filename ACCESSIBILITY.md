@@ -106,16 +106,17 @@ Context types:
 
 Companion controls inherit the controlled table's `locale` from `<nat-table-surface>`, and `NatTableToolbar` also accepts `[for]="grid"` when rendered outside that surface. Controls accept localized visible strings plus structured `accessibilityLabels` bags for instance-specific overrides:
 
-| Component / helper               | Primary localization inputs                                              |
-| -------------------------------- | ------------------------------------------------------------------------ |
-| `NatTableColumnVisibility`       | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
-| `NatTablePageSize`               | `groupAriaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
-| `NatTablePager`                  | `groupAriaLabel`, `NatTableAccessibilityPagerLabels`                     |
-| `NatTableScrollControl`          | `groupAriaLabel`, `NatTableAccessibilityScrollControlLabels`             |
-| `NatTablePagination`             | `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerLabels` |
-| `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                                |
-| `withNatTableSelectionColumn(...)` | `NatTableAccessibilitySelectionLabels`                                  |
-| `provideNatTableUiIntl(...)`     | Advanced UI-only override provider used by the locale registry           |
+| Component / helper                 | Primary localization inputs                                               |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| `NatTableColumnVisibility`         | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels`  |
+| `NatTablePageSize`                 | `groupAriaLabel`, `NatTableAccessibilityPageSizeLabels`                   |
+| `NatTablePager`                    | `groupAriaLabel`, `NatTableAccessibilityPagerLabels`                      |
+| `NatTableScrollControl`            | `groupAriaLabel`, `NatTableAccessibilityScrollControlLabels`              |
+| `NatTableExport`                   | visible host text or host `aria-label`; optional `exportFileName`         |
+| `NatTablePagination`               | `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerLabels` |
+| `withNatTableHeaderActions(...)`   | `NatTableAccessibilityHeaderActionLabels`                                 |
+| `withNatTableSelectionColumn(...)` | `NatTableAccessibilitySelectionLabels`                                    |
+| `provideNatTableUiIntl(...)`       | Advanced UI-only override provider used by the locale registry            |
 
 Header action labels include the sort button, menu trigger, menu content, pin buttons, move buttons, and visible menu item text. When column drag/drop is available, `withNatTableHeaderActions(..., { enableColumnPinActions: false, enableColumnReorderActions: true })` supplies a move-only menu so pointer users can reorder without dragging.
 
@@ -338,15 +339,16 @@ Accessibility requirements:
 
 The `ng-advanced-table-ui` package consumes locale dictionaries from `provideNatTableUiLocales()` and exposes per-instance copy overrides without requiring consumers to rebuild table state.
 
-| Component or helper              | Consumer-owned copy                                                      |
-| -------------------------------- | ------------------------------------------------------------------------ |
-| `NatTableColumnVisibility`       | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels` |
-| `NatTablePageSize`               | `groupAriaLabel`, `NatTableAccessibilityPageSizeLabels`                  |
-| `NatTablePager`                  | `groupAriaLabel`, `NatTableAccessibilityPagerLabels`                     |
-| `NatTableScrollControl`          | `groupAriaLabel`, `NatTableAccessibilityScrollControlLabels`             |
-| `NatTablePagination`             | `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerLabels` |
-| `withNatTableHeaderActions(...)` | `NatTableAccessibilityHeaderActionLabels`                                |
-| `withNatTableSelectionColumn(...)` | `NatTableAccessibilitySelectionLabels`                                  |
+| Component or helper                | Consumer-owned copy                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| `NatTableColumnVisibility`         | `label`, `groupAriaLabel`, `NatTableAccessibilityColumnVisibilityLabels`  |
+| `NatTablePageSize`                 | `groupAriaLabel`, `NatTableAccessibilityPageSizeLabels`                   |
+| `NatTablePager`                    | `groupAriaLabel`, `NatTableAccessibilityPagerLabels`                      |
+| `NatTableScrollControl`            | `groupAriaLabel`, `NatTableAccessibilityScrollControlLabels`              |
+| `NatTableExport`                   | visible host text or host `aria-label`; optional `exportFileName`         |
+| `NatTablePagination`               | `NatTableAccessibilityPageSizeLabels`, `NatTableAccessibilityPagerLabels` |
+| `withNatTableHeaderActions(...)`   | `NatTableAccessibilityHeaderActionLabels`                                 |
+| `withNatTableSelectionColumn(...)` | `NatTableAccessibilitySelectionLabels`                                    |
 
 Use `provideNatTableUiLocales()` for common UI locale labels. Use `label` for visible control labels, `groupAriaLabel` for control group names, and `accessibilityLabels` for generated button text, summaries, and per-state labels only when one control needs instance-specific copy. Search inputs are consumer-owned; give them a visible label or `aria-label`, and do not rely on placeholder text as the only accessible label.
 
@@ -354,6 +356,7 @@ Decision rules for agents:
 
 - If a consumer-owned search input is rendered in a non-English product, localize both its label and placeholder through the app's translation source.
 - If one `NatTableColumnVisibility`, `NatTablePageSize`, `NatTablePager`, or `NatTableScrollControl` instance needs different wording from the active locale, pass its specific label input or `accessibilityLabels` bag.
+- If `NatTableExport` is attached to an icon-only or otherwise unlabeled host, provide an `aria-label` that includes the visible cue. The directive sets busy/disabled state during export, but the consuming app owns the host's accessible name.
 - If `withNatTableHeaderActions(...)` is used and one table/column needs wording different from the active locale, pass `NatTableAccessibilityHeaderActionLabels` through helper options or column metadata. This label surface covers the sort button, overflow trigger, opened column actions menu label, pin action labels, move action labels, and visible menu item text.
 - When a visible button also has an `aria-label`, keep the visible words inside the accessible name so speech-input users can activate the control by the text they see.
 
@@ -365,7 +368,7 @@ Use this pattern:
 
 - Store common generated table copy in `provideNatTableLocales()` dictionaries.
 - Store common generated companion copy in `provideNatTableUiLocales()` or `provideNatTableUtilsLocales()` dictionaries when those packages are used.
-- Pass `<nat-table [locale]="localeId()">`.
+- Pass `<nat-table-surface [locale]="localeId()">`.
 - Keep `accessibleName`, visible `caption`, and column `meta.label` as table-specific product copy.
 - Derive translated `columns` with `computed(...)` when headers or `meta.label` change with the locale.
 - Rebuild static helpers such as `withRenderMetricsColumn(...)` when the locale changes, or pass their `locale` option when constructing columns.
