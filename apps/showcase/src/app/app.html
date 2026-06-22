@@ -152,6 +152,8 @@
                             [parent]="navGroupTreeGroup"
                             [label]="item.label"
                             [attr.data-testid]="'showcase-nav-link-' + item.id"
+                            (focus)="prefetchNavItem(item)"
+                            (pointerenter)="prefetchNavItem(item)"
                             (click)="closeMobileNav(false)"
                           >
                             <span class="showcase-nav-tree-connector" aria-hidden="true"></span>

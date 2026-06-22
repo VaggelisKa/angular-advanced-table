@@ -2,6 +2,7 @@ import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
+import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
 import { App } from './app';
 
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
@@ -26,6 +27,13 @@ describe('App', () => {
       imports: [App],
       providers: [
         provideZonelessChangeDetection(),
+        {
+          provide: DocsMarkdownCache,
+          useValue: {
+            load: () => undefined,
+            preload: () => undefined,
+          },
+        },
         provideRouter([
           {
             path: '',
@@ -316,6 +324,10 @@ describe('App', () => {
 
   it('should close the mobile drawer after choosing a navigation link', async () => {
     const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/docs/quick-start');
+    fixture.detectChanges();
     await fixture.whenStable();
 
     const compiled = fixture.nativeElement as HTMLElement;

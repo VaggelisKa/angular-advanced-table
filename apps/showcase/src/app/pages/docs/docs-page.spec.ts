@@ -107,6 +107,43 @@ describe('DocsPage', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('State');
   });
 
+  it('reuses cached markdown when returning to a docs route', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/docs/quick-start', DocsPage);
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/docs/quick-start.md').flush('# Quick start\n\nCached docs.');
+    await waitForMarkdownRender(harness.fixture);
+
+    await harness.navigateByUrl('/docs/state', DocsPage);
+    http.expectOne('/docs/state.md').flush('# State');
+    await waitForMarkdownRender(harness.fixture);
+
+    await harness.navigateByUrl('/docs/quick-start', DocsPage);
+    http.expectNone('/docs/quick-start.md');
+    await waitForMarkdownRender(harness.fixture);
+
+    const compiled = harness.fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('h1')?.textContent).toContain('Quick start');
+    expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Cached docs.');
+  });
+
+  it('renders an error message when markdown cannot be loaded', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/docs/quick-start', DocsPage);
+
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne('/docs/quick-start.md')
+      .flush('Not found', { status: 404, statusText: 'Not Found' });
+    await waitForMarkdownRender(harness.fixture);
+
+    const compiled = harness.fixture.nativeElement as HTMLElement;
+    const error = compiled.querySelector('.docs-error');
+
+    expect(error?.getAttribute('role')).toBe('alert');
+    expect(error?.textContent).toContain('Documentation could not be loaded.');
+  });
+
   it('runs Prism syntax highlighting for fenced code blocks', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/docs/quick-start', DocsPage);
@@ -121,8 +158,13 @@ describe('DocsPage', () => {
   });
 });
 
-async function waitForMarkdownRender(fixture: { whenStable(): Promise<unknown> }): Promise<void> {
+async function waitForMarkdownRender(fixture: {
+  detectChanges(): void;
+  whenStable(): Promise<unknown>;
+}): Promise<void> {
   await fixture.whenStable();
+  fixture.detectChanges();
   await new Promise((resolve) => setTimeout(resolve));
   await fixture.whenStable();
+  fixture.detectChanges();
 }
