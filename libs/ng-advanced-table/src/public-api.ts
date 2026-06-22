@@ -44,3 +44,14 @@ export type {
   NatTableUiState,
 } from './lib/components/table/table.types';
 export type * as NatTableA11y from './lib/nat-table-a11y-public';
+export { NAT_TABLE_KEYBINDINGS } from './lib/components/table/table.types';
+export type {
+  NatTableShortcut,
+  NatTableShortcutValue,
+  NatTableKeybindings,
+} from './lib/components/table/table.types';
+export { NatTableHotkeyA11y } from './lib/components/table/hotkey-a11y.directive';
+export { serializeShortcutValue, createNatTableKeyboard } from './lib/components/table/keybindings';
+export type { NatTableKeyboard } from './lib/components/table/keybindings';
+
+

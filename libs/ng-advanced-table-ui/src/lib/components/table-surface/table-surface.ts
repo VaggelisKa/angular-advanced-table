@@ -12,6 +12,7 @@ import type {
 import {
   NatTableService,
   type NatTableAccessibilityText,
+  type NatTableKeybindings,
   type NatTableMode,
   type NatTableModeConfiguration,
   type NatTableState,
@@ -49,6 +50,8 @@ export class NatTableSurface {
   readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
   readonly accessibilityText = input<NatTableAccessibilityText>({});
+  /** Optional overrides for keyboard interaction shortcuts. */
+  readonly keybindings = input<NatTableKeybindings>({});
   /** When to apply resize: `'onEnd'` (default, on pointer release) or `'onChange'` (live). */
   readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   /** Width model: `'fill'` (default — columns stretch to fill the container) or `'fixed'` (column widths are authoritative and the region scrolls horizontally, giving pixel-exact resizing). */
@@ -96,6 +99,9 @@ export class NatTableSurface {
     });
     effect(() => {
       this.natTableService.accessibilityText.set(this.accessibilityText());
+    });
+    effect(() => {
+      this.natTableService.surfaceKeybindings.set(this.keybindings());
     });
     effect(() => {
       this.natTableService.columnResizeMode.set(this.columnResizeMode());
