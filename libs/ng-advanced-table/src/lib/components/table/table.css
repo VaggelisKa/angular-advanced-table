@@ -255,20 +255,16 @@
   z-index: 4;
 }
 
-.has-sticky-header:not(.is-region-scrollable) .header-cell {
-  will-change: transform;
+@keyframes nat-table-viewport-sticky {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--nat-table-sticky-max-translate, 0px));
+  }
 }
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
-  @keyframes nat-table-viewport-sticky {
-    from {
-      transform: translateY(0);
-    }
-    to {
-      transform: translateY(var(--nat-table-sticky-max-translate, 0px));
-    }
-  }
-
   .has-sticky-header:not(.is-region-scrollable) .header-cell {
     animation: nat-table-viewport-sticky auto linear both;
     animation-timeline: scroll(block root);
