@@ -100,6 +100,9 @@ catalogs:
     nx:
       specifier: 23.1.0-beta.0
       version: 23.1.0-beta.0
+    nx-stylelint:
+      specifier: ^19.0.0
+      version: 19.0.0
     prettier:
       specifier: ^3.8.4
       version: 3.8.4
@@ -220,6 +223,9 @@ importers:
       nx:
         specifier: catalog:shared-dev
         version: 23.1.0-beta.0
+      nx-stylelint:
+        specifier: catalog:shared-dev
+        version: 19.0.0(nx@23.1.0-beta.0)(stylelint-config-standard-scss@17.0.0(postcss@8.5.15)(stylelint@17.12.0(typescript@6.0.3)))(stylelint-config-standard@40.0.0(stylelint@17.12.0(typescript@6.0.3)))(stylelint@17.12.0(typescript@6.0.3))(typescript@6.0.3)
       prettier:
         specifier: catalog:shared-dev
         version: 3.8.4
@@ -5826,6 +5832,19 @@ packages:
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
+
+  nx-stylelint@19.0.0:
+    resolution: {integrity: sha512-rApxP/mO31+iZM9rJiOAE8/rFK+TJnw+XLE6GP4iV+pDmQcFfsX2fUhDcXUdzD2x7rE60tMNknkSNmwitmBn1w==}
+    engines: {node: ^22.12.0 || >=24.11.0}
+    peerDependencies:
+      stylelint: ^17.0.0
+      stylelint-config-standard: '>=40.0.0'
+      stylelint-config-standard-scss: '>=17.0.0'
+    peerDependenciesMeta:
+      stylelint-config-standard:
+        optional: true
+      stylelint-config-standard-scss:
+        optional: true
 
   nx@22.7.3:
     resolution: {integrity: sha512-yo2XWmxFF01D2i5YBk34Dz1K7YX2u7BoBuCSbD819lIus9B8LNJ7BzbnWfDFXOcvuGoLXqIxO2ElPqpkx5e5JQ==}
@@ -13523,6 +13542,19 @@ snapshots:
   nth-check@2.1.1:
     dependencies:
       boolbase: 1.0.0
+
+  nx-stylelint@19.0.0(nx@23.1.0-beta.0)(stylelint-config-standard-scss@17.0.0(postcss@8.5.15)(stylelint@17.12.0(typescript@6.0.3)))(stylelint-config-standard@40.0.0(stylelint@17.12.0(typescript@6.0.3)))(stylelint@17.12.0(typescript@6.0.3))(typescript@6.0.3):
+    dependencies:
+      '@nx/devkit': 22.7.3(nx@23.1.0-beta.0)
+      cosmiconfig: 9.0.2(typescript@6.0.3)
+      stylelint: 17.12.0(typescript@6.0.3)
+      tslib: 2.8.1
+    optionalDependencies:
+      stylelint-config-standard: 40.0.0(stylelint@17.12.0(typescript@6.0.3))
+      stylelint-config-standard-scss: 17.0.0(postcss@8.5.15)(stylelint@17.12.0(typescript@6.0.3))
+    transitivePeerDependencies:
+      - nx
+      - typescript
 
   nx@22.7.3(debug@4.4.3):
     dependencies:
