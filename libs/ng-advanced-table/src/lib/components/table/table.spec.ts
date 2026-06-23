@@ -639,6 +639,20 @@ function mockClientRect(element: HTMLElement, rect: Partial<DOMRectReadOnly>): v
     }) as DOMRect;
 }
 
+function createMatchMedia(matches: (mediaQuery: string) => boolean): typeof window.matchMedia {
+  return (mediaQuery: string): MediaQueryList =>
+    ({
+      matches: matches(mediaQuery),
+      media: mediaQuery,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }) as MediaQueryList;
+}
+
 // Returns the last element of a recorded-events array, throwing if empty. Lets
 // assertions read the latest event without optional chaining on `.at(-1)`.
 const requireLast = <T>(values: readonly T[]): T => {
@@ -3210,32 +3224,26 @@ describe('NatTable', () => {
     await recreateHost({ stickyHeader: true });
     fixture.detectChanges();
 
-    const scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
-
     vi.stubGlobal('CSS', {
       supports: (): boolean => false
-    });
-
-    Object.defineProperty(window, 'scrollY', {
-      configurable: true,
-      value: 150
     });
 
     const table = getInternalTable(fixture) as unknown as {
       cachedStickyTop: number;
       isRegionScrollable: boolean;
       tableHeight: number;
-      tablePageTop: number;
       theadHeight: number;
       updateStickyHeaderPosition(): void;
     };
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
     const thead = queryRequired<HTMLTableSectionElement>(fixture, 'thead');
     const headerCells = queryAll<HTMLTableCellElement>(fixture, 'thead th');
 
+    mockClientRect(tableElement, { top: -50, height: 400 });
+    mockClientRect(thead, { height: 40 });
     table.cachedStickyTop = 0;
     table.isRegionScrollable = false;
     table.tableHeight = 400;
-    table.tablePageTop = 100;
     table.theadHeight = 40;
 
     try {
@@ -3245,9 +3253,51 @@ describe('NatTable', () => {
       expect(headerCells.every((cell) => cell.style.transform === '')).toBe(true);
     } finally {
       vi.unstubAllGlobals();
+    }
+  });
 
-      if (scrollYDescriptor) {
-        Object.defineProperty(window, 'scrollY', scrollYDescriptor);
+  it('uses the JavaScript viewport sticky path on coarse touch devices even when scroll timelines are supported', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    const matchMediaDescriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+
+    vi.stubGlobal('CSS', {
+      supports: (): boolean => true
+    });
+
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: createMatchMedia((mediaQuery) => mediaQuery === '(hover: none) and (pointer: coarse)')
+    });
+
+    const table = getInternalTable(fixture) as unknown as {
+      cachedStickyTop: number;
+      isRegionScrollable: boolean;
+      measureTableDimensions(): void;
+      updateStickyHeaderPosition(): void;
+    };
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+    const thead = queryRequired<HTMLTableSectionElement>(fixture, 'thead');
+
+    mockClientRect(tableElement, { top: -72, height: 400 });
+    mockClientRect(thead, { height: 40 });
+    table.cachedStickyTop = 0;
+    table.isRegionScrollable = false;
+
+    try {
+      table.measureTableDimensions();
+      table.updateStickyHeaderPosition();
+
+      expect(tableElement.classList.contains('supports-scroll-timeline')).toBe(false);
+      expect(thead.style.transform).toBe('translate3d(0, 72px, 0)');
+    } finally {
+      vi.unstubAllGlobals();
+
+      if (matchMediaDescriptor) {
+        Object.defineProperty(window, 'matchMedia', matchMediaDescriptor);
+      } else {
+        Reflect.deleteProperty(window, 'matchMedia');
       }
     }
   });

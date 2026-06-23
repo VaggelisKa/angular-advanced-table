@@ -72,6 +72,60 @@ test('viewport sticky tables translate headers on page scroll', async ({ page })
   expect(horizontalDelta).toBe(0);
 });
 
+test('touch viewport sticky tables stay aligned farther down the page', async ({ page }) => {
+  await page.addInitScript(() => {
+    const nativeMatchMedia = window.matchMedia.bind(window);
+
+    window.matchMedia = (query: string): MediaQueryList => {
+      const result = nativeMatchMedia(query);
+
+      if (query !== '(hover: none) and (pointer: coarse)') {
+        return result;
+      }
+
+      return new Proxy(result, {
+        get(target, property, receiver) {
+          if (property === 'matches') {
+            return true;
+          }
+
+          return Reflect.get(target, property, receiver);
+        }
+      });
+    };
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/examples/sticky-header');
+
+  const table5 = page.locator('table[aria-label="Viewport sticky table 5"]');
+
+  await table5.scrollIntoViewIfNeeded();
+  await page.evaluate(() => {
+    window.scrollBy(0, 220);
+  });
+  await page.waitForTimeout(150);
+
+  const metrics = await table5.evaluate((table) => {
+    const thead = table.querySelector('thead');
+
+    if (!thead) {
+      throw new Error('Expected table header to be rendered.');
+    }
+
+    return {
+      tableClass: table.className,
+      headerTop: thead.getBoundingClientRect().top,
+      stickyTop: getComputedStyle(table.closest('.table-region') ?? table)
+        .getPropertyValue('--nat-table-sticky-top')
+        .trim()
+    };
+  });
+
+  expect(metrics.tableClass).not.toContain('supports-scroll-timeline');
+  expect(metrics.stickyTop).toBe('0');
+  expect(Math.abs(metrics.headerTop)).toBeLessThanOrEqual(2);
+});
+
 test('simulating sticky topbar shifts the sticky offset', async ({ page }) => {
   // Toggle simulated topbar simulation
   const simulateToggle = page.locator('label').filter({ hasText: 'Simulate Sticky Topbar (60px)' }).locator('input');

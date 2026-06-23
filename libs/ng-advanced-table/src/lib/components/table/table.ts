@@ -185,6 +185,21 @@ const RESIZE_KEYBOARD_STEP_LARGE = 40;
  */
 const DEFAULT_MIN_COLUMN_WIDTH = 48;
 let nextTableId = 0;
+const COARSE_TOUCH_POINTER_QUERY = '(hover: none) and (pointer: coarse)';
+
+function usesCoarseTouchPointer(): boolean {
+  const matchMedia = (globalThis as { matchMedia?: Window['matchMedia'] }).matchMedia;
+
+  return matchMedia?.(COARSE_TOUCH_POINTER_QUERY).matches === true;
+}
+
+function supportsViewportScrollTimeline(): boolean {
+  return (
+    !usesCoarseTouchPointer() &&
+    typeof CSS !== 'undefined' &&
+    CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')
+  );
+}
 
 const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
   const query = String(filterValue ?? '')
@@ -1814,7 +1829,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
     // Check vertical scrollability of region
     const overflowY = window.getComputedStyle(region).overflowY;
-    const supportsScrollTimeline = this.supportsScrollTimeline();
+    const supportsScrollTimeline = supportsViewportScrollTimeline();
 
     this.isRegionScrollable = region.scrollHeight > region.clientHeight && (overflowY === 'auto' || overflowY === 'scroll');
 
@@ -1841,12 +1856,13 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private setupStickyHeaderScrollListener(): void {
     this.ngZone.runOutsideAngular(() => {
       const region = this.tableRegionRef()?.nativeElement;
+      const visualViewport = window.visualViewport;
 
       if (!region) {
         return;
       }
 
-      const supportsScrollTimeline = this.supportsScrollTimeline();
+      const supportsScrollTimeline = supportsViewportScrollTimeline();
 
       if (typeof IntersectionObserver !== 'undefined') {
         this.intersectionObserver = new IntersectionObserver(
@@ -1896,7 +1912,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       if (!supportsScrollTimeline) {
         window.addEventListener('scroll', listener, { passive: true });
         region.addEventListener('scroll', listener, { passive: true });
+        visualViewport?.addEventListener('scroll', listener, { passive: true });
       }
+      visualViewport?.addEventListener('resize', listener, { passive: true });
       window.addEventListener('resize', listener, { passive: true });
 
       this.destroyRef.onDestroy(() => {
@@ -1905,7 +1923,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         if (!supportsScrollTimeline) {
           window.removeEventListener('scroll', listener);
           region.removeEventListener('scroll', listener);
+          visualViewport?.removeEventListener('scroll', listener);
         }
+        visualViewport?.removeEventListener('resize', listener);
         window.removeEventListener('resize', listener);
       });
 
@@ -1917,11 +1937,15 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   private updateStickyHeaderPosition(): void {
     const region = this.tableRegionRef()?.nativeElement;
-    const theadEl = this.cachedTheadEl ?? region?.querySelector('thead');
+    const tableEl = this.cachedTableEl ?? region?.querySelector('table');
+    const theadEl = this.cachedTheadEl ?? tableEl?.querySelector('thead');
 
-    if (!region || !theadEl) {
+    if (!region || !tableEl || !theadEl) {
       return;
     }
+
+    this.cachedTableEl = tableEl as HTMLTableElement;
+    this.cachedTheadEl = theadEl as HTMLTableSectionElement;
 
     if (!this.stickyHeader()) {
       this.clearViewportStickyTransform(theadEl);
@@ -1935,7 +1959,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    if (this.supportsScrollTimeline()) {
+    if (supportsViewportScrollTimeline()) {
       this.clearLegacyHeaderCellTransforms(region);
 
       if (theadEl.style.transform) {
@@ -1945,13 +1969,15 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    const currentScrollY = window.scrollY;
-    const rectTop = this.tablePageTop - currentScrollY;
+    const tableRect = tableEl.getBoundingClientRect();
+    const rectTop = tableRect.top;
+    const tableHeight = tableRect.height || this.tableHeight;
+    const theadHeight = this.theadHeight || theadEl.getBoundingClientRect().height;
 
     let translateY = 0;
 
     if (rectTop < this.cachedStickyTop) {
-      const maxTranslateY = Math.max(0, this.tableHeight - this.theadHeight);
+      const maxTranslateY = Math.max(0, tableHeight - theadHeight);
 
       translateY = Math.min(Math.max(0, this.cachedStickyTop - rectTop), maxTranslateY);
     }
@@ -1988,10 +2014,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         cell.style.transform = '';
       }
     }
-  }
-
-  private supportsScrollTimeline(): boolean {
-    return typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
   }
 
   private measureRegionViewportWidth(): void {
