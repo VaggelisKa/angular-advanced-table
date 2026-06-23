@@ -264,8 +264,18 @@
   }
 }
 
-.has-sticky-header:not(.is-region-scrollable) .header-cell {
-  /* Safe reference outside @supports to ensure proper keyframe scoping by Angular compiler */
+.has-sticky-header:not(.is-region-scrollable) thead {
+  position: relative;
+  z-index: 4;
+  will-change: transform;
+}
+
+.has-sticky-header.supports-scroll-timeline:not(.is-region-scrollable) thead {
+  /*
+   * Safe reference outside @supports to ensure proper keyframe scoping by
+   * Angular compiler, guarded by a runtime support class so JS fallback
+   * transforms are not overridden in browsers without scroll timelines.
+   */
   animation-name: nat-table-viewport-sticky;
   animation-duration: auto;
   animation-timing-function: linear;
@@ -273,7 +283,7 @@
 }
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
-  .has-sticky-header:not(.is-region-scrollable) .header-cell {
+  .has-sticky-header.supports-scroll-timeline:not(.is-region-scrollable) thead {
     animation-timeline: scroll(block root);
     animation-range: var(--nat-table-sticky-range-start, 0px) var(--nat-table-sticky-range-end, 0px);
   }
@@ -294,6 +304,23 @@
 .header-cell.is-pinned-right {
   position: sticky;
   z-index: 6;
+}
+
+.has-sticky-header:not(.is-region-scrollable) .header-cell {
+  /*
+   * Viewport-sticky mode translates the header row as a single layer. Keeping
+   * vertical sticky positioning on each <th> makes the sticky calculation fight
+   * the parent transform on mobile engines. Pinned cells remain sticky only for
+   * horizontal pinning via their left/right offsets.
+   */
+  position: static;
+  top: auto;
+}
+
+.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-left,
+.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-right {
+  position: sticky;
+  top: auto;
 }
 
 .has-pinned-edge-left {

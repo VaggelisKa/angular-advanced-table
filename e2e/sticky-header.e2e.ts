@@ -11,10 +11,11 @@ test('renders the sticky header showcase page', async ({ page }) => {
 
 test('viewport sticky tables translate headers on page scroll', async ({ page }) => {
   const table1 = page.locator('table[aria-label="Viewport sticky table 1"]');
+  const thead = table1.locator('thead');
   const headerCell = table1.locator('thead th').first();
 
   // Initially, no translation since we are at the top
-  const transformInit = await headerCell.evaluate((el) => {
+  const transformInit = await thead.evaluate((el) => {
     return el.style.transform || window.getComputedStyle(el).transform;
   });
   expect(transformInit === '' || transformInit === 'none' || transformInit.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(true);
@@ -30,13 +31,45 @@ test('viewport sticky tables translate headers on page scroll', async ({ page })
   // Give the scroll listener a moment to fire and requestAnimationFrame to execute
   await page.waitForTimeout(150);
 
-  // The header cell should now have translation applied (either via style.transform or computed matrix)
-  const transform = await headerCell.evaluate((el) => {
+  // The header row should now have translation applied (either via style.transform or computed matrix)
+  const transform = await thead.evaluate((el) => {
     return el.style.transform || window.getComputedStyle(el).transform;
   });
   expect(transform).not.toBe('');
   expect(transform).not.toBe('none');
   expect(transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(false);
+
+  // Individual cells stay untransformed so horizontal table scrolling remains synchronized.
+  await expect
+    .poll(async () =>
+      headerCell.evaluate((el) => {
+        const transformValue = window.getComputedStyle(el).transform;
+
+        return transformValue === 'none' || transformValue === 'matrix(1, 0, 0, 1, 0, 0)';
+      })
+    )
+    .toBe(true);
+
+  await table1.evaluate((table) => {
+    const region = table.closest('.table-region');
+
+    if (region) {
+      region.scrollLeft = 120;
+    }
+  });
+
+  const horizontalDelta = await table1.evaluate((table) => {
+    const header = table.querySelector('thead th');
+    const body = table.querySelector('tbody tr:first-child th, tbody tr:first-child td');
+
+    if (!header || !body) {
+      throw new Error('Expected header and body cells to be rendered.');
+    }
+
+    return Math.round(header.getBoundingClientRect().left - body.getBoundingClientRect().left);
+  });
+
+  expect(horizontalDelta).toBe(0);
 });
 
 test('simulating sticky topbar shifts the sticky offset', async ({ page }) => {
@@ -65,7 +98,7 @@ test('simulating sticky topbar shifts the sticky offset', async ({ page }) => {
 
 test('toggling off sticky header removes translations', async ({ page }) => {
   const table1 = page.locator('table[aria-label="Viewport sticky table 1"]');
-  const headerCell = table1.locator('thead th').first();
+  const thead = table1.locator('thead');
 
   // Scroll Table 1 into view
   await table1.scrollIntoViewIfNeeded();
@@ -76,7 +109,7 @@ test('toggling off sticky header removes translations', async ({ page }) => {
   });
   await page.waitForTimeout(150);
 
-  let transform = await headerCell.evaluate((el) => {
+  let transform = await thead.evaluate((el) => {
     return el.style.transform || window.getComputedStyle(el).transform;
   });
   expect(transform).not.toBe('');
@@ -99,7 +132,7 @@ test('toggling off sticky header removes translations', async ({ page }) => {
   await page.waitForTimeout(150);
 
   // The translation should be cleared / not applied
-  transform = await headerCell.evaluate((el) => {
+  transform = await thead.evaluate((el) => {
     return el.style.transform || window.getComputedStyle(el).transform;
   });
   expect(transform === '' || transform === 'none' || transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(true);

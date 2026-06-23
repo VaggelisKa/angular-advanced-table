@@ -3206,6 +3206,52 @@ describe('NatTable', () => {
     expect(tableInstance.cachedStickyTop).toBe(64);
   });
 
+  it('uses the header row as the viewport sticky transform layer', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    const scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
+
+    vi.stubGlobal('CSS', {
+      supports: (): boolean => false
+    });
+
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 150
+    });
+
+    const table = getInternalTable(fixture) as unknown as {
+      cachedStickyTop: number;
+      isRegionScrollable: boolean;
+      tableHeight: number;
+      tablePageTop: number;
+      theadHeight: number;
+      updateStickyHeaderPosition(): void;
+    };
+    const thead = queryRequired<HTMLTableSectionElement>(fixture, 'thead');
+    const headerCells = queryAll<HTMLTableCellElement>(fixture, 'thead th');
+
+    table.cachedStickyTop = 0;
+    table.isRegionScrollable = false;
+    table.tableHeight = 400;
+    table.tablePageTop = 100;
+    table.theadHeight = 40;
+
+    try {
+      table.updateStickyHeaderPosition();
+
+      expect(thead.style.transform).toBe('translate3d(0, 50px, 0)');
+      expect(headerCells.every((cell) => cell.style.transform === '')).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+
+      if (scrollYDescriptor) {
+        Object.defineProperty(window, 'scrollY', scrollYDescriptor);
+      }
+    }
+  });
+
   it('refreshes cached sticky dimensions when rendered rows change', async () => {
     await recreateHost({ stickyHeader: true, initialState: {} });
     fixture.detectChanges();

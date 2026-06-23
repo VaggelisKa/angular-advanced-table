@@ -1814,6 +1814,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
     // Check vertical scrollability of region
     const overflowY = window.getComputedStyle(region).overflowY;
+    const supportsScrollTimeline = this.supportsScrollTimeline();
 
     this.isRegionScrollable = region.scrollHeight > region.clientHeight && (overflowY === 'auto' || overflowY === 'scroll');
 
@@ -1823,7 +1824,8 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       tableEl.classList.remove('is-region-scrollable');
     }
 
-    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
+    if (supportsScrollTimeline) {
+      tableEl.classList.add('supports-scroll-timeline');
       const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop);
       const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
       const rangeEnd = rangeStart + maxTranslate;
@@ -1831,6 +1833,8 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       tableEl.style.setProperty('--nat-table-sticky-range-start', `${rangeStart}px`);
       tableEl.style.setProperty('--nat-table-sticky-range-end', `${rangeEnd}px`);
       tableEl.style.setProperty('--nat-table-sticky-max-translate', `${maxTranslate}px`);
+    } else {
+      tableEl.classList.remove('supports-scroll-timeline');
     }
   }
 
@@ -1842,8 +1846,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         return;
       }
 
-      const supportsScrollTimeline =
-        typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
+      const supportsScrollTimeline = this.supportsScrollTimeline();
 
       if (typeof IntersectionObserver !== 'undefined') {
         this.intersectionObserver = new IntersectionObserver(
@@ -1914,44 +1917,29 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   private updateStickyHeaderPosition(): void {
     const region = this.tableRegionRef()?.nativeElement;
+    const theadEl = this.cachedTheadEl ?? region?.querySelector('thead');
 
-    if (!region) {
+    if (!region || !theadEl) {
       return;
     }
 
     if (!this.stickyHeader()) {
-      const headerCells =
-        this.cachedHeaderCells.length > 0
-          ? this.cachedHeaderCells
-          : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
-
-      for (const cell of headerCells) {
-        cell.style.transform = '';
-      }
+      this.clearViewportStickyTransform(theadEl);
 
       return;
     }
-
-    const headerCells =
-      this.cachedHeaderCells.length > 0
-        ? this.cachedHeaderCells
-        : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
-
-    this.cachedHeaderCells = headerCells as HTMLTableCellElement[];
 
     if (this.isRegionScrollable) {
-      for (const cell of headerCells) {
-        cell.style.transform = '';
-      }
+      this.clearViewportStickyTransform(theadEl);
 
       return;
     }
 
-    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
-      for (const cell of headerCells) {
-        if (cell.style.transform) {
-          cell.style.transform = '';
-        }
+    if (this.supportsScrollTimeline()) {
+      this.clearLegacyHeaderCellTransforms(region);
+
+      if (theadEl.style.transform) {
+        theadEl.style.transform = '';
       }
 
       return;
@@ -1970,9 +1958,40 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
     const transformValue = translateY > 0 ? `translate3d(0, ${translateY}px, 0)` : '';
 
-    for (const cell of headerCells) {
-      cell.style.transform = transformValue;
+    if (theadEl.style.transform !== transformValue) {
+      theadEl.style.transform = transformValue;
     }
+  }
+
+  private clearViewportStickyTransform(theadEl: HTMLTableSectionElement): void {
+    if (theadEl.style.transform) {
+      theadEl.style.transform = '';
+    }
+
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (region) {
+      this.clearLegacyHeaderCellTransforms(region);
+    }
+  }
+
+  private clearLegacyHeaderCellTransforms(region: HTMLElement): void {
+    const headerCells =
+      this.cachedHeaderCells.length > 0
+        ? this.cachedHeaderCells
+        : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+
+    this.cachedHeaderCells = headerCells;
+
+    for (const cell of headerCells) {
+      if (cell.style.transform) {
+        cell.style.transform = '';
+      }
+    }
+  }
+
+  private supportsScrollTimeline(): boolean {
+    return typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
   }
 
   private measureRegionViewportWidth(): void {
