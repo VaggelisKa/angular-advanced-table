@@ -9,10 +9,16 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded runs: a new push to a PR/branch kills the in-flight one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Warm the node_modules cache once; every downstream job restores it.
   install:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
         with:
@@ -23,6 +29,7 @@ jobs:
   format:
     needs: install
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
         with:
@@ -35,6 +42,7 @@ jobs:
   checks:
     needs: format
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
         with:
@@ -48,6 +56,7 @@ jobs:
   e2e:
     needs: format
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
         with:
@@ -81,11 +90,27 @@ jobs:
             exit 1
           fi
           pnpm exec nx affected -t e2e-ci --base="$NX_BASE" --head="$NX_HEAD"
+      # On failure keep the trace (on-first-retry) + html + blob reports.
+      # Confirmed via the resolved CI config + `nx show project e2e`: atomized
+      # e2e-ci writes all three under
+      # dist/.playwright/e2e/{test-output,playwright-report,blob-report}.
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: dist/.playwright
+          if-no-files-found: ignore
+          retention-days: 7
 
   # Release gates: version plan on package-affecting PRs + full verify.
   release:
-    needs: format
+    # Gate only — does not publish (see release.yml). Runs the heavy `verify`
+    # (full build+test+pack) only once checks AND e2e are green, so a failing
+    # PR doesn't burn minutes building packages that won't ship anyway.
+    needs: [checks, e2e]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
         with:
