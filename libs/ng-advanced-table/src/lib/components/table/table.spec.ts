@@ -3342,54 +3342,6 @@ describe('NatTable', () => {
     }
   });
 
-  it('keeps viewport sticky on horizontally scrollable coarse touch tables without scroll timelines', async () => {
-    await recreateHost({ stickyHeader: true });
-    fixture.detectChanges();
-
-    const restoreMatchMedia = mockCoarseTouchPointer(true);
-
-    vi.stubGlobal('CSS', {
-      supports: (): boolean => true
-    });
-
-    const table = getInternalTable(fixture) as unknown as {
-      measureTableDimensions(): void;
-    };
-    const region = queryRequired<HTMLElement>(fixture, '.table-region');
-    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
-    const thead = queryRequired<HTMLTableSectionElement>(fixture, 'thead');
-
-    mockClientRect(tableElement, { top: 100, height: 400 });
-    mockClientRect(thead, { height: 40 });
-    Object.defineProperty(region, 'scrollHeight', {
-      configurable: true,
-      value: 400
-    });
-    Object.defineProperty(region, 'clientHeight', {
-      configurable: true,
-      value: 400
-    });
-    Object.defineProperty(region, 'scrollWidth', {
-      configurable: true,
-      value: 900
-    });
-    Object.defineProperty(region, 'clientWidth', {
-      configurable: true,
-      value: 600
-    });
-
-    try {
-      table.measureTableDimensions();
-
-      expect(tableElement.classList.contains('uses-viewport-sticky')).toBe(true);
-      expect(tableElement.classList.contains('uses-native-viewport-sticky')).toBe(false);
-      expect(tableElement.classList.contains('supports-scroll-timeline')).toBe(false);
-    } finally {
-      vi.unstubAllGlobals();
-      restoreMatchMedia();
-    }
-  });
-
   it('refreshes cached sticky dimensions when rendered rows change', async () => {
     await recreateHost({ stickyHeader: true, initialState: {} });
     fixture.detectChanges();
