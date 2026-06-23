@@ -3206,6 +3206,95 @@ describe('NatTable', () => {
     expect(tableInstance.cachedStickyTop).toBe(64);
   });
 
+  it('uses live table position for viewport sticky header transforms', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    vi.stubGlobal('CSS', {
+      supports: (): boolean => false
+    });
+
+    const table = getInternalTable(fixture) as unknown as {
+      cachedStickyTop: number;
+      isRegionScrollable: boolean;
+      tableHeight: number;
+      theadHeight: number;
+      updateStickyHeaderPosition(): void;
+    };
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+    const headerCells = queryAll<HTMLTableCellElement>(fixture, 'thead th');
+
+    tableElement.getBoundingClientRect = (): DOMRect =>
+      ({
+        top: -50,
+        height: 400
+      }) as DOMRect;
+
+    table.cachedStickyTop = 0;
+    table.isRegionScrollable = false;
+    table.tableHeight = 400;
+    table.theadHeight = 40;
+
+    try {
+      table.updateStickyHeaderPosition();
+
+      expect(headerCells.every((cell) => cell.style.transform === 'translate3d(0, 50px, 0)')).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('compensates for the mobile visual-viewport offset when docking the header', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    vi.stubGlobal('CSS', {
+      supports: (): boolean => false
+    });
+
+    const visualViewportDescriptor = Object.getOwnPropertyDescriptor(window, 'visualViewport');
+
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: { offsetTop: 40 }
+    });
+
+    const table = getInternalTable(fixture) as unknown as {
+      cachedStickyTop: number;
+      isRegionScrollable: boolean;
+      tableHeight: number;
+      theadHeight: number;
+      updateStickyHeaderPosition(): void;
+    };
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+    const headerCells = queryAll<HTMLTableCellElement>(fixture, 'thead th');
+
+    tableElement.getBoundingClientRect = (): DOMRect =>
+      ({
+        top: 0,
+        height: 400
+      }) as DOMRect;
+
+    table.cachedStickyTop = 0;
+    table.isRegionScrollable = false;
+    table.tableHeight = 400;
+    table.theadHeight = 40;
+
+    try {
+      table.updateStickyHeaderPosition();
+
+      expect(headerCells.every((cell) => cell.style.transform === 'translate3d(0, 40px, 0)')).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+
+      if (visualViewportDescriptor) {
+        Object.defineProperty(window, 'visualViewport', visualViewportDescriptor);
+      } else {
+        delete (window as unknown as { visualViewport?: unknown }).visualViewport;
+      }
+    }
+  });
+
   it('refreshes cached sticky dimensions when rendered rows change', async () => {
     await recreateHost({ stickyHeader: true, initialState: {} });
     fixture.detectChanges();

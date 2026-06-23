@@ -199,6 +199,15 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
 };
 
 /**
+ * Whether the current browser can drive the viewport-sticky header from the
+ * compositor via CSS scroll-driven animations. When unsupported (notably older
+ * iOS Safari), the table falls back to the JS scroll listener instead.
+ */
+function browserSupportsScrollTimeline(): boolean {
+  return typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
+}
+
+/**
  * Signals-first Angular table primitive built on TanStack Table.
  *
  * The core component renders the table structure only. Optional controls,
@@ -1823,7 +1832,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       tableEl.classList.remove('is-region-scrollable');
     }
 
-    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
+    if (browserSupportsScrollTimeline()) {
       const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop);
       const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
       const rangeEnd = rangeStart + maxTranslate;
@@ -1842,32 +1851,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         return;
       }
 
-      const supportsScrollTimeline =
-        typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
+      const supportsScrollTimeline = browserSupportsScrollTimeline();
 
-      if (typeof IntersectionObserver !== 'undefined') {
-        this.intersectionObserver = new IntersectionObserver(
-          (entries) => {
-            const entry = entries[0];
-            const wasVisible = this.isTableVisible;
-
-            this.isTableVisible = entry.isIntersecting;
-
-            if (this.isTableVisible && !wasVisible) {
-              this.updateCachedStickyTop();
-              this.measureTableDimensions();
-              this.updateStickyHeaderPosition();
-            }
-          },
-          {
-            rootMargin: '100px 0px 100px 0px'
-          }
-        );
-
-        this.intersectionObserver.observe(region);
-      } else {
-        this.isTableVisible = true;
-      }
+      this.observeStickyHeaderVisibility(region);
 
       let ticking = false;
 
@@ -1890,11 +1876,15 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         }
       };
 
+      const viewport = window.visualViewport ?? null;
+
       if (!supportsScrollTimeline) {
         window.addEventListener('scroll', listener, { passive: true });
         region.addEventListener('scroll', listener, { passive: true });
+        viewport?.addEventListener('scroll', listener, { passive: true });
       }
       window.addEventListener('resize', listener, { passive: true });
+      viewport?.addEventListener('resize', listener, { passive: true });
 
       this.destroyRef.onDestroy(() => {
         this.intersectionObserver?.disconnect();
@@ -1902,14 +1892,49 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         if (!supportsScrollTimeline) {
           window.removeEventListener('scroll', listener);
           region.removeEventListener('scroll', listener);
+          viewport?.removeEventListener('scroll', listener);
         }
         window.removeEventListener('resize', listener);
+        viewport?.removeEventListener('resize', listener);
       });
 
       this.updateCachedStickyTop();
       this.measureTableDimensions();
       this.updateStickyHeaderPosition();
     });
+  }
+
+  /**
+   * Tracks whether the table is near the viewport so the sticky-header scroll
+   * work is skipped while it is off-screen, and recalculates its dimensions the
+   * moment it scrolls back into view.
+   */
+  private observeStickyHeaderVisibility(region: HTMLElement): void {
+    if (typeof IntersectionObserver === 'undefined') {
+      this.isTableVisible = true;
+
+      return;
+    }
+
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const wasVisible = this.isTableVisible;
+
+        this.isTableVisible = entry.isIntersecting;
+
+        if (this.isTableVisible && !wasVisible) {
+          this.updateCachedStickyTop();
+          this.measureTableDimensions();
+          this.updateStickyHeaderPosition();
+        }
+      },
+      {
+        rootMargin: '100px 0px 100px 0px'
+      }
+    );
+
+    this.intersectionObserver.observe(region);
   }
 
   private updateStickyHeaderPosition(): void {
@@ -1947,7 +1972,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
+    if (browserSupportsScrollTimeline()) {
       for (const cell of headerCells) {
         if (cell.style.transform) {
           cell.style.transform = '';
@@ -1957,8 +1982,15 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    const currentScrollY = window.scrollY;
-    const rectTop = this.tablePageTop - currentScrollY;
+    // Read the header's live viewport position every frame rather than deriving
+    // it from a cached page offset. On mobile engines `window.scrollY` lags behind
+    // compositor-driven momentum scrolling and ignores the visual-viewport shift
+    // caused by the dynamic URL bar, which left the translated header detached from
+    // the top of the viewport. Measuring the live rect and compensating for
+    // `visualViewport.offsetTop` keeps the header docked.
+    const tableEl = this.cachedTableEl ?? region.querySelector<HTMLTableElement>('table');
+    const visualOffsetTop = window.visualViewport?.offsetTop ?? 0;
+    const rectTop = (tableEl ? tableEl.getBoundingClientRect().top : this.tablePageTop - window.scrollY) - visualOffsetTop;
 
     let translateY = 0;
 
