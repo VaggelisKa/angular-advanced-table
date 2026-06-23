@@ -10,42 +10,63 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  # Warm the node_modules cache once; every downstream job restores it.
+  install:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - uses: ./.github/actions/setup
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+  # Gate: formatting fails fast before any heavier job starts.
+  format:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
         with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
       - name: Check formatting
         run: pnpm exec prettier --check .
 
-      - name: Set Nx comparison refs
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            echo "NX_BASE=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
-          else
-            echo "NX_BASE=HEAD~1" >> "$GITHUB_ENV"
-          fi
+  # Static + unit + build, on affected projects.
+  checks:
+    needs: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Lint, stylelint, test, build (affected)
+        run: pnpm exec nx affected -t stylelint,lint,test,build --base="$NX_BASE" --head="$NX_HEAD"
 
-          echo "NX_HEAD=HEAD" >> "$GITHUB_ENV"
+  # Atomized Playwright e2e, in parallel with checks. Playwright's webServer
+  # starts the showcase on demand, so no manual serve step is needed.
+  e2e:
+    needs: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Install Playwright Chrome
+        run: npx playwright install --with-deps chrome
+      - name: Atomized e2e (affected)
+        run: pnpm exec nx affected -t e2e-ci --base="$NX_BASE" --head="$NX_HEAD"
 
+  # Release gates: version plan on package-affecting PRs + full verify.
+  release:
+    needs: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
       - name: Detect package-affecting changes
         id: package_changes
         if: github.event_name == 'pull_request'
@@ -56,16 +77,8 @@ jobs:
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
-
       - name: Require Nx version plan
         if: github.event_name == 'pull_request' && steps.package_changes.outputs.changed == 'true'
         run: pnpm exec nx release plan:check --base="$NX_BASE" --head="$NX_HEAD"
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Verify workspace
-        run: pnpm exec nx affected -t lint,test,build,e2e,stylelint --base="$NX_BASE" --head="$NX_HEAD"
-
       - name: Verify packages and release config
         run: pnpm run verify
