@@ -21,7 +21,7 @@ test.describe('Column reordering', () => {
     await nameHeader.focus();
 
     // Press Control + Shift + ArrowRight to swap with Category
-  await page.keyboard.press(`${modifier}+Shift+ArrowRight`);
+    await page.keyboard.press(`${modifier}+Shift+ArrowRight`);
 
     // Order should now be: Category, Name, Status, Value
     await expect(orderItems).toContainText(['Category', 'Name', 'Status', 'Value']);

@@ -28,13 +28,11 @@ test.describe('Column reordering', () => {
     await expect.poll(() => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
     await expect(categoryHeader).toBeFocused();
     await expect(page.getByTestId('nat-table-live-region')).toContainText(
-      'Moved Category column to position 3 of 4 in the unpinned region.',
+      'Moved Category column to position 3 of 4 in the unpinned region.'
     );
   });
 
-  test('scrolls the table region when keyboard reordering moves a focused header right out of view', async ({
-    page,
-  }) => {
+  test('scrolls the table region when keyboard reordering moves a focused header right out of view', async ({ page }) => {
     await page.setViewportSize({ width: 420, height: 760 });
     await page.addStyleTag({
       content: `
@@ -44,7 +42,7 @@ test.describe('Column reordering', () => {
           min-width: 220px !important;
           width: 220px !important;
         }
-      `,
+      `
     });
 
     test('scrolls the table region when keyboard reordering moves a focused header right out of view', async ({ page }) => {

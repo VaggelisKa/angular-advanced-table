@@ -1,6 +1,9 @@
-import { afterNextRender, Component, ElementRef, viewChild } from '@angular/core';
+/* eslint-disable max-lines */
+import { LowerCasePipe } from '@angular/common';
+import type { ElementRef } from '@angular/core';
+import { Component, afterNextRender, viewChild } from '@angular/core';
 
-interface DemoItem {
+type DemoItem = {
   id: string;
   name: string;
   category: string;
@@ -8,41 +11,36 @@ interface DemoItem {
   region: string;
   utilization: string;
   value: number;
-}
+};
 
 // Generate 50 items to ensure long vertical scrollability
 const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
   const id = index + 1;
-  const categories = [
-    'Cloud Compute',
-    'Storage Bucket',
-    'Serverless Function',
-    'Database Instance',
-  ];
+  const categories = ['Cloud Compute', 'Storage Bucket', 'Serverless Function', 'Database Instance'];
   const statuses = ['Healthy', 'Degraded', 'Maintenance', 'Provisioning'];
   const regions = ['us-east-1', 'us-west-2', 'eu-central-1', 'ap-northeast-1'];
 
   return {
     id: `node-${id}`,
     name: `Resource Node ${id}`,
-    category: categories[id % categories.length]!,
-    status: statuses[id % statuses.length]!,
-    region: regions[id % regions.length]!,
+    category: categories[id % categories.length] ?? '',
+    status: statuses[id % statuses.length] ?? '',
+    region: regions[id % regions.length] ?? '',
     utilization: `${30 + ((id * 17) % 65)}%`,
-    value: 500 + ((id * 380) % 9500),
+    value: 500 + ((id * 380) % 9500)
   };
 });
 
 @Component({
   selector: 'app-sticky-header-grid-poc',
+  imports: [LowerCasePipe],
   template: `
     <div class="showcase-page showcase-container">
       <header class="header-section">
         <h1 class="title">Sticky Header (CSS Grid)</h1>
         <p class="description">
-          Demonstrates a sticky table header with horizontal scroll using CSS Grid and ARIA roles.
-          The header sticks to the browser viewport without container height restrictions while the
-          body scrolls horizontally.
+          Demonstrates a sticky table header with horizontal scroll using CSS Grid and ARIA roles. The header sticks to the browser
+          viewport without container height restrictions while the body scrolls horizontally.
         </p>
       </header>
 
@@ -50,38 +48,36 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
         <div class="card">
           <h2 class="card-title">Grid Table</h2>
 
-          <div role="table" aria-label="Resource Node Utilization" class="grid-table">
+          <div aria-label="Resource Node Utilization" class="grid-table" role="table">
             <!-- Header scroll container. Horizontally synced, vertically sticky. -->
-            <div #headerScroll class="grid-header-scroll-wrapper">
-              <div role="rowgroup" class="grid-header">
-                <div role="row" class="grid-row header-row">
-                  <div role="columnheader" class="grid-cell header-cell">Node Name</div>
-                  <div role="columnheader" class="grid-cell header-cell">Category</div>
-                  <div role="columnheader" class="grid-cell header-cell">Status</div>
-                  <div role="columnheader" class="grid-cell header-cell">Region</div>
-                  <div role="columnheader" class="grid-cell header-cell">CPU Utilization</div>
-                  <div role="columnheader" class="grid-cell header-cell">Monthly Cost</div>
+            <div #headerScroll class="grid-header-scroll-wrapper" role="presentation">
+              <div class="grid-header" role="rowgroup">
+                <div class="grid-row header-row" role="row">
+                  <div class="grid-cell header-cell" role="columnheader">Node Name</div>
+                  <div class="grid-cell header-cell" role="columnheader">Category</div>
+                  <div class="grid-cell header-cell" role="columnheader">Status</div>
+                  <div class="grid-cell header-cell" role="columnheader">Region</div>
+                  <div class="grid-cell header-cell" role="columnheader">CPU Utilization</div>
+                  <div class="grid-cell header-cell" role="columnheader">Monthly Cost</div>
                 </div>
               </div>
             </div>
 
             <!-- Body scroll container. Handles horizontal scrolling natively. -->
-            <div #bodyScroll class="grid-body-scroll-wrapper">
-              <div role="rowgroup" class="grid-body">
+            <div #bodyScroll class="grid-body-scroll-wrapper" role="presentation">
+              <div class="grid-body" role="rowgroup">
                 @for (item of data; track item.id) {
-                  <div role="row" class="grid-row body-row">
-                    <div role="cell" class="grid-cell node-name">{{ item.name }}</div>
-                    <div role="cell" class="grid-cell">{{ item.category }}</div>
-                    <div role="cell" class="grid-cell">
-                      <span class="status-badge" [class]="item.status.toLowerCase()">
+                  <div class="grid-row body-row" role="row">
+                    <div class="grid-cell node-name" role="cell">{{ item.name }}</div>
+                    <div class="grid-cell" role="cell">{{ item.category }}</div>
+                    <div class="grid-cell" role="cell">
+                      <span [class]="'status-badge ' + (item.status | lowercase)">
                         {{ item.status }}
                       </span>
                     </div>
-                    <div role="cell" class="grid-cell code-font">{{ item.region }}</div>
-                    <div role="cell" class="grid-cell">{{ item.utilization }}</div>
-                    <div role="cell" class="grid-cell cost-cell">
-                      \${{ item.value.toLocaleString() }}
-                    </div>
+                    <div class="grid-cell code-font" role="cell">{{ item.region }}</div>
+                    <div class="grid-cell" role="cell">{{ item.utilization }}</div>
+                    <div class="grid-cell cost-cell" role="cell">\${{ item.value.toLocaleString() }}</div>
                   </div>
                 }
               </div>
@@ -93,13 +89,11 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
           <h2 class="card-title">Grid Table Layout</h2>
           <div class="control-panel">
             <p>
-              This implementation uses CSS Grid and explicit ARIA roles to allow the header to stick
-              to the viewport (without a parent height limit) while the table body scrolls
-              horizontally.
+              This implementation uses CSS Grid and explicit ARIA roles to allow the header to stick to the viewport (without a parent
+              height limit) while the table body scrolls horizontally.
             </p>
             <div class="tip">
-              Scroll the page vertically to see the header stay pinned, and scroll the table body
-              horizontally to see columns align.
+              Scroll the page vertically to see the header stay pinned, and scroll the table body horizontally to see columns align.
             </div>
           </div>
         </div>
@@ -154,7 +148,6 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
       }
     }
 
-
     /* Header Container - sticky vertically, hides scrollbar horizontally */
     .grid-header-scroll-wrapper {
       position: sticky;
@@ -171,8 +164,6 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
-
-
 
     /* Ensure both header and body scroll elements have the same content width */
     .grid-header,
@@ -268,7 +259,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
       font-size: 14px;
       line-height: 1.5;
     }
-  `,
+  `
 })
 export class StickyHeaderGridPocPage {
   protected readonly data = DEMO_DATA;
@@ -276,17 +267,14 @@ export class StickyHeaderGridPocPage {
   private readonly headerScroll = viewChild<ElementRef<HTMLElement>>('headerScroll');
   private readonly bodyScroll = viewChild<ElementRef<HTMLElement>>('bodyScroll');
 
-  constructor() {
+  private constructor() {
     afterNextRender(() => {
       const bodyEl = this.bodyScroll()?.nativeElement;
       const headerEl = this.headerScroll()?.nativeElement;
 
       if (bodyEl && headerEl) {
         // Detect native CSS scroll-timeline and timeline-scope support
-        const supportsScrollTimeline =
-          CSS.supports('timeline-scope', '--foo') &&
-          (CSS.supports('(scroll-timeline-axis: inline)') ||
-            CSS.supports('(scroll-timeline: --foo inline)'));
+        const supportsScrollTimeline = CSS.supports('timeline-scope', '--foo') && CSS.supports('(scroll-timeline-axis: inline)');
 
         if (supportsScrollTimeline) {
           return; // Skip JS syncing if native CSS scroll-timeline is supported
@@ -308,7 +296,7 @@ export class StickyHeaderGridPocPage {
               ticking = true;
             }
           },
-          { passive: true },
+          { passive: true }
         );
       }
     });

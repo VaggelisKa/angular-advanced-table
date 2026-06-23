@@ -81,10 +81,8 @@ export const routes: Routes = [
   {
     path: 'examples/sticky-header-grid-poc',
     title: 'Advanced Table - Sticky Header Grid PoC',
-    loadComponent: () =>
-      import('./pages/single-features/sticky-header-grid-poc').then(
-        (module) => module.StickyHeaderGridPocPage,
-      ),
+    loadComponent: async () =>
+      import('./pages/single-features/sticky-header-grid-poc').then((module) => module.StickyHeaderGridPocPage)
   },
   {
     path: 'examples/toolbar',
