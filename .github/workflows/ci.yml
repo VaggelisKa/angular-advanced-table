@@ -40,6 +40,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
+      - uses: ./.github/actions/nx-refs
       - name: Lint, stylelint, test, build (affected)
         run: pnpm exec nx affected -t stylelint,lint,test,build --base="$NX_BASE" --head="$NX_HEAD"
 
@@ -52,6 +53,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
+      - uses: ./.github/actions/nx-refs
       - name: Install Playwright Chrome
         run: npx playwright install --with-deps chrome
       - name: Atomized e2e (affected)
@@ -63,12 +65,21 @@ jobs:
         # Drop the pre-serve + flag once Nx Cloud / DTE agents are wired up.
         env:
           NX_SKIP_ATOMIZER_VALIDATION: 'true'
+        shell: bash
         run: |
           pnpm exec nx run showcase:serve-e2e --port 4201 &
+          serve_pid=$!
+          up=
           for i in $(seq 1 90); do
-            if curl -sf http://localhost:4201 >/dev/null; then echo "showcase up"; break; fi
+            if curl -sf http://localhost:4201 >/dev/null; then up=1; echo "showcase up"; break; fi
+            if ! kill -0 "$serve_pid" 2>/dev/null; then echo "serve-e2e exited before binding :4201"; break; fi
             sleep 2
           done
+          if [ -z "$up" ]; then
+            echo "::error::showcase failed to bind :4201 — aborting before e2e"
+            kill "$serve_pid" 2>/dev/null || true
+            exit 1
+          fi
           pnpm exec nx affected -t e2e-ci --base="$NX_BASE" --head="$NX_HEAD"
 
   # Release gates: version plan on package-affecting PRs + full verify.
@@ -80,6 +91,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
+      - uses: ./.github/actions/nx-refs
       - name: Detect package-affecting changes
         id: package_changes
         if: github.event_name == 'pull_request'

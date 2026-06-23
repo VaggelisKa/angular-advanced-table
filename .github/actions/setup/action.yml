@@ -1,5 +1,5 @@
 name: Set up workspace
-description: Node 24 + pnpm with a restored node_modules cache and resolved Nx base/head refs.
+description: Node 24 + pnpm with a restored node_modules cache.
 
 runs:
   using: composite
@@ -25,14 +25,3 @@ runs:
       if: steps.node-modules.outputs.cache-hit != 'true'
       shell: bash
       run: pnpm install --frozen-lockfile
-
-    - name: Resolve Nx base/head refs
-      shell: bash
-      run: |
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          echo "NX_BASE=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
-        else
-          echo "NX_BASE=HEAD~1" >> "$GITHUB_ENV"
-        fi
-        echo "NX_HEAD=HEAD" >> "$GITHUB_ENV"
