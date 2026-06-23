@@ -264,6 +264,11 @@
   }
 }
 
+.has-sticky-header:not(.is-region-scrollable) .header-cell {
+  /* Safe reference outside @supports to prevent build minifiers (cssnano) from discarding this keyframe */
+  animation-name: nat-table-viewport-sticky;
+}
+
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   .has-sticky-header:not(.is-region-scrollable) .header-cell {
     animation: nat-table-viewport-sticky auto linear both;
