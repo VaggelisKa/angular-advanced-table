@@ -264,13 +264,13 @@
   }
 }
 
-.has-sticky-header:not(.is-region-scrollable) thead {
+.has-sticky-header.uses-viewport-sticky:not(.is-region-scrollable) thead {
   position: relative;
   z-index: 4;
   will-change: transform;
 }
 
-.has-sticky-header.supports-scroll-timeline:not(.is-region-scrollable) thead {
+.has-sticky-header.uses-viewport-sticky.supports-scroll-timeline:not(.is-region-scrollable) thead {
   /*
    * Safe reference outside @supports to ensure proper keyframe scoping by
    * Angular compiler, guarded by a runtime support class so JS fallback
@@ -283,7 +283,7 @@
 }
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
-  .has-sticky-header.supports-scroll-timeline:not(.is-region-scrollable) thead {
+  .has-sticky-header.uses-viewport-sticky.supports-scroll-timeline:not(.is-region-scrollable) thead {
     animation-timeline: scroll(block root);
     animation-range: var(--nat-table-sticky-range-start, 0px) var(--nat-table-sticky-range-end, 0px);
   }

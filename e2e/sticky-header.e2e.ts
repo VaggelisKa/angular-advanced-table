@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { devices, expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/examples/sticky-header');
@@ -9,7 +9,7 @@ test('renders the sticky header showcase page', async ({ page }) => {
   await expect(page.getByText('Configure Sticky State')).toBeVisible();
 });
 
-test('viewport sticky tables translate headers on page scroll', async ({ page }) => {
+test('desktop viewport sticky tables translate headers on page scroll', async ({ page }) => {
   const table1 = page.locator('table[aria-label="Viewport sticky table 1"]');
   const thead = table1.locator('thead');
   const headerCell = table1.locator('thead th').first();
@@ -35,6 +35,7 @@ test('viewport sticky tables translate headers on page scroll', async ({ page })
   const transform = await thead.evaluate((el) => {
     return el.style.transform || window.getComputedStyle(el).transform;
   });
+  await expect(table1).toHaveClass(/uses-viewport-sticky/);
   expect(transform).not.toBe('');
   expect(transform).not.toBe('none');
   expect(transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(false);
@@ -70,6 +71,37 @@ test('viewport sticky tables translate headers on page scroll', async ({ page })
   });
 
   expect(horizontalDelta).toBe(0);
+});
+
+test('touch viewport sticky tables fall back to normal page scrolling', async ({ baseURL, browser }) => {
+  const context = await browser.newContext({
+    ...devices['iPhone 15'],
+    baseURL
+  });
+  const page = await context.newPage();
+
+  try {
+    await page.goto('/examples/sticky-header');
+
+    const table1 = page.locator('table[aria-label="Viewport sticky table 1"]');
+    const thead = table1.locator('thead');
+
+    await table1.scrollIntoViewIfNeeded();
+    await page.evaluate(() => {
+      window.scrollBy(0, 200);
+    });
+    await page.waitForTimeout(150);
+
+    await expect(table1).toHaveClass(/has-sticky-header/);
+    await expect(table1).not.toHaveClass(/uses-viewport-sticky/);
+
+    const transform = await thead.evaluate((el) => {
+      return el.style.transform || window.getComputedStyle(el).transform;
+    });
+    expect(transform === '' || transform === 'none' || transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(true);
+  } finally {
+    await context.close();
+  }
 });
 
 test('simulating sticky topbar shifts the sticky offset', async ({ page }) => {

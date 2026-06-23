@@ -639,6 +639,33 @@ function mockClientRect(element: HTMLElement, rect: Partial<DOMRectReadOnly>): v
     }) as DOMRect;
 }
 
+function mockCoarseTouchPointer(matches: boolean): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    value: (query: string): MediaQueryList =>
+      ({
+        matches: matches && query === '(hover: none) and (pointer: coarse)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: () => true
+      }) as MediaQueryList
+  });
+
+  return () => {
+    if (descriptor) {
+      Object.defineProperty(window, 'matchMedia', descriptor);
+    } else {
+      Reflect.deleteProperty(window, 'matchMedia');
+    }
+  };
+}
+
 // Returns the last element of a recorded-events array, throwing if empty. Lets
 // assertions read the latest event without optional chaining on `.at(-1)`.
 const requireLast = <T>(values: readonly T[]): T => {
@@ -3224,6 +3251,7 @@ describe('NatTable', () => {
     const table = getInternalTable(fixture) as unknown as {
       cachedStickyTop: number;
       isRegionScrollable: boolean;
+      isViewportStickyEnabled: boolean;
       tableHeight: number;
       tablePageTop: number;
       theadHeight: number;
@@ -3234,6 +3262,7 @@ describe('NatTable', () => {
 
     table.cachedStickyTop = 0;
     table.isRegionScrollable = false;
+    table.isViewportStickyEnabled = true;
     table.tableHeight = 400;
     table.tablePageTop = 100;
     table.theadHeight = 40;
@@ -3245,6 +3274,57 @@ describe('NatTable', () => {
       expect(headerCells.every((cell) => cell.style.transform === '')).toBe(true);
     } finally {
       vi.unstubAllGlobals();
+
+      if (scrollYDescriptor) {
+        Object.defineProperty(window, 'scrollY', scrollYDescriptor);
+      }
+    }
+  });
+
+  it('disables viewport sticky transforms on coarse touch pointers', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    const restoreMatchMedia = mockCoarseTouchPointer(true);
+    const scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
+
+    vi.stubGlobal('CSS', {
+      supports: (): boolean => false
+    });
+
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 150
+    });
+
+    const table = getInternalTable(fixture) as unknown as {
+      measureTableDimensions(): void;
+      updateStickyHeaderPosition(): void;
+    };
+    const region = queryRequired<HTMLElement>(fixture, '.table-region');
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+    const thead = queryRequired<HTMLTableSectionElement>(fixture, 'thead');
+
+    mockClientRect(tableElement, { top: 100, height: 400 });
+    mockClientRect(thead, { height: 40 });
+    Object.defineProperty(region, 'scrollHeight', {
+      configurable: true,
+      value: 400
+    });
+    Object.defineProperty(region, 'clientHeight', {
+      configurable: true,
+      value: 400
+    });
+
+    try {
+      table.measureTableDimensions();
+      table.updateStickyHeaderPosition();
+
+      expect(tableElement.classList.contains('uses-viewport-sticky')).toBe(false);
+      expect(thead.style.transform).toBe('');
+    } finally {
+      vi.unstubAllGlobals();
+      restoreMatchMedia();
 
       if (scrollYDescriptor) {
         Object.defineProperty(window, 'scrollY', scrollYDescriptor);
