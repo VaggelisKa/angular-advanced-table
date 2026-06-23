@@ -10,7 +10,7 @@ import type {
   RowData,
   RowSelectionState,
   SortingState,
-  VisibilityState,
+  VisibilityState
 } from '@tanstack/angular-table';
 
 /**
@@ -18,7 +18,7 @@ import type {
  * packages. Published entry points must expose local public interfaces so
  * package declarations do not reference this private library.
  */
-export interface NatTableState {
+export type NatTableState = {
   sorting: SortingState;
   globalFilter: string;
   columnFilters: ColumnFiltersState;
@@ -28,7 +28,7 @@ export interface NatTableState {
   columnSizing: ColumnSizingState;
   rowSelection: RowSelectionState;
   pagination: PaginationState;
-}
+};
 
 /** Semantic tone that can be applied to a rendered body cell. */
 export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
@@ -37,41 +37,36 @@ export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
 export type NatTableSortDirection = 'asc' | 'desc' | false;
 
 /** Context passed to companion sort-indicator renderers. */
-export interface NatTableSortIndicatorContext<TData extends RowData = RowData> {
+export type NatTableSortIndicatorContext<TData extends RowData = RowData> = {
   $implicit: NatTableSortDirection;
   sortState: NatTableSortDirection;
   ariaSort: 'ascending' | 'descending' | 'none';
   column: Column<TData, unknown>;
   label: string;
-}
+};
 
 /** Value returned by table export metadata before format-specific normalization. */
 export type NatTableColumnExportValue = unknown;
 
 /** Context passed to column export value callbacks. */
-export interface NatTableColumnExportValueContext<
-  TData extends RowData = RowData,
-  TValue = unknown,
-> {
+export type NatTableColumnExportValueContext<TData extends RowData = RowData, TValue = unknown> = {
   readonly row: Row<TData>;
   readonly column: Column<TData, TValue>;
   readonly value: TValue;
-}
+};
 
 /** Export behavior attached to a table column definition. */
-export interface NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> {
+export type NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> = {
   readonly enabled?: boolean;
   readonly header?: string;
-  readonly value?: (
-    context: NatTableColumnExportValueContext<TData, TValue>,
-  ) => NatTableColumnExportValue;
-}
+  readonly value?: (context: NatTableColumnExportValueContext<TData, TValue>) => NatTableColumnExportValue;
+};
 
 /**
  * Shared canonical metadata contract understood by the table, companion UI,
  * and optional utilities.
  */
-export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> {
+export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown> = {
   label?: string;
   hiddenHeaderLabel?: string;
   align?: 'start' | 'end';
@@ -83,4 +78,4 @@ export interface NatTableColumnMeta<TData extends RowData = RowData, TValue = un
   headerMinSize?: number | string;
   headerMaxSize?: number | string;
   export?: NatTableColumnExportOptions<TData, TValue>;
-}
+};

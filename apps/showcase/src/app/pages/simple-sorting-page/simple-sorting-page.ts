@@ -1,22 +1,17 @@
+/* eslint-disable max-lines */
+import { UpperCasePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
-import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
-import { withNatTableHeaderActions, NatTableSurface } from 'ng-advanced-table-ui';
+import { flexRenderComponent } from '@tanstack/angular-table';
+import type { ColumnDef } from '@tanstack/angular-table';
 
+import { NatTable } from 'ng-advanced-table';
+import type { NatTableState } from 'ng-advanced-table';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+
+import { getMockOrderRowId } from './simple-sorting-page.util';
+import type { MockOrderRow } from './simple-sorting-page.util';
 import { NatRowActionsMenu } from '../table-showcase-page/nat-row-actions-menu';
-
-interface MockOrderRow {
-  id: string;
-  customer: string;
-  owner: string;
-  channel: 'Online' | 'Retail' | 'Wholesale';
-  region: string;
-  status: 'Ready' | 'Review' | 'Queued';
-  items: number;
-  updatedAt: number;
-  total: number;
-}
 
 @Component({
   selector: 'app-order-code',
@@ -31,8 +26,7 @@ interface MockOrderRow {
       border-radius: 6px;
       background: color-mix(in srgb, var(--showcase-page-text) 4%, var(--showcase-page-surface));
       color: var(--showcase-page-text);
-      font-family:
-        'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
+      font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
       font-size: 0.78rem;
       font-weight: 650;
       line-height: 1;
@@ -44,10 +38,11 @@ interface MockOrderRow {
       word-break: normal;
     }
   `,
-  template: `{{ code().toUpperCase() }}`,
+  imports: [UpperCasePipe],
+  template: `{{ code() | uppercase }}`
 })
 class OrderCode {
-  readonly code = input.required<string>();
+  public readonly code = input.required<string>();
 }
 
 @Component({
@@ -87,22 +82,22 @@ class OrderCode {
   `,
   template: `<span>{{ status() }}</span>`,
   host: {
-    '[attr.data-status]': 'status()',
-  },
+    '[attr.data-status]': 'status()'
+  }
 })
 class OrderStatusBadge {
-  readonly status = input.required<MockOrderRow['status']>();
+  public readonly status = input.required<MockOrderRow['status']>();
 }
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 0
 });
 const integerFormatter = new Intl.NumberFormat('en-US');
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
-  day: 'numeric',
+  day: 'numeric'
 });
 
 const mockOrderRows: readonly MockOrderRow[] = [
@@ -115,7 +110,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
     status: 'Ready',
     items: 18,
     updatedAt: Date.UTC(2026, 5, 6),
-    total: 18400,
+    total: 18400
   },
   {
     id: 'ord-1002',
@@ -126,7 +121,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
     status: 'Queued',
     items: 7,
     updatedAt: Date.UTC(2026, 5, 4),
-    total: 9200,
+    total: 9200
   },
   {
     id: 'ord-1011',
@@ -137,7 +132,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
     status: 'Review',
     items: 12,
     updatedAt: Date.UTC(2026, 5, 7),
-    total: 12750,
+    total: 12750
   },
   {
     id: 'ord-1004',
@@ -148,7 +143,7 @@ const mockOrderRows: readonly MockOrderRow[] = [
     status: 'Ready',
     items: 24,
     updatedAt: Date.UTC(2026, 5, 5),
-    total: 22100,
+    total: 22100
   },
   {
     id: 'ord-1009',
@@ -159,8 +154,8 @@ const mockOrderRows: readonly MockOrderRow[] = [
     status: 'Review',
     items: 15,
     updatedAt: Date.UTC(2026, 5, 8),
-    total: 14600,
-  },
+    total: 14600
+  }
 ];
 
 const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderActions([
@@ -173,14 +168,14 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     meta: {
       label: 'Order',
       rowHeader: true,
-      cellMaxLines: Infinity,
+      cellMaxLines: Infinity
     },
     cell: (info) =>
       flexRenderComponent(OrderCode, {
         inputs: {
-          code: info.getValue<string>(),
-        },
-      }),
+          code: info.getValue<string>()
+        }
+      })
   },
   {
     accessorKey: 'customer',
@@ -189,9 +184,9 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     size: 220,
     minSize: 160,
     meta: {
-      label: 'Customer',
+      label: 'Customer'
     },
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'owner',
@@ -201,9 +196,9 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     minSize: 190,
     meta: {
       label: 'Company',
-      cellHeight: 72,
+      cellHeight: 72
     },
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'channel',
@@ -212,9 +207,9 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     size: 140,
     minSize: 116,
     meta: {
-      label: 'Channel',
+      label: 'Channel'
     },
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'region',
@@ -223,9 +218,9 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     size: 140,
     minSize: 112,
     meta: {
-      label: 'Region',
+      label: 'Region'
     },
-    cell: (info) => info.getValue<string>(),
+    cell: (info) => info.getValue<string>()
   },
   {
     accessorKey: 'status',
@@ -234,14 +229,14 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     size: 132,
     minSize: 108,
     meta: {
-      label: 'Status',
+      label: 'Status'
     },
     cell: (info) =>
       flexRenderComponent(OrderStatusBadge, {
         inputs: {
-          status: info.getValue<MockOrderRow['status']>(),
-        },
-      }),
+          status: info.getValue<MockOrderRow['status']>()
+        }
+      })
   },
   {
     accessorKey: 'items',
@@ -251,9 +246,9 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     minSize: 88,
     meta: {
       label: 'Items',
-      align: 'end',
+      align: 'end'
     },
-    cell: (info) => integerFormatter.format(info.getValue<number>()),
+    cell: (info) => integerFormatter.format(info.getValue<number>())
   },
   {
     accessorKey: 'updatedAt',
@@ -262,9 +257,9 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     size: 128,
     minSize: 108,
     meta: {
-      label: 'Updated',
+      label: 'Updated'
     },
-    cell: (info) => dateFormatter.format(info.getValue<number>()),
+    cell: (info) => dateFormatter.format(info.getValue<number>())
   },
   {
     accessorKey: 'total',
@@ -274,9 +269,9 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     minSize: 104,
     meta: {
       label: 'Total',
-      align: 'end',
+      align: 'end'
     },
-    cell: (info) => currencyFormatter.format(info.getValue<number>()),
+    cell: (info) => currencyFormatter.format(info.getValue<number>())
   },
   {
     id: 'actions',
@@ -289,33 +284,33 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     meta: {
       hiddenHeaderLabel: 'Row actions',
       align: 'end',
-      headerSize: 50,
+      headerSize: 50
     },
     cell: (info) =>
       flexRenderComponent(NatRowActionsMenu, {
         inputs: {
-          symbol: info.row.original.id,
-        },
-      }),
-  },
+          symbol: info.row.original.id
+        }
+      })
+  }
 ]);
 
 const preconfiguredTableState: Partial<NatTableState> = {
   columnPinning: {
     left: ['owner'],
-    right: ['actions'],
-  },
+    right: ['actions']
+  }
 };
 
 @Component({
   selector: 'app-simple-sorting-page',
   imports: [NatTable, NatTableSurface],
   templateUrl: './simple-sorting-page.html',
-  styleUrl: './simple-sorting-page.css',
+  styleUrl: './simple-sorting-page.css'
 })
 export class SimpleSortingPage {
   protected readonly rows = mockOrderRows;
   protected readonly columns = mockOrderColumns;
   protected readonly tableState = preconfiguredTableState;
-  protected readonly getRowId = (row: MockOrderRow) => row.id;
+  protected readonly getRowId = getMockOrderRowId;
 }

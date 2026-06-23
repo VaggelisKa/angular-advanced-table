@@ -16,7 +16,7 @@ import { NatTableSelectionCheckbox } from './table-selection';
  */
 export const withNatTableSelectionColumn = <TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],
-  options: NatTableSelectionColumnOptions<TData> = {},
+  options: NatTableSelectionColumnOptions<TData> = {}
 ): ColumnDef<TData, unknown>[] => {
   const columnId = options.columnId ?? SELECTION_COLUMN_ID;
 
@@ -36,8 +36,8 @@ export const withNatTableSelectionColumn = <TData extends RowData>(
           mode: 'all',
           table: context.table as Table<RowData>,
           ariaLabel: options.selectAllAriaLabel ?? '',
-          label: options.label ?? '',
-        },
+          label: options.label ?? ''
+        }
       }),
     cell: (context) =>
       flexRenderComponent(NatTableSelectionCheckbox, {
@@ -45,9 +45,9 @@ export const withNatTableSelectionColumn = <TData extends RowData>(
           mode: 'row',
           table: context.table as Table<RowData>,
           row: context.row as Row<RowData>,
-          ariaLabel: options.selectRowAriaLabel?.(context.row) ?? '',
-        },
-      }),
+          ariaLabel: options.selectRowAriaLabel?.(context.row) ?? ''
+        }
+      })
   };
 
   return [selectionColumn, ...columns];

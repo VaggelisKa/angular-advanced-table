@@ -7,5 +7,5 @@ import type { NatTableUiLocaleLabelsMap } from './ui-types';
  * Importing `provideNatTableUiLocales()` registers every locale in this object.
  */
 export const NAT_TABLE_BUILT_IN_UI_LOCALES: NatTableUiLocaleLabelsMap = {
-  [NAT_EN_LOCALE_ID]: NAT_EN_UI_LOCALE_LABELS,
+  [NAT_EN_LOCALE_ID]: NAT_EN_UI_LOCALE_LABELS
 };

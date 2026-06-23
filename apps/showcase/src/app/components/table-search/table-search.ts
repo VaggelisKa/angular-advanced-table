@@ -1,5 +1,7 @@
 import { Component, DestroyRef, booleanAttribute, computed, inject, input } from '@angular/core';
+
 import type { PaginationState, RowData } from '@tanstack/angular-table';
+
 import { NatTableService, NatToolbarItem } from 'ng-advanced-table-ui';
 
 let nextSearchFieldId = 0;
@@ -16,7 +18,7 @@ let nextSearchFieldId = 0;
   selector: 'app-table-search',
   imports: [NatToolbarItem],
   templateUrl: './table-search.html',
-  styleUrl: './table-search.css',
+  styleUrl: './table-search.css'
 })
 export class TableSearch<TData extends RowData = RowData> {
   public readonly label = input('Search table');
@@ -31,9 +33,9 @@ export class TableSearch<TData extends RowData = RowData> {
   protected readonly controller = computed(() => this.natTableService.controller());
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly value = computed(() => this.table()?.getState().globalFilter ?? '');
+  protected readonly value = computed<string>(() => String(this.table()?.getState().globalFilter ?? ''));
 
-  constructor() {
+  public constructor() {
     this.natTableService.registerSearch();
     this.destroyRef.onDestroy(() => this.natTableService.unregisterSearch());
   }
@@ -41,11 +43,12 @@ export class TableSearch<TData extends RowData = RowData> {
   protected onInput(event: Event): void {
     const target = event.target;
     const isInstanceOfInput = target instanceof HTMLInputElement;
+
     if (!isInstanceOfInput || target.value === this.value()) return;
 
     this.controller()?.patchState({
       globalFilter: target.value,
-      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 }),
+      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 })
     });
   }
 }

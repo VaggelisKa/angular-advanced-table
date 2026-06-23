@@ -7,5 +7,5 @@ import type { NatTableLocaleLabelsMap } from './types';
  * Importing `provideNatTableLocales()` registers every locale in this object.
  */
 export const NAT_TABLE_BUILT_IN_LOCALES: NatTableLocaleLabelsMap = {
-  [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS,
+  [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS
 };

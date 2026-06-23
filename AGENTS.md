@@ -12,6 +12,11 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Do not create Nx version plan files for changes that only affect the showcase app, because showcase-only changes do not affect the published libraries.
 - Do not reuse or edit unrelated existing version plan files unless the user asks for that.
 
+## Workspace Tooling
+
+- Use `pnpm` and Corepack for installs, scripts, Nx commands, and CI examples; keep `pnpm-lock.yaml` current and do not reintroduce `package-lock.json`.
+- Keep shared dependency versions in `pnpm-workspace.yaml` catalogs (`frontend`, `peers`, `frontend-dev`, `shared`, `shared-dev`) instead of duplicating literal versions in package manifests.
+
 ## Package Layering
 
 - `ng-advanced-table` is the core package. It must not import from or otherwise depend on `ng-advanced-table-ui` or `ng-advanced-table-utils`.
@@ -31,6 +36,15 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - For `<nat-table-toolbar>`, projected interactive controls that participate in toolbar navigation must use `natToolbarItem` or `NatToolbarGroup`, with DOM order matching screen-reader and roving-keyboard order.
 - Do not use or reintroduce the removed `NatTableActionBar`/`<nat-table-action-bar>` API. Compose bundled control rows with `<nat-table-toolbar>`, `NatToolbarGroup`/`natToolbarItem`, and the pagination or scroll companion controls instead.
 - Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/lib/components/table/table-utils.ts`; keep `table.ts` focused on Angular wiring, signals, and DOM behavior.
+- Keep table data export as optional `ng-advanced-table-ui` Table Action behavior (`natTableExport`/`provideNatTableExport(...)`). The core package may expose shared column metadata such as `NatTableColumnMeta.export`, but it must not own export side effects or file-generation state.
+- When changing table keybindings, update `keybindings.ts`, `keybindings.md`, `NatTableHotkeyA11y`, public API exports, and table/surface input coverage together so configured shortcuts, conflict warnings, and `aria-keyshortcuts` stay aligned.
+
+## Documentation Ownership
+
+- Keep "how to use the table" guidance in the showcase app docs. Author those pages as GitHub-flavored Markdown under `apps/showcase/public/docs/`, register them in `apps/showcase/src/app/showcase-navigation.ts`, and serve them under `/docs/*`.
+- Keep live behavior demos under `/examples/*`. Showcase routes must use either the `/docs` or `/examples` base path; do not add new top-level showcase routes such as `/sorting` or `/toolbar`.
+- Do not keep root or package README placeholders that only link back to showcase docs. Remove duplicated usage/reference markdown instead of replacing it with link-only docs.
+- Keep repository markdown only when it is technical maintainer material: contribution rules, package boundaries, architectural decisions, terminology, changelogs, internal package notes, or "how the table is built" explanations.
 
 ## TypeScript Best Practices
 

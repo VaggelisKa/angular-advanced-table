@@ -5,6 +5,8 @@
 /.nx/cache
 /.nx/workspace-data
 /.angular
+/test-results
+/tmp
 
 # Lockfiles are managed by their package managers, not Prettier
 package-lock.json

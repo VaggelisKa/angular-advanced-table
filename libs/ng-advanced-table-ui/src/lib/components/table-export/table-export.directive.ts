@@ -1,28 +1,35 @@
-import { computed, Directive, ElementRef, inject, input, signal } from '@angular/core';
+import { Directive, ElementRef, computed, inject, input, signal } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
+import { createNatTableExportData, exportNatTableCsv, resolveNatTableExportColumns } from './table-export-client';
+import { NAT_TABLE_EXPORT } from './table-export.provider';
+import type { NatTableExportConfig, NatTableExportContext, NatTableExportData, NatTableExportHandler } from './table-export.types';
 import { injectNatTableUiController } from '../../shared/resolve-ui-controller';
 import type { NatTableUiController } from '../../shared/table-ui.types';
-import {
-  createNatTableExportData,
-  exportNatTableCsv,
-  resolveNatTableExportColumns,
-} from './table-export-client';
-import { NAT_TABLE_EXPORT } from './table-export.provider';
-import type {
-  NatTableExportConfig,
-  NatTableExportContext,
-  NatTableExportData,
-  NatTableExportHandler,
-} from './table-export.types';
 
 const DEFAULT_EXPORT_FILE_NAME = 'table-export';
 
-type NativeDisableableElement =
-  | HTMLButtonElement
-  | HTMLInputElement
-  | HTMLSelectElement
-  | HTMLTextAreaElement;
+type NativeDisableableElement = HTMLButtonElement | HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+export const normalizeNatTableExportFileName = (fileName: string | null | undefined): string =>
+  fileName?.trim() ? fileName.trim() : DEFAULT_EXPORT_FILE_NAME;
+
+const isActivationKey = (event: KeyboardEvent): boolean => event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar';
+
+const preventActivation = (event: Event): void => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+};
+
+const isNativeDisableableElement = (element: HTMLElement): element is NativeDisableableElement =>
+  element instanceof HTMLButtonElement ||
+  element instanceof HTMLInputElement ||
+  element instanceof HTMLSelectElement ||
+  element instanceof HTMLTextAreaElement;
+
+const isNativeActivatableElement = (element: HTMLElement): boolean =>
+  isNativeDisableableElement(element) || (element instanceof HTMLAnchorElement && !!element.href);
 
 @Directive({
   selector: '[natTableExport]',
@@ -31,8 +38,8 @@ type NativeDisableableElement =
     '[attr.aria-busy]': 'ariaBusy()',
     '[attr.aria-disabled]': 'ariaDisabled()',
     '(click)': 'onHostClick($event)',
-    '(keydown)': 'onHostKeydown($event)',
-  },
+    '(keydown)': 'onHostKeydown($event)'
+  }
 })
 export class NatTableExport<TData extends RowData = RowData> {
   /** Optional explicit controller for layouts outside a `NatTableService` scope. */
@@ -45,7 +52,7 @@ export class NatTableExport<TData extends RowData = RowData> {
   protected readonly isExporting = signal(false);
   protected readonly ariaBusy = computed(() => (this.isExporting() ? 'true' : null));
   protected readonly ariaDisabled = computed(() =>
-    this.isExporting() && !isNativeDisableableElement(this.element.nativeElement) ? 'true' : null,
+    this.isExporting() && !isNativeDisableableElement(this.element.nativeElement) ? 'true' : null
   );
 
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -67,6 +74,7 @@ export class NatTableExport<TData extends RowData = RowData> {
 
     if (this.isExporting()) {
       preventActivation(event);
+
       return;
     }
 
@@ -108,9 +116,7 @@ export class NatTableExport<TData extends RowData = RowData> {
     }
   }
 
-  private createExportContext(
-    controller: NatTableUiController<TData>,
-  ): NatTableExportContext<TData> {
+  private createExportContext(controller: NatTableUiController<TData>): NatTableExportContext<TData> {
     const table = controller.table;
     let data: NatTableExportData | undefined;
     const context: NatTableExportContext<TData> = {
@@ -123,7 +129,10 @@ export class NatTableExport<TData extends RowData = RowData> {
 
         return data;
       },
-      exportCsv: () => exportNatTableCsv(context),
+      exportCsv: async () => {
+        exportNatTableCsv(context);
+        await Promise.resolve();
+      }
     };
 
     return context;
@@ -143,6 +152,7 @@ export class NatTableExport<TData extends RowData = RowData> {
 
       element.setAttribute('disabled', '');
       element.disabled = true;
+
       return;
     }
 
@@ -160,32 +170,4 @@ export class NatTableExport<TData extends RowData = RowData> {
 
     this.previousDisabledAttribute = undefined;
   }
-}
-
-export function normalizeNatTableExportFileName(fileName: string | null | undefined): string {
-  return fileName?.trim() || DEFAULT_EXPORT_FILE_NAME;
-}
-
-function isActivationKey(event: KeyboardEvent): boolean {
-  return event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar';
-}
-
-function preventActivation(event: Event): void {
-  event.preventDefault();
-  event.stopImmediatePropagation();
-}
-
-function isNativeDisableableElement(element: HTMLElement): element is NativeDisableableElement {
-  return (
-    element instanceof HTMLButtonElement ||
-    element instanceof HTMLInputElement ||
-    element instanceof HTMLSelectElement ||
-    element instanceof HTMLTextAreaElement
-  );
-}
-
-function isNativeActivatableElement(element: HTMLElement): boolean {
-  return (
-    isNativeDisableableElement(element) || (element instanceof HTMLAnchorElement && !!element.href)
-  );
 }

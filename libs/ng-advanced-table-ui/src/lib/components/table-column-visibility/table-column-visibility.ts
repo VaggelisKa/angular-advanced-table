@@ -1,86 +1,78 @@
 import { Component, computed, inject, input } from '@angular/core';
+
 import type { Column, RowData } from '@tanstack/angular-table';
 
 import {
-  mergeColumnVisibilityLabels,
   NAT_TABLE_UI_ENGLISH_LOCALE,
   NAT_TABLE_UI_INTL,
-  resolveNatTableUiIntl,
+  mergeColumnVisibilityLabels,
+  resolveNatTableUiIntl
 } from '../../shared/table-ui-intl';
-import {
-  formatNatTableAccessibilityNumber,
-  getNatTableColumnLabel,
-} from '../../shared/table-ui.helpers';
-import { NatTableService } from '../../shared/table.service';
+import { formatNatTableAccessibilityNumber, getNatTableColumnLabel } from '../../shared/table-ui.helpers';
 import type {
   NatTableAccessibilityColumnVisibilityActionContext,
   NatTableAccessibilityColumnVisibilityLabels,
-  NatTableAccessibilityColumnVisibilityStateContext,
-  NatTableUiController,
+  NatTableAccessibilityColumnVisibilityStateContext
 } from '../../shared/table-ui.types';
+import { NatTableService } from '../../shared/table.service';
 
-interface ColumnVisibilityItem<TData extends RowData = RowData> {
+type ColumnVisibilityItem<TData extends RowData = RowData> = {
   column: Column<TData, unknown>;
   label: string;
   visible: boolean;
   canToggle: boolean;
   actionLabel: string;
   stateLabel: string;
-}
+};
+
+const applyColumnVisibilityToggle = <TData extends RowData = RowData>(column: ColumnVisibilityItem<TData>): void => {
+  if (!column.canToggle) return;
+
+  column.column.toggleVisibility(!column.visible);
+};
 
 @Component({
   selector: 'nat-table-column-visibility',
   templateUrl: './table-column-visibility.html',
-  styleUrl: './table-column-visibility.css',
+  styleUrl: './table-column-visibility.css'
 })
 export class NatTableColumnVisibility<TData extends RowData = RowData> {
-  readonly locale = input<string | undefined>(undefined);
-  readonly label = input<string | undefined>(undefined);
-  readonly groupAriaLabel = input<string | undefined>(undefined);
-  readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(
-    undefined,
-  );
+  public readonly locale = input<string | undefined>(undefined);
+  public readonly label = input<string | undefined>(undefined);
+  public readonly groupAriaLabel = input<string | undefined>(undefined);
+  public readonly accessibilityLabels = input<NatTableAccessibilityColumnVisibilityLabels | undefined>(undefined);
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   protected readonly controller = computed(() => this.natTableService.controller());
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  private readonly localeId = computed(
-    () => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE,
-  );
-  private readonly tableUiIntl = computed(() =>
-    resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()),
-  );
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
+
+  private readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
+
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
 
-  private readonly allLeafColumns = computed(
-    () => this.controller()?.table.getAllLeafColumns() ?? [],
-  );
-  protected readonly visibleColumnCount = computed(
-    () => this.controller()?.table.getVisibleLeafColumns().length ?? 0,
-  );
+  private readonly allLeafColumns = computed(() => this.controller()?.table.getAllLeafColumns() ?? []);
+
+  protected readonly visibleColumnCount = computed(() => this.controller()?.table.getVisibleLeafColumns().length ?? 0);
+
   protected readonly totalColumnCount = computed(() => this.allLeafColumns().length);
   private readonly resolvedAccessibilityLabels = computed(() =>
-    mergeColumnVisibilityLabels(
-      this.tableUiIntl().columnVisibility?.accessibilityLabels,
-      this.accessibilityLabels(),
-    ),
+    mergeColumnVisibilityLabels(this.tableUiIntl().columnVisibility?.accessibilityLabels, this.accessibilityLabels())
   );
+
   protected readonly resolvedHeading = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
     return this.label() ?? labels.heading ?? this.tableUiIntl().columnVisibility?.label ?? '';
   });
+
   protected readonly resolvedAriaLabel = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
 
-    return (
-      this.groupAriaLabel() ??
-      labels.groupAriaLabel ??
-      this.tableUiIntl().columnVisibility?.groupAriaLabel ??
-      ''
-    );
+    return this.groupAriaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().columnVisibility?.groupAriaLabel ?? '';
   });
+
   protected readonly visibilitySummary = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
     const visibleColumnCount = this.visibleColumnCount();
@@ -91,19 +83,20 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
         visibleColumnCount,
         this.tableUiIntl().formatNumber,
         undefined,
-        this.localeId(),
+        this.localeId()
       ),
       totalColumnCountValue: totalColumnCount,
       totalColumnCountText: formatNatTableAccessibilityNumber(
         totalColumnCount,
         this.tableUiIntl().formatNumber,
         undefined,
-        this.localeId(),
-      ),
+        this.localeId()
+      )
     };
 
     return labels.visibilitySummary?.(context) ?? '';
   });
+
   protected readonly columns = computed<ColumnVisibilityItem<TData>[]>(() => {
     const visibleColumnCount = this.visibleColumnCount();
     const labels = this.resolvedAccessibilityLabels();
@@ -116,10 +109,10 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
         const actionContext: NatTableAccessibilityColumnVisibilityActionContext = {
           columnLabel: label,
           visibilityState: visible ? 'visible' : 'hidden',
-          toggleAction: visible ? 'hide' : 'show',
+          toggleAction: visible ? 'hide' : 'show'
         };
         const stateContext: NatTableAccessibilityColumnVisibilityStateContext = {
-          visibilityState: visible ? 'visible' : 'hidden',
+          visibilityState: visible ? 'visible' : 'hidden'
         };
 
         return {
@@ -128,16 +121,10 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
           visible,
           canToggle: !visible || visibleColumnCount > 1,
           actionLabel: labels.toggleColumnAriaLabel?.(actionContext) ?? '',
-          stateLabel: labels.columnState?.(stateContext) ?? '',
+          stateLabel: labels.columnState?.(stateContext) ?? ''
         };
       });
   });
 
-  protected toggleColumnVisibility(column: ColumnVisibilityItem<TData>): void {
-    if (!column.canToggle) {
-      return;
-    }
-
-    column.column.toggleVisibility(!column.visible);
-  }
+  protected readonly toggleColumnVisibility = applyColumnVisibilityToggle<TData>;
 }

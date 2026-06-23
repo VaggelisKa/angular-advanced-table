@@ -97,11 +97,24 @@ input {
   --showcase-page-negative: #b42318;
   --showcase-page-warning: #9a6700;
   --showcase-page-focus: rgba(31, 111, 235, 0.32);
+  --showcase-code-bg: #f8fafc;
+  --showcase-code-border: #d8dee7;
+  --showcase-code-text: #24292f;
+  --showcase-code-inline-bg: #eef2f7;
+  --showcase-code-token-comment: #57606a;
+  --showcase-code-token-punctuation: #57606a;
+  --showcase-code-token-keyword: #cf222e;
+  --showcase-code-token-string: #116329;
+  --showcase-code-token-function: #8250df;
+  --showcase-code-token-class: #953800;
+  --showcase-code-token-number: #0550ae;
+  --showcase-code-token-property: #0550ae;
+  --showcase-code-token-operator: #57606a;
+  --showcase-code-token-tag: #116329;
   --showcase-page-radius: 10px;
   --showcase-page-radius-sm: 6px;
   --showcase-page-radius-xs: 4px;
-  --showcase-page-mono-font:
-    'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
+  --showcase-page-mono-font: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, ui-monospace, monospace;
   --showcase-page-shadow: 0 1px 2px rgba(15, 20, 25, 0.04), 0 8px 24px rgba(15, 20, 25, 0.06);
   --showcase-page-shadow-sm: 0 1px 2px rgba(15, 20, 25, 0.04);
 
@@ -135,6 +148,20 @@ input {
   --showcase-page-negative: #f15b5b;
   --showcase-page-warning: #e5b452;
   --showcase-page-focus: rgba(79, 139, 255, 0.36);
+  --showcase-code-bg: #0f1419;
+  --showcase-code-border: #30363d;
+  --showcase-code-text: #d5dbe3;
+  --showcase-code-inline-bg: #1a1e24;
+  --showcase-code-token-comment: #8b949e;
+  --showcase-code-token-punctuation: #c9d1d9;
+  --showcase-code-token-keyword: #ff7b72;
+  --showcase-code-token-string: #a5d6ff;
+  --showcase-code-token-function: #d2a8ff;
+  --showcase-code-token-class: #ffa657;
+  --showcase-code-token-number: #79c0ff;
+  --showcase-code-token-property: #79c0ff;
+  --showcase-code-token-operator: #c9d1d9;
+  --showcase-code-token-tag: #7ee787;
   --showcase-page-shadow: 0 1px 2px rgba(0, 0, 0, 0.36), 0 14px 34px rgba(0, 0, 0, 0.28);
   --showcase-page-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
 
@@ -303,8 +330,7 @@ input {
   --nat-table-color-divider: var(--showcase-page-border);
   --nat-table-color-divider-subtle: var(--showcase-page-border);
 
-  --nat-table-font-family:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --nat-table-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --nat-table-font-size-header: 0.7rem;
   --nat-table-font-size-label: 0.7rem;
   --nat-table-font-size-caption: 0.78rem;
@@ -379,8 +405,7 @@ input {
   --nat-table-search-border-color: var(--showcase-page-border);
   --nat-table-search-border-color-hover: var(--showcase-page-border-strong);
   --nat-table-search-border-color-focus: var(--showcase-page-accent);
-  --nat-table-search-focus-ring: 0 0 0 3px
-    color-mix(in srgb, var(--showcase-page-accent) 22%, transparent);
+  --nat-table-search-focus-ring: 0 0 0 3px color-mix(in srgb, var(--showcase-page-accent) 22%, transparent);
 
   --nat-table-chip-color: var(--showcase-page-text-soft);
   --nat-table-chip-background: var(--showcase-page-surface);
@@ -388,11 +413,7 @@ input {
   --nat-table-chip-background-active: var(--showcase-page-accent-soft);
   --nat-table-chip-border-color: var(--showcase-page-border);
   --nat-table-chip-border-color-hover: var(--showcase-page-border-strong);
-  --nat-table-chip-border-color-active: color-mix(
-    in srgb,
-    var(--showcase-page-accent) 45%,
-    transparent
-  );
+  --nat-table-chip-border-color-active: color-mix(in srgb, var(--showcase-page-accent) 45%, transparent);
   --nat-table-chip-shadow-active: none;
   --nat-table-chip-count-color: var(--showcase-page-text-muted);
 
@@ -416,16 +437,8 @@ input {
   --nat-table-sort-icon-color-active: var(--showcase-page-accent);
   --nat-table-sort-icon-color-idle: var(--showcase-page-text-soft);
   --nat-table-sort-icon-color-hover: var(--showcase-page-text);
-  --nat-table-sort-icon-color-muted: color-mix(
-    in srgb,
-    var(--showcase-page-text-muted) 60%,
-    transparent
-  );
-  --nat-table-sort-icon-color-disabled: color-mix(
-    in srgb,
-    var(--showcase-page-text-muted) 45%,
-    transparent
-  );
+  --nat-table-sort-icon-color-muted: color-mix(in srgb, var(--showcase-page-text-muted) 60%, transparent);
+  --nat-table-sort-icon-color-disabled: color-mix(in srgb, var(--showcase-page-text-muted) 45%, transparent);
   --nat-table-sort-icon-chip-background: transparent;
   --nat-table-sort-icon-chip-background-hover: var(--showcase-page-surface-hover);
   --nat-table-sort-icon-chip-background-active: var(--showcase-page-accent-soft);
@@ -436,11 +449,7 @@ input {
   --nat-table-pin-border-color: transparent;
   --nat-table-pin-color: var(--showcase-page-text-muted);
   --nat-table-pin-color-pinned: var(--showcase-page-accent);
-  --nat-table-pin-border-color-pinned: color-mix(
-    in srgb,
-    var(--showcase-page-accent) 40%,
-    transparent
-  );
+  --nat-table-pin-border-color-pinned: color-mix(in srgb, var(--showcase-page-accent) 40%, transparent);
   --nat-table-pin-shadow-pinned: none;
 
   --nat-table-row-background: transparent;
@@ -487,7 +496,7 @@ input {
     box-shadow 140ms ease;
 }
 
-.showcase-page .btn[aria-disabled="true"] {
+.showcase-page .btn[aria-disabled='true'] {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -716,12 +725,13 @@ input {
   margin: 0;
   padding: 20px;
   overflow-x: auto;
-  background: #0f1419;
+  border-top: 1px solid var(--showcase-code-border);
+  background: var(--showcase-code-bg);
 }
 
 .showcase-page .code-content {
   margin: 0;
-  color: #d5dbe3;
+  color: var(--showcase-code-text);
   font-family: var(--showcase-page-mono-font);
   font-size: 0.82rem;
   line-height: 1.6;
@@ -736,6 +746,224 @@ input {
 .showcase-page .btn-sm:focus-visible {
   outline: 3px solid var(--showcase-page-focus);
   outline-offset: 2px;
+}
+
+.docs-markdown {
+  min-width: 0;
+  overflow-x: auto;
+  color: var(--showcase-page-text);
+  font-size: 0.94rem;
+  line-height: 1.65;
+}
+
+.docs-markdown markdown {
+  display: block;
+  min-width: 0;
+}
+
+.docs-markdown h1,
+.docs-markdown h2,
+.docs-markdown h3 {
+  margin: 1.6em 0 0.55em;
+  color: var(--showcase-page-text);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.docs-markdown h1:first-child,
+.docs-markdown h2:first-child,
+.docs-markdown h3:first-child {
+  margin-top: 0;
+}
+
+.docs-markdown h1 {
+  font-size: 1.5rem;
+}
+
+.docs-markdown h2 {
+  font-size: 1.15rem;
+}
+
+.docs-markdown h3 {
+  font-size: 1rem;
+}
+
+.docs-markdown p,
+.docs-markdown ul,
+.docs-markdown ol,
+.docs-markdown blockquote,
+.docs-markdown pre,
+.docs-markdown table {
+  margin: 0 0 1rem;
+}
+
+.docs-markdown ul,
+.docs-markdown ol {
+  padding-left: 1.35rem;
+}
+
+.docs-markdown li + li {
+  margin-top: 0.35rem;
+}
+
+.docs-markdown a {
+  color: var(--showcase-page-accent-strong);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+.docs-markdown a:focus-visible {
+  outline: 3px solid var(--showcase-page-focus);
+  outline-offset: 2px;
+}
+
+.docs-markdown code {
+  border-radius: var(--showcase-page-radius-xs);
+  background: var(--showcase-code-inline-bg);
+  color: var(--showcase-code-text);
+  font-family: var(--showcase-page-mono-font);
+  font-size: 0.86em;
+}
+
+.docs-markdown :not(pre) > code {
+  padding: 0.12rem 0.28rem;
+}
+
+.docs-markdown pre {
+  min-width: 0;
+  overflow-x: auto;
+  padding: 16px;
+  border: 1px solid var(--showcase-code-border);
+  border-radius: var(--showcase-page-radius-sm);
+  background: var(--showcase-code-bg);
+  color: var(--showcase-code-text);
+}
+
+.docs-markdown pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.docs-markdown code[class*='language-'] {
+  background: transparent;
+  color: var(--showcase-code-text);
+  text-shadow: none;
+}
+
+.docs-markdown pre[class*='language-'] {
+  background: var(--showcase-code-bg);
+  color: var(--showcase-code-text);
+  text-shadow: none;
+}
+
+.docs-markdown .token.comment,
+.docs-markdown .token.prolog,
+.docs-markdown .token.doctype,
+.docs-markdown .token.cdata {
+  color: var(--showcase-code-token-comment);
+  font-style: italic;
+}
+
+.docs-markdown .token.punctuation {
+  color: var(--showcase-code-token-punctuation);
+}
+
+.docs-markdown .token.namespace {
+  opacity: 0.72;
+}
+
+.docs-markdown .token.property,
+.docs-markdown .token.attr-name,
+.docs-markdown .token.variable {
+  color: var(--showcase-code-token-property);
+}
+
+.docs-markdown .token.boolean,
+.docs-markdown .token.number,
+.docs-markdown .token.constant,
+.docs-markdown .token.symbol,
+.docs-markdown .token.deleted {
+  color: var(--showcase-code-token-number);
+}
+
+.docs-markdown .token.selector,
+.docs-markdown .token.string,
+.docs-markdown .token.char,
+.docs-markdown .token.builtin,
+.docs-markdown .token.inserted {
+  color: var(--showcase-code-token-string);
+}
+
+.docs-markdown .token.operator,
+.docs-markdown .token.entity,
+.docs-markdown .token.url {
+  background: transparent;
+  color: var(--showcase-code-token-operator);
+}
+
+.docs-markdown .token.atrule,
+.docs-markdown .token.attr-value,
+.docs-markdown .token.keyword {
+  color: var(--showcase-code-token-keyword);
+}
+
+.docs-markdown .token.function {
+  color: var(--showcase-code-token-function);
+}
+
+.docs-markdown .token.class-name {
+  color: var(--showcase-code-token-class);
+}
+
+.docs-markdown .token.tag {
+  color: var(--showcase-code-token-tag);
+}
+
+.docs-markdown .token.regex,
+.docs-markdown .token.important {
+  color: var(--showcase-code-token-class);
+}
+
+.docs-markdown .token.important,
+.docs-markdown .token.bold {
+  font-weight: 700;
+}
+
+.docs-markdown .token.italic {
+  font-style: italic;
+}
+
+.docs-markdown blockquote {
+  padding: 0.2rem 0 0.2rem 1rem;
+  border-left: 3px solid var(--showcase-page-border-strong);
+  color: var(--showcase-page-text-soft);
+}
+
+.docs-markdown table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  border: 1px solid var(--showcase-page-border);
+  font-size: 0.86rem;
+}
+
+.docs-markdown th,
+.docs-markdown td {
+  padding: 10px 12px;
+  border: 1px solid var(--showcase-page-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-markdown th {
+  background: var(--showcase-page-surface-muted);
+  color: var(--showcase-page-text);
+  font-weight: 700;
 }
 
 @media (hover: hover) and (pointer: fine) {

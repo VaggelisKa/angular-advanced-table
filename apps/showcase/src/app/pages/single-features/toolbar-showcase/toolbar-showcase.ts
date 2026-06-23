@@ -1,10 +1,8 @@
-import { Component, ElementRef, computed, signal, viewChild } from '@angular/core';
-import {
-  type CellContext,
-  type ColumnDef,
-  type SortingState,
-  type VisibilityState,
-} from '@tanstack/angular-table';
+import type { ElementRef } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
+
+import type { CellContext, ColumnDef, SortingState, VisibilityState } from '@tanstack/angular-table';
+
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import {
@@ -13,7 +11,7 @@ import {
   NatTableToolbar,
   NatToolbarGroup,
   NatToolbarItem,
-  withNatTableHeaderActions,
+  withNatTableHeaderActions
 } from 'ng-advanced-table-ui';
 
 import { TableSearch } from '../../../components/table-search/table-search';
@@ -34,11 +32,11 @@ const DEMO_DATA: DemoItem[] = [
     name: 'Gamma Processor',
     category: 'Data Science',
     status: 'Paused',
-    value: 7800,
+    value: 7800
   },
   { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
   { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 },
+  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
 ];
 
 /** A user-defined quick filter exposed through the overflow menu. */
@@ -54,25 +52,17 @@ const FILTER_PRESETS: readonly FilterPreset[] = [
   { key: 'high-value', label: 'Value over $2,000', predicate: (item) => item.value > 2000 },
   { key: 'active', label: 'Active only', predicate: (item) => item.status === 'Active' },
   { key: 'security', label: 'Security team', predicate: (item) => item.category === 'Security' },
-  { key: 'attention', label: 'Needs attention', predicate: (item) => item.status !== 'Active' },
+  { key: 'attention', label: 'Needs attention', predicate: (item) => item.status !== 'Active' }
 ];
 
 @Component({
   selector: 'app-toolbar-showcase',
-  imports: [
-    NatTable,
-    NatTableExport,
-    NatTableSurface,
-    NatTableToolbar,
-    NatToolbarGroup,
-    NatToolbarItem,
-    TableSearch,
-  ],
+  imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarGroup, NatToolbarItem, TableSearch],
   templateUrl: './toolbar-showcase.html',
   styleUrl: './toolbar-showcase.css',
   host: {
-    '(document:click)': 'onDocumentClick($event)',
-  },
+    '(document:click)': 'onDocumentClick($event)'
+  }
 })
 export class ToolbarShowcasePage {
   protected readonly lastAction = signal('none');
@@ -83,28 +73,28 @@ export class ToolbarShowcasePage {
     {
       accessorKey: 'name',
       header: 'Name',
-      meta: { label: 'Name', rowHeader: true },
+      meta: { label: 'Name', rowHeader: true }
     },
     {
       accessorKey: 'category',
       header: 'Category',
-      meta: { label: 'Category' },
+      meta: { label: 'Category' }
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      meta: { label: 'Status' },
+      meta: { label: 'Status' }
     },
     {
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
-    },
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
+    }
   ]);
 
   protected readonly tableState = signal<Partial<NatTableState>>({
-    sorting: [],
+    sorting: []
   });
 
   // --- search + filter menu (Example 2) ---
@@ -114,14 +104,16 @@ export class ToolbarShowcasePage {
   protected readonly filterPresets = FILTER_PRESETS;
   protected readonly activePresetKey = signal<string>('all');
   private readonly activePreset = computed(
-    () =>
-      FILTER_PRESETS.find((preset) => preset.key === this.activePresetKey()) ?? FILTER_PRESETS[0],
+    () => FILTER_PRESETS.find((preset) => preset.key === this.activePresetKey()) ?? FILTER_PRESETS[0]
   );
+
   protected readonly activeFilterLabel = computed(() => this.activePreset().label);
   protected readonly filteredData = computed(() => {
     const predicate = this.activePreset().predicate;
+
     return predicate ? DEMO_DATA.filter(predicate) : DEMO_DATA;
   });
+
   protected readonly visibleCount = computed(() => this.filteredData().length);
 
   // --- overflow disclosure menu ---

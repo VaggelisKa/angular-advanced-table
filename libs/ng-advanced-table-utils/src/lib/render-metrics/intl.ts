@@ -10,8 +10,9 @@ export {
   NAT_TABLE_UTILS_ENGLISH_LOCALE,
   NAT_TABLE_UTILS_INTL,
   provideNatTableUtilsIntl,
-  resolveNatTableUtilsIntl,
+  resolveNatTableUtilsIntl
 } from 'ng-advanced-table-locales';
+
 export type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,
@@ -22,5 +23,5 @@ export type {
   NatTableUtilsIntl,
   NatTableUtilsIntlConfig,
   NatTableUtilsIntlProviderConfig,
-  NatTableUtilsNumberFormatter,
+  NatTableUtilsNumberFormatter
 } from 'ng-advanced-table-locales';

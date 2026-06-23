@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/sticky-header');
+  await page.goto('/examples/sticky-header');
 });
 
 test('renders the sticky header showcase page', async ({ page }) => {
@@ -14,8 +14,10 @@ test('viewport sticky tables translate headers on page scroll', async ({ page })
   const headerCell = table1.locator('thead th').first();
   
   // Initially, no translation since we are at the top
-  const transformInit = await headerCell.evaluate((el) => el.style.transform);
-  expect(transformInit).toBe('');
+  const transformInit = await headerCell.evaluate((el) => {
+    return el.style.transform || window.getComputedStyle(el).transform;
+  });
+  expect(transformInit === '' || transformInit === 'none' || transformInit.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(true);
 
   // Scroll Table 1 into view
   await table1.scrollIntoViewIfNeeded();
@@ -28,9 +30,13 @@ test('viewport sticky tables translate headers on page scroll', async ({ page })
   // Give the scroll listener a moment to fire and requestAnimationFrame to execute
   await page.waitForTimeout(150);
 
-  // The header cell should now have translate3d applied because it is sticky
-  const transform = await headerCell.evaluate((el) => el.style.transform);
-  expect(transform).toContain('translate3d(0px,');
+  // The header cell should now have translation applied (either via style.transform or computed matrix)
+  const transform = await headerCell.evaluate((el) => {
+    return el.style.transform || window.getComputedStyle(el).transform;
+  });
+  expect(transform).not.toBe('');
+  expect(transform).not.toBe('none');
+  expect(transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(false);
 });
 
 test('simulating sticky topbar shifts the sticky offset', async ({ page }) => {
@@ -70,8 +76,12 @@ test('toggling off sticky header removes translations', async ({ page }) => {
   });
   await page.waitForTimeout(150);
 
-  let transform = await headerCell.evaluate((el) => el.style.transform);
-  expect(transform).toContain('translate3d(0px,');
+  let transform = await headerCell.evaluate((el) => {
+    return el.style.transform || window.getComputedStyle(el).transform;
+  });
+  expect(transform).not.toBe('');
+  expect(transform).not.toBe('none');
+  expect(transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(false);
 
   // Scroll up to ensure configuration card is in view
   const configHeader = page.getByText('Configure Sticky State');
@@ -89,6 +99,8 @@ test('toggling off sticky header removes translations', async ({ page }) => {
   await page.waitForTimeout(150);
 
   // The translation should be cleared / not applied
-  transform = await headerCell.evaluate((el) => el.style.transform);
-  expect(transform).toBe('');
+  transform = await headerCell.evaluate((el) => {
+    return el.style.transform || window.getComputedStyle(el).transform;
+  });
+  expect(transform === '' || transform === 'none' || transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(true);
 });

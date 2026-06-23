@@ -1,4 +1,6 @@
-import { booleanAttribute, Component, effect, inject, input, output } from '@angular/core';
+/* eslint-disable max-lines */
+import { Component, booleanAttribute, effect, inject, input, model, output } from '@angular/core';
+
 import type {
   ColumnFiltersState,
   ColumnOrderState,
@@ -7,16 +9,51 @@ import type {
   PaginationState,
   RowSelectionState,
   SortingState,
-  VisibilityState,
+  VisibilityState
 } from '@tanstack/angular-table';
-import {
-  NatTableService,
-  type NatTableAccessibilityText,
-  type NatTableKeybindings,
-  type NatTableMode,
-  type NatTableModeConfiguration,
-  type NatTableState,
+import { NatTableService } from 'ng-advanced-table';
+import type {
+  NatTableAccessibilityText,
+  NatTableKeybindings,
+  NatTableMode,
+  NatTableModeConfiguration,
+  NatTableState
 } from 'ng-advanced-table';
+
+const serializeSelectedRowIds = (selection: NatTableState['rowSelection']): string =>
+  Object.keys(selection)
+    .filter((rowId) => selection[rowId])
+    .sort()
+    .join('|');
+
+type NatTableStateDiff = {
+  sortingChanged: boolean;
+  globalFilterChanged: boolean;
+  columnFiltersChanged: boolean;
+  columnVisibilityChanged: boolean;
+  columnOrderChanged: boolean;
+  columnPinningChanged: boolean;
+  columnSizingChanged: boolean;
+  paginationChanged: boolean;
+  rowSelectionChanged: boolean;
+};
+
+/** A state-slice changed flag paired with the emit action for that slice. */
+type SliceEmitter = readonly [changed: boolean, emit: () => void];
+
+const jsonChanged = (a: unknown, b: unknown): boolean => JSON.stringify(a) !== JSON.stringify(b);
+
+const computeNatTableStateDiff = (prev: NatTableState, next: NatTableState): NatTableStateDiff => ({
+  sortingChanged: jsonChanged(prev.sorting, next.sorting),
+  globalFilterChanged: prev.globalFilter !== next.globalFilter,
+  columnFiltersChanged: jsonChanged(prev.columnFilters, next.columnFilters),
+  columnVisibilityChanged: jsonChanged(prev.columnVisibility, next.columnVisibility),
+  columnOrderChanged: jsonChanged(prev.columnOrder, next.columnOrder),
+  columnPinningChanged: jsonChanged(prev.columnPinning, next.columnPinning),
+  columnSizingChanged: jsonChanged(prev.columnSizing, next.columnSizing),
+  paginationChanged: jsonChanged(prev.pagination, next.pagination),
+  rowSelectionChanged: serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(next.rowSelection)
+});
 
 @Component({
   selector: 'nat-table-surface',
@@ -26,52 +63,79 @@ import {
     <ng-content />
   </div>`,
   styleUrl: './table-surface.css',
-  providers: [NatTableService],
+  providers: [NatTableService]
 })
 export class NatTableSurface {
-  /** Two-way bindable state input representing the current table view state. */
-  readonly state = input<Partial<NatTableState>>({});
-  /** Emits when the table state changes. */
-  readonly stateChange = output<Partial<NatTableState>>();
+  /** Two-way bindable state representing the current table view state. */
+  public readonly state = model<Partial<NatTableState>>({});
   /** One-time seed configuration for the table state. */
-  readonly initialState = input<Partial<NatTableState>>({});
+  public readonly initialState = input<Partial<NatTableState>>({});
   /** Operation mode: 'auto' (client-side) or 'manual' (server-side/external), or custom per-slice configuration. */
-  readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
+  public readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
 
   /** Total page count for manual (server-side) pagination. */
-  readonly manualPageCount = input<number | undefined>(undefined);
+  public readonly manualPageCount = input<number | undefined>(undefined);
   /** Enables polite live announcements for sort/filter/pagination changes. */
-  readonly enableAnnouncements = input(true, { transform: booleanAttribute });
+  public readonly enableAnnouncements = input(true, { transform: booleanAttribute });
   /** Enables sticky positioning for the table header row. */
-  readonly stickyHeader = input(true, { transform: booleanAttribute });
+  public readonly stickyHeader = input(true, { transform: booleanAttribute });
   /** Allows multiple simultaneous sort columns. Default false (single-column sort). */
-  readonly enableMultiSort = input(false, { transform: booleanAttribute });
+  public readonly enableMultiSort = input(false, { transform: booleanAttribute });
   /** Locale id used to resolve generated table accessibility copy. */
-  readonly locale = input<string | undefined>(undefined);
+  public readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
-  readonly accessibilityText = input<NatTableAccessibilityText>({});
+  public readonly accessibilityText = input<NatTableAccessibilityText>({});
   /** Optional overrides for keyboard interaction shortcuts. */
-  readonly keybindings = input<NatTableKeybindings>({});
+  public readonly keybindings = input<NatTableKeybindings>({});
   /** When to apply resize: `'onEnd'` (default, on pointer release) or `'onChange'` (live). */
-  readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
+  public readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   /** Width model: `'fill'` (default — columns stretch to fill the container) or `'fixed'` (column widths are authoritative and the region scrolls horizontally, giving pixel-exact resizing). */
-  readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
+  public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
   /** Text direction. Falls back to the inherited CDK direction, then `'ltr'`. */
-  readonly direction = input<'ltr' | 'rtl'>();
+  public readonly direction = input<'ltr' | 'rtl'>();
 
   // Slice-specific change outputs
-  readonly sortingChange = output<SortingState>();
-  readonly globalFilterChange = output<string>();
-  readonly columnFiltersChange = output<ColumnFiltersState>();
-  readonly columnVisibilityChange = output<VisibilityState>();
-  readonly columnOrderChange = output<ColumnOrderState>();
-  readonly columnPinningChange = output<ColumnPinningState>();
-  readonly columnSizingChange = output<ColumnSizingState>();
-  readonly paginationChange = output<PaginationState>();
-  readonly rowSelectionChange = output<RowSelectionState>();
+  public readonly sortingChange = output<SortingState>();
+  public readonly globalFilterChange = output<string>();
+  public readonly columnFiltersChange = output<ColumnFiltersState>();
+  public readonly columnVisibilityChange = output<VisibilityState>();
+  public readonly columnOrderChange = output<ColumnOrderState>();
+  public readonly columnPinningChange = output<ColumnPinningState>();
+  public readonly columnSizingChange = output<ColumnSizingState>();
+  public readonly paginationChange = output<PaginationState>();
+  public readonly rowSelectionChange = output<RowSelectionState>();
 
   private readonly natTableService = inject(NatTableService);
-  constructor() {
+
+  private previousTableState: NatTableState = {
+    sorting: [],
+    globalFilter: '',
+    columnFilters: [],
+    columnVisibility: {},
+    columnOrder: [],
+    columnPinning: { left: [], right: [] },
+    columnSizing: {},
+    rowSelection: {},
+    pagination: { pageIndex: 0, pageSize: 10 }
+  };
+
+  private firstStateChange = true;
+
+  public constructor() {
+    this.syncInputsToService();
+
+    // Detect internal state changes from the table and emit slice outputs.
+    effect(() => {
+      const nextState = this.natTableService.stateChangeEvent();
+
+      if (nextState) {
+        this.emitStateSliceChanges(nextState);
+      }
+    });
+  }
+
+  /** Mirror each surface input into the table service, one effect per input. */
+  private syncInputsToService(): void {
     effect(() => {
       this.natTableService.setState(this.state());
     });
@@ -112,107 +176,43 @@ export class NatTableSurface {
     effect(() => {
       this.natTableService.direction.set(this.direction());
     });
-
-    // Detect internal state changes from the table and emit slice outputs
-    let isFirstChange = true;
-    let previousState: NatTableState = {
-      sorting: [],
-      globalFilter: '',
-      columnFilters: [],
-      columnVisibility: {},
-      columnOrder: [],
-      columnPinning: { left: [], right: [] },
-      columnSizing: {},
-      rowSelection: {},
-      pagination: { pageIndex: 0, pageSize: 10 },
-    };
-
-    effect(() => {
-      const nextState = this.natTableService.stateChangeEvent();
-      if (!nextState) {
-        return;
-      }
-
-      if (isFirstChange) {
-        previousState = nextState;
-        isFirstChange = false;
-      }
-
-      const prev = previousState;
-      previousState = nextState;
-
-      const sortingChanged = JSON.stringify(prev.sorting) !== JSON.stringify(nextState.sorting);
-      const globalFilterChanged = prev.globalFilter !== nextState.globalFilter;
-      const columnFiltersChanged =
-        JSON.stringify(prev.columnFilters) !== JSON.stringify(nextState.columnFilters);
-      const columnVisibilityChanged =
-        JSON.stringify(prev.columnVisibility) !== JSON.stringify(nextState.columnVisibility);
-      const columnOrderChanged =
-        JSON.stringify(prev.columnOrder) !== JSON.stringify(nextState.columnOrder);
-      const columnPinningChanged =
-        JSON.stringify(prev.columnPinning) !== JSON.stringify(nextState.columnPinning);
-      const columnSizingChanged =
-        JSON.stringify(prev.columnSizing) !== JSON.stringify(nextState.columnSizing);
-      const paginationChanged =
-        JSON.stringify(prev.pagination) !== JSON.stringify(nextState.pagination);
-      const rowSelectionChanged =
-        serializeSelectedRowIds(prev.rowSelection) !==
-        serializeSelectedRowIds(nextState.rowSelection);
-
-      if (
-        sortingChanged ||
-        globalFilterChanged ||
-        columnFiltersChanged ||
-        columnVisibilityChanged ||
-        columnOrderChanged ||
-        columnPinningChanged ||
-        columnSizingChanged ||
-        paginationChanged ||
-        rowSelectionChanged
-      ) {
-        this.stateChange.emit(nextState);
-      }
-
-      if (sortingChanged) {
-        this.sortingChange.emit(nextState.sorting);
-      }
-
-      if (globalFilterChanged) {
-        this.globalFilterChange.emit(nextState.globalFilter);
-      }
-
-      if (columnFiltersChanged) {
-        this.columnFiltersChange.emit(nextState.columnFilters);
-      }
-
-      if (columnVisibilityChanged) {
-        this.columnVisibilityChange.emit(nextState.columnVisibility);
-      }
-
-      if (columnOrderChanged) {
-        this.columnOrderChange.emit(nextState.columnOrder);
-      }
-
-      if (columnPinningChanged) {
-        this.columnPinningChange.emit(nextState.columnPinning);
-      }
-
-      if (columnSizingChanged) {
-        this.columnSizingChange.emit(nextState.columnSizing);
-      }
-      if (paginationChanged) {
-        this.paginationChange.emit(nextState.pagination);
-      }
-      if (rowSelectionChanged) {
-        this.rowSelectionChange.emit(nextState.rowSelection);
-      }
-    });
   }
-}
 
-function serializeSelectedRowIds(selection: NatTableState['rowSelection']): string {
-  return Object.keys(selection)
-    .filter((rowId) => selection[rowId])
-    .sort()
-    .join('|');
+  /** Diff incoming table state against the previous and emit each changed slice. */
+  private emitStateSliceChanges(nextState: NatTableState): void {
+    if (this.firstStateChange) {
+      this.previousTableState = nextState;
+      this.firstStateChange = false;
+    }
+
+    const prev = this.previousTableState;
+
+    this.previousTableState = nextState;
+
+    const diff = computeNatTableStateDiff(prev, nextState);
+
+    if (Object.values(diff).some((changed) => changed)) {
+      this.state.set(nextState);
+    }
+
+    // One emit per changed slice, in declaration order. Table-driven so the
+    // method stays under the complexity budget without losing the 1:1 mapping.
+    const sliceEmitters: readonly SliceEmitter[] = [
+      [diff.sortingChanged, (): void => this.sortingChange.emit(nextState.sorting)],
+      [diff.globalFilterChanged, (): void => this.globalFilterChange.emit(nextState.globalFilter)],
+      [diff.columnFiltersChanged, (): void => this.columnFiltersChange.emit(nextState.columnFilters)],
+      [diff.columnVisibilityChanged, (): void => this.columnVisibilityChange.emit(nextState.columnVisibility)],
+      [diff.columnOrderChanged, (): void => this.columnOrderChange.emit(nextState.columnOrder)],
+      [diff.columnPinningChanged, (): void => this.columnPinningChange.emit(nextState.columnPinning)],
+      [diff.columnSizingChanged, (): void => this.columnSizingChange.emit(nextState.columnSizing)],
+      [diff.paginationChanged, (): void => this.paginationChange.emit(nextState.pagination)],
+      [diff.rowSelectionChanged, (): void => this.rowSelectionChange.emit(nextState.rowSelection)]
+    ];
+
+    for (const [changed, emit] of sliceEmitters) {
+      if (changed) {
+        emit();
+      }
+    }
+  }
 }

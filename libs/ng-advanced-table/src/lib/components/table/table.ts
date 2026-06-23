@@ -1,53 +1,56 @@
+/* eslint-disable max-lines -- the table component is a single cohesive primitive (state, layout, a11y, resize, reorder); splitting it would fragment tightly-coupled signal graph and lifecycle wiring. */
 import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import { Directionality } from '@angular/cdk/bidi';
-import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import type { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  Component,
+  DestroyRef,
+  Injector,
+  NgZone,
   afterNextRender,
   afterRenderEffect,
   booleanAttribute,
-  Component,
   computed,
   contentChild,
-  DestroyRef,
   effect,
-  ElementRef,
   inject,
-  Injector,
   input,
   isDevMode,
-  NgZone,
   output,
   signal,
   untracked,
-  viewChild,
-  type TemplateRef,
+  viewChild
 } from '@angular/core';
+import type { ElementRef, TemplateRef } from '@angular/core';
+
 import {
-  createAngularTable,
   FlexRender,
+  createAngularTable,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
-  type CellContext,
-  type Column,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type ColumnOrderState,
-  type ColumnPinningState,
-  type ColumnSizingState,
-  type FilterFn,
-  type Header,
-  type HeaderGroup,
-  type PaginationState,
-  type Row,
-  type RowData,
-  type RowSelectionState,
-  type SortingState,
-  type Table,
-  type Updater,
-  type VisibilityState,
+  getSortedRowModel
+} from '@tanstack/angular-table';
+import type {
+  Column,
+  ColumnDef,
+  ColumnFiltersState,
+  ColumnOrderState,
+  ColumnPinningState,
+  ColumnSizingState,
+  FilterFn,
+  Header,
+  HeaderGroup,
+  PaginationState,
+  Row,
+  RowData,
+  RowSelectionState,
+  SortingState,
+  Table,
+  Updater,
+  VisibilityState
 } from '@tanstack/angular-table';
 
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from './cell-interaction';
@@ -55,20 +58,16 @@ import type { NatTableRowRenderedEvent } from './events';
 import { validateKeybindings } from './keybindings';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
-  formatNatTableIntlNumber,
-  mergeNatTableAccessibilityText,
   NAT_TABLE_ENGLISH_LOCALE,
   NAT_TABLE_INTL,
-  resolveNatTableIntl,
+  formatNatTableIntlNumber,
+  mergeNatTableAccessibilityText,
+  resolveNatTableIntl
 } from './table-intl';
+import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NatTableResizeGuide } from './table-layout.directive';
 import { NatTableStateCell } from './table-state-cell.directive';
+import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from './table-state-templates';
 import {
-  NatTableEmptyTemplate,
-  NatTableErrorTemplate,
-  NatTableLoadingTemplate,
-} from './table-state-templates';
-import {
-  DEFAULT_CELL_MAX_LINES,
   getColumnDefLeafIds,
   getColumnMoveTargetIndex,
   getNumericColumnWidth,
@@ -76,27 +75,22 @@ import {
   hasSameColumnVisibility,
   hasSameStringOrder,
   hasSameWidths,
-  isPrimitiveHeaderContent,
-  isUnavailableRequiredInputError,
   matchesFilterQuery,
   moveItemInArrayCopy,
-  normalizeCellMaxLines,
-  normalizeColumnDimension,
-  normalizeColumnLabel,
   normalizeColumnOrder,
   normalizeColumnPinning,
   normalizeDataStatus,
   normalizeRowSelection,
   normalizeSortingState,
   originatesFromInteractiveDescendant,
+  readColumnEntry,
   replaceIdsInSlots,
   resolveColumnLabel,
   serializeColumnFilters,
   serializeRowSelection,
-  serializeSorting,
-  type ColumnReorderKeyboardDirection,
-  type TableColumnAccessibilityState,
+  serializeSorting
 } from './table-utils';
+import type { ColumnReorderKeyboardDirection, TableColumnAccessibilityState, TableColumnSizingState } from './table-utils';
 import { NatTableService } from './table.service';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
@@ -109,7 +103,6 @@ import type {
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySummaryContext,
   NatTableBodyState,
-  NatTableCellTone,
   NatTableColumnMoveDirection,
   NatTableDataStatus,
   NatTableEmptyTemplateContext,
@@ -118,37 +111,32 @@ import type {
   NatTableRowActivateEvent,
   NatTableRowIdGetter,
   NatTableState,
-  NatTableUiController,
+  NatTableUiController
 } from './table.types';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './table.types';
+import {
+  accumulatePinnedOffsets,
+  buildColumnRenderState,
+  canResizeColumn,
+  firstPageUpdater,
+  getCellTone,
+  getColumnZone,
+  getHeaderRowColumnIds,
+  isColumnResizable,
+  isResizeKey,
+  readRequiredInput,
+  resolveDraggedColumnId,
+  resolveFilterState,
+  resolvePinnedZoneColumns,
+  resolveSeedState,
+  resolveUpdater,
+  scrollElementHorizontallyIntoView,
+  shouldHidePrimitiveHeaderLabel,
+  sortDirection
+} from './table.util';
+import type { ColumnRenderStateContext, ColumnReorderZone, TableColumnRenderState } from './table.util';
 
-type ColumnReorderZone = 'left' | 'center' | 'right';
-
-interface TableColumnRenderState {
-  label: string;
-  hiddenHeaderLabel: string | null;
-  alignEnd: boolean;
-  pinnedLeft: boolean;
-  pinnedRight: boolean;
-  hasPinnedEdgeLeft: boolean;
-  hasPinnedEdgeRight: boolean;
-  left: number | null;
-  right: number | null;
-  width: string | null;
-  minWidth: string | null;
-  maxWidth: string | null;
-  constrainedWidth: boolean;
-  headerWidth: string | null;
-  headerMinWidth: string | null;
-  headerMaxWidth: string | null;
-  headerConstrainedWidth: boolean;
-  cellHeight: string | null;
-  cellMaxLines: number | null;
-  ariaSort: 'ascending' | 'descending' | null;
-  rowHeader: boolean;
-}
-
-interface TableAccessibilitySnapshot {
+type TableAccessibilitySnapshot = {
   dataStatus: NatTableDataStatus;
   sortingKey: string;
   globalFilter: string;
@@ -160,15 +148,15 @@ interface TableAccessibilitySnapshot {
   visibleRows: number;
   totalRows: number;
   columns: TableColumnAccessibilityState[];
-}
+};
 
 const EMPTY_COLUMN_PINNING: ColumnPinningState = {
   left: [],
-  right: [],
+  right: []
 };
 const DEFAULT_PAGINATION: PaginationState = {
   pageIndex: 0,
-  pageSize: 10,
+  pageSize: 10
 };
 const DEFAULT_COLUMN_ORDER: ColumnOrderState = [];
 const EMPTY_COLUMN_SIZING: ColumnSizingState = {};
@@ -181,7 +169,7 @@ const DEFAULT_TABLE_STATE: NatTableState = {
   columnPinning: EMPTY_COLUMN_PINNING,
   columnSizing: EMPTY_COLUMN_SIZING,
   rowSelection: {},
-  pagination: DEFAULT_PAGINATION,
+  pagination: DEFAULT_PAGINATION
 };
 const RESIZE_KEYBOARD_STEP = 8;
 const RESIZE_KEYBOARD_STEP_LARGE = 40;
@@ -229,11 +217,15 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
     FlexRender,
     NatTableRowRenderEmitter,
     NatTableStateCell,
+    NatTableHeaderCellLayout,
+    NatTableBodyCellLayout,
+    NatTablePxWidth,
+    NatTableResizeGuide
   ],
   templateUrl: './table.html',
-  styleUrl: './table.css',
+  styleUrl: './table.css'
 })
-export class NatTable<TData extends RowData = RowData> {
+export class NatTable<TData extends RowData = RowData> implements NatTableUiController<TData> {
   /** Row data rendered by the table. */
   public readonly data = input.required<readonly TData[]>();
   /** TanStack column definitions for the current row type. */
@@ -247,9 +239,9 @@ export class NatTable<TData extends RowData = RowData> {
   /** Optional error payload passed through to `natTableError` templates. */
   public readonly error = input<unknown>(null);
   /** Enables row selection (`aria-selected`, selection state, companion checkbox column). */
-  readonly enableRowSelection = input(false, { transform: booleanAttribute });
+  public readonly enableRowSelection = input(false, { transform: booleanAttribute });
   /** Selection cardinality when enabled: `'multiple'` (default) or `'single'`. */
-  readonly selectionMode = input<'single' | 'multiple'>('multiple');
+  public readonly selectionMode = input<'single' | 'multiple'>('multiple');
   /** Optional override for the global filter implementation. */
   public readonly globalFilterFn = input<FilterFn<TData>>();
   /** Optional stable row id resolver used for selection, pinning, and events. */
@@ -262,7 +254,7 @@ export class NatTable<TData extends RowData = RowData> {
   /** Emits on row click or Enter/Space unless the event started on an interactive descendant. */
   public readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
-  private readonly natTableService = inject(NatTableService);
+  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly ngZone = inject(NgZone);
 
   protected readonly initialState = computed(() => this.natTableService.surfaceInitialState());
@@ -271,13 +263,14 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly manualPagination = computed(() => this.natTableService.manualPagination());
   protected readonly manualSorting = computed(() => this.natTableService.manualSorting());
   protected readonly manualFiltering = computed(() => this.natTableService.manualFiltering());
-  readonly enablePagination = computed(() => this.natTableService.hasPagination());
-  readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
+  // Public because NatTable serves as the NatTableUiController (see setController);
+  // the `[for]="grid"` consumer binding needs these on the public surface.
+  public readonly enablePagination = computed(() => this.natTableService.hasPagination());
+  public readonly enableGlobalFilter = computed(() => this.natTableService.hasSearch());
 
   protected readonly manualPageCount = computed(() => this.natTableService.manualPageCount());
-  protected readonly enableAnnouncements = computed(() =>
-    this.natTableService.enableAnnouncements(),
-  );
+  protected readonly enableAnnouncements = computed(() => this.natTableService.enableAnnouncements());
+
   protected readonly stickyHeader = computed(() => this.natTableService.stickyHeader());
   protected readonly enableMultiSort = computed(() => this.natTableService.enableMultiSort());
   protected readonly locale = computed(() => this.natTableService.locale());
@@ -290,19 +283,15 @@ export class NatTable<TData extends RowData = RowData> {
 
   private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
   private readonly internalGlobalFilter = signal(DEFAULT_TABLE_STATE.globalFilter);
-  private readonly internalColumnFilters = signal<ColumnFiltersState>(
-    DEFAULT_TABLE_STATE.columnFilters,
-  );
-  private readonly internalColumnVisibility = signal<VisibilityState>(
-    DEFAULT_TABLE_STATE.columnVisibility,
-  );
+  private readonly internalColumnFilters = signal<ColumnFiltersState>(DEFAULT_TABLE_STATE.columnFilters);
+
+  private readonly internalColumnVisibility = signal<VisibilityState>(DEFAULT_TABLE_STATE.columnVisibility);
+
   private readonly internalColumnOrder = signal<ColumnOrderState>(DEFAULT_TABLE_STATE.columnOrder);
-  private readonly internalColumnPinning = signal<ColumnPinningState>(
-    DEFAULT_TABLE_STATE.columnPinning,
-  );
-  private readonly internalColumnSizing = signal<ColumnSizingState>(
-    DEFAULT_TABLE_STATE.columnSizing,
-  );
+  private readonly internalColumnPinning = signal<ColumnPinningState>(DEFAULT_TABLE_STATE.columnPinning);
+
+  private readonly internalColumnSizing = signal<ColumnSizingState>(DEFAULT_TABLE_STATE.columnSizing);
+
   /**
    * Transient measured width staged for a column the resolved state hasn't
    * sized yet, applied only during the synchronous pointer-down that starts a
@@ -310,9 +299,8 @@ export class NatTable<TData extends RowData = RowData> {
    * instead of the 150px default; `onResizeStart` clears it once captured.
    */
   private readonly resizeSeedSizing = signal<ColumnSizingState>({});
-  private readonly internalRowSelection = signal<RowSelectionState>(
-    DEFAULT_TABLE_STATE.rowSelection,
-  );
+  private readonly internalRowSelection = signal<RowSelectionState>(DEFAULT_TABLE_STATE.rowSelection);
+
   private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   private readonly hasSeededInitialState = signal(false);
   protected readonly liveMessage = signal('');
@@ -321,37 +309,28 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly tableCaptionId = computed(() => `${this.tableElementId()}-caption`);
   protected readonly tableSummaryId = computed(() => `${this.tableElementId()}-summary`);
   protected readonly tableDescriptionId = computed(() => `${this.tableElementId()}-description`);
-  protected readonly tableKeyboardInstructionsId = computed(
-    () => `${this.tableElementId()}-instructions`,
-  );
+  protected readonly tableKeyboardInstructionsId = computed(() => `${this.tableElementId()}-instructions`);
+
   private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
   /** Current locale id resolved from the `locale` input or built-in English default. */
   public readonly localeId = computed(() => this.locale() ?? NAT_TABLE_ENGLISH_LOCALE);
-  private readonly tableIntl = computed(() =>
-    resolveNatTableIntl(this.tableIntlConfig, this.localeId()),
-  );
+  private readonly tableIntl = computed(() => resolveNatTableIntl(this.tableIntlConfig, this.localeId()));
 
   protected readonly renderCycleToken = signal(0);
   protected readonly renderCycleStartedAt = signal(0);
-  private readonly allLeafColumnIds = computed(() =>
-    getColumnDefLeafIds(this.readRequiredInput(this.columns, [])),
-  );
-  private readonly userColumnSizing = computed(() =>
-    getUserColumnSizing(this.readRequiredInput(this.columns, [])),
-  );
+  private readonly allLeafColumnIds = computed(() => getColumnDefLeafIds(readRequiredInput(this.columns, [])));
+
+  private readonly userColumnSizing = computed(() => getUserColumnSizing(readRequiredInput(this.columns, [])));
+
   private readonly resolvedColumnOrder = computed(() =>
-    normalizeColumnOrder(
-      this.state().columnOrder ?? this.internalColumnOrder(),
-      this.allLeafColumnIds(),
-    ),
+    normalizeColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds())
   );
+
   private readonly resolvedColumnPinning = computed(() =>
-    normalizeColumnPinning(
-      this.state().columnPinning ?? this.internalColumnPinning(),
-      this.allLeafColumnIds(),
-    ),
+    normalizeColumnPinning(this.state().columnPinning ?? this.internalColumnPinning(), this.allLeafColumnIds())
   );
+
   private readonly resolvedColumnSizing = computed<ColumnSizingState>(() => {
     const resolved = this.state().columnSizing ?? this.internalColumnSizing();
     const seed = this.resizeSeedSizing();
@@ -360,6 +339,7 @@ export class NatTable<TData extends RowData = RowData> {
     // Resolved entries always win, so the overlay self-shadows once a controlled
     // binding (or the internal signal) catches up — and never blocks a reset.
     let merged: ColumnSizingState | null = null;
+
     for (const columnId of Object.keys(seed)) {
       if (!(columnId in resolved)) {
         (merged ??= { ...resolved })[columnId] = seed[columnId];
@@ -368,21 +348,19 @@ export class NatTable<TData extends RowData = RowData> {
 
     return merged ?? resolved;
   });
+
   private readonly resolvedAccessibilityText = computed(() =>
-    mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText()),
+    mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText())
   );
-  protected readonly resolvedDescription = computed(
-    () => this.resolvedAccessibilityText().description ?? '',
-  );
-  protected readonly resolvedEmptyState = computed(
-    () => this.resolvedAccessibilityText().emptyState ?? '',
-  );
-  protected readonly resolvedLoadingState = computed(
-    () => this.resolvedAccessibilityText().loadingState ?? '',
-  );
-  protected readonly resolvedErrorState = computed(
-    () => this.resolvedAccessibilityText().errorState ?? '',
-  );
+
+  protected readonly resolvedDescription = computed(() => this.resolvedAccessibilityText().description ?? '');
+
+  protected readonly resolvedEmptyState = computed(() => this.resolvedAccessibilityText().emptyState ?? '');
+
+  protected readonly resolvedLoadingState = computed(() => this.resolvedAccessibilityText().loadingState ?? '');
+
+  protected readonly resolvedErrorState = computed(() => this.resolvedAccessibilityText().errorState ?? '');
+
   protected readonly resolvedDataStatus = computed(() => normalizeDataStatus(this.dataStatus()));
   protected readonly resolvedCaption = computed(() => this.caption()?.trim() ?? '');
   protected readonly tableAriaLabel = computed(() => {
@@ -392,15 +370,13 @@ export class NatTable<TData extends RowData = RowData> {
 
     return this.accessibleName().trim() || null;
   });
-  protected readonly tableAriaLabelledBy = computed(() =>
-    this.resolvedCaption() ? this.tableCaptionId() : null,
-  );
+
+  protected readonly tableAriaLabelledBy = computed(() => (this.resolvedCaption() ? this.tableCaptionId() : null));
+
   protected readonly resolvedKeyboardInstructions = computed(() => {
     const instructions = (this.resolvedAccessibilityText().keyboardInstructions ?? '').trim();
-    const reorderInstructions =
-      this.resolvedAccessibilityText().reorderKeyboardInstructions?.trim() ?? '';
-    const resizeInstructions =
-      this.resolvedAccessibilityText().resizeKeyboardInstructions?.trim() ?? '';
+    const reorderInstructions = this.resolvedAccessibilityText().reorderKeyboardInstructions?.trim() ?? '';
+    const resizeInstructions = this.resolvedAccessibilityText().resizeKeyboardInstructions?.trim() ?? '';
     const parts = [instructions, reorderInstructions];
 
     if (this.hasResizableColumns()) {
@@ -413,29 +389,21 @@ export class NatTable<TData extends RowData = RowData> {
   protected readonly headerGroups = computed(() => this.table.getHeaderGroups());
   protected readonly bodyRows = computed(() => this.table.getRowModel().rows);
   private readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
-  private readonly hasResizableColumns = computed(() =>
-    this.allLeafColumns().some((column) => this.isColumnResizable(column)),
-  );
+  private readonly hasResizableColumns = computed(() => this.allLeafColumns().some((column) => isColumnResizable(column)));
+
   protected readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   protected readonly mergedState = computed<NatTableState>(() => ({
-    sorting: normalizeSortingState(
-      this.state().sorting ?? this.internalSorting(),
-      this.enableMultiSort(),
-    ),
-    globalFilter: this.enableGlobalFilter()
-      ? (this.state().globalFilter ?? this.internalGlobalFilter())
-      : '',
+    sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting(), this.enableMultiSort()),
+    globalFilter: this.enableGlobalFilter() ? (this.state().globalFilter ?? this.internalGlobalFilter()) : '',
     columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnOrder: this.resolvedColumnOrder(),
     columnPinning: this.resolvedColumnPinning(),
     columnSizing: this.resolvedColumnSizing(),
-    rowSelection: normalizeRowSelection(
-      this.state().rowSelection ?? this.internalRowSelection(),
-      this.selectionMode() === 'multiple',
-    ),
-    pagination: this.state().pagination ?? this.internalPagination(),
+    rowSelection: normalizeRowSelection(this.state().rowSelection ?? this.internalRowSelection(), this.selectionMode() === 'multiple'),
+    pagination: this.state().pagination ?? this.internalPagination()
   }));
+
   /**
    * Grid-level `aria-multiselectable` for row selection. The `ngGrid` directive
    * only manages this attribute for its own cell-selection model
@@ -444,27 +412,28 @@ export class NatTable<TData extends RowData = RowData> {
    * The directive's host binding clobbers template bindings for the attribute,
    * so the value is written imperatively after render (see constructor).
    */
-  private readonly ariaMultiSelectable = computed(
-    () => this.enableRowSelection() && this.selectionMode() === 'multiple',
-  );
+  private readonly ariaMultiSelectable = computed(() => this.enableRowSelection() && this.selectionMode() === 'multiple');
+
   protected readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   protected readonly visibleRowCount = computed(() => this.bodyRows().length);
-  protected readonly totalRowCount = computed(() => this.readRequiredInput(this.data, []).length);
+  protected readonly totalRowCount = computed(() => readRequiredInput(this.data, []).length);
   protected readonly resolvedPageCount = computed(() => {
     if (this.manualPagination()) {
       return this.manualPageCount() ?? 1;
     }
+
     return this.enablePagination() ? Math.max(this.table.getPageCount(), 1) : 1;
   });
+
   protected readonly visibleColumnIds = computed(() =>
     this.visibleColumns()
       .map((column) => column.id)
-      .join('|'),
+      .join('|')
   );
+
   protected readonly emptyStateColSpan = computed(() => Math.max(this.visibleColumnCount(), 1));
-  protected readonly tableAriaBusy = computed(() =>
-    this.resolvedDataStatus() === NAT_TABLE_DATA_STATUS.loading ? 'true' : null,
-  );
+  protected readonly tableAriaBusy = computed(() => (this.resolvedDataStatus() === NAT_TABLE_DATA_STATUS.loading ? 'true' : null));
+
   protected readonly bodyState = computed<NatTableBodyState>(() => {
     const dataStatus = this.resolvedDataStatus();
 
@@ -478,34 +447,35 @@ export class NatTable<TData extends RowData = RowData> {
 
     return this.visibleRowCount() > 0 ? NAT_TABLE_BODY_STATE.rows : NAT_TABLE_BODY_STATE.empty;
   });
+
   private readonly renderedVisibleRowCount = computed(() =>
-    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 0,
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 0
   );
+
   private readonly stateTotalRowCount = computed(() => {
     const bodyState = this.bodyState();
 
-    return bodyState === NAT_TABLE_BODY_STATE.loading || bodyState === NAT_TABLE_BODY_STATE.error
-      ? 0
-      : this.totalRowCount();
+    return bodyState === NAT_TABLE_BODY_STATE.loading || bodyState === NAT_TABLE_BODY_STATE.error ? 0 : this.totalRowCount();
   });
+
   private readonly renderedPageIndex = computed(() =>
-    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.mergedState().pagination.pageIndex : 0,
+    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.mergedState().pagination.pageIndex : 0
   );
-  private readonly renderedPageCount = computed(() =>
-    this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.resolvedPageCount() : 1,
-  );
-  protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(
-    () => ({
-      ...this.getStateTemplateBaseContext(),
-      $implicit: NAT_TABLE_BODY_STATE.loading,
-      status: NAT_TABLE_BODY_STATE.loading,
-    }),
-  );
+
+  private readonly renderedPageCount = computed(() => (this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.resolvedPageCount() : 1));
+
+  protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(() => ({
+    ...this.getStateTemplateBaseContext(),
+    $implicit: NAT_TABLE_BODY_STATE.loading,
+    status: NAT_TABLE_BODY_STATE.loading
+  }));
+
   protected readonly emptyTemplateContext = computed<NatTableEmptyTemplateContext<TData>>(() => ({
     ...this.getStateTemplateBaseContext(),
     $implicit: NAT_TABLE_BODY_STATE.empty,
-    status: NAT_TABLE_BODY_STATE.empty,
+    status: NAT_TABLE_BODY_STATE.empty
   }));
+
   protected readonly errorTemplateContext = computed<NatTableErrorTemplateContext<TData>>(() => {
     const error = this.error();
 
@@ -513,37 +483,34 @@ export class NatTable<TData extends RowData = RowData> {
       ...this.getStateTemplateBaseContext(),
       $implicit: error,
       status: NAT_TABLE_BODY_STATE.error,
-      error,
+      error
     };
   });
+
   private readonly loadingTemplate = contentChild(NatTableLoadingTemplate);
   private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
   private readonly errorTemplate = contentChild(NatTableErrorTemplate);
-  protected readonly loadingTemplateRef = computed<TemplateRef<
-    NatTableLoadingTemplateContext<TData>
-  > | null>(() => {
+  protected readonly loadingTemplateRef = computed<TemplateRef<NatTableLoadingTemplateContext<TData>> | null>(() => {
     const templateRef = this.loadingTemplate()?.templateRef;
 
     return templateRef ? (templateRef as TemplateRef<NatTableLoadingTemplateContext<TData>>) : null;
   });
-  protected readonly emptyTemplateRef = computed<TemplateRef<
-    NatTableEmptyTemplateContext<TData>
-  > | null>(() => {
+
+  protected readonly emptyTemplateRef = computed<TemplateRef<NatTableEmptyTemplateContext<TData>> | null>(() => {
     const templateRef = this.emptyTemplate()?.templateRef;
 
     return templateRef ? (templateRef as TemplateRef<NatTableEmptyTemplateContext<TData>>) : null;
   });
-  protected readonly errorTemplateRef = computed<TemplateRef<
-    NatTableErrorTemplateContext<TData>
-  > | null>(() => {
+
+  protected readonly errorTemplateRef = computed<TemplateRef<NatTableErrorTemplateContext<TData>> | null>(() => {
     const templateRef = this.errorTemplate()?.templateRef;
 
     return templateRef ? (templateRef as TemplateRef<NatTableErrorTemplateContext<TData>>) : null;
   });
+
   protected readonly tableSummary = computed(() => this.buildTableSummary());
-  protected readonly leafHeaderRowId = computed(
-    () => this.table.getHeaderGroups().at(-1)?.id ?? null,
-  );
+  protected readonly leafHeaderRowId = computed(() => this.table.getHeaderGroups().at(-1)?.id ?? null);
+
   protected readonly ariaDescribedBy = computed(() => {
     const ids: string[] = [];
 
@@ -561,17 +528,17 @@ export class NatTable<TData extends RowData = RowData> {
 
     return ids.length ? ids.join(' ') : null;
   });
+
   public readonly table: Table<TData> = createAngularTable<TData>(() => ({
-    data: this.readRequiredInput(this.data, []) as TData[],
-    columns: this.readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
+    data: readRequiredInput(this.data, []) as TData[],
+    columns: readRequiredInput(this.columns, []) as ColumnDef<TData, unknown>[],
     state: this.mergedState(),
     pageCount: this.manualPagination() ? this.manualPageCount() : undefined,
     manualPagination: this.manualPagination(),
     manualSorting: this.manualSorting(),
     manualFiltering: this.manualFiltering(),
     enableMultiSort: this.enableMultiSort(),
-    isMultiSortEvent: (event) =>
-      this.enableMultiSort() && (event as { shiftKey?: boolean })?.shiftKey === true,
+    isMultiSortEvent: (event) => this.enableMultiSort() && (event as { shiftKey?: boolean }).shiftKey === true,
     enableColumnPinning: true,
     enableColumnOrdering: true,
     enableColumnResizing: true,
@@ -582,7 +549,7 @@ export class NatTable<TData extends RowData = RowData> {
     meta: {
       natTableLocaleId: this.localeId(),
       natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
-      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
+      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction)
     },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
@@ -590,25 +557,22 @@ export class NatTable<TData extends RowData = RowData> {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
     getSortedRowModel: this.manualSorting() ? undefined : getSortedRowModel(),
-    getPaginationRowModel:
-      !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
+    getPaginationRowModel: !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
     onSortingChange: (updater) => this.updateState({ sorting: updater }),
-    onGlobalFilterChange: (updater) =>
-      this.updateState({ globalFilter: updater, pagination: this.firstPageUpdater }),
-    onColumnFiltersChange: (updater) =>
-      this.updateState({ columnFilters: updater, pagination: this.firstPageUpdater }),
-    onColumnVisibilityChange: (updater) => this.updateState({ columnVisibility: updater }),
+    onGlobalFilterChange: (updater: Updater<string>) => this.updateState({ globalFilter: updater, pagination: firstPageUpdater }),
+    onColumnFiltersChange: (updater) => this.updateState({ columnFilters: updater, pagination: firstPageUpdater }),
+    onColumnVisibilityChange: (updater: Updater<VisibilityState>) => this.updateState({ columnVisibility: updater }),
     onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
     onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
     onColumnSizingChange: (updater) => this.applyColumnSizingChange(updater),
     onRowSelectionChange: (updater) => this.updateState({ rowSelection: updater }),
-    onPaginationChange: (updater) => this.updateState({ pagination: updater }),
+    onPaginationChange: (updater) => this.updateState({ pagination: updater })
   })) as Table<TData>;
+
   private readonly tableRegionRef = viewChild<ElementRef<HTMLElement>>('tableRegion');
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
-  public readonly tableScrollContainer = computed(
-    () => this.tableRegionRef()?.nativeElement ?? null,
-  );
+  public readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
+
   private readonly measuredHeaderWidths = signal<Record<string, number>>({});
   private readonly injector = inject(Injector);
   /**
@@ -620,9 +584,8 @@ export class NatTable<TData extends RowData = RowData> {
   private readonly destroyRef = inject(DestroyRef);
   private readonly directionality = inject(Directionality, { optional: true });
   /** Resolved text direction: explicit `direction` config → inherited CDK direction → `'ltr'`. */
-  protected readonly resolvedDirection = computed<'ltr' | 'rtl'>(
-    () => this.direction() ?? this.directionality?.value ?? 'ltr',
-  );
+  protected readonly resolvedDirection = computed<'ltr' | 'rtl'>(() => this.direction() ?? this.directionality?.value ?? 'ltr');
+
   private headerResizeObserver: ResizeObserver | null = null;
 
   private cachedStickyTop = 0;
@@ -660,15 +623,14 @@ export class NatTable<TData extends RowData = RowData> {
    * region is measured or when no column opts into resizing.
    */
   private readonly isFillFlexLayout = computed(
-    () => !this.isFixedLayout() && this.hasResizableColumns() && this.regionViewportWidth() > 0,
+    () => !this.isFixedLayout() && this.hasResizableColumns() && this.regionViewportWidth() > 0
   );
+
   /**
    * Authoritative widths drive the layout: either explicit `fixed` sizing mode or
    * fill flex. Renders the colgroup and switches the table to `table-layout: fixed`.
    */
-  protected readonly usesAuthoritativeLayout = computed(
-    () => this.isFixedLayout() || this.isFillFlexLayout(),
-  );
+  protected readonly usesAuthoritativeLayout = computed(() => this.isFixedLayout() || this.isFillFlexLayout());
 
   /**
    * Per-column widths used for sticky pinned offsets, the colgroup, and the keyboard
@@ -684,93 +646,134 @@ export class NatTable<TData extends RowData = RowData> {
     // region width in proportion to their intrinsic size (never below their min), so
     // the widths sum to the region and the table stays filled while each resize is
     // pixel-exact under table-layout: fixed.
-    if (this.isFillFlexLayout()) {
-      const container = this.regionViewportWidth();
-      const widths: Record<string, number> = {};
-      const flex: { id: string; weight: number; min: number }[] = [];
-      let sumPinned = 0;
-      let totalWeight = 0;
-      let sumFlexMins = 0;
+    return this.isFillFlexLayout()
+      ? this.computeFillFlexWidths(visibleColumns, columnSizing)
+      : this.computeIntrinsicWidths(visibleColumns, columnSizing);
+  });
 
-      for (const column of visibleColumns) {
-        const resizedWidth = columnSizing[column.id];
+  /**
+   * Fill-flex width distribution: resized columns keep their exact (clamped) width;
+   * the remaining columns each get their min plus a proportional share of the surplus,
+   * so the widths sum to the region and no flex column drops below its min.
+   */
+  private computeFillFlexWidths(
+    visibleColumns: readonly Column<TData, unknown>[],
+    columnSizing: ColumnSizingState
+  ): Record<string, number> {
+    const container = this.regionViewportWidth();
+    const widths: Record<string, number> = {};
+    const flex: { id: string; weight: number; min: number }[] = [];
+    let sumPinned = 0;
+    let totalWeight = 0;
+    let sumFlexMins = 0;
 
-        if (resizedWidth !== undefined) {
-          const width = this.clampColumnWidth(column, resizedWidth);
-          widths[column.id] = width;
-          sumPinned += width;
-        } else {
-          const weight = Math.max(Math.round(column.getSize()), 1);
-          const min = this.getResizeBounds(column).min;
-          flex.push({ id: column.id, weight, min });
-          totalWeight += weight;
-          sumFlexMins += min;
-        }
+    for (const column of visibleColumns) {
+      const resizedWidth = readColumnEntry(columnSizing, column.id);
+
+      if (resizedWidth !== undefined) {
+        const width = this.clampColumnWidth(column, resizedWidth);
+
+        widths[column.id] = width;
+        sumPinned += width;
+      } else {
+        const weight = Math.max(Math.round(column.getSize()), 1);
+        const min = this.getResizeBounds(column).min;
+
+        flex.push({ id: column.id, weight, min });
+        totalWeight += weight;
+        sumFlexMins += min;
       }
+    }
 
-      // Every column pinned: authoritative widths, region scrolls if they overflow.
-      if (flex.length === 0) {
-        return widths;
-      }
-
-      // Each flex column gets its min plus a share of the leftover space (in
-      // proportion to intrinsic size); the last absorbs the exact remainder so the
-      // widths sum to the region — no gap, no overflow — and no flex column drops
-      // below its min. When the pinned columns leave no surplus, the flex columns
-      // sit at their mins and the region scrolls.
-      const surplus = Math.max(0, container - sumPinned - sumFlexMins);
-      let distributedSurplus = 0;
-
-      flex.forEach(({ id, weight, min }, index) => {
-        // Math.floor never over-allocates, so the running sum stays <= surplus and the
-        // last column gets the exact remainder (always >= 0) — the widths sum to the
-        // container with no sub-pixel overflow. (The old Math.round could over-allocate
-        // and leave the last column a negative share, pushing the total 1–2px past the
-        // region.)
-        const extra =
-          index === flex.length - 1
-            ? surplus - distributedSurplus
-            : Math.floor((surplus * weight) / totalWeight);
-        distributedSurplus += extra;
-        // Honor the column's own maxSize: a flex column never renders wider than its cap.
-        // ponytail: if every flex column is capped below its share the table may sit
-        // slightly under-filled (rare); we don't redistribute the capped remainder.
-        const flexMax = this.getResizeBounds(this.table.getColumn(id)!).max;
-        const width = min + Math.max(0, extra);
-        widths[id] = flexMax !== null ? Math.min(width, flexMax) : width;
-      });
-
+    // Every column pinned: authoritative widths, region scrolls if they overflow.
+    if (flex.length === 0) {
       return widths;
     }
 
+    // Each flex column gets its min plus a share of the leftover space (in
+    // proportion to intrinsic size); the last absorbs the exact remainder so the
+    // widths sum to the region — no gap, no overflow — and no flex column drops
+    // below its min. When the pinned columns leave no surplus, the flex columns
+    // sit at their mins and the region scrolls.
+    const surplus = Math.max(0, container - sumPinned - sumFlexMins);
+    let distributedSurplus = 0;
+
+    flex.forEach(({ id, weight, min }, index) => {
+      // Math.floor never over-allocates, so the running sum stays <= surplus and the
+      // last column gets the exact remainder (always >= 0) — the widths sum to the
+      // container with no sub-pixel overflow. (The old Math.round could over-allocate
+      // and leave the last column a negative share, pushing the total 1–2px past the
+      // region.)
+      const extra = index === flex.length - 1 ? surplus - distributedSurplus : Math.floor((surplus * weight) / totalWeight);
+
+      distributedSurplus += extra;
+      // Honor the column's own maxSize: a flex column never renders wider than its cap.
+      // ponytail: if every flex column is capped below its share the table may sit
+      // slightly under-filled (rare); we don't redistribute the capped remainder.
+      const flexColumn = this.table.getColumn(id);
+      const flexMax = flexColumn ? this.getResizeBounds(flexColumn).max : null;
+      const width = min + Math.max(0, extra);
+
+      widths[id] = flexMax !== null ? Math.min(width, flexMax) : width;
+    });
+
+    return widths;
+  }
+
+  /**
+   * Intrinsic (auto) / fixed-mode width resolution.
+   * Precedence: user-resized > measured header (auto layout only) > fixed def size > getSize().
+   */
+  private computeIntrinsicWidths(
+    visibleColumns: readonly Column<TData, unknown>[],
+    columnSizing: ColumnSizingState
+  ): Record<string, number> {
     const measured = this.measuredHeaderWidths();
     const userColumnSizing = this.userColumnSizing();
+    const usesAuthoritativeLayout = this.usesAuthoritativeLayout();
     const result: Record<string, number> = {};
 
     for (const column of visibleColumns) {
-      const measuredWidth = measured[column.id];
-      const sizing = userColumnSizing[column.id];
-      const fixedWidth = sizing?.hasSize === true ? getNumericColumnWidth(column.getSize()) : null;
-      const resizedWidth = columnSizing[column.id];
-
-      // Precedence: user-resized > measured header > fixed def size > getSize().
-      // The measured-header fallback applies only in intrinsic (auto) layout. Under an
-      // authoritative colgroup (fixed mode / fill-flex), the "measured" width is just the
-      // width the colgroup forced last frame — re-confirmed by the ResizeObserver — so
-      // using it as a fallback would pin a column to its pre-reset width and defeat a
-      // columnSizing reset. Fall straight through to the def size / getSize() instead.
-      result[column.id] =
-        resizedWidth !== undefined
-          ? this.clampColumnWidth(column, resizedWidth)
-          : !this.usesAuthoritativeLayout() && measuredWidth !== undefined && measuredWidth > 0
-            ? measuredWidth
-            : fixedWidth !== null
-              ? fixedWidth
-              : Math.max(Math.round(column.getSize()), 1);
+      result[column.id] = this.resolveIntrinsicColumnWidth(column, {
+        measuredWidth: measured[column.id],
+        sizing: userColumnSizing[column.id],
+        resizedWidth: columnSizing[column.id],
+        usesAuthoritativeLayout
+      });
     }
 
     return result;
-  });
+  }
+
+  /**
+   * Resolves one column's intrinsic width by precedence. The measured-header fallback
+   * applies only in auto layout: under an authoritative colgroup the "measured" width is
+   * just last frame's forced colgroup width, so using it would defeat a columnSizing reset.
+   */
+  private resolveIntrinsicColumnWidth(
+    column: Column<TData, unknown>,
+    context: {
+      measuredWidth: number | undefined;
+      sizing: TableColumnSizingState | undefined;
+      resizedWidth: number | undefined;
+      usesAuthoritativeLayout: boolean;
+    }
+  ): number {
+    const { measuredWidth, sizing, resizedWidth, usesAuthoritativeLayout } = context;
+
+    if (resizedWidth !== undefined) {
+      return this.clampColumnWidth(column, resizedWidth);
+    }
+
+    if (!usesAuthoritativeLayout && measuredWidth !== undefined && measuredWidth > 0) {
+      return measuredWidth;
+    }
+
+    const fixedWidth = sizing?.hasSize === true ? getNumericColumnWidth(column.getSize()) : null;
+
+    return fixedWidth ?? Math.max(Math.round(column.getSize()), 1);
+  }
+
   /**
    * Sum of all visible column widths, used as the table width in fixed-layout
    * mode so columns render at exactly their resolved widths (`table-layout:
@@ -781,194 +784,86 @@ export class NatTable<TData extends RowData = RowData> {
 
     return this.visibleColumns().reduce((total, column) => total + (widths[column.id] ?? 0), 0);
   });
+
   protected readonly columnRenderStates = computed<Record<string, TableColumnRenderState>>(() => {
     const visibleColumns = this.visibleColumns();
     const widths = this.resolvedColumnWidths();
-    const userColumnSizing = this.userColumnSizing();
     const state = this.mergedState();
-    const primarySortColumnId = state.sorting[0]?.id ?? null;
-    const visibleColumnsById = new Map(
-      visibleColumns.map((column) => [column.id, column] as const),
-    );
-    const leftVisibleColumns = (state.columnPinning.left ?? [])
-      .map((columnId) => visibleColumnsById.get(columnId))
-      .filter((column): column is Column<TData, unknown> => !!column);
-    const rightVisibleColumns = (state.columnPinning.right ?? [])
-      .map((columnId) => visibleColumnsById.get(columnId))
-      .filter((column): column is Column<TData, unknown> => !!column);
-    const leftPinnedIds = new Set(leftVisibleColumns.map((column) => column.id));
-    const rightPinnedIds = new Set(rightVisibleColumns.map((column) => column.id));
-    const leftOffsets: Record<string, number> = {};
-    const rightOffsets: Record<string, number> = {};
+    const visibleColumnsById = new Map(visibleColumns.map((column) => [column.id, column] as const));
+    const leftVisibleColumns = resolvePinnedZoneColumns(state.columnPinning.left, visibleColumnsById);
+    const rightVisibleColumns = resolvePinnedZoneColumns(state.columnPinning.right, visibleColumnsById);
+    const context: ColumnRenderStateContext<TData> = {
+      widths,
+      state,
+      userColumnSizing: this.userColumnSizing(),
+      primarySortColumnId: state.sorting.at(0)?.id ?? null,
+      leftVisibleColumns,
+      rightVisibleColumns,
+      leftPinnedIds: new Set(leftVisibleColumns.map((column) => column.id)),
+      rightPinnedIds: new Set(rightVisibleColumns.map((column) => column.id)),
+      leftOffsets: accumulatePinnedOffsets(leftVisibleColumns, widths),
+      rightOffsets: accumulatePinnedOffsets([...rightVisibleColumns].reverse(), widths)
+    };
     const result: Record<string, TableColumnRenderState> = {};
-    let leftOffset = 0;
-
-    for (const column of leftVisibleColumns) {
-      leftOffsets[column.id] = leftOffset;
-      leftOffset += widths[column.id] ?? 0;
-    }
-
-    let rightOffset = 0;
-
-    for (let index = rightVisibleColumns.length - 1; index >= 0; index -= 1) {
-      const column = rightVisibleColumns[index];
-
-      rightOffsets[column.id] = rightOffset;
-      rightOffset += widths[column.id] ?? 0;
-    }
 
     for (const column of visibleColumns) {
-      const sizing = userColumnSizing[column.id];
-      const resizedWidth = state.columnSizing[column.id];
-      const hasExplicitWidth = sizing?.hasSize === true || resizedWidth !== undefined;
-      const width = hasExplicitWidth
-        ? normalizeColumnDimension(
-            resizedWidth !== undefined ? (widths[column.id] ?? column.getSize()) : column.getSize(),
-          )
-        : null;
-      const minWidth =
-        sizing?.hasMinSize === true
-          ? normalizeColumnDimension(column.columnDef.minSize)
-          : width !== null
-            ? width
-            : null;
-      const maxWidth =
-        sizing?.hasMaxSize === true
-          ? normalizeColumnDimension(column.columnDef.maxSize)
-          : width !== null
-            ? width
-            : null;
-      const pinnedLeft = leftPinnedIds.has(column.id);
-      const pinnedRight = rightPinnedIds.has(column.id);
-
-      const primarySortEntry =
-        primarySortColumnId === column.id
-          ? (state.sorting.find((entry) => entry.id === column.id) ?? null)
-          : null;
-      const meta = column.columnDef.meta;
-      // A user-resized column drives BOTH header and body widths, so the whole
-      // column visibly resizes; otherwise headers stay intrinsic unless the
-      // column opts into header-only sizing via meta.headerSize.
-      const resizedDimension = resizedWidth !== undefined ? width : null;
-      const label = resolveColumnLabel(column);
-      const headerWidth =
-        resizedDimension ??
-        (meta?.headerSize !== undefined ? normalizeColumnDimension(meta.headerSize) : null);
-      const headerMinWidth =
-        resizedDimension ??
-        (meta?.headerMinSize !== undefined
-          ? normalizeColumnDimension(meta.headerMinSize)
-          : headerWidth !== null
-            ? headerWidth
-            : null);
-      const headerMaxWidth =
-        resizedDimension ??
-        (meta?.headerMaxSize !== undefined
-          ? normalizeColumnDimension(meta.headerMaxSize)
-          : headerWidth !== null
-            ? headerWidth
-            : null);
-      const cellHeight =
-        meta?.cellHeight !== undefined ? normalizeColumnDimension(meta.cellHeight) : null;
-      const cellMaxLines = normalizeCellMaxLines(meta?.cellMaxLines ?? DEFAULT_CELL_MAX_LINES);
-
-      result[column.id] = {
-        label,
-        hiddenHeaderLabel: normalizeColumnLabel(meta?.hiddenHeaderLabel),
-        alignEnd: meta?.align === 'end',
-        pinnedLeft,
-        pinnedRight,
-        hasPinnedEdgeLeft: pinnedLeft && leftVisibleColumns.at(-1)?.id === column.id,
-        hasPinnedEdgeRight: pinnedRight && rightVisibleColumns[0]?.id === column.id,
-        left: pinnedLeft ? (leftOffsets[column.id] ?? 0) : null,
-        right: pinnedRight ? (rightOffsets[column.id] ?? 0) : null,
-        width,
-        minWidth,
-        maxWidth,
-        constrainedWidth: width !== null || maxWidth !== null,
-        headerWidth,
-        headerMinWidth,
-        headerMaxWidth,
-        headerConstrainedWidth: headerWidth !== null || headerMaxWidth !== null,
-        cellHeight,
-        cellMaxLines,
-        ariaSort: primarySortEntry ? (primarySortEntry.desc ? 'descending' : 'ascending') : null,
-        rowHeader: !!meta?.rowHeader,
-      };
+      result[column.id] = buildColumnRenderState(column, context);
     }
 
     return result;
   });
 
-  constructor() {
-    this.natTableService.setController(this as unknown as NatTableUiController<any>);
+  public constructor() {
+    this.natTableService.setController(this);
 
+    this.registerKeybindingValidationEffect();
+    this.registerSeedEffect();
+    this.registerRenderCycleEffect();
+    this.registerAnnouncementEffect();
+    this.registerResizeAnnouncementEffect();
+    this.registerHeaderObservationEffects();
+    this.registerCacheInvalidationEffect();
+
+    this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
+  }
+
+  /** Dev-only: warns when configured keybindings overlap. */
+  private registerKeybindingValidationEffect(): void {
     effect(() => {
       const bindings = this.natTableService.keybindings();
+
       if (isDevMode()) {
         const warnings = validateKeybindings(bindings);
+
         for (const warning of warnings) {
           console.warn(`[ng-advanced-table] ${warning}`);
         }
       }
     });
+  }
 
+  /** Seeds internal state from the surface's initial state on first run. */
+  private registerSeedEffect(): void {
     effect(() => {
       if (this.hasSeededInitialState()) {
         return;
       }
 
-      const initialState = this.initialState();
-
-      this.internalSorting.set(
-        normalizeSortingState(
-          initialState.sorting ?? DEFAULT_TABLE_STATE.sorting,
-          this.enableMultiSort(),
-        ),
-      );
-      this.internalGlobalFilter.set(
-        this.enableGlobalFilter()
-          ? (initialState.globalFilter ?? DEFAULT_TABLE_STATE.globalFilter)
-          : '',
-      );
-      this.internalColumnFilters.set(
-        initialState.columnFilters ?? DEFAULT_TABLE_STATE.columnFilters,
-      );
-      this.internalColumnVisibility.set(
-        initialState.columnVisibility ?? DEFAULT_TABLE_STATE.columnVisibility,
-      );
-      this.internalColumnOrder.set(initialState.columnOrder ?? DEFAULT_TABLE_STATE.columnOrder);
-      this.internalColumnPinning.set(
-        initialState.columnPinning ?? DEFAULT_TABLE_STATE.columnPinning,
-      );
-      this.internalColumnSizing.set(initialState.columnSizing ?? DEFAULT_TABLE_STATE.columnSizing);
-      this.internalRowSelection.set(
-        normalizeRowSelection(
-          initialState.rowSelection ?? DEFAULT_TABLE_STATE.rowSelection,
-          this.selectionMode() === 'multiple',
-        ),
-      );
-      this.internalPagination.set({
-        pageIndex: initialState.pagination?.pageIndex ?? DEFAULT_PAGINATION.pageIndex,
-        pageSize: initialState.pagination?.pageSize ?? DEFAULT_PAGINATION.pageSize,
-      });
-      this.hasSeededInitialState.set(true);
-
-      untracked(() => {
-        if (this.natTableService) {
-          this.natTableService.notifyStateChange(this.mergedState());
-        }
-      });
+      this.seedInitialState(this.initialState());
     });
+  }
 
-    // Track render cycles for the row-render emitter. A "cycle" is any change
-    // that might cause rows to re-paint. Both signals are consumed purely by
-    // the internal emitter directive (and remain inert when emitRowRenderEvents
-    // is disabled).
+  /**
+   * Tracks render cycles for the row-render emitter. A "cycle" is any change that
+   * might cause rows to re-paint. Both signals are consumed purely by the internal
+   * emitter directive (and remain inert when emitRowRenderEvents is disabled).
+   */
+  private registerRenderCycleEffect(): void {
     effect(() => {
       if (!this.emitRowRenderEvents()) {
         this.renderCycleToken.set(0);
         this.renderCycleStartedAt.set(0);
+
         return;
       }
 
@@ -977,7 +872,10 @@ export class NatTable<TData extends RowData = RowData> {
       this.renderCycleStartedAt.set(performance.now());
       this.renderCycleToken.update((token) => token + 1);
     });
+  }
 
+  /** Announces accessibility changes (sorting, filtering, selection, pagination) once seeded. */
+  private registerAnnouncementEffect(): void {
     effect(() => {
       if (!this.hasSeededInitialState()) {
         return;
@@ -998,7 +896,9 @@ export class NatTable<TData extends RowData = RowData> {
         this.announce(message);
       }
     });
+  }
 
+  private registerCacheInvalidationEffect(): void {
     effect(() => {
       // Access columnRenderStates to react to column visibility/ordering changes and invalidate cache
       this.columnRenderStates();
@@ -1006,36 +906,48 @@ export class NatTable<TData extends RowData = RowData> {
       this.cachedTableEl = null;
       this.cachedTheadEl = null;
     });
+  }
 
-    // Announce the final width once a pointer/touch resize drag ends. Keyed off
-    // TanStack's `isResizingColumn`, which is set only for pointer drags (never
-    // keyboard), so this never double-announces with the keyboard path.
+  /**
+   * Announces the final width once a pointer/touch resize drag ends. Keyed off
+   * TanStack's `isResizingColumn`, set only for pointer drags (never keyboard),
+   * so this never double-announces with the keyboard path.
+   */
+  private registerResizeAnnouncementEffect(): void {
     effect(() => {
       const resizingColumnId = this.table.getState().columnSizingInfo.isResizingColumn || null;
 
-      untracked(() => {
-        const previous = this.previousResizingColumnId;
-        this.previousResizingColumnId = resizingColumnId;
-
-        if (!previous || resizingColumnId || !this.enableAnnouncements()) {
-          return;
-        }
-
-        const commit = this.resizeCommit;
-        this.resizeCommit = null;
-
-        if (!commit || commit.columnId !== previous) {
-          return;
-        }
-
-        const column = this.table.getColumn(previous);
-
-        if (column) {
-          this.announceColumnResize(column, commit.width);
-        }
-      });
+      untracked(() => this.handleResizeEnd(resizingColumnId));
     });
+  }
 
+  /** Fires the resize-end announcement when a pointer resize transitions to idle. */
+  private handleResizeEnd(resizingColumnId: string | null): void {
+    const previous = this.previousResizingColumnId;
+
+    this.previousResizingColumnId = resizingColumnId;
+
+    if (!previous || resizingColumnId || !this.enableAnnouncements()) {
+      return;
+    }
+
+    const commit = this.resizeCommit;
+
+    this.resizeCommit = null;
+
+    if (commit?.columnId !== previous) {
+      return;
+    }
+
+    const column = this.table.getColumn(previous);
+
+    if (column) {
+      this.announceColumnResize(column, commit.width);
+    }
+  }
+
+  /** Wires up header-width measurement and the imperative aria-multiselectable attribute. */
+  private registerHeaderObservationEffects(): void {
     afterNextRender(() => {
       this.initializeHeaderObservation();
       this.setupStickyHeaderScrollListener();
@@ -1062,15 +974,31 @@ export class NatTable<TData extends RowData = RowData> {
         table.removeAttribute('aria-multiselectable');
       }
     });
+  }
 
-    this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
+  /** Seeds the internal (uncontrolled) state signals from the surface's initial state, once. */
+  private seedInitialState(initialState: Partial<NatTableState>): void {
+    const seed = resolveSeedState(initialState, DEFAULT_TABLE_STATE);
+
+    this.internalSorting.set(normalizeSortingState(seed.sorting, this.enableMultiSort()));
+    this.internalGlobalFilter.set(this.enableGlobalFilter() ? seed.globalFilter : '');
+    this.internalColumnFilters.set(seed.columnFilters);
+    this.internalColumnVisibility.set(seed.columnVisibility);
+    this.internalColumnOrder.set(seed.columnOrder);
+    this.internalColumnPinning.set(seed.columnPinning);
+    this.internalColumnSizing.set(seed.columnSizing);
+    this.internalRowSelection.set(normalizeRowSelection(seed.rowSelection, this.selectionMode() === 'multiple'));
+    this.internalPagination.set(seed.pagination);
+    this.hasSeededInitialState.set(true);
+
+    untracked(() => this.natTableService.notifyStateChange(this.mergedState()));
   }
 
   /** Apply a partial state update from companion controls (search, pager, filters). Respects controlled and uncontrolled slices. */
   public patchState(
     updaters: Partial<{
       [K in keyof NatTableState]: Updater<NatTableState[K]>;
-    }>,
+    }>
   ): void {
     this.updateState(updaters);
   }
@@ -1079,27 +1007,24 @@ export class NatTable<TData extends RowData = RowData> {
     return headerGroup.id === this.leafHeaderRowId();
   }
 
-  protected getHeaderRowColumnIds(headerGroup: HeaderGroup<TData>): string[] {
-    return headerGroup.headers
-      .filter((header) => !header.isPlaceholder)
-      .map((header) => header.column.id);
-  }
+  /** Template-bound alias for the colocated util (kept a field so the template can call it). */
+  protected readonly getHeaderRowColumnIds = getHeaderRowColumnIds<TData>;
+
+  /** Template-bound alias for the colocated util. */
+  protected readonly shouldHidePrimitiveHeaderLabel = shouldHidePrimitiveHeaderLabel<TData>;
+
+  /** Template-bound alias for the colocated cell-tone util. */
+  protected readonly getCellTone = getCellTone<TData>;
+
+  /** Host/template focusin handler — bound to the imported helper (no instance state). */
+  protected readonly onCellFocusIn = handleCellInteractionFocusIn;
 
   protected canReorderHeader(header: Header<TData, unknown>): boolean {
     if (header.isPlaceholder) {
       return false;
     }
 
-    return this.getVisibleZoneColumnIds(this.getColumnZone(header.column)).length > 1;
-  }
-
-  protected shouldHidePrimitiveHeaderLabel(
-    header: Header<TData, unknown>,
-    columnState: TableColumnRenderState | undefined,
-  ): boolean {
-    return (
-      !!columnState?.hiddenHeaderLabel && isPrimitiveHeaderContent(header.column.columnDef.header)
-    );
+    return this.getVisibleZoneColumnIds(getColumnZone(header.column)).length > 1;
   }
 
   protected onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
@@ -1108,7 +1033,7 @@ export class NatTable<TData extends RowData = RowData> {
     }
 
     const rowColumnIds = this.getHeaderRowColumnIds(headerGroup);
-    const movingColumnId = this.resolveDraggedColumnId(event, rowColumnIds);
+    const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
 
     if (!movingColumnId) {
       return;
@@ -1120,14 +1045,8 @@ export class NatTable<TData extends RowData = RowData> {
       return;
     }
 
-    const reorderedRowColumnIds = moveItemInArrayCopy(
-      rowColumnIds,
-      event.previousIndex,
-      event.currentIndex,
-    );
-    const nextVisibleZoneOrder = reorderedRowColumnIds.filter(
-      (columnId) => this.getColumnZoneById(columnId) === zone,
-    );
+    const reorderedRowColumnIds = moveItemInArrayCopy(rowColumnIds, event.previousIndex, event.currentIndex);
+    const nextVisibleZoneOrder = reorderedRowColumnIds.filter((columnId) => this.getColumnZoneById(columnId) === zone);
 
     this.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
   }
@@ -1137,17 +1056,12 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (handleCellInteractionKeydown(event, keyboard.cellInteraction)) return;
 
-    const isResizeKey =
-      event.key === 'ArrowLeft' ||
-      event.key === 'ArrowRight' ||
-      event.key === 'Home' ||
-      event.key === 'End';
-
     // Alt+Arrow steps the focused header's column; Alt+Home/End jump to its min/max
     // width. This is the keyboard resize path — the handle itself is mouse-only.
     // Column reordering uses Control/Command+Shift+Arrow (handled below).
-    if (event.altKey && !event.shiftKey && isResizeKey) {
+    if (event.altKey && !event.shiftKey && isResizeKey(event)) {
       this.resizeColumnFromKey(event, column);
+
       return;
     }
 
@@ -1155,7 +1069,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (directionDelta === null) return;
 
-    const zone = this.getColumnZone(column);
+    const zone = getColumnZone(column);
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(column.id);
 
@@ -1171,18 +1085,8 @@ export class NatTable<TData extends RowData = RowData> {
     handleCellInteractionKeydown(event, this.natTableService.keyboard().cellInteraction);
   }
 
-  protected onCellFocusIn(event: FocusEvent): void {
-    handleCellInteractionFocusIn(event);
-  }
-
-  /** A column is resizable only when its definition opts in with `enableResizing: true`. */
-  private isColumnResizable(column: Column<TData, unknown>): boolean {
-    return column.columnDef.enableResizing === true;
-  }
-
-  protected canResizeColumn(header: Header<TData, unknown>): boolean {
-    return !header.isPlaceholder && this.isColumnResizable(header.column);
-  }
+  /** Template-bound alias for the colocated util. */
+  protected readonly canResizeColumn = canResizeColumn<TData>;
 
   protected onResizeStart(event: MouseEvent | TouchEvent, header: Header<TData, unknown>): void {
     if (!this.canResizeColumn(header)) {
@@ -1211,8 +1115,8 @@ export class NatTable<TData extends RowData = RowData> {
    * so the two disagree and keyboard resizes overshoot the table bounds.
    */
   private seedColumnSizingFromMeasuredWidth(column: Column<TData, unknown>): void {
-    const alreadyResized = this.mergedState().columnSizing[column.id] !== undefined;
-    const explicitlySized = this.userColumnSizing()[column.id]?.hasSize === true;
+    const alreadyResized = readColumnEntry(this.mergedState().columnSizing, column.id) !== undefined;
+    const explicitlySized = readColumnEntry(this.userColumnSizing(), column.id)?.hasSize === true;
 
     // In fill flex layout the rendered width is the flex-distributed width, not the
     // column's `size`, so an explicitly-sized column must still be seeded from its
@@ -1224,7 +1128,7 @@ export class NatTable<TData extends RowData = RowData> {
     const measuredWidth = this.getColumnEffectiveWidth(column);
 
     this.updateState({
-      columnSizing: (current) => ({ ...current, [column.id]: measuredWidth }),
+      columnSizing: (current) => ({ ...current, [column.id]: measuredWidth })
     });
 
     // A controlled `columnSizing` binding can't reflect this update within the
@@ -1265,21 +1169,16 @@ export class NatTable<TData extends RowData = RowData> {
     // moves opposite the column's growth.
     const { min, max } = this.getResizeFitBounds(column);
     const startSize = info.startSize ?? this.getColumnEffectiveWidth(column);
-    const clampedDelta = Math.max(
-      min - startSize,
-      max !== null ? Math.min(max - startSize, widthDelta) : widthDelta,
-    );
+    const clampedDelta = Math.max(min - startSize, max !== null ? Math.min(max - startSize, widthDelta) : widthDelta);
 
     return {
       left: origin,
-      offset: this.resolvedDirection() === 'rtl' ? -clampedDelta : clampedDelta,
+      offset: this.resolvedDirection() === 'rtl' ? -clampedDelta : clampedDelta
     };
   });
 
   /** True while a pointer/touch column-resize drag is in progress. */
-  protected readonly isColumnResizing = computed(
-    () => this.table.getState().columnSizingInfo.isResizingColumn !== false,
-  );
+  protected readonly isColumnResizing = computed(() => this.table.getState().columnSizingInfo.isResizingColumn !== false);
 
   private captureResizeGuideOrigin(event: MouseEvent | TouchEvent): void {
     const region = this.tableRegionRef()?.nativeElement;
@@ -1287,6 +1186,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (!region || !handle) {
       this.resizeGuideOrigin.set(null);
+
       return;
     }
 
@@ -1294,6 +1194,7 @@ export class NatTable<TData extends RowData = RowData> {
     const handleRect = handle.getBoundingClientRect();
     // The resize edge sits on the column's trailing side: right in LTR, left in RTL.
     const edge = this.resolvedDirection() === 'rtl' ? handleRect.left : handleRect.right;
+
     this.resizeGuideOrigin.set(edge - regionRect.left + region.scrollLeft);
   }
 
@@ -1303,7 +1204,7 @@ export class NatTable<TData extends RowData = RowData> {
    * RTL-aware and fit/min/max clamped; a no-op resize bails without emitting.
    */
   private resizeColumnFromKey(event: KeyboardEvent, column: Column<TData, unknown>): void {
-    if (!this.isColumnResizable(column)) return;
+    if (!isColumnResizable(column)) return;
 
     const { min, max } = this.getResizeFitBounds(column);
     const current = this.getColumnEffectiveWidth(column);
@@ -1342,11 +1243,12 @@ export class NatTable<TData extends RowData = RowData> {
     // change (announcing is not a state change; no columnSizing event fires here).
     if (clamped === current) {
       this.announceColumnResize(column, current);
+
       return;
     }
 
     this.updateState({
-      columnSizing: (currentSizing) => ({ ...currentSizing, [column.id]: clamped }),
+      columnSizing: (currentSizing) => ({ ...currentSizing, [column.id]: clamped })
     });
     this.announceColumnResize(column, clamped);
   }
@@ -1355,14 +1257,11 @@ export class NatTable<TData extends RowData = RowData> {
     // An explicit `minSize` wins; otherwise fall back to a usable default instead of
     // TanStack's 20px (which is narrower than the resize handle). hasMinSize reads the
     // original input def, so it is true only when the consumer set minSize themselves.
-    const explicitMin = this.userColumnSizing()[column.id]?.hasMinSize === true;
+    const explicitMin = readColumnEntry(this.userColumnSizing(), column.id)?.hasMinSize === true;
     const rawMin = explicitMin ? column.columnDef.minSize : DEFAULT_MIN_COLUMN_WIDTH;
     const min = Math.max(Math.round(rawMin ?? DEFAULT_MIN_COLUMN_WIDTH), 1);
     const rawMax = column.columnDef.maxSize;
-    const max =
-      typeof rawMax === 'number' && Number.isFinite(rawMax) && rawMax < Number.MAX_SAFE_INTEGER
-        ? Math.round(rawMax)
-        : null;
+    const max = typeof rawMax === 'number' && Number.isFinite(rawMax) && rawMax < Number.MAX_SAFE_INTEGER ? Math.round(rawMax) : null;
 
     return { min, max };
   }
@@ -1401,7 +1300,7 @@ export class NatTable<TData extends RowData = RowData> {
       // stay put; elsewhere the other columns hold their current widths. So the most
       // this column can take is the region minus every other column's floor.
       sumOthers +=
-        this.isFillFlexLayout() && columnSizing[other.id] === undefined
+        this.isFillFlexLayout() && readColumnEntry(columnSizing, other.id) === undefined
           ? this.getResizeBounds(other).min
           : (widths[other.id] ?? 0);
     }
@@ -1458,6 +1357,7 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (typeof resizingColumnId !== 'string') {
       this.updateState({ columnSizing: updater });
+
       return;
     }
 
@@ -1465,10 +1365,10 @@ export class NatTable<TData extends RowData = RowData> {
     // the visible region, then store the capped map (not the raw updater) so the
     // committed/controlled width matches what renders and what is announced.
     const next: ColumnSizingState = {
-      ...this.resolveUpdater(this.mergedState().columnSizing, updater),
+      ...resolveUpdater(this.mergedState().columnSizing, updater)
     };
     const column = this.table.getColumn(resizingColumnId);
-    const raw = next[resizingColumnId];
+    const raw = readColumnEntry(next, resizingColumnId);
 
     if (column && raw !== undefined) {
       const { min, max } = this.getResizeFitBounds(column);
@@ -1490,10 +1390,7 @@ export class NatTable<TData extends RowData = RowData> {
     // neighbouring resize jump: a "grow" press would clamp straight down to the bound
     // instead of stepping by one. clampColumnWidth also rounds and floors at 1px so the
     // committed and announced width stays a whole number of pixels.
-    return this.clampColumnWidth(
-      column,
-      this.resolvedColumnWidths()[column.id] ?? column.getSize(),
-    );
+    return this.clampColumnWidth(column, this.resolvedColumnWidths()[column.id] ?? column.getSize());
   }
 
   private announceColumnResize(column: Column<TData, unknown>, width: number): void {
@@ -1511,17 +1408,10 @@ export class NatTable<TData extends RowData = RowData> {
       widthValue: width,
       widthText: this.formatAccessibilityNumber(width),
       atMinimum: width <= min,
-      atMaximum: max !== null && width >= max,
+      atMaximum: max !== null && width >= max
     };
 
     this.announce(formatter?.(context) ?? '');
-  }
-
-  protected getCellTone(
-    column: Column<TData, unknown>,
-    context: CellContext<TData, unknown>,
-  ): NatTableCellTone | null {
-    return column.columnDef.meta?.cellTone?.(context) ?? null;
   }
 
   protected onRowRendered(event: NatTableRowRenderedEvent): void {
@@ -1544,7 +1434,7 @@ export class NatTable<TData extends RowData = RowData> {
     this.rowActivate.emit({
       rowData: row.original,
       row,
-      originalEvent: event,
+      originalEvent: event
     });
   }
 
@@ -1568,54 +1458,36 @@ export class NatTable<TData extends RowData = RowData> {
     this.rowActivate.emit({
       rowData: row.original,
       row,
-      originalEvent: event,
+      originalEvent: event
     });
   }
-
-  private readonly firstPageUpdater: Updater<PaginationState> = (currentPagination) => ({
-    ...currentPagination,
-    pageIndex: 0,
-  });
 
   private updateState(
     updaters: Partial<{
       [K in keyof NatTableState]: Updater<NatTableState[K]>;
-    }>,
+    }>
   ): void {
     const currentState = this.mergedState();
     const nextState: NatTableState = {
-      sorting: normalizeSortingState(
-        this.resolveUpdater(currentState.sorting, updaters.sorting),
-        this.enableMultiSort(),
-      ),
-      globalFilter: this.resolveUpdater(currentState.globalFilter, updaters.globalFilter),
-      columnFilters: this.resolveUpdater(currentState.columnFilters, updaters.columnFilters),
-      columnVisibility: this.resolveUpdater(
-        currentState.columnVisibility,
-        updaters.columnVisibility,
-      ),
-      columnOrder: normalizeColumnOrder(
-        this.resolveUpdater(currentState.columnOrder, updaters.columnOrder),
-        this.allLeafColumnIds(),
-      ),
+      sorting: normalizeSortingState(resolveUpdater(currentState.sorting, updaters.sorting), this.enableMultiSort()),
+      globalFilter: resolveUpdater(currentState.globalFilter, updaters.globalFilter),
+      columnFilters: resolveUpdater(currentState.columnFilters, updaters.columnFilters),
+      columnVisibility: resolveUpdater(currentState.columnVisibility, updaters.columnVisibility),
+      columnOrder: normalizeColumnOrder(resolveUpdater(currentState.columnOrder, updaters.columnOrder), this.allLeafColumnIds()),
       columnPinning: normalizeColumnPinning(
-        this.resolveUpdater(currentState.columnPinning, updaters.columnPinning),
-        this.allLeafColumnIds(),
+        resolveUpdater(currentState.columnPinning, updaters.columnPinning),
+        this.allLeafColumnIds()
       ),
-      columnSizing: this.clampColumnSizing(
-        this.resolveUpdater(currentState.columnSizing, updaters.columnSizing),
-      ),
+      columnSizing: this.clampColumnSizing(resolveUpdater(currentState.columnSizing, updaters.columnSizing)),
       rowSelection: normalizeRowSelection(
-        this.resolveUpdater(currentState.rowSelection, updaters.rowSelection),
-        this.selectionMode() === 'multiple',
+        resolveUpdater(currentState.rowSelection, updaters.rowSelection),
+        this.selectionMode() === 'multiple'
       ),
-      pagination: this.resolveUpdater(currentState.pagination, updaters.pagination),
+      pagination: resolveUpdater(currentState.pagination, updaters.pagination)
     };
 
     this.commitInternalState(nextState);
-    if (this.natTableService) {
-      this.natTableService.notifyStateChange(nextState);
-    }
+    this.natTableService.notifyStateChange(nextState);
   }
 
   private commitInternalState(nextState: NatTableState): void {
@@ -1658,24 +1530,7 @@ export class NatTable<TData extends RowData = RowData> {
     }
   }
 
-  private resolveDraggedColumnId(
-    event: CdkDragDrop<string[]>,
-    rowColumnIds: readonly string[],
-  ): string | null {
-    const draggedColumnId = event.item.data;
-
-    if (typeof draggedColumnId === 'string' && rowColumnIds.includes(draggedColumnId)) {
-      return draggedColumnId;
-    }
-
-    return rowColumnIds[event.previousIndex] ?? null;
-  }
-
-  private isDropIndexWithinZone(
-    rowColumnIds: readonly string[],
-    zone: ColumnReorderZone,
-    currentIndex: number,
-  ): boolean {
+  private isDropIndexWithinZone(rowColumnIds: readonly string[], zone: ColumnReorderZone, currentIndex: number): boolean {
     const zoneIndices = rowColumnIds.reduce<number[]>((indices, columnId, index) => {
       if (this.getColumnZoneById(columnId) === zone) {
         indices.push(index);
@@ -1691,11 +1546,7 @@ export class NatTable<TData extends RowData = RowData> {
     return currentIndex >= zoneIndices[0] && currentIndex <= zoneIndices[zoneIndices.length - 1];
   }
 
-  private applyVisibleZoneReorder(
-    zone: ColumnReorderZone,
-    movingColumnId: string,
-    nextVisibleZoneOrder: readonly string[],
-  ): void {
+  private applyVisibleZoneReorder(zone: ColumnReorderZone, movingColumnId: string, nextVisibleZoneOrder: readonly string[]): void {
     const currentState = this.mergedState();
     const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const movingColumn = this.table.getColumn(movingColumnId);
@@ -1711,11 +1562,7 @@ export class NatTable<TData extends RowData = RowData> {
     const label = resolveColumnLabel(movingColumn);
 
     if (zone === 'center') {
-      const nextColumnOrder = replaceIdsInSlots(
-        currentState.columnOrder,
-        nextVisibleZoneOrder,
-        new Set(currentVisibleZoneColumnIds),
-      );
+      const nextColumnOrder = replaceIdsInSlots(currentState.columnOrder, nextVisibleZoneOrder, new Set(currentVisibleZoneColumnIds));
 
       if (hasSameStringOrder(currentState.columnOrder, nextColumnOrder)) {
         return;
@@ -1724,16 +1571,12 @@ export class NatTable<TData extends RowData = RowData> {
       this.updateState({ columnOrder: nextColumnOrder });
       this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
       this.scrollColumnHeaderIntoView(movingColumnId);
+
       return;
     }
 
-    const currentPinnedZoneOrder =
-      (zone === 'left' ? currentState.columnPinning.left : currentState.columnPinning.right) ?? [];
-    const nextPinnedZoneOrder = replaceIdsInSlots(
-      currentPinnedZoneOrder,
-      nextVisibleZoneOrder,
-      new Set(currentVisibleZoneColumnIds),
-    );
+    const currentPinnedZoneOrder = (zone === 'left' ? currentState.columnPinning.left : currentState.columnPinning.right) ?? [];
+    const nextPinnedZoneOrder = replaceIdsInSlots(currentPinnedZoneOrder, nextVisibleZoneOrder, new Set(currentVisibleZoneColumnIds));
 
     if (hasSameStringOrder(currentPinnedZoneOrder, nextPinnedZoneOrder)) {
       return;
@@ -1742,8 +1585,8 @@ export class NatTable<TData extends RowData = RowData> {
     this.updateState({
       columnPinning: {
         ...currentState.columnPinning,
-        [zone]: nextPinnedZoneOrder,
-      },
+        [zone]: nextPinnedZoneOrder
+      }
     });
     this.announceColumnReorder(label, zone, nextVisibleZoneOrder, movingColumnId);
     this.scrollColumnHeaderIntoView(movingColumnId);
@@ -1757,10 +1600,7 @@ export class NatTable<TData extends RowData = RowData> {
     this.moveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
   }
 
-  private canMoveColumnByDelta(
-    columnId: string,
-    directionDelta: ColumnReorderKeyboardDirection,
-  ): boolean {
+  private canMoveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): boolean {
     const zone = this.getColumnZoneById(columnId);
 
     if (!zone) return false;
@@ -1770,10 +1610,7 @@ export class NatTable<TData extends RowData = RowData> {
     return getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta) !== null;
   }
 
-  private moveColumnByDelta(
-    columnId: string,
-    directionDelta: ColumnReorderKeyboardDirection,
-  ): void {
+  private moveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): void {
     const zone = this.getColumnZoneById(columnId);
 
     if (!zone) return;
@@ -1800,10 +1637,10 @@ export class NatTable<TData extends RowData = RowData> {
             return;
           }
 
-          this.scrollElementHorizontallyIntoView(scrollContainer, headerElement);
-        },
+          scrollElementHorizontallyIntoView(scrollContainer, headerElement);
+        }
       },
-      { injector: this.injector },
+      { injector: this.injector }
     );
   }
 
@@ -1825,28 +1662,11 @@ export class NatTable<TData extends RowData = RowData> {
     return null;
   }
 
-  private scrollElementHorizontallyIntoView(
-    scrollContainer: HTMLElement,
-    element: HTMLElement,
-  ): void {
-    const containerRect = scrollContainer.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
-
-    if (elementRect.left < containerRect.left) {
-      scrollContainer.scrollLeft -= containerRect.left - elementRect.left;
-      return;
-    }
-
-    if (elementRect.right > containerRect.right) {
-      scrollContainer.scrollLeft += elementRect.right - containerRect.right;
-    }
-  }
-
   private announceColumnReorder(
     label: string,
     zone: ColumnReorderZone,
     nextVisibleZoneOrder: readonly string[],
-    movingColumnId: string,
+    movingColumnId: string
   ): void {
     const nextIndex = nextVisibleZoneOrder.indexOf(movingColumnId);
 
@@ -1862,36 +1682,22 @@ export class NatTable<TData extends RowData = RowData> {
       positionValue: nextIndex + 1,
       positionText: this.formatAccessibilityNumber(nextIndex + 1),
       totalValue: nextVisibleZoneOrder.length,
-      totalText: this.formatAccessibilityNumber(nextVisibleZoneOrder.length),
+      totalText: this.formatAccessibilityNumber(nextVisibleZoneOrder.length)
     };
 
     this.announce(formatter?.(context) ?? '');
   }
 
-  private getColumnZone(column: Column<TData, unknown>): ColumnReorderZone {
-    const pinnedState = column.getIsPinned();
-
-    if (pinnedState === 'left') {
-      return 'left';
-    }
-
-    if (pinnedState === 'right') {
-      return 'right';
-    }
-
-    return 'center';
-  }
-
   private getColumnZoneById(columnId: string): ColumnReorderZone | null {
     const column = this.table.getColumn(columnId);
 
-    return column ? this.getColumnZone(column) : null;
+    return column ? getColumnZone(column) : null;
   }
 
   private getVisibleZoneColumnIds(zone: ColumnReorderZone): string[] {
     return this.table
       .getVisibleLeafColumns()
-      .filter((column) => this.getColumnZone(column) === zone)
+      .filter((column) => getColumnZone(column) === zone)
       .map((column) => column.id);
   }
 
@@ -1953,28 +1759,34 @@ export class NatTable<TData extends RowData = RowData> {
 
   private updateCachedStickyTop(): void {
     const region = this.tableRegionRef()?.nativeElement;
+
     if (!region) {
       return;
     }
     const computedVar = window.getComputedStyle(region).getPropertyValue('--nat-table-sticky-top').trim();
+
     if (!computedVar) {
       this.cachedStickyTop = 0;
+
       return;
     }
 
     if (/^-?\d+(\.\d+)?(px)?$/.test(computedVar)) {
       this.cachedStickyTop = parseFloat(computedVar) || 0;
+
       return;
     }
 
     try {
       const temp = document.createElement('div');
+
       temp.style.position = 'absolute';
       temp.style.visibility = 'hidden';
       temp.style.pointerEvents = 'none';
       temp.style.height = computedVar;
       region.appendChild(temp);
       const computedHeight = window.getComputedStyle(temp).height;
+
       region.removeChild(temp);
       this.cachedStickyTop = parseFloat(computedHeight) || 0;
     } catch {
@@ -1984,8 +1796,8 @@ export class NatTable<TData extends RowData = RowData> {
 
   private measureTableDimensions(): void {
     const region = this.tableRegionRef()?.nativeElement;
-    const tableEl = this.cachedTableEl || region?.querySelector('table');
-    const theadEl = this.cachedTheadEl || tableEl?.querySelector('thead');
+    const tableEl = this.cachedTableEl ?? region?.querySelector('table');
+    const theadEl = this.cachedTheadEl ?? tableEl?.querySelector('thead');
 
     if (!region || !tableEl || !theadEl) {
       return;
@@ -1995,34 +1807,54 @@ export class NatTable<TData extends RowData = RowData> {
     this.cachedTheadEl = theadEl as HTMLTableSectionElement;
 
     const rect = tableEl.getBoundingClientRect();
+
     this.tablePageTop = rect.top + window.scrollY;
     this.theadHeight = theadEl.getBoundingClientRect().height;
     this.tableHeight = rect.height;
 
     // Check vertical scrollability of region
     const overflowY = window.getComputedStyle(region).overflowY;
+
     this.isRegionScrollable = region.scrollHeight > region.clientHeight && (overflowY === 'auto' || overflowY === 'scroll');
+
+    if (this.isRegionScrollable) {
+      tableEl.classList.add('is-region-scrollable');
+    } else {
+      tableEl.classList.remove('is-region-scrollable');
+    }
+
+    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
+      const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop);
+      const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
+      const rangeEnd = rangeStart + maxTranslate;
+
+      tableEl.style.setProperty('--nat-table-sticky-range-start', `${rangeStart}px`);
+      tableEl.style.setProperty('--nat-table-sticky-range-end', `${rangeEnd}px`);
+      tableEl.style.setProperty('--nat-table-sticky-max-translate', `${maxTranslate}px`);
+    }
   }
 
   private setupStickyHeaderScrollListener(): void {
     this.ngZone.runOutsideAngular(() => {
       const region = this.tableRegionRef()?.nativeElement;
+
       if (!region) {
         return;
       }
 
+      const supportsScrollTimeline = typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
+
       if (typeof IntersectionObserver !== 'undefined') {
         this.intersectionObserver = new IntersectionObserver((entries) => {
           const entry = entries[0];
-          if (entry) {
-            const wasVisible = this.isTableVisible;
-            this.isTableVisible = entry.isIntersecting;
+          const wasVisible = this.isTableVisible;
 
-            if (this.isTableVisible && !wasVisible) {
-              this.updateCachedStickyTop();
-              this.measureTableDimensions();
-              this.updateStickyHeaderPosition();
-            }
+          this.isTableVisible = entry.isIntersecting;
+
+          if (this.isTableVisible && !wasVisible) {
+            this.updateCachedStickyTop();
+            this.measureTableDimensions();
+            this.updateStickyHeaderPosition();
           }
         }, {
           rootMargin: '100px 0px 100px 0px'
@@ -2035,7 +1867,7 @@ export class NatTable<TData extends RowData = RowData> {
 
       let ticking = false;
 
-      const listener = (event: Event) => {
+      const listener = (event: Event): void => {
         if (!this.isTableVisible) {
           return;
         }
@@ -2045,7 +1877,7 @@ export class NatTable<TData extends RowData = RowData> {
           this.measureTableDimensions();
         }
 
-        if (!ticking) {
+        if (!supportsScrollTimeline && !ticking) {
           window.requestAnimationFrame(() => {
             this.updateStickyHeaderPosition();
             ticking = false;
@@ -2054,15 +1886,20 @@ export class NatTable<TData extends RowData = RowData> {
         }
       };
 
-      window.addEventListener('scroll', listener, { passive: true });
+      if (!supportsScrollTimeline) {
+        window.addEventListener('scroll', listener, { passive: true });
+        region.addEventListener('scroll', listener, { passive: true });
+      }
       window.addEventListener('resize', listener, { passive: true });
-      region.addEventListener('scroll', listener, { passive: true });
 
       this.destroyRef.onDestroy(() => {
         this.intersectionObserver?.disconnect();
-        window.removeEventListener('scroll', listener);
+
+        if (!supportsScrollTimeline) {
+          window.removeEventListener('scroll', listener);
+          region.removeEventListener('scroll', listener);
+        }
         window.removeEventListener('resize', listener);
-        region.removeEventListener('scroll', listener);
       });
 
       this.updateCachedStickyTop();
@@ -2080,19 +1917,33 @@ export class NatTable<TData extends RowData = RowData> {
 
     if (!this.stickyHeader()) {
       const headerCells = this.cachedHeaderCells.length > 0 ? this.cachedHeaderCells : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+
       for (const cell of headerCells) {
         cell.style.transform = '';
       }
+
       return;
     }
 
     const headerCells = this.cachedHeaderCells.length > 0 ? this.cachedHeaderCells : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+
     this.cachedHeaderCells = headerCells as HTMLTableCellElement[];
 
     if (this.isRegionScrollable) {
       for (const cell of headerCells) {
         cell.style.transform = '';
       }
+
+      return;
+    }
+
+    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
+      for (const cell of headerCells) {
+        if (cell.style.transform) {
+          cell.style.transform = '';
+        }
+      }
+
       return;
     }
 
@@ -2100,12 +1951,15 @@ export class NatTable<TData extends RowData = RowData> {
     const rectTop = this.tablePageTop - currentScrollY;
 
     let translateY = 0;
+
     if (rectTop < this.cachedStickyTop) {
       const maxTranslateY = Math.max(0, this.tableHeight - this.theadHeight);
+
       translateY = Math.min(Math.max(0, this.cachedStickyTop - rectTop), maxTranslateY);
     }
 
     const transformValue = translateY > 0 ? `translate3d(0, ${translateY}px, 0)` : '';
+
     for (const cell of headerCells) {
       cell.style.transform = transformValue;
     }
@@ -2144,7 +1998,7 @@ export class NatTable<TData extends RowData = RowData> {
       visibleRowsValue: this.renderedVisibleRowCount(),
       totalRowsValue: this.stateTotalRowCount(),
       visibleColumnsValue: this.visibleColumnCount(),
-      filtered: this.isFiltered(),
+      filtered: this.isFiltered()
     };
   }
 
@@ -2169,7 +2023,7 @@ export class NatTable<TData extends RowData = RowData> {
       pageCountValue: pageCount,
       pageCountText: this.formatAccessibilityNumber(pageCount),
       filterState: this.isFiltered() ? 'filtered' : 'unfiltered',
-      paginationState: this.enablePagination() ? 'enabled' : 'disabled',
+      paginationState: this.enablePagination() ? 'enabled' : 'disabled'
     };
   }
 
@@ -2191,7 +2045,7 @@ export class NatTable<TData extends RowData = RowData> {
       selectedRowCount: Object.values(state.rowSelection).filter(Boolean).length,
       pagination: {
         ...state.pagination,
-        pageIndex: this.renderedPageIndex(),
+        pageIndex: this.renderedPageIndex()
       },
       pageCount: this.renderedPageCount(),
       visibleRows: this.renderedVisibleRowCount(),
@@ -2199,15 +2053,12 @@ export class NatTable<TData extends RowData = RowData> {
       columns: this.allLeafColumns().map((column) => ({
         id: column.id,
         label: resolveColumnLabel(column),
-        visible: column.getIsVisible(),
-      })),
+        visible: column.getIsVisible()
+      }))
     };
   }
 
-  private describeAccessibilityChange(
-    previous: TableAccessibilitySnapshot,
-    next: TableAccessibilitySnapshot,
-  ): string | null {
+  private describeAccessibilityChange(previous: TableAccessibilitySnapshot, next: TableAccessibilitySnapshot): string | null {
     if (previous.dataStatus !== next.dataStatus) {
       return this.describeDataStatusChange(next);
     }
@@ -2216,10 +2067,7 @@ export class NatTable<TData extends RowData = RowData> {
       return this.describeSortingChange(next);
     }
 
-    if (
-      previous.globalFilter !== next.globalFilter ||
-      previous.columnFiltersKey !== next.columnFiltersKey
-    ) {
+    if (previous.globalFilter !== next.globalFilter || previous.columnFiltersKey !== next.columnFiltersKey) {
       return this.describeFilteringChange(next);
     }
 
@@ -2261,21 +2109,19 @@ export class NatTable<TData extends RowData = RowData> {
   private describeSortingChange(snapshot: TableAccessibilitySnapshot): string {
     const sortingState = this.mergedState().sorting;
     const formatter = this.resolvedAccessibilityText().sortingChange;
-    const entry = sortingState[0];
-    const columnLabel = entry
-      ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id)
-      : null;
-    const sortState = entry ? (entry.desc ? 'descending' : 'ascending') : 'none';
+    const entry = sortingState.at(0);
+    const columnLabel = entry ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id) : null;
+    const sortState = entry ? sortDirection(entry.desc) : 'none';
     const sortedColumns = sortingState.map((sortEntry) => ({
       id: sortEntry.id,
       label: snapshot.columns.find((column) => column.id === sortEntry.id)?.label ?? sortEntry.id,
-      sortState: sortEntry.desc ? ('descending' as const) : ('ascending' as const),
+      sortState: sortDirection(sortEntry.desc)
     }));
     const context: NatTableAccessibilitySortingAnnouncementContext = {
       columnId: entry?.id ?? null,
       columnLabel,
       sortState,
-      sortedColumns,
+      sortedColumns
     };
 
     return formatter?.(context) ?? '';
@@ -2287,17 +2133,11 @@ export class NatTable<TData extends RowData = RowData> {
     const hasColumnFilters = !!snapshot.columnFiltersKey;
     const context: NatTableAccessibilityFilteringAnnouncementContext = {
       query: snapshot.globalFilter,
-      filterState: query
-        ? hasColumnFilters
-          ? 'global-and-column'
-          : 'global'
-        : hasColumnFilters
-          ? 'column'
-          : 'none',
+      filterState: resolveFilterState(!!query, hasColumnFilters),
       visibleRowsValue: snapshot.visibleRows,
       visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows),
       totalRowsValue: snapshot.totalRows,
-      totalRowsText: this.formatAccessibilityNumber(snapshot.totalRows),
+      totalRowsText: this.formatAccessibilityNumber(snapshot.totalRows)
     };
 
     if (formatter) {
@@ -2309,24 +2149,21 @@ export class NatTable<TData extends RowData = RowData> {
 
   private describeColumnVisibilityChange(
     previous: readonly TableColumnAccessibilityState[],
-    next: readonly TableColumnAccessibilityState[],
+    next: readonly TableColumnAccessibilityState[]
   ): string {
-    const changedColumns = next.reduce<NatTableAccessibilityColumnVisibilityAnnouncementChange[]>(
-      (result, column) => {
-        const previousColumn = previous.find((candidate) => candidate.id === column.id);
+    const changedColumns = next.reduce<NatTableAccessibilityColumnVisibilityAnnouncementChange[]>((result, column) => {
+      const previousColumn = previous.find((candidate) => candidate.id === column.id);
 
-        if (previousColumn && previousColumn.visible !== column.visible) {
-          result.push({
-            id: column.id,
-            label: column.label,
-            visibilityState: column.visible ? 'visible' : 'hidden',
-          });
-        }
+      if (previousColumn && previousColumn.visible !== column.visible) {
+        result.push({
+          id: column.id,
+          label: column.label,
+          visibilityState: column.visible ? 'visible' : 'hidden'
+        });
+      }
 
-        return result;
-      },
-      [],
-    );
+      return result;
+    }, []);
     const visibleCount = next.filter((column) => column.visible).length;
     const formatter = this.resolvedAccessibilityText().columnVisibilityChange;
     const context: NatTableAccessibilityColumnVisibilityAnnouncementContext = {
@@ -2334,7 +2171,7 @@ export class NatTable<TData extends RowData = RowData> {
       visibleColumnsValue: visibleCount,
       visibleColumnsText: this.formatAccessibilityNumber(visibleCount),
       totalColumnsValue: next.length,
-      totalColumnsText: this.formatAccessibilityNumber(next.length),
+      totalColumnsText: this.formatAccessibilityNumber(next.length)
     };
 
     if (formatter) {
@@ -2352,7 +2189,7 @@ export class NatTable<TData extends RowData = RowData> {
       selectedCountValue: count,
       selectedCountText: this.formatAccessibilityNumber(count),
       totalRowsValue: total,
-      totalRowsText: this.formatAccessibilityNumber(total),
+      totalRowsText: this.formatAccessibilityNumber(total)
     };
 
     return formatter?.(context) ?? '';
@@ -2380,9 +2217,7 @@ export class NatTable<TData extends RowData = RowData> {
     return '';
   }
 
-  private getPaginationAnnouncementContext(
-    snapshot: TableAccessibilitySnapshot,
-  ): NatTableAccessibilityPaginationAnnouncementContext {
+  private getPaginationAnnouncementContext(snapshot: TableAccessibilitySnapshot): NatTableAccessibilityPaginationAnnouncementContext {
     const page = snapshot.pagination.pageIndex + 1;
     const pageCount = snapshot.pageCount;
     const pageSize = snapshot.pagination.pageSize;
@@ -2396,7 +2231,7 @@ export class NatTable<TData extends RowData = RowData> {
       pageSizeValue: pageSize,
       pageSizeText: this.formatAccessibilityNumber(pageSize),
       visibleRowsValue: snapshot.visibleRows,
-      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows),
+      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows)
     };
   }
 
@@ -2413,25 +2248,5 @@ export class NatTable<TData extends RowData = RowData> {
 
   private formatAccessibilityNumber(value: number): string {
     return formatNatTableIntlNumber(this.tableIntl(), value, undefined, this.localeId());
-  }
-
-  private resolveUpdater<T>(currentValue: T, updater: Updater<T> | undefined): T {
-    if (updater === undefined) {
-      return currentValue;
-    }
-
-    return updater instanceof Function ? updater(currentValue) : updater;
-  }
-
-  private readRequiredInput<T>(reader: () => T, fallback: T): T {
-    try {
-      return reader();
-    } catch (error) {
-      if (isUnavailableRequiredInputError(error)) {
-        return fallback;
-      }
-
-      throw error;
-    }
   }
 }

@@ -1,0 +1,24 @@
+<article class="showcase-page showcase-container docs-page">
+  <header class="header-section docs-header">
+    <div class="docs-title-group">
+      <span class="docs-eyebrow">Docs</span>
+      <h1 class="title" id="docs-page-title">{{ doc().label }}</h1>
+    </div>
+    <p class="description">{{ doc().description }}</p>
+  </header>
+
+  @if (loadFailed()) {
+  <p class="docs-error" role="alert">Documentation could not be loaded.</p>
+  }
+
+  <section
+    [attr.aria-busy]="
+      markdownState().status === 'idle' || markdownState().status === 'loading' ? 'true' : null
+    "
+    aria-labelledby="docs-page-title"
+    class="docs-markdown">
+    @if (markdownState().status === 'loaded') {
+    <markdown [data]="markdownState().content" />
+    }
+  </section>
+</article>

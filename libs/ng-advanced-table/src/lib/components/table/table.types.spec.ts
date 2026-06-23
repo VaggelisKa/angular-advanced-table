@@ -3,33 +3,35 @@ import type {
   Expect,
   NatTableColumnMeta as InternalNatTableColumnMeta,
   NatTableSortIndicatorContext as InternalNatTableSortIndicatorContext,
-  NatTableState as InternalNatTableState,
+  NatTableState as InternalNatTableState
 } from 'ng-advanced-table-types';
 
-import type {
-  NatTableColumnMoveDirection,
-  NatTableColumnMeta,
-  NatTableSortIndicatorContext,
-  NatTableState,
-} from './table.types';
+import type { NatTableColumnMeta, NatTableColumnMoveDirection, NatTableSortIndicatorContext, NatTableState } from './table.types';
 
-interface ContractRow {
+type ContractRow = {
   amount: number;
-}
+};
 
-type _NatTableStateMatchesInternalContract = Expect<Equal<NatTableState, InternalNatTableState>>;
-type _NatTableColumnMetaMatchesInternalContract = Expect<
+type NatTableStateMatchesInternalContract = Expect<Equal<NatTableState, InternalNatTableState>>;
+type NatTableColumnMetaMatchesInternalContract = Expect<
   Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
 >;
-type _NatTableSortIndicatorContextMatchesInternalContract = Expect<
-  Equal<
-    NatTableSortIndicatorContext<ContractRow>,
-    InternalNatTableSortIndicatorContext<ContractRow>
-  >
+type NatTableSortIndicatorContextMatchesInternalContract = Expect<
+  Equal<NatTableSortIndicatorContext<ContractRow>, InternalNatTableSortIndicatorContext<ContractRow>>
 >;
 
 describe('ng-advanced-table public table contracts', () => {
   it('keeps public table contracts aligned with the internal contract library', () => {
+    // Compile-time contract assertions: the tuple type only resolves when each public
+    // type structurally matches its internal counterpart, so a drift fails the build.
+    const contractChecks: [
+      NatTableStateMatchesInternalContract,
+      NatTableColumnMetaMatchesInternalContract,
+      NatTableSortIndicatorContextMatchesInternalContract
+    ] = [true, true, true];
+
+    expect(contractChecks).toStrictEqual([true, true, true]);
+
     const stateKey: keyof NatTableState = 'pagination';
     const moveDirection: NatTableColumnMoveDirection = 'right';
     const meta: NatTableColumnMeta<ContractRow, number> = {
@@ -41,9 +43,9 @@ describe('ng-advanced-table public table contracts', () => {
       export: {
         enabled: true,
         header: 'Exported amount',
-        value: ({ value }) => value,
+        value: ({ value }) => value
       },
-      cellTone: (context) => (context.getValue() > 0 ? 'positive' : null),
+      cellTone: (context) => (context.getValue() > 0 ? 'positive' : null)
     };
 
     expect(stateKey).toBe('pagination');
@@ -53,7 +55,7 @@ describe('ng-advanced-table public table contracts', () => {
     expect(meta.cellMaxLines).toBe(3);
     expect(meta.headerSize).toBe(120);
     expect(meta.export?.header).toBe('Exported amount');
-    expect(meta.export?.value).toEqual(expect.any(Function));
-    expect(meta.cellTone).toEqual(expect.any(Function));
+    expect(meta.export?.value).toStrictEqual(expect.any(Function));
+    expect(meta.cellTone).toStrictEqual(expect.any(Function));
   });
 });

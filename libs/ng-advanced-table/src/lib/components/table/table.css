@@ -128,10 +128,7 @@
   inset-inline-end: calc(50% - 1px);
   inline-size: 2px;
   border-radius: 1px;
-  background: var(
-    --nat-table-resize-handle-color,
-    color-mix(in srgb, currentColor 24%, transparent)
-  );
+  background: var(--nat-table-resize-handle-color, color-mix(in srgb, currentColor 24%, transparent));
   opacity: 0;
   transition: opacity 120ms ease;
 }
@@ -161,10 +158,7 @@
   bottom: 0;
   inline-size: 2px;
   margin-inline-start: -1px;
-  background: var(
-    --nat-table-resize-handle-active-color,
-    var(--nat-table-focus-ring-color, Highlight)
-  );
+  background: var(--nat-table-resize-handle-active-color, var(--nat-table-focus-ring-color, Highlight));
   pointer-events: none;
   z-index: 9;
 }
@@ -262,6 +256,23 @@
   will-change: transform;
 }
 
+@supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+  @keyframes nat-table-viewport-sticky {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(var(--nat-table-sticky-max-translate, 0px));
+    }
+  }
+
+  .has-sticky-header:not(.is-region-scrollable) .header-cell {
+    animation: nat-table-viewport-sticky auto linear both;
+    animation-timeline: scroll(block root);
+    animation-range: var(--nat-table-sticky-range-start, 0px) var(--nat-table-sticky-range-end, 0px);
+  }
+}
+
 .has-sticky-header .is-pinned-left,
 .has-sticky-header .is-pinned-right,
 .is-pinned-left,
@@ -319,8 +330,8 @@
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
   white-space: normal;
-  animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms)
-    var(--nat-table-state-transition-timing, ease-out) both;
+  animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms) var(--nat-table-state-transition-timing, ease-out)
+    both;
 }
 
 .loading-state {
@@ -351,8 +362,7 @@
 
 [ngGridCell]:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, 2px)
-    var(--nat-table-focus-ring-color, Highlight);
+  box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, 2px) var(--nat-table-focus-ring-color, Highlight);
   z-index: 7;
 }
 
