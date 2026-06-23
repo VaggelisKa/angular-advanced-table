@@ -267,7 +267,7 @@ export class StickyHeaderGridPocPage {
   private readonly headerScroll = viewChild<ElementRef<HTMLElement>>('headerScroll');
   private readonly bodyScroll = viewChild<ElementRef<HTMLElement>>('bodyScroll');
 
-  private constructor() {
+  public constructor() {
     afterNextRender(() => {
       const bodyEl = this.bodyScroll()?.nativeElement;
       const headerEl = this.headerScroll()?.nativeElement;
