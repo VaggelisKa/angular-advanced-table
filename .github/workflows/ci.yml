@@ -43,8 +43,7 @@ jobs:
       - name: Lint, stylelint, test, build (affected)
         run: pnpm exec nx affected -t stylelint,lint,test,build --base="$NX_BASE" --head="$NX_HEAD"
 
-  # Atomized Playwright e2e, in parallel with checks. Playwright's webServer
-  # starts the showcase on demand, so no manual serve step is needed.
+  # Atomized Playwright e2e, in parallel with checks.
   e2e:
     needs: format
     runs-on: ubuntu-latest
@@ -56,7 +55,21 @@ jobs:
       - name: Install Playwright Chrome
         run: npx playwright install --with-deps chrome
       - name: Atomized e2e (affected)
-        run: pnpm exec nx affected -t e2e-ci --base="$NX_BASE" --head="$NX_HEAD"
+        # NX_SKIP_ATOMIZER_VALIDATION opts the e2e-ci tasks out of the Nx Cloud
+        # requirement (they run serially on this single runner). The showcase is
+        # pre-served once and the per-spec tasks reuse it via
+        # reuseExistingServer: letting each task start serve-e2e itself trips
+        # Nx's recursive-task guard, and it also avoids one server boot per spec.
+        # Drop the pre-serve + flag once Nx Cloud / DTE agents are wired up.
+        env:
+          NX_SKIP_ATOMIZER_VALIDATION: 'true'
+        run: |
+          pnpm exec nx run showcase:serve-e2e --port 4201 &
+          for i in $(seq 1 90); do
+            if curl -sf http://localhost:4201 >/dev/null; then echo "showcase up"; break; fi
+            sleep 2
+          done
+          pnpm exec nx affected -t e2e-ci --base="$NX_BASE" --head="$NX_HEAD"
 
   # Release gates: version plan on package-affecting PRs + full verify.
   release:
