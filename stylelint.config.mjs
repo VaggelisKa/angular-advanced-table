@@ -20,7 +20,7 @@ export default {
         // lists. `:host`/`:host-context` already pass; `::ng-deep` and the
         // `<markdown>` element selector (ngx-markdown) need explicit allows.
         'selector-pseudo-element-no-unknown': [true, { ignorePseudoElements: ['ng-deep'] }],
-        'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['host', 'host-context', 'ng-deep'] }],
+        'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['host', 'host-context'] }],
         'selector-type-no-unknown': [true, { ignore: ['custom-elements'], ignoreTypes: ['markdown'] }]
       }
     }
