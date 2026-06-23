@@ -3,11 +3,12 @@ import { Component, signal } from '@angular/core';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table-ui';
 
+import { StickyDebugOverlay } from './sticky-debug-overlay';
 import { COLUMNS, DEMO_DATA } from './sticky-header-showcase.data';
 
 @Component({
   selector: 'app-sticky-header-showcase',
-  imports: [NatTable, NatTableSurface],
+  imports: [NatTable, NatTableSurface, StickyDebugOverlay],
   templateUrl: './sticky-header-showcase.html',
   styleUrl: './sticky-header-showcase.css'
 })

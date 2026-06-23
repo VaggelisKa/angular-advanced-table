@@ -1,0 +1,41 @@
+.sticky-debug {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+}
+
+.sticky-debug__readout {
+  margin: 0;
+  font:
+    600 11px/1.35 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  color: #00ff88;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  border-radius: 6px;
+  padding: 6px 8px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.sticky-debug__reset {
+  pointer-events: auto;
+  align-self: flex-start;
+  font:
+    600 11px/1 ui-monospace,
+    monospace;
+  color: #fff;
+  background: #ea4335;
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
