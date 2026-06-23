@@ -151,7 +151,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
     /* Header Container - sticky vertically, hides scrollbar horizontally */
     .grid-header-scroll-wrapper {
       position: sticky;
-      top: 0;
+      top: var(--nat-table-sticky-top, 0);
       z-index: 10;
       overflow-x: hidden;
       background-color: var(--surface-ground, #f9fafb);

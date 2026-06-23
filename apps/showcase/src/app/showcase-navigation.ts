@@ -160,6 +160,12 @@ export const showcaseExamples: readonly ShowcaseNavItem[] = [
     path: '/examples/sticky-header'
   },
   {
+    id: 'sticky-header-grid-poc',
+    label: 'Sticky header (CSS Grid)',
+    description: 'Viewport sticky header using CSS Grid',
+    path: '/examples/sticky-header-grid-poc'
+  },
+  {
     id: 'toolbar',
     label: 'Toolbar',
     description: 'Slot-based keyboard toolbar',
@@ -251,7 +257,8 @@ export const showcaseExampleGroups: readonly ShowcaseNavGroup[] = [
       getShowcaseExample('reordering'),
       getShowcaseExample('resizing'),
       getShowcaseExample('visibility'),
-      getShowcaseExample('sticky-header')
+      getShowcaseExample('sticky-header'),
+      getShowcaseExample('sticky-header-grid-poc')
     ]
   },
   {
