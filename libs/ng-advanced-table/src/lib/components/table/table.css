@@ -265,13 +265,15 @@
 }
 
 .has-sticky-header:not(.is-region-scrollable) .header-cell {
-  /* Safe reference outside @supports to prevent build minifiers (cssnano) from discarding this keyframe */
+  /* Safe reference outside @supports to ensure proper keyframe scoping by Angular compiler */
   animation-name: nat-table-viewport-sticky;
+  animation-duration: auto;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
 }
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
   .has-sticky-header:not(.is-region-scrollable) .header-cell {
-    animation: nat-table-viewport-sticky auto linear both;
     animation-timeline: scroll(block root);
     animation-range: var(--nat-table-sticky-range-start, 0px) var(--nat-table-sticky-range-end, 0px);
   }
