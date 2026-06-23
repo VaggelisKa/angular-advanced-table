@@ -101,6 +101,11 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 50 }, (_, index) => {
     </div>
   `,
   styles: `
+    @media (max-width: 820px) {
+      :host {
+        --nat-table-sticky-top: 61px;
+      }
+    }
     /* Ensure cards and grid container allow vertical overflow for viewport sticky header */
     .card {
       overflow: visible !important;
