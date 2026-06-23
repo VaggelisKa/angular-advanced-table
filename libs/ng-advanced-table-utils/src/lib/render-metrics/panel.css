@@ -4,28 +4,28 @@
 
 .render-kpi {
   display: inline-flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
   padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--text, #ecf5fb) 12%, transparent);
-  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
   font-size: 0.85rem;
   color: var(--text-soft);
   white-space: nowrap;
+  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text, #ecf5fb) 12%, transparent);
+  border-radius: 999px;
 }
 
 .render-kpi strong {
-  color: var(--text);
   font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 
 .render-kpi-dot {
+  flex-shrink: 0;
   width: 7px;
   height: 7px;
-  border-radius: 50%;
   background: var(--text-soft);
-  flex-shrink: 0;
+  border-radius: 50%;
 }
 
 .render-kpi[data-health='fast'] .render-kpi-dot {
@@ -45,8 +45,8 @@
 
 .render-kpi-text {
   display: inline-flex;
-  align-items: baseline;
   gap: 6px;
+  align-items: baseline;
 }
 
 .render-kpi-detail {

@@ -9,41 +9,41 @@
 
 .control-heading {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .control-label {
-  color: var(--nat-table-color-text-muted, inherit);
   font-size: var(--nat-table-font-size-label, 0.85rem);
-  letter-spacing: var(--nat-table-letter-spacing-label, 0.08em);
+  color: var(--nat-table-color-text-muted, inherit);
   text-transform: var(--nat-table-text-transform-label, uppercase);
+  letter-spacing: var(--nat-table-letter-spacing-label, 0.08em);
 }
 
 .control-caption {
-  color: var(--nat-table-color-text-muted, inherit);
   font-size: var(--nat-table-font-size-caption, 0.82rem);
+  color: var(--nat-table-color-text-muted, inherit);
 }
 
 .chip-row {
   display: flex;
-  gap: var(--nat-table-space-chip-row-gap, 10px);
   flex-wrap: wrap;
+  gap: var(--nat-table-space-chip-row-gap, 10px);
 }
 
 .chip {
   display: inline-flex;
-  align-items: center;
   gap: var(--nat-table-space-chip-row-gap, 10px);
+  align-items: center;
   min-height: var(--nat-table-chip-min-height, 42px);
   padding: 0 var(--nat-table-chip-padding-x, 14px);
-  border-radius: var(--nat-table-radius-chip, 999px);
-  border: 1px solid var(--nat-table-chip-border-color, transparent);
   color: var(--nat-table-chip-color, inherit);
-  background: var(--nat-table-chip-background, transparent);
   cursor: pointer;
+  background: var(--nat-table-chip-background, transparent);
+  border: 1px solid var(--nat-table-chip-border-color, transparent);
+  border-radius: var(--nat-table-radius-chip, 999px);
   transition:
     background-color var(--nat-table-transition-medium, 180ms ease),
     border-color var(--nat-table-transition-medium, 180ms ease),
@@ -60,8 +60,8 @@
 
 .chip:disabled {
   cursor: not-allowed;
-  transform: none;
   opacity: var(--nat-table-disabled-opacity, 0.45);
+  transform: none;
 }
 
 .chip:focus-visible {
@@ -70,13 +70,13 @@
 }
 
 .column-chip {
-  min-width: var(--nat-table-chip-min-width-column, 150px);
   justify-content: space-between;
+  min-width: var(--nat-table-chip-min-width-column, 150px);
 }
 
 .chip-count {
-  color: var(--nat-table-chip-count-color, currentColor);
   font-size: var(--nat-table-font-size-chip-meta, 0.82rem);
+  color: var(--nat-table-chip-count-color, currentColor);
 }
 
 @media (hover: hover) and (pointer: fine) {

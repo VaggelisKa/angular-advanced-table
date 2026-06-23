@@ -5,16 +5,17 @@
 .pagination-toolbar {
   box-sizing: border-box;
   border-bottom: 1px solid var(--nat-table-color-border, #e4e7eb);
+
   --nat-table-toolbar-gap: var(--nat-table-space-toolbar-gap, 14px);
   --nat-table-toolbar-padding: var(--nat-table-space-card-compact, 10px 20px);
-  --nat-table-toolbar-background: var(--nat-table-color-surface, #ffffff);
+  --nat-table-toolbar-background: var(--nat-table-color-surface, #fff);
 }
 
 /* Page Size Styles */
 .chip-row {
   display: flex;
-  gap: var(--nat-table-space-chip-row-gap, 10px);
   flex-wrap: wrap;
+  gap: var(--nat-table-space-chip-row-gap, 10px);
 }
 
 .chip {
@@ -22,12 +23,12 @@
   align-items: center;
   min-height: var(--nat-table-chip-min-height-compact, 36px);
   padding: 0 var(--nat-table-chip-padding-x-compact, 12px);
-  border-radius: var(--nat-table-radius-chip, 999px);
-  border: 1px solid var(--nat-table-chip-border-color, transparent);
-  color: var(--nat-table-chip-color, inherit);
-  background: var(--nat-table-chip-background, transparent);
   font-size: var(--nat-table-font-size-chip-compact, 0.92rem);
+  color: var(--nat-table-chip-color, inherit);
   cursor: pointer;
+  background: var(--nat-table-chip-background, transparent);
+  border: 1px solid var(--nat-table-chip-border-color, transparent);
+  border-radius: var(--nat-table-radius-chip, 999px);
   transition:
     background-color var(--nat-table-transition-medium, 180ms ease),
     border-color var(--nat-table-transition-medium, 180ms ease),
@@ -58,25 +59,25 @@
 /* Pager Styles */
 .pager {
   display: flex;
-  align-items: center;
-  gap: var(--nat-table-space-pager-gap, 10px);
   flex-wrap: wrap;
+  gap: var(--nat-table-space-pager-gap, 10px);
+  align-items: center;
 }
 
 .pager-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--nat-table-pager-min-height, 44px);
   min-width: var(--nat-table-pager-min-height, 44px);
+  min-height: var(--nat-table-pager-min-height, 44px);
   padding: 0 var(--nat-table-pager-padding-x, 18px);
-  border-radius: var(--nat-table-radius-chip, 999px);
-  border: 1px solid var(--nat-table-pager-border-color, transparent);
   font-weight: var(--nat-table-font-weight-pager, 700);
-  letter-spacing: var(--nat-table-letter-spacing-pager, 0.01em);
   color: var(--nat-table-pager-color, inherit);
-  background: var(--nat-table-pager-background, transparent);
+  letter-spacing: var(--nat-table-letter-spacing-pager, 0.01em);
   cursor: pointer;
+  background: var(--nat-table-pager-background, transparent);
+  border: 1px solid var(--nat-table-pager-border-color, transparent);
+  border-radius: var(--nat-table-radius-chip, 999px);
   transition:
     background-color var(--nat-table-transition-medium, 180ms ease),
     border-color var(--nat-table-transition-medium, 180ms ease),
@@ -97,9 +98,9 @@
 }
 
 .pager-label {
-  color: var(--nat-table-pager-label-color, currentColor);
   font-size: var(--nat-table-font-size-pager-label, 0.92rem);
   font-variant-numeric: tabular-nums;
+  color: var(--nat-table-pager-label-color, currentColor);
 }
 
 .pager-icon {
@@ -110,8 +111,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .pager-button:hover:not(:disabled) {
-    box-shadow: var(--nat-table-pager-shadow-hover, none);
     background: var(--nat-table-pager-background-hover, transparent);
+    box-shadow: var(--nat-table-pager-shadow-hover, none);
     transform: var(--nat-table-hover-lift, translateY(-1px));
   }
 }
