@@ -1,11 +1,11 @@
 :host {
+  box-sizing: border-box;
   display: flex;
   flex-wrap: nowrap;
+  gap: var(--nat-table-toolbar-gap, 12px);
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  gap: var(--nat-table-toolbar-gap, 12px);
   padding: var(--nat-table-toolbar-padding, 10px);
   background: var(--nat-table-toolbar-background, transparent);
 }

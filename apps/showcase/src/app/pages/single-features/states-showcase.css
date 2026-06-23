@@ -4,12 +4,12 @@
 
 .state-template {
   display: grid;
-  justify-items: center;
   gap: 6px;
+  justify-items: center;
   width: min(360px, 100%);
   margin: 0 auto;
-  color: var(--showcase-page-text);
   line-height: 1.45;
+  color: var(--showcase-page-text);
 }
 
 .state-template strong {
@@ -18,8 +18,8 @@
 }
 
 .state-template span {
-  color: var(--showcase-page-text-soft);
   font-size: 0.82rem;
+  color: var(--showcase-page-text-soft);
 }
 
 .state-template-error span {
@@ -43,20 +43,20 @@
   width: min(240px, 80%);
   height: 8px;
   margin-top: 6px;
-  border-radius: 999px;
   background: linear-gradient(
     90deg,
     var(--showcase-page-surface-muted),
     var(--showcase-page-border-strong),
     var(--showcase-page-surface-muted)
   );
+  border-radius: 999px;
 }
 
 .state-reference-card {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 900px) {
+@media (width <= 900px) {
   .state-grid {
     grid-template-columns: minmax(0, 1fr);
   }

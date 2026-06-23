@@ -65,7 +65,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Verify workspace
-        run: pnpm exec nx affected -t lint,test,build,e2e --base="$NX_BASE" --head="$NX_HEAD"
+        run: pnpm exec nx affected -t lint,test,build,e2e,stylelint --base="$NX_BASE" --head="$NX_HEAD"
 
       - name: Verify packages and release config
         run: pnpm run verify

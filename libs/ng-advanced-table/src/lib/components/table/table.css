@@ -1,18 +1,18 @@
 :host {
   display: block;
-  color: var(--nat-table-color-text, inherit);
   font-family: var(--nat-table-font-family, inherit);
+  color: var(--nat-table-color-text, inherit);
 }
 
 .table-region {
   position: relative;
-  overflow-x: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto));
-  overflow-y: var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
-  max-height: var(--nat-table-max-height, inherit);
   height: var(--nat-table-height, inherit);
-  border: 1px solid var(--nat-table-region-border-color, rgba(128, 128, 128, 0.24));
-  border-radius: var(--nat-table-radius-region, 16px);
+  max-height: var(--nat-table-max-height, inherit);
+  overflow: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto))
+    var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
   background: var(--nat-table-region-background, transparent);
+  border: 1px solid var(--nat-table-region-border-color, rgb(128 128 128 / 24%));
+  border-radius: var(--nat-table-radius-region, 16px);
 }
 
 .table-region:has(:focus-visible) {
@@ -20,28 +20,29 @@
 }
 
 .data-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: auto;
   min-width: 100%;
+  table-layout: auto;
+  border-spacing: 0;
+  border-collapse: separate;
 }
 
 .data-table.is-fixed-layout {
+  min-width: 0;
+
   /*
    * Fixed layout makes the <colgroup> widths authoritative and the table exactly
    * as wide as their sum, so the region scrolls instead of stretching columns —
    * the precondition for pixel-exact column resizing.
    */
   table-layout: fixed;
-  min-width: 0;
 }
 
 .header-cell,
 .data-cell {
   box-sizing: border-box;
   padding: var(--nat-table-space-cell-y, 0) var(--nat-table-space-cell-x, 0);
-  border-bottom: 1px solid var(--nat-table-cell-border-color, rgba(128, 128, 128, 0.24));
   text-align: start;
+  border-bottom: 1px solid var(--nat-table-cell-border-color, rgb(128 128 128 / 24%));
 }
 
 .header-cell.is-width-constrained,
@@ -51,21 +52,21 @@
 }
 
 .header-cell {
-  background: var(--nat-table-header-background, #f6f8fa);
-  color: var(--nat-table-header-color, inherit);
   font-size: var(--nat-table-font-size-header, 0.84rem);
   font-weight: 600;
-  letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
+  color: var(--nat-table-header-color, inherit);
   text-transform: var(--nat-table-text-transform-header, uppercase);
-  border-bottom: 1px solid var(--nat-table-header-border-color, rgba(128, 128, 128, 0.3));
+  letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
   white-space: nowrap;
+  background: var(--nat-table-header-background, #f6f8fa);
+  border-bottom: 1px solid var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
 }
 
 .header-cell-content {
   display: flex;
+  gap: var(--nat-table-space-header-content-gap, 8px);
   align-items: center;
   justify-content: space-between;
-  gap: var(--nat-table-space-header-content-gap, 8px);
   min-width: 0;
   max-width: 100%;
 }
@@ -73,9 +74,9 @@
 .header-cell-primary {
   display: block;
   flex: 1 1 auto;
+  inline-size: 100%;
   min-width: 0;
   max-width: 100%;
-  inline-size: 100%;
 }
 
 .header-cell.is-width-constrained .header-cell-primary {
@@ -109,25 +110,25 @@
 
 .column-resize-handle {
   position: absolute;
+  inset-inline-end: 0;
   top: 0;
   bottom: 0;
-  inset-inline-end: 0;
-  inline-size: var(--nat-table-resize-handle-hit, 24px);
-  cursor: col-resize;
-  touch-action: none;
-  user-select: none;
   z-index: 8;
+  inline-size: var(--nat-table-resize-handle-hit, 24px);
+  touch-action: none;
+  cursor: col-resize;
+  user-select: none;
 }
 
 .column-resize-handle::after {
-  content: '';
   position: absolute;
+  inset-inline-end: calc(50% - 1px);
   top: 18%;
   bottom: 18%;
-  inset-inline-end: calc(50% - 1px);
   inline-size: 2px;
-  border-radius: 1px;
+  content: '';
   background: var(--nat-table-resize-handle-color, color-mix(in srgb, currentColor 24%, transparent));
+  border-radius: 1px;
   opacity: 0;
   transition: opacity 120ms ease;
 }
@@ -155,16 +156,16 @@
   position: absolute;
   top: 0;
   bottom: 0;
+  z-index: 9;
   inline-size: 2px;
   margin-inline-start: -1px;
-  background: var(--nat-table-resize-handle-active-color, var(--nat-table-focus-ring-color, Highlight));
   pointer-events: none;
-  z-index: 9;
+  background: var(--nat-table-resize-handle-active-color, var(--nat-table-focus-ring-color, Highlight));
 }
 
 .header-cell.is-reorderable {
-  cursor: grab;
   touch-action: pan-y;
+  cursor: grab;
   user-select: none;
 }
 
@@ -187,15 +188,15 @@
 }
 
 .header-cell.cdk-drag-preview {
-  display: table-cell;
   z-index: 12;
-  background: var(--nat-table-header-background, #f6f8fa);
+  display: table-cell;
   color: var(--nat-table-header-color, inherit);
-  border-bottom-color: var(--nat-table-header-border-color, rgba(128, 128, 128, 0.3));
-  opacity: 0.98;
+  background: var(--nat-table-header-background, #f6f8fa);
+  border-bottom-color: var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
   box-shadow:
-    0 14px 30px rgba(15, 23, 42, 0.16),
-    0 0 0 1px rgba(128, 128, 128, 0.3);
+    0 14px 30px rgb(15 23 42 / 16%),
+    0 0 0 1px rgb(128 128 128 / 30%);
+  opacity: 0.98;
 }
 
 .header-cell.is-pinned-left.cdk-drag-preview,
@@ -221,22 +222,22 @@
 }
 
 .data-row:has(:focus-visible) {
-  background: var(--nat-table-row-background-focus, rgba(128, 128, 128, 0.12));
+  background: var(--nat-table-row-background-focus, rgb(128 128 128 / 12%));
 }
 
 .data-row:has(:focus-visible) .is-pinned-left,
 .data-row:has(:focus-visible) .is-pinned-right {
-  background: var(--nat-table-row-background-focus-pinned, rgba(128, 128, 128, 0.16));
+  background: var(--nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%));
 }
 
 @media (hover: hover) and (pointer: fine) {
   .data-row:hover {
-    background: var(--nat-table-row-background-hover, rgba(128, 128, 128, 0.08));
+    background: var(--nat-table-row-background-hover, rgb(128 128 128 / 8%));
   }
 
   .data-row:hover .is-pinned-left,
   .data-row:hover .is-pinned-right {
-    background: var(--nat-table-row-background-hover-pinned, rgba(128, 128, 128, 0.12));
+    background: var(--nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%));
   }
 }
 
@@ -272,11 +273,11 @@
 }
 
 .has-pinned-edge-left {
-  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color, rgba(128, 128, 128, 0.34));
+  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color, rgb(128 128 128 / 34%));
 }
 
 .has-pinned-edge-right {
-  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color, rgba(128, 128, 128, 0.34));
+  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color, rgb(128 128 128 / 34%));
 }
 
 .header-cell.is-align-end,
@@ -306,10 +307,10 @@
 
 .table-state {
   padding: var(--nat-table-space-empty-state, 40px 24px);
-  text-align: center;
-  color: var(--nat-table-empty-state-color, #5b6672);
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
+  color: var(--nat-table-empty-state-color, #5b6672);
+  text-align: center;
   white-space: normal;
   animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms) var(--nat-table-state-transition-timing, ease-out)
     both;
@@ -342,9 +343,9 @@
 }
 
 [ngGridCell]:focus-visible {
+  z-index: 7;
   outline: none;
   box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, 2px) var(--nat-table-focus-ring-color, Highlight);
-  z-index: 7;
 }
 
 /*
@@ -353,7 +354,7 @@
  * sticky headers and pinned cells retain their `position: sticky` context
  * when focused.
  */
-[ngGridCell]:focus-visible:not(.is-pinned-left):not(.is-pinned-right):not(.header-cell) {
+[ngGridCell]:focus-visible:not(.is-pinned-left, .is-pinned-right, .header-cell) {
   position: relative;
 }
 
@@ -364,7 +365,7 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+  clip-path: inset(50%);
 }

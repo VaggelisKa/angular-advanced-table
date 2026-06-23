@@ -24,9 +24,7 @@ export default [
       '**/tsconfig*.json',
       '.vscode/**',
       // Flat-config files: not part of any tsconfig project (projectService).
-      '**/eslint.config.mjs',
-      'eslint.config.base.mjs',
-      'prettier.config.mjs'
+      '**/*.config*.mjs'
     ]
   },
   // recommended = base + javascript + typescript + json + boundaries + prettier.

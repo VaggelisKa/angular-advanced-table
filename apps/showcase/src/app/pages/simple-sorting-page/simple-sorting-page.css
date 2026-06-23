@@ -3,22 +3,23 @@
 }
 
 .simple-sorting-page {
+  box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  box-sizing: border-box;
 }
 
 .simple-sorting-page nat-table-surface {
   display: block;
   width: min(1180px, 100%);
-  max-width: 100%;
   min-width: 0;
+  max-width: 100%;
 }
 
 .simple-table {
   display: block;
   width: 100%;
   min-width: 0;
+
   --text: var(--showcase-page-text);
   --text-soft: var(--showcase-page-text-soft);
   --surface: var(--showcase-page-surface);
@@ -41,7 +42,7 @@
   --nat-table-sort-icon-chip-background-active: color-mix(in srgb, var(--showcase-page-accent) 15%, transparent);
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .simple-table {
     --nat-table-space-cell-y: 12px;
     --nat-table-space-header-content-gap: 12px;
