@@ -16,6 +16,10 @@
   background: var(--nat-table-region-background, transparent);
 }
 
+.table-region.uses-native-viewport-sticky {
+  overflow: visible;
+}
+
 .table-region:has(:focus-visible) {
   border-color: var(--nat-table-focus-ring-color, Highlight);
 }
@@ -270,6 +274,10 @@
   will-change: transform;
 }
 
+.has-sticky-header.uses-native-viewport-sticky:not(.is-region-scrollable) .header-cell {
+  top: var(--nat-table-sticky-top, 0px);
+}
+
 .has-sticky-header.uses-viewport-sticky.supports-scroll-timeline:not(.is-region-scrollable) thead {
   /*
    * Safe reference outside @supports to ensure proper keyframe scoping by
@@ -306,7 +314,7 @@
   z-index: 6;
 }
 
-.has-sticky-header:not(.is-region-scrollable) .header-cell {
+.has-sticky-header.uses-viewport-sticky:not(.is-region-scrollable) .header-cell {
   /*
    * Viewport-sticky mode translates the header row as a single layer. Keeping
    * vertical sticky positioning on each <th> makes the sticky calculation fight
@@ -317,8 +325,8 @@
   top: auto;
 }
 
-.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-left,
-.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-right {
+.has-sticky-header.uses-viewport-sticky:not(.is-region-scrollable) .header-cell.is-pinned-left,
+.has-sticky-header.uses-viewport-sticky:not(.is-region-scrollable) .header-cell.is-pinned-right {
   position: sticky;
   top: auto;
 }

@@ -3281,7 +3281,7 @@ describe('NatTable', () => {
     }
   });
 
-  it('disables viewport sticky transforms on coarse touch pointers', async () => {
+  it('uses native viewport sticky on coarse touch pointers when the region does not need horizontal scrolling', async () => {
     await recreateHost({ stickyHeader: true });
     fixture.detectChanges();
 
@@ -3315,12 +3315,22 @@ describe('NatTable', () => {
       configurable: true,
       value: 400
     });
+    Object.defineProperty(region, 'scrollWidth', {
+      configurable: true,
+      value: 600
+    });
+    Object.defineProperty(region, 'clientWidth', {
+      configurable: true,
+      value: 600
+    });
 
     try {
       table.measureTableDimensions();
       table.updateStickyHeaderPosition();
 
       expect(tableElement.classList.contains('uses-viewport-sticky')).toBe(false);
+      expect(tableElement.classList.contains('uses-native-viewport-sticky')).toBe(true);
+      expect(region.classList.contains('uses-native-viewport-sticky')).toBe(true);
       expect(thead.style.transform).toBe('');
     } finally {
       vi.unstubAllGlobals();
