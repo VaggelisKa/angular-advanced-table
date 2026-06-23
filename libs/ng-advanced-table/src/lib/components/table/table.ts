@@ -8,6 +8,7 @@ import {
   Component,
   DestroyRef,
   Injector,
+  NgZone,
   afterNextRender,
   afterRenderEffect,
   booleanAttribute,
@@ -254,6 +255,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  private readonly ngZone = inject(NgZone);
 
   protected readonly initialState = computed(() => this.natTableService.surfaceInitialState());
   protected readonly state = computed(() => this.natTableService.state());
@@ -586,6 +588,17 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   private headerResizeObserver: ResizeObserver | null = null;
 
+  private cachedStickyTop = 0;
+  private tablePageTop = 0;
+  private theadHeight = 0;
+  private tableHeight = 0;
+  private isRegionScrollable = false;
+  private isTableVisible = false;
+  private cachedHeaderCells: HTMLTableCellElement[] = [];
+  private cachedTableEl: HTMLTableElement | null = null;
+  private cachedTheadEl: HTMLTableSectionElement | null = null;
+  private intersectionObserver: IntersectionObserver | null = null;
+
   /**
    * TanStack id of the column whose pointer/touch resize drag is in progress.
    * Tracked so a single announcement can fire when the drag ends (the keyboard
@@ -809,6 +822,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     this.registerAnnouncementEffect();
     this.registerResizeAnnouncementEffect();
     this.registerHeaderObservationEffects();
+    this.registerCacheInvalidationEffect();
 
     this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
   }
@@ -884,6 +898,16 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     });
   }
 
+  private registerCacheInvalidationEffect(): void {
+    effect(() => {
+      // Access columnRenderStates to react to column visibility/ordering changes and invalidate cache
+      this.columnRenderStates();
+      this.cachedHeaderCells = [];
+      this.cachedTableEl = null;
+      this.cachedTheadEl = null;
+    });
+  }
+
   /**
    * Announces the final width once a pointer/touch resize drag ends. Keyed off
    * TanStack's `isResizingColumn`, set only for pointer drags (never keyboard),
@@ -924,10 +948,17 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   /** Wires up header-width measurement and the imperative aria-multiselectable attribute. */
   private registerHeaderObservationEffects(): void {
-    afterNextRender(() => this.initializeHeaderObservation());
+    afterNextRender(() => {
+      this.initializeHeaderObservation();
+      this.setupStickyHeaderScrollListener();
+    });
     afterRenderEffect(() => {
       this.visibleColumnIds();
+      this.bodyRows();
+      this.bodyState();
       this.reattachHeaderObservers();
+      this.measureTableDimensions();
+      this.updateStickyHeaderPosition();
     });
     afterRenderEffect(() => {
       const multiSelectable = this.ariaMultiSelectable();
@@ -1724,6 +1755,224 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     }
 
     this.measuredHeaderWidths.set(next);
+  }
+
+  private updateCachedStickyTop(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (!region) {
+      return;
+    }
+    const computedVar = window.getComputedStyle(region).getPropertyValue('--nat-table-sticky-top').trim();
+
+    if (!computedVar) {
+      this.cachedStickyTop = 0;
+
+      return;
+    }
+
+    if (/^-?\d+(\.\d+)?(px)?$/.test(computedVar)) {
+      this.cachedStickyTop = parseFloat(computedVar) || 0;
+
+      return;
+    }
+
+    try {
+      const temp = document.createElement('div');
+
+      temp.style.position = 'absolute';
+      temp.style.visibility = 'hidden';
+      temp.style.pointerEvents = 'none';
+      temp.style.height = computedVar;
+      region.appendChild(temp);
+      const computedHeight = window.getComputedStyle(temp).height;
+
+      region.removeChild(temp);
+      this.cachedStickyTop = parseFloat(computedHeight) || 0;
+    } catch {
+      this.cachedStickyTop = parseFloat(computedVar) || 0;
+    }
+  }
+
+  private measureTableDimensions(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+    const tableEl = this.cachedTableEl ?? region?.querySelector('table');
+    const theadEl = this.cachedTheadEl ?? tableEl?.querySelector('thead');
+
+    if (!region || !tableEl || !theadEl) {
+      return;
+    }
+
+    this.cachedTableEl = tableEl as HTMLTableElement;
+    this.cachedTheadEl = theadEl as HTMLTableSectionElement;
+
+    const rect = tableEl.getBoundingClientRect();
+
+    this.tablePageTop = rect.top + window.scrollY;
+    this.theadHeight = theadEl.getBoundingClientRect().height;
+    this.tableHeight = rect.height;
+
+    // Check vertical scrollability of region
+    const overflowY = window.getComputedStyle(region).overflowY;
+
+    this.isRegionScrollable = region.scrollHeight > region.clientHeight && (overflowY === 'auto' || overflowY === 'scroll');
+
+    if (this.isRegionScrollable) {
+      tableEl.classList.add('is-region-scrollable');
+    } else {
+      tableEl.classList.remove('is-region-scrollable');
+    }
+
+    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
+      const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop);
+      const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
+      const rangeEnd = rangeStart + maxTranslate;
+
+      tableEl.style.setProperty('--nat-table-sticky-range-start', `${rangeStart}px`);
+      tableEl.style.setProperty('--nat-table-sticky-range-end', `${rangeEnd}px`);
+      tableEl.style.setProperty('--nat-table-sticky-max-translate', `${maxTranslate}px`);
+    }
+  }
+
+  private setupStickyHeaderScrollListener(): void {
+    this.ngZone.runOutsideAngular(() => {
+      const region = this.tableRegionRef()?.nativeElement;
+
+      if (!region) {
+        return;
+      }
+
+      const supportsScrollTimeline =
+        typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
+
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            const entry = entries[0];
+            const wasVisible = this.isTableVisible;
+
+            this.isTableVisible = entry.isIntersecting;
+
+            if (this.isTableVisible && !wasVisible) {
+              this.updateCachedStickyTop();
+              this.measureTableDimensions();
+              this.updateStickyHeaderPosition();
+            }
+          },
+          {
+            rootMargin: '100px 0px 100px 0px'
+          }
+        );
+
+        this.intersectionObserver.observe(region);
+      } else {
+        this.isTableVisible = true;
+      }
+
+      let ticking = false;
+
+      const listener = (event: Event): void => {
+        if (!this.isTableVisible) {
+          return;
+        }
+
+        if (event.type === 'resize') {
+          this.updateCachedStickyTop();
+          this.measureTableDimensions();
+        }
+
+        if (!supportsScrollTimeline && !ticking) {
+          window.requestAnimationFrame(() => {
+            this.updateStickyHeaderPosition();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+
+      if (!supportsScrollTimeline) {
+        window.addEventListener('scroll', listener, { passive: true });
+        region.addEventListener('scroll', listener, { passive: true });
+      }
+      window.addEventListener('resize', listener, { passive: true });
+
+      this.destroyRef.onDestroy(() => {
+        this.intersectionObserver?.disconnect();
+
+        if (!supportsScrollTimeline) {
+          window.removeEventListener('scroll', listener);
+          region.removeEventListener('scroll', listener);
+        }
+        window.removeEventListener('resize', listener);
+      });
+
+      this.updateCachedStickyTop();
+      this.measureTableDimensions();
+      this.updateStickyHeaderPosition();
+    });
+  }
+
+  private updateStickyHeaderPosition(): void {
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (!region) {
+      return;
+    }
+
+    if (!this.stickyHeader()) {
+      const headerCells =
+        this.cachedHeaderCells.length > 0
+          ? this.cachedHeaderCells
+          : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+
+      for (const cell of headerCells) {
+        cell.style.transform = '';
+      }
+
+      return;
+    }
+
+    const headerCells =
+      this.cachedHeaderCells.length > 0
+        ? this.cachedHeaderCells
+        : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+
+    this.cachedHeaderCells = headerCells as HTMLTableCellElement[];
+
+    if (this.isRegionScrollable) {
+      for (const cell of headerCells) {
+        cell.style.transform = '';
+      }
+
+      return;
+    }
+
+    if (typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')) {
+      for (const cell of headerCells) {
+        if (cell.style.transform) {
+          cell.style.transform = '';
+        }
+      }
+
+      return;
+    }
+
+    const currentScrollY = window.scrollY;
+    const rectTop = this.tablePageTop - currentScrollY;
+
+    let translateY = 0;
+
+    if (rectTop < this.cachedStickyTop) {
+      const maxTranslateY = Math.max(0, this.tableHeight - this.theadHeight);
+
+      translateY = Math.min(Math.max(0, this.cachedStickyTop - rectTop), maxTranslateY);
+    }
+
+    const transformValue = translateY > 0 ? `translate3d(0, ${translateY}px, 0)` : '';
+
+    for (const cell of headerCells) {
+      cell.style.transform = transformValue;
+    }
   }
 
   private measureRegionViewportWidth(): void {

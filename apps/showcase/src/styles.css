@@ -172,7 +172,7 @@ input {
   width: min(1200px, 100%);
   margin: 0 auto;
   padding: 20px 24px 48px;
-  gap: 16px;
+  gap: 24px;
   align-content: start;
   box-sizing: border-box;
 }

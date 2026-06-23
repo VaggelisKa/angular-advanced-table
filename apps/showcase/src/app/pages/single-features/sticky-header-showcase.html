@@ -1,0 +1,61 @@
+@if (simulateTopbar()) {
+<div class="simulate-topbar">
+  <span>Simulated Sticky Topbar Active (Height: 60px)</span>
+</div>
+}
+
+<div class="showcase-page showcase-container showcase-wrapper">
+  <header class="header-section">
+    <div class="header-title-container">
+      <h1 class="title">Sticky Header</h1>
+      <p class="description">Demonstrates vertical sticky header pinning. The header stays docked when scrolling down the grid.</p>
+    </div>
+  </header>
+
+  <div class="grid-layout grid-layout-with-panel">
+    <div class="card scrollable-grid-card">
+      <h2 class="card-title">Scrollable Grid</h2>
+      <nat-table-surface [class.with-topbar]="simulateTopbar()" [stickyHeader]="stickyHeaderEnabled()">
+        <nat-table [columns]="columns" [data]="data" accessibleName="Sticky header demo table" />
+      </nat-table-surface>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Configure Sticky State</h2>
+      <div class="control-panel">
+        <label class="toggle-label">
+          <input [checked]="stickyHeaderEnabled()" type="checkbox" (change)="toggleStickyHeader($event)" />
+          <span>Enable Sticky Header</span>
+        </label>
+        <label class="toggle-label">
+          <input [checked]="simulateTopbar()" type="checkbox" (change)="toggleTopbarSimulation($event)" />
+          <span>Simulate Sticky Topbar (60px)</span>
+        </label>
+        <div class="tip">
+          Scroll down the table to verify the sticky behavior, then turn it off to observe standard scrolling logic.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="header-section">
+    <div class="header-title-container">
+      <h2 class="title">Viewport Sticky Tables (No Max Height)</h2>
+      <p class="description">
+        These 5 tables have no max height limit. As you scroll down the page, each table's header will stick to the top of the
+        viewport/window and push the previous one out of view.
+      </p>
+    </div>
+  </header>
+
+  <div class="table-stack">
+    @for (i of [1, 2, 3, 4, 5]; track i) {
+    <div class="card viewport-stack-card">
+      <h3 class="card-title">Table #{{ i }}</h3>
+      <nat-table-surface [class.with-topbar]="simulateTopbar()" [stickyHeader]="stickyHeaderEnabled()">
+        <nat-table [accessibleName]="`Viewport sticky table ${i}`" [columns]="columns" [data]="data" />
+      </nat-table-surface>
+    </div>
+    }
+  </div>
+</div>

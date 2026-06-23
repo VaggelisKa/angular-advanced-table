@@ -26,6 +26,7 @@ import type {
   SortingState,
   VisibilityState
 } from '@tanstack/angular-table';
+import { vi } from 'vitest';
 
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction';
 import { NatTable } from './table';
@@ -3170,6 +3171,75 @@ describe('NatTable', () => {
     fixture.detectChanges();
     tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
     expect(tableElement.classList.contains('has-sticky-header')).toBe(false);
+  });
+
+  it('correctly resolves sticky top offset specified in non-pixel CSS units', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture);
+    const region = queryRequired<HTMLElement>(fixture, '.table-region');
+
+    region.style.setProperty('--nat-table-sticky-top', '4rem');
+
+    const originalGetComputedStyle = window.getComputedStyle;
+
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((el: Element, pseudoElt?: string | null) => {
+      const styles = originalGetComputedStyle(el, pseudoElt);
+
+      if (el instanceof HTMLDivElement && el.style.height === '4rem') {
+        Object.defineProperty(styles, 'height', {
+          value: '64px',
+          configurable: true
+        });
+      }
+
+      return styles;
+    });
+
+    const tableInstance = table as unknown as {
+      updateCachedStickyTop(): void;
+      cachedStickyTop: number;
+    };
+
+    tableInstance.updateCachedStickyTop();
+    expect(tableInstance.cachedStickyTop).toBe(64);
+  });
+
+  it('refreshes cached sticky dimensions when rendered rows change', async () => {
+    await recreateHost({ stickyHeader: true, initialState: {} });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table = getInternalTable(fixture) as unknown as {
+      measureTableDimensions(): void;
+      tableHeight: number;
+    };
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+    const thead = queryRequired<HTMLTableSectionElement>(fixture, 'thead');
+    let measuredTableHeight = 80;
+
+    tableElement.getBoundingClientRect = (): DOMRect =>
+      ({
+        top: 20,
+        height: measuredTableHeight
+      }) as DOMRect;
+    thead.getBoundingClientRect = (): DOMRect =>
+      ({
+        height: 24
+      }) as DOMRect;
+
+    table.measureTableDimensions();
+    expect(table.tableHeight).toBe(80);
+
+    measuredTableHeight = 280;
+    host.rows.set(buildRows(12));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(table.tableHeight).toBe(280);
   });
 
   describe('manual mode', () => {

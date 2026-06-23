@@ -8,6 +8,7 @@
   position: relative;
   overflow-x: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto));
   overflow-y: var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
+  overscroll-behavior-x: contain;
   max-height: var(--nat-table-max-height, inherit);
   height: var(--nat-table-height, inherit);
   border: 1px solid var(--nat-table-region-border-color, rgba(128, 128, 128, 0.24));
@@ -250,8 +251,25 @@
 
 .has-sticky-header .header-cell {
   position: sticky;
-  top: var(--nat-table-sticky-top, 0);
+  top: 0;
   z-index: 4;
+}
+
+@keyframes nat-table-viewport-sticky {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--nat-table-sticky-max-translate, 0px));
+  }
+}
+
+@supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+  .has-sticky-header:not(.is-region-scrollable) .header-cell {
+    animation: nat-table-viewport-sticky auto linear both;
+    animation-timeline: scroll(block root);
+    animation-range: var(--nat-table-sticky-range-start, 0px) var(--nat-table-sticky-range-end, 0px);
+  }
 }
 
 .has-sticky-header .is-pinned-left,
