@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
@@ -44,11 +44,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/nx-refs
+      # Persist the Nx local cache so the release job's `verify` reuses these
+      # build/test results instead of rebuilding on its fresh runner. The
+      # restore-keys fallback also warms `checks` itself run-to-run.
+      - name: Cache Nx results
+        uses: actions/cache@v6
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ github.run_id }}
+          restore-keys: nx-cache-
       - name: Lint, stylelint, test, build (affected)
         run: pnpm exec nx affected -t stylelint,lint,test,build --base="$NX_BASE" --head="$NX_HEAD"
 
@@ -58,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
@@ -96,7 +105,7 @@ jobs:
       # dist/.playwright/e2e/{test-output,playwright-report,blob-report}.
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: dist/.playwright
@@ -112,11 +121,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/nx-refs
+      # Reuse the Nx cache saved by `checks` this run, so `verify`'s build/test
+      # tasks hit cache (showcase + affected libs) instead of rebuilding.
+      - name: Restore Nx cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ github.run_id }}
+          restore-keys: nx-cache-
       - name: Detect package-affecting changes
         id: package_changes
         if: github.event_name == 'pull_request'
