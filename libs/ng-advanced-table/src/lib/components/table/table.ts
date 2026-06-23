@@ -594,7 +594,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private tableHeight = 0;
   private isRegionScrollable = false;
   private isViewportStickyEnabled = false;
-  private isNativeViewportStickyEnabled = false;
   private isTableVisible = false;
   private cachedHeaderCells: HTMLTableCellElement[] = [];
   private cachedTableEl: HTMLTableElement | null = null;
@@ -1819,11 +1818,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     const supportsScrollTimeline = this.supportsScrollTimeline();
 
     this.isRegionScrollable = region.scrollHeight > region.clientHeight && (overflowY === 'auto' || overflowY === 'scroll');
-    const isHorizontallyScrollable = region.scrollWidth > region.clientWidth;
-
-    this.isNativeViewportStickyEnabled =
-      this.stickyHeader() && !this.isRegionScrollable && this.usesCoarseTouchPointer() && !isHorizontallyScrollable;
-    this.isViewportStickyEnabled = this.stickyHeader() && !this.isRegionScrollable && !this.isNativeViewportStickyEnabled;
+    this.isViewportStickyEnabled = this.stickyHeader() && !this.isRegionScrollable && !this.usesCoarseTouchPointer();
 
     if (this.isRegionScrollable) {
       tableEl.classList.add('is-region-scrollable');
@@ -1835,14 +1830,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       tableEl.classList.add('uses-viewport-sticky');
     } else {
       tableEl.classList.remove('uses-viewport-sticky');
-    }
-
-    if (this.isNativeViewportStickyEnabled) {
-      region.classList.add('uses-native-viewport-sticky');
-      tableEl.classList.add('uses-native-viewport-sticky');
-    } else {
-      region.classList.remove('uses-native-viewport-sticky');
-      tableEl.classList.remove('uses-native-viewport-sticky');
     }
 
     if (supportsScrollTimeline && this.isViewportStickyEnabled) {
@@ -2015,11 +2002,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   }
 
   private supportsScrollTimeline(): boolean {
-    return (
-      !this.usesCoarseTouchPointer() &&
-      typeof CSS !== 'undefined' &&
-      CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)')
-    );
+    return typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
   }
 
   private usesCoarseTouchPointer(): boolean {
