@@ -3179,7 +3179,7 @@ describe('NatTable', () => {
 
     const table = getInternalTable(fixture);
     const region = queryRequired<HTMLElement>(fixture, '.table-region');
-    
+
     region.style.setProperty('--nat-table-sticky-top', '4rem');
 
     const originalGetComputedStyle = window.getComputedStyle;
@@ -3223,11 +3223,11 @@ describe('NatTable', () => {
     tableElement.getBoundingClientRect = (): DOMRect =>
       ({
         top: 20,
-        height: measuredTableHeight,
+        height: measuredTableHeight
       }) as DOMRect;
     thead.getBoundingClientRect = (): DOMRect =>
       ({
-        height: 24,
+        height: 24
       }) as DOMRect;
 
     table.measureTableDimensions();

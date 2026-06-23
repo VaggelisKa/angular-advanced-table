@@ -12,7 +12,7 @@ test('renders the sticky header showcase page', async ({ page }) => {
 test('viewport sticky tables translate headers on page scroll', async ({ page }) => {
   const table1 = page.locator('table[aria-label="Viewport sticky table 1"]');
   const headerCell = table1.locator('thead th').first();
-  
+
   // Initially, no translation since we are at the top
   const transformInit = await headerCell.evaluate((el) => {
     return el.style.transform || window.getComputedStyle(el).transform;

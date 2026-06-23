@@ -1842,23 +1842,27 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         return;
       }
 
-      const supportsScrollTimeline = typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
+      const supportsScrollTimeline =
+        typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
 
       if (typeof IntersectionObserver !== 'undefined') {
-        this.intersectionObserver = new IntersectionObserver((entries) => {
-          const entry = entries[0];
-          const wasVisible = this.isTableVisible;
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            const entry = entries[0];
+            const wasVisible = this.isTableVisible;
 
-          this.isTableVisible = entry.isIntersecting;
+            this.isTableVisible = entry.isIntersecting;
 
-          if (this.isTableVisible && !wasVisible) {
-            this.updateCachedStickyTop();
-            this.measureTableDimensions();
-            this.updateStickyHeaderPosition();
+            if (this.isTableVisible && !wasVisible) {
+              this.updateCachedStickyTop();
+              this.measureTableDimensions();
+              this.updateStickyHeaderPosition();
+            }
+          },
+          {
+            rootMargin: '100px 0px 100px 0px'
           }
-        }, {
-          rootMargin: '100px 0px 100px 0px'
-        });
+        );
 
         this.intersectionObserver.observe(region);
       } else {
@@ -1916,7 +1920,10 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     }
 
     if (!this.stickyHeader()) {
-      const headerCells = this.cachedHeaderCells.length > 0 ? this.cachedHeaderCells : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+      const headerCells =
+        this.cachedHeaderCells.length > 0
+          ? this.cachedHeaderCells
+          : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
 
       for (const cell of headerCells) {
         cell.style.transform = '';
@@ -1925,7 +1932,10 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    const headerCells = this.cachedHeaderCells.length > 0 ? this.cachedHeaderCells : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
+    const headerCells =
+      this.cachedHeaderCells.length > 0
+        ? this.cachedHeaderCells
+        : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
 
     this.cachedHeaderCells = headerCells as HTMLTableCellElement[];
 
