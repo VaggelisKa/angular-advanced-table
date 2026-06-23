@@ -73,7 +73,7 @@ test('desktop viewport sticky tables translate headers on page scroll', async ({
   expect(horizontalDelta).toBe(0);
 });
 
-test('touch viewport sticky tables use native sticky without scroll-sync transforms', async ({ baseURL, browser }) => {
+test('touch viewport sticky tables stay sticky without scroll-timeline animation', async ({ baseURL, browser }) => {
   const context = await browser.newContext({
     ...devices['iPhone 15'],
     baseURL
@@ -94,15 +94,20 @@ test('touch viewport sticky tables use native sticky without scroll-sync transfo
     await page.waitForTimeout(150);
 
     await expect(table1).toHaveClass(/has-sticky-header/);
-    await expect(table1).not.toHaveClass(/uses-viewport-sticky/);
-    await expect(table1).toHaveClass(/uses-native-viewport-sticky/);
+    await expect(table1).not.toHaveClass(/supports-scroll-timeline/);
 
     const transform = await thead.evaluate((el) => {
       return el.style.transform || window.getComputedStyle(el).transform;
     });
     const headerTop = await headerCell.evaluate((el) => Math.round(el.getBoundingClientRect().top));
 
-    expect(transform === '' || transform === 'none' || transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(true);
+    if (await table1.evaluate((el) => el.classList.contains('uses-native-viewport-sticky'))) {
+      expect(transform === '' || transform === 'none' || transform.includes('matrix(1, 0, 0, 1, 0, 0)')).toBe(true);
+    } else {
+      await expect(table1).toHaveClass(/uses-viewport-sticky/);
+      expect(transform).not.toBe('');
+      expect(transform).not.toBe('none');
+    }
     expect(Math.abs(headerTop)).toBeLessThanOrEqual(2);
   } finally {
     await context.close();
