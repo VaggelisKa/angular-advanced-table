@@ -119,13 +119,24 @@ export function collectStickyMetrics(): StickyMetrics {
   };
 }
 
-export function formatStickyMetrics(m: StickyMetrics, peak: number): string {
-  return [
+export function formatStickyMetrics(m: StickyMetrics, peak: StickyMetrics | null): string {
+  const lines = [
     `timeline=${m.supportsTimeline} stickyTop=${fmt(m.stickyTop)}`,
     `scrollY=${fmt(m.scrollY)} docTop=${fmt(m.docTop)}`,
     `vv.offTop=${fmt(m.vvOffsetTop)} vv.h=${fmt(m.vvHeight)} innerH=${fmt(m.innerHeight)}`,
-    `rectTop=${fmt(m.rectTop)} expected=${fmt(m.expected)} actual=${fmt(m.actual)}`,
-    `DIFF=${fmt(m.diff)}  PEAK=${fmt(peak)}`,
+    `rectTop=${fmt(m.rectTop)} exp=${fmt(m.expected)} act=${fmt(m.actual)}`,
+    `DIFF=${fmt(m.diff)}`,
     `range=[${m.rangeStart} → ${m.rangeEnd}] max=${m.maxTranslate}`
-  ].join('\n');
+  ];
+
+  if (peak) {
+    lines.push(
+      '— PEAK desync context —',
+      `PEAK.DIFF=${fmt(peak.diff)} @ scrollY=${fmt(peak.scrollY)}`,
+      `PEAK vv.offTop=${fmt(peak.vvOffsetTop)} vv.h=${fmt(peak.vvHeight)} innerH=${fmt(peak.innerHeight)}`,
+      `PEAK rectTop=${fmt(peak.rectTop)} exp=${fmt(peak.expected)} act=${fmt(peak.actual)}`
+    );
+  }
+
+  return lines.join('\n');
 }

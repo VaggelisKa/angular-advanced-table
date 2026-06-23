@@ -1,6 +1,7 @@
 import { Component, DestroyRef, NgZone, ViewEncapsulation, afterNextRender, inject } from '@angular/core';
 
 import { collectStickyMetrics, formatStickyMetrics } from './sticky-debug-metrics';
+import type { StickyMetrics } from './sticky-debug-metrics';
 
 /**
  * Diagnostic-only overlay (enabled via `?stickydebug=1`) that appends a fixed
@@ -47,9 +48,9 @@ export class StickyDebugOverlay {
     container.append(readout, resetButton);
     document.body.appendChild(container);
 
-    let peak = 0;
+    let peak: StickyMetrics | null = null;
     const reset = (): void => {
-      peak = 0;
+      peak = null;
     };
 
     resetButton.addEventListener('click', reset);
@@ -58,7 +59,10 @@ export class StickyDebugOverlay {
     const tick = (): void => {
       const metrics = collectStickyMetrics();
 
-      peak = Number.isFinite(metrics.diff) && Math.abs(metrics.diff) > Math.abs(peak) ? metrics.diff : peak;
+      if (Number.isFinite(metrics.diff) && Math.abs(metrics.diff) > Math.abs(peak?.diff ?? 0)) {
+        peak = metrics;
+      }
+
       readout.textContent = formatStickyMetrics(metrics, peak);
       rafId = window.requestAnimationFrame(tick);
     };
