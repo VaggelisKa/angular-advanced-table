@@ -1,70 +1,68 @@
-import {
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  inject,
-  provideZonelessChangeDetection,
-} from '@angular/core';
+/* eslint-disable max-lines */
+import { CUSTOM_ELEMENTS_SCHEMA, Component, inject, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
 import type { ColumnDef } from '@tanstack/angular-table';
+import { NatTable, NatTableService } from 'ng-advanced-table';
+import type { NatTableState } from 'ng-advanced-table';
+import type { MockInstance } from 'vitest';
 import { vi } from 'vitest';
 
-import { NatTable, NatTableService, type NatTableState } from 'ng-advanced-table';
-
-import { NatTableSurface } from '../table-surface/table-surface';
-import { NatTableToolbar } from '../table-toolbar/table-toolbar';
-import { NatToolbarItem } from '../table-toolbar/toolbar-item/toolbar-item.directive';
 import { createNatTableExportData } from './table-export-client';
 import { NatTableExport } from './table-export.directive';
 import { provideNatTableExport } from './table-export.provider';
 import type { NatTableExportContext, NatTableExportData } from './table-export.types';
+import { NatTableSurface } from '../table-surface/table-surface';
+import { NatTableToolbar } from '../table-toolbar/table-toolbar';
+import { NatToolbarItem } from '../table-toolbar/toolbar-item/toolbar-item.directive';
 
 const CSV_MIME_TYPE = 'text/csv;charset=utf-8';
 
-interface ExportRow {
+type ExportRow = {
   readonly id: string;
   readonly name: string;
   readonly price: number;
   readonly details: { readonly risk: string };
-}
+};
 
 const EXPORT_ROWS: readonly ExportRow[] = [
   { id: 'row-1', name: 'Alpha', price: 12, details: { risk: 'low' } },
-  { id: 'row-2', name: 'Beta', price: 24, details: { risk: 'high' } },
+  { id: 'row-2', name: 'Beta', price: 24, details: { risk: 'high' } }
 ];
 
 const EXPORT_COLUMNS: ColumnDef<ExportRow, unknown>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-    meta: { label: 'Name' },
+    meta: { label: 'Name' }
   },
   {
     accessorKey: 'price',
     header: 'Price',
-    meta: { label: 'Price' },
+    meta: { label: 'Price' }
   },
   {
     accessorKey: 'details',
     header: 'Details',
     meta: {
       export: {
-        header: 'Risk profile',
-      },
-    },
+        header: 'Risk profile'
+      }
+    }
   },
   {
     id: 'actions',
     header: 'Actions',
     cell: () => 'Open',
-    meta: { label: 'Actions' },
-  },
+    meta: { label: 'Actions' }
+  }
 ];
 
 const EXPORT_VALUE_COLUMNS: ColumnDef<ExportRow, unknown>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-    meta: { label: 'Name' },
+    meta: { label: 'Name' }
   },
   {
     accessorKey: 'price',
@@ -72,116 +70,96 @@ const EXPORT_VALUE_COLUMNS: ColumnDef<ExportRow, unknown>[] = [
     meta: {
       label: 'Price',
       export: {
-        value: () => null,
-      },
-    },
+        value: () => null
+      }
+    }
   },
   {
     accessorKey: 'details',
     header: 'Details',
     meta: {
       export: {
-        value: () => undefined,
-      },
-    },
-  },
+        value: () => undefined
+      }
+    }
+  }
 ];
 
 let anchorDownloads: string[];
 let downloadedBlobs: Blob[];
-let anchorClickSpy: ReturnType<typeof vi.spyOn> | undefined;
+let anchorClickSpy: MockInstance<() => void> | undefined;
 
 const downloadMock = {
   createObjectURL: vi.fn((blob: Blob) => {
     downloadedBlobs.push(blob);
+
     return 'blob:nat-table-export';
   }),
-  revokeObjectURL: vi.fn(),
+  revokeObjectURL: vi.fn()
 };
 
 @Component({
   imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarItem],
+  selector: 'nat-export-default-host',
   host: { 'data-export-spec-host': 'default' },
   template: `
     <nat-table-surface [state]="tableState">
       <nat-table-toolbar accessibleName="Export toolbar">
-        <button
-          type="button"
-          natToolbarItem
-          natTableExport
-          exportFileName="orders"
-          data-testid="export-button"
-        >
-          Export
-        </button>
+        <button data-testid="export-button" exportFileName="orders" natTableExport natToolbarItem type="button">Export</button>
       </nat-table-toolbar>
 
-      <nat-table [data]="rows" [columns]="columns" accessibleName="Orders" />
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
     </nat-table-surface>
-  `,
+  `
 })
 class DefaultExportHost {
-  readonly rows = EXPORT_ROWS;
-  readonly columns = EXPORT_COLUMNS;
-  readonly tableState: Partial<NatTableState> = {
+  protected readonly rows = EXPORT_ROWS;
+  protected readonly columns = EXPORT_COLUMNS;
+  protected readonly tableState: Partial<NatTableState> = {
     columnOrder: ['details', 'name', 'price', 'actions'],
-    columnVisibility: { price: false },
+    columnVisibility: { price: false }
   };
 }
 
 @Component({
   imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarItem],
+  selector: 'nat-export-custom-handler-host',
   host: { 'data-export-spec-host': 'custom-handler' },
   template: `
     <nat-table-surface>
       <nat-table-toolbar accessibleName="Export toolbar">
-        <button
-          type="button"
-          natToolbarItem
-          natTableExport
-          [exportHandler]="exportHandler"
-          data-testid="export-button"
-        >
-          Export
-        </button>
+        <button [exportHandler]="exportHandler" data-testid="export-button" natTableExport natToolbarItem type="button">Export</button>
       </nat-table-toolbar>
 
-      <nat-table [data]="rows" [columns]="columns" accessibleName="Orders" />
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
     </nat-table-surface>
-  `,
+  `
 })
 class CustomHandlerHost {
-  readonly rows = EXPORT_ROWS;
-  readonly columns = EXPORT_COLUMNS;
-  readonly exportHandler = vi.fn((_context: NatTableExportContext<ExportRow>) => Promise.resolve());
+  protected readonly rows = EXPORT_ROWS;
+  protected readonly columns = EXPORT_COLUMNS;
+  public readonly exportHandler = vi.fn(async (): Promise<void> => Promise.resolve());
 }
 
 @Component({
   imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarItem],
+  selector: 'nat-export-value-mapping-host',
   host: { 'data-export-spec-host': 'value-mapping' },
   template: `
     <nat-table-surface>
       <nat-table-toolbar accessibleName="Export toolbar">
-        <button
-          type="button"
-          natToolbarItem
-          natTableExport
-          [exportHandler]="exportHandler"
-          data-testid="export-button"
-        >
-          Export
-        </button>
+        <button [exportHandler]="exportHandler" data-testid="export-button" natTableExport natToolbarItem type="button">Export</button>
       </nat-table-toolbar>
 
-      <nat-table [data]="rows" [columns]="columns" accessibleName="Orders" />
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
     </nat-table-surface>
-  `,
+  `
 })
 class ExportValueMappingHost {
-  readonly rows = EXPORT_ROWS;
-  readonly columns = EXPORT_VALUE_COLUMNS;
-  exportData: NatTableExportData | undefined;
-  readonly exportHandler = vi.fn((context: NatTableExportContext<ExportRow>) => {
+  public exportData: NatTableExportData | undefined;
+  protected readonly rows = EXPORT_ROWS;
+  protected readonly columns = EXPORT_VALUE_COLUMNS;
+  public readonly exportHandler = vi.fn(async (context: NatTableExportContext<ExportRow>) => {
     this.exportData = createNatTableExportData(context);
 
     return Promise.resolve();
@@ -190,107 +168,92 @@ class ExportValueMappingHost {
 
 @Component({
   imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarItem],
+  selector: 'nat-export-delegating-host',
   host: { 'data-export-spec-host': 'delegating' },
   template: `
     <nat-table-surface>
       <nat-table-toolbar accessibleName="Export toolbar">
-        <button
-          type="button"
-          natToolbarItem
-          natTableExport
-          [exportHandler]="exportHandler"
-          data-testid="export-button"
-        >
-          Export
-        </button>
+        <button [exportHandler]="exportHandler" data-testid="export-button" natTableExport natToolbarItem type="button">Export</button>
       </nat-table-toolbar>
 
-      <nat-table [data]="rows" [columns]="columns" accessibleName="Orders" />
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
     </nat-table-surface>
-  `,
+  `
 })
 class DelegatingHandlerHost {
-  readonly rows = EXPORT_ROWS;
-  readonly columns = EXPORT_COLUMNS;
-  readonly exportHandler = vi.fn((context: NatTableExportContext<ExportRow>) =>
-    context.exportCsv(),
-  );
+  protected readonly rows = EXPORT_ROWS;
+  protected readonly columns = EXPORT_COLUMNS;
+  public readonly exportHandler = vi.fn(async (context: NatTableExportContext<ExportRow>) => context.exportCsv());
 }
 
 @Component({
   imports: [NatTable, NatTableExport],
   providers: [NatTableService],
+  selector: 'nat-export-explicit-controller-host',
   host: { 'data-export-spec-host': 'explicit-controller' },
   template: `
-    <nat-table #grid="natTable" [data]="rows" [columns]="columns" accessibleName="Orders" />
-    <button type="button" natTableExport [for]="grid" data-testid="export-button">Export</button>
-  `,
+    <nat-table #grid="natTable" [columns]="columns" [data]="rows" accessibleName="Orders" />
+    <button [for]="grid" data-testid="export-button" natTableExport type="button">Export</button>
+  `
 })
 class ExplicitControllerHost {
-  readonly rows = EXPORT_ROWS;
-  readonly columns = EXPORT_COLUMNS;
+  protected readonly rows = EXPORT_ROWS;
+  protected readonly columns = EXPORT_COLUMNS;
 }
 
 @Component({
   imports: [NatTable, NatTableExport, NatTableSurface],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  selector: 'nat-export-custom-event-host',
   host: { 'data-export-spec-host': 'custom-event' },
   template: `
     <nat-table-surface>
       <my-custom-button
-        natTableExport
         #tableExport="natTableExport"
-        exportFileName="custom-event"
         data-testid="export-button"
-        (pressed)="tableExport.trigger($event)"
-      >
+        exportFileName="custom-event"
+        natTableExport
+        (pressed)="tableExport.trigger($event)">
         Export
       </my-custom-button>
 
-      <nat-table [data]="rows" [columns]="columns" accessibleName="Orders" />
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
     </nat-table-surface>
-  `,
+  `
 })
 class CustomEventHost {
-  readonly rows = EXPORT_ROWS;
-  readonly columns = EXPORT_COLUMNS;
+  protected readonly rows = EXPORT_ROWS;
+  protected readonly columns = EXPORT_COLUMNS;
 }
 
 @Component({
   imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarItem],
+  selector: 'nat-export-busy-host',
   host: { 'data-export-spec-host': 'busy' },
   template: `
     <nat-table-surface>
       <nat-table-toolbar accessibleName="Export toolbar">
-        <button
-          type="button"
-          natToolbarItem
-          natTableExport
-          [exportHandler]="exportHandler"
-          data-testid="export-button"
-        >
-          Export
-        </button>
+        <button [exportHandler]="exportHandler" data-testid="export-button" natTableExport natToolbarItem type="button">Export</button>
       </nat-table-toolbar>
 
-      <nat-table [data]="rows" [columns]="columns" accessibleName="Orders" />
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
     </nat-table-surface>
-  `,
+  `
 })
 class BusyExportHost {
-  readonly rows = EXPORT_ROWS;
-  readonly columns = EXPORT_COLUMNS;
-  resolveExport: (() => void) | undefined;
-  readonly exportHandler = vi.fn(
-    () =>
+  public resolveExport: (() => void) | undefined;
+  protected readonly rows = EXPORT_ROWS;
+  protected readonly columns = EXPORT_COLUMNS;
+  public readonly exportHandler = vi.fn(
+    async () =>
       new Promise<void>((resolve) => {
         this.resolveExport = resolve;
-      }),
+      })
   );
 }
 
 class ExportApi {
-  readonly exportOrders = vi.fn((_context: NatTableExportContext<ExportRow>) => Promise.resolve());
+  public readonly exportOrders = vi.fn<(context: NatTableExportContext<ExportRow>) => Promise<void>>(async () => Promise.resolve());
 }
 
 describe('NatTableExport', () => {
@@ -298,21 +261,19 @@ describe('NatTableExport', () => {
     vi.clearAllMocks();
     anchorDownloads = [];
     downloadedBlobs = [];
-    anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
-      this: HTMLAnchorElement,
-    ) {
+    anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
       anchorDownloads.push(this.download);
     });
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
-      value: downloadMock.createObjectURL,
+      value: downloadMock.createObjectURL
     });
     Object.defineProperty(URL, 'revokeObjectURL', {
       configurable: true,
-      value: downloadMock.revokeObjectURL,
+      value: downloadMock.revokeObjectURL
     });
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
   });
 
@@ -328,13 +289,11 @@ describe('NatTableExport', () => {
   function expectClientCsvDownload(fileName: string): Blob {
     expect(downloadMock.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(downloadedBlobs).toHaveLength(1);
-    expect(anchorDownloads).toEqual([fileName]);
+    expect(anchorDownloads).toStrictEqual([fileName]);
 
     const blob = downloadedBlobs[0];
 
-    if (!blob) {
-      throw new Error('Expected table export to create a Blob.');
-    }
+    expect(blob).toBeDefined();
 
     expect(blob.type).toBe(CSV_MIME_TYPE);
     expect(blob.size).toBeGreaterThan(0);
@@ -353,9 +312,7 @@ describe('NatTableExport', () => {
 
     const blob = expectClientCsvDownload('orders.csv');
 
-    await expect(blob.text()).resolves.toBe(
-      'Risk profile,Name\r\n"{""risk"":""low""}",Alpha\r\n"{""risk"":""high""}",Beta',
-    );
+    await expect(blob.text()).resolves.toBe('Risk profile,Name\r\n"{""risk"":""low""}",Alpha\r\n"{""risk"":""high""}",Beta');
   });
 
   it('builds export data from visible exportable columns and lets value callbacks clear cells', async () => {
@@ -367,25 +324,25 @@ describe('NatTableExport', () => {
     exportButton().click();
     await fixture.whenStable();
 
-    expect(fixture.componentInstance.exportData).toEqual({
+    expect(fixture.componentInstance.exportData).toStrictEqual({
       columns: [
         { id: 'name', header: 'Name' },
         { id: 'price', header: 'Price' },
-        { id: 'details', header: 'Details' },
+        { id: 'details', header: 'Details' }
       ],
       rows: [
         { id: '0', values: ['Alpha', null, null] },
-        { id: '1', values: ['Beta', null, null] },
-      ],
+        { id: '1', values: ['Beta', null, null] }
+      ]
     });
     expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
   });
 
   it('lets a directive-level handler replace provider and client-side handlers', async () => {
-    const providerHandler = vi.fn(() => Promise.resolve());
+    const providerHandler = vi.fn(async () => Promise.resolve());
 
     TestBed.configureTestingModule({
-      providers: [provideNatTableExport({ handler: providerHandler })],
+      providers: [provideNatTableExport({ handler: providerHandler })]
     });
     const fixture = TestBed.createComponent(CustomHandlerHost);
 
@@ -401,14 +358,11 @@ describe('NatTableExport', () => {
   });
 
   it('uses an app-level provider handler when no directive handler is present', async () => {
-    const providerHandler = vi.fn(() => Promise.resolve());
+    const providerHandler = vi.fn(async () => Promise.resolve());
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableExport({ handler: providerHandler }),
-      ],
+      providers: [provideZonelessChangeDetection(), provideNatTableExport({ handler: providerHandler })]
     });
     const fixture = TestBed.createComponent(DefaultExportHost);
 
@@ -432,10 +386,10 @@ describe('NatTableExport', () => {
           const api = inject(ExportApi);
 
           return {
-            handler: (context) => api.exportOrders(context),
+            handler: async (context): Promise<void> => api.exportOrders(context)
           };
-        }),
-      ],
+        })
+      ]
     });
     const fixture = TestBed.createComponent(DefaultExportHost);
 
@@ -471,7 +425,7 @@ describe('NatTableExport', () => {
     exportButton().click();
     await fixture.whenStable();
 
-    expectClientCsvDownload('table-export.csv');
+    expect(expectClientCsvDownload('table-export.csv')).toBeInstanceOf(Blob);
   });
 
   it('supports custom activation events through the exported directive instance', async () => {
@@ -482,6 +436,7 @@ describe('NatTableExport', () => {
 
     const event = new CustomEvent('pressed', { bubbles: true, cancelable: true });
     const dispatchResult = exportButton().dispatchEvent(event);
+
     await fixture.whenStable();
 
     expect(dispatchResult).toBe(false);
@@ -496,6 +451,7 @@ describe('NatTableExport', () => {
     await fixture.whenStable();
 
     const button = exportButton() as HTMLButtonElement;
+
     button.click();
     fixture.detectChanges();
 
@@ -509,6 +465,11 @@ describe('NatTableExport', () => {
     expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
 
     fixture.componentInstance.resolveExport?.();
+    // Drain the async handler's promise-adoption microtasks past a macrotask
+    // boundary, then settle + render so the directive's `finally` clears busy.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     await fixture.whenStable();
     fixture.detectChanges();
 

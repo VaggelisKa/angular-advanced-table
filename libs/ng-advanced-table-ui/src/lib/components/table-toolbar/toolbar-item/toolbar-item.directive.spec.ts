@@ -1,5 +1,6 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
-import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { NatTableToolbar } from '../table-toolbar';
@@ -8,25 +9,25 @@ import { NAT_TOOLBAR_ITEM } from '../common/toolbar-tokens.const';
 import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolbar-tokens.type';
 
 @Component({
+  selector: 'nat-toolbar-item-host',
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button natToolbarItem="export" id="default-start">Export</button>
-      <button natToolbarItem="filter" natToolbarItemPosition="end" id="explicit-end">Filter</button>
-      <button natToolbarItem="dynamic" [natToolbarItemPosition]="dynamicPosition()" id="dynamic">
-        Dynamic
-      </button>
+      <button id="default-start" natToolbarItem="export" type="button">Export</button>
+      <button id="explicit-end" natToolbarItem="filter" natToolbarItemPosition="end" type="button">Filter</button>
+      <button [natToolbarItemPosition]="dynamicPosition()" id="dynamic" natToolbarItem="dynamic" type="button">Dynamic</button>
       <div natToolbarItem="custom">Custom widget</div>
     </nat-table-toolbar>
-  `,
+  `
 })
 class DirectiveHost {
   public readonly dynamicPosition = signal<NatToolbarItemPosition>('center');
 }
 
 @Component({
+  selector: 'nat-toolbarless-host',
   imports: [NatToolbarItem],
-  template: `<button natToolbarItem="orphan">Orphan</button>`,
+  template: `<button natToolbarItem="orphan" type="button">Orphan</button>`
 })
 class ToolbarlessHost {}
 
@@ -35,7 +36,7 @@ describe('NatToolbarItem', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()]
     });
     fixture = TestBed.createComponent(DirectiveHost);
     fixture.detectChanges();
@@ -44,7 +45,7 @@ describe('NatToolbarItem', () => {
   });
 
   function element(domId: string): HTMLElement {
-    return fixture.nativeElement.querySelector(`#${domId}`) as HTMLElement;
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
   function itemRef(domId: string): NatToolbarItemRef {
@@ -64,9 +65,15 @@ describe('NatToolbarItem', () => {
       .map((debugElement) => debugElement.injector.get(NAT_TOOLBAR_ITEM))
       .find((ref) => ref.element.tagName === 'DIV');
 
+    expect(unnamed).toBeDefined();
+
+    if (!unnamed) {
+      throw new Error('Expected an unnamed toolbar item ref on a DIV host.');
+    }
+
     // cdk _IdGenerator format: ng-toolbar-widget-<appId>-<n>.
-    expect(unnamed?.id).toMatch(/^ng-toolbar-widget-/);
-    expect(unnamed?.element.id).toBe(unnamed?.id);
+    expect(unnamed.id).toMatch(/^ng-toolbar-widget-/);
+    expect(unnamed.element.id).toBe(unnamed.id);
   });
 
   it("defaults the position to 'start' and passes explicit values through", () => {
@@ -90,6 +97,7 @@ describe('NatToolbarItem', () => {
   it('throws outside a toolbar — the ToolbarWidget host directive requires a parent ngToolbar', () => {
     expect(() => {
       const orphanFixture = TestBed.createComponent(ToolbarlessHost);
+
       orphanFixture.detectChanges();
     }).toThrow(/Toolbar/);
   });

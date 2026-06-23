@@ -1,5 +1,5 @@
-<div class="render-kpi" [attr.data-health]="health().tone" [attr.aria-label]="ariaLabel()">
-  <span class="render-kpi-dot" aria-hidden="true"></span>
+<div [attr.aria-label]="ariaLabel()" [attr.data-health]="health().tone" class="render-kpi">
+  <span aria-hidden="true" class="render-kpi-dot"></span>
   <span class="render-kpi-text">
     <strong>{{ formatDurationMs(measurement()?.durationMs ?? 0) }}</strong>
     <span class="render-kpi-detail">{{ health().label }} · {{ compactSummary() }}</span>

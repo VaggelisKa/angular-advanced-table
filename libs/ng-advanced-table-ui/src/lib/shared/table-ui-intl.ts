@@ -12,8 +12,9 @@ export {
   NAT_TABLE_UI_ENGLISH_LOCALE,
   NAT_TABLE_UI_INTL,
   provideNatTableUiIntl,
-  resolveNatTableUiIntl,
+  resolveNatTableUiIntl
 } from 'ng-advanced-table-locales';
+
 export type {
   NatTableColumnVisibilityIntl,
   NatTableHeaderActionsIntl,
@@ -26,5 +27,5 @@ export type {
   NatTableUiIntl,
   NatTableUiIntlConfig,
   NatTableUiIntlProviderConfig,
-  NatTableUiNumberFormatter,
+  NatTableUiNumberFormatter
 } from 'ng-advanced-table-locales';

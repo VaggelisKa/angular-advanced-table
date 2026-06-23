@@ -1,19 +1,20 @@
-import { computed, signal, type Signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
+import type { Signal } from '@angular/core';
 
 import type { NatTableRenderMetricsEvent } from './contracts';
 import { getRowRenderTone, roundToSingleDecimal } from './tone';
 import type { RowRenderMeasurement, RowRenderMetric } from './types';
 
-interface StoreState {
+type StoreState = {
   currentToken: number;
   cycleMetrics: Record<string, RowRenderMetric>;
   rowMetrics: Record<string, RowRenderMetric>;
-}
+};
 
 const INITIAL_STATE: StoreState = {
   currentToken: 0,
   cycleMetrics: {},
-  rowMetrics: {},
+  rowMetrics: {}
 };
 
 /**
@@ -26,15 +27,13 @@ export class NatTableRenderMetricsStore {
   private readonly state = signal<StoreState>(INITIAL_STATE);
 
   /** Latest known metric for each row keyed by row id. */
-  readonly rowMetrics: Signal<Record<string, RowRenderMetric>> = computed(
-    () => this.state().rowMetrics,
-  );
+  public readonly rowMetrics: Signal<Record<string, RowRenderMetric>> = computed(() => this.state().rowMetrics);
 
   /**
    * Aggregate measurement for the latest completed render cycle on the current
    * page, or `null` when no samples have been recorded yet.
    */
-  readonly measurement: Signal<RowRenderMeasurement | null> = computed(() => {
+  public readonly measurement: Signal<RowRenderMeasurement | null> = computed(() => {
     const cycleMetrics = this.state().cycleMetrics;
     const durations = Object.values(cycleMetrics)
       .map((metric) => metric.durationMs)
@@ -45,17 +44,14 @@ export class NatTableRenderMetricsStore {
     }
 
     const totalDurationMs = Math.max(...durations);
-    const averageRowDurationMs = roundToSingleDecimal(
-      durations.reduce((total, duration) => total + duration, 0) / durations.length,
-    );
+    const averageRowDurationMs = roundToSingleDecimal(durations.reduce((total, duration) => total + duration, 0) / durations.length);
     const rowCount = durations.length;
 
     return {
       durationMs: roundToSingleDecimal(totalDurationMs),
       averageRowDurationMs,
       rowCount,
-      rowsPerSecond:
-        totalDurationMs > 0 ? Math.round((rowCount * 1000) / totalDurationMs) : 0,
+      rowsPerSecond: totalDurationMs > 0 ? Math.round((rowCount * 1000) / totalDurationMs) : 0
     };
   });
 
@@ -64,31 +60,31 @@ export class NatTableRenderMetricsStore {
    *
    * @param event Row-level render event payload from the table.
    */
-  record(event: NatTableRenderMetricsEvent): void {
+  public record(event: NatTableRenderMetricsEvent): void {
     const metric: RowRenderMetric = {
       durationMs: event.durationMs,
       measuredAt: Date.now(),
-      tone: getRowRenderTone(event.durationMs),
+      tone: getRowRenderTone(event.durationMs)
     };
 
     this.state.update((current) => {
       const nextRowMetrics: Record<string, RowRenderMetric> = {
         ...current.rowMetrics,
-        [event.rowId]: metric,
+        [event.rowId]: metric
       };
 
       if (event.renderToken !== current.currentToken) {
         return {
           currentToken: event.renderToken,
           cycleMetrics: { [event.rowId]: metric },
-          rowMetrics: nextRowMetrics,
+          rowMetrics: nextRowMetrics
         };
       }
 
       return {
         currentToken: current.currentToken,
         cycleMetrics: { ...current.cycleMetrics, [event.rowId]: metric },
-        rowMetrics: nextRowMetrics,
+        rowMetrics: nextRowMetrics
       };
     });
   }
@@ -98,12 +94,12 @@ export class NatTableRenderMetricsStore {
    *
    * @param rowId Stable row identifier.
    */
-  rowMetric(rowId: string): RowRenderMetric | undefined {
+  public rowMetric(rowId: string): RowRenderMetric | undefined {
     return this.state().rowMetrics[rowId];
   }
 
   /** Clears all recorded row and cycle measurements. */
-  reset(): void {
+  public reset(): void {
     this.state.set(INITIAL_STATE);
   }
 }

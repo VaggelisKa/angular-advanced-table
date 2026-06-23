@@ -1,9 +1,7 @@
-export {
-  NAT_EN_UI_LOCALE_LABELS,
-  NAT_TABLE_UI_ENGLISH_INTL,
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-} from './lib/ui-en';
+export { NAT_EN_UI_LOCALE_LABELS, NAT_TABLE_UI_ENGLISH_INTL, NAT_TABLE_UI_ENGLISH_LOCALE } from './lib/ui-en';
+
 export { NAT_TABLE_BUILT_IN_UI_LOCALES } from './lib/ui-built-in-locales';
+
 export {
   formatNatTableUiNumber,
   mergeColumnVisibilityLabels,
@@ -17,8 +15,9 @@ export {
   NAT_TABLE_UI_INTL,
   provideNatTableUiIntl,
   provideNatTableUiLocales,
-  resolveNatTableUiIntl,
+  resolveNatTableUiIntl
 } from './lib/provide-ui-locales';
+
 export type {
   NatTableAccessibilityColumnVisibilityActionContext,
   NatTableAccessibilityColumnVisibilityLabels,
@@ -51,5 +50,5 @@ export type {
   NatTableUiIntlProviderConfig,
   NatTableUiLocaleLabels,
   NatTableUiLocaleLabelsMap,
-  NatTableUiNumberFormatter,
+  NatTableUiNumberFormatter
 } from './lib/ui-types';

@@ -7,11 +7,7 @@ export {
   NAT_TABLE_ENGLISH_LOCALE,
   NAT_TABLE_INTL,
   provideNatTableIntl,
-  resolveNatTableIntl,
+  resolveNatTableIntl
 } from 'ng-advanced-table-locales';
-export type {
-  NatTableIntl,
-  NatTableIntlConfig,
-  NatTableIntlProviderConfig,
-  NatTableNumberFormatter,
-} from 'ng-advanced-table-locales';
+
+export type { NatTableIntl, NatTableIntlConfig, NatTableIntlProviderConfig, NatTableNumberFormatter } from 'ng-advanced-table-locales';

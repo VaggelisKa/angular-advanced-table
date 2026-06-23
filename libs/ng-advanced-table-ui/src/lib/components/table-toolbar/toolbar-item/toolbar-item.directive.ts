@@ -1,5 +1,5 @@
-import { Directive, inject, input } from '@angular/core';
 import { ToolbarWidget } from '@angular/aria/toolbar';
+import { Directive, inject, input } from '@angular/core';
 
 import { NAT_TOOLBAR_ITEM } from '../common/toolbar-tokens.const';
 import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolbar-tokens.type';
@@ -42,9 +42,7 @@ import type { NatToolbarItemPosition, NatToolbarItemRef } from '../common/toolba
   // selector attribute lets a bare `natToolbarItem` satisfy it with `''`. Bare
   // items then share value `''` (non-unique) — harmless while selection is
   // disabled; pass a string per item if Aria selection is ever re-enabled.
-  hostDirectives: [
-    { directive: ToolbarWidget, inputs: ['value: natToolbarItem', 'disabled', 'id'] },
-  ],
+  hostDirectives: [{ directive: ToolbarWidget, inputs: ['value: natToolbarItem', 'disabled', 'id'] }]
 })
 export class NatToolbarItem implements NatToolbarItemRef {
   public readonly natToolbarItemPosition = input<NatToolbarItemPosition>('start');

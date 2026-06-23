@@ -9,6 +9,6 @@ script = ""
 name = "Run"
 icon = "run"
 command = '''
-npm install
-npm start
+pnpm install
+pnpm run start
 '''

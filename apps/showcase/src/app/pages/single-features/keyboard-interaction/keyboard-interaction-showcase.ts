@@ -1,7 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { flexRenderComponent, type CellContext, type ColumnDef } from '@tanstack/angular-table';
+
+import { flexRenderComponent } from '@tanstack/angular-table';
+import type { CellContext, ColumnDef } from '@tanstack/angular-table';
+
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+
 import { KeyboardDemoAcknowledgeButton } from './keyboard-demo-acknowledge-button';
 import { KeyboardDemoStatusCell } from './keyboard-demo-status-cell';
 
@@ -21,38 +25,38 @@ const DEMO_DATA: DemoItem[] = [
     name: 'Gamma Processor',
     category: 'Data Science',
     status: 'Paused',
-    value: 7800,
+    value: 7800
   },
   { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
   { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 },
+  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
 ];
 
 @Component({
   selector: 'app-keyboard-interaction-showcase',
   imports: [NatTable, NatTableSurface],
-  templateUrl: './keyboard-interaction-showcase.html',
+  templateUrl: './keyboard-interaction-showcase.html'
 })
 export class KeyboardInteractionShowcasePage {
-  readonly data = signal<DemoItem[]>(DEMO_DATA);
-  readonly lastAction = signal('None yet');
+  protected readonly data = signal<DemoItem[]>(DEMO_DATA);
+  protected readonly lastAction = signal('None yet');
 
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
     {
       accessorKey: 'name',
       header: 'Name',
-      meta: { label: 'Name', rowHeader: true },
+      meta: { label: 'Name', rowHeader: true }
     },
     {
       accessorKey: 'category',
       header: 'Category',
-      meta: { label: 'Category' },
+      meta: { label: 'Category' }
     },
     {
       accessorKey: 'value',
       header: 'Value',
       meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`,
+      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
     },
     {
       accessorKey: 'status',
@@ -64,10 +68,10 @@ export class KeyboardInteractionShowcasePage {
         flexRenderComponent(KeyboardDemoStatusCell, {
           inputs: {
             name: context.row.original.name,
-            status: context.row.original.status,
+            status: context.row.original.status
           },
-          outputs: { toggled: () => this.onToggleStatus(context.row.original.id) },
-        }),
+          outputs: { toggled: () => this.onToggleStatus(context.row.original.id) }
+        })
     },
     {
       id: 'actions',
@@ -78,16 +82,16 @@ export class KeyboardInteractionShowcasePage {
       cell: (context: CellContext<DemoItem, unknown>) =>
         flexRenderComponent(KeyboardDemoAcknowledgeButton, {
           inputs: { name: context.row.original.name },
-          outputs: { pressed: (name: string) => this.onAcknowledge(name) },
-        }),
-    },
+          outputs: { pressed: (name: string) => this.onAcknowledge(name) }
+        })
+    }
   ]);
 
-  onAcknowledge(name: string): void {
+  private onAcknowledge(name: string): void {
     this.lastAction.set(`Acknowledged ${name}`);
   }
 
-  onToggleStatus(id: string): void {
+  private onToggleStatus(id: string): void {
     this.data.update((items) =>
       items.map((item) => {
         if (item.id !== id) return item;
@@ -97,7 +101,7 @@ export class KeyboardInteractionShowcasePage {
         this.lastAction.set(`${status === 'Active' ? 'Resumed' : 'Paused'} ${item.name}`);
 
         return { ...item, status };
-      }),
+      })
     );
   }
 }

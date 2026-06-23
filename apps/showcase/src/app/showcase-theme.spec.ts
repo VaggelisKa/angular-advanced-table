@@ -4,6 +4,16 @@ import { ShowcaseThemeStore } from './showcase-theme';
 
 const themeStorageKey = 'nat-showcase-theme';
 
+const clearThemeState = (): void => {
+  try {
+    globalThis.localStorage.removeItem(themeStorageKey);
+  } catch {
+    // ignore
+  }
+
+  document.documentElement.removeAttribute('data-theme');
+};
+
 describe('ShowcaseThemeStore', () => {
   let store: Record<string, string> = {};
   let originalLocalStorage: typeof globalThis.localStorage;
@@ -12,40 +22,39 @@ describe('ShowcaseThemeStore', () => {
     store = {};
     originalLocalStorage = globalThis.localStorage;
     const mockLocalStorage = {
-      getItem: (key: string) => store[key] || null,
-      setItem: (key: string, value: string) => {
+      getItem: (key: string): string | null => store[key] || null,
+      setItem: (key: string, value: string): void => {
         store[key] = value;
       },
-      removeItem: (key: string) => {
-        delete store[key];
+      removeItem: (key: string): void => {
+        Reflect.deleteProperty(store, key);
       },
-      clear: () => {
+      clear: (): void => {
         store = {};
       },
       length: 0,
-      key: () => null,
+      key: (): string | null => null
     };
+
     Object.defineProperty(globalThis, 'localStorage', {
       value: mockLocalStorage,
       writable: true,
-      configurable: true,
+      configurable: true
     });
     clearThemeState();
   });
 
   afterEach(() => {
-    if (originalLocalStorage) {
-      Object.defineProperty(globalThis, 'localStorage', {
-        value: originalLocalStorage,
-        writable: true,
-        configurable: true,
-      });
-    }
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: originalLocalStorage,
+      writable: true,
+      configurable: true
+    });
     clearThemeState();
   });
 
   it('should apply the stored theme to the document root when initialized', () => {
-    globalThis.localStorage?.setItem(themeStorageKey, 'dark');
+    globalThis.localStorage.setItem(themeStorageKey, 'dark');
 
     const themeStore = TestBed.inject(ShowcaseThemeStore);
 
@@ -65,13 +74,3 @@ describe('ShowcaseThemeStore', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('light');
   });
 });
-
-function clearThemeState(): void {
-  try {
-    globalThis.localStorage?.removeItem(themeStorageKey);
-  } catch {
-    // ignore
-  }
-
-  document.documentElement.removeAttribute('data-theme');
-}

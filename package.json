@@ -14,13 +14,17 @@
     "test": "nx test showcase",
     "test:packages": "nx run-many -t test -p ng-advanced-table,ng-advanced-table-ui,ng-advanced-table-utils,ng-advanced-table-locales",
     "e2e": "playwright test -c e2e",
+    "lint": "nx run-many -t lint",
+    "lint:fix": "nx run-many -t lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "release:check": "nx release plan:check --base=${NX_BASE:-main} --head=${NX_HEAD:-HEAD} && nx release --dry-run",
     "release": "nx release",
     "pack:dry-run": "npm pack --dry-run ./dist/libs/ng-advanced-table && npm pack --dry-run ./dist/libs/ng-advanced-table-ui && npm pack --dry-run ./dist/libs/ng-advanced-table-utils && npm pack --dry-run ./dist/libs/ng-advanced-table-locales",
     "verify": "pnpm run test:packages && pnpm run build:packages && pnpm run build:showcase && pnpm run release:check && pnpm run pack:dry-run"
   },
   "private": true,
-  "packageManager": "pnpm@11.8.0",
+  "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26",
   "engines": {
     "node": "24.x"
   },
@@ -35,6 +39,11 @@
     "@angular/platform-browser": "catalog:frontend",
     "@angular/router": "catalog:frontend",
     "@tanstack/angular-table": "catalog:frontend",
+    "katex": "^0.16.47",
+    "marked": "^18.0.5",
+    "marked-katex-extension": "^5.1.10",
+    "ngx-markdown": "22.0.0",
+    "prismjs": "^1.30.0",
     "rxjs": "catalog:frontend",
     "tslib": "catalog:shared"
   },
@@ -43,9 +52,14 @@
     "@angular/cli": "catalog:frontend-dev",
     "@angular/compiler-cli": "catalog:frontend-dev",
     "@nx/angular": "catalog:frontend-dev",
+    "@nx/eslint": "catalog:shared-dev",
     "@nx/js": "catalog:shared-dev",
     "@playwright/test": "catalog:frontend-dev",
+    "eslint": "catalog:shared-dev",
+    "eslint-config-prettier": "catalog:shared-dev",
     "jsdom": "catalog:frontend-dev",
+    "jiti": "catalog:shared-dev",
+    "lint-suite": "catalog:shared-dev",
     "ng-advanced-table": "workspace:*",
     "ng-advanced-table-locales": "workspace:*",
     "ng-advanced-table-ui": "workspace:*",
@@ -54,6 +68,7 @@
     "nx": "catalog:shared-dev",
     "prettier": "catalog:shared-dev",
     "typescript": "catalog:shared-dev",
+    "typescript-eslint": "catalog:shared-dev",
     "vitest": "catalog:shared-dev"
   }
 }

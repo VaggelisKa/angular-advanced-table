@@ -17,5 +17,5 @@ export type {
   NatTableEmptyTemplateContext,
   NatTableErrorTemplateContext,
   NatTableLoadingTemplateContext,
-  NatTableStateTemplateContext,
+  NatTableStateTemplateContext
 } from './components/table/table.types';

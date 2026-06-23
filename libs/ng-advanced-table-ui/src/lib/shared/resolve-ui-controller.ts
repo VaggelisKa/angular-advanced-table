@@ -1,9 +1,10 @@
 import { assertInInjectionContext, computed, inject, isDevMode } from '@angular/core';
 import type { Signal } from '@angular/core';
+
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableService } from './table.service';
 import type { NatTableUiController } from './table-ui.types';
+import { NatTableService } from './table.service';
 
 type InjectNatTableUiControllerOptions = {
   /**
@@ -25,7 +26,7 @@ type InjectNatTableUiControllerOptions = {
 export const injectNatTableUiController = <TData extends RowData = RowData>(
   forInput: Signal<NatTableUiController<TData> | undefined>,
   debugName: string,
-  options?: InjectNatTableUiControllerOptions,
+  options?: InjectNatTableUiControllerOptions
 ): Signal<NatTableUiController<TData> | null> => {
   assertInInjectionContext(injectNatTableUiController);
 
@@ -41,7 +42,7 @@ export const injectNatTableUiController = <TData extends RowData = RowData>(
       hasWarned = true;
       console.warn(
         `[ng-advanced-table-ui] ${debugName}: no controller resolved. ` +
-          `Pass [for]="grid" explicitly or wrap the table in <nat-table-surface>.`,
+          `Pass [for]="grid" explicitly or wrap the table in <nat-table-surface>.`
       );
     }
 

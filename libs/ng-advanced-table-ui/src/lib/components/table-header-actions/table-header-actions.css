@@ -131,8 +131,7 @@
 
 .sort-button:focus-visible,
 .menu-button:focus-visible {
-  outline: var(--nat-table-focus-ring-width, 2px) solid
-    var(--nat-table-focus-ring-color, currentColor);
+  outline: var(--nat-table-focus-ring-width, 2px) solid var(--nat-table-focus-ring-color, currentColor);
   outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }
 
@@ -227,10 +226,7 @@
 
 .sort-button[disabled] .nat-default-sort__up,
 .sort-button[disabled] .nat-default-sort__down {
-  fill: var(
-    --nat-table-sort-icon-color-disabled,
-    color-mix(in srgb, currentColor 22%, transparent)
-  );
+  fill: var(--nat-table-sort-icon-color-disabled, color-mix(in srgb, currentColor 22%, transparent));
   opacity: 1;
   transform: none;
 }
@@ -283,18 +279,11 @@
 
 @media (hover: hover) and (pointer: fine) {
   .sort-button:hover:not([disabled]) .nat-default-sort {
-    background: var(
-      --nat-table-sort-icon-chip-background-hover,
-      color-mix(in srgb, currentColor 8%, transparent)
-    );
+    background: var(--nat-table-sort-icon-chip-background-hover, color-mix(in srgb, currentColor 8%, transparent));
   }
 
-  .sort-button:hover:not([disabled])
-    .nat-default-sort[data-sort-state='none']
-    .nat-default-sort__up,
-  .sort-button:hover:not([disabled])
-    .nat-default-sort[data-sort-state='none']
-    .nat-default-sort__down {
+  .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
+  .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__down {
     fill: var(--nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent));
   }
 

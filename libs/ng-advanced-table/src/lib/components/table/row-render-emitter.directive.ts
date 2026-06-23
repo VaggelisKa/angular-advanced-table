@@ -1,12 +1,8 @@
-import {
-  afterRenderEffect,
-  booleanAttribute,
-  Directive,
-  input,
-  output,
-} from '@angular/core';
+import { Directive, afterRenderEffect, booleanAttribute, input, output } from '@angular/core';
 
 import type { NatTableRowRenderedEvent } from './events';
+
+const roundToSingleDecimal = (value: number): number => Number(value.toFixed(1));
 
 /**
  * Internal directive attached to each body row when row-render events are
@@ -17,63 +13,50 @@ import type { NatTableRowRenderedEvent } from './events';
  * `(rowRendered)` output on `<nat-table>` instead.
  */
 @Directive({
-  selector: 'tr[natTableRowRenderEmitter]',
+  selector: 'tr[natTableRowRenderEmitter]'
 })
 export class NatTableRowRenderEmitter {
-  readonly rowId = input.required<string>({
-    alias: 'natTableRowRenderEmitter',
-  });
-  readonly renderToken = input.required<number>({
-    alias: 'natTableRowRenderToken',
-  });
-  readonly renderStartedAt = input.required<number>({
-    alias: 'natTableRowRenderStartedAt',
-  });
-  readonly enabled = input(false, {
-    alias: 'natTableRowRenderEnabled',
-    transform: booleanAttribute,
+  // Property names equal their binding names: each input/output is named for the
+  // namespaced host binding on the shared `tr[natTableRowRenderEmitter]` selector,
+  // so no alias is needed. `rowId`'s alias equals the directive selector, which
+  // no-input-rename permits — it stays aliased.
+  public readonly rowId = input.required<string>({
+    alias: 'natTableRowRenderEmitter'
   });
 
-  readonly rendered = output<NatTableRowRenderedEvent>({
-    alias: 'natTableRowRendered',
+  public readonly natTableRowRenderToken = input.required<number>();
+
+  public readonly natTableRowRenderStartedAt = input.required<number>();
+
+  public readonly natTableRowRenderEnabled = input(false, {
+    transform: booleanAttribute
   });
+
+  public readonly natTableRowRendered = output<NatTableRowRenderedEvent>();
 
   private lastEmissionKey = '';
 
-  constructor() {
+  public constructor() {
     afterRenderEffect({
       read: () => {
-        if (!this.enabled()) {
-          return;
-        }
+        if (!this.natTableRowRenderEnabled()) return;
 
         const rowId = this.rowId();
-        const renderToken = this.renderToken();
-        const renderStartedAt = this.renderStartedAt();
+        const renderToken = this.natTableRowRenderToken();
+        const renderStartedAt = this.natTableRowRenderStartedAt();
 
-        if (renderToken <= 0 || renderStartedAt <= 0) {
-          return;
-        }
+        if (renderToken <= 0 || renderStartedAt <= 0) return;
 
         const emissionKey = `${renderToken}:${rowId}`;
 
-        if (this.lastEmissionKey === emissionKey) {
-          return;
-        }
-
+        if (this.lastEmissionKey === emissionKey) return;
         this.lastEmissionKey = emissionKey;
-        this.rendered.emit({
+        this.natTableRowRendered.emit({
           rowId,
           renderToken,
-          durationMs: roundToSingleDecimal(
-            Math.max(performance.now() - renderStartedAt, 0.1),
-          ),
+          durationMs: roundToSingleDecimal(Math.max(performance.now() - renderStartedAt, 0.1))
         });
-      },
+      }
     });
   }
-}
-
-function roundToSingleDecimal(value: number): number {
-  return Number(value.toFixed(1));
 }

@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check formatting
+        run: pnpm exec prettier --check .
+
       - name: Set Nx comparison refs
         shell: bash
         run: |
@@ -62,7 +65,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Verify workspace
-        run: pnpm exec nx affected -t test,build,e2e --base="$NX_BASE" --head="$NX_HEAD"
+        run: pnpm exec nx affected -t lint,test,build,e2e --base="$NX_BASE" --head="$NX_HEAD"
 
       - name: Verify packages and release config
         run: pnpm run verify
