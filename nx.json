@@ -3,7 +3,13 @@
   "defaultBase": "main",
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/eslint.config.mjs"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.spec.ts",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/eslint.config.mjs",
+      "!{projectRoot}/stylelint.config.mjs"
+    ],
     "sharedGlobals": []
   },
   "plugins": [
@@ -11,6 +17,20 @@
       "plugin": "@nx/eslint/plugin",
       "options": {
         "targetName": "lint"
+      }
+    },
+    {
+      "plugin": "nx-stylelint/plugin",
+      "options": {
+        "targetName": "stylelint",
+        "extensions": ["css"]
+      }
+    },
+    {
+      "plugin": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "e2e",
+        "ciTargetName": "e2e-ci"
       }
     }
   ],

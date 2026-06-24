@@ -9,43 +9,131 @@ on:
 permissions:
   contents: read
 
-jobs:
-  validate:
-    runs-on: ubuntu-latest
+# Cancel superseded runs: a new push to a PR/branch kills the in-flight one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
+jobs:
+  # Warm the node_modules cache once; every downstream job restores it.
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      - uses: ./.github/actions/setup
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+  # Gate: formatting fails fast before any heavier job starts.
+  format:
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
         with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
       - name: Check formatting
         run: pnpm exec prettier --check .
 
-      - name: Set Nx comparison refs
+  # Static + unit + build, on affected projects.
+  checks:
+    needs: format
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/nx-refs
+      # Persist the Nx local cache so the release job's `verify` reuses these
+      # build/test results instead of rebuilding on its fresh runner. The
+      # restore-keys fallback also warms `checks` itself run-to-run.
+      - name: Cache Nx results
+        uses: actions/cache@v6
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ github.run_id }}
+          restore-keys: nx-cache-
+      - name: Lint, stylelint, test, build (affected)
+        run: pnpm exec nx affected -t stylelint,lint,test,build --base="$NX_BASE" --head="$NX_HEAD"
+
+  # Atomized Playwright e2e, in parallel with checks.
+  e2e:
+    needs: format
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/nx-refs
+      - name: Install Playwright Chrome
+        run: npx playwright install --with-deps chrome
+      - name: Atomized e2e (affected)
+        # NX_SKIP_ATOMIZER_VALIDATION opts the e2e-ci tasks out of the Nx Cloud
+        # requirement (they run serially on this single runner). The showcase is
+        # pre-served once and the per-spec tasks reuse it via
+        # reuseExistingServer: letting each task start serve-e2e itself trips
+        # Nx's recursive-task guard, and it also avoids one server boot per spec.
+        # Drop the pre-serve + flag once Nx Cloud / DTE agents are wired up.
+        env:
+          NX_SKIP_ATOMIZER_VALIDATION: 'true'
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            echo "NX_BASE=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
-          else
-            echo "NX_BASE=HEAD~1" >> "$GITHUB_ENV"
+          pnpm exec nx run showcase:serve-e2e --port 4201 &
+          serve_pid=$!
+          up=
+          for i in $(seq 1 90); do
+            if curl -sf http://localhost:4201 >/dev/null; then up=1; echo "showcase up"; break; fi
+            if ! kill -0 "$serve_pid" 2>/dev/null; then echo "serve-e2e exited before binding :4201"; break; fi
+            sleep 2
+          done
+          if [ -z "$up" ]; then
+            echo "::error::showcase failed to bind :4201 — aborting before e2e"
+            kill "$serve_pid" 2>/dev/null || true
+            exit 1
           fi
+          pnpm exec nx affected -t e2e-ci --base="$NX_BASE" --head="$NX_HEAD"
+      # On failure keep the trace (on-first-retry) + html + blob reports.
+      # Confirmed via the resolved CI config + `nx show project e2e`: atomized
+      # e2e-ci writes all three under
+      # dist/.playwright/e2e/{test-output,playwright-report,blob-report}.
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: dist/.playwright
+          if-no-files-found: ignore
+          retention-days: 7
 
-          echo "NX_HEAD=HEAD" >> "$GITHUB_ENV"
-
+  # Release gates: version plan on package-affecting PRs + full verify.
+  release:
+    # Gate only — does not publish (see release.yml). Runs the heavy `verify`
+    # (full build+test+pack) only once checks AND e2e are green, so a failing
+    # PR doesn't burn minutes building packages that won't ship anyway.
+    needs: [checks, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/nx-refs
+      # Reuse the Nx cache saved by `checks` this run, so `verify`'s build/test
+      # tasks hit cache (showcase + affected libs) instead of rebuilding.
+      - name: Restore Nx cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ github.run_id }}
+          restore-keys: nx-cache-
       - name: Detect package-affecting changes
         id: package_changes
         if: github.event_name == 'pull_request'
@@ -56,16 +144,8 @@ jobs:
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
-
       - name: Require Nx version plan
         if: github.event_name == 'pull_request' && steps.package_changes.outputs.changed == 'true'
         run: pnpm exec nx release plan:check --base="$NX_BASE" --head="$NX_HEAD"
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Verify workspace
-        run: pnpm exec nx affected -t lint,test,build,e2e --base="$NX_BASE" --head="$NX_HEAD"
-
       - name: Verify packages and release config
         run: pnpm run verify

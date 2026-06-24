@@ -1,0 +1,16 @@
+name: Resolve Nx base/head refs
+description: Sets NX_BASE/NX_HEAD for `nx affected`. Only needed by jobs that run affected.
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve Nx base/head refs
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          echo "NX_BASE=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+        else
+          echo "NX_BASE=HEAD~1" >> "$GITHUB_ENV"
+        fi
+        echo "NX_HEAD=HEAD" >> "$GITHUB_ENV"

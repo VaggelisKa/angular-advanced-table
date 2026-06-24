@@ -9,48 +9,48 @@
 
 .control-heading {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
 .control-label {
-  color: var(--text-soft);
   font-size: 0.85rem;
-  letter-spacing: 0.08em;
+  color: var(--text-soft);
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .control-caption {
-  color: var(--text-soft);
   font-size: 0.82rem;
+  color: var(--text-soft);
 }
 
 .chip-row {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .chip {
-  border: 1px solid transparent;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 14px;
   color: inherit;
   cursor: pointer;
+  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--text, #ecf5fb) 14%, transparent);
+  border-radius: 999px;
   transition:
     background-color 180ms ease,
     border-color 180ms ease,
     box-shadow 180ms ease,
     transform 180ms ease,
     color 180ms ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 42px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
-  border-color: color-mix(in srgb, var(--text, #ecf5fb) 14%, transparent);
 }
 
 .chip.is-active {
@@ -60,13 +60,13 @@
 }
 
 .chip-count {
-  color: var(--text-soft);
   font-size: 0.82rem;
+  color: var(--text-soft);
 }
 
 .render-chip {
-  min-width: 140px;
   justify-content: space-between;
+  min-width: 140px;
 }
 
 .chip:focus-visible {

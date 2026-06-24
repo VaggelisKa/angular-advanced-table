@@ -1,0 +1,27 @@
+name: Set up workspace
+description: Node 24 + pnpm with a restored node_modules cache.
+
+runs:
+  using: composite
+  steps:
+    - name: Enable Corepack
+      shell: bash
+      run: corepack enable
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        cache: pnpm
+
+    - name: Restore node_modules
+      id: node-modules
+      uses: actions/cache@v6
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+    - name: Install dependencies
+      if: steps.node-modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile
