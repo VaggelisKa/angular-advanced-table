@@ -18,6 +18,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Keep shared dependency versions in `pnpm-workspace.yaml` catalogs (`frontend`, `peers`, `frontend-dev`, `shared`, `shared-dev`) instead of duplicating literal versions in package manifests.
 - Use the root lint and format scripts for workspace validation: `pnpm run format:check`, `pnpm run lint`, and `pnpm run lint:styles`. Nx infers project `lint` targets from per-project `eslint.config.mjs` files and project `stylelint` targets from `stylelint.config.mjs` files.
 - Before merging or asking the user to merge a PR, run `pnpm run format:check` and fix any Prettier drift in the PR.
+- Keep Nx project configuration in each project `package.json` `nx` block. Published library manifests must not ship that `nx` block; rely on the `strip-nx` target or `pnpm run pack:dry-run` before publishing or inspecting package tarballs.
 
 ## Package Layering
 
