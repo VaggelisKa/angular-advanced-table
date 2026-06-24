@@ -849,12 +849,100 @@ input {
 
 .docs-markdown pre {
   min-width: 0;
-  padding: 16px;
-  overflow-x: auto;
+  padding: 0;
+  overflow: hidden;
   color: var(--showcase-code-text);
   background: var(--showcase-code-bg);
   border: 1px solid var(--showcase-code-border);
   border-radius: var(--showcase-page-radius-sm);
+}
+
+.docs-markdown pre:not(.docs-code-block) {
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.docs-markdown pre.docs-code-block {
+  position: relative;
+}
+
+.docs-markdown .docs-code-scroll {
+  min-width: 0;
+  padding: 48px 16px 16px;
+  overflow-x: auto;
+}
+
+.docs-markdown .docs-code-scroll code {
+  display: block;
+}
+
+.docs-markdown .docs-code-copy {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--showcase-page-text-soft);
+  cursor: pointer;
+  background: var(--showcase-page-surface);
+  border: 1px solid var(--showcase-code-border);
+  border-radius: var(--showcase-page-radius-xs);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.docs-markdown .docs-code-copy:hover {
+  color: var(--showcase-page-text);
+  background: var(--showcase-page-surface-hover);
+  transform: translateY(-1px);
+}
+
+.docs-markdown .docs-code-copy:focus-visible {
+  outline: 3px solid var(--showcase-page-focus);
+  outline-offset: 2px;
+}
+
+.docs-markdown .docs-code-copy.is-copied {
+  color: var(--showcase-page-positive);
+  border-color: var(--showcase-page-positive);
+}
+
+.docs-markdown .docs-code-copy-icon {
+  grid-area: 1 / 1;
+  width: 15px;
+  height: 15px;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.docs-markdown .docs-code-copy-icon--check {
+  opacity: 0;
+  transform: scale(0.6) rotate(-12deg);
+}
+
+.docs-markdown .docs-code-copy.is-copied .docs-code-copy-icon--copy {
+  opacity: 0;
+  transform: scale(0.6) rotate(12deg);
+}
+
+.docs-markdown .docs-code-copy.is-copied .docs-code-copy-icon--check {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-markdown .docs-code-copy,
+  .docs-markdown .docs-code-copy-icon {
+    transition: none;
+  }
 }
 
 .docs-markdown pre code {
