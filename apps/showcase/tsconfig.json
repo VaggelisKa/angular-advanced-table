@@ -1,0 +1,7 @@
+/* Project solution file. Build/test options live in the referenced configs; shared options come from tsconfig.base.json. */
+{
+  "extends": "../../tsconfig.base.json",
+  "files": [],
+  "include": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.spec.json" }]
+}
