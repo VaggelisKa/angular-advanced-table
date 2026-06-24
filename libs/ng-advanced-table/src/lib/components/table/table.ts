@@ -603,6 +603,8 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   private cachedStickyTop = 0;
   private tablePageTop = 0;
+  private cachedStickyRangeStart = 0;
+  private cachedStickyMaxTranslate = 0;
   private theadHeight = 0;
   private tableHeight = 0;
   private isRegionScrollable = false;
@@ -1841,17 +1843,19 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
       const rangeEnd = rangeStart + maxTranslate;
 
+      this.cachedStickyRangeStart = rangeStart;
+      this.cachedStickyMaxTranslate = maxTranslate;
+
       tableEl.style.setProperty('--nat-table-sticky-range-start', `${rangeStart}px`);
       tableEl.style.setProperty('--nat-table-sticky-range-end', `${rangeEnd}px`);
       tableEl.style.setProperty('--nat-table-sticky-max-translate', `${maxTranslate}px`);
-      tableEl.style.setProperty('--nat-table-sticky-vv-correction', '0px');
     }
   }
 
   /**
-   * Nudges the scroll-timeline translate with a small correction derived from live
-   * table geometry. The animation range stays stable between layout changes so
-   * stacked tables do not drift, while this term absorbs visual-viewport desync.
+   * Nudges the scroll-timeline range from its cached layout anchor so the
+   * compositor translate matches live table geometry without recomputing
+   * document offsets every frame.
    */
   private updateScrollTimelineViewportCorrection(): void {
     const region = this.tableRegionRef()?.nativeElement;
@@ -1863,16 +1867,24 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
     const visualOffsetTop = readVisualViewportOffsetTop();
     const rectTop = tableEl.getBoundingClientRect().top - visualOffsetTop;
-    const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop);
-    const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
-    const timelineTranslate = Math.min(Math.max(0, window.scrollY - rangeStart), maxTranslate);
+    const timelineTranslate = Math.min(
+      Math.max(0, window.scrollY - this.cachedStickyRangeStart),
+      this.cachedStickyMaxTranslate
+    );
     let expectedTranslate = 0;
 
     if (rectTop < this.cachedStickyTop) {
-      expectedTranslate = Math.min(Math.max(0, this.cachedStickyTop - rectTop), maxTranslate);
+      expectedTranslate = Math.min(Math.max(0, this.cachedStickyTop - rectTop), this.cachedStickyMaxTranslate);
     }
 
-    tableEl.style.setProperty('--nat-table-sticky-vv-correction', `${expectedTranslate - timelineTranslate}px`);
+    const correction = expectedTranslate - timelineTranslate;
+    const adjustedRangeStart = Math.max(0, this.cachedStickyRangeStart - correction);
+
+    tableEl.style.setProperty('--nat-table-sticky-range-start', `${adjustedRangeStart}px`);
+    tableEl.style.setProperty(
+      '--nat-table-sticky-range-end',
+      `${adjustedRangeStart + this.cachedStickyMaxTranslate}px`
+    );
   }
 
   private setupStickyHeaderScrollListener(): void {
@@ -2000,13 +2012,10 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         this.cachedHeaderCells.length > 0
           ? this.cachedHeaderCells
           : Array.from(region.querySelectorAll<HTMLTableCellElement>('thead th'));
-      const tableEl = this.cachedTableEl ?? region.querySelector<HTMLTableElement>('table');
 
       for (const cell of headerCells) {
         cell.style.transform = '';
       }
-
-      tableEl?.style.setProperty('--nat-table-sticky-vv-correction', '0px');
 
       return;
     }

@@ -250,12 +250,6 @@
   font-weight: var(--nat-table-font-weight-row-header, 600);
 }
 
-@property --nat-table-sticky-translate {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
 .has-sticky-header .header-cell {
   position: sticky;
   top: 0;
@@ -264,16 +258,14 @@
 
 @keyframes nat-table-viewport-sticky {
   from {
-    --nat-table-sticky-translate: 0px;
+    transform: translateY(0);
   }
   to {
-    --nat-table-sticky-translate: var(--nat-table-sticky-max-translate, 0px);
+    transform: translateY(var(--nat-table-sticky-max-translate, 0px));
   }
 }
 
 .has-sticky-header:not(.is-region-scrollable) .header-cell {
-  --nat-table-sticky-vv-correction: 0px;
-  transform: translateY(calc(var(--nat-table-sticky-translate) + var(--nat-table-sticky-vv-correction)));
   /* Safe reference outside @supports to ensure proper keyframe scoping by Angular compiler */
   animation-name: nat-table-viewport-sticky;
   animation-duration: auto;

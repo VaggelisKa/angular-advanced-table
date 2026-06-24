@@ -3333,7 +3333,6 @@ describe('NatTable', () => {
       table.measureTableDimensions();
 
       expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('600px');
-      expect(tableElement.style.getPropertyValue('--nat-table-sticky-vv-correction')).toBe('0px');
     } finally {
       vi.unstubAllGlobals();
 
@@ -3366,12 +3365,12 @@ describe('NatTable', () => {
 
     const table = getInternalTable(fixture) as unknown as {
       cachedStickyTop: number;
+      cachedStickyRangeStart: number;
+      cachedStickyMaxTranslate: number;
       isRegionScrollable: boolean;
       tableHeight: number;
       theadHeight: number;
-      tablePageTop: number;
       isTableVisible: boolean;
-      measureTableDimensions(): void;
       updateScrollTimelineViewportCorrection(): void;
     };
     const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
@@ -3383,16 +3382,18 @@ describe('NatTable', () => {
       }) as DOMRect;
 
     table.cachedStickyTop = 0;
+    table.cachedStickyRangeStart = 600;
+    table.cachedStickyMaxTranslate = 360;
     table.isRegionScrollable = false;
     table.tableHeight = 400;
     table.theadHeight = 40;
-    table.tablePageTop = 600;
     table.isTableVisible = true;
 
     try {
       table.updateScrollTimelineViewportCorrection();
 
-      expect(tableElement.style.getPropertyValue('--nat-table-sticky-vv-correction')).toBe('-50px');
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('650px');
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-end')).toBe('1010px');
     } finally {
       vi.unstubAllGlobals();
 

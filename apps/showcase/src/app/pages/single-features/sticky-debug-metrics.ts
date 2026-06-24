@@ -13,7 +13,6 @@ export type StickyMetrics = {
   rangeStart: string;
   rangeEnd: string;
   maxTranslate: string;
-  vvCorrection: string;
 };
 
 function timelineSupported(): boolean {
@@ -89,14 +88,11 @@ function fmt(value: number | undefined): string {
   return value.toFixed(1);
 }
 
-function readRangeProps(
-  table: HTMLTableElement | null
-): Pick<StickyMetrics, 'rangeStart' | 'rangeEnd' | 'maxTranslate' | 'vvCorrection'> {
+function readRangeProps(table: HTMLTableElement | null): Pick<StickyMetrics, 'rangeStart' | 'rangeEnd' | 'maxTranslate'> {
   return {
     rangeStart: orDash(table?.style.getPropertyValue('--nat-table-sticky-range-start')),
     rangeEnd: orDash(table?.style.getPropertyValue('--nat-table-sticky-range-end')),
-    maxTranslate: orDash(table?.style.getPropertyValue('--nat-table-sticky-max-translate')),
-    vvCorrection: orDash(table?.style.getPropertyValue('--nat-table-sticky-vv-correction'))
+    maxTranslate: orDash(table?.style.getPropertyValue('--nat-table-sticky-max-translate'))
   };
 }
 
@@ -130,7 +126,6 @@ export function formatStickyMetrics(m: StickyMetrics, peak: StickyMetrics | null
     `vv.offTop=${fmt(m.vvOffsetTop)} vv.h=${fmt(m.vvHeight)} innerH=${fmt(m.innerHeight)}`,
     `rectTop=${fmt(m.rectTop)} exp=${fmt(m.expected)} act=${fmt(m.actual)}`,
     `DIFF=${fmt(m.diff)}`,
-    `vv.corr=${m.vvCorrection}`,
     `range=[${m.rangeStart} → ${m.rangeEnd}] max=${m.maxTranslate}`
   ];
 
