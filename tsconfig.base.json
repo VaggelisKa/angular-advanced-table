@@ -1,5 +1,6 @@
 /* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
 /* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+/* Shared base. Every project's tsconfig.json extends this; the root tsconfig.json is a solution file that references each project. */
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -20,48 +21,16 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "dom"],
+    "noUnusedLocals": true,
+    "verbatimModuleSyntax": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  },
-  "files": [],
-  "references": [
-    {
-      "path": "./apps/showcase/tsconfig.app.json"
-    },
-    {
-      "path": "./apps/showcase/tsconfig.spec.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table/tsconfig.lib.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table/tsconfig.spec.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table-locales/tsconfig.lib.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table-locales/tsconfig.spec.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table-types/tsconfig.lib.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table-utils/tsconfig.lib.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table-utils/tsconfig.spec.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table-ui/tsconfig.lib.json"
-    },
-    {
-      "path": "./libs/ng-advanced-table-ui/tsconfig.spec.json"
-    }
-  ]
+  }
 }
