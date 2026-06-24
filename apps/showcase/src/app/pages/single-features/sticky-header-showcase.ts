@@ -27,6 +27,7 @@ export class StickyHeaderShowcasePage {
   private readonly injector = inject(Injector);
   private readonly nativeProxyFrames = viewChildren<ElementRef<HTMLElement>>('nativeProxyFrame');
   private nativeProxyDragState: NativeProxyDragState | null = null;
+  private nativeProxyWheelCleanups: Array<() => void> = [];
 
   protected readonly data = DEMO_DATA;
   protected readonly columns = COLUMNS;
@@ -38,10 +39,14 @@ export class StickyHeaderShowcasePage {
       () => {
         const refresh = (): void => this.refreshNativeProxyScrollers();
 
+        this.setupNativeProxyWheelListeners();
         refresh();
         globalThis.requestAnimationFrame(refresh);
         globalThis.addEventListener('resize', refresh, { passive: true });
-        this.destroyRef.onDestroy(() => globalThis.removeEventListener('resize', refresh));
+        this.destroyRef.onDestroy(() => {
+          this.destroyNativeProxyWheelListeners();
+          globalThis.removeEventListener('resize', refresh);
+        });
       },
       { injector: this.injector }
     );
@@ -147,13 +152,7 @@ export class StickyHeaderShowcasePage {
     this.nativeProxyDragState = null;
   }
 
-  protected scrollNativeProxyWheel(event: WheelEvent): void {
-    const frame = this.resolveNativeProxyFrame(event);
-
-    if (!frame) {
-      return;
-    }
-
+  private scrollNativeProxyWheel(frame: HTMLElement, event: WheelEvent): void {
     const scroller = this.getNativeProxyScroller(frame);
 
     if (!scroller) {
@@ -162,7 +161,7 @@ export class StickyHeaderShowcasePage {
 
     const delta = event.deltaX !== 0 ? event.deltaX : event.shiftKey ? event.deltaY : 0;
 
-    if (Math.abs(delta) < 0.5) {
+    if (Math.abs(delta) < 0.01) {
       return;
     }
 
@@ -179,6 +178,26 @@ export class StickyHeaderShowcasePage {
 
     scroller.scrollLeft = nextScrollLeft;
     this.syncNativeProxyFrame(frame);
+  }
+
+  private setupNativeProxyWheelListeners(): void {
+    this.destroyNativeProxyWheelListeners();
+
+    for (const frameRef of this.nativeProxyFrames()) {
+      const frame = frameRef.nativeElement;
+      const listener = (event: WheelEvent): void => this.scrollNativeProxyWheel(frame, event);
+
+      frame.addEventListener('wheel', listener, { capture: true, passive: false });
+      this.nativeProxyWheelCleanups.push(() => frame.removeEventListener('wheel', listener, { capture: true }));
+    }
+  }
+
+  private destroyNativeProxyWheelListeners(): void {
+    for (const cleanup of this.nativeProxyWheelCleanups) {
+      cleanup();
+    }
+
+    this.nativeProxyWheelCleanups = [];
   }
 
   private refreshNativeProxyScrollers(): void {

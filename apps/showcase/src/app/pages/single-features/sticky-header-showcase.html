@@ -26,8 +26,7 @@
         (pointercancel)="endNativeProxyDrag($event)"
         (pointerdown)="startNativeProxyDrag($event)"
         (pointermove)="moveNativeProxyDrag($event)"
-        (pointerup)="endNativeProxyDrag($event)"
-        (wheel)="scrollNativeProxyWheel($event)">
+        (pointerup)="endNativeProxyDrag($event)">
         <nat-table-surface [stickyHeader]="stickyHeaderEnabled()" class="sticky-strategy-native-proxy">
           <nat-table [accessibleName]="`Contained horizontal-scroll sticky table ${i}`" [columns]="columns" [data]="data" />
         </nat-table-surface>
