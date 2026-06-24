@@ -22,21 +22,21 @@ describe('DocsMarkdownCache', () => {
   });
 
   it('loads markdown and exposes the cached content synchronously', () => {
-    expect(cache.getState('/docs/quick-start.md')).toEqual({
+    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
       status: 'idle',
       content: ''
     });
 
     cache.load('/docs/quick-start.md');
 
-    expect(cache.getState('/docs/quick-start.md')).toEqual({
+    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
       status: 'loading',
       content: ''
     });
 
     http.expectOne('/docs/quick-start.md').flush('# Quick start');
 
-    expect(cache.getState('/docs/quick-start.md')).toEqual({
+    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
       status: 'loaded',
       content: '# Quick start'
     });
@@ -53,7 +53,7 @@ describe('DocsMarkdownCache', () => {
 
     cache.load('/docs/quick-start.md');
     http.expectNone('/docs/quick-start.md');
-    expect(cache.getState('/docs/quick-start.md')).toEqual({
+    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
       status: 'loaded',
       content: '# Quick start'
     });
@@ -78,7 +78,7 @@ describe('DocsMarkdownCache', () => {
     cache.load('/docs/quick-start.md');
     http.expectOne('/docs/quick-start.md').flush('# Quick start');
 
-    expect(cache.getState('/docs/quick-start.md')).toEqual({
+    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
       status: 'loaded',
       content: '# Quick start'
     });

@@ -1,7 +1,6 @@
 import { Component, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
-
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';

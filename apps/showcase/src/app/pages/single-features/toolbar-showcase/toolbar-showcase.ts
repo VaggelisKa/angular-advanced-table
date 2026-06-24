@@ -2,7 +2,6 @@ import type { ElementRef } from '@angular/core';
 import { Component, computed, signal, viewChild } from '@angular/core';
 
 import type { CellContext, ColumnDef, SortingState, VisibilityState } from '@tanstack/angular-table';
-
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import {

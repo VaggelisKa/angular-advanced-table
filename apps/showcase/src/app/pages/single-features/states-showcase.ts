@@ -1,7 +1,6 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 
 import type { ColumnDef } from '@tanstack/angular-table';
-
 import {
   NAT_TABLE_DATA_STATUS,
   NatTable,
