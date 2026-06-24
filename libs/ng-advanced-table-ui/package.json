@@ -2,7 +2,7 @@
   "name": "ng-advanced-table-ui",
   "version": "1.3.0",
   "description": "Optional composable UI primitives for ng-advanced-table.",
-  "typings": "../../dist/libs/ng-advanced-table-ui/types/ng-advanced-table-ui.d.ts",
+  "typings": "src/public-api.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
