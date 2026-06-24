@@ -19,6 +19,7 @@ const readDocsRouteData = (data: Data): DocsRouteData => ({ docId: data['docId']
 const CODE_COPY_BUTTON_SELECTOR = '[data-docs-code-copy]';
 const CODE_COPY_BUTTON_CLASS = 'docs-code-copy';
 const CODE_COPY_BLOCK_CLASS = 'docs-code-block';
+const CODE_SCROLL_CLASS = 'docs-code-scroll';
 const CODE_COPY_COPIED_CLASS = 'is-copied';
 const CODE_COPY_TEXT = 'Copy';
 const CODE_COPIED_TEXT = 'Copied';
@@ -73,8 +74,12 @@ export class DocsPage {
         continue;
       }
 
+      const scrollArea = this.document.createElement('div');
       const button = this.document.createElement('button');
 
+      scrollArea.className = CODE_SCROLL_CLASS;
+      code.replaceWith(scrollArea);
+      scrollArea.append(code);
       button.type = 'button';
       button.className = CODE_COPY_BUTTON_CLASS;
       button.textContent = CODE_COPY_TEXT;

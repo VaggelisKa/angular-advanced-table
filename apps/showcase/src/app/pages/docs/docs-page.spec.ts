@@ -215,8 +215,13 @@ describe('DocsPage', () => {
     await waitForMarkdownRender(harness.fixture);
 
     const compiled = harness.fixture.nativeElement as HTMLElement;
+    const codeBlock = queryRequiredElement<HTMLElement>(compiled, 'pre.docs-code-block');
+    const codeScroller = queryRequiredElement<HTMLElement>(codeBlock, '.docs-code-scroll');
     const copyButton = queryRequiredElement<HTMLButtonElement>(compiled, '.docs-code-copy');
 
+    expect(copyButton.parentElement).toBe(codeBlock);
+    expect(codeScroller.parentElement).toBe(codeBlock);
+    expect(queryRequiredElement<HTMLElement>(codeScroller, 'code').textContent).toBe('readonly rows = [];');
     expect(copyButton.textContent).toBe('Copy');
     expect(copyButton.getAttribute('aria-label')).toBe('Copy code block');
 

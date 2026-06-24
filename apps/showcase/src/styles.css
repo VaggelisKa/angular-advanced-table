@@ -849,23 +849,38 @@ input {
 
 .docs-markdown pre {
   min-width: 0;
-  padding: 16px;
-  overflow-x: auto;
+  padding: 0;
+  overflow: hidden;
   color: var(--showcase-code-text);
   background: var(--showcase-code-bg);
   border: 1px solid var(--showcase-code-border);
   border-radius: var(--showcase-page-radius-sm);
 }
 
+.docs-markdown pre:not(.docs-code-block) {
+  padding: 16px;
+  overflow-x: auto;
+}
+
 .docs-markdown pre.docs-code-block {
   position: relative;
-  padding-top: 48px;
+}
+
+.docs-markdown .docs-code-scroll {
+  min-width: 0;
+  padding: 48px 16px 16px;
+  overflow-x: auto;
+}
+
+.docs-markdown .docs-code-scroll code {
+  display: block;
 }
 
 .docs-markdown .docs-code-copy {
   position: absolute;
   top: 10px;
   right: 10px;
+  z-index: 1;
   min-height: 28px;
   padding: 0 10px;
   font: inherit;
