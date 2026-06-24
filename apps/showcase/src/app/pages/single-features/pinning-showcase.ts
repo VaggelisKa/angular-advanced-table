@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { Component, signal } from '@angular/core';
 
-import type { CellContext, ColumnDef, ColumnPinningState } from '@tanstack/angular-table';
+import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
@@ -145,10 +145,6 @@ export class PinningShowcasePage {
     }
 
     return null;
-  }
-
-  private onColumnPinningChange(columnPinning: ColumnPinningState): void {
-    this.tableState.update((current) => ({ ...current, columnPinning }));
   }
 
   protected pinColumn(id: string, side: 'left' | 'right' | null): void {

@@ -88,8 +88,4 @@ export class SearchShowcasePage {
   protected readonly tableState = signal<Partial<NatTableState>>({
     globalFilter: ''
   });
-
-  private onGlobalFilterChange(globalFilter: string): void {
-    this.tableState.update((current) => ({ ...current, globalFilter }));
-  }
 }
