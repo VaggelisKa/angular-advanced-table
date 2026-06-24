@@ -5,8 +5,8 @@
 .scroll-control {
   display: grid;
   grid-template-columns: auto minmax(160px, 1fr) auto;
-  align-items: center;
   gap: var(--nat-table-scroll-control-gap, 10px);
+  align-items: center;
   inline-size: 100%;
 }
 
@@ -14,14 +14,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--nat-table-scroll-button-min-height, 44px);
   min-width: var(--nat-table-scroll-button-min-height, 44px);
+  min-height: var(--nat-table-scroll-button-min-height, 44px);
   padding: 0 var(--nat-table-scroll-button-padding-x, 18px);
-  border-radius: var(--nat-table-radius-chip, 999px);
-  border: 1px solid var(--nat-table-scroll-button-border-color, transparent);
   color: var(--nat-table-scroll-button-color, inherit);
-  background: var(--nat-table-scroll-button-background, transparent);
   cursor: pointer;
+  background: var(--nat-table-scroll-button-background, transparent);
+  border: 1px solid var(--nat-table-scroll-button-border-color, transparent);
+  border-radius: var(--nat-table-radius-chip, 999px);
   transition:
     background-color var(--nat-table-transition-medium, 180ms ease),
     border-color var(--nat-table-transition-medium, 180ms ease),
@@ -31,8 +31,8 @@
 }
 
 .scroll-button:hover:not(:disabled) {
-  box-shadow: var(--nat-table-scroll-button-shadow-hover, none);
   background: var(--nat-table-scroll-button-background-hover, transparent);
+  box-shadow: var(--nat-table-scroll-button-shadow-hover, none);
   transform: var(--nat-table-hover-lift, translateY(-1px));
 }
 
@@ -57,15 +57,15 @@
 .scroll-range-label {
   display: grid;
   grid-template-columns: minmax(7ch, auto) minmax(120px, 1fr);
-  align-items: center;
   gap: var(--nat-table-scroll-range-gap, 10px);
+  align-items: center;
   min-width: 0;
 }
 
 .scroll-range-copy {
-  color: var(--nat-table-scroll-position-color, currentColor);
   font-size: var(--nat-table-font-size-scroll-position, 0.92rem);
   font-variant-numeric: tabular-nums;
+  color: var(--nat-table-scroll-position-color, currentColor);
   white-space: nowrap;
 }
 
@@ -81,13 +81,13 @@
   opacity: var(--nat-table-scroll-range-disabled-opacity, 0.5);
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .scroll-control {
     grid-template-columns: auto auto;
   }
 
   .scroll-range-label {
-    grid-column: 1 / -1;
     grid-row: 1;
+    grid-column: 1 / -1;
   }
 }

@@ -22,10 +22,10 @@
 .toolbar-button {
   min-height: 2.25rem;
   padding: 0 12px;
+  cursor: pointer;
+  background: transparent;
   border: 1px solid var(--showcase-page-border);
   border-radius: 10px;
-  background: transparent;
-  cursor: pointer;
   transition: background-color 180ms ease;
 }
 
@@ -55,8 +55,8 @@
 
 .toolbar-menu-trigger {
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
 }
 
 .toolbar-menu-caret {
@@ -66,18 +66,18 @@
 
 .toolbar-menu-panel {
   position: absolute;
-  top: calc(100% + 6px);
   inset-inline-end: 0;
+  top: calc(100% + 6px);
   z-index: 20;
   display: flex;
   flex-direction: column;
+  gap: 2px;
   min-width: 184px;
   padding: 6px;
-  gap: 2px;
+  background: var(--showcase-page-surface);
   border: 1px solid var(--showcase-page-border);
   border-radius: 12px;
-  background: var(--showcase-page-surface);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 18%);
 }
 
 /* `display: flex` above would otherwise beat the [hidden] UA rule. */
@@ -89,12 +89,12 @@
   display: block;
   width: 100%;
   padding: 8px 12px;
+  color: inherit;
   text-align: start;
+  cursor: pointer;
+  background: transparent;
   border: none;
   border-radius: 8px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
 }
 
 .toolbar-menu-item:focus-visible {

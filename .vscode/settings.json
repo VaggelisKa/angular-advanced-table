@@ -2,9 +2,15 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
   },
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "html", "json"],
+  "stylelint.validate": ["css", "scss"],
+  // Let Stylelint own CSS/SCSS diagnostics; disable VS Code's built-in linters
+  // so they don't double-report (Prettier still formats on save).
+  "css.validate": false,
+  "scss.validate": false,
   "prettier.requireConfig": true
 }
