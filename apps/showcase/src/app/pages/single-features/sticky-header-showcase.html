@@ -93,6 +93,47 @@
 
   <header class="header-section">
     <div class="header-title-container">
+      <h2 class="title">Prototype A3: Native Sticky With Proxy Horizontal Scroll</h2>
+      <p class="description">
+        This keeps viewport-native sticky header cells, clips the table to the card, and uses a separate horizontal scrollbar to move
+        the real table sideways without making the table region a vertical sticky container.
+      </p>
+    </div>
+  </header>
+
+  <div class="table-stack">
+    @for (i of prototypeTableIds; track i) {
+    <div class="card sticky-native-contained-card viewport-stack-card">
+      <h3 class="card-title">Native proxy-scroll table #{{ i }}</h3>
+      <div
+        #nativeProxyFrame
+        class="native-proxy-frame"
+        data-native-proxy-frame
+        (focusin)="refreshNativeProxyScroll($event)"
+        (pointerenter)="refreshNativeProxyScroll($event)"
+        (touchcancel)="endNativeProxyTouch()"
+        (touchend)="endNativeProxyTouch()"
+        (touchmove)="moveNativeProxyTouch($event)"
+        (touchstart)="startNativeProxyTouch($event)"
+        (wheel)="scrollNativeProxyWheel($event)">
+        <nat-table-surface [stickyHeader]="stickyHeaderEnabled()" class="sticky-strategy-native-proxy">
+          <nat-table [accessibleName]="`Native proxy-scroll sticky table ${i}`" [columns]="columns" [data]="data" />
+        </nat-table-surface>
+        <div
+          aria-label="Scroll native proxy table horizontally"
+          class="native-proxy-scrollbar"
+          tabindex="0"
+          (focus)="refreshNativeProxyScroll($event)"
+          (scroll)="syncNativeProxyScroll($event)">
+          <div class="native-proxy-scrollbar-track"></div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <header class="header-section">
+    <div class="header-title-container">
       <h2 class="title">Prototype B: Native Hybrid Scroll</h2>
       <p class="description">
         This keeps a horizontal table scroller but removes the vertical transform sync. It is useful to test whether the mobile browser
