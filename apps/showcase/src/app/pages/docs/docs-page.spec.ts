@@ -222,15 +222,18 @@ describe('DocsPage', () => {
     expect(copyButton.parentElement).toBe(codeBlock);
     expect(codeScroller.parentElement).toBe(codeBlock);
     expect(queryRequiredElement<HTMLElement>(codeScroller, 'code').textContent).toBe('readonly rows = [];');
-    expect(copyButton.textContent).toBe('Copy');
+    expect(queryRequiredElement<SVGElement>(copyButton, '.docs-code-copy-icon--copy')).toBeTruthy();
+    expect(queryRequiredElement<SVGElement>(copyButton, '.docs-code-copy-icon--check')).toBeTruthy();
     expect(copyButton.getAttribute('aria-label')).toBe('Copy code block');
+    expect(copyButton.title).toBe('Copy code block');
 
     copyButton.click();
     await Promise.resolve();
     await Promise.resolve();
 
     expect(writeText).toHaveBeenCalledWith('readonly rows = [];');
-    expect(copyButton.textContent).toBe('Copied');
+    expect(copyButton.classList.contains('is-copied')).toBe(true);
     expect(copyButton.getAttribute('aria-label')).toBe('Copied code block');
+    expect(copyButton.title).toBe('Copied code block');
   });
 });

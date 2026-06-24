@@ -881,22 +881,27 @@ input {
   top: 10px;
   right: 10px;
   z-index: 1;
-  min-height: 28px;
-  padding: 0 10px;
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   color: var(--showcase-page-text-soft);
   cursor: pointer;
   background: var(--showcase-page-surface);
   border: 1px solid var(--showcase-code-border);
   border-radius: var(--showcase-page-radius-xs);
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
 }
 
 .docs-markdown .docs-code-copy:hover {
   color: var(--showcase-page-text);
   background: var(--showcase-page-surface-hover);
+  transform: translateY(-1px);
 }
 
 .docs-markdown .docs-code-copy:focus-visible {
@@ -907,6 +912,37 @@ input {
 .docs-markdown .docs-code-copy.is-copied {
   color: var(--showcase-page-positive);
   border-color: var(--showcase-page-positive);
+}
+
+.docs-markdown .docs-code-copy-icon {
+  grid-area: 1 / 1;
+  width: 15px;
+  height: 15px;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.docs-markdown .docs-code-copy-icon--check {
+  opacity: 0;
+  transform: scale(0.6) rotate(-12deg);
+}
+
+.docs-markdown .docs-code-copy.is-copied .docs-code-copy-icon--copy {
+  opacity: 0;
+  transform: scale(0.6) rotate(12deg);
+}
+
+.docs-markdown .docs-code-copy.is-copied .docs-code-copy-icon--check {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-markdown .docs-code-copy,
+  .docs-markdown .docs-code-copy-icon {
+    transition: none;
+  }
 }
 
 .docs-markdown pre code {

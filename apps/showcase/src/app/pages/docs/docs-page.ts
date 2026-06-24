@@ -8,6 +8,7 @@ import type { Data } from '@angular/router';
 import { MarkdownComponent } from 'ngx-markdown';
 import { map } from 'rxjs';
 
+import { createDocsCodeCopyIcons } from './docs-code-copy-icons';
 import { DocsMarkdownCache } from './docs-markdown-cache';
 import { findShowcaseDoc } from '../../showcase-navigation';
 
@@ -21,8 +22,6 @@ const CODE_COPY_BUTTON_CLASS = 'docs-code-copy';
 const CODE_COPY_BLOCK_CLASS = 'docs-code-block';
 const CODE_SCROLL_CLASS = 'docs-code-scroll';
 const CODE_COPY_COPIED_CLASS = 'is-copied';
-const CODE_COPY_TEXT = 'Copy';
-const CODE_COPIED_TEXT = 'Copied';
 const CODE_COPY_LABEL = 'Copy code block';
 const CODE_COPIED_LABEL = 'Copied code block';
 const CODE_COPY_RESET_DELAY_MS = 2000;
@@ -82,9 +81,10 @@ export class DocsPage {
       scrollArea.append(code);
       button.type = 'button';
       button.className = CODE_COPY_BUTTON_CLASS;
-      button.textContent = CODE_COPY_TEXT;
       button.setAttribute('aria-label', CODE_COPY_LABEL);
       button.setAttribute('data-docs-code-copy', '');
+      button.title = CODE_COPY_LABEL;
+      button.append(...createDocsCodeCopyIcons(this.document));
       button.addEventListener('click', () => this.copyDocsCodeBlock(button, code));
       codeBlock.classList.add(CODE_COPY_BLOCK_CLASS);
       codeBlock.append(button);
@@ -133,8 +133,8 @@ export class DocsPage {
 
   private setCopyButtonState(button: HTMLButtonElement, copied: boolean): void {
     button.classList.toggle(CODE_COPY_COPIED_CLASS, copied);
-    button.textContent = copied ? CODE_COPIED_TEXT : CODE_COPY_TEXT;
     button.setAttribute('aria-label', copied ? CODE_COPIED_LABEL : CODE_COPY_LABEL);
+    button.title = copied ? CODE_COPIED_LABEL : CODE_COPY_LABEL;
 
     if (!copied) {
       return;
