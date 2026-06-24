@@ -27,7 +27,7 @@ type UiSortIndicatorContextMatchesCore = Expect<
 >;
 
 describe('ng-advanced-table-ui public table contracts', () => {
-  it('reuses the core column metadata contract for TanStack column definitions', () => {
+  it('keeps public UI contracts aligned with the core table contracts', () => {
     const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore, UiSortIndicatorContextMatchesCore] = [true, true, true];
 
     expect(contractsHold).toStrictEqual([true, true, true]);
