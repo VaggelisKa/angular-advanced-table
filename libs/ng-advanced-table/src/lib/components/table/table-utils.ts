@@ -400,8 +400,122 @@ export function serializeSorting(sorting: SortingState): string {
   return sorting.map((entry) => `${entry.id}:${entry.desc ? 'desc' : 'asc'}`).join('|');
 }
 
+function serializeThrownValue(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+type FilterValueSerializer = (value: unknown, seen: WeakSet<object>) => string;
+
+function serializePrimitiveFilterValue(value: unknown): string | null {
+  if (value === null) {
+    return 'null';
+  }
+
+  const valueType = typeof value;
+
+  if (valueType === 'object') {
+    return null;
+  }
+
+  if (valueType === 'function') {
+    const functionName = (value as { name: string }).name;
+
+    return `function:${functionName === '' ? 'anonymous' : functionName}`;
+  }
+
+  if (valueType === 'symbol') {
+    const symbolValue = value as symbol;
+
+    return `symbol:${symbolValue.description ?? symbolValue.toString()}`;
+  }
+
+  if (valueType === 'bigint') {
+    return `bigint:${String(value)}`;
+  }
+
+  if (valueType === 'undefined') {
+    return 'undefined';
+  }
+
+  return JSON.stringify(value);
+}
+
+function serializeArrayFilterValue(value: readonly unknown[], seen: WeakSet<object>, serialize: FilterValueSerializer): string {
+  return `[${value.map((item) => serialize(item, seen)).join(',')}]`;
+}
+
+function serializeMapFilterValue(value: Map<unknown, unknown>, seen: WeakSet<object>, serialize: FilterValueSerializer): string {
+  const entries = Array.from(value.entries())
+    .map(([entryKey, entryValue]) => `${serialize(entryKey, seen)}=>${serialize(entryValue, seen)}`)
+    .sort();
+
+  return `Map{${entries.join(',')}}`;
+}
+
+function serializeSetFilterValue(value: Set<unknown>, seen: WeakSet<object>, serialize: FilterValueSerializer): string {
+  const entries = Array.from(value.values())
+    .map((entryValue) => serialize(entryValue, seen))
+    .sort();
+
+  return `Set{${entries.join(',')}}`;
+}
+
+function serializeRecordFilterValue(record: Record<string, unknown>, seen: WeakSet<object>, serialize: FilterValueSerializer): string {
+  const entries = Object.keys(record)
+    .sort()
+    .map((key) => {
+      try {
+        return `${JSON.stringify(key)}:${serialize(record[key], seen)}`;
+      } catch (error) {
+        return `${JSON.stringify(key)}:[Throws:${serializeThrownValue(error)}]`;
+      }
+    });
+
+  return `{${entries.join(',')}}`;
+}
+
+function serializeUnseenObjectFilterValue(value: object, seen: WeakSet<object>, serialize: FilterValueSerializer): string {
+  if (Array.isArray(value)) {
+    return serializeArrayFilterValue(value, seen, serialize);
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? 'Date:Invalid' : `Date:${value.toISOString()}`;
+  }
+
+  if (value instanceof Map) {
+    return serializeMapFilterValue(value, seen, serialize);
+  }
+
+  if (value instanceof Set) {
+    return serializeSetFilterValue(value, seen, serialize);
+  }
+
+  return serializeRecordFilterValue(value as Record<string, unknown>, seen, serialize);
+}
+
+function serializeObjectFilterValue(value: object, seen: WeakSet<object>, serialize: FilterValueSerializer): string {
+  if (seen.has(value)) {
+    return '[Circular]';
+  }
+
+  seen.add(value);
+
+  try {
+    return serializeUnseenObjectFilterValue(value, seen, serialize);
+  } finally {
+    seen.delete(value);
+  }
+}
+
+function serializeFilterValue(value: unknown, seen = new WeakSet<object>()): string {
+  const primitive = serializePrimitiveFilterValue(value);
+
+  return primitive ?? serializeObjectFilterValue(value as object, seen, serializeFilterValue);
+}
+
 export function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
-  return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
+  return columnFilters.map((entry) => `${entry.id}:${serializeFilterValue(entry.value)}`).join('|');
 }
 
 /** Collapses a multi-row selection map to its first selected key by sort order in single mode. */

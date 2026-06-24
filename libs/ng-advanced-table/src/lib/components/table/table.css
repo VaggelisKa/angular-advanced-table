@@ -127,10 +127,16 @@
   bottom: 18%;
   inline-size: 2px;
   content: '';
-  background: var(--nat-table-resize-handle-color, color-mix(in srgb, currentColor 24%, transparent));
+  background: var(--nat-table-resize-handle-color, rgb(128 128 128 / 42%));
   border-radius: 1px;
   opacity: 0;
   transition: opacity 120ms ease;
+}
+
+@supports (background: color-mix(in srgb, currentColor 24%, transparent)) {
+  .column-resize-handle::after {
+    background: var(--nat-table-resize-handle-color, color-mix(in srgb, currentColor 24%, transparent));
+  }
 }
 
 .header-cell:hover .column-resize-handle:not(.is-resizing)::after,
