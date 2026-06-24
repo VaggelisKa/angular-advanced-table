@@ -208,6 +208,23 @@ function browserSupportsScrollTimeline(): boolean {
 }
 
 /**
+ * Touch-first viewports expose a dynamic visual viewport (URL bar, rubber-banding)
+ * that desyncs from layout scroll mid-gesture. The scroll-timeline animation only
+ * tracks document scroll, so it lags behind live geometry during slow reversals.
+ */
+function needsLiveViewportStickySync(): boolean {
+  if (typeof window === 'undefined' || window.visualViewport == null) {
+    return false;
+  }
+
+  return window.matchMedia('(pointer: coarse)').matches;
+}
+
+function usesViewportStickyScrollTimeline(): boolean {
+  return browserSupportsScrollTimeline() && !needsLiveViewportStickySync();
+}
+
+/**
  * Signals-first Angular table primitive built on TanStack Table.
  *
  * The core component renders the table structure only. Optional controls,
@@ -1832,7 +1849,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       tableEl.classList.remove('is-region-scrollable');
     }
 
-    if (browserSupportsScrollTimeline()) {
+    if (usesViewportStickyScrollTimeline()) {
       const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop);
       const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
       const rangeEnd = rangeStart + maxTranslate;
@@ -1840,6 +1857,14 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       tableEl.style.setProperty('--nat-table-sticky-range-start', `${rangeStart}px`);
       tableEl.style.setProperty('--nat-table-sticky-range-end', `${rangeEnd}px`);
       tableEl.style.setProperty('--nat-table-sticky-max-translate', `${maxTranslate}px`);
+      tableEl.classList.remove('is-viewport-sticky-js-sync');
+    } else if (!this.isRegionScrollable) {
+      tableEl.classList.add('is-viewport-sticky-js-sync');
+      tableEl.style.removeProperty('--nat-table-sticky-range-start');
+      tableEl.style.removeProperty('--nat-table-sticky-range-end');
+      tableEl.style.removeProperty('--nat-table-sticky-max-translate');
+    } else {
+      tableEl.classList.remove('is-viewport-sticky-js-sync');
     }
   }
 
@@ -1851,7 +1876,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         return;
       }
 
-      const supportsScrollTimeline = browserSupportsScrollTimeline();
+      const supportsScrollTimeline = usesViewportStickyScrollTimeline();
 
       this.observeStickyHeaderVisibility(region);
 
@@ -1972,7 +1997,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    if (browserSupportsScrollTimeline()) {
+    if (usesViewportStickyScrollTimeline()) {
       for (const cell of headerCells) {
         if (cell.style.transform) {
           cell.style.transform = '';

@@ -3295,6 +3295,78 @@ describe('NatTable', () => {
     }
   });
 
+  it('prefers live rect sync over scroll timeline on coarse-pointer viewports', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    vi.stubGlobal('CSS', {
+      supports: (): boolean => true
+    });
+
+    const visualViewportDescriptor = Object.getOwnPropertyDescriptor(window, 'visualViewport');
+    const matchMediaDescriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+
+    Object.defineProperty(window, 'visualViewport', {
+      configurable: true,
+      value: { offsetTop: 0 }
+    });
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string): MediaQueryList =>
+        ({
+          matches: query.includes('pointer: coarse'),
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn()
+        }) as unknown as MediaQueryList
+    });
+
+    const table = getInternalTable(fixture) as unknown as {
+      cachedStickyTop: number;
+      isRegionScrollable: boolean;
+      tableHeight: number;
+      theadHeight: number;
+      measureTableDimensions(): void;
+      updateStickyHeaderPosition(): void;
+    };
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+    const headerCells = queryAll<HTMLTableCellElement>(fixture, 'thead th');
+
+    tableElement.getBoundingClientRect = (): DOMRect =>
+      ({
+        top: -50,
+        height: 400
+      }) as DOMRect;
+
+    table.cachedStickyTop = 0;
+    table.isRegionScrollable = false;
+    table.tableHeight = 400;
+    table.theadHeight = 40;
+
+    try {
+      table.measureTableDimensions();
+
+      expect(tableElement.classList.contains('is-viewport-sticky-js-sync')).toBe(true);
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('');
+
+      table.updateStickyHeaderPosition();
+
+      expect(headerCells.every((cell) => cell.style.transform === 'translate3d(0, 50px, 0)')).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+
+      if (visualViewportDescriptor) {
+        Object.defineProperty(window, 'visualViewport', visualViewportDescriptor);
+      } else {
+        delete (window as unknown as { visualViewport?: unknown }).visualViewport;
+      }
+
+      if (matchMediaDescriptor) {
+        Object.defineProperty(window, 'matchMedia', matchMediaDescriptor);
+      }
+    }
+  });
+
   it('refreshes cached sticky dimensions when rendered rows change', async () => {
     await recreateHost({ stickyHeader: true, initialState: {} });
     fixture.detectChanges();

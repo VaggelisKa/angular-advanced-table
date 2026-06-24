@@ -264,7 +264,7 @@
   }
 }
 
-.has-sticky-header:not(.is-region-scrollable) .header-cell {
+.has-sticky-header:not(.is-region-scrollable):not(.is-viewport-sticky-js-sync) .header-cell {
   /* Safe reference outside @supports to ensure proper keyframe scoping by Angular compiler */
   animation-name: nat-table-viewport-sticky;
   animation-duration: auto;
@@ -273,7 +273,7 @@
 }
 
 @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
-  .has-sticky-header:not(.is-region-scrollable) .header-cell {
+  .has-sticky-header:not(.is-region-scrollable):not(.is-viewport-sticky-js-sync) .header-cell {
     animation-timeline: scroll(block root);
     animation-range: var(--nat-table-sticky-range-start, 0px) var(--nat-table-sticky-range-end, 0px);
   }

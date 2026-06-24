@@ -1,5 +1,6 @@
 export type StickyMetrics = {
   supportsTimeline: boolean;
+  usesJsSync: boolean;
   stickyTop: number;
   scrollY: number;
   docTop: number;
@@ -17,6 +18,10 @@ export type StickyMetrics = {
 
 function timelineSupported(): boolean {
   return typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
+}
+
+function usesJsStickySync(table: HTMLTableElement | null): boolean {
+  return table?.classList.contains('is-viewport-sticky-js-sync') ?? false;
 }
 
 /** Picks the viewport-sticky table currently being pinned near the top. */
@@ -105,6 +110,7 @@ export function collectStickyMetrics(): StickyMetrics {
 
   return {
     supportsTimeline: timelineSupported(),
+    usesJsSync: usesJsStickySync(table),
     stickyTop: readStickyTop(table),
     scrollY: window.scrollY,
     docTop: document.scrollingElement?.scrollTop ?? NaN,
@@ -121,7 +127,7 @@ export function collectStickyMetrics(): StickyMetrics {
 
 export function formatStickyMetrics(m: StickyMetrics, peak: StickyMetrics | null): string {
   const lines = [
-    `timeline=${m.supportsTimeline} stickyTop=${fmt(m.stickyTop)}`,
+    `timeline=${m.supportsTimeline} jsSync=${m.usesJsSync} stickyTop=${fmt(m.stickyTop)}`,
     `scrollY=${fmt(m.scrollY)} docTop=${fmt(m.docTop)}`,
     `vv.offTop=${fmt(m.vvOffsetTop)} vv.h=${fmt(m.vvHeight)} innerH=${fmt(m.innerHeight)}`,
     `rectTop=${fmt(m.rectTop)} exp=${fmt(m.expected)} act=${fmt(m.actual)}`,
