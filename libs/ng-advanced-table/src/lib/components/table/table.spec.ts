@@ -3295,7 +3295,7 @@ describe('NatTable', () => {
     }
   });
 
-  it('prefers live rect sync over scroll timeline on coarse-pointer viewports', async () => {
+  it('includes the visual viewport offset in scroll-timeline animation range', async () => {
     await recreateHost({ stickyHeader: true });
     fixture.detectChanges();
 
@@ -3304,54 +3304,35 @@ describe('NatTable', () => {
     });
 
     const visualViewportDescriptor = Object.getOwnPropertyDescriptor(window, 'visualViewport');
-    const matchMediaDescriptor = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+    const scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
 
     Object.defineProperty(window, 'visualViewport', {
       configurable: true,
-      value: { offsetTop: 0 }
+      value: { offsetTop: 40 }
     });
-    Object.defineProperty(window, 'matchMedia', {
+    Object.defineProperty(window, 'scrollY', {
       configurable: true,
-      value: (query: string): MediaQueryList =>
-        ({
-          matches: query.includes('pointer: coarse'),
-          media: query,
-          addEventListener: vi.fn(),
-          removeEventListener: vi.fn()
-        }) as unknown as MediaQueryList
+      value: 500
     });
 
     const table = getInternalTable(fixture) as unknown as {
       cachedStickyTop: number;
-      isRegionScrollable: boolean;
-      tableHeight: number;
-      theadHeight: number;
       measureTableDimensions(): void;
-      updateStickyHeaderPosition(): void;
     };
     const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
-    const headerCells = queryAll<HTMLTableCellElement>(fixture, 'thead th');
 
     tableElement.getBoundingClientRect = (): DOMRect =>
       ({
-        top: -50,
+        top: 100,
         height: 400
       }) as DOMRect;
 
     table.cachedStickyTop = 0;
-    table.isRegionScrollable = false;
-    table.tableHeight = 400;
-    table.theadHeight = 40;
 
     try {
       table.measureTableDimensions();
 
-      expect(tableElement.classList.contains('is-viewport-sticky-js-sync')).toBe(true);
-      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('');
-
-      table.updateStickyHeaderPosition();
-
-      expect(headerCells.every((cell) => cell.style.transform === 'translate3d(0, 50px, 0)')).toBe(true);
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('640px');
     } finally {
       vi.unstubAllGlobals();
 
@@ -3361,8 +3342,8 @@ describe('NatTable', () => {
         delete (window as unknown as { visualViewport?: unknown }).visualViewport;
       }
 
-      if (matchMediaDescriptor) {
-        Object.defineProperty(window, 'matchMedia', matchMediaDescriptor);
+      if (scrollYDescriptor) {
+        Object.defineProperty(window, 'scrollY', scrollYDescriptor);
       }
     }
   });

@@ -207,21 +207,8 @@ function browserSupportsScrollTimeline(): boolean {
   return typeof CSS !== 'undefined' && CSS.supports('(animation-timeline: scroll()) and (animation-range: 0% 100%)');
 }
 
-/**
- * Touch-first viewports expose a dynamic visual viewport (URL bar, rubber-banding)
- * that desyncs from layout scroll mid-gesture. The scroll-timeline animation only
- * tracks document scroll, so it lags behind live geometry during slow reversals.
- */
-function needsLiveViewportStickySync(): boolean {
-  if (typeof window === 'undefined' || window.visualViewport == null) {
-    return false;
-  }
-
-  return window.matchMedia('(pointer: coarse)').matches;
-}
-
-function usesViewportStickyScrollTimeline(): boolean {
-  return browserSupportsScrollTimeline() && !needsLiveViewportStickySync();
+function readVisualViewportOffsetTop(): number {
+  return window.visualViewport?.offsetTop ?? 0;
 }
 
 /**
@@ -1849,22 +1836,15 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       tableEl.classList.remove('is-region-scrollable');
     }
 
-    if (usesViewportStickyScrollTimeline()) {
-      const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop);
+    if (browserSupportsScrollTimeline()) {
+      const visualOffsetTop = readVisualViewportOffsetTop();
+      const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop + visualOffsetTop);
       const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
       const rangeEnd = rangeStart + maxTranslate;
 
       tableEl.style.setProperty('--nat-table-sticky-range-start', `${rangeStart}px`);
       tableEl.style.setProperty('--nat-table-sticky-range-end', `${rangeEnd}px`);
       tableEl.style.setProperty('--nat-table-sticky-max-translate', `${maxTranslate}px`);
-      tableEl.classList.remove('is-viewport-sticky-js-sync');
-    } else if (!this.isRegionScrollable) {
-      tableEl.classList.add('is-viewport-sticky-js-sync');
-      tableEl.style.removeProperty('--nat-table-sticky-range-start');
-      tableEl.style.removeProperty('--nat-table-sticky-range-end');
-      tableEl.style.removeProperty('--nat-table-sticky-max-translate');
-    } else {
-      tableEl.classList.remove('is-viewport-sticky-js-sync');
     }
   }
 
@@ -1876,7 +1856,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         return;
       }
 
-      const supportsScrollTimeline = usesViewportStickyScrollTimeline();
+      const supportsScrollTimeline = browserSupportsScrollTimeline();
 
       this.observeStickyHeaderVisibility(region);
 
@@ -1890,11 +1870,22 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         if (event.type === 'resize') {
           this.updateCachedStickyTop();
           this.measureTableDimensions();
+
+          if (!supportsScrollTimeline) {
+            this.updateStickyHeaderPosition();
+          }
+
+          return;
         }
 
-        if (!supportsScrollTimeline && !ticking) {
+        if (!ticking) {
           window.requestAnimationFrame(() => {
-            this.updateStickyHeaderPosition();
+            if (supportsScrollTimeline) {
+              this.measureTableDimensions();
+            } else {
+              this.updateStickyHeaderPosition();
+            }
+
             ticking = false;
           });
           ticking = true;
@@ -1903,22 +1894,18 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
       const viewport = window.visualViewport ?? null;
 
-      if (!supportsScrollTimeline) {
-        window.addEventListener('scroll', listener, { passive: true });
-        region.addEventListener('scroll', listener, { passive: true });
-        viewport?.addEventListener('scroll', listener, { passive: true });
-      }
+      window.addEventListener('scroll', listener, { passive: true });
+      region.addEventListener('scroll', listener, { passive: true });
+      viewport?.addEventListener('scroll', listener, { passive: true });
       window.addEventListener('resize', listener, { passive: true });
       viewport?.addEventListener('resize', listener, { passive: true });
 
       this.destroyRef.onDestroy(() => {
         this.intersectionObserver?.disconnect();
 
-        if (!supportsScrollTimeline) {
-          window.removeEventListener('scroll', listener);
-          region.removeEventListener('scroll', listener);
-          viewport?.removeEventListener('scroll', listener);
-        }
+        window.removeEventListener('scroll', listener);
+        region.removeEventListener('scroll', listener);
+        viewport?.removeEventListener('scroll', listener);
         window.removeEventListener('resize', listener);
         viewport?.removeEventListener('resize', listener);
       });
@@ -1997,7 +1984,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    if (usesViewportStickyScrollTimeline()) {
+    if (browserSupportsScrollTimeline()) {
       for (const cell of headerCells) {
         if (cell.style.transform) {
           cell.style.transform = '';
@@ -2014,7 +2001,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     // the top of the viewport. Measuring the live rect and compensating for
     // `visualViewport.offsetTop` keeps the header docked.
     const tableEl = this.cachedTableEl ?? region.querySelector<HTMLTableElement>('table');
-    const visualOffsetTop = window.visualViewport?.offsetTop ?? 0;
+    const visualOffsetTop = readVisualViewportOffsetTop();
     const rectTop = (tableEl ? tableEl.getBoundingClientRect().top : this.tablePageTop - window.scrollY) - visualOffsetTop;
 
     let translateY = 0;
