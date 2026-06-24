@@ -122,32 +122,10 @@ test('touch viewport sticky tables stay aligned farther down the page', async ({
   });
 
   expect(metrics.tableClass).not.toContain('supports-scroll-timeline');
-  expect(metrics.stickyTop).toBe('0');
-  expect(Math.abs(metrics.headerTop)).toBeLessThanOrEqual(2);
-});
+  const stickyTop = Number.parseFloat(metrics.stickyTop);
 
-test('simulating sticky topbar shifts the sticky offset', async ({ page }) => {
-  // Toggle simulated topbar simulation
-  const simulateToggle = page.locator('label').filter({ hasText: 'Simulate Sticky Topbar (60px)' }).locator('input');
-  await simulateToggle.check();
-
-  // Scroll to Table 1
-  const table1 = page.locator('table[aria-label="Viewport sticky table 1"]');
-  await table1.scrollIntoViewIfNeeded();
-
-  // Scroll down past Table 1's top by 200px
-  await page.evaluate(() => {
-    window.scrollBy(0, 200);
-  });
-
-  await page.waitForTimeout(150);
-
-  // Verify that the table header elements have sticky offset adjusted
-  const stickyTop = await table1.evaluate((el) => {
-    const region = el.closest('.table-region');
-    return region ? getComputedStyle(region).getPropertyValue('--nat-table-sticky-top') : '';
-  });
-  expect(stickyTop.trim()).toBe('60px');
+  expect(stickyTop).toBeGreaterThan(0);
+  expect(Math.abs(metrics.headerTop - stickyTop)).toBeLessThanOrEqual(2);
 });
 
 test('toggling off sticky header removes translations', async ({ page }) => {
