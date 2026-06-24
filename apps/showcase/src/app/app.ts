@@ -23,7 +23,7 @@ function getShowcaseNavBranchIds(sections: readonly ShowcaseNavSection[]): strin
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 const SHOWCASE_NAV_BRANCH_IDS = getShowcaseNavBranchIds(showcaseNavSections);
 const SHOWCASE_NAV_BRANCH_ID_SET = new Set(SHOWCASE_NAV_BRANCH_IDS);
-const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = showcaseNavSections.map((section) => section.id);
+const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = ['docs'];
 
 function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
   try {
@@ -54,6 +54,10 @@ function normalizeRoutePath(url: string): string {
 
 function findNavBranchIdsByRoute(sections: readonly ShowcaseNavSection[], routePath: string): string[] {
   for (const section of sections) {
+    if (section.items.some((item) => item.path === routePath)) {
+      return [section.id];
+    }
+
     const group = section.groups.find((navGroup) => navGroup.items.some((item) => item.path === routePath));
 
     if (group) {
@@ -66,7 +70,7 @@ function findNavBranchIdsByRoute(sections: readonly ShowcaseNavSection[], routeP
 
 function branchContainsRoute(branch: ShowcaseNavSection | ShowcaseNavGroup, routePath: string): boolean {
   if ('groups' in branch) {
-    return branch.groups.some((group) => branchContainsRoute(group, routePath));
+    return branch.items.some((item) => item.path === routePath) || branch.groups.some((group) => branchContainsRoute(group, routePath));
   }
 
   return branch.items.some((item) => item.path === routePath);

@@ -90,6 +90,23 @@
 
           <div [attr.aria-label]="section.ariaLabel" class="showcase-nav-tree-group showcase-nav-tree-branch-group" role="group">
             <ng-template #sectionTreeGroup="ngTreeItemGroup" [ownedBy]="sectionTreeItem" ngTreeItemGroup>
+              @for (item of section.items; track item.path) {
+              <a
+                [attr.data-testid]="`showcase-nav-link-${item.id}`"
+                [label]="item.label"
+                [parent]="sectionTreeGroup"
+                [routerLink]="item.path"
+                [value]="item.path"
+                class="showcase-nav-tree-link"
+                ngTreeItem
+                (click)="closeMobileNav(false)"
+                (focus)="prefetchNavItem(item)"
+                (pointerenter)="prefetchNavItem(item)">
+                <span aria-hidden="true" class="showcase-nav-tree-connector"></span>
+                <span class="showcase-nav-tree-label">{{ item.label }}</span>
+              </a>
+              }
+
               @for (group of section.groups; track group.id) {
               <div
                 #navGroupTreeItem="ngTreeItem"
