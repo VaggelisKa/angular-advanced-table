@@ -7,7 +7,9 @@ test.describe('FEATURE: Table states accessibility', () => {
 
   test.describe('GIVEN: the states example is loaded', () => {
     test.describe('WHEN: the retry button is activated via keyboard', () => {
-      test('THEN: it displays loading, empty, and errored grids and re-enters loading when retry is triggered via keyboard', async ({ page }) => {
+      test('THEN: it displays loading, empty, and errored grids and re-enters loading when retry is triggered via keyboard', async ({
+        page
+      }) => {
         const errorTable = page.getByRole('grid', { name: 'Errored incidents table' });
 
         await test.step('THEN: heading is visible', async () => {

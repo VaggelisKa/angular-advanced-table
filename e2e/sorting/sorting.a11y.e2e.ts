@@ -33,7 +33,9 @@ test.describe('FEATURE: Sorting accessibility', () => {
         await test.step('THEN: the state reflects name (desc)', async () => {
           await expect(stateTag).toContainText('name (desc)');
 
-          const clearBtn = page.locator('.card', { hasText: 'Programmatic Sort Actions' }).getByRole('button', { name: 'Clear Sorting' });
+          const clearBtn = page
+            .locator('.card', { hasText: 'Programmatic Sort Actions' })
+            .getByRole('button', { name: 'Clear Sorting' });
 
           await clearBtn.focus();
           await page.keyboard.press('Enter');

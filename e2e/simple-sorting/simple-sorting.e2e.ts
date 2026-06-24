@@ -28,14 +28,26 @@ test.describe('FEATURE: Simple sorting', () => {
         const customerCells = table.locator('td[data-column-id="customer"]');
 
         await test.step('THEN: initial unsorted order is shown', async () => {
-          await expect(customerCells).toContainText(['Northstar Supply', 'Juniper Foods', 'Atlas Studio', 'Harbor Retail', 'Pioneer Labs']);
+          await expect(customerCells).toContainText([
+            'Northstar Supply',
+            'Juniper Foods',
+            'Atlas Studio',
+            'Harbor Retail',
+            'Pioneer Labs'
+          ]);
 
           await customerHeaderBtn.click();
         });
 
         await test.step('THEN: rows are sorted ascending by customer', async () => {
           // Now sorted ascending by customer:
-          await expect(customerCells).toContainText(['Atlas Studio', 'Harbor Retail', 'Juniper Foods', 'Northstar Supply', 'Pioneer Labs']);
+          await expect(customerCells).toContainText([
+            'Atlas Studio',
+            'Harbor Retail',
+            'Juniper Foods',
+            'Northstar Supply',
+            'Pioneer Labs'
+          ]);
         });
       });
     });

@@ -1238,7 +1238,9 @@ describe('FEATURE: NatTable', () => {
         // the other columns' minimums), even when the column's own maxSize is much larger.
         // Every column is sized 100 with min 50 so the fit budget is deterministic.
         const sizedColumns: ColumnDef<Row, unknown>[] = resizableColumns.map((column) =>
-          'accessorKey' in column ? { ...column, size: 100, minSize: 50, maxSize: column.accessorKey === 'region' ? 1000 : 100 } : column
+          'accessorKey' in column
+            ? { ...column, size: 100, minSize: 50, maxSize: column.accessorKey === 'region' ? 1000 : 100 }
+            : column
         );
 
         await recreateHost({ columns: sizedColumns });
@@ -2154,7 +2156,9 @@ describe('FEATURE: NatTable', () => {
 
         // then:
         expect(summary.textContent.trim()).toBe('Oversigt 2/6/4/1/3');
-        expect(instructions.textContent).toContain('Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.');
+        expect(instructions.textContent).toContain(
+          'Brug Control+Shift+Piletaster til at flytte kolonner. Brug Command+Shift på macOS.'
+        );
 
         // when:
         tableComponent.table.nextPage();
