@@ -1838,7 +1838,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
     if (browserSupportsScrollTimeline()) {
       const visualOffsetTop = readVisualViewportOffsetTop();
-      const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop + visualOffsetTop);
+      // Match the JS fallback: translate = stickyTop - rect.top + visualOffsetTop.
+      // Since translate equals scrollY - rangeStart, offsetTop must be subtracted here.
+      const rangeStart = Math.max(0, this.tablePageTop - this.cachedStickyTop - visualOffsetTop);
       const maxTranslate = Math.max(0, this.tableHeight - this.theadHeight);
       const rangeEnd = rangeStart + maxTranslate;
 

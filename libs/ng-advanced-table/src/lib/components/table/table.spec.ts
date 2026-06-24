@@ -3332,7 +3332,7 @@ describe('NatTable', () => {
     try {
       table.measureTableDimensions();
 
-      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('640px');
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('560px');
     } finally {
       vi.unstubAllGlobals();
 
