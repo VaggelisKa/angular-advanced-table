@@ -160,20 +160,23 @@ export class StickyHeaderShowcasePage {
       return;
     }
 
-    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.shiftKey ? event.deltaY : 0;
+    const delta = event.deltaX !== 0 ? event.deltaX : event.shiftKey ? event.deltaY : 0;
 
-    if (delta === 0) {
+    if (Math.abs(delta) < 0.5) {
       return;
     }
 
     const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
     const nextScrollLeft = Math.min(Math.max(0, scroller.scrollLeft + delta), maxScrollLeft);
 
+    if (maxScrollLeft > 0) {
+      event.preventDefault();
+    }
+
     if (nextScrollLeft === scroller.scrollLeft) {
       return;
     }
 
-    event.preventDefault();
     scroller.scrollLeft = nextScrollLeft;
     this.syncNativeProxyFrame(frame);
   }
