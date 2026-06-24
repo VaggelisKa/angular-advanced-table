@@ -1,36 +1,11 @@
-.scrollable-grid-card nat-table-surface {
-  --nat-table-max-height: 400px;
-}
-
 .table-stack nat-table-surface {
   --nat-table-max-height: none;
-}
-
-.sticky-strategy-native-visible {
-  --nat-table-region-overflow: visible;
-  --nat-table-region-overflow-x: visible;
-  --nat-table-region-overflow-y: visible;
-}
-
-.sticky-strategy-native-contained {
-  --nat-table-region-overflow: visible;
-  --nat-table-region-overflow-x: visible;
-  --nat-table-region-overflow-y: visible;
 }
 
 .sticky-strategy-native-proxy {
   --nat-table-region-overflow: visible;
   --nat-table-region-overflow-x: visible;
   --nat-table-region-overflow-y: visible;
-}
-
-.sticky-strategy-native-hybrid {
-  --nat-table-region-overflow-x: auto;
-  --nat-table-region-overflow-y: clip;
-}
-
-.table-stack nat-table-surface.sticky-strategy-bounded-region {
-  --nat-table-max-height: min(460px, 70vh);
 }
 
 .table-stack {
@@ -53,8 +28,11 @@
 }
 
 .native-proxy-frame {
+  --nat-showcase-proxy-table-inline-size: max(100%, 1120px);
+
   display: grid;
   min-width: 0;
+  touch-action: pan-y;
 }
 
 .native-proxy-scrollbar {
@@ -72,7 +50,7 @@
 
 .native-proxy-scrollbar-track {
   block-size: 1px;
-  inline-size: 100%;
+  inline-size: var(--nat-showcase-proxy-table-inline-size);
 }
 
 @media (max-width: 820px) {

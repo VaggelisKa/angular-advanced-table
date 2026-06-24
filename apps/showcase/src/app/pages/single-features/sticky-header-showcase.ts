@@ -30,8 +30,7 @@ export class StickyHeaderShowcasePage {
   protected readonly data = DEMO_DATA;
   protected readonly columns = COLUMNS;
   protected readonly stickyHeaderEnabled = signal(true);
-  protected readonly viewportTableIds = [1, 2, 3, 4, 5];
-  protected readonly prototypeTableIds = [1, 2, 3];
+  protected readonly tableIds = [1, 2, 3];
 
   public constructor() {
     afterNextRender(
@@ -189,7 +188,9 @@ export class StickyHeaderShowcasePage {
     }
 
     const frameWidth = Math.ceil(frame.getBoundingClientRect().width);
-    const tableWidth = Math.ceil(table.getBoundingClientRect().width);
+    const tableWidth = Math.ceil(
+      Math.max(table.scrollWidth, table.offsetWidth, table.getBoundingClientRect().width)
+    );
     const scrollWidth = Math.max(frameWidth, tableWidth);
     const maxScrollLeft = Math.max(0, scrollWidth - scroller.clientWidth);
 
