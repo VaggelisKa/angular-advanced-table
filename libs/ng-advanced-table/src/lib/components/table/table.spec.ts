@@ -3295,7 +3295,7 @@ describe('NatTable', () => {
     }
   });
 
-  it('includes the visual viewport offset in scroll-timeline animation range', async () => {
+  it('keeps a stable scroll-timeline range from cached table layout', async () => {
     await recreateHost({ stickyHeader: true });
     fixture.detectChanges();
 
@@ -3332,7 +3332,8 @@ describe('NatTable', () => {
     try {
       table.measureTableDimensions();
 
-      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('560px');
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-range-start')).toBe('600px');
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-vv-correction')).toBe('0px');
     } finally {
       vi.unstubAllGlobals();
 
@@ -3341,6 +3342,59 @@ describe('NatTable', () => {
       } else {
         delete (window as unknown as { visualViewport?: unknown }).visualViewport;
       }
+
+      if (scrollYDescriptor) {
+        Object.defineProperty(window, 'scrollY', scrollYDescriptor);
+      }
+    }
+  });
+
+  it('applies a scroll-timeline viewport correction from live table geometry', async () => {
+    await recreateHost({ stickyHeader: true });
+    fixture.detectChanges();
+
+    vi.stubGlobal('CSS', {
+      supports: (): boolean => true
+    });
+
+    const scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
+
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 700
+    });
+
+    const table = getInternalTable(fixture) as unknown as {
+      cachedStickyTop: number;
+      isRegionScrollable: boolean;
+      tableHeight: number;
+      theadHeight: number;
+      tablePageTop: number;
+      isTableVisible: boolean;
+      measureTableDimensions(): void;
+      updateScrollTimelineViewportCorrection(): void;
+    };
+    const tableElement = queryRequired<HTMLTableElement>(fixture, 'table');
+
+    tableElement.getBoundingClientRect = (): DOMRect =>
+      ({
+        top: -50,
+        height: 400
+      }) as DOMRect;
+
+    table.cachedStickyTop = 0;
+    table.isRegionScrollable = false;
+    table.tableHeight = 400;
+    table.theadHeight = 40;
+    table.tablePageTop = 600;
+    table.isTableVisible = true;
+
+    try {
+      table.updateScrollTimelineViewportCorrection();
+
+      expect(tableElement.style.getPropertyValue('--nat-table-sticky-vv-correction')).toBe('-50px');
+    } finally {
+      vi.unstubAllGlobals();
 
       if (scrollYDescriptor) {
         Object.defineProperty(window, 'scrollY', scrollYDescriptor);

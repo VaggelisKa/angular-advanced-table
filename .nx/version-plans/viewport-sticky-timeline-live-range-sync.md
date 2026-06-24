@@ -2,4 +2,4 @@
 ng-advanced-table: patch
 ---
 
-Keep CSS scroll-timeline viewport sticky headers in sync on mobile by recomputing the animation range from the table's live document position on every scroll and visual-viewport scroll frame, and by subtracting `visualViewport.offsetTop` from the range start so the scroll-timeline translate matches the live-rect JavaScript formula (`stickyTop - rect.top + offsetTop`).
+Fix viewport-sticky headers drifting below page chrome on mobile by keeping scroll-timeline animation ranges stable between layout changes and applying a lightweight `--nat-table-sticky-vv-correction` term from live table geometry during scroll. Recomputing the range every frame had been shifting stacked tables further out of sync the deeper you scrolled.
