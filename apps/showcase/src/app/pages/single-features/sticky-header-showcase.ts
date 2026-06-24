@@ -16,21 +16,12 @@ export class StickyHeaderShowcasePage {
   protected readonly data = DEMO_DATA;
   protected readonly columns = COLUMNS;
   protected readonly stickyHeaderEnabled = signal(true);
-  protected readonly simulateTopbar = signal(false);
 
   protected toggleStickyHeader(event: Event): void {
     const target = event.target;
 
     if (target instanceof HTMLInputElement) {
       this.stickyHeaderEnabled.set(target.checked);
-    }
-  }
-
-  protected toggleTopbarSimulation(event: Event): void {
-    const target = event.target;
-
-    if (target instanceof HTMLInputElement) {
-      this.simulateTopbar.set(target.checked);
     }
   }
 }

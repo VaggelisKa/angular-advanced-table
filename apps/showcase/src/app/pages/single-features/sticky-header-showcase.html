@@ -1,11 +1,5 @@
 <app-sticky-debug-overlay />
 
-@if (simulateTopbar()) {
-<div class="simulate-topbar">
-  <span>Simulated Sticky Topbar Active (Height: 60px)</span>
-</div>
-}
-
 <div class="showcase-page showcase-container showcase-wrapper">
   <header class="header-section">
     <div class="header-title-container">
@@ -17,7 +11,7 @@
   <div class="grid-layout grid-layout-with-panel">
     <div class="card scrollable-grid-card">
       <h2 class="card-title">Scrollable Grid</h2>
-      <nat-table-surface [class.with-topbar]="simulateTopbar()" [stickyHeader]="stickyHeaderEnabled()">
+      <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
         <nat-table [columns]="columns" [data]="data" accessibleName="Sticky header demo table" />
       </nat-table-surface>
     </div>
@@ -29,12 +23,9 @@
           <input [checked]="stickyHeaderEnabled()" type="checkbox" (change)="toggleStickyHeader($event)" />
           <span>Enable Sticky Header</span>
         </label>
-        <label class="toggle-label">
-          <input [checked]="simulateTopbar()" type="checkbox" (change)="toggleTopbarSimulation($event)" />
-          <span>Simulate Sticky Topbar (60px)</span>
-        </label>
         <div class="tip">
-          Scroll down the table to verify the sticky behavior, then turn it off to observe standard scrolling logic.
+          Scroll down the table to verify the sticky behavior, then turn it off to observe standard scrolling logic. On mobile, the
+          showcase header is included automatically via <code>--nat-table-sticky-top</code>.
         </div>
       </div>
     </div>
@@ -54,7 +45,7 @@
     @for (i of [1, 2, 3, 4, 5]; track i) {
     <div class="card viewport-stack-card">
       <h3 class="card-title">Table #{{ i }}</h3>
-      <nat-table-surface [class.with-topbar]="simulateTopbar()" [stickyHeader]="stickyHeaderEnabled()">
+      <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
         <nat-table [accessibleName]="`Viewport sticky table ${i}`" [columns]="columns" [data]="data" />
       </nat-table-surface>
     </div>
