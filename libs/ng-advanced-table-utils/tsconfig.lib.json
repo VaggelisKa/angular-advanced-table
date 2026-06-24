@@ -6,13 +6,7 @@
     "outDir": "../../out-tsc/lib-utils",
     "declaration": true,
     "declarationMap": true,
-    "types": [],
-    "paths": {
-      "ng-advanced-table-locales": [
-        "../../dist/libs/ng-advanced-table-locales",
-        "../../libs/ng-advanced-table-locales/src/public-api.ts"
-      ]
-    }
+    "types": []
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
