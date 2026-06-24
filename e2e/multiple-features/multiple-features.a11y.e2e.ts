@@ -1,44 +1,50 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Multiple features accessibility', () => {
+test.describe('FEATURE: Multiple features accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/multiple-features');
   });
 
-  test('navigates live tape features using keyboard only', async ({ page }) => {
-    // Focus the simulation toggle button and press Enter to pause feed
-    const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
+  test.describe('GIVEN: the live market tape example is loaded', () => {
+    test.describe('WHEN: live tape features are navigated via keyboard', () => {
+      test('THEN: it navigates live tape features using keyboard only', async ({ page }) => {
+        const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
 
-    await toggleBtn.focus();
-    await page.keyboard.press('Enter');
-    await expect(page.locator('.session-label')).toContainText('Feed paused');
+        await toggleBtn.focus();
+        await page.keyboard.press('Enter');
 
-    // Focus status filter chip and toggle it using Space
-    const advancingChip = page.locator('.status-chip[data-status="Advancing"]');
+        await test.step('THEN: the session reports the feed as paused', async () => {
+          await expect(page.locator('.session-label')).toContainText('Feed paused');
 
-    await advancingChip.focus();
-    await page.keyboard.press('Space');
+          const advancingChip = page.locator('.status-chip[data-status="Advancing"]');
 
-    // Verify only Advancing status is visible
-    const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
-    const totalRows = await page.locator('tbody tr').count();
+          await advancingChip.focus();
+          await page.keyboard.press('Space');
+        });
 
-    expect(totalRows).toBeGreaterThan(0);
-    await expect(advancingRows).toHaveCount(totalRows);
+        await test.step('THEN: every visible row has the Advancing status', async () => {
+          const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
+          const totalRows = await page.locator('tbody tr').count();
 
-    // Focus search input, type NASDAQ, and press Enter
-    await expect(page.locator('tbody tr')).not.toHaveCount(0);
-    const searchInput = page.locator('app-table-search input');
+          expect(totalRows).toBeGreaterThan(0);
+          await expect(advancingRows).toHaveCount(totalRows);
 
-    await searchInput.focus();
-    await page.keyboard.type('NASDAQ');
-    await page.keyboard.press('Enter');
+          await expect(page.locator('tbody tr')).not.toHaveCount(0);
+          const searchInput = page.locator('app-table-search input');
 
-    // Verify search result — leading visible row's exchange is NASDAQ
-    await expect(page.locator('td[data-column-id="exchange"]')).toContainText(['NASDAQ']);
-    const nasdaqCells = page.locator('td[data-column-id="exchange"]').filter({ hasText: 'NASDAQ' });
-    const totalRowsAfterSearch = await page.locator('tbody tr').count();
+          await searchInput.focus();
+          await page.keyboard.type('NASDAQ');
+          await page.keyboard.press('Enter');
+        });
 
-    await expect(nasdaqCells).toHaveCount(totalRowsAfterSearch);
+        await test.step('THEN: every visible exchange cell is NASDAQ', async () => {
+          await expect(page.locator('td[data-column-id="exchange"]')).toContainText(['NASDAQ']);
+          const nasdaqCells = page.locator('td[data-column-id="exchange"]').filter({ hasText: 'NASDAQ' });
+          const totalRowsAfterSearch = await page.locator('tbody tr').count();
+
+          await expect(nasdaqCells).toHaveCount(totalRowsAfterSearch);
+        });
+      });
+    });
   });
 });
