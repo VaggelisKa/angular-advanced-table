@@ -52,8 +52,18 @@
       "dependsOn": ["^build"],
       "inputs": ["default", "^production"]
     },
+    "strip-nx": {
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node tools/strip-nx-manifest.mjs dist/{projectRoot}"
+      }
+    },
     "nx-release-publish": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build", "strip-nx"],
+      "options": {
+        "packageRoot": "dist/{projectRoot}",
+        "access": "public"
+      }
     }
   },
   "release": {

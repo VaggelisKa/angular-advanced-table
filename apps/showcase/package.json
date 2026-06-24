@@ -1,0 +1,126 @@
+{
+  "name": "showcase",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@angular/aria": "catalog:frontend",
+    "@angular/cdk": "catalog:frontend",
+    "@angular/common": "catalog:frontend",
+    "@angular/compiler": "catalog:frontend",
+    "@angular/core": "catalog:frontend",
+    "@angular/forms": "catalog:frontend",
+    "@angular/platform-browser": "catalog:frontend",
+    "@angular/router": "catalog:frontend",
+    "@tanstack/angular-table": "catalog:frontend",
+    "katex": "catalog:frontend",
+    "marked": "catalog:frontend",
+    "marked-katex-extension": "catalog:frontend",
+    "ngx-markdown": "catalog:frontend",
+    "prismjs": "catalog:frontend",
+    "rxjs": "catalog:frontend",
+    "tslib": "catalog:shared",
+    "ng-advanced-table": "workspace:*",
+    "ng-advanced-table-locales": "workspace:*",
+    "ng-advanced-table-ui": "workspace:*",
+    "ng-advanced-table-utils": "workspace:*"
+  },
+  "nx": {
+    "name": "showcase",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "application",
+    "prefix": "app",
+    "sourceRoot": "apps/showcase/src",
+    "tags": [
+      "type:app",
+      "scope:showcase"
+    ],
+    "targets": {
+      "build": {
+        "executor": "@angular/build:application",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "dist/apps/showcase",
+          "browser": "apps/showcase/src/main.ts",
+          "tsConfig": "apps/showcase/tsconfig.app.json",
+          "assets": [
+            {
+              "glob": "**/*",
+              "input": "public"
+            },
+            {
+              "glob": "**/*",
+              "input": "apps/showcase/public"
+            }
+          ],
+          "styles": [
+            "apps/showcase/src/styles.css"
+          ],
+          "scripts": [
+            "node_modules/prismjs/prism.js",
+            "node_modules/prismjs/components/prism-bash.min.js",
+            "node_modules/prismjs/components/prism-css.min.js",
+            "node_modules/prismjs/components/prism-markup.min.js",
+            "node_modules/prismjs/components/prism-typescript.min.js",
+            "node_modules/prismjs/components/prism-json.min.js"
+          ]
+        },
+        "configurations": {
+          "production": {
+            "budgets": [
+              {
+                "type": "initial",
+                "maximumWarning": "500kB",
+                "maximumError": "1MB"
+              },
+              {
+                "type": "anyComponentStyle",
+                "maximumWarning": "50kB",
+                "maximumError": "50kB"
+              }
+            ],
+            "outputHashing": "all"
+          },
+          "development": {
+            "optimization": false,
+            "extractLicenses": false,
+            "sourceMap": true
+          }
+        },
+        "defaultConfiguration": "production"
+      },
+      "serve": {
+        "executor": "@angular/build:dev-server",
+        "continuous": true,
+        "configurations": {
+          "production": {
+            "buildTarget": "showcase:build:production"
+          },
+          "development": {
+            "buildTarget": "showcase:build:development"
+          }
+        },
+        "defaultConfiguration": "development"
+      },
+      "serve-e2e": {
+        "executor": "@angular/build:dev-server",
+        "configurations": {
+          "production": {
+            "buildTarget": "showcase:build:production"
+          },
+          "development": {
+            "buildTarget": "showcase:build:development"
+          }
+        },
+        "defaultConfiguration": "development"
+      },
+      "test": {
+        "executor": "@angular/build:unit-test",
+        "options": {
+          "tsConfig": "apps/showcase/tsconfig.spec.json"
+        }
+      }
+    }
+  }
+}

@@ -153,7 +153,7 @@ describe('App', () => {
     expect(utilities.getAttribute('aria-label')).toBe('Showcase utilities');
     expect(utilities.textContent.trim()).toBe('');
     expect(themeToggle.getAttribute('aria-label')).toBe('Color theme');
-    expect(themeOptions.map((option) => option.getAttribute('aria-label'))).toEqual(['Use light theme', 'Use dark theme']);
+    expect(themeOptions.map((option) => option.getAttribute('aria-label'))).toStrictEqual(['Use light theme', 'Use dark theme']);
     expect(githubLink.getAttribute('aria-label')).toBe('Open angular-advanced-table repository on GitHub');
     expect(githubLink.getAttribute('title')).toBe('Open GitHub repository');
   });

@@ -3,9 +3,8 @@ import type { ApplicationConfig } from '@angular/core';
 import { provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-import { MARKED_OPTIONS, provideMarkdown } from 'ngx-markdown';
-
 import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table-locales';
+import { MARKED_OPTIONS, provideMarkdown } from 'ngx-markdown';
 
 import { routes } from './app.routes';
 
