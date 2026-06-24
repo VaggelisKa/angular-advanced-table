@@ -1,5 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 
+import { NatTableService } from 'ng-advanced-table';
+
 import {
   NAT_TABLE_UTILS_ENGLISH_LOCALE,
   NAT_TABLE_UTILS_INTL,
@@ -35,8 +37,10 @@ export class NatRenderMetricsPanel {
   /** Per-instance label overrides. */
   public readonly labels = input<NatTableRenderMetricsPanelIntl | undefined>(undefined);
 
+  private readonly natTableService = inject(NatTableService, { optional: true });
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
-  private readonly localeId = computed(() => this.locale() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
+  private readonly tableLocaleId = computed(() => this.natTableService?.controller()?.localeId?.());
+  private readonly localeId = computed(() => this.locale() ?? this.tableLocaleId() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
   private readonly utilsIntl = computed(() => resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()));
 
   private readonly resolvedLabels = computed(() => mergeRenderMetricsPanelIntl(this.utilsIntl().renderMetrics?.panel, this.labels()));

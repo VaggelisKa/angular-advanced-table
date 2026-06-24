@@ -120,10 +120,10 @@
       </div>
 
       <nat-table-surface [accessibilityText]="accessibilityText" [stickyHeader]="true" [(state)]="tableState" class="table-shell">
-        <nat-table-toolbar accessibleName="Render metrics toolbar" class="kitchen-metrics-toolbar">
+        <div class="kitchen-metrics-controls">
           <nat-render-metrics-filter [store]="metricsStore" />
           <nat-render-metrics-panel [store]="metricsStore" />
-        </nat-table-toolbar>
+        </div>
 
         <nat-table-toolbar accessibleName="Live movers table toolbar" class="kitchen-table-toolbar">
           <app-table-search

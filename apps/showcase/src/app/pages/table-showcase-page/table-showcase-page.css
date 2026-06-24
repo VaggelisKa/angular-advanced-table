@@ -440,7 +440,7 @@
   color: var(--warning);
 }
 
-.kitchen-metrics-toolbar nat-render-metrics-filter {
+.kitchen-metrics-controls nat-render-metrics-filter {
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -619,9 +619,14 @@
   backdrop-filter: none;
 }
 
-.kitchen-metrics-toolbar,
+.kitchen-metrics-controls,
 .kitchen-table-toolbar {
+  display: flex;
   flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
   padding: 14px 20px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);

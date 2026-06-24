@@ -41,8 +41,10 @@
   padding: 0 14px;
   color: inherit;
   cursor: pointer;
+  background: rgb(236 245 251 / 5%);
   background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
   border: 1px solid transparent;
+  border-color: rgb(236 245 251 / 14%);
   border-color: color-mix(in srgb, var(--text, #ecf5fb) 14%, transparent);
   border-radius: 999px;
   transition:
@@ -54,8 +56,11 @@
 }
 
 .chip.is-active {
+  background: rgb(87 209 255 / 18%);
   background: color-mix(in srgb, var(--accent, #57d1ff) 18%, transparent);
+  border-color: rgb(87 209 255 / 34%);
   border-color: color-mix(in srgb, var(--accent, #57d1ff) 34%, transparent);
+  box-shadow: 0 0 16px rgb(87 209 255 / 14%);
   box-shadow: 0 0 16px color-mix(in srgb, var(--accent, #57d1ff) 14%, transparent);
 }
 
@@ -76,7 +81,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .chip:hover {
+    background: rgb(236 245 251 / 8%);
     background: color-mix(in srgb, var(--text, #ecf5fb) 8%, transparent);
+    border-color: rgb(236 245 251 / 20%);
     border-color: color-mix(in srgb, var(--text, #ecf5fb) 20%, transparent);
     transform: translateY(-1px);
   }

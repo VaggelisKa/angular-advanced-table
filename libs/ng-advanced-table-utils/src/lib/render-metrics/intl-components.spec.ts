@@ -41,40 +41,63 @@ const providerOptions: readonly RowRenderFilterOption[] = [
   }
 ];
 
+const providerPanelLabels: NatTableRenderMetricsPanelIntl = {
+  ariaLabel: 'Provider row render sample',
+  toneLabel: (tone) => `Provider ${tone}`,
+  rowSampleSummary: ({ rowCountText }) => `Provider ${rowCountText} rows sampled`,
+  duration: ({ durationMsText }) => `Provider ${durationMsText} ms`
+};
+
+const providerFilterLabels: NatTableRenderMetricsFilterIntl = {
+  heading: 'Provider render speed',
+  groupAriaLabel: 'Provider row render speed',
+  rowSampleCaption: ({ rowCountText }) => `Provider ${rowCountText} visible rows`,
+  options: providerOptions
+};
+
+const qaPanelLabels: NatTableRenderMetricsPanelIntl = {
+  ariaLabel: 'QA row render sample',
+  toneLabel: (tone) => `QA ${tone}`,
+  rowSampleSummary: ({ rowCountText }) => `QA ${rowCountText} rows sampled`,
+  duration: ({ durationMsText }) => `QA ${durationMsText} ms`
+};
+
 @Component({
   selector: 'nat-test-host',
   imports: [NatRenderMetricsFilter, NatRenderMetricsPanel],
   providers: [
     NatTableService,
     provideNatTableUtilsIntl({
-      formatNumber: (value) => `n${value}`,
-      renderMetrics: {
-        panel: {
-          ariaLabel: 'Provider row render sample',
-          toneLabel: (tone) => `Provider ${tone}`,
-          rowSampleSummary: ({ rowCountText }) => `Provider ${rowCountText} rows sampled`,
-          duration: ({ durationMsText }) => `Provider ${durationMsText} ms`
+      locales: {
+        en: {
+          formatNumber: (value) => `n${value}`,
+          renderMetrics: {
+            panel: providerPanelLabels,
+            filter: providerFilterLabels
+          }
         },
-        filter: {
-          heading: 'Provider render speed',
-          groupAriaLabel: 'Provider row render speed',
-          rowSampleCaption: ({ rowCountText }) => `Provider ${rowCountText} visible rows`,
-          options: providerOptions
+        qa: {
+          formatNumber: (value) => `q${value}`,
+          renderMetrics: {
+            panel: qaPanelLabels
+          }
         }
       }
     })
   ],
   template: `
-    <nat-render-metrics-panel [labels]="panelLabels()" [store]="store" />
+    <nat-render-metrics-panel [labels]="panelLabels()" [locale]="panelLocale()" [store]="store" />
     <nat-render-metrics-filter [labels]="filterLabels()" [store]="store" />
   `
 })
 class RenderMetricsIntlHost {
   protected readonly store = new NatTableRenderMetricsStore();
+  public readonly controllerLocale = signal('en');
   private readonly controller: NatTableUiController<Row> = {
     table: {
       getState: () => ({ columnFilters: [] })
     } as unknown as Table<Row>,
+    localeId: this.controllerLocale,
     tableElementId: signal('nat-table-mock'),
     enableGlobalFilter: () => true,
     enablePagination: () => true,
@@ -82,6 +105,7 @@ class RenderMetricsIntlHost {
   };
 
   public readonly panelLabels = signal<NatTableRenderMetricsPanelIntl | undefined>(undefined);
+  public readonly panelLocale = signal<string | undefined>(undefined);
   public readonly filterLabels = signal<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
   private readonly natTableService = inject(NatTableService);
@@ -100,18 +124,18 @@ describe('render metrics intl components', () => {
   let fixture: ComponentFixture<RenderMetricsIntlHost>;
   let host: RenderMetricsIntlHost;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [RenderMetricsIntlHost],
       providers: [provideZonelessChangeDetection()]
-    });
+    }).compileComponents();
 
     fixture = TestBed.createComponent(RenderMetricsIntlHost);
     host = fixture.componentInstance;
   });
 
-  it('uses provider render-metrics labels and lets component inputs override them', () => {
-    fixture.detectChanges();
+  it('uses provider render-metrics labels and lets component inputs override them', async () => {
+    await fixture.whenStable();
 
     const nativeElement = fixture.nativeElement as HTMLElement;
     const panel = nativeElement.querySelector('.render-kpi') as HTMLElement;
@@ -138,11 +162,34 @@ describe('render metrics intl components', () => {
     host.filterLabels.set({
       heading: 'Input render speed'
     });
-    fixture.detectChanges();
+    await fixture.whenStable();
 
     expect(panel.getAttribute('aria-label')).toBe('Input row render sample');
     expect(detail.textContent.trim()).toBe('Input tone · Provider n1 rows sampled');
     expect(filterHeading.textContent.trim()).toBe('Input render speed');
     expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
+  });
+
+  it('uses the table locale for panel labels unless the panel locale input is set', async () => {
+    host.controllerLocale.set('qa');
+
+    await fixture.whenStable();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    const panel = nativeElement.querySelector('.render-kpi') as HTMLElement;
+    const duration = nativeElement.querySelector('.render-kpi strong') as HTMLElement;
+    const detail = nativeElement.querySelector('.render-kpi-detail') as HTMLElement;
+
+    expect(panel.getAttribute('aria-label')).toBe('QA row render sample');
+    expect(duration.textContent.trim()).toBe('QA q5.5 ms');
+    expect(detail.textContent.trim()).toBe('QA watch · QA q1 rows sampled');
+
+    host.panelLocale.set('en');
+
+    await fixture.whenStable();
+
+    expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
+    expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
+    expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
   });
 });
