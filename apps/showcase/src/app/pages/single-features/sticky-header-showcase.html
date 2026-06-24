@@ -72,6 +72,27 @@
 
   <header class="header-section">
     <div class="header-title-container">
+      <h2 class="title">Prototype A2: Native Viewport Sticky, Contained</h2>
+      <p class="description">
+        This keeps the native sticky header cells from Prototype A, but clips horizontal overflow at the card boundary so the table
+        cannot widen the whole page.
+      </p>
+    </div>
+  </header>
+
+  <div class="table-stack">
+    @for (i of prototypeTableIds; track i) {
+    <div class="card sticky-native-contained-card viewport-stack-card">
+      <h3 class="card-title">Native contained table #{{ i }}</h3>
+      <nat-table-surface [stickyHeader]="stickyHeaderEnabled()" class="sticky-strategy-native-contained">
+        <nat-table [accessibleName]="`Native contained sticky table ${i}`" [columns]="columns" [data]="data" />
+      </nat-table-surface>
+    </div>
+    }
+  </div>
+
+  <header class="header-section">
+    <div class="header-title-container">
       <h2 class="title">Prototype B: Native Hybrid Scroll</h2>
       <p class="description">
         This keeps a horizontal table scroller but removes the vertical transform sync. It is useful to test whether the mobile browser

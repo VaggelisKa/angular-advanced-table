@@ -12,6 +12,12 @@
   --nat-table-region-overflow-y: visible;
 }
 
+.sticky-strategy-native-contained {
+  --nat-table-region-overflow: visible;
+  --nat-table-region-overflow-x: visible;
+  --nat-table-region-overflow-y: visible;
+}
+
 .sticky-strategy-native-hybrid {
   --nat-table-region-overflow-x: auto;
   --nat-table-region-overflow-y: clip;
@@ -34,6 +40,10 @@
 
 .viewport-stack-card {
   margin-bottom: 4rem;
+}
+
+.table-stack .card.sticky-native-contained-card {
+  overflow: clip;
 }
 
 @media (max-width: 820px) {

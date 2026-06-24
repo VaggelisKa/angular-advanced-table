@@ -986,6 +986,7 @@ input {
 /* Sticky-header strategy prototypes intentionally reach into the table internals
    so the showcase can compare alternatives without adding public API. */
 .sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) thead,
+.sticky-strategy-native-contained .data-table.has-sticky-header:not(.is-region-scrollable) thead,
 .sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) thead {
   position: static;
   z-index: auto;
@@ -995,6 +996,7 @@ input {
 }
 
 .sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell,
+.sticky-strategy-native-contained .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell,
 .sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell {
   position: sticky !important;
   top: var(--nat-table-sticky-top, 0) !important;
@@ -1003,6 +1005,8 @@ input {
 
 .sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-left,
 .sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-right,
+.sticky-strategy-native-contained .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-left,
+.sticky-strategy-native-contained .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-right,
 .sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-left,
 .sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-right {
   top: var(--nat-table-sticky-top, 0) !important;
