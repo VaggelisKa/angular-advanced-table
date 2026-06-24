@@ -32,10 +32,18 @@
 
   display: grid;
   min-width: 0;
+  cursor: grab;
   touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.native-proxy-frame:active {
+  cursor: grabbing;
 }
 
 .native-proxy-scrollbar {
+  block-size: 16px;
   min-width: 0;
   max-width: 100%;
   overflow-x: auto;

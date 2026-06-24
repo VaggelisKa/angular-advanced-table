@@ -23,10 +23,10 @@
         data-native-proxy-frame
         (focusin)="refreshNativeProxyScroll($event)"
         (pointerenter)="refreshNativeProxyScroll($event)"
-        (touchcancel)="endNativeProxyTouch()"
-        (touchend)="endNativeProxyTouch()"
-        (touchmove)="moveNativeProxyTouch($event)"
-        (touchstart)="startNativeProxyTouch($event)"
+        (pointercancel)="endNativeProxyDrag($event)"
+        (pointerdown)="startNativeProxyDrag($event)"
+        (pointermove)="moveNativeProxyDrag($event)"
+        (pointerup)="endNativeProxyDrag($event)"
         (wheel)="scrollNativeProxyWheel($event)">
         <nat-table-surface [stickyHeader]="stickyHeaderEnabled()" class="sticky-strategy-native-proxy">
           <nat-table [accessibleName]="`Contained horizontal-scroll sticky table ${i}`" [columns]="columns" [data]="data" />

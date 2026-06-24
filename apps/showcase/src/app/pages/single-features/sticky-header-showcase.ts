@@ -6,9 +6,10 @@ import { NatTableSurface } from 'ng-advanced-table-ui';
 
 import { COLUMNS, DEMO_DATA } from './sticky-header-showcase.data';
 
-type NativeProxyTouchState = {
+type NativeProxyDragState = {
   frame: HTMLElement;
   mode: 'horizontal' | 'pending' | 'vertical';
+  pointerId: number;
   scroller: HTMLElement;
   startScrollLeft: number;
   startX: number;
@@ -25,7 +26,7 @@ export class StickyHeaderShowcasePage {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly nativeProxyFrames = viewChildren<ElementRef<HTMLElement>>('nativeProxyFrame');
-  private nativeProxyTouchState: NativeProxyTouchState | null = null;
+  private nativeProxyDragState: NativeProxyDragState | null = null;
 
   protected readonly data = DEMO_DATA;
   protected readonly columns = COLUMNS;
@@ -70,11 +71,14 @@ export class StickyHeaderShowcasePage {
     }
   }
 
-  protected startNativeProxyTouch(event: TouchEvent): void {
-    const frame = this.resolveNativeProxyFrame(event);
-    const touch = event.touches.item(0);
+  protected startNativeProxyDrag(event: PointerEvent): void {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
+      return;
+    }
 
-    if (!frame || !touch) {
+    const frame = this.resolveNativeProxyFrame(event);
+
+    if (!frame) {
       return;
     }
 
@@ -86,26 +90,26 @@ export class StickyHeaderShowcasePage {
       return;
     }
 
-    this.nativeProxyTouchState = {
+    this.nativeProxyDragState = {
       frame,
       mode: 'pending',
+      pointerId: event.pointerId,
       scroller,
       startScrollLeft: scroller.scrollLeft,
-      startX: touch.clientX,
-      startY: touch.clientY
+      startX: event.clientX,
+      startY: event.clientY
     };
   }
 
-  protected moveNativeProxyTouch(event: TouchEvent): void {
-    const state = this.nativeProxyTouchState;
-    const touch = event.touches.item(0);
+  protected moveNativeProxyDrag(event: PointerEvent): void {
+    const state = this.nativeProxyDragState;
 
-    if (!state || !touch) {
+    if (!state || event.pointerId !== state.pointerId) {
       return;
     }
 
-    const deltaX = touch.clientX - state.startX;
-    const deltaY = touch.clientY - state.startY;
+    const deltaX = event.clientX - state.startX;
+    const deltaY = event.clientY - state.startY;
 
     if (state.mode === 'pending') {
       const absX = Math.abs(deltaX);
@@ -116,6 +120,10 @@ export class StickyHeaderShowcasePage {
       }
 
       state.mode = absX > absY ? 'horizontal' : 'vertical';
+
+      if (state.mode === 'horizontal') {
+        this.captureNativeProxyPointer(state.frame, event.pointerId);
+      }
     }
 
     if (state.mode === 'vertical') {
@@ -127,8 +135,16 @@ export class StickyHeaderShowcasePage {
     this.syncNativeProxyFrame(state.frame);
   }
 
-  protected endNativeProxyTouch(): void {
-    this.nativeProxyTouchState = null;
+  protected endNativeProxyDrag(event: PointerEvent): void {
+    const state = this.nativeProxyDragState;
+
+    if (!state || event.pointerId !== state.pointerId) {
+      return;
+    }
+
+    this.releaseNativeProxyPointer(state.frame, event.pointerId);
+
+    this.nativeProxyDragState = null;
   }
 
   protected scrollNativeProxyWheel(event: WheelEvent): void {
@@ -176,6 +192,26 @@ export class StickyHeaderShowcasePage {
 
   private getNativeProxyScroller(frame: HTMLElement): HTMLElement | null {
     return frame.querySelector<HTMLElement>('.native-proxy-scrollbar');
+  }
+
+  private captureNativeProxyPointer(frame: HTMLElement, pointerId: number): void {
+    try {
+      if (!frame.hasPointerCapture(pointerId)) {
+        frame.setPointerCapture(pointerId);
+      }
+    } catch {
+      // Pointer capture can fail if the browser has already claimed the gesture.
+    }
+  }
+
+  private releaseNativeProxyPointer(frame: HTMLElement, pointerId: number): void {
+    try {
+      if (frame.hasPointerCapture(pointerId)) {
+        frame.releasePointerCapture(pointerId);
+      }
+    } catch {
+      // Ignore stale pointer IDs after cancellation.
+    }
   }
 
   private syncNativeProxyFrame(frame: HTMLElement): void {
