@@ -1,7 +1,11 @@
 import type { ColumnDef } from '@tanstack/angular-table';
-import type { NatTableColumnMeta as InternalNatTableColumnMeta, NatTableState } from 'ng-advanced-table-types';
+import type {
+  NatTableColumnMeta as InternalNatTableColumnMeta,
+  NatTableSortIndicatorContext as InternalNatTableSortIndicatorContext,
+  NatTableState
+} from 'ng-advanced-table-types';
 
-import type { NatTableColumnMeta, NatTableColumnMoveDirection, NatTableUiState } from './table-ui.types';
+import type { NatTableColumnMeta, NatTableColumnMoveDirection, NatTableSortIndicatorContext, NatTableUiState } from './table-ui.types';
 
 type ContractRow = {
   amount: number;
@@ -18,12 +22,15 @@ type Equal<T, U> =
 
 type UiStateMatchesCore = Expect<Equal<NatTableUiState, NatTableState>>;
 type UiColumnMetaMatchesCore = Expect<Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>>;
+type UiSortIndicatorContextMatchesCore = Expect<
+  Equal<NatTableSortIndicatorContext<ContractRow>, InternalNatTableSortIndicatorContext<ContractRow>>
+>;
 
 describe('ng-advanced-table-ui public table contracts', () => {
-  it('reuses the core column metadata contract for TanStack column definitions', () => {
-    const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore] = [true, true];
+  it('keeps public UI contracts aligned with the core table contracts', () => {
+    const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore, UiSortIndicatorContextMatchesCore] = [true, true, true];
 
-    expect(contractsHold).toStrictEqual([true, true]);
+    expect(contractsHold).toStrictEqual([true, true, true]);
 
     const meta: NatTableColumnMeta<ContractRow, number> = {
       hiddenHeaderLabel: 'Amount',
