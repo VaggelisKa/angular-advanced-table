@@ -6,6 +6,21 @@
   --nat-table-max-height: none;
 }
 
+.sticky-strategy-native-visible {
+  --nat-table-region-overflow: visible;
+  --nat-table-region-overflow-x: visible;
+  --nat-table-region-overflow-y: visible;
+}
+
+.sticky-strategy-native-hybrid {
+  --nat-table-region-overflow-x: auto;
+  --nat-table-region-overflow-y: clip;
+}
+
+.table-stack nat-table-surface.sticky-strategy-bounded-region {
+  --nat-table-max-height: min(460px, 70vh);
+}
+
 .table-stack {
   display: block;
   width: 100%;

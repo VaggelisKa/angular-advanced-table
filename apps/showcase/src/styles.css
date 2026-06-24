@@ -966,6 +966,31 @@ input {
   font-weight: 700;
 }
 
+/* Sticky-header strategy prototypes intentionally reach into the table internals
+   so the showcase can compare alternatives without adding public API. */
+.sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) thead,
+.sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) thead {
+  position: static;
+  z-index: auto;
+  animation: none !important;
+  transform: none !important;
+  will-change: auto;
+}
+
+.sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell,
+.sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell {
+  position: sticky !important;
+  top: var(--nat-table-sticky-top, 0) !important;
+  z-index: 6;
+}
+
+.sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-left,
+.sticky-strategy-native-visible .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-right,
+.sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-left,
+.sticky-strategy-native-hybrid .data-table.has-sticky-header:not(.is-region-scrollable) .header-cell.is-pinned-right {
+  top: var(--nat-table-sticky-top, 0) !important;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .showcase-page .btn:hover,
   .showcase-page .tab-btn:hover,

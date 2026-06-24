@@ -30,16 +30,16 @@
 
   <header class="header-section">
     <div class="header-title-container">
-      <h2 class="title">Viewport Sticky Tables (No Max Height)</h2>
+      <h2 class="title">Current: Transform-Synced Viewport Sticky</h2>
       <p class="description">
-        These 5 tables have no max height limit. As you scroll down the page, each table's header will stick to the top of the
-        viewport/window and push the previous one out of view.
+        This is the current viewport sticky implementation. It keeps horizontal scrolling on the table region and translates the header
+        row while the page scrolls.
       </p>
     </div>
   </header>
 
   <div class="table-stack">
-    @for (i of [1, 2, 3, 4, 5]; track i) {
+    @for (i of viewportTableIds; track i) {
     <div class="card viewport-stack-card">
       <h3 class="card-title">Table #{{ i }}</h3>
       <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
@@ -47,5 +47,66 @@
       </nat-table-surface>
     </div>
     }
+  </div>
+
+  <header class="header-section">
+    <div class="header-title-container">
+      <h2 class="title">Prototype A: Native Viewport Sticky</h2>
+      <p class="description">
+        This version disables the transform layer and lets header cells use native sticky positioning. The table region is not clipped,
+        so horizontal overflow belongs to the page/card instead of a nested table scroller.
+      </p>
+    </div>
+  </header>
+
+  <div class="table-stack">
+    @for (i of prototypeTableIds; track i) {
+    <div class="card card--overflow-visible viewport-stack-card">
+      <h3 class="card-title">Native viewport table #{{ i }}</h3>
+      <nat-table-surface [stickyHeader]="stickyHeaderEnabled()" class="sticky-strategy-native-visible">
+        <nat-table [accessibleName]="`Native viewport sticky table ${i}`" [columns]="columns" [data]="data" />
+      </nat-table-surface>
+    </div>
+    }
+  </div>
+
+  <header class="header-section">
+    <div class="header-title-container">
+      <h2 class="title">Prototype B: Native Hybrid Scroll</h2>
+      <p class="description">
+        This keeps a horizontal table scroller but removes the vertical transform sync. It is useful to test whether the mobile browser
+        can combine horizontal overflow with native vertical sticky; if it slips, the horizontal overflow container is the blocker.
+      </p>
+    </div>
+  </header>
+
+  <div class="table-stack">
+    @for (i of prototypeTableIds; track i) {
+    <div class="card card--overflow-visible viewport-stack-card">
+      <h3 class="card-title">Native hybrid table #{{ i }}</h3>
+      <nat-table-surface [stickyHeader]="stickyHeaderEnabled()" class="sticky-strategy-native-hybrid">
+        <nat-table [accessibleName]="`Native hybrid sticky table ${i}`" [columns]="columns" [data]="data" />
+      </nat-table-surface>
+    </div>
+    }
+  </div>
+
+  <header class="header-section">
+    <div class="header-title-container">
+      <h2 class="title">Prototype C: Bounded Region Sticky</h2>
+      <p class="description">
+        This avoids viewport syncing by making the table region itself scroll vertically. Header stickiness stays fully native inside
+        the table region, so test this one by scrolling inside the table.
+      </p>
+    </div>
+  </header>
+
+  <div class="table-stack">
+    <div class="card viewport-stack-card">
+      <h3 class="card-title">Bounded native table</h3>
+      <nat-table-surface [stickyHeader]="stickyHeaderEnabled()" class="sticky-strategy-bounded-region">
+        <nat-table [columns]="columns" [data]="data" accessibleName="Bounded region sticky table" />
+      </nat-table-surface>
+    </div>
   </div>
 </div>

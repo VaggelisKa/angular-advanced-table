@@ -15,6 +15,8 @@ export class StickyHeaderShowcasePage {
   protected readonly data = DEMO_DATA;
   protected readonly columns = COLUMNS;
   protected readonly stickyHeaderEnabled = signal(true);
+  protected readonly viewportTableIds = [1, 2, 3, 4, 5];
+  protected readonly prototypeTableIds = [1, 2, 3];
 
   protected toggleStickyHeader(event: Event): void {
     const target = event.target;

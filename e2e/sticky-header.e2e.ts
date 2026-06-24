@@ -128,6 +128,40 @@ test('touch viewport sticky tables stay aligned farther down the page', async ({
   expect(Math.abs(metrics.headerTop - stickyTop)).toBeLessThanOrEqual(2);
 });
 
+test('native viewport prototype avoids transform sync while sticky', async ({ page }) => {
+  const table = page.locator('table[aria-label="Native viewport sticky table 2"]');
+
+  await table.evaluate((tableElement) => {
+    const tableTop = tableElement.getBoundingClientRect().top + window.scrollY;
+
+    window.scrollTo(0, tableTop + 220);
+  });
+  await page.waitForTimeout(150);
+
+  const metrics = await table.evaluate((tableElement) => {
+    const thead = tableElement.querySelector('thead');
+    const headerCell = tableElement.querySelector('thead th');
+
+    if (!thead || !headerCell) {
+      throw new Error('Expected table header to be rendered.');
+    }
+
+    const transform = window.getComputedStyle(thead).transform;
+
+    return {
+      headerTop: headerCell.getBoundingClientRect().top,
+      stickyTop: getComputedStyle(tableElement.closest('.table-region') ?? tableElement)
+        .getPropertyValue('--nat-table-sticky-top')
+        .trim(),
+      transform
+    };
+  });
+  const stickyTop = Number.parseFloat(metrics.stickyTop || '0');
+
+  expect(metrics.transform === 'none' || metrics.transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true);
+  expect(Math.abs(metrics.headerTop - stickyTop)).toBeLessThanOrEqual(2);
+});
+
 test('toggling off sticky header removes translations', async ({ page }) => {
   const table1 = page.locator('table[aria-label="Viewport sticky table 1"]');
   const thead = table1.locator('thead');
