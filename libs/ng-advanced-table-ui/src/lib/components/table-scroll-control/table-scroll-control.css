@@ -81,7 +81,8 @@
   opacity: var(--nat-table-scroll-range-disabled-opacity, 0.5);
 }
 
-@media (width <= 520px) {
+/* stylelint-disable-next-line media-feature-range-notation -- Safari 16.0-16.3 lacks compact range syntax. */
+@media (max-width: 520px) {
   .scroll-control {
     grid-template-columns: auto auto;
   }
