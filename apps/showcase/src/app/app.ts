@@ -70,7 +70,9 @@ function findNavBranchIdsByRoute(sections: readonly ShowcaseNavSection[], routeP
 
 function branchContainsRoute(branch: ShowcaseNavSection | ShowcaseNavGroup, routePath: string): boolean {
   if ('groups' in branch) {
-    return branch.items.some((item) => item.path === routePath) || branch.groups.some((group) => branchContainsRoute(group, routePath));
+    return (
+      branch.items.some((item) => item.path === routePath) || branch.groups.some((group) => branchContainsRoute(group, routePath))
+    );
   }
 
   return branch.items.some((item) => item.path === routePath);

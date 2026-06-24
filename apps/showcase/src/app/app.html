@@ -105,9 +105,7 @@
                 <span aria-hidden="true" class="showcase-nav-tree-connector"></span>
                 <span class="showcase-nav-tree-label">{{ item.label }}</span>
               </a>
-              }
-
-              @for (group of section.groups; track group.id) {
+              } @for (group of section.groups; track group.id) {
               <div
                 #navGroupTreeItem="ngTreeItem"
                 [attr.aria-label]="group.label"
