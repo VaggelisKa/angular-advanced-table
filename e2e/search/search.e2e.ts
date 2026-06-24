@@ -18,22 +18,18 @@ test.describe('FEATURE: Global search', () => {
         // Initially we should have 6 rows (DEMO_DATA size)
         await expect(table.locator('tbody tr')).toHaveCount(6);
 
-        await test.step('THEN: entering "Security" as the query', async () => {
+        await test.step('THEN: only the matching rows remain after entering "Security"', async () => {
           await searchInput.fill('Security');
           await searchInput.press('Enter');
-        });
 
-        await test.step('THEN: only the matching rows remain', async () => {
           // Only 2 rows match "Security" (Delta Watcher and Epsilon Shield)
           await expect(table.locator('tbody tr')).toHaveCount(2);
         });
 
-        await test.step('THEN: clearing the query', async () => {
+        await test.step('THEN: all rows are restored after clearing the query', async () => {
           await searchInput.fill('');
           await searchInput.press('Enter');
-        });
 
-        await test.step('THEN: all rows are restored', async () => {
           // All 6 rows are back
           await expect(table.locator('tbody tr')).toHaveCount(6);
         });

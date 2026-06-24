@@ -7,15 +7,17 @@ test.describe('FEATURE: Multiple features', () => {
 
   test.describe('GIVEN: the live market tape example is loaded', () => {
     test.describe('WHEN: the page is rendered', () => {
-      test('THEN: it shows the branding and Live movers heading', async ({ page }) => {
-        await expect(page.locator('.brand-name')).toHaveText('Advanced Table');
-        await expect(page.locator('.brand-context')).toHaveText('Live market tape');
-        await expect(page.getByRole('heading', { name: 'Live movers' })).toBeVisible();
-      });
+      test('THEN: it shows the branding, heading, and kpi cards', async ({ page }) => {
+        await test.step('THEN: it shows the branding and Live movers heading', async () => {
+          await expect(page.locator('.brand-name')).toHaveText('Advanced Table');
+          await expect(page.locator('.brand-context')).toHaveText('Live market tape');
+          await expect(page.getByRole('heading', { name: 'Live movers' })).toBeVisible();
+        });
 
-      test('THEN: it shows the kpi cards', async ({ page }) => {
-        await expect(page.locator('.kpis')).toBeVisible();
-        await expect(page.locator('.kpi', { hasText: 'Instruments' })).toContainText('Instruments');
+        await test.step('THEN: it shows the kpi cards', async () => {
+          await expect(page.locator('.kpis')).toBeVisible();
+          await expect(page.locator('.kpi', { hasText: 'Instruments' })).toContainText('Instruments');
+        });
       });
     });
 

@@ -18,32 +18,26 @@ test.describe('FEATURE: Table builder', () => {
           await expect(codeContent).toContainText('app-table-search');
         });
 
-        await test.step('THEN: the search toggle is switched off via the keyboard', async () => {
+        await test.step('THEN: search disappears from the preview after switching the toggle off via the keyboard', async () => {
           await globalSearchToggle.focus();
           await page.keyboard.press('Space');
-        });
 
-        await test.step('THEN: search disappears from the preview', async () => {
           await expect(globalSearchToggle).not.toBeChecked();
           await expect(codeContent).not.toContainText('app-table-search');
         });
 
-        await test.step('THEN: the TS tab is activated via the keyboard', async () => {
+        await test.step('THEN: the TS tab becomes active and its content is shown after activating it via the keyboard', async () => {
           await tsTabBtn.focus();
           await page.keyboard.press('Enter');
-        });
 
-        await test.step('THEN: the TS tab becomes active and its content is shown', async () => {
           await expect(tsTabBtn).toHaveClass(/is-active/);
           await expect(codeContent).toContainText('export class CustomTableComponent');
         });
 
-        await test.step('THEN: the copy button is activated via the keyboard', async () => {
+        await test.step('THEN: the label confirms the copy after activating the copy button via the keyboard', async () => {
           await copyBtn.focus();
           await page.keyboard.press('Space');
-        });
 
-        await test.step('THEN: the label confirms the copy', async () => {
           await expect(copyBtn).toHaveText('Copied');
         });
       });

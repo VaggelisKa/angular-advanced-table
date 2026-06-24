@@ -54,18 +54,20 @@ test.describe('FEATURE: Table toolbar', () => {
     });
 
     test.describe('WHEN: the page is rendered', () => {
-      test('THEN: it shows the heading and the Products toolbar', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
-        await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
-      });
+      test('THEN: it shows the heading, Products toolbar, and toolbar-button styling', async ({ page }) => {
+        await test.step('THEN: it shows the heading and the Products toolbar', async () => {
+          await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
+          await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+        });
 
-      test('THEN: it applies the toolbar-button styling to projected buttons', async ({ page }) => {
-        const exportButton = page.getByTestId('export-button');
+        await test.step('THEN: it applies the toolbar-button styling to projected buttons', async () => {
+          const exportButton = page.getByTestId('export-button');
 
-        await expect(exportButton).toHaveClass(/toolbar-button/);
-        const radius = await exportButton.evaluate((el) => getComputedStyle(el).borderRadius);
+          await expect(exportButton).toHaveClass(/toolbar-button/);
+          const radius = await exportButton.evaluate((el) => getComputedStyle(el).borderRadius);
 
-        expect(radius).not.toBe('0px');
+          expect(radius).not.toBe('0px');
+        });
       });
 
       test('THEN: it lays items out as start | center | end in the DOM and on screen', async ({ page }) => {

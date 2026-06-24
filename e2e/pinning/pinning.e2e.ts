@@ -23,20 +23,16 @@ test.describe('FEATURE: Column pinning', () => {
           await expect(nameNoneBtn).not.toHaveClass(/active/);
         });
 
-        await test.step('THEN: the None control is clicked to unpin Name', async () => {
+        await test.step('THEN: None is active and Left is no longer active after clicking None', async () => {
           await nameNoneBtn.click();
-        });
 
-        await test.step('THEN: None is active and Left is no longer active', async () => {
           await expect(nameNoneBtn).toHaveClass(/active/);
           await expect(nameLeftBtn).not.toHaveClass(/active/);
         });
 
-        await test.step('THEN: the Right control is clicked to pin Name right', async () => {
+        await test.step('THEN: Right is active and the other options are not after clicking Right', async () => {
           await nameRightBtn.click();
-        });
 
-        await test.step('THEN: Right is active and the other options are not', async () => {
           await expect(nameRightBtn).toHaveClass(/active/);
           await expect(nameLeftBtn).not.toHaveClass(/active/);
           await expect(nameNoneBtn).not.toHaveClass(/active/);

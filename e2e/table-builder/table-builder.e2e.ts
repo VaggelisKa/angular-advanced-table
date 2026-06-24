@@ -26,21 +26,17 @@ test.describe('FEATURE: Table builder', () => {
           await expect(codeContent).toContainText('app-table-search');
         });
 
-        await test.step('THEN: search is toggled off', async () => {
+        await test.step('THEN: search disappears from the preview after toggling it off', async () => {
           // The input sits under the slider overlay, so click the label.
           await globalSearchControl.click();
-        });
 
-        await test.step('THEN: search disappears from the preview', async () => {
           await expect(globalSearchToggle).not.toBeChecked();
           await expect(codeContent).not.toContainText('app-table-search');
         });
 
-        await test.step('THEN: search is toggled on again', async () => {
+        await test.step('THEN: search returns to the preview after toggling it on again', async () => {
           await globalSearchControl.click();
-        });
 
-        await test.step('THEN: search returns to the preview', async () => {
           await expect(globalSearchToggle).toBeChecked();
           await expect(codeContent).toContainText('app-table-search');
         });
@@ -59,11 +55,9 @@ test.describe('FEATURE: Table builder', () => {
           await expect(codeContent).toContainText('nat-table-surface');
         });
 
-        await test.step('THEN: the TS tab is selected', async () => {
+        await test.step('THEN: the TS tab becomes active and its content is shown after selecting it', async () => {
           await tsTabBtn.click();
-        });
 
-        await test.step('THEN: the TS tab becomes active and its content is shown', async () => {
           await expect(tsTabBtn).toHaveClass(/is-active/);
           await expect(htmlTabBtn).not.toHaveClass(/is-active/);
           await expect(codeContent).toContainText('export class CustomTableComponent');

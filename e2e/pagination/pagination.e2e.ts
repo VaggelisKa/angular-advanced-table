@@ -23,19 +23,15 @@ test.describe('FEATURE: Pagination', () => {
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });
 
-        await test.step('THEN: the page size is changed to 5', async () => {
+        await test.step('THEN: five rows are shown after the page size changes to 5', async () => {
           await pager.getByRole('button', { name: '5' }).click();
-        });
 
-        await test.step('THEN: five rows are shown', async () => {
           await expect(clientTable.locator('tbody tr')).toHaveCount(5);
         });
 
-        await test.step('THEN: the page size is changed back to 3', async () => {
+        await test.step('THEN: three rows are shown after the page size changes back to 3', async () => {
           await pager.getByRole('button', { name: '3' }).click();
-        });
 
-        await test.step('THEN: three rows are shown', async () => {
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });
 
@@ -43,11 +39,9 @@ test.describe('FEATURE: Pagination', () => {
           await expect(prevBtn).toBeDisabled();
         });
 
-        await test.step('THEN: Next page is clicked', async () => {
+        await test.step('THEN: Previous is enabled and still shows three rows after clicking Next', async () => {
           await nextBtn.click();
-        });
 
-        await test.step('THEN: Previous is enabled and the page still shows three rows', async () => {
           await expect(prevBtn).toBeEnabled();
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });
@@ -69,11 +63,9 @@ test.describe('FEATURE: Pagination', () => {
           await expect(nameCells).toContainText(['Alpha Searcher', 'Beta Runner', 'Gamma Processor']);
         });
 
-        await test.step('THEN: Next page is clicked', async () => {
+        await test.step('THEN: page 2 shows the next three names after clicking Next', async () => {
           await nextBtn.click();
-        });
 
-        await test.step('THEN: page 2 shows the next three names', async () => {
           // Page 2 names come from mock dataset index 3-5
           await expect(manualTable.locator('tbody tr')).toHaveCount(3);
           const nameCells = manualTable.locator('tbody [data-column-id="name"]');

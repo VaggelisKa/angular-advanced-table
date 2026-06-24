@@ -21,21 +21,17 @@ test.describe('FEATURE: Pagination accessibility', () => {
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });
 
-        await test.step('THEN: size 5 button is focused and toggled with Space', async () => {
+        await test.step('THEN: five rows are shown after focusing size 5 and pressing Space', async () => {
           await btn5.focus();
           await page.keyboard.press('Space');
-        });
 
-        await test.step('THEN: five rows are shown', async () => {
           await expect(clientTable.locator('tbody tr')).toHaveCount(5);
         });
 
-        await test.step('THEN: size 3 button is focused and toggled with Enter', async () => {
+        await test.step('THEN: three rows are shown after focusing size 3 and pressing Enter', async () => {
           await btn3.focus();
           await page.keyboard.press('Enter');
-        });
 
-        await test.step('THEN: three rows are shown', async () => {
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });
 
@@ -43,12 +39,10 @@ test.describe('FEATURE: Pagination accessibility', () => {
           await expect(prevBtn).toBeDisabled();
         });
 
-        await test.step('THEN: Next page is focused and activated with Enter', async () => {
+        await test.step('THEN: Previous is enabled after focusing Next and pressing Enter', async () => {
           await nextBtn.focus();
           await page.keyboard.press('Enter');
-        });
 
-        await test.step('THEN: Previous is enabled', async () => {
           await expect(prevBtn).toBeEnabled();
         });
       });

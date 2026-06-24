@@ -18,25 +18,21 @@ test.describe('FEATURE: Global search accessibility', () => {
         // Initially we should have 6 rows (DEMO_DATA size)
         await expect(table.locator('tbody tr')).toHaveCount(6);
 
-        await test.step('THEN: typing "Security" via the keyboard', async () => {
+        await test.step('THEN: only the matching rows remain after typing "Security" via the keyboard', async () => {
           await searchInput.focus();
           await page.keyboard.type('Security');
           await page.keyboard.press('Enter');
-        });
 
-        await test.step('THEN: only the matching rows remain', async () => {
           // Only 2 rows match "Security"
           await expect(table.locator('tbody tr')).toHaveCount(2);
         });
 
-        await test.step('THEN: clearing the query via the keyboard', async () => {
+        await test.step('THEN: all rows are restored after clearing the query via the keyboard', async () => {
           await searchInput.focus();
           await page.keyboard.press('ControlOrMeta+A'); // Select all
           await page.keyboard.press('Backspace');
           await page.keyboard.press('Enter');
-        });
 
-        await test.step('THEN: all rows are restored', async () => {
           // All 6 rows are back
           await expect(table.locator('tbody tr')).toHaveCount(6);
         });

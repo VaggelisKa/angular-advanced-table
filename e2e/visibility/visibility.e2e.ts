@@ -24,22 +24,18 @@ test.describe('FEATURE: Column visibility', () => {
           await expect(statusChip).not.toHaveClass(/is-active/);
         });
 
-        await test.step('THEN: the Status chip is clicked', async () => {
+        await test.step('THEN: the Status column becomes visible after clicking its chip', async () => {
           await statusChip.click();
-        });
 
-        await test.step('THEN: the Status column becomes visible', async () => {
           await expect(statusChip).toHaveClass(/is-active/);
           await expect(table.getByRole('columnheader', { name: 'Status' })).toBeVisible();
 
           await expect(nameChip).toHaveClass(/is-active/);
         });
 
-        await test.step('THEN: the Name chip is clicked', async () => {
+        await test.step('THEN: the Name column becomes hidden after clicking its chip', async () => {
           await nameChip.click();
-        });
 
-        await test.step('THEN: the Name column becomes hidden', async () => {
           await expect(nameChip).not.toHaveClass(/is-active/);
           await expect(table.getByRole('columnheader', { name: 'Name' })).toBeHidden();
         });
