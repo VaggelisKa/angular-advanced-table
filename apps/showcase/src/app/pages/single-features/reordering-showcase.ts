@@ -113,10 +113,6 @@ export class ReorderingShowcasePage {
   protected readonly currentOrder = computed(() => {
     return this.tableState().columnOrder ?? ['name', 'category', 'status', 'value'];
   });
-
-  private onColumnOrderChange(columnOrder: ColumnOrderState): void {
-    this.tableState.update((current) => ({ ...current, columnOrder }));
-  }
 }
 
-export { ColumnOrderState };
+export type { ColumnOrderState };
