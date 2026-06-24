@@ -160,8 +160,8 @@ describe('built-in companion UI locale completeness', () => {
       );
 
       expectNonEmptyText(locale.pager?.groupAriaLabel, `${localeId}: pager.groupAriaLabel`);
-      expectNonEmptyText(locale.pager?.accessibilityLabels?.previousPageAriaLabel, `${localeId}: pager.previousPageAriaLabel`);
-      expectNonEmptyText(locale.pager?.accessibilityLabels?.nextPageAriaLabel, `${localeId}: pager.nextPageAriaLabel`);
+      expectNonEmptyText(locale.pager?.accessibilityLabels?.previousPageAriaLabel, `${localeId}: pager.accessibilityLabels.previousPageAriaLabel`);
+      expectNonEmptyText(locale.pager?.accessibilityLabels?.nextPageAriaLabel, `${localeId}: pager.accessibilityLabels.nextPageAriaLabel`);
       expectFormattedText(
         locale.pager?.accessibilityLabels?.pageIndicator,
         pagerContext,
@@ -225,7 +225,7 @@ describe('built-in companion UI locale completeness', () => {
 
       expectNonEmptyText(locale.toolbar?.toolbarLabel, `${localeId}: toolbar.toolbarLabel`);
       expectNonEmptyText(locale.selection?.columnLabel, `${localeId}: selection.columnLabel`);
-      expectNonEmptyText(locale.selection?.accessibilityLabels?.selectAllAriaLabel, `${localeId}: selection.selectAllAriaLabel`);
+      expectNonEmptyText(locale.selection?.accessibilityLabels?.selectAllAriaLabel, `${localeId}: selection.accessibilityLabels.selectAllAriaLabel`);
       expectFormattedText(
         locale.selection?.accessibilityLabels?.selectRowAriaLabel,
         { rowId: 'row-1' },
