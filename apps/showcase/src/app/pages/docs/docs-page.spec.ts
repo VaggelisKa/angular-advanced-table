@@ -23,6 +23,16 @@ type PrismTestGlobal = typeof globalThis & {
   };
 };
 
+const queryRequiredElement = <T extends Element>(root: ParentNode, selector: string): T => {
+  const element = root.querySelector<T>(selector);
+
+  if (!element) {
+    throw new Error(`Expected ${selector} to exist.`);
+  }
+
+  return element;
+};
+
 @Component({
   selector: 'app-test-empty-route',
   template: ''
@@ -31,9 +41,13 @@ class TestEmptyRoute {}
 
 describe('DocsPage', () => {
   let highlightCalls = 0;
+  let originalClipboard: Clipboard | undefined;
+  let shouldRestoreClipboard = false;
 
   beforeEach(async () => {
     highlightCalls = 0;
+    originalClipboard = navigator.clipboard;
+    shouldRestoreClipboard = false;
     (globalThis as PrismTestGlobal).Prism = {
       highlightAllUnder: (element): void => {
         highlightCalls += 1;
@@ -82,6 +96,13 @@ describe('DocsPage', () => {
   });
 
   afterEach(() => {
+    if (shouldRestoreClipboard) {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: originalClipboard
+      });
+    }
+
     TestBed.inject(HttpTestingController).verify();
     delete (globalThis as PrismTestGlobal).Prism;
   });
@@ -174,5 +195,37 @@ describe('DocsPage', () => {
 
     expect(highlightCalls).toBeGreaterThan(0);
     expect(compiled.querySelector('.docs-markdown .token.keyword')?.textContent).toBe('readonly');
+  });
+
+  it('copies fenced code block text from the generated copy button', async () => {
+    const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
+    const harness = await RouterTestingHarness.create();
+
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText }
+    });
+    shouldRestoreClipboard = true;
+
+    await harness.navigateByUrl('/docs/quick-start', DocsPage);
+
+    const http = TestBed.inject(HttpTestingController);
+
+    http.expectOne('/docs/quick-start.md').flush('```ts\nreadonly rows = [];\n```');
+    await waitForMarkdownRender(harness.fixture);
+
+    const compiled = harness.fixture.nativeElement as HTMLElement;
+    const copyButton = queryRequiredElement<HTMLButtonElement>(compiled, '.docs-code-copy');
+
+    expect(copyButton.textContent).toBe('Copy');
+    expect(copyButton.getAttribute('aria-label')).toBe('Copy code block');
+
+    copyButton.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(writeText).toHaveBeenCalledWith('readonly rows = [];');
+    expect(copyButton.textContent).toBe('Copied');
+    expect(copyButton.getAttribute('aria-label')).toBe('Copied code block');
   });
 });
