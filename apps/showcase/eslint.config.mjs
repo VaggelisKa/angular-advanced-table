@@ -14,6 +14,9 @@ export default [
   ...rxjs,
   ...angularOverrides,
   {
+    // The showcase imports workspace packages that may not have dist output yet
+    // when Nx runs affected lint/build tasks in parallel. Resolve those imports
+    // through source paths so import-x linting is independent of package build order.
     settings: {
       'import-x/resolver-next': [
         createTypeScriptImportResolver({
