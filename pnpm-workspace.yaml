@@ -2,8 +2,10 @@ packages:
   - 'libs/*'
   - 'apps/*'
 # pnpm 11 ignores the .npmrc `node-linker=hoisted` key, so it is set here too.
-# Hoisting keeps a single root node_modules that Nx/Angular and the
-# manifest-less apps/showcase resolve against.
+# Hoisting keeps a single root node_modules. Each project declares its own deps
+# (apps/showcase owns the app runtime deps; the libs declare peers); the root
+# manifest holds tooling/devDeps only. The libs' framework (e.g. @angular/core
+# for their build/specs) resolves from showcase's declaration via this hoisting.
 nodeLinker: hoisted
 # pnpm 11 runs `pnpm install` before every `pnpm run`/`pnpm exec` by default
 # (verifyDepsBeforeRun). Disable it so script runs (e.g. `pnpm run verify`,
@@ -27,6 +29,12 @@ catalogs:
     '@angular/router': '22.0.2'
     '@tanstack/angular-table': '^8.21.4'
     rxjs: '~7.8.2'
+    # showcase-only: Markdown docs rendering + Prism syntax highlighting
+    katex: '^0.16.47'
+    marked: '^18.0.5'
+    marked-katex-extension: '^5.1.10'
+    ngx-markdown: '22.0.0'
+    prismjs: '^1.30.0'
   # published peer ranges for the libs. Decoupled from `frontend` so the app
   # pins exact versions while published tarballs keep caret ranges (pnpm
   # rewrites catalog: refs to these literals at publish time).
