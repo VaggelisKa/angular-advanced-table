@@ -76,6 +76,9 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 - Prefer `data-testid` selectors for automated test hooks. Avoid coupling tests to CSS classes, DOM shape, or incidental implementation attributes when a stable `data-testid` can be added.
 - For showcase Playwright coverage, group specs by feature under `e2e/<feature>/`, pair pointer/workflow specs with keyboard accessibility specs named `<feature>.a11y.e2e.ts`, and keep the showcase `e2e` Nx target wired into CI when those files are added or moved.
+- Write specs in formal Gherkin: `describe('FEATURE: …')` → `describe('GIVEN: …')` → `describe('WHEN: …')` → `it('THEN: it …')` (Playwright: `test.describe`/`test`). Use behavioral leaf names, and keep one source test as one test when restructuring (never split or merge to fit the shape).
+- Vitest `describe` nesting is capped at 3 (`vitest/max-nested-describe`): keep `GIVEN`s as flat siblings, put shared module setup in a FEATURE-level `beforeEach` (not a setup-only `GIVEN` wrapper), and keep `WHEN:` titles unique within a `GIVEN` (`vitest/no-identical-title`) — differentiate repeats by scenario instead of merging non-adjacent tests.
+- In e2e, keep a sequential interaction flow as a single test and mark each checkpoint with `await test.step('THEN: …', async () => { … })`; declare any locator or variable shared across steps above the steps, since `test.step` closures do not share scope.
 
 ## Browser Compatibility
 
