@@ -9,5 +9,3 @@ export type MockOrderRow = {
   updatedAt: number;
   total: number;
 };
-
-export const getMockOrderRowId = (row: MockOrderRow): string => row.id;

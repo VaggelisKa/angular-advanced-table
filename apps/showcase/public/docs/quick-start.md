@@ -16,7 +16,7 @@ npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils ng-ad
 
 ## First Table
 
-Define a row type, provide TanStack columns, and render `NatTable` inside `NatTableSurface`. Give every table an accessible name or visible caption, and provide a stable `getRowId` as soon as the table can sort, filter, select rows, paginate, or receive live updates.
+Define a row type, provide TanStack columns, and render `NatTable` inside `NatTableSurface`. Give every table an accessible name or visible caption. Rows with a string or number `id` property get stable table identity automatically; pass `getRowId` only when identity lives somewhere else.
 
 ```ts
 import { Component, signal } from '@angular/core';
@@ -37,7 +37,7 @@ interface PositionRow {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface>
-      <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
     </nat-table-surface>
   `
 })
@@ -65,8 +65,6 @@ export class PositionsTable {
       cell: (context) => `$${context.getValue<number>().toFixed(2)}`
     }
   ];
-
-  readonly getRowId = (row: PositionRow) => row.id;
 }
 ```
 
@@ -100,7 +98,7 @@ interface PositionRow {
   selector: 'app-core-only-table',
   imports: [NatTable],
   providers: [NatTableService],
-  template: ` <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Core-only positions" /> `
+  template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Core-only positions" /> `
 })
 export class CoreOnlyTable {
   readonly rows = signal<readonly PositionRow[]>([]);
@@ -111,7 +109,6 @@ export class CoreOnlyTable {
       meta: { label: 'Symbol', rowHeader: true }
     }
   ];
-  readonly getRowId = (row: PositionRow) => row.id;
 }
 ```
 
@@ -146,7 +143,7 @@ interface PositionRow {
     <nat-table-surface [initialState]="initialState">
       <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-      <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
 
       <nat-table-scroll-control />
       <nat-table-column-visibility />
@@ -155,7 +152,6 @@ interface PositionRow {
 })
 export class PositionsTable {
   readonly rows = signal<readonly PositionRow[]>([]);
-  readonly getRowId = (row: PositionRow) => row.id;
   readonly initialState: Partial<NatTableState> = {
     pagination: { pageIndex: 0, pageSize: 25 }
   };
@@ -190,7 +186,7 @@ Start with these defaults unless the feature needs something else:
 | Need                       | Default choice                                                                     |
 | -------------------------- | ---------------------------------------------------------------------------------- |
 | Table identity             | `accessibleName` or visible `caption`                                              |
-| Row identity               | `getRowId = (row) => row.id`                                                       |
+| Row identity               | String or number `row.id`; `getRowId` for custom, composite, or nested identifiers |
 | Column labels              | `meta.label` on every column                                                       |
 | Row header                 | `meta.rowHeader: true` on the primary identifying column                           |
 | Numeric columns            | `meta.align: 'end'`                                                                |

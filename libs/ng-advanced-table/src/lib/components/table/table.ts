@@ -85,6 +85,7 @@ import {
   readColumnEntry,
   replaceIdsInSlots,
   resolveColumnLabel,
+  resolveDefaultRowId,
   serializeColumnFilters,
   serializeRowSelection,
   serializeSorting
@@ -243,7 +244,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public readonly selectionMode = input<'single' | 'multiple'>('multiple');
   /** Optional override for the global filter implementation. */
   public readonly globalFilterFn = input<FilterFn<TData>>();
-  /** Optional stable row id resolver used for selection, pinning, and events. */
+  /** Optional row id resolver. Defaults to a string/number `row.id`, then the row index. */
   public readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
   public readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
@@ -2021,7 +2022,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private resolveRowId(row: TData, index: number, parent?: Row<TData>): string {
     const getRowId = this.getRowId();
 
-    return getRowId ? getRowId(row, index, parent) : String(index);
+    return getRowId ? getRowId(row, index, parent) : resolveDefaultRowId(row, index, parent);
   }
 
   private formatAccessibilityNumber(value: number): string {

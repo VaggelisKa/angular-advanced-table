@@ -281,6 +281,40 @@ export function matchesFilterQuery(value: unknown, query: string): boolean {
   return false;
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function resolveObjectRowId(row: RowData): string | null {
+  if (!isObjectRecord(row)) {
+    return null;
+  }
+
+  const id = row['id'];
+
+  if (typeof id === 'string' && id.trim()) {
+    return id;
+  }
+
+  if (typeof id === 'number' && Number.isFinite(id)) {
+    return String(id);
+  }
+
+  return null;
+}
+
+export function resolveDefaultRowId<TData extends RowData>(row: TData, index: number, parent?: { id: string }): string {
+  const rowId = resolveObjectRowId(row);
+
+  if (rowId !== null) {
+    return rowId;
+  }
+
+  const fallbackId = String(index);
+
+  return parent ? `${parent.id}.${fallbackId}` : fallbackId;
+}
+
 export function normalizeColumnDimension(value: number | string | undefined): string | null {
   if (typeof value === 'number') {
     return Number.isFinite(value) && value >= 0 ? `${Math.round(value)}px` : null;

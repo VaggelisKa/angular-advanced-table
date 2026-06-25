@@ -9,7 +9,7 @@ Use `NatTableSurface` when you want the stock surface and companion-control them
   <nat-table-surface>
     <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-    <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Orders" />
+    <nat-table [data]="rows()" [columns]="columns" accessibleName="Orders" />
 
     <nat-table-scroll-control />
     <nat-table-column-visibility />

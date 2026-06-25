@@ -36,7 +36,6 @@ import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderM
         [data]="rows()"
         [columns]="columns"
         [emitRowRenderEvents]="true"
-        [getRowId]="getRowId"
         accessibleName="Position render metrics"
         (rowRendered)="onRowRendered($event)" />
     </nat-table-surface>
@@ -46,7 +45,6 @@ export class PositionsTable {
   readonly metricsStore = new NatTableRenderMetricsStore();
   readonly metricsTable = viewChild<NatTable<PositionRow>>('metricsTable');
   readonly columns: ColumnDef<PositionRow>[] = [];
-  readonly getRowId = (row: PositionRow) => row.id;
 
   protected onRowRendered(event: NatTableRenderMetricsEvent): void {
     this.metricsStore.record(event);
@@ -101,7 +99,6 @@ The panel summarizes the latest render cycle. The filter targets the synthetic m
     [data]="rows()"
     [columns]="columns"
     [emitRowRenderEvents]="true"
-    [getRowId]="getRowId"
     accessibleName="Position render metrics"
     (rowRendered)="metricsStore.record($event)" />
 </nat-table-surface>

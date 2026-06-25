@@ -23,19 +23,13 @@ interface ServiceRow {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
-      <nat-table
-        [data]="rows()"
-        [columns]="columns"
-        [enableRowSelection]="true"
-        [getRowId]="getRowId"
-        accessibleName="Selectable services" />
+      <nat-table [data]="rows()" [columns]="columns" [enableRowSelection]="true" accessibleName="Selectable services" />
     </nat-table-surface>
   `
 })
 export class ServicesTable {
   readonly rows = signal<readonly ServiceRow[]>([]);
   readonly rowSelection = signal<RowSelectionState>({});
-  readonly getRowId = (row: ServiceRow) => row.id;
 
   readonly tableState = computed<Partial<NatTableState>>(() => ({
     rowSelection: this.rowSelection()
@@ -72,7 +66,7 @@ export class ServicesTable {
 }
 ```
 
-Always provide `getRowId`. Selection is stored as `Record<rowId, boolean>`. Without stable ids, selection follows row positions after sorting, filtering, paging, or data refreshes.
+Selection is stored as `Record<rowId, boolean>`. Rows with a string or number `id` property use that value automatically. Provide `getRowId` when the stable id lives under another property, is composite, or needs parent-aware nested row keys. Without a stable id, selection follows row positions after sorting, filtering, paging, or data refreshes.
 
 ## Single And Multiple Selection
 
@@ -84,7 +78,6 @@ The default selection mode is multiple. Use `selectionMode="single"` when only o
   [columns]="columns"
   [enableRowSelection]="true"
   selectionMode="single"
-  [getRowId]="getRowId"
   accessibleName="Selectable services" />
 ```
 

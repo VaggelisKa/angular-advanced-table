@@ -331,8 +331,8 @@ describe('NatTableExport', () => {
         { id: 'details', header: 'Details' }
       ],
       rows: [
-        { id: '0', values: ['Alpha', null, null] },
-        { id: '1', values: ['Beta', null, null] }
+        { id: 'row-1', values: ['Alpha', null, null] },
+        { id: 'row-2', values: ['Beta', null, null] }
       ]
     });
     expect(downloadMock.createObjectURL).not.toHaveBeenCalled();

@@ -233,12 +233,7 @@ readonly columns = withNatTableSelectionColumn(baseColumns, {
 
 ```html
 <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
-  <nat-table
-    [data]="rows()"
-    [columns]="columns"
-    [enableRowSelection]="true"
-    [getRowId]="getRowId"
-    accessibleName="Selectable positions" />
+  <nat-table [data]="rows()" [columns]="columns" [enableRowSelection]="true" accessibleName="Selectable positions" />
 </nat-table-surface>
 ```
 
