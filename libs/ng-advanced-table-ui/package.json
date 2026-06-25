@@ -28,8 +28,7 @@
     "@angular/aria": "catalog:peers",
     "@angular/common": "catalog:peers",
     "@angular/core": "catalog:peers",
-    "@tanstack/angular-table": "catalog:peers",
-    "ng-advanced-table": "*"
+    "@tanstack/angular-table": "catalog:peers"
   },
   "dependencies": {
     "ng-advanced-table-locales": "*",
