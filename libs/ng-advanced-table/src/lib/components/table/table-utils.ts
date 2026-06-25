@@ -400,6 +400,9 @@ export function serializeSorting(sorting: SortingState): string {
   return sorting.map((entry) => `${entry.id}:${entry.desc ? 'desc' : 'asc'}`).join('|');
 }
 
+// Internal accessibility-announcement key only. Column filter values come from
+// consumers and may be non-JSON or circular, so this must be deterministic and
+// non-throwing rather than a reversible/public serialization format.
 function serializeThrownValue(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
