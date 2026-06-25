@@ -3,11 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 
 import { applyDocumentDirection } from '../support/document-direction';
 
-test.describe('Table toolbar', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/toolbar');
-  });
-
+test.describe('FEATURE: Table toolbar', () => {
   /**
    * Asserts `first` precedes `second` in REAL DOM order (what screen readers
    * read). The toolbar places items with static ng-content slots, so DOM order
@@ -52,65 +48,61 @@ test.describe('Table toolbar', () => {
     return box;
   };
 
-  test('renders the toolbar showcase page', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
-    await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+  test.describe('GIVEN: the toolbar showcase page is loaded', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/examples/toolbar');
+    });
 
-    // toolbar-button class is applied to projected buttons and resolves a non-zero border-radius.
-    const exportButton = page.getByTestId('export-button');
+    test.describe('WHEN: the page is rendered', () => {
+      test('THEN: it shows the heading, Products toolbar, and toolbar-button styling', async ({ page }) => {
+        await test.step('THEN: it shows the heading and the Products toolbar', async () => {
+          await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
+          await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+        });
 
-    await expect(exportButton).toHaveClass(/toolbar-button/);
-    const radius = await exportButton.evaluate((el) => getComputedStyle(el).borderRadius);
+        await test.step('THEN: it applies the toolbar-button styling to projected buttons', async () => {
+          const exportButton = page.getByTestId('export-button');
 
-    expect(radius).not.toBe('0px');
-  });
+          await expect(exportButton).toHaveClass(/toolbar-button/);
+          const radius = await exportButton.evaluate((el) => getComputedStyle(el).borderRadius);
 
-  test('activates items and reports the action', async ({ page }) => {
-    await page.getByTestId('export-button').click();
-    await expect(page.getByTestId('last-action')).toHaveText('export');
+          expect(radius).not.toBe('0px');
+        });
+      });
 
-    await page.getByTestId('refresh-button').click();
-    await expect(page.getByTestId('last-action')).toHaveText('refresh');
+      test('THEN: it lays items out as start | center | end in the DOM and on screen', async ({ page }) => {
+        const { exportButton, refreshButton, compactButton, shareButton } = buttons(page);
 
-    await page.getByTestId('share-button').click();
-    await expect(page.getByTestId('last-action')).toHaveText('share');
+        // Export (start) < Refresh (center) < density group < Share (end) —
+        // visually AND in the DOM.
+        await expectPrecedes(exportButton, refreshButton);
+        await expectPrecedes(refreshButton, compactButton);
+        await expectPrecedes(compactButton, shareButton);
 
-    await page.getByTestId('density-compact-button').click();
-    await expect(page.getByTestId('last-action')).toHaveText('density-compact');
-  });
+        // The flex spacers sit between the slots: start | spacer | center | spacer | end.
+        // Scope to the Products toolbar — the page now has several toolbars.
+        // Each spacer carries a positional test id, so locate them semantically.
+        const firstSpacer = page.getByRole('toolbar', { name: 'Products toolbar' }).getByTestId('toolbar-spacer-start');
+        const secondSpacer = page.getByRole('toolbar', { name: 'Products toolbar' }).getByTestId('toolbar-spacer-end');
 
-  test('slots lay items out as start | center | end in DOM and on screen', async ({ page }) => {
-    const { exportButton, refreshButton, compactButton, shareButton } = buttons(page);
+        await expectPrecedes(exportButton, firstSpacer);
+        await expectPrecedes(firstSpacer, refreshButton);
+        await expectPrecedes(refreshButton, secondSpacer);
+        await expectPrecedes(secondSpacer, compactButton);
 
-    // Export (start) < Refresh (center) < density group < Share (end) —
-    // visually AND in the DOM.
-    await expectPrecedes(exportButton, refreshButton);
-    await expectPrecedes(refreshButton, compactButton);
-    await expectPrecedes(compactButton, shareButton);
+        const exportBox = await requireBox(exportButton);
+        const refreshBox = await requireBox(refreshButton);
+        const shareBox = await requireBox(shareButton);
 
-    // The flex spacers sit between the slots: start | spacer | center | spacer | end.
-    // Scope to the Products toolbar — the page now has several toolbars.
-    // Each spacer carries a positional test id, so locate them semantically.
-    const firstSpacer = page.getByRole('toolbar', { name: 'Products toolbar' }).getByTestId('toolbar-spacer-start');
-    const secondSpacer = page.getByRole('toolbar', { name: 'Products toolbar' }).getByTestId('toolbar-spacer-end');
+        // the on-screen x positions follow the same order
+        expect(exportBox.x).toBeLessThan(refreshBox.x);
+        expect(refreshBox.x).toBeLessThan(shareBox.x);
+      });
 
-    await expectPrecedes(exportButton, firstSpacer);
-    await expectPrecedes(firstSpacer, refreshButton);
-    await expectPrecedes(refreshButton, secondSpacer);
-    await expectPrecedes(secondSpacer, compactButton);
+      test('THEN: it exposes the labelled widget group in slot order in the accessibility tree', async ({ page }) => {
+        const toolbar = page.getByRole('toolbar', { name: 'Products toolbar' });
 
-    const exportBox = await requireBox(exportButton);
-    const refreshBox = await requireBox(refreshButton);
-    const shareBox = await requireBox(shareButton);
-
-    expect(exportBox.x).toBeLessThan(refreshBox.x);
-    expect(refreshBox.x).toBeLessThan(shareBox.x);
-  });
-
-  test('accessibility tree exposes the labelled widget group in slot order', async ({ page }) => {
-    const toolbar = page.getByRole('toolbar', { name: 'Products toolbar' });
-
-    await expect(toolbar).toMatchAriaSnapshot(`
+        await expect(toolbar).toMatchAriaSnapshot(`
       - button "Export"
       - button "Refresh"
       - group "View density":
@@ -118,59 +110,96 @@ test.describe('Table toolbar', () => {
         - button "Comfortable"
       - button "Share"
     `);
-  });
+      });
+    });
 
-  test('moves the roving tab stop with arrow keys across all three slots (LTR)', async ({ page }) => {
-    const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } = buttons(page);
+    test.describe('WHEN: a toolbar item is clicked', () => {
+      test('THEN: it reports the activated action for each item', async ({ page }) => {
+        await page.getByTestId('export-button').click();
+        await expect(page.getByTestId('last-action')).toHaveText('export');
 
-    await exportButton.focus();
-    await exportButton.press('ArrowRight');
-    await expect(refreshButton).toBeFocused();
+        await page.getByTestId('refresh-button').click();
+        await expect(page.getByTestId('last-action')).toHaveText('refresh');
 
-    // Left/Right traverse group members linearly, like any other item.
-    await refreshButton.press('ArrowRight');
-    await expect(compactButton).toBeFocused();
+        await page.getByTestId('share-button').click();
+        await expect(page.getByTestId('last-action')).toHaveText('share');
 
-    await compactButton.press('ArrowRight');
-    await expect(comfortableButton).toBeFocused();
+        await page.getByTestId('density-compact-button').click();
+        await expect(page.getByTestId('last-action')).toHaveText('density-compact');
+      });
+    });
 
-    await comfortableButton.press('ArrowRight');
-    await expect(shareButton).toBeFocused();
+    test.describe('WHEN: arrow keys traverse the toolbar in LTR', () => {
+      test('THEN: it moves the roving tab stop across all three slots', async ({ page }) => {
+        const { exportButton, refreshButton, compactButton, comfortableButton, shareButton } = buttons(page);
 
-    await shareButton.press('ArrowLeft');
-    await expect(comfortableButton).toBeFocused();
+        await test.step('THEN: ArrowRight moves focus rightward from Export', async () => {
+          await exportButton.focus();
+          await exportButton.press('ArrowRight');
+          await expect(refreshButton).toBeFocused();
+        });
 
-    await comfortableButton.press('Home');
-    await expect(exportButton).toBeFocused();
+        await test.step('THEN: Left/Right traverse group members linearly, like any other item', async () => {
+          await refreshButton.press('ArrowRight');
+          await expect(compactButton).toBeFocused();
 
-    await exportButton.press('End');
-    await expect(shareButton).toBeFocused();
-  });
+          await compactButton.press('ArrowRight');
+          await expect(comfortableButton).toBeFocused();
 
-  test('Up/Down cycle inside the widget group without leaving it', async ({ page }) => {
-    const { compactButton, comfortableButton } = buttons(page);
+          await comfortableButton.press('ArrowRight');
+          await expect(shareButton).toBeFocused();
+        });
 
-    await compactButton.focus();
-    await compactButton.press('ArrowDown');
-    await expect(comfortableButton).toBeFocused();
+        await test.step('THEN: ArrowLeft / Home / End move focus', async () => {
+          await shareButton.press('ArrowLeft');
+          await expect(comfortableButton).toBeFocused();
 
-    // Next widget (Share) is outside the group — Down wraps to its first member.
-    await comfortableButton.press('ArrowDown');
-    await expect(compactButton).toBeFocused();
+          await comfortableButton.press('Home');
+          await expect(exportButton).toBeFocused();
 
-    await compactButton.press('ArrowUp');
-    await expect(comfortableButton).toBeFocused();
-  });
+          await exportButton.press('End');
+          await expect(shareButton).toBeFocused();
+        });
+      });
+    });
 
-  test('reverses arrow keys in RTL', async ({ page }) => {
-    await applyDocumentDirection(page, 'rtl');
-    await page.goto('/examples/toolbar');
-    await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+    test.describe('WHEN: Up/Down arrow keys cycle the widget group', () => {
+      test('THEN: it cycles inside the widget group without leaving it', async ({ page }) => {
+        const { compactButton, comfortableButton } = buttons(page);
 
-    const { exportButton, refreshButton } = buttons(page);
+        await test.step('THEN: ArrowDown moves within the group', async () => {
+          await compactButton.focus();
+          await compactButton.press('ArrowDown');
+          await expect(comfortableButton).toBeFocused();
+        });
 
-    await exportButton.focus();
-    await exportButton.press('ArrowLeft');
-    await expect(refreshButton).toBeFocused();
+        await test.step('THEN: Next widget (Share) is outside the group — Down wraps to its first member', async () => {
+          await comfortableButton.press('ArrowDown');
+          await expect(compactButton).toBeFocused();
+        });
+
+        await test.step('THEN: ArrowUp moves back up within the group', async () => {
+          await compactButton.press('ArrowUp');
+          await expect(comfortableButton).toBeFocused();
+        });
+      });
+    });
+
+    test.describe('WHEN: arrow keys traverse the toolbar in RTL', () => {
+      test('THEN: it reverses the arrow-key direction', async ({ page }) => {
+        // re-navigates with RTL direction inside this body (rule 5) — not hoisted to the shared GIVEN
+        await applyDocumentDirection(page, 'rtl');
+        await page.goto('/examples/toolbar');
+        await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+
+        const { exportButton, refreshButton } = buttons(page);
+
+        await test.step('THEN: ArrowLeft moves focus in the reversed direction', async () => {
+          await exportButton.focus();
+          await exportButton.press('ArrowLeft');
+          await expect(refreshButton).toBeFocused();
+        });
+      });
+    });
   });
 });

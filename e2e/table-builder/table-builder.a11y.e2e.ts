@@ -1,37 +1,46 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Table builder accessibility', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/builder');
-  });
+test.describe('FEATURE: Table builder', () => {
+  test.describe('GIVEN: the table builder page is loaded', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/examples/builder');
+    });
 
-  test('configures table builder using keyboard only', async ({ page }) => {
-    const globalSearchToggle = page.locator('.toggle-control', { hasText: 'Global Search' }).locator('input');
-    const codeContent = page.locator('.code-content');
+    test.describe('WHEN: the user configures the table builder using keyboard only', () => {
+      test('THEN: it applies each interaction and reflects the result in the preview', async ({ page }) => {
+        const globalSearchToggle = page.locator('.toggle-control', { hasText: 'Global Search' }).locator('input');
+        const codeContent = page.locator('.code-content');
+        const tsTabBtn = page.getByRole('button', { name: 'custom-table.ts' });
+        const copyBtn = page.locator('.btn-copy');
 
-    // Verify search is initially active
-    await expect(globalSearchToggle).toBeChecked();
-    await expect(codeContent).toContainText('app-table-search');
+        await test.step('THEN: search is active and present in the preview', async () => {
+          await expect(globalSearchToggle).toBeChecked();
+          await expect(codeContent).toContainText('app-table-search');
+        });
 
-    // Focus and press Space to toggle (uncheck)
-    await globalSearchToggle.focus();
-    await page.keyboard.press('Space');
-    await expect(globalSearchToggle).not.toBeChecked();
-    await expect(codeContent).not.toContainText('app-table-search');
+        await test.step('THEN: search disappears from the preview after switching the toggle off via the keyboard', async () => {
+          await globalSearchToggle.focus();
+          await page.keyboard.press('Space');
 
-    // Focus custom-table.ts tab button and press Enter to switch tabs
-    const tsTabBtn = page.getByRole('button', { name: 'custom-table.ts' });
+          await expect(globalSearchToggle).not.toBeChecked();
+          await expect(codeContent).not.toContainText('app-table-search');
+        });
 
-    await tsTabBtn.focus();
-    await page.keyboard.press('Enter');
-    await expect(tsTabBtn).toHaveClass(/is-active/);
-    await expect(codeContent).toContainText('export class CustomTableComponent');
+        await test.step('THEN: the TS tab becomes active and its content is shown after activating it via the keyboard', async () => {
+          await tsTabBtn.focus();
+          await page.keyboard.press('Enter');
 
-    // Focus Copy button and press Space to click
-    const copyBtn = page.locator('.btn-copy');
+          await expect(tsTabBtn).toHaveClass(/is-active/);
+          await expect(codeContent).toContainText('export class CustomTableComponent');
+        });
 
-    await copyBtn.focus();
-    await page.keyboard.press('Space');
-    await expect(copyBtn).toHaveText('Copied');
+        await test.step('THEN: the label confirms the copy after activating the copy button via the keyboard', async () => {
+          await copyBtn.focus();
+          await page.keyboard.press('Space');
+
+          await expect(copyBtn).toHaveText('Copied');
+        });
+      });
+    });
   });
 });

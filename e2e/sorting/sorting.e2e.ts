@@ -1,58 +1,85 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Sorting', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/sorting');
-  });
+test.describe('FEATURE: Sorting', () => {
+  test.describe('GIVEN: the sorting example is loaded', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/examples/sorting');
+    });
 
-  test('renders sorting grids and handles programmatic single-column sort actions', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Sorting Feature' })).toBeVisible();
+    test.describe('WHEN: programmatic sort buttons are clicked', () => {
+      test('THEN: it applies and clears single-column sort', async ({ page }) => {
+        await expect(page.getByRole('heading', { name: 'Sorting Feature' })).toBeVisible();
 
-    const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
+        const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
 
-    await expect(stateTag).toContainText('name (asc)');
+        await test.step('THEN: initial state is name (asc)', async () => {
+          await expect(stateTag).toContainText('name (asc)');
 
-    // Sort by Value (Asc)
-    await page.getByRole('button', { name: 'Sort by Value (Asc)' }).click();
-    await expect(stateTag).toContainText('value (asc)');
+          await page.getByRole('button', { name: 'Sort by Value (Asc)' }).click();
+        });
 
-    // Sort by Name (Desc)
-    await page.getByRole('button', { name: 'Sort by Name (Desc)' }).click();
-    await expect(stateTag).toContainText('name (desc)');
+        await test.step('THEN: the state reflects value (asc)', async () => {
+          await expect(stateTag).toContainText('value (asc)');
 
-    // Clear Sorting
-    await page.locator('.card', { hasText: 'Programmatic Sort Actions' }).getByRole('button', { name: 'Clear Sorting' }).click();
-    await expect(stateTag).toContainText('None');
-  });
+          await page.getByRole('button', { name: 'Sort by Name (Desc)' }).click();
+        });
 
-  test('handles interactive sorting on column headers', async ({ page }) => {
-    const table = page.getByRole('grid', { name: 'Sorting demo table', exact: true });
-    const categoryHeaderBtn = table.locator('th[data-column-id="category"] button.sort-button');
-    const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
+        await test.step('THEN: the state reflects name (desc)', async () => {
+          await expect(stateTag).toContainText('name (desc)');
 
-    // Initially name (asc)
-    await expect(stateTag).toContainText('name (asc)');
+          await page.locator('.card', { hasText: 'Programmatic Sort Actions' }).getByRole('button', { name: 'Clear Sorting' }).click();
+        });
 
-    // Click category to sort ascending
-    await categoryHeaderBtn.click();
-    await expect(stateTag).toContainText('category (asc)');
+        await test.step('THEN: the state is cleared', async () => {
+          await expect(stateTag).toContainText('None');
+        });
+      });
+    });
 
-    // Click category again to sort descending
-    await categoryHeaderBtn.click();
-    await expect(stateTag).toContainText('category (desc)');
-  });
+    test.describe('WHEN: the Category column header is clicked', () => {
+      test('THEN: it cycles from ascending to descending sort', async ({ page }) => {
+        const table = page.getByRole('grid', { name: 'Sorting demo table', exact: true });
+        const categoryHeaderBtn = table.locator('th[data-column-id="category"] button.sort-button');
+        const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
 
-  test('handles programmatic multi-column sorting', async ({ page }) => {
-    const multiStateTag = page.locator('.info-tag', { hasText: 'Current sorting' });
+        await test.step('THEN: initial state is name (asc)', async () => {
+          await expect(stateTag).toContainText('name (asc)');
 
-    await expect(multiStateTag).toContainText('None');
+          await categoryHeaderBtn.click();
+        });
 
-    // Apply multi preset
-    await page.getByRole('button', { name: 'Sort by Category, then Value' }).click();
-    await expect(multiStateTag).toContainText('1. category (asc), 2. value (desc)');
+        await test.step('THEN: it sorts ascending', async () => {
+          await expect(stateTag).toContainText('category (asc)');
 
-    // Clear
-    await page.locator('.card', { hasText: 'Sort Priority' }).getByRole('button', { name: 'Clear Sorting' }).click();
-    await expect(multiStateTag).toContainText('None');
+          await categoryHeaderBtn.click();
+        });
+
+        await test.step('THEN: it sorts descending', async () => {
+          await expect(stateTag).toContainText('category (desc)');
+        });
+      });
+    });
+
+    test.describe('WHEN: the multi-column sort preset and clear are clicked', () => {
+      test('THEN: it applies and clears multi-column sort', async ({ page }) => {
+        const multiStateTag = page.locator('.info-tag', { hasText: 'Current sorting' });
+
+        await test.step('THEN: initial state is None', async () => {
+          await expect(multiStateTag).toContainText('None');
+
+          await page.getByRole('button', { name: 'Sort by Category, then Value' }).click();
+        });
+
+        await test.step('THEN: both sort levels are reflected', async () => {
+          await expect(multiStateTag).toContainText('1. category (asc), 2. value (desc)');
+
+          await page.locator('.card', { hasText: 'Sort Priority' }).getByRole('button', { name: 'Clear Sorting' }).click();
+        });
+
+        await test.step('THEN: the state is cleared', async () => {
+          await expect(multiStateTag).toContainText('None');
+        });
+      });
+    });
   });
 });
