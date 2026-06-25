@@ -58,8 +58,6 @@ const computeNatTableStateDiff = (prev: NatTableState, next: NatTableState): Nat
 @Component({
   selector: 'nat-table-surface',
   template: `<div class="surface">
-    <ng-content name="table-pager" />
-
     <ng-content />
   </div>`,
   styleUrl: './table-surface.css',

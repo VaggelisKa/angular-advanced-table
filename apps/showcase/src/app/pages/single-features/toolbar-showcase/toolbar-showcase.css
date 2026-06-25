@@ -1,9 +1,3 @@
-.position-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .demo-state {
   display: grid;
   grid-template-columns: auto 1fr;
