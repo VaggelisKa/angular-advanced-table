@@ -17,7 +17,7 @@ npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tans
 Create one `NatTableRenderMetricsStore`, enable row render events on the table, and record each event.
 
 ```ts
-import { Component } from '@angular/core';
+import { Component, viewChild } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
@@ -29,9 +29,10 @@ import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderM
   imports: [NatTable, NatTableSurface, NatRenderMetricsPanel],
   template: `
     <nat-table-surface>
-      <nat-render-metrics-panel [store]="metricsStore" />
+      <nat-render-metrics-panel [controller]="metricsTable()" [store]="metricsStore" />
 
       <nat-table
+        #metricsTable
         [data]="rows()"
         [columns]="columns"
         [emitRowRenderEvents]="true"
@@ -43,6 +44,7 @@ import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderM
 })
 export class PositionsTable {
   readonly metricsStore = new NatTableRenderMetricsStore();
+  readonly metricsTable = viewChild<NatTable<PositionRow>>('metricsTable');
   readonly columns: ColumnDef<PositionRow>[] = [];
   readonly getRowId = (row: PositionRow) => row.id;
 
@@ -89,12 +91,13 @@ The panel summarizes the latest render cycle. The filter targets the synthetic m
 
 ```html
 <nat-table-surface>
-  <nat-table-toolbar accessibleName="Render metrics toolbar">
-    <nat-render-metrics-filter [store]="metricsStore" />
-    <nat-render-metrics-panel [store]="metricsStore" />
-  </nat-table-toolbar>
+  <div class="render-metrics-controls">
+    <nat-render-metrics-filter [controller]="metricsTable()" [store]="metricsStore" />
+    <nat-render-metrics-panel [controller]="metricsTable()" [store]="metricsStore" />
+  </div>
 
   <nat-table
+    #metricsTable
     [data]="rows()"
     [columns]="columns"
     [emitRowRenderEvents]="true"
@@ -104,15 +107,21 @@ The panel summarizes the latest render cycle. The filter targets the synthetic m
 </nat-table-surface>
 ```
 
-`NatRenderMetricsFilter` patches `columnFilters` for the metrics column and resets pagination to the first page. It needs the same surface/controller scope as the table.
+`NatRenderMetricsFilter` patches `columnFilters` for the metrics column and resets pagination to the first page. Pass the `NatTable` instance, or any object matching `NatTableRenderMetricsController`, through `[controller]`.
+
+Keep `NatRenderMetricsFilter` outside `<nat-table-toolbar>` because it renders its own internal chip buttons as a labeled button group. Use `<nat-table-toolbar>` for controls that can register each interactive element with `natToolbarItem` or `NatToolbarGroup`.
 
 ## Reading Measurements
 
-The store exposes row-level and cycle-level metrics.
+The store exposes read-only row-level and cycle-level metrics. Row history is bounded to the newest 1000 row ids by default so long-lived tables with row churn do not retain unbounded metrics.
 
 ```ts
+readonly metricsStore = new NatTableRenderMetricsStore({
+  maxRetainedRowMetrics: 2000,
+});
+
 readonly latestMeasurement = computed(() => this.metricsStore.measurement());
-readonly allRowMetrics = computed(() => this.metricsStore.rowMetrics());
+readonly retainedRowMetrics = computed(() => this.metricsStore.rowMetrics());
 
 protected resetMetrics(): void {
   this.metricsStore.reset();
@@ -133,6 +142,8 @@ The latest measurement includes:
 | `rowsPerSecond`        | Approximate rendered rows per second               |
 
 Row metrics include `durationMs`, `measuredAt`, and a derived tone: `fast`, `watch`, or `slow`.
+
+Set `maxRetainedRowMetrics` to a higher finite value when a table needs a longer diagnostic window. Set it to `Infinity` only when the row-id space is known to be bounded.
 
 ## Locale And Labels
 

@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, viewChild } from '@angular/core';
 
 import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef, FilterFn } from '@tanstack/angular-table';
@@ -19,7 +19,7 @@ import {
   NatTableRenderMetricsStore,
   withRenderMetricsColumn
 } from 'ng-advanced-table-utils';
-import type { NatTableRenderMetricsEvent } from 'ng-advanced-table-utils';
+import type { NatTableRenderMetricsController, NatTableRenderMetricsEvent } from 'ng-advanced-table-utils';
 
 import { NatRowActionsMenu } from './nat-row-actions-menu';
 import { NatSparkline } from './nat-sparkline';
@@ -330,6 +330,11 @@ export class TableShowcasePage {
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = SIMULATION_STATUSES;
   protected readonly metricsStore = new NatTableRenderMetricsStore();
+  private readonly renderMetricsTable = viewChild<NatTable<SimulationRow>>('renderMetricsTable');
+  protected readonly renderMetricsController = computed<NatTableRenderMetricsController<SimulationRow> | undefined>(() =>
+    this.renderMetricsTable()
+  );
+
   protected readonly columns = withNatTableHeaderActions(withRenderMetricsColumn(simulationColumns, this.metricsStore), {
     enableColumnReorderActions: true,
     sortIndicator: (context) =>
