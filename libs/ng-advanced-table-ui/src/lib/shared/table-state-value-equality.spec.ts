@@ -10,6 +10,18 @@ describe('table state value equality', () => {
     expect(
       hasNatTableStateValueChanged([{ id: 'status', value: new Set(['Healthy']) }], [{ id: 'status', value: new Set(['Healthy']) }])
     ).toBe(false);
+    expect(
+      hasNatTableStateValueChanged(
+        [{ id: 'status', value: new Set(['Healthy', 'Warning']) }],
+        [{ id: 'status', value: new Set(['Warning', 'Healthy']) }]
+      )
+    ).toBe(false);
+    expect(
+      hasNatTableStateValueChanged(
+        [{ id: 'status', value: new Set([{ value: 'Healthy' }, { value: 'Warning' }]) }],
+        [{ id: 'status', value: new Set([{ value: 'Warning' }, { value: 'Healthy' }]) }]
+      )
+    ).toBe(false);
     expect(hasNatTableStateValueChanged([{ id: 'status', value: 1n }], [{ id: 'status', value: 2n }])).toBe(true);
     expect(
       hasNatTableStateValueChanged([{ id: 'status', value: new Set(['Healthy']) }], [{ id: 'status', value: new Set(['Alert']) }])

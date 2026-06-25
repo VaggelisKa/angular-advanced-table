@@ -1,4 +1,4 @@
-type SeenPairs = WeakMap<object, WeakSet<object>>;
+type SeenPairs = Map<object, Set<object>>;
 type ValueMatcher = (left: unknown, right: unknown, seen: SeenPairs) => boolean;
 
 let valuesMatch: ValueMatcher = () => false;
@@ -18,10 +18,40 @@ const hasSeenPair = (left: object, right: object, seen: SeenPairs): boolean => {
   if (rightValues) {
     rightValues.add(right);
   } else {
-    seen.set(left, new WeakSet([right]));
+    seen.set(left, new Set([right]));
   }
 
   return false;
+};
+
+const cloneSeenPairs = (seen: SeenPairs): SeenPairs => {
+  const clone: SeenPairs = new Map();
+
+  for (const [left, rightValues] of seen) {
+    clone.set(left, new Set(rightValues));
+  }
+
+  return clone;
+};
+
+const replaceSeenPairs = (target: SeenPairs, source: SeenPairs): void => {
+  target.clear();
+
+  for (const [left, rightValues] of source) {
+    target.set(left, new Set(rightValues));
+  }
+};
+
+const valuesMatchWithoutFailedPairSideEffects = (left: unknown, right: unknown, seen: SeenPairs): boolean => {
+  const trialSeen = cloneSeenPairs(seen);
+
+  if (!valuesMatch(left, right, trialSeen)) {
+    return false;
+  }
+
+  replaceSeenPairs(seen, trialSeen);
+
+  return true;
 };
 
 const isDateComparison = (left: object, right: object): boolean => left instanceof Date || right instanceof Date;
@@ -63,9 +93,21 @@ const setsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
   }
 
   const leftSet = left as ReadonlySet<unknown>;
-  const rightValues = Array.from((right as ReadonlySet<unknown>).values());
+  const unmatchedRightValues = Array.from((right as ReadonlySet<unknown>).values());
 
-  return Array.from(leftSet.values()).every((value, index) => valuesMatch(value, rightValues[index], seen));
+  return Array.from(leftSet.values()).every((leftValue) => {
+    const matchingIndex = unmatchedRightValues.findIndex((rightValue) =>
+      valuesMatchWithoutFailedPairSideEffects(leftValue, rightValue, seen)
+    );
+
+    if (matchingIndex < 0) {
+      return false;
+    }
+
+    unmatchedRightValues.splice(matchingIndex, 1);
+
+    return true;
+  });
 };
 
 const plainObjectsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
@@ -137,4 +179,4 @@ valuesMatch = (left, right, seen): boolean => {
 };
 
 export const hasNatTableStateValueChanged = (left: unknown, right: unknown): boolean =>
-  !valuesMatch(left, right, new WeakMap<object, WeakSet<object>>());
+  !valuesMatch(left, right, new Map<object, Set<object>>());
