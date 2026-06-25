@@ -9,11 +9,11 @@ nat-table-surface {
 
 .simple-sorting-page {
   box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .examples-grid {
@@ -47,23 +47,23 @@ nat-table-surface {
 }
 
 .example-card-surface footer {
-  margin-top: auto;
-  padding-top: 1.5rem;
   display: flex;
   justify-content: flex-end;
+  padding-top: 1.5rem;
+  margin-top: auto;
 }
 
 .example-card-surface footer button,
 .detailed-page-header .back-button,
 .dialog-header button {
   padding: 0.5rem 1rem;
-  border-radius: 6px;
-  background: var(--showcase-page-accent);
-  color: white;
-  border: none;
   font-size: 0.9rem;
   font-weight: 600;
+  color: white;
   cursor: pointer;
+  background: var(--showcase-page-accent);
+  border: none;
+  border-radius: 6px;
   transition:
     background var(--nat-table-transition-fast),
     transform var(--nat-table-transition-fast);
@@ -84,20 +84,20 @@ nat-table-surface {
 
 /* Dialog Styles */
 dialog {
-  padding: 0;
-  border: 1px solid var(--showcase-page-border);
-  border-radius: var(--showcase-page-radius, 12px);
-  background: var(--showcase-page-surface);
-  color: var(--showcase-page-text);
-  box-shadow: var(--showcase-page-shadow);
+  width: 1000px;
   max-width: 90vw;
   max-height: 85vh;
-  width: 1000px;
+  padding: 0;
   overflow: hidden;
+  color: var(--showcase-page-text);
+  background: var(--showcase-page-surface);
+  border: 1px solid var(--showcase-page-border);
+  border-radius: var(--showcase-page-radius, 12px);
+  box-shadow: var(--showcase-page-shadow);
 }
 
 dialog::backdrop {
-  background: rgba(0, 0, 0, 0.45);
+  background: rgb(0 0 0 / 45%);
   backdrop-filter: blur(4px);
 }
 
@@ -109,8 +109,8 @@ dialog::backdrop {
 
 .dialog-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--showcase-page-border);
 }
@@ -122,8 +122,8 @@ dialog::backdrop {
 }
 
 .dialog-header button {
-  background: var(--showcase-page-surface-muted);
   color: var(--showcase-page-text);
+  background: var(--showcase-page-surface-muted);
   border: 1px solid var(--showcase-page-border);
 }
 
@@ -139,19 +139,19 @@ dialog::backdrop {
 
 /* Detailed Page Styles */
 .detailed-page-container {
+  position: relative;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: calc(100vh - 68px);
-  box-sizing: border-box;
-  position: relative;
 }
 
 .detailed-page-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  justify-content: space-between;
   height: 68px;
+  padding: 1rem;
 }
 
 .detailed-page-header h2 {
@@ -161,8 +161,8 @@ dialog::backdrop {
 }
 
 .detailed-page-header .back-button {
-  background: var(--showcase-page-surface-muted);
   color: var(--showcase-page-text);
+  background: var(--showcase-page-surface-muted);
   border: 1px solid var(--showcase-page-border);
 }
 
@@ -180,9 +180,9 @@ dialog::backdrop {
   height: 60vh;
   height: 60dvh;
 }
+
 nat-table-surface.dialog-table-surface {
   --nat-table-max-height: 60vh;
-  --nat-table-max-height: 60dvh;
 }
 
 .detailed-page-body nat-table-surface.dialog-table-surface {
@@ -190,10 +190,10 @@ nat-table-surface.dialog-table-surface {
 }
 
 nat-table-surface.dialog-table-surface ::ng-deep .surface {
-  border-radius: 0;
   padding: 0;
   background: none;
   border: 0;
+  border-radius: 0;
 }
 
 .simple-table {
