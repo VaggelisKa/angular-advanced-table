@@ -16,6 +16,8 @@ import { NAT_TABLE_DATA_STATUS } from './table.types';
 
 export const DEFAULT_CELL_MAX_LINES = 2;
 
+const DEFAULT_ROW_ID_INDEX_PREFIX = '__nat-table-row-index__:';
+
 export type TableColumnAccessibilityState = {
   id: string;
   label: string;
@@ -310,7 +312,7 @@ export function resolveDefaultRowId<TData extends RowData>(row: TData, index: nu
     return rowId;
   }
 
-  const fallbackId = String(index);
+  const fallbackId = `${DEFAULT_ROW_ID_INDEX_PREFIX}${index}`;
 
   return parent ? `${parent.id}.${fallbackId}` : fallbackId;
 }

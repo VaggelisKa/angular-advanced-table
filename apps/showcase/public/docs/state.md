@@ -4,17 +4,17 @@
 
 `NatTableState` contains the serializable view state exposed by the table and companion surface.
 
-| Slice              | Use it for                                                                |
-| ------------------ | ------------------------------------------------------------------------- |
-| `sorting`          | Active sort entries                                                       |
-| `globalFilter`     | Current global search query                                               |
-| `columnFilters`    | Column-specific filters keyed by column id                                |
-| `pagination`       | `pageIndex` and `pageSize`                                                |
-| `columnVisibility` | Hideable column visibility map                                            |
-| `columnOrder`      | Leaf-column order                                                         |
-| `columnPinning`    | Left and right pinned column ids                                          |
-| `columnSizing`     | Resized column widths in pixels                                           |
-| `rowSelection`     | Selected row ids keyed by `getRowId`, `row.id`, or the fallback row index |
+| Slice              | Use it for                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| `sorting`          | Active sort entries                                                                   |
+| `globalFilter`     | Current global search query                                                           |
+| `columnFilters`    | Column-specific filters keyed by column id                                            |
+| `pagination`       | `pageIndex` and `pageSize`                                                            |
+| `columnVisibility` | Hideable column visibility map                                                        |
+| `columnOrder`      | Leaf-column order                                                                     |
+| `columnPinning`    | Left and right pinned column ids                                                      |
+| `columnSizing`     | Resized column widths in pixels                                                       |
+| `rowSelection`     | Selected row ids keyed by `getRowId`, `row.id`, or the namespaced positional fallback |
 
 The `pagination` slice always exists in emitted state. Pagination affects rendered rows only when pagination is enabled by a pagination companion control or a table setup that registers pagination.
 
@@ -234,4 +234,4 @@ interface PositionRow {
 readonly getRowId = (row: PositionRow) => `${row.accountId}:${row.positionId}`;
 ```
 
-Without stable IDs, the table falls back to row positions. Selection, row activation, and per-row instrumentation can then follow indexes instead of the underlying data after sorting, filtering, paging, or refreshes.
+Without stable IDs, the table falls back to namespaced row positions. Selection, row activation, and per-row instrumentation can then follow indexes instead of the underlying data after sorting, filtering, paging, or refreshes.

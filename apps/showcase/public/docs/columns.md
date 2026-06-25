@@ -250,7 +250,7 @@ Disable export for columns that are useful only on screen.
 ## Common Mistakes
 
 - Do not omit `meta.label` because the visible `header` happens to be a string today.
-- Do not rely on fallback array indexes as row ids for interactive tables.
+- Do not rely on namespaced positional fallback ids for interactive tables.
 - Do not make clickable `<div>` or `<span>` content inside cells; use real controls.
 - Do not enable resizing on every column automatically. Choose the columns where resizing is useful.
 - Do not move workflow state such as filters, dialogs, or mutations into cell components.

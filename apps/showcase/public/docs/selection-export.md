@@ -66,7 +66,7 @@ export class ServicesTable {
 }
 ```
 
-Selection is stored as `Record<rowId, boolean>`. Rows with a string or number `id` property use that value automatically. Provide `getRowId` when the stable id lives under another property, is composite, or needs parent-aware nested row keys. Without a stable id, selection follows row positions after sorting, filtering, paging, or data refreshes.
+Selection is stored as `Record<rowId, boolean>`. Rows with a string or number `id` property use that value automatically. Provide `getRowId` when the stable id lives under another property, is composite, or needs parent-aware nested row keys. Without a stable id, selection follows namespaced row positions after sorting, filtering, paging, or data refreshes.
 
 ## Single And Multiple Selection
 

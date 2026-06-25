@@ -54,15 +54,33 @@ describe('FEATURE: table utilities', () => {
       });
     });
 
+    describe('WHEN: a row exposes zero as its numeric id', () => {
+      it('THEN: it preserves zero as a valid row id', () => {
+        expect(resolveDefaultRowId({ id: 0 }, 4)).toBe('0');
+      });
+    });
+
     describe('WHEN: a row does not expose a usable id', () => {
-      it('THEN: it falls back to the row index', () => {
-        expect(resolveDefaultRowId({ id: '' }, 4)).toBe('4');
+      it('THEN: it falls back to a namespaced row index', () => {
+        expect(resolveDefaultRowId({ id: '' }, 4)).toBe('__nat-table-row-index__:4');
+      });
+    });
+
+    describe('WHEN: rows mix explicit ids with fallback ids', () => {
+      it('THEN: it keeps numeric ids distinct from fallback indexes', () => {
+        const rows = [{ id: 2 }, {}, {}];
+
+        expect(rows.map((row, index) => resolveDefaultRowId(row, index))).toStrictEqual([
+          '2',
+          '__nat-table-row-index__:1',
+          '__nat-table-row-index__:2'
+        ]);
       });
     });
 
     describe('WHEN: an index fallback belongs to a parent row', () => {
       it('THEN: it prefixes the fallback id with the parent id', () => {
-        expect(resolveDefaultRowId({ name: 'Child' }, 2, { id: 'parent-1' })).toBe('parent-1.2');
+        expect(resolveDefaultRowId({ name: 'Child' }, 2, { id: 'parent-1' })).toBe('parent-1.__nat-table-row-index__:2');
       });
     });
   });
