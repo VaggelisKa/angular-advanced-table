@@ -4,9 +4,11 @@ export type {
   NatTableColumnExportValue,
   NatTableColumnExportValueContext,
   NatTableColumnMeta,
+  NatTableRenderMetricsController,
   NatTableSortDirection,
   NatTableSortIndicatorContext,
-  NatTableState
+  NatTableState,
+  NatTableUiController
 } from './lib/table-contracts';
 
 export type { Equal, Expect } from './testing/type-assertions';

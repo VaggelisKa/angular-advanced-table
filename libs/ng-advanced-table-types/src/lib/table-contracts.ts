@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 import type {
   CellContext,
   Column,
@@ -10,6 +12,8 @@ import type {
   RowData,
   RowSelectionState,
   SortingState,
+  Table,
+  Updater,
   VisibilityState
 } from '@tanstack/angular-table';
 
@@ -78,4 +82,34 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   headerMinSize?: number | string;
   headerMaxSize?: number | string;
   export?: NatTableColumnExportOptions<TData, TValue>;
+};
+
+/**
+ * Minimal table-controller contract consumed by render-metrics helpers.
+ */
+export type NatTableRenderMetricsController<TData extends RowData = RowData> = {
+  readonly table: Table<TData>;
+  readonly localeId?: Signal<string>;
+  patchState(
+    updaters: Partial<{
+      [K in keyof NatTableState]: Updater<NatTableState[K]>;
+    }>
+  ): void;
+};
+
+/**
+ * Minimal table-controller contract consumed by UI companion controls.
+ */
+export type NatTableUiController<TData extends RowData = RowData> = {
+  readonly table: Table<TData>;
+  enableGlobalFilter(): boolean;
+  enablePagination(): boolean;
+  patchState(
+    updaters: Partial<{
+      [K in keyof NatTableState]: Updater<NatTableState[K]>;
+    }>
+  ): void;
+  readonly tableElementId: Signal<string>;
+  readonly tableScrollContainer?: Signal<HTMLElement | null>;
+  readonly localeId?: Signal<string>;
 };

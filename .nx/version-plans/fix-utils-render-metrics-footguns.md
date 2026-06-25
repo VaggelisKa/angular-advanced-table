@@ -1,5 +1,5 @@
 ---
-ng-advanced-table-utils: patch
+ng-advanced-table-utils: minor
 ---
 
-Fix render-metrics package metadata, panel locale fallback, bounded store retention, readonly exposed metrics, and Safari-safe style fallbacks.
+Fix render-metrics package boundaries, panel locale fallback, bounded store retention, readonly exposed metrics, and Safari-safe style fallbacks. Render-metrics controls now accept an explicit structural table controller instead of importing the core table service.

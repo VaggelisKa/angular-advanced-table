@@ -1,10 +1,9 @@
-import { Component, inject, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
 import type { Table } from '@tanstack/angular-table';
-import { NatTableService } from 'ng-advanced-table';
-import type { NatTableUiController } from 'ng-advanced-table';
+import type { NatTableUiController } from 'ng-advanced-table-types';
 
 import { NatRenderMetricsFilter } from './filter';
 import { provideNatTableUtilsIntl } from './intl';
@@ -66,7 +65,6 @@ const qaPanelLabels: NatTableRenderMetricsPanelIntl = {
   selector: 'nat-test-host',
   imports: [NatRenderMetricsFilter, NatRenderMetricsPanel],
   providers: [
-    NatTableService,
     provideNatTableUtilsIntl({
       locales: {
         en: {
@@ -86,14 +84,14 @@ const qaPanelLabels: NatTableRenderMetricsPanelIntl = {
     })
   ],
   template: `
-    <nat-render-metrics-panel [labels]="panelLabels()" [locale]="panelLocale()" [store]="store" />
-    <nat-render-metrics-filter [labels]="filterLabels()" [store]="store" />
+    <nat-render-metrics-panel [controller]="controller" [labels]="panelLabels()" [locale]="panelLocale()" [store]="store" />
+    <nat-render-metrics-filter [controller]="controller" [labels]="filterLabels()" [store]="store" />
   `
 })
 class RenderMetricsIntlHost {
   protected readonly store = new NatTableRenderMetricsStore();
   public readonly controllerLocale = signal('en');
-  private readonly controller: NatTableUiController<Row> = {
+  public readonly controller: NatTableUiController<Row> = {
     table: {
       getState: () => ({ columnFilters: [] })
     } as unknown as Table<Row>,
@@ -108,10 +106,7 @@ class RenderMetricsIntlHost {
   public readonly panelLocale = signal<string | undefined>(undefined);
   public readonly filterLabels = signal<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
-  private readonly natTableService = inject(NatTableService);
-
   public constructor() {
-    this.natTableService.setController(this.controller);
     this.store.record({
       rowId: 'row-1',
       renderToken: 1,

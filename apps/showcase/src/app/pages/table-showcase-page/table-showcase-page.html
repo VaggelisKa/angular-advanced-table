@@ -121,8 +121,8 @@
 
       <nat-table-surface [accessibilityText]="accessibilityText" [stickyHeader]="true" [(state)]="tableState" class="table-shell">
         <div class="kitchen-metrics-controls">
-          <nat-render-metrics-filter [store]="metricsStore" />
-          <nat-render-metrics-panel [store]="metricsStore" />
+          <nat-render-metrics-filter [controller]="renderMetricsController()" [store]="metricsStore" />
+          <nat-render-metrics-panel [controller]="renderMetricsController()" [store]="metricsStore" />
         </div>
 
         <nat-table-toolbar accessibleName="Live movers table toolbar" class="kitchen-table-toolbar">
@@ -136,6 +136,7 @@
         </nat-table-toolbar>
 
         <nat-table
+          #renderMetricsTable
           [columns]="columns"
           [data]="simulation.rows()"
           [emitRowRenderEvents]="true"

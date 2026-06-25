@@ -1,7 +1,11 @@
 import type { ColumnDef } from '@tanstack/angular-table';
-import type { NatTableColumnMeta as InternalNatTableColumnMeta, NatTableState } from 'ng-advanced-table-types';
+import type {
+  NatTableColumnMeta as InternalNatTableColumnMeta,
+  NatTableRenderMetricsController as InternalNatTableRenderMetricsController,
+  NatTableState
+} from 'ng-advanced-table-types';
 
-import type { NatTableColumnMeta, NatTableRenderMetricsState } from './contracts';
+import type { NatTableColumnMeta, NatTableRenderMetricsController, NatTableRenderMetricsState } from './contracts';
 
 type ContractRow = {
   durationMs: number;
@@ -20,6 +24,9 @@ type RenderMetricsStateMatchesCore = Expect<Equal<NatTableRenderMetricsState, Na
 type RenderMetricsColumnMetaMatchesCore = Expect<
   Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
 >;
+type RenderMetricsControllerMatchesCore = Expect<
+  Equal<NatTableRenderMetricsController<ContractRow>, InternalNatTableRenderMetricsController<ContractRow>>
+>;
 
 function requireDefined<T>(value: T | undefined): T {
   if (value === undefined) {
@@ -31,9 +38,13 @@ function requireDefined<T>(value: T | undefined): T {
 
 describe('ng-advanced-table-utils public table contracts', () => {
   it('matches the core render-metrics type contracts', () => {
-    const typeContracts: [RenderMetricsStateMatchesCore, RenderMetricsColumnMetaMatchesCore] = [true, true];
+    const typeContracts: [RenderMetricsStateMatchesCore, RenderMetricsColumnMetaMatchesCore, RenderMetricsControllerMatchesCore] = [
+      true,
+      true,
+      true
+    ];
 
-    expect(typeContracts).toHaveLength(2);
+    expect(typeContracts).toHaveLength(3);
   });
 
   it('reuses the core column metadata contract for TanStack column definitions', () => {

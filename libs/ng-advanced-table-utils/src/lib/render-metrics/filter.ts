@@ -1,7 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 
 import type { ColumnFiltersState } from '@tanstack/angular-table';
-import { NatTableService } from 'ng-advanced-table';
 
 import type { NatTableRenderMetricsController } from './contracts';
 import {
@@ -39,15 +38,14 @@ function upsertColumnFilter(currentFilters: ColumnFiltersState, columnId: string
 export class NatRenderMetricsFilter<TData = unknown> {
   /** Shared store — used only so the panel/filter can react to measurement changes. */
   public readonly store = input.required<NatTableRenderMetricsStore>();
+  /** Controlled table controller. Pass the `NatTable` instance or a structural controller. */
+  public readonly controller = input<NatTableRenderMetricsController<TData> | null | undefined>(undefined);
   /** Column id to target when the metrics column uses a custom identifier. */
   public readonly columnId = input(RENDER_METRIC_COLUMN_ID);
   /** Locale id override for generated render-metrics labels. Defaults to the controlled table locale. */
   public readonly locale = input<string | undefined>(undefined);
   /** Per-instance label overrides. */
   public readonly labels = input<NatTableRenderMetricsFilterIntl | undefined>(undefined);
-
-  private readonly natTableService = inject(NatTableService);
-  protected readonly controller = computed(() => this.natTableService.controller() as NatTableRenderMetricsController<TData> | null);
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
   private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
