@@ -79,8 +79,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ## Browser Compatibility
 
-- The project must support Safari 16.
-- Before using newer browser APIs, CSS features, or Angular/browser platform features, verify compatibility with Safari 16 and provide a compatible fallback or choose an older-supported approach.
+- The project must support Safari 16.2 and newer.
+- Before using newer browser APIs, CSS features, or Angular/browser platform features, verify compatibility with Safari 16.2 and provide a compatible fallback or choose an older-supported approach.
 - Be especially cautious with recently introduced CSS APIs such as `@starting-style`, View Transitions, newer selectors, and animation features.
 
 ### Components

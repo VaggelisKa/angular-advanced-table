@@ -400,8 +400,21 @@ export function serializeSorting(sorting: SortingState): string {
   return sorting.map((entry) => `${entry.id}:${entry.desc ? 'desc' : 'asc'}`).join('|');
 }
 
+// Filter values are expected to be JSON-serializable consumer state. This guard
+// only keeps accessibility snapshotting from crashing when a consumer passes an
+// unsupported value; it does not try to define semantics for arbitrary objects.
+function serializeColumnFilterValue(value: unknown): string {
+  try {
+    const serialized = JSON.stringify(value) as string | undefined;
+
+    return serialized ?? String(value);
+  } catch {
+    return '[unserializable]';
+  }
+}
+
 export function serializeColumnFilters(columnFilters: ColumnFiltersState): string {
-  return columnFilters.map((entry) => `${entry.id}:${JSON.stringify(entry.value)}`).join('|');
+  return columnFilters.map((entry) => `${entry.id}:${serializeColumnFilterValue(entry.value)}`).join('|');
 }
 
 /** Collapses a multi-row selection map to its first selected key by sort order in single mode. */

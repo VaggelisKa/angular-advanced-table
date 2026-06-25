@@ -54,7 +54,7 @@ import type {
 
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from './cell-interaction';
 import type { NatTableRowRenderedEvent } from './events';
-import { validateKeybindings } from './keybindings';
+import { isSpaceShortcutKey, validateKeybindings } from './keybindings';
 import { NatTableRowRenderEmitter } from './row-render-emitter.directive';
 import {
   NAT_TABLE_ENGLISH_LOCALE,
@@ -229,8 +229,8 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public readonly data = input.required<readonly TData[]>();
   /** TanStack column definitions for the current row type. */
   public readonly columns = input.required<readonly ColumnDef<TData, unknown>[]>();
-  /** Required accessible name announced for the grid when no visible caption is rendered. */
-  public readonly accessibleName = input.required<string>();
+  /** Accessible name announced for the grid when no visible caption is rendered. */
+  public readonly accessibleName = input<string | undefined>(undefined);
   /** Visible table caption. When present, it provides the grid's accessible name. */
   public readonly caption = input<string | undefined>(undefined);
   /** Data lifecycle status. The table renders state rows; consumers still own loading, retry, and error handling. */
@@ -366,7 +366,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return null;
     }
 
-    return this.accessibleName().trim() || null;
+    const name = this.accessibleName()?.trim();
+
+    return name === undefined || name === '' ? null : name;
   });
 
   protected readonly tableAriaLabelledBy = computed(() => (this.resolvedCaption() ? this.tableCaptionId() : null));
@@ -803,6 +805,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public constructor() {
     this.natTableService.setController(this);
 
+    this.registerAccessibleNameValidationEffect();
     this.registerKeybindingValidationEffect();
     this.registerSeedEffect();
     this.registerRenderCycleEffect();
@@ -810,7 +813,21 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     this.registerResizeAnnouncementEffect();
     this.registerHeaderObservationEffects();
 
-    this.destroyRef.onDestroy(() => this.headerResizeObserver?.disconnect());
+    this.destroyRef.onDestroy(() => {
+      this.headerResizeObserver?.disconnect();
+      this.natTableService.clearController(this);
+    });
+  }
+
+  /** Dev-only: warns when the table has neither a caption nor hidden accessible name. */
+  private registerAccessibleNameValidationEffect(): void {
+    afterRenderEffect(() => {
+      if (!isDevMode() || this.resolvedCaption() || this.accessibleName()?.trim()) {
+        return;
+      }
+
+      console.warn('[ng-advanced-table] <nat-table> requires either `caption` or `accessibleName` for an accessible name.');
+    });
   }
 
   /** Dev-only: warns when configured keybindings overlap. */
@@ -1420,7 +1437,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return;
     }
 
-    if (event.key === ' ' || event.key === 'Spacebar') {
+    if (isSpaceShortcutKey(event.key)) {
       event.preventDefault();
     }
 

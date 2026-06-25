@@ -4,6 +4,7 @@ import {
   Component,
   DestroyRef,
   booleanAttribute,
+  computed,
   effect,
   inject,
   input,
@@ -540,8 +541,56 @@ class CaptionHost {
 }
 
 @Component({
+  selector: 'test-caption-only-host',
+  imports: [NatTable, TestTableSurface],
+  template: `
+    <nat-table-surface>
+      <nat-table [columns]="columns" [data]="rows()" caption="Visible operations" />
+    </nat-table-surface>
+  `
+})
+class CaptionOnlyHost {
+  protected readonly rows = signal<Row[]>(buildRows(2));
+  protected readonly columns = columns;
+}
+
+@Component({
+  selector: 'test-destroyable-table-host',
+  imports: [NatTable, TestTableSurface],
+  template: `
+    <nat-table-surface>
+      @if (showTable()) {
+        <nat-table [columns]="columns" [data]="rows()" accessibleName="Destroyable table" />
+      }
+    </nat-table-surface>
+  `
+})
+class DestroyableTableHost {
+  public readonly showTable = signal(true);
+  protected readonly rows = signal<Row[]>(buildRows(2));
+  protected readonly columns = columns;
+}
+
+@Component({
+  selector: 'test-state-template-service-probe',
+  template: `<span class="custom-template-controller">{{ controllerId() }}</span>`
+})
+class StateTemplateServiceProbe {
+  private readonly natTableService = inject(NatTableService);
+  protected readonly controllerId = computed(() => this.natTableService.controller()?.tableElementId() ?? 'missing');
+}
+
+@Component({
   selector: 'test-state-templates-host',
-  imports: [NatTable, TestTableSurface, TestSearch, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
+  imports: [
+    NatTable,
+    TestTableSurface,
+    TestSearch,
+    StateTemplateServiceProbe,
+    NatTableLoadingTemplate,
+    NatTableEmptyTemplate,
+    NatTableErrorTemplate
+  ],
   template: `
     <nat-table-surface [accessibilityText]="accessibilityText" [state]="state()">
       <test-search />
@@ -553,6 +602,7 @@ class CaptionHost {
         accessibleName="State template table">
         <ng-template let-status="status" let-totalRowsValue="totalRowsValue" natTableLoading>
           <span class="custom-loading">{{ status }} {{ totalRowsValue }}</span>
+          <test-state-template-service-probe />
         </ng-template>
 
         <ng-template let-columns="visibleColumnsValue" let-filtered="filtered" natTableEmpty>
@@ -677,7 +727,15 @@ describe('NatTable', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost, ProviderAccessibilityHost, AccessibleNameHost, CaptionHost, StateTemplatesHost],
+      imports: [
+        TableHost,
+        ProviderAccessibilityHost,
+        AccessibleNameHost,
+        CaptionHost,
+        CaptionOnlyHost,
+        DestroyableTableHost,
+        StateTemplatesHost
+      ],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
@@ -1634,6 +1692,41 @@ describe('NatTable', () => {
     captionFixture.destroy();
   });
 
+  it('allows caption-only tables to compile and use the caption as the accessible name', () => {
+    const captionFixture = TestBed.createComponent(CaptionOnlyHost);
+
+    captionFixture.detectChanges();
+
+    const table = queryRequired<HTMLTableElement>(captionFixture, 'table');
+    const caption = queryRequired<HTMLTableCaptionElement>(captionFixture, 'caption');
+
+    expect(caption.textContent.trim()).toBe('Visible operations');
+    expect(table.getAttribute('aria-label')).toBeNull();
+    expect(table.getAttribute('aria-labelledby')).toBe(caption.id);
+
+    captionFixture.destroy();
+  });
+
+  it('clears the scoped table controller when the table is destroyed', async () => {
+    const destroyFixture = TestBed.createComponent(DestroyableTableHost);
+
+    await destroyFixture.whenStable();
+    destroyFixture.detectChanges();
+
+    const surface = destroyFixture.debugElement.query(By.directive(TestTableSurface));
+    const service = surface.injector.get(NatTableService);
+
+    expect(service.controller()).not.toBeNull();
+
+    destroyFixture.componentInstance.showTable.set(false);
+    destroyFixture.detectChanges();
+    await destroyFixture.whenStable();
+
+    expect(service.controller()).toBeNull();
+
+    destroyFixture.destroy();
+  });
+
   it('only applies aria-sort to the actively sorted header', () => {
     fixture.detectChanges();
 
@@ -1966,9 +2059,13 @@ describe('NatTable', () => {
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
     stateFixture.detectChanges();
 
-    let stateCell = queryRequired<HTMLElement>(stateFixture, '.loading-state');
+    queryRequired<HTMLElement>(stateFixture, '.loading-state');
+    const controllerProbe = queryRequired<HTMLElement>(stateFixture, '.custom-template-controller');
+    const table = queryRequired<HTMLTableElement>(stateFixture, 'table');
+    const loadingContent = queryRequired<HTMLElement>(stateFixture, '.custom-loading');
 
-    expect(stateCell.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('loading 0');
+    expect(loadingContent.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('loading 0');
+    expect(controllerProbe.textContent.trim()).toBe(table.id);
 
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.success);
     stateHost.state.set({ globalFilter: 'missing' });
@@ -1976,9 +2073,9 @@ describe('NatTable', () => {
     await stateFixture.whenStable();
     stateFixture.detectChanges();
 
-    stateCell = queryRequired<HTMLElement>(stateFixture, '.empty-state');
+    const emptyStateCell = queryRequired<HTMLElement>(stateFixture, '.empty-state');
 
-    expect(stateCell.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Filtered empty 4');
+    expect(emptyStateCell.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Filtered empty 4');
 
     stateHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
     stateHost.error.set(new Error('API unavailable'));
@@ -1986,7 +2083,7 @@ describe('NatTable', () => {
     await stateFixture.whenStable();
     stateFixture.detectChanges();
 
-    stateCell = queryRequired<HTMLElement>(stateFixture, '.error-state');
+    const stateCell = queryRequired<HTMLElement>(stateFixture, '.error-state');
     const errorButton = stateCell.querySelector('.custom-error') as HTMLButtonElement;
 
     expect(stateCell.textContent.trim()).toBe('API unavailable');
@@ -3292,7 +3389,7 @@ describe('NatTable', () => {
         ];
 
         protected readonly keybindings = {
-          rowActivate: 'a',
+          rowActivate: 'Space',
           columnReorderLeft: 'Ctrl+ArrowLeft',
           columnReorderRight: 'Ctrl+ArrowRight'
         };
@@ -3316,10 +3413,13 @@ describe('NatTable', () => {
       customFixture.detectChanges();
       expect(customFixture.componentInstance.events).toHaveLength(0);
 
-      // 2. Press custom key 'a' - should activate
-      firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+      // 2. Press the browser Space key value for the custom 'Space' shortcut - should activate.
+      const spaceEvent = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+
+      firstRow.dispatchEvent(spaceEvent);
       customFixture.detectChanges();
       expect(customFixture.componentInstance.events).toHaveLength(1);
+      expect(spaceEvent.defaultPrevented).toBe(true);
     });
 
     it('should fall back to default keybindings for non-overridden properties when keybindings are partially customized', async () => {

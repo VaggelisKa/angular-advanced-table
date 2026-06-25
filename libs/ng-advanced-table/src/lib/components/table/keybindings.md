@@ -27,6 +27,8 @@ Keybindings can be configured using three formats:
 
 You can specify combinations using string syntax. Modifiers are joined with `+` (e.g., `Alt+Shift+ArrowLeft`).
 
+`Space`, `Spacebar`, lowercase `space`, and the browser `KeyboardEvent.key` value `' '` are treated as the same Space key. ARIA serialization emits the canonical `Space` token for all of these aliases.
+
 A virtual modifier **`Mod`** (or **`CmdOrCtrl`** / **`CommandOrControl`**) is supported. It automatically resolves based on the user's OS:
 
 - **macOS / iOS:** Resolves to the `Command` key (`metaKey`).

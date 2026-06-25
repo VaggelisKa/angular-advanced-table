@@ -208,6 +208,16 @@ describe('NatTable Keybindings Utilities', () => {
 
       expect(matchShortcut(event, { key: 'Enter' })).toBe(true);
     });
+
+    it('should normalize Space aliases when matching KeyboardEvents', () => {
+      const modernSpaceEvent = new KeyboardEvent('keydown', { key: ' ' });
+      const legacySpaceEvent = new KeyboardEvent('keydown', { key: 'Spacebar' });
+
+      expect(matchShortcut(modernSpaceEvent, 'Space')).toBe(true);
+      expect(matchShortcut(modernSpaceEvent, 'space')).toBe(true);
+      expect(matchShortcut(modernSpaceEvent, 'Spacebar')).toBe(true);
+      expect(matchShortcut(legacySpaceEvent, 'Space')).toBe(true);
+    });
   });
 
   describe('matchShortcutValue', () => {
@@ -254,6 +264,8 @@ describe('NatTable Keybindings Utilities', () => {
     it('should serialize simple string shortcuts', () => {
       expect(serializeShortcutValue('Enter')).toBe('Enter');
       expect(serializeShortcutValue(' ')).toBe('Space');
+      expect(serializeShortcutValue('Spacebar')).toBe('Space');
+      expect(serializeShortcutValue('space')).toBe('Space');
     });
 
     it('should serialize single shortcut objects with modifiers alphabetically', () => {
@@ -280,6 +292,8 @@ describe('NatTable Keybindings Utilities', () => {
     it('should return true for identical shortcuts in different formats', () => {
       expect(areShortcutsEqual('Ctrl+Enter', { key: 'Enter', ctrlKey: true })).toBe(true);
       expect(areShortcutsEqual('Alt+Shift+a', 'Alt+Shift+A')).toBe(true);
+      expect(areShortcutsEqual('Space', 'Spacebar')).toBe(true);
+      expect(areShortcutsEqual('Space', { key: ' ' })).toBe(true);
     });
 
     it('should return false for different key combinations', () => {
