@@ -29,7 +29,6 @@ import type {
   SortingState,
   VisibilityState
 } from '@tanstack/angular-table';
-import { vi } from 'vitest';
 
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction';
 import { NatTable } from './table';
@@ -2138,30 +2137,6 @@ describe('FEATURE: NatTable', () => {
           'custom-svc-00005',
           'custom-svc-00006'
         ]);
-      });
-    });
-
-    describe('WHEN: duplicate row ids are resolved', () => {
-      it('THEN: it warns in development so consumers can provide a custom resolver', async () => {
-        // sequential flow kept whole — splitting re-runs setup and risks ordering
-        // when:
-        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-
-        try {
-          host.rows.set([
-            { id: 'svc-duplicate', name: 'Alpha', region: 'us-east-1', status: 'Healthy', throughput: 1000 },
-            { id: 'svc-duplicate', name: 'Beta', region: 'eu-west-3', status: 'Pending', throughput: 2000 }
-          ]);
-          fixture.detectChanges();
-          await fixture.whenStable();
-
-          // then:
-          expect(warnSpy).toHaveBeenCalledWith(
-            '[ng-advanced-table] Duplicate row ids detected (svc-duplicate). Row ids must be unique; pass `getRowId` when rows do not expose unique string or number `id` values.'
-          );
-        } finally {
-          warnSpy.mockRestore();
-        }
       });
     });
 

@@ -312,7 +312,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
-  private lastDuplicateRowIdWarningKey = '';
   /** Current locale id resolved from the `locale` input or built-in English default. */
   public readonly localeId = computed(() => this.locale() ?? NAT_TABLE_ENGLISH_LOCALE);
   private readonly tableIntl = computed(() => resolveNatTableIntl(this.tableIntlConfig, this.localeId()));
@@ -809,7 +808,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
     this.registerAccessibleNameValidationEffect();
     this.registerKeybindingValidationEffect();
-    this.registerRowIdUniquenessValidationEffect();
     this.registerSeedEffect();
     this.registerRenderCycleEffect();
     this.registerAnnouncementEffect();
@@ -846,51 +844,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
         }
       }
     });
-  }
-
-  /** Dev-only: warns when resolved row ids are not unique. */
-  private registerRowIdUniquenessValidationEffect(): void {
-    effect(() => {
-      if (!isDevMode()) {
-        return;
-      }
-
-      readRequiredInput(this.data, []);
-      this.getRowId();
-
-      const duplicateRowIds = this.getDuplicateRowIds();
-      const warningKey = duplicateRowIds.join('|');
-
-      if (!warningKey) {
-        this.lastDuplicateRowIdWarningKey = '';
-
-        return;
-      }
-
-      if (warningKey === this.lastDuplicateRowIdWarningKey) {
-        return;
-      }
-
-      this.lastDuplicateRowIdWarningKey = warningKey;
-      console.warn(
-        `[ng-advanced-table] Duplicate row ids detected (${duplicateRowIds.join(', ')}). Row ids must be unique; pass \`getRowId\` when rows do not expose unique string or number \`id\` values.`
-      );
-    });
-  }
-
-  private getDuplicateRowIds(): string[] {
-    const seen = new Set<string>();
-    const duplicateRowIds = new Set<string>();
-
-    for (const row of this.table.getCoreRowModel().flatRows) {
-      if (seen.has(row.id)) {
-        duplicateRowIds.add(row.id);
-      } else {
-        seen.add(row.id);
-      }
-    }
-
-    return [...duplicateRowIds].sort();
   }
 
   /** Seeds internal state from the surface's initial state on first run. */

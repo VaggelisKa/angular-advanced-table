@@ -45,8 +45,7 @@ export type NatTableState = {
 
 /**
  * Stable row id resolver passed to `getRowId` when the built-in string/number
- * `row.id` default is not enough. Resolved row ids must be unique; development
- * builds warn when duplicates are detected. Matches TanStack Table's
+ * `row.id` default is not enough. Matches TanStack Table's
  * `getRowId(originalRow, index, parentRow?)` shape so consumers can key sub-rows
  * consistently when they enable nested features later.
  */

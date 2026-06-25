@@ -283,16 +283,8 @@ export function matchesFilterQuery(value: unknown, query: string): boolean {
   return false;
 }
 
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function resolveObjectRowId(row: RowData): string | null {
-  if (!isObjectRecord(row)) {
-    return null;
-  }
-
-  const id = row['id'];
+export function resolveDefaultRowId<TData extends RowData>(row: TData, index: number, parent?: { id: string }): string {
+  const id = typeof row === 'object' && row !== null ? (row as { readonly id?: unknown }).id : undefined;
 
   if (typeof id === 'string' && id.trim()) {
     return id;
@@ -300,16 +292,6 @@ function resolveObjectRowId(row: RowData): string | null {
 
   if (typeof id === 'number' && Number.isFinite(id)) {
     return String(id);
-  }
-
-  return null;
-}
-
-export function resolveDefaultRowId<TData extends RowData>(row: TData, index: number, parent?: { id: string }): string {
-  const rowId = resolveObjectRowId(row);
-
-  if (rowId !== null) {
-    return rowId;
   }
 
   const fallbackId = `${DEFAULT_ROW_ID_INDEX_PREFIX}${index}`;
