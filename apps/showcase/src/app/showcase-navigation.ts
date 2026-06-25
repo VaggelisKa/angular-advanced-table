@@ -41,6 +41,13 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     markdownPath: '/docs/columns.md'
   },
   {
+    id: 'sticky-header-alternatives',
+    label: 'Sticky header alternatives',
+    description: 'Scrolling, max-height, and pagination',
+    path: '/docs/sticky-header-alternatives',
+    markdownPath: '/docs/sticky-header-alternatives.md'
+  },
+  {
     id: 'state',
     label: 'State',
     description: 'Controlled and uncontrolled slices',
@@ -189,6 +196,30 @@ export const showcaseExamples: readonly ShowcaseNavItem[] = [
     label: 'Sorting with pinned columns',
     description: 'Fixed company and total columns',
     path: '/examples/simple-sorting'
+  },
+  {
+    id: 'sticky-header-max-height',
+    label: 'Sticky header max height',
+    description: 'Sticky header with max height',
+    path: '/examples/sticky-header-max-height'
+  },
+  {
+    id: 'pagination-sticky-alt',
+    label: 'Pagination sticky alt',
+    description: 'Different layout of pagination controls',
+    path: '/examples/pagination-sticky-alt'
+  },
+  {
+    id: 'sticky-no-overflow-x',
+    label: 'Sticky no overflow x',
+    description: 'Sticky header with no overflow x',
+    path: '/examples/sticky-no-overflow-x'
+  },
+  {
+    id: 'sticky-show-detailed-view',
+    label: 'Sticky show detailed view',
+    description: 'Sticky header with show detailed view',
+    path: '/examples/sticky-show-detailed-view'
   }
 ];
 
@@ -219,6 +250,7 @@ export const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
     ariaLabel: 'Foundational table documentation',
     items: [
       getShowcaseDoc('columns'),
+      getShowcaseDoc('sticky-header-alternatives'),
       getShowcaseDoc('state'),
       getShowcaseDoc('data-lifecycle'),
       getShowcaseDoc('theming'),
@@ -270,6 +302,17 @@ export const showcaseExampleGroups: readonly ShowcaseNavGroup[] = [
     label: 'Controls and keyboard',
     ariaLabel: 'Control and keyboard examples',
     items: [getShowcaseExample('toolbar'), getShowcaseExample('keyboard-interaction')]
+  },
+  {
+    id: 'examples-alternative-sticky-header',
+    label: 'Sticky Header Alternatives',
+    ariaLabel: 'Sticky header alternatives examples',
+    items: [
+      getShowcaseExample('sticky-header-max-height'),
+      getShowcaseExample('pagination-sticky-alt'),
+      getShowcaseExample('sticky-no-overflow-x'),
+      getShowcaseExample('sticky-show-detailed-view')
+    ]
   }
 ];
 

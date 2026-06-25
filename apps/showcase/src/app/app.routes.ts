@@ -110,6 +110,35 @@ export const routes: Routes = [
     loadComponent: async () => import('./pages/simple-sorting-page/simple-sorting-page').then((module) => module.SimpleSortingPage)
   },
   {
+    path: 'examples/sticky-header-max-height',
+    title: 'Sticky header max height | Angular Advanced Table',
+    loadComponent: async () =>
+      import('./pages/sticky-header-max-height/sticky-header-max-height').then((module) => module.StickyHeaderMaxHeight)
+  },
+  {
+    path: 'examples/pagination-sticky-alt',
+    title: 'Pagination sticky alt | Angular Advanced Table',
+    loadComponent: async () =>
+      import('./pages/pagination-sticky-alt/pagination-sticky-alt').then((module) => module.PaginationStickyAlt)
+  },
+  {
+    path: 'examples/sticky-no-overflow-x',
+    title: 'Sticky header no overflow x | Angular Advanced Table',
+    loadComponent: async () => import('./pages/sticky-no-overflow-x/sticky-no-overflow-x').then((module) => module.StickyNoOverflowX)
+  },
+  {
+    path: 'examples/sticky-show-detailed-view',
+    title: 'Sticky header show detailed view | Angular Advanced Table',
+    loadComponent: async () =>
+      import('./pages/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
+  },
+  {
+    path: 'examples/sticky-show-detailed-view/details',
+    title: 'Detailed view | Angular Advanced Table',
+    loadComponent: async () =>
+      import('./pages/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
+  },
+  {
     path: '**',
     redirectTo: 'docs/quick-start'
   }

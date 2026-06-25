@@ -1,0 +1,53 @@
+:host {
+  display: block;
+}
+
+.simple-sorting-page {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.simple-sorting-page nat-table-surface {
+  display: block;
+  width: min(600px, 100%);
+  min-width: 0;
+  max-width: 100%;
+
+  --nat-table-region-overflow-x: visible;
+  --nat-table-region-overflow-y: visible;
+}
+
+.simple-table {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  --text: var(--showcase-page-text);
+  --text-soft: var(--showcase-page-text-soft);
+  --surface: var(--showcase-page-surface);
+  --surface-elevated: var(--showcase-page-surface-elevated);
+  --surface-contrast: var(--showcase-page-surface-contrast);
+  --accent: var(--showcase-page-accent);
+  --shadow: var(--showcase-page-shadow);
+  --nat-table-cell-border-color: color-mix(in srgb, var(--showcase-page-border) 74%, transparent);
+  --nat-table-focus-ring-color: var(--showcase-page-focus);
+  --nat-table-focus-ring-width: 3px;
+  --nat-table-radius-region: 8px;
+  --nat-table-space-cell-y: 7px;
+  --nat-table-space-cell-x: 9px;
+  --nat-table-space-header-content-gap: 8px;
+  --nat-table-header-background: var(--showcase-page-surface-contrast);
+  --nat-table-header-border-color: var(--showcase-page-border);
+  --nat-table-region-background: var(--showcase-page-surface);
+  --nat-table-region-border-color: var(--showcase-page-border);
+  --nat-table-row-background-hover: color-mix(in srgb, var(--showcase-page-accent) 7%, transparent);
+  --nat-table-sort-icon-chip-background-active: color-mix(in srgb, var(--showcase-page-accent) 15%, transparent);
+}
+
+@media (width >= 768px) {
+  .simple-table {
+    --nat-table-space-cell-y: 12px;
+    --nat-table-space-header-content-gap: 12px;
+  }
+}
