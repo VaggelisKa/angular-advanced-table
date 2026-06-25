@@ -400,9 +400,12 @@ export function serializeSorting(sorting: SortingState): string {
   return sorting.map((entry) => `${entry.id}:${entry.desc ? 'desc' : 'asc'}`).join('|');
 }
 
-// Internal accessibility-announcement key only. Column filter values come from
-// consumers and may be non-JSON or circular, so this must be deterministic and
-// non-throwing rather than a reversible/public serialization format.
+// Internal accessibility-announcement key only. `captureAccessibilitySnapshot`
+// compares this string to decide whether filters changed enough to announce,
+// but column filter values are consumer-owned and may be functions, Symbols,
+// Dates, Maps/Sets, BigInts, or circular objects. The helpers below create a
+// deterministic, non-throwing comparison key for those shapes; this is not a
+// reversible or public serialization format.
 function serializeThrownValue(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
