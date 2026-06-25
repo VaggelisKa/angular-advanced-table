@@ -426,6 +426,7 @@ function serializePrimitiveFilterValue(value: unknown): string | null {
   if (valueType === 'symbol') {
     const symbolValue = value as symbol;
 
+    // Unnamed symbols stringify as "Symbol()", so distinct Symbol() values are indistinguishable in this snapshot.
     return `symbol:${symbolValue.description ?? symbolValue.toString()}`;
   }
 

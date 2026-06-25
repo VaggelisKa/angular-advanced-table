@@ -89,11 +89,9 @@ export class NatTableHotkeyA11y {
     const observer = this.createMutationObserver(nativeEl);
 
     if (!observer) {
-      afterEveryRender({
-        read: () => {
-          this.syncExternalAriaLabel(nativeEl);
-          this.originalInnerText.set(readTrimmedText(nativeEl));
-        }
+      afterEveryRender(() => {
+        this.syncExternalAriaLabel(nativeEl);
+        this.originalInnerText.set(readTrimmedText(nativeEl));
       });
     }
 
