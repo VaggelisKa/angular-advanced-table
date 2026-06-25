@@ -70,7 +70,6 @@
   inline-size: 1.9rem;
   block-size: 1.9rem;
   padding: 0;
-  color: currentcolor;
   color: color-mix(in srgb, currentcolor 54%, transparent);
   cursor: pointer;
   background: transparent;
@@ -114,7 +113,6 @@
 
 .menu-button[aria-expanded='true'] {
   color: inherit;
-  background: transparent;
   background: color-mix(in srgb, currentcolor 8%, transparent);
   transform: translateY(-1px);
 }
@@ -126,7 +124,6 @@
 
   .menu-button:hover {
     color: inherit;
-    background: transparent;
     background: color-mix(in srgb, currentcolor 8%, transparent);
     transform: translateY(-1px);
   }
@@ -189,7 +186,6 @@
 
 .nat-default-sort[data-sort-state='asc'],
 .nat-default-sort[data-sort-state='desc'] {
-  background: rgb(87 209 255 / 14%);
   background: var(
     --nat-table-sort-icon-chip-background-active,
     color-mix(in srgb, var(--nat-table-sort-icon-color, currentColor) 14%, transparent)
@@ -207,7 +203,6 @@
 /* Solid chevrons read with stronger contrast than thin outlines. */
 .nat-default-sort__up,
 .nat-default-sort__down {
-  fill: currentcolor;
   fill: var(--nat-table-sort-icon-color-idle, color-mix(in srgb, currentColor 45%, transparent));
   stroke: none;
   transform-origin: center;
@@ -227,14 +222,12 @@
 .nat-default-sort[data-sort-state='asc'] .nat-default-sort__down,
 .nat-default-sort[data-sort-state='desc'] .nat-default-sort__up {
   opacity: var(--nat-table-sort-icon-muted-opacity, 0.75);
-  fill: currentcolor;
   fill: var(--nat-table-sort-icon-color-muted, color-mix(in srgb, currentColor 22%, transparent));
 }
 
 .sort-button[disabled] .nat-default-sort__up,
 .sort-button[disabled] .nat-default-sort__down {
   opacity: 1;
-  fill: currentcolor;
   fill: var(--nat-table-sort-icon-color-disabled, color-mix(in srgb, currentColor 22%, transparent));
   transform: none;
 }
@@ -245,18 +238,13 @@
   min-width: 12rem;
   padding: 6px;
   color: var(--nat-table-header-color, inherit);
-  background: var(--nat-table-region-background, canvas);
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--nat-table-region-background, canvas) 96%, currentcolor 4%),
     color-mix(in srgb, var(--nat-table-region-background, canvas) 90%, currentcolor 10%)
   );
-  border: 1px solid rgb(236 245 251 / 12%);
   border: 1px solid color-mix(in srgb, currentcolor 12%, transparent);
   border-radius: 14px;
-  box-shadow:
-    0 18px 48px rgb(0 0 0 / 28%),
-    0 2px 8px rgb(0 0 0 / 12%);
   box-shadow:
     0 18px 48px color-mix(in srgb, black 28%, transparent),
     0 2px 8px color-mix(in srgb, black 12%, transparent);
@@ -287,37 +275,31 @@
 .column-menu-item[data-active='true']:not([disabled]),
 .column-menu-item:focus-visible:not([disabled]) {
   outline: none;
-  background: transparent;
   background: color-mix(in srgb, currentcolor 10%, transparent);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .sort-button:hover:not([disabled]) .nat-default-sort {
-    background: transparent;
     background: var(--nat-table-sort-icon-chip-background-hover, color-mix(in srgb, currentColor 8%, transparent));
   }
 
   .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
   .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__down {
-    fill: currentcolor;
     fill: var(--nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent));
   }
 
   .column-menu-item:hover:not([disabled]) {
     outline: none;
-    background: transparent;
     background: color-mix(in srgb, currentcolor 10%, transparent);
   }
 }
 
 .column-menu-item:focus-visible:not([disabled]) {
-  box-shadow: inset 0 0 0 1px rgb(236 245 251 / 22%);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent);
 }
 
 .column-menu-item.is-active {
   color: var(--nat-table-pin-color-pinned, inherit);
-  background: rgb(87 209 255 / 12%);
   background: color-mix(in srgb, var(--nat-table-pin-color-pinned, currentColor) 12%, transparent);
 }
 
@@ -366,12 +348,10 @@
 }
 
 .column-menu-item__dock {
-  color: currentcolor;
   color: color-mix(in srgb, currentcolor 50%, transparent);
 }
 
 .column-menu-item__move {
-  color: currentcolor;
   color: color-mix(in srgb, currentcolor 58%, transparent);
 }
 
