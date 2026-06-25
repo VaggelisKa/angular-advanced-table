@@ -187,7 +187,8 @@
     background-color var(--nat-table-transition-slow);
 }
 
-@media (width <= 720px) {
+/* stylelint-disable-next-line media-feature-range-notation -- Safari 16.0-16.3 lacks compact range syntax. */
+@media (max-width: 720px) {
   .surface {
     padding: var(--nat-table-space-card-compact);
     border-radius: var(--nat-table-radius-card-compact);

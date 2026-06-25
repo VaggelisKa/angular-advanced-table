@@ -11,7 +11,19 @@ const normalizeColumnLabel = (label: string | undefined): string | null => {
 };
 
 export const sanitizePageSizeOptions = (options: readonly number[]): number[] => {
-  const sanitized = options.map((value) => Math.trunc(value)).filter((value) => value > 0);
+  const sanitized: number[] = [];
+  const seen = new Set<number>();
+
+  for (const value of options) {
+    const pageSize = Math.trunc(value);
+
+    if (!(pageSize > 0) || seen.has(pageSize)) {
+      continue;
+    }
+
+    seen.add(pageSize);
+    sanitized.push(pageSize);
+  }
 
   return sanitized.length ? sanitized : [...DEFAULT_PAGE_SIZE_OPTIONS];
 };
