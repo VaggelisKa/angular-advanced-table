@@ -226,26 +226,6 @@ export function moveItemInArrayCopy(values: readonly string[], fromIndex: number
   return nextValues;
 }
 
-export function getColumnReorderKeyboardDirection(event: KeyboardEvent): ColumnReorderKeyboardDirection | null {
-  // `KeyboardEvent.key` uses platform-neutral arrow names. Accept the platform
-  // primary modifier: Control on Windows/Linux, Command on macOS.
-  const hasSinglePrimaryModifier = event.ctrlKey !== event.metaKey;
-
-  if (!hasSinglePrimaryModifier || !event.shiftKey || event.altKey) {
-    return null;
-  }
-
-  if (event.key === 'ArrowLeft') {
-    return -1;
-  }
-
-  if (event.key === 'ArrowRight') {
-    return 1;
-  }
-
-  return null;
-}
-
 export function getColumnMoveTargetIndex(
   columnIds: readonly string[],
   columnId: string,
