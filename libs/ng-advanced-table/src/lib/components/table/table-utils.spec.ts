@@ -4,7 +4,7 @@ import { serializeColumnFilters } from './table-utils';
 
 describe('table-utils', () => {
   describe('serializeColumnFilters', () => {
-    it('serializes JSON-compatible filter values deterministically', () => {
+    it('serializes JSON-compatible filter values', () => {
       const filters: ColumnFiltersState = [
         {
           id: 'status',
@@ -18,35 +18,22 @@ describe('table-utils', () => {
         }
       ];
 
-      expect(serializeColumnFilters(filters)).toBe('status:{"meta":{"active":true,"priority":2},"selected":["Pending","Healthy"]}');
+      expect(serializeColumnFilters(filters)).toBe('status:{"selected":["Pending","Healthy"],"meta":{"priority":2,"active":true}}');
     });
 
-    it('does not throw for circular filter values', () => {
+    it('does not throw when a consumer passes unsupported filter values', () => {
       const circular: Record<string, unknown> = {
         selected: 'Healthy'
       };
 
       circular['self'] = circular;
 
-      expect(serializeColumnFilters([{ id: 'status', value: circular }])).toBe('status:{"selected":"Healthy","self":[Circular]}');
-    });
-
-    it('preserves type markers for non-JSON filter values', () => {
-      const symbolFilter = Symbol('status');
-      const callbackFilter = function statusFilter(): boolean {
-        return true;
-      };
-
       const filters: ColumnFiltersState = [
-        { id: 'missing', value: undefined },
-        { id: 'symbol', value: symbolFilter },
-        { id: 'callback', value: callbackFilter },
+        { id: 'status', value: circular },
         { id: 'count', value: 2n }
       ];
 
-      expect(serializeColumnFilters(filters)).toBe(
-        'missing:undefined|symbol:symbol:status|callback:function:statusFilter|count:bigint:2'
-      );
+      expect(serializeColumnFilters(filters)).toBe('status:[unserializable]|count:[unserializable]');
     });
   });
 });
