@@ -40,6 +40,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Do not use or reintroduce the removed `NatTableActionBar`/`<nat-table-action-bar>` API. Compose bundled control rows with `<nat-table-toolbar>`, `NatToolbarGroup`/`natToolbarItem`, and the pagination or scroll companion controls instead.
 - Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/lib/components/table/table-utils.ts`; keep `table.ts` focused on Angular wiring, signals, and DOM behavior.
 - Keep table data export as optional `ng-advanced-table-ui` Table Action behavior (`natTableExport`/`provideNatTableExport(...)`). The core package may expose shared column metadata such as `NatTableColumnMeta.export`, but it must not own export side effects or file-generation state.
+- Keep render-metrics controls (`NatRenderMetricsFilter`, `NatRenderMetricsPanel`) wired through an explicit `[controller]` (`NatTable` or `NatTableRenderMetricsController`). Do not place `NatRenderMetricsFilter` inside `<nat-table-toolbar>` because its internal chip buttons are a standalone labeled button group, not toolbar items.
+- When comparing `NatTableState` slices in `ng-advanced-table-ui`, use the local structural equality helper instead of `JSON.stringify`; consumer filter values can include non-JSON-safe values such as `BigInt`, `Set`, `Date`, `RegExp`, or cycles.
 - When changing table keybindings, update `keybindings.ts`, `keybindings.md`, `NatTableHotkeyA11y`, public API exports, and table/surface input coverage together so configured shortcuts, conflict warnings, and `aria-keyshortcuts` stay aligned.
 
 ## Documentation Ownership
