@@ -16,6 +16,8 @@ import { NAT_TABLE_DATA_STATUS } from './table.types';
 
 export const DEFAULT_CELL_MAX_LINES = 2;
 
+const DEFAULT_ROW_ID_INDEX_PREFIX = '__nat-table-row-index__:';
+
 export type TableColumnAccessibilityState = {
   id: string;
   label: string;
@@ -279,6 +281,22 @@ export function matchesFilterQuery(value: unknown, query: string): boolean {
   }
 
   return false;
+}
+
+export function resolveDefaultRowId<TData extends RowData>(row: TData, index: number, parent?: { id: string }): string {
+  const id = typeof row === 'object' && row !== null ? (row as { readonly id?: unknown }).id : undefined;
+
+  if (typeof id === 'string' && id.trim()) {
+    return id;
+  }
+
+  if (typeof id === 'number' && Number.isFinite(id)) {
+    return String(id);
+  }
+
+  const fallbackId = `${DEFAULT_ROW_ID_INDEX_PREFIX}${index}`;
+
+  return parent ? `${parent.id}.${fallbackId}` : fallbackId;
 }
 
 export function normalizeColumnDimension(value: number | string | undefined): string | null {

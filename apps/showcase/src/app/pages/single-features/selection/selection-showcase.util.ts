@@ -13,8 +13,6 @@ export type RowSelectionSource = {
   readonly multiple: boolean;
 };
 
-export const getDemoItemRowId = (row: DemoItem): string => row.id;
-
 export const computeRowSelection = (
   source: RowSelectionSource,
   previous: { readonly source: RowSelectionSource; readonly value: RowSelectionState } | undefined

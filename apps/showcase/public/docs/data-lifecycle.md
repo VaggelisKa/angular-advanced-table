@@ -159,13 +159,7 @@ Use manual modes when a backend owns pagination, sorting, or filtering. The surf
 
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-  <nat-table
-    [data]="rows()"
-    [columns]="columns"
-    [dataStatus]="status()"
-    [error]="error()"
-    [getRowId]="getRowId"
-    accessibleName="Server-side positions">
+  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Server-side positions">
     <ng-template natTableLoading>Loading positions</ng-template>
     <ng-template natTableEmpty>No positions match the current request</ng-template>
     <ng-template natTableError>Positions could not be loaded</ng-template>
@@ -250,4 +244,4 @@ protected updateStatusFilter(statuses: readonly PositionStatus[]): void {
 - Use loading with existing rows for background refreshes.
 - Use `natTableEmpty` for both no-data and filtered-empty messages.
 - Reset `pageIndex` when a user changes global search or column filters.
-- Provide `getRowId` for server-backed data, selection, live updates, and render metrics.
+- Use rows with stable string or number `id` values, or provide `getRowId` when identity is custom.

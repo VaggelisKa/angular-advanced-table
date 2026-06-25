@@ -119,7 +119,7 @@ export type NatTableAccessibilityColumnVisibilityLabels = {
 
 /** Context passed to per-row selection checkbox label formatters. */
 export type NatTableAccessibilitySelectionRowContext = {
-  /** Stable row id resolved through the table's `getRowId`. */
+  /** Stable row id resolved by `<nat-table>`. */
   readonly rowId: string;
 };
 

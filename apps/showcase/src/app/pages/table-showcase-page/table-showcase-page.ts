@@ -32,7 +32,6 @@ import {
   formatSignedCurrency,
   formatSignedPercent,
   formatTime,
-  getSimulationRowId,
   numberTone,
   statusTone,
   upsertColumnFilter
@@ -343,7 +342,6 @@ export class TableShowcasePage {
       })
   });
 
-  protected readonly getRowId = getSimulationRowId;
   protected readonly accessibilityText = showcaseAccessibilityText;
   protected readonly theme = this.themeStore.theme;
   public readonly tableState = signal<Partial<NatTableState>>({

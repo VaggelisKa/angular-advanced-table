@@ -43,6 +43,7 @@ import type {
   NatTableMode,
   NatTableModeConfiguration,
   NatTableRowActivateEvent,
+  NatTableRowIdGetter,
   NatTableState
 } from './table.types';
 
@@ -414,7 +415,7 @@ class TableHost {
   public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   protected readonly error = signal<unknown>(null);
   public columns: ColumnDef<Row, unknown>[] = columns;
-  protected readonly getRowId = getRowIdValue;
+  public getRowId: NatTableRowIdGetter<Row> | undefined = undefined;
   public initialState: Partial<NatTableState> = {
     sorting: [{ id: 'throughput', desc: true }],
     columnPinning: {
@@ -766,6 +767,7 @@ describe('FEATURE: NatTable', () => {
     mode?: NatTableMode | NatTableModeConfiguration;
     manualPageCount?: number;
     columns?: ColumnDef<Row, unknown>[];
+    getRowId?: NatTableRowIdGetter<Row>;
   };
 
   async function recreateHost(options: RecreateHostOptions = {}): Promise<void> {
@@ -2092,6 +2094,49 @@ describe('FEATURE: NatTable', () => {
         // then:
         expect(queryAll(fixture, 'tbody tr')).toHaveLength(1);
         expect(query(fixture, 'tbody tr')?.textContent).toContain('Gamma');
+      });
+    });
+
+    describe('WHEN: no custom row id resolver is supplied', () => {
+      it('THEN: it uses the row id property for table row identity', () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        // when:
+        fixture.detectChanges();
+
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        // then:
+        expect(table.table.getCoreRowModel().rows.map((row) => row.id)).toStrictEqual([
+          'svc-00001',
+          'svc-00002',
+          'svc-00003',
+          'svc-00004',
+          'svc-00005',
+          'svc-00006'
+        ]);
+      });
+    });
+
+    describe('WHEN: a custom row id resolver is supplied', () => {
+      it('THEN: it overrides the row id property default', async () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        // when:
+        await recreateHost({
+          getRowId: (row) => `custom-${getRowIdValue(row)}`
+        });
+        fixture.detectChanges();
+
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        // then:
+        expect(table.table.getCoreRowModel().rows.map((row) => row.id)).toStrictEqual([
+          'custom-svc-00001',
+          'custom-svc-00002',
+          'custom-svc-00003',
+          'custom-svc-00004',
+          'custom-svc-00005',
+          'custom-svc-00006'
+        ]);
       });
     });
 

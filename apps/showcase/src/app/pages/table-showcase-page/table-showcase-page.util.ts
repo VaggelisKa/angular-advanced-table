@@ -1,6 +1,6 @@
 import type { NatTableState } from 'ng-advanced-table';
 
-import type { SimulationRow, SimulationStatus } from './table-simulation';
+import type { SimulationStatus } from './table-simulation';
 
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {
@@ -42,8 +42,6 @@ export const formatSignedCurrency = (value: number): string => signedCurrencyFor
 export const formatSignedPercent = (value: number): string => `${signedPercentFormatter.format(value)}%`;
 
 export const formatTime = (value: number): string => timeFormatter.format(value);
-
-export const getSimulationRowId = (row: SimulationRow): string => row.id;
 
 export const compareSortKeys = (left: string, right: string): number => {
   if (left === right) {

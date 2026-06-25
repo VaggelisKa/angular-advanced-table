@@ -39,14 +39,15 @@ export type NatTableState = {
   columnPinning: ColumnPinningState;
   /** Per-column pixel widths keyed by column id, set by interactive resizing. */
   columnSizing: ColumnSizingState;
-  /** Selected row ids keyed by `getRowId`. */
+  /** Selected row ids keyed by `getRowId`, a string/number `row.id`, or the namespaced positional fallback. */
   rowSelection: RowSelectionState;
 };
 
 /**
- * Stable row id resolver passed to `getRowId`. Matches TanStack Table's
- * `getRowId(originalRow, index, parentRow?)` shape so consumers can key
- * sub-rows consistently when they enable nested features later.
+ * Stable row id resolver passed to `getRowId` when the built-in string/number
+ * `row.id` default is not enough. Matches TanStack Table's
+ * `getRowId(originalRow, index, parentRow?)` shape so consumers can key sub-rows
+ * consistently when they enable nested features later.
  */
 export type NatTableRowIdGetter<TData extends RowData = RowData> = (row: TData, index: number, parent?: Row<TData>) => string;
 

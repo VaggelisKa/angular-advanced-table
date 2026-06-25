@@ -19,7 +19,7 @@ Most companion controls should live inside `NatTableSurface`. The surface create
 <nat-table-surface [initialState]="initialState">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-  <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
+  <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
 
   <nat-table-scroll-control />
   <nat-table-column-visibility />

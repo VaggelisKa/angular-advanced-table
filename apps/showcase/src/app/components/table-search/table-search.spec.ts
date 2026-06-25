@@ -20,8 +20,6 @@ const columns: ColumnDef<Row, unknown>[] = [
   { accessorKey: 'region', header: 'Region', meta: { label: 'Region' } }
 ];
 
-const getRowId = (row: Row): string => row.id;
-
 @Component({
   selector: 'app-table-search-host',
   imports: [NatTable, NatTableSurface, NatTablePageSize, NatTablePager, TableSearch],
@@ -31,7 +29,7 @@ const getRowId = (row: Row): string => row.id;
       <nat-table-page-size [pageSizeOptions]="pageSizeOptions" />
       <nat-table-pager />
 
-      <nat-table [columns]="columns" [data]="rows()" [getRowId]="getRowId" accessibleName="Demo table" />
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Demo table" />
     </nat-table-surface>
   `
 })
@@ -46,7 +44,6 @@ class Host {
   ]);
 
   protected readonly columns = columns;
-  protected readonly getRowId = getRowId;
   protected readonly pageSizeOptions = [2, 3, 5] as const;
   public readonly tableState = signal<Partial<NatTableState>>({});
   protected readonly initialState: Partial<NatTableState> = {

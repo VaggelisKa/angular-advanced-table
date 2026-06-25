@@ -3,7 +3,7 @@
  * instrumentation is enabled.
  */
 export type NatTableRowRenderedEvent = {
-  /** Stable row identifier resolved from `getRowId` or the row index fallback. */
+  /** Stable row identifier resolved from `getRowId`, `row.id`, or the namespaced positional fallback. */
   rowId: string;
   /** Monotonic token for the render cycle that produced this row measurement. */
   renderToken: number;
