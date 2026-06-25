@@ -21,6 +21,7 @@ export type ShowcaseNavSection = {
   readonly id: string;
   readonly label: string;
   readonly ariaLabel: string;
+  readonly items: readonly ShowcaseNavItem[];
   readonly groups: readonly ShowcaseNavGroup[];
 };
 
@@ -217,7 +218,6 @@ export const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
     label: 'Foundations',
     ariaLabel: 'Foundational table documentation',
     items: [
-      getShowcaseDoc('quick-start'),
       getShowcaseDoc('columns'),
       getShowcaseDoc('state'),
       getShowcaseDoc('data-lifecycle'),
@@ -278,12 +278,14 @@ export const showcaseNavSections: readonly ShowcaseNavSection[] = [
     id: 'docs',
     label: 'Docs',
     ariaLabel: 'Table documentation',
+    items: [getShowcaseDoc('quick-start')],
     groups: showcaseDocGroups
   },
   {
     id: 'examples',
     label: 'Examples',
     ariaLabel: 'Table examples',
+    items: [],
     groups: showcaseExampleGroups
   }
 ];

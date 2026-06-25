@@ -206,7 +206,8 @@ describe('TableShowcasePage', () => {
       element.tagName.toLowerCase()
     );
 
-    expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar')).toHaveLength(2);
+    expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar')).toHaveLength(1);
+    expect(host().querySelector('.kitchen-metrics-controls nat-render-metrics-filter')).toBeTruthy();
     expect(host().querySelector('app-table-search')).toBeTruthy();
     expect(host().querySelector('nat-table-toolbar nat-table-pagination[natToolbarItemPosition="end"]')).toBeTruthy();
     expect(host().querySelector('nat-table-scroll-control')).toBeTruthy();

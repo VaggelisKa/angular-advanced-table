@@ -1,5 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 
+import type { NatTableRenderMetricsController } from './contracts';
 import {
   NAT_TABLE_UTILS_ENGLISH_LOCALE,
   NAT_TABLE_UTILS_INTL,
@@ -27,16 +28,19 @@ type RenderHealthState = {
   templateUrl: './panel.html',
   styleUrl: './panel.css'
 })
-export class NatRenderMetricsPanel {
+export class NatRenderMetricsPanel<TData = unknown> {
   /** Shared store. */
   public readonly store = input.required<NatTableRenderMetricsStore>();
+  /** Controlled table controller. Used to inherit the table locale when provided. */
+  public readonly controller = input<NatTableRenderMetricsController<TData> | null | undefined>(undefined);
   /** Locale id override for generated render-metrics labels. */
   public readonly locale = input<string | undefined>(undefined);
   /** Per-instance label overrides. */
   public readonly labels = input<NatTableRenderMetricsPanelIntl | undefined>(undefined);
 
   private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
-  private readonly localeId = computed(() => this.locale() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
+  private readonly tableLocaleId = computed(() => this.controller()?.localeId?.());
+  private readonly localeId = computed(() => this.locale() ?? this.tableLocaleId() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
   private readonly utilsIntl = computed(() => resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()));
 
   private readonly resolvedLabels = computed(() => mergeRenderMetricsPanelIntl(this.utilsIntl().renderMetrics?.panel, this.labels()));

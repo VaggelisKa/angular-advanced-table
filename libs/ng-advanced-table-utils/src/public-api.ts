@@ -1,5 +1,7 @@
 export { NatTableRenderMetricsStore } from './lib/render-metrics/store';
 
+export type { NatTableRenderMetricsStoreOptions } from './lib/render-metrics/store';
+
 export { NatRenderMetricsFilter } from './lib/render-metrics/filter';
 
 export { NatRenderMetricsPanel } from './lib/render-metrics/panel';
@@ -47,5 +49,6 @@ export {
   type RowRenderFilterValue,
   type RowRenderMeasurement,
   type RowRenderMetric,
+  type RowRenderMetrics,
   type RowRenderTone
 } from './lib/render-metrics/types';

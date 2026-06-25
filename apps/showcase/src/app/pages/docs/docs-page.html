@@ -12,13 +12,14 @@
   }
 
   <section
+    #markdownContainer
     [attr.aria-busy]="
       markdownState().status === 'idle' || markdownState().status === 'loading' ? 'true' : null
     "
     aria-labelledby="docs-page-title"
     class="docs-markdown">
     @if (markdownState().status === 'loaded') {
-    <markdown [data]="markdownState().content" />
+    <markdown [data]="markdownState().content" (ready)="decorateCodeBlocks()" />
     }
   </section>
 </article>

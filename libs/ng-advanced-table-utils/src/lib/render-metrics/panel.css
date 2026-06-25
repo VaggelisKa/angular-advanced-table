@@ -10,8 +10,10 @@
   font-size: 0.85rem;
   color: var(--text-soft);
   white-space: nowrap;
+  background: rgb(236 245 251 / 5%);
   background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--text, #ecf5fb) 12%, transparent);
+  border: 1px solid rgb(236 245 251 / 12%);
+  border-color: color-mix(in srgb, var(--text, #ecf5fb) 12%, transparent);
   border-radius: 999px;
 }
 
@@ -30,16 +32,19 @@
 
 .render-kpi[data-health='fast'] .render-kpi-dot {
   background: var(--success, #5de6a6);
+  box-shadow: 0 0 6px rgb(93 230 166 / 40%);
   box-shadow: 0 0 6px color-mix(in srgb, var(--success, #5de6a6) 40%, transparent);
 }
 
 .render-kpi[data-health='watch'] .render-kpi-dot {
   background: var(--warning, #ffd166);
+  box-shadow: 0 0 6px rgb(255 209 102 / 40%);
   box-shadow: 0 0 6px color-mix(in srgb, var(--warning, #ffd166) 40%, transparent);
 }
 
 .render-kpi[data-health='slow'] .render-kpi-dot {
   background: var(--danger, #ff8d7f);
+  box-shadow: 0 0 6px rgb(255 141 127 / 40%);
   box-shadow: 0 0 6px color-mix(in srgb, var(--danger, #ff8d7f) 40%, transparent);
 }
 
