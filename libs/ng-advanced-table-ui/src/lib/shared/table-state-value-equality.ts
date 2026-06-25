@@ -178,5 +178,9 @@ valuesMatch = (left, right, seen): boolean => {
   return specialMatch ?? plainObjectsMatch(left, right, seen);
 };
 
+/**
+ * Avoid JSON serialization: consumer-owned filter values can include BigInt,
+ * Sets, Maps, Dates, or RegExps that either throw or stringify incorrectly.
+ */
 export const hasNatTableStateValueChanged = (left: unknown, right: unknown): boolean =>
   !valuesMatch(left, right, new Map<object, Set<object>>());
