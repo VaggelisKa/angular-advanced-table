@@ -25,6 +25,7 @@ export type NatTableRenderMetricsStoreOptions = Readonly<{
   /**
    * Maximum row metrics retained across render cycles. Defaults to 1000.
    * Set to `Infinity` only when the table's row ids are known to be bounded.
+   * Non-positive and non-finite values fall back to the default.
    */
   maxRetainedRowMetrics?: number;
 }>;
@@ -53,11 +54,13 @@ const normalizeMaxRetainedRowMetrics = (value: number | undefined): number => {
     return Number.POSITIVE_INFINITY;
   }
 
-  if (!Number.isFinite(value) || value < 0) {
+  if (!Number.isFinite(value)) {
     return DEFAULT_MAX_RETAINED_ROW_METRICS;
   }
 
-  return Math.floor(value);
+  const normalizedValue = Math.floor(value);
+
+  return normalizedValue > 0 ? normalizedValue : DEFAULT_MAX_RETAINED_ROW_METRICS;
 };
 
 /**
@@ -151,27 +154,14 @@ export class NatTableRenderMetricsStore {
   }
 
   private retainRowMetric(current: StoreState, rowId: string, metric: RowRenderMetric): RetainedRowMetrics {
-    const nextRowMetrics: Record<string, RowRenderMetric> = {
-      ...current.rowMetrics,
-      [rowId]: metric
-    };
     const nextOrder = [...current.rowMetricOrder.filter((orderedRowId) => orderedRowId !== rowId), rowId];
     const retainedOrder =
-      this.maxRetainedRowMetrics === Number.POSITIVE_INFINITY
-        ? nextOrder
-        : nextOrder.slice(this.maxRetainedRowMetrics === 0 ? nextOrder.length : -this.maxRetainedRowMetrics);
-
-    if (retainedOrder.length === nextOrder.length) {
-      return {
-        rowMetrics: freezeMetrics(nextRowMetrics),
-        rowMetricOrder: freezeOrder(retainedOrder)
-      };
-    }
+      this.maxRetainedRowMetrics === Number.POSITIVE_INFINITY ? nextOrder : nextOrder.slice(-this.maxRetainedRowMetrics);
 
     const retainedRowMetrics: Record<string, RowRenderMetric> = {};
 
     for (const retainedRowId of retainedOrder) {
-      retainedRowMetrics[retainedRowId] = nextRowMetrics[retainedRowId];
+      retainedRowMetrics[retainedRowId] = retainedRowId === rowId ? metric : current.rowMetrics[retainedRowId];
     }
 
     return {

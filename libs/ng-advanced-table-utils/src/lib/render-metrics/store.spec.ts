@@ -94,6 +94,15 @@ describe('NatTableRenderMetricsStore', () => {
     expect(store.measurement()?.rowCount).toBe(2);
   });
 
+  it('falls back to the default retention limit when configured with zero', () => {
+    store = new NatTableRenderMetricsStore({ maxRetainedRowMetrics: 0 });
+
+    store.record({ rowId: 'row-1', renderToken: 1, durationMs: 2 });
+
+    expect(requireMetric(store.rowMetric('row-1')).durationMs).toBe(2);
+    expect(Object.keys(store.rowMetrics())).toStrictEqual(['row-1']);
+  });
+
   it('freezes exposed metric state so external mutation cannot corrupt the store', () => {
     store.record({ rowId: 'row-1', renderToken: 1, durationMs: 4 });
 
