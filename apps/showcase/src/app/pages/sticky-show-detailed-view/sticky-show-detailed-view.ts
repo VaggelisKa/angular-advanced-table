@@ -260,7 +260,7 @@ export class StickyShowDetailedView {
   protected readonly detailedRows = generateMockOrderRows(50);
   protected readonly isDetailsPage = computed(() => this.router.url.endsWith('/details'));
 
-  public tables = [
+  public readonly tables = [
     {
       type: 'dialog',
       label: 'Detailed View in Modal Dialog',

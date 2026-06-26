@@ -91,9 +91,12 @@ nat-table-surface {
 dialog {
   width: 1000px;
   max-width: 90vw;
+  height: 80vh;
+  height: 80dvh;
   max-height: 85vh;
   padding: 0;
   overflow: hidden;
+  overscroll-behavior-y: contain;
   color: var(--showcase-page-text);
   background: var(--showcase-page-surface);
   border: 1px solid var(--showcase-page-border);
@@ -149,6 +152,7 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 68px);
+  overscroll-behavior-y: contain;
 }
 
 .detailed-page-header {
@@ -199,6 +203,10 @@ nat-table-surface.dialog-table-surface ::ng-deep .surface {
   background: none;
   border: 0;
   border-radius: 0;
+}
+
+.simple-table ::ng-deep .table-region {
+  overscroll-behavior-y: contain;
 }
 
 .simple-table {
