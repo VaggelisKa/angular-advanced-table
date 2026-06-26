@@ -192,16 +192,10 @@ function getShowcaseExample(exampleId: string): ShowcaseNavItem {
 
 export const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
   {
-    id: 'docs-start',
-    label: 'Start',
-    ariaLabel: 'Getting started table documentation',
-    items: [getShowcaseDoc('quick-start'), getShowcaseDoc('composition')]
-  },
-  {
     id: 'docs-core-model',
-    label: 'Core model',
-    ariaLabel: 'Core table model documentation',
-    items: [getShowcaseDoc('columns'), getShowcaseDoc('state'), getShowcaseDoc('data-lifecycle')]
+    label: 'Core principles',
+    ariaLabel: 'Core table principles documentation',
+    items: [getShowcaseDoc('composition'), getShowcaseDoc('columns'), getShowcaseDoc('state'), getShowcaseDoc('data-lifecycle')]
   },
   {
     id: 'docs-capabilities',
@@ -249,7 +243,7 @@ export const showcaseNavSections: readonly ShowcaseNavSection[] = [
     id: 'docs',
     label: 'Docs',
     ariaLabel: 'Table documentation',
-    items: [],
+    items: [getShowcaseDoc('quick-start')],
     groups: showcaseDocGroups
   },
   {

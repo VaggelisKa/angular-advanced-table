@@ -120,7 +120,8 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     expect(compiled.querySelector('router-outlet')).not.toBeNull();
-    expect(compiled.querySelector('.showcase-nav')?.textContent).toContain('Docs and examples');
+    expect(compiled.querySelector('.showcase-mobile-header')?.textContent).toContain('Docs and examples');
+    expect(compiled.querySelector('.showcase-nav-header')?.textContent).not.toContain('Docs and examples');
     expect(compiled.querySelector('.showcase-nav')?.textContent).toContain('Docs');
     expect(compiled.querySelector('.showcase-nav')?.textContent).toContain('Gallery');
     const tree = compiled.querySelector('[data-testid="showcase-nav-tree"]') as HTMLElement;
@@ -132,16 +133,17 @@ describe('App', () => {
     expect(docsBranch.getAttribute('aria-expanded')).toBe('true');
     expect(galleryBranch.getAttribute('aria-expanded')).toBe('false');
     expect(compiled.querySelector('[data-testid="showcase-nav-link-quick-start"]')).not.toBeNull();
-    const docsStartBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs-start"]') as HTMLElement;
+    expect(compiled.querySelector('[data-testid="showcase-nav-branch-docs-start"]')).toBeNull();
+    const docsCoreModelBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs-core-model"]') as HTMLElement;
     const docsCapabilitiesBranch = compiled.querySelector('[data-testid="showcase-nav-branch-docs-capabilities"]') as HTMLElement;
 
-    expect(docsStartBranch.getAttribute('aria-label')).toBe('Start');
-    expect(docsStartBranch.getAttribute('aria-expanded')).toBe('true');
+    expect(docsCoreModelBranch.getAttribute('aria-label')).toBe('Core principles');
+    expect(docsCoreModelBranch.getAttribute('aria-expanded')).toBe('false');
+    expect(compiled.querySelector('[data-testid="showcase-nav-link-composition"]')).toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-link-columns"]')).toBeNull();
     expect(docsCapabilitiesBranch.getAttribute('aria-label')).toBe('Capabilities');
     expect(docsCapabilitiesBranch.querySelector(':scope > .showcase-nav-tree-row')?.textContent).toContain('Capabilities');
     expect(docsCapabilitiesBranch.getAttribute('aria-expanded')).toBe('false');
-    expect(compiled.querySelector('[data-testid="showcase-nav-link-composition"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]')).toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
     expect(compiled.querySelector('.showcase-nav-count')).toBeNull();
@@ -251,8 +253,9 @@ describe('App', () => {
 
     expect(docsBranch.getAttribute('aria-expanded')).toBe('true');
     expect(docsCoreModelBranch.getAttribute('aria-expanded')).toBe('true');
+    expect(compiled.querySelector('[data-testid="showcase-nav-link-quick-start"]')).not.toBeNull();
+    expect(compiled.querySelector('[data-testid="showcase-nav-link-composition"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="showcase-nav-link-columns"]')).not.toBeNull();
-    expect(compiled.querySelector('[data-testid="showcase-nav-link-quick-start"]')).toBeNull();
     expect(galleryBranch.getAttribute('aria-expanded')).toBe('false');
     expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
   });

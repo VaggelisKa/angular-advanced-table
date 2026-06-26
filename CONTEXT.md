@@ -25,7 +25,7 @@ A subject-oriented guide for one table capability or workflow that can contain e
 _Avoid_: Docs page, example page when discussing the canonical organization unit.
 
 **Documentation Group**:
-A navigation grouping for related Documentation Topics, named around consumer learning goals such as Start, Core Model, Capabilities, Accessibility and UX, or Advanced.
+A navigation grouping for related Documentation Topics, named around consumer learning goals such as Core Principles, Capabilities, Accessibility and UX, or Advanced.
 _Avoid_: Section when it could mean a heading inside a topic.
 
 **Table Capability**:

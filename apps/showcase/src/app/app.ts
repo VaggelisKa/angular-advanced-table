@@ -23,7 +23,7 @@ function getShowcaseNavBranchIds(sections: readonly ShowcaseNavSection[]): strin
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 const SHOWCASE_NAV_BRANCH_IDS = getShowcaseNavBranchIds(showcaseNavSections);
 const SHOWCASE_NAV_BRANCH_ID_SET = new Set(SHOWCASE_NAV_BRANCH_IDS);
-const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = ['docs', 'docs-start'];
+const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = ['docs'];
 
 function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
   try {
