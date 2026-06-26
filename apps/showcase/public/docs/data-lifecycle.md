@@ -1,4 +1,4 @@
-`NatTable` owns how loading, empty, and error states appear inside the table body. Your app owns data fetching, retry handling, request cancellation, error classification, and server-side state.
+`NatTable` owns how loading, empty, and error states appear inside the table body. Your app owns data fetching, retry handling, request cancellation, error classification, and Manual Data Handling.
 
 ## State Model
 
@@ -142,9 +142,9 @@ protected formatError(error: unknown): string {
 
 Keep retry and error classification in the container. The table should not know about HTTP status codes, permissions, or business-specific recovery flows.
 
-## Manual Server-Side Data
+## Manual Data Handling
 
-Use manual modes when a backend owns pagination, sorting, or filtering. The surface emits state; your component fetches rows and passes back the current page.
+Use manual modes when your app owns pagination, sorting, or filtering outside the table. The surface emits state; your component prepares rows and passes back the current page or row set.
 
 ```html
 <nat-table-surface
@@ -159,7 +159,7 @@ Use manual modes when a backend owns pagination, sorting, or filtering. The surf
 
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Server-side positions">
+  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Manual positions">
     <ng-template natTableLoading>Loading positions</ng-template>
     <ng-template natTableEmpty>No positions match the current request</ng-template>
     <ng-template natTableError>Positions could not be loaded</ng-template>
@@ -200,7 +200,7 @@ private loadServerRows(state: Partial<NatTableState>): void {
 }
 ```
 
-For production server flows, cancel or ignore stale requests when a newer table state arrives. Keep that policy in the container or data service.
+For production request flows, cancel or ignore stale requests when a newer table state arrives. Keep that policy in the container or data service.
 
 ## Custom Filter Functions
 

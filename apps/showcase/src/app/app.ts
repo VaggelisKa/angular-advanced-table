@@ -23,7 +23,7 @@ function getShowcaseNavBranchIds(sections: readonly ShowcaseNavSection[]): strin
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 const SHOWCASE_NAV_BRANCH_IDS = getShowcaseNavBranchIds(showcaseNavSections);
 const SHOWCASE_NAV_BRANCH_ID_SET = new Set(SHOWCASE_NAV_BRANCH_IDS);
-const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = ['docs'];
+const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = ['docs', 'docs-start'];
 
 function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
   try {
@@ -79,7 +79,7 @@ function branchContainsRoute(branch: ShowcaseNavSection | ShowcaseNavGroup, rout
 }
 
 function isShowcaseDoc(item: ShowcaseNavItem): item is ShowcaseDoc {
-  return 'markdownPath' in item;
+  return 'markdownPaths' in item;
 }
 
 function setExpandedNavTreeBranches(
@@ -171,7 +171,7 @@ export class App {
       () => {
         globalThis.setTimeout(() => {
           void loadDocsPage();
-          this.docsMarkdownCache.preload(showcaseDocs.map((doc) => doc.markdownPath));
+          this.docsMarkdownCache.preload(showcaseDocs.flatMap((doc) => doc.markdownPaths));
         });
       },
       { injector: this.injector }
@@ -198,7 +198,7 @@ export class App {
 
   protected prefetchNavItem(item: ShowcaseNavItem): void {
     if (isShowcaseDoc(item)) {
-      this.docsMarkdownCache.load(item.markdownPath);
+      this.docsMarkdownCache.preload(item.markdownPaths);
     }
   }
 

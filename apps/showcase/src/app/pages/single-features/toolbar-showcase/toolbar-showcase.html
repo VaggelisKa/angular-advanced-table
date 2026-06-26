@@ -1,171 +1,159 @@
-<!-- eslint-disable max-lines -->
-<div class="showcase-page showcase-container">
-  <header class="header-section">
-    <h1 class="title">Table Toolbar</h1>
-    <p class="description">
-      Composable toolbar shell with static start/center/end slots and roving keyboard focus. Items pick their slot with the
-      <code>natToolbarItemPosition</code> attribute — DOM, screen-reader and keyboard order always match what you see. The toolbar is a
-      generic host: drop in your own components — a search field, a dropdown — and they join the same roving focus.
-    </p>
-  </header>
+<!-- Example 1: slots & roving focus -->
+<div class="grid-layout grid-layout-with-panel">
+  <div class="card">
+    <h2 class="card-title">Slots &amp; roving focus</h2>
 
-  <!-- Example 1: slots & roving focus -->
-  <div class="grid-layout grid-layout-with-panel">
-    <div class="card">
-      <h2 class="card-title">Slots &amp; roving focus</h2>
+    <nat-table-surface
+      [state]="tableState()"
+      (columnVisibilityChange)="onColumnVisibilityChange($event)"
+      (sortingChange)="onSortingChange($event)">
+      <nat-table-toolbar accessibleName="Products toolbar">
+        <button
+          class="toolbar-button"
+          data-testid="export-button"
+          exportFileName="toolbar-demo"
+          natTableExport
+          natToolbarItem
+          natToolbarItemPosition="start"
+          type="button"
+          (click)="recordAction('export')">
+          Export
+        </button>
 
-      <nat-table-surface
-        [state]="tableState()"
-        (columnVisibilityChange)="onColumnVisibilityChange($event)"
-        (sortingChange)="onSortingChange($event)">
-        <nat-table-toolbar accessibleName="Products toolbar">
+        <button
+          class="toolbar-button"
+          data-testid="refresh-button"
+          natToolbarItem
+          natToolbarItemPosition="center"
+          type="button"
+          (click)="recordAction('refresh')">
+          Refresh
+        </button>
+
+        <div accessibleName="View density" natToolbarGroup="end">
           <button
             class="toolbar-button"
-            data-testid="export-button"
-            exportFileName="toolbar-demo"
-            natTableExport
+            data-testid="density-compact-button"
             natToolbarItem
-            natToolbarItemPosition="start"
             type="button"
-            (click)="recordAction('export')">
-            Export
+            (click)="recordAction('density-compact')">
+            Compact
           </button>
-
           <button
             class="toolbar-button"
-            data-testid="refresh-button"
+            data-testid="density-comfortable-button"
             natToolbarItem
-            natToolbarItemPosition="center"
             type="button"
-            (click)="recordAction('refresh')">
-            Refresh
+            (click)="recordAction('density-comfortable')">
+            Comfortable
           </button>
-
-          <div accessibleName="View density" natToolbarGroup="end">
-            <button
-              class="toolbar-button"
-              data-testid="density-compact-button"
-              natToolbarItem
-              type="button"
-              (click)="recordAction('density-compact')">
-              Compact
-            </button>
-            <button
-              class="toolbar-button"
-              data-testid="density-comfortable-button"
-              natToolbarItem
-              type="button"
-              (click)="recordAction('density-comfortable')">
-              Comfortable
-            </button>
-          </div>
-
-          <button
-            aria-label="Share"
-            class="toolbar-button toolbar-button--icon"
-            data-testid="share-button"
-            natToolbarItem
-            natToolbarItemPosition="end"
-            type="button"
-            (click)="recordAction('share')">
-            <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" width="16">
-              <circle cx="12" cy="3.5" r="2" />
-              <circle cx="4" cy="8" r="2" />
-              <circle cx="12" cy="12.5" r="2" />
-              <path d="M5.8 7 10.2 4.5M5.8 9l4.4 2.5" />
-            </svg>
-          </button>
-        </nat-table-toolbar>
-
-        <nat-table [columns]="columns" [data]="data" accessibleName="Toolbar demo table" />
-      </nat-table-surface>
-    </div>
-
-    <div class="card">
-      <h2 class="card-title">Item Activation</h2>
-      <div class="control-panel">
-        <dl class="demo-state">
-          <dt class="demo-state-term">Last action</dt>
-          <dd class="demo-state-value" data-testid="last-action">{{ lastAction() }}</dd>
-        </dl>
-
-        <div class="tip">
-          Export sits in the start slot, Refresh is centered, the "View density" widget group and Share are at the end. Activate an
-          item to record the last action. Keyboard: Tab into the toolbar, Left/Right + Home/End move across all items, Up/Down cycle
-          inside the density group.
         </div>
+
+        <button
+          aria-label="Share"
+          class="toolbar-button toolbar-button--icon"
+          data-testid="share-button"
+          natToolbarItem
+          natToolbarItemPosition="end"
+          type="button"
+          (click)="recordAction('share')">
+          <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16" width="16">
+            <circle cx="12" cy="3.5" r="2" />
+            <circle cx="4" cy="8" r="2" />
+            <circle cx="12" cy="12.5" r="2" />
+            <path d="M5.8 7 10.2 4.5M5.8 9l4.4 2.5" />
+          </svg>
+        </button>
+      </nat-table-toolbar>
+
+      <nat-table [columns]="columns" [data]="data" accessibleName="Toolbar demo table" />
+    </nat-table-surface>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title">Item Activation</h2>
+    <div class="control-panel">
+      <dl class="demo-state">
+        <dt class="demo-state-term">Last action</dt>
+        <dd class="demo-state-value" data-testid="last-action">{{ lastAction() }}</dd>
+      </dl>
+
+      <div class="tip">
+        Export sits in the start slot, Refresh is centered, the "View density" widget group and Share are at the end. Activate an item
+        to record the last action. Keyboard: Tab into the toolbar, Left/Right + Home/End move across all items, Up/Down cycle inside
+        the density group.
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Example 2: user-defined search + filter menu sharing one toolbar -->
-  <div class="grid-layout grid-layout-with-panel">
-    <div class="card card--overflow-visible">
-      <h2 class="card-title">Search &amp; filter menu (user components)</h2>
-      <p class="description">
-        Two consumer-built components share one toolbar — neither is shipped by the library. The
-        <code>&lt;app-table-search toolbar&gt;</code> drives the real global filter; the <code>Actions</code> button is a hand-wired
-        disclosure of preset filters (the ARIA menu directive can't share a <code>natToolbarItem</code>). Pick a preset to filter the
-        table — it composes with the free-text search. Both controls join the toolbar's roving focus.
-      </p>
+<!-- Example 2: user-defined search + filter menu sharing one toolbar -->
+<div class="grid-layout grid-layout-with-panel">
+  <div class="card card--overflow-visible">
+    <h2 class="card-title">Search &amp; filter menu (user components)</h2>
+    <p class="description">
+      Two consumer-built components share one toolbar — neither is shipped by the library. The
+      <code>&lt;app-table-search toolbar&gt;</code> drives the real global filter; the <code>Actions</code> button is a hand-wired
+      disclosure of preset filters (the ARIA menu directive can't share a <code>natToolbarItem</code>). Pick a preset to filter the
+      table — it composes with the free-text search. Both controls join the toolbar's roving focus.
+    </p>
 
-      <nat-table-surface>
-        <nat-table-toolbar accessibleName="Table actions toolbar">
-          <app-table-search
-            label="Search by name, category or status"
-            natToolbarItemPosition="start"
-            placeholder="Search e.g. Security, Active, Delta…"
-            toolbar />
+    <nat-table-surface>
+      <nat-table-toolbar accessibleName="Table actions toolbar">
+        <app-table-search
+          label="Search by name, category or status"
+          natToolbarItemPosition="start"
+          placeholder="Search e.g. Security, Active, Delta…"
+          toolbar />
 
-          <div #menuRoot class="toolbar-menu" natToolbarItemPosition="end" tabindex="-1" (keydown.escape)="closeMenu(true)">
+        <div #menuRoot class="toolbar-menu" natToolbarItemPosition="end" tabindex="-1" (keydown.escape)="closeMenu(true)">
+          <button
+            #menuTrigger
+            [attr.aria-expanded]="menuOpen()"
+            aria-controls="toolbar-overflow-menu"
+            aria-haspopup="true"
+            class="toolbar-button toolbar-menu-trigger"
+            data-testid="menu-trigger"
+            natToolbarItem
+            type="button"
+            (click)="toggleMenu()">
+            Actions
+            <span aria-hidden="true" class="toolbar-menu-caret">▾</span>
+          </button>
+
+          <div [hidden]="!menuOpen()" aria-label="Quick filters" class="toolbar-menu-panel" id="toolbar-overflow-menu" role="group">
+            @for (preset of filterPresets; track preset.key) {
             <button
-              #menuTrigger
-              [attr.aria-expanded]="menuOpen()"
-              aria-controls="toolbar-overflow-menu"
-              aria-haspopup="true"
-              class="toolbar-button toolbar-menu-trigger"
-              data-testid="menu-trigger"
-              natToolbarItem
+              [attr.aria-current]="preset.key === activePresetKey() ? 'true' : null"
+              [attr.data-testid]="`filter-${preset.key}`"
+              class="toolbar-menu-item"
               type="button"
-              (click)="toggleMenu()">
-              Actions
-              <span aria-hidden="true" class="toolbar-menu-caret">▾</span>
+              (click)="applyPreset(preset.key)">
+              {{ preset.label }}
             </button>
-
-            <div [hidden]="!menuOpen()" aria-label="Quick filters" class="toolbar-menu-panel" id="toolbar-overflow-menu" role="group">
-              @for (preset of filterPresets; track preset.key) {
-              <button
-                [attr.aria-current]="preset.key === activePresetKey() ? 'true' : null"
-                [attr.data-testid]="`filter-${preset.key}`"
-                class="toolbar-menu-item"
-                type="button"
-                (click)="applyPreset(preset.key)">
-                {{ preset.label }}
-              </button>
-              }
-            </div>
+            }
           </div>
-        </nat-table-toolbar>
-
-        <nat-table [columns]="columns" [data]="filteredData()" accessibleName="Search and filter table" />
-      </nat-table-surface>
-    </div>
-
-    <div class="card">
-      <h2 class="card-title">Active filter</h2>
-      <div class="control-panel">
-        <dl class="demo-state">
-          <dt class="demo-state-term">Preset</dt>
-          <dd class="demo-state-value" data-testid="active-filter">{{ activeFilterLabel() }}</dd>
-          <dt class="demo-state-term">Rows</dt>
-          <dd class="demo-state-value" data-testid="filter-row-count">{{ visibleCount() }} of {{ data.length }}</dd>
-        </dl>
-
-        <div class="tip">
-          The trigger reflects open state with <code>aria-expanded</code>; the active preset is marked with <code>aria-current</code>.
-          Selecting a preset filters the table and closes the menu, returning focus to the trigger. The free-text search narrows
-          whatever the preset leaves.
         </div>
+      </nat-table-toolbar>
+
+      <nat-table [columns]="columns" [data]="filteredData()" accessibleName="Search and filter table" />
+    </nat-table-surface>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title">Active filter</h2>
+    <div class="control-panel">
+      <dl class="demo-state">
+        <dt class="demo-state-term">Preset</dt>
+        <dd class="demo-state-value" data-testid="active-filter">{{ activeFilterLabel() }}</dd>
+        <dt class="demo-state-term">Rows</dt>
+        <dd class="demo-state-value" data-testid="filter-row-count">{{ visibleCount() }} of {{ data.length }}</dd>
+      </dl>
+
+      <div class="tip">
+        The trigger reflects open state with <code>aria-expanded</code>; the active preset is marked with <code>aria-current</code>.
+        Selecting a preset filters the table and closes the menu, returning focus to the trigger. The free-text search narrows whatever
+        the preset leaves.
       </div>
     </div>
   </div>

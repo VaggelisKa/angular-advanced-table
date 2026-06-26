@@ -3,12 +3,12 @@ import { expect, test } from '@playwright/test';
 test.describe('FEATURE: Column visibility', () => {
   test.describe('GIVEN: the column visibility demo page is loaded', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/examples/visibility');
+      await page.goto('/docs/column-layout');
     });
 
     test.describe('WHEN: a column chip is activated via keyboard', () => {
       test('THEN: it toggles the corresponding column visibility', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: 'Column Visibility' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Column visibility' })).toBeVisible();
 
         const table = page.getByRole('grid', { name: 'Visibility demo table' });
         const statusChip = page.locator('button[data-column-id="status"]');

@@ -22,7 +22,7 @@ test.describe('FEATURE: Table toolbar', () => {
 
   test.describe('GIVEN: the toolbar showcase page is loaded', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/examples/toolbar');
+      await page.goto('/docs/toolbar-actions');
     });
 
     test.describe('WHEN: keyboard activates a toolbar item', () => {
@@ -125,7 +125,7 @@ test.describe('FEATURE: Table toolbar', () => {
       test('THEN: it reverses the arrow-key direction', async ({ page }) => {
         // re-navigates with RTL direction inside this body (rule 5) — not hoisted to the shared GIVEN
         await applyDocumentDirection(page, 'rtl');
-        await page.goto('/examples/toolbar');
+        await page.goto('/docs/toolbar-actions');
         await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 
         const { exportButton, refreshButton } = buttons(page);

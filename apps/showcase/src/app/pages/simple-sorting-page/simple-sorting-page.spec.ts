@@ -149,12 +149,12 @@ describe('SimpleSortingPage', () => {
     expect(firstRowHeader.textContent.trim()).toBe('ORD-1011');
   });
 
-  it('should use the shared showcase page layout', () => {
+  it('should render as an embeddable sorting demo', () => {
     fixture.detectChanges();
 
     const page = query<HTMLDivElement>('.simple-sorting-page');
 
-    expect(page.classList.contains('showcase-page')).toBe(true);
+    expect(page.classList.contains('showcase-page')).toBe(false);
     expect(page.getAttribute('data-theme')).toBeNull();
   });
 });

@@ -9,7 +9,10 @@ import { MarkdownComponent } from 'ngx-markdown';
 import { map } from 'rxjs';
 
 import { createDocsCodeCopyIcons } from './docs-code-copy-icons';
+import type { DocsMarkdownState } from './docs-markdown-cache';
 import { DocsMarkdownCache } from './docs-markdown-cache';
+import { DocsTopicExample } from './docs-topic-example';
+import { findDocsTopicContent } from './docs-topics';
 import { findShowcaseDoc } from '../../showcase-navigation';
 
 type DocsRouteData = {
@@ -28,7 +31,7 @@ const CODE_COPY_RESET_DELAY_MS = 2000;
 
 @Component({
   selector: 'app-docs-page',
-  imports: [MarkdownComponent],
+  imports: [DocsTopicExample, MarkdownComponent],
   templateUrl: './docs-page.html',
   styleUrl: './docs-page.css'
 })
@@ -48,15 +51,23 @@ export class DocsPage {
     return findShowcaseDoc(typeof docId === 'string' ? docId : undefined);
   });
 
-  protected readonly markdownState = computed(() => this.docsMarkdownCache.getState(this.doc().markdownPath));
-  protected readonly loadFailed = computed(() => this.markdownState().status === 'error');
+  protected readonly topic = computed(() => findDocsTopicContent(this.doc().id));
+  protected readonly loadFailed = computed(() =>
+    this.topic().blocks.some(
+      (block) => block.kind === 'markdown' && this.docsMarkdownCache.getState(block.markdownPath).status === 'error'
+    )
+  );
 
   public constructor() {
     effect(() => {
-      const markdownPath = this.doc().markdownPath;
+      const markdownPaths = this.doc().markdownPaths;
 
-      untracked(() => this.docsMarkdownCache.load(markdownPath));
+      untracked(() => this.docsMarkdownCache.preload(markdownPaths));
     });
+  }
+
+  protected markdownState(markdownPath: string): DocsMarkdownState {
+    return this.docsMarkdownCache.getState(markdownPath);
   }
 
   protected decorateCodeBlocks(): void {
@@ -66,7 +77,7 @@ export class DocsPage {
       return;
     }
 
-    for (const codeBlock of Array.from(container.querySelectorAll('pre'))) {
+    for (const codeBlock of Array.from(container.querySelectorAll('.docs-markdown pre'))) {
       const code = codeBlock.querySelector('code');
 
       if (!code || codeBlock.querySelector(CODE_COPY_BUTTON_SELECTOR)) {

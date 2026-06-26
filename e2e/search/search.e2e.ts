@@ -3,12 +3,12 @@ import { expect, test } from '@playwright/test';
 test.describe('FEATURE: Global search', () => {
   test.describe('GIVEN: the search example is loaded', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/examples/search');
+      await page.goto('/docs/filtering-search');
     });
 
     test.describe('WHEN: a query is entered and then cleared', () => {
       test('THEN: it filters rows to matches and restores all rows on clear', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: 'Global Search & Filter' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Consumer-owned search' })).toBeVisible();
 
         const table = page.getByRole('grid', { name: 'Search demo table' });
         const searchInput = page.locator('app-table-search input');

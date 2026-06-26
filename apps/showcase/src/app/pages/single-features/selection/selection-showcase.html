@@ -1,74 +1,59 @@
-<div class="showcase-page showcase-container">
-  <header class="header-section">
-    <h1 class="title">Row Selection</h1>
-    <p class="description">
-      Demonstrates single and multiple row selection with a generated checkbox column,
-      <code>aria-selected</code> row states, and polite live announcements.
-    </p>
-  </header>
+<div class="grid-layout grid-layout-with-panel">
+  <div class="card">
+    <h2 class="card-title">Selectable Services Grid</h2>
+    <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
+      <nat-table-toolbar accessibleName="Bulk actions">
+        <button
+          [disabled]="selectedNames().length === 0"
+          class="btn btn-secondary"
+          natToolbarItem
+          natToolbarItemPosition="start"
+          type="button"
+          (click)="deleteSelected()">
+          Delete selected ({{ selectedNames().length }})
+        </button>
+        <button class="btn btn-outline" natToolbarItem natToolbarItemPosition="start" type="button" (click)="restoreData()">
+          Reset data
+        </button>
+      </nat-table-toolbar>
+      <nat-table
+        [columns]="columns"
+        [data]="data()"
+        [enableRowSelection]="true"
+        [selectionMode]="selectionMode()"
+        accessibleName="Row selection demo table" />
+    </nat-table-surface>
+  </div>
 
-  <div class="grid-layout grid-layout-with-panel">
-    <div class="card">
-      <h2 class="card-title">Selectable Services Grid</h2>
-      <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
-        <nat-table-toolbar accessibleName="Bulk actions">
-          <button
-            [disabled]="selectedNames().length === 0"
-            class="btn btn-secondary"
-            natToolbarItem
-            natToolbarItemPosition="start"
-            type="button"
-            (click)="deleteSelected()">
-            Delete selected ({{ selectedNames().length }})
-          </button>
-          <button class="btn btn-outline" natToolbarItem natToolbarItemPosition="start" type="button" (click)="restoreData()">
-            Reset data
-          </button>
-        </nat-table-toolbar>
-        <nat-table
-          [columns]="columns"
-          [data]="data()"
-          [enableRowSelection]="true"
-          [selectionMode]="selectionMode()"
-          accessibleName="Row selection demo table" />
-      </nat-table-surface>
+  <div class="card">
+    <h2 class="card-title">How To Use The Keyboard</h2>
+    <div class="instructions">
+      <ol>
+        <li><strong>Tab</strong> to the grid, then move between cells with the <code>Arrow</code> keys.</li>
+        <li>
+          Press <code>Enter</code> on a checkbox cell to move focus into its checkbox, then press <code>Space</code> to toggle the row.
+        </li>
+        <li>
+          In multiple mode, the header checkbox selects or clears all rows and shows an indeterminate state for partial selections.
+        </li>
+        <li>Press <code>Escape</code> to return focus from the checkbox to the cell.</li>
+        <li>Selection changes are announced through the table's polite live region.</li>
+      </ol>
+    </div>
+    <h2 class="card-title">Selection Controls</h2>
+    <div class="actions-panel">
+      <button [attr.aria-pressed]="selectionMode() === 'multiple'" class="btn btn-outline" type="button" (click)="setMode('multiple')">
+        Multiple mode
+      </button>
+      <button [attr.aria-pressed]="selectionMode() === 'single'" class="btn btn-outline" type="button" (click)="setMode('single')">
+        Single mode
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="clearSelection()">Clear selection</button>
     </div>
 
-    <div class="card">
-      <h2 class="card-title">How To Use The Keyboard</h2>
-      <div class="instructions">
-        <ol>
-          <li><strong>Tab</strong> to the grid, then move between cells with the <code>Arrow</code> keys.</li>
-          <li>
-            Press <code>Enter</code> on a checkbox cell to move focus into its checkbox, then press <code>Space</code> to toggle the
-            row.
-          </li>
-          <li>
-            In multiple mode, the header checkbox selects or clears all rows and shows an indeterminate state for partial selections.
-          </li>
-          <li>Press <code>Escape</code> to return focus from the checkbox to the cell.</li>
-          <li>Selection changes are announced through the table's polite live region.</li>
-        </ol>
-      </div>
-      <h2 class="card-title">Selection Controls</h2>
-      <div class="actions-panel">
-        <button
-          [attr.aria-pressed]="selectionMode() === 'multiple'"
-          class="btn btn-outline"
-          type="button"
-          (click)="setMode('multiple')">
-          Multiple mode
-        </button>
-        <button [attr.aria-pressed]="selectionMode() === 'single'" class="btn btn-outline" type="button" (click)="setMode('single')">
-          Single mode
-        </button>
-        <button class="btn btn-secondary" type="button" (click)="clearSelection()">Clear selection</button>
-      </div>
-
-      <div class="info-tags">
-        <div class="info-tag">Mode: {{ selectionMode() }}</div>
-        <div class="info-tag">Selected ({{ selectedNames().length }}): {{ selectedSummary() }}</div>
-      </div>
+    <div class="info-tags">
+      <div class="info-tag">Mode: {{ selectionMode() }}</div>
+      <div class="info-tag">Selected ({{ selectedNames().length }}): {{ selectedSummary() }}</div>
     </div>
   </div>
 </div>

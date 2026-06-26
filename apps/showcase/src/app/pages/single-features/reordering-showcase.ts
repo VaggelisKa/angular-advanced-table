@@ -33,41 +33,32 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-reordering-showcase',
   imports: [NatTable, NatTableSurface, TitleCasePipe],
   template: `
-    <div class="showcase-page showcase-container">
-      <header class="header-section">
-        <h1 class="title">Column Reordering</h1>
-        <p class="description">
-          Demonstrates drag-and-drop header reordering, menu-based move actions, and accessible keyboard reordering.
-        </p>
-      </header>
+    <div class="grid-layout grid-layout-with-panel">
+      <div class="card">
+        <h2 class="card-title">Drag & Reorder Grid</h2>
+        <nat-table-surface [(state)]="tableState" data-testid="reordering-demo-table">
+          <nat-table [columns]="columns" [data]="data" accessibleName="Reordering demo table" />
+        </nat-table-surface>
+      </div>
 
-      <div class="grid-layout grid-layout-with-panel">
-        <div class="card">
-          <h2 class="card-title">Drag & Reorder Grid</h2>
-          <nat-table-surface [(state)]="tableState" data-testid="reordering-demo-table">
-            <nat-table [columns]="columns" [data]="data" accessibleName="Reordering demo table" />
-          </nat-table-surface>
+      <div class="card">
+        <h2 class="card-title">Rendered Column Order</h2>
+        <div class="order-list" data-testid="reordering-order-list">
+          @for (colId of currentOrder(); track colId) {
+            <div [attr.data-column-id]="colId" class="order-item" data-testid="reordering-order-item">
+              <span class="order-badge">{{ $index + 1 }}</span>
+              <span>{{ colId | titlecase }}</span>
+            </div>
+          }
         </div>
-
-        <div class="card">
-          <h2 class="card-title">Rendered Column Order</h2>
-          <div class="order-list" data-testid="reordering-order-list">
-            @for (colId of currentOrder(); track colId) {
-              <div [attr.data-column-id]="colId" class="order-item" data-testid="reordering-order-item">
-                <span class="order-badge">{{ $index + 1 }}</span>
-                <span>{{ colId | titlecase }}</span>
-              </div>
-            }
-          </div>
-          <div class="instructions">
-            <strong>Keyboard usage:</strong> Focus a header cell, then press <code>Ctrl + Shift + Left Arrow</code> or
-            <code>Ctrl + Shift + Right Arrow</code> to swap columns. On macOS, use <code>Command + Shift + Left Arrow</code> or
-            <code>Command + Shift + Right Arrow</code>.
-          </div>
-          <div class="instructions">
-            <strong>Pointer usage:</strong> Open a header actions menu and choose <span>Move left</span> or <span>Move right</span> to
-            reorder without dragging.
-          </div>
+        <div class="instructions">
+          <strong>Keyboard usage:</strong> Focus a header cell, then press <code>Ctrl + Shift + Left Arrow</code> or
+          <code>Ctrl + Shift + Right Arrow</code> to swap columns. On macOS, use <code>Command + Shift + Left Arrow</code> or
+          <code>Command + Shift + Right Arrow</code>.
+        </div>
+        <div class="instructions">
+          <strong>Pointer usage:</strong> Open a header actions menu and choose <span>Move left</span> or <span>Move right</span> to
+          reorder without dragging.
         </div>
       </div>
     </div>

@@ -9,17 +9,43 @@
 
   @if (loadFailed()) {
   <p class="docs-error" role="alert">Documentation could not be loaded.</p>
-  }
+  } @if (topic().contents; as contents) { @if (contents.length) {
+  <nav aria-label="On this page" class="docs-topic-toc">
+    <span class="docs-topic-toc-label">On this page</span>
+    <div class="docs-topic-toc-links">
+      @for (item of contents; track item.path) {
+      <a [href]="item.path" class="docs-topic-toc-link">{{ item.label }}</a>
+      }
+    </div>
+  </nav>
+  } }
 
-  <section
-    #markdownContainer
-    [attr.aria-busy]="
-      markdownState().status === 'idle' || markdownState().status === 'loading' ? 'true' : null
-    "
-    aria-labelledby="docs-page-title"
-    class="docs-markdown">
-    @if (markdownState().status === 'loaded') {
-    <markdown [data]="markdownState().content" (ready)="decorateCodeBlocks()" />
-    }
+  <section #markdownContainer aria-labelledby="docs-page-title" class="docs-topic-body">
+    @for (block of topic().blocks; track block.id) { @switch (block.kind) { @case ('markdown') {
+    <section
+      [attr.aria-busy]="
+            markdownState(block.markdownPath).status === 'idle' || markdownState(block.markdownPath).status === 'loading'
+              ? 'true'
+              : null
+          "
+      class="docs-markdown docs-topic-block">
+      @if (markdownState(block.markdownPath).status === 'loaded') {
+      <markdown [data]="markdownState(block.markdownPath).content" (ready)="decorateCodeBlocks()" />
+      }
+    </section>
+    } @case ('example') {
+    <app-docs-topic-example [example]="block" />
+    } } }
   </section>
+
+  @if (topic().related; as relatedTopics) { @if (relatedTopics.length) {
+  <nav aria-label="Related topics" class="docs-related">
+    <span class="docs-related-label">Related topics</span>
+    <div class="docs-related-links">
+      @for (item of relatedTopics; track item.path) {
+      <a [href]="item.path" class="docs-related-link">{{ item.label }}</a>
+      }
+    </div>
+  </nav>
+  } }
 </article>
