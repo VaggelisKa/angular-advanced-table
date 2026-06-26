@@ -115,7 +115,7 @@ Generated copy resolves from locale providers. Add only the providers for packag
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
-import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table-locales';
+import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table/locale';
 
 export const appConfig: ApplicationConfig = {
   providers: [provideNatTableLocales(), provideNatTableUiLocales(), provideNatTableUtilsLocales()]

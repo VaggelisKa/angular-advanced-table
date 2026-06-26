@@ -11,7 +11,7 @@ import {
   NatTableSurface,
   NatTableToolbar,
   withNatTableHeaderActions
-} from 'ng-advanced-table-ui';
+} from 'ng-advanced-table/ui';
 
 import { buildComponentSource, buildStateObject, formatStateLiteral, omitColumnOrder } from './table-builder.util';
 import type { TableBuilderFlags } from './table-builder.util';

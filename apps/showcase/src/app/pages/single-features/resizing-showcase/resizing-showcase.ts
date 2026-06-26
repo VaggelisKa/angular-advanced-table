@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table-ui';
+import { NatTableSurface } from 'ng-advanced-table/ui';
 
 type DemoItem = {
   readonly id: string;

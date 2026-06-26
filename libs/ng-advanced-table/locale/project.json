@@ -1,0 +1,16 @@
+{
+  "name": "ng-advanced-table-locale",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "prefix": "nat",
+  "sourceRoot": "libs/ng-advanced-table/locale",
+  "tags": ["type:lib", "type:locale", "scope:public"],
+  "targets": {
+    "test": {
+      "options": {
+        "buildTarget": "ng-advanced-table:build:development",
+        "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json"
+      }
+    }
+  }
+}

@@ -586,14 +586,29 @@
   color: var(--text-soft);
 }
 
+.table-controls-surface,
 .table-shell {
   display: block;
+}
+
+.table-controls-grid {
+  display: grid;
+  gap: 14px;
 }
 
 .table-shell nat-table-scroll-control {
   display: block;
   padding: 12px 20px;
   border-top: 1px solid var(--border);
+}
+
+.demo-surface .table-card .table-controls-surface ::ng-deep .surface {
+  padding: 12px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .demo-surface .table-card .table-shell ::ng-deep .surface {

@@ -1,15 +1,11 @@
-Render metrics are optional diagnostics from `ng-advanced-table-utils`. They measure row render timing, add a synthetic metrics column, and expose a compact panel and filter. Enable them when you are tuning a heavy table or building an internal performance view.
+Render metrics are optional diagnostics from `ng-advanced-table/utils`. They measure row render timing, add a synthetic metrics column, and expose a compact panel and filter. Enable them when you are tuning a heavy table or building an internal performance view.
 
 ## Install
 
-```bash
-npm install ng-advanced-table-utils
-```
-
-Use it with the core and UI packages:
+Render metrics live in the `ng-advanced-table/utils` entry point of the single `ng-advanced-table` package — no separate install:
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils @tanstack/angular-table @angular/common @angular/aria @angular/cdk
+npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## Basic Wiring
@@ -21,8 +17,8 @@ import { Component, viewChild } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table-ui';
-import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderMetricsEvent } from 'ng-advanced-table-utils';
+import { NatTableSurface } from 'ng-advanced-table/ui';
+import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderMetricsEvent } from 'ng-advanced-table/utils';
 
 @Component({
   selector: 'app-positions-table',
@@ -59,8 +55,8 @@ export class PositionsTable {
 Use `withRenderMetricsColumn(...)` to append a synthetic render-time column. Wrap with header actions after adding synthetic columns.
 
 ```ts
-import { withNatTableHeaderActions } from 'ng-advanced-table-ui';
-import { NatTableRenderMetricsStore, withRenderMetricsColumn } from 'ng-advanced-table-utils';
+import { withNatTableHeaderActions } from 'ng-advanced-table/ui';
+import { NatTableRenderMetricsStore, withRenderMetricsColumn } from 'ng-advanced-table/utils';
 
 readonly metricsStore = new NatTableRenderMetricsStore();
 
@@ -144,10 +140,10 @@ Set `maxRetainedRowMetrics` to a higher finite value when a table needs a longer
 
 ## Locale And Labels
 
-Render-metrics copy can come from `ng-advanced-table-locales`.
+Render-metrics copy can come from `ng-advanced-table/locale`.
 
 ```ts
-import { provideNatTableUtilsLocales } from 'ng-advanced-table-locales';
+import { provideNatTableUtilsLocales } from 'ng-advanced-table/locale';
 
 providers: [
   provideNatTableUtilsLocales({

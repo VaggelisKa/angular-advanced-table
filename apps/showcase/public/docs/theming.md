@@ -124,7 +124,7 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 
 ## UI Control Tokens
 
-`ng-advanced-table-ui` controls consume the same theme. Common groups include:
+`ng-advanced-table/ui` controls consume the same theme. Common groups include:
 
 | Group          | Common tokens                                                                                                                                  |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
