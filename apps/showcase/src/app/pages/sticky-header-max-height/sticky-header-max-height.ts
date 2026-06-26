@@ -242,8 +242,8 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
 
 const preconfiguredTableState: Partial<NatTableState> = {
   columnPinning: {
-    left: ['owner'],
-    right: ['actions']
+    left: ['id'],
+    right: []
   }
 };
 

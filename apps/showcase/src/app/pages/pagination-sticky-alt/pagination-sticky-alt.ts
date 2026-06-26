@@ -257,7 +257,7 @@ export class PaginationStickyAlt {
       pageSize: 5
     },
     columnPinning: {
-      left: ['owner'],
+      left: ['id'],
       right: ['actions']
     }
   });

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 /* eslint-disable import-x/order */
 
 import { UpperCasePipe } from '@angular/common';
@@ -46,49 +45,49 @@ class OrderCode {
   public readonly code = input.required<string>();
 }
 
-@Component({
-  selector: 'app-order-status-badge',
-  styles: `
-    :host {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.42rem;
-      min-height: 1.75rem;
-      padding-inline: 0.62rem;
-      border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-      border-radius: 999px;
-      background: color-mix(in srgb, currentColor 9%, transparent);
-      color: var(--showcase-page-text-soft);
-      font-size: 0.78rem;
-      font-weight: 650;
-      line-height: 1;
-    }
+// @Component({
+//   selector: 'app-order-status-badge',
+//   styles: `
+//     :host {
+//       display: inline-flex;
+//       align-items: center;
+//       gap: 0.42rem;
+//       min-height: 1.75rem;
+//       padding-inline: 0.62rem;
+//       border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+//       border-radius: 999px;
+//       background: color-mix(in srgb, currentColor 9%, transparent);
+//       color: var(--showcase-page-text-soft);
+//       font-size: 0.78rem;
+//       font-weight: 650;
+//       line-height: 1;
+//     }
 
-    :host::before {
-      width: 0.45rem;
-      height: 0.45rem;
-      flex: 0 0 auto;
-      border-radius: 999px;
-      background: currentColor;
-      content: '';
-    }
+//     :host::before {
+//       width: 0.45rem;
+//       height: 0.45rem;
+//       flex: 0 0 auto;
+//       border-radius: 999px;
+//       background: currentColor;
+//       content: '';
+//     }
 
-    :host([data-status='Ready']) {
-      color: var(--showcase-page-positive);
-    }
+//     :host([data-status='Ready']) {
+//       color: var(--showcase-page-positive);
+//     }
 
-    :host([data-status='Review']) {
-      color: var(--showcase-page-warning);
-    }
-  `,
-  template: `<span>{{ status() }}</span>`,
-  host: {
-    '[attr.data-status]': 'status()'
-  }
-})
-class OrderStatusBadge {
-  public readonly status = input.required<MockOrderRow['status']>();
-}
+//     :host([data-status='Review']) {
+//       color: var(--showcase-page-warning);
+//     }
+//   `,
+//   template: `<span>{{ status() }}</span>`,
+//   host: {
+//     '[attr.data-status]': 'status()'
+//   }
+// })
+// class OrderStatusBadge {
+//   public readonly status = input.required<MockOrderRow['status']>();
+// }
 
 const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderActions([
   {
@@ -121,24 +120,17 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
     cell: (info) => info.getValue<string>()
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
-    enablePinning: false,
-    size: 132,
-    minSize: 108,
-    meta: {
-      label: 'Status'
-    },
-    cell: (info) =>
-      flexRenderComponent(OrderStatusBadge, {
-        inputs: {
-          status: info.getValue<MockOrderRow['status']>()
-        }
-      })
-  },
-  {
     id: 'actions',
     header: 'Actions',
+    enablePinning: false,
+    size: 50,
+    minSize: 50,
+    maxSize: 50,
+    meta: {
+      hiddenHeaderLabel: 'Row actions',
+      align: 'end',
+      headerSize: 50
+    },
     cell: (info) =>
       flexRenderComponent(NatRowActionsMenu, {
         inputs: {
