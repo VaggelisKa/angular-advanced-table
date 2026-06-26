@@ -284,6 +284,7 @@ export class StickyShowDetailedView {
       customer: false,
       owner: false,
       region: false,
+      items: false,
       updatedAt: false,
       total: false,
       actions: false

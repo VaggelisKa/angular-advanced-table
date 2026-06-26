@@ -14,6 +14,7 @@ nat-table-surface {
   gap: 2rem;
   width: 100%;
   min-width: 0;
+  padding: 0;
 }
 
 .examples-grid {
@@ -39,6 +40,7 @@ nat-table-surface {
 }
 
 .example-card-surface .description {
+  padding: 0;
   margin-top: 0;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
@@ -49,8 +51,11 @@ nat-table-surface {
 .example-card-surface footer {
   display: flex;
   justify-content: flex-end;
-  padding-top: 1.5rem;
-  margin-top: auto;
+  padding: 0.5rem;
+  background: var(--nat-table-region-background, transparent);
+  border: 1px solid var(--showcase-page-border);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
 }
 
 .example-card-surface footer button,
@@ -211,7 +216,7 @@ nat-table-surface.dialog-table-surface ::ng-deep .surface {
   --nat-table-cell-border-color: color-mix(in srgb, var(--showcase-page-border) 74%, transparent);
   --nat-table-focus-ring-color: var(--showcase-page-focus);
   --nat-table-focus-ring-width: 3px;
-  --nat-table-radius-region: 8px;
+  --nat-table-radius-region: 8px 8px 0 0;
   --nat-table-space-cell-y: 7px;
   --nat-table-space-cell-x: 9px;
   --nat-table-space-header-content-gap: 8px;
