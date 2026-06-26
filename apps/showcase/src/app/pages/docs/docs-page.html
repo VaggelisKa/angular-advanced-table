@@ -14,7 +14,12 @@
     <span class="docs-topic-toc-label">On this page</span>
     <div class="docs-topic-toc-links">
       @for (item of contents; track item.path) {
-      <a [href]="item.path" class="docs-topic-toc-link">{{ item.label }}</a>
+      <a
+        [attr.href]="tableOfContentsHref(item.path)"
+        class="docs-topic-toc-link"
+        (click)="navigateToTableOfContentsItem($event, item.path)">
+        {{ item.label }}
+      </a>
       }
     </div>
   </nav>
