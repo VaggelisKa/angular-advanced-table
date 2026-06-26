@@ -2,14 +2,14 @@ Selection and export are separate features. Selection is table state keyed by ro
 
 ## Row Selection
 
-Enable selection on the core table and add the optional checkbox column from `ng-advanced-table-ui`.
+Enable selection on the core table and add the optional checkbox column from `ng-advanced-table/ui`.
 
 ```ts
 import { Component, computed, signal } from '@angular/core';
 import type { ColumnDef, RowSelectionState } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableState } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableSelectionColumn } from 'ng-advanced-table-ui';
+import { NatTableSurface, withNatTableSelectionColumn } from 'ng-advanced-table/ui';
 
 interface ServiceRow {
   id: string;
@@ -219,7 +219,7 @@ Accessor columns opt in by default. Display columns opt out unless `meta.export.
 Use a per-button handler when one export action needs custom behavior.
 
 ```ts
-import type { NatTableExportHandler } from 'ng-advanced-table-ui';
+import type { NatTableExportHandler } from 'ng-advanced-table/ui';
 
 readonly exportSelected: NatTableExportHandler<ServiceRow> = async (context) => {
   const selection = this.rowSelection();
@@ -254,7 +254,7 @@ Use `provideNatTableExport(...)` when every export button should go through the 
 
 ```ts
 import { inject } from '@angular/core';
-import { provideNatTableExport } from 'ng-advanced-table-ui';
+import { provideNatTableExport } from 'ng-advanced-table/ui';
 
 providers: [
   provideNatTableExport<ServiceRow>(() => {

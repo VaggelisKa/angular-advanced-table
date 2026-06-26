@@ -1,0 +1,19 @@
+{
+  "name": "ng-advanced-table-ui",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "prefix": "nat",
+  "sourceRoot": "libs/ng-advanced-table/ui",
+  "tags": ["type:lib", "type:ui", "scope:public"],
+  "targets": {
+    "test": {
+      "options": {
+        "buildTarget": "ng-advanced-table:build:development",
+        "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json"
+      }
+    },
+    "stylelint": {
+      "executor": "nx-stylelint:lint"
+    }
+  }
+}

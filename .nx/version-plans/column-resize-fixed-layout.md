@@ -1,6 +1,5 @@
 ---
 ng-advanced-table: minor
-ng-advanced-table-ui: minor
 ---
 
 Add a `columnSizingMode` input (`'fill'` default, or `'fixed'`) to the table surface and a matching layout mode in the table. `'fill'` keeps the existing behavior where columns stretch to fill the container. `'fixed'` makes column widths authoritative via `table-layout: fixed` and a generated `<colgroup>`, sizing the table to the exact sum of its columns so the region scrolls horizontally — which makes pointer and keyboard resizing pixel-exact (the dragged edge tracks the cursor) and the drag guide land exactly where the column edge will.

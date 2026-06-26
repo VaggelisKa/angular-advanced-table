@@ -1,6 +1,5 @@
 ---
 ng-advanced-table: patch
-ng-advanced-table-locales: patch
 ---
 
 Refine column resizing for accessibility and correctness:

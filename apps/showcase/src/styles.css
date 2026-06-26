@@ -284,11 +284,17 @@ input {
 }
 
 .showcase-page .search-panel,
-.showcase-page .visibility-panel {
+.showcase-page .visibility-panel,
+.showcase-page .table-controls-grid {
   padding: 12px 20px;
   margin: 0;
   background: var(--showcase-page-surface);
   border-bottom: 1px solid var(--showcase-page-border);
+}
+
+.showcase-page .table-controls-grid {
+  display: grid;
+  gap: 14px;
 }
 
 .showcase-page nat-table-surface {
@@ -1128,6 +1134,7 @@ input {
   .showcase-page .config-options,
   .showcase-page .search-panel,
   .showcase-page .visibility-panel,
+  .showcase-page .table-controls-grid,
   .showcase-page .code-card-header,
   .showcase-page .code-editor {
     padding-inline: 14px;
