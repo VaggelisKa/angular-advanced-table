@@ -21,6 +21,8 @@ import type {
   NatTableState
 } from 'ng-advanced-table';
 
+import { hasNatTableStateValueChanged } from '../../shared/table-state-value-equality';
+
 const serializeSelectedRowIds = (selection: NatTableState['rowSelection']): string =>
   Object.keys(selection)
     .filter((rowId) => selection[rowId])
@@ -42,17 +44,15 @@ type NatTableStateDiff = {
 /** A state-slice changed flag paired with the emit action for that slice. */
 type SliceEmitter = readonly [changed: boolean, emit: () => void];
 
-const jsonChanged = (a: unknown, b: unknown): boolean => JSON.stringify(a) !== JSON.stringify(b);
-
 const computeNatTableStateDiff = (prev: NatTableState, next: NatTableState): NatTableStateDiff => ({
-  sortingChanged: jsonChanged(prev.sorting, next.sorting),
+  sortingChanged: hasNatTableStateValueChanged(prev.sorting, next.sorting),
   globalFilterChanged: prev.globalFilter !== next.globalFilter,
-  columnFiltersChanged: jsonChanged(prev.columnFilters, next.columnFilters),
-  columnVisibilityChanged: jsonChanged(prev.columnVisibility, next.columnVisibility),
-  columnOrderChanged: jsonChanged(prev.columnOrder, next.columnOrder),
-  columnPinningChanged: jsonChanged(prev.columnPinning, next.columnPinning),
-  columnSizingChanged: jsonChanged(prev.columnSizing, next.columnSizing),
-  paginationChanged: jsonChanged(prev.pagination, next.pagination),
+  columnFiltersChanged: hasNatTableStateValueChanged(prev.columnFilters, next.columnFilters),
+  columnVisibilityChanged: hasNatTableStateValueChanged(prev.columnVisibility, next.columnVisibility),
+  columnOrderChanged: hasNatTableStateValueChanged(prev.columnOrder, next.columnOrder),
+  columnPinningChanged: hasNatTableStateValueChanged(prev.columnPinning, next.columnPinning),
+  columnSizingChanged: hasNatTableStateValueChanged(prev.columnSizing, next.columnSizing),
+  paginationChanged: hasNatTableStateValueChanged(prev.pagination, next.pagination),
   rowSelectionChanged: serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(next.rowSelection)
 });
 
