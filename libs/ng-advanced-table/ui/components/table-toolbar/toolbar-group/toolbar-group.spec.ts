@@ -24,7 +24,7 @@ class GroupHost {
   public readonly groupDisabled = signal(false);
 }
 
-describe('NatToolbarGroup', () => {
+describe('FEATURE: NatToolbarGroup', () => {
   let fixture: ComponentFixture<GroupHost>;
 
   beforeEach(async () => {
@@ -54,59 +54,79 @@ describe('NatToolbarGroup', () => {
     return event;
   }
 
-  it('renders a labelled role="group"', () => {
-    const group = element('density-group');
+  describe('GIVEN: renders a labelled role="group"', () => {
+    describe('WHEN: renders a labelled role="group"', () => {
+      it('THEN: it renders a labelled role="group"', () => {
+        const group = element('density-group');
 
-    expect(group.getAttribute('role')).toBe('group');
-    expect(group.getAttribute('aria-label')).toBe('View density');
+        expect(group.getAttribute('role')).toBe('group');
+        expect(group.getAttribute('aria-label')).toBe('View density');
+      });
+    });
   });
 
-  it('projects into its slot: after the first spacer, before the second', () => {
-    const group = element('density-group');
-    const toolbar = group.closest('nat-table-toolbar') as HTMLElement;
-    const spacers = Array.from(toolbar.querySelectorAll('.nat-toolbar-spacer'));
+  describe('GIVEN: projects into its slot: after the first spacer, before the second', () => {
+    describe('WHEN: projects into its slot: after the first spacer, before the second', () => {
+      it('THEN: it projects into its slot: after the first spacer, before the second', () => {
+        const group = element('density-group');
+        const toolbar = group.closest('nat-table-toolbar') as HTMLElement;
+        const spacers = Array.from(toolbar.querySelectorAll('.nat-toolbar-spacer'));
 
-    expect(spacers).toHaveLength(2);
-    expect(Boolean(spacers[0].compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
-    expect(Boolean(group.compareDocumentPosition(spacers[1]) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+        expect(spacers).toHaveLength(2);
+        expect(Boolean(spacers[0].compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+        expect(Boolean(group.compareDocumentPosition(spacers[1]) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+      });
+    });
   });
 
-  it('keeps Left/Right linear across solo items and group members', async () => {
-    await focusItem('solo-start');
+  describe('GIVEN: keeps Left/Right linear across solo items and group members', () => {
+    describe('WHEN: keeps Left/Right linear across solo items and group members', () => {
+      it('THEN: it keeps Left/Right linear across solo items and group members', async () => {
+        await focusItem('solo-start');
 
-    pressKey(element('solo-start'), 'ArrowRight');
-    expect(document.activeElement).toBe(element('compact'));
+        pressKey(element('solo-start'), 'ArrowRight');
+        expect(document.activeElement).toBe(element('compact'));
 
-    pressKey(element('compact'), 'ArrowRight');
-    expect(document.activeElement).toBe(element('comfortable'));
+        pressKey(element('compact'), 'ArrowRight');
+        expect(document.activeElement).toBe(element('comfortable'));
 
-    pressKey(element('comfortable'), 'ArrowRight');
-    expect(document.activeElement).toBe(element('solo-end'));
+        pressKey(element('comfortable'), 'ArrowRight');
+        expect(document.activeElement).toBe(element('solo-end'));
+      });
+    });
   });
 
-  it('cycles within the group on Up/Down (Aria group navigation)', async () => {
-    await focusItem('compact');
+  describe('GIVEN: cycles within the group on Up/Down (Aria group navigation)', () => {
+    describe('WHEN: cycles within the group on Up/Down (Aria group navigation)', () => {
+      it('THEN: it cycles within the group on Up/Down (Aria group navigation)', async () => {
+        await focusItem('compact');
 
-    pressKey(element('compact'), 'ArrowDown');
-    expect(document.activeElement).toBe(element('comfortable'));
+        pressKey(element('compact'), 'ArrowDown');
+        expect(document.activeElement).toBe(element('comfortable'));
 
-    // Next widget (solo-end) is outside the group — Down wraps to its first member.
-    pressKey(element('comfortable'), 'ArrowDown');
-    expect(document.activeElement).toBe(element('compact'));
+        // Next widget (solo-end) is outside the group — Down wraps to its first member.
+        pressKey(element('comfortable'), 'ArrowDown');
+        expect(document.activeElement).toBe(element('compact'));
 
-    pressKey(element('compact'), 'ArrowUp');
-    expect(document.activeElement).toBe(element('comfortable'));
+        pressKey(element('compact'), 'ArrowUp');
+        expect(document.activeElement).toBe(element('comfortable'));
+      });
+    });
   });
 
-  it('soft-disables every member through the stock group directive', async () => {
-    expect(element('compact').getAttribute('aria-disabled')).toBe('false');
+  describe('GIVEN: soft-disables every member through the stock group directive', () => {
+    describe('WHEN: soft-disables every member through the stock group directive', () => {
+      it('THEN: it soft-disables every member through the stock group directive', async () => {
+        expect(element('compact').getAttribute('aria-disabled')).toBe('false');
 
-    fixture.componentInstance.groupDisabled.set(true);
-    fixture.detectChanges();
-    await fixture.whenStable();
+        fixture.componentInstance.groupDisabled.set(true);
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-    expect(element('compact').getAttribute('aria-disabled')).toBe('true');
-    expect(element('comfortable').getAttribute('aria-disabled')).toBe('true');
-    expect(element('solo-end').getAttribute('aria-disabled')).toBe('false');
+        expect(element('compact').getAttribute('aria-disabled')).toBe('true');
+        expect(element('comfortable').getAttribute('aria-disabled')).toBe('true');
+        expect(element('solo-end').getAttribute('aria-disabled')).toBe('false');
+      });
+    });
   });
 });

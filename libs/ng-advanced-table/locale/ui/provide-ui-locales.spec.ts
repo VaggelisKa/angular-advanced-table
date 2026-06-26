@@ -20,86 +20,110 @@ import type {
 
 const localeOf = (uiIntl: NatTableUiIntlConfig, localeId: string): NatTableUiIntl | undefined => uiIntl.locales?.[localeId];
 
-describe('UI locale toolbar slice', () => {
+describe('FEATURE: UI locale toolbar slice', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
   });
 
-  it('ships a complete toolbar slice in every built-in UI locale', () => {
-    const localeIds = Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES);
+  describe('GIVEN: ships a complete toolbar slice in every built-in UI locale', () => {
+    describe('WHEN: ships a complete toolbar slice in every built-in UI locale', () => {
+      it('THEN: it ships a complete toolbar slice in every built-in UI locale', () => {
+        const localeIds = Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES);
 
-    expect(localeIds.length).toBeGreaterThan(0);
+        expect(localeIds.length).toBeGreaterThan(0);
 
-    for (const localeId of localeIds) {
-      const toolbar = NAT_TABLE_BUILT_IN_UI_LOCALES[localeId].toolbar;
+        for (const localeId of localeIds) {
+          const toolbar = NAT_TABLE_BUILT_IN_UI_LOCALES[localeId].toolbar;
 
-      expect(toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
-    }
-  });
-
-  it('locks the English toolbar copy', () => {
-    const toolbar = NAT_TABLE_BUILT_IN_UI_LOCALES['en'].toolbar;
-
-    expect(toolbar?.toolbarLabel).toBe('Table toolbar');
-  });
-
-  it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))(
-    'keeps the toolbar slice for %s through provideNatTableUiLocales()',
-    (localeId) => {
-      TestBed.configureTestingModule({
-        providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()]
+          expect(toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
+        }
       });
-
-      const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
-
-      expect(localeOf(uiIntl, localeId)?.toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
-    }
-  );
-
-  it('falls back to English toolbar copy for unknown locales', () => {
-    const resolved = resolveNatTableUiIntl(NAT_TABLE_UI_DEFAULT_INTL, 'zz');
-
-    expect(resolved.toolbar?.toolbarLabel).toBe('Table toolbar');
+    });
   });
 
-  it('lets a locale dictionary override English toolbar copy', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableUiLocales({
-          da: {
-            toolbar: {
-              toolbarLabel: 'Tabel værktøjslinje'
-            }
-          }
-        })
-      ]
+  describe('GIVEN: locks the English toolbar copy', () => {
+    describe('WHEN: locks the English toolbar copy', () => {
+      it('THEN: it locks the English toolbar copy', () => {
+        const toolbar = NAT_TABLE_BUILT_IN_UI_LOCALES['en'].toolbar;
+
+        expect(toolbar?.toolbarLabel).toBe('Table toolbar');
+      });
     });
-
-    const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'da');
-
-    expect(resolved.toolbar?.toolbarLabel).toBe('Tabel værktøjslinje');
   });
 
-  it('lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideNatTableUiIntl({
-          toolbar: {
-            toolbarLabel: 'Provider toolbar'
-          }
-        })
-      ]
+  describe('GIVEN: keeps the toolbar slice for %s through provideNatTableUiLocales()', () => {
+    describe('WHEN: keeps the toolbar slice for %s through provideNatTableUiLocales()', () => {
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))(
+        'THEN: it keeps the toolbar slice for %s through provideNatTableUiLocales()',
+        (localeId) => {
+          TestBed.configureTestingModule({
+            providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()]
+          });
+
+          const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
+
+          expect(localeOf(uiIntl, localeId)?.toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
+        }
+      );
     });
+  });
 
-    const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'en');
+  describe('GIVEN: falls back to English toolbar copy for unknown locales', () => {
+    describe('WHEN: falls back to English toolbar copy for unknown locales', () => {
+      it('THEN: it falls back to English toolbar copy for unknown locales', () => {
+        const resolved = resolveNatTableUiIntl(NAT_TABLE_UI_DEFAULT_INTL, 'zz');
 
-    expect(resolved.toolbar?.toolbarLabel).toBe('Provider toolbar');
+        expect(resolved.toolbar?.toolbarLabel).toBe('Table toolbar');
+      });
+    });
+  });
+
+  describe('GIVEN: lets a locale dictionary override English toolbar copy', () => {
+    describe('WHEN: lets a locale dictionary override English toolbar copy', () => {
+      it('THEN: it lets a locale dictionary override English toolbar copy', () => {
+        TestBed.configureTestingModule({
+          providers: [
+            provideZonelessChangeDetection(),
+            provideNatTableUiLocales({
+              da: {
+                toolbar: {
+                  toolbarLabel: 'Tabel værktøjslinje'
+                }
+              }
+            })
+          ]
+        });
+
+        const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'da');
+
+        expect(resolved.toolbar?.toolbarLabel).toBe('Tabel værktøjslinje');
+      });
+    });
+  });
+
+  describe('GIVEN: lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
+    describe('WHEN: lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
+      it('THEN: it lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
+        TestBed.configureTestingModule({
+          providers: [
+            provideZonelessChangeDetection(),
+            provideNatTableUiIntl({
+              toolbar: {
+                toolbarLabel: 'Provider toolbar'
+              }
+            })
+          ]
+        });
+
+        const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'en');
+
+        expect(resolved.toolbar?.toolbarLabel).toBe('Provider toolbar');
+      });
+    });
   });
 });
 
-describe('English companion-control accessibility copy', () => {
+describe('FEATURE: English companion-control accessibility copy', () => {
   const english = NAT_TABLE_BUILT_IN_UI_LOCALES['en'];
   const pageSizeContext = {
     pageSizeValue: 25,
@@ -138,92 +162,116 @@ describe('English companion-control accessibility copy', () => {
     pinnedSide: 'left' as const
   };
 
-  describe('column visibility', () => {
+  describe('GIVEN: column visibility', () => {
     let labels: NatTableAccessibilityColumnVisibilityLabels | undefined;
 
     beforeEach(() => {
       labels = english.columnVisibility?.accessibilityLabels;
     });
 
-    it('locks the toggle-column aria label', () => {
-      expect(labels?.toggleColumnAriaLabel?.(visibilityContext)).toBe('Service shown. Hide column');
+    describe('WHEN: locks the toggle-column aria label', () => {
+      it('THEN: it locks the toggle-column aria label', () => {
+        expect(labels?.toggleColumnAriaLabel?.(visibilityContext)).toBe('Service shown. Hide column');
+      });
     });
   });
 
-  describe('page size', () => {
+  describe('GIVEN: page size', () => {
     let labels: NatTableAccessibilityPageSizeLabels | undefined;
 
     beforeEach(() => {
       labels = english.pageSize?.accessibilityLabels;
     });
 
-    it('locks the page-size option text', () => {
-      expect(labels?.pageSizeOptionText?.(pageSizeContext)).toBe('25 rows');
+    describe('WHEN: locks the page-size option text', () => {
+      it('THEN: it locks the page-size option text', () => {
+        expect(labels?.pageSizeOptionText?.(pageSizeContext)).toBe('25 rows');
+      });
     });
 
-    it('locks the page-size option aria label', () => {
-      expect(labels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+    describe('WHEN: locks the page-size option aria label', () => {
+      it('THEN: it locks the page-size option aria label', () => {
+        expect(labels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+      });
     });
   });
 
-  describe('pager', () => {
+  describe('GIVEN: pager', () => {
     let labels: NatTableAccessibilityPagerLabels | undefined;
 
     beforeEach(() => {
       labels = english.pager?.accessibilityLabels;
     });
 
-    it('locks the page indicator', () => {
-      expect(labels?.pageIndicator?.(pagerContext)).toBe('Page 2 of 5');
+    describe('WHEN: locks the page indicator', () => {
+      it('THEN: it locks the page indicator', () => {
+        expect(labels?.pageIndicator?.(pagerContext)).toBe('Page 2 of 5');
+      });
     });
   });
 
-  describe('header actions', () => {
+  describe('GIVEN: header actions', () => {
     let labels: NatTableAccessibilityHeaderActionLabels | undefined;
 
     beforeEach(() => {
       labels = english.headerActions?.accessibilityLabels;
     });
 
-    it('locks the unsorted sort-button label', () => {
-      expect(
-        labels?.sortButton?.({
-          ...sortedHeaderContext,
-          sortState: 'none',
-          sortPriority: null,
-          sortCount: 0
-        })
-      ).toBe('Sort by Service');
+    describe('WHEN: locks the unsorted sort-button label', () => {
+      it('THEN: it locks the unsorted sort-button label', () => {
+        expect(
+          labels?.sortButton?.({
+            ...sortedHeaderContext,
+            sortState: 'none',
+            sortPriority: null,
+            sortCount: 0
+          })
+        ).toBe('Sort by Service');
+      });
     });
 
-    it('locks the sorted sort-button label', () => {
-      expect(labels?.sortButton?.(sortedHeaderContext)).toBe(
-        'Service sorted in ascending order, sort priority 1 of 2. Change sorting'
-      );
+    describe('WHEN: locks the sorted sort-button label', () => {
+      it('THEN: it locks the sorted sort-button label', () => {
+        expect(labels?.sortButton?.(sortedHeaderContext)).toBe(
+          'Service sorted in ascending order, sort priority 1 of 2. Change sorting'
+        );
+      });
     });
 
-    it('locks the menu-button label', () => {
-      expect(labels?.menuButton?.({ label: 'Service' })).toBe('Open column actions for Service column');
+    describe('WHEN: locks the menu-button label', () => {
+      it('THEN: it locks the menu-button label', () => {
+        expect(labels?.menuButton?.({ label: 'Service' })).toBe('Open column actions for Service column');
+      });
     });
 
-    it('locks the menu label', () => {
-      expect(labels?.menuLabel?.({ label: 'Service' })).toBe('Column actions for Service column');
+    describe('WHEN: locks the menu label', () => {
+      it('THEN: it locks the menu label', () => {
+        expect(labels?.menuLabel?.({ label: 'Service' })).toBe('Column actions for Service column');
+      });
     });
 
-    it('locks the pin-button label', () => {
-      expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe('Pin left: Service column');
+    describe('WHEN: locks the pin-button label', () => {
+      it('THEN: it locks the pin-button label', () => {
+        expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe('Pin left: Service column');
+      });
     });
 
-    it('locks the pin-button text', () => {
-      expect(labels?.pinButtonText?.(pinnedHeaderContext)).toBe('Unpin left');
+    describe('WHEN: locks the pin-button text', () => {
+      it('THEN: it locks the pin-button text', () => {
+        expect(labels?.pinButtonText?.(pinnedHeaderContext)).toBe('Unpin left');
+      });
     });
 
-    it('locks the move-button label', () => {
-      expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe('Move Service column right');
+    describe('WHEN: locks the move-button label', () => {
+      it('THEN: it locks the move-button label', () => {
+        expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe('Move Service column right');
+      });
     });
 
-    it('locks the move-button text', () => {
-      expect(labels?.moveButtonText?.({ label: 'Service', direction: 'right' })).toBe('Move right');
+    describe('WHEN: locks the move-button text', () => {
+      it('THEN: it locks the move-button text', () => {
+        expect(labels?.moveButtonText?.({ label: 'Service', direction: 'right' })).toBe('Move right');
+      });
     });
   });
 });

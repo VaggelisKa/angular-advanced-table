@@ -55,7 +55,7 @@ class Host {
   }
 }
 
-describe('TableSearch (user-defined)', () => {
+describe('FEATURE: TableSearch (user-defined)', () => {
   let fixture: ComponentFixture<Host>;
   let host: Host;
 
@@ -81,39 +81,51 @@ describe('TableSearch (user-defined)', () => {
     await fixture.whenStable();
   });
 
-  it('registers with the table so global filtering is enabled', () => {
-    fixture.detectChanges();
+  describe('GIVEN: registers with the table so global filtering is enabled', () => {
+    describe('WHEN: registers with the table so global filtering is enabled', () => {
+      it('THEN: it registers with the table so global filtering is enabled', () => {
+        fixture.detectChanges();
 
-    expect(searchInput()).toBeTruthy();
+        expect(searchInput()).toBeTruthy();
+      });
+    });
   });
 
-  it('associates the input with the table element via aria-controls', () => {
-    fixture.detectChanges();
+  describe('GIVEN: associates the input with the table element via aria-controls', () => {
+    describe('WHEN: associates the input with the table element via aria-controls', () => {
+      it('THEN: it associates the input with the table element via aria-controls', () => {
+        fixture.detectChanges();
 
-    const element = fixture.nativeElement as HTMLElement;
-    const table = element.querySelector<HTMLTableElement>('nat-table table');
+        const element = fixture.nativeElement as HTMLElement;
+        const table = element.querySelector<HTMLTableElement>('nat-table table');
 
-    if (!table) {
-      throw new Error('Expected the table element to render.');
-    }
+        if (!table) {
+          throw new Error('Expected the table element to render.');
+        }
 
-    expect(searchInput().getAttribute('aria-controls')).toBe(table.id);
+        expect(searchInput().getAttribute('aria-controls')).toBe(table.id);
+      });
+    });
   });
 
-  it('filters rows and resets pagination to the first page on input', async () => {
-    fixture.detectChanges();
-    const input = searchInput();
+  describe('GIVEN: filters rows and resets pagination to the first page on input', () => {
+    describe('WHEN: filters rows and resets pagination to the first page on input', () => {
+      it('THEN: it filters rows and resets pagination to the first page on input', async () => {
+        fixture.detectChanges();
+        const input = searchInput();
 
-    input.value = 'gamma';
-    input.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+        input.value = 'gamma';
+        input.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-    const element = fixture.nativeElement as HTMLElement;
+        const element = fixture.nativeElement as HTMLElement;
 
-    expect(host.tableState().globalFilter).toBe('gamma');
-    expect(host.tableState().pagination?.pageIndex).toBe(0);
-    expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
+        expect(host.tableState().globalFilter).toBe('gamma');
+        expect(host.tableState().pagination?.pageIndex).toBe(0);
+        expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
+      });
+    });
   });
 });

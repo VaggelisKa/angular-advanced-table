@@ -34,7 +34,7 @@ function pressKey(target: HTMLElement, key: string, modifiers: Partial<KeyboardE
   return event;
 }
 
-describe('NatTableToolbar roving tabindex', () => {
+describe('FEATURE: NatTableToolbar roving tabindex', () => {
   let fixture: ComponentFixture<RovingToolbarHost>;
 
   beforeEach(async () => {
@@ -50,24 +50,32 @@ describe('NatTableToolbar roving tabindex', () => {
     return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
-  it('gives the first VISUAL stop the tab stop (start group before end group)', () => {
-    expect(element('start-a').getAttribute('tabindex')).toBe('0');
-    expect(element('text-entry').getAttribute('tabindex')).toBe('-1');
-    expect(element('end-a').getAttribute('tabindex')).toBe('-1');
-    expect(element('end-b').getAttribute('tabindex')).toBe('-1');
+  describe('GIVEN: gives the first VISUAL stop the tab stop (start group before end group)', () => {
+    describe('WHEN: gives the first VISUAL stop the tab stop (start group before end group)', () => {
+      it('THEN: it gives the first VISUAL stop the tab stop (start group before end group)', () => {
+        expect(element('start-a').getAttribute('tabindex')).toBe('0');
+        expect(element('text-entry').getAttribute('tabindex')).toBe('-1');
+        expect(element('end-a').getAttribute('tabindex')).toBe('-1');
+        expect(element('end-b').getAttribute('tabindex')).toBe('-1');
+      });
+    });
   });
 
-  it('moves the tab stop to the item that receives focus', async () => {
-    element('end-a').focus();
-    fixture.detectChanges();
-    await fixture.whenStable();
+  describe('GIVEN: moves the tab stop to the item that receives focus', () => {
+    describe('WHEN: moves the tab stop to the item that receives focus', () => {
+      it('THEN: it moves the tab stop to the item that receives focus', async () => {
+        element('end-a').focus();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-    expect(element('end-a').getAttribute('tabindex')).toBe('0');
-    expect(element('start-a').getAttribute('tabindex')).toBe('-1');
+        expect(element('end-a').getAttribute('tabindex')).toBe('0');
+        expect(element('start-a').getAttribute('tabindex')).toBe('-1');
+      });
+    });
   });
 });
 
-describe('NatTableToolbar keyboard navigation', () => {
+describe('FEATURE: NatTableToolbar keyboard navigation', () => {
   let fixture: ComponentFixture<RovingToolbarHost>;
 
   beforeEach(async () => {
@@ -89,62 +97,86 @@ describe('NatTableToolbar keyboard navigation', () => {
     await fixture.whenStable();
   }
 
-  it('ArrowRight moves focus to the next visual stop and prevents default', async () => {
-    await focusItem('start-a');
-    const event = pressKey(element('start-a'), 'ArrowRight');
+  describe('GIVEN: ArrowRight moves focus to the next visual stop and prevents default', () => {
+    describe('WHEN: ArrowRight moves focus to the next visual stop and prevents default', () => {
+      it('THEN: it ArrowRight moves focus to the next visual stop and prevents default', async () => {
+        await focusItem('start-a');
+        const event = pressKey(element('start-a'), 'ArrowRight');
 
-    expect(document.activeElement).toBe(element('text-entry'));
-    expect(event.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(element('text-entry'));
+        expect(event.defaultPrevented).toBe(true);
+      });
+    });
   });
 
-  it('ArrowRight wraps from the last stop to the first', async () => {
-    await focusItem('end-b');
-    pressKey(element('end-b'), 'ArrowRight');
+  describe('GIVEN: ArrowRight wraps from the last stop to the first', () => {
+    describe('WHEN: ArrowRight wraps from the last stop to the first', () => {
+      it('THEN: it ArrowRight wraps from the last stop to the first', async () => {
+        await focusItem('end-b');
+        pressKey(element('end-b'), 'ArrowRight');
 
-    expect(document.activeElement).toBe(element('start-a'));
+        expect(document.activeElement).toBe(element('start-a'));
+      });
+    });
   });
 
-  it('ArrowLeft wraps from the first stop to the last', async () => {
-    await focusItem('start-a');
-    pressKey(element('start-a'), 'ArrowLeft');
+  describe('GIVEN: ArrowLeft wraps from the first stop to the last', () => {
+    describe('WHEN: ArrowLeft wraps from the first stop to the last', () => {
+      it('THEN: it ArrowLeft wraps from the first stop to the last', async () => {
+        await focusItem('start-a');
+        pressKey(element('start-a'), 'ArrowLeft');
 
-    expect(document.activeElement).toBe(element('end-b'));
+        expect(document.activeElement).toBe(element('end-b'));
+      });
+    });
   });
 
-  it('Home and End jump to the first and last visual stops', async () => {
-    await focusItem('end-a');
-    pressKey(element('end-a'), 'Home');
-    expect(document.activeElement).toBe(element('start-a'));
+  describe('GIVEN: Home and End jump to the first and last visual stops', () => {
+    describe('WHEN: Home and End jump to the first and last visual stops', () => {
+      it('THEN: it Home and End jump to the first and last visual stops', async () => {
+        await focusItem('end-a');
+        pressKey(element('end-a'), 'Home');
+        expect(document.activeElement).toBe(element('start-a'));
 
-    await focusItem('end-a');
-    pressKey(element('end-a'), 'End');
-    expect(document.activeElement).toBe(element('end-b'));
+        await focusItem('end-a');
+        pressKey(element('end-a'), 'End');
+        expect(document.activeElement).toBe(element('end-b'));
+      });
+    });
   });
 
-  it('ignores arrows carrying modifier keys', async () => {
-    await focusItem('start-a');
-    const event = pressKey(element('start-a'), 'ArrowRight', { ctrlKey: true });
+  describe('GIVEN: ignores arrows carrying modifier keys', () => {
+    describe('WHEN: ignores arrows carrying modifier keys', () => {
+      it('THEN: it ignores arrows carrying modifier keys', async () => {
+        await focusItem('start-a');
+        const event = pressKey(element('start-a'), 'ArrowRight', { ctrlKey: true });
 
-    expect(document.activeElement).toBe(element('start-a'));
-    expect(event.defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(element('start-a'));
+        expect(event.defaultPrevented).toBe(false);
+      });
+    });
   });
 
-  it('does not intercept arrows or Home/End while focus is inside a text input', async () => {
-    await focusItem('text-entry');
+  describe('GIVEN: does not intercept arrows or Home/End while focus is inside a text input', () => {
+    describe('WHEN: does not intercept arrows or Home/End while focus is inside a text input', () => {
+      it('THEN: it does not intercept arrows or Home/End while focus is inside a text input', async () => {
+        await focusItem('text-entry');
 
-    const arrowEvent = pressKey(element('text-entry'), 'ArrowRight');
+        const arrowEvent = pressKey(element('text-entry'), 'ArrowRight');
 
-    expect(document.activeElement).toBe(element('text-entry'));
-    expect(arrowEvent.defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(element('text-entry'));
+        expect(arrowEvent.defaultPrevented).toBe(false);
 
-    const homeEvent = pressKey(element('text-entry'), 'Home');
+        const homeEvent = pressKey(element('text-entry'), 'Home');
 
-    expect(document.activeElement).toBe(element('text-entry'));
-    expect(homeEvent.defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(element('text-entry'));
+        expect(homeEvent.defaultPrevented).toBe(false);
+      });
+    });
   });
 });
 
-describe('NatTableToolbar keyboard navigation (RTL)', () => {
+describe('FEATURE: NatTableToolbar keyboard navigation (RTL)', () => {
   let fixture: ComponentFixture<RovingToolbarHost>;
 
   beforeEach(async () => {
@@ -171,23 +203,31 @@ describe('NatTableToolbar keyboard navigation (RTL)', () => {
     return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
-  it('ArrowLeft moves to the NEXT visual stop in RTL', async () => {
-    element('start-a').focus();
-    fixture.detectChanges();
-    await fixture.whenStable();
+  describe('GIVEN: ArrowLeft moves to the NEXT visual stop in RTL', () => {
+    describe('WHEN: ArrowLeft moves to the NEXT visual stop in RTL', () => {
+      it('THEN: it ArrowLeft moves to the NEXT visual stop in RTL', async () => {
+        element('start-a').focus();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-    pressKey(element('start-a'), 'ArrowLeft');
+        pressKey(element('start-a'), 'ArrowLeft');
 
-    expect(document.activeElement).toBe(element('text-entry'));
+        expect(document.activeElement).toBe(element('text-entry'));
+      });
+    });
   });
 
-  it('ArrowRight moves to the PREVIOUS visual stop in RTL', async () => {
-    element('end-a').focus();
-    fixture.detectChanges();
-    await fixture.whenStable();
+  describe('GIVEN: ArrowRight moves to the PREVIOUS visual stop in RTL', () => {
+    describe('WHEN: ArrowRight moves to the PREVIOUS visual stop in RTL', () => {
+      it('THEN: it ArrowRight moves to the PREVIOUS visual stop in RTL', async () => {
+        element('end-a').focus();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-    pressKey(element('end-a'), 'ArrowRight');
+        pressKey(element('end-a'), 'ArrowRight');
 
-    expect(document.activeElement).toBe(element('text-entry'));
+        expect(document.activeElement).toBe(element('text-entry'));
+      });
+    });
   });
 });

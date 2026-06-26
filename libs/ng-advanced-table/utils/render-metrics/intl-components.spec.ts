@@ -115,7 +115,7 @@ class RenderMetricsIntlHost {
   }
 }
 
-describe('render metrics intl components', () => {
+describe('FEATURE: render metrics intl components', () => {
   let fixture: ComponentFixture<RenderMetricsIntlHost>;
   let host: RenderMetricsIntlHost;
 
@@ -129,62 +129,70 @@ describe('render metrics intl components', () => {
     host = fixture.componentInstance;
   });
 
-  it('uses provider render-metrics labels and lets component inputs override them', async () => {
-    await fixture.whenStable();
+  describe('GIVEN: uses provider render-metrics labels and lets component inputs override them', () => {
+    describe('WHEN: uses provider render-metrics labels and lets component inputs override them', () => {
+      it('THEN: it uses provider render-metrics labels and lets component inputs override them', async () => {
+        await fixture.whenStable();
 
-    const nativeElement = fixture.nativeElement as HTMLElement;
-    const panel = nativeElement.querySelector('.render-kpi') as HTMLElement;
-    const duration = nativeElement.querySelector('.render-kpi strong') as HTMLElement;
-    const detail = nativeElement.querySelector('.render-kpi-detail') as HTMLElement;
-    const filterHeading = nativeElement.querySelector('.control-label') as HTMLElement;
-    const filterCaption = nativeElement.querySelector('.control-caption') as HTMLElement;
-    const filterGroup = nativeElement.querySelector('.chip-row') as HTMLElement;
-    const firstChip = nativeElement.querySelector('.render-chip') as HTMLButtonElement;
+        const nativeElement = fixture.nativeElement as HTMLElement;
+        const panel = nativeElement.querySelector('.render-kpi') as HTMLElement;
+        const duration = nativeElement.querySelector('.render-kpi strong') as HTMLElement;
+        const detail = nativeElement.querySelector('.render-kpi-detail') as HTMLElement;
+        const filterHeading = nativeElement.querySelector('.control-label') as HTMLElement;
+        const filterCaption = nativeElement.querySelector('.control-caption') as HTMLElement;
+        const filterGroup = nativeElement.querySelector('.chip-row') as HTMLElement;
+        const firstChip = nativeElement.querySelector('.render-chip') as HTMLButtonElement;
 
-    expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
-    expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
-    expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
-    expect(filterHeading.textContent.trim()).toBe('Provider render speed');
-    expect(filterCaption.textContent.trim()).toBe('Provider n1 visible rows');
-    expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
-    expect(firstChip.textContent).toContain('Provider all');
-    expect(firstChip.textContent).toContain('Provider latest');
+        expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
+        expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
+        expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
+        expect(filterHeading.textContent.trim()).toBe('Provider render speed');
+        expect(filterCaption.textContent.trim()).toBe('Provider n1 visible rows');
+        expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
+        expect(firstChip.textContent).toContain('Provider all');
+        expect(firstChip.textContent).toContain('Provider latest');
 
-    host.panelLabels.set({
-      ariaLabel: 'Input row render sample',
-      toneLabel: () => 'Input tone'
+        host.panelLabels.set({
+          ariaLabel: 'Input row render sample',
+          toneLabel: () => 'Input tone'
+        });
+        host.filterLabels.set({
+          heading: 'Input render speed'
+        });
+        await fixture.whenStable();
+
+        expect(panel.getAttribute('aria-label')).toBe('Input row render sample');
+        expect(detail.textContent.trim()).toBe('Input tone · Provider n1 rows sampled');
+        expect(filterHeading.textContent.trim()).toBe('Input render speed');
+        expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
+      });
     });
-    host.filterLabels.set({
-      heading: 'Input render speed'
-    });
-    await fixture.whenStable();
-
-    expect(panel.getAttribute('aria-label')).toBe('Input row render sample');
-    expect(detail.textContent.trim()).toBe('Input tone · Provider n1 rows sampled');
-    expect(filterHeading.textContent.trim()).toBe('Input render speed');
-    expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
   });
 
-  it('uses the table locale for panel labels unless the panel locale input is set', async () => {
-    host.controllerLocale.set('qa');
+  describe('GIVEN: uses the table locale for panel labels unless the panel locale input is set', () => {
+    describe('WHEN: uses the table locale for panel labels unless the panel locale input is set', () => {
+      it('THEN: it uses the table locale for panel labels unless the panel locale input is set', async () => {
+        host.controllerLocale.set('qa');
 
-    await fixture.whenStable();
+        await fixture.whenStable();
 
-    const nativeElement = fixture.nativeElement as HTMLElement;
-    const panel = nativeElement.querySelector('.render-kpi') as HTMLElement;
-    const duration = nativeElement.querySelector('.render-kpi strong') as HTMLElement;
-    const detail = nativeElement.querySelector('.render-kpi-detail') as HTMLElement;
+        const nativeElement = fixture.nativeElement as HTMLElement;
+        const panel = nativeElement.querySelector('.render-kpi') as HTMLElement;
+        const duration = nativeElement.querySelector('.render-kpi strong') as HTMLElement;
+        const detail = nativeElement.querySelector('.render-kpi-detail') as HTMLElement;
 
-    expect(panel.getAttribute('aria-label')).toBe('QA row render sample');
-    expect(duration.textContent.trim()).toBe('QA q5.5 ms');
-    expect(detail.textContent.trim()).toBe('QA watch · QA q1 rows sampled');
+        expect(panel.getAttribute('aria-label')).toBe('QA row render sample');
+        expect(duration.textContent.trim()).toBe('QA q5.5 ms');
+        expect(detail.textContent.trim()).toBe('QA watch · QA q1 rows sampled');
 
-    host.panelLocale.set('en');
+        host.panelLocale.set('en');
 
-    await fixture.whenStable();
+        await fixture.whenStable();
 
-    expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
-    expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
-    expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
+        expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
+        expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
+        expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
+      });
+    });
   });
 });

@@ -78,7 +78,7 @@ class SelectionOverrideHost {
   protected readonly getRowId = getRowId;
 }
 
-describe('withNatTableSelectionColumn', () => {
+describe('FEATURE: withNatTableSelectionColumn', () => {
   let fixture: ComponentFixture<SelectionHost>;
   let host: SelectionHost;
 
@@ -105,104 +105,128 @@ describe('withNatTableSelectionColumn', () => {
   const rowCheckbox = (index: number): HTMLInputElement =>
     root().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')[index];
 
-  it('prepends a selection column with a header and per-row checkboxes', () => {
-    expect(headerCheckbox()).toBeTruthy();
-    expect(headerCheckbox().getAttribute('aria-label')).toBe('Select all rows');
-    expect(root().querySelectorAll('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')).toHaveLength(3);
+  describe('GIVEN: prepends a selection column with a header and per-row checkboxes', () => {
+    describe('WHEN: prepends a selection column with a header and per-row checkboxes', () => {
+      it('THEN: it prepends a selection column with a header and per-row checkboxes', () => {
+        expect(headerCheckbox()).toBeTruthy();
+        expect(headerCheckbox().getAttribute('aria-label')).toBe('Select all rows');
+        expect(root().querySelectorAll('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')).toHaveLength(3);
 
-    const firstHeader = root().querySelector<HTMLElement>('thead th') as HTMLElement;
+        const firstHeader = root().querySelector<HTMLElement>('thead th') as HTMLElement;
 
-    expect(firstHeader.dataset['columnId']).toBe('__natSelect');
+        expect(firstHeader.dataset['columnId']).toBe('__natSelect');
+      });
+    });
   });
 
-  it('renders the plain column label instead of a select-all checkbox in single mode', async () => {
-    // Set single mode before the first change detection to avoid NG0100.
-    const single = TestBed.createComponent(SelectionHost);
+  describe('GIVEN: renders the plain column label instead of a select-all checkbox in single mode', () => {
+    describe('WHEN: renders the plain column label instead of a select-all checkbox in single mode', () => {
+      it('THEN: it renders the plain column label instead of a select-all checkbox in single mode', async () => {
+        // Set single mode before the first change detection to avoid NG0100.
+        const single = TestBed.createComponent(SelectionHost);
 
-    single.componentInstance.selectionMode = 'single';
-    await single.whenStable();
-    single.detectChanges();
+        single.componentInstance.selectionMode = 'single';
+        await single.whenStable();
+        single.detectChanges();
 
-    const selectHeader = root(single).querySelector<HTMLElement>('thead th[data-column-id="__natSelect"]') as HTMLElement;
+        const selectHeader = root(single).querySelector<HTMLElement>('thead th[data-column-id="__natSelect"]') as HTMLElement;
 
-    expect(selectHeader.querySelector('input.nat-selection-checkbox')).toBeNull();
-    expect(selectHeader.textContent.trim()).toBe('Selection');
+        expect(selectHeader.querySelector('input.nat-selection-checkbox')).toBeNull();
+        expect(selectHeader.textContent.trim()).toBe('Selection');
 
-    single.destroy();
+        single.destroy();
+      });
+    });
   });
 
-  it('gives each per-row checkbox a unique default aria-label derived from the row id', () => {
-    const labels = Array.from(
-      root().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')
-    ).map((input) => input.getAttribute('aria-label'));
+  describe('GIVEN: gives each per-row checkbox a unique default aria-label derived from the row id', () => {
+    describe('WHEN: gives each per-row checkbox a unique default aria-label derived from the row id', () => {
+      it('THEN: it gives each per-row checkbox a unique default aria-label derived from the row id', () => {
+        const labels = Array.from(
+          root().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')
+        ).map((input) => input.getAttribute('aria-label'));
 
-    expect(labels).toStrictEqual(['Select row r1', 'Select row r2', 'Select row r3']);
+        expect(labels).toStrictEqual(['Select row r1', 'Select row r2', 'Select row r3']);
+      });
+    });
   });
 
-  it('prefers explicit label overrides over the locale defaults', async () => {
-    const overrideFixture = TestBed.createComponent(SelectionOverrideHost);
+  describe('GIVEN: prefers explicit label overrides over the locale defaults', () => {
+    describe('WHEN: prefers explicit label overrides over the locale defaults', () => {
+      it('THEN: it prefers explicit label overrides over the locale defaults', async () => {
+        const overrideFixture = TestBed.createComponent(SelectionOverrideHost);
 
-    await overrideFixture.whenStable();
-    overrideFixture.detectChanges();
+        await overrideFixture.whenStable();
+        overrideFixture.detectChanges();
 
-    const header = root(overrideFixture).querySelector<HTMLInputElement>(
-      'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox'
-    ) as HTMLInputElement;
-    const cell = root(overrideFixture).querySelector<HTMLInputElement>(
-      'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox'
-    ) as HTMLInputElement;
+        const header = root(overrideFixture).querySelector<HTMLInputElement>(
+          'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox'
+        ) as HTMLInputElement;
+        const cell = root(overrideFixture).querySelector<HTMLInputElement>(
+          'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox'
+        ) as HTMLInputElement;
 
-    expect(header.getAttribute('aria-label')).toBe('Pick every service');
-    expect(cell.getAttribute('aria-label')).toBe('Pick service r1');
+        expect(header.getAttribute('aria-label')).toBe('Pick every service');
+        expect(cell.getAttribute('aria-label')).toBe('Pick service r1');
 
-    overrideFixture.destroy();
+        overrideFixture.destroy();
+      });
+    });
   });
 
-  it('selects a single row through its checkbox', async () => {
-    rowCheckbox(0).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+  describe('GIVEN: selects a single row through its checkbox', () => {
+    describe('WHEN: selects a single row through its checkbox', () => {
+      it('THEN: it selects a single row through its checkbox', async () => {
+        rowCheckbox(0).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-    expect(host.state().rowSelection).toStrictEqual({ r1: true });
-    expect(selectedRowCount()).toBe(1);
+        expect(host.state().rowSelection).toStrictEqual({ r1: true });
+        expect(selectedRowCount()).toBe(1);
+      });
+    });
   });
 
-  it('selects and clears all rows through the header checkbox with an indeterminate partial state', async () => {
-    headerCheckbox().click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+  describe('GIVEN: selects and clears all rows through the header checkbox with an indeterminate partial state', () => {
+    describe('WHEN: selects and clears all rows through the header checkbox with an indeterminate partial state', () => {
+      it('THEN: it selects and clears all rows through the header checkbox with an indeterminate partial state', async () => {
+        headerCheckbox().click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-    expect(selectedRowCount()).toBe(3);
-    expect(headerCheckbox().checked).toBe(true);
+        expect(selectedRowCount()).toBe(3);
+        expect(headerCheckbox().checked).toBe(true);
 
-    rowCheckbox(0).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+        rowCheckbox(0).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-    expect(selectedRowCount()).toBe(2);
-    expect(headerCheckbox().indeterminate).toBe(true);
-    expect(headerCheckbox().checked).toBe(false);
+        expect(selectedRowCount()).toBe(2);
+        expect(headerCheckbox().indeterminate).toBe(true);
+        expect(headerCheckbox().checked).toBe(false);
 
-    headerCheckbox().click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+        headerCheckbox().click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-    expect(selectedRowCount()).toBe(3);
-    expect(headerCheckbox().checked).toBe(true);
-    expect(headerCheckbox().indeterminate).toBe(false);
+        expect(selectedRowCount()).toBe(3);
+        expect(headerCheckbox().checked).toBe(true);
+        expect(headerCheckbox().indeterminate).toBe(false);
 
-    headerCheckbox().click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+        headerCheckbox().click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-    expect(selectedRowCount()).toBe(0);
-    expect(host.state().rowSelection).toStrictEqual({});
-    expect(headerCheckbox().checked).toBe(false);
-    expect(headerCheckbox().indeterminate).toBe(false);
+        expect(selectedRowCount()).toBe(0);
+        expect(host.state().rowSelection).toStrictEqual({});
+        expect(headerCheckbox().checked).toBe(false);
+        expect(headerCheckbox().indeterminate).toBe(false);
+      });
+    });
   });
 });
