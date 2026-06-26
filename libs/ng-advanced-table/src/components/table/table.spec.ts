@@ -1815,6 +1815,32 @@ describe('FEATURE: NatTable', () => {
         expect(rowHeaderCell.getAttribute('role')).toBe('rowheader');
         expect(rowHeaderCell.getAttribute('data-column-id')).toBe('name');
       });
+
+      it('THEN: it removes the final rendered data-row separator from body cells', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const finalRowRule = tableStyles.find((rule) =>
+          ['tbody', '.data-row', ':last-child', '.data-cell'].every((selectorPart) => rule.selectorText.includes(selectorPart))
+        );
+
+        expect(finalRowRule?.style.borderBottom).toBe('0px');
+      });
+
+      it('THEN: it keeps table boundary and divider widths configurable', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const cssText = tableStyles.map((rule) => rule.cssText).join('\n');
+
+        expect(cssText).toContain('--nat-table-region-border-width');
+        expect(cssText).toContain('--nat-table-cell-border-width');
+        expect(cssText).toContain('--nat-table-header-border-width');
+      });
     });
 
     describe('WHEN: all hidden descriptions are suppressed', () => {

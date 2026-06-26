@@ -11,7 +11,7 @@
   overflow: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto))
     var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
   background: var(--nat-table-region-background, transparent);
-  border: 1px solid var(--nat-table-region-border-color, rgb(128 128 128 / 24%));
+  border: var(--nat-table-region-border-width, 1px) solid var(--nat-table-region-border-color, rgb(128 128 128 / 24%));
   border-radius: var(--nat-table-radius-region, 16px);
 }
 
@@ -42,7 +42,7 @@
   box-sizing: border-box;
   padding: var(--nat-table-space-cell-y, 0) var(--nat-table-space-cell-x, 0);
   text-align: start;
-  border-bottom: 1px solid var(--nat-table-cell-border-color, rgb(128 128 128 / 24%));
+  border-bottom: var(--nat-table-cell-border-width, 1px) solid var(--nat-table-cell-border-color, rgb(128 128 128 / 24%));
 }
 
 .header-cell.is-width-constrained,
@@ -59,7 +59,7 @@
   letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
   white-space: nowrap;
   background: var(--nat-table-header-background, #f6f8fa);
-  border-bottom: 1px solid var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
+  border-bottom: var(--nat-table-header-border-width, 1px) solid var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
 }
 
 .header-cell-content {
@@ -99,6 +99,10 @@
   line-height: var(--nat-table-line-height-cell, 1.4);
   vertical-align: middle;
   white-space: normal;
+}
+
+tbody .data-row:last-child .data-cell {
+  border-bottom: 0;
 }
 
 .data-cell.is-cell-clamped .data-cell-content {
