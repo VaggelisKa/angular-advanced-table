@@ -1,7 +1,5 @@
 import { recommended, vitest, playwright } from 'lint-suite/eslint';
 
-// Shared base config. Per-project `eslint.config.mjs` files extend this; the
-// @nx/eslint/plugin infers a `lint` target for each project from its config.
 export default [
   {
     // Build output + tool/state dirs. Mirrors .gitignore (flat config only
@@ -19,9 +17,6 @@ export default [
       '.omc/**',
       '.codex/**',
       '**/*.d.ts',
-      // Comment-bearing config JSON — lint-suite's json config parses these as
-      // strict JSON (fatal on `//` and `/* */`). Prettier still formats them.
-      '**/tsconfig*.json',
       '.vscode/**',
       // Flat-config files: not part of any tsconfig project (projectService).
       '**/*.config*.mjs'

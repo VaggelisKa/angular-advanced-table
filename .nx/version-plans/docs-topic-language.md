@@ -1,8 +1,5 @@
 ---
 ng-advanced-table: patch
-ng-advanced-table-locales: patch
-ng-advanced-table-ui: patch
-ng-advanced-table-utils: patch
 ---
 
 Define Documentation Topic, Documentation Group, Table Capability, Manual Data Handling, Example Gallery, Topic Example, Docs Block, Topic Layout, and Usage Boundary as the canonical language for the topic-first documentation structure.

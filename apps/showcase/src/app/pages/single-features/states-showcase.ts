@@ -9,7 +9,7 @@ import {
   NatTableLoadingTemplate
 } from 'ng-advanced-table';
 import type { NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table-ui';
+import { NatTableSurface } from 'ng-advanced-table/ui';
 
 import { formatError } from './states-showcase.util';
 

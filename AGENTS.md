@@ -20,28 +20,31 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Before merging or asking the user to merge a PR, run `pnpm run format:check` and fix any Prettier drift in the PR.
 - Keep Nx project configuration in each project `package.json` `nx` block. Published library manifests must not ship that `nx` block; rely on the `strip-nx` target or `pnpm run pack:dry-run` before publishing or inspecting package tarballs.
 
-## Package Layering
+## Entry-Point Layering
 
-- `ng-advanced-table` is the core package. It must not import from or otherwise depend on `ng-advanced-table-ui` or `ng-advanced-table-utils`.
-- `ng-advanced-table-ui` and `ng-advanced-table-utils` are companion packages. They may depend on `ng-advanced-table` when they use its runtime services, injection tokens, components, or public contracts.
-- `ng-advanced-table-locales` must remain below the core and companion packages in the dependency graph. It may be consumed by `ng-advanced-table`, `ng-advanced-table-ui`, and `ng-advanced-table-utils`, but it must not import from them.
-- Do not add TypeScript path mappings, package dependencies, or re-exports that create a dependency from the core package back to a companion package. If a bundled experience is needed, create a separate wrapper package instead of making the core package depend on companions.
+The library ships as one `ng-advanced-table` package whose layers are ng-packagr secondary entry points: `ng-advanced-table` (core, primary), `ng-advanced-table/ui`, `ng-advanced-table/utils`, and `ng-advanced-table/locale`. ng-packagr builds each entry point separately and topologically, so this layering is enforced at build time — a cross-entry import is treated as an external dependency, and a circular entry-point dependency is a hard build error. It is **also lint-enforced**: per-layer `no-restricted-imports` rules in `libs/ng-advanced-table/eslint.config.mjs` fail `nx lint` on any cross-entry-point import that violates the graph below, so a break is caught before build/review.
+
+- `ng-advanced-table` (core) must not import from `ng-advanced-table/ui` or `ng-advanced-table/utils`.
+- `ng-advanced-table/ui` and `ng-advanced-table/utils` are companion entry points. They may import `ng-advanced-table` (core) when they use its runtime services, injection tokens, components, or public contracts.
+- `ng-advanced-table/locale` must remain the leaf — below core and the companions. It may be consumed by `ng-advanced-table`, `ng-advanced-table/ui`, and `ng-advanced-table/utils`, but it must not import from them.
+- Cross-entry imports must use the package specifier (e.g. `import { X } from 'ng-advanced-table/locale'`), never a deep relative path across an entry-point boundary — a deep relative import silently inlines the code and breaks tree-shaking. Do not add path mappings, dependencies, or re-exports that make core depend on a companion entry point.
+- Source path mappings for `ng-advanced-table` (+ its subpaths) live in `tsconfig.paths.json`, extended only by the showcase config and the library `tsconfig.spec.json` — **not** `tsconfig.base.json`. The production build (`tsconfig.lib*.json`) carries no path mappings and resolves these specifiers via `node_modules` + the package `exports` map, exactly like a published consumer. Keep these mappings out of the shared base so the build stays resolution-faithful; entry files are named `index.ts` (not `public-api.ts`).
 
 ## Package Boundaries
 
-- Keep `ng-advanced-table-types` internal. Published entry points must expose local public interfaces or aliases so generated declarations do not reference the private package.
-- When changing shared contracts such as `NatTableColumnMeta`, `NatTableState`, sort indicator context, or table controller state, update the core table package, companion UI package, utils package, internal types package, public API barrels, and matching contract/type specs in the same change.
+- Keep the testing contract mirror internal: it is a source-only, test-only contract mirror living at `libs/ng-advanced-table/testing/`, imported solely by `*.spec.ts` files via a relative path (e.g. `../testing`), which assert production types against it via `Equal<>`. It is never built or published — no production source imports it (so ng-packagr never reaches it) and `tsconfig.lib.json` excludes the `testing/` folder. Published entry points must expose their own local public interfaces or aliases so generated declarations never reference it.
+- When changing shared contracts such as `NatTableColumnMeta`, `NatTableState`, sort indicator context, or table controller state, update the core entry point, the `ui` and `utils` entry points, the internal testing contract mirror (`libs/ng-advanced-table/testing/`), public API barrels, and matching contract/type specs in the same change.
 
 ## Table Library Patterns
 
-- Keep workflow-specific controls such as global search inputs and filter menus consumer-owned unless they are generic table primitives. Showcase examples can implement `app-*` components against `NatTableService`; `ng-advanced-table-ui` should stay focused on generic shells, companion controls, and controller wiring.
+- Keep workflow-specific controls such as global search inputs and filter menus consumer-owned unless they are generic table primitives. Showcase examples can implement `app-*` components against `NatTableService`; `ng-advanced-table/ui` should stay focused on generic shells, companion controls, and controller wiring.
 - Treat `dataStatus` as the table-owned switch for loading, empty, and error body rows. Keep data fetching, retry handling, and error classification in consuming containers, and render custom state UI through `natTableLoading`, `natTableEmpty`, or `natTableError` templates inside `<nat-table>`.
 - For `<nat-table-toolbar>`, projected interactive controls that participate in toolbar navigation must use `natToolbarItem` or `NatToolbarGroup`, with DOM order matching screen-reader and roving-keyboard order.
 - Do not use or reintroduce the removed `NatTableActionBar`/`<nat-table-action-bar>` API. Compose bundled control rows with `<nat-table-toolbar>`, `NatToolbarGroup`/`natToolbarItem`, and the pagination or scroll companion controls instead.
-- Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/lib/components/table/table-utils.ts`; keep `table.ts` focused on Angular wiring, signals, and DOM behavior.
-- Keep table data export as optional `ng-advanced-table-ui` Table Action behavior (`natTableExport`/`provideNatTableExport(...)`). The core package may expose shared column metadata such as `NatTableColumnMeta.export`, but it must not own export side effects or file-generation state.
+- Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/components/table/table-utils.ts`; keep `table.ts` focused on Angular wiring, signals, and DOM behavior.
+- Keep table data export as optional `ng-advanced-table/ui` Table Action behavior (`natTableExport`/`provideNatTableExport(...)`). The core package may expose shared column metadata such as `NatTableColumnMeta.export`, but it must not own export side effects or file-generation state.
 - Keep render-metrics controls (`NatRenderMetricsFilter`, `NatRenderMetricsPanel`) wired through an explicit `[controller]` (`NatTable` or `NatTableRenderMetricsController`). Do not place `NatRenderMetricsFilter` inside `<nat-table-toolbar>` because its internal chip buttons are a standalone labeled button group, not toolbar items.
-- When comparing `NatTableState` slices in `ng-advanced-table-ui`, use the local structural equality helper instead of `JSON.stringify`; consumer filter values can include non-JSON-safe values such as `BigInt`, `Set`, `Date`, `RegExp`, or cycles.
+- When comparing `NatTableState` slices in `ng-advanced-table/ui`, use the local structural equality helper instead of `JSON.stringify`; consumer filter values can include non-JSON-safe values such as `BigInt`, `Set`, `Date`, `RegExp`, or cycles.
 - When changing table keybindings, update `keybindings.ts`, `keybindings.md`, `NatTableHotkeyA11y`, public API exports, and table/surface input coverage together so configured shortcuts, conflict warnings, and `aria-keyshortcuts` stay aligned.
 
 ## Documentation Ownership

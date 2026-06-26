@@ -1,7 +1,0 @@
-{
-  "name": "ng-advanced-table-types",
-  "projectType": "library",
-  "root": "libs/ng-advanced-table-types",
-  "sourceRoot": "libs/ng-advanced-table-types/src",
-  "tags": ["internal", "type:types"]
-}

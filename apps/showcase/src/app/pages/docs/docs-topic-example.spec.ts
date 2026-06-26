@@ -95,6 +95,33 @@ describe('FEATURE: docs topic example code tabs', () => {
   });
 
   describe('GIVEN: an example with multiple snippets', () => {
+    describe('WHEN: the preview view is active', () => {
+      it('THEN: it keeps both top-level tab panels mounted and hides the inactive panel', async () => {
+        const fixture = TestBed.createComponent(TestHost);
+
+        fixture.detectChanges();
+        await waitForExampleRender(fixture);
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const previewTab = queryRequiredElement<HTMLButtonElement>(compiled, '#docs-example-pagination-preview-tab');
+        const codeTab = queryRequiredElement<HTMLButtonElement>(compiled, '#docs-example-pagination-code-tab');
+        const previewPanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-preview-panel');
+        const codePanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-code-panel');
+
+        expect(previewTab.getAttribute('aria-controls')).toBe(previewPanel.id);
+        expect(codeTab.getAttribute('aria-controls')).toBe(codePanel.id);
+        expect(previewPanel.hidden).toBe(false);
+        expect(codePanel.hidden).toBe(true);
+
+        codeTab.click();
+        fixture.detectChanges();
+        await waitForExampleRender(fixture);
+
+        expect(previewPanel.hidden).toBe(true);
+        expect(codePanel.hidden).toBe(false);
+      });
+    });
+
     describe('WHEN: the code view opens without a chosen snippet', () => {
       it('THEN: it selects the first snippet tab and highlights the rendered code', async () => {
         const fixture = TestBed.createComponent(TestHost);
@@ -111,9 +138,15 @@ describe('FEATURE: docs topic example code tabs', () => {
 
         const htmlTab = queryRequiredElement<HTMLButtonElement>(compiled, '#docs-example-pagination-html-tab');
         const tsTab = queryRequiredElement<HTMLButtonElement>(compiled, '#docs-example-pagination-ts-tab');
+        const htmlPanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-html-panel');
+        const tsPanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-ts-panel');
 
+        expect(htmlTab.getAttribute('aria-controls')).toBe(htmlPanel.id);
+        expect(tsTab.getAttribute('aria-controls')).toBe(tsPanel.id);
         expect(htmlTab.getAttribute('aria-selected')).toBe('true');
         expect(tsTab.getAttribute('aria-selected')).toBe('false');
+        expect(htmlPanel.hidden).toBe(false);
+        expect(tsPanel.hidden).toBe(true);
         expect(highlightCalls).toBeGreaterThan(0);
         expect(queryRequiredElement<HTMLElement>(compiled, 'code.language-html .token.tag').textContent).toBe('<nat-table-surface>');
       });
@@ -135,6 +168,8 @@ describe('FEATURE: docs topic example code tabs', () => {
         const initialHighlightCalls = highlightCalls;
         const htmlTab = queryRequiredElement<HTMLButtonElement>(compiled, '#docs-example-pagination-html-tab');
         const tsTab = queryRequiredElement<HTMLButtonElement>(compiled, '#docs-example-pagination-ts-tab');
+        const htmlPanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-html-panel');
+        const tsPanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-ts-panel');
 
         tsTab.click();
         fixture.detectChanges();
@@ -142,6 +177,8 @@ describe('FEATURE: docs topic example code tabs', () => {
 
         expect(htmlTab.getAttribute('aria-selected')).toBe('false');
         expect(tsTab.getAttribute('aria-selected')).toBe('true');
+        expect(htmlPanel.hidden).toBe(true);
+        expect(tsPanel.hidden).toBe(false);
         expect(highlightCalls).toBeGreaterThan(initialHighlightCalls);
         expect(queryRequiredElement<HTMLElement>(compiled, 'code.language-typescript .token.keyword').textContent).toBe('readonly');
       });

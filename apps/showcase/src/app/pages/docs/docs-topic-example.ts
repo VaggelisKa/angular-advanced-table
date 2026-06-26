@@ -47,7 +47,6 @@ export class DocsTopicExample {
     return activeSnippet ?? snippets[0];
   });
 
-  protected readonly codeClass = computed(() => `language-${this.activeSnippet().language}`);
   protected readonly copyButtonLabel = computed(() => (this.copied() ? COPIED_LABEL : COPY_LABEL));
   protected readonly headingId = computed(() => `docs-example-${this.example().id}-title`);
   protected readonly previewTabId = computed(() => `docs-example-${this.example().id}-preview-tab`);
@@ -99,8 +98,8 @@ export class DocsTopicExample {
     this.activeSnippetId.set(nextSnippetId);
   }
 
-  protected copyActiveSnippet(): void {
-    void this.copyText(this.activeSnippet().code).then((copied) => this.setCopied(copied));
+  protected copySnippet(snippet: DocsCodeSnippet): void {
+    void this.copyText(snippet.code).then((copied) => this.setCopied(copied));
   }
 
   private getNextSnippetId(key: string, currentSnippetId: string): string | undefined {
@@ -185,6 +184,6 @@ export class DocsTopicExample {
       return;
     }
 
-    prism.highlightAllUnder(codePanel);
+    prism.highlightAllUnder(this.document.getElementById(this.snippetPanelId(this.activeSnippet())) ?? codePanel);
   }
 }

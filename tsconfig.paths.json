@@ -1,0 +1,17 @@
+/* Dev/test-only source path mappings. Kept OUT of tsconfig.base.json so the
+ * library's production build (ng-packagr) resolves `ng-advanced-table` and its
+ * subpaths via node_modules + the package `exports` map — exactly like a
+ * published consumer. Only configs that need live SOURCE resolution extend this:
+ * the showcase app (dev/HMR + its specs) and the library's spec config (vitest
+ * compiles cross-entry source as first-party). Paths resolve relative to THIS
+ * file's directory (repo root), so they stay valid no matter who extends it. */
+{
+  "compilerOptions": {
+    "paths": {
+      "ng-advanced-table": ["./libs/ng-advanced-table/src/index.ts"],
+      "ng-advanced-table/locale": ["./libs/ng-advanced-table/locale/index.ts"],
+      "ng-advanced-table/ui": ["./libs/ng-advanced-table/ui/index.ts"],
+      "ng-advanced-table/utils": ["./libs/ng-advanced-table/utils/index.ts"]
+    }
+  }
+}

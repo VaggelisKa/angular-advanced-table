@@ -19,10 +19,7 @@
     "prismjs": "catalog:frontend",
     "rxjs": "catalog:frontend",
     "tslib": "catalog:shared",
-    "ng-advanced-table": "workspace:*",
-    "ng-advanced-table-locales": "workspace:*",
-    "ng-advanced-table-ui": "workspace:*",
-    "ng-advanced-table-utils": "workspace:*"
+    "ng-advanced-table": "workspace:*"
   },
   "nx": {
     "name": "showcase",

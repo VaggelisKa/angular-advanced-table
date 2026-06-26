@@ -98,6 +98,10 @@
   background: var(--showcase-code-bg);
 }
 
+.docs-example [hidden] {
+  display: none;
+}
+
 .docs-code-header {
   display: flex;
   gap: 12px;

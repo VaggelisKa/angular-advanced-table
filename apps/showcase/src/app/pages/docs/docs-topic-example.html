@@ -31,14 +31,18 @@
     </div>
   </div>
 
-  @if (activePanel() === 'preview') {
-  <div [attr.aria-labelledby]="previewTabId()" [id]="previewPanelId()" class="docs-example-panel" role="tabpanel">
+  <div
+    [attr.aria-labelledby]="previewTabId()"
+    [hidden]="activePanel() !== 'preview'"
+    [id]="previewPanelId()"
+    class="docs-example-panel"
+    role="tabpanel">
     <ng-container *ngComponentOutlet="example().component" />
   </div>
-  } @else {
   <div
     #codePanel
     [attr.aria-labelledby]="codeTabId()"
+    [hidden]="activePanel() !== 'code'"
     [id]="codePanelId()"
     class="docs-example-panel docs-example-code-panel"
     role="tabpanel">
@@ -58,18 +62,22 @@
       </button>
       }
     </div>
-    }
-
-    <div [attr.aria-labelledby]="snippetTabId(activeSnippet())" [id]="snippetPanelId(activeSnippet())" role="tabpanel">
+    } @for (snippet of example().snippets; track snippet.id) {
+    <div
+      [attr.aria-labelledby]="$count > 1 ? snippetTabId(snippet) : null"
+      [hidden]="selectedSnippetId() !== snippet.id"
+      [id]="snippetPanelId(snippet)"
+      class="docs-code-snippet-panel"
+      role="tabpanel">
       <div class="docs-code-header">
-        <span class="docs-code-label">{{ activeSnippet().label }}</span>
+        <span class="docs-code-label">{{ snippet.label }}</span>
         <button
           [attr.aria-label]="copyButtonLabel()"
           [class.is-copied]="copied()"
           [title]="copyButtonLabel()"
           class="docs-code-copy"
           type="button"
-          (click)="copyActiveSnippet()">
+          (click)="copySnippet(snippet)">
           <svg aria-hidden="true" class="docs-code-copy-icon docs-code-copy-icon--copy" focusable="false" viewBox="0 0 16 16">
             <path d="M5 4.5V3.25A1.25 1.25 0 0 1 6.25 2h5.5A1.25 1.25 0 0 1 13 3.25v6.5A1.25 1.25 0 0 1 11.75 11H10.5" />
             <path
@@ -80,8 +88,8 @@
           </svg>
         </button>
       </div>
-      <pre class="docs-code-block"><code [class]="codeClass()" [textContent]="activeSnippet().code"></code></pre>
+      <pre class="docs-code-block"><code [class]="`language-${snippet.language}`" [textContent]="snippet.code"></code></pre>
     </div>
+    }
   </div>
-  }
 </section>

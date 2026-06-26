@@ -1,8 +1,8 @@
 {
   "name": "ng-advanced-table",
-  "version": "1.2.0",
-  "description": "Signals-first Angular data table primitives built on TanStack Table.",
-  "typings": "src/public-api.ts",
+  "version": "2.0.0",
+  "description": "Signals-first Angular data table built on TanStack Table — core primitives plus composable UI, utilities, and i18n via subpath entry points (ng-advanced-table/ui, /utils, /locale).",
+  "typings": "src/index.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,7 +21,10 @@
     "signals",
     "table",
     "data-table",
-    "tanstack-table"
+    "tanstack-table",
+    "ui",
+    "i18n",
+    "accessibility"
   ],
   "peerDependencies": {
     "@angular/cdk": "catalog:peers",
@@ -31,26 +34,43 @@
     "@tanstack/angular-table": "catalog:peers"
   },
   "dependencies": {
-    "ng-advanced-table-locales": "*",
     "tslib": "catalog:shared"
   },
   "sideEffects": false,
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale": {
+      "types": "./locale/index.ts",
+      "default": "./locale/index.ts"
+    },
+    "./ui": {
+      "types": "./ui/index.ts",
+      "default": "./ui/index.ts"
+    },
+    "./utils": {
+      "types": "./utils/index.ts",
+      "default": "./utils/index.ts"
+    }
+  },
   "nx": {
     "name": "ng-advanced-table",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
     "prefix": "nat",
-    "sourceRoot": "libs/ng-advanced-table/src",
+    "sourceRoot": "libs/ng-advanced-table",
     "tags": [
       "type:lib",
       "scope:public"
     ],
     "targets": {
       "build": {
-        "executor": "@nx/angular:package",
-        "outputs": [
-          "{workspaceRoot}/dist/libs/ng-advanced-table"
-        ],
+        "executor": "@angular/build:ng-packagr",
         "options": {
           "project": "libs/ng-advanced-table/ng-package.json"
         },
@@ -64,27 +84,11 @@
         },
         "defaultConfiguration": "production"
       },
-      "test-build": {
-        "executor": "@angular/build:ng-packagr",
-        "options": {
-          "project": "libs/ng-advanced-table/ng-package.json"
-        },
-        "configurations": {
-          "production": {
-            "tsConfig": "libs/ng-advanced-table/tsconfig.lib.prod.json"
-          },
-          "development": {
-            "tsConfig": "libs/ng-advanced-table/tsconfig.lib.json"
-          }
-        },
-        "defaultConfiguration": "development"
+      "lint": {
+        "executor": "nx:noop"
       },
-      "test": {
-        "executor": "@angular/build:unit-test",
-        "options": {
-          "buildTarget": "ng-advanced-table:test-build:development",
-          "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json"
-        }
+      "stylelint": {
+        "executor": "nx:noop"
       },
       "strip-nx": {
         "executor": "nx:run-commands"

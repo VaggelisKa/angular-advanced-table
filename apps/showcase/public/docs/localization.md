@@ -1,6 +1,6 @@
 ## Locale Providers
 
-Generated table copy resolves from `ng-advanced-table-locales`. Add only the providers for packages you use.
+Generated table copy resolves from the `ng-advanced-table/locale` entry point. Add only the providers for entry points you use.
 
 ```ts
 provideNatTableLocales(...);

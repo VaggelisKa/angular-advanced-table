@@ -13,8 +13,8 @@ nodeLinker: hoisted
 # redundant reinstall on each invocation.
 verifyDepsBeforeRun: false
 # pnpm 11 ignores the .npmrc `link-workspace-packages` key, so it is set here
-# too. Links the internal `ng-advanced-table-locales: "*"` dep to local source
-# instead of resolving the published tarball during re-resolution.
+# too. Links the showcase's `ng-advanced-table: "workspace:*"` dep to local
+# source instead of resolving the published tarball during re-resolution.
 linkWorkspacePackages: true
 catalogs:
   # runtime: Angular + table/reactivity packages

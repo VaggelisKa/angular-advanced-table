@@ -3,7 +3,7 @@ import { Component, signal } from '@angular/core';
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { NatTableColumnVisibility, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+import { NatTableColumnVisibility, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/ui';
 
 type DemoItem = {
   id: string;

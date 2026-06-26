@@ -112,11 +112,12 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  # Release gates: version plan on package-affecting PRs + full verify.
-  release:
-    # Gate only — does not publish (see release.yml). Runs the heavy `verify`
-    # (full build+test+pack) only once checks AND e2e are green, so a failing
-    # PR doesn't burn minutes building packages that won't ship anyway.
+  # Release gate: version plan on package-affecting PRs, then build + pack +
+  # release dry-run. Does NOT re-run unit tests (the `checks` job already ran
+  # them) and does NOT publish — publishing lives in release.yml. Runs only once
+  # checks AND e2e are green, so a failing PR doesn't burn minutes building a
+  # package that won't ship anyway.
+  release-gate:
     needs: [checks, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -126,8 +127,8 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/nx-refs
-      # Reuse the Nx cache saved by `checks` this run, so `verify`'s build/test
-      # tasks hit cache (showcase + affected libs) instead of rebuilding.
+      # Reuse the Nx cache saved by `checks` this run, so the build tasks hit
+      # cache (showcase + the package) instead of rebuilding on a fresh runner.
       - name: Restore Nx cache
         uses: actions/cache/restore@v6
         with:
@@ -147,5 +148,11 @@ jobs:
       - name: Require Nx version plan
         if: github.event_name == 'pull_request' && steps.package_changes.outputs.changed == 'true'
         run: pnpm exec nx release plan:check --base="$NX_BASE" --head="$NX_HEAD"
-      - name: Verify packages and release config
-        run: pnpm run verify
+      - name: Build package
+        run: pnpm run build:packages
+      - name: Build showcase
+        run: pnpm run build:showcase
+      - name: Validate release preview (dry run — does not publish)
+        run: pnpm exec nx release --dry-run
+      - name: Pack (dry run)
+        run: pnpm run pack:dry-run
