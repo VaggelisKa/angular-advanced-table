@@ -4,12 +4,7 @@ export { NatTableService, NAT_TABLE_UI_CONTROLLER } from './components/table/tab
 
 export { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from './components/table/table-state-templates';
 
-export {
-  NAT_TABLE_ENGLISH_INTL,
-  NAT_TABLE_DEFAULT_INTL,
-  NAT_TABLE_INTL,
-  provideNatTableIntl
-} from './components/table/table-intl';
+export { NAT_TABLE_ENGLISH_INTL, NAT_TABLE_DEFAULT_INTL, NAT_TABLE_INTL, provideNatTableIntl } from './components/table/table-intl';
 
 export { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './components/table/table.types';
 

@@ -6,7 +6,6 @@ import { provideRouter } from '@angular/router';
 import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table/locale';
 import { MARKED_OPTIONS, provideMarkdown } from 'ngx-markdown';
 
-
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
