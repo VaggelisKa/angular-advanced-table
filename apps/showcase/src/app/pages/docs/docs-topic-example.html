@@ -36,13 +36,18 @@
     <ng-container *ngComponentOutlet="example().component" />
   </div>
   } @else {
-  <div [attr.aria-labelledby]="codeTabId()" [id]="codePanelId()" class="docs-example-panel docs-example-code-panel" role="tabpanel">
+  <div
+    #codePanel
+    [attr.aria-labelledby]="codeTabId()"
+    [id]="codePanelId()"
+    class="docs-example-panel docs-example-code-panel"
+    role="tabpanel">
     @if (example().snippets.length > 1) {
     <div [attr.aria-label]="`${example().title} source files`" class="docs-code-tabs" role="tablist">
       @for (snippet of example().snippets; track snippet.id) {
       <button
         [attr.aria-controls]="snippetPanelId(snippet)"
-        [attr.aria-selected]="activeSnippetId() === snippet.id"
+        [attr.aria-selected]="selectedSnippetId() === snippet.id"
         [id]="snippetTabId(snippet)"
         class="docs-code-tab"
         role="tab"
@@ -75,7 +80,7 @@
           </svg>
         </button>
       </div>
-      <pre class="docs-code-block"><code [class]="codeClass()">{{ activeSnippet().code }}</code></pre>
+      <pre class="docs-code-block"><code [class]="codeClass()" [textContent]="activeSnippet().code"></code></pre>
     </div>
   </div>
   }

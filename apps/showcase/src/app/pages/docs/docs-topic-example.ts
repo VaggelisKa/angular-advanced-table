@@ -1,11 +1,18 @@
 import { DOCUMENT, NgComponentOutlet } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, viewChild } from '@angular/core';
+import type { ElementRef } from '@angular/core';
 
 import type { DocsCodeSnippet, DocsTopicExampleBlock } from './docs-topic.types';
 
 const COPY_LABEL = 'Copy example code';
 const COPIED_LABEL = 'Copied example code';
 const COPY_RESET_DELAY_MS = 2000;
+
+type PrismGlobal = typeof globalThis & {
+  Prism?: {
+    highlightAllUnder(element: Element | Document): void;
+  };
+};
 
 @Component({
   selector: 'app-docs-topic-example',
@@ -15,6 +22,7 @@ const COPY_RESET_DELAY_MS = 2000;
 })
 export class DocsTopicExample {
   private readonly document = inject(DOCUMENT);
+  private readonly codePanel = viewChild<ElementRef<HTMLElement>>('codePanel');
 
   public readonly example = input.required<DocsTopicExampleBlock>();
 
@@ -23,9 +31,18 @@ export class DocsTopicExample {
   protected readonly copied = signal(false);
   private copiedResetTimer: ReturnType<typeof setTimeout> | undefined;
 
+  protected readonly selectedSnippetId = computed(() => {
+    const snippets = this.example().snippets;
+    const activeSnippetId = this.activeSnippetId();
+    const activeSnippetExists = snippets.some((snippet) => snippet.id === activeSnippetId);
+
+    return activeSnippetExists ? activeSnippetId : snippets[0].id;
+  });
+
   protected readonly activeSnippet = computed(() => {
     const snippets = this.example().snippets;
-    const activeSnippet = snippets.find((snippet) => snippet.id === this.activeSnippetId());
+    const selectedSnippetId = this.selectedSnippetId();
+    const activeSnippet = snippets.find((snippet) => snippet.id === selectedSnippetId);
 
     return activeSnippet ?? snippets[0];
   });
@@ -37,6 +54,22 @@ export class DocsTopicExample {
   protected readonly codeTabId = computed(() => `docs-example-${this.example().id}-code-tab`);
   protected readonly previewPanelId = computed(() => `docs-example-${this.example().id}-preview-panel`);
   protected readonly codePanelId = computed(() => `docs-example-${this.example().id}-code-panel`);
+
+  public constructor() {
+    effect(() => {
+      if (this.activePanel() !== 'code') {
+        return;
+      }
+
+      const snippetId = this.activeSnippet().id;
+
+      queueMicrotask(() => {
+        if (this.activeSnippet().id === snippetId) {
+          this.highlightCodePanel();
+        }
+      });
+    });
+  }
 
   protected snippetTabId(snippet: DocsCodeSnippet): string {
     return `docs-example-${this.example().id}-${snippet.id}-tab`;
@@ -142,5 +175,16 @@ export class DocsTopicExample {
     }
 
     this.copiedResetTimer = setTimeout(() => this.copied.set(false), COPY_RESET_DELAY_MS);
+  }
+
+  private highlightCodePanel(): void {
+    const codePanel = this.codePanel()?.nativeElement;
+    const prism = (globalThis as PrismGlobal).Prism;
+
+    if (!codePanel || typeof prism?.highlightAllUnder !== 'function') {
+      return;
+    }
+
+    prism.highlightAllUnder(codePanel);
   }
 }
