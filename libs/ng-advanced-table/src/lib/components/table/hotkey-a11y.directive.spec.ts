@@ -105,6 +105,27 @@ describe('NatTableHotkeyA11y', () => {
 
       expect(button.getAttribute('aria-keyshortcuts')).toBe(serializeShortcutValue(DEFAULT_NAT_TABLE_KEYBINDINGS.columnReorderRight));
     });
+
+    it('should initialize attributes when MutationObserver is unavailable', async () => {
+      const originalMutationObserver = globalThis.MutationObserver;
+
+      vi.stubGlobal('MutationObserver', undefined);
+
+      const noObserverFixture = TestBed.createComponent(FallbackHost);
+
+      try {
+        await noObserverFixture.whenStable();
+        noObserverFixture.detectChanges();
+
+        const button = queryRequired<HTMLButtonElement>(noObserverFixture, '[data-testid="fallback-btn"]');
+
+        expect(button.getAttribute('aria-keyshortcuts')).toBe('Space');
+        expect(button.getAttribute('aria-label')).toBe('Activate Row (Shortcut: Space)');
+      } finally {
+        noObserverFixture.destroy();
+        vi.stubGlobal('MutationObserver', originalMutationObserver);
+      }
+    });
   });
 
   describe('Scoped scenarios (with NatTableService)', () => {

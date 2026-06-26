@@ -92,6 +92,10 @@ export class NatTableService<TData extends RowData = RowData> {
     this.controllerSignal.set(controller);
   }
 
+  public clearController(controller: NatTableUiController<TData>): void {
+    this.controllerSignal.update((current) => (current === controller ? null : current));
+  }
+
   public notifyStateChange(state: NatTableState): void {
     this.stateChangeEvent.set(state);
   }

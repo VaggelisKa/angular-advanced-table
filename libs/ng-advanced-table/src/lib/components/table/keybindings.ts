@@ -73,6 +73,18 @@ export function isMacPlatform(): boolean {
   );
 }
 
+/** Returns whether a keyboard key value represents the Space key. */
+export function isSpaceShortcutKey(key: string): boolean {
+  const lowerKey = key.toLowerCase();
+
+  return key === ' ' || lowerKey === 'space' || lowerKey === 'spacebar';
+}
+
+/** Normalizes equivalent key aliases for shortcut comparisons. */
+function normalizeShortcutKeyForComparison(key: string): string {
+  return isSpaceShortcutKey(key) ? 'space' : key.toLowerCase();
+}
+
 /** Resolves the ctrl/alt/shift/meta flags from a set of lowercased modifier tokens. */
 function resolveModifierFlags(
   modifiers: ReadonlySet<string>,
@@ -130,7 +142,7 @@ export function matchShortcut(event: KeyboardEvent, shortcut: string | NatTableS
   const norm = normalizeShortcut(shortcut);
 
   return (
-    event.key === norm.key &&
+    normalizeShortcutKeyForComparison(event.key) === normalizeShortcutKeyForComparison(norm.key) &&
     event.altKey === norm.altKey &&
     event.ctrlKey === norm.ctrlKey &&
     event.shiftKey === norm.shiftKey &&
@@ -180,10 +192,7 @@ function serializeSingleShortcut(norm: NatTableShortcut): string {
 
   if (norm.shiftKey) parts.push('Shift');
 
-  const lowerKey = norm.key.toLowerCase();
-  const isSpace = norm.key === ' ' || lowerKey === 'spacebar' || lowerKey === 'space';
-
-  parts.push(isSpace ? 'Space' : norm.key);
+  parts.push(isSpaceShortcutKey(norm.key) ? 'Space' : norm.key);
 
   return parts.join('+');
 }
@@ -209,7 +218,7 @@ export function areShortcutsEqual(a: string | NatTableShortcut, b: string | NatT
   const normB = normalizeShortcut(b);
 
   return (
-    normA.key.toLowerCase() === normB.key.toLowerCase() &&
+    normalizeShortcutKeyForComparison(normA.key) === normalizeShortcutKeyForComparison(normB.key) &&
     normA.altKey === normB.altKey &&
     normA.ctrlKey === normB.ctrlKey &&
     normA.shiftKey === normB.shiftKey &&

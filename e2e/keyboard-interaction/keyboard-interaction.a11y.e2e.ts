@@ -1,39 +1,43 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Keyboard interaction accessibility', () => {
+test.describe('FEATURE: Keyboard interaction accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/keyboard-interaction');
   });
 
-  test('handles interactive cell controls and reports actions via keyboard', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Keyboard Interaction' })).toBeVisible();
+  test.describe('GIVEN: the keyboard interaction example is loaded', () => {
+    test.describe('WHEN: interactive cell controls are operated via keyboard', () => {
+      test('THEN: it operates controls and reports actions via keyboard only', async ({ page }) => {
+        const lastAction = page.locator('.info-tag');
+        const ackBtn = page.getByRole('button', { name: 'Acknowledge Alpha Searcher' });
+        const checkbox = page.getByRole('checkbox', { name: 'Active Alpha Searcher' });
 
-    const lastAction = page.locator('.info-tag');
+        await test.step('THEN: the page renders with no action reported yet', async () => {
+          await expect(page.getByRole('heading', { name: 'Keyboard Interaction' })).toBeVisible();
+          await expect(lastAction).toContainText('Last action: None yet');
+          await expect(ackBtn).toBeVisible();
+          await ackBtn.focus();
+          await page.keyboard.press('Enter');
+        });
 
-    await expect(lastAction).toContainText('Last action: None yet');
+        await test.step('THEN: the acknowledge action is reported', async () => {
+          await expect(lastAction).toContainText('Last action: Acknowledged Alpha Searcher');
+          await expect(checkbox).toBeChecked();
+          await checkbox.focus();
+          await page.keyboard.press('Space');
+        });
 
-    // Find the Acknowledge button for "Alpha Searcher", focus it, and press Enter
-    const ackBtn = page.getByRole('button', { name: 'Acknowledge Alpha Searcher' });
+        await test.step('THEN: the row is unchecked and the pause action is reported', async () => {
+          await expect(checkbox).not.toBeChecked();
+          await expect(lastAction).toContainText('Last action: Paused Alpha Searcher');
+          await page.keyboard.press('Space');
+        });
 
-    await expect(ackBtn).toBeVisible();
-    await ackBtn.focus();
-    await page.keyboard.press('Enter');
-    await expect(lastAction).toContainText('Last action: Acknowledged Alpha Searcher');
-
-    // Find the checkbox for "Alpha Searcher" (initially Active), focus it, and press Space to toggle
-    const checkbox = page.getByRole('checkbox', { name: 'Active Alpha Searcher' });
-
-    await expect(checkbox).toBeChecked();
-
-    // Toggle status checkbox (to pause it) via Space
-    await checkbox.focus();
-    await page.keyboard.press('Space');
-    await expect(checkbox).not.toBeChecked();
-    await expect(lastAction).toContainText('Last action: Paused Alpha Searcher');
-
-    // Toggle status checkbox again (to resume it) via Enter (checkboxes also toggle on Enter in many environments, but Space is standard. Let's use Space again or Enter)
-    await page.keyboard.press('Space');
-    await expect(checkbox).toBeChecked();
-    await expect(lastAction).toContainText('Last action: Resumed Alpha Searcher');
+        await test.step('THEN: the row is checked and the resume action is reported', async () => {
+          await expect(checkbox).toBeChecked();
+          await expect(lastAction).toContainText('Last action: Resumed Alpha Searcher');
+        });
+      });
+    });
   });
 });

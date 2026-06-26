@@ -1,4 +1,15 @@
-import { DestroyRef, Directive, ElementRef, Renderer2, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  DestroyRef,
+  Directive,
+  ElementRef,
+  Renderer2,
+  afterEveryRender,
+  computed,
+  effect,
+  inject,
+  input,
+  signal
+} from '@angular/core';
 
 import { NAT_TABLE_KEYBINDINGS, mergeNatTableKeybindings, serializeShortcutValue } from './keybindings';
 import { NatTableService } from './table.service';
@@ -74,20 +85,17 @@ export class NatTableHotkeyA11y {
     this.originalAriaLabel.set(nativeEl.getAttribute('aria-label'));
     this.originalInnerText.set(readTrimmedText(nativeEl));
 
-    // Observe changes to attributes or content to stay in sync
-    const observer = new MutationObserver((mutations) => this.syncFromMutations(nativeEl, mutations));
+    // Observe changes to attributes or content to stay in sync when a DOM observer exists.
+    const observer = this.createMutationObserver(nativeEl);
 
-    observer.observe(nativeEl, {
-      attributes: true,
-      attributeFilter: ['aria-label'],
-      childList: true,
-      characterData: true,
-      subtree: true
-    });
+    if (!observer) {
+      afterEveryRender(() => {
+        this.syncExternalAriaLabel(nativeEl);
+        this.originalInnerText.set(readTrimmedText(nativeEl));
+      });
+    }
 
-    this.destroyRef.onDestroy(() => {
-      observer.disconnect();
-    });
+    this.destroyRef.onDestroy(() => observer?.disconnect());
 
     // Effect to update ARIA attributes
     effect(() => {
@@ -102,6 +110,26 @@ export class NatTableHotkeyA11y {
         this.updatingAttributes = false;
       }
     });
+  }
+
+  private createMutationObserver(nativeEl: HTMLElement): MutationObserver | null {
+    const mutationObserverCtor = globalThis.MutationObserver;
+
+    if (typeof mutationObserverCtor === 'undefined') {
+      return null;
+    }
+
+    const observer = new mutationObserverCtor((mutations) => this.syncFromMutations(nativeEl, mutations));
+
+    observer.observe(nativeEl, {
+      attributes: true,
+      attributeFilter: ['aria-label'],
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+
+    return observer;
   }
 
   /** Re-reads aria-label / text into the original-* signals when changed from outside this directive. */

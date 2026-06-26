@@ -162,10 +162,7 @@
       <tr ngGridRow>
         <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableStateCell ngGridCell>
           @if (loadingTemplateRef(); as templateRef) {
-          <ng-container
-            [ngTemplateOutlet]="templateRef"
-            [ngTemplateOutletContext]="loadingTemplateContext()"
-            ngTemplateOutletInjector="outlet" />
+          <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
           } @else { {{ resolvedLoadingState() }} }
         </td>
       </tr>
@@ -173,10 +170,7 @@
       <tr ngGridRow>
         <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableStateCell ngGridCell>
           @if (errorTemplateRef(); as templateRef) {
-          <ng-container
-            [ngTemplateOutlet]="templateRef"
-            [ngTemplateOutletContext]="errorTemplateContext()"
-            ngTemplateOutletInjector="outlet" />
+          <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
           } @else { {{ resolvedErrorState() }} }
         </td>
       </tr>
@@ -184,10 +178,7 @@
       <tr ngGridRow>
         <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableStateCell ngGridCell>
           @if (emptyTemplateRef(); as templateRef) {
-          <ng-container
-            [ngTemplateOutlet]="templateRef"
-            [ngTemplateOutletContext]="emptyTemplateContext()"
-            ngTemplateOutletInjector="outlet" />
+          <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
           } @else { {{ resolvedEmptyState() }} }
         </td>
       </tr>

@@ -1,37 +1,41 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Keyboard interaction', () => {
+test.describe('FEATURE: Keyboard interaction', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/keyboard-interaction');
   });
 
-  test('handles interactive cell controls and reports actions', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Keyboard Interaction' })).toBeVisible();
+  test.describe('GIVEN: the keyboard interaction example is loaded', () => {
+    test.describe('WHEN: interactive cell controls are operated via pointer', () => {
+      test('THEN: it operates controls and reports actions via pointer', async ({ page }) => {
+        const lastAction = page.locator('.info-tag');
+        const ackBtn = page.getByRole('button', { name: 'Acknowledge Alpha Searcher' });
+        const checkbox = page.getByRole('checkbox', { name: 'Active Alpha Searcher' });
 
-    const lastAction = page.locator('.info-tag');
+        await test.step('THEN: the page renders with no action reported yet', async () => {
+          await expect(page.getByRole('heading', { name: 'Keyboard Interaction' })).toBeVisible();
+          await expect(lastAction).toContainText('Last action: None yet');
+          await expect(ackBtn).toBeVisible();
+          await ackBtn.click();
+        });
 
-    await expect(lastAction).toContainText('Last action: None yet');
+        await test.step('THEN: the acknowledge action is reported', async () => {
+          await expect(lastAction).toContainText('Last action: Acknowledged Alpha Searcher');
+          await expect(checkbox).toBeChecked();
+          await checkbox.click();
+        });
 
-    // Find the Acknowledge button for "Alpha Searcher"
-    const ackBtn = page.getByRole('button', { name: 'Acknowledge Alpha Searcher' });
+        await test.step('THEN: the row is unchecked and the pause action is reported', async () => {
+          await expect(checkbox).not.toBeChecked();
+          await expect(lastAction).toContainText('Last action: Paused Alpha Searcher');
+          await checkbox.click();
+        });
 
-    await expect(ackBtn).toBeVisible();
-    await ackBtn.click();
-    await expect(lastAction).toContainText('Last action: Acknowledged Alpha Searcher');
-
-    // Find the checkbox for "Alpha Searcher" (initially Active)
-    const checkbox = page.getByRole('checkbox', { name: 'Active Alpha Searcher' });
-
-    await expect(checkbox).toBeChecked();
-
-    // Toggle status checkbox (to pause it)
-    await checkbox.click();
-    await expect(checkbox).not.toBeChecked();
-    await expect(lastAction).toContainText('Last action: Paused Alpha Searcher');
-
-    // Toggle status checkbox again (to resume it)
-    await checkbox.click();
-    await expect(checkbox).toBeChecked();
-    await expect(lastAction).toContainText('Last action: Resumed Alpha Searcher');
+        await test.step('THEN: the row is checked and the resume action is reported', async () => {
+          await expect(checkbox).toBeChecked();
+          await expect(lastAction).toContainText('Last action: Resumed Alpha Searcher');
+        });
+      });
+    });
   });
 });

@@ -1,101 +1,126 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Multiple features', () => {
+test.describe('FEATURE: Multiple features', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/multiple-features');
   });
 
-  test('renders the live market tape showcase page', async ({ page }) => {
-    await expect(page.locator('.brand-name')).toHaveText('Advanced Table');
-    await expect(page.locator('.brand-context')).toHaveText('Live market tape');
-    await expect(page.getByRole('heading', { name: 'Live movers' })).toBeVisible();
+  test.describe('GIVEN: the live market tape example is loaded', () => {
+    test.describe('WHEN: the page is rendered', () => {
+      test('THEN: it shows the branding, heading, and kpi cards', async ({ page }) => {
+        await test.step('THEN: it shows the branding and Live movers heading', async () => {
+          await expect(page.locator('.brand-name')).toHaveText('Advanced Table');
+          await expect(page.locator('.brand-context')).toHaveText('Live market tape');
+          await expect(page.getByRole('heading', { name: 'Live movers' })).toBeVisible();
+        });
 
-    // telemetry cards
-    await expect(page.locator('.kpis')).toBeVisible();
-    await expect(page.locator('.kpi', { hasText: 'Instruments' })).toContainText('Instruments');
-  });
+        await test.step('THEN: it shows the kpi cards', async () => {
+          await expect(page.locator('.kpis')).toBeVisible();
+          await expect(page.locator('.kpi', { hasText: 'Instruments' })).toContainText('Instruments');
+        });
+      });
+    });
 
-  test('can pause and resume live feed simulation', async ({ page }) => {
-    const sessionLabel = page.locator('.session-label');
-    const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
+    test.describe('WHEN: the feed toggle is clicked to pause and resume', () => {
+      test('THEN: it pauses and resumes the live feed simulation', async ({ page }) => {
+        const sessionLabel = page.locator('.session-label');
+        const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
 
-    // Pause feed
-    await toggleBtn.click();
-    await expect(sessionLabel).toContainText('Feed paused');
+        await toggleBtn.click();
 
-    // Resume feed
-    await toggleBtn.click();
-    await expect(sessionLabel).toContainText('Feed live');
-  });
+        await test.step('THEN: the session reports the feed as paused', async () => {
+          await expect(sessionLabel).toContainText('Feed paused');
 
-  test('can tick manually when feed is paused', async ({ page }) => {
-    // Feed starts live; pause it so the tick count only changes on manual ticks.
-    await page.getByRole('button', { name: 'Pause feed' }).click();
-    await expect(page.locator('.session-label')).toContainText('Feed paused');
+          await toggleBtn.click();
+        });
 
-    const tickBtn = page.getByRole('button', { name: 'Tick once' });
-    const totalTicksValue = page.locator('.kpi', { hasText: 'Total ticks' }).locator('.kpi-value');
-    const totalTicksBefore = await totalTicksValue.textContent();
+        await test.step('THEN: the session reports the feed as live', async () => {
+          await expect(sessionLabel).toContainText('Feed live');
+        });
+      });
+    });
 
-    await tickBtn.click();
+    test.describe('WHEN: a manual tick is triggered while the feed is paused', () => {
+      test('THEN: it increments the total ticks count', async ({ page }) => {
+        // Feed starts live; pause it so the tick count only changes on manual ticks.
+        await page.getByRole('button', { name: 'Pause feed' }).click();
+        await expect(page.locator('.session-label')).toContainText('Feed paused');
 
-    // The total ticks count should increment or update
-    await expect(totalTicksValue).not.toHaveText(totalTicksBefore ?? '');
-  });
+        const tickBtn = page.getByRole('button', { name: 'Tick once' });
+        const totalTicksValue = page.locator('.kpi', { hasText: 'Total ticks' }).locator('.kpi-value');
+        const totalTicksBefore = await totalTicksValue.textContent();
 
-  test('filters table using signal chips', async ({ page }) => {
-    // Pause simulation to prevent rows from mutating dynamically (feed starts live)
-    await page.getByRole('button', { name: 'Pause feed' }).click();
-    await expect(page.locator('.session-label')).toContainText('Feed paused');
+        await tickBtn.click();
 
-    // Select Advancing signal chip
-    const advancingChip = page.locator('.status-chip[data-status="Advancing"]');
+        await test.step('THEN: the total ticks count changes', async () => {
+          await expect(totalTicksValue).not.toHaveText(totalTicksBefore ?? '');
+        });
+      });
+    });
 
-    await advancingChip.click();
+    test.describe('WHEN: a signal chip is selected', () => {
+      test('THEN: it filters the table to show only rows with that status', async ({ page }) => {
+        // Pause simulation to prevent rows from mutating dynamically (feed starts live)
+        await page.getByRole('button', { name: 'Pause feed' }).click();
+        await expect(page.locator('.session-label')).toContainText('Feed paused');
 
-    // Verify only Advancing status is visible
-    const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
-    const totalRows = await page.locator('tbody tr').count();
+        const advancingChip = page.locator('.status-chip[data-status="Advancing"]');
 
-    expect(totalRows).toBeGreaterThan(0);
-    await expect(advancingRows).toHaveCount(totalRows);
-  });
+        await advancingChip.click();
 
-  test('searches rows using global fuzzy search input', async ({ page }) => {
-    // Pause simulation to prevent rows from mutating dynamically (feed starts live)
-    await page.getByRole('button', { name: 'Pause feed' }).click();
-    await expect(page.locator('.session-label')).toContainText('Feed paused');
+        await test.step('THEN: every visible row has the Advancing status', async () => {
+          const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
+          const totalRows = await page.locator('tbody tr').count();
 
-    // Wait for table rows to render to ensure table is fully initialized
-    await expect(page.locator('tbody tr')).not.toHaveCount(0);
+          expect(totalRows).toBeGreaterThan(0);
+          await expect(advancingRows).toHaveCount(totalRows);
+        });
+      });
+    });
 
-    const searchInput = page.locator('app-table-search input');
+    test.describe('WHEN: NASDAQ is entered into the global search', () => {
+      test('THEN: it filters table rows to show only NASDAQ exchange entries', async ({ page }) => {
+        // Pause simulation to prevent rows from mutating dynamically (feed starts live)
+        await page.getByRole('button', { name: 'Pause feed' }).click();
+        await expect(page.locator('.session-label')).toContainText('Feed paused');
 
-    await expect(searchInput).toBeVisible();
+        await expect(page.locator('tbody tr')).not.toHaveCount(0);
 
-    await searchInput.fill('NASDAQ');
-    await searchInput.press('Enter');
+        const searchInput = page.locator('app-table-search input');
 
-    // Check that the leading visible row's exchange is indeed NASDAQ
-    await expect(page.locator('td[data-column-id="exchange"]')).toContainText(['NASDAQ']);
+        await expect(searchInput).toBeVisible();
 
-    // Check that no non-NASDAQ exchange cells are displayed
-    const nasdaqCells = page.locator('td[data-column-id="exchange"]').filter({ hasText: 'NASDAQ' });
-    const totalRows = await page.locator('tbody tr').count();
+        await searchInput.fill('NASDAQ');
+        await searchInput.press('Enter');
 
-    await expect(nasdaqCells).toHaveCount(totalRows);
-  });
+        await test.step('THEN: every visible exchange cell is NASDAQ', async () => {
+          await expect(page.locator('td[data-column-id="exchange"]')).toContainText(['NASDAQ']);
 
-  test('navigates pagination page sizes and indices', async ({ page }) => {
-    const pager = page.getByRole('toolbar', { name: 'Live movers table toolbar' });
-    const nextBtn = pager.getByRole('button', { name: 'Next page' });
-    const prevBtn = pager.getByRole('button', { name: 'Previous page' });
+          const nasdaqCells = page.locator('td[data-column-id="exchange"]').filter({ hasText: 'NASDAQ' });
+          const totalRows = await page.locator('tbody tr').count();
 
-    // Initially on page 1
-    await expect(prevBtn).toBeDisabled();
+          await expect(nasdaqCells).toHaveCount(totalRows);
+        });
+      });
+    });
 
-    await expect(nextBtn).toBeEnabled();
-    await nextBtn.click();
-    await expect(prevBtn).toBeEnabled();
+    test.describe('WHEN: the Next page button is clicked', () => {
+      test('THEN: it enables the Previous page button', async ({ page }) => {
+        const pager = page.getByRole('toolbar', { name: 'Live movers table toolbar' });
+        const nextBtn = pager.getByRole('button', { name: 'Next page' });
+        const prevBtn = pager.getByRole('button', { name: 'Previous page' });
+
+        await test.step('THEN: the first page disables Previous and enables Next', async () => {
+          await expect(prevBtn).toBeDisabled();
+          await expect(nextBtn).toBeEnabled();
+
+          await nextBtn.click();
+        });
+
+        await test.step('THEN: Previous is enabled', async () => {
+          await expect(prevBtn).toBeEnabled();
+        });
+      });
+    });
   });
 });

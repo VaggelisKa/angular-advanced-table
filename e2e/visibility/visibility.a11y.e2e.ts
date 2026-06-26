@@ -1,43 +1,53 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Column visibility accessibility', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/visibility');
-  });
+test.describe('FEATURE: Column visibility', () => {
+  test.describe('GIVEN: the column visibility demo page is loaded', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/examples/visibility');
+    });
 
-  test('toggles column visibility via chips using keyboard only', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Column Visibility' })).toBeVisible();
+    test.describe('WHEN: a column chip is activated via keyboard', () => {
+      test('THEN: it toggles the corresponding column visibility', async ({ page }) => {
+        await expect(page.getByRole('heading', { name: 'Column Visibility' })).toBeVisible();
 
-    const table = page.getByRole('grid', { name: 'Visibility demo table' });
+        const table = page.getByRole('grid', { name: 'Visibility demo table' });
+        const statusChip = page.locator('button[data-column-id="status"]');
+        const nameChip = page.locator('button[data-column-id="name"]');
 
-    // Columns initially defined in tableState:
-    // name: true, category: true, status: false, value: true
-    await expect(table.getByRole('columnheader', { name: 'Name' })).toBeVisible();
-    await expect(table.getByRole('columnheader', { name: 'Status' })).toBeHidden();
+        // Columns initially defined in tableState:
+        // name: true, category: true, status: false, value: true
+        await test.step('THEN: Name is shown and Status is hidden initially', async () => {
+          await expect(table.getByRole('columnheader', { name: 'Name' })).toBeVisible();
+          await expect(table.getByRole('columnheader', { name: 'Status' })).toBeHidden();
 
-    // Find the column chip for status, focus and press Space to show it
-    const statusChip = page.locator('button[data-column-id="status"]');
+          await expect(statusChip).toBeVisible();
+          await expect(statusChip).not.toHaveClass(/is-active/);
+        });
 
-    await expect(statusChip).toBeVisible();
-    await expect(statusChip).not.toHaveClass(/is-active/);
+        await test.step('THEN: the Status chip is focused and activated with Space', async () => {
+          await statusChip.focus();
+          await expect(statusChip).toBeFocused();
+          await page.keyboard.press('Space');
+        });
 
-    await statusChip.focus();
-    await expect(statusChip).toBeFocused();
-    await page.keyboard.press('Space');
+        await test.step('THEN: the Status column becomes visible', async () => {
+          await expect(statusChip).toHaveClass(/is-active/);
+          await expect(table.getByRole('columnheader', { name: 'Status' })).toBeVisible();
 
-    await expect(statusChip).toHaveClass(/is-active/);
-    await expect(table.getByRole('columnheader', { name: 'Status' })).toBeVisible();
+          await expect(nameChip).toHaveClass(/is-active/);
+        });
 
-    // Focus the "Name" chip and press Enter to hide it
-    const nameChip = page.locator('button[data-column-id="name"]');
+        await test.step('THEN: the Name chip is focused and activated with Enter', async () => {
+          await nameChip.focus();
+          await expect(nameChip).toBeFocused();
+          await page.keyboard.press('Enter');
+        });
 
-    await expect(nameChip).toHaveClass(/is-active/);
-
-    await nameChip.focus();
-    await expect(nameChip).toBeFocused();
-    await page.keyboard.press('Enter');
-
-    await expect(nameChip).not.toHaveClass(/is-active/);
-    await expect(table.getByRole('columnheader', { name: 'Name' })).toBeHidden();
+        await test.step('THEN: the Name column becomes hidden', async () => {
+          await expect(nameChip).not.toHaveClass(/is-active/);
+          await expect(table.getByRole('columnheader', { name: 'Name' })).toBeHidden();
+        });
+      });
+    });
   });
 });
