@@ -81,9 +81,9 @@ describe('FEATURE: TableSearch (user-defined)', () => {
     await fixture.whenStable();
   });
 
-  describe('GIVEN: registers with the table so global filtering is enabled', () => {
+  describe('GIVEN: a table search host is rendered', () => {
     describe('WHEN: registers with the table so global filtering is enabled', () => {
-      it('THEN: it registers with the table so global filtering is enabled', () => {
+      it('THEN: it renders the search input after table registration', () => {
         fixture.detectChanges();
 
         expect(searchInput()).toBeTruthy();
@@ -91,9 +91,9 @@ describe('FEATURE: TableSearch (user-defined)', () => {
     });
   });
 
-  describe('GIVEN: associates the input with the table element via aria-controls', () => {
+  describe('GIVEN: a table search host is rendered with a rendered table target', () => {
     describe('WHEN: associates the input with the table element via aria-controls', () => {
-      it('THEN: it associates the input with the table element via aria-controls', () => {
+      it('THEN: it points aria-controls at the rendered table', () => {
         fixture.detectChanges();
 
         const element = fixture.nativeElement as HTMLElement;
@@ -108,9 +108,9 @@ describe('FEATURE: TableSearch (user-defined)', () => {
     });
   });
 
-  describe('GIVEN: filters rows and resets pagination to the first page on input', () => {
+  describe('GIVEN: a table search host is rendered with paginated searchable rows', () => {
     describe('WHEN: filters rows and resets pagination to the first page on input', () => {
-      it('THEN: it filters rows and resets pagination to the first page on input', async () => {
+      it('THEN: it updates filtering and pagination state', async () => {
         fixture.detectChanges();
         const input = searchInput();
 

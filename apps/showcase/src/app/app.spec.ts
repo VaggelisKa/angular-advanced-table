@@ -105,9 +105,9 @@ describe('FEATURE: App', () => {
     vi.unstubAllGlobals();
   });
 
-  describe('GIVEN: create the app', () => {
+  describe('GIVEN: the showcase app shell is rendered', () => {
     describe('WHEN: create the app', () => {
-      it('THEN: it should create the app', () => {
+      it('THEN: it creates the app component instance', () => {
         const fixture = TestBed.createComponent(App);
         const app = fixture.componentInstance;
 
@@ -116,9 +116,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: render the docs and examples navigation shell', () => {
+  describe('GIVEN: the showcase app shell is rendered with docs and examples routes', () => {
     describe('WHEN: render the docs and examples navigation shell', () => {
-      it('THEN: it should render the docs and examples navigation shell', async () => {
+      it('THEN: it shows the navigation landmarks and branches', async () => {
         const fixture = TestBed.createComponent(App);
 
         await fixture.whenStable();
@@ -172,9 +172,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: collapse and expand top-level navigation tree branches', () => {
+  describe('GIVEN: the showcase app shell is rendered with expandable top-level navigation', () => {
     describe('WHEN: collapse and expand top-level navigation tree branches', () => {
-      it('THEN: it should collapse and expand top-level navigation tree branches', async () => {
+      it('THEN: it updates top-level tree expansion state', async () => {
         const fixture = TestBed.createComponent(App);
 
         await fixture.whenStable();
@@ -211,9 +211,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: expand and collapse nested navigation tree groups', () => {
+  describe('GIVEN: the showcase app shell is rendered with nested navigation groups', () => {
     describe('WHEN: expand and collapse nested navigation tree groups', () => {
-      it('THEN: it should expand and collapse nested navigation tree groups', async () => {
+      it('THEN: it updates nested tree expansion state', async () => {
         const fixture = TestBed.createComponent(App);
 
         await fixture.whenStable();
@@ -252,9 +252,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: restore persisted expanded top-level navigation tree branches', () => {
+  describe('GIVEN: the showcase app shell is rendered with persisted navigation state', () => {
     describe('WHEN: restore persisted expanded top-level navigation tree branches', () => {
-      it('THEN: it should restore persisted expanded top-level navigation tree branches', async () => {
+      it('THEN: it loads expansion state from storage', async () => {
         globalThis.localStorage.setItem(
           EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY,
           JSON.stringify(['docs', 'docs-core-model', 'removed-branch'])
@@ -280,9 +280,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: mark the current route leaf and ancestor tree branch', () => {
+  describe('GIVEN: the showcase app shell is rendered with an active nested route', () => {
     describe('WHEN: mark the current route leaf and ancestor tree branch', () => {
-      it('THEN: it should mark the current route leaf and ancestor tree branch', async () => {
+      it('THEN: it marks the active leaf and expanded ancestor', async () => {
         const router = TestBed.inject(Router);
 
         await router.navigateByUrl('/docs/quick-start');
@@ -302,9 +302,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: toggle the showcase theme from the sidenav', () => {
+  describe('GIVEN: the showcase app shell is rendered with sidenav theme controls', () => {
     describe('WHEN: toggle the showcase theme from the sidenav', () => {
-      it('THEN: it should toggle the showcase theme from the sidenav', async () => {
+      it('THEN: it updates theme state and button copy', async () => {
         const fixture = TestBed.createComponent(App);
 
         await fixture.whenStable();
@@ -330,9 +330,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: open and close the mobile navigation drawer from the trigger', () => {
+  describe('GIVEN: the showcase app shell is rendered with a mobile navigation trigger', () => {
     describe('WHEN: open and close the mobile navigation drawer from the trigger', () => {
-      it('THEN: it should open and close the mobile navigation drawer from the trigger', async () => {
+      it('THEN: it updates drawer visibility and trigger state', async () => {
         const fixture = TestBed.createComponent(App);
 
         await fixture.whenStable();
@@ -368,9 +368,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: move focus into the mobile drawer and restore it on close', () => {
+  describe('GIVEN: the showcase app shell is rendered with mobile drawer focus management', () => {
     describe('WHEN: move focus into the mobile drawer and restore it on close', () => {
-      it('THEN: it should move focus into the mobile drawer and restore it on close', async () => {
+      it('THEN: it moves focus into the drawer and back to the trigger', async () => {
         const fixture = TestBed.createComponent(App);
 
         await fixture.whenStable();
@@ -395,9 +395,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: close the mobile drawer after choosing a navigation link', () => {
+  describe('GIVEN: the showcase app shell is rendered with mobile drawer navigation links', () => {
     describe('WHEN: close the mobile drawer after choosing a navigation link', () => {
-      it('THEN: it should close the mobile drawer after choosing a navigation link', async () => {
+      it('THEN: it hides the drawer after link activation', async () => {
         const fixture = TestBed.createComponent(App);
         const router = TestBed.inject(Router);
 
@@ -425,9 +425,9 @@ describe('FEATURE: App', () => {
     });
   });
 
-  describe('GIVEN: route the default page to the quick start docs', () => {
+  describe('GIVEN: the showcase app shell is rendered with the default route configured', () => {
     describe('WHEN: route the default page to the quick start docs', () => {
-      it('THEN: it should route the default page to the quick start docs', async () => {
+      it('THEN: it navigates to the quick start docs route', async () => {
         const fixture = TestBed.createComponent(App);
         const router = TestBed.inject(Router);
 

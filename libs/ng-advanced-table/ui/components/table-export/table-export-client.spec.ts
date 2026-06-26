@@ -4,9 +4,9 @@ import { createNatTableCsvBlob, normalizeNatTableCsvFileName } from './table-exp
 import type { NatTableExportData } from './table-export.types';
 
 describe('FEATURE: table export CSV client', () => {
-  describe('GIVEN: serializes export data as UTF-8 CSV with escaping and spreadsheet formula guards', () => {
+  describe('GIVEN: CSV export inputs are available', () => {
     describe('WHEN: serializes export data as UTF-8 CSV with escaping and spreadsheet formula guards', () => {
-      it('THEN: it serializes export data as UTF-8 CSV with escaping and spreadsheet formula guards', async () => {
+      it('THEN: it emits guarded CSV text and filename metadata', async () => {
         const data: NatTableExportData = {
           columns: [
             { id: 'name', header: 'Name' },
@@ -36,9 +36,9 @@ describe('FEATURE: table export CSV client', () => {
     });
   });
 
-  describe('GIVEN: appends the csv extension only when missing', () => {
+  describe('GIVEN: CSV export inputs are available with CSV download filenames', () => {
     describe('WHEN: appends the csv extension only when missing', () => {
-      it('THEN: it appends the csv extension only when missing', () => {
+      it('THEN: it normalizes CSV filenames without duplicating extensions', () => {
         expect(normalizeNatTableCsvFileName('orders')).toBe('orders.csv');
         expect(normalizeNatTableCsvFileName('orders.CSV')).toBe('orders.CSV');
       });

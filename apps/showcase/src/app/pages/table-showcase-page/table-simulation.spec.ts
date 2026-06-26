@@ -14,25 +14,25 @@ describe('FEATURE: TableSimulation', () => {
     service.pause();
   });
 
-  describe('GIVEN: be created', () => {
+  describe('GIVEN: a table simulation instance is created', () => {
     describe('WHEN: be created', () => {
-      it('THEN: it should be created', () => {
+      it('THEN: it creates the simulation instance', () => {
         expect(service).toBeTruthy();
       });
     });
   });
 
-  describe('GIVEN: create a dataset that matches the default size', () => {
+  describe('GIVEN: a table simulation instance is created with default dataset options', () => {
     describe('WHEN: create a dataset that matches the default size', () => {
-      it('THEN: it should create a dataset that matches the default size', () => {
+      it('THEN: it creates the default number of rows', () => {
         expect(service.rows()).toHaveLength(service.datasetSize());
       });
     });
   });
 
-  describe('GIVEN: seed rows with trading metrics', () => {
+  describe('GIVEN: a table simulation instance is created with generated market rows', () => {
     describe('WHEN: seed rows with trading metrics', () => {
-      it('THEN: it should seed rows with trading metrics', () => {
+      it('THEN: it adds trading metric values to seeded rows', () => {
         const firstRow = service.rows()[0];
 
         expect(firstRow.price).toBeGreaterThan(0);
@@ -42,9 +42,9 @@ describe('FEATURE: TableSimulation', () => {
     });
   });
 
-  describe('GIVEN: seed every row with a full sparkline history', () => {
+  describe('GIVEN: a table simulation instance is created with generated sparkline histories', () => {
     describe('WHEN: seed every row with a full sparkline history', () => {
-      it('THEN: it should seed every row with a full sparkline history', () => {
+      it('THEN: it adds full sparkline history to each row', () => {
         const rows = service.rows();
 
         expect(rows[0].priceHistory).toHaveLength(SPARK_HISTORY_LENGTH);
@@ -54,9 +54,9 @@ describe('FEATURE: TableSimulation', () => {
     });
   });
 
-  describe('GIVEN: cap sparkline history at the configured length after pulses', () => {
+  describe('GIVEN: a table simulation instance is created with pulsed sparkline history', () => {
     describe('WHEN: cap sparkline history at the configured length after pulses', () => {
-      it('THEN: it should cap sparkline history at the configured length after pulses', () => {
+      it('THEN: it keeps sparkline history within the configured limit', () => {
         for (let index = 0; index < 3; index += 1) {
           service.pulse();
         }
@@ -72,9 +72,9 @@ describe('FEATURE: TableSimulation', () => {
     });
   });
 
-  describe('GIVEN: mutate rows when a pulse runs', () => {
+  describe('GIVEN: a table simulation instance is created with pulsed market rows', () => {
     describe('WHEN: mutate rows when a pulse runs', () => {
-      it('THEN: it should mutate rows when a pulse runs', () => {
+      it('THEN: it changes row values during a pulse', () => {
         service.pulse();
 
         expect(service.lastMutationSize()).toBeGreaterThan(0);

@@ -36,9 +36,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     store = new NatTableRenderMetricsStore();
   });
 
-  describe('GIVEN: starts with no measurement and no recorded metrics', () => {
+  describe('GIVEN: a render metrics store is created', () => {
     describe('WHEN: starts with no measurement and no recorded metrics', () => {
-      it('THEN: it starts with no measurement and no recorded metrics', () => {
+      it('THEN: it exposes empty initial metric state', () => {
         expect(store.measurement()).toBeNull();
         expect(store.rowMetric('missing')).toBeUndefined();
         expect(store.rowMetrics()).toStrictEqual({});
@@ -46,9 +46,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     });
   });
 
-  describe('GIVEN: aggregates durations across rows in the same render cycle', () => {
+  describe('GIVEN: a render metrics store is created with one render cycle containing multiple rows', () => {
     describe('WHEN: aggregates durations across rows in the same render cycle', () => {
-      it('THEN: it aggregates durations across rows in the same render cycle', () => {
+      it('THEN: it records row and cycle duration totals', () => {
         store.record({ rowId: 'row-1', renderToken: 1, durationMs: 2.4 });
         store.record({ rowId: 'row-2', renderToken: 1, durationMs: 6.8 });
         store.record({ rowId: 'row-3', renderToken: 1, durationMs: 12.0 });
@@ -69,9 +69,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     });
   });
 
-  describe('GIVEN: resets the cycle aggregate when a new render token arrives while keeping per-row history', () => {
+  describe('GIVEN: a render metrics store is created with multiple render cycle tokens', () => {
     describe('WHEN: resets the cycle aggregate when a new render token arrives while keeping per-row history', () => {
-      it('THEN: it resets the cycle aggregate when a new render token arrives while keeping per-row history', () => {
+      it('THEN: it starts a fresh cycle and preserves row history', () => {
         store.record({ rowId: 'row-1', renderToken: 1, durationMs: 2 });
         store.record({ rowId: 'row-2', renderToken: 1, durationMs: 3 });
         store.record({ rowId: 'row-3', renderToken: 2, durationMs: 10 });
@@ -92,9 +92,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     });
   });
 
-  describe('GIVEN: retains only the newest row metrics according to the configured row limit', () => {
+  describe('GIVEN: a render metrics store is created with a configured row retention limit', () => {
     describe('WHEN: retains only the newest row metrics according to the configured row limit', () => {
-      it('THEN: it retains only the newest row metrics according to the configured row limit', () => {
+      it('THEN: it evicts older row metric entries', () => {
         store = new NatTableRenderMetricsStore({ maxRetainedRowMetrics: 2 });
 
         store.record({ rowId: 'row-1', renderToken: 1, durationMs: 2 });
@@ -110,9 +110,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     });
   });
 
-  describe('GIVEN: falls back to the default retention limit when configured with zero', () => {
+  describe('GIVEN: a render metrics store is created with an invalid row retention limit', () => {
     describe('WHEN: falls back to the default retention limit when configured with zero', () => {
-      it('THEN: it falls back to the default retention limit when configured with zero', () => {
+      it('THEN: it uses the default row retention limit', () => {
         store = new NatTableRenderMetricsStore({ maxRetainedRowMetrics: 0 });
 
         store.record({ rowId: 'row-1', renderToken: 1, durationMs: 2 });
@@ -123,9 +123,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     });
   });
 
-  describe('GIVEN: freezes exposed metric state so external mutation cannot corrupt the store', () => {
+  describe('GIVEN: a render metrics store is created with exposed metric snapshots', () => {
     describe('WHEN: freezes exposed metric state so external mutation cannot corrupt the store', () => {
-      it('THEN: it freezes exposed metric state so external mutation cannot corrupt the store', () => {
+      it('THEN: it protects snapshots from external mutation', () => {
         store.record({ rowId: 'row-1', renderToken: 1, durationMs: 4 });
 
         const rowMetrics = store.rowMetrics();
@@ -159,9 +159,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     });
   });
 
-  describe('GIVEN: classifies durations into render tones', () => {
+  describe('GIVEN: a render metrics store is created with render duration thresholds', () => {
     describe('WHEN: classifies durations into render tones', () => {
-      it('THEN: it classifies durations into render tones', () => {
+      it('THEN: it returns the expected tone for each duration', () => {
         store.record({ rowId: 'fast', renderToken: 1, durationMs: 1.2 });
         store.record({ rowId: 'watch', renderToken: 1, durationMs: 6 });
         store.record({ rowId: 'slow', renderToken: 1, durationMs: 15 });
@@ -173,9 +173,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
     });
   });
 
-  describe('GIVEN: clears all state on reset', () => {
+  describe('GIVEN: a render metrics store is created with populated render metric state', () => {
     describe('WHEN: clears all state on reset', () => {
-      it('THEN: it clears all state on reset', () => {
+      it('THEN: it returns to an empty metric state', () => {
         store.record({ rowId: 'row-1', renderToken: 1, durationMs: 4 });
         store.reset();
 

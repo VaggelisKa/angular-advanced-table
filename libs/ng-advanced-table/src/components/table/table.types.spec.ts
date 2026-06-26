@@ -30,9 +30,9 @@ type NatTableUiControllerMatchesInternalContract = Expect<
 >;
 
 describe('FEATURE: ng-advanced-table public table contracts', () => {
-  describe('GIVEN: keeps public table contracts aligned with the internal contract library', () => {
+  describe('GIVEN: the core public contract mirror is available', () => {
     describe('WHEN: keeps public table contracts aligned with the internal contract library', () => {
-      it('THEN: it keeps public table contracts aligned with the internal contract library', () => {
+      it('THEN: it type-checks the published table contracts', () => {
         // Compile-time contract assertions: the tuple type only resolves when each public
         // type structurally matches its internal counterpart, so a drift fails the build.
         const contractChecks: [

@@ -51,9 +51,9 @@ describe('FEATURE: SelectionShowcasePage', () => {
     fixture.detectChanges();
   }
 
-  describe('GIVEN: clears the selection when the mode changes and restores a correct partial header', () => {
+  describe('GIVEN: the selection showcase page is rendered', () => {
     describe('WHEN: clears the selection when the mode changes and restores a correct partial header', () => {
-      it('THEN: it clears the selection when the mode changes and restores a correct partial header', async () => {
+      it('THEN: it resets selection state and header checkbox state', async () => {
         rowCheckbox(0).click();
         await flush();
         rowCheckbox(1).click();
@@ -86,9 +86,9 @@ describe('FEATURE: SelectionShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: prunes the selection when selected rows are deleted', () => {
+  describe('GIVEN: the selection showcase page is rendered with deletable selected rows', () => {
     describe('WHEN: prunes the selection when selected rows are deleted', () => {
-      it('THEN: it prunes the selection when selected rows are deleted', async () => {
+      it('THEN: it removes deleted rows from selection state', async () => {
         const header = headerCheckbox();
 
         if (!header) {
@@ -108,9 +108,9 @@ describe('FEATURE: SelectionShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: drops a deleted row from a partial selection without leaving a stale id', () => {
+  describe('GIVEN: the selection showcase page is rendered with a partially selected row set', () => {
     describe('WHEN: drops a deleted row from a partial selection without leaving a stale id', () => {
-      it('THEN: it drops a deleted row from a partial selection without leaving a stale id', async () => {
+      it('THEN: it removes the stale partial-selection id', async () => {
         rowCheckbox(0).click();
         await flush();
         rowCheckbox(1).click();
@@ -130,9 +130,9 @@ describe('FEATURE: SelectionShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: clears every checkbox when selection is cleared', () => {
+  describe('GIVEN: the selection showcase page is rendered with selected checkboxes', () => {
     describe('WHEN: clears every checkbox when selection is cleared', () => {
-      it('THEN: it clears every checkbox when selection is cleared', async () => {
+      it('THEN: it unchecks all rendered selection controls', async () => {
         rowCheckbox(0).click();
         await flush();
         rowCheckbox(1).click();

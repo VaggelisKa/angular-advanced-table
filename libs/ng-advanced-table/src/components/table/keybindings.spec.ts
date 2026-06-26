@@ -17,7 +17,7 @@ import type { NatTableKeybindings, NatTableShortcut } from './keybindings';
 describe('FEATURE: NatTable Keybindings Utilities', () => {
   describe('GIVEN: parseShortcutString', () => {
     describe('WHEN: parse single keys with no modifiers', () => {
-      it('THEN: it should parse single keys with no modifiers', () => {
+      it('THEN: it returns a shortcut object with no modifier flags', () => {
         const parsed = parseShortcutString('Enter');
 
         expect(parsed).toStrictEqual({
@@ -31,7 +31,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: parse key combinations with modifiers', () => {
-      it('THEN: it should parse key combinations with modifiers', () => {
+      it('THEN: it returns a shortcut object with the requested modifier flags', () => {
         const parsed = parseShortcutString('Alt+Shift+ArrowLeft');
 
         expect(parsed).toStrictEqual({
@@ -45,7 +45,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: support alternative modifier names like Control/Cmd/Win', () => {
-      it('THEN: it should support alternative modifier names like Control/Cmd/Win', () => {
+      it('THEN: it recognizes the supported modifier aliases', () => {
         const parsed = parseShortcutString('Control+Cmd+a');
 
         expect(parsed).toStrictEqual({
@@ -59,7 +59,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: correctly handle the plus (+) key when used with modifiers', () => {
-      it('THEN: it should correctly handle the plus (+) key when used with modifiers', () => {
+      it('THEN: it keeps the plus key distinct from modifier separators', () => {
         const parsed = parseShortcutString('Ctrl++');
 
         expect(parsed).toStrictEqual({
@@ -89,7 +89,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: map Mod to metaKey on Mac', () => {
-      it('THEN: it should map Mod to metaKey on Mac', () => {
+      it('THEN: it sets the macOS meta modifier flag', () => {
         Object.defineProperty(globalThis, 'navigator', {
           value: {
             userAgent: 'macintosh',
@@ -111,7 +111,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: map Mod to ctrlKey on Windows/Linux', () => {
-      it('THEN: it should map Mod to ctrlKey on Windows/Linux', () => {
+      it('THEN: it sets the non-macOS control modifier flag', () => {
         Object.defineProperty(globalThis, 'navigator', {
           value: {
             userAgent: 'windows',
@@ -133,7 +133,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: map cmdOrCtrlKey object property correctly based on platform', () => {
-      it('THEN: it should map cmdOrCtrlKey object property correctly based on platform', () => {
+      it('THEN: it normalizes cmdOrCtrlKey for each platform', () => {
         // Mac
         Object.defineProperty(globalThis, 'navigator', {
           value: {
@@ -173,7 +173,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: normalizeShortcut', () => {
     describe('WHEN: parse a string representation', () => {
-      it('THEN: it should parse a string representation', () => {
+      it('THEN: it returns the normalized shortcut value', () => {
         const parsed = normalizeShortcut('Ctrl+Alt+Delete');
 
         expect(parsed.key).toBe('Delete');
@@ -183,7 +183,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: normalize a partial shortcut object, filling in missing modifiers with false', () => {
-      it('THEN: it should normalize a partial shortcut object, filling in missing modifiers with false', () => {
+      it('THEN: it fills all omitted modifier flags with false', () => {
         const partial: NatTableShortcut = { key: 'ArrowDown', ctrlKey: true };
         const normalized = normalizeShortcut(partial);
 
@@ -200,7 +200,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: matchShortcut', () => {
     describe('WHEN: match a KeyboardEvent against a string shortcut', () => {
-      it('THEN: it should match a KeyboardEvent against a string shortcut', () => {
+      it('THEN: it reports a match for the configured key event', () => {
         const event = new KeyboardEvent('keydown', {
           key: 'ArrowLeft',
           altKey: true,
@@ -212,7 +212,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: not match if modifier keys do not match exactly', () => {
-      it('THEN: it should not match if modifier keys do not match exactly', () => {
+      it('THEN: it rejects events with different modifier state', () => {
         const event = new KeyboardEvent('keydown', {
           key: 'ArrowLeft',
           altKey: true,
@@ -224,7 +224,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: match a KeyboardEvent against a shortcut object', () => {
-      it('THEN: it should match a KeyboardEvent against a shortcut object', () => {
+      it('THEN: it accepts the matching object shortcut', () => {
         const event = new KeyboardEvent('keydown', {
           key: 'Enter'
         });
@@ -234,7 +234,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: normalize Space aliases when matching KeyboardEvents', () => {
-      it('THEN: it should normalize Space aliases when matching KeyboardEvents', () => {
+      it('THEN: it accepts supported Space key aliases', () => {
         const modernSpaceEvent = new KeyboardEvent('keydown', { key: ' ' });
         const legacySpaceEvent = new KeyboardEvent('keydown', { key: 'Spacebar' });
 
@@ -248,7 +248,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: matchShortcutValue', () => {
     describe('WHEN: match against a single value', () => {
-      it('THEN: it should match against a single value', () => {
+      it('THEN: it accepts the configured shortcut value', () => {
         const event = new KeyboardEvent('keydown', { key: 'Escape' });
 
         expect(matchShortcutValue(event, 'Escape')).toBe(true);
@@ -256,7 +256,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: match against an array of values', () => {
-      it('THEN: it should match against an array of values', () => {
+      it('THEN: it accepts any matching shortcut candidate', () => {
         const event = new KeyboardEvent('keydown', { key: 'Spacebar' });
 
         expect(matchShortcutValue(event, ['Enter', ' ', 'Spacebar'])).toBe(true);
@@ -264,7 +264,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: return false if value is undefined', () => {
-      it('THEN: it should return false if value is undefined', () => {
+      it('THEN: it reports no match for missing shortcut values', () => {
         const event = new KeyboardEvent('keydown', { key: 'Enter' });
 
         expect(matchShortcutValue(event, undefined)).toBe(false);
@@ -274,7 +274,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: mergeNatTableKeybindings', () => {
     describe('WHEN: fall back to defaults when empty overrides are provided', () => {
-      it('THEN: it should fall back to defaults when empty overrides are provided', () => {
+      it('THEN: it preserves default keybinding values', () => {
         const merged = mergeNatTableKeybindings({}, {});
 
         expect(merged).toStrictEqual(DEFAULT_NAT_TABLE_KEYBINDINGS);
@@ -282,7 +282,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: merge and prioritize overrides', () => {
-      it('THEN: it should merge and prioritize overrides', () => {
+      it('THEN: it applies override values over defaults', () => {
         const merged = mergeNatTableKeybindings({ rowActivate: 'Space' }, { columnReorderLeft: 'Ctrl+ArrowLeft' });
 
         expect(merged.rowActivate).toBe('Space');
@@ -294,13 +294,13 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: serializeShortcutValue', () => {
     describe('WHEN: handle undefined and empty input', () => {
-      it('THEN: it should handle undefined and empty input', () => {
+      it('THEN: it returns an empty serialized shortcut string', () => {
         expect(serializeShortcutValue(undefined)).toBe('');
       });
     });
 
     describe('WHEN: serialize simple string shortcuts', () => {
-      it('THEN: it should serialize simple string shortcuts', () => {
+      it('THEN: it returns the original shortcut text', () => {
         expect(serializeShortcutValue('Enter')).toBe('Enter');
         expect(serializeShortcutValue(' ')).toBe('Space');
         expect(serializeShortcutValue('Spacebar')).toBe('Space');
@@ -309,7 +309,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: serialize single shortcut objects with modifiers alphabetically', () => {
-      it('THEN: it should serialize single shortcut objects with modifiers alphabetically', () => {
+      it('THEN: it emits modifiers in stable order', () => {
         const shortcut: NatTableShortcut = {
           key: 'a',
           ctrlKey: true,
@@ -324,7 +324,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: serialize array shortcut values separated by spaces', () => {
-      it('THEN: it should serialize array shortcut values separated by spaces', () => {
+      it('THEN: it joins serialized shortcuts with spaces', () => {
         const value = ['Enter', ' ', { key: 'ArrowLeft', altKey: true, shiftKey: true }];
 
         expect(serializeShortcutValue(value)).toBe('Enter Space Alt+Shift+ArrowLeft');
@@ -334,7 +334,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: areShortcutsEqual', () => {
     describe('WHEN: return true for identical shortcuts in different formats', () => {
-      it('THEN: it should return true for identical shortcuts in different formats', () => {
+      it('THEN: it recognizes equivalent shortcut definitions', () => {
         expect(areShortcutsEqual('Ctrl+Enter', { key: 'Enter', ctrlKey: true })).toBe(true);
         expect(areShortcutsEqual('Alt+Shift+a', 'Alt+Shift+A')).toBe(true);
         expect(areShortcutsEqual('Space', 'Spacebar')).toBe(true);
@@ -343,7 +343,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: return false for different key combinations', () => {
-      it('THEN: it should return false for different key combinations', () => {
+      it('THEN: it rejects different shortcut definitions', () => {
         expect(areShortcutsEqual('Ctrl+Enter', 'Enter')).toBe(false);
         expect(areShortcutsEqual('Ctrl+Enter', 'Alt+Enter')).toBe(false);
       });
@@ -352,14 +352,14 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: areShortcutValuesOverlapping', () => {
     describe('WHEN: return true if there is any overlap between values', () => {
-      it('THEN: it should return true if there is any overlap between values', () => {
+      it('THEN: it detects shared shortcut values', () => {
         expect(areShortcutValuesOverlapping(['Enter', 'Space'], 'Space')).toBe(true);
         expect(areShortcutValuesOverlapping(['Alt+ArrowLeft'], ['Alt+ArrowLeft', 'ArrowLeft'])).toBe(true);
       });
     });
 
     describe('WHEN: return false if there is no overlap', () => {
-      it('THEN: it should return false if there is no overlap', () => {
+      it('THEN: it reports no conflict for distinct shortcut values', () => {
         expect(areShortcutValuesOverlapping(['Enter', 'Space'], 'ArrowLeft')).toBe(false);
       });
     });
@@ -367,7 +367,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: validateKeybindings', () => {
     describe('WHEN: return no warnings for standard/default keybindings', () => {
-      it('THEN: it should return no warnings for standard/default keybindings', () => {
+      it('THEN: it keeps the default configuration warning-free', () => {
         const warnings = validateKeybindings(DEFAULT_NAT_TABLE_KEYBINDINGS);
 
         expect(warnings).toStrictEqual([]);
@@ -375,7 +375,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
     });
 
     describe('WHEN: return warnings when multiple actions register conflicting shortcuts', () => {
-      it('THEN: it should return warnings when multiple actions register conflicting shortcuts', () => {
+      it('THEN: it reports the conflicting actions and shortcut', () => {
         const conflicting: Required<NatTableKeybindings> = {
           ...DEFAULT_NAT_TABLE_KEYBINDINGS,
           columnReorderLeft: 'Alt+Shift+ArrowLeft',
@@ -392,7 +392,7 @@ describe('FEATURE: NatTable Keybindings Utilities', () => {
 
   describe('GIVEN: createNatTableKeyboard', () => {
     describe('WHEN: compile functional helper mapping matching KeyboardEvents', () => {
-      it('THEN: it should compile functional helper mapping matching KeyboardEvents', () => {
+      it('THEN: it exposes helper functions that match keyboard events', () => {
         const keyboard = createNatTableKeyboard(DEFAULT_NAT_TABLE_KEYBINDINGS);
 
         // Test enter

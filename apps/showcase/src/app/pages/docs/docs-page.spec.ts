@@ -108,9 +108,9 @@ describe('FEATURE: DocsPage', () => {
     vi.restoreAllMocks();
   });
 
-  describe('GIVEN: renders the selected markdown asset', () => {
+  describe('GIVEN: the docs page host is rendered', () => {
     describe('WHEN: renders the selected markdown asset', () => {
-      it('THEN: it renders the selected markdown asset', async () => {
+      it('THEN: it shows the requested markdown content', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
@@ -128,9 +128,9 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
-  describe('GIVEN: updates the markdown source when navigating between docs routes', () => {
+  describe('GIVEN: the docs page host is rendered with route-driven markdown sources', () => {
     describe('WHEN: updates the markdown source when navigating between docs routes', () => {
-      it('THEN: it updates the markdown source when navigating between docs routes', async () => {
+      it('THEN: it loads the next route markdown source', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
@@ -150,9 +150,9 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
-  describe('GIVEN: reuses cached markdown when returning to a docs route', () => {
+  describe('GIVEN: the docs page host is rendered with cached markdown content', () => {
     describe('WHEN: reuses cached markdown when returning to a docs route', () => {
-      it('THEN: it reuses cached markdown when returning to a docs route', async () => {
+      it('THEN: it serves markdown from cache on return navigation', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
@@ -177,9 +177,9 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
-  describe('GIVEN: renders an error message when markdown cannot be loaded', () => {
+  describe('GIVEN: the docs page host is rendered with a failing markdown request', () => {
     describe('WHEN: renders an error message when markdown cannot be loaded', () => {
-      it('THEN: it renders an error message when markdown cannot be loaded', async () => {
+      it('THEN: it shows the markdown loading error state', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
@@ -198,9 +198,9 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
-  describe('GIVEN: runs Prism syntax highlighting for fenced code blocks', () => {
+  describe('GIVEN: the docs page host is rendered with fenced code markdown', () => {
     describe('WHEN: runs Prism syntax highlighting for fenced code blocks', () => {
-      it('THEN: it runs Prism syntax highlighting for fenced code blocks', async () => {
+      it('THEN: it applies highlighted code markup', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
@@ -218,9 +218,9 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
-  describe('GIVEN: keeps table of contents links on the current docs route', () => {
+  describe('GIVEN: the docs page host is rendered with table of contents links', () => {
     describe('WHEN: keeps table of contents links on the current docs route', () => {
-      it('THEN: it keeps table of contents links on the current docs route', async () => {
+      it('THEN: it rewrites table of contents links locally', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/state', DocsPage);
@@ -243,9 +243,9 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
-  describe('GIVEN: scrolls to the current fragment after markdown heading ids are generated', () => {
+  describe('GIVEN: the docs page host is rendered with a routed heading fragment', () => {
     describe('WHEN: scrolls to the current fragment after markdown heading ids are generated', () => {
-      it('THEN: it scrolls to the current fragment after markdown heading ids are generated', async () => {
+      it('THEN: it scrolls to the generated heading id', async () => {
         Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
           configurable: true,
           value: () => undefined
@@ -271,9 +271,9 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
-  describe('GIVEN: copies fenced code block text from the generated copy button', () => {
+  describe('GIVEN: the docs page host is rendered with generated code copy buttons', () => {
     describe('WHEN: copies fenced code block text from the generated copy button', () => {
-      it('THEN: it copies fenced code block text from the generated copy button', async () => {
+      it('THEN: it writes code text to the clipboard', async () => {
         const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);
         const harness = await RouterTestingHarness.create();
 

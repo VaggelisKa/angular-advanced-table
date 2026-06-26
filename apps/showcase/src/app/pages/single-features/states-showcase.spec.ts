@@ -30,9 +30,9 @@ describe('FEATURE: StatesShowcasePage', () => {
     vi.useRealTimers();
   });
 
-  describe('GIVEN: renders loading, empty, error, transition, and refresh state examples', () => {
+  describe('GIVEN: the states showcase page is rendered', () => {
     describe('WHEN: renders loading, empty, error, transition, and refresh state examples', () => {
-      it('THEN: it renders loading, empty, error, transition, and refresh state examples', () => {
+      it('THEN: it shows each table state example', () => {
         fixture.detectChanges();
 
         const page = fixture.nativeElement as HTMLElement;
@@ -49,9 +49,9 @@ describe('FEATURE: StatesShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: switches the transition preview between table states', () => {
+  describe('GIVEN: the states showcase page is rendered with transition preview controls', () => {
     describe('WHEN: switches the transition preview between table states', () => {
-      it('THEN: it switches the transition preview between table states', () => {
+      it('THEN: it updates the transition preview state', () => {
         fixture.detectChanges();
 
         const page = fixture.nativeElement as HTMLElement;
@@ -80,9 +80,9 @@ describe('FEATURE: StatesShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: lets keyboard users enter the retry action from the state cell', () => {
+  describe('GIVEN: the states showcase page is rendered with an error state retry action', () => {
     describe('WHEN: lets keyboard users enter the retry action from the state cell', () => {
-      it('THEN: it lets keyboard users enter the retry action from the state cell', async () => {
+      it('THEN: it activates retry from the keyboard path', async () => {
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -108,9 +108,9 @@ describe('FEATURE: StatesShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: loops retry through loading and back to error', () => {
+  describe('GIVEN: the states showcase page is rendered with retry state cycling enabled', () => {
     describe('WHEN: loops retry through loading and back to error', () => {
-      it('THEN: it loops retry through loading and back to error', () => {
+      it('THEN: it cycles retry state through loading and error', () => {
         vi.useFakeTimers();
         fixture.detectChanges();
 

@@ -25,9 +25,9 @@ describe('FEATURE: UI locale toolbar slice', () => {
     TestBed.resetTestingModule();
   });
 
-  describe('GIVEN: ships a complete toolbar slice in every built-in UI locale', () => {
+  describe('GIVEN: UI locale toolbar dictionaries are available', () => {
     describe('WHEN: ships a complete toolbar slice in every built-in UI locale', () => {
-      it('THEN: it ships a complete toolbar slice in every built-in UI locale', () => {
+      it('THEN: it finds toolbar labels in each built-in locale', () => {
         const localeIds = Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES);
 
         expect(localeIds.length).toBeGreaterThan(0);
@@ -41,9 +41,9 @@ describe('FEATURE: UI locale toolbar slice', () => {
     });
   });
 
-  describe('GIVEN: locks the English toolbar copy', () => {
+  describe('GIVEN: UI locale toolbar dictionaries are available with English toolbar locale copy', () => {
     describe('WHEN: locks the English toolbar copy', () => {
-      it('THEN: it locks the English toolbar copy', () => {
+      it('THEN: it keeps the English toolbar label stable', () => {
         const toolbar = NAT_TABLE_BUILT_IN_UI_LOCALES['en'].toolbar;
 
         expect(toolbar?.toolbarLabel).toBe('Table toolbar');
@@ -51,10 +51,10 @@ describe('FEATURE: UI locale toolbar slice', () => {
     });
   });
 
-  describe('GIVEN: keeps the toolbar slice for %s through provideNatTableUiLocales()', () => {
+  describe('GIVEN: UI locale toolbar dictionaries are available with provided toolbar locale slices', () => {
     describe('WHEN: keeps the toolbar slice for %s through provideNatTableUiLocales()', () => {
       it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))(
-        'THEN: it keeps the toolbar slice for %s through provideNatTableUiLocales()',
+        'THEN: it preserves toolbar labels after provider registration',
         (localeId) => {
           TestBed.configureTestingModule({
             providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()]
@@ -68,9 +68,9 @@ describe('FEATURE: UI locale toolbar slice', () => {
     });
   });
 
-  describe('GIVEN: falls back to English toolbar copy for unknown locales', () => {
+  describe('GIVEN: UI locale toolbar dictionaries are available with an unknown UI locale id', () => {
     describe('WHEN: falls back to English toolbar copy for unknown locales', () => {
-      it('THEN: it falls back to English toolbar copy for unknown locales', () => {
+      it('THEN: it returns the English toolbar fallback', () => {
         const resolved = resolveNatTableUiIntl(NAT_TABLE_UI_DEFAULT_INTL, 'zz');
 
         expect(resolved.toolbar?.toolbarLabel).toBe('Table toolbar');
@@ -78,9 +78,9 @@ describe('FEATURE: UI locale toolbar slice', () => {
     });
   });
 
-  describe('GIVEN: lets a locale dictionary override English toolbar copy', () => {
+  describe('GIVEN: UI locale toolbar dictionaries are available with a custom toolbar dictionary', () => {
     describe('WHEN: lets a locale dictionary override English toolbar copy', () => {
-      it('THEN: it lets a locale dictionary override English toolbar copy', () => {
+      it('THEN: it uses the locale-specific toolbar label', () => {
         TestBed.configureTestingModule({
           providers: [
             provideZonelessChangeDetection(),
@@ -101,9 +101,9 @@ describe('FEATURE: UI locale toolbar slice', () => {
     });
   });
 
-  describe('GIVEN: lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
+  describe('GIVEN: UI locale toolbar dictionaries are available with UI intl overrides', () => {
     describe('WHEN: lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
-      it('THEN: it lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
+      it('THEN: it uses provider overrides before built-in copy', () => {
         TestBed.configureTestingModule({
           providers: [
             provideZonelessChangeDetection(),
@@ -170,7 +170,7 @@ describe('FEATURE: English companion-control accessibility copy', () => {
     });
 
     describe('WHEN: locks the toggle-column aria label', () => {
-      it('THEN: it locks the toggle-column aria label', () => {
+      it('THEN: it keeps column visibility aria copy stable', () => {
         expect(labels?.toggleColumnAriaLabel?.(visibilityContext)).toBe('Service shown. Hide column');
       });
     });
@@ -184,13 +184,13 @@ describe('FEATURE: English companion-control accessibility copy', () => {
     });
 
     describe('WHEN: locks the page-size option text', () => {
-      it('THEN: it locks the page-size option text', () => {
+      it('THEN: it keeps page-size visible copy stable', () => {
         expect(labels?.pageSizeOptionText?.(pageSizeContext)).toBe('25 rows');
       });
     });
 
     describe('WHEN: locks the page-size option aria label', () => {
-      it('THEN: it locks the page-size option aria label', () => {
+      it('THEN: it keeps page-size aria copy stable', () => {
         expect(labels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
       });
     });
@@ -204,7 +204,7 @@ describe('FEATURE: English companion-control accessibility copy', () => {
     });
 
     describe('WHEN: locks the page indicator', () => {
-      it('THEN: it locks the page indicator', () => {
+      it('THEN: it keeps pager indicator copy stable', () => {
         expect(labels?.pageIndicator?.(pagerContext)).toBe('Page 2 of 5');
       });
     });
@@ -218,7 +218,7 @@ describe('FEATURE: English companion-control accessibility copy', () => {
     });
 
     describe('WHEN: locks the unsorted sort-button label', () => {
-      it('THEN: it locks the unsorted sort-button label', () => {
+      it('THEN: it keeps unsorted header action copy stable', () => {
         expect(
           labels?.sortButton?.({
             ...sortedHeaderContext,
@@ -231,7 +231,7 @@ describe('FEATURE: English companion-control accessibility copy', () => {
     });
 
     describe('WHEN: locks the sorted sort-button label', () => {
-      it('THEN: it locks the sorted sort-button label', () => {
+      it('THEN: it keeps sorted header action copy stable', () => {
         expect(labels?.sortButton?.(sortedHeaderContext)).toBe(
           'Service sorted in ascending order, sort priority 1 of 2. Change sorting'
         );
@@ -239,37 +239,37 @@ describe('FEATURE: English companion-control accessibility copy', () => {
     });
 
     describe('WHEN: locks the menu-button label', () => {
-      it('THEN: it locks the menu-button label', () => {
+      it('THEN: it keeps menu button copy stable', () => {
         expect(labels?.menuButton?.({ label: 'Service' })).toBe('Open column actions for Service column');
       });
     });
 
     describe('WHEN: locks the menu label', () => {
-      it('THEN: it locks the menu label', () => {
+      it('THEN: it keeps menu copy stable', () => {
         expect(labels?.menuLabel?.({ label: 'Service' })).toBe('Column actions for Service column');
       });
     });
 
     describe('WHEN: locks the pin-button label', () => {
-      it('THEN: it locks the pin-button label', () => {
+      it('THEN: it keeps pin button aria copy stable', () => {
         expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe('Pin left: Service column');
       });
     });
 
     describe('WHEN: locks the pin-button text', () => {
-      it('THEN: it locks the pin-button text', () => {
+      it('THEN: it keeps pin button visible copy stable', () => {
         expect(labels?.pinButtonText?.(pinnedHeaderContext)).toBe('Unpin left');
       });
     });
 
     describe('WHEN: locks the move-button label', () => {
-      it('THEN: it locks the move-button label', () => {
+      it('THEN: it keeps move button aria copy stable', () => {
         expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe('Move Service column right');
       });
     });
 
     describe('WHEN: locks the move-button text', () => {
-      it('THEN: it locks the move-button text', () => {
+      it('THEN: it keeps move button visible copy stable', () => {
         expect(labels?.moveButtonText?.({ label: 'Service', direction: 'right' })).toBe('Move right');
       });
     });

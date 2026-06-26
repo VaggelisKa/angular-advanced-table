@@ -60,9 +60,9 @@ const renderMetricsCell = (column: ColumnDef<Row, unknown> | undefined, rowId: s
 };
 
 describe('FEATURE: withRenderMetricsColumn', () => {
-  describe('GIVEN: sets TanStack sizing defaults', () => {
+  describe('GIVEN: render metrics column helpers are configured', () => {
     describe('WHEN: sets TanStack sizing defaults', () => {
-      it('THEN: it sets TanStack sizing defaults', () => {
+      it('THEN: it adds default sizing values to the metrics column', () => {
         const columns = withRenderMetricsColumn<Row>([], new NatTableRenderMetricsStore());
         const metricsColumn = requireDefined(columns.at(-1));
 
@@ -74,9 +74,9 @@ describe('FEATURE: withRenderMetricsColumn', () => {
     });
   });
 
-  describe('GIVEN: keeps TanStack sizing options on the metrics column', () => {
+  describe('GIVEN: render metrics column helpers are configured with metrics column sizing options', () => {
     describe('WHEN: keeps TanStack sizing options on the metrics column', () => {
-      it('THEN: it keeps TanStack sizing options on the metrics column', () => {
+      it('THEN: it preserves explicit sizing values on the metrics column', () => {
         const baseColumns: ColumnDef<Row, unknown>[] = [
           {
             accessorKey: 'name',
@@ -104,9 +104,9 @@ describe('FEATURE: withRenderMetricsColumn', () => {
     });
   });
 
-  describe('GIVEN: uses provider column defaults and lets per-call options override them', () => {
+  describe('GIVEN: render metrics column helpers are configured with provider and per-call column defaults', () => {
     describe('WHEN: uses provider column defaults and lets per-call options override them', () => {
-      it('THEN: it uses provider column defaults and lets per-call options override them', () => {
+      it('THEN: it merges provider defaults with per-call overrides', () => {
         TestBed.configureTestingModule({
           imports: [ProviderColumnHost],
           providers: [provideZonelessChangeDetection()]

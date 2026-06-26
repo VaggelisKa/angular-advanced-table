@@ -50,9 +50,9 @@ describe('FEATURE: NatTableToolbar roving tabindex', () => {
     return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
-  describe('GIVEN: gives the first VISUAL stop the tab stop (start group before end group)', () => {
+  describe('GIVEN: a roving toolbar host is rendered', () => {
     describe('WHEN: gives the first VISUAL stop the tab stop (start group before end group)', () => {
-      it('THEN: it gives the first VISUAL stop the tab stop (start group before end group)', () => {
+      it('THEN: it sets the initial roving tab stop on the first visual item', () => {
         expect(element('start-a').getAttribute('tabindex')).toBe('0');
         expect(element('text-entry').getAttribute('tabindex')).toBe('-1');
         expect(element('end-a').getAttribute('tabindex')).toBe('-1');
@@ -61,9 +61,9 @@ describe('FEATURE: NatTableToolbar roving tabindex', () => {
     });
   });
 
-  describe('GIVEN: moves the tab stop to the item that receives focus', () => {
+  describe('GIVEN: a roving toolbar host is rendered with focusable toolbar items', () => {
     describe('WHEN: moves the tab stop to the item that receives focus', () => {
-      it('THEN: it moves the tab stop to the item that receives focus', async () => {
+      it('THEN: it updates roving tabindex state after focus moves', async () => {
         element('end-a').focus();
         fixture.detectChanges();
         await fixture.whenStable();
@@ -97,9 +97,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
     await fixture.whenStable();
   }
 
-  describe('GIVEN: ArrowRight moves focus to the next visual stop and prevents default', () => {
+  describe('GIVEN: a roving toolbar host is rendered with left-to-right toolbar navigation', () => {
     describe('WHEN: ArrowRight moves focus to the next visual stop and prevents default', () => {
-      it('THEN: it ArrowRight moves focus to the next visual stop and prevents default', async () => {
+      it('THEN: it focuses the next item and cancels browser handling', async () => {
         await focusItem('start-a');
         const event = pressKey(element('start-a'), 'ArrowRight');
 
@@ -109,9 +109,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
     });
   });
 
-  describe('GIVEN: ArrowRight wraps from the last stop to the first', () => {
+  describe('GIVEN: a roving toolbar host is rendered with focus on the last toolbar item', () => {
     describe('WHEN: ArrowRight wraps from the last stop to the first', () => {
-      it('THEN: it ArrowRight wraps from the last stop to the first', async () => {
+      it('THEN: it moves focus back to the first item', async () => {
         await focusItem('end-b');
         pressKey(element('end-b'), 'ArrowRight');
 
@@ -120,9 +120,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
     });
   });
 
-  describe('GIVEN: ArrowLeft wraps from the first stop to the last', () => {
+  describe('GIVEN: a roving toolbar host is rendered with focus on the first toolbar item', () => {
     describe('WHEN: ArrowLeft wraps from the first stop to the last', () => {
-      it('THEN: it ArrowLeft wraps from the first stop to the last', async () => {
+      it('THEN: it moves focus back to the last item', async () => {
         await focusItem('start-a');
         pressKey(element('start-a'), 'ArrowLeft');
 
@@ -131,9 +131,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
     });
   });
 
-  describe('GIVEN: Home and End jump to the first and last visual stops', () => {
+  describe('GIVEN: a roving toolbar host is rendered with boundary toolbar shortcuts', () => {
     describe('WHEN: Home and End jump to the first and last visual stops', () => {
-      it('THEN: it Home and End jump to the first and last visual stops', async () => {
+      it('THEN: it focuses the boundary toolbar items', async () => {
         await focusItem('end-a');
         pressKey(element('end-a'), 'Home');
         expect(document.activeElement).toBe(element('start-a'));
@@ -145,9 +145,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
     });
   });
 
-  describe('GIVEN: ignores arrows carrying modifier keys', () => {
+  describe('GIVEN: a roving toolbar host is rendered with modified arrow key events', () => {
     describe('WHEN: ignores arrows carrying modifier keys', () => {
-      it('THEN: it ignores arrows carrying modifier keys', async () => {
+      it('THEN: it leaves modified arrow events untouched', async () => {
         await focusItem('start-a');
         const event = pressKey(element('start-a'), 'ArrowRight', { ctrlKey: true });
 
@@ -157,9 +157,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
     });
   });
 
-  describe('GIVEN: does not intercept arrows or Home/End while focus is inside a text input', () => {
+  describe('GIVEN: a roving toolbar host is rendered with a text input inside the toolbar', () => {
     describe('WHEN: does not intercept arrows or Home/End while focus is inside a text input', () => {
-      it('THEN: it does not intercept arrows or Home/End while focus is inside a text input', async () => {
+      it('THEN: it preserves native text-entry key handling', async () => {
         await focusItem('text-entry');
 
         const arrowEvent = pressKey(element('text-entry'), 'ArrowRight');
@@ -203,9 +203,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation (RTL)', () => {
     return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
   }
 
-  describe('GIVEN: ArrowLeft moves to the NEXT visual stop in RTL', () => {
+  describe('GIVEN: a roving toolbar host is rendered with right-to-left toolbar navigation', () => {
     describe('WHEN: ArrowLeft moves to the NEXT visual stop in RTL', () => {
-      it('THEN: it ArrowLeft moves to the NEXT visual stop in RTL', async () => {
+      it('THEN: it focuses the next visual item in RTL order', async () => {
         element('start-a').focus();
         fixture.detectChanges();
         await fixture.whenStable();
@@ -217,9 +217,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation (RTL)', () => {
     });
   });
 
-  describe('GIVEN: ArrowRight moves to the PREVIOUS visual stop in RTL', () => {
+  describe('GIVEN: a roving toolbar host is rendered with right-to-left toolbar navigation at the next item', () => {
     describe('WHEN: ArrowRight moves to the PREVIOUS visual stop in RTL', () => {
-      it('THEN: it ArrowRight moves to the PREVIOUS visual stop in RTL', async () => {
+      it('THEN: it focuses the previous visual item in RTL order', async () => {
         element('end-a').focus();
         fixture.detectChanges();
         await fixture.whenStable();

@@ -27,9 +27,9 @@ type UiSortIndicatorContextMatchesCore = Expect<
 >;
 
 describe('FEATURE: ng-advanced-table/ui public table contracts', () => {
-  describe('GIVEN: keeps public UI contracts aligned with the core table contracts', () => {
+  describe('GIVEN: the UI public contract mirror is available', () => {
     describe('WHEN: keeps public UI contracts aligned with the core table contracts', () => {
-      it('THEN: it keeps public UI contracts aligned with the core table contracts', () => {
+      it('THEN: it type-checks the published UI contracts', () => {
         const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore, UiSortIndicatorContextMatchesCore] = [true, true, true];
 
         expect(contractsHold).toStrictEqual([true, true, true]);

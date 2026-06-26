@@ -54,9 +54,9 @@ describe('FEATURE: NatToolbarGroup', () => {
     return event;
   }
 
-  describe('GIVEN: renders a labelled role="group"', () => {
+  describe('GIVEN: a toolbar group host is rendered', () => {
     describe('WHEN: renders a labelled role="group"', () => {
-      it('THEN: it renders a labelled role="group"', () => {
+      it('THEN: it adds group semantics and accessible naming', () => {
         const group = element('density-group');
 
         expect(group.getAttribute('role')).toBe('group');
@@ -65,9 +65,9 @@ describe('FEATURE: NatToolbarGroup', () => {
     });
   });
 
-  describe('GIVEN: projects into its slot: after the first spacer, before the second', () => {
+  describe('GIVEN: a toolbar group host is rendered with grouped projected toolbar content', () => {
     describe('WHEN: projects into its slot: after the first spacer, before the second', () => {
-      it('THEN: it projects into its slot: after the first spacer, before the second', () => {
+      it('THEN: it places group content in the expected toolbar slot', () => {
         const group = element('density-group');
         const toolbar = group.closest('nat-table-toolbar') as HTMLElement;
         const spacers = Array.from(toolbar.querySelectorAll('.nat-toolbar-spacer'));
@@ -79,9 +79,9 @@ describe('FEATURE: NatToolbarGroup', () => {
     });
   });
 
-  describe('GIVEN: keeps Left/Right linear across solo items and group members', () => {
+  describe('GIVEN: a toolbar group host is rendered with solo and grouped toolbar items', () => {
     describe('WHEN: keeps Left/Right linear across solo items and group members', () => {
-      it('THEN: it keeps Left/Right linear across solo items and group members', async () => {
+      it('THEN: it moves focus through solo and grouped items in order', async () => {
         await focusItem('solo-start');
 
         pressKey(element('solo-start'), 'ArrowRight');
@@ -96,9 +96,9 @@ describe('FEATURE: NatToolbarGroup', () => {
     });
   });
 
-  describe('GIVEN: cycles within the group on Up/Down (Aria group navigation)', () => {
+  describe('GIVEN: a toolbar group host is rendered with grouped vertical toolbar navigation', () => {
     describe('WHEN: cycles within the group on Up/Down (Aria group navigation)', () => {
-      it('THEN: it cycles within the group on Up/Down (Aria group navigation)', async () => {
+      it('THEN: it loops focus inside the toolbar group', async () => {
         await focusItem('compact');
 
         pressKey(element('compact'), 'ArrowDown');
@@ -114,9 +114,9 @@ describe('FEATURE: NatToolbarGroup', () => {
     });
   });
 
-  describe('GIVEN: soft-disables every member through the stock group directive', () => {
+  describe('GIVEN: a toolbar group host is rendered with a disabled toolbar group', () => {
     describe('WHEN: soft-disables every member through the stock group directive', () => {
-      it('THEN: it soft-disables every member through the stock group directive', async () => {
+      it('THEN: it marks each grouped control disabled', async () => {
         expect(element('compact').getAttribute('aria-disabled')).toBe('false');
 
         fixture.componentInstance.groupDisabled.set(true);

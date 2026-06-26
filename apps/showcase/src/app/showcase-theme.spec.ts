@@ -53,9 +53,9 @@ describe('FEATURE: ShowcaseThemeStore', () => {
     clearThemeState();
   });
 
-  describe('GIVEN: apply the stored theme to the document root when initialized', () => {
+  describe('GIVEN: a showcase theme store is initialized', () => {
     describe('WHEN: apply the stored theme to the document root when initialized', () => {
-      it('THEN: it should apply the stored theme to the document root when initialized', () => {
+      it('THEN: it sets the stored theme on the document root', () => {
         globalThis.localStorage.setItem(themeStorageKey, 'dark');
 
         const themeStore = TestBed.inject(ShowcaseThemeStore);
@@ -66,9 +66,9 @@ describe('FEATURE: ShowcaseThemeStore', () => {
     });
   });
 
-  describe('GIVEN: keep the document root theme synchronized with updates', () => {
+  describe('GIVEN: a showcase theme store is initialized with document root theme synchronization', () => {
     describe('WHEN: keep the document root theme synchronized with updates', () => {
-      it('THEN: it should keep the document root theme synchronized with updates', () => {
+      it('THEN: it updates the document root when theme state changes', () => {
         const themeStore = TestBed.inject(ShowcaseThemeStore);
 
         themeStore.setTheme('dark');

@@ -129,9 +129,9 @@ describe('FEATURE: render metrics intl components', () => {
     host = fixture.componentInstance;
   });
 
-  describe('GIVEN: uses provider render-metrics labels and lets component inputs override them', () => {
+  describe('GIVEN: render metrics components are configured with locale providers', () => {
     describe('WHEN: uses provider render-metrics labels and lets component inputs override them', () => {
-      it('THEN: it uses provider render-metrics labels and lets component inputs override them', async () => {
+      it('THEN: it prefers component labels over provider defaults', async () => {
         await fixture.whenStable();
 
         const nativeElement = fixture.nativeElement as HTMLElement;
@@ -169,9 +169,9 @@ describe('FEATURE: render metrics intl components', () => {
     });
   });
 
-  describe('GIVEN: uses the table locale for panel labels unless the panel locale input is set', () => {
+  describe('GIVEN: render metrics components are configured with locale providers with table and panel render metrics locales', () => {
     describe('WHEN: uses the table locale for panel labels unless the panel locale input is set', () => {
-      it('THEN: it uses the table locale for panel labels unless the panel locale input is set', async () => {
+      it('THEN: it resolves panel labels from locale inputs and table locale', async () => {
         host.controllerLocale.set('qa');
 
         await fixture.whenStable();

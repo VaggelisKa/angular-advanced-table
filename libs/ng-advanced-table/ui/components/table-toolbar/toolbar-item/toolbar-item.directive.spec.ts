@@ -52,9 +52,9 @@ describe('FEATURE: NatToolbarItem', () => {
     return fixture.debugElement.query(By.css(`#${domId}`)).injector.get(NAT_TOOLBAR_ITEM);
   }
 
-  describe('GIVEN: mirrors the host id from the aria widget', () => {
+  describe('GIVEN: a toolbar item host is rendered', () => {
     describe('WHEN: mirrors the host id from the aria widget', () => {
-      it('THEN: it mirrors the host id from the aria widget', () => {
+      it('THEN: it keeps the consumer-provided id stable', () => {
         // The id attribute feeds the exposed ToolbarWidget `id` input, whose host
         // binding writes the same value back — consumer ids stay stable.
         expect(itemRef('default-start').id).toBe('default-start');
@@ -63,9 +63,9 @@ describe('FEATURE: NatToolbarItem', () => {
     });
   });
 
-  describe('GIVEN: generates a unique aria widget id when the host declares none', () => {
+  describe('GIVEN: a toolbar item host is rendered with an unnamed toolbar widget', () => {
     describe('WHEN: generates a unique aria widget id when the host declares none', () => {
-      it('THEN: it generates a unique aria widget id when the host declares none', () => {
+      it('THEN: it assigns a generated toolbar widget id', () => {
         const unnamed = fixture.debugElement
           .queryAll(By.directive(NatToolbarItem))
           .map((debugElement) => debugElement.injector.get(NAT_TOOLBAR_ITEM))
@@ -84,18 +84,18 @@ describe('FEATURE: NatToolbarItem', () => {
     });
   });
 
-  describe("GIVEN: defaults the position to 'start' and passes explicit values through", () => {
+  describe('GIVEN: toolbar items declare default and explicit positions', () => {
     describe("WHEN: defaults the position to 'start' and passes explicit values through", () => {
-      it("THEN: it defaults the position to 'start' and passes explicit values through", () => {
+      it('THEN: it resolves default and explicit toolbar positions', () => {
         expect(itemRef('default-start').position()).toBe('start');
         expect(itemRef('explicit-end').position()).toBe('end');
       });
     });
   });
 
-  describe('GIVEN: re-binds the position signal at runtime (slot placement stays static)', () => {
+  describe('GIVEN: a toolbar item host is rendered with a dynamic toolbar item position', () => {
     describe('WHEN: re-binds the position signal at runtime (slot placement stays static)', () => {
-      it('THEN: it re-binds the position signal at runtime (slot placement stays static)', async () => {
+      it('THEN: it updates the position signal while keeping content projected', async () => {
         expect(itemRef('dynamic').position()).toBe('center');
 
         fixture.componentInstance.dynamicPosition.set('end');
@@ -110,9 +110,9 @@ describe('FEATURE: NatToolbarItem', () => {
     });
   });
 
-  describe('GIVEN: throws outside a toolbar — the ToolbarWidget host directive requires a parent ngToolbar', () => {
+  describe('GIVEN: a toolbar item is declared without a toolbar parent', () => {
     describe('WHEN: throws outside a toolbar — the ToolbarWidget host directive requires a parent ngToolbar', () => {
-      it('THEN: it throws outside a toolbar — the ToolbarWidget host directive requires a parent ngToolbar', () => {
+      it('THEN: it raises the toolbar parent requirement error', () => {
         expect(() => {
           const orphanFixture = TestBed.createComponent(ToolbarlessHost);
 

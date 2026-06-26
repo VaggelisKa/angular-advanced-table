@@ -37,9 +37,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     await fixture.whenStable();
   });
 
-  describe('GIVEN: render the mock table surface with sorting and status badges', () => {
+  describe('GIVEN: the simple sorting page is rendered', () => {
     describe('WHEN: render the mock table surface with sorting and status badges', () => {
-      it('THEN: it should render the mock table surface with sorting and status badges', () => {
+      it('THEN: it shows the sorting table surface and badges', () => {
         fixture.detectChanges();
 
         const table = query<HTMLElement>('nat-table');
@@ -56,9 +56,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     });
   });
 
-  describe('GIVEN: render the expected header labels', () => {
+  describe('GIVEN: the simple sorting page is rendered with header labels', () => {
     describe('WHEN: render the expected header labels', () => {
-      it('THEN: it should render the expected header labels', () => {
+      it('THEN: it shows the expected table headers', () => {
         fixture.detectChanges();
 
         const headerText = host().querySelector('thead')?.textContent;
@@ -71,9 +71,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     });
   });
 
-  describe('GIVEN: omit search, column chips, paging, and pin controls', () => {
+  describe('GIVEN: the simple sorting page is rendered with the compact sorting surface', () => {
     describe('WHEN: omit search, column chips, paging, and pin controls', () => {
-      it('THEN: it should omit search, column chips, paging, and pin controls', () => {
+      it('THEN: it hides unrelated companion controls', () => {
         fixture.detectChanges();
 
         expect(host().querySelector('app-table-search')).toBeFalsy();
@@ -84,9 +84,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     });
   });
 
-  describe('GIVEN: right-align numeric columns', () => {
+  describe('GIVEN: the simple sorting page is rendered with numeric columns', () => {
     describe('WHEN: right-align numeric columns', () => {
-      it('THEN: it should right-align numeric columns', () => {
+      it('THEN: it applies numeric column alignment', () => {
         fixture.detectChanges();
 
         const itemsHeader = query<HTMLTableCellElement>('thead th[data-column-id="items"]');
@@ -102,9 +102,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     });
   });
 
-  describe('GIVEN: pin company left and row actions right without pin controls', () => {
+  describe('GIVEN: the simple sorting page is rendered with pinned table columns', () => {
     describe('WHEN: pin company left and row actions right without pin controls', () => {
-      it('THEN: it should pin company left and row actions right without pin controls', () => {
+      it('THEN: it applies fixed pinned-column placement', () => {
         fixture.detectChanges();
 
         const orderCell = query<HTMLTableCellElement>('tbody tr:first-child th[data-column-id="id"]');
@@ -129,9 +129,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     });
   });
 
-  describe('GIVEN: render a right-pinned three-dots actions menu for each row', () => {
+  describe('GIVEN: the simple sorting page is rendered with right-pinned row actions', () => {
     describe('WHEN: render a right-pinned three-dots actions menu for each row', () => {
-      it('THEN: it should render a right-pinned three-dots actions menu for each row', async () => {
+      it('THEN: it shows a pinned row action menu for every row', async () => {
         fixture.detectChanges();
 
         const actionTriggers = queryAll<HTMLButtonElement>('tbody td[data-column-id="actions"] .row-actions-trigger');
@@ -155,9 +155,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     });
   });
 
-  describe('GIVEN: sort the mock rows from a header action', () => {
+  describe('GIVEN: the simple sorting page is rendered with sortable mock rows', () => {
     describe('WHEN: sort the mock rows from a header action', () => {
-      it('THEN: it should sort the mock rows from a header action', () => {
+      it('THEN: it updates row order from the header action', () => {
         fixture.detectChanges();
 
         const sortButtons = queryAll<HTMLButtonElement>('.sort-button');
@@ -177,9 +177,9 @@ describe('FEATURE: SimpleSortingPage', () => {
     });
   });
 
-  describe('GIVEN: render as an embeddable sorting demo', () => {
+  describe('GIVEN: the simple sorting page is rendered with embeddable demo chrome', () => {
     describe('WHEN: render as an embeddable sorting demo', () => {
-      it('THEN: it should render as an embeddable sorting demo', () => {
+      it('THEN: it shows the embeddable demo surface', () => {
         fixture.detectChanges();
 
         const page = query<HTMLDivElement>('.simple-sorting-page');

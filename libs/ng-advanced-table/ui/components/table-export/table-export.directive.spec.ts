@@ -302,9 +302,9 @@ describe('FEATURE: NatTableExport', () => {
     return blob;
   }
 
-  describe('GIVEN: exports all client rows with visible exportable columns to CSV by default', () => {
+  describe('GIVEN: an export directive host is configured', () => {
     describe('WHEN: exports all client rows with visible exportable columns to CSV by default', () => {
-      it('THEN: it exports all client rows with visible exportable columns to CSV by default', async () => {
+      it('THEN: it passes visible exportable client rows to the CSV handler', async () => {
         const fixture = TestBed.createComponent(DefaultExportHost);
 
         fixture.detectChanges();
@@ -320,9 +320,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: builds export data from visible exportable columns and lets value callbacks clear cells', () => {
+  describe('GIVEN: an export directive host is configured with exportable visible columns', () => {
     describe('WHEN: builds export data from visible exportable columns and lets value callbacks clear cells', () => {
-      it('THEN: it builds export data from visible exportable columns and lets value callbacks clear cells', async () => {
+      it('THEN: it applies column visibility, export flags, and value callbacks', async () => {
         const fixture = TestBed.createComponent(ExportValueMappingHost);
 
         fixture.detectChanges();
@@ -347,9 +347,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: lets a directive-level handler replace provider and client-side handlers', () => {
+  describe('GIVEN: an export directive host is configured with a directive export handler', () => {
     describe('WHEN: lets a directive-level handler replace provider and client-side handlers', () => {
-      it('THEN: it lets a directive-level handler replace provider and client-side handlers', async () => {
+      it('THEN: it invokes only the directive export handler', async () => {
         const providerHandler = vi.fn(async () => Promise.resolve());
 
         TestBed.configureTestingModule({
@@ -370,9 +370,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: uses an app-level provider handler when no directive handler is present', () => {
+  describe('GIVEN: an export directive host is configured with an app-level export handler', () => {
     describe('WHEN: uses an app-level provider handler when no directive handler is present', () => {
-      it('THEN: it uses an app-level provider handler when no directive handler is present', async () => {
+      it('THEN: it invokes the provider export handler', async () => {
         const providerHandler = vi.fn(async () => Promise.resolve());
 
         TestBed.resetTestingModule();
@@ -393,9 +393,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: supports app-level provider factories that use Angular injection', () => {
+  describe('GIVEN: an export directive host is configured with injectable export handler factories', () => {
     describe('WHEN: supports app-level provider factories that use Angular injection', () => {
-      it('THEN: it supports app-level provider factories that use Angular injection', async () => {
+      it('THEN: it resolves injected provider factories for export handling', async () => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
           providers: [
@@ -424,9 +424,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: lets custom handlers delegate back to the client-side CSV export', () => {
+  describe('GIVEN: an export directive host is configured with delegated CSV export handlers', () => {
     describe('WHEN: lets custom handlers delegate back to the client-side CSV export', () => {
-      it('THEN: it lets custom handlers delegate back to the client-side CSV export', async () => {
+      it('THEN: it allows custom handlers to call the CSV client', async () => {
         const fixture = TestBed.createComponent(DelegatingHandlerHost);
 
         fixture.detectChanges();
@@ -441,9 +441,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: supports explicit controller targeting outside nat-table-surface', () => {
+  describe('GIVEN: an export directive host is configured with an explicit export controller target', () => {
     describe('WHEN: supports explicit controller targeting outside nat-table-surface', () => {
-      it('THEN: it supports explicit controller targeting outside nat-table-surface', async () => {
+      it('THEN: it uses the explicitly targeted table controller', async () => {
         const fixture = TestBed.createComponent(ExplicitControllerHost);
 
         fixture.detectChanges();
@@ -457,9 +457,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: supports custom activation events through the exported directive instance', () => {
+  describe('GIVEN: an export directive host is configured with custom export activation events', () => {
     describe('WHEN: supports custom activation events through the exported directive instance', () => {
-      it('THEN: it supports custom activation events through the exported directive instance', async () => {
+      it('THEN: it runs export from the directive API', async () => {
         const fixture = TestBed.createComponent(CustomEventHost);
 
         fixture.detectChanges();
@@ -477,9 +477,9 @@ describe('FEATURE: NatTableExport', () => {
     });
   });
 
-  describe('GIVEN: marks native buttons busy and ignores duplicate activations while exporting', () => {
+  describe('GIVEN: an export directive host is configured with a busy native export button', () => {
     describe('WHEN: marks native buttons busy and ignores duplicate activations while exporting', () => {
-      it('THEN: it marks native buttons busy and ignores duplicate activations while exporting', async () => {
+      it('THEN: it sets busy state and suppresses concurrent exports', async () => {
         const fixture = TestBed.createComponent(BusyExportHost);
 
         fixture.detectChanges();

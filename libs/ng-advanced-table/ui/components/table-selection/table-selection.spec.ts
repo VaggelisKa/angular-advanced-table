@@ -105,9 +105,9 @@ describe('FEATURE: withNatTableSelectionColumn', () => {
   const rowCheckbox = (index: number): HTMLInputElement =>
     root().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')[index];
 
-  describe('GIVEN: prepends a selection column with a header and per-row checkboxes', () => {
+  describe('GIVEN: selection column helpers are configured', () => {
     describe('WHEN: prepends a selection column with a header and per-row checkboxes', () => {
-      it('THEN: it prepends a selection column with a header and per-row checkboxes', () => {
+      it('THEN: it adds select-all and row checkbox cells', () => {
         expect(headerCheckbox()).toBeTruthy();
         expect(headerCheckbox().getAttribute('aria-label')).toBe('Select all rows');
         expect(root().querySelectorAll('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')).toHaveLength(3);
@@ -119,9 +119,9 @@ describe('FEATURE: withNatTableSelectionColumn', () => {
     });
   });
 
-  describe('GIVEN: renders the plain column label instead of a select-all checkbox in single mode', () => {
+  describe('GIVEN: selection column helpers are configured with single selection mode', () => {
     describe('WHEN: renders the plain column label instead of a select-all checkbox in single mode', () => {
-      it('THEN: it renders the plain column label instead of a select-all checkbox in single mode', async () => {
+      it('THEN: it uses the single-select header label', async () => {
         // Set single mode before the first change detection to avoid NG0100.
         const single = TestBed.createComponent(SelectionHost);
 
@@ -139,9 +139,9 @@ describe('FEATURE: withNatTableSelectionColumn', () => {
     });
   });
 
-  describe('GIVEN: gives each per-row checkbox a unique default aria-label derived from the row id', () => {
+  describe('GIVEN: selection column helpers are configured with default row checkbox labels', () => {
     describe('WHEN: gives each per-row checkbox a unique default aria-label derived from the row id', () => {
-      it('THEN: it gives each per-row checkbox a unique default aria-label derived from the row id', () => {
+      it('THEN: it generates distinct row checkbox labels', () => {
         const labels = Array.from(
           root().querySelectorAll<HTMLInputElement>('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')
         ).map((input) => input.getAttribute('aria-label'));
@@ -151,9 +151,9 @@ describe('FEATURE: withNatTableSelectionColumn', () => {
     });
   });
 
-  describe('GIVEN: prefers explicit label overrides over the locale defaults', () => {
+  describe('GIVEN: selection column helpers are configured with explicit selection label overrides', () => {
     describe('WHEN: prefers explicit label overrides over the locale defaults', () => {
-      it('THEN: it prefers explicit label overrides over the locale defaults', async () => {
+      it('THEN: it uses the supplied selection label overrides', async () => {
         const overrideFixture = TestBed.createComponent(SelectionOverrideHost);
 
         await overrideFixture.whenStable();
@@ -174,9 +174,9 @@ describe('FEATURE: withNatTableSelectionColumn', () => {
     });
   });
 
-  describe('GIVEN: selects a single row through its checkbox', () => {
+  describe('GIVEN: selection column helpers are configured with single row selection controls', () => {
     describe('WHEN: selects a single row through its checkbox', () => {
-      it('THEN: it selects a single row through its checkbox', async () => {
+      it('THEN: it updates selection state for one row', async () => {
         rowCheckbox(0).click();
         fixture.detectChanges();
         await fixture.whenStable();
@@ -188,9 +188,9 @@ describe('FEATURE: withNatTableSelectionColumn', () => {
     });
   });
 
-  describe('GIVEN: selects and clears all rows through the header checkbox with an indeterminate partial state', () => {
+  describe('GIVEN: selection column helpers are configured with multi-row selection controls', () => {
     describe('WHEN: selects and clears all rows through the header checkbox with an indeterminate partial state', () => {
-      it('THEN: it selects and clears all rows through the header checkbox with an indeterminate partial state', async () => {
+      it('THEN: it toggles all rows and exposes partial state', async () => {
         headerCheckbox().click();
         fixture.detectChanges();
         await fixture.whenStable();

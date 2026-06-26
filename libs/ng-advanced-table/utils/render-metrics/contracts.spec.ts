@@ -37,9 +37,9 @@ function requireDefined<T>(value: T | undefined): T {
 }
 
 describe('FEATURE: ng-advanced-table/utils public table contracts', () => {
-  describe('GIVEN: matches the core render-metrics type contracts', () => {
+  describe('GIVEN: the utils public contract mirror is available', () => {
     describe('WHEN: matches the core render-metrics type contracts', () => {
-      it('THEN: it matches the core render-metrics type contracts', () => {
+      it('THEN: it type-checks the render-metrics contracts', () => {
         const typeContracts: [RenderMetricsStateMatchesCore, RenderMetricsColumnMetaMatchesCore, RenderMetricsControllerMatchesCore] =
           [true, true, true];
 
@@ -48,9 +48,9 @@ describe('FEATURE: ng-advanced-table/utils public table contracts', () => {
     });
   });
 
-  describe('GIVEN: reuses the core column metadata contract for TanStack column definitions', () => {
+  describe('GIVEN: core column metadata contracts are available', () => {
     describe('WHEN: reuses the core column metadata contract for TanStack column definitions', () => {
-      it('THEN: it reuses the core column metadata contract for TanStack column definitions', () => {
+      it('THEN: it type-checks column metadata compatibility', () => {
         const column: ColumnDef<ContractRow, number> = {
           accessorKey: 'durationMs',
           meta: {

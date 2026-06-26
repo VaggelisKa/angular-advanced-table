@@ -70,7 +70,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: fall back to global NAT_TABLE_KEYBINDINGS configuration', () => {
-      it('THEN: it should fall back to global NAT_TABLE_KEYBINDINGS configuration', () => {
+      it('THEN: it writes the configured fallback shortcut attributes', () => {
         fixture.detectChanges();
         const button = queryRequired<HTMLButtonElement>(fixture, '[data-testid="fallback-btn"]');
 
@@ -80,7 +80,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: support other input aliases like natTableHotkeyA11y', () => {
-      it('THEN: it should support other input aliases like natTableHotkeyA11y', () => {
+      it('THEN: it maps input aliases to the same shortcut attributes', () => {
         fixture.detectChanges();
         const button = queryRequired<HTMLButtonElement>(fixture, '[data-testid="alias-btn"]');
 
@@ -90,7 +90,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: update attributes when actionKey changes', () => {
-      it('THEN: it should update attributes when actionKey changes', async () => {
+      it('THEN: it refreshes aria attributes for the new action', async () => {
         host.actionKey.set('columnReorderLeft');
         fixture.detectChanges();
         await fixture.whenStable();
@@ -103,7 +103,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: use default keybindings if not overridden in NAT_TABLE_KEYBINDINGS', () => {
-      it('THEN: it should use default keybindings if not overridden in NAT_TABLE_KEYBINDINGS', async () => {
+      it('THEN: it uses the default shortcut for missing overrides', async () => {
         host.actionKey.set('columnReorderRight');
         fixture.detectChanges();
         await fixture.whenStable();
@@ -116,7 +116,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: initialize attributes when MutationObserver is unavailable', () => {
-      it('THEN: it should initialize attributes when MutationObserver is unavailable', async () => {
+      it('THEN: it sets the fallback aria attributes without observer support', async () => {
         const originalMutationObserver = globalThis.MutationObserver;
 
         vi.stubGlobal('MutationObserver', undefined);
@@ -157,7 +157,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: resolve keybindings from NatTableService and default values', () => {
-      it('THEN: it should resolve keybindings from NatTableService and default values', () => {
+      it('THEN: it uses service-scoped shortcuts and defaults', () => {
         fixture.detectChanges();
         const button = queryRequired<HTMLButtonElement>(fixture, '[data-testid="service-btn"]');
 
@@ -167,7 +167,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: update keybindings dynamically when service keybindings change', () => {
-      it('THEN: it should update keybindings dynamically when service keybindings change', async () => {
+      it('THEN: it refreshes the scoped shortcut attributes', async () => {
         service.surfaceKeybindings.set({ rowActivate: 'Ctrl+Enter' });
         fixture.detectChanges();
         await fixture.whenStable();
@@ -180,7 +180,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     });
 
     describe('WHEN: update aria-label reactively when inner text changes (MutationObserver)', () => {
-      it('THEN: it should update aria-label reactively when inner text changes (MutationObserver)', async () => {
+      it('THEN: it refreshes the accessible label after text mutations', async () => {
         fixture.detectChanges();
         const button = queryRequired<HTMLButtonElement>(fixture, '[data-testid="service-btn"]');
 

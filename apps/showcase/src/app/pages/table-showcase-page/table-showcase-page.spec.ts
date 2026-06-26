@@ -44,17 +44,17 @@ describe('FEATURE: TableShowcasePage', () => {
     await fixture.whenStable();
   });
 
-  describe('GIVEN: create', () => {
+  describe('GIVEN: the table showcase page is rendered', () => {
     describe('WHEN: create', () => {
-      it('THEN: it should create', () => {
+      it('THEN: it creates the component instance', () => {
         expect(component).toBeTruthy();
       });
     });
   });
 
-  describe('GIVEN: start without seeded sorting, pinning, or custom pagination', () => {
+  describe('GIVEN: the table showcase page is rendered with default controlled state', () => {
     describe('WHEN: start without seeded sorting, pinning, or custom pagination', () => {
-      it('THEN: it should start without seeded sorting, pinning, or custom pagination', () => {
+      it('THEN: it starts with the expected default table state', () => {
         fixture.detectChanges();
 
         const rows = queryAll('tbody tr');
@@ -77,9 +77,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: update the status filter through controlled table state', () => {
+  describe('GIVEN: the table showcase page is rendered with a controlled status filter', () => {
     describe('WHEN: update the status filter through controlled table state', () => {
-      it('THEN: it should update the status filter through controlled table state', () => {
+      it('THEN: it updates controlled filter state', () => {
         fixture.detectChanges();
 
         const decliningChip = query<HTMLButtonElement>('.filter-pill[data-status="Declining"]');
@@ -97,9 +97,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: render only the trading signal in the signal cell', () => {
+  describe('GIVEN: the table showcase page is rendered with signal cell rendering', () => {
     describe('WHEN: render only the trading signal in the signal cell', () => {
-      it('THEN: it should render only the trading signal in the signal cell', () => {
+      it('THEN: it shows only the signal text', () => {
         fixture.detectChanges();
 
         const statusCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="status"]');
@@ -110,9 +110,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: keep search working end to end without rendering column visibility chips', () => {
+  describe('GIVEN: the table showcase page is rendered with global search controls', () => {
     describe('WHEN: keep search working end to end without rendering column visibility chips', () => {
-      it('THEN: it should keep search working end to end without rendering column visibility chips', () => {
+      it('THEN: it filters rows without showing visibility chips', () => {
         fixture.detectChanges();
 
         const searchInput = query<HTMLInputElement>('app-table-search input');
@@ -128,9 +128,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: apply warning tones to halted move cells', () => {
+  describe('GIVEN: the table showcase page is rendered with halted move cells', () => {
     describe('WHEN: apply warning tones to halted move cells', () => {
-      it('THEN: it should apply warning tones to halted move cells', () => {
+      it('THEN: it marks halted move cells with warning styling', () => {
         fixture.detectChanges();
 
         const changePercentCell = query<HTMLTableCellElement>('tbody tr:first-child td[data-column-id="changePercent"]');
@@ -140,9 +140,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: inherit the shared showcase theme', () => {
+  describe('GIVEN: the table showcase page is rendered with the shared showcase theme', () => {
     describe('WHEN: inherit the shared showcase theme', () => {
-      it('THEN: it should inherit the shared showcase theme', () => {
+      it('THEN: it uses the shared showcase theme class', () => {
         fixture.detectChanges();
 
         const themeStore = TestBed.inject(ShowcaseThemeStore);
@@ -163,9 +163,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: render a sparkline svg for each visible row', () => {
+  describe('GIVEN: the table showcase page is rendered with sparkline history cells', () => {
     describe('WHEN: render a sparkline svg for each visible row', () => {
-      it('THEN: it should render a sparkline svg for each visible row', () => {
+      it('THEN: it shows one sparkline per visible row', () => {
         fixture.detectChanges();
 
         const sparkCells = queryAll('tbody td[data-column-id="spark"] nat-sparkline svg');
@@ -175,9 +175,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: render ticker marks in the symbol column', () => {
+  describe('GIVEN: the table showcase page is rendered with ticker mark cells', () => {
     describe('WHEN: render ticker marks in the symbol column', () => {
-      it('THEN: it should render ticker marks in the symbol column', () => {
+      it('THEN: it shows ticker marks in symbol cells', () => {
         fixture.detectChanges();
 
         const marks = queryAll('tbody th[data-column-id="symbol"] nat-ticker-mark');
@@ -187,9 +187,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: render a three-dots actions menu in each visible row', () => {
+  describe('GIVEN: the table showcase page is rendered with row action menus', () => {
     describe('WHEN: render a three-dots actions menu in each visible row', () => {
-      it('THEN: it should render a three-dots actions menu in each visible row', async () => {
+      it('THEN: it shows row action menu buttons', async () => {
         fixture.detectChanges();
 
         const actionTriggers = queryAll<HTMLButtonElement>('tbody td[data-column-id="actions"] .row-actions-trigger');
@@ -211,9 +211,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: preserve the table render filter when toggling statuses', () => {
+  describe('GIVEN: the table showcase page is rendered with render filter state', () => {
     describe('WHEN: preserve the table render filter when toggling statuses', () => {
-      it('THEN: it should preserve the table render filter when toggling statuses', () => {
+      it('THEN: it keeps the render metrics filter selected', () => {
         fixture.detectChanges();
 
         const slowRenderChip = query<HTMLButtonElement>('.render-chip[data-render-filter="slow"]');
@@ -241,9 +241,9 @@ describe('FEATURE: TableShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: render the kitchen sink table features by default', () => {
+  describe('GIVEN: the table showcase page is rendered with default kitchen sink features', () => {
     describe('WHEN: render the kitchen sink table features by default', () => {
-      it('THEN: it should render the kitchen sink table features by default', () => {
+      it('THEN: it shows the expected default feature set', () => {
         fixture.detectChanges();
 
         expect(host().querySelector('[data-testid="open-table-options"]')).toBeFalsy();

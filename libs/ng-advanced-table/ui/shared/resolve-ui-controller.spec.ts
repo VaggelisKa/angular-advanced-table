@@ -23,9 +23,9 @@ describe('FEATURE: injectNatTableUiController', () => {
     vi.restoreAllMocks();
   });
 
-  describe('GIVEN: throws outside an injection context', () => {
+  describe('GIVEN: the UI controller resolver is exercised', () => {
     describe('WHEN: throws outside an injection context', () => {
-      it('THEN: it throws outside an injection context', () => {
+      it('THEN: it raises the Angular injection-context error', () => {
         const forInput = signal<NatTableUiController | undefined>(undefined);
 
         expect(() => injectNatTableUiController(forInput, 'spec-control')).toThrow();
@@ -33,9 +33,9 @@ describe('FEATURE: injectNatTableUiController', () => {
     });
   });
 
-  describe('GIVEN: resolves the explicit [for] controller and reacts to input changes', () => {
+  describe('GIVEN: the UI controller resolver is exercised with an explicit controller input', () => {
     describe('WHEN: resolves the explicit [for] controller and reacts to input changes', () => {
-      it('THEN: it resolves the explicit [for] controller and reacts to input changes', () => {
+      it('THEN: it returns the current explicit controller signal value', () => {
         const stub = createControllerStub();
         const forInput = signal<NatTableUiController | undefined>(stub);
         const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
@@ -51,9 +51,9 @@ describe('FEATURE: injectNatTableUiController', () => {
     });
   });
 
-  describe('GIVEN: returns null with a single dev-mode warning while unresolved', () => {
+  describe('GIVEN: the UI controller resolver is exercised without a resolvable controller', () => {
     describe('WHEN: returns null with a single dev-mode warning while unresolved', () => {
-      it('THEN: it returns null with a single dev-mode warning while unresolved', () => {
+      it('THEN: it reports unresolved controller state once', () => {
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const forInput = signal<NatTableUiController | undefined>(undefined);
         const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
@@ -74,9 +74,9 @@ describe('FEATURE: injectNatTableUiController', () => {
     });
   });
 
-  describe('GIVEN: falls back to the NatTableService controller when [for] is not set', () => {
+  describe('GIVEN: the UI controller resolver is exercised with only the service controller available', () => {
     describe('WHEN: falls back to the NatTableService controller when [for] is not set', () => {
-      it('THEN: it falls back to the NatTableService controller when [for] is not set', () => {
+      it('THEN: it returns the service-provided controller', () => {
         const stub = createControllerStub();
 
         TestBed.configureTestingModule({ providers: [NatTableService] });
@@ -95,9 +95,9 @@ describe('FEATURE: injectNatTableUiController', () => {
     });
   });
 
-  describe('GIVEN: prefers the explicit [for] controller over the service controller', () => {
+  describe('GIVEN: the UI controller resolver is exercised with explicit and service controllers', () => {
     describe('WHEN: prefers the explicit [for] controller over the service controller', () => {
-      it('THEN: it prefers the explicit [for] controller over the service controller', () => {
+      it('THEN: it returns the explicit controller over the fallback', () => {
         const forStub = createControllerStub();
         const serviceStub = createControllerStub();
 
@@ -115,9 +115,9 @@ describe('FEATURE: injectNatTableUiController', () => {
     });
   });
 
-  describe('GIVEN: does not warn while unresolved when optionalUsage is set', () => {
+  describe('GIVEN: the UI controller resolver is exercised with optional unresolved usage', () => {
     describe('WHEN: does not warn while unresolved when optionalUsage is set', () => {
-      it('THEN: it does not warn while unresolved when optionalUsage is set', () => {
+      it('THEN: it suppresses optional unresolved-controller warnings', () => {
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const forInput = signal<NatTableUiController | undefined>(undefined);
         const controller = TestBed.runInInjectionContext(() =>
@@ -130,9 +130,9 @@ describe('FEATURE: injectNatTableUiController', () => {
     });
   });
 
-  describe('GIVEN: does not warn when the controller resolves on first read', () => {
+  describe('GIVEN: the UI controller resolver is exercised with an immediately resolved controller', () => {
     describe('WHEN: does not warn when the controller resolves on first read', () => {
-      it('THEN: it does not warn when the controller resolves on first read', () => {
+      it('THEN: it returns the controller without warning', () => {
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const forInput = signal<NatTableUiController | undefined>(createControllerStub());
         const controller = TestBed.runInInjectionContext(() => injectNatTableUiController(forInput, 'spec-control'));
