@@ -43,7 +43,7 @@
     <span class="docs-related-label">Related topics</span>
     <div class="docs-related-links">
       @for (item of relatedTopics; track item.path) {
-      <a [href]="item.path" class="docs-related-link">{{ item.label }}</a>
+      <a [routerLink]="item.path" class="docs-related-link">{{ item.label }}</a>
       }
     </div>
   </nav>

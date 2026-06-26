@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { Component, computed, effect, inject, untracked, viewChild } from '@angular/core';
 import type { ElementRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { Data } from '@angular/router';
 
 import { MarkdownComponent } from 'ngx-markdown';
@@ -31,7 +31,7 @@ const CODE_COPY_RESET_DELAY_MS = 2000;
 
 @Component({
   selector: 'app-docs-page',
-  imports: [DocsTopicExample, MarkdownComponent],
+  imports: [DocsTopicExample, MarkdownComponent, RouterLink],
   templateUrl: './docs-page.html',
   styleUrl: './docs-page.css'
 })
