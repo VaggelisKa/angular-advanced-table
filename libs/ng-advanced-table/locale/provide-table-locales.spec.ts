@@ -82,16 +82,16 @@ describe('FEATURE: companion UI and utils locale registration', () => {
   });
 
   describe('GIVEN: companion locale providers are configured with companion UI locale ids', () => {
-    describe('WHEN: registers companion UI locale %s', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))('THEN: it makes the companion UI locale available', (localeId) => {
+    describe('WHEN: registering each built-in companion UI locale', () => {
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))('THEN: it makes the companion UI locale %s available', (localeId) => {
         expect(uiLocale(uiIntl, localeId)).toBeDefined();
       });
     });
   });
 
   describe('GIVEN: companion locale providers are configured with companion utils locale ids', () => {
-    describe('WHEN: registers companion utils locale %s', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_UTILS_LOCALES))('THEN: it makes the companion utils locale available', (localeId) => {
+    describe('WHEN: registering each built-in companion utils locale', () => {
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_UTILS_LOCALES))('THEN: it makes the companion utils locale %s available', (localeId) => {
         expect(utilsIntl.locales?.[localeId]).toBeDefined();
       });
     });

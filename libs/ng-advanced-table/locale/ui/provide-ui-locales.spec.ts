@@ -52,9 +52,9 @@ describe('FEATURE: UI locale toolbar slice', () => {
   });
 
   describe('GIVEN: UI locale toolbar dictionaries are available with provided toolbar locale slices', () => {
-    describe('WHEN: keeps the toolbar slice for %s through provideNatTableUiLocales()', () => {
+    describe('WHEN: resolving each built-in locale through provideNatTableUiLocales()', () => {
       it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))(
-        'THEN: it preserves toolbar labels after provider registration',
+        'THEN: it preserves toolbar labels for %s after provider registration',
         (localeId) => {
           TestBed.configureTestingModule({
             providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()]
