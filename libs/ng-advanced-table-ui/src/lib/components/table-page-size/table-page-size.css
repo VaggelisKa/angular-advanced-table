@@ -2,45 +2,43 @@
   display: block;
 }
 
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--nat-table-space-chip-row-gap, 10px);
+.page-size-container {
+  display: inline-flex;
 }
 
-.chip {
+.page-size-select {
   display: inline-flex;
   align-items: center;
   min-height: var(--nat-table-chip-min-height-compact, 36px);
-  padding: 0 var(--nat-table-chip-padding-x-compact, 12px);
+  padding: 0 32px 0 var(--nat-table-chip-padding-x-compact, 12px);
+  font-family: inherit;
   font-size: var(--nat-table-font-size-chip-compact, 0.92rem);
   color: var(--nat-table-chip-color, inherit);
+  appearance: none;
   cursor: pointer;
-  background: var(--nat-table-chip-background, transparent);
-  border: 1px solid var(--nat-table-chip-border-color, transparent);
+  outline: none;
+  background-color: var(--nat-table-chip-background, transparent);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%236b7280' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  border: 1px solid var(--nat-table-chip-border-color, var(--nat-table-color-border, #e4e7eb));
   border-radius: var(--nat-table-radius-chip, 999px);
   transition:
     background-color var(--nat-table-transition-medium, 180ms ease),
     border-color var(--nat-table-transition-medium, 180ms ease),
     box-shadow var(--nat-table-transition-medium, 180ms ease),
-    transform var(--nat-table-transition-medium, 180ms ease),
-    color var(--nat-table-transition-medium, 180ms ease);
+    transform var(--nat-table-transition-medium, 180ms ease);
 }
 
-.chip.is-active {
-  background: var(--nat-table-chip-background-active, transparent);
-  border-color: var(--nat-table-chip-border-color-active, currentColor);
-  box-shadow: var(--nat-table-chip-shadow-active, none);
-}
-
-.chip:focus-visible {
+.page-size-select:focus-visible {
   outline: var(--nat-table-focus-ring-width, 2px) solid var(--nat-table-focus-ring-color, currentColor);
   outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .chip:hover {
-    background: var(--nat-table-chip-background-hover, transparent);
+  .page-size-select:hover {
+    background-color: var(--nat-table-chip-background-hover, rgb(0 0 0 / 4%));
     border-color: var(--nat-table-chip-border-color-hover, currentColor);
     transform: var(--nat-table-hover-lift, translateY(-1px));
   }

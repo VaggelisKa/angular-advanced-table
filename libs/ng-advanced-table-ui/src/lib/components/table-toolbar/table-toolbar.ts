@@ -26,6 +26,8 @@ const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
 const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
   if (target instanceof HTMLTextAreaElement) return true;
 
+  if (target instanceof HTMLSelectElement) return true;
+
   if (target instanceof HTMLElement && target.isContentEditable) return true;
 
   return target instanceof HTMLInputElement && NAT_TOOLBAR_TEXT_INPUT_TYPES.has(target.type);
