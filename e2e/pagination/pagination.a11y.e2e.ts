@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('FEATURE: Pagination accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/pagination');
+    await page.goto('/docs/pagination');
   });
 
   test.describe('GIVEN: the pagination example is loaded', () => {

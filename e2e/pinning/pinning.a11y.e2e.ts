@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('FEATURE: Column pinning accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/pinning');
+    await page.goto('/docs/column-layout');
   });
 
   test.describe('GIVEN: the column pinning example is loaded', () => {
@@ -14,7 +14,7 @@ test.describe('FEATURE: Column pinning accessibility', () => {
         const nameRightBtn = nameControl.getByRole('button', { name: 'Right' });
 
         await test.step('THEN: the page renders', async () => {
-          await expect(page.getByRole('heading', { name: 'Column Pinning' })).toBeVisible();
+          await expect(page.getByRole('heading', { name: 'Column pinning' })).toBeVisible();
         });
 
         await test.step('THEN: the Name column starts pinned left', async () => {

@@ -3,7 +3,7 @@ import { Component, signal } from '@angular/core';
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { NatTableColumnVisibility, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+import { NatTableColumnVisibility, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/ui';
 
 type DemoItem = {
   id: string;
@@ -32,24 +32,17 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-visibility-showcase',
   imports: [NatTable, NatTableSurface, NatTableColumnVisibility],
   template: `
-    <div class="showcase-page showcase-container">
-      <header class="header-section">
-        <h1 class="title">Column Visibility</h1>
-        <p class="description">Demonstrates how columns can be dynamically shown or hidden by the user.</p>
-      </header>
+    <div class="grid-layout">
+      <div class="card">
+        <h2 class="card-title">Visibility Grid Control</h2>
 
-      <div class="grid-layout">
-        <div class="card">
-          <h2 class="card-title">Visibility Grid Control</h2>
+        <nat-table-surface [(state)]="tableState">
+          <div class="visibility-panel">
+            <nat-table-column-visibility />
+          </div>
 
-          <nat-table-surface [(state)]="tableState">
-            <div class="visibility-panel">
-              <nat-table-column-visibility />
-            </div>
-
-            <nat-table [columns]="columns" [data]="data" accessibleName="Visibility demo table" />
-          </nat-table-surface>
-        </div>
+          <nat-table [columns]="columns" [data]="data" accessibleName="Visibility demo table" />
+        </nat-table-surface>
       </div>
     </div>
   `

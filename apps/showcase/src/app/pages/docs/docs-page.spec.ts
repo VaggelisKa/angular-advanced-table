@@ -2,7 +2,7 @@ import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { MARKED_OPTIONS, provideMarkdown } from 'ngx-markdown';
@@ -105,6 +105,7 @@ describe('DocsPage', () => {
 
     TestBed.inject(HttpTestingController).verify();
     delete (globalThis as PrismTestGlobal).Prism;
+    vi.restoreAllMocks();
   });
 
   it('renders the selected markdown asset', async () => {
@@ -195,6 +196,51 @@ describe('DocsPage', () => {
 
     expect(highlightCalls).toBeGreaterThan(0);
     expect(compiled.querySelector('.docs-markdown .token.keyword')?.textContent).toBe('readonly');
+  });
+
+  it('keeps table of contents links on the current docs route', async () => {
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/docs/state', DocsPage);
+
+    const http = TestBed.inject(HttpTestingController);
+
+    http.expectOne('/docs/state.md').flush('## State Slices\n\n## Own One Slice\n\n## Manual Data Handling');
+    await waitForMarkdownRender(harness.fixture);
+
+    const compiled = harness.fixture.nativeElement as HTMLElement;
+    const firstTocLink = queryRequiredElement<HTMLAnchorElement>(compiled, '.docs-topic-toc-link');
+
+    expect(firstTocLink.getAttribute('href')).toBe('/docs/state#state-slices');
+
+    firstTocLink.click();
+    await waitForMarkdownRender(harness.fixture);
+
+    expect(TestBed.inject(Router).url).toBe('/docs/state#state-slices');
+  });
+
+  it('scrolls to the current fragment after markdown heading ids are generated', async () => {
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: () => undefined
+    });
+
+    const scrollIntoView = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(() => undefined);
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/docs/state#manual-data-handling', DocsPage);
+
+    const http = TestBed.inject(HttpTestingController);
+
+    http.expectOne('/docs/state.md').flush('## State Slices\n\n## Own One Slice\n\n## Manual Data Handling');
+    await waitForMarkdownRender(harness.fixture);
+
+    const compiled = harness.fixture.nativeElement as HTMLElement;
+    const manualDataHeading = queryRequiredElement<HTMLElement>(compiled, '#manual-data-handling');
+
+    expect(TestBed.inject(Router).url).toBe('/docs/state#manual-data-handling');
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
+    expect(scrollIntoView.mock.contexts.at(0)).toBe(manualDataHeading);
   });
 
   it('copies fenced code block text from the generated copy button', async () => {

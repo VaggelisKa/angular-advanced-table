@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/ui';
 
 type DemoItem = {
   id: string;
@@ -37,30 +37,23 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
     }
   `,
   template: `
-    <div class="showcase-page showcase-container">
-      <header class="header-section">
-        <h1 class="title">Sticky Header</h1>
-        <p class="description">Demonstrates vertical sticky header pinning. The header stays docked when scrolling down the grid.</p>
-      </header>
+    <div class="grid-layout grid-layout-with-panel">
+      <div class="card">
+        <h2 class="card-title">Scrollable Grid</h2>
+        <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
+          <nat-table [columns]="columns" [data]="data" accessibleName="Sticky header demo table" />
+        </nat-table-surface>
+      </div>
 
-      <div class="grid-layout grid-layout-with-panel">
-        <div class="card">
-          <h2 class="card-title">Scrollable Grid</h2>
-          <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
-            <nat-table [columns]="columns" [data]="data" accessibleName="Sticky header demo table" />
-          </nat-table-surface>
-        </div>
-
-        <div class="card">
-          <h2 class="card-title">Configure Sticky State</h2>
-          <div class="control-panel">
-            <label class="toggle-label">
-              <input [checked]="stickyHeaderEnabled()" type="checkbox" (change)="toggleStickyHeader($event)" />
-              <span>Enable Sticky Header</span>
-            </label>
-            <div class="tip">
-              Scroll down the table to verify the sticky behavior, then turn it off to observe standard scrolling logic.
-            </div>
+      <div class="card">
+        <h2 class="card-title">Configure Sticky State</h2>
+        <div class="control-panel">
+          <label class="toggle-label">
+            <input [checked]="stickyHeaderEnabled()" type="checkbox" (change)="toggleStickyHeader($event)" />
+            <span>Enable Sticky Header</span>
+          </label>
+          <div class="tip">
+            Scroll down the table to verify the sticky behavior, then turn it off to observe standard scrolling logic.
           </div>
         </div>
       </div>

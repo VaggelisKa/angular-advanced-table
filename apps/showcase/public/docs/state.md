@@ -4,17 +4,17 @@
 
 `NatTableState` contains the serializable view state exposed by the table and companion surface.
 
-| Slice              | Use it for                                 |
-| ------------------ | ------------------------------------------ |
-| `sorting`          | Active sort entries                        |
-| `globalFilter`     | Current global search query                |
-| `columnFilters`    | Column-specific filters keyed by column id |
-| `pagination`       | `pageIndex` and `pageSize`                 |
-| `columnVisibility` | Hideable column visibility map             |
-| `columnOrder`      | Leaf-column order                          |
-| `columnPinning`    | Left and right pinned column ids           |
-| `columnSizing`     | Resized column widths in pixels            |
-| `rowSelection`     | Selected row ids keyed by `getRowId`       |
+| Slice              | Use it for                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| `sorting`          | Active sort entries                                                                   |
+| `globalFilter`     | Current global search query                                                           |
+| `columnFilters`    | Column-specific filters keyed by column id                                            |
+| `pagination`       | `pageIndex` and `pageSize`                                                            |
+| `columnVisibility` | Hideable column visibility map                                                        |
+| `columnOrder`      | Leaf-column order                                                                     |
+| `columnPinning`    | Left and right pinned column ids                                                      |
+| `columnSizing`     | Resized column widths in pixels                                                       |
+| `rowSelection`     | Selected row ids keyed by `getRowId`, `row.id`, or the namespaced positional fallback |
 
 The `pagination` slice always exists in emitted state. Pagination affects rendered rows only when pagination is enabled by a pagination companion control or a table setup that registers pagination.
 
@@ -34,7 +34,7 @@ readonly initialState: Partial<NatTableState> = {
 <nat-table-surface [initialState]="initialState">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-  <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
+  <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
 </nat-table-surface>
 ```
 
@@ -166,9 +166,9 @@ function firstPage(state: Partial<NatTableState>): PaginationState {
 
 Global filter and column-filter updates reset `pagination.pageIndex` to `0` inside the table. If your app owns filter slices and pagination together, mirror that behavior when updating your signal.
 
-## Manual Modes
+## Manual Data Handling
 
-Use manual mode when the server owns sorting, filtering, or pagination. The table still emits state changes; your container fetches data and passes back the current page of rows.
+Use manual mode when your app owns sorting, filtering, or pagination outside the table. The table still emits state changes; your container prepares rows and passes back the current page or current row set.
 
 ```html
 <nat-table-surface
@@ -177,7 +177,7 @@ Use manual mode when the server owns sorting, filtering, or pagination. The tabl
   [state]="tableState()"
   (stateChange)="loadPage($event)">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
-  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Server-side positions" />
+  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Manual positions" />
 </nat-table-surface>
 ```
 
@@ -209,14 +209,29 @@ protected loadPage(state: Partial<NatTableState>): void {
 }
 ```
 
-You can also mix modes. For example, `{ pagination: 'manual', sorting: 'auto' }` fetches pages externally while sorting the rows currently held by the client.
+You can also mix modes. For example, `{ pagination: 'manual', sorting: 'auto' }` prepares pages externally while sorting the rows currently held by the client.
 
 ## Stable Row IDs
 
-Always provide `getRowId` when selection, live updates, pagination, or server-backed data are involved.
+Rows with a string or number `id` property get stable ids automatically.
 
 ```ts
-readonly getRowId = (row: PositionRow) => row.id;
+interface PositionRow {
+  id: string;
+  symbol: string;
+}
 ```
 
-Without stable IDs, TanStack falls back to row positions. Selection, row activation, and per-row instrumentation can then follow indexes instead of the underlying data after sorting, filtering, paging, or refreshes.
+Provide `getRowId` when the stable id lives under another property, is composite, or needs parent-aware nested row keys.
+
+```ts
+interface PositionRow {
+  accountId: string;
+  positionId: string;
+  symbol: string;
+}
+
+readonly getRowId = (row: PositionRow) => `${row.accountId}:${row.positionId}`;
+```
+
+Without stable IDs, the table falls back to namespaced row positions. Selection, row activation, and per-row instrumentation can then follow indexes instead of the underlying data after sorting, filtering, paging, or refreshes.

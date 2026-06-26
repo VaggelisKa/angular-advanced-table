@@ -3,7 +3,7 @@ import { Component, computed, signal } from '@angular/core';
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/ui';
 
 type DemoItem = {
   readonly id: string;
@@ -31,7 +31,13 @@ const DEMO_DATA: DemoItem[] = [
 @Component({
   selector: 'app-sorting-showcase',
   imports: [NatTable, NatTableSurface],
-  templateUrl: './sorting-showcase.html'
+  templateUrl: './sorting-showcase.html',
+  styles: `
+    :host {
+      display: grid;
+      gap: 24px;
+    }
+  `
 })
 export class SortingShowcasePage {
   protected readonly data = DEMO_DATA;

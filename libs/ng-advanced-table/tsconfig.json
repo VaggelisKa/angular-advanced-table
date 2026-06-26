@@ -1,4 +1,3 @@
-/* Project solution file. Build/test options live in the referenced configs; shared options come from tsconfig.base.json. */
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {

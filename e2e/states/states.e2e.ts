@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('FEATURE: Table states', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/states');
+    await page.goto('/docs/data-lifecycle');
   });
 
   test.describe('GIVEN: the states example is loaded', () => {
@@ -11,7 +11,7 @@ test.describe('FEATURE: Table states', () => {
         const errorTable = page.getByRole('grid', { name: 'Errored incidents table' });
 
         await test.step('THEN: heading is visible', async () => {
-          await expect(page.getByRole('heading', { name: 'Table States' })).toBeVisible();
+          await expect(page.getByRole('heading', { name: 'State rows stay inside the table' })).toBeVisible();
         });
 
         await test.step('THEN: each grid shows its initial state', async () => {

@@ -7,7 +7,7 @@ import type { ColumnDef } from '@tanstack/angular-table';
 import { flexRenderComponent } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/ui';
 
 import { NatRowActionsMenu } from '../table-showcase-page/nat-row-actions-menu';
 import type { MockOrderRow } from './sticky-no-overflow-x.utils';

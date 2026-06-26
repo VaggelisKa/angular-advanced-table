@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('FEATURE: Pagination', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/pagination');
+    await page.goto('/docs/pagination');
   });
 
   test.describe('GIVEN: the pagination example is loaded', () => {
@@ -16,7 +16,7 @@ test.describe('FEATURE: Pagination', () => {
         const prevBtn = pager.getByRole('button', { name: 'Previous page' });
 
         await test.step('THEN: the page renders', async () => {
-          await expect(page.getByRole('heading', { name: 'Table Pagination' })).toBeVisible();
+          await expect(page.getByRole('heading', { name: 'Client and manual pagination' })).toBeVisible();
         });
 
         await test.step('THEN: the client-side grid starts with the default page size', async () => {
@@ -49,9 +49,9 @@ test.describe('FEATURE: Pagination', () => {
       });
     });
 
-    test.describe('WHEN: the Next page button is clicked (server-side)', () => {
-      test('THEN: it supports manual/server-side pagination', async ({ page }) => {
-        const manualCard = page.locator('.card', { hasText: 'Manual / Server-Side Pagination' });
+    test.describe('WHEN: the Next page button is clicked (manual data handling)', () => {
+      test('THEN: it supports manual pagination', async ({ page }) => {
+        const manualCard = page.locator('.card', { hasText: 'Manual Data Handling (Mixed Mode)' });
         const manualTable = manualCard.locator('table');
         const pager = manualCard.getByRole('toolbar');
         const nextBtn = pager.getByRole('button', { name: 'Next page' });

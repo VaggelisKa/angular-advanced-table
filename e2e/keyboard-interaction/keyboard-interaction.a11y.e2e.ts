@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('FEATURE: Keyboard interaction accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/keyboard-interaction');
+    await page.goto('/docs/keyboard-interaction');
   });
 
   test.describe('GIVEN: the keyboard interaction example is loaded', () => {
@@ -13,7 +13,7 @@ test.describe('FEATURE: Keyboard interaction accessibility', () => {
         const checkbox = page.getByRole('checkbox', { name: 'Active Alpha Searcher' });
 
         await test.step('THEN: the page renders with no action reported yet', async () => {
-          await expect(page.getByRole('heading', { name: 'Keyboard Interaction' })).toBeVisible();
+          await expect(page.getByRole('heading', { name: 'Keyboard cell interaction' })).toBeVisible();
           await expect(lastAction).toContainText('Last action: None yet');
           await expect(ackBtn).toBeVisible();
           await ackBtn.focus();

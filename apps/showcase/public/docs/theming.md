@@ -9,7 +9,7 @@ Use `NatTableSurface` when you want the stock surface and companion-control them
   <nat-table-surface>
     <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-    <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Orders" />
+    <nat-table [data]="rows()" [columns]="columns" accessibleName="Orders" />
 
     <nat-table-scroll-control />
     <nat-table-column-visibility />
@@ -124,7 +124,7 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 
 ## UI Control Tokens
 
-`ng-advanced-table-ui` controls consume the same theme. Common groups include:
+`ng-advanced-table/ui` controls consume the same theme. Common groups include:
 
 | Group          | Common tokens                                                                                                                                  |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -115,7 +115,7 @@ Generated copy resolves from locale providers. Add only the providers for packag
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
-import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table-locales';
+import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table/locale';
 
 export const appConfig: ApplicationConfig = {
   providers: [provideNatTableLocales(), provideNatTableUiLocales(), provideNatTableUtilsLocales()]
@@ -233,12 +233,7 @@ readonly columns = withNatTableSelectionColumn(baseColumns, {
 
 ```html
 <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
-  <nat-table
-    [data]="rows()"
-    [columns]="columns"
-    [enableRowSelection]="true"
-    [getRowId]="getRowId"
-    accessibleName="Selectable positions" />
+  <nat-table [data]="rows()" [columns]="columns" [enableRowSelection]="true" accessibleName="Selectable positions" />
 </nat-table-surface>
 ```
 

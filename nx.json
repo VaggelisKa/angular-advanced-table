@@ -42,7 +42,15 @@
     },
     "test": {
       "cache": true,
-      "inputs": ["default", "^production"]
+      "inputs": ["default", "^production"],
+      "executor": "@angular/build:unit-test"
+    },
+    "stylelint": {
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "lintFilePatterns": ["{projectRoot}/**/*.css"]
+      }
     },
     "e2e": {
       "cache": true,
@@ -64,12 +72,8 @@
     }
   },
   "release": {
-    "projects": ["ng-advanced-table", "ng-advanced-table-ui", "ng-advanced-table-utils", "ng-advanced-table-locales"],
-    "projectsRelationship": "independent",
+    "projects": ["ng-advanced-table"],
     "versionPlans": true,
-    "releaseTag": {
-      "pattern": "{projectName}@{version}"
-    },
     "changelog": {
       "workspaceChangelog": false,
       "projectChangelogs": {

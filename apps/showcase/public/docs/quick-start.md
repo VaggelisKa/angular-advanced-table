@@ -2,28 +2,22 @@ Start with `NatTable` inside `NatTableSurface`. The table renders the grid; the 
 
 ## Install
 
-Core table plus the surface and companion controls:
+Everything ships in one package. The companion controls, utilities, and built-in locale dictionaries are subpath entry points — `ng-advanced-table/ui`, `ng-advanced-table/utils`, and `ng-advanced-table/locale` — so you import only what you use and tree-shaking drops the rest.
 
 ```bash
-npm install ng-advanced-table ng-advanced-table-ui @tanstack/angular-table @angular/common @angular/aria @angular/cdk
-```
-
-Core table, companion controls, render metrics, and built-in locale dictionaries:
-
-```bash
-npm install ng-advanced-table ng-advanced-table-ui ng-advanced-table-utils ng-advanced-table-locales @tanstack/angular-table @angular/common @angular/aria @angular/cdk
+npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
 ```
 
 ## First Table
 
-Define a row type, provide TanStack columns, and render `NatTable` inside `NatTableSurface`. Give every table an accessible name or visible caption, and provide a stable `getRowId` as soon as the table can sort, filter, select rows, paginate, or receive live updates.
+Define a row type, provide TanStack columns, and render `NatTable` inside `NatTableSurface`. Give every table an accessible name or visible caption. Rows with a string or number `id` property get stable table identity automatically; pass `getRowId` only when identity lives somewhere else.
 
 ```ts
 import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table-ui';
+import { NatTableSurface } from 'ng-advanced-table/ui';
 
 interface PositionRow {
   id: string;
@@ -37,7 +31,7 @@ interface PositionRow {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface>
-      <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
     </nat-table-surface>
   `
 })
@@ -65,8 +59,6 @@ export class PositionsTable {
       cell: (context) => `$${context.getValue<number>().toFixed(2)}`
     }
   ];
-
-  readonly getRowId = (row: PositionRow) => row.id;
 }
 ```
 
@@ -80,7 +72,7 @@ Use a visible `caption` when the page design needs a table title inside the grid
 
 ## Core-Only Scope
 
-When you intentionally use only `ng-advanced-table` without `ng-advanced-table-ui`, provide `NatTableService` at the local wrapper that owns the table. Most application code should prefer `NatTableSurface` because it provides the same scope and unlocks companion controls later.
+When you intentionally use only `ng-advanced-table` without `ng-advanced-table/ui`, provide `NatTableService` at the local wrapper that owns the table. Most application code should prefer `NatTableSurface` because it provides the same scope and unlocks companion controls later.
 
 ```bash
 npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
@@ -100,7 +92,7 @@ interface PositionRow {
   selector: 'app-core-only-table',
   imports: [NatTable],
   providers: [NatTableService],
-  template: ` <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Core-only positions" /> `
+  template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Core-only positions" /> `
 })
 export class CoreOnlyTable {
   readonly rows = signal<readonly PositionRow[]>([]);
@@ -111,13 +103,12 @@ export class CoreOnlyTable {
       meta: { label: 'Symbol', rowHeader: true }
     }
   ];
-  readonly getRowId = (row: PositionRow) => row.id;
 }
 ```
 
 ## Add Companion Controls
 
-Use `ng-advanced-table-ui` when you want pagination controls, column visibility, horizontal scroll controls, toolbar behavior, header actions, selection checkbox columns, or export actions.
+Use `ng-advanced-table/ui` when you want pagination controls, column visibility, horizontal scroll controls, toolbar behavior, header actions, selection checkbox columns, or export actions.
 
 ```ts
 import { Component, signal } from '@angular/core';
@@ -130,7 +121,7 @@ import {
   NatTableScrollControl,
   NatTableSurface,
   withNatTableHeaderActions
-} from 'ng-advanced-table-ui';
+} from 'ng-advanced-table/ui';
 
 interface PositionRow {
   id: string;
@@ -146,7 +137,7 @@ interface PositionRow {
     <nat-table-surface [initialState]="initialState">
       <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-      <nat-table [data]="rows()" [columns]="columns" [getRowId]="getRowId" accessibleName="Open positions" />
+      <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
 
       <nat-table-scroll-control />
       <nat-table-column-visibility />
@@ -155,7 +146,6 @@ interface PositionRow {
 })
 export class PositionsTable {
   readonly rows = signal<readonly PositionRow[]>([]);
-  readonly getRowId = (row: PositionRow) => row.id;
   readonly initialState: Partial<NatTableState> = {
     pagination: { pageIndex: 0, pageSize: 25 }
   };
@@ -190,7 +180,7 @@ Start with these defaults unless the feature needs something else:
 | Need                       | Default choice                                                                     |
 | -------------------------- | ---------------------------------------------------------------------------------- |
 | Table identity             | `accessibleName` or visible `caption`                                              |
-| Row identity               | `getRowId = (row) => row.id`                                                       |
+| Row identity               | String or number `row.id`; `getRowId` for custom, composite, or nested identifiers |
 | Column labels              | `meta.label` on every column                                                       |
 | Row header                 | `meta.rowHeader: true` on the primary identifying column                           |
 | Numeric columns            | `meta.align: 'end'`                                                                |
@@ -203,6 +193,7 @@ Start with these defaults unless the feature needs something else:
 
 - Use `/docs/columns` for column metadata, sizing, custom cell components, header actions, and row activation.
 - Use `/docs/state` for controlled and uncontrolled state patterns.
-- Use `/docs/data-lifecycle` for loading, empty, error, background refresh, and manual server-side data.
-- Use `/docs/composition` for surfaces, toolbars, consumer-owned search, and companion controls.
-- Use `/docs/selection-export` for selection checkboxes, bulk actions, and CSV/custom export.
+- Use `/docs/data-lifecycle` for loading, empty, error, background refresh, and Manual Data Handling.
+- Use `/docs/filtering-search` for consumer-owned search and filtering controls.
+- Use `/docs/row-selection` for selection checkboxes and bulk state.
+- Use `/docs/export` for CSV defaults and custom export handlers.

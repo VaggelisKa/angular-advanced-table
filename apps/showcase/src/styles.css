@@ -219,7 +219,7 @@ input {
 .showcase-page .grid-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: 24px;
   align-items: start;
 }
 
@@ -287,11 +287,17 @@ input {
 }
 
 .showcase-page .search-panel,
-.showcase-page .visibility-panel {
+.showcase-page .visibility-panel,
+.showcase-page .table-controls-grid {
   padding: 12px 20px;
   margin: 0;
   background: var(--showcase-page-surface);
   border-bottom: 1px solid var(--showcase-page-border);
+}
+
+.showcase-page .table-controls-grid {
+  display: grid;
+  gap: 14px;
 }
 
 .showcase-page nat-table-surface {
@@ -966,22 +972,31 @@ input {
 .docs-markdown .token.comment,
 .docs-markdown .token.prolog,
 .docs-markdown .token.doctype,
-.docs-markdown .token.cdata {
+.docs-markdown .token.cdata,
+.docs-example .token.comment,
+.docs-example .token.prolog,
+.docs-example .token.doctype,
+.docs-example .token.cdata {
   font-style: italic;
   color: var(--showcase-code-token-comment);
 }
 
-.docs-markdown .token.punctuation {
+.docs-markdown .token.punctuation,
+.docs-example .token.punctuation {
   color: var(--showcase-code-token-punctuation);
 }
 
-.docs-markdown .token.namespace {
+.docs-markdown .token.namespace,
+.docs-example .token.namespace {
   opacity: 0.72;
 }
 
 .docs-markdown .token.property,
 .docs-markdown .token.attr-name,
-.docs-markdown .token.variable {
+.docs-markdown .token.variable,
+.docs-example .token.property,
+.docs-example .token.attr-name,
+.docs-example .token.variable {
   color: var(--showcase-code-token-property);
 }
 
@@ -989,7 +1004,12 @@ input {
 .docs-markdown .token.number,
 .docs-markdown .token.constant,
 .docs-markdown .token.symbol,
-.docs-markdown .token.deleted {
+.docs-markdown .token.deleted,
+.docs-example .token.boolean,
+.docs-example .token.number,
+.docs-example .token.constant,
+.docs-example .token.symbol,
+.docs-example .token.deleted {
   color: var(--showcase-code-token-number);
 }
 
@@ -997,46 +1017,65 @@ input {
 .docs-markdown .token.string,
 .docs-markdown .token.char,
 .docs-markdown .token.builtin,
-.docs-markdown .token.inserted {
+.docs-markdown .token.inserted,
+.docs-example .token.selector,
+.docs-example .token.string,
+.docs-example .token.char,
+.docs-example .token.builtin,
+.docs-example .token.inserted {
   color: var(--showcase-code-token-string);
 }
 
 .docs-markdown .token.operator,
 .docs-markdown .token.entity,
-.docs-markdown .token.url {
+.docs-markdown .token.url,
+.docs-example .token.operator,
+.docs-example .token.entity,
+.docs-example .token.url {
   color: var(--showcase-code-token-operator);
   background: transparent;
 }
 
 .docs-markdown .token.atrule,
 .docs-markdown .token.attr-value,
-.docs-markdown .token.keyword {
+.docs-markdown .token.keyword,
+.docs-example .token.atrule,
+.docs-example .token.attr-value,
+.docs-example .token.keyword {
   color: var(--showcase-code-token-keyword);
 }
 
-.docs-markdown .token.function {
+.docs-markdown .token.function,
+.docs-example .token.function {
   color: var(--showcase-code-token-function);
 }
 
-.docs-markdown .token.class-name {
+.docs-markdown .token.class-name,
+.docs-example .token.class-name {
   color: var(--showcase-code-token-class);
 }
 
-.docs-markdown .token.tag {
+.docs-markdown .token.tag,
+.docs-example .token.tag {
   color: var(--showcase-code-token-tag);
 }
 
 .docs-markdown .token.regex,
-.docs-markdown .token.important {
+.docs-markdown .token.important,
+.docs-example .token.regex,
+.docs-example .token.important {
   color: var(--showcase-code-token-class);
 }
 
 .docs-markdown .token.important,
-.docs-markdown .token.bold {
+.docs-markdown .token.bold,
+.docs-example .token.important,
+.docs-example .token.bold {
   font-weight: 700;
 }
 
-.docs-markdown .token.italic {
+.docs-markdown .token.italic,
+.docs-example .token.italic {
   font-style: italic;
 }
 
@@ -1131,6 +1170,7 @@ input {
   .showcase-page .config-options,
   .showcase-page .search-panel,
   .showcase-page .visibility-panel,
+  .showcase-page .table-controls-grid,
   .showcase-page .code-card-header,
   .showcase-page .code-editor {
     padding-inline: 14px;

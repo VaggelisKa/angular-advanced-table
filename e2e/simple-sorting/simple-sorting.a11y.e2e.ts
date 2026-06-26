@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test.describe('FEATURE: Simple sorting accessibility', () => {
   test.describe('GIVEN: the simple-sorting example is loaded', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/examples/simple-sorting');
+      await page.goto('/docs/sorting');
     });
 
     test.describe('WHEN: the Customer header is activated via keyboard', () => {

@@ -3,9 +3,9 @@ import { Component, computed, linkedSignal, signal } from '@angular/core';
 import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table-ui';
+import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table/ui';
 
-import { computeRowSelection, getDemoItemRowId } from './selection-showcase.util';
+import { computeRowSelection } from './selection-showcase.util';
 import type { DemoItem, RowSelectionSource } from './selection-showcase.util';
 
 const DEMO_DATA: DemoItem[] = [
@@ -31,7 +31,6 @@ const DEMO_DATA: DemoItem[] = [
 export class SelectionShowcasePage {
   protected readonly data = signal<DemoItem[]>(DEMO_DATA);
   protected readonly selectionMode = signal<'single' | 'multiple'>('multiple');
-  protected readonly getRowId = getDemoItemRowId;
 
   /**
    * Row selection derived from the current data and cardinality. Using a

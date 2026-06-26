@@ -82,7 +82,7 @@ import { type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, NatTableState } from 'ng-advanced-table';
 import {
   ${uiImports.join(',\n  ')}
-} from 'ng-advanced-table-ui';
+} from 'ng-advanced-table/ui';
 
 interface DemoItem {
   id: string;

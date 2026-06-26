@@ -3,7 +3,7 @@ import { Component, computed, signal } from '@angular/core';
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { NatTablePagination, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table-ui';
+import { NatTablePagination, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/ui';
 
 type DemoItem = {
   id: string;
@@ -40,41 +40,29 @@ const DEMO_DATA: DemoItem[] = [
     }
   `,
   template: `
-    <div class="showcase-page showcase-container">
-      <header class="header-section">
-        <h1 class="title">Table Pagination</h1>
-        <p class="description">
-          Demonstrates client-side pagination row models driven by pager and page-size switches, as well as server-side/manual
-          configurations.
-        </p>
-      </header>
+    <div class="grid-layout">
+      <div class="card">
+        <h2 class="card-title">Paginated Grid (Client-Side)</h2>
 
-      <div class="grid-layout">
-        <div class="card">
-          <h2 class="card-title">Paginated Grid (Client-Side)</h2>
+        <nat-table-surface [(state)]="tableState">
+          <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
 
-          <nat-table-surface [(state)]="tableState">
-            <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
+          <nat-table [columns]="columns" [data]="data" accessibleName="Pagination demo table" />
+        </nat-table-surface>
+      </div>
 
-            <nat-table [columns]="columns" [data]="data" accessibleName="Pagination demo table" />
-          </nat-table-surface>
-        </div>
+      <div class="card">
+        <h2 class="card-title">Manual Data Handling (Mixed Mode)</h2>
+        <p class="description description-spaced">Pagination is handled externally, while sorting remains automatic client-side.</p>
 
-        <div class="card">
-          <h2 class="card-title">Manual / Server-Side Pagination (Mixed Mode)</h2>
-          <p class="description description-spaced">
-            Pagination is handled externally (simulated server-side slicing), while sorting remains automatic client-side.
-          </p>
+        <nat-table-surface
+          [manualPageCount]="manualPageCount()"
+          [mode]="{ pagination: 'manual', sorting: 'auto' }"
+          [(state)]="manualTableState">
+          <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
 
-          <nat-table-surface
-            [manualPageCount]="manualPageCount()"
-            [mode]="{ pagination: 'manual', sorting: 'auto' }"
-            [(state)]="manualTableState">
-            <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
-
-            <nat-table [columns]="columns" [data]="manualData()" accessibleName="Manual pagination demo table" />
-          </nat-table-surface>
-        </div>
+          <nat-table [columns]="columns" [data]="manualData()" accessibleName="Manual pagination demo table" />
+        </nat-table-surface>
       </div>
     </div>
   `
