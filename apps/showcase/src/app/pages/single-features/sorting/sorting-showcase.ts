@@ -31,7 +31,13 @@ const DEMO_DATA: DemoItem[] = [
 @Component({
   selector: 'app-sorting-showcase',
   imports: [NatTable, NatTableSurface],
-  templateUrl: './sorting-showcase.html'
+  templateUrl: './sorting-showcase.html',
+  styles: `
+    :host {
+      display: grid;
+      gap: 24px;
+    }
+  `
 })
 export class SortingShowcasePage {
   protected readonly data = DEMO_DATA;

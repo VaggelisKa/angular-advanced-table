@@ -216,7 +216,7 @@ input {
 .showcase-page .grid-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: 24px;
   align-items: start;
 }
 
