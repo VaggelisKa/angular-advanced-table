@@ -34,26 +34,19 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-search-showcase',
   imports: [NatTable, NatTableSurface, TableSearch],
   template: `
-    <div class="showcase-page showcase-container">
-      <header class="header-section">
-        <h1 class="title">Global Search & Filter</h1>
-        <p class="description">Demonstrates real-time fuzzy search filtering against all columns.</p>
-      </header>
+    <div class="grid-layout">
+      <div class="card">
+        <h2 class="card-title">Searchable Grid</h2>
 
-      <div class="grid-layout">
-        <div class="card">
-          <h2 class="card-title">Searchable Grid</h2>
+        <nat-table-surface [(state)]="tableState">
+          <div class="search-panel">
+            <app-table-search
+              label="Fuzzy search symbol, name, status, or category"
+              placeholder="Search e.g. Analytics, Active, Delta..." />
+          </div>
 
-          <nat-table-surface [(state)]="tableState">
-            <div class="search-panel">
-              <app-table-search
-                label="Fuzzy search symbol, name, status, or category"
-                placeholder="Search e.g. Analytics, Active, Delta..." />
-            </div>
-
-            <nat-table [columns]="columns" [data]="data" accessibleName="Search demo table" />
-          </nat-table-surface>
-        </div>
+          <nat-table [columns]="columns" [data]="data" accessibleName="Search demo table" />
+        </nat-table-surface>
       </div>
     </div>
   `

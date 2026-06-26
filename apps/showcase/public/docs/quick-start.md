@@ -193,6 +193,7 @@ Start with these defaults unless the feature needs something else:
 
 - Use `/docs/columns` for column metadata, sizing, custom cell components, header actions, and row activation.
 - Use `/docs/state` for controlled and uncontrolled state patterns.
-- Use `/docs/data-lifecycle` for loading, empty, error, background refresh, and manual server-side data.
-- Use `/docs/composition` for surfaces, toolbars, consumer-owned search, and companion controls.
-- Use `/docs/selection-export` for selection checkboxes, bulk actions, and CSV/custom export.
+- Use `/docs/data-lifecycle` for loading, empty, error, background refresh, and Manual Data Handling.
+- Use `/docs/filtering-search` for consumer-owned search and filtering controls.
+- Use `/docs/row-selection` for selection checkboxes and bulk state.
+- Use `/docs/export` for CSV defaults and custom export handlers.

@@ -1,13 +1,14 @@
-Composition is the main design point of the table packages. `ng-advanced-table` renders the grid and exposes a controller. `ng-advanced-table/ui` provides optional companion controls that read and patch that controller. Your app owns domain workflows such as search copy, filter menus, row actions, bulk actions, dialogs, and server requests.
+Composition is the main design point of the table entry points. `ng-advanced-table` renders the grid and exposes a controller. `ng-advanced-table/ui` provides optional companion controls that read and patch that controller. Your app owns domain workflows such as search copy, filter menus, row actions, bulk actions, dialogs, and server requests.
 
-## Package Responsibilities
+## Entry Point Responsibilities
 
-| Package                   | Responsibility                                                                                                       |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`       | Core table, keyboard grid behavior, TanStack integration, state rows, row activation, accessibility announcements    |
-| `ng-advanced-table/ui`    | Surface, pagination, column visibility, scroll controls, toolbar, header actions, selection column, export directive |
-| `ng-advanced-table/utils` | Optional render-metrics store, filter, panel, and synthetic metrics column                                           |
-| Your app                  | Search inputs, domain filters, row menus, bulk actions, fetch/retry flows, dialogs, routing, permissions             |
+| Entry point                | Responsibility                                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `ng-advanced-table`        | Core table, keyboard grid behavior, TanStack integration, state rows, row activation, accessibility announcements    |
+| `ng-advanced-table/ui`     | Surface, pagination, column visibility, scroll controls, toolbar, header actions, selection column, export directive |
+| `ng-advanced-table/utils`  | Optional render-metrics store, filter, panel, and synthetic metrics column                                           |
+| `ng-advanced-table/locale` | Built-in locale dictionaries and provider helpers for core, UI, and utilities copy                                   |
+| Your app                   | Search inputs, domain filters, row menus, bulk actions, fetch/retry flows, dialogs, routing, permissions             |
 
 Keeping this boundary clear makes the reusable packages stable while still letting product-specific workflows feel native to your application.
 

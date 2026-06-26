@@ -1,56 +1,48 @@
-<div class="showcase-page showcase-container">
-  <header class="header-section">
-    <h1 class="title">Sorting Feature</h1>
-    <p class="description">Demonstrates single-column sorting configuration and state handling in the table.</p>
-  </header>
-
-  <div class="grid-layout grid-layout-with-panel">
-    <div class="card">
-      <h2 class="card-title">Interactive Sorting Grid</h2>
-      <nat-table-surface [(state)]="tableState">
-        <nat-table [columns]="columns" [data]="data" accessibleName="Sorting demo table" />
-      </nat-table-surface>
-    </div>
-
-    <div class="card">
-      <h2 class="card-title">Programmatic Sort Actions</h2>
-      <div class="actions-panel">
-        <button class="btn btn-outline" type="button" (click)="sortBy('value', 'asc')">Sort by Value (Asc)</button>
-        <button class="btn btn-outline" type="button" (click)="sortBy('name', 'desc')">Sort by Name (Desc)</button>
-        <button class="btn btn-secondary" type="button" (click)="clearSort()">Clear Sorting</button>
-      </div>
-
-      <div class="info-tag">Current state: {{ currentSortLabel() }}</div>
-    </div>
+<div class="grid-layout grid-layout-with-panel">
+  <div class="card">
+    <h2 class="card-title">Interactive Sorting Grid</h2>
+    <nat-table-surface [(state)]="tableState">
+      <nat-table [columns]="columns" [data]="data" accessibleName="Sorting demo table" />
+    </nat-table-surface>
   </div>
 
-  <div class="grid-layout grid-layout-with-panel">
-    <div class="card">
-      <h2 class="card-title">Multi-Column Sorting Grid</h2>
-      <nat-table-surface [enableMultiSort]="true" [(state)]="multiSortState">
-        <nat-table [columns]="columns" [data]="data" accessibleName="Multi-column sorting demo table" />
-      </nat-table-surface>
+  <div class="card">
+    <h2 class="card-title">Programmatic Sort Actions</h2>
+    <div class="actions-panel">
+      <button class="btn btn-outline" type="button" (click)="sortBy('value', 'asc')">Sort by Value (Asc)</button>
+      <button class="btn btn-outline" type="button" (click)="sortBy('name', 'desc')">Sort by Name (Desc)</button>
+      <button class="btn btn-secondary" type="button" (click)="clearSort()">Clear Sorting</button>
     </div>
 
-    <div class="card">
-      <h2 class="card-title">Sort Priority</h2>
-      <div class="instructions">
-        <ol>
-          <li>Click a header's sort button to sort by that column.</li>
-          <li>
-            <strong>Shift + click</strong> (or <strong>Shift + Enter</strong> on a focused sort button) adds another column to the
-            sort.
-          </li>
-          <li>A numbered badge on each sorted header shows its priority.</li>
-        </ol>
-      </div>
+    <div class="info-tag">Current state: {{ currentSortLabel() }}</div>
+  </div>
+</div>
 
-      <div class="info-tag">Current sorting (priority order): {{ multiSortLabel() }}</div>
+<div class="grid-layout grid-layout-with-panel">
+  <div class="card">
+    <h2 class="card-title">Multi-Column Sorting Grid</h2>
+    <nat-table-surface [enableMultiSort]="true" [(state)]="multiSortState">
+      <nat-table [columns]="columns" [data]="data" accessibleName="Multi-column sorting demo table" />
+    </nat-table-surface>
+  </div>
 
-      <div class="actions-panel">
-        <button class="btn btn-outline" type="button" (click)="applyMultiPreset()">Sort by Category, then Value</button>
-        <button class="btn btn-secondary" type="button" (click)="clearMultiSort()">Clear Sorting</button>
-      </div>
+  <div class="card">
+    <h2 class="card-title">Sort Priority</h2>
+    <div class="instructions">
+      <ol>
+        <li>Click a header's sort button to sort by that column.</li>
+        <li>
+          <strong>Shift + click</strong> (or <strong>Shift + Enter</strong> on a focused sort button) adds another column to the sort.
+        </li>
+        <li>A numbered badge on each sorted header shows its priority.</li>
+      </ol>
+    </div>
+
+    <div class="info-tag">Current sorting (priority order): {{ multiSortLabel() }}</div>
+
+    <div class="actions-panel">
+      <button class="btn btn-outline" type="button" (click)="applyMultiPreset()">Sort by Category, then Value</button>
+      <button class="btn btn-secondary" type="button" (click)="clearMultiSort()">Clear Sorting</button>
     </div>
   </div>
 </div>

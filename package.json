@@ -10,7 +10,7 @@
     "build:packages": "nx build ng-advanced-table",
     "watch": "nx build showcase --watch --configuration development",
     "test": "nx test showcase",
-    "test:packages": "nx test ng-advanced-table",
+    "test:packages": "nx run-many -t test --projects=ng-advanced-table-core,ng-advanced-table-ui,ng-advanced-table-utils,ng-advanced-table-locale",
     "e2e": "nx run e2e:e2e",
     "e2e:ci": "nx run e2e:e2e-ci",
     "lint": "nx run-many -t lint",

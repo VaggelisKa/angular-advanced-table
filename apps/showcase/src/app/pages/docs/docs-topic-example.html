@@ -1,0 +1,95 @@
+<section [attr.aria-labelledby]="headingId()" class="docs-example">
+  <div class="docs-example-header">
+    <div class="docs-example-title-group">
+      <h2 [id]="headingId()" class="docs-example-title">{{ example().title }}</h2>
+      <p class="docs-example-description">{{ example().description }}</p>
+    </div>
+
+    <div [attr.aria-label]="`${example().title} view`" class="docs-example-tabs" role="tablist">
+      <button
+        [attr.aria-controls]="previewPanelId()"
+        [attr.aria-selected]="activePanel() === 'preview'"
+        [id]="previewTabId()"
+        class="docs-example-tab"
+        role="tab"
+        type="button"
+        (click)="activePanel.set('preview')"
+        (keydown)="switchPanelFromKeyboard($event, 'preview')">
+        Preview
+      </button>
+      <button
+        [attr.aria-controls]="codePanelId()"
+        [attr.aria-selected]="activePanel() === 'code'"
+        [id]="codeTabId()"
+        class="docs-example-tab"
+        role="tab"
+        type="button"
+        (click)="activePanel.set('code')"
+        (keydown)="switchPanelFromKeyboard($event, 'code')">
+        Code
+      </button>
+    </div>
+  </div>
+
+  <div
+    [attr.aria-labelledby]="previewTabId()"
+    [hidden]="activePanel() !== 'preview'"
+    [id]="previewPanelId()"
+    class="docs-example-panel"
+    role="tabpanel">
+    <ng-container *ngComponentOutlet="example().component" />
+  </div>
+  <div
+    #codePanel
+    [attr.aria-labelledby]="codeTabId()"
+    [hidden]="activePanel() !== 'code'"
+    [id]="codePanelId()"
+    class="docs-example-panel docs-example-code-panel"
+    role="tabpanel">
+    @if (example().snippets.length > 1) {
+    <div [attr.aria-label]="`${example().title} source files`" class="docs-code-tabs" role="tablist">
+      @for (snippet of example().snippets; track snippet.id) {
+      <button
+        [attr.aria-controls]="snippetPanelId(snippet)"
+        [attr.aria-selected]="selectedSnippetId() === snippet.id"
+        [id]="snippetTabId(snippet)"
+        class="docs-code-tab"
+        role="tab"
+        type="button"
+        (click)="activeSnippetId.set(snippet.id)"
+        (keydown)="switchSnippetFromKeyboard($event, snippet.id)">
+        {{ snippet.label }}
+      </button>
+      }
+    </div>
+    } @for (snippet of example().snippets; track snippet.id) {
+    <div
+      [attr.aria-labelledby]="$count > 1 ? snippetTabId(snippet) : null"
+      [hidden]="selectedSnippetId() !== snippet.id"
+      [id]="snippetPanelId(snippet)"
+      class="docs-code-snippet-panel"
+      role="tabpanel">
+      <div class="docs-code-header">
+        <span class="docs-code-label">{{ snippet.label }}</span>
+        <button
+          [attr.aria-label]="copyButtonLabel()"
+          [class.is-copied]="copied()"
+          [title]="copyButtonLabel()"
+          class="docs-code-copy"
+          type="button"
+          (click)="copySnippet(snippet)">
+          <svg aria-hidden="true" class="docs-code-copy-icon docs-code-copy-icon--copy" focusable="false" viewBox="0 0 16 16">
+            <path d="M5 4.5V3.25A1.25 1.25 0 0 1 6.25 2h5.5A1.25 1.25 0 0 1 13 3.25v6.5A1.25 1.25 0 0 1 11.75 11H10.5" />
+            <path
+              d="M3.25 5h5.5A1.25 1.25 0 0 1 10 6.25v6.5A1.25 1.25 0 0 1 8.75 14h-5.5A1.25 1.25 0 0 1 2 12.75v-6.5A1.25 1.25 0 0 1 3.25 5Z" />
+          </svg>
+          <svg aria-hidden="true" class="docs-code-copy-icon docs-code-copy-icon--check" focusable="false" viewBox="0 0 16 16">
+            <path d="M3.25 8.25 6.25 11.25 12.75 4.75" />
+          </svg>
+        </button>
+      </div>
+      <pre class="docs-code-block"><code [class]="`language-${snippet.language}`" [textContent]="snippet.code"></code></pre>
+    </div>
+    }
+  </div>
+</section>

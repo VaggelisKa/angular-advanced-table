@@ -3,12 +3,12 @@ import { expect, test } from '@playwright/test';
 test.describe('FEATURE: Sorting', () => {
   test.describe('GIVEN: the sorting example is loaded', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/examples/sorting');
+      await page.goto('/docs/sorting');
     });
 
     test.describe('WHEN: programmatic sort buttons are clicked', () => {
       test('THEN: it applies and clears single-column sort', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: 'Sorting Feature' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Single and multi-column sorting' })).toBeVisible();
 
         const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
 

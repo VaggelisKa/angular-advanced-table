@@ -50,13 +50,13 @@ test.describe('FEATURE: Table toolbar', () => {
 
   test.describe('GIVEN: the toolbar showcase page is loaded', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/examples/toolbar');
+      await page.goto('/docs/toolbar-actions');
     });
 
     test.describe('WHEN: the page is rendered', () => {
       test('THEN: it shows the heading, Products toolbar, and toolbar-button styling', async ({ page }) => {
         await test.step('THEN: it shows the heading and the Products toolbar', async () => {
-          await expect(page.getByRole('heading', { name: 'Table Toolbar' })).toBeVisible();
+          await expect(page.getByRole('heading', { name: 'Toolbar groups and action placement' })).toBeVisible();
           await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
         });
 
@@ -189,7 +189,7 @@ test.describe('FEATURE: Table toolbar', () => {
       test('THEN: it reverses the arrow-key direction', async ({ page }) => {
         // re-navigates with RTL direction inside this body (rule 5) — not hoisted to the shared GIVEN
         await applyDocumentDirection(page, 'rtl');
-        await page.goto('/examples/toolbar');
+        await page.goto('/docs/toolbar-actions');
         await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
 
         const { exportButton, refreshButton } = buttons(page);

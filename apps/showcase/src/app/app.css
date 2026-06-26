@@ -272,7 +272,7 @@
 }
 
 .showcase-nav-header {
-  display: flex;
+  display: none;
   gap: 10px;
   align-items: center;
   padding: 0 8px 6px;
@@ -691,6 +691,8 @@
   }
 
   .showcase-nav-header {
+    display: flex;
+    justify-content: flex-end;
     padding: 0 4px 6px;
   }
 

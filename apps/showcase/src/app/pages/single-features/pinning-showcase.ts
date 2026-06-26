@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { Component, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
@@ -33,52 +32,41 @@ const DEMO_DATA: DemoItem[] = [
   selector: 'app-pinning-showcase',
   imports: [NatTable, NatTableSurface],
   template: `
-    <div class="showcase-page showcase-container">
-      <header class="header-section">
-        <h1 class="title">Column Pinning</h1>
-        <p class="description">Demonstrates sticky columns locked to the left or right side of the scrollable region.</p>
-      </header>
+    <div class="grid-layout grid-layout-with-panel">
+      <div class="card">
+        <h2 class="card-title">Scrollable Grid with Pinning</h2>
+        <nat-table-surface [(state)]="tableState">
+          <nat-table [columns]="columns" [data]="data" accessibleName="Pinning demo table" />
+        </nat-table-surface>
+      </div>
 
-      <div class="grid-layout grid-layout-with-panel">
-        <div class="card">
-          <h2 class="card-title">Scrollable Grid with Pinning</h2>
-          <nat-table-surface [(state)]="tableState">
-            <nat-table [columns]="columns" [data]="data" accessibleName="Pinning demo table" />
-          </nat-table-surface>
-        </div>
-
-        <div class="card">
-          <h2 class="card-title">Configure Pinning State</h2>
-          <div class="pinning-controls">
-            @for (col of targetColumns; track col.id) {
-              <div class="column-control">
-                <span class="column-name">{{ col.label }}</span>
-                <div class="btn-group">
-                  <button
-                    [class.active]="getPinnedSide(col.id) === 'left'"
-                    class="btn-sm"
-                    type="button"
-                    (click)="pinColumn(col.id, 'left')">
-                    Left
-                  </button>
-                  <button
-                    [class.active]="getPinnedSide(col.id) === null"
-                    class="btn-sm"
-                    type="button"
-                    (click)="pinColumn(col.id, null)">
-                    None
-                  </button>
-                  <button
-                    [class.active]="getPinnedSide(col.id) === 'right'"
-                    class="btn-sm"
-                    type="button"
-                    (click)="pinColumn(col.id, 'right')">
-                    Right
-                  </button>
-                </div>
+      <div class="card">
+        <h2 class="card-title">Configure Pinning State</h2>
+        <div class="pinning-controls">
+          @for (col of targetColumns; track col.id) {
+            <div class="column-control">
+              <span class="column-name">{{ col.label }}</span>
+              <div class="btn-group">
+                <button
+                  [class.active]="getPinnedSide(col.id) === 'left'"
+                  class="btn-sm"
+                  type="button"
+                  (click)="pinColumn(col.id, 'left')">
+                  Left
+                </button>
+                <button [class.active]="getPinnedSide(col.id) === null" class="btn-sm" type="button" (click)="pinColumn(col.id, null)">
+                  None
+                </button>
+                <button
+                  [class.active]="getPinnedSide(col.id) === 'right'"
+                  class="btn-sm"
+                  type="button"
+                  (click)="pinColumn(col.id, 'right')">
+                  Right
+                </button>
               </div>
-            }
-          </div>
+            </div>
+          }
         </div>
       </div>
     </div>

@@ -166,9 +166,9 @@ function firstPage(state: Partial<NatTableState>): PaginationState {
 
 Global filter and column-filter updates reset `pagination.pageIndex` to `0` inside the table. If your app owns filter slices and pagination together, mirror that behavior when updating your signal.
 
-## Manual Modes
+## Manual Data Handling
 
-Use manual mode when the server owns sorting, filtering, or pagination. The table still emits state changes; your container fetches data and passes back the current page of rows.
+Use manual mode when your app owns sorting, filtering, or pagination outside the table. The table still emits state changes; your container prepares rows and passes back the current page or current row set.
 
 ```html
 <nat-table-surface
@@ -177,7 +177,7 @@ Use manual mode when the server owns sorting, filtering, or pagination. The tabl
   [state]="tableState()"
   (stateChange)="loadPage($event)">
   <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
-  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Server-side positions" />
+  <nat-table [data]="rows()" [columns]="columns" [dataStatus]="status()" [error]="error()" accessibleName="Manual positions" />
 </nat-table-surface>
 ```
 
@@ -209,7 +209,7 @@ protected loadPage(state: Partial<NatTableState>): void {
 }
 ```
 
-You can also mix modes. For example, `{ pagination: 'manual', sorting: 'auto' }` fetches pages externally while sorting the rows currently held by the client.
+You can also mix modes. For example, `{ pagination: 'manual', sorting: 'auto' }` prepares pages externally while sorting the rows currently held by the client.
 
 ## Stable Row IDs
 

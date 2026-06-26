@@ -32,17 +32,13 @@
     [attr.aria-modal]="mobileNavOpen() ? 'true' : null"
     [attr.role]="mobileNavOpen() ? 'dialog' : null"
     [class.is-open]="mobileNavOpen()"
-    aria-labelledby="showcase-nav-title"
+    aria-label="Docs and examples"
     class="showcase-nav"
     id="showcase-navigation"
     tabindex="-1"
     (keydown)="trapMobileNavFocus($event)"
     (keydown.escape)="closeMobileNav()">
     <div class="showcase-nav-header">
-      <span class="showcase-brand-copy">
-        <span class="showcase-eyebrow">Showcase</span>
-        <h1 id="showcase-nav-title">Docs and examples</h1>
-      </span>
       <button
         #mobileNavCloseButton
         aria-label="Close showcase navigation"

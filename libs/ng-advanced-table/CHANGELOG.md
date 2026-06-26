@@ -80,7 +80,7 @@
 
 - Tighten table accessibility labels, hidden header label rendering, and English companion-control copy. ([#122](https://github.com/VaggelisKa/angular-advanced-table/pull/122))
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - Consolidate the four published packages into a single `ng-advanced-table` package that exposes its layers through ng-packagr subpath entry points — `ng-advanced-table/ui`, `ng-advanced-table/utils`, and `ng-advanced-table/locale` — mirroring how `@angular/cdk` ships `@angular/cdk/table`, `@angular/cdk/overlay`, etc. One install, one version, atomic releases; the wildcard internal `ng-advanced-table-locales` dependency is gone (locales is now an entry point, not a published dependency). ([#186](https://github.com/VaggelisKa/angular-advanced-table/pull/186), [#191](https://github.com/VaggelisKa/angular-advanced-table/pull/191))
 
