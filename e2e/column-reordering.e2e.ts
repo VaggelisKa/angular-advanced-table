@@ -25,6 +25,7 @@ test.describe('FEATURE: Column reordering', () => {
           await expect(categoryHeader).toBeFocused();
 
           const isMac = process.platform === 'darwin';
+
           await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+ArrowRight`);
         });
 
@@ -74,6 +75,7 @@ test.describe('FEATURE: Column reordering', () => {
           scrollLeftBefore = await tableRegion.evaluate((element) => element.scrollLeft);
 
           const isMac = process.platform === 'darwin';
+
           await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+ArrowRight`);
         });
 

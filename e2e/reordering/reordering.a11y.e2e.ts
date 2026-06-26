@@ -21,6 +21,7 @@ test.describe('FEATURE: Column reordering accessibility', () => {
         await expect(nameHeader).toBeFocused();
 
         const isMac = process.platform === 'darwin';
+
         await page.keyboard.press(`${isMac ? 'Meta' : 'Control'}+Shift+ArrowRight`);
 
         await test.step('THEN: Name swaps with Category', async () => {

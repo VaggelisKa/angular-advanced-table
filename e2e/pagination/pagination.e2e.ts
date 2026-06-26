@@ -11,7 +11,7 @@ test.describe('FEATURE: Pagination', () => {
         const clientCard = page.locator('.card', { hasText: 'Paginated Grid (Client-Side)' });
         const clientTable = clientCard.locator('table');
         const pager = clientCard.getByRole('toolbar');
-        const pageSizeSelect = pager.locator('select');
+        const rowsPerPageSelect = pager.getByRole('combobox');
         const nextBtn = pager.getByRole('button', { name: 'Next page' });
         const prevBtn = pager.getByRole('button', { name: 'Previous page' });
 
@@ -25,13 +25,13 @@ test.describe('FEATURE: Pagination', () => {
         });
 
         await test.step('THEN: five rows are shown after the page size changes to 5', async () => {
-          await pageSizeSelect.selectOption('5');
+          await rowsPerPageSelect.selectOption('5');
 
           await expect(clientTable.locator('tbody tr')).toHaveCount(5);
         });
 
         await test.step('THEN: three rows are shown after the page size changes back to 3', async () => {
-          await pageSizeSelect.selectOption('3');
+          await rowsPerPageSelect.selectOption('3');
 
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });
