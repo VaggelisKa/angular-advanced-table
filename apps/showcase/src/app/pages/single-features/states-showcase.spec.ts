@@ -12,7 +12,7 @@ const clickCardButton = (card: HTMLElement, label: string): void => {
   button.click();
 };
 
-describe('StatesShowcasePage', () => {
+describe('FEATURE: StatesShowcasePage', () => {
   let fixture: ComponentFixture<StatesShowcasePage>;
 
   beforeEach(async () => {
@@ -30,91 +30,107 @@ describe('StatesShowcasePage', () => {
     vi.useRealTimers();
   });
 
-  it('renders loading, empty, error, transition, and refresh state examples', () => {
-    fixture.detectChanges();
+  describe('GIVEN: the states showcase page is rendered', () => {
+    describe('WHEN: renders loading, empty, error, transition, and refresh state examples', () => {
+      it('THEN: it shows each table state example', () => {
+        fixture.detectChanges();
 
-    const page = fixture.nativeElement as HTMLElement;
-    const cards = Array.from(page.querySelectorAll('.card-title')).map((title) => title.textContent.trim());
-    const busyTables = page.querySelectorAll('table[aria-busy="true"]');
+        const page = fixture.nativeElement as HTMLElement;
+        const cards = Array.from(page.querySelectorAll('.card-title')).map((title) => title.textContent.trim());
+        const busyTables = page.querySelectorAll('table[aria-busy="true"]');
 
-    expect(cards).toStrictEqual(['Loading state', 'Empty state', 'Error state', 'Transition preview', 'Background refresh']);
-    expect(page.textContent).toContain('Loading incidents');
-    expect(page.textContent).toContain('No incidents found');
-    expect(page.textContent).toContain('Incident queue unavailable');
-    expect(page.textContent).toContain('Loading queue');
-    expect(busyTables).toHaveLength(3);
+        expect(cards).toStrictEqual(['Loading state', 'Empty state', 'Error state', 'Transition preview', 'Background refresh']);
+        expect(page.textContent).toContain('Loading incidents');
+        expect(page.textContent).toContain('No incidents found');
+        expect(page.textContent).toContain('Incident queue unavailable');
+        expect(page.textContent).toContain('Loading queue');
+        expect(busyTables).toHaveLength(3);
+      });
+    });
   });
 
-  it('switches the transition preview between table states', () => {
-    fixture.detectChanges();
+  describe('GIVEN: the states showcase page is rendered with transition preview controls', () => {
+    describe('WHEN: switches the transition preview between table states', () => {
+      it('THEN: it updates the transition preview state', () => {
+        fixture.detectChanges();
 
-    const page = fixture.nativeElement as HTMLElement;
-    const transitionCard = Array.from(page.querySelectorAll('.card')).find(
-      (card) => card.querySelector('.card-title')?.textContent.trim() === 'Transition preview'
-    ) as HTMLElement;
+        const page = fixture.nativeElement as HTMLElement;
+        const transitionCard = Array.from(page.querySelectorAll('.card')).find(
+          (card) => card.querySelector('.card-title')?.textContent.trim() === 'Transition preview'
+        ) as HTMLElement;
 
-    clickCardButton(transitionCard, 'Empty');
-    fixture.detectChanges();
+        clickCardButton(transitionCard, 'Empty');
+        fixture.detectChanges();
 
-    expect(transitionCard.textContent).toContain('No transition rows');
-    expect(transitionCard.textContent).not.toContain('Loading queue');
+        expect(transitionCard.textContent).toContain('No transition rows');
+        expect(transitionCard.textContent).not.toContain('Loading queue');
 
-    clickCardButton(transitionCard, 'Error');
-    fixture.detectChanges();
+        clickCardButton(transitionCard, 'Error');
+        fixture.detectChanges();
 
-    expect(transitionCard.textContent).toContain('Transition request failed');
-    expect(transitionCard.textContent).toContain('Transition service returned 503.');
+        expect(transitionCard.textContent).toContain('Transition request failed');
+        expect(transitionCard.textContent).toContain('Transition service returned 503.');
 
-    clickCardButton(transitionCard, 'Rows');
-    fixture.detectChanges();
+        clickCardButton(transitionCard, 'Rows');
+        fixture.detectChanges();
 
-    expect(transitionCard.textContent).toContain('INC-1042');
-    expect(transitionCard.textContent).not.toContain('Transition request failed');
+        expect(transitionCard.textContent).toContain('INC-1042');
+        expect(transitionCard.textContent).not.toContain('Transition request failed');
+      });
+    });
   });
 
-  it('lets keyboard users enter the retry action from the state cell', async () => {
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+  describe('GIVEN: the states showcase page is rendered with an error state retry action', () => {
+    describe('WHEN: lets keyboard users enter the retry action from the state cell', () => {
+      it('THEN: it activates retry from the keyboard path', async () => {
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-    const page = fixture.nativeElement as HTMLElement;
-    const errorCell = page.querySelector('.error-state') as HTMLTableCellElement;
-    const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
-      button.textContent.includes('Retry')
-    ) as HTMLButtonElement;
+        const page = fixture.nativeElement as HTMLElement;
+        const errorCell = page.querySelector('.error-state') as HTMLTableCellElement;
+        const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
+          button.textContent.includes('Retry')
+        ) as HTMLButtonElement;
 
-    errorCell.focus();
-    errorCell.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'Enter',
-        bubbles: true,
-        cancelable: true
-      })
-    );
-    fixture.detectChanges();
+        errorCell.focus();
+        errorCell.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+            cancelable: true
+          })
+        );
+        fixture.detectChanges();
 
-    expect(document.activeElement).toBe(retryButton);
+        expect(document.activeElement).toBe(retryButton);
+      });
+    });
   });
 
-  it('loops retry through loading and back to error', () => {
-    vi.useFakeTimers();
-    fixture.detectChanges();
+  describe('GIVEN: the states showcase page is rendered with retry state cycling enabled', () => {
+    describe('WHEN: loops retry through loading and back to error', () => {
+      it('THEN: it cycles retry state through loading and error', () => {
+        vi.useFakeTimers();
+        fixture.detectChanges();
 
-    const page = fixture.nativeElement as HTMLElement;
-    const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
-      button.textContent.includes('Retry')
-    ) as HTMLButtonElement;
+        const page = fixture.nativeElement as HTMLElement;
+        const retryButton = Array.from(page.querySelectorAll('button')).find((button) =>
+          button.textContent.includes('Retry')
+        ) as HTMLButtonElement;
 
-    retryButton.click();
-    fixture.detectChanges();
+        retryButton.click();
+        fixture.detectChanges();
 
-    expect(page.textContent).toContain('Retrying incident queue');
-    expect(page.textContent).not.toContain('Incident queue unavailable');
+        expect(page.textContent).toContain('Retrying incident queue');
+        expect(page.textContent).not.toContain('Incident queue unavailable');
 
-    vi.advanceTimersByTime(900);
-    fixture.detectChanges();
+        vi.advanceTimersByTime(900);
+        fixture.detectChanges();
 
-    expect(page.textContent).toContain('Incident queue unavailable');
-    expect(page.textContent).toContain('Incident service returned 503 after retry.');
+        expect(page.textContent).toContain('Incident queue unavailable');
+        expect(page.textContent).toContain('Incident service returned 503 after retry.');
+      });
+    });
   });
 });

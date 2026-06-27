@@ -36,48 +36,53 @@ function requireDefined<T>(value: T | undefined): T {
   return value;
 }
 
-describe('ng-advanced-table/utils public table contracts', () => {
-  it('matches the core render-metrics type contracts', () => {
-    const typeContracts: [RenderMetricsStateMatchesCore, RenderMetricsColumnMetaMatchesCore, RenderMetricsControllerMatchesCore] = [
-      true,
-      true,
-      true
-    ];
+describe('FEATURE: ng-advanced-table/utils public table contracts', () => {
+  describe('GIVEN: the utils public contract mirror is available', () => {
+    describe('WHEN: matches the core render-metrics type contracts', () => {
+      it('THEN: it type-checks the render-metrics contracts', () => {
+        const typeContracts: [RenderMetricsStateMatchesCore, RenderMetricsColumnMetaMatchesCore, RenderMetricsControllerMatchesCore] =
+          [true, true, true];
 
-    expect(typeContracts).toHaveLength(3);
+        expect(typeContracts).toHaveLength(3);
+      });
+    });
   });
 
-  it('reuses the core column metadata contract for TanStack column definitions', () => {
-    const column: ColumnDef<ContractRow, number> = {
-      accessorKey: 'durationMs',
-      meta: {
-        hiddenHeaderLabel: 'Duration',
-        align: 'end',
-        cellHeight: '3rem',
-        cellMaxLines: 1,
-        headerSize: 96,
-        headerMinSize: '6rem',
-        headerMaxSize: 144,
-        export: {
-          enabled: true,
-          header: 'Render duration',
-          value: ({ value }) => value
-        },
-        cellTone: (context) => (context.getValue() > 16 ? 'warning' : 'neutral')
-      } satisfies NatTableColumnMeta<ContractRow, number>
-    };
+  describe('GIVEN: core column metadata contracts are available', () => {
+    describe('WHEN: reuses the core column metadata contract for TanStack column definitions', () => {
+      it('THEN: it type-checks column metadata compatibility', () => {
+        const column: ColumnDef<ContractRow, number> = {
+          accessorKey: 'durationMs',
+          meta: {
+            hiddenHeaderLabel: 'Duration',
+            align: 'end',
+            cellHeight: '3rem',
+            cellMaxLines: 1,
+            headerSize: 96,
+            headerMinSize: '6rem',
+            headerMaxSize: 144,
+            export: {
+              enabled: true,
+              header: 'Render duration',
+              value: ({ value }) => value
+            },
+            cellTone: (context) => (context.getValue() > 16 ? 'warning' : 'neutral')
+          } satisfies NatTableColumnMeta<ContractRow, number>
+        };
 
-    const meta = requireDefined(column.meta);
-    const exportMeta = requireDefined(meta.export);
+        const meta = requireDefined(column.meta);
+        const exportMeta = requireDefined(meta.export);
 
-    expect(meta.hiddenHeaderLabel).toBe('Duration');
-    expect(meta.cellHeight).toBe('3rem');
-    expect(meta.cellMaxLines).toBe(1);
-    expect(meta.headerSize).toBe(96);
-    expect(meta.headerMinSize).toBe('6rem');
-    expect(meta.headerMaxSize).toBe(144);
-    expect(exportMeta.header).toBe('Render duration');
-    expect(exportMeta.value).toStrictEqual(expect.any(Function));
-    expect(meta.cellTone).toStrictEqual(expect.any(Function));
+        expect(meta.hiddenHeaderLabel).toBe('Duration');
+        expect(meta.cellHeight).toBe('3rem');
+        expect(meta.cellMaxLines).toBe(1);
+        expect(meta.headerSize).toBe(96);
+        expect(meta.headerMinSize).toBe('6rem');
+        expect(meta.headerMaxSize).toBe(144);
+        expect(exportMeta.header).toBe('Render duration');
+        expect(exportMeta.value).toStrictEqual(expect.any(Function));
+        expect(meta.cellTone).toStrictEqual(expect.any(Function));
+      });
+    });
   });
 });

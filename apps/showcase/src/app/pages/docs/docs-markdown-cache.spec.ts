@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { DocsMarkdownCache } from './docs-markdown-cache';
 
-describe('DocsMarkdownCache', () => {
+describe('FEATURE: DocsMarkdownCache', () => {
   let cache: DocsMarkdownCache;
   let http: HttpTestingController;
 
@@ -21,66 +21,82 @@ describe('DocsMarkdownCache', () => {
     http.verify();
   });
 
-  it('loads markdown and exposes the cached content synchronously', () => {
-    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
-      status: 'idle',
-      content: ''
-    });
+  describe('GIVEN: a docs markdown cache is created', () => {
+    describe('WHEN: loads markdown and exposes the cached content synchronously', () => {
+      it('THEN: it stores loaded markdown for synchronous reads', () => {
+        expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
+          status: 'idle',
+          content: ''
+        });
 
-    cache.load('/docs/quick-start.md');
+        cache.load('/docs/quick-start.md');
 
-    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
-      status: 'loading',
-      content: ''
-    });
+        expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
+          status: 'loading',
+          content: ''
+        });
 
-    http.expectOne('/docs/quick-start.md').flush('# Quick start');
+        http.expectOne('/docs/quick-start.md').flush('# Quick start');
 
-    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
-      status: 'loaded',
-      content: '# Quick start'
-    });
-  });
-
-  it('dedupes loading and loaded markdown requests', () => {
-    cache.load('/docs/quick-start.md');
-    cache.load('/docs/quick-start.md');
-
-    const req = http.expectOne('/docs/quick-start.md');
-
-    expect(req.request.method).toBe('GET');
-    req.flush('# Quick start');
-
-    cache.load('/docs/quick-start.md');
-    http.expectNone('/docs/quick-start.md');
-    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
-      status: 'loaded',
-      content: '# Quick start'
+        expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
+          status: 'loaded',
+          content: '# Quick start'
+        });
+      });
     });
   });
 
-  it('preloads each uncached markdown path', () => {
-    cache.preload(['/docs/quick-start.md', '/docs/state.md']);
+  describe('GIVEN: a docs markdown cache is created with duplicate markdown requests', () => {
+    describe('WHEN: dedupes loading and loaded markdown requests', () => {
+      it('THEN: it shares one request for repeated markdown loads', () => {
+        cache.load('/docs/quick-start.md');
+        cache.load('/docs/quick-start.md');
 
-    http.expectOne('/docs/quick-start.md').flush('# Quick start');
-    http.expectOne('/docs/state.md').flush('# State');
+        const req = http.expectOne('/docs/quick-start.md');
 
-    expect(cache.getState('/docs/quick-start.md').status).toBe('loaded');
-    expect(cache.getState('/docs/state.md').status).toBe('loaded');
+        expect(req.request.method).toBe('GET');
+        req.flush('# Quick start');
+
+        cache.load('/docs/quick-start.md');
+        http.expectNone('/docs/quick-start.md');
+        expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
+          status: 'loaded',
+          content: '# Quick start'
+        });
+      });
+    });
   });
 
-  it('records load failures and allows a later retry', () => {
-    cache.load('/docs/quick-start.md');
-    http.expectOne('/docs/quick-start.md').flush('Not found', { status: 404, statusText: 'Not Found' });
+  describe('GIVEN: a docs markdown cache is created with uncached markdown paths', () => {
+    describe('WHEN: preloads each uncached markdown path', () => {
+      it('THEN: it starts loading only uncached markdown paths', () => {
+        cache.preload(['/docs/quick-start.md', '/docs/state.md']);
 
-    expect(cache.getState('/docs/quick-start.md').status).toBe('error');
+        http.expectOne('/docs/quick-start.md').flush('# Quick start');
+        http.expectOne('/docs/state.md').flush('# State');
 
-    cache.load('/docs/quick-start.md');
-    http.expectOne('/docs/quick-start.md').flush('# Quick start');
+        expect(cache.getState('/docs/quick-start.md').status).toBe('loaded');
+        expect(cache.getState('/docs/state.md').status).toBe('loaded');
+      });
+    });
+  });
 
-    expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
-      status: 'loaded',
-      content: '# Quick start'
+  describe('GIVEN: a docs markdown cache is created with a recoverable markdown load failure', () => {
+    describe('WHEN: records load failures and allows a later retry', () => {
+      it('THEN: it stores failures and permits retry loads', () => {
+        cache.load('/docs/quick-start.md');
+        http.expectOne('/docs/quick-start.md').flush('Not found', { status: 404, statusText: 'Not Found' });
+
+        expect(cache.getState('/docs/quick-start.md').status).toBe('error');
+
+        cache.load('/docs/quick-start.md');
+        http.expectOne('/docs/quick-start.md').flush('# Quick start');
+
+        expect(cache.getState('/docs/quick-start.md')).toStrictEqual({
+          status: 'loaded',
+          content: '# Quick start'
+        });
+      });
     });
   });
 });

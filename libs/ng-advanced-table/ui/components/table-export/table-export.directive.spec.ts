@@ -257,7 +257,7 @@ class ExportApi {
   public readonly exportOrders = vi.fn<(context: NatTableExportContext<ExportRow>) => Promise<void>>(async () => Promise.resolve());
 }
 
-describe('NatTableExport', () => {
+describe('FEATURE: NatTableExport', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     anchorDownloads = [];
@@ -302,179 +302,215 @@ describe('NatTableExport', () => {
     return blob;
   }
 
-  it('exports all client rows with visible exportable columns to CSV by default', async () => {
-    const fixture = TestBed.createComponent(DefaultExportHost);
+  describe('GIVEN: an export directive host is configured', () => {
+    describe('WHEN: exports all client rows with visible exportable columns to CSV by default', () => {
+      it('THEN: it passes visible exportable client rows to the CSV handler', async () => {
+        const fixture = TestBed.createComponent(DefaultExportHost);
 
-    fixture.detectChanges();
-    await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-    exportButton().click();
-    await fixture.whenStable();
+        exportButton().click();
+        await fixture.whenStable();
 
-    const blob = expectClientCsvDownload('orders.csv');
+        const blob = expectClientCsvDownload('orders.csv');
 
-    await expect(blob.text()).resolves.toBe('Risk profile,Name\r\n"{""risk"":""low""}",Alpha\r\n"{""risk"":""high""}",Beta');
-  });
-
-  it('builds export data from visible exportable columns and lets value callbacks clear cells', async () => {
-    const fixture = TestBed.createComponent(ExportValueMappingHost);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    exportButton().click();
-    await fixture.whenStable();
-
-    expect(fixture.componentInstance.exportData).toStrictEqual({
-      columns: [
-        { id: 'name', header: 'Name' },
-        { id: 'price', header: 'Price' },
-        { id: 'details', header: 'Details' }
-      ],
-      rows: [
-        { id: 'row-1', values: ['Alpha', null, null] },
-        { id: 'row-2', values: ['Beta', null, null] }
-      ]
+        await expect(blob.text()).resolves.toBe('Risk profile,Name\r\n"{""risk"":""low""}",Alpha\r\n"{""risk"":""high""}",Beta');
+      });
     });
-    expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
   });
 
-  it('lets a directive-level handler replace provider and client-side handlers', async () => {
-    const providerHandler = vi.fn(async () => Promise.resolve());
+  describe('GIVEN: an export directive host is configured with exportable visible columns', () => {
+    describe('WHEN: builds export data from visible exportable columns and lets value callbacks clear cells', () => {
+      it('THEN: it applies column visibility, export flags, and value callbacks', async () => {
+        const fixture = TestBed.createComponent(ExportValueMappingHost);
 
-    TestBed.configureTestingModule({
-      providers: [provideNatTableExport({ handler: providerHandler })]
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        exportButton().click();
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.exportData).toStrictEqual({
+          columns: [
+            { id: 'name', header: 'Name' },
+            { id: 'price', header: 'Price' },
+            { id: 'details', header: 'Details' }
+          ],
+          rows: [
+            { id: 'row-1', values: ['Alpha', null, null] },
+            { id: 'row-2', values: ['Beta', null, null] }
+          ]
+        });
+        expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
+      });
     });
-    const fixture = TestBed.createComponent(CustomHandlerHost);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    exportButton().click();
-    await fixture.whenStable();
-
-    expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
-    expect(providerHandler).not.toHaveBeenCalled();
-    expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
   });
 
-  it('uses an app-level provider handler when no directive handler is present', async () => {
-    const providerHandler = vi.fn(async () => Promise.resolve());
+  describe('GIVEN: an export directive host is configured with a directive export handler', () => {
+    describe('WHEN: lets a directive-level handler replace provider and client-side handlers', () => {
+      it('THEN: it invokes only the directive export handler', async () => {
+        const providerHandler = vi.fn(async () => Promise.resolve());
 
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideNatTableExport({ handler: providerHandler })]
+        TestBed.configureTestingModule({
+          providers: [provideNatTableExport({ handler: providerHandler })]
+        });
+        const fixture = TestBed.createComponent(CustomHandlerHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        exportButton().click();
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
+        expect(providerHandler).not.toHaveBeenCalled();
+        expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
+      });
     });
-    const fixture = TestBed.createComponent(DefaultExportHost);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    exportButton().click();
-    await fixture.whenStable();
-
-    expect(providerHandler).toHaveBeenCalledTimes(1);
-    expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
   });
 
-  it('supports app-level provider factories that use Angular injection', async () => {
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        ExportApi,
-        provideNatTableExport<ExportRow>(() => {
-          const api = inject(ExportApi);
+  describe('GIVEN: an export directive host is configured with an app-level export handler', () => {
+    describe('WHEN: uses an app-level provider handler when no directive handler is present', () => {
+      it('THEN: it invokes the provider export handler', async () => {
+        const providerHandler = vi.fn(async () => Promise.resolve());
 
-          return {
-            handler: async (context): Promise<void> => api.exportOrders(context)
-          };
-        })
-      ]
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [provideZonelessChangeDetection(), provideNatTableExport({ handler: providerHandler })]
+        });
+        const fixture = TestBed.createComponent(DefaultExportHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        exportButton().click();
+        await fixture.whenStable();
+
+        expect(providerHandler).toHaveBeenCalledTimes(1);
+        expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
+      });
     });
-    const fixture = TestBed.createComponent(DefaultExportHost);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    exportButton().click();
-    await fixture.whenStable();
-
-    expect(TestBed.inject(ExportApi).exportOrders).toHaveBeenCalledTimes(1);
-    expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
   });
 
-  it('lets custom handlers delegate back to the client-side CSV export', async () => {
-    const fixture = TestBed.createComponent(DelegatingHandlerHost);
+  describe('GIVEN: an export directive host is configured with injectable export handler factories', () => {
+    describe('WHEN: supports app-level provider factories that use Angular injection', () => {
+      it('THEN: it resolves injected provider factories for export handling', async () => {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            provideZonelessChangeDetection(),
+            ExportApi,
+            provideNatTableExport<ExportRow>(() => {
+              const api = inject(ExportApi);
 
-    fixture.detectChanges();
-    await fixture.whenStable();
+              return {
+                handler: async (context): Promise<void> => api.exportOrders(context)
+              };
+            })
+          ]
+        });
+        const fixture = TestBed.createComponent(DefaultExportHost);
 
-    exportButton().click();
-    await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-    expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
-    expectClientCsvDownload('table-export.csv');
-  });
+        exportButton().click();
+        await fixture.whenStable();
 
-  it('supports explicit controller targeting outside nat-table-surface', async () => {
-    const fixture = TestBed.createComponent(ExplicitControllerHost);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    exportButton().click();
-    await fixture.whenStable();
-
-    expect(expectClientCsvDownload('table-export.csv')).toBeInstanceOf(Blob);
-  });
-
-  it('supports custom activation events through the exported directive instance', async () => {
-    const fixture = TestBed.createComponent(CustomEventHost);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const event = new CustomEvent('pressed', { bubbles: true, cancelable: true });
-    const dispatchResult = exportButton().dispatchEvent(event);
-
-    await fixture.whenStable();
-
-    expect(dispatchResult).toBe(false);
-    expect(event.defaultPrevented).toBe(true);
-    expectClientCsvDownload('custom-event.csv');
-  });
-
-  it('marks native buttons busy and ignores duplicate activations while exporting', async () => {
-    const fixture = TestBed.createComponent(BusyExportHost);
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const button = exportButton() as HTMLButtonElement;
-
-    button.click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
-    expect(button.disabled).toBe(true);
-    expect(button.getAttribute('aria-busy')).toBe('true');
-
-    button.click();
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
-
-    fixture.componentInstance.resolveExport?.();
-    // Drain the async handler's promise-adoption microtasks past a macrotask
-    // boundary, then settle + render so the directive's `finally` clears busy.
-    await new Promise((resolve) => {
-      setTimeout(resolve, 0);
+        expect(TestBed.inject(ExportApi).exportOrders).toHaveBeenCalledTimes(1);
+        expect(downloadMock.createObjectURL).not.toHaveBeenCalled();
+      });
     });
-    await fixture.whenStable();
-    fixture.detectChanges();
+  });
 
-    expect(button.disabled).toBe(false);
-    expect(button.hasAttribute('aria-busy')).toBe(false);
+  describe('GIVEN: an export directive host is configured with delegated CSV export handlers', () => {
+    describe('WHEN: lets custom handlers delegate back to the client-side CSV export', () => {
+      it('THEN: it allows custom handlers to call the CSV client', async () => {
+        const fixture = TestBed.createComponent(DelegatingHandlerHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        exportButton().click();
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
+        expectClientCsvDownload('table-export.csv');
+      });
+    });
+  });
+
+  describe('GIVEN: an export directive host is configured with an explicit export controller target', () => {
+    describe('WHEN: supports explicit controller targeting outside nat-table-surface', () => {
+      it('THEN: it uses the explicitly targeted table controller', async () => {
+        const fixture = TestBed.createComponent(ExplicitControllerHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        exportButton().click();
+        await fixture.whenStable();
+
+        expect(expectClientCsvDownload('table-export.csv')).toBeInstanceOf(Blob);
+      });
+    });
+  });
+
+  describe('GIVEN: an export directive host is configured with custom export activation events', () => {
+    describe('WHEN: supports custom activation events through the exported directive instance', () => {
+      it('THEN: it runs export from the directive API', async () => {
+        const fixture = TestBed.createComponent(CustomEventHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const event = new CustomEvent('pressed', { bubbles: true, cancelable: true });
+        const dispatchResult = exportButton().dispatchEvent(event);
+
+        await fixture.whenStable();
+
+        expect(dispatchResult).toBe(false);
+        expect(event.defaultPrevented).toBe(true);
+        expectClientCsvDownload('custom-event.csv');
+      });
+    });
+  });
+
+  describe('GIVEN: an export directive host is configured with a busy native export button', () => {
+    describe('WHEN: marks native buttons busy and ignores duplicate activations while exporting', () => {
+      it('THEN: it sets busy state and suppresses concurrent exports', async () => {
+        const fixture = TestBed.createComponent(BusyExportHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const button = exportButton() as HTMLButtonElement;
+
+        button.click();
+        fixture.detectChanges();
+
+        expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
+        expect(button.disabled).toBe(true);
+        expect(button.getAttribute('aria-busy')).toBe('true');
+
+        button.click();
+        fixture.detectChanges();
+
+        expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
+
+        fixture.componentInstance.resolveExport?.();
+        // Drain the async handler's promise-adoption microtasks past a macrotask
+        // boundary, then settle + render so the directive's `finally` clears busy.
+        await new Promise((resolve) => {
+          setTimeout(resolve, 0);
+        });
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        expect(button.disabled).toBe(false);
+        expect(button.hasAttribute('aria-busy')).toBe(false);
+      });
+    });
   });
 });
