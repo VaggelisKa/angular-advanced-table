@@ -49,8 +49,8 @@ The library ships as one `ng-advanced-table` package whose layers are ng-packagr
 
 ## Documentation Ownership
 
-- Keep "how to use the table" guidance in the showcase app docs. Author those pages as GitHub-flavored Markdown under `apps/showcase/public/docs/`, register them in `apps/showcase/src/app/showcase-navigation.ts`, and serve them under `/docs/*`.
-- Keep live behavior demos under `/examples/*`. Showcase routes must use either the `/docs` or `/examples` base path; do not add new top-level showcase routes such as `/sorting` or `/toolbar`.
+- Keep "how to use the table" guidance in showcase Documentation Topics served under `/docs/*`. Author prose as GitHub-flavored Markdown under `apps/showcase/public/docs/`, register topic routes in `apps/showcase/src/app/showcase-navigation.ts`, and compose local TOCs, related links, snippets, and embedded examples in `apps/showcase/src/app/pages/docs/docs-topics.ts`.
+- Keep feature-specific live demos as Topic Examples inside their relevant docs topics, using `DocsTopicExample` preview/code blocks. Reserve `/examples/*` for broad standalone scenarios or tools such as the multiple-features demo and table builder; do not add one-feature gallery routes or new top-level showcase routes such as `/sorting` or `/toolbar`.
 - Do not keep root or package README placeholders that only link back to showcase docs. Remove duplicated usage/reference markdown instead of replacing it with link-only docs.
 - Keep repository markdown only when it is technical maintainer material: contribution rules, package boundaries, architectural decisions, terminology, changelogs, internal package notes, or "how the table is built" explanations.
 
