@@ -36,20 +36,23 @@ describe('FEATURE: NatToolbarGroup', () => {
     await fixture.whenStable();
   });
 
-  const element = (domId: string): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
-  }
+  const element = (domId: string): HTMLElement => {
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
+  };
 
-  const focusItem = async (domId: string): Promise<void> => {    element(domId).focus();
+  const focusItem = async (domId: string): Promise<void> => {
+    element(domId).focus();
     fixture.detectChanges();
     await fixture.whenStable();
-  }
+  };
 
-  const pressKey = (target: HTMLElement, key: string): KeyboardEvent => {    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  const pressKey = (target: HTMLElement, key: string): KeyboardEvent => {
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
 
     target.dispatchEvent(event);
 
     return event;
-  }
+  };
 
   describe('GIVEN: a toolbar group host is rendered', () => {
     describe('WHEN: renders a labelled role="group"', () => {

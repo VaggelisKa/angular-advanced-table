@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 
-type DocsMarkdownStatus = 'idle' | 'loading' | 'loaded' | 'error';
+export type DocsMarkdownStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
-type DocsMarkdownState = {
+export type DocsMarkdownState = {
   readonly status: DocsMarkdownStatus;
   readonly content: string;
   readonly error?: unknown;

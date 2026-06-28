@@ -5,26 +5,29 @@ type Mutable<T> = {
   -readonly [K in keyof T]: T[K];
 };
 
-const requireMetric = (metric: RowRenderMetric | undefined): RowRenderMetric => {  if (metric === undefined) {
+const requireMetric = (metric: RowRenderMetric | undefined): RowRenderMetric => {
+  if (metric === undefined) {
     throw new Error('Expected a recorded metric for the row.');
   }
 
   return metric;
-}
+};
 
-const requireMeasurement = (measurement: RowRenderMeasurement | null): RowRenderMeasurement => {  if (measurement === null) {
+const requireMeasurement = (measurement: RowRenderMeasurement | null): RowRenderMeasurement => {
+  if (measurement === null) {
     throw new Error('Expected a measurement after recording rows.');
   }
 
   return measurement;
-}
+};
 
-const ignoreFrozenWrite = (write: () => void): void => {  try {
+const ignoreFrozenWrite = (write: () => void): void => {
+  try {
     write();
   } catch {
     // Frozen objects throw in strict mode and silently ignore writes otherwise.
   }
-}
+};
 
 describe('FEATURE: NatTableRenderMetricsStore', () => {
   let store: NatTableRenderMetricsStore;

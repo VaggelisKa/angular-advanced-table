@@ -44,11 +44,13 @@ describe('FEATURE: NatToolbarItem', () => {
     await fixture.whenStable();
   });
 
-  const element = (domId: string): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
-  }
+  const element = (domId: string): HTMLElement => {
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
+  };
 
-  const itemRef = (domId: string): NatToolbarItemRef => {    return fixture.debugElement.query(By.css(`#${domId}`)).injector.get(NAT_TOOLBAR_ITEM);
-  }
+  const itemRef = (domId: string): NatToolbarItemRef => {
+    return fixture.debugElement.query(By.css(`#${domId}`)).injector.get(NAT_TOOLBAR_ITEM);
+  };
 
   describe('GIVEN: a toolbar item host is rendered', () => {
     describe('WHEN: mirrors the host id from the aria widget', () => {

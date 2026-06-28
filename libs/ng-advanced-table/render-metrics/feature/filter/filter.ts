@@ -26,7 +26,7 @@ const upsertColumnFilter = (currentFilters: ColumnFiltersState, columnId: string
   }
 
   return [...nextFilters, { id: columnId, value }];
-}
+};
 
 /**
  * Filter chip group that drives the synthetic render-metrics column created by

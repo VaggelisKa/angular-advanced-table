@@ -45,29 +45,33 @@ describe('FEATURE: NatTableToolbar @angular/aria integration', () => {
     await fixture.whenStable();
   });
 
-  const element = (domId: string): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
-  }
+  const element = (domId: string): HTMLElement => {
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
+  };
 
-  const focusItem = async (domId: string): Promise<void> => {    element(domId).focus();
+  const focusItem = async (domId: string): Promise<void> => {
+    element(domId).focus();
     fixture.detectChanges();
     await fixture.whenStable();
-  }
+  };
 
-  const dispatchKeydown = (target: HTMLElement, key: string): KeyboardEvent => {    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+  const dispatchKeydown = (target: HTMLElement, key: string): KeyboardEvent => {
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
 
     target.dispatchEvent(event);
 
     return event;
-  }
+  };
 
-  const dispatchPointerdown = (target: HTMLElement): MouseEvent => {    // jsdom has no PointerEvent constructor; Aria's handler only needs the
+  const dispatchPointerdown = (target: HTMLElement): MouseEvent => {
+    // jsdom has no PointerEvent constructor; Aria's handler only needs the
     // event target and preventDefault, so a MouseEvent stands in.
     const event = new MouseEvent('pointerdown', { bubbles: true, cancelable: true });
 
     target.dispatchEvent(event);
 
     return event;
-  }
+  };
 
   describe('GIVEN: a toolbar with start/center/end items and a text-entry search field', () => {
     describe('WHEN: Enter or Space is pressed on a focused button item', () => {

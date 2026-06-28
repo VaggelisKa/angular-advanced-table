@@ -336,7 +336,8 @@ const queryAll = <T extends HTMLElement = HTMLElement>(f: ComponentFixture<unkno
 const getGridHarness = async (f: ComponentFixture<unknown>): Promise<GridHarness> =>
   TestbedHarnessEnvironment.loader(f).getHarness(GridHarness);
 
-const buildRows = (size: number): Row[] => {  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
+const buildRows = (size: number): Row[] => {
+  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
 
   return Array.from({ length: size }, (_, index) => ({
     id: `svc-${String(index + 1).padStart(5, '0')}`,
@@ -345,9 +346,10 @@ const buildRows = (size: number): Row[] => {  const statuses: Row['status'][] = 
     status: statuses[index % statuses.length],
     throughput: 1000 + index * 1000
   }));
-}
+};
 
-const buildDynamicColumns = (nameHeader: string): ColumnDef<Row, unknown>[] => {  return [
+const buildDynamicColumns = (nameHeader: string): ColumnDef<Row, unknown>[] => {
+  return [
     {
       accessorKey: 'name',
       header: nameHeader,
@@ -363,7 +365,7 @@ const buildDynamicColumns = (nameHeader: string): ColumnDef<Row, unknown>[] => {
       cell: (info) => info.getValue<string>()
     }
   ];
-}
+};
 
 @Component({
   selector: 'test-table-host',
@@ -645,22 +647,26 @@ type NatTableInternals = NatTable<Row> & {
   onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: ReturnType<NatTable<Row>['table']['getHeaderGroups']>[number]): void;
 };
 
-const getInternalTable = (fixture: ComponentFixture<TableHost>): NatTableInternals => {  return fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTableInternals;
-}
+const getInternalTable = (fixture: ComponentFixture<TableHost>): NatTableInternals => {
+  return fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTableInternals;
+};
 
-const createDropEvent = (columnId: string, previousIndex: number, currentIndex: number): CdkDragDrop<string[]> => {  return {
+const createDropEvent = (columnId: string, previousIndex: number, currentIndex: number): CdkDragDrop<string[]> => {
+  return {
     previousIndex,
     currentIndex,
     item: { data: columnId }
   } as unknown as CdkDragDrop<string[]>;
-}
+};
 
-const getHeaderColumnIds = (fixture: ComponentFixture<TableHost>): string[] => {  return queryAll(fixture, 'thead th[data-column-id]').map((header) => header.dataset['columnId'] ?? '');
-}
+const getHeaderColumnIds = (fixture: ComponentFixture<TableHost>): string[] => {
+  return queryAll(fixture, 'thead th[data-column-id]').map((header) => header.dataset['columnId'] ?? '');
+};
 
 // Derives the size of one axis from its start and (optional) end.
-const resolveAxisSize = (start: number, size: number | undefined, end: number | undefined): number => {  return size ?? (end ?? start) - start;
-}
+const resolveAxisSize = (start: number, size: number | undefined, end: number | undefined): number => {
+  return size ?? (end ?? start) - start;
+};
 
 // Resolves one axis (start/size/end) from any subset of its three values.
 const resolveAxis = (
@@ -672,9 +678,10 @@ const resolveAxis = (
   const resolvedSize = resolveAxisSize(resolvedStart, size, end);
 
   return { start: resolvedStart, size: resolvedSize, end: end ?? resolvedStart + resolvedSize };
-}
+};
 
-const mockClientRect = (element: HTMLElement, rect: Partial<DOMRectReadOnly>): void => {  const horizontal = resolveAxis(rect.left, rect.width, rect.right);
+const mockClientRect = (element: HTMLElement, rect: Partial<DOMRectReadOnly>): void => {
+  const horizontal = resolveAxis(rect.left, rect.width, rect.right);
   const vertical = resolveAxis(rect.top, rect.height, rect.bottom);
 
   element.getBoundingClientRect = (): DOMRect =>
@@ -689,7 +696,7 @@ const mockClientRect = (element: HTMLElement, rect: Partial<DOMRectReadOnly>): v
       height: vertical.size,
       toJSON: () => ({})
     }) as DOMRect;
-}
+};
 
 // Returns the last element of a recorded-events array, throwing if empty. Lets
 // assertions read the latest event without optional chaining on `.at(-1)`.
@@ -764,7 +771,8 @@ describe('FEATURE: NatTable', () => {
     readonly getRowId?: NatTableRowIdGetter<Row>;
   };
 
-  const recreateHost = async (options: RecreateHostOptions = {}): Promise<void> => {    fixture.destroy();
+  const recreateHost = async (options: RecreateHostOptions = {}): Promise<void> => {
+    fixture.destroy();
     fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
 
@@ -781,7 +789,7 @@ describe('FEATURE: NatTable', () => {
     }
 
     await fixture.whenStable();
-  }
+  };
 
   describe('GIVEN: a table with resizable columns', () => {
     describe('WHEN: the table renders resize handles', () => {

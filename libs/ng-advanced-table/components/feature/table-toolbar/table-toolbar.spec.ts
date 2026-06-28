@@ -22,7 +22,8 @@ class ToolbarControllerHost {
   public readonly controller = signal<NatTableUiController | undefined>(undefined);
 }
 
-const createControllerStub = (): NatTableUiController => {  return {
+const createControllerStub = (): NatTableUiController => {
+  return {
     table: {} as NatTableUiController['table'],
     enableGlobalFilter: () => true,
     enablePagination: () => true,
@@ -30,7 +31,7 @@ const createControllerStub = (): NatTableUiController => {  return {
     tableElementId: signal('nat-table-el-1'),
     localeId: signal('en')
   };
-}
+};
 
 @Component({
   selector: 'nat-toolbar-shell-host',
@@ -76,14 +77,16 @@ class ToolbarItemsHost {
 })
 class ToolbarSlotsHost {}
 
-const getItemRefs = (fixture: ComponentFixture<unknown>): NatToolbarItemRef[] => {  return fixture.debugElement
+const getItemRefs = (fixture: ComponentFixture<unknown>): NatToolbarItemRef[] => {
+  return fixture.debugElement
     .queryAll(By.directive(NatToolbarItem))
     .map((debugElement) => debugElement.injector.get(NAT_TOOLBAR_ITEM));
-}
+};
 
 describe('FEATURE: NatTableToolbar', () => {
-  const getToolbarElement = (fixture: ComponentFixture<unknown>): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector('nat-table-toolbar') as HTMLElement;
-  }
+  const getToolbarElement = (fixture: ComponentFixture<unknown>): HTMLElement => {
+    return (fixture.nativeElement as HTMLElement).querySelector('nat-table-toolbar') as HTMLElement;
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({

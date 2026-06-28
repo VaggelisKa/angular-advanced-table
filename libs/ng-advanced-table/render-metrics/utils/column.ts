@@ -51,7 +51,7 @@ const createMetricsFilterFn = <TData extends RowData>(store: NatTableRenderMetri
 
     return metric.tone === activeFilter;
   };
-}
+};
 
 /** Resolved render-metrics intl bundle used when rendering metric cells. */
 type ResolvedUtilsIntl = ReturnType<typeof resolveNatTableUtilsIntl>;
@@ -99,7 +99,7 @@ const createMetricsCell = <TData extends RowData>(config: MetricsCellConfig): ((
       }) ?? `${durationMsText}${unitSuffix}`
     );
   };
-}
+};
 
 /**
  * Returns a new column definition array with a synthetic "render" column
@@ -151,4 +151,4 @@ export const withRenderMetricsColumn = <TData extends RowData>(
   };
 
   return [...columns, metricsColumn];
-}
+};

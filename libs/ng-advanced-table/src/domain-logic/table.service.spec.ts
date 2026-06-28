@@ -6,14 +6,15 @@ import type { RowData, Table } from '@tanstack/angular-table';
 import { NatTableService } from './table.service';
 import type { NatTableUiController } from '../common/table.type';
 
-const createController = (id: string): NatTableUiController => {  return {
+const createController = (id: string): NatTableUiController => {
+  return {
     table: {} as Table<RowData>,
     enableGlobalFilter: () => false,
     enablePagination: () => false,
     patchState: () => undefined,
     tableElementId: signal(id)
   };
-}
+};
 
 describe('NatTableService', () => {
   let service: NatTableService;

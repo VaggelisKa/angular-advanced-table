@@ -21,7 +21,8 @@ import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
 })
 class RovingToolbarHost {}
 
-const pressKey = (target: HTMLElement, key: string, modifiers: Partial<KeyboardEventInit> = {}): KeyboardEvent => {  const event = new KeyboardEvent('keydown', {
+const pressKey = (target: HTMLElement, key: string, modifiers: Partial<KeyboardEventInit> = {}): KeyboardEvent => {
+  const event = new KeyboardEvent('keydown', {
     key,
     bubbles: true,
     cancelable: true,
@@ -31,7 +32,7 @@ const pressKey = (target: HTMLElement, key: string, modifiers: Partial<KeyboardE
   target.dispatchEvent(event);
 
   return event;
-}
+};
 
 describe('FEATURE: NatTableToolbar roving tabindex', () => {
   let fixture: ComponentFixture<RovingToolbarHost>;
@@ -45,8 +46,9 @@ describe('FEATURE: NatTableToolbar roving tabindex', () => {
     await fixture.whenStable();
   });
 
-  const element = (domId: string): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
-  }
+  const element = (domId: string): HTMLElement => {
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
+  };
 
   describe('GIVEN: a roving toolbar host is rendered', () => {
     describe('WHEN: gives the first VISUAL stop the tab stop (start group before end group)', () => {
@@ -85,13 +87,15 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
     await fixture.whenStable();
   });
 
-  const element = (domId: string): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
-  }
+  const element = (domId: string): HTMLElement => {
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
+  };
 
-  const focusItem = async (domId: string): Promise<void> => {    element(domId).focus();
+  const focusItem = async (domId: string): Promise<void> => {
+    element(domId).focus();
     fixture.detectChanges();
     await fixture.whenStable();
-  }
+  };
 
   describe('GIVEN: a roving toolbar host is rendered with left-to-right toolbar navigation', () => {
     describe('WHEN: ArrowRight moves focus to the next visual stop and prevents default', () => {
@@ -195,8 +199,9 @@ describe('FEATURE: NatTableToolbar keyboard navigation (RTL)', () => {
     await fixture.whenStable();
   });
 
-  const element = (domId: string): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
-  }
+  const element = (domId: string): HTMLElement => {
+    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
+  };
 
   describe('GIVEN: a roving toolbar host is rendered with right-to-left toolbar navigation', () => {
     describe('WHEN: ArrowLeft moves to the NEXT visual stop in RTL', () => {

@@ -283,10 +283,12 @@ describe('FEATURE: NatTableExport', () => {
     anchorClickSpy = undefined;
   });
 
-  const exportButton = (): HTMLElement => {    return document.querySelector('[data-testid="export-button"]') as HTMLElement;
-  }
+  const exportButton = (): HTMLElement => {
+    return document.querySelector('[data-testid="export-button"]') as HTMLElement;
+  };
 
-  const expectClientCsvDownload = (fileName: string): Blob => {    expect(downloadMock.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+  const expectClientCsvDownload = (fileName: string): Blob => {
+    expect(downloadMock.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(downloadedBlobs).toHaveLength(1);
     expect(anchorDownloads).toStrictEqual([fileName]);
 
@@ -298,7 +300,7 @@ describe('FEATURE: NatTableExport', () => {
     expect(blob.size).toBeGreaterThan(0);
 
     return blob;
-  }
+  };
 
   describe('GIVEN: an export directive host is configured', () => {
     describe('WHEN: exports all client rows with visible exportable columns to CSV by default', () => {

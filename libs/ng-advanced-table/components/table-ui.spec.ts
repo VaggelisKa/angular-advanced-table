@@ -705,11 +705,12 @@ describe('FEATURE: NatTable UI', () => {
     await fixture.whenStable();
   });
 
-  const recreateHost = async (): Promise<void> => {    fixture.destroy();
+  const recreateHost = async (): Promise<void> => {
+    fixture.destroy();
     fixture = TestBed.createComponent(TableUiHost);
     host = fixture.componentInstance;
     await fixture.whenStable();
-  }
+  };
 
   describe('GIVEN: a table surface with projected controls and pagination', () => {
     describe('WHEN: the surface renders', () => {
