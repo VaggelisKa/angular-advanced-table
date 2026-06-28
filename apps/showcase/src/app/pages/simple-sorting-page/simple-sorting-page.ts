@@ -6,7 +6,7 @@ import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/ui';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 import type { MockOrderRow } from './simple-sorting-page.util';
 import { NatRowActionsMenu } from '../table-showcase-page/nat-row-actions-menu';

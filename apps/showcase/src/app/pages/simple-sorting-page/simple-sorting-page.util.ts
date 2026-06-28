@@ -1,11 +1,11 @@
 export type MockOrderRow = {
-  id: string;
-  customer: string;
-  owner: string;
-  channel: 'Online' | 'Retail' | 'Wholesale';
-  region: string;
-  status: 'Ready' | 'Review' | 'Queued';
-  items: number;
-  updatedAt: number;
-  total: number;
+  readonly id: string;
+  readonly customer: string;
+  readonly owner: string;
+  readonly channel: 'Online' | 'Retail' | 'Wholesale';
+  readonly region: string;
+  readonly status: 'Ready' | 'Review' | 'Queued';
+  readonly items: number;
+  readonly updatedAt: number;
+  readonly total: number;
 };

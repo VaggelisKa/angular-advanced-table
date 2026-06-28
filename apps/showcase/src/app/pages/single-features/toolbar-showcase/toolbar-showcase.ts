@@ -11,7 +11,7 @@ import {
   NatToolbarGroup,
   NatToolbarItem,
   withNatTableHeaderActions
-} from 'ng-advanced-table/ui';
+} from 'ng-advanced-table/components';
 
 import { TableSearch } from '../../../components/table-search/table-search';
 

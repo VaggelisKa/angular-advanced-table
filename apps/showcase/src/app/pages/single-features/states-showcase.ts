@@ -9,15 +9,15 @@ import {
   NatTableLoadingTemplate
 } from 'ng-advanced-table';
 import type { NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table/ui';
+import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { formatError } from './states-showcase.util';
 
 type IncidentRow = {
-  id: string;
-  service: string;
-  owner: string;
-  severity: string;
+  readonly id: string;
+  readonly service: string;
+  readonly owner: string;
+  readonly severity: string;
 };
 
 type TransitionPreviewState = 'loading' | 'empty' | 'error' | 'rows';
@@ -64,8 +64,8 @@ export class StatesShowcasePage {
   });
 
   protected readonly transitionPreviewOptions: readonly {
-    state: TransitionPreviewState;
-    label: string;
+    readonly state: TransitionPreviewState;
+    readonly label: string;
   }[] = [
     { state: 'loading', label: 'Loading' },
     { state: 'empty', label: 'Empty' },

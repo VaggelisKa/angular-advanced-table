@@ -3,7 +3,7 @@ import { Component, computed, linkedSignal, signal } from '@angular/core';
 import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table/ui';
+import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table/components';
 
 import { computeRowSelection } from './selection-showcase.util';
 import type { DemoItem, RowSelectionSource } from './selection-showcase.util';

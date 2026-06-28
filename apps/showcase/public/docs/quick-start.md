@@ -2,7 +2,7 @@ Start with `NatTable` inside `NatTableSurface`. The table renders the grid; the 
 
 ## Install
 
-Everything ships in one package. The companion controls, utilities, and built-in locale dictionaries are subpath entry points — `ng-advanced-table/ui`, `ng-advanced-table/utils`, and `ng-advanced-table/locale` — so you import only what you use and tree-shaking drops the rest.
+Everything ships in one package. The companion controls, utilities, and built-in locale dictionaries are subpath entry points — `ng-advanced-table/components`, `ng-advanced-table/render-metrics`, and `ng-advanced-table/locale` — so you import only what you use and tree-shaking drops the rest.
 
 ```bash
 npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
@@ -17,7 +17,7 @@ import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table/ui';
+import { NatTableSurface } from 'ng-advanced-table/components';
 
 interface PositionRow {
   id: string;
@@ -72,7 +72,7 @@ Use a visible `caption` when the page design needs a table title inside the grid
 
 ## Core-Only Scope
 
-When you intentionally use only `ng-advanced-table` without `ng-advanced-table/ui`, provide `NatTableService` at the local wrapper that owns the table. Most application code should prefer `NatTableSurface` because it provides the same scope and unlocks companion controls later.
+When you intentionally use only `ng-advanced-table` without `ng-advanced-table/components`, provide `NatTableService` at the local wrapper that owns the table. Most application code should prefer `NatTableSurface` because it provides the same scope and unlocks companion controls later.
 
 ```bash
 npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
@@ -108,7 +108,7 @@ export class CoreOnlyTable {
 
 ## Add Companion Controls
 
-Use `ng-advanced-table/ui` when you want pagination controls, column visibility, horizontal scroll controls, toolbar behavior, header actions, selection checkbox columns, or export actions.
+Use `ng-advanced-table/components` when you want pagination controls, column visibility, horizontal scroll controls, toolbar behavior, header actions, selection checkbox columns, or export actions.
 
 ```ts
 import { Component, signal } from '@angular/core';
@@ -121,7 +121,7 @@ import {
   NatTableScrollControl,
   NatTableSurface,
   withNatTableHeaderActions
-} from 'ng-advanced-table/ui';
+} from 'ng-advanced-table/components';
 
 interface PositionRow {
   id: string;

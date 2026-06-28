@@ -1,8 +1,8 @@
-Render metrics are optional diagnostics from `ng-advanced-table/utils`. They measure row render timing, add a synthetic metrics column, and expose a compact panel and filter. Enable them when you are tuning a heavy table or building an internal performance view.
+Render metrics are optional diagnostics from `ng-advanced-table/render-metrics`. They measure row render timing, add a synthetic metrics column, and expose a compact panel and filter. Enable them when you are tuning a heavy table or building an internal performance view.
 
 ## Install
 
-Render metrics live in the `ng-advanced-table/utils` entry point of the single `ng-advanced-table` package — no separate install:
+Render metrics live in the `ng-advanced-table/render-metrics` entry point of the single `ng-advanced-table` package — no separate install:
 
 ```bash
 npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
@@ -17,8 +17,8 @@ import { Component, viewChild } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table/ui';
-import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderMetricsEvent } from 'ng-advanced-table/utils';
+import { NatTableSurface } from 'ng-advanced-table/components';
+import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderMetricsEvent } from 'ng-advanced-table/render-metrics';
 
 @Component({
   selector: 'app-positions-table',
@@ -55,8 +55,8 @@ export class PositionsTable {
 Use `withRenderMetricsColumn(...)` to append a synthetic render-time column. Wrap with header actions after adding synthetic columns.
 
 ```ts
-import { withNatTableHeaderActions } from 'ng-advanced-table/ui';
-import { NatTableRenderMetricsStore, withRenderMetricsColumn } from 'ng-advanced-table/utils';
+import { withNatTableHeaderActions } from 'ng-advanced-table/components';
+import { NatTableRenderMetricsStore, withRenderMetricsColumn } from 'ng-advanced-table/render-metrics';
 
 readonly metricsStore = new NatTableRenderMetricsStore();
 
