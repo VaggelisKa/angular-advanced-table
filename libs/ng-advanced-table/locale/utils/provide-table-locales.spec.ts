@@ -3,12 +3,14 @@ import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { NAT_TABLE_INTL, provideNatTableLocales } from './provide-table-locales';
+import { NAT_TABLE_UI_INTL, provideNatTableUiLocales } from './provide-ui-locales';
+import { NAT_TABLE_UTILS_INTL, provideNatTableUtilsLocales } from './provide-utils-locales';
 import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/built-in-locales.const';
 import type { NatTableAccessibilityText, NatTableIntlConfig } from '../common/type';
+import { NAT_TABLE_BUILT_IN_UI_LOCALES } from '../common/ui-built-in-locales.const';
 import type { NatTableAccessibilityPageSizeLabels, NatTableUiIntl, NatTableUiIntlConfig } from '../common/ui.type';
+import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from '../common/utils-built-in-locales.const';
 import type { NatTableRenderMetricsIntl, NatTableUtilsIntlConfig } from '../common/utils.type';
-import { NAT_TABLE_BUILT_IN_UI_LOCALES, NAT_TABLE_UI_INTL, provideNatTableUiLocales } from '../ui-locale';
-import { NAT_TABLE_BUILT_IN_UTILS_LOCALES, NAT_TABLE_UTILS_INTL, provideNatTableUtilsLocales } from '../utils-locale';
 
 const configure = (...providers: Provider[]): void => {
   TestBed.configureTestingModule({
