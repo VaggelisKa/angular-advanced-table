@@ -7,11 +7,11 @@ test.describe('FEATURE: Table toolbar', () => {
   const buttons = (
     page: Page
   ): {
-    exportButton: Locator;
-    refreshButton: Locator;
-    compactButton: Locator;
-    comfortableButton: Locator;
-    shareButton: Locator;
+    readonly exportButton: Locator;
+    readonly refreshButton: Locator;
+    readonly compactButton: Locator;
+    readonly comfortableButton: Locator;
+    readonly shareButton: Locator;
   } => ({
     exportButton: page.getByTestId('export-button'),
     refreshButton: page.getByTestId('refresh-button'),

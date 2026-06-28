@@ -22,11 +22,11 @@ test.describe('FEATURE: Table toolbar', () => {
   const buttons = (
     page: Page
   ): {
-    exportButton: Locator;
-    refreshButton: Locator;
-    compactButton: Locator;
-    comfortableButton: Locator;
-    shareButton: Locator;
+    readonly exportButton: Locator;
+    readonly refreshButton: Locator;
+    readonly compactButton: Locator;
+    readonly comfortableButton: Locator;
+    readonly shareButton: Locator;
   } => ({
     exportButton: page.getByTestId('export-button'),
     refreshButton: page.getByTestId('refresh-button'),
@@ -35,7 +35,7 @@ test.describe('FEATURE: Table toolbar', () => {
     shareButton: page.getByTestId('share-button')
   });
 
-  type BoundingBox = { x: number; y: number; width: number; height: number };
+  type BoundingBox = { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
 
   /** Reads a locator's bounding box, failing loudly if the element has none. */
   const requireBox = async (locator: Locator): Promise<BoundingBox> => {
