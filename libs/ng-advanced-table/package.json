@@ -1,7 +1,7 @@
 {
   "name": "ng-advanced-table",
   "version": "2.0.0",
-  "description": "Signals-first Angular data table built on TanStack Table — core primitives plus composable UI, utilities, and i18n via subpath entry points (ng-advanced-table/ui, /utils, /locale).",
+  "description": "Signals-first Angular data table built on TanStack Table — core primitives plus composable UI, utilities, and i18n via subpath entry points (ng-advanced-table/components, /render-metrics, /locale).",
   "typings": "src/index.ts",
   "license": "MIT",
   "repository": {
@@ -49,13 +49,13 @@
       "types": "./locale/index.ts",
       "default": "./locale/index.ts"
     },
-    "./ui": {
-      "types": "./ui/index.ts",
-      "default": "./ui/index.ts"
+    "./components": {
+      "types": "./components/index.ts",
+      "default": "./components/index.ts"
     },
-    "./utils": {
-      "types": "./utils/index.ts",
-      "default": "./utils/index.ts"
+    "./render-metrics": {
+      "types": "./render-metrics/index.ts",
+      "default": "./render-metrics/index.ts"
     }
   },
   "nx": {
@@ -65,7 +65,7 @@
     "prefix": "nat",
     "sourceRoot": "libs/ng-advanced-table",
     "tags": [
-      "type:lib",
+      "type:public-api",
       "scope:public"
     ],
     "targets": {

@@ -1,17 +1,15 @@
-export { NAT_TABLE_BUILT_IN_LOCALES } from './built-in-locales';
+export { NAT_TABLE_BUILT_IN_LOCALES } from './common/built-in-locales.const';
 
-export { NAT_EN_LOCALE_ID, NAT_EN_LOCALE_LABELS, NAT_TABLE_ENGLISH_INTL, NAT_TABLE_ENGLISH_LOCALE } from './en';
+export { NAT_EN_LOCALE_ID, NAT_EN_LOCALE_LABELS, NAT_TABLE_ENGLISH_INTL, NAT_TABLE_ENGLISH_LOCALE } from './common/en.const';
 
 export {
   formatNatTableIntlNumber,
   mergeNatTableAccessibilityText,
-  mergeNatTableIntl,
-  NAT_TABLE_DEFAULT_INTL,
   NAT_TABLE_INTL,
   provideNatTableIntl,
   provideNatTableLocales,
   resolveNatTableIntl
-} from './provide-table-locales';
+} from './utils/provide-table-locales';
 
 export type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
@@ -30,8 +28,8 @@ export type {
   NatTableLocaleLabels,
   NatTableLocaleLabelsMap,
   NatTableNumberFormatter
-} from './types';
+} from './common/type';
 
-export * from './ui';
+export * from './ui-locale';
 
-export * from './utils';
+export * from './utils-locale';

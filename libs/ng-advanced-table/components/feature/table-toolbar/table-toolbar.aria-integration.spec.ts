@@ -1,0 +1,148 @@
+import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+
+import { NatTableToolbar } from './table-toolbar';
+import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
+
+/**
+ * Tripwire suite for the @angular/aria integration.
+ * Every test here locks an internal Aria behavior the toolbar patches or
+ * relies on — a failure after an @angular/aria bump means the pattern
+ * contract changed and `patchAriaToolbarPattern` in table-toolbar.ts must be
+ * re-verified.
+ *
+ * Slot DOM order: A, search (start) | B (center) | C, D (end).
+ */
+@Component({
+  selector: 'nat-aria-integration-host',
+  imports: [NatTableToolbar, NatToolbarItem],
+  template: `
+    <nat-table-toolbar>
+      <button id="item-a" natToolbarItem="a" natToolbarItemPosition="start" type="button">A</button>
+      <button id="item-b" natToolbarItem="b" natToolbarItemPosition="center" type="button">B</button>
+      <button id="item-c" natToolbarItem="c" type="button">C</button>
+      @if (showD()) {
+        <button id="item-d" natToolbarItem="d" type="button">D</button>
+      }
+      <input aria-label="Filter" id="search" natToolbarItem="search" natToolbarItemPosition="start" type="search" />
+    </nat-table-toolbar>
+  `
+})
+class AriaIntegrationHost {
+  public readonly showD = signal(true);
+}
+
+describe('FEATURE: NatTableToolbar @angular/aria integration', () => {
+  let fixture: ComponentFixture<AriaIntegrationHost>;
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()]
+    });
+    fixture = TestBed.createComponent(AriaIntegrationHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  const element = (domId: string): HTMLElement => {    return (fixture.nativeElement as HTMLElement).querySelector(`#${domId}`) as HTMLElement;
+  }
+
+  const focusItem = async (domId: string): Promise<void> => {    element(domId).focus();
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  const dispatchKeydown = (target: HTMLElement, key: string): KeyboardEvent => {    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+
+    target.dispatchEvent(event);
+
+    return event;
+  }
+
+  const dispatchPointerdown = (target: HTMLElement): MouseEvent => {    // jsdom has no PointerEvent constructor; Aria's handler only needs the
+    // event target and preventDefault, so a MouseEvent stands in.
+    const event = new MouseEvent('pointerdown', { bubbles: true, cancelable: true });
+
+    target.dispatchEvent(event);
+
+    return event;
+  }
+
+  describe('GIVEN: a toolbar with start/center/end items and a text-entry search field', () => {
+    describe('WHEN: Enter or Space is pressed on a focused button item', () => {
+      it('THEN: it leaves Enter and Space to the browser so native button activation works', async () => {
+        await focusItem('item-a');
+
+        expect(dispatchKeydown(element('item-a'), 'Enter').defaultPrevented).toBe(false);
+        expect(dispatchKeydown(element('item-a'), ' ').defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(element('item-a'));
+      });
+    });
+
+    describe('WHEN: pointerdown lands on the search text-entry field', () => {
+      it('THEN: it does not preventDefault pointerdown on text-entry items (caret placement)', () => {
+        expect(dispatchPointerdown(element('search')).defaultPrevented).toBe(false);
+      });
+    });
+
+    describe('WHEN: pointerdown lands on a button item', () => {
+      it('THEN: it preventDefaults pointerdown on buttons — the Aria focus model the patches rely on', () => {
+        // Aria suppresses native mousedown focus and re-focuses the widget from
+        // its click handler instead. If this stops being true after a bump, the
+        // text-entry onClick patch must be revisited.
+
+        expect(dispatchPointerdown(element('item-a')).defaultPrevented).toBe(true);
+      });
+    });
+
+    describe('WHEN: a button item is clicked', () => {
+      it("THEN: it focuses the clicked widget from Aria's click handler", async () => {
+        element('item-c').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // Aria focuses it and moves the roving tab stop onto it
+        expect(document.activeElement).toBe(element('item-c'));
+        expect(element('item-c').getAttribute('tabindex')).toBe('0');
+      });
+    });
+
+    describe('WHEN: the search text-entry field is clicked after focusing a button', () => {
+      it('THEN: it ignores clicks on text-entry items so the caret is never stolen', async () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        // The onClick patch must bypass Aria entirely for text-entry widgets —
+        // if Aria handled the click it would re-focus the widget and move the
+        // roving tab stop, stealing the caret the user just placed.
+        await focusItem('item-a');
+
+        // when: the text-entry search field is clicked
+        element('search').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // then: focus and the roving tab stop stay on the previously focused button
+        expect(document.activeElement).toBe(element('item-a'));
+        expect(element('item-a').getAttribute('tabindex')).toBe('0');
+      });
+    });
+
+    describe('WHEN: the active item unmounts', () => {
+      it('THEN: it moves the roving tab stop to the first visual item when the active item unmounts', async () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        // Aria never clears its active widget on unregister — without the reset
+        // effect in table-toolbar.ts NO item would carry tabindex="0" and Tab
+        // would skip the toolbar entirely.
+        await focusItem('item-d');
+        expect(element('item-d').getAttribute('tabindex')).toBe('0');
+
+        fixture.componentInstance.showD.set(false);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // then: the roving tab stop resets to the first visual item
+        expect(element('item-a').getAttribute('tabindex')).toBe('0');
+      });
+    });
+  });
+});

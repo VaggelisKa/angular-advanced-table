@@ -1,5 +1,5 @@
 /* eslint-disable complexity */
-import { NAT_TABLE_BUILT_IN_UI_LOCALES } from './ui/ui-built-in-locales';
+import { NAT_TABLE_BUILT_IN_UI_LOCALES } from './common/ui-built-in-locales.const';
 import type {
   NatTableAccessibilityColumnVisibilityActionContext,
   NatTableAccessibilityColumnVisibilitySummaryContext,
@@ -9,14 +9,14 @@ import type {
   NatTableAccessibilityPagerContext,
   NatTableAccessibilityScrollControlPositionContext,
   NatTableUiNumberFormatter
-} from './ui/ui-types';
-import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './utils/utils-built-in-locales';
+} from './common/ui.type';
+import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './common/utils-built-in-locales.const';
 import type {
   NatTableRenderMetricsDurationContext,
   NatTableRenderMetricsRowCountContext,
   NatTableUtilsNumberFormatter,
   RowRenderTone
-} from './utils/utils-types';
+} from './common/utils.type';
 
 const expectNonEmptyText = (value: unknown, label: string): void => {
   if (typeof value !== 'string' || value.trim().length === 0) {

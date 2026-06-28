@@ -10,18 +10,18 @@ npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/a
 
 ## Entry points
 
-| Import from                | What you get                                                                                                                        |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `ng-advanced-table`        | Core table (`NatTable`, `NatTableService`, state, accessibility, keybindings)                                                       |
-| `ng-advanced-table/ui`     | Composable UI: surface, pagination, column visibility, scroll controls, toolbar, header actions, selection column, export directive |
-| `ng-advanced-table/utils`  | Optional render-metrics store, filter, panel, and synthetic metrics column                                                          |
-| `ng-advanced-table/locale` | Built-in locale registry and `provide*Locales()` helpers                                                                            |
+| Import from                        | What you get                                                                                                                        |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `ng-advanced-table`                | Core table (`NatTable`, `NatTableService`, state, accessibility, keybindings)                                                       |
+| `ng-advanced-table/components`     | Composable UI: surface, pagination, column visibility, scroll controls, toolbar, header actions, selection column, export directive |
+| `ng-advanced-table/render-metrics` | Optional render-metrics store, filter, panel, and synthetic metrics column                                                          |
+| `ng-advanced-table/locale`         | Built-in locale registry and `provide*Locales()` helpers                                                                            |
 
-Each entry point is built and tree-shaken independently (`sideEffects: false`), so importing `ng-advanced-table/ui` never pulls in `ng-advanced-table/utils`.
+Each entry point is built and tree-shaken independently (`sideEffects: false`), so importing `ng-advanced-table/components` never pulls in `ng-advanced-table/render-metrics`.
 
 ```ts
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table/ui';
+import { NatTableSurface } from 'ng-advanced-table/components';
 import { provideNatTableLocales } from 'ng-advanced-table/locale';
 ```
 
@@ -29,11 +29,11 @@ import { provideNatTableLocales } from 'ng-advanced-table/locale';
 
 The standalone `ng-advanced-table-ui`, `ng-advanced-table-utils`, and `ng-advanced-table-locales` packages are no longer published. Install only `ng-advanced-table` and rewrite the import specifiers:
 
-| 1.x package                 | 2.x entry point            |
-| --------------------------- | -------------------------- |
-| `ng-advanced-table-ui`      | `ng-advanced-table/ui`     |
-| `ng-advanced-table-utils`   | `ng-advanced-table/utils`  |
-| `ng-advanced-table-locales` | `ng-advanced-table/locale` |
+| 1.x package                 | 2.x entry point                    |
+| --------------------------- | ---------------------------------- |
+| `ng-advanced-table-ui`      | `ng-advanced-table/components`     |
+| `ng-advanced-table-utils`   | `ng-advanced-table/render-metrics` |
+| `ng-advanced-table-locales` | `ng-advanced-table/locale`         |
 
 The core `ng-advanced-table` import and every exported symbol are unchanged — only the package layout moved.
 
