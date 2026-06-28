@@ -1,5 +1,3 @@
-You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
-
 ## Release Workflow
 
 - For every code change that affects behavior, public API, docs, examples, or tests, add a new Nx version plan file in `.nx/version-plans/` as part of the same task unless the user explicitly says not to.
@@ -54,21 +52,13 @@ The library ships as one `ng-advanced-table` package whose layers are ng-packagr
 - Do not keep root or package README placeholders that only link back to showcase docs. Remove duplicated usage/reference markdown instead of replacing it with link-only docs.
 - Keep repository markdown only when it is technical maintainer material: contribution rules, package boundaries, architectural decisions, terminology, changelogs, internal package notes, or "how the table is built" explanations.
 
-## TypeScript Best Practices
+## Angular Project Conventions
 
-- Use strict type checking
-- Prefer type inference when the type is obvious
-- Avoid the `any` type; use `unknown` when type is uncertain
-
-## Angular Best Practices
-
-- Always use standalone components over NgModules
-- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.
-- Use signals for state management
-- Implement lazy loading for feature routes
-- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
-- Use `NgOptimizedImage` for all static images.
-  - `NgOptimizedImage` does not work for inline base64 images.
+- Do not set `standalone: true` inside Angular decorators; it is the Angular v20+ default.
+- Do not add `@HostBinding` or `@HostListener`; put host bindings and listeners in the decorator `host` object.
+- For new or modified components, do not add explicit `ChangeDetectionStrategy.OnPush`; Angular v22 defaults to `OnPush`. Use `ChangeDetectionStrategy.Eager` only when eager checking is genuinely required.
+- Prefer `input()` and `output()` for component APIs, signals for local state, and `computed()` for derived state. Do not use signal `.mutate()`; use `set` or `update`.
+- Keep templates on native control flow (`@if`, `@for`, `@switch`) and do not assume globals such as `new Date()` are available in templates.
 
 ## Accessibility Requirements
 
@@ -90,35 +80,3 @@ The library ships as one `ng-advanced-table` package whose layers are ng-packagr
 - The project must support Safari 16.2 and newer.
 - Before using newer browser APIs, CSS features, or Angular/browser platform features, verify compatibility with Safari 16.2 and provide a compatible fallback or choose an older-supported approach.
 - Be especially cautious with recently introduced CSS APIs such as `@starting-style`, View Transitions, newer selectors, and animation features.
-
-### Components
-
-- Keep components small and focused on a single responsibility
-- Use `input()` and `output()` functions instead of decorators
-- Use `computed()` for derived state
-- Do NOT set `changeDetection` explicitly; rely on the Angular v22 default (`OnPush`). Only add `changeDetection: ChangeDetectionStrategy.Eager` when a component genuinely requires eager checking
-- Prefer inline templates for small components
-- Prefer Reactive forms instead of Template-driven ones
-- Do NOT use `ngClass`, use `class` bindings instead
-- Do NOT use `ngStyle`, use `style` bindings instead
-- When using external templates/styles, use paths relative to the component TS file.
-
-## State Management
-
-- Use signals for local component state
-- Use `computed()` for derived state
-- Keep state transformations pure and predictable
-- Do NOT use `mutate` on signals, use `update` or `set` instead
-
-## Templates
-
-- Keep templates simple and avoid complex logic
-- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
-- Use the async pipe to handle observables
-- Do not assume globals like (`new Date()`) are available.
-
-## Services
-
-- Design services around a single responsibility
-- Use the `providedIn: 'root'` option for singleton services
-- Use the `inject()` function instead of constructor injection
