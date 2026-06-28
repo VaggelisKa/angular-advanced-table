@@ -4,14 +4,18 @@
  * published consumer. Only configs that need live SOURCE resolution extend this:
  * the showcase app (dev/HMR + its specs) and the library's spec config (vitest
  * compiles cross-entry source as first-party). Paths resolve relative to THIS
- * file's directory (repo root), so they stay valid no matter who extends it. */
+ * file's directory (repo root), so they stay valid no matter who extends it.
+ * `ng-advanced-table/testing` is internal test-contract infrastructure — it is
+ * deliberately NOT a published `exports` subpath, only a source alias so
+ * cross-entry contract specs can import it without illegal relative paths. */
 {
   "compilerOptions": {
     "paths": {
       "ng-advanced-table": ["./libs/ng-advanced-table/src/index.ts"],
       "ng-advanced-table/locale": ["./libs/ng-advanced-table/locale/index.ts"],
-      "ng-advanced-table/ui": ["./libs/ng-advanced-table/ui/index.ts"],
-      "ng-advanced-table/utils": ["./libs/ng-advanced-table/utils/index.ts"]
+      "ng-advanced-table/components": ["./libs/ng-advanced-table/components/index.ts"],
+      "ng-advanced-table/render-metrics": ["./libs/ng-advanced-table/render-metrics/index.ts"],
+      "ng-advanced-table/testing": ["./libs/ng-advanced-table/testing/index.ts"]
     }
   }
 }

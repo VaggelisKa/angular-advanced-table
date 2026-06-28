@@ -26,7 +26,49 @@ export default [
   // vitest/playwright are rule-only and self-scope to spec/e2e files.
   ...recommended,
   ...vitest,
-  ...playwright
+  ...playwright,
+  {
+    // Entry-point layering for the consolidated `ng-advanced-table` package.
+    // Each subpath (`.`, `/components`, `/render-metrics`, `/locale`) is its own Nx
+    // project; this guards which subpath may import which. Confirmed against the real
+    // Nx graph (#185), matching the documented policy in AGENTS.md: core must NOT
+    // import the companions (components/render-metrics); both companions may compose
+    // core; locale is the leaf (imported by all, imports none).
+    // `type:public-api` is the build-only wrapper project; the bare
+    // `ng-advanced-table` specifier resolves to it as well as to core, so every
+    // entry point is allowed to "see" it.
+    files: ['**/*.ts', '**/*.js'],
+    rules: {
+      '@nx/enforce-module-boundaries': [
+        'error',
+        {
+          enforceBuildableLibDependency: true,
+          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?js$'],
+          depConstraints: [
+            { sourceTag: 'type:app', onlyDependOnLibsWithTags: ['*'] },
+            { sourceTag: 'type:e2e', onlyDependOnLibsWithTags: ['type:app'] },
+            { sourceTag: 'type:public-api', onlyDependOnLibsWithTags: ['*'] },
+            {
+              // Companion entry point (/components): may compose core + the locale leaf.
+              sourceTag: 'type:components',
+              onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
+            },
+            {
+              // Core must NOT import the companions; locale leaf only.
+              sourceTag: 'type:core',
+              onlyDependOnLibsWithTags: ['type:locale', 'type:public-api']
+            },
+            {
+              // Companion entry point (/render-metrics): may compose core + the locale leaf.
+              sourceTag: 'type:render-metrics',
+              onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
+            },
+            { sourceTag: 'type:locale', onlyDependOnLibsWithTags: [] }
+          ]
+        }
+      ]
+    }
+  }
 ];
 
 // Temporary repo-wide rule overrides for Angular projects. Spread these LAST in
