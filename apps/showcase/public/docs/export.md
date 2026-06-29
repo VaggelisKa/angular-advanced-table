@@ -1,6 +1,6 @@
 ## Export Button
 
-Table Data Export is an optional Table Action from `ng-advanced-table/ui`. Add `natTableExport` to an interactive host element and place it wherever the command belongs.
+Table Data Export is an optional Table Action from `ng-advanced-table/components`. Add `natTableExport` to an interactive host element and place it wherever the command belongs.
 
 ```html
 <button type="button" natToolbarItem natTableExport exportFileName="services">Export CSV</button>

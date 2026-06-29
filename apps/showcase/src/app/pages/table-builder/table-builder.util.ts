@@ -17,7 +17,7 @@ const DEFAULT_COLUMN_VISIBILITY = {
   value: true
 } as const;
 
-export const buildUiImports = (flags: TableBuilderFlags): string[] => {
+const buildUiImports = (flags: TableBuilderFlags): string[] => {
   const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
 
   if (flags.withGlobalFilter || flags.showColumnVisibility) {
@@ -40,25 +40,12 @@ export const buildUiImports = (flags: TableBuilderFlags): string[] => {
   return uiImports;
 };
 
-export const buildStateObject = (flags: TableBuilderFlags, currentState: Partial<NatTableState>): Partial<NatTableState> => {
-  const stateObj: Partial<NatTableState> = {
-    columnVisibility: currentState.columnVisibility ?? { ...DEFAULT_COLUMN_VISIBILITY }
-  };
-
-  if (flags.withPagination) {
-    stateObj.pagination = currentState.pagination ?? { pageIndex: 0, pageSize: 3 };
-  }
-
-  if (flags.withColumnPinning && currentState.columnPinning) {
-    stateObj.columnPinning = currentState.columnPinning;
-  }
-
-  if (flags.withColumnReorder && currentState.columnOrder) {
-    stateObj.columnOrder = currentState.columnOrder;
-  }
-
-  return stateObj;
-};
+export const buildStateObject = (flags: TableBuilderFlags, currentState: Partial<NatTableState>): Partial<NatTableState> => ({
+  columnVisibility: currentState.columnVisibility ?? { ...DEFAULT_COLUMN_VISIBILITY },
+  ...(flags.withPagination ? { pagination: currentState.pagination ?? { pageIndex: 0, pageSize: 3 } } : {}),
+  ...(flags.withColumnPinning && currentState.columnPinning ? { columnPinning: currentState.columnPinning } : {}),
+  ...(flags.withColumnReorder && currentState.columnOrder ? { columnOrder: currentState.columnOrder } : {})
+});
 
 export const formatStateLiteral = (stateObj: Partial<NatTableState>): string =>
   JSON.stringify(stateObj, null, 4)
@@ -82,7 +69,7 @@ import { type ColumnDef } from '@tanstack/angular-table';
 import { NatTable, NatTableState } from 'ng-advanced-table';
 import {
   ${uiImports.join(',\n  ')}
-} from 'ng-advanced-table/ui';
+} from 'ng-advanced-table/components';
 
 interface DemoItem {
   id: string;

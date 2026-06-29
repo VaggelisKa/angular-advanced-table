@@ -129,7 +129,7 @@ Set the border-width tokens to `0` when a design needs to remove the outer table
 
 ## UI Control Tokens
 
-`ng-advanced-table/ui` controls consume the same theme. Common groups include:
+`ng-advanced-table/components` controls consume the same theme. Common groups include:
 
 | Group          | Common tokens                                                                                                                                  |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |

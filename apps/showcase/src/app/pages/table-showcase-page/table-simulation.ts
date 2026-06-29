@@ -8,39 +8,39 @@ export type SimulationProfile = 'steady' | 'balanced' | 'burst';
 export type SparkTrend = 'up' | 'down' | 'flat';
 
 export type SimulationRow = {
-  id: string;
-  symbol: string;
-  symbolSortKey: string;
-  company: string;
-  companySortKey: string;
-  exchange: string;
-  desk: string;
-  status: SimulationStatus;
-  previousClose: number;
-  price: number;
-  change: number;
-  changePercent: number;
-  volume: number;
-  turnoverMillions: number;
-  updatedAt: number;
-  priceHistory: readonly number[];
-  sparkTrend: SparkTrend;
+  readonly id: string;
+  readonly symbol: string;
+  readonly symbolSortKey: string;
+  readonly company: string;
+  readonly companySortKey: string;
+  readonly exchange: string;
+  readonly desk: string;
+  readonly status: SimulationStatus;
+  readonly previousClose: number;
+  readonly price: number;
+  readonly change: number;
+  readonly changePercent: number;
+  readonly volume: number;
+  readonly turnoverMillions: number;
+  readonly updatedAt: number;
+  readonly priceHistory: readonly number[];
+  readonly sparkTrend: SparkTrend;
 };
 
 export const SPARK_HISTORY_LENGTH = 24;
 
-export type SimulationStatusCounts = Record<SimulationStatus, number>;
+type SimulationStatusCounts = Record<SimulationStatus, number>;
 
 type SimulationProfilePreset = {
-  label: string;
-  description: string;
-  tickIntervalMs: number;
-  mutationBatchSize: number;
+  readonly label: string;
+  readonly description: string;
+  readonly tickIntervalMs: number;
+  readonly mutationBatchSize: number;
 };
 
 type InstrumentSeed = {
-  symbol: string;
-  company: string;
+  readonly symbol: string;
+  readonly company: string;
 };
 
 export const SIMULATION_STATUSES = ['Advancing', 'Watching', 'Declining', 'Halted'] as const satisfies readonly SimulationStatus[];
@@ -190,7 +190,7 @@ const mutateRows = (
   rows: readonly SimulationRow[],
   batchSize: number,
   now: number
-): { rows: SimulationRow[]; updatedCount: number } => {
+): { readonly rows: SimulationRow[]; readonly updatedCount: number } => {
   const nextRows = rows.slice();
   const pickedIndexes = new Set<number>();
 

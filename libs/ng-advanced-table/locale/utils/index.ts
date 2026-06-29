@@ -1,40 +1,33 @@
 export {
-  getRenderToneLabel,
-  NAT_EN_UTILS_LOCALE_LABELS,
-  NAT_TABLE_UTILS_ENGLISH_INTL,
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
-  RENDER_FILTER_OPTIONS
-} from './utils-en';
+  formatNatTableIntlNumber,
+  mergeNatTableAccessibilityText,
+  NAT_TABLE_INTL,
+  provideNatTableIntl,
+  provideNatTableLocales,
+  resolveNatTableIntl
+} from './provide-table-locales';
 
-export { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './utils-built-in-locales';
+export {
+  mergeColumnVisibilityLabels,
+  mergeHeaderActionLabels,
+  mergePageSizeLabels,
+  mergePagerLabels,
+  mergeScrollControlLabels,
+  NAT_TABLE_UI_DEFAULT_INTL,
+  NAT_TABLE_UI_INTL,
+  provideNatTableUiIntl,
+  provideNatTableUiLocales,
+  resolveNatTableUiIntl
+} from './provide-ui-locales';
 
 export {
   formatNatTableUtilsNumber,
   injectNatTableUtilsIntl,
-  mergeNatTableUtilsIntl,
   mergeRenderMetricsColumnIntl,
   mergeRenderMetricsFilterIntl,
   mergeRenderMetricsPanelIntl,
-  NAT_TABLE_UTILS_DEFAULT_INTL,
   NAT_TABLE_UTILS_INTL,
   provideNatTableUtilsIntl,
   provideNatTableUtilsLocales,
   resolveNatTableUtilsIntl
 } from './provide-utils-locales';
-
-export type {
-  NatTableRenderMetricsColumnIntl,
-  NatTableRenderMetricsDurationContext,
-  NatTableRenderMetricsFilterIntl,
-  NatTableRenderMetricsIntl,
-  NatTableRenderMetricsPanelIntl,
-  NatTableRenderMetricsRowCountContext,
-  NatTableUtilsIntl,
-  NatTableUtilsIntlConfig,
-  NatTableUtilsIntlProviderConfig,
-  NatTableUtilsLocaleLabels,
-  NatTableUtilsLocaleLabelsMap,
-  NatTableUtilsNumberFormatter,
-  RowRenderFilterOption,
-  RowRenderTone
-} from './utils-types';

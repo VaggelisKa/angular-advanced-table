@@ -1,14 +1,9 @@
 export type {
-  NatTableCellTone,
-  NatTableColumnExportOptions,
-  NatTableColumnExportValue,
-  NatTableColumnExportValueContext,
   NatTableColumnMeta,
   NatTableRenderMetricsController,
-  NatTableSortDirection,
   NatTableSortIndicatorContext,
   NatTableState,
   NatTableUiController
-} from './table-contracts';
+} from './common/table-contracts.type';
 
-export type { Equal, Expect } from './type-assertions';
+export type { Equal, Expect } from './common/type-assertions.type';

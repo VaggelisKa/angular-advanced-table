@@ -1,0 +1,19 @@
+{
+  "name": "ng-advanced-table-render-metrics",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "prefix": "nat",
+  "sourceRoot": "libs/ng-advanced-table/render-metrics",
+  "tags": ["type:render-metrics", "scope:public"],
+  "targets": {
+    "test": {
+      "options": {
+        "buildTarget": "ng-advanced-table:build:development",
+        "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json"
+      }
+    },
+    "stylelint": {
+      "executor": "nx-stylelint:lint"
+    }
+  }
+}
