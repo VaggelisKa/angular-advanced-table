@@ -3,10 +3,10 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { NatTableHotkeyA11y } from './hotkey-a11y.directive';
-import { DEFAULT_NAT_TABLE_KEYBINDINGS, NAT_TABLE_KEYBINDINGS } from '../common/keybindings';
-import type { NatTableKeybindings } from '../common/keybindings';
+import { provideNatTableKeybindings } from '../common/keybindings.provider';
+import type { NatTableKeybindings } from '../common/keybindings.type';
 import { NatTableService } from '../domain-logic/table.service';
-import { serializeShortcutValue } from '../utils/keybindings';
+import { DEFAULT_NAT_TABLE_KEYBINDINGS, serializeShortcutValue } from '../utils/keybindings';
 
 const queryRequired = <T extends HTMLElement = HTMLElement>(f: ComponentFixture<unknown>, sel: string): T => {
   const element = (f.nativeElement as HTMLElement).querySelector<T>(sel);
@@ -55,13 +55,10 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
         imports: [FallbackHost],
         providers: [
           provideZonelessChangeDetection(),
-          {
-            provide: NAT_TABLE_KEYBINDINGS,
-            useValue: {
-              rowActivate: 'Space',
-              columnReorderLeft: { key: 'ArrowLeft', shiftKey: true }
-            } as NatTableKeybindings
-          }
+          provideNatTableKeybindings({
+            rowActivate: 'Space',
+            columnReorderLeft: { key: 'ArrowLeft', shiftKey: true }
+          })
         ]
       }).compileComponents();
 

@@ -33,7 +33,7 @@ import type {
 import { provideNatTableIntl } from 'ng-advanced-table/locale';
 
 import { NatTable } from './table';
-import type { NatTableKeybindings } from '../common/keybindings';
+import type { NatTableKeybindings } from '../common/keybindings.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table.type';
 import type {
   NatTableAccessibilityText,

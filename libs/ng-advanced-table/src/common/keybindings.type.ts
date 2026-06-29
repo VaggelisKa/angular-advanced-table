@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 /** A keyboard shortcut definition matching properties of standard browser {@link KeyboardEvent}. */
 export type NatTableShortcut = {
   /** The value of the key property, e.g. `'ArrowLeft'`, `'Enter'`, `'a'`. */
@@ -36,23 +34,6 @@ export type NatTableKeybindings = {
   /** Key combination to move to the previous interactive control inside a cell. Default: `'Shift+Tab'` */
   readonly cellTabPrevControl?: NatTableShortcutValue;
 };
-
-/** Default keyboard shortcuts adhering to standard WCAG cell-interaction and reordering behaviors. */
-export const DEFAULT_NAT_TABLE_KEYBINDINGS: Required<NatTableKeybindings> = {
-  rowActivate: ['Enter', ' ', 'Spacebar'],
-  columnReorderLeft: 'Mod+Shift+ArrowLeft',
-  columnReorderRight: 'Mod+Shift+ArrowRight',
-  cellEnterControl: 'Enter',
-  cellExitControl: 'Escape',
-  cellTabNextControl: 'Tab',
-  cellTabPrevControl: 'Shift+Tab'
-};
-
-/** Injection token for custom keyboard shortcuts configuration. */
-export const NAT_TABLE_KEYBINDINGS = new InjectionToken<NatTableKeybindings>('NAT_TABLE_KEYBINDINGS', {
-  providedIn: 'root',
-  factory: (): NatTableKeybindings => ({})
-});
 
 /** A compiled, functional keyboard shortcuts helper mapping KeyboardEvents to actions. */
 export type NatTableKeyboard = {

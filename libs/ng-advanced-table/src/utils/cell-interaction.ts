@@ -14,7 +14,7 @@
  * arrow-consuming control keep the Enter / Tab / Escape model above.
  */
 
-import type { NatTableKeyboard } from '../common/keybindings';
+import type { NatTableKeyboard } from '../common/keybindings.type';
 
 export const ROW_ACTIVATE_INTERACTIVE_SELECTOR =
   'a[href], button, input, select, textarea, summary, [contenteditable="true"], ' +

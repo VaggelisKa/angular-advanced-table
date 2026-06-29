@@ -2,8 +2,8 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
-import { NAT_TABLE_KEYBINDINGS } from '../common/keybindings';
-import type { NatTableKeybindings } from '../common/keybindings';
+import { NAT_TABLE_KEYBINDINGS } from '../common/keybindings.provider';
+import type { NatTableKeybindings } from '../common/keybindings.type';
 import type {
   NatTableAccessibilityText,
   NatTableMode,

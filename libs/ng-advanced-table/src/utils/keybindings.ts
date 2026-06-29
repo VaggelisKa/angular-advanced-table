@@ -1,6 +1,16 @@
 /* eslint-disable max-lines -- cohesive keybinding parsing/matching/serialization helpers; tightly coupled, splitting hurts readability. */
-import type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut, NatTableShortcutValue } from '../common/keybindings';
-import { DEFAULT_NAT_TABLE_KEYBINDINGS } from '../common/keybindings';
+import type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut, NatTableShortcutValue } from '../common/keybindings.type';
+
+/** Default keyboard shortcuts adhering to standard WCAG cell-interaction and reordering behaviors. */
+export const DEFAULT_NAT_TABLE_KEYBINDINGS: Required<NatTableKeybindings> = {
+  rowActivate: ['Enter', ' ', 'Spacebar'],
+  columnReorderLeft: 'Mod+Shift+ArrowLeft',
+  columnReorderRight: 'Mod+Shift+ArrowRight',
+  cellEnterControl: 'Enter',
+  cellExitControl: 'Escape',
+  cellTabNextControl: 'Tab',
+  cellTabPrevControl: 'Shift+Tab'
+};
 
 /** Detects if the current platform is macOS or iOS. Safe for SSR. */
 const isMacPlatform = (): boolean => {

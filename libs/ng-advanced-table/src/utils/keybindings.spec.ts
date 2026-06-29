@@ -1,7 +1,6 @@
 /* eslint-disable max-lines -- large integration spec */
-import { DEFAULT_NAT_TABLE_KEYBINDINGS } from './keybindings';
-import type { NatTableKeybindings, NatTableShortcut } from './keybindings';
 import {
+  DEFAULT_NAT_TABLE_KEYBINDINGS,
   areShortcutValuesOverlapping,
   areShortcutsEqual,
   createNatTableKeyboard,
@@ -12,7 +11,8 @@ import {
   parseShortcutString,
   serializeShortcutValue,
   validateKeybindings
-} from '../utils/keybindings';
+} from './keybindings';
+import type { NatTableKeybindings, NatTableShortcut } from '../common/keybindings.type';
 
 describe('FEATURE: NatTable Keybindings Utilities', () => {
   describe('GIVEN: parseShortcutString', () => {

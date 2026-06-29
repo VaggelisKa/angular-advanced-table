@@ -11,8 +11,8 @@ import {
   signal
 } from '@angular/core';
 
-import { NAT_TABLE_KEYBINDINGS } from '../common/keybindings';
-import type { NatTableKeybindings } from '../common/keybindings';
+import { NAT_TABLE_KEYBINDINGS } from '../common/keybindings.provider';
+import type { NatTableKeybindings } from '../common/keybindings.type';
 import { NatTableService } from '../domain-logic/table.service';
 import { mergeNatTableKeybindings, serializeShortcutValue } from '../utils/keybindings';
 

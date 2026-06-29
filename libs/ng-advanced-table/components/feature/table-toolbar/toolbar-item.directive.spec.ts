@@ -3,10 +3,10 @@ import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import { NatToolbarItem } from './toolbar-item.directive';
+import { NatTableToolbar } from './table-toolbar';
 import { NAT_TOOLBAR_ITEM } from '../../common/toolbar-tokens.const';
 import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/toolbar-tokens.type';
-import { NatTableToolbar } from '../../feature/table-toolbar/table-toolbar';
+import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
 
 @Component({
   selector: 'nat-toolbar-item-host',

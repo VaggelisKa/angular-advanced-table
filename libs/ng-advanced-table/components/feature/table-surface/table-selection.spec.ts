@@ -7,8 +7,8 @@ import type { ColumnDef } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 
-import { withNatTableSelectionColumn } from './with-table-selection-column';
-import { NatTableSurface } from '../../feature/table-surface/table-surface';
+import { NatTableSurface } from './table-surface';
+import { withNatTableSelectionColumn } from '../../ui/table-selection/with-table-selection-column';
 
 type Row = {
   readonly id: string;

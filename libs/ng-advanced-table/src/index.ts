@@ -30,8 +30,8 @@ export type {
 
 export { NatTableHotkeyA11y } from './feature/hotkey-a11y.directive';
 
-export { NAT_TABLE_KEYBINDINGS } from './common/keybindings';
+export { NAT_TABLE_KEYBINDINGS, provideNatTableKeybindings } from './common/keybindings.provider';
 
 export { createNatTableKeyboard, serializeShortcutValue } from './utils/keybindings';
 
-export type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut } from './common/keybindings';
+export type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut } from './common/keybindings.type';
