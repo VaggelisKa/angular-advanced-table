@@ -2,8 +2,8 @@ import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef, Row, RowData, Table } from '@tanstack/angular-table';
 
 import { NatTableSelectionCheckbox } from './table-selection';
-import { SELECTION_COLUMN_ID } from '../../common/selection-tokens.const';
-import type { NatTableSelectionColumnOptions } from '../../common/selection-tokens.type';
+import { SELECTION_COLUMN_ID } from '../../common/selection.const';
+import type { NatTableSelectionColumnOptions } from '../../common/selection.type';
 
 /**
  * Prepends a leading selection column with a select-all header checkbox and a
