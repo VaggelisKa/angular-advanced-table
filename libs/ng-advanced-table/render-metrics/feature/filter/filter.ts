@@ -3,12 +3,12 @@ import { Component, computed, inject, input } from '@angular/core';
 import type { ColumnFiltersState } from '@tanstack/angular-table';
 
 import {
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
-  NAT_TABLE_UTILS_INTL,
-  RENDER_FILTER_OPTIONS,
-  formatNatTableUtilsNumber,
+  NAT_EN_LOCALE_ID,
+  NAT_TABLE_RENDER_METRICS_INTL,
+  RENDER_METRICS_FILTER_OPTIONS,
+  formatNatTableRenderMetricsNumber,
   mergeRenderMetricsFilterIntl,
-  resolveNatTableUtilsIntl
+  resolveNatTableRenderMetricsIntl
 } from 'ng-advanced-table/locale';
 import type { NatTableRenderMetricsFilterIntl } from 'ng-advanced-table/locale';
 
@@ -49,10 +49,10 @@ export class NatRenderMetricsFilter<TData = unknown> {
   /** Per-instance label overrides. */
   public readonly labels = input<NatTableRenderMetricsFilterIntl | undefined>(undefined);
 
-  private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
-  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
+  private readonly utilsIntlConfig = inject(NAT_TABLE_RENDER_METRICS_INTL);
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_EN_LOCALE_ID);
 
-  private readonly utilsIntl = computed(() => resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()));
+  private readonly utilsIntl = computed(() => resolveNatTableRenderMetricsIntl(this.utilsIntlConfig, this.localeId()));
 
   private readonly resolvedLabels = computed(() =>
     mergeRenderMetricsFilterIntl(this.utilsIntl().renderMetrics?.filter, this.labels())
@@ -60,7 +60,7 @@ export class NatRenderMetricsFilter<TData = unknown> {
 
   protected readonly heading = computed(() => this.resolvedLabels().heading ?? '');
   protected readonly groupAriaLabel = computed(() => this.resolvedLabels().groupAriaLabel ?? '');
-  protected readonly options = computed(() => this.resolvedLabels().options ?? RENDER_FILTER_OPTIONS);
+  protected readonly options = computed(() => this.resolvedLabels().options ?? RENDER_METRICS_FILTER_OPTIONS);
 
   protected readonly selected = computed<RowRenderFilterValue>(() => {
     const controller = this.controller();
@@ -83,7 +83,7 @@ export class NatRenderMetricsFilter<TData = unknown> {
       return labels.idleCaption ?? '';
     }
 
-    const rowCountText = formatNatTableUtilsNumber(this.utilsIntl(), measurement.rowCount, undefined, this.localeId());
+    const rowCountText = formatNatTableRenderMetricsNumber(this.utilsIntl(), measurement.rowCount, undefined, this.localeId());
 
     return (
       labels.rowSampleCaption?.({

@@ -5,7 +5,7 @@ import type { ComponentFixture } from '@angular/core/testing';
 import type { Table } from '@tanstack/angular-table';
 import type { NatTableUiController } from 'ng-advanced-table/testing';
 
-import { provideNatTableUtilsIntl } from 'ng-advanced-table/locale';
+import { provideNatTableRenderMetricsIntl } from 'ng-advanced-table/locale';
 import type { NatTableRenderMetricsFilterIntl, NatTableRenderMetricsPanelIntl, RowRenderFilterOption } from 'ng-advanced-table/locale';
 
 import { NatRenderMetricsFilter } from './feature/filter/filter';
@@ -65,7 +65,7 @@ const qaPanelLabels: NatTableRenderMetricsPanelIntl = {
   selector: 'nat-test-host',
   imports: [NatRenderMetricsFilter, NatRenderMetricsPanel],
   providers: [
-    provideNatTableUtilsIntl({
+    provideNatTableRenderMetricsIntl({
       locales: {
         en: {
           formatNumber: (value) => `n${value}`,
