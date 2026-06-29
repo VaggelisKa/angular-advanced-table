@@ -39,7 +39,7 @@ const sortingSnippets = [
     'TS',
     'typescript',
     `
-readonly tableState = signal<Partial<NatTableState>>({
+readonly tableState = signal<Partial<NatTableUserState>>({
   sorting: [{ id: 'name', desc: false }]
 });
 
@@ -74,7 +74,7 @@ const columnLayoutSnippets = [
     'TS',
     'typescript',
     `
-readonly tableState = signal<Partial<NatTableState>>({
+readonly tableState = signal<Partial<NatTableUserState>>({
   columnPinning: { left: ['name'], right: ['value'] },
   columnVisibility: { status: false }
 });
@@ -105,7 +105,7 @@ const paginationSnippets = [
     'TS',
     'typescript',
     `
-readonly tableState = signal<Partial<NatTableState>>({
+readonly tableState = signal<Partial<NatTableUserState>>({
   pagination: { pageIndex: 0, pageSize: 25 }
 });
 `
@@ -129,7 +129,7 @@ const filteringSnippets = [
     'TS',
     'typescript',
     `
-readonly tableState = signal<Partial<NatTableState>>({
+readonly tableState = signal<Partial<NatTableUserState>>({
   globalFilter: ''
 });
 
@@ -166,7 +166,7 @@ const selectionSnippets = [
     'TS',
     'typescript',
     `
-readonly tableState = signal<Partial<NatTableState>>({ rowSelection: {} });
+readonly tableState = signal<Partial<NatTableUserState>>({ rowSelection: {} });
 
 readonly columns = withNatTableSelectionColumn(
   withNatTableHeaderActions(baseColumns),

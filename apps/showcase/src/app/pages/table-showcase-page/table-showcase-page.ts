@@ -4,7 +4,7 @@ import { Component, computed, inject, input, signal, viewChild } from '@angular/
 import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef, FilterFn } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import {
   NatTablePagination,
   NatTableScrollControl,
@@ -344,7 +344,7 @@ export class TableShowcasePage {
 
   protected readonly accessibilityText = showcaseAccessibilityText;
   protected readonly theme = this.themeStore.theme;
-  public readonly tableState = signal<Partial<NatTableState>>({
+  public readonly tableState = signal<Partial<NatTableUserState>>({
     columnFilters: []
   });
 

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
 type DemoItem = {
@@ -95,7 +95,7 @@ export class ResizingShowcasePage {
     }));
   });
 
-  protected readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableUserState>>({
     columnSizing: {}
   });
 
