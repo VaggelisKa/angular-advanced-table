@@ -4,8 +4,8 @@ Generated table copy resolves from the `ng-advanced-table/locale` entry point. A
 
 ```ts
 provideNatTableLocales(...);
-provideNatTableUiLocales(...);
-provideNatTableUtilsLocales(...);
+provideNatTableControlsLocales(...);
+provideNatTableRenderMetricsLocales(...);
 ```
 
 Core table copy, companion UI controls, and render-metrics utilities have separate locale sections so applications can adopt them independently.

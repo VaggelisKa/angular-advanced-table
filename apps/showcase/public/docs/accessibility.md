@@ -14,7 +14,7 @@ Before shipping a table, verify this list:
 | State rows have visible, meaningful text           | `natTableLoading`, `natTableEmpty`, `natTableError` templates or `accessibilityText`            |
 | Custom cell controls have names                    | App-owned `aria-label`, visible text, or design-system labels                                   |
 | Interactive cells integrate with grid focus        | `ngGridCellWidget` on the real focusable element                                                |
-| Generated UI copy is localized                     | `provideNatTableLocales`, `provideNatTableUiLocales`, `provideNatTableUtilsLocales`             |
+| Generated UI copy is localized                     | `provideNatTableLocales`, `provideNatTableControlsLocales`, `provideNatTableRenderMetricsLocales`             |
 | Reordering and resizing have keyboard instructions | `accessibilityText.reorderKeyboardInstructions`, `accessibilityText.resizeKeyboardInstructions` |
 
 ## Table Name
@@ -115,10 +115,10 @@ Generated copy resolves from locale providers. Add only the providers for packag
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
-import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table/locale';
+import { provideNatTableLocales, provideNatTableControlsLocales, provideNatTableRenderMetricsLocales } from 'ng-advanced-table/locale';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideNatTableLocales(), provideNatTableUiLocales(), provideNatTableUtilsLocales()]
+  providers: [provideNatTableLocales(), provideNatTableControlsLocales(), provideNatTableRenderMetricsLocales()]
 };
 ```
 

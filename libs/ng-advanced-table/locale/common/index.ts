@@ -1,6 +1,7 @@
-export { NAT_TABLE_BUILT_IN_LOCALES } from './built-in-locales.const';
+export { NAT_EN_LOCALE_ID } from './locale-id.const';
 
-export { NAT_EN_LOCALE_ID, NAT_EN_LOCALE_LABELS, NAT_TABLE_ENGLISH_INTL, NAT_TABLE_ENGLISH_LOCALE } from './en.const';
+// accessibility boundary (core grid)
+export { NAT_EN_LOCALE_LABELS, NAT_TABLE_BUILT_IN_LOCALES } from './accessibility.const';
 
 export type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
@@ -16,14 +17,12 @@ export type {
   NatTableIntl,
   NatTableIntlConfig,
   NatTableIntlProviderConfig,
-  NatTableLocaleLabels,
-  NatTableLocaleLabelsMap,
+  NatTableLocalesMap,
   NatTableNumberFormatter
-} from './type';
+} from './accessibility.type';
 
-export { NAT_EN_UI_LOCALE_LABELS, NAT_TABLE_UI_ENGLISH_INTL, NAT_TABLE_UI_ENGLISH_LOCALE } from './ui-en.const';
-
-export { NAT_TABLE_BUILT_IN_UI_LOCALES } from './ui-built-in-locales.const';
+// controls boundary (companion components controls)
+export { NAT_EN_CONTROLS_LOCALE_LABELS, NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from './controls.const';
 
 export type {
   NatTableAccessibilityColumnVisibilityActionContext,
@@ -50,36 +49,32 @@ export type {
   NatTablePagerIntl,
   NatTableScrollControlIntl,
   NatTableSelectionIntl,
-  NatTableUiIntl,
-  NatTableUiIntlConfig,
-  NatTableUiIntlProviderConfig,
-  NatTableUiLocaleLabels,
-  NatTableUiLocaleLabelsMap,
-  NatTableUiNumberFormatter
-} from './ui.type';
+  NatTableControlsIntl,
+  NatTableControlsIntlConfig,
+  NatTableControlsIntlProviderConfig,
+  NatTableControlsLocalesMap,
+  NatTableControlsNumberFormatter
+} from './controls.type';
 
+// render-metrics boundary
 export {
-  NAT_EN_UTILS_LOCALE_LABELS,
-  NAT_TABLE_UTILS_ENGLISH_INTL,
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
-  RENDER_FILTER_OPTIONS
-} from './utils-en.const';
-
-export { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './utils-built-in-locales.const';
+  NAT_EN_RENDER_METRICS_LOCALE_LABELS,
+  NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES,
+  RENDER_METRICS_FILTER_OPTIONS
+} from './render-metrics.const';
 
 export type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,
   NatTableRenderMetricsFilterIntl,
-  NatTableRenderMetricsIntl,
+  NatTableRenderMetricsWidgetsIntl,
   NatTableRenderMetricsPanelIntl,
   NatTableRenderMetricsRowCountContext,
-  NatTableUtilsIntl,
-  NatTableUtilsIntlConfig,
-  NatTableUtilsIntlProviderConfig,
-  NatTableUtilsLocaleLabels,
-  NatTableUtilsLocaleLabelsMap,
-  NatTableUtilsNumberFormatter,
+  NatTableRenderMetricsIntl,
+  NatTableRenderMetricsIntlConfig,
+  NatTableRenderMetricsIntlProviderConfig,
+  NatTableRenderMetricsLocalesMap,
+  NatTableRenderMetricsNumberFormatter,
   RowRenderFilterOption,
   RowRenderTone
-} from './utils.type';
+} from './render-metrics.type';
