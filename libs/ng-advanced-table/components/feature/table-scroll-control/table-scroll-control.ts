@@ -6,10 +6,10 @@ import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from 'ng-advanced-table';
 import {
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  NAT_TABLE_UI_INTL,
+  NAT_EN_LOCALE_ID,
+  NAT_TABLE_CONTROLS_INTL,
   mergeScrollControlLabels,
-  resolveNatTableUiIntl
+  resolveNatTableControlsIntl
 } from 'ng-advanced-table/locale';
 
 import type {
@@ -38,11 +38,11 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
 
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
 
-  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_EN_LOCALE_ID);
 
-  private readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
+  private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
 
   private readonly scrollContainer = signal<HTMLElement | null>(null);
   private cleanupScrollTarget: (() => void) | null = null;

@@ -1,39 +1,35 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import {
-  NAT_TABLE_UI_DEFAULT_INTL,
-  NAT_TABLE_UI_INTL,
-  provideNatTableUiIntl,
-  provideNatTableUiLocales,
-  resolveNatTableUiIntl
-} from './provide-ui-locales';
-import { NAT_TABLE_BUILT_IN_UI_LOCALES } from '../common/ui-built-in-locales.const';
+import { NAT_TABLE_CONTROLS_INTL, provideNatTableControlsIntl, provideNatTableControlsLocales } from './controls.provider';
+import { NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
 import type {
   NatTableAccessibilityColumnVisibilityLabels,
   NatTableAccessibilityHeaderActionLabels,
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPagerLabels,
-  NatTableUiIntl,
-  NatTableUiIntlConfig
-} from '../common/ui.type';
+  NatTableControlsIntl,
+  NatTableControlsIntlConfig
+} from '../common/controls.type';
+import { resolveNatTableControlsIntl } from '../utils/controls.util';
 
-const localeOf = (uiIntl: NatTableUiIntlConfig, localeId: string): NatTableUiIntl | undefined => uiIntl.locales?.[localeId];
+const localeOf = (controlsIntl: NatTableControlsIntlConfig, localeId: string): NatTableControlsIntl | undefined =>
+  controlsIntl.locales?.[localeId];
 
-describe('FEATURE: UI locale toolbar slice', () => {
+describe('FEATURE: components locale toolbar slice', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
   });
 
-  describe('GIVEN: UI locale toolbar dictionaries are available', () => {
-    describe('WHEN: ships a complete toolbar slice in every built-in UI locale', () => {
-      it('THEN: it finds toolbar labels in each built-in locale', () => {
-        const localeIds = Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES);
+  describe('GIVEN: components locale toolbar dictionaries are available', () => {
+    describe('WHEN: ships a complete toolbar slice in every built-in components locale', () => {
+      const localeIds = Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES);
 
+      it('THEN: it finds toolbar labels in each built-in locale', () => {
         expect(localeIds.length).toBeGreaterThan(0);
 
         for (const localeId of localeIds) {
-          const toolbar = NAT_TABLE_BUILT_IN_UI_LOCALES[localeId].toolbar;
+          const toolbar = NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].toolbar;
 
           expect(toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
         }
@@ -41,26 +37,26 @@ describe('FEATURE: UI locale toolbar slice', () => {
     });
   });
 
-  describe('GIVEN: UI locale toolbar dictionaries are available with English toolbar locale copy', () => {
+  describe('GIVEN: components locale toolbar dictionaries are available with English toolbar locale copy', () => {
     describe('WHEN: locks the English toolbar copy', () => {
-      it('THEN: it keeps the English toolbar label stable', () => {
-        const toolbar = NAT_TABLE_BUILT_IN_UI_LOCALES['en'].toolbar;
+      const toolbar = NAT_TABLE_BUILT_IN_CONTROLS_LOCALES['en'].toolbar;
 
+      it('THEN: it keeps the English toolbar label stable', () => {
         expect(toolbar?.toolbarLabel).toBe('Table toolbar');
       });
     });
   });
 
-  describe('GIVEN: UI locale toolbar dictionaries are available with provided toolbar locale slices', () => {
-    describe('WHEN: resolving each built-in locale through provideNatTableUiLocales()', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))(
+  describe('GIVEN: components locale toolbar dictionaries are available with provided toolbar locale slices', () => {
+    describe('WHEN: resolving each built-in locale through provideNatTableControlsLocales()', () => {
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES))(
         'THEN: it preserves toolbar labels for %s after provider registration',
         (localeId) => {
           TestBed.configureTestingModule({
-            providers: [provideZonelessChangeDetection(), provideNatTableUiLocales()]
+            providers: [provideZonelessChangeDetection(), provideNatTableControlsLocales()]
           });
 
-          const uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
+          const uiIntl = TestBed.inject(NAT_TABLE_CONTROLS_INTL);
 
           expect(localeOf(uiIntl, localeId)?.toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
         }
@@ -68,23 +64,23 @@ describe('FEATURE: UI locale toolbar slice', () => {
     });
   });
 
-  describe('GIVEN: UI locale toolbar dictionaries are available with an unknown UI locale id', () => {
+  describe('GIVEN: components locale toolbar dictionaries are available with an unknown components locale id', () => {
     describe('WHEN: falls back to English toolbar copy for unknown locales', () => {
-      it('THEN: it returns the English toolbar fallback', () => {
-        const resolved = resolveNatTableUiIntl(NAT_TABLE_UI_DEFAULT_INTL, 'zz');
+      const resolved = resolveNatTableControlsIntl({ locales: NAT_TABLE_BUILT_IN_CONTROLS_LOCALES }, 'zz');
 
+      it('THEN: it returns the English toolbar fallback', () => {
         expect(resolved.toolbar?.toolbarLabel).toBe('Table toolbar');
       });
     });
   });
 
-  describe('GIVEN: UI locale toolbar dictionaries are available with a custom toolbar dictionary', () => {
+  describe('GIVEN: components locale toolbar dictionaries are available with a custom toolbar dictionary', () => {
     describe('WHEN: lets a locale dictionary override English toolbar copy', () => {
       it('THEN: it uses the locale-specific toolbar label', () => {
         TestBed.configureTestingModule({
           providers: [
             provideZonelessChangeDetection(),
-            provideNatTableUiLocales({
+            provideNatTableControlsLocales({
               da: {
                 toolbar: {
                   toolbarLabel: 'Tabel værktøjslinje'
@@ -94,20 +90,20 @@ describe('FEATURE: UI locale toolbar slice', () => {
           ]
         });
 
-        const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'da');
+        const resolved = resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), 'da');
 
         expect(resolved.toolbar?.toolbarLabel).toBe('Tabel værktøjslinje');
       });
     });
   });
 
-  describe('GIVEN: UI locale toolbar dictionaries are available with UI intl overrides', () => {
-    describe('WHEN: lets provideNatTableUiIntl overrides win over the built-in dictionary', () => {
+  describe('GIVEN: components locale toolbar dictionaries are available with components intl overrides', () => {
+    describe('WHEN: lets provideNatTableControlsIntl overrides win over the built-in dictionary', () => {
       it('THEN: it uses provider overrides before built-in copy', () => {
         TestBed.configureTestingModule({
           providers: [
             provideZonelessChangeDetection(),
-            provideNatTableUiIntl({
+            provideNatTableControlsIntl({
               toolbar: {
                 toolbarLabel: 'Provider toolbar'
               }
@@ -115,7 +111,7 @@ describe('FEATURE: UI locale toolbar slice', () => {
           ]
         });
 
-        const resolved = resolveNatTableUiIntl(TestBed.inject(NAT_TABLE_UI_INTL), 'en');
+        const resolved = resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), 'en');
 
         expect(resolved.toolbar?.toolbarLabel).toBe('Provider toolbar');
       });
@@ -124,7 +120,7 @@ describe('FEATURE: UI locale toolbar slice', () => {
 });
 
 describe('FEATURE: English companion-control accessibility copy', () => {
-  const english = NAT_TABLE_BUILT_IN_UI_LOCALES['en'];
+  const english = NAT_TABLE_BUILT_IN_CONTROLS_LOCALES['en'];
   const pageSizeContext = {
     pageSizeValue: 25,
     pageSizeText: '25',

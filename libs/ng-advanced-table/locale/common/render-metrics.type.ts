@@ -1,5 +1,5 @@
 /** Formats numbers used in render-metrics labels and values. */
-export type NatTableUtilsNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
+export type NatTableRenderMetricsNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
 
 export type RowRenderTone = 'fast' | 'watch' | 'slow';
 
@@ -66,28 +66,25 @@ export type NatTableRenderMetricsColumnIntl = {
 };
 
 /** App or feature-level defaults for render-metrics helper copy. */
-export type NatTableRenderMetricsIntl = {
+export type NatTableRenderMetricsWidgetsIntl = {
   readonly filter?: NatTableRenderMetricsFilterIntl;
   readonly panel?: NatTableRenderMetricsPanelIntl;
   readonly column?: NatTableRenderMetricsColumnIntl;
 };
 
 /** Locale-specific defaults for `ng-advanced-table/render-metrics`. */
-export type NatTableUtilsIntl = {
-  readonly renderMetrics?: NatTableRenderMetricsIntl;
+export type NatTableRenderMetricsIntl = {
+  readonly renderMetrics?: NatTableRenderMetricsWidgetsIntl;
   /** Number formatter used for row counts and durations. */
-  readonly formatNumber?: NatTableUtilsNumberFormatter;
+  readonly formatNumber?: NatTableRenderMetricsNumberFormatter;
 };
 
-export type NatTableUtilsIntlConfig = {
+export type NatTableRenderMetricsIntlConfig = {
   /** Locale dictionaries keyed by locale id. */
-  readonly locales?: Record<string, NatTableUtilsIntl>;
+  readonly locales?: Record<string, NatTableRenderMetricsIntl>;
 };
 
-export type NatTableUtilsIntlProviderConfig = NatTableUtilsIntl | NatTableUtilsIntlConfig;
+export type NatTableRenderMetricsIntlProviderConfig = NatTableRenderMetricsIntl | NatTableRenderMetricsIntlConfig;
 
-/** Utils locale dictionaries keyed by locale id. */
-export type NatTableUtilsLocaleLabelsMap = Record<string, NatTableUtilsIntl>;
-
-/** Alias for the utils locale label shape. */
-export type NatTableUtilsLocaleLabels = NatTableUtilsIntl;
+/** Render-metrics locale dictionaries keyed by locale id. */
+export type NatTableRenderMetricsLocalesMap = Record<string, NatTableRenderMetricsIntl>;

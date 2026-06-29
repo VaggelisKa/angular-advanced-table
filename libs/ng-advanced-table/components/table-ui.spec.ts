@@ -9,7 +9,7 @@ import type { ColumnDef, FilterFn } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { provideNatTableIntl, provideNatTableUiIntl } from 'ng-advanced-table/locale';
+import { provideNatTableControlsIntl, provideNatTableIntl } from 'ng-advanced-table/locale';
 
 import type {
   NatTableAccessibilityColumnVisibilityLabels,
@@ -460,7 +460,7 @@ class CustomAccessibilityLabelsHost {
   selector: 'nat-provider-accessibility-labels-host',
   imports: [NatTable, NatTableColumnVisibility, NatTablePageSize, NatTablePager, NatTableScrollControl, NatTableSurface],
   providers: [
-    provideNatTableUiIntl({
+    provideNatTableControlsIntl({
       formatNumber: (value) => `n${value}`,
       search: {
         label: 'Provider search',
@@ -559,7 +559,7 @@ class ProviderAccessibilityLabelsHost {
         }
       }
     }),
-    provideNatTableUiIntl({
+    provideNatTableControlsIntl({
       locales: {
         da: {
           search: {

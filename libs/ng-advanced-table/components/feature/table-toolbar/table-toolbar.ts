@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, input } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
-import { NAT_TABLE_UI_ENGLISH_LOCALE, NAT_TABLE_UI_INTL, resolveNatTableUiIntl } from 'ng-advanced-table/locale';
+import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
 import type { NatTableUiController } from '../../common/table-ui.type';
 import { injectNatTableUiController } from '../../domain-logic/resolve-ui-controller';
@@ -51,7 +51,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
   public readonly accessibleName = input<string>();
   public readonly locale = input<string>();
 
-  private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
   private readonly controller = injectNatTableUiController(this.for, 'nat-table-toolbar');
   // The generic is the selection value type — this toolbar disables Aria's
   // selection model entirely (see the pattern patches below), so widget
@@ -65,9 +65,9 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     return pattern;
   }
 
-  protected readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
+  protected readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_EN_LOCALE_ID);
 
-  protected readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
+  protected readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
 
   protected readonly resolvedAccessibleName = computed(
     () => this.accessibleName() ?? this.tableUiIntl().toolbar?.toolbarLabel ?? null

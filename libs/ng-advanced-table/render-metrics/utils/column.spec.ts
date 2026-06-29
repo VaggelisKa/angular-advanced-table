@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 
-import { provideNatTableUtilsIntl } from 'ng-advanced-table/locale';
+import { provideNatTableRenderMetricsIntl } from 'ng-advanced-table/locale';
 
 import { withRenderMetricsColumn } from './column';
 import { NatTableRenderMetricsStore } from './store';
@@ -16,7 +16,7 @@ type Row = {
 
 @Component({
   providers: [
-    provideNatTableUtilsIntl({
+    provideNatTableRenderMetricsIntl({
       formatNumber: (value) => `n${value}`,
       renderMetrics: {
         column: {

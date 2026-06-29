@@ -1,11 +1,11 @@
 import { Component, computed, inject, input } from '@angular/core';
 
 import {
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
-  NAT_TABLE_UTILS_INTL,
-  formatNatTableUtilsNumber,
+  NAT_EN_LOCALE_ID,
+  NAT_TABLE_RENDER_METRICS_INTL,
+  formatNatTableRenderMetricsNumber,
   mergeRenderMetricsPanelIntl,
-  resolveNatTableUtilsIntl
+  resolveNatTableRenderMetricsIntl
 } from 'ng-advanced-table/locale';
 import type { NatTableRenderMetricsPanelIntl } from 'ng-advanced-table/locale';
 
@@ -39,10 +39,10 @@ export class NatRenderMetricsPanel<TData = unknown> {
   /** Per-instance label overrides. */
   public readonly labels = input<NatTableRenderMetricsPanelIntl | undefined>(undefined);
 
-  private readonly utilsIntlConfig = inject(NAT_TABLE_UTILS_INTL);
+  private readonly utilsIntlConfig = inject(NAT_TABLE_RENDER_METRICS_INTL);
   private readonly tableLocaleId = computed(() => this.controller()?.localeId?.());
-  private readonly localeId = computed(() => this.locale() ?? this.tableLocaleId() ?? NAT_TABLE_UTILS_ENGLISH_LOCALE);
-  private readonly utilsIntl = computed(() => resolveNatTableUtilsIntl(this.utilsIntlConfig, this.localeId()));
+  private readonly localeId = computed(() => this.locale() ?? this.tableLocaleId() ?? NAT_EN_LOCALE_ID);
+  private readonly utilsIntl = computed(() => resolveNatTableRenderMetricsIntl(this.utilsIntlConfig, this.localeId()));
 
   private readonly resolvedLabels = computed(() => mergeRenderMetricsPanelIntl(this.utilsIntl().renderMetrics?.panel, this.labels()));
 
@@ -70,7 +70,7 @@ export class NatRenderMetricsPanel<TData = unknown> {
       return labels.idleSummary ?? '';
     }
 
-    const rowCountText = formatNatTableUtilsNumber(this.utilsIntl(), measurement.rowCount, undefined, this.localeId());
+    const rowCountText = formatNatTableRenderMetricsNumber(this.utilsIntl(), measurement.rowCount, undefined, this.localeId());
 
     return (
       labels.rowSampleSummary?.({
@@ -82,7 +82,7 @@ export class NatRenderMetricsPanel<TData = unknown> {
 
   protected formatDurationMs(value: number): string {
     const labels = this.resolvedLabels();
-    const durationMsText = formatNatTableUtilsNumber(
+    const durationMsText = formatNatTableRenderMetricsNumber(
       this.utilsIntl(),
       value,
       {

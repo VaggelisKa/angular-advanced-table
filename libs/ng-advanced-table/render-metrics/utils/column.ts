@@ -1,11 +1,11 @@
 import type { CellContext, ColumnDef, FilterFn, RowData } from '@tanstack/angular-table';
 
 import {
-  NAT_TABLE_UTILS_ENGLISH_LOCALE,
-  formatNatTableUtilsNumber,
-  injectNatTableUtilsIntl,
+  NAT_EN_LOCALE_ID,
+  formatNatTableRenderMetricsNumber,
+  injectNatTableRenderMetricsIntl,
   mergeRenderMetricsColumnIntl,
-  resolveNatTableUtilsIntl
+  resolveNatTableRenderMetricsIntl
 } from 'ng-advanced-table/locale';
 import type { NatTableRenderMetricsColumnIntl } from 'ng-advanced-table/locale';
 
@@ -54,7 +54,7 @@ const createMetricsFilterFn = <TData extends RowData>(store: NatTableRenderMetri
 };
 
 /** Resolved render-metrics intl bundle used when rendering metric cells. */
-type ResolvedUtilsIntl = ReturnType<typeof resolveNatTableUtilsIntl>;
+type ResolvedUtilsIntl = ReturnType<typeof resolveNatTableRenderMetricsIntl>;
 /** Resolved render-metrics column intl used when rendering metric cells. */
 type ResolvedColumnIntl = ReturnType<typeof mergeRenderMetricsColumnIntl>;
 
@@ -82,7 +82,7 @@ const createMetricsCell = <TData extends RowData>(config: MetricsCellConfig): ((
       return pendingLabel;
     }
 
-    const durationMsText = formatNatTableUtilsNumber(
+    const durationMsText = formatNatTableRenderMetricsNumber(
       utilsIntl,
       metric.durationMs,
       {
@@ -111,7 +111,7 @@ const createMetricsCell = <TData extends RowData>(config: MetricsCellConfig): ((
  * @param options Optional labels, sizing, and identifier overrides.
  *
  * Call this helper from an Angular injection context to apply
- * `provideNatTableUtilsIntl(...)` defaults. Pass `options.locale` or rebuild
+ * `provideNatTableRenderMetricsIntl(...)` defaults. Pass `options.locale` or rebuild
  * columns from a computed value when the table locale changes. Calls outside DI
  * still work, but use built-in defaults plus the explicit `options` passed
  * here.
@@ -123,9 +123,9 @@ export const withRenderMetricsColumn = <TData extends RowData>(
   store: NatTableRenderMetricsStore,
   options: WithRenderMetricsColumnOptions = {}
 ): ColumnDef<TData, unknown>[] => {
-  const utilsIntlConfig = injectNatTableUtilsIntl();
-  const locale = options.locale ?? NAT_TABLE_UTILS_ENGLISH_LOCALE;
-  const utilsIntl = resolveNatTableUtilsIntl(utilsIntlConfig, locale);
+  const utilsIntlConfig = injectNatTableRenderMetricsIntl();
+  const locale = options.locale ?? NAT_EN_LOCALE_ID;
+  const utilsIntl = resolveNatTableRenderMetricsIntl(utilsIntlConfig, locale);
   const columnIntl = mergeRenderMetricsColumnIntl(utilsIntl.renderMetrics?.column, options);
   const columnId = options.columnId ?? RENDER_METRIC_COLUMN_ID;
   const pendingLabel = columnIntl.pendingLabel ?? '';

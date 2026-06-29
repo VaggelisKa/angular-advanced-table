@@ -2,7 +2,7 @@ import { Component, inject, input } from '@angular/core';
 
 import type { Row, RowData, Table } from '@tanstack/angular-table';
 
-import { NAT_TABLE_UI_ENGLISH_LOCALE, NAT_TABLE_UI_INTL, resolveNatTableUiIntl } from 'ng-advanced-table/locale';
+import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
 import type { NatTableAccessibilitySelectionLabels } from '../../common/table-ui.type';
 
@@ -20,7 +20,7 @@ import type { NatTableAccessibilitySelectionLabels } from '../../common/table-ui
   styleUrl: './table-selection.css'
 })
 export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
-  private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
   public readonly mode = input.required<'row' | 'all'>();
   public readonly table = input.required<Table<TData>>();
   public readonly row = input<Row<TData>>();
@@ -73,13 +73,13 @@ export class NatTableSelectionCheckbox<TData extends RowData = RowData> {
     handler?.(event);
   }
 
-  private tableUiIntl(): ReturnType<typeof resolveNatTableUiIntl> {
-    return resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId());
+  private tableUiIntl(): ReturnType<typeof resolveNatTableControlsIntl> {
+    return resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId());
   }
 
   private localeId(): string {
     const tableMeta = this.table().options.meta as { readonly natTableLocaleId?: unknown } | undefined;
 
-    return typeof tableMeta?.natTableLocaleId === 'string' ? tableMeta.natTableLocaleId : NAT_TABLE_UI_ENGLISH_LOCALE;
+    return typeof tableMeta?.natTableLocaleId === 'string' ? tableMeta.natTableLocaleId : NAT_EN_LOCALE_ID;
   }
 }

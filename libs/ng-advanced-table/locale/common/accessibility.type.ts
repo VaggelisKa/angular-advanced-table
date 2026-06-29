@@ -229,7 +229,4 @@ export type NatTableIntlConfig = {
 export type NatTableIntlProviderConfig = NatTableIntl | NatTableIntlConfig;
 
 /** Locale dictionaries keyed by locale id. */
-export type NatTableLocaleLabelsMap = Record<string, NatTableIntl>;
-
-/** Alias for the table locale label shape. */
-export type NatTableLocaleLabels = NatTableIntl;
+export type NatTableLocalesMap = Record<string, NatTableIntl>;

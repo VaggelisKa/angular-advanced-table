@@ -1,5 +1,5 @@
 /** Formats numbers used in generated companion-control labels. */
-export type NatTableUiNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
+export type NatTableControlsNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
 
 /** Context passed to page-size option label formatters. */
 export type NatTableAccessibilityPageSizeOptionContext = {
@@ -247,7 +247,7 @@ export type NatTableSelectionIntl = {
 };
 
 /** Locale-specific defaults for generated `ng-advanced-table/components` copy. */
-export type NatTableUiIntl = {
+export type NatTableControlsIntl = {
   readonly search?: NatTableSearchIntl;
   readonly columnVisibility?: NatTableColumnVisibilityIntl;
   readonly pageSize?: NatTablePageSizeIntl;
@@ -257,18 +257,15 @@ export type NatTableUiIntl = {
   readonly toolbar?: NatTableToolbarIntl;
   readonly selection?: NatTableSelectionIntl;
   /** Number formatter used for `...Text` fields passed to generated label formatters. */
-  readonly formatNumber?: NatTableUiNumberFormatter;
+  readonly formatNumber?: NatTableControlsNumberFormatter;
 };
 
-export type NatTableUiIntlConfig = {
+export type NatTableControlsIntlConfig = {
   /** Locale dictionaries keyed by locale id. */
-  readonly locales?: Record<string, NatTableUiIntl>;
+  readonly locales?: Record<string, NatTableControlsIntl>;
 };
 
-export type NatTableUiIntlProviderConfig = NatTableUiIntl | NatTableUiIntlConfig;
+export type NatTableControlsIntlProviderConfig = NatTableControlsIntl | NatTableControlsIntlConfig;
 
-/** UI locale dictionaries keyed by locale id. */
-export type NatTableUiLocaleLabelsMap = Record<string, NatTableUiIntl>;
-
-/** Alias for the UI locale label shape. */
-export type NatTableUiLocaleLabels = NatTableUiIntl;
+/** Components locale dictionaries keyed by locale id. */
+export type NatTableControlsLocalesMap = Record<string, NatTableControlsIntl>;

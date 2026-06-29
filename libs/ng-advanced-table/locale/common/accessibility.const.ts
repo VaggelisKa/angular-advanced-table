@@ -1,12 +1,6 @@
-import type { NatTableLocaleLabels, NatTableNumberFormatter } from './type';
-
-/** Locale id for the built-in English table locale. */
-export const NAT_EN_LOCALE_ID = 'en';
-
-export const NAT_TABLE_ENGLISH_LOCALE = NAT_EN_LOCALE_ID;
-
-const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
+import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
+import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
+import { NAT_EN_LOCALE_ID } from './locale-id.const';
 
 const pluralize = (label: string, count: number): string => (count === 1 ? label : `${label}s`);
 
@@ -35,7 +29,7 @@ const resizeBoundSuffix = (atMinimum?: boolean, atMaximum?: boolean): string => 
 };
 
 /** Built-in English labels shipped with the table locale package. */
-export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
+export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
   accessibilityText: {
     keyboardInstructions:
       'Use arrow keys to move between cells. A cell whose only content is a single button or link ' +
@@ -143,4 +137,11 @@ export const NAT_EN_LOCALE_LABELS: NatTableLocaleLabels = {
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };
 
-export const NAT_TABLE_ENGLISH_INTL = NAT_EN_LOCALE_LABELS;
+/**
+ * Table locale registry shipped by `ng-advanced-table/locale`.
+ *
+ * Importing `provideNatTableLocales()` registers every locale in this object.
+ */
+export const NAT_TABLE_BUILT_IN_LOCALES: NatTableLocalesMap = {
+  [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS
+};

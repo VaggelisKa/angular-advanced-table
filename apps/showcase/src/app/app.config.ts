@@ -3,7 +3,7 @@ import type { ApplicationConfig } from '@angular/core';
 import { provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 
-import { provideNatTableLocales, provideNatTableUiLocales, provideNatTableUtilsLocales } from 'ng-advanced-table/locale';
+import { provideNatTableControlsLocales, provideNatTableLocales, provideNatTableRenderMetricsLocales } from 'ng-advanced-table/locale';
 import { MARKED_OPTIONS, provideMarkdown } from 'ngx-markdown';
 
 import { routes } from './app.routes';
@@ -25,8 +25,8 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     provideNatTableLocales(),
-    provideNatTableUiLocales(),
-    provideNatTableUtilsLocales(),
+    provideNatTableControlsLocales(),
+    provideNatTableRenderMetricsLocales(),
     provideRouter(
       routes,
       withInMemoryScrolling({

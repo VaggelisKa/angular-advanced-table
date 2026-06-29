@@ -143,10 +143,10 @@ Set `maxRetainedRowMetrics` to a higher finite value when a table needs a longer
 Render-metrics copy can come from `ng-advanced-table/locale`.
 
 ```ts
-import { provideNatTableUtilsLocales } from 'ng-advanced-table/locale';
+import { provideNatTableRenderMetricsLocales } from 'ng-advanced-table/locale';
 
 providers: [
-  provideNatTableUtilsLocales({
+  provideNatTableRenderMetricsLocales({
     en: {
       renderMetrics: {
         column: {

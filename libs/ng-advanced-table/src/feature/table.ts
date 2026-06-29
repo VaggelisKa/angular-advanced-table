@@ -53,9 +53,9 @@ import type {
 } from '@tanstack/angular-table';
 
 import {
-  NAT_TABLE_ENGLISH_LOCALE,
+  NAT_EN_LOCALE_ID,
   NAT_TABLE_INTL,
-  formatNatTableIntlNumber,
+  formatNatTableNumber,
   mergeNatTableAccessibilityText,
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
@@ -318,7 +318,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
   /** Current locale id resolved from the `locale` input or built-in English default. */
-  public readonly localeId = computed(() => this.locale() ?? NAT_TABLE_ENGLISH_LOCALE);
+  public readonly localeId = computed(() => this.locale() ?? NAT_EN_LOCALE_ID);
   private readonly tableIntl = computed(() => resolveNatTableIntl(this.tableIntlConfig, this.localeId()));
 
   protected readonly renderCycleToken = signal(0);
@@ -2031,6 +2031,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   }
 
   private formatAccessibilityNumber(value: number): string {
-    return formatNatTableIntlNumber(this.tableIntl(), value, undefined, this.localeId());
+    return formatNatTableNumber(this.tableIntl(), value, undefined, this.localeId());
   }
 }

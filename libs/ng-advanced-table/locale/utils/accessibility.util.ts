@@ -1,31 +1,13 @@
-import { InjectionToken, Optional, SkipSelf } from '@angular/core';
-import type { Provider } from '@angular/core';
-
-import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/built-in-locales.const';
-import { NAT_TABLE_ENGLISH_INTL, NAT_TABLE_ENGLISH_LOCALE } from '../common/en.const';
+import { NAT_EN_LOCALE_LABELS } from '../common/accessibility.const';
 import type {
   NatTableAccessibilityText,
   NatTableIntl,
   NatTableIntlConfig,
   NatTableIntlProviderConfig,
-  NatTableLocaleLabels,
-  NatTableLocaleLabelsMap,
-  NatTableNumberFormatter
-} from '../common/type';
-
-const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
-
-/** Built-in locale defaults used when no provider is configured. */
-const NAT_TABLE_DEFAULT_INTL: NatTableIntlConfig = {
-  locales: NAT_TABLE_BUILT_IN_LOCALES
-};
-
-/** Injection token backing `provideNatTableLocales(...)`. */
-export const NAT_TABLE_INTL = new InjectionToken<NatTableIntlConfig>('NAT_TABLE_INTL', {
-  providedIn: 'root',
-  factory: (): NatTableIntlConfig => NAT_TABLE_DEFAULT_INTL
-});
+  NatTableLocalesMap
+} from '../common/accessibility.type';
+import { DEFAULT_NUMBER_FORMATTER } from '../common/locale-formatter.const';
+import { NAT_EN_LOCALE_ID } from '../common/locale-id.const';
 
 /** Merges the description and keyboard instruction text, override values winning. */
 const mergeAccessibilityInstructions = (
@@ -98,23 +80,20 @@ export const mergeNatTableAccessibilityText = (
   ...mergeAccessibilityColumnAnnouncers(parent, override)
 });
 
-const mergeNatTableLocaleIntl = (parent?: NatTableLocaleLabels, override?: NatTableLocaleLabels): NatTableLocaleLabels => ({
+const mergeNatTableIntl = (parent?: NatTableIntl, override?: NatTableIntl): NatTableIntl => ({
   accessibilityText: mergeNatTableAccessibilityText(parent?.accessibilityText, override?.accessibilityText),
   formatNumber: override?.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER
 });
 
-const mergeLocaleMaps = (
-  parentLocales: NatTableLocaleLabelsMap,
-  overrideLocales: NatTableLocaleLabelsMap
-): NatTableLocaleLabelsMap => {
-  const merged: NatTableLocaleLabelsMap = {};
+const mergeLocaleMaps = (parentLocales: NatTableLocalesMap, overrideLocales: NatTableLocalesMap): NatTableLocalesMap => {
+  const merged: NatTableLocalesMap = {};
 
   for (const [localeId, labels] of Object.entries(parentLocales)) {
-    merged[localeId] = mergeNatTableLocaleIntl(undefined, labels);
+    merged[localeId] = mergeNatTableIntl(undefined, labels);
   }
 
   for (const [localeId, labels] of Object.entries(overrideLocales)) {
-    merged[localeId] = mergeNatTableLocaleIntl(merged[localeId], labels);
+    merged[localeId] = mergeNatTableIntl(merged[localeId], labels);
   }
 
   return merged;
@@ -123,18 +102,17 @@ const mergeLocaleMaps = (
 const isIntlConfig = (config: NatTableIntlProviderConfig): config is NatTableIntlConfig => 'locales' in config;
 
 const normalizeIntlProviderConfig = (config: NatTableIntlProviderConfig): NatTableIntlConfig => {
-  if (isIntlConfig(config)) {
-    return config;
-  }
+  if (isIntlConfig(config)) return config;
 
   return {
     locales: {
-      [NAT_TABLE_ENGLISH_LOCALE]: config
+      [NAT_EN_LOCALE_ID]: config
     }
   };
 };
 
-const mergeNatTableIntlConfig = (parent: NatTableIntlConfig, override: NatTableIntlProviderConfig): NatTableIntlConfig => {
+/** Merges a parent intl config with a provider override, field by field. */
+export const mergeNatTableIntlConfig = (parent: NatTableIntlConfig, override: NatTableIntlProviderConfig): NatTableIntlConfig => {
   const overrideConfig = normalizeIntlProviderConfig(override);
 
   return {
@@ -142,43 +120,14 @@ const mergeNatTableIntlConfig = (parent: NatTableIntlConfig, override: NatTableI
   };
 };
 
-/**
- * Provides default table labels, announcement formatters, and number formatting.
- *
- * Nested providers merge with parent defaults, so feature-level providers can
- * override a subset of app-level copy without replacing the entire bag.
- */
-export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[] => [
-  {
-    provide: NAT_TABLE_INTL,
-    deps: [[new Optional(), new SkipSelf(), NAT_TABLE_INTL]],
-    useFactory: (parent: NatTableIntlConfig | null) => mergeNatTableIntlConfig(parent ?? NAT_TABLE_DEFAULT_INTL, intl)
-  }
-];
-
-/**
- * Registers every table locale shipped by `ng-advanced-table/locale`.
- *
- * Pass `overrides` only when adding custom locale ids or overriding built-in
- * generated table labels. Instance-specific copy such as table names,
- * captions, descriptions, and column labels should stay on component inputs or
- * column definitions.
- */
-export const provideNatTableLocales = (overrides: NatTableLocaleLabelsMap = {}): Provider[] =>
-  provideNatTableIntl({ locales: overrides });
-
 /** Formats generated table accessibility numbers through the configured locale formatter. */
-export const formatNatTableIntlNumber = (
-  intl: NatTableIntl,
-  value: number,
-  options?: Intl.NumberFormatOptions,
-  locale?: string
-): string => (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
+export const formatNatTableNumber = (intl: NatTableIntl, value: number, options?: Intl.NumberFormatOptions, locale?: string): string =>
+  (intl.formatNumber ?? DEFAULT_NUMBER_FORMATTER)(value, options, locale);
 
 /** Resolves a locale dictionary, falling back to built-in English defaults. */
 export const resolveNatTableIntl = (intl: NatTableIntlConfig, locale: string): NatTableIntl => {
-  const englishIntl = intl.locales?.[NAT_TABLE_ENGLISH_LOCALE] ?? NAT_TABLE_ENGLISH_INTL;
-  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_TABLE_ENGLISH_LOCALE ? {} : null);
+  const englishIntl = intl.locales?.[NAT_EN_LOCALE_ID] ?? NAT_EN_LOCALE_LABELS;
+  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
 
-  return selectedIntl ? mergeNatTableLocaleIntl(englishIntl, selectedIntl) : mergeNatTableLocaleIntl(englishIntl, {});
+  return selectedIntl ? mergeNatTableIntl(englishIntl, selectedIntl) : mergeNatTableIntl(englishIntl, {});
 };

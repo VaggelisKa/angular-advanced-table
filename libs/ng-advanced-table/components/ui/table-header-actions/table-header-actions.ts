@@ -9,10 +9,10 @@ import { FlexRender } from '@tanstack/angular-table';
 import type { HeaderContext, RowData } from '@tanstack/angular-table';
 
 import {
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  NAT_TABLE_UI_INTL,
+  NAT_EN_LOCALE_ID,
+  NAT_TABLE_CONTROLS_INTL,
   mergeHeaderActionLabels,
-  resolveNatTableUiIntl
+  resolveNatTableControlsIntl
 } from 'ng-advanced-table/locale';
 
 import type {
@@ -36,9 +36,9 @@ type NatTablePinSide = 'left' | 'right';
   styleUrl: './table-header-actions.css'
 })
 export class NatTableHeaderActions {
-  private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  private readonly localeId = computed(() => this.locale() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
-  private readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
+  private readonly localeId = computed(() => this.locale() ?? NAT_EN_LOCALE_ID);
+  private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
 
   protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
   protected readonly moveDirections: readonly NatTableColumnMoveDirection[] = ['left', 'right'];

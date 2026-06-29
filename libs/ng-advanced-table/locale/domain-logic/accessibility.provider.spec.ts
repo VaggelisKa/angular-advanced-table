@@ -2,15 +2,15 @@ import { EnvironmentInjector, createEnvironmentInjector, provideZonelessChangeDe
 import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { NAT_TABLE_INTL, provideNatTableLocales } from './provide-table-locales';
-import { NAT_TABLE_UI_INTL, provideNatTableUiLocales } from './provide-ui-locales';
-import { NAT_TABLE_UTILS_INTL, provideNatTableUtilsLocales } from './provide-utils-locales';
-import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/built-in-locales.const';
-import type { NatTableAccessibilityText, NatTableIntlConfig } from '../common/type';
-import { NAT_TABLE_BUILT_IN_UI_LOCALES } from '../common/ui-built-in-locales.const';
-import type { NatTableAccessibilityPageSizeLabels, NatTableUiIntl, NatTableUiIntlConfig } from '../common/ui.type';
-import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from '../common/utils-built-in-locales.const';
-import type { NatTableRenderMetricsIntl, NatTableUtilsIntlConfig } from '../common/utils.type';
+import { NAT_TABLE_INTL, provideNatTableLocales } from './accessibility.provider';
+import { NAT_TABLE_CONTROLS_INTL, provideNatTableControlsLocales } from './controls.provider';
+import { NAT_TABLE_RENDER_METRICS_INTL, provideNatTableRenderMetricsLocales } from './render-metrics.provider';
+import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/accessibility.const';
+import type { NatTableAccessibilityText, NatTableIntlConfig } from '../common/accessibility.type';
+import { NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
+import type { NatTableAccessibilityPageSizeLabels, NatTableControlsIntl, NatTableControlsIntlConfig } from '../common/controls.type';
+import { NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES } from '../common/render-metrics.const';
+import type { NatTableRenderMetricsIntlConfig, NatTableRenderMetricsWidgetsIntl } from '../common/render-metrics.type';
 
 const configure = (...providers: Provider[]): void => {
   TestBed.configureTestingModule({
@@ -21,11 +21,13 @@ const configure = (...providers: Provider[]): void => {
 const tableAccess = (intl: NatTableIntlConfig, localeId: string): NatTableAccessibilityText | undefined =>
   intl.locales?.[localeId]?.accessibilityText;
 
-const uiLocale = (intl: NatTableUiIntlConfig, localeId: string): NatTableUiIntl | undefined => intl.locales?.[localeId];
+const controlsLocale = (intl: NatTableControlsIntlConfig, localeId: string): NatTableControlsIntl | undefined =>
+  intl.locales?.[localeId];
 
-const pageSizeLabels = (ui?: NatTableUiIntl): NatTableAccessibilityPageSizeLabels | undefined => ui?.pageSize?.accessibilityLabels;
+const pageSizeLabels = (controls?: NatTableControlsIntl): NatTableAccessibilityPageSizeLabels | undefined =>
+  controls?.pageSize?.accessibilityLabels;
 
-const utilsMetrics = (intl: NatTableUtilsIntlConfig, localeId: string): NatTableRenderMetricsIntl | undefined =>
+const renderMetricsWidgets = (intl: NatTableRenderMetricsIntlConfig, localeId: string): NatTableRenderMetricsWidgetsIntl | undefined =>
   intl.locales?.[localeId]?.renderMetrics;
 
 const pageSizeContext = {
@@ -41,9 +43,8 @@ afterEach(() => {
 describe('FEATURE: provideNatTableLocales', () => {
   describe('GIVEN: table locale providers are configured', () => {
     describe('WHEN: registers every built-in table locale with no configuration', () => {
+      configure(provideNatTableLocales());
       it('THEN: it makes each built-in table locale available', () => {
-        configure(provideNatTableLocales());
-
         const tableIntl = TestBed.inject(NAT_TABLE_INTL);
 
         for (const localeId of Object.keys(NAT_TABLE_BUILT_IN_LOCALES)) {
@@ -55,9 +56,8 @@ describe('FEATURE: provideNatTableLocales', () => {
 
   describe('GIVEN: table locale providers are configured with built-in English table copy', () => {
     describe('WHEN: uses platform primary modifier shortcuts in the built-in English column reorder instructions', () => {
+      configure(provideNatTableLocales());
       it('THEN: it keeps English reorder instructions platform-aware', () => {
-        configure(provideNatTableLocales());
-
         expect(tableAccess(TestBed.inject(NAT_TABLE_INTL), 'en')?.reorderKeyboardInstructions).toBe(
           'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
         );
@@ -66,39 +66,45 @@ describe('FEATURE: provideNatTableLocales', () => {
   });
 });
 
-describe('FEATURE: companion UI and utils locale registration', () => {
-  let uiIntl: NatTableUiIntlConfig;
-  let utilsIntl: NatTableUtilsIntlConfig;
+describe('FEATURE: companion components and render-metrics locale registration', () => {
+  let controlsIntl: NatTableControlsIntlConfig;
+  let renderMetricsIntl: NatTableRenderMetricsIntlConfig;
 
   beforeEach(() => {
-    configure(provideNatTableUiLocales(), provideNatTableUtilsLocales());
-    uiIntl = TestBed.inject(NAT_TABLE_UI_INTL);
-    utilsIntl = TestBed.inject(NAT_TABLE_UTILS_INTL);
+    configure(provideNatTableControlsLocales(), provideNatTableRenderMetricsLocales());
+    controlsIntl = TestBed.inject(NAT_TABLE_CONTROLS_INTL);
+    renderMetricsIntl = TestBed.inject(NAT_TABLE_RENDER_METRICS_INTL);
   });
 
-  describe('GIVEN: companion locale providers are configured with companion UI locale ids', () => {
-    describe('WHEN: registering each built-in companion UI locale', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_UI_LOCALES))('THEN: it makes the companion UI locale %s available', (localeId) => {
-        expect(uiLocale(uiIntl, localeId)).toBeDefined();
-      });
+  describe('GIVEN: companion locale providers are configured with companion components locale ids', () => {
+    describe('WHEN: registering each built-in companion components locale', () => {
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES))(
+        'THEN: it makes the companion components locale %s available',
+        (localeId) => {
+          expect(controlsLocale(controlsIntl, localeId)).toBeDefined();
+        }
+      );
     });
   });
 
-  describe('GIVEN: companion locale providers are configured with companion utils locale ids', () => {
-    describe('WHEN: registering each built-in companion utils locale', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_UTILS_LOCALES))('THEN: it makes the companion utils locale %s available', (localeId) => {
-        expect(utilsIntl.locales?.[localeId]).toBeDefined();
-      });
+  describe('GIVEN: companion locale providers are configured with companion render-metrics locale ids', () => {
+    describe('WHEN: registering each built-in companion render-metrics locale', () => {
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES))(
+        'THEN: it makes the companion render-metrics locale %s available',
+        (localeId) => {
+          expect(renderMetricsIntl.locales?.[localeId]).toBeDefined();
+        }
+      );
     });
   });
 });
 
-describe('FEATURE: partial built-in UI locale overrides', () => {
-  let en: NatTableUiIntl | undefined;
+describe('FEATURE: partial built-in components locale overrides', () => {
+  let en: NatTableControlsIntl | undefined;
 
   beforeEach(() => {
     configure(
-      provideNatTableUiLocales({
+      provideNatTableControlsLocales({
         en: {
           pageSize: {
             groupAriaLabel: 'Invoices per page',
@@ -109,10 +115,10 @@ describe('FEATURE: partial built-in UI locale overrides', () => {
         }
       })
     );
-    en = uiLocale(TestBed.inject(NAT_TABLE_UI_INTL), 'en');
+    en = controlsLocale(TestBed.inject(NAT_TABLE_CONTROLS_INTL), 'en');
   });
 
-  describe('GIVEN: a partial built-in UI locale override is configured with a group label override', () => {
+  describe('GIVEN: a partial built-in components locale override is configured with a group label override', () => {
     describe('WHEN: keeps the overridden group aria label', () => {
       it('THEN: it preserves the supplied page-size group label', () => {
         expect(en?.pageSize?.groupAriaLabel).toBe('Invoices per page');
@@ -120,7 +126,7 @@ describe('FEATURE: partial built-in UI locale overrides', () => {
     });
   });
 
-  describe('GIVEN: a partial built-in UI locale override is configured with a page-size option text override', () => {
+  describe('GIVEN: a partial built-in components locale override is configured with a page-size option text override', () => {
     describe('WHEN: keeps the overridden option text', () => {
       it('THEN: it uses the supplied page-size option text formatter', () => {
         expect(pageSizeLabels(en)?.pageSizeOptionText?.(pageSizeContext)).toBe('25 invoices');
@@ -128,7 +134,7 @@ describe('FEATURE: partial built-in UI locale overrides', () => {
     });
   });
 
-  describe('GIVEN: a partial built-in UI locale override is configured with nested default UI copy', () => {
+  describe('GIVEN: a partial built-in components locale override is configured with nested default components copy', () => {
     describe('WHEN: preserves the nested default option aria label', () => {
       it('THEN: it keeps the default page-size aria label formatter', () => {
         expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
@@ -141,12 +147,12 @@ describe('FEATURE: custom locale ids through overrides', () => {
   beforeEach(() => {
     configure(
       provideNatTableLocales({ qa: { accessibilityText: { emptyState: 'QA empty state' } } }),
-      provideNatTableUiLocales({ qa: { search: { label: 'QA search' } } }),
-      provideNatTableUtilsLocales({ qa: { renderMetrics: { panel: { ariaLabel: 'QA render panel' } } } })
+      provideNatTableControlsLocales({ qa: { search: { label: 'QA search' } } }),
+      provideNatTableRenderMetricsLocales({ qa: { renderMetrics: { panel: { ariaLabel: 'QA render panel' } } } })
     );
   });
 
-  describe('GIVEN: custom table, UI, and utils locale ids are configured with custom table locale definitions', () => {
+  describe('GIVEN: custom table, components, and render-metrics locale ids are configured with custom table locale definitions', () => {
     describe('WHEN: adds the custom table locale', () => {
       it('THEN: it makes the custom table locale available', () => {
         expect(tableAccess(TestBed.inject(NAT_TABLE_INTL), 'qa')?.emptyState).toBe('QA empty state');
@@ -154,18 +160,18 @@ describe('FEATURE: custom locale ids through overrides', () => {
     });
   });
 
-  describe('GIVEN: custom table, UI, and utils locale ids are configured with custom UI locale definitions', () => {
-    describe('WHEN: adds the custom UI locale', () => {
-      it('THEN: it makes the custom UI locale available', () => {
-        expect(uiLocale(TestBed.inject(NAT_TABLE_UI_INTL), 'qa')?.search?.label).toBe('QA search');
+  describe('GIVEN: custom table, components, and render-metrics locale ids are configured with custom components locale definitions', () => {
+    describe('WHEN: adds the custom components locale', () => {
+      it('THEN: it makes the custom components locale available', () => {
+        expect(controlsLocale(TestBed.inject(NAT_TABLE_CONTROLS_INTL), 'qa')?.search?.label).toBe('QA search');
       });
     });
   });
 
-  describe('GIVEN: custom table, UI, and utils locale ids are configured with custom utils locale definitions', () => {
-    describe('WHEN: adds the custom utils locale', () => {
-      it('THEN: it makes the custom utils locale available', () => {
-        expect(utilsMetrics(TestBed.inject(NAT_TABLE_UTILS_INTL), 'qa')?.panel?.ariaLabel).toBe('QA render panel');
+  describe('GIVEN: custom table, components, and render-metrics locale ids are configured with custom render-metrics locale definitions', () => {
+    describe('WHEN: adds the custom render-metrics locale', () => {
+      it('THEN: it makes the custom render-metrics locale available', () => {
+        expect(renderMetricsWidgets(TestBed.inject(NAT_TABLE_RENDER_METRICS_INTL), 'qa')?.panel?.ariaLabel).toBe('QA render panel');
       });
     });
   });
@@ -223,26 +229,26 @@ describe('FEATURE: parent table locale overrides in nested providers', () => {
   });
 });
 
-describe('FEATURE: parent UI locale overrides in nested providers', () => {
+describe('FEATURE: parent components locale overrides in nested providers', () => {
   let childInjector: EnvironmentInjector;
-  let en: NatTableUiIntl | undefined;
+  let en: NatTableControlsIntl | undefined;
 
   beforeEach(() => {
-    configure(provideNatTableUiLocales({ en: { pageSize: { groupAriaLabel: 'Parent page size' } } }));
+    configure(provideNatTableControlsLocales({ en: { pageSize: { groupAriaLabel: 'Parent page size' } } }));
 
     childInjector = createEnvironmentInjector(
-      [provideNatTableUiLocales({ en: { search: { label: 'Child search' } } })],
+      [provideNatTableControlsLocales({ en: { search: { label: 'Child search' } } })],
       TestBed.inject(EnvironmentInjector)
     );
 
-    en = uiLocale(childInjector.get(NAT_TABLE_UI_INTL), 'en');
+    en = controlsLocale(childInjector.get(NAT_TABLE_CONTROLS_INTL), 'en');
   });
 
   afterEach(() => {
     childInjector.destroy();
   });
 
-  describe('GIVEN: a nested UI locale provider overrides its parent with parent UI locale copy', () => {
+  describe('GIVEN: a nested components locale provider overrides its parent with parent components locale copy', () => {
     describe('WHEN: keeps the parent page-size group aria label', () => {
       it('THEN: it preserves the parent page-size group label', () => {
         expect(en?.pageSize?.groupAriaLabel).toBe('Parent page size');
@@ -250,7 +256,7 @@ describe('FEATURE: parent UI locale overrides in nested providers', () => {
     });
   });
 
-  describe('GIVEN: a nested UI locale provider overrides its parent with child UI locale overrides', () => {
+  describe('GIVEN: a nested components locale provider overrides its parent with child components locale overrides', () => {
     describe('WHEN: keeps the child search label', () => {
       it('THEN: it uses the child search label override', () => {
         expect(en?.search?.label).toBe('Child search');
@@ -258,7 +264,7 @@ describe('FEATURE: parent UI locale overrides in nested providers', () => {
     });
   });
 
-  describe('GIVEN: a nested UI locale provider overrides its parent with nested default page-size copy', () => {
+  describe('GIVEN: a nested components locale provider overrides its parent with nested default page-size copy', () => {
     describe('WHEN: preserves the nested default page-size option aria label', () => {
       it('THEN: it keeps the default page-size option aria label', () => {
         expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
@@ -267,26 +273,26 @@ describe('FEATURE: parent UI locale overrides in nested providers', () => {
   });
 });
 
-describe('FEATURE: parent utils locale overrides in nested providers', () => {
+describe('FEATURE: parent render-metrics locale overrides in nested providers', () => {
   let childInjector: EnvironmentInjector;
-  let renderMetrics: NatTableRenderMetricsIntl | undefined;
+  let renderMetrics: NatTableRenderMetricsWidgetsIntl | undefined;
 
   beforeEach(() => {
-    configure(provideNatTableUtilsLocales({ en: { renderMetrics: { panel: { ariaLabel: 'Parent render panel' } } } }));
+    configure(provideNatTableRenderMetricsLocales({ en: { renderMetrics: { panel: { ariaLabel: 'Parent render panel' } } } }));
 
     childInjector = createEnvironmentInjector(
-      [provideNatTableUtilsLocales({ en: { renderMetrics: { column: { header: 'Child render column' } } } })],
+      [provideNatTableRenderMetricsLocales({ en: { renderMetrics: { column: { header: 'Child render column' } } } })],
       TestBed.inject(EnvironmentInjector)
     );
 
-    renderMetrics = utilsMetrics(childInjector.get(NAT_TABLE_UTILS_INTL), 'en');
+    renderMetrics = renderMetricsWidgets(childInjector.get(NAT_TABLE_RENDER_METRICS_INTL), 'en');
   });
 
   afterEach(() => {
     childInjector.destroy();
   });
 
-  describe('GIVEN: a nested utils locale provider overrides its parent with parent utils locale copy', () => {
+  describe('GIVEN: a nested render-metrics locale provider overrides its parent with parent render-metrics locale copy', () => {
     describe('WHEN: keeps the parent panel aria label', () => {
       it('THEN: it preserves the parent render panel label', () => {
         expect(renderMetrics?.panel?.ariaLabel).toBe('Parent render panel');
@@ -294,7 +300,7 @@ describe('FEATURE: parent utils locale overrides in nested providers', () => {
     });
   });
 
-  describe('GIVEN: a nested utils locale provider overrides its parent with child utils locale overrides', () => {
+  describe('GIVEN: a nested render-metrics locale provider overrides its parent with child render-metrics locale overrides', () => {
     describe('WHEN: keeps the child column header', () => {
       it('THEN: it uses the child render column header', () => {
         expect(renderMetrics?.column?.header).toBe('Child render column');
@@ -302,7 +308,7 @@ describe('FEATURE: parent utils locale overrides in nested providers', () => {
     });
   });
 
-  describe('GIVEN: a nested utils locale provider overrides its parent with nested default utils copy', () => {
+  describe('GIVEN: a nested render-metrics locale provider overrides its parent with nested default render-metrics copy', () => {
     describe('WHEN: preserves the nested default column unit suffix', () => {
       it('THEN: it keeps the default render-metric unit suffix', () => {
         expect(renderMetrics?.column?.unitSuffix).toBe(' ms');

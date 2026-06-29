@@ -1,18 +1,12 @@
-import type { NatTableUiLocaleLabels, NatTableUiNumberFormatter } from './ui.type';
-
-/** Locale id for the built-in English UI locale. */
-export const NAT_EN_LOCALE_ID = 'en';
-
-export const NAT_TABLE_UI_ENGLISH_LOCALE = NAT_EN_LOCALE_ID;
-
-const DEFAULT_NUMBER_FORMATTER: NatTableUiNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
+import type { NatTableControlsIntl, NatTableControlsLocalesMap } from './controls.type';
+import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
+import { NAT_EN_LOCALE_ID } from './locale-id.const';
 
 const describeSortState = (sortState: 'ascending' | 'descending'): string =>
   sortState === 'ascending' ? 'in ascending order' : 'in descending order';
 
 /** Built-in English labels shipped with `ng-advanced-table/locale`. */
-export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
+export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
   search: {
     label: 'Search rows',
     placeholder: 'Search rows'
@@ -88,4 +82,11 @@ export const NAT_EN_UI_LOCALE_LABELS: NatTableUiLocaleLabels = {
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };
 
-export const NAT_TABLE_UI_ENGLISH_INTL = NAT_EN_UI_LOCALE_LABELS;
+/**
+ * Companion components locale registry shipped by `ng-advanced-table/locale`.
+ *
+ * Importing `provideNatTableControlsLocales()` registers every locale in this object.
+ */
+export const NAT_TABLE_BUILT_IN_CONTROLS_LOCALES: NatTableControlsLocalesMap = {
+  [NAT_EN_LOCALE_ID]: NAT_EN_CONTROLS_LOCALE_LABELS
+};
