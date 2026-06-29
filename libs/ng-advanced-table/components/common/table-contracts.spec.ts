@@ -5,9 +5,10 @@ import type {
   NatTableState
 } from 'ng-advanced-table/testing';
 
+import type { NatTableUiState } from 'ng-advanced-table';
+
 import type { NatTableColumnMeta } from './column-meta.type';
 import type { NatTableColumnMoveDirection, NatTableSortIndicatorContext } from './header-actions.type';
-import type { NatTableUiState } from './table-controller.type';
 
 type ContractRow = {
   readonly amount: number;

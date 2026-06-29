@@ -4,9 +4,9 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { NatTableService } from 'ng-advanced-table';
+import type { NatTableUiController } from 'ng-advanced-table';
 
 import { injectNatTableUiController } from './ui-controller.provider';
-import type { NatTableUiController } from '../common/table-controller.type';
 
 const createControllerStub = (): NatTableUiController => {
   return {

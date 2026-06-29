@@ -21,8 +21,6 @@ export type {
   NatTableSortIndicatorContext
 } from './header-actions.type';
 
-export type { NatTableUiController, NatTableUiState } from './table-controller.type';
-
 export type { NatTableSelectionColumnOptions } from './selection.type';
 
 export type { NatToolbarItemPosition, NatToolbarItemRef } from './toolbar.type';

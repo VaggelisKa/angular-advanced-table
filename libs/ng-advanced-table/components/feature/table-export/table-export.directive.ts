@@ -2,7 +2,8 @@ import { Directive, ElementRef, computed, inject, input, signal } from '@angular
 
 import type { RowData } from '@tanstack/angular-table';
 
-import type { NatTableUiController } from '../../common/table-controller.type';
+import type { NatTableUiController } from 'ng-advanced-table';
+
 import type {
   NatTableExportConfig,
   NatTableExportContext,

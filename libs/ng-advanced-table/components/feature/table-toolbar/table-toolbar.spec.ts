@@ -7,8 +7,9 @@ import { By } from '@angular/platform-browser';
 
 import { vi } from 'vitest';
 
+import type { NatTableUiController } from 'ng-advanced-table';
+
 import { NatTableToolbar } from './table-toolbar';
-import type { NatTableUiController } from '../../common/table-controller.type';
 import { NAT_TOOLBAR_ITEM } from '../../common/toolbar.const';
 import type { NatToolbarItemRef } from '../../common/toolbar.type';
 import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
