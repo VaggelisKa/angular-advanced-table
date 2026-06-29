@@ -3,12 +3,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import type { Column, RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from 'ng-advanced-table';
-import {
-  NAT_TABLE_UI_ENGLISH_LOCALE,
-  NAT_TABLE_UI_INTL,
-  mergeColumnVisibilityLabels,
-  resolveNatTableUiIntl
-} from 'ng-advanced-table/locale';
+import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, mergeColumnVisibilityLabels, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
 import type {
   NatTableAccessibilityColumnVisibilityActionContext,
@@ -46,10 +41,10 @@ export class NatTableColumnVisibility<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   protected readonly controller = computed(() => this.natTableService.controller());
 
-  private readonly tableUiIntlConfig = inject(NAT_TABLE_UI_INTL);
-  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_TABLE_UI_ENGLISH_LOCALE);
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
+  private readonly localeId = computed(() => this.locale() ?? this.controller()?.localeId?.() ?? NAT_EN_LOCALE_ID);
 
-  private readonly tableUiIntl = computed(() => resolveNatTableUiIntl(this.tableUiIntlConfig, this.localeId()));
+  private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
 
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
 

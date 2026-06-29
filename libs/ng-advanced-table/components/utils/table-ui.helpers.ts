@@ -1,6 +1,6 @@
 import type { Column, ColumnDef, RowData } from '@tanstack/angular-table';
 
-import type { NatTableUiNumberFormatter } from 'ng-advanced-table/locale';
+import type { NatTableControlsNumberFormatter } from 'ng-advanced-table/locale';
 
 export const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 
@@ -18,7 +18,7 @@ export const sanitizePageSizeOptions = (options: readonly number[]): number[] =>
 
 export const formatNatTableAccessibilityNumber = (
   value: number,
-  formatter?: NatTableUiNumberFormatter,
+  formatter?: NatTableControlsNumberFormatter,
   options?: Intl.NumberFormatOptions,
   locale?: string
 ): string =>
