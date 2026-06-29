@@ -53,7 +53,7 @@ export class NatTableHeaderActions {
   protected readonly pinSides = NAT_HEADER_ACTIONS_PIN_SIDES;
   protected readonly moveDirections = NAT_HEADER_ACTIONS_MOVE_DIRECTIONS;
   protected readonly pinMenu = viewChild<Menu<string>>('pinMenu');
-  protected readonly pinMenuPositions = NAT_HEADER_ACTIONS_PIN_MENU_POSITIONS;
+  protected readonly pinMenuPositions = [...NAT_HEADER_ACTIONS_PIN_MENU_POSITIONS];
 
   public readonly context = input.required<HeaderContext<RowData, unknown>>();
   public readonly content = input.required<NatTableHeaderRenderContent>();

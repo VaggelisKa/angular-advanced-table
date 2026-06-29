@@ -10,7 +10,7 @@ export const NAT_HEADER_ACTIONS_PIN_SIDES: readonly NatTablePinSide[] = ['left',
 export const NAT_HEADER_ACTIONS_MOVE_DIRECTIONS: readonly NatTableColumnMoveDirection[] = ['left', 'right'];
 
 /** Connected-overlay fallback positions for the pin actions menu. */
-export const NAT_HEADER_ACTIONS_PIN_MENU_POSITIONS: ConnectedPosition[] = [
+export const NAT_HEADER_ACTIONS_PIN_MENU_POSITIONS: readonly ConnectedPosition[] = [
   {
     originX: 'end',
     originY: 'bottom',
