@@ -18,6 +18,74 @@ Header sort controls are added by wrapping columns with `withNatTableHeaderActio
 
 Enable multi-sort on the surface when users need priority order across multiple columns. The first sorting entry has the highest priority. Keep the priority visible when the workflow depends on it.
 
+```html
+<nat-table-surface [enableMultiSort]="true" [(state)]="tableState">
+  <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
+</nat-table-surface>
+```
+
+```ts
+readonly tableState = signal<Partial<NatTableState>>({
+  sorting: [
+    { id: 'sector', desc: false },
+    { id: 'marketValue', desc: true },
+  ],
+});
+```
+
+Use the `sorting` array as the source of truth for priority. Header sort buttons add another sorted column when the user holds <kbd>Shift</kbd> while clicking, or <kbd>Shift</kbd> while pressing <kbd>Enter</kbd> on a focused sort button. Programmatic presets should write the same ordered array instead of keeping a separate priority model.
+
+When multi-sort changes the meaning of the result set, show the priority near the table or in the sorted headers. The bundled header actions render a priority badge for sorted columns when more than one column is active.
+
+## Custom Sort Indicators
+
+Use `withNatTableHeaderActions(...)` when you want the bundled sort behavior, labels, and menu actions, but need indicator content that matches your product or design system.
+
+```ts
+import { Component, input } from '@angular/core';
+import { flexRenderComponent } from '@tanstack/angular-table';
+import { type NatTableSortIndicatorContext, withNatTableHeaderActions } from 'ng-advanced-table/ui';
+
+@Component({
+  selector: 'app-sort-indicator',
+  template: `
+    <span [attr.data-sort-state]="context().sortState || 'none'" class="sort-indicator">
+      {{ context().sortState === 'asc' ? 'Asc' : context().sortState === 'desc' ? 'Desc' : 'Sort' }}
+    </span>
+  `,
+})
+export class SortIndicator {
+  readonly context = input.required<NatTableSortIndicatorContext>();
+}
+
+readonly columns = withNatTableHeaderActions(baseColumns, {
+  sortIndicator: (context) =>
+    flexRenderComponent(SortIndicator, {
+      inputs: { context },
+    }),
+});
+```
+
+The indicator receives the current `sortState`, resolved column `label`, `ariaSort` token, and TanStack `column`. Keep the indicator visual only; the generated sort button still owns the accessible name and sort action.
+
+Override individual columns through `column.meta.headerActions` when one column needs a different indicator or should opt out.
+
+```ts
+{
+  accessorKey: 'marketValue',
+  header: 'Market value',
+  meta: {
+    label: 'Market value',
+    align: 'end',
+    headerActions: {
+      sortIndicator: ({ sortState }) => (sortState === false ? 'No sort' : sortState.toUpperCase()),
+    },
+  },
+}
+```
+
+Set `meta.headerActions` to `false` for action columns or utility columns that should keep their original header instead of receiving sort, pin, or move controls.
+
 ## Pinned Columns Variant
 
 Sorting and pinning can coexist. Pinning affects where columns render; sorting still uses column ids and row data. Keep pinned columns stable when they carry row identity or row actions.
