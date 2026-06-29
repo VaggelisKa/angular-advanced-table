@@ -4,18 +4,18 @@ Accessible table authoring is part of the table API. The core table handles grid
 
 Before shipping a table, verify this list:
 
-| Requirement                                        | Where to set it                                                                                 |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Table has a clear accessible name                  | `caption` or `accessibleName`                                                                   |
-| Every data column has a human label                | `columnDef.meta.label`                                                                          |
-| One identifying column is a row header             | `columnDef.meta.rowHeader: true`                                                                |
-| Icon-only or utility headers remain named          | `columnDef.meta.hiddenHeaderLabel`                                                              |
-| Numeric cells align predictably                    | `columnDef.meta.align: 'end'`                                                                   |
-| State rows have visible, meaningful text           | `natTableLoading`, `natTableEmpty`, `natTableError` templates or `accessibilityText`            |
-| Custom cell controls have names                    | App-owned `aria-label`, visible text, or design-system labels                                   |
-| Interactive cells integrate with grid focus        | `ngGridCellWidget` on the real focusable element                                                |
-| Generated UI copy is localized                     | `provideNatTableLocales`, `provideNatTableControlsLocales`, `provideNatTableRenderMetricsLocales`             |
-| Reordering and resizing have keyboard instructions | `accessibilityText.reorderKeyboardInstructions`, `accessibilityText.resizeKeyboardInstructions` |
+| Requirement                                        | Where to set it                                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Table has a clear accessible name                  | `caption` or `accessibleName`                                                                     |
+| Every data column has a human label                | `columnDef.meta.label`                                                                            |
+| One identifying column is a row header             | `columnDef.meta.rowHeader: true`                                                                  |
+| Icon-only or utility headers remain named          | `columnDef.meta.hiddenHeaderLabel`                                                                |
+| Numeric cells align predictably                    | `columnDef.meta.align: 'end'`                                                                     |
+| State rows have visible, meaningful text           | `natTableLoading`, `natTableEmpty`, `natTableError` templates or `accessibilityText`              |
+| Custom cell controls have names                    | App-owned `aria-label`, visible text, or design-system labels                                     |
+| Interactive cells integrate with grid focus        | `ngGridCellWidget` on the real focusable element                                                  |
+| Generated UI copy is localized                     | `provideNatTableLocales`, `provideNatTableControlsLocales`, `provideNatTableRenderMetricsLocales` |
+| Reordering and resizing have keyboard instructions | `accessibilityText.reorderKeyboardInstructions`, `accessibilityText.resizeKeyboardInstructions`   |
 
 ## Table Name
 

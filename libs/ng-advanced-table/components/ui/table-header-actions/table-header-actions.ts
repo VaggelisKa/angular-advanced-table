@@ -8,7 +8,12 @@ import { Component, computed, inject, input, viewChild } from '@angular/core';
 import { FlexRender } from '@tanstack/angular-table';
 import type { HeaderContext, RowData } from '@tanstack/angular-table';
 
-import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, mergeHeaderActionLabels, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
+import {
+  NAT_EN_LOCALE_ID,
+  NAT_TABLE_CONTROLS_INTL,
+  mergeHeaderActionLabels,
+  resolveNatTableControlsIntl
+} from 'ng-advanced-table/locale';
 
 import type {
   NatTableAccessibilityHeaderActionLabels,

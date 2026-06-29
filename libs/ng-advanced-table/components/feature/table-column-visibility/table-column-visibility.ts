@@ -3,7 +3,12 @@ import { Component, computed, inject, input } from '@angular/core';
 import type { Column, RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from 'ng-advanced-table';
-import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, mergeColumnVisibilityLabels, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
+import {
+  NAT_EN_LOCALE_ID,
+  NAT_TABLE_CONTROLS_INTL,
+  mergeColumnVisibilityLabels,
+  resolveNatTableControlsIntl
+} from 'ng-advanced-table/locale';
 
 import type {
   NatTableAccessibilityColumnVisibilityActionContext,
