@@ -33,7 +33,8 @@ export const provideNatTableRenderMetricsIntl = (intl: NatTableRenderMetricsIntl
   {
     provide: NAT_TABLE_RENDER_METRICS_INTL,
     deps: [[new Optional(), new SkipSelf(), NAT_TABLE_RENDER_METRICS_INTL]],
-    useFactory: (parent: NatTableRenderMetricsIntlConfig | null) => mergeNatTableRenderMetricsIntlConfig(parent ?? NAT_TABLE_RENDER_METRICS_DEFAULT_INTL, intl)
+    useFactory: (parent: NatTableRenderMetricsIntlConfig | null) =>
+      mergeNatTableRenderMetricsIntlConfig(parent ?? NAT_TABLE_RENDER_METRICS_DEFAULT_INTL, intl)
   }
 ];
 

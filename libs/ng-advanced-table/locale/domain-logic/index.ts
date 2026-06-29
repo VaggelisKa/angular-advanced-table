@@ -1,6 +1,6 @@
 export { NAT_TABLE_INTL, provideNatTableIntl, provideNatTableLocales } from './accessibility.provider';
 
-export { NAT_TABLE_CONTROLS_DEFAULT_INTL, NAT_TABLE_CONTROLS_INTL, provideNatTableControlsIntl, provideNatTableControlsLocales } from './controls.provider';
+export { NAT_TABLE_CONTROLS_INTL, provideNatTableControlsIntl, provideNatTableControlsLocales } from './controls.provider';
 
 export {
   injectNatTableRenderMetricsIntl,

@@ -2,11 +2,15 @@ import { InjectionToken, Optional, SkipSelf } from '@angular/core';
 import type { Provider } from '@angular/core';
 
 import { NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
-import type { NatTableControlsIntlConfig, NatTableControlsIntlProviderConfig, NatTableControlsLocalesMap } from '../common/controls.type';
+import type {
+  NatTableControlsIntlConfig,
+  NatTableControlsIntlProviderConfig,
+  NatTableControlsLocalesMap
+} from '../common/controls.type';
 import { mergeNatTableControlsIntlConfig } from '../utils/controls.util';
 
 /** Built-in locale defaults used when no components locale provider is configured. */
-export const NAT_TABLE_CONTROLS_DEFAULT_INTL: NatTableControlsIntlConfig = {
+const NAT_TABLE_CONTROLS_DEFAULT_INTL: NatTableControlsIntlConfig = {
   locales: NAT_TABLE_BUILT_IN_CONTROLS_LOCALES
 };
 
@@ -26,7 +30,8 @@ export const provideNatTableControlsIntl = (intl: NatTableControlsIntlProviderCo
   {
     provide: NAT_TABLE_CONTROLS_INTL,
     deps: [[new Optional(), new SkipSelf(), NAT_TABLE_CONTROLS_INTL]],
-    useFactory: (parent: NatTableControlsIntlConfig | null) => mergeNatTableControlsIntlConfig(parent ?? NAT_TABLE_CONTROLS_DEFAULT_INTL, intl)
+    useFactory: (parent: NatTableControlsIntlConfig | null) =>
+      mergeNatTableControlsIntlConfig(parent ?? NAT_TABLE_CONTROLS_DEFAULT_INTL, intl)
   }
 ];
 

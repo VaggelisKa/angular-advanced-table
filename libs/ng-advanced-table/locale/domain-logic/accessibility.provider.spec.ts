@@ -21,9 +21,11 @@ const configure = (...providers: Provider[]): void => {
 const tableAccess = (intl: NatTableIntlConfig, localeId: string): NatTableAccessibilityText | undefined =>
   intl.locales?.[localeId]?.accessibilityText;
 
-const controlsLocale = (intl: NatTableControlsIntlConfig, localeId: string): NatTableControlsIntl | undefined => intl.locales?.[localeId];
+const controlsLocale = (intl: NatTableControlsIntlConfig, localeId: string): NatTableControlsIntl | undefined =>
+  intl.locales?.[localeId];
 
-const pageSizeLabels = (controls?: NatTableControlsIntl): NatTableAccessibilityPageSizeLabels | undefined => controls?.pageSize?.accessibilityLabels;
+const pageSizeLabels = (controls?: NatTableControlsIntl): NatTableAccessibilityPageSizeLabels | undefined =>
+  controls?.pageSize?.accessibilityLabels;
 
 const renderMetricsWidgets = (intl: NatTableRenderMetricsIntlConfig, localeId: string): NatTableRenderMetricsWidgetsIntl | undefined =>
   intl.locales?.[localeId]?.renderMetrics;
@@ -41,9 +43,8 @@ afterEach(() => {
 describe('FEATURE: provideNatTableLocales', () => {
   describe('GIVEN: table locale providers are configured', () => {
     describe('WHEN: registers every built-in table locale with no configuration', () => {
+      configure(provideNatTableLocales());
       it('THEN: it makes each built-in table locale available', () => {
-        configure(provideNatTableLocales());
-
         const tableIntl = TestBed.inject(NAT_TABLE_INTL);
 
         for (const localeId of Object.keys(NAT_TABLE_BUILT_IN_LOCALES)) {
@@ -55,9 +56,8 @@ describe('FEATURE: provideNatTableLocales', () => {
 
   describe('GIVEN: table locale providers are configured with built-in English table copy', () => {
     describe('WHEN: uses platform primary modifier shortcuts in the built-in English column reorder instructions', () => {
+      configure(provideNatTableLocales());
       it('THEN: it keeps English reorder instructions platform-aware', () => {
-        configure(provideNatTableLocales());
-
         expect(tableAccess(TestBed.inject(NAT_TABLE_INTL), 'en')?.reorderKeyboardInstructions).toBe(
           'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
         );
@@ -78,17 +78,23 @@ describe('FEATURE: companion components and render-metrics locale registration',
 
   describe('GIVEN: companion locale providers are configured with companion components locale ids', () => {
     describe('WHEN: registering each built-in companion components locale', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES))('THEN: it makes the companion components locale %s available', (localeId) => {
-        expect(controlsLocale(controlsIntl, localeId)).toBeDefined();
-      });
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES))(
+        'THEN: it makes the companion components locale %s available',
+        (localeId) => {
+          expect(controlsLocale(controlsIntl, localeId)).toBeDefined();
+        }
+      );
     });
   });
 
   describe('GIVEN: companion locale providers are configured with companion render-metrics locale ids', () => {
     describe('WHEN: registering each built-in companion render-metrics locale', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES))('THEN: it makes the companion render-metrics locale %s available', (localeId) => {
-        expect(renderMetricsIntl.locales?.[localeId]).toBeDefined();
-      });
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES))(
+        'THEN: it makes the companion render-metrics locale %s available',
+        (localeId) => {
+          expect(renderMetricsIntl.locales?.[localeId]).toBeDefined();
+        }
+      );
     });
   });
 });
