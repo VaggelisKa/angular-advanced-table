@@ -335,6 +335,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     contents: [
       { label: 'When to use sorting', path: '#when-to-use-sorting' },
       { label: 'Controlled sorting', path: '#controlled-sorting' },
+      { label: 'Multi-column sorting', path: '#multi-column-sorting' },
+      { label: 'Custom sort indicators', path: '#custom-sort-indicators' },
       { label: 'Pinned columns variant', path: '#pinned-columns-variant' }
     ],
     blocks: [
@@ -389,6 +391,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     contents: [
       { label: 'When to use pagination', path: '#when-to-use-pagination' },
       { label: 'Client pagination', path: '#client-pagination' },
+      { label: 'Split controls', path: '#split-page-size-and-pager-controls' },
       { label: 'Manual pagination', path: '#manual-pagination' }
     ],
     blocks: [
@@ -412,7 +415,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     contents: [
       { label: 'Layout responsibilities', path: '#layout-responsibilities' },
       { label: 'Pinning and visibility', path: '#pinning-and-visibility' },
-      { label: 'Reordering and resizing', path: '#reordering-and-resizing' }
+      { label: 'Reordering and resizing', path: '#reordering-and-resizing' },
+      { label: 'Horizontal scroll controls', path: '#horizontal-scroll-controls' }
     ],
     blocks: [
       { kind: 'markdown', id: 'column-layout-prose', markdownPath: '/docs/column-layout.md' },
@@ -467,6 +471,9 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     contents: [
       { label: 'When to use selection', path: '#when-to-use-selection' },
       { label: 'Selection state', path: '#selection-state' },
+      { label: 'Selection column', path: '#selection-column' },
+      { label: 'Single and multiple selection', path: '#single-and-multiple-selection' },
+      { label: 'Direct selection checkboxes', path: '#direct-selection-checkboxes' },
       { label: 'Bulk actions', path: '#bulk-actions' }
     ],
     blocks: [
