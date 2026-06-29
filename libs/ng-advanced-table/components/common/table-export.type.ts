@@ -1,5 +1,3 @@
-import type { Provider } from '@angular/core';
-
 import type { Column, Row, RowData, Table } from '@tanstack/angular-table';
 
 /** Normalized value exposed to table export handlers before format-specific serialization. */
@@ -57,4 +55,25 @@ export type NatTableExportConfig<TData extends RowData = RowData> = {
 /** Factory used when app-level table export configuration needs Angular DI. */
 export type NatTableExportConfigFactory<TData extends RowData = RowData> = () => NatTableExportConfig<TData>;
 
-export type NatTableExportProvider = Provider[];
+/** Value returned by table export metadata before format-specific normalization. */
+type NatTableColumnExportValue = unknown;
+
+/** Context passed to column export value callbacks. */
+export type NatTableColumnExportValueContext<TData extends RowData = RowData, TValue = unknown> = {
+  /** Row being exported. */
+  readonly row: Row<TData>;
+  /** Column being exported. */
+  readonly column: Column<TData, TValue>;
+  /** Raw value resolved from the row and column before export-specific normalization. */
+  readonly value: TValue;
+};
+
+/** Export behavior attached to a table column definition. */
+export type NatTableColumnExportOptions<TData extends RowData = RowData, TValue = unknown> = {
+  /** Whether the column participates in table export. Accessor columns opt in by default. */
+  readonly enabled?: boolean;
+  /** Header text used by export formats. Defaults to column labels and identifiers. */
+  readonly header?: string;
+  /** Maps a row/column value into an export value. Defaults to the raw accessor value. */
+  readonly value?: (context: NatTableColumnExportValueContext<TData, TValue>) => NatTableColumnExportValue;
+};

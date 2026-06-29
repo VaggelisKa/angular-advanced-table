@@ -5,8 +5,8 @@ import { vi } from 'vitest';
 
 import { NatTableService } from 'ng-advanced-table';
 
-import { injectNatTableUiController } from './resolve-ui-controller';
-import type { NatTableUiController } from '../common/table-ui.type';
+import { injectNatTableUiController } from './ui-controller.provider';
+import type { NatTableUiController } from '../common/table-controller.type';
 
 const createControllerStub = (): NatTableUiController => {
   return {

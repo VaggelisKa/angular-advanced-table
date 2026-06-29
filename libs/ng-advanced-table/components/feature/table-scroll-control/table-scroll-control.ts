@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { DOCUMENT } from '@angular/common';
 import { Component, DestroyRef, afterRenderEffect, computed, inject, input, numberAttribute, signal } from '@angular/core';
 
@@ -11,16 +10,11 @@ import {
   mergeScrollControlLabels,
   resolveNatTableControlsIntl
 } from 'ng-advanced-table/locale';
+import type { NatTableAccessibilityScrollControlLabels } from 'ng-advanced-table/locale';
 
-import type {
-  NatTableAccessibilityScrollControlLabels,
-  NatTableAccessibilityScrollControlPositionContext
-} from '../../common/table-ui.type';
-import { formatNatTableAccessibilityNumber } from '../../utils/table-ui.helpers';
+import { buildScrollPositionContext, clamp } from '../../utils/scroll-metrics.util';
 
 const DEFAULT_SCROLL_STEP = 240;
-
-const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max);
 
 @Component({
   selector: 'nat-table-scroll-control',
@@ -83,17 +77,7 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
 
   protected readonly positionText = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
-    const scrollLeft = this.scrollLeft();
-    const maxScrollLeft = this.maxScrollLeft();
-    const percentage = maxScrollLeft ? Math.round((scrollLeft / maxScrollLeft) * 100) : 0;
-    const context: NatTableAccessibilityScrollControlPositionContext = {
-      scrollLeftValue: scrollLeft,
-      scrollLeftText: formatNatTableAccessibilityNumber(scrollLeft, this.tableUiIntl().formatNumber, undefined, this.localeId()),
-      maxScrollLeftValue: maxScrollLeft,
-      maxScrollLeftText: formatNatTableAccessibilityNumber(maxScrollLeft, this.tableUiIntl().formatNumber, undefined, this.localeId()),
-      percentageValue: percentage,
-      percentageText: formatNatTableAccessibilityNumber(percentage, this.tableUiIntl().formatNumber, undefined, this.localeId())
-    };
+    const context = buildScrollPositionContext(this.scrollLeft(), this.maxScrollLeft(), this.tableUiIntl().formatNumber, this.localeId());
 
     return labels.scrollPositionText?.(context) ?? '';
   });

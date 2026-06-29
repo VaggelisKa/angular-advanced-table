@@ -5,7 +5,9 @@ import type {
   NatTableState
 } from 'ng-advanced-table/testing';
 
-import type { NatTableColumnMeta, NatTableColumnMoveDirection, NatTableSortIndicatorContext, NatTableUiState } from './table-ui.type';
+import type { NatTableColumnMeta } from './column-meta.type';
+import type { NatTableColumnMoveDirection, NatTableSortIndicatorContext } from './header-actions.type';
+import type { NatTableUiState } from './table-controller.type';
 
 type ContractRow = {
   readonly amount: number;
@@ -28,10 +30,10 @@ type UiSortIndicatorContextMatchesCore = Expect<
 
 describe('FEATURE: ng-advanced-table/components public table contracts', () => {
   describe('GIVEN: the UI public contract mirror is available', () => {
+    const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore, UiSortIndicatorContextMatchesCore] = [true, true, true];
+
     describe('WHEN: keeps public UI contracts aligned with the core table contracts', () => {
       it('THEN: it type-checks the published UI contracts', () => {
-        const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore, UiSortIndicatorContextMatchesCore] = [true, true, true];
-
         expect(contractsHold).toStrictEqual([true, true, true]);
 
         const meta: NatTableColumnMeta<ContractRow, number> = {

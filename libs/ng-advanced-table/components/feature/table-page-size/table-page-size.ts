@@ -4,9 +4,10 @@ import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, mergePageSizeLabels, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
+import type { NatTableAccessibilityPageSizeLabels, NatTableAccessibilityPageSizeOptionContext } from 'ng-advanced-table/locale';
 
-import type { NatTableAccessibilityPageSizeLabels, NatTableAccessibilityPageSizeOptionContext } from '../../common/table-ui.type';
-import { DEFAULT_PAGE_SIZE_OPTIONS, formatNatTableAccessibilityNumber, sanitizePageSizeOptions } from '../../utils/table-ui.helpers';
+import { formatNatTableAccessibilityNumber } from '../../utils/accessibility-number.util';
+import { DEFAULT_PAGE_SIZE_OPTIONS, sanitizePageSizeOptions } from '../../utils/page-size.util';
 
 type PageSizeOption = {
   readonly pageSize: number;

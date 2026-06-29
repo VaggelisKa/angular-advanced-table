@@ -3,8 +3,7 @@ import { Component, inject, input } from '@angular/core';
 import type { Row, RowData, Table } from '@tanstack/angular-table';
 
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
-
-import type { NatTableAccessibilitySelectionLabels } from '../../common/table-ui.type';
+import type { NatTableAccessibilitySelectionLabels } from 'ng-advanced-table/locale';
 
 /**
  * Accessible selection checkbox rendered by {@link withNatTableSelectionColumn}.

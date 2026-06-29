@@ -1,7 +1,12 @@
 import type { Column, Row, RowData } from '@tanstack/angular-table';
 
-import type { NatTableExportCellValue, NatTableExportContext, NatTableExportData } from '../common/table-export.type';
-import type { NatTableColumnExportOptions, NatTableColumnExportValueContext } from '../common/table-ui.type';
+import type {
+  NatTableColumnExportOptions,
+  NatTableColumnExportValueContext,
+  NatTableExportCellValue,
+  NatTableExportContext,
+  NatTableExportData
+} from '../common/table-export.type';
 
 const CSV_MIME_TYPE = 'text/csv;charset=utf-8';
 const CSV_UTF8_BOM = '﻿';
@@ -121,6 +126,7 @@ const resolveNatTableExportCellValue = <TData extends RowData>(
   return normalizeExportCellValue(exportValue);
 };
 
+// ponytail: browser download lives here; promote to a data-access layer only if more I/O appears
 const downloadNatTableExportBlob = (blob: Blob, fileName: string): void => {
   const objectUrl = URL.createObjectURL(blob);
   const anchor = document.createElement('a');

@@ -1,8 +1,6 @@
-/* eslint-disable max-lines */
 import { GridCellWidget } from '@angular/aria/grid';
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import { OverlayModule } from '@angular/cdk/overlay';
-import type { ConnectedPosition } from '@angular/cdk/overlay';
 import { Component, computed, inject, input, viewChild } from '@angular/core';
 
 import { FlexRender } from '@tanstack/angular-table';
@@ -14,20 +12,32 @@ import {
   mergeHeaderActionLabels,
   resolveNatTableControlsIntl
 } from 'ng-advanced-table/locale';
+import type { NatTableAccessibilityHeaderActionLabels } from 'ng-advanced-table/locale';
 
+import {
+  NAT_HEADER_ACTIONS_MOVE_DIRECTIONS,
+  NAT_HEADER_ACTIONS_PIN_MENU_POSITIONS,
+  NAT_HEADER_ACTIONS_PIN_SIDES
+} from './table-header-actions.const';
 import type {
-  NatTableAccessibilityHeaderActionLabels,
-  NatTableAccessibilityHeaderActionMenuContext,
-  NatTableAccessibilityHeaderActionMoveContext,
-  NatTableAccessibilityHeaderActionPinContext,
   NatTableColumnMoveDirection,
   NatTableHeaderRenderContent,
   NatTableSortDirection,
   NatTableSortIndicatorContent,
   NatTableSortIndicatorContext
-} from '../../common/table-ui.type';
-
-type NatTablePinSide = 'left' | 'right';
+} from '../../common/header-actions.type';
+import {
+  buildSortIndicatorContext,
+  resolveMenuButtonLabel,
+  resolveMenuLabel,
+  resolveMoveLabel,
+  resolveMoveText,
+  resolvePinLabel,
+  resolvePinText,
+  resolveSortLabel,
+  toAriaSort
+} from '../../utils/header-actions-labels.util';
+import type { NatTablePinSide } from '../../utils/header-actions-labels.util';
 
 @Component({
   selector: 'nat-table-header-actions',
@@ -40,32 +50,10 @@ export class NatTableHeaderActions {
   private readonly localeId = computed(() => this.locale() ?? NAT_EN_LOCALE_ID);
   private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
 
-  protected readonly pinSides: readonly NatTablePinSide[] = ['left', 'right'];
-  protected readonly moveDirections: readonly NatTableColumnMoveDirection[] = ['left', 'right'];
+  protected readonly pinSides = NAT_HEADER_ACTIONS_PIN_SIDES;
+  protected readonly moveDirections = NAT_HEADER_ACTIONS_MOVE_DIRECTIONS;
   protected readonly pinMenu = viewChild<Menu<string>>('pinMenu');
-  protected readonly pinMenuPositions: ConnectedPosition[] = [
-    {
-      originX: 'end',
-      originY: 'bottom',
-      overlayX: 'end',
-      overlayY: 'top',
-      offsetY: 6
-    },
-    {
-      originX: 'start',
-      originY: 'bottom',
-      overlayX: 'start',
-      overlayY: 'top',
-      offsetY: 6
-    },
-    {
-      originX: 'end',
-      originY: 'top',
-      overlayX: 'end',
-      overlayY: 'bottom',
-      offsetY: -6
-    }
-  ];
+  protected readonly pinMenuPositions = NAT_HEADER_ACTIONS_PIN_MENU_POSITIONS;
 
   public readonly context = input.required<HeaderContext<RowData, unknown>>();
   public readonly content = input.required<NatTableHeaderRenderContent>();
@@ -115,29 +103,11 @@ export class NatTableHeaderActions {
   }
 
   protected ariaSort(): 'ascending' | 'descending' | 'none' {
-    const sortState = this.sortState();
-
-    if (sortState === 'asc') {
-      return 'ascending';
-    }
-
-    if (sortState === 'desc') {
-      return 'descending';
-    }
-
-    return 'none';
+    return toAriaSort(this.sortState());
   }
 
   protected sortIndicatorContext(): NatTableSortIndicatorContext<RowData> {
-    const sortState = this.sortState();
-
-    return {
-      $implicit: sortState,
-      sortState,
-      ariaSort: this.ariaSort(),
-      column: this.column(),
-      label: this.label()
-    };
+    return buildSortIndicatorContext(this.sortState(), this.ariaSort(), this.column(), this.label());
   }
 
   protected togglePin(side: NatTablePinSide): void {
@@ -159,32 +129,19 @@ export class NatTableHeaderActions {
   }
 
   protected getSortLabel(): string {
-    const labels = this.resolveAccessibilityLabels();
-    const sortPriority = this.sortPriority();
-    const sortCount = this.context().table.getState().sorting.length;
-
-    return (
-      labels.sortButton?.({
-        label: this.label(),
-        sortState: this.ariaSort(),
-        sortPriority,
-        sortCount
-      }) ?? ''
-    );
+    return resolveSortLabel(this.resolveAccessibilityLabels(), this.label(), {
+      ariaSort: this.ariaSort(),
+      sortPriority: this.sortPriority(),
+      sortCount: this.context().table.getState().sorting.length
+    });
   }
 
   protected getPinLabel(side: NatTablePinSide): string {
-    const context = this.getPinContext(side);
-    const labels = this.resolveAccessibilityLabels();
-
-    return labels.pinButton?.(context) ?? '';
+    return resolvePinLabel(this.resolveAccessibilityLabels(), this.label(), side, this.pinnedSide());
   }
 
   protected getPinText(side: NatTablePinSide): string {
-    const context = this.getPinContext(side);
-    const labels = this.resolveAccessibilityLabels();
-
-    return labels.pinButtonText?.(context) ?? '';
+    return resolvePinText(this.resolveAccessibilityLabels(), this.label(), side, this.pinnedSide());
   }
 
   protected canMoveColumn(direction: NatTableColumnMoveDirection): boolean {
@@ -200,29 +157,19 @@ export class NatTableHeaderActions {
   }
 
   protected getMoveLabel(direction: NatTableColumnMoveDirection): string {
-    const context = this.getMoveContext(direction);
-    const labels = this.resolveAccessibilityLabels();
-
-    return labels.moveButton?.(context) ?? '';
+    return resolveMoveLabel(this.resolveAccessibilityLabels(), this.label(), direction);
   }
 
   protected getMoveText(direction: NatTableColumnMoveDirection): string {
-    const context = this.getMoveContext(direction);
-    const labels = this.resolveAccessibilityLabels();
-
-    return labels.moveButtonText?.(context) ?? '';
+    return resolveMoveText(this.resolveAccessibilityLabels(), this.label(), direction);
   }
 
   protected getMenuButtonLabel(): string {
-    const labels = this.resolveAccessibilityLabels();
-
-    return labels.menuButton?.(this.getMenuContext()) ?? '';
+    return resolveMenuButtonLabel(this.resolveAccessibilityLabels(), this.label());
   }
 
   protected getMenuLabel(): string {
-    const labels = this.resolveAccessibilityLabels();
-
-    return labels.menuLabel?.(this.getMenuContext()) ?? '';
+    return resolveMenuLabel(this.resolveAccessibilityLabels(), this.label());
   }
 
   protected column(): HeaderContext<RowData, unknown>['column'] {
@@ -233,31 +180,6 @@ export class NatTableHeaderActions {
     const pinState = this.column().getIsPinned();
 
     return pinState === 'left' || pinState === 'right' ? pinState : null;
-  }
-
-  private getPinContext(side: NatTablePinSide): NatTableAccessibilityHeaderActionPinContext {
-    const pinnedSide = this.pinnedSide();
-
-    return {
-      label: this.label(),
-      pinState: pinnedSide ? 'pinned' : 'unpinned',
-      toggleAction: pinnedSide === side ? 'unpin' : 'pin',
-      pinSide: side,
-      pinnedSide
-    };
-  }
-
-  private getMoveContext(direction: NatTableColumnMoveDirection): NatTableAccessibilityHeaderActionMoveContext {
-    return {
-      label: this.label(),
-      direction
-    };
-  }
-
-  private getMenuContext(): NatTableAccessibilityHeaderActionMenuContext {
-    return {
-      label: this.label()
-    };
   }
 
   private resolveAccessibilityLabels(): NatTableAccessibilityHeaderActionLabels {

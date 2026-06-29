@@ -4,8 +4,8 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { NatTableToolbar } from './table-toolbar';
-import { NAT_TOOLBAR_ITEM } from '../../common/toolbar-tokens.const';
-import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/toolbar-tokens.type';
+import { NAT_TOOLBAR_ITEM } from '../../common/toolbar.const';
+import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/toolbar.type';
 import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
 
 @Component({

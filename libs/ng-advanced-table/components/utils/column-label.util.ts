@@ -1,31 +1,10 @@
 import type { Column, ColumnDef, RowData } from '@tanstack/angular-table';
 
-import type { NatTableControlsNumberFormatter } from 'ng-advanced-table/locale';
-
-export const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
-
 const normalizeColumnLabel = (label: string | undefined): string | null => {
   const normalized = label?.trim() ?? '';
 
   return normalized || null;
 };
-
-export const sanitizePageSizeOptions = (options: readonly number[]): number[] => {
-  const sanitized = options.map((value) => Math.trunc(value)).filter((value) => value > 0);
-
-  return sanitized.length ? sanitized : [...DEFAULT_PAGE_SIZE_OPTIONS];
-};
-
-export const formatNatTableAccessibilityNumber = (
-  value: number,
-  formatter?: NatTableControlsNumberFormatter,
-  options?: Intl.NumberFormatOptions,
-  locale?: string
-): string =>
-  (
-    formatter ??
-    ((numberValue, numberOptions, numberLocale): string => new Intl.NumberFormat(numberLocale, numberOptions).format(numberValue))
-  )(value, options, locale);
 
 export const resolveNatTableColumnLabel = <TData extends RowData>(
   columnDef: ColumnDef<TData, unknown>,

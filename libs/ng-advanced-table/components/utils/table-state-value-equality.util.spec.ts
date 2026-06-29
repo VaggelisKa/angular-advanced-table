@@ -1,4 +1,4 @@
-import { hasNatTableStateValueChanged } from './table-state-value-equality';
+import { hasNatTableStateValueChanged } from './table-state-value-equality.util';
 
 class FilterToken {
   public readonly value = 'same';

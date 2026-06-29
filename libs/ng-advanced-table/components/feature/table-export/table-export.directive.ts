@@ -2,16 +2,16 @@ import { Directive, ElementRef, computed, inject, input, signal } from '@angular
 
 import type { RowData } from '@tanstack/angular-table';
 
-import { NAT_TABLE_EXPORT } from '../../common/table-export.provider';
+import type { NatTableUiController } from '../../common/table-controller.type';
 import type {
   NatTableExportConfig,
   NatTableExportContext,
   NatTableExportData,
   NatTableExportHandler
 } from '../../common/table-export.type';
-import type { NatTableUiController } from '../../common/table-ui.type';
-import { injectNatTableUiController } from '../../domain-logic/resolve-ui-controller';
-import { createNatTableExportData, exportNatTableCsv, resolveNatTableExportColumns } from '../../utils/table-export-client';
+import { NAT_TABLE_EXPORT } from '../../domain-logic/table-export.provider';
+import { injectNatTableUiController } from '../../domain-logic/ui-controller.provider';
+import { createNatTableExportData, exportNatTableCsv, resolveNatTableExportColumns } from '../../utils/table-export.util';
 
 const DEFAULT_EXPORT_FILE_NAME = 'table-export';
 

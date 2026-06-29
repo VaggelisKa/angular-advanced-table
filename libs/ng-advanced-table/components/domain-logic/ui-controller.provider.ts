@@ -5,7 +5,7 @@ import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from 'ng-advanced-table';
 
-import type { NatTableUiController } from '../common/table-ui.type';
+import type { NatTableUiController } from '../common/table-controller.type';
 
 type InjectNatTableUiControllerOptions = {
   /**

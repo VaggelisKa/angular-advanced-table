@@ -10,15 +10,16 @@ import {
   mergePagerLabels,
   resolveNatTableControlsIntl
 } from 'ng-advanced-table/locale';
-
 import type {
   NatTableAccessibilityPageSizeLabels,
   NatTableAccessibilityPageSizeOptionContext,
   NatTableAccessibilityPagerLabels
-} from '../../common/table-ui.type';
+} from 'ng-advanced-table/locale';
+
 import { NatToolbarGroup } from '../../ui/toolbar-group/toolbar-group';
 import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
-import { DEFAULT_PAGE_SIZE_OPTIONS, formatNatTableAccessibilityNumber, sanitizePageSizeOptions } from '../../utils/table-ui.helpers';
+import { formatNatTableAccessibilityNumber } from '../../utils/accessibility-number.util';
+import { DEFAULT_PAGE_SIZE_OPTIONS, sanitizePageSizeOptions } from '../../utils/page-size.util';
 import { NatTableToolbar } from '../table-toolbar/table-toolbar';
 
 type PageSizeOption = {
