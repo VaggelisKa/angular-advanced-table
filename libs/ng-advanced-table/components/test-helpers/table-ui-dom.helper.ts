@@ -29,7 +29,8 @@ const requireElement = <TElement extends Element = Element>(element: TElement | 
 
 const findIn = (parent: ParentNode, selector: string): Element => requireElement(parent.querySelector(selector), selector);
 
-export const attrOf = (parent: ParentNode, selector: string, name: string): string | null => findIn(parent, selector).getAttribute(name);
+export const attrOf = (parent: ParentNode, selector: string, name: string): string | null =>
+  findIn(parent, selector).getAttribute(name);
 
 export const textOf = (parent: ParentNode, selector: string): string => findIn(parent, selector).textContent.trim();
 

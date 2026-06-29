@@ -57,27 +57,20 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
     return this.groupAriaLabel() ?? labels.groupAriaLabel ?? this.tableUiIntl().scrollControl?.groupAriaLabel ?? '';
   });
 
-  protected readonly scrollLeftAriaLabel = computed(() => {
-    const labels = this.resolvedAccessibilityLabels();
+  protected readonly scrollLeftAriaLabel = computed(() => this.resolvedAccessibilityLabels().scrollLeftAriaLabel ?? '');
 
-    return labels.scrollLeftAriaLabel ?? '';
-  });
+  protected readonly scrollRightAriaLabel = computed(() => this.resolvedAccessibilityLabels().scrollRightAriaLabel ?? '');
 
-  protected readonly scrollRightAriaLabel = computed(() => {
-    const labels = this.resolvedAccessibilityLabels();
-
-    return labels.scrollRightAriaLabel ?? '';
-  });
-
-  protected readonly scrollPositionAriaLabel = computed(() => {
-    const labels = this.resolvedAccessibilityLabels();
-
-    return labels.scrollPositionAriaLabel ?? '';
-  });
+  protected readonly scrollPositionAriaLabel = computed(() => this.resolvedAccessibilityLabels().scrollPositionAriaLabel ?? '');
 
   protected readonly positionText = computed(() => {
     const labels = this.resolvedAccessibilityLabels();
-    const context = buildScrollPositionContext(this.scrollLeft(), this.maxScrollLeft(), this.tableUiIntl().formatNumber, this.localeId());
+    const context = buildScrollPositionContext(
+      this.scrollLeft(),
+      this.maxScrollLeft(),
+      this.tableUiIntl().formatNumber,
+      this.localeId()
+    );
 
     return labels.scrollPositionText?.(context) ?? '';
   });

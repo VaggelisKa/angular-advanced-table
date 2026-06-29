@@ -1,7 +1,14 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { getOpenMenuHarness, getOpenMenuItem, getOpenMoveMenuItem, getOpenPinMenu, requireOpenMenu, textOf } from '../../test-helpers/table-ui-dom.helper';
+import {
+  getOpenMenuHarness,
+  getOpenMenuItem,
+  getOpenMoveMenuItem,
+  getOpenPinMenu,
+  requireOpenMenu,
+  textOf
+} from '../../test-helpers/table-ui-dom.helper';
 import { CustomAccessibilityLabelsHost } from '../../test-helpers/table-ui-label-hosts.helper';
 import { ProviderAccessibilityLabelsHost } from '../../test-helpers/table-ui-provider-host.helper';
 

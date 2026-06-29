@@ -1,6 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 
-import { BusyExportHost, CustomEventHost, ExplicitControllerHost, ExportValueMappingHost } from './test-helpers/table-export-hosts.helper';
+import {
+  BusyExportHost,
+  CustomEventHost,
+  ExplicitControllerHost,
+  ExportValueMappingHost
+} from './test-helpers/table-export-hosts.helper';
 import {
   DefaultExportHost,
   downloadMock,

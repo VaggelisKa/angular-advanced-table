@@ -15,7 +15,11 @@ import {
   root,
   textOf
 } from '../../test-helpers/table-ui-dom.helper';
-import { CustomSortIndicatorHost, HiddenHeaderActionLabelHost, MoveOnlyHeaderActionsHost } from '../../test-helpers/table-ui-header-hosts.helper';
+import {
+  CustomSortIndicatorHost,
+  HiddenHeaderActionLabelHost,
+  MoveOnlyHeaderActionsHost
+} from '../../test-helpers/table-ui-header-hosts.helper';
 import { TableUiHost } from '../../test-helpers/table-ui-hosts.helper';
 
 describe('FEATURE: NatTable UI', () => {
