@@ -1,8 +1,8 @@
+import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
 import type {
   NatTableRenderMetricsIntl,
   NatTableRenderMetricsLocalesMap,
-  NatTableRenderMetricsNumberFormatter,
   RowRenderFilterOption,
   RowRenderTone
 } from './render-metrics.type';
@@ -26,9 +26,6 @@ const getRenderToneLabel = (tone: RowRenderTone | 'idle'): string => {
       return 'Idle';
   }
 };
-
-const DEFAULT_NUMBER_FORMATTER: NatTableRenderMetricsNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
 
 /** Built-in English labels shipped with `ng-advanced-table/locale`. */
 export const NAT_EN_RENDER_METRICS_LOCALE_LABELS: NatTableRenderMetricsIntl = {

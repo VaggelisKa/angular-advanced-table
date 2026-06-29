@@ -1,8 +1,6 @@
-import type { NatTableIntl, NatTableLocalesMap, NatTableNumberFormatter } from './accessibility.type';
+import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
+import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
-
-const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
 
 const pluralize = (label: string, count: number): string => (count === 1 ? label : `${label}s`);
 

@@ -1,8 +1,6 @@
-import type { NatTableControlsIntl, NatTableControlsLocalesMap, NatTableControlsNumberFormatter } from './controls.type';
+import type { NatTableControlsIntl, NatTableControlsLocalesMap } from './controls.type';
+import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
-
-const DEFAULT_NUMBER_FORMATTER: NatTableControlsNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
 
 const describeSortState = (sortState: 'ascending' | 'descending'): string =>
   sortState === 'ascending' ? 'in ascending order' : 'in descending order';
