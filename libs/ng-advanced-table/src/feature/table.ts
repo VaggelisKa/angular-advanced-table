@@ -20,6 +20,7 @@ import {
 import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
+import { NatTableCell } from './table-state-cell.directive';
 import type { NatTableRowRenderedEvent } from '../common/events.type';
 import type {
   NatTableDataStatus,
@@ -51,7 +52,6 @@ import {
   originatesFromInteractiveDescendant,
   shouldHidePrimitiveHeaderLabel
 } from '../utils/table-utils';
-import { NatTableCell } from './table-state-cell.directive';
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
