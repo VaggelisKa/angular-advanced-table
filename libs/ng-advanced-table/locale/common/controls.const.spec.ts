@@ -200,7 +200,9 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
-        expect(formatsNumber(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
+        expect(formatsNumber(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(
+          true
+        );
       });
     });
   });

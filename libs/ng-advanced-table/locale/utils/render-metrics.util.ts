@@ -1,3 +1,4 @@
+import { DEFAULT_NUMBER_FORMATTER } from '../common/locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from '../common/locale-id.const';
 import { NAT_EN_RENDER_METRICS_LOCALE_LABELS } from '../common/render-metrics.const';
 import type {
@@ -7,13 +8,9 @@ import type {
   NatTableRenderMetricsIntlConfig,
   NatTableRenderMetricsIntlProviderConfig,
   NatTableRenderMetricsLocalesMap,
-  NatTableRenderMetricsNumberFormatter,
   NatTableRenderMetricsPanelIntl,
   NatTableRenderMetricsWidgetsIntl
 } from '../common/render-metrics.type';
-
-const DEFAULT_NUMBER_FORMATTER: NatTableRenderMetricsNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
 
 /** Merges the render-metrics filter text fields, override values winning. */
 const mergeRenderMetricsFilterText = (

@@ -59,7 +59,10 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
   describe('GIVEN: every built-in render-metrics locale dictionary', () => {
     describe('WHEN: inspecting the render-metrics filter', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics filter copy', (localeId) => {
-        const renderMetrics = expectDefined(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
+        const renderMetrics = expectDefined(
+          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
+          `${localeId}: renderMetrics`
+        );
         const filter = expectDefined(renderMetrics.filter, `${localeId}: renderMetrics.filter`);
         const options = expectDefined(filter.options, `${localeId}: renderMetrics.filter.options`);
 
@@ -77,7 +80,10 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the render-metrics panel', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics panel copy', (localeId) => {
-        const renderMetrics = expectDefined(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
+        const renderMetrics = expectDefined(
+          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
+          `${localeId}: renderMetrics`
+        );
         const panel = expectDefined(renderMetrics.panel, `${localeId}: renderMetrics.panel`);
         const toneLabel = expectDefined(panel.toneLabel, `${localeId}: renderMetrics.panel.toneLabel`);
 
@@ -94,7 +100,10 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the render-metrics column', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics column copy', (localeId) => {
-        const renderMetrics = expectDefined(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
+        const renderMetrics = expectDefined(
+          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
+          `${localeId}: renderMetrics`
+        );
         const column = expectDefined(renderMetrics.column, `${localeId}: renderMetrics.column`);
 
         expect(isNonEmptyText(column.header), `${localeId}: column.header`).toBe(true);
@@ -106,9 +115,10 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
-        expect(formatsNumber(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(
-          true
-        );
+        expect(
+          formatsNumber(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].formatNumber, localeId),
+          `${localeId}: formatNumber`
+        ).toBe(true);
       });
     });
   });

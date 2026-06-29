@@ -5,7 +5,8 @@ export {
   mergeHeaderActionLabels,
   mergePageSizeLabels,
   mergePagerLabels,
-  mergeScrollControlLabels
+  mergeScrollControlLabels,
+  mergeSelectionLabels
 } from './controls-labels.util';
 
 export { resolveNatTableControlsIntl } from './controls.util';

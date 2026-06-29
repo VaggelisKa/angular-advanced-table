@@ -13,17 +13,14 @@ import type {
   NatTableControlsIntlConfig,
   NatTableControlsIntlProviderConfig,
   NatTableControlsLocalesMap,
-  NatTableControlsNumberFormatter,
   NatTableHeaderActionsIntl,
   NatTablePageSizeIntl,
   NatTablePagerIntl,
   NatTableScrollControlIntl,
   NatTableSelectionIntl
 } from '../common/controls.type';
+import { DEFAULT_NUMBER_FORMATTER } from '../common/locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from '../common/locale-id.const';
-
-const DEFAULT_NUMBER_FORMATTER: NatTableControlsNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
 
 const mergeDefined = <T extends object>(parent: T | undefined, override: T | undefined): T => {
   const merged = {

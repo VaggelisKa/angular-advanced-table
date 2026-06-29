@@ -4,13 +4,10 @@ import type {
   NatTableIntl,
   NatTableIntlConfig,
   NatTableIntlProviderConfig,
-  NatTableLocalesMap,
-  NatTableNumberFormatter
+  NatTableLocalesMap
 } from '../common/accessibility.type';
+import { DEFAULT_NUMBER_FORMATTER } from '../common/locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from '../common/locale-id.const';
-
-const DEFAULT_NUMBER_FORMATTER: NatTableNumberFormatter = (value, options, locale) =>
-  new Intl.NumberFormat(locale, options).format(value);
 
 /** Merges the description and keyboard instruction text, override values winning. */
 const mergeAccessibilityInstructions = (
