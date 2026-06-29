@@ -105,9 +105,7 @@ const mergeLocaleMaps = (parentLocales: NatTableLocalesMap, overrideLocales: Nat
 const isIntlConfig = (config: NatTableIntlProviderConfig): config is NatTableIntlConfig => 'locales' in config;
 
 const normalizeIntlProviderConfig = (config: NatTableIntlProviderConfig): NatTableIntlConfig => {
-  if (isIntlConfig(config)) {
-    return config;
-  }
+  if (isIntlConfig(config)) return config;
 
   return {
     locales: {

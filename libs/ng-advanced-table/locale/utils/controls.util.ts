@@ -34,7 +34,10 @@ const mergeDefined = <T extends object>(parent: T | undefined, override: T | und
   return merged as T;
 };
 
-const mergeColumnVisibilitySlice = (parent: NatTableControlsIntl | undefined, override: NatTableControlsIntl): NatTableColumnVisibilityIntl => ({
+const mergeColumnVisibilitySlice = (
+  parent: NatTableControlsIntl | undefined,
+  override: NatTableControlsIntl
+): NatTableColumnVisibilityIntl => ({
   ...mergeDefined(parent?.columnVisibility, override.columnVisibility),
   accessibilityLabels: mergeColumnVisibilityLabels(
     parent?.columnVisibility?.accessibilityLabels,
@@ -52,7 +55,10 @@ const mergePagerSlice = (parent: NatTableControlsIntl | undefined, override: Nat
   accessibilityLabels: mergePagerLabels(parent?.pager?.accessibilityLabels, override.pager?.accessibilityLabels)
 });
 
-const mergeScrollControlSlice = (parent: NatTableControlsIntl | undefined, override: NatTableControlsIntl): NatTableScrollControlIntl => ({
+const mergeScrollControlSlice = (
+  parent: NatTableControlsIntl | undefined,
+  override: NatTableControlsIntl
+): NatTableScrollControlIntl => ({
   ...mergeDefined(parent?.scrollControl, override.scrollControl),
   accessibilityLabels: mergeScrollControlLabels(
     parent?.scrollControl?.accessibilityLabels,
@@ -60,7 +66,10 @@ const mergeScrollControlSlice = (parent: NatTableControlsIntl | undefined, overr
   )
 });
 
-const mergeHeaderActionsSlice = (parent: NatTableControlsIntl | undefined, override: NatTableControlsIntl): NatTableHeaderActionsIntl => ({
+const mergeHeaderActionsSlice = (
+  parent: NatTableControlsIntl | undefined,
+  override: NatTableControlsIntl
+): NatTableHeaderActionsIntl => ({
   accessibilityLabels: mergeHeaderActionLabels(parent?.headerActions?.accessibilityLabels, override.headerActions?.accessibilityLabels)
 });
 
@@ -70,7 +79,10 @@ const mergeSelectionSlice = (parent: NatTableControlsIntl | undefined, override:
 });
 
 /** Merges companion components locale dictionaries, with override values taking precedence. */
-const mergeNatTableControlsIntl = (parent: NatTableControlsIntl | undefined, override: NatTableControlsIntl): NatTableControlsIntl => ({
+const mergeNatTableControlsIntl = (
+  parent: NatTableControlsIntl | undefined,
+  override: NatTableControlsIntl
+): NatTableControlsIntl => ({
   search: mergeDefined(parent?.search, override.search),
   columnVisibility: mergeColumnVisibilitySlice(parent, override),
   pageSize: mergePageSizeSlice(parent, override),
@@ -105,9 +117,7 @@ const mergeLocaleMaps = (
 const isControlsIntlConfig = (config: NatTableControlsIntlProviderConfig): config is NatTableControlsIntlConfig => 'locales' in config;
 
 const normalizeControlsIntlProviderConfig = (config: NatTableControlsIntlProviderConfig): NatTableControlsIntlConfig => {
-  if (isControlsIntlConfig(config)) {
-    return config;
-  }
+  if (isControlsIntlConfig(config)) return config;
 
   return {
     locales: {

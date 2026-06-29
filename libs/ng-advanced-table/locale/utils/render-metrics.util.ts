@@ -108,7 +108,10 @@ const mergeRenderMetricsWidgetsIntl = (
 });
 
 /** Merges render-metrics locale dictionaries, with override values taking precedence. */
-const mergeNatTableRenderMetricsIntl = (parent: NatTableRenderMetricsIntl | undefined, override: NatTableRenderMetricsIntl): NatTableRenderMetricsIntl => ({
+const mergeNatTableRenderMetricsIntl = (
+  parent: NatTableRenderMetricsIntl | undefined,
+  override: NatTableRenderMetricsIntl
+): NatTableRenderMetricsIntl => ({
   renderMetrics: mergeRenderMetricsWidgetsIntl(parent?.renderMetrics, override.renderMetrics),
   formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER
 });
@@ -135,12 +138,13 @@ const mergeLocaleMaps = (
   return merged;
 };
 
-const isRenderMetricsIntlConfig = (config: NatTableRenderMetricsIntlProviderConfig): config is NatTableRenderMetricsIntlConfig => 'locales' in config;
+const isRenderMetricsIntlConfig = (config: NatTableRenderMetricsIntlProviderConfig): config is NatTableRenderMetricsIntlConfig =>
+  'locales' in config;
 
-const normalizeRenderMetricsIntlProviderConfig = (config: NatTableRenderMetricsIntlProviderConfig): NatTableRenderMetricsIntlConfig => {
-  if (isRenderMetricsIntlConfig(config)) {
-    return config;
-  }
+const normalizeRenderMetricsIntlProviderConfig = (
+  config: NatTableRenderMetricsIntlProviderConfig
+): NatTableRenderMetricsIntlConfig => {
+  if (isRenderMetricsIntlConfig(config)) return config;
 
   return {
     locales: {

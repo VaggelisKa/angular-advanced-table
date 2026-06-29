@@ -5,10 +5,11 @@ describe('FEATURE: controls label merge', () => {
     describe('WHEN: merging field by field', () => {
       const merged = mergePageSizeLabels({ groupAriaLabel: 'Parent group' }, { pageSizeOptionText: () => 'override' });
 
-      it('THEN: the override wins and the parent fills the gaps', () => {
-        // then: unset override field falls back to the parent
+      it('THEN: unset override field falls back to the parent', () => {
         expect(merged.groupAriaLabel).toBe('Parent group');
-        // then: supplied override formatter wins
+      });
+
+      it('THEN: supplied override formatter wins', () => {
         expect(merged.pageSizeOptionText?.({ pageSizeValue: 1, pageSizeText: '1', selectionState: 'not-selected' })).toBe('override');
       });
     });
