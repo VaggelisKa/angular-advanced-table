@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/angular-table';
 import type {
   NatTableColumnMeta as InternalNatTableColumnMeta,
   NatTableRenderMetricsController as InternalNatTableRenderMetricsController,
-  NatTableState
+  NatTableUserState
 } from 'ng-advanced-table/testing';
 
 import type { NatTableColumnMeta, NatTableRenderMetricsController, NatTableRenderMetricsState } from './contracts.type';
@@ -20,7 +20,7 @@ type Equal<T, U> =
       : false
     : false;
 
-type RenderMetricsStateMatchesCore = Expect<Equal<NatTableRenderMetricsState, NatTableState>>;
+type RenderMetricsStateMatchesCore = Expect<Equal<NatTableRenderMetricsState, NatTableUserState>>;
 type RenderMetricsColumnMetaMatchesCore = Expect<
   Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
 >;

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 
 import { baseColumns, buildHeaderActionCompositionColumns, buildRows, sortIndicatorGlyph } from './table-data.helper';
 import type { Row } from './table-data.helper';
@@ -23,9 +23,9 @@ export class CustomSortIndicatorHost {
     sortIndicator: ({ sortState }) => sortIndicatorGlyph(sortState)
   });
 
-  public readonly tableState = signal<Partial<NatTableState>>({});
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
 
-  protected onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);
   }
 }
@@ -46,9 +46,9 @@ export class MoveOnlyHeaderActionsHost {
     enableColumnReorderActions: true
   });
 
-  public readonly tableState = signal<Partial<NatTableState>>({});
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
 
-  protected onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);
   }
 }
@@ -82,9 +82,9 @@ export class HiddenHeaderActionLabelHost {
     })
   );
 
-  public readonly tableState = signal<Partial<NatTableState>>({});
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
 
-  protected onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);
   }
 }
@@ -119,9 +119,9 @@ export class HeaderActionCompositionHost {
     }
   );
 
-  public readonly tableState = signal<Partial<NatTableState>>({});
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
 
-  protected onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);
   }
 }
@@ -138,9 +138,9 @@ export class HeaderActionCompositionHost {
 export class MultiSortHost {
   protected readonly rows = signal<Row[]>(buildRows(6));
   protected readonly columns = withNatTableHeaderActions(baseColumns);
-  public readonly tableState = signal<Partial<NatTableState>>({});
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
 
-  protected onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);
   }
 }

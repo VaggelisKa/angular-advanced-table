@@ -3,7 +3,7 @@ import type {
   Expect,
   NatTableColumnMeta as InternalNatTableColumnMeta,
   NatTableSortIndicatorContext as InternalNatTableSortIndicatorContext,
-  NatTableState as InternalNatTableState,
+  NatTableUserState as InternalNatTableState,
   NatTableUiController as InternalNatTableUiController
 } from 'ng-advanced-table/testing';
 
@@ -11,15 +11,15 @@ import type {
   NatTableColumnMeta,
   NatTableColumnMoveDirection,
   NatTableSortIndicatorContext,
-  NatTableState,
-  NatTableUiController
+  NatTableUiController,
+  NatTableUserState
 } from './table.type';
 
 type ContractRow = {
   readonly amount: number;
 };
 
-type NatTableStateMatchesInternalContract = Expect<Equal<NatTableState, InternalNatTableState>>;
+type NatTableStateMatchesInternalContract = Expect<Equal<NatTableUserState, InternalNatTableState>>;
 type NatTableColumnMetaMatchesInternalContract = Expect<
   Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>
 >;
@@ -45,7 +45,7 @@ describe('FEATURE: ng-advanced-table public table contracts', () => {
 
         expect(contractChecks).toStrictEqual([true, true, true, true]);
 
-        const stateKey: keyof NatTableState = 'pagination';
+        const stateKey: keyof NatTableUserState = 'pagination';
         const moveDirection: NatTableColumnMoveDirection = 'right';
         const meta: NatTableColumnMeta<ContractRow, number> = {
           hiddenHeaderLabel: 'Amount',

@@ -1,5 +1,13 @@
 export { NatTable } from './feature/table';
 
+export { NatTableA11yService } from './domain-logic/table-a11y.service';
+
+export { NatTableHeaderMeasurementService } from './domain-logic/table-header-measurement.service';
+
+export { NatTableReorderService } from './domain-logic/table-reorder.service';
+
+export { NatTableResizeService } from './domain-logic/table-resize.service';
+
 export { NatTableService } from './domain-logic/table.service';
 
 export { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from './ui/table-state-templates';
@@ -23,7 +31,7 @@ export type {
   NatTableSortIndicatorContext,
   NatTableMode,
   NatTableModeConfiguration,
-  NatTableState,
+  NatTableUserState,
   NatTableUiController,
   NatTableUiState
 } from './common/table.type';

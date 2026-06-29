@@ -6,7 +6,7 @@ import type { MockInstance } from 'vitest';
 import { afterEach, beforeEach, expect, vi } from 'vitest';
 
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 
 import type { NatTableExportContext } from '../../../common/table-export.type';
 import { NatToolbarItem } from '../../../ui/toolbar-item/toolbar-item.directive';
@@ -113,7 +113,7 @@ export const expectClientCsvDownload = (fileName: string): Blob => {
 export class DefaultExportHost {
   protected readonly rows = EXPORT_ROWS;
   protected readonly columns = EXPORT_COLUMNS;
-  protected readonly tableState: Partial<NatTableState> = {
+  protected readonly tableState: Partial<NatTableUserState> = {
     columnOrder: ['details', 'name', 'price', 'actions'],
     columnVisibility: { price: false }
   };

@@ -168,12 +168,12 @@ Use manual modes when your app owns pagination, sorting, or filtering outside th
 ```
 
 ```ts
-protected onTableStateChange(state: Partial<NatTableState>): void {
+protected onTableStateChange(state: Partial<NatTableUserState>): void {
   this.tableState.set(state);
   this.loadServerRows(state);
 }
 
-private loadServerRows(state: Partial<NatTableState>): void {
+private loadServerRows(state: Partial<NatTableUserState>): void {
   this.status.set(NAT_TABLE_DATA_STATUS.loading);
   this.error.set(null);
   const pagination = state.pagination ?? { pageIndex: 0, pageSize: 25 };

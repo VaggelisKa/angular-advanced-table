@@ -22,7 +22,7 @@ import type {
  * Serializable view state exposed by {@link NatTable} and emitted through
  * `stateChange`.
  */
-export type NatTableState = {
+export type NatTableUserState = {
   /** Active single-column sort order. */
   readonly sorting: SortingState;
   /** Current global search query. */
@@ -86,12 +86,16 @@ export type TableColumnRenderState = {
   readonly cellMaxLines: number | null;
   readonly ariaSort: 'ascending' | 'descending' | null;
   readonly rowHeader: boolean;
+  /** Precomputed space-separated CSS classes for header cells. */
+  readonly headerClassMap: string;
+  /** Precomputed space-separated CSS classes for body cells. */
+  readonly cellClassMap: string;
 };
 
 /** Precomputed inputs shared across every column when building render state. */
 export type ColumnRenderStateContext<TData extends RowData> = {
   readonly widths: Record<string, number>;
-  readonly state: NatTableState;
+  readonly state: NatTableUserState;
   readonly userColumnSizing: Record<string, TableColumnSizingState>;
   readonly primarySortColumnId: string | null;
   readonly leftVisibleColumns: Column<TData, unknown>[];
@@ -507,8 +511,8 @@ export type NatTableModeConfiguration = {
   readonly filtering?: NatTableMode;
 };
 
-/** Alias to NatTableState for UI component consumption. */
-export type NatTableUiState = NatTableState;
+/** Alias to NatTableUserState for UI component consumption. */
+export type NatTableUiState = NatTableUserState;
 
 /**
  * Minimal table-controller contract consumed by UI companion controls.

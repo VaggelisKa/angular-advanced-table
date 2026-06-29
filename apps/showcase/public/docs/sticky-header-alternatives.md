@@ -73,14 +73,14 @@ To enable pagination, place the `<nat-table-pagination>` component inside the ta
 
 ```ts
 import { Component, signal, computed } from '@angular/core';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 
 export class OrderTableComponent {
   protected readonly rows = signal(ORDER_DATA);
   protected readonly columns = ORDER_COLUMNS;
 
   // Let the table handle pagination state internally or control it
-  protected readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableUserState>>({
     pagination: { pageIndex: 0, pageSize: 10 }
   });
 }

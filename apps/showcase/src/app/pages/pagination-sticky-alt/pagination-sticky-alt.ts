@@ -5,7 +5,7 @@ import { Component, signal } from '@angular/core';
 
 import type { ColumnDef } from '@tanstack/angular-table';
 import { flexRenderComponent } from '@tanstack/angular-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTablePagination, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
@@ -174,7 +174,7 @@ export class PaginationStickyAlt {
   protected readonly columns = mockOrderColumns;
   protected readonly getRowId = getMockOrderRowId;
 
-  public readonly tableState = signal<Partial<NatTableState>>({
+  public readonly tableState = signal<Partial<NatTableUserState>>({
     pagination: {
       pageIndex: 0,
       pageSize: 5

@@ -7,7 +7,7 @@ Use row selection when users need to compare, batch, or act on rows. Do not use 
 Selection is stored by stable row id in the `rowSelection` state slice. Rows with a string or number `id` property use that value automatically. Provide `getRowId` when identity is composite or lives elsewhere.
 
 ```ts
-readonly tableState = signal<Partial<NatTableState>>({
+readonly tableState = signal<Partial<NatTableUserState>>({
   rowSelection: {
     'position-1': true,
   },

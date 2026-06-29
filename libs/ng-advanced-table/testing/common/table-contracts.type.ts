@@ -22,7 +22,7 @@ import type {
  * packages. Published entry points must expose local public interfaces so
  * package declarations do not reference this private library.
  */
-export type NatTableState = {
+export type NatTableUserState = {
   readonly sorting: SortingState;
   readonly globalFilter: string;
   readonly columnFilters: ColumnFiltersState;
@@ -92,7 +92,7 @@ export type NatTableRenderMetricsController<TData extends RowData = RowData> = {
   readonly localeId?: Signal<string>;
   patchState(
     updaters: Partial<{
-      [K in keyof NatTableState]: Updater<NatTableState[K]>;
+      [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
     }>
   ): void;
 };
@@ -106,7 +106,7 @@ export type NatTableUiController<TData extends RowData = RowData> = {
   enablePagination(): boolean;
   patchState(
     updaters: Partial<{
-      [K in keyof NatTableState]: Updater<NatTableState[K]>;
+      [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
     }>
   ): void;
   readonly tableElementId: Signal<string>;

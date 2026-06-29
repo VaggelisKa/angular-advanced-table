@@ -8,8 +8,8 @@ import type {
   NatTableAccessibilityText,
   NatTableMode,
   NatTableModeConfiguration,
-  NatTableState,
-  NatTableUiController
+  NatTableUiController,
+  NatTableUserState
 } from '../common/table.type';
 import { createNatTableKeyboard, mergeNatTableKeybindings } from '../utils/keybindings';
 
@@ -23,10 +23,10 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly controller = this.controllerSignal.asReadonly();
 
   // Model state bound from the surface component
-  private readonly stateSignal = signal<Partial<NatTableState>>({});
+  private readonly stateSignal = signal<Partial<NatTableUserState>>({});
   public readonly state = this.stateSignal.asReadonly();
 
-  public readonly surfaceInitialState = signal<Partial<NatTableState>>({});
+  public readonly surfaceInitialState = signal<Partial<NatTableUserState>>({});
   public readonly surfaceMode = signal<NatTableMode | NatTableModeConfiguration>('auto');
 
   public readonly manualPageCount = signal<number | undefined>(undefined);
@@ -84,7 +84,7 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly hasSearch = computed(() => this.searchRegistrations() > 0);
 
   // Writable signal to emit state updates from NatTable back to NatTableSurface
-  public readonly stateChangeEvent = signal<NatTableState | null>(null);
+  public readonly stateChangeEvent = signal<NatTableUserState | null>(null);
 
   public setController(controller: NatTableUiController<TData> | null): void {
     this.controllerSignal.set(controller);
@@ -94,15 +94,15 @@ export class NatTableService<TData extends RowData = RowData> {
     this.controllerSignal.update((current) => (current === controller ? null : current));
   }
 
-  public notifyStateChange(state: NatTableState): void {
+  public notifyStateChange(state: NatTableUserState): void {
     this.stateChangeEvent.set(state);
   }
 
-  public updateState(updater: (current: Partial<NatTableState>) => Partial<NatTableState>): void {
+  public updateState(updater: (current: Partial<NatTableUserState>) => Partial<NatTableUserState>): void {
     this.stateSignal.update(updater);
   }
 
-  public setState(value: Partial<NatTableState>): void {
+  public setState(value: Partial<NatTableUserState>): void {
     this.stateSignal.set(value);
   }
 
