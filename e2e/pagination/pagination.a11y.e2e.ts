@@ -6,13 +6,12 @@ test.describe('FEATURE: Pagination accessibility', () => {
   });
 
   test.describe('GIVEN: the pagination example is loaded', () => {
-    test.describe('WHEN: keyboard activates page-size and navigation buttons', () => {
+    test.describe('WHEN: keyboard activates page-size select and navigation buttons', () => {
       test('THEN: it navigates client-side pagination using keyboard only', async ({ page }) => {
         const clientCard = page.locator('.card', { hasText: 'Paginated Grid (Client-Side)' });
         const clientTable = clientCard.locator('table');
         const pager = clientCard.getByRole('toolbar');
-        const btn5 = pager.getByRole('button', { name: '5' });
-        const btn3 = pager.getByRole('button', { name: '3' });
+        const rowsPerPageSelect = pager.getByRole('combobox');
         const nextBtn = pager.getByRole('button', { name: 'Next page' });
         const prevBtn = pager.getByRole('button', { name: 'Previous page' });
 
@@ -21,16 +20,16 @@ test.describe('FEATURE: Pagination accessibility', () => {
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });
 
-        await test.step('THEN: five rows are shown after focusing size 5 and pressing Space', async () => {
-          await btn5.focus();
-          await page.keyboard.press('Space');
+        await test.step('THEN: five rows are shown after selecting page size 5 via keyboard', async () => {
+          await rowsPerPageSelect.focus();
+          await rowsPerPageSelect.selectOption('5');
 
           await expect(clientTable.locator('tbody tr')).toHaveCount(5);
         });
 
-        await test.step('THEN: three rows are shown after focusing size 3 and pressing Enter', async () => {
-          await btn3.focus();
-          await page.keyboard.press('Enter');
+        await test.step('THEN: three rows are shown after selecting page size 3 via keyboard', async () => {
+          await rowsPerPageSelect.focus();
+          await rowsPerPageSelect.selectOption('3');
 
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });

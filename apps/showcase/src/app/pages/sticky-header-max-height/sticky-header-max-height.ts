@@ -1,15 +1,17 @@
 /* eslint-disable max-lines */
+/* eslint-disable import-x/order */
+
 import { Component } from '@angular/core';
 
-import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef } from '@tanstack/angular-table';
-import { NatTable } from 'ng-advanced-table';
+import { flexRenderComponent } from '@tanstack/angular-table';
 import type { NatTableState } from 'ng-advanced-table';
+import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
-import type { MockOrderRow } from '../mock-order-data';
-import { OrderCode, OrderStatusBadge } from '../mock-order-data';
 import { NatRowActionsMenu } from '../table-showcase-page/nat-row-actions-menu';
+import type { MockOrderRow } from '../mock-order-data';
+import { OrderCode, OrderStatusBadge, generateMockOrderRows, getMockOrderRowId } from '../mock-order-data';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -22,63 +24,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   day: 'numeric'
 });
 
-const mockOrderRows: readonly MockOrderRow[] = [
-  {
-    id: 'ord-1007',
-    customer: 'Northstar Supply',
-    owner: 'Northstar Global Distribution Cooperative',
-    channel: 'Wholesale',
-    region: 'West',
-    status: 'Ready',
-    items: 18,
-    updatedAt: Date.UTC(2026, 5, 6),
-    total: 18400
-  },
-  {
-    id: 'ord-1002',
-    customer: 'Juniper Foods',
-    owner: 'Juniper Foods',
-    channel: 'Online',
-    region: 'Midwest',
-    status: 'Queued',
-    items: 7,
-    updatedAt: Date.UTC(2026, 5, 4),
-    total: 9200
-  },
-  {
-    id: 'ord-1011',
-    customer: 'Atlas Studio',
-    owner: 'Atlas Studio International Design Group',
-    channel: 'Retail',
-    region: 'Northeast',
-    status: 'Review',
-    items: 12,
-    updatedAt: Date.UTC(2026, 5, 7),
-    total: 12750
-  },
-  {
-    id: 'ord-1004',
-    customer: 'Harbor Retail',
-    owner: 'Harbor Retail',
-    channel: 'Retail',
-    region: 'South',
-    status: 'Ready',
-    items: 24,
-    updatedAt: Date.UTC(2026, 5, 5),
-    total: 22100
-  },
-  {
-    id: 'ord-1009',
-    customer: 'Pioneer Labs',
-    owner: 'Pioneer Labs Advanced Fulfillment Partners',
-    channel: 'Online',
-    region: 'West',
-    status: 'Review',
-    items: 15,
-    updatedAt: Date.UTC(2026, 5, 8),
-    total: 14600
-  }
-];
+const mockOrderRows = generateMockOrderRows(50);
 
 const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderActions([
   {
@@ -219,19 +165,20 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
 
 const preconfiguredTableState: Partial<NatTableState> = {
   columnPinning: {
-    left: ['owner'],
-    right: ['actions']
+    left: ['id'],
+    right: []
   }
 };
 
 @Component({
-  selector: 'app-simple-sorting-page',
+  selector: 'app-sticky-header-max-height',
   imports: [NatTable, NatTableSurface],
-  templateUrl: './simple-sorting-page.html',
-  styleUrl: './simple-sorting-page.css'
+  templateUrl: './sticky-header-max-height.html',
+  styleUrl: './sticky-header-max-height.css'
 })
-export class SimpleSortingPage {
+export class StickyHeaderMaxHeight {
   protected readonly rows = mockOrderRows;
   protected readonly columns = mockOrderColumns;
   protected readonly tableState = preconfiguredTableState;
+  protected readonly getRowId = getMockOrderRowId;
 }

@@ -1,20 +1,18 @@
 @if (controller(); as ctrl) { @if (ctrl.enablePagination()) {
 <nat-table-toolbar [accessibleName]="resolvedPagerAriaLabel()" class="pagination-toolbar">
   <!-- Page Size Selection -->
-  <div [accessibleName]="resolvedPageSizeAriaLabel()" class="chip-row compact" natToolbarGroup="start">
-    @for (option of resolvedPageSizeOptions(); track option.pageSize) {
-    <button
+  <div [accessibleName]="resolvedPageSizeAriaLabel()" class="page-size-group" natToolbarGroup="start">
+    <select
       [attr.aria-controls]="tableElementId()"
-      [attr.aria-label]="option.ariaLabel"
-      [attr.aria-pressed]="selectedPageSize() === option.pageSize"
-      [class.is-active]="selectedPageSize() === option.pageSize"
-      [natToolbarItem]="`page-size-${option.pageSize}`"
-      class="chip"
-      type="button"
-      (click)="setPageSize(option.pageSize)">
-      {{ option.text }}
-    </button>
-    }
+      [attr.aria-label]="resolvedPageSizeAriaLabel()"
+      [value]="selectedPageSize()"
+      class="page-size-select"
+      natToolbarItem="page-size-select"
+      (change)="setPageSize(+$any($event.target).value)">
+      @for (option of resolvedPageSizeOptions(); track option.pageSize) {
+      <option [attr.aria-label]="option.ariaLabel" [value]="option.pageSize">{{ option.text }}</option>
+      }
+    </select>
   </div>
 
   <!-- Pager Navigation -->

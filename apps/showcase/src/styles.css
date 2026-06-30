@@ -78,6 +78,16 @@ input {
 
 /* ---------- Shared showcase page layout ---------- */
 .showcase-page {
+  display: grid;
+  align-items: start;
+  min-height: 100vh;
+  padding: 24px;
+  color: var(--showcase-page-text);
+  color-scheme: light;
+  background: var(--showcase-page-bg);
+}
+
+.showcase-shell {
   --showcase-page-bg: #f6f7f9;
   --showcase-page-text: #0f1419;
   --showcase-page-text-soft: #5b6672;
@@ -118,16 +128,9 @@ input {
   --showcase-page-mono-font: 'JetBrains Mono', 'SFMono-Regular', menlo, monaco, consolas, ui-monospace, monospace;
   --showcase-page-shadow: 0 1px 2px rgb(15 20 25 / 4%), 0 8px 24px rgb(15 20 25 / 6%);
   --showcase-page-shadow-sm: 0 1px 2px rgb(15 20 25 / 4%);
-
-  display: grid;
-  align-items: start;
-  min-height: 100vh;
-  padding: 24px;
-  color: var(--showcase-page-text);
-  color-scheme: light;
-  background: var(--showcase-page-bg);
 }
 
+.showcase-shell[data-theme='dark'],
 .showcase-shell[data-theme='dark'] .showcase-page,
 .showcase-page[data-theme='dark'] {
   --showcase-page-bg: #0b0d10;
@@ -356,7 +359,7 @@ input {
   --nat-table-space-control-block-gap: 12px;
   --nat-table-space-toolbar-gap: 14px;
   --nat-table-space-toolbar-margin-bottom: 16px;
-  --nat-table-space-pager-gap: 10px;
+  --nat-table-space-pager-gap: 8px;
   --nat-table-space-chip-row-gap: 10px;
   --nat-table-space-header-content-gap: 6px;
   --nat-table-space-cell-y: 10px;

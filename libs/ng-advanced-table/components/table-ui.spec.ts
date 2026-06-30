@@ -726,7 +726,7 @@ describe('FEATURE: NatTable UI', () => {
 
         const table = root(fixture).querySelector('nat-table table') as HTMLTableElement;
         const columnChip = root(fixture).querySelector('.column-chip') as HTMLButtonElement;
-        const pageSizeButton = root(fixture).querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeSelect = root(fixture).querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pagerButton = root(fixture).querySelector('nat-table-pager .pager-button') as HTMLButtonElement;
         const scrollButton = root(fixture).querySelector('nat-table-scroll-control .scroll-button') as HTMLButtonElement;
         const scrollRange = root(fixture).querySelector('nat-table-scroll-control .scroll-range') as HTMLInputElement;
@@ -734,9 +734,13 @@ describe('FEATURE: NatTable UI', () => {
         expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
         expect(columnChip.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Service Shown');
         expect(columnChip.getAttribute('aria-label')).toBe('Service shown. Hide column');
-        expect(pageSizeButton.getAttribute('aria-controls')).toBe(table.id);
-        expect(pageSizeButton.textContent.trim()).toBe('2 rows');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
+        expect(pageSizeSelect.getAttribute('aria-controls')).toBe(table.id);
+        expect(pageSizeSelect.getAttribute('aria-label')).toBe('Rows per page');
+        const firstOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstOption.value).toBe('2');
+        expect(firstOption.textContent.trim()).toBe('2 rows');
+        expect(firstOption.getAttribute('aria-label')).toBe('2 rows per page');
         expect(pagerButton.getAttribute('aria-controls')).toBe(table.id);
         expect(scrollButton.getAttribute('aria-controls')).toBe(table.id);
         expect(scrollRange.getAttribute('aria-controls')).toBe(table.id);
@@ -829,13 +833,12 @@ describe('FEATURE: NatTable UI', () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         fixture.detectChanges();
 
-        const pageSizeButton = Array.from(root(fixture).querySelectorAll('nat-table-page-size .chip'))
-          .map((button) => button as HTMLButtonElement)
-          .find((button) => button.textContent.includes('3 rows')) as HTMLButtonElement;
+        const pageSizeSelect = root(fixture).querySelector('nat-table-page-size select') as HTMLSelectElement;
         const nextButton = root(fixture).querySelector('nat-table-pager .pager-button:last-child') as HTMLButtonElement;
 
         // when: page size is changed to 3
-        pageSizeButton.click();
+        pageSizeSelect.value = '3';
+        pageSizeSelect.dispatchEvent(new Event('change'));
         fixture.detectChanges();
 
         // then: pagination state reflects new page size
@@ -870,7 +873,7 @@ describe('FEATURE: NatTable UI', () => {
         expect(toolbar.getAttribute('role')).toBe('toolbar');
         expect(toolbar.getAttribute('aria-label')).toBe('Table pagination');
         expect(groups).toHaveLength(2);
-        expect(root(paginationFixture).querySelectorAll('nat-table-pagination .chip')).toHaveLength(3);
+        expect(root(paginationFixture).querySelectorAll('nat-table-pagination select.page-size-select option')).toHaveLength(3);
         expect(root(paginationFixture).querySelectorAll('nat-table-pagination .pager-button')).toHaveLength(2);
       });
     });
@@ -1262,8 +1265,8 @@ describe('FEATURE: NatTable UI', () => {
         const visibilityGroup = nativeElement.querySelector('nat-table-column-visibility .chip-row') as HTMLElement;
         const firstColumnChip = nativeElement.querySelector('nat-table-column-visibility .column-chip') as HTMLButtonElement;
         const firstColumnState = firstColumnChip.querySelector('.chip-count') as HTMLElement;
-        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .chip-row') as HTMLElement;
-        const pageSizeButton = nativeElement.querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .page-size-container') as HTMLElement;
+        const pageSizeSelect = nativeElement.querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
         const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
         const scrollControl = nativeElement.querySelector('nat-table-scroll-control .scroll-control') as HTMLElement;
@@ -1284,8 +1287,10 @@ describe('FEATURE: NatTable UI', () => {
         expect(firstColumnState.textContent.trim()).toBe('Synlig');
 
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
-        expect(pageSizeButton.textContent.trim()).toBe('2 rækker');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker');
+        const firstPageSizeOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstPageSizeOption.textContent.trim()).toBe('2 rækker');
+        expect(firstPageSizeOption.getAttribute('aria-label')).toBe('Vis 2 rækker');
 
         expect(pager.getAttribute('aria-label')).toBe('Sideskift');
         expect(pagerLabel.textContent.trim()).toBe('Side 2 af 3');
@@ -1368,8 +1373,8 @@ describe('FEATURE: NatTable UI', () => {
         const visibilityHeading = nativeElement.querySelector('nat-table-column-visibility .control-label') as HTMLElement;
         const visibilityCaption = nativeElement.querySelector('nat-table-column-visibility .control-caption') as HTMLElement;
         const visibilityGroup = nativeElement.querySelector('nat-table-column-visibility .chip-row') as HTMLElement;
-        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .chip-row') as HTMLElement;
-        const pageSizeButton = nativeElement.querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .page-size-container') as HTMLElement;
+        const pageSizeSelect = nativeElement.querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
         const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
         const previousButton = nativeElement.querySelector('nat-table-pager .pager-button:first-child') as HTMLButtonElement;
@@ -1384,8 +1389,10 @@ describe('FEATURE: NatTable UI', () => {
         expect(visibilityCaption.textContent.trim()).toBe('Provider n4/n4');
         expect(visibilityGroup.getAttribute('aria-label')).toBe('Provider column visibility');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Provider page size group');
-        expect(pageSizeButton.textContent.trim()).toBe('n2 provider rows');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('Provider show n2 rows');
+        const firstProviderOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstProviderOption.textContent.trim()).toBe('n2 provider rows');
+        expect(firstProviderOption.getAttribute('aria-label')).toBe('Provider show n2 rows');
         expect(pager.getAttribute('aria-label')).toBe('Provider pager');
         expect(pagerLabel.textContent.trim()).toBe('Provider page n2/n3');
         expect(previousButton.getAttribute('aria-label')).toBe('Provider previous');
@@ -1432,8 +1439,8 @@ describe('FEATURE: NatTable UI', () => {
         const nativeElement = localeFixture.nativeElement as HTMLElement;
         const emptyState = nativeElement.querySelector('.empty-state') as HTMLElement;
         const tableSummary = nativeElement.querySelector('p.sr-only') as HTMLElement;
-        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .chip-row') as HTMLElement;
-        const pageSizeButton = nativeElement.querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .page-size-container') as HTMLElement;
+        const pageSizeSelect = nativeElement.querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
         const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
         const nextButton = nativeElement.querySelector('nat-table-pager .pager-button:last-child') as HTMLButtonElement;
@@ -1442,8 +1449,10 @@ describe('FEATURE: NatTable UI', () => {
         expect(emptyState.textContent.trim()).toBe('No rows match the current view.');
         expect(tableSummary.textContent.trim()).toBe('No rows are currently shown. 4 visible columns. Page 1 of 1.');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rows per page');
-        expect(pageSizeButton.textContent.trim()).toBe('2 rows');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
+        let firstLocaleOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstLocaleOption.textContent.trim()).toBe('2 rows');
+        expect(firstLocaleOption.getAttribute('aria-label')).toBe('2 rows per page');
         expect(pager.getAttribute('aria-label')).toBe('Table pagination');
         expect(pagerLabel.textContent.trim()).toBe('Page 1 of 1');
         expect(nextButton.getAttribute('aria-label')).toBe('Next page');
@@ -1453,11 +1462,12 @@ describe('FEATURE: NatTable UI', () => {
         localeFixture.detectChanges();
 
         // then: Danish labels are rendered
+        firstLocaleOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
         expect(emptyState.textContent.trim()).toBe('Ingen rækker matcher visningen.');
         expect(tableSummary.textContent.trim()).toBe('0 rækker og 4 kolonner.');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
-        expect(pageSizeButton.textContent.trim()).toBe('2 / side');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker pr. side');
+        expect(firstLocaleOption.textContent.trim()).toBe('2 / side');
+        expect(firstLocaleOption.getAttribute('aria-label')).toBe('Vis 2 rækker pr. side');
         expect(pager.getAttribute('aria-label')).toBe('Tabelsider');
         expect(pagerLabel.textContent.trim()).toBe('Side 1 af 1');
         expect(nextButton.getAttribute('aria-label')).toBe('Næste side');

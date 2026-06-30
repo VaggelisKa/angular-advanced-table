@@ -11,7 +11,7 @@
 
 .simple-sorting-page nat-table-surface {
   display: block;
-  width: min(1180px, 100%);
+  width: min(600px, 100%);
   min-width: 0;
   max-width: 100%;
 }

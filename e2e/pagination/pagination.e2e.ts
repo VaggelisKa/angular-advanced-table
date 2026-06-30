@@ -6,11 +6,12 @@ test.describe('FEATURE: Pagination', () => {
   });
 
   test.describe('GIVEN: the pagination example is loaded', () => {
-    test.describe('WHEN: the page-size buttons and Next page are clicked (client-side)', () => {
+    test.describe('WHEN: the page-size select and Next page are clicked (client-side)', () => {
       test('THEN: it supports client-side pagination and page size configuration', async ({ page }) => {
         const clientCard = page.locator('.card', { hasText: 'Paginated Grid (Client-Side)' });
         const clientTable = clientCard.locator('table');
         const pager = clientCard.getByRole('toolbar');
+        const rowsPerPageSelect = pager.getByRole('combobox');
         const nextBtn = pager.getByRole('button', { name: 'Next page' });
         const prevBtn = pager.getByRole('button', { name: 'Previous page' });
 
@@ -24,13 +25,13 @@ test.describe('FEATURE: Pagination', () => {
         });
 
         await test.step('THEN: five rows are shown after the page size changes to 5', async () => {
-          await pager.getByRole('button', { name: '5' }).click();
+          await rowsPerPageSelect.selectOption('5');
 
           await expect(clientTable.locator('tbody tr')).toHaveCount(5);
         });
 
         await test.step('THEN: three rows are shown after the page size changes back to 3', async () => {
-          await pager.getByRole('button', { name: '3' }).click();
+          await rowsPerPageSelect.selectOption('3');
 
           await expect(clientTable.locator('tbody tr')).toHaveCount(3);
         });

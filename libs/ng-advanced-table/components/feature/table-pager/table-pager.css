@@ -5,7 +5,7 @@
 .pager {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--nat-table-space-pager-gap, 10px);
+  gap: var(--nat-table-space-pager-gap, 8px);
   align-items: center;
 }
 

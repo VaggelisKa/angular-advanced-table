@@ -48,6 +48,13 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     markdownPaths: ['/docs/columns.md']
   },
   {
+    id: 'sticky-header-alternatives',
+    label: 'Sticky header alternatives',
+    description: 'Scrolling, max-height, and pagination',
+    path: '/docs/sticky-header-alternatives',
+    markdownPaths: ['/docs/sticky-header-alternatives.md']
+  },
+  {
     id: 'state',
     label: 'State',
     description: 'Controlled and uncontrolled slices',
@@ -167,6 +174,108 @@ const showcaseExamples: readonly ShowcaseNavItem[] = [
     label: 'Table builder',
     description: 'Interactive config',
     path: '/examples/builder'
+  },
+  {
+    id: 'sorting',
+    label: 'Sorting',
+    description: 'Column sorting',
+    path: '/examples/sorting'
+  },
+  {
+    id: 'pinning',
+    label: 'Column pinning',
+    description: 'Sticky boundary pinning',
+    path: '/examples/pinning'
+  },
+  {
+    id: 'reordering',
+    label: 'Column reordering',
+    description: 'Drag-and-drop headers',
+    path: '/examples/reordering'
+  },
+  {
+    id: 'pagination',
+    label: 'Pagination',
+    description: 'Row-based pagination',
+    path: '/examples/pagination'
+  },
+  {
+    id: 'visibility',
+    label: 'Column visibility',
+    description: 'Dynamic column display',
+    path: '/examples/visibility'
+  },
+  {
+    id: 'search',
+    label: 'Global search',
+    description: 'Fuzzy filter mapping',
+    path: '/examples/search'
+  },
+  {
+    id: 'states',
+    label: 'Table states',
+    description: 'Loading empty error',
+    path: '/examples/states'
+  },
+  {
+    id: 'sticky-header',
+    label: 'Sticky header',
+    description: 'Fixed viewport headers',
+    path: '/examples/sticky-header'
+  },
+  {
+    id: 'toolbar',
+    label: 'Toolbar',
+    description: 'Slot-based keyboard toolbar',
+    path: '/examples/toolbar'
+  },
+  {
+    id: 'keyboard-interaction',
+    label: 'Keyboard interaction',
+    description: 'Grid cell navigation',
+    path: '/examples/keyboard-interaction'
+  },
+  {
+    id: 'resizing',
+    label: 'Column resizing',
+    description: 'Drag and keyboard widths',
+    path: '/examples/resizing'
+  },
+  {
+    id: 'selection',
+    label: 'Row selection',
+    description: 'Checkbox row selection',
+    path: '/examples/selection'
+  },
+  {
+    id: 'simple-sorting',
+    label: 'Sorting with pinned columns',
+    description: 'Fixed company and total columns',
+    path: '/examples/simple-sorting'
+  },
+  {
+    id: 'sticky-header-max-height',
+    label: 'Sticky header max height',
+    description: 'Sticky header with max height',
+    path: '/examples/sticky-header-max-height'
+  },
+  {
+    id: 'pagination-sticky-alt',
+    label: 'Pagination sticky alt',
+    description: 'Different layout of pagination controls',
+    path: '/examples/pagination-sticky-alt'
+  },
+  {
+    id: 'sticky-no-overflow-x',
+    label: 'Sticky no overflow x',
+    description: 'Sticky header with no overflow x',
+    path: '/examples/sticky-no-overflow-x'
+  },
+  {
+    id: 'sticky-show-detailed-view',
+    label: 'Sticky show detailed view',
+    description: 'Sticky header with show detailed view',
+    path: '/examples/sticky-show-detailed-view'
   }
 ];
 
@@ -207,7 +316,8 @@ const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
       getShowcaseDoc('pagination'),
       getShowcaseDoc('column-layout'),
       getShowcaseDoc('row-selection'),
-      getShowcaseDoc('toolbar-actions')
+      getShowcaseDoc('toolbar-actions'),
+      getShowcaseDoc('sticky-header-alternatives')
     ]
   },
   {
@@ -235,6 +345,48 @@ const showcaseExampleGroups: readonly ShowcaseNavGroup[] = [
     label: 'Scenarios',
     ariaLabel: 'Standalone scenario examples',
     items: [getShowcaseExample('multiple-features'), getShowcaseExample('builder')]
+  },
+  {
+    id: 'examples-columns',
+    label: 'Columns',
+    ariaLabel: 'Column behavior examples',
+    items: [
+      getShowcaseExample('sorting'),
+      getShowcaseExample('simple-sorting'),
+      getShowcaseExample('pinning'),
+      getShowcaseExample('reordering'),
+      getShowcaseExample('resizing'),
+      getShowcaseExample('visibility'),
+      getShowcaseExample('sticky-header')
+    ]
+  },
+  {
+    id: 'examples-data-workflows',
+    label: 'Data workflows',
+    ariaLabel: 'Data workflow examples',
+    items: [
+      getShowcaseExample('pagination'),
+      getShowcaseExample('search'),
+      getShowcaseExample('states'),
+      getShowcaseExample('selection')
+    ]
+  },
+  {
+    id: 'examples-controls-keyboard',
+    label: 'Controls and keyboard',
+    ariaLabel: 'Control and keyboard examples',
+    items: [getShowcaseExample('toolbar'), getShowcaseExample('keyboard-interaction')]
+  },
+  {
+    id: 'examples-alternative-sticky-header',
+    label: 'Sticky Header Alternatives',
+    ariaLabel: 'Sticky header alternatives examples',
+    items: [
+      getShowcaseExample('sticky-header-max-height'),
+      getShowcaseExample('pagination-sticky-alt'),
+      getShowcaseExample('sticky-no-overflow-x'),
+      getShowcaseExample('sticky-show-detailed-view')
+    ]
   }
 ];
 
