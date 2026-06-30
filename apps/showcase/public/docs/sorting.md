@@ -7,7 +7,7 @@ Use sorting when the table can order the rows it currently receives, or when you
 Sorting lives in the `sorting` state slice. Let the table manage it for simple client-side tables, or own the slice when you need URL persistence, custom buttons, analytics, or a manual row pipeline.
 
 ```ts
-readonly tableState = signal<Partial<NatTableState>>({
+readonly tableState = signal<Partial<NatTableUserState>>({
   sorting: [{ id: 'name', desc: false }]
 });
 ```
@@ -25,7 +25,7 @@ Enable multi-sort on the surface when users need priority order across multiple 
 ```
 
 ```ts
-readonly tableState = signal<Partial<NatTableState>>({
+readonly tableState = signal<Partial<NatTableUserState>>({
   sorting: [
     { id: 'sector', desc: false },
     { id: 'marketValue', desc: true },

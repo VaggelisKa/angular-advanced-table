@@ -9,13 +9,13 @@ import {
 } from '../utils/cell-interaction';
 
 @Directive({
-  selector: '[natTableStateCell]',
+  selector: '[natTableCell]',
   host: {
     '(keydown)': 'onKeydown($event)',
     '(focusin)': 'onFocusIn($event)'
   }
 })
-export class NatTableStateCell {
+export class NatTableCell {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly natTableService = inject(NatTableService);
 

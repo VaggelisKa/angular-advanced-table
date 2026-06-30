@@ -1,8 +1,8 @@
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 
 import { hasNatTableStateValueChanged } from './table-state-value-equality.util';
 
-const serializeSelectedRowIds = (selection: NatTableState['rowSelection']): string =>
+const serializeSelectedRowIds = (selection: NatTableUserState['rowSelection']): string =>
   Object.keys(selection)
     .filter((rowId) => selection[rowId])
     .sort()
@@ -23,7 +23,7 @@ export type NatTableStateDiff = {
 /** A state-slice changed flag paired with the emit action for that slice. */
 export type SliceEmitter = readonly [changed: boolean, emit: () => void];
 
-export const computeNatTableStateDiff = (prev: NatTableState, next: NatTableState): NatTableStateDiff => ({
+export const computeNatTableStateDiff = (prev: NatTableUserState, next: NatTableUserState): NatTableStateDiff => ({
   sortingChanged: hasNatTableStateValueChanged(prev.sorting, next.sorting),
   globalFilterChanged: prev.globalFilter !== next.globalFilter,
   columnFiltersChanged: hasNatTableStateValueChanged(prev.columnFilters, next.columnFilters),

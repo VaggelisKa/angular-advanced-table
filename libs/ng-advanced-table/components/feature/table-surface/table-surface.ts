@@ -17,7 +17,7 @@ import type {
   NatTableKeybindings,
   NatTableMode,
   NatTableModeConfiguration,
-  NatTableState
+  NatTableUserState
 } from 'ng-advanced-table';
 
 import { computeNatTableStateDiff } from '../../utils/table-state-diff.util';
@@ -35,9 +35,9 @@ import type { SliceEmitter } from '../../utils/table-state-diff.util';
 })
 export class NatTableSurface {
   /** Two-way bindable state representing the current table view state. */
-  public readonly state = model<Partial<NatTableState>>({});
+  public readonly state = model<Partial<NatTableUserState>>({});
   /** One-time seed configuration for the table state. */
-  public readonly initialState = input<Partial<NatTableState>>({});
+  public readonly initialState = input<Partial<NatTableUserState>>({});
   /** Operation mode: 'auto' (client-side) or 'manual' (server-side/external), or custom per-slice configuration. */
   public readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
 
@@ -75,7 +75,7 @@ export class NatTableSurface {
 
   private readonly natTableService = inject(NatTableService);
 
-  private previousTableState: NatTableState = {
+  private previousTableState: NatTableUserState = {
     sorting: [],
     globalFilter: '',
     columnFilters: [],
@@ -147,7 +147,7 @@ export class NatTableSurface {
   }
 
   /** Diff incoming table state against the previous and emit each changed slice. */
-  private emitStateSliceChanges(nextState: NatTableState): void {
+  private emitStateSliceChanges(nextState: NatTableUserState): void {
     if (this.firstStateChange) {
       this.previousTableState = nextState;
       this.firstStateChange = false;

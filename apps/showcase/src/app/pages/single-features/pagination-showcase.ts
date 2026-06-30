@@ -2,7 +2,7 @@ import { Component, computed, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTablePagination, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 type DemoItem = {
@@ -94,7 +94,7 @@ export class PaginationShowcasePage {
     }
   ]);
 
-  protected readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableUserState>>({
     pagination: {
       pageIndex: 0,
       pageSize: 3
@@ -102,7 +102,7 @@ export class PaginationShowcasePage {
   });
 
   // Mixed Mode State & Computing
-  protected readonly manualTableState = signal<Partial<NatTableState>>({
+  protected readonly manualTableState = signal<Partial<NatTableUserState>>({
     pagination: {
       pageIndex: 0,
       pageSize: 3

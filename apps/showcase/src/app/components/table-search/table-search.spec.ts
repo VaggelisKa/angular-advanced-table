@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import type { ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTablePageSize, NatTablePager, NatTableSurface } from 'ng-advanced-table/components';
 
 import { TableSearch } from './table-search';
@@ -45,12 +45,12 @@ class Host {
 
   protected readonly columns = columns;
   protected readonly pageSizeOptions = [2, 3, 5] as const;
-  public readonly tableState = signal<Partial<NatTableState>>({});
-  protected readonly initialState: Partial<NatTableState> = {
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
+  protected readonly initialState: Partial<NatTableUserState> = {
     pagination: { pageIndex: 1, pageSize: 2 }
   };
 
-  protected onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);
   }
 }

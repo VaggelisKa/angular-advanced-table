@@ -1,4 +1,4 @@
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 
 export type TableBuilderFlags = {
   readonly withPagination: boolean;
@@ -40,14 +40,14 @@ const buildUiImports = (flags: TableBuilderFlags): string[] => {
   return uiImports;
 };
 
-export const buildStateObject = (flags: TableBuilderFlags, currentState: Partial<NatTableState>): Partial<NatTableState> => ({
+export const buildStateObject = (flags: TableBuilderFlags, currentState: Partial<NatTableUserState>): Partial<NatTableUserState> => ({
   columnVisibility: currentState.columnVisibility ?? { ...DEFAULT_COLUMN_VISIBILITY },
   ...(flags.withPagination ? { pagination: currentState.pagination ?? { pageIndex: 0, pageSize: 3 } } : {}),
   ...(flags.withColumnPinning && currentState.columnPinning ? { columnPinning: currentState.columnPinning } : {}),
   ...(flags.withColumnReorder && currentState.columnOrder ? { columnOrder: currentState.columnOrder } : {})
 });
 
-export const formatStateLiteral = (stateObj: Partial<NatTableState>): string =>
+export const formatStateLiteral = (stateObj: Partial<NatTableUserState>): string =>
   JSON.stringify(stateObj, null, 4)
     .replace(/"([^"]+)":/g, '$1:')
     .replace(/"/g, "'")
@@ -55,7 +55,7 @@ export const formatStateLiteral = (stateObj: Partial<NatTableState>): string =>
     .map((line, index) => (index === 0 ? line : `    ${line}`))
     .join('\n');
 
-export const omitColumnOrder = (state: Partial<NatTableState>): Partial<NatTableState> => {
+export const omitColumnOrder = (state: Partial<NatTableUserState>): Partial<NatTableUserState> => {
   const next = { ...state };
 
   delete next.columnOrder;
@@ -66,7 +66,7 @@ export const omitColumnOrder = (state: Partial<NatTableState>): Partial<NatTable
 const buildSourceHeader = (uiImports: string[], extraImports: string): string =>
   `import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
-import { NatTable, NatTableState } from 'ng-advanced-table';
+import { NatTable, NatTableUserState } from 'ng-advanced-table';
 import {
   ${uiImports.join(',\n  ')}
 } from 'ng-advanced-table/components';
@@ -108,9 +108,9 @@ const buildSourceBody = (headerOptions: string, formattedState: string): string 
     },
   ]${headerOptions});
 
-  readonly tableState = signal<Partial<NatTableState>>(${formattedState});
+  readonly tableState = signal<Partial<NatTableUserState>>(${formattedState});
 
-  onTableStateChange(state: NatTableState): void {
+  onTableStateChange(state: NatTableUserState): void {
     this.tableState.set(state);
   }
 }`;

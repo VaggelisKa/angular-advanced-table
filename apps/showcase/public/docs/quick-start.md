@@ -114,7 +114,7 @@ Use `ng-advanced-table/components` when you want pagination controls, column vis
 import { Component, signal } from '@angular/core';
 import { type ColumnDef } from '@tanstack/angular-table';
 
-import { NatTable, type NatTableState } from 'ng-advanced-table';
+import { NatTable, type NatTableUserState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePagination,
@@ -146,7 +146,7 @@ interface PositionRow {
 })
 export class PositionsTable {
   readonly rows = signal<readonly PositionRow[]>([]);
-  readonly initialState: Partial<NatTableState> = {
+  readonly initialState: Partial<NatTableUserState> = {
     pagination: { pageIndex: 0, pageSize: 25 }
   };
 

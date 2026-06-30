@@ -14,11 +14,9 @@
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
     [attr.dir]="resolvedDirection()"
-    [class.has-sticky-header]="stickyHeader()"
-    [class.is-fixed-layout]="usesAuthoritativeLayout()"
+    [class]="tableClassMap()"
     [id]="tableElementId()"
     [natTablePxWidth]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null"
-    class="data-table"
     colWrap="nowrap"
     ngGrid
     rowWrap="nowrap">
@@ -49,18 +47,12 @@
           [attr.data-testid]="`nat-table-header-${header.column.id}`"
           [cdkDragData]="header.column.id"
           [cdkDragDisabled]="!canReorderHeader(header)"
-          [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-          [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-          [class.is-align-end]="columnState?.alignEnd"
-          [class.is-pinned-left]="columnState?.pinnedLeft"
-          [class.is-pinned-right]="columnState?.pinnedRight"
+          [class]="columnState?.headerClassMap"
           [class.is-reorderable]="canReorderHeader(header)"
-          [class.is-width-constrained]="columnState?.headerConstrainedWidth"
           [natTableHeaderCellLayout]="columnState"
           cdkDrag
           cdkDragLockAxis="x"
           cdkDragPreviewContainer="parent"
-          class="header-cell"
           ngGridCell
           role="columnheader"
           scope="col"
@@ -118,20 +110,12 @@
         <th
           [attr.data-column-id]="cell.column.id"
           [attr.data-tone]="cellTone"
-          [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-          [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-          [class.is-align-end]="columnState?.alignEnd"
-          [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
-          [class.is-pinned-left]="columnState?.pinnedLeft"
-          [class.is-pinned-right]="columnState?.pinnedRight"
-          [class.is-width-constrained]="columnState?.constrainedWidth"
+          [class]="columnState?.cellClassMap"
           [natTableBodyCellLayout]="columnState"
-          class="data-cell data-row-header"
+          natTableCell
           ngGridCell
           role="rowheader"
-          scope="row"
-          (focusin)="onCellFocusIn($event)"
-          (keydown)="onCellKeydown($event)">
+          scope="row">
           <span class="data-cell-content">
             <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"> {{ rendered }} </ng-container>
           </span>
@@ -140,18 +124,10 @@
         <td
           [attr.data-column-id]="cell.column.id"
           [attr.data-tone]="cellTone"
-          [class.has-pinned-edge-left]="columnState?.hasPinnedEdgeLeft"
-          [class.has-pinned-edge-right]="columnState?.hasPinnedEdgeRight"
-          [class.is-align-end]="columnState?.alignEnd"
-          [class.is-cell-clamped]="(columnState?.cellMaxLines ?? null) !== null"
-          [class.is-pinned-left]="columnState?.pinnedLeft"
-          [class.is-pinned-right]="columnState?.pinnedRight"
-          [class.is-width-constrained]="columnState?.constrainedWidth"
+          [class]="columnState?.cellClassMap"
           [natTableBodyCellLayout]="columnState"
-          class="data-cell"
-          ngGridCell
-          (focusin)="onCellFocusIn($event)"
-          (keydown)="onCellKeydown($event)">
+          natTableCell
+          ngGridCell>
           <span class="data-cell-content">
             <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"> {{ rendered }} </ng-container>
           </span>
@@ -160,7 +136,7 @@
       </tr>
       } } @case ('loading') {
       <tr ngGridRow>
-        <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableStateCell ngGridCell>
+        <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableCell ngGridCell>
           @if (loadingTemplateRef(); as templateRef) {
           <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
           } @else { {{ resolvedLoadingState() }} }
@@ -168,7 +144,7 @@
       </tr>
       } @case ('error') {
       <tr ngGridRow>
-        <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableStateCell ngGridCell>
+        <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableCell ngGridCell>
           @if (errorTemplateRef(); as templateRef) {
           <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
           } @else { {{ resolvedErrorState() }} }
@@ -176,7 +152,7 @@
       </tr>
       } @case ('empty') {
       <tr ngGridRow>
-        <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableStateCell ngGridCell>
+        <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableCell ngGridCell>
           @if (emptyTemplateRef(); as templateRef) {
           <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
           } @else { {{ resolvedEmptyState() }} }

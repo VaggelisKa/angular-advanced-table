@@ -3,7 +3,7 @@ import { Component, computed, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef, ColumnOrderState } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 type DemoItem = {
@@ -97,7 +97,7 @@ export class ReorderingShowcasePage {
     }
   );
 
-  protected readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableUserState>>({
     columnOrder: ['name', 'category', 'status', 'value']
   });
 

@@ -3,7 +3,7 @@ import { Component, computed, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePagination,
@@ -117,7 +117,7 @@ export class TableBuilderPage {
   );
 
   // Table State
-  protected readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableUserState>>({
     columnVisibility: {
       name: true,
       category: true,

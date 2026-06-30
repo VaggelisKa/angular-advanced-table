@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { provideNatTableControlsIntl } from 'ng-advanced-table/locale';
 
 import type { Row } from './table-data.helper';
@@ -87,8 +87,8 @@ export class ProviderAccessibilityLabelsHost {
 
   protected readonly getRowId = getRowId;
   protected readonly pageSizeOptions = [2, 3, 5] as const;
-  public readonly tableState = signal<Partial<NatTableState>>({});
-  protected readonly initialState: Partial<NatTableState> = {
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
+  protected readonly initialState: Partial<NatTableUserState> = {
     pagination: {
       pageIndex: 1,
       pageSize: 2
@@ -97,7 +97,7 @@ export class ProviderAccessibilityLabelsHost {
 
   public readonly pageSizeGroupAriaLabel = signal<string | undefined>(undefined);
 
-  protected onTableStateChange(state: Partial<NatTableState>): void {
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);
   }
 }

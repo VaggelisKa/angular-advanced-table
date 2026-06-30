@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
 
 import type { ColumnDef } from '@tanstack/angular-table';
 import { flexRenderComponent } from '@tanstack/angular-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
@@ -163,7 +163,7 @@ const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderA
   }
 ]);
 
-const preconfiguredTableState: Partial<NatTableState> = {
+const preconfiguredTableState: Partial<NatTableUserState> = {
   columnPinning: {
     left: ['id'],
     right: []

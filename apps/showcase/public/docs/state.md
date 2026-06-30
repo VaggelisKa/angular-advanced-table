@@ -2,7 +2,7 @@
 
 ## State Slices
 
-`NatTableState` contains the serializable view state exposed by the table and companion surface.
+`NatTableUserState` contains the serializable view state exposed by the table and companion surface.
 
 | Slice              | Use it for                                                                            |
 | ------------------ | ------------------------------------------------------------------------------------- |
@@ -23,7 +23,7 @@ The `pagination` slice always exists in emitted state. Pagination affects render
 Most tables should start uncontrolled. Pass `[initialState]` for defaults and let the table manage updates internally.
 
 ```ts
-readonly initialState: Partial<NatTableState> = {
+readonly initialState: Partial<NatTableUserState> = {
   pagination: { pageIndex: 0, pageSize: 25 },
   sorting: [{ id: 'symbol', desc: false }],
   columnPinning: { left: ['symbol'], right: [] },
@@ -48,12 +48,12 @@ When your application needs to persist, synchronize, or inspect one state slice,
 import { Component, computed, signal } from '@angular/core';
 import type { SortingState } from '@tanstack/angular-table';
 
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 
 export class PositionsTable {
   readonly sorting = signal<SortingState>([]);
 
-  readonly tableState = computed<Partial<NatTableState>>(() => ({
+  readonly tableState = computed<Partial<NatTableUserState>>(() => ({
     sorting: this.sorting()
   }));
 
@@ -76,7 +76,7 @@ This keeps sorting controlled and leaves filters, pagination, pinning, sizing, o
 Use one signal when several slices belong to the same workflow, such as URL persistence or a saved table view.
 
 ```ts
-readonly viewState = signal<Partial<NatTableState>>({
+readonly viewState = signal<Partial<NatTableUserState>>({
   sorting: [{ id: 'symbol', desc: false }],
   columnVisibility: { desk: true, exchange: false },
   pagination: { pageIndex: 0, pageSize: 25 },
@@ -106,12 +106,12 @@ Prefer granular outputs when the app controls known slices. Use `(stateChange)` 
 
 ## Full State Snapshots
 
-`(stateChange)` is typed as `Partial<NatTableState>` because it pairs with the partial `[state]` input. The emitted value is useful for telemetry, local storage, or "save current view" commands.
+`(stateChange)` is typed as `Partial<NatTableUserState>` because it pairs with the partial `[state]` input. The emitted value is useful for telemetry, local storage, or "save current view" commands.
 
 ```ts
-readonly latestState = signal<Partial<NatTableState> | null>(null);
+readonly latestState = signal<Partial<NatTableUserState> | null>(null);
 
-protected rememberState(state: Partial<NatTableState>): void {
+protected rememberState(state: Partial<NatTableUserState>): void {
   this.latestState.set(state);
 }
 ```
@@ -137,7 +137,7 @@ After the first emitted state is assigned back into `[state]`, every slice is pr
 For URL-backed views, store only the slices that should survive reloads. Keep volatile slices such as `columnSizing` or `rowSelection` out unless the product specifically needs them.
 
 ```ts
-readonly stateFromUrl = signal<Partial<NatTableState>>({
+readonly stateFromUrl = signal<Partial<NatTableUserState>>({
   sorting: [{ id: 'price', desc: true }],
   pagination: { pageIndex: 0, pageSize: 50 },
 });
@@ -157,7 +157,7 @@ private writeUrl(): void {
   // Serialize only the slices that are part of the route contract.
 }
 
-function firstPage(state: Partial<NatTableState>): PaginationState {
+function firstPage(state: Partial<NatTableUserState>): PaginationState {
   const pagination = state.pagination ?? { pageIndex: 0, pageSize: 25 };
 
   return { ...pagination, pageIndex: 0 };
@@ -182,7 +182,7 @@ Use manual mode when your app owns sorting, filtering, or pagination outside the
 ```
 
 ```ts
-protected loadPage(state: Partial<NatTableState>): void {
+protected loadPage(state: Partial<NatTableUserState>): void {
   this.tableState.set(state);
   this.status.set(NAT_TABLE_DATA_STATUS.loading);
   const pagination = state.pagination ?? { pageIndex: 0, pageSize: 25 };

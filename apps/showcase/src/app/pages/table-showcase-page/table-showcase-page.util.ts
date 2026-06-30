@@ -1,4 +1,4 @@
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 
 import type { SimulationStatus } from './table-simulation';
 
@@ -77,10 +77,10 @@ export const statusTone = (status: SimulationStatus): 'positive' | 'negative' | 
 };
 
 export const upsertColumnFilter = (
-  currentFilters: NonNullable<Partial<NatTableState>['columnFilters']>,
+  currentFilters: NonNullable<Partial<NatTableUserState>['columnFilters']>,
   columnId: string,
   value: unknown
-): NonNullable<Partial<NatTableState>['columnFilters']> => {
+): NonNullable<Partial<NatTableUserState>['columnFilters']> => {
   const nextFilters = currentFilters.filter((filter) => filter.id !== columnId);
 
   if (value === null) {

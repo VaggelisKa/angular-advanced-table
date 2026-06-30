@@ -3,7 +3,7 @@ import { Component, computed, signal, viewChild } from '@angular/core';
 
 import type { CellContext, ColumnDef, SortingState, VisibilityState } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import {
   NatTableExport,
   NatTableSurface,
@@ -92,7 +92,7 @@ export class ToolbarShowcasePage {
     }
   ]);
 
-  protected readonly tableState = signal<Partial<NatTableState>>({
+  protected readonly tableState = signal<Partial<NatTableUserState>>({
     sorting: []
   });
 

@@ -2,7 +2,7 @@ export type {
   NatTableColumnMeta,
   NatTableRenderMetricsController,
   NatTableSortIndicatorContext,
-  NatTableState,
+  NatTableUserState,
   NatTableUiController
 } from './common/table-contracts.type';
 

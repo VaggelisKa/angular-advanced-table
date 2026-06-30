@@ -42,9 +42,10 @@ import type {
   NatTableModeConfiguration,
   NatTableRowActivateEvent,
   NatTableRowIdGetter,
-  NatTableState
+  NatTableUserState
 } from '../common/table.type';
 import { NatTableService } from '../domain-logic/table.service';
+import { NatTableState } from '../domain-logic/table.state';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-state-templates';
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from '../utils/cell-interaction';
 
@@ -86,7 +87,7 @@ const pickSlice = <T>(bound: T | undefined, initial: T | undefined, fallback: T)
 
 // Seeds the "previous state" baseline from whichever slices the host controls,
 // falling back to the surface's initial state and then to empty defaults.
-const seedPreviousState = (bound: Partial<NatTableState>, initial: Partial<NatTableState>): NatTableState => ({
+const seedPreviousState = (bound: Partial<NatTableUserState>, initial: Partial<NatTableUserState>): NatTableUserState => ({
   sorting: pickSlice(bound.sorting, initial.sorting, []),
   globalFilter: pickSlice(bound.globalFilter, initial.globalFilter, ''),
   columnFilters: pickSlice(bound.columnFilters, initial.columnFilters, []),
@@ -101,11 +102,11 @@ const seedPreviousState = (bound: Partial<NatTableState>, initial: Partial<NatTa
 const sliceChanged = (a: unknown, b: unknown): boolean => JSON.stringify(a) !== JSON.stringify(b);
 
 // Emits `next[slice]` on `emitter` only when that slice differs from `prev`.
-const emitIfChanged = <K extends keyof NatTableState>(
-  prev: NatTableState,
-  next: NatTableState,
+const emitIfChanged = <K extends keyof NatTableUserState>(
+  prev: NatTableUserState,
+  next: NatTableUserState,
   slice: K,
-  emitter: (value: NatTableState[K]) => void
+  emitter: (value: NatTableUserState[K]) => void
 ): void => {
   if (sliceChanged(prev[slice], next[slice])) {
     emitter(next[slice]);
@@ -122,9 +123,9 @@ class TestTableSurface {
   // computed next-state through `stateChange`; a two-way model would feed the
   // emitted value back into the binding and change the controlled-state semantics.
   // eslint-disable-next-line @angular-eslint/prefer-signal-model -- one-way controlled input + computed change output, not two-way
-  public readonly state = input<Partial<NatTableState>>({});
+  public readonly state = input<Partial<NatTableUserState>>({});
 
-  public readonly initialState = input<Partial<NatTableState>>({});
+  public readonly initialState = input<Partial<NatTableUserState>>({});
   public readonly mode = input<NatTableMode | NatTableModeConfiguration>('auto');
 
   public readonly manualPageCount = input<number | undefined>(undefined);
@@ -138,7 +139,7 @@ class TestTableSurface {
   public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
   public readonly direction = input<'ltr' | 'rtl'>();
 
-  public readonly stateChange = output<NatTableState>();
+  public readonly stateChange = output<NatTableUserState>();
   public readonly sortingChange = output<SortingState>();
   public readonly globalFilterChange = output<string>();
   public readonly columnFiltersChange = output<ColumnFiltersState>();
@@ -147,7 +148,7 @@ class TestTableSurface {
   public readonly columnPinningChange = output<ColumnPinningState>();
   public readonly columnSizingChange = output<ColumnSizingState>();
   public readonly paginationChange = output<PaginationState>();
-  public readonly rowSelectionChange = output<NatTableState['rowSelection']>();
+  public readonly rowSelectionChange = output<NatTableUserState['rowSelection']>();
 
   private readonly natTableService = inject(NatTableService);
 
@@ -193,7 +194,7 @@ class TestTableSurface {
     });
 
     let isFirstChange = true;
-    let previousState: NatTableState = {
+    let previousState: NatTableUserState = {
       sorting: [],
       globalFilter: '',
       columnFilters: [],
@@ -227,7 +228,7 @@ class TestTableSurface {
   }
 
   // Emits one granular slice output per slice that differs between prev and next.
-  private emitSliceChanges(prev: NatTableState, next: NatTableState): void {
+  private emitSliceChanges(prev: NatTableUserState, next: NatTableUserState): void {
     emitIfChanged(prev, next, 'sorting', (value) => this.sortingChange.emit(value));
     emitIfChanged(prev, next, 'globalFilter', (value) => this.globalFilterChange.emit(value));
     emitIfChanged(prev, next, 'columnFilters', (value) => this.columnFiltersChange.emit(value));
@@ -412,12 +413,12 @@ const buildDynamicColumns = (nameHeader: string): ColumnDef<Row, unknown>[] => {
 })
 class TableHost {
   public readonly rows = signal<Row[]>(buildRows(6));
-  public readonly state = signal<Partial<NatTableState>>({});
+  public readonly state = signal<Partial<NatTableUserState>>({});
   public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   protected readonly error = signal<unknown>(null);
   public columns: ColumnDef<Row, unknown>[] = columns;
   public getRowId: NatTableRowIdGetter<Row> | undefined = undefined;
-  public initialState: Partial<NatTableState> = {
+  public initialState: Partial<NatTableUserState> = {
     sorting: [{ id: 'throughput', desc: true }],
     columnPinning: {
       left: ['name'],
@@ -440,55 +441,55 @@ class TableHost {
   public accessibilityText: NatTableAccessibilityText = {};
   public mode: NatTableMode | NatTableModeConfiguration = 'auto';
   public manualPageCount: number | undefined = undefined;
-  public readonly stateEvents: Partial<NatTableState>[] = [];
+  public readonly stateEvents: Partial<NatTableUserState>[] = [];
   public readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
-  public readonly sortingEvents: NatTableState['sorting'][] = [];
-  public readonly paginationEvents: NatTableState['pagination'][] = [];
-  public readonly globalFilterEvents: NatTableState['globalFilter'][] = [];
-  public readonly columnFiltersEvents: NatTableState['columnFilters'][] = [];
-  public readonly columnVisibilityEvents: NatTableState['columnVisibility'][] = [];
-  public readonly columnOrderEvents: NatTableState['columnOrder'][] = [];
-  public readonly columnPinningEvents: NatTableState['columnPinning'][] = [];
-  public readonly columnSizingEvents: NatTableState['columnSizing'][] = [];
-  public readonly rowSelectionEvents: NatTableState['rowSelection'][] = [];
+  public readonly sortingEvents: NatTableUserState['sorting'][] = [];
+  public readonly paginationEvents: NatTableUserState['pagination'][] = [];
+  public readonly globalFilterEvents: NatTableUserState['globalFilter'][] = [];
+  public readonly columnFiltersEvents: NatTableUserState['columnFilters'][] = [];
+  public readonly columnVisibilityEvents: NatTableUserState['columnVisibility'][] = [];
+  public readonly columnOrderEvents: NatTableUserState['columnOrder'][] = [];
+  public readonly columnPinningEvents: NatTableUserState['columnPinning'][] = [];
+  public readonly columnSizingEvents: NatTableUserState['columnSizing'][] = [];
+  public readonly rowSelectionEvents: NatTableUserState['rowSelection'][] = [];
 
-  protected onStateChange(state: Partial<NatTableState>): void {
+  protected onStateChange(state: Partial<NatTableUserState>): void {
     this.stateEvents.push(state);
   }
 
-  protected onSortingChange(sorting: NatTableState['sorting']): void {
+  protected onSortingChange(sorting: NatTableUserState['sorting']): void {
     this.sortingEvents.push(sorting);
   }
 
-  protected onPaginationChange(pagination: NatTableState['pagination']): void {
+  protected onPaginationChange(pagination: NatTableUserState['pagination']): void {
     this.paginationEvents.push(pagination);
   }
 
-  protected onGlobalFilterChange(globalFilter: NatTableState['globalFilter']): void {
+  protected onGlobalFilterChange(globalFilter: NatTableUserState['globalFilter']): void {
     this.globalFilterEvents.push(globalFilter);
   }
 
-  protected onColumnFiltersChange(columnFilters: NatTableState['columnFilters']): void {
+  protected onColumnFiltersChange(columnFilters: NatTableUserState['columnFilters']): void {
     this.columnFiltersEvents.push(columnFilters);
   }
 
-  protected onColumnVisibilityChange(columnVisibility: NatTableState['columnVisibility']): void {
+  protected onColumnVisibilityChange(columnVisibility: NatTableUserState['columnVisibility']): void {
     this.columnVisibilityEvents.push(columnVisibility);
   }
 
-  protected onColumnOrderChange(columnOrder: NatTableState['columnOrder']): void {
+  protected onColumnOrderChange(columnOrder: NatTableUserState['columnOrder']): void {
     this.columnOrderEvents.push(columnOrder);
   }
 
-  protected onColumnPinningChange(columnPinning: NatTableState['columnPinning']): void {
+  protected onColumnPinningChange(columnPinning: NatTableUserState['columnPinning']): void {
     this.columnPinningEvents.push(columnPinning);
   }
 
-  protected onColumnSizingChange(columnSizing: NatTableState['columnSizing']): void {
+  protected onColumnSizingChange(columnSizing: NatTableUserState['columnSizing']): void {
     this.columnSizingEvents.push(columnSizing);
   }
 
-  protected onRowSelectionChange(rowSelection: NatTableState['rowSelection']): void {
+  protected onRowSelectionChange(rowSelection: NatTableUserState['rowSelection']): void {
     this.rowSelectionEvents.push(rowSelection);
   }
 
@@ -630,7 +631,7 @@ class StateTemplateServiceProbe {
 })
 class StateTemplatesHost {
   public readonly rows = signal<Row[]>([]);
-  public readonly state = signal<Partial<NatTableState>>({});
+  public readonly state = signal<Partial<NatTableUserState>>({});
   public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   public readonly error = signal<unknown>(new Error('Request failed'));
   protected readonly columns = columns;
@@ -649,6 +650,10 @@ type NatTableInternals = NatTable<Row> & {
 
 const getInternalTable = (fixture: ComponentFixture<TableHost>): NatTableInternals => {
   return fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTableInternals;
+};
+
+const getInternalStore = (fixture: ComponentFixture<TableHost>): NatTableState<Row> => {
+  return fixture.debugElement.query(By.directive(NatTable)).injector.get(NatTableState) as NatTableState<Row>;
 };
 
 const createDropEvent = (columnId: string, previousIndex: number, currentIndex: number): CdkDragDrop<string[]> => {
@@ -763,8 +768,8 @@ describe('FEATURE: NatTable', () => {
     readonly direction?: 'ltr' | 'rtl';
     readonly columnSizingMode?: 'fill' | 'fixed';
     readonly accessibilityText?: NatTableAccessibilityText;
-    readonly initialState?: Partial<NatTableState>;
-    readonly state?: Partial<NatTableState>;
+    readonly initialState?: Partial<NatTableUserState>;
+    readonly state?: Partial<NatTableUserState>;
     readonly mode?: NatTableMode | NatTableModeConfiguration;
     readonly manualPageCount?: number;
     readonly columns?: ColumnDef<Row, unknown>[];
@@ -1032,11 +1037,7 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         // jsdom has no layout, so inject a measured width distinct from the 150px default.
-        (
-          internal as unknown as {
-            readonly measuredHeaderWidths: { set(value: Record<string, number>): void };
-          }
-        ).measuredHeaderWidths.set({ region: 222 });
+        getInternalStore(fixture).measuredHeaderWidths.set({ region: 222 });
 
         const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
 
@@ -1115,13 +1116,10 @@ describe('FEATURE: NatTable', () => {
         // jsdom has no layout, so set the region width directly. In fill flex the fit
         // budget is the region minus the OTHER columns' minimums (the space they can
         // yield); column widths come from intrinsic size, so measured headers are unused.
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly regionViewportWidth: { set(value: number): void };
-          resolvedColumnWidths(): Record<string, number>;
-        };
+        const store = getInternalStore(fixture);
 
         // when:
-        internal.regionViewportWidth.set(390);
+        store.regionViewportWidth.set(390);
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -1142,7 +1140,7 @@ describe('FEATURE: NatTable', () => {
         expect(host.columnSizingEvents.at(-1)).toStrictEqual({ region: 174 });
 
         // The widths still sum to the region: the table fills it exactly, never overflows.
-        const widths = internal.resolvedColumnWidths();
+        const widths = store.resolvedColumnWidths();
         const total = Object.values(widths).reduce((sum, width) => sum + width, 0);
 
         // then:
@@ -1202,12 +1200,10 @@ describe('FEATURE: NatTable', () => {
         fixture.detectChanges();
 
         // Simulate fill-layout redistribution stretching region's measured width past maxSize.
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly measuredHeaderWidths: { set(value: Record<string, number>): void };
-        };
+        const store = getInternalStore(fixture);
 
         // when:
-        internal.measuredHeaderWidths.set({ region: 272 });
+        store.measuredHeaderWidths.set({ region: 272 });
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -1251,15 +1247,14 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
+        const store = getInternalStore(fixture);
         const internal = getInternalTable(fixture) as unknown as {
           readonly table: { getState(): { readonly columnSizingInfo: { readonly isResizingColumn: string | false } } };
           columnResizeGuide(): { readonly left: number; readonly offset: number } | null;
-          readonly regionViewportWidth: { set(value: number): void };
-          visibleColumns(): readonly { readonly id: string }[];
         };
-        const otherColumnsWidth = (internal.visibleColumns().length - 1) * 100;
+        const otherColumnsWidth = (store.visibleColumns().length - 1) * 100;
 
-        internal.regionViewportWidth.set(otherColumnsWidth + 250); // region fit budget = 250
+        store.regionViewportWidth.set(otherColumnsWidth + 250); // region fit budget = 250
         fixture.detectChanges();
 
         const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
@@ -1287,18 +1282,15 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly regionViewportWidth: { set(value: number): void };
-          resolvedColumnWidths(): Record<string, number>;
-        };
+        const store = getInternalStore(fixture);
 
         // when:
-        internal.regionViewportWidth.set(600);
+        store.regionViewportWidth.set(600);
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const widthsBefore = internal.resolvedColumnWidths();
+        const widthsBefore = store.resolvedColumnWidths();
         const total = (widths: Record<string, number>): number => Object.values(widths).reduce((sum, width) => sum + width, 0);
 
         // then:
@@ -1316,7 +1308,7 @@ describe('FEATURE: NatTable', () => {
 
         // The resized column grows by exactly one step while the others absorb the delta,
         // so the table still fills the region — no jump, no overflow.
-        const widthsAfter = internal.resolvedColumnWidths();
+        const widthsAfter = store.resolvedColumnWidths();
 
         // then:
         expect(widthsAfter['region']).toBe(widthsBefore['region'] + 8);
@@ -1432,13 +1424,9 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        // Same viewport as the fill-mode fit test, where End capped region at 174.
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly regionViewportWidth: { set(value: number): void };
-        };
+        const store = getInternalStore(fixture);
 
-        // when:
-        internal.regionViewportWidth.set(390);
+        store.regionViewportWidth.set(390);
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -1482,17 +1470,14 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly measuredHeaderWidths: { set(v: Record<string, number>): void };
-          resolvedColumnWidths(): Record<string, number>;
-        };
+        const store = getInternalStore(fixture);
 
         // when:
         // Inject a stale measured width (300px) that differs from the region column's def size (140).
         // This simulates the state after a resize: the ResizeObserver captured the colgroup-forced
         // width. With the bug the reset below would leave region at 300; with the fix it returns
         // to the def size because the measured fallback is skipped in authoritative layout.
-        internal.measuredHeaderWidths.set({ region: 300 });
+        store.measuredHeaderWidths.set({ region: 300 });
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -1500,7 +1485,7 @@ describe('FEATURE: NatTable', () => {
         // columnSizing is empty — region was never resized, so no entry exists.
         // resolvedColumnWidths must resolve to the column's def size (140), not the stale 300.
         // resizableColumns['region'] has size: 140 (confirmed from the fixture column defs above).
-        const widths = internal.resolvedColumnWidths();
+        const widths = store.resolvedColumnWidths();
 
         // then:
         expect(widths['region']).toBe(140);
@@ -1555,12 +1540,10 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly regionViewportWidth: { set(value: number): void };
-        };
+        const store = getInternalStore(fixture);
 
         // when:
-        internal.regionViewportWidth.set(390);
+        store.regionViewportWidth.set(390);
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -1608,21 +1591,18 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly regionViewportWidth: { set(value: number): void };
-          resolvedColumnWidths(): Record<string, number>;
-        };
+        const store = getInternalStore(fixture);
 
         // when:
-        // A wide region hands every flex column a generous surplus share; without the cap
+        // A wide region hands every flex column a generous surplus share, but the
         // status would stretch well past 90.
-        internal.regionViewportWidth.set(900);
+        store.regionViewportWidth.set(900);
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
 
         // then:
-        expect(internal.resolvedColumnWidths()['status']).toBe(90);
+        expect(store.resolvedColumnWidths()['status']).toBe(90);
       });
     });
 
@@ -1637,22 +1617,18 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const internal = getInternalTable(fixture) as unknown as {
-          readonly regionViewportWidth: { set(value: number): void };
-          resolvedColumnWidths(): Record<string, number>;
-          visibleColumns(): readonly { readonly id: string }[];
-        };
+        const store = getInternalStore(fixture);
 
         // when:
         // An odd region width forces non-integer per-share splits, exercising the rounding.
-        internal.regionViewportWidth.set(917);
+        store.regionViewportWidth.set(917);
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
 
         // then:
-        expect(internal.visibleColumns()).toHaveLength(4);
-        const widths = internal.resolvedColumnWidths();
+        expect(store.visibleColumns()).toHaveLength(4);
+        const widths = store.resolvedColumnWidths();
         const total = Object.values(widths).reduce((sum, width) => sum + width, 0);
 
         // then:
@@ -2723,7 +2699,7 @@ describe('FEATURE: NatTable', () => {
             }
           ]);
 
-          protected readonly initialState: Partial<NatTableState> = {
+          protected readonly initialState: Partial<NatTableUserState> = {
             columnPinning: {
               left: ['name', 'region', 'status'],
               right: []

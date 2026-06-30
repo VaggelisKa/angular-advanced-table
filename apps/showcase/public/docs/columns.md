@@ -121,7 +121,7 @@ Configure the table width model on the surface.
 Pinning is enabled where the column allows it. Reordering stays inside the current pinning zone: left, center, or right.
 
 ```ts
-readonly initialState: Partial<NatTableState> = {
+readonly initialState: Partial<NatTableUserState> = {
   columnPinning: {
     left: ['symbol'],
     right: ['actions'],

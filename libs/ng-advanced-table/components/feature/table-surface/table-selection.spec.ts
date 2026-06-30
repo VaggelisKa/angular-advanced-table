@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import type { ColumnDef } from '@tanstack/angular-table';
 
-import type { NatTableState } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 
 import { NatTableSurface } from './table-surface';
@@ -51,7 +51,7 @@ class SelectionHost {
   protected readonly columns = withNatTableSelectionColumn(baseColumns);
   protected readonly getRowId = getRowId;
   public selectionMode: 'single' | 'multiple' = 'multiple';
-  public readonly state = signal<Partial<NatTableState>>({});
+  public readonly state = signal<Partial<NatTableUserState>>({});
 }
 
 @Component({
