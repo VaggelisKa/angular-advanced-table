@@ -3,8 +3,8 @@ import { Component, signal } from '@angular/core';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 
-import { baseColumns, buildRows, getRowId } from './table-ui-data.helper';
-import type { Row } from './table-ui-data.helper';
+import { baseColumns, buildRows, getRowId } from './table-data.helper';
+import type { Row } from './table-data.helper';
 import { NatTableColumnVisibility } from '../feature/table-column-visibility/table-column-visibility';
 import { NatTablePageSize } from '../feature/table-page-size/table-page-size';
 import { NatTablePager } from '../feature/table-pager/table-pager';
@@ -14,7 +14,7 @@ import { NatTableSurface } from '../feature/table-surface/table-surface';
 import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table-header-actions';
 
 @Component({
-  selector: 'nat-table-ui-host',
+  selector: 'nat-table-host',
   imports: [NatTable, NatTableColumnVisibility, NatTablePageSize, NatTablePager, NatTableScrollControl, NatTableSurface],
   template: `
     <nat-table-surface [initialState]="initialState" [state]="tableState()" (stateChange)="onTableStateChange($event)">
@@ -28,7 +28,7 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
     </nat-table-surface>
   `
 })
-export class TableUiHost {
+export class TableHost {
   protected readonly rows = signal<Row[]>(buildRows(6));
   protected readonly columns = withNatTableHeaderActions(baseColumns, {
     enableColumnReorderActions: true

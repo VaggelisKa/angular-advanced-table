@@ -3,8 +3,8 @@ import { Component, signal } from '@angular/core';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
 
-import { baseColumns, buildHeaderActionCompositionColumns, buildRows, sortIndicatorGlyph } from './table-ui-data.helper';
-import type { Row } from './table-ui-data.helper';
+import { baseColumns, buildHeaderActionCompositionColumns, buildRows, sortIndicatorGlyph } from './table-data.helper';
+import type { Row } from './table-data.helper';
 import { NatTableSurface } from '../feature/table-surface/table-surface';
 import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table-header-actions';
 
