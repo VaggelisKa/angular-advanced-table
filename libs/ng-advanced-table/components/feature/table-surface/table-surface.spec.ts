@@ -34,7 +34,7 @@ describe('FEATURE: NatTable UI', () => {
 
         const table = root(fixture).querySelector('nat-table table') as HTMLTableElement;
         const columnChip = root(fixture).querySelector('.column-chip') as HTMLButtonElement;
-        const pageSizeButton = root(fixture).querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeSelect = root(fixture).querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pagerButton = root(fixture).querySelector('nat-table-pager .pager-button') as HTMLButtonElement;
         const scrollButton = root(fixture).querySelector('nat-table-scroll-control .scroll-button') as HTMLButtonElement;
         const scrollRange = root(fixture).querySelector('nat-table-scroll-control .scroll-range') as HTMLInputElement;
@@ -42,9 +42,13 @@ describe('FEATURE: NatTable UI', () => {
         expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
         expect(columnChip.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Service Shown');
         expect(columnChip.getAttribute('aria-label')).toBe('Service shown. Hide column');
-        expect(pageSizeButton.getAttribute('aria-controls')).toBe(table.id);
-        expect(pageSizeButton.textContent.trim()).toBe('2 rows');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
+        expect(pageSizeSelect.getAttribute('aria-controls')).toBe(table.id);
+        expect(pageSizeSelect.getAttribute('aria-label')).toBe('Rows per page');
+        const firstOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstOption.value).toBe('2');
+        expect(firstOption.textContent.trim()).toBe('2 rows');
+        expect(firstOption.getAttribute('aria-label')).toBe('2 rows per page');
         expect(pagerButton.getAttribute('aria-controls')).toBe(table.id);
         expect(scrollButton.getAttribute('aria-controls')).toBe(table.id);
         expect(scrollRange.getAttribute('aria-controls')).toBe(table.id);
@@ -137,13 +141,12 @@ describe('FEATURE: NatTable UI', () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         fixture.detectChanges();
 
-        const pageSizeButton = Array.from(root(fixture).querySelectorAll('nat-table-page-size .chip'))
-          .map((button) => button as HTMLButtonElement)
-          .find((button) => button.textContent.includes('3 rows')) as HTMLButtonElement;
+        const pageSizeSelect = root(fixture).querySelector('nat-table-page-size select') as HTMLSelectElement;
         const nextButton = root(fixture).querySelector('nat-table-pager .pager-button:last-child') as HTMLButtonElement;
 
         // when: page size is changed to 3
-        pageSizeButton.click();
+        pageSizeSelect.value = '3';
+        pageSizeSelect.dispatchEvent(new Event('change'));
         fixture.detectChanges();
 
         // then: pagination state reflects new page size
@@ -178,7 +181,7 @@ describe('FEATURE: NatTable UI', () => {
         expect(toolbar.getAttribute('role')).toBe('toolbar');
         expect(toolbar.getAttribute('aria-label')).toBe('Table pagination');
         expect(groups).toHaveLength(2);
-        expect(root(paginationFixture).querySelectorAll('nat-table-pagination .chip')).toHaveLength(3);
+        expect(root(paginationFixture).querySelectorAll('nat-table-pagination select.page-size-select option')).toHaveLength(3);
         expect(root(paginationFixture).querySelectorAll('nat-table-pagination .pager-button')).toHaveLength(2);
       });
     });

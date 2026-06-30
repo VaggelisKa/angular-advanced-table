@@ -25,8 +25,8 @@ describe('FEATURE: NatTable UI', () => {
         const nativeElement = localeFixture.nativeElement as HTMLElement;
         const emptyState = nativeElement.querySelector('.empty-state') as HTMLElement;
         const tableSummary = nativeElement.querySelector('p.sr-only') as HTMLElement;
-        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .chip-row') as HTMLElement;
-        const pageSizeButton = nativeElement.querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .page-size-container') as HTMLElement;
+        const pageSizeSelect = nativeElement.querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
         const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
         const nextButton = nativeElement.querySelector('nat-table-pager .pager-button:last-child') as HTMLButtonElement;
@@ -35,8 +35,10 @@ describe('FEATURE: NatTable UI', () => {
         expect(emptyState.textContent.trim()).toBe('No rows match the current view.');
         expect(tableSummary.textContent.trim()).toBe('No rows are currently shown. 4 visible columns. Page 1 of 1.');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rows per page');
-        expect(pageSizeButton.textContent.trim()).toBe('2 rows');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('2 rows per page');
+        let firstLocaleOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstLocaleOption.textContent.trim()).toBe('2 rows');
+        expect(firstLocaleOption.getAttribute('aria-label')).toBe('2 rows per page');
         expect(pager.getAttribute('aria-label')).toBe('Table pagination');
         expect(pagerLabel.textContent.trim()).toBe('Page 1 of 1');
         expect(nextButton.getAttribute('aria-label')).toBe('Next page');
@@ -46,11 +48,12 @@ describe('FEATURE: NatTable UI', () => {
         localeFixture.detectChanges();
 
         // then: Danish labels are rendered
+        firstLocaleOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
         expect(emptyState.textContent.trim()).toBe('Ingen rækker matcher visningen.');
         expect(tableSummary.textContent.trim()).toBe('0 rækker og 4 kolonner.');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
-        expect(pageSizeButton.textContent.trim()).toBe('2 / side');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker pr. side');
+        expect(firstLocaleOption.textContent.trim()).toBe('2 / side');
+        expect(firstLocaleOption.getAttribute('aria-label')).toBe('Vis 2 rækker pr. side');
         expect(pager.getAttribute('aria-label')).toBe('Tabelsider');
         expect(pagerLabel.textContent.trim()).toBe('Side 1 af 1');
         expect(nextButton.getAttribute('aria-label')).toBe('Næste side');

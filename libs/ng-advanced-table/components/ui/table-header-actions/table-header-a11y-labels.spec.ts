@@ -34,8 +34,8 @@ describe('FEATURE: NatTable UI', () => {
         const visibilityGroup = nativeElement.querySelector('nat-table-column-visibility .chip-row') as HTMLElement;
         const firstColumnChip = nativeElement.querySelector('nat-table-column-visibility .column-chip') as HTMLButtonElement;
         const firstColumnState = firstColumnChip.querySelector('.chip-count') as HTMLElement;
-        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .chip-row') as HTMLElement;
-        const pageSizeButton = nativeElement.querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .page-size-container') as HTMLElement;
+        const pageSizeSelect = nativeElement.querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
         const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
         const scrollControl = nativeElement.querySelector('nat-table-scroll-control .scroll-control') as HTMLElement;
@@ -56,8 +56,10 @@ describe('FEATURE: NatTable UI', () => {
         expect(firstColumnState.textContent.trim()).toBe('Synlig');
 
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rækker pr. side');
-        expect(pageSizeButton.textContent.trim()).toBe('2 rækker');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('Vis 2 rækker');
+        const firstPageSizeOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstPageSizeOption.textContent.trim()).toBe('2 rækker');
+        expect(firstPageSizeOption.getAttribute('aria-label')).toBe('Vis 2 rækker');
 
         expect(pager.getAttribute('aria-label')).toBe('Sideskift');
         expect(pagerLabel.textContent.trim()).toBe('Side 2 af 3');
@@ -140,8 +142,8 @@ describe('FEATURE: NatTable UI', () => {
         const visibilityHeading = nativeElement.querySelector('nat-table-column-visibility .control-label') as HTMLElement;
         const visibilityCaption = nativeElement.querySelector('nat-table-column-visibility .control-caption') as HTMLElement;
         const visibilityGroup = nativeElement.querySelector('nat-table-column-visibility .chip-row') as HTMLElement;
-        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .chip-row') as HTMLElement;
-        const pageSizeButton = nativeElement.querySelector('nat-table-page-size .chip') as HTMLButtonElement;
+        const pageSizeGroup = nativeElement.querySelector('nat-table-page-size .page-size-container') as HTMLElement;
+        const pageSizeSelect = nativeElement.querySelector('nat-table-page-size select') as HTMLSelectElement;
         const pager = nativeElement.querySelector('nat-table-pager .pager') as HTMLElement;
         const pagerLabel = nativeElement.querySelector('nat-table-pager .pager-label') as HTMLElement;
         const previousButton = nativeElement.querySelector('nat-table-pager .pager-button:first-child') as HTMLButtonElement;
@@ -156,8 +158,10 @@ describe('FEATURE: NatTable UI', () => {
         expect(visibilityCaption.textContent.trim()).toBe('Provider n4/n4');
         expect(visibilityGroup.getAttribute('aria-label')).toBe('Provider column visibility');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Provider page size group');
-        expect(pageSizeButton.textContent.trim()).toBe('n2 provider rows');
-        expect(pageSizeButton.getAttribute('aria-label')).toBe('Provider show n2 rows');
+        const firstProviderOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+
+        expect(firstProviderOption.textContent.trim()).toBe('n2 provider rows');
+        expect(firstProviderOption.getAttribute('aria-label')).toBe('Provider show n2 rows');
         expect(pager.getAttribute('aria-label')).toBe('Provider pager');
         expect(pagerLabel.textContent.trim()).toBe('Provider page n2/n3');
         expect(previousButton.getAttribute('aria-label')).toBe('Provider previous');
