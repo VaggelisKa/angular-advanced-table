@@ -44,7 +44,7 @@ Use `withNatTableHeaderActions(...)` when you want the bundled sort behavior, la
 ```ts
 import { Component, input } from '@angular/core';
 import { flexRenderComponent } from '@tanstack/angular-table';
-import { type NatTableSortIndicatorContext, withNatTableHeaderActions } from 'ng-advanced-table/ui';
+import { type NatTableSortIndicatorContext, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 @Component({
   selector: 'app-sort-indicator',
