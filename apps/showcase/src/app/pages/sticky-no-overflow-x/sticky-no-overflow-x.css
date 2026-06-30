@@ -17,7 +17,10 @@
 
   --nat-table-region-overflow-x: visible;
   --nat-table-region-overflow-y: visible;
-  --nat-table-sticky-top: 60px;
+
+  @media (width <= 820px) {
+    --nat-table-sticky-top: 60px;
+  }
 }
 
 .simple-table {

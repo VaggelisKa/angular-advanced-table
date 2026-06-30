@@ -89,24 +89,29 @@ nat-table-surface {
 
 /* Dialog Styles */
 dialog {
-  width: 1000px;
-  max-width: 90vw;
-  height: 80vh;
-  height: 80dvh;
-  max-height: 85vh;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  width: 100dvw;
+  max-width: 100vw;
+  max-width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
   padding: 0;
+  margin: 0;
   overflow: hidden;
   overscroll-behavior-y: contain;
   color: var(--showcase-page-text);
   background: var(--showcase-page-surface);
-  border: 1px solid var(--showcase-page-border);
-  border-radius: var(--showcase-page-radius, 12px);
-  box-shadow: var(--showcase-page-shadow);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 dialog::backdrop {
-  background: rgb(0 0 0 / 45%);
-  backdrop-filter: blur(4px);
+  background: var(--showcase-page-surface);
 }
 
 .dialog-content {
@@ -116,9 +121,11 @@ dialog::backdrop {
 }
 
 .dialog-header {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 68px;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--showcase-page-border);
 }
@@ -185,13 +192,8 @@ dialog::backdrop {
 }
 
 /* Detailed Table Surface styles using max height CSS variable */
-.dialog-body {
-  height: 60vh;
-  height: 60dvh;
-}
-
 nat-table-surface.dialog-table-surface {
-  --nat-table-max-height: 80vh;
+  --nat-table-max-height: calc(100vh - 68px);
 }
 
 .detailed-page-body nat-table-surface.dialog-table-surface {
