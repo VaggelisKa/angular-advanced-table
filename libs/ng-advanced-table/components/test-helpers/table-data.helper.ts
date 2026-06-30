@@ -11,13 +11,9 @@ export type Row = {
 export const getRowId = (row: Row): string => row.id;
 
 export const sortIndicatorGlyph = (sortState: 'asc' | 'desc' | false): string => {
-  if (sortState === 'asc') {
-    return 'A';
-  }
+  if (sortState === 'asc') return 'A';
 
-  if (sortState === 'desc') {
-    return 'D';
-  }
+  if (sortState === 'desc') return 'D';
 
   return '-';
 };
@@ -37,9 +33,7 @@ export const danishPinLabel = (params: {
 export const statusFilter: FilterFn<Row> = (row, columnId, filterValue) => {
   const selectedStatuses = (filterValue ?? []) as Row['status'][];
 
-  if (!selectedStatuses.length) {
-    return true;
-  }
+  if (!selectedStatuses.length) return true;
 
   return selectedStatuses.includes(row.getValue(columnId) as Row['status']);
 };

@@ -87,13 +87,9 @@ export const resolveMenuLabel = (labels: NatTableAccessibilityHeaderActionLabels
 
 /** Maps a TanStack sort direction to its ARIA sort token. */
 export const toAriaSort = (sortState: NatTableSortDirection): NatTableAriaSort => {
-  if (sortState === 'asc') {
-    return 'ascending';
-  }
+  if (sortState === 'asc') return 'ascending';
 
-  if (sortState === 'desc') {
-    return 'descending';
-  }
+  if (sortState === 'desc') return 'descending';
 
   return 'none';
 };

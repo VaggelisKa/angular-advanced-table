@@ -22,9 +22,7 @@ const stringifyCsvCellValue = (value: Exclude<NatTableExportCellValue, null>): s
 };
 
 const serializeNatTableCsvCell = (value: NatTableExportCellValue): string => {
-  if (value === null) {
-    return '';
-  }
+  if (value === null) return '';
 
   const text = stringifyCsvCellValue(value);
   const safeText = DANGEROUS_SPREADSHEET_TEXT_PATTERN.test(text) ? `'${text}` : text;
@@ -43,17 +41,13 @@ const normalizeExportHeader = (value: string | undefined): string | null => {
 const normalizeExportCellValue = (value: unknown): NatTableExportCellValue => {
   if (value === null || value === undefined) return null;
 
-  if (typeof value === 'string' || typeof value === 'boolean') {
-    return value;
-  }
+  if (typeof value === 'string' || typeof value === 'boolean') return value;
 
   if (typeof value === 'number') {
     return Number.isFinite(value) ? value : String(value);
   }
 
-  if (value instanceof Date) {
-    return value;
-  }
+  if (value instanceof Date) return value;
 
   if (typeof value === 'object') {
     try {
@@ -83,9 +77,7 @@ const isAccessorColumn = <TData extends RowData>(column: Column<TData, unknown>)
 const isNatTableExportColumn = <TData extends RowData>(column: Column<TData, unknown>): boolean => {
   const exportOptions = column.columnDef.meta?.export;
 
-  if (exportOptions?.enabled !== undefined) {
-    return exportOptions.enabled;
-  }
+  if (exportOptions?.enabled !== undefined) return exportOptions.enabled;
 
   return isAccessorColumn(column);
 };
@@ -101,9 +93,7 @@ const resolveNatTableExportHeader = <TData extends RowData>(column: Column<TData
     normalizeExportHeader(meta?.hiddenHeaderLabel) ??
     normalizePrimitiveHeader(column.columnDef.header);
 
-  if (resolvedHeader) {
-    return resolvedHeader;
-  }
+  if (resolvedHeader) return resolvedHeader;
 
   return column.id || 'Column';
 };

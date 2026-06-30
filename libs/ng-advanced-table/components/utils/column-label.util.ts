@@ -12,25 +12,17 @@ export const resolveNatTableColumnLabel = <TData extends RowData>(
 ): string => {
   const hiddenHeaderLabel = normalizeColumnLabel(columnDef.meta?.hiddenHeaderLabel);
 
-  if (hiddenHeaderLabel) {
-    return hiddenHeaderLabel;
-  }
+  if (hiddenHeaderLabel) return hiddenHeaderLabel;
 
   const metaLabel = columnDef.meta?.label;
 
-  if (metaLabel) {
-    return metaLabel;
-  }
+  if (metaLabel) return metaLabel;
 
-  if (typeof columnDef.header === 'string') {
-    return columnDef.header;
-  }
+  if (typeof columnDef.header === 'string') return columnDef.header;
 
   const accessorKey = (columnDef as { readonly accessorKey?: unknown }).accessorKey;
 
-  if (typeof accessorKey === 'string') {
-    return accessorKey;
-  }
+  if (typeof accessorKey === 'string') return accessorKey;
 
   return fallbackId || 'Column';
 };
