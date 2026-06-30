@@ -11,15 +11,15 @@ import {
   NatTableSurface,
   NatTableToolbar,
   withNatTableHeaderActions
-} from 'ng-advanced-table/ui';
-import type { NatTableSortIndicatorContext } from 'ng-advanced-table/ui';
+} from 'ng-advanced-table/components';
+import type { NatTableSortIndicatorContext } from 'ng-advanced-table/components';
 import {
   NatRenderMetricsFilter,
   NatRenderMetricsPanel,
   NatTableRenderMetricsStore,
   withRenderMetricsColumn
-} from 'ng-advanced-table/utils';
-import type { NatTableRenderMetricsController, NatTableRenderMetricsEvent } from 'ng-advanced-table/utils';
+} from 'ng-advanced-table/render-metrics';
+import type { NatTableRenderMetricsController, NatTableRenderMetricsEvent } from 'ng-advanced-table/render-metrics';
 
 import { NatRowActionsMenu } from './nat-row-actions-menu';
 import { NatSparkline } from './nat-sparkline';

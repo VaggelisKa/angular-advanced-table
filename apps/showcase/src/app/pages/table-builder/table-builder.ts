@@ -11,18 +11,18 @@ import {
   NatTableSurface,
   NatTableToolbar,
   withNatTableHeaderActions
-} from 'ng-advanced-table/ui';
+} from 'ng-advanced-table/components';
 
 import { buildComponentSource, buildStateObject, formatStateLiteral, omitColumnOrder } from './table-builder.util';
 import type { TableBuilderFlags } from './table-builder.util';
 import { TableSearch } from '../../components/table-search/table-search';
 
 type DemoItem = {
-  id: string;
-  name: string;
-  category: string;
-  status: string;
-  value: number;
+  readonly id: string;
+  readonly name: string;
+  readonly category: string;
+  readonly status: string;
+  readonly value: number;
 };
 
 const DEMO_DATA: DemoItem[] = [

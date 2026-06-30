@@ -14,7 +14,7 @@ const clearThemeState = (): void => {
   document.documentElement.removeAttribute('data-theme');
 };
 
-describe('ShowcaseThemeStore', () => {
+describe('FEATURE: ShowcaseThemeStore', () => {
   let store: Record<string, string> = {};
   let originalLocalStorage: typeof globalThis.localStorage;
 
@@ -53,24 +53,32 @@ describe('ShowcaseThemeStore', () => {
     clearThemeState();
   });
 
-  it('should apply the stored theme to the document root when initialized', () => {
-    globalThis.localStorage.setItem(themeStorageKey, 'dark');
+  describe('GIVEN: a showcase theme store is initialized', () => {
+    describe('WHEN: apply the stored theme to the document root when initialized', () => {
+      it('THEN: it sets the stored theme on the document root', () => {
+        globalThis.localStorage.setItem(themeStorageKey, 'dark');
 
-    const themeStore = TestBed.inject(ShowcaseThemeStore);
+        const themeStore = TestBed.inject(ShowcaseThemeStore);
 
-    expect(themeStore.theme()).toBe('dark');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+        expect(themeStore.theme()).toBe('dark');
+        expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+      });
+    });
   });
 
-  it('should keep the document root theme synchronized with updates', () => {
-    const themeStore = TestBed.inject(ShowcaseThemeStore);
+  describe('GIVEN: a showcase theme store is initialized with document root theme synchronization', () => {
+    describe('WHEN: keep the document root theme synchronized with updates', () => {
+      it('THEN: it updates the document root when theme state changes', () => {
+        const themeStore = TestBed.inject(ShowcaseThemeStore);
 
-    themeStore.setTheme('dark');
+        themeStore.setTheme('dark');
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+        expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
 
-    themeStore.setTheme('light');
+        themeStore.setTheme('light');
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+        expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+      });
+    });
   });
 });

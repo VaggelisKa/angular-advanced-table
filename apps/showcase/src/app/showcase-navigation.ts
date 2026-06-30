@@ -162,7 +162,7 @@ if (!firstShowcaseDoc) {
 
 const FALLBACK_SHOWCASE_DOC: ShowcaseDoc = firstShowcaseDoc;
 
-export const showcaseExamples: readonly ShowcaseNavItem[] = [
+const showcaseExamples: readonly ShowcaseNavItem[] = [
   {
     id: 'multiple-features',
     label: 'Multiple features',
@@ -299,7 +299,7 @@ function getShowcaseExample(exampleId: string): ShowcaseNavItem {
   return example;
 }
 
-export const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
+const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
   {
     id: 'docs-core-model',
     label: 'Core principles',
@@ -339,7 +339,7 @@ export const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
   }
 ];
 
-export const showcaseExampleGroups: readonly ShowcaseNavGroup[] = [
+const showcaseExampleGroups: readonly ShowcaseNavGroup[] = [
   {
     id: 'examples-scenarios',
     label: 'Scenarios',

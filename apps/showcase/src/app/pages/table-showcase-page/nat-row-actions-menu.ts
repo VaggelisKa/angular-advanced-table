@@ -4,9 +4,9 @@ import { CdkMenuModule } from '@angular/cdk/menu';
 import { Component, input } from '@angular/core';
 
 type DemoRowAction = {
-  id: string;
-  label: string;
-  hint: string;
+  readonly id: string;
+  readonly label: string;
+  readonly hint: string;
 };
 
 const DEMO_ROW_ACTIONS: readonly DemoRowAction[] = [

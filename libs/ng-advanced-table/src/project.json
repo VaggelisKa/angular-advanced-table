@@ -4,7 +4,7 @@
   "projectType": "library",
   "prefix": "nat",
   "sourceRoot": "libs/ng-advanced-table/src",
-  "tags": ["type:lib", "type:core", "scope:public"],
+  "tags": ["type:core", "scope:public"],
   "targets": {
     "test": {
       "options": {

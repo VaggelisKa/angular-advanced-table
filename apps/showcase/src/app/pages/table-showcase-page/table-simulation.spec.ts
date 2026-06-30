@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { SPARK_HISTORY_LENGTH, TableSimulation } from './table-simulation';
 
-describe('TableSimulation', () => {
+describe('FEATURE: TableSimulation', () => {
   let service: TableSimulation;
 
   beforeEach(() => {
@@ -14,48 +14,72 @@ describe('TableSimulation', () => {
     service.pause();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  describe('GIVEN: a table simulation instance is created', () => {
+    describe('WHEN: be created', () => {
+      it('THEN: it creates the simulation instance', () => {
+        expect(service).toBeTruthy();
+      });
+    });
   });
 
-  it('should create a dataset that matches the default size', () => {
-    expect(service.rows()).toHaveLength(service.datasetSize());
+  describe('GIVEN: a table simulation instance is created with default dataset options', () => {
+    describe('WHEN: create a dataset that matches the default size', () => {
+      it('THEN: it creates the default number of rows', () => {
+        expect(service.rows()).toHaveLength(service.datasetSize());
+      });
+    });
   });
 
-  it('should seed rows with trading metrics', () => {
-    const firstRow = service.rows()[0];
+  describe('GIVEN: a table simulation instance is created with generated market rows', () => {
+    describe('WHEN: seed rows with trading metrics', () => {
+      it('THEN: it adds trading metric values to seeded rows', () => {
+        const firstRow = service.rows()[0];
 
-    expect(firstRow.price).toBeGreaterThan(0);
-    expect(firstRow.volume).toBeGreaterThan(0);
-    expect(firstRow.symbol).toMatch(/[A-Z0-9]+/);
+        expect(firstRow.price).toBeGreaterThan(0);
+        expect(firstRow.volume).toBeGreaterThan(0);
+        expect(firstRow.symbol).toMatch(/[A-Z0-9]+/);
+      });
+    });
   });
 
-  it('should seed every row with a full sparkline history', () => {
-    const rows = service.rows();
+  describe('GIVEN: a table simulation instance is created with generated sparkline histories', () => {
+    describe('WHEN: seed every row with a full sparkline history', () => {
+      it('THEN: it adds full sparkline history to each row', () => {
+        const rows = service.rows();
 
-    expect(rows[0].priceHistory).toHaveLength(SPARK_HISTORY_LENGTH);
-    expect(rows[0].priceHistory[SPARK_HISTORY_LENGTH - 1]).toBeCloseTo(rows[0].price, 2);
-    expect(['up', 'down', 'flat']).toContain(rows[0].sparkTrend);
+        expect(rows[0].priceHistory).toHaveLength(SPARK_HISTORY_LENGTH);
+        expect(rows[0].priceHistory[SPARK_HISTORY_LENGTH - 1]).toBeCloseTo(rows[0].price, 2);
+        expect(['up', 'down', 'flat']).toContain(rows[0].sparkTrend);
+      });
+    });
   });
 
-  it('should cap sparkline history at the configured length after pulses', () => {
-    for (let index = 0; index < 3; index += 1) {
-      service.pulse();
-    }
+  describe('GIVEN: a table simulation instance is created with pulsed sparkline history', () => {
+    describe('WHEN: cap sparkline history at the configured length after pulses', () => {
+      it('THEN: it keeps sparkline history within the configured limit', () => {
+        for (let index = 0; index < 3; index += 1) {
+          service.pulse();
+        }
 
-    const row = service.rows().find((candidate) => candidate.priceHistory.length > 0);
+        const row = service.rows().find((candidate) => candidate.priceHistory.length > 0);
 
-    if (!row) {
-      throw new Error('Expected at least one row with sparkline history.');
-    }
+        if (!row) {
+          throw new Error('Expected at least one row with sparkline history.');
+        }
 
-    expect(row.priceHistory.length).toBeLessThanOrEqual(SPARK_HISTORY_LENGTH);
+        expect(row.priceHistory.length).toBeLessThanOrEqual(SPARK_HISTORY_LENGTH);
+      });
+    });
   });
 
-  it('should mutate rows when a pulse runs', () => {
-    service.pulse();
+  describe('GIVEN: a table simulation instance is created with pulsed market rows', () => {
+    describe('WHEN: mutate rows when a pulse runs', () => {
+      it('THEN: it changes row values during a pulse', () => {
+        service.pulse();
 
-    expect(service.lastMutationSize()).toBeGreaterThan(0);
-    expect(service.totalMutations()).toBe(service.lastMutationSize());
+        expect(service.lastMutationSize()).toBeGreaterThan(0);
+        expect(service.totalMutations()).toBe(service.lastMutationSize());
+      });
+    });
   });
 });

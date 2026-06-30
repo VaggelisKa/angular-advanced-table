@@ -4,7 +4,7 @@
   "projectType": "library",
   "prefix": "nat",
   "sourceRoot": "libs/ng-advanced-table/locale",
-  "tags": ["type:lib", "type:locale", "scope:public"],
+  "tags": ["type:locale", "scope:public"],
   "targets": {
     "test": {
       "options": {

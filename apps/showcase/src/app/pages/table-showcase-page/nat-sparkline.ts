@@ -4,7 +4,7 @@ import type { SparkTrend } from './table-simulation';
 
 const VIEWBOX_HEIGHT = 100;
 
-const pointBounds = (points: readonly number[]): { min: number; range: number } => {
+const pointBounds = (points: readonly number[]): { readonly min: number; readonly range: number } => {
   let min = points[0];
   let max = points[0];
 

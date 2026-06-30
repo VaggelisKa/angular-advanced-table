@@ -1,4 +1,4 @@
-export const getFocusableElements = (container: HTMLElement): HTMLElement[] =>
+const getFocusableElements = (container: HTMLElement): HTMLElement[] =>
   Array.from(container.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]')).filter(
     (element) => element.tabIndex >= 0 && !element.closest('[hidden]')
   );

@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import type { ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableState } from 'ng-advanced-table';
-import { NatTablePageSize, NatTablePager, NatTableSurface } from 'ng-advanced-table/ui';
+import { NatTablePageSize, NatTablePager, NatTableSurface } from 'ng-advanced-table/components';
 
 import { TableSearch } from './table-search';
 
@@ -55,7 +55,7 @@ class Host {
   }
 }
 
-describe('TableSearch (user-defined)', () => {
+describe('FEATURE: TableSearch (user-defined)', () => {
   let fixture: ComponentFixture<Host>;
   let host: Host;
 
@@ -78,42 +78,50 @@ describe('TableSearch (user-defined)', () => {
 
     fixture = TestBed.createComponent(Host);
     host = fixture.componentInstance;
-    await fixture.whenStable();
-  });
-
-  it('registers with the table so global filtering is enabled', () => {
-    fixture.detectChanges();
-
-    expect(searchInput()).toBeTruthy();
-  });
-
-  it('associates the input with the table element via aria-controls', () => {
-    fixture.detectChanges();
-
-    const element = fixture.nativeElement as HTMLElement;
-    const table = element.querySelector<HTMLTableElement>('nat-table table');
-
-    if (!table) {
-      throw new Error('Expected the table element to render.');
-    }
-
-    expect(searchInput().getAttribute('aria-controls')).toBe(table.id);
-  });
-
-  it('filters rows and resets pagination to the first page on input', async () => {
-    fixture.detectChanges();
-    const input = searchInput();
-
-    input.value = 'gamma';
-    input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     await fixture.whenStable();
-    fixture.detectChanges();
+  });
 
-    const element = fixture.nativeElement as HTMLElement;
+  describe('GIVEN: a table search host is rendered', () => {
+    describe('WHEN: registers with the table so global filtering is enabled', () => {
+      it('THEN: it renders the search input after table registration', () => {
+        expect(searchInput()).toBeTruthy();
+      });
+    });
+  });
 
-    expect(host.tableState().globalFilter).toBe('gamma');
-    expect(host.tableState().pagination?.pageIndex).toBe(0);
-    expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
+  describe('GIVEN: a table search host is rendered with a rendered table target', () => {
+    describe('WHEN: associates the input with the table element via aria-controls', () => {
+      it('THEN: it points aria-controls at the rendered table', () => {
+        const element = fixture.nativeElement as HTMLElement;
+        const table = element.querySelector<HTMLTableElement>('nat-table table');
+
+        if (!table) {
+          throw new Error('Expected the table element to render.');
+        }
+
+        expect(searchInput().getAttribute('aria-controls')).toBe(table.id);
+      });
+    });
+  });
+
+  describe('GIVEN: a table search host is rendered with paginated searchable rows', () => {
+    describe('WHEN: filters rows and resets pagination to the first page on input', () => {
+      it('THEN: it updates filtering and pagination state', async () => {
+        const input = searchInput();
+
+        input.value = 'gamma';
+        input.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const element = fixture.nativeElement as HTMLElement;
+
+        expect(host.tableState().globalFilter).toBe('gamma');
+        expect(host.tableState().pagination?.pageIndex).toBe(0);
+        expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
+      });
+    });
   });
 });

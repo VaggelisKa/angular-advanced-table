@@ -1,5 +1,3 @@
-You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
-
 ## Release Workflow
 
 - For every code change that affects behavior, public API, docs, examples, or tests, add a new Nx version plan file in `.nx/version-plans/` as part of the same task unless the user explicitly says not to.
@@ -22,53 +20,58 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ## Entry-Point Layering
 
-The library ships as one `ng-advanced-table` package whose layers are ng-packagr secondary entry points: `ng-advanced-table` (core, primary), `ng-advanced-table/ui`, `ng-advanced-table/utils`, and `ng-advanced-table/locale`. ng-packagr builds each entry point separately and topologically, so this layering is enforced at build time — a cross-entry import is treated as an external dependency, and a circular entry-point dependency is a hard build error. It is **also lint-enforced**: per-layer `no-restricted-imports` rules in `libs/ng-advanced-table/eslint.config.mjs` fail `nx lint` on any cross-entry-point import that violates the graph below, so a break is caught before build/review.
+The library ships as one `ng-advanced-table` package whose layers are ng-packagr secondary entry points: `ng-advanced-table` (core, primary), `ng-advanced-table/components`, `ng-advanced-table/render-metrics`, and `ng-advanced-table/locale`. ng-packagr builds each entry point separately and topologically, so this layering is enforced at build time — a cross-entry import is treated as an external dependency, and a circular entry-point dependency is a hard build error. It is **also lint-enforced**: each entry point is its own tagged Nx project (`type:core`, `type:components`, `type:render-metrics`, `type:locale`; the build-only publish wrapper is `type:public-api`; all `scope:public`), and the `@nx/enforce-module-boundaries` `depConstraints` in `eslint.config.base.mjs` fail `nx lint` on any cross-entry import that violates the graph below, so a break is caught before build/review.
 
-- `ng-advanced-table` (core) must not import from `ng-advanced-table/ui` or `ng-advanced-table/utils`.
-- `ng-advanced-table/ui` and `ng-advanced-table/utils` are companion entry points. They may import `ng-advanced-table` (core) when they use its runtime services, injection tokens, components, or public contracts.
-- `ng-advanced-table/locale` must remain the leaf — below core and the companions. It may be consumed by `ng-advanced-table`, `ng-advanced-table/ui`, and `ng-advanced-table/utils`, but it must not import from them.
+- `ng-advanced-table` (core) must not import from `ng-advanced-table/components` or `ng-advanced-table/render-metrics`.
+- `ng-advanced-table/components` and `ng-advanced-table/render-metrics` are companion entry points. They may import `ng-advanced-table` (core) when they use its runtime services, injection tokens, components, or public contracts.
+- `ng-advanced-table/locale` must remain the leaf — below core and the companions. It may be consumed by `ng-advanced-table`, `ng-advanced-table/components`, and `ng-advanced-table/render-metrics`, but it must not import from them.
 - Cross-entry imports must use the package specifier (e.g. `import { X } from 'ng-advanced-table/locale'`), never a deep relative path across an entry-point boundary — a deep relative import silently inlines the code and breaks tree-shaking. Do not add path mappings, dependencies, or re-exports that make core depend on a companion entry point.
 - Source path mappings for `ng-advanced-table` (+ its subpaths) live in `tsconfig.paths.json`, extended only by the showcase config and the library `tsconfig.spec.json` — **not** `tsconfig.base.json`. The production build (`tsconfig.lib*.json`) carries no path mappings and resolves these specifiers via `node_modules` + the package `exports` map, exactly like a published consumer. Keep these mappings out of the shared base so the build stays resolution-faithful; entry files are named `index.ts` (not `public-api.ts`).
 
+## Element Layering (within an entry point)
+
+Inside each entry point, source is organized into element folders enforced by `eslint-plugin-boundaries` (`boundaries/dependencies` in `libs/ng-advanced-table/eslint.config.mjs`). A file is typed by its **deepest** element folder, so `components/feature/<comp>/` is `feature` and `components/ui/<comp>/` is `ui` — the entry-point folder name (`components`, `render-metrics`) never decides the element. Allowed direction (a layer may import itself and everything below it):
+
+- `feature` → `ui`, `domain-logic`, `utils`, `common` — composers: `@Component`/`@Directive` that inject services or compose other components.
+- `domain-logic` → `data-access`, `utils`, `common` — stateful services, controllers, intl resolution, `with*` mixins.
+- `data-access` → `utils`, `common` — raw stores / API. Currently unused in this library (see below).
+- `ui` → `utils`, `common` — presentational components/directives that inject no app service.
+- `utils` → `common` — pure, stateless functions.
+- `common` → `common` — types, consts, tokens, i18n data.
+
+`feature → data-access` is forbidden, so a stateful store/service injected directly by a feature component is classified `domain-logic` (e.g. `NatTableService`, `NatTableRenderMetricsStore`), not `data-access` — that tier is intentionally empty here. `*.spec.ts` files are exempt (`boundaries/dependencies: off`) because they test across layers; the entry barrels (`*/index.ts`) need no exemption because the entry folder names (`components`, `render-metrics`, `src`, `locale`) match no element pattern, so they sit unmatched. When adding a file, place it in the element folder that matches its role; if its imports would cross the direction above, the lint fails — split the file or relocate the dependency rather than disabling the rule.
+
 ## Package Boundaries
 
-- Keep the testing contract mirror internal: it is a source-only, test-only contract mirror living at `libs/ng-advanced-table/testing/`, imported solely by `*.spec.ts` files via a relative path (e.g. `../testing`), which assert production types against it via `Equal<>`. It is never built or published — no production source imports it (so ng-packagr never reaches it) and `tsconfig.lib.json` excludes the `testing/` folder. Published entry points must expose their own local public interfaces or aliases so generated declarations never reference it.
-- When changing shared contracts such as `NatTableColumnMeta`, `NatTableState`, sort indicator context, or table controller state, update the core entry point, the `ui` and `utils` entry points, the internal testing contract mirror (`libs/ng-advanced-table/testing/`), public API barrels, and matching contract/type specs in the same change.
+- Keep the testing contract mirror internal: it is a source-only, test-only contract mirror living at `libs/ng-advanced-table/testing/`, imported solely by `*.spec.ts` files via the `ng-advanced-table/testing` source alias (a dev/test-only `tsconfig.paths.json` mapping, deliberately NOT an `exports` subpath), which assert production types against it via `Equal<>`. It is never built or published — no production source imports it (so ng-packagr never reaches it) and `tsconfig.lib.json` excludes the `testing/` folder. Published entry points must expose their own local public interfaces or aliases so generated declarations never reference it.
+- When changing shared contracts such as `NatTableColumnMeta`, `NatTableState`, sort indicator context, or table controller state, update the core entry point, the `components` and `render-metrics` entry points, the internal testing contract mirror (`libs/ng-advanced-table/testing/`), public API barrels, and matching contract/type specs in the same change.
 
 ## Table Library Patterns
 
-- Keep workflow-specific controls such as global search inputs and filter menus consumer-owned unless they are generic table primitives. Showcase examples can implement `app-*` components against `NatTableService`; `ng-advanced-table/ui` should stay focused on generic shells, companion controls, and controller wiring.
+- Keep workflow-specific controls such as global search inputs and filter menus consumer-owned unless they are generic table primitives. Showcase examples can implement `app-*` components against `NatTableService`; `ng-advanced-table/components` should stay focused on generic shells, companion controls, and controller wiring.
 - Treat `dataStatus` as the table-owned switch for loading, empty, and error body rows. Keep data fetching, retry handling, and error classification in consuming containers, and render custom state UI through `natTableLoading`, `natTableEmpty`, or `natTableError` templates inside `<nat-table>`.
 - For `<nat-table-toolbar>`, projected interactive controls that participate in toolbar navigation must use `natToolbarItem` or `NatToolbarGroup`, with DOM order matching screen-reader and roving-keyboard order.
 - Do not use or reintroduce the removed `NatTableActionBar`/`<nat-table-action-bar>` API. Compose bundled control rows with `<nat-table-toolbar>`, `NatToolbarGroup`/`natToolbarItem`, and the pagination or scroll companion controls instead.
-- Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/components/table/table-utils.ts`; keep `table.ts` focused on Angular wiring, signals, and DOM behavior.
-- Keep table data export as optional `ng-advanced-table/ui` Table Action behavior (`natTableExport`/`provideNatTableExport(...)`). The core package may expose shared column metadata such as `NatTableColumnMeta.export`, but it must not own export side effects or file-generation state.
+- Keep pure table-state and column helper functions in `libs/ng-advanced-table/src/utils/table-utils.ts`; keep the `NatTable` component (`src/feature/table.ts`) focused on Angular wiring, signals, and DOM behavior.
+- Keep table data export as optional `ng-advanced-table/components` Table Action behavior (`natTableExport`/`provideNatTableExport(...)`). The core package may expose shared column metadata such as `NatTableColumnMeta.export`, but it must not own export side effects or file-generation state.
 - Keep render-metrics controls (`NatRenderMetricsFilter`, `NatRenderMetricsPanel`) wired through an explicit `[controller]` (`NatTable` or `NatTableRenderMetricsController`). Do not place `NatRenderMetricsFilter` inside `<nat-table-toolbar>` because its internal chip buttons are a standalone labeled button group, not toolbar items.
-- When comparing `NatTableState` slices in `ng-advanced-table/ui`, use the local structural equality helper instead of `JSON.stringify`; consumer filter values can include non-JSON-safe values such as `BigInt`, `Set`, `Date`, `RegExp`, or cycles.
+- When comparing `NatTableState` slices in `ng-advanced-table/components`, use the local structural equality helper instead of `JSON.stringify`; consumer filter values can include non-JSON-safe values such as `BigInt`, `Set`, `Date`, `RegExp`, or cycles.
 - When changing table keybindings, update `keybindings.ts`, `keybindings.md`, `NatTableHotkeyA11y`, public API exports, and table/surface input coverage together so configured shortcuts, conflict warnings, and `aria-keyshortcuts` stay aligned.
 
 ## Documentation Ownership
 
-- Keep "how to use the table" guidance in the showcase app docs. Author those pages as GitHub-flavored Markdown under `apps/showcase/public/docs/`, register them in `apps/showcase/src/app/showcase-navigation.ts`, and serve them under `/docs/*`.
-- Keep live behavior demos under `/examples/*`. Showcase routes must use either the `/docs` or `/examples` base path; do not add new top-level showcase routes such as `/sorting` or `/toolbar`.
+- Keep "how to use the table" guidance in showcase Documentation Topics served under `/docs/*`. Author prose as GitHub-flavored Markdown under `apps/showcase/public/docs/`, register topic routes in `apps/showcase/src/app/showcase-navigation.ts`, and compose local TOCs, related links, snippets, and embedded examples in `apps/showcase/src/app/pages/docs/docs-topics.ts`.
+- Keep feature-specific live demos as Topic Examples inside their relevant docs topics, using `DocsTopicExample` preview/code blocks. Reserve `/examples/*` for broad standalone scenarios or tools such as the multiple-features demo and table builder; do not add one-feature gallery routes or new top-level showcase routes such as `/sorting` or `/toolbar`.
 - Do not keep root or package README placeholders that only link back to showcase docs. Remove duplicated usage/reference markdown instead of replacing it with link-only docs.
 - Keep repository markdown only when it is technical maintainer material: contribution rules, package boundaries, architectural decisions, terminology, changelogs, internal package notes, or "how the table is built" explanations.
 
-## TypeScript Best Practices
+## Angular Project Conventions
 
-- Use strict type checking
-- Prefer type inference when the type is obvious
-- Avoid the `any` type; use `unknown` when type is uncertain
-
-## Angular Best Practices
-
-- Always use standalone components over NgModules
-- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.
-- Use signals for state management
-- Implement lazy loading for feature routes
-- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
-- Use `NgOptimizedImage` for all static images.
-  - `NgOptimizedImage` does not work for inline base64 images.
+- Do not set `standalone: true` inside Angular decorators; it is the Angular v20+ default.
+- Do not add `@HostBinding` or `@HostListener`; put host bindings and listeners in the decorator `host` object.
+- For new or modified components, do not add explicit `ChangeDetectionStrategy.OnPush`; Angular v22 defaults to `OnPush`. Use `ChangeDetectionStrategy.Eager` only when eager checking is genuinely required.
+- Prefer `input()` and `output()` for component APIs, signals for local state, and `computed()` for derived state. Do not use signal `.mutate()`; use `set` or `update`.
+- Keep templates on native control flow (`@if`, `@for`, `@switch`) and do not assume globals such as `new Date()` are available in templates.
 
 ## Accessibility Requirements
 
@@ -90,35 +93,3 @@ The library ships as one `ng-advanced-table` package whose layers are ng-packagr
 - The project must support Safari 16.2 and newer.
 - Before using newer browser APIs, CSS features, or Angular/browser platform features, verify compatibility with Safari 16.2 and provide a compatible fallback or choose an older-supported approach.
 - Be especially cautious with recently introduced CSS APIs such as `@starting-style`, View Transitions, newer selectors, and animation features.
-
-### Components
-
-- Keep components small and focused on a single responsibility
-- Use `input()` and `output()` functions instead of decorators
-- Use `computed()` for derived state
-- Do NOT set `changeDetection` explicitly; rely on the Angular v22 default (`OnPush`). Only add `changeDetection: ChangeDetectionStrategy.Eager` when a component genuinely requires eager checking
-- Prefer inline templates for small components
-- Prefer Reactive forms instead of Template-driven ones
-- Do NOT use `ngClass`, use `class` bindings instead
-- Do NOT use `ngStyle`, use `style` bindings instead
-- When using external templates/styles, use paths relative to the component TS file.
-
-## State Management
-
-- Use signals for local component state
-- Use `computed()` for derived state
-- Keep state transformations pure and predictable
-- Do NOT use `mutate` on signals, use `update` or `set` instead
-
-## Templates
-
-- Keep templates simple and avoid complex logic
-- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
-- Use the async pipe to handle observables
-- Do not assume globals like (`new Date()`) are available.
-
-## Services
-
-- Design services around a single responsibility
-- Use the `providedIn: 'root'` option for singleton services
-- Use the `inject()` function instead of constructor injection

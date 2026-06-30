@@ -2,8 +2,8 @@
 import { InjectionToken, Optional, SkipSelf, inject } from '@angular/core';
 import type { Provider } from '@angular/core';
 
-import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from './utils-built-in-locales';
-import { NAT_TABLE_UTILS_ENGLISH_INTL, NAT_TABLE_UTILS_ENGLISH_LOCALE } from './utils-en';
+import { NAT_TABLE_BUILT_IN_UTILS_LOCALES } from '../common/utils-built-in-locales.const';
+import { NAT_TABLE_UTILS_ENGLISH_INTL, NAT_TABLE_UTILS_ENGLISH_LOCALE } from '../common/utils-en.const';
 import type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsFilterIntl,
@@ -15,13 +15,13 @@ import type {
   NatTableUtilsLocaleLabels,
   NatTableUtilsLocaleLabelsMap,
   NatTableUtilsNumberFormatter
-} from './utils-types';
+} from '../common/utils.type';
 
 const DEFAULT_NUMBER_FORMATTER: NatTableUtilsNumberFormatter = (value, options, locale) =>
   new Intl.NumberFormat(locale, options).format(value);
 
 /** Built-in locale defaults used when no utils locale provider is configured. */
-export const NAT_TABLE_UTILS_DEFAULT_INTL: NatTableUtilsIntlConfig = {
+const NAT_TABLE_UTILS_DEFAULT_INTL: NatTableUtilsIntlConfig = {
   locales: NAT_TABLE_BUILT_IN_UTILS_LOCALES
 };
 
@@ -124,7 +124,7 @@ const mergeRenderMetricsIntl = (
 });
 
 /** Merges utility locale dictionaries, with override values taking precedence. */
-export const mergeNatTableUtilsIntl = (parent: NatTableUtilsIntl | undefined, override: NatTableUtilsIntl): NatTableUtilsIntl => ({
+const mergeNatTableUtilsIntl = (parent: NatTableUtilsIntl | undefined, override: NatTableUtilsIntl): NatTableUtilsIntl => ({
   renderMetrics: mergeRenderMetricsIntl(parent?.renderMetrics, override.renderMetrics),
   formatNumber: override.formatNumber ?? parent?.formatNumber ?? DEFAULT_NUMBER_FORMATTER
 });
@@ -177,7 +177,7 @@ const mergeNatTableUtilsIntlConfig = (
 };
 
 const isMissingInjectionContextError = (error: unknown): boolean =>
-  typeof error === 'object' && error !== null && 'code' in error && (error as { code: unknown }).code === -203;
+  typeof error === 'object' && error !== null && 'code' in error && (error as { readonly code: unknown }).code === -203;
 
 /**
  * Provides default labels and number formatting for optional utility helpers.
@@ -196,7 +196,7 @@ export const provideNatTableUtilsIntl = (intl: NatTableUtilsIntlProviderConfig):
 /**
  * Registers every utility locale shipped by `ng-advanced-table/locale`.
  *
- * Call this only when using `ng-advanced-table/utils`.
+ * Call this only when using `ng-advanced-table/render-metrics`.
  */
 export const provideNatTableUtilsLocales = (overrides: NatTableUtilsLocaleLabelsMap = {}): Provider[] =>
   provideNatTableUtilsIntl({ locales: overrides });

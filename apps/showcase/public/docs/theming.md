@@ -96,35 +96,40 @@ If controls and the table live in different surfaces, put product tokens on thei
 
 These are the most common stable `ng-advanced-table` tokens to override directly.
 
-| Token                              | Purpose                            |
-| ---------------------------------- | ---------------------------------- |
-| `--nat-table-color-text`           | Base table text color              |
-| `--nat-table-font-family`          | Table font family                  |
-| `--nat-table-region-background`    | Scrollable table region background |
-| `--nat-table-region-border-color`  | Scrollable table region border     |
-| `--nat-table-radius-region`        | Scrollable table region radius     |
-| `--nat-table-header-background`    | Header background                  |
-| `--nat-table-header-color`         | Header text color                  |
-| `--nat-table-header-border-color`  | Header divider                     |
-| `--nat-table-row-background`       | Default body row background        |
-| `--nat-table-row-background-hover` | Hovered row background             |
-| `--nat-table-row-background-focus` | Focus-within row background        |
-| `--nat-table-pinned-background`    | Pinned cell background             |
-| `--nat-table-pinned-divider-color` | Pinned edge divider                |
-| `--nat-table-cell-border-color`    | Body cell divider                  |
-| `--nat-table-cell-color-positive`  | Positive semantic cell tone        |
-| `--nat-table-cell-color-negative`  | Negative semantic cell tone        |
-| `--nat-table-cell-color-warning`   | Warning semantic cell tone         |
-| `--nat-table-cell-color-neutral`   | Neutral semantic cell tone         |
-| `--nat-table-empty-state-color`    | Empty, loading, and error row text |
-| `--nat-table-focus-ring-color`     | Keyboard focus indicator           |
-| `--nat-table-focus-ring-width`     | Keyboard focus indicator width     |
-| `--nat-table-space-cell-y`         | Cell block padding                 |
-| `--nat-table-space-cell-x`         | Cell inline padding                |
+| Token                              | Purpose                              |
+| ---------------------------------- | ------------------------------------ |
+| `--nat-table-color-text`           | Base table text color                |
+| `--nat-table-font-family`          | Table font family                    |
+| `--nat-table-region-background`    | Scrollable table region background   |
+| `--nat-table-region-border-color`  | Scrollable table region border       |
+| `--nat-table-region-border-width`  | Scrollable table region border width |
+| `--nat-table-radius-region`        | Scrollable table region radius       |
+| `--nat-table-header-background`    | Header background                    |
+| `--nat-table-header-color`         | Header text color                    |
+| `--nat-table-header-border-color`  | Header divider                       |
+| `--nat-table-header-border-width`  | Header divider width                 |
+| `--nat-table-row-background`       | Default body row background          |
+| `--nat-table-row-background-hover` | Hovered row background               |
+| `--nat-table-row-background-focus` | Focus-within row background          |
+| `--nat-table-pinned-background`    | Pinned cell background               |
+| `--nat-table-pinned-divider-color` | Pinned edge divider                  |
+| `--nat-table-cell-border-color`    | Body cell divider                    |
+| `--nat-table-cell-border-width`    | Body cell divider width              |
+| `--nat-table-cell-color-positive`  | Positive semantic cell tone          |
+| `--nat-table-cell-color-negative`  | Negative semantic cell tone          |
+| `--nat-table-cell-color-warning`   | Warning semantic cell tone           |
+| `--nat-table-cell-color-neutral`   | Neutral semantic cell tone           |
+| `--nat-table-empty-state-color`    | Empty, loading, and error row text   |
+| `--nat-table-focus-ring-color`     | Keyboard focus indicator             |
+| `--nat-table-focus-ring-width`     | Keyboard focus indicator width       |
+| `--nat-table-space-cell-y`         | Cell block padding                   |
+| `--nat-table-space-cell-x`         | Cell inline padding                  |
+
+Set the border-width tokens to `0` when a design needs to remove the outer table boundary or internal dividers.
 
 ## UI Control Tokens
 
-`ng-advanced-table/ui` controls consume the same theme. Common groups include:
+`ng-advanced-table/components` controls consume the same theme. Common groups include:
 
 | Group          | Common tokens                                                                                                                                  |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
