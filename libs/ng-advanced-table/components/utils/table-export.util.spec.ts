@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createNatTableCsvBlob, normalizeNatTableCsvFileName } from './table-export-client';
+import { createNatTableCsvBlob, normalizeNatTableCsvFileName } from './table-export.util';
 import type { NatTableExportData } from '../common/table-export.type';
 
 describe('FEATURE: table export CSV client', () => {

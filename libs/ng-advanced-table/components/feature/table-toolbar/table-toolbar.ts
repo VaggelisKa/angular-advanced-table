@@ -3,10 +3,10 @@ import { Component, computed, effect, inject, input } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
+import type { NatTableUiController } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
-import type { NatTableUiController } from '../../common/table-ui.type';
-import { injectNatTableUiController } from '../../domain-logic/resolve-ui-controller';
+import { injectNatTableUiController } from '../../domain-logic/ui-controller.provider';
 
 const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
   'text',

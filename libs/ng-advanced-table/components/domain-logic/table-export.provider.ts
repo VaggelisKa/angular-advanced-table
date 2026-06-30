@@ -1,8 +1,9 @@
 import { InjectionToken } from '@angular/core';
+import type { Provider } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
-import type { NatTableExportConfig, NatTableExportConfigFactory, NatTableExportProvider } from './table-export.type';
+import type { NatTableExportConfig, NatTableExportConfigFactory } from '../common/table-export.type';
 
 export const NAT_TABLE_EXPORT = new InjectionToken<NatTableExportConfig>('NAT_TABLE_EXPORT', {
   providedIn: 'root',
@@ -11,7 +12,7 @@ export const NAT_TABLE_EXPORT = new InjectionToken<NatTableExportConfig>('NAT_TA
 
 export const provideNatTableExport = <TData extends RowData = RowData>(
   config: NatTableExportConfig<TData> | NatTableExportConfigFactory<TData>
-): NatTableExportProvider => {
+): Provider[] => {
   if (typeof config === 'function') {
     return [{ provide: NAT_TABLE_EXPORT, useFactory: config }];
   }

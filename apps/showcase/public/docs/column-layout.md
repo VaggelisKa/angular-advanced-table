@@ -30,7 +30,7 @@ Use `columnSizingMode="fill"` when columns should stretch to the available width
 ```
 
 ```ts
-import type { NatTableAccessibilityScrollControlLabels } from 'ng-advanced-table/ui';
+import type { NatTableAccessibilityScrollControlLabels } from 'ng-advanced-table/locale';
 
 readonly scrollLabels = {
   scrollLeftAriaLabel: 'Scroll positions left',

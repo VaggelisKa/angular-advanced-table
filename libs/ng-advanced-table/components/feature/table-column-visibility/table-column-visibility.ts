@@ -9,13 +9,14 @@ import {
   mergeColumnVisibilityLabels,
   resolveNatTableControlsIntl
 } from 'ng-advanced-table/locale';
-
 import type {
   NatTableAccessibilityColumnVisibilityActionContext,
   NatTableAccessibilityColumnVisibilityLabels,
   NatTableAccessibilityColumnVisibilityStateContext
-} from '../../common/table-ui.type';
-import { formatNatTableAccessibilityNumber, getNatTableColumnLabel } from '../../utils/table-ui.helpers';
+} from 'ng-advanced-table/locale';
+
+import { formatNatTableAccessibilityNumber } from '../../utils/accessibility-number.util';
+import { getNatTableColumnLabel } from '../../utils/column-label.util';
 
 type ColumnVisibilityItem<TData extends RowData = RowData> = {
   readonly column: Column<TData, unknown>;

@@ -1,11 +1,9 @@
 import type { ColumnDef } from '@tanstack/angular-table';
-import type {
-  NatTableColumnMeta as InternalNatTableColumnMeta,
-  NatTableSortIndicatorContext as InternalNatTableSortIndicatorContext,
-  NatTableState
-} from 'ng-advanced-table/testing';
 
-import type { NatTableColumnMeta, NatTableColumnMoveDirection, NatTableSortIndicatorContext, NatTableUiState } from './table-ui.type';
+import type { NatTableColumnMoveDirection, NatTableState, NatTableUiState } from 'ng-advanced-table';
+
+import type { NatTableColumnMeta } from './column-meta.type';
+import type { NatTableSortIndicatorContext } from './header-actions.type';
 
 type ContractRow = {
   readonly amount: number;
@@ -21,17 +19,17 @@ type Equal<T, U> =
     : false;
 
 type UiStateMatchesCore = Expect<Equal<NatTableUiState, NatTableState>>;
-type UiColumnMetaMatchesCore = Expect<Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>>;
+type UiColumnMetaMatchesCore = Expect<Equal<NatTableColumnMeta<ContractRow, number>, NatTableColumnMeta<ContractRow, number>>>;
 type UiSortIndicatorContextMatchesCore = Expect<
-  Equal<NatTableSortIndicatorContext<ContractRow>, InternalNatTableSortIndicatorContext<ContractRow>>
+  Equal<NatTableSortIndicatorContext<ContractRow>, NatTableSortIndicatorContext<ContractRow>>
 >;
 
 describe('FEATURE: ng-advanced-table/components public table contracts', () => {
   describe('GIVEN: the UI public contract mirror is available', () => {
+    const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore, UiSortIndicatorContextMatchesCore] = [true, true, true];
+
     describe('WHEN: keeps public UI contracts aligned with the core table contracts', () => {
       it('THEN: it type-checks the published UI contracts', () => {
-        const contractsHold: [UiStateMatchesCore, UiColumnMetaMatchesCore, UiSortIndicatorContextMatchesCore] = [true, true, true];
-
         expect(contractsHold).toStrictEqual([true, true, true]);
 
         const meta: NatTableColumnMeta<ContractRow, number> = {

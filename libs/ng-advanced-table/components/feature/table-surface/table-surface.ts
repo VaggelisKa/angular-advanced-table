@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { Component, booleanAttribute, effect, inject, input, model, output } from '@angular/core';
 
 import type {
@@ -21,40 +20,8 @@ import type {
   NatTableState
 } from 'ng-advanced-table';
 
-import { hasNatTableStateValueChanged } from '../../utils/table-state-value-equality';
-
-const serializeSelectedRowIds = (selection: NatTableState['rowSelection']): string =>
-  Object.keys(selection)
-    .filter((rowId) => selection[rowId])
-    .sort()
-    .join('|');
-
-type NatTableStateDiff = {
-  readonly sortingChanged: boolean;
-  readonly globalFilterChanged: boolean;
-  readonly columnFiltersChanged: boolean;
-  readonly columnVisibilityChanged: boolean;
-  readonly columnOrderChanged: boolean;
-  readonly columnPinningChanged: boolean;
-  readonly columnSizingChanged: boolean;
-  readonly paginationChanged: boolean;
-  readonly rowSelectionChanged: boolean;
-};
-
-/** A state-slice changed flag paired with the emit action for that slice. */
-type SliceEmitter = readonly [changed: boolean, emit: () => void];
-
-const computeNatTableStateDiff = (prev: NatTableState, next: NatTableState): NatTableStateDiff => ({
-  sortingChanged: hasNatTableStateValueChanged(prev.sorting, next.sorting),
-  globalFilterChanged: prev.globalFilter !== next.globalFilter,
-  columnFiltersChanged: hasNatTableStateValueChanged(prev.columnFilters, next.columnFilters),
-  columnVisibilityChanged: hasNatTableStateValueChanged(prev.columnVisibility, next.columnVisibility),
-  columnOrderChanged: hasNatTableStateValueChanged(prev.columnOrder, next.columnOrder),
-  columnPinningChanged: hasNatTableStateValueChanged(prev.columnPinning, next.columnPinning),
-  columnSizingChanged: hasNatTableStateValueChanged(prev.columnSizing, next.columnSizing),
-  paginationChanged: hasNatTableStateValueChanged(prev.pagination, next.pagination),
-  rowSelectionChanged: serializeSelectedRowIds(prev.rowSelection) !== serializeSelectedRowIds(next.rowSelection)
-});
+import { computeNatTableStateDiff } from '../../utils/table-state-diff.util';
+import type { SliceEmitter } from '../../utils/table-state-diff.util';
 
 @Component({
   selector: 'nat-table-surface',

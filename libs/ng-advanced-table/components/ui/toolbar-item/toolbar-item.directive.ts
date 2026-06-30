@@ -1,8 +1,8 @@
 import { ToolbarWidget } from '@angular/aria/toolbar';
 import { Directive, inject, input } from '@angular/core';
 
-import { NAT_TOOLBAR_ITEM } from '../../common/toolbar-tokens.const';
-import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/toolbar-tokens.type';
+import { NAT_TOOLBAR_ITEM } from '../../common/toolbar.const';
+import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/toolbar.type';
 
 /**
  * Marks an interactive element (a `<button>`, `<input>`, …) as a toolbar item,

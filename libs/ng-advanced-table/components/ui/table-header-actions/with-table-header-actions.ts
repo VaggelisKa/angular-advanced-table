@@ -1,13 +1,11 @@
 import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef, HeaderContext, RowData } from '@tanstack/angular-table';
 
+import type { NatTableAccessibilityHeaderActionLabels } from 'ng-advanced-table/locale';
+
 import { NatTableHeaderActions } from './table-header-actions';
-import type {
-  NatTableAccessibilityHeaderActionLabels,
-  NatTableHeaderActionsOptions,
-  NatTableHeaderRenderContent
-} from '../../common/table-ui.type';
-import { resolveNatTableColumnLabel } from '../../utils/table-ui.helpers';
+import type { NatTableHeaderActionsOptions, NatTableHeaderRenderContent } from '../../common/header-actions.type';
+import { resolveNatTableColumnLabel } from '../../utils/column-label.util';
 
 const NAT_TABLE_HEADER_ACTIONS_CONTENT = Symbol('NatTableHeaderActionsContent');
 

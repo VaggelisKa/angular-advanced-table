@@ -4,9 +4,9 @@ import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, mergePagerLabels, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
+import type { NatTableAccessibilityPagerLabels } from 'ng-advanced-table/locale';
 
-import type { NatTableAccessibilityPagerLabels } from '../../common/table-ui.type';
-import { formatNatTableAccessibilityNumber } from '../../utils/table-ui.helpers';
+import { formatNatTableAccessibilityNumber } from '../../utils/accessibility-number.util';
 
 @Component({
   selector: 'nat-table-pager',
