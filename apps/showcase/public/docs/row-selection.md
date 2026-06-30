@@ -27,7 +27,7 @@ Keep `rowSelection` in app state when bulk actions, URL persistence, or saved vi
 Use `withNatTableSelectionColumn(...)` for the standard leading checkbox column. Pair the helper with `[enableRowSelection]="true"` on `<nat-table>`.
 
 ```ts
-import { withNatTableSelectionColumn } from 'ng-advanced-table/ui';
+import { withNatTableSelectionColumn } from 'ng-advanced-table/components';
 
 readonly columns = withNatTableSelectionColumn(baseColumns, {
   label: 'Select rows',
@@ -59,7 +59,7 @@ Most tables should use `withNatTableSelectionColumn(...)`. Use `NatTableSelectio
 
 ```ts
 import { flexRenderComponent } from '@tanstack/angular-table';
-import { NatTableSelectionCheckbox } from 'ng-advanced-table/ui';
+import { NatTableSelectionCheckbox } from 'ng-advanced-table/components';
 
 readonly columns = [
   {
