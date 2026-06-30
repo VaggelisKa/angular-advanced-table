@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Global search accessibility', () => {
   test.describe('GIVEN: the search example is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/filtering-search');
+      await loadDocsExamplePreview(page, 'filtering-search', 'Consumer-owned search');
     });
 
     test.describe('WHEN: a query is typed and then cleared via the keyboard', () => {

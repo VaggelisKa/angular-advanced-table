@@ -11,7 +11,7 @@ import { filter, map, startWith } from 'rxjs';
 import { loadDocsPage } from './app.routes';
 import { resolveFocusTrapTarget } from './app.util';
 import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
-import { showcaseDocs, showcaseNavSections } from './showcase-navigation';
+import { showcaseNavSections } from './showcase-navigation';
 import type { ShowcaseDoc, ShowcaseNavGroup, ShowcaseNavItem, ShowcaseNavSection } from './showcase-navigation';
 import { ShowcaseThemeStore } from './showcase-theme';
 import type { ShowcaseTheme } from './showcase-theme';
@@ -171,7 +171,6 @@ export class App {
       () => {
         globalThis.setTimeout(() => {
           void loadDocsPage();
-          this.docsMarkdownCache.preload(showcaseDocs.flatMap((doc) => doc.markdownPaths));
         });
       },
       { injector: this.injector }

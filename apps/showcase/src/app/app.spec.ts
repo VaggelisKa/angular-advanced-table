@@ -60,7 +60,10 @@ function getElement<T extends Element>(container: HTMLElement, selector: string)
 }
 
 describe('FEATURE: App', () => {
+  let preloadCalls: readonly string[][] = [];
+
   beforeEach(async () => {
+    preloadCalls = [];
     vi.stubGlobal('localStorage', createTestStorage());
 
     try {
@@ -79,7 +82,11 @@ describe('FEATURE: App', () => {
           provide: DocsMarkdownCache,
           useValue: {
             load: (): undefined => undefined,
-            preload: (): undefined => undefined
+            preload: (paths: readonly string[]): undefined => {
+              preloadCalls = [...preloadCalls, [...paths]];
+
+              return undefined;
+            }
           }
         },
         provideRouter([
@@ -112,6 +119,17 @@ describe('FEATURE: App', () => {
         const app = fixture.componentInstance;
 
         expect(app).toBeTruthy();
+      });
+    });
+
+    describe('WHEN: browser idle preloading runs', () => {
+      it('THEN: it does not eagerly request every docs markdown asset', async () => {
+        const fixture = TestBed.createComponent(App);
+
+        await fixture.whenStable();
+        await new Promise((resolve) => setTimeout(resolve));
+
+        expect(preloadCalls).toStrictEqual([]);
       });
     });
   });

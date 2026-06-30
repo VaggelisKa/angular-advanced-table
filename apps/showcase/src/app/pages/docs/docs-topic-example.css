@@ -90,6 +90,27 @@
   padding: 20px;
 }
 
+.docs-example-preview-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  padding: 24px;
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.5;
+  color: var(--showcase-page-text-soft);
+  text-align: center;
+  background: var(--showcase-page-surface-muted);
+  border: 1px dashed var(--showcase-page-border-strong);
+  border-radius: var(--showcase-page-radius-sm);
+}
+
+.docs-example-preview-placeholder--error {
+  color: var(--showcase-page-negative);
+  background: color-mix(in srgb, var(--showcase-page-negative) 8%, var(--showcase-page-surface));
+  border-color: color-mix(in srgb, var(--showcase-page-negative) 42%, transparent);
+}
+
 .docs-example-code-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

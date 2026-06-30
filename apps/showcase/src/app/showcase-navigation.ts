@@ -162,7 +162,7 @@ if (!firstShowcaseDoc) {
 
 const FALLBACK_SHOWCASE_DOC: ShowcaseDoc = firstShowcaseDoc;
 
-const showcaseExamples: readonly ShowcaseNavItem[] = [
+export const showcaseExamples: readonly ShowcaseNavItem[] = [
   {
     id: 'multiple-features',
     label: 'Multiple features',

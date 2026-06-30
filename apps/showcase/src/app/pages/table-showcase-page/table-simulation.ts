@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { Injectable, Injector, afterNextRender, computed, effect, inject, signal } from '@angular/core';
 
 export type SimulationStatus = 'Advancing' | 'Watching' | 'Declining' | 'Halted';
 
@@ -70,6 +70,7 @@ export const DATASET_OPTIONS = [2000, 12000, 25000] as const;
 
 export const PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
 
+const DEFAULT_SIMULATION_TIMESTAMP = Date.UTC(2026, 0, 2, 9, 30, 0);
 const EXCHANGES = ['NASDAQ', 'NYSE', 'IEX', 'CBOE'] as const;
 const DESKS = ['Momentum', 'Macro', 'Quant', 'Delta One', 'Volatility'] as const;
 const INSTRUMENTS = [
@@ -205,10 +206,8 @@ const mutateRows = (
   return { rows: nextRows, updatedCount: pickedIndexes.size };
 };
 
-const buildDataset = (size: number): SimulationRow[] => {
-  const baseTimestamp = Date.now();
-
-  return Array.from({ length: size }, (_, index) => {
+const buildDataset = (size: number, baseTimestamp = DEFAULT_SIMULATION_TIMESTAMP): SimulationRow[] =>
+  Array.from({ length: size }, (_, index) => {
     const instrument = INSTRUMENTS[index % INSTRUMENTS.length];
     const seriesNumber = Math.floor(index / INSTRUMENTS.length) + 1;
     const previousClose = roundToCents(18 + ((index * 19) % 380) + (index % 7) * 0.37);
@@ -238,20 +237,21 @@ const buildDataset = (size: number): SimulationRow[] => {
       sparkTrend: computeSparkTrend(priceHistory)
     };
   });
-};
 
 @Injectable({
   providedIn: 'root'
 })
 export class TableSimulation {
+  private readonly injector = inject(Injector);
   private readonly datasetSizeSignal = signal<number>(12000);
   private readonly profileSignal = signal<SimulationProfile>('balanced');
   private readonly isRunningSignal = signal(true);
   private readonly rowsSignal = signal<SimulationRow[]>(buildDataset(this.datasetSizeSignal()));
   private readonly lastMutationSizeSignal = signal(0);
   private readonly lastCycleDurationMsSignal = signal(0);
-  private readonly lastTickAtSignal = signal(Date.now());
+  private readonly lastTickAtSignal = signal(DEFAULT_SIMULATION_TIMESTAMP);
   private readonly totalMutationsSignal = signal(0);
+  private readonly browserReadySignal = signal(false);
 
   public readonly datasetSize = this.datasetSizeSignal.asReadonly();
   public readonly profile = this.profileSignal.asReadonly();
@@ -298,8 +298,10 @@ export class TableSimulation {
   public readonly positiveMoverCount = computed(() => this.marketSnapshot().positiveMoverCount);
 
   public constructor() {
+    afterNextRender({ write: () => this.browserReadySignal.set(true) }, { injector: this.injector });
+
     effect((onCleanup) => {
-      if (!this.isRunningSignal()) {
+      if (!this.browserReadySignal() || !this.isRunningSignal()) {
         return;
       }
 
@@ -352,7 +354,7 @@ export class TableSimulation {
   private resetMutationStats(): void {
     this.lastMutationSizeSignal.set(0);
     this.lastCycleDurationMsSignal.set(0);
-    this.lastTickAtSignal.set(Date.now());
+    this.lastTickAtSignal.set(DEFAULT_SIMULATION_TIMESTAMP);
     this.totalMutationsSignal.set(0);
   }
 }

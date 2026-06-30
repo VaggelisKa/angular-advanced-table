@@ -112,6 +112,9 @@ describe('FEATURE: docs topic example code tabs', () => {
         expect(codeTab.getAttribute('aria-controls')).toBe(codePanel.id);
         expect(previewPanel.hidden).toBe(false);
         expect(codePanel.hidden).toBe(true);
+        expect(compiled.querySelector('.docs-example-preview-placeholder')?.textContent).toContain(
+          'Client and manual pagination preview loads when it enters the viewport.'
+        );
 
         codeTab.click();
         fixture.detectChanges();

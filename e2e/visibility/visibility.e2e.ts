@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Column visibility', () => {
   test.describe('GIVEN: the column visibility demo page is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/column-layout');
+      await loadDocsExamplePreview(page, 'column-visibility', 'Column visibility');
     });
 
     test.describe('WHEN: a column chip is clicked', () => {

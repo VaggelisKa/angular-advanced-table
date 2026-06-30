@@ -26,7 +26,9 @@ catalogs:
     '@angular/core': '22.0.2'
     '@angular/forms': '22.0.2'
     '@angular/platform-browser': '22.0.2'
+    '@angular/platform-server': '22.0.2'
     '@angular/router': '22.0.2'
+    '@angular/ssr': '22.0.3'
     '@tanstack/angular-table': '^8.21.4'
     rxjs: '~7.8.2'
     # showcase-only: Markdown docs rendering + Prism syntax highlighting

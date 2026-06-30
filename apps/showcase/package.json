@@ -10,7 +10,9 @@
     "@angular/core": "catalog:frontend",
     "@angular/forms": "catalog:frontend",
     "@angular/platform-browser": "catalog:frontend",
+    "@angular/platform-server": "catalog:frontend",
     "@angular/router": "catalog:frontend",
+    "@angular/ssr": "catalog:frontend",
     "@tanstack/angular-table": "catalog:frontend",
     "katex": "catalog:frontend",
     "marked": "catalog:frontend",
@@ -41,6 +43,8 @@
         "options": {
           "outputPath": "dist/apps/showcase",
           "browser": "apps/showcase/src/main.ts",
+          "server": "apps/showcase/src/main.server.ts",
+          "outputMode": "static",
           "tsConfig": "apps/showcase/tsconfig.app.json",
           "assets": [
             {

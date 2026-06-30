@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, computed, effect, inject, untracked, viewChild } from '@angular/core';
+import { Component, Injector, afterNextRender, computed, effect, inject, untracked, viewChild } from '@angular/core';
 import type { ElementRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -38,6 +38,7 @@ const CODE_COPY_RESET_DELAY_MS = 2000;
 })
 export class DocsPage {
   private readonly document = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly docsMarkdownCache = inject(DocsMarkdownCache);
@@ -89,6 +90,10 @@ export class DocsPage {
   }
 
   protected decorateCodeBlocks(): void {
+    afterNextRender({ write: () => this.decorateRenderedMarkdown() }, { injector: this.injector });
+  }
+
+  private decorateRenderedMarkdown(): void {
     const container = this.markdownContainer()?.nativeElement;
 
     if (!container) {

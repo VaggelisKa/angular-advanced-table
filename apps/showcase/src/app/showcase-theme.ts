@@ -1,12 +1,9 @@
-import { Injectable, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Injectable, Injector, afterNextRender, inject, signal } from '@angular/core';
 
 export type ShowcaseTheme = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'nat-showcase-theme';
-
-const applyThemeToDocument = (theme: ShowcaseTheme): void => {
-  globalThis.document.documentElement.setAttribute('data-theme', theme);
-};
 
 const persistTheme = (theme: ShowcaseTheme): void => {
   try {
@@ -40,17 +37,34 @@ const readInitialTheme = (): ShowcaseTheme => {
   providedIn: 'root'
 })
 export class ShowcaseThemeStore {
-  private readonly themeState = signal<ShowcaseTheme>(readInitialTheme());
+  private readonly document = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
+  private readonly themeState = signal<ShowcaseTheme>('light');
 
   public readonly theme = this.themeState.asReadonly();
 
   public constructor() {
-    applyThemeToDocument(this.themeState());
+    this.applyThemeToDocument(this.themeState());
+
+    afterNextRender(
+      {
+        write: () => this.setThemeState(readInitialTheme())
+      },
+      { injector: this.injector }
+    );
   }
 
   public setTheme(theme: ShowcaseTheme): void {
-    this.themeState.set(theme);
+    this.setThemeState(theme);
     persistTheme(theme);
-    applyThemeToDocument(theme);
+  }
+
+  private setThemeState(theme: ShowcaseTheme): void {
+    this.themeState.set(theme);
+    this.applyThemeToDocument(theme);
+  }
+
+  private applyThemeToDocument(theme: ShowcaseTheme): void {
+    this.document.documentElement.setAttribute('data-theme', theme);
   }
 }
