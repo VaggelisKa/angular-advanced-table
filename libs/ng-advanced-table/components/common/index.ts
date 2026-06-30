@@ -14,7 +14,6 @@ export type {
 export type { NatTableColumnMeta } from './column-meta.type';
 
 export type {
-  NatTableColumnMoveDirection,
   NatTableHeaderActionsOptions,
   NatTableSortDirection,
   NatTableSortIndicatorContent,

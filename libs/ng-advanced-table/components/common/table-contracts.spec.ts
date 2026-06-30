@@ -1,14 +1,9 @@
 import type { ColumnDef } from '@tanstack/angular-table';
-import type {
-  NatTableColumnMeta as InternalNatTableColumnMeta,
-  NatTableSortIndicatorContext as InternalNatTableSortIndicatorContext,
-  NatTableState
-} from 'ng-advanced-table/testing';
 
-import type { NatTableUiState } from 'ng-advanced-table';
+import type { NatTableColumnMoveDirection, NatTableState, NatTableUiState } from 'ng-advanced-table';
 
 import type { NatTableColumnMeta } from './column-meta.type';
-import type { NatTableColumnMoveDirection, NatTableSortIndicatorContext } from './header-actions.type';
+import type { NatTableSortIndicatorContext } from './header-actions.type';
 
 type ContractRow = {
   readonly amount: number;
@@ -24,9 +19,9 @@ type Equal<T, U> =
     : false;
 
 type UiStateMatchesCore = Expect<Equal<NatTableUiState, NatTableState>>;
-type UiColumnMetaMatchesCore = Expect<Equal<NatTableColumnMeta<ContractRow, number>, InternalNatTableColumnMeta<ContractRow, number>>>;
+type UiColumnMetaMatchesCore = Expect<Equal<NatTableColumnMeta<ContractRow, number>, NatTableColumnMeta<ContractRow, number>>>;
 type UiSortIndicatorContextMatchesCore = Expect<
-  Equal<NatTableSortIndicatorContext<ContractRow>, InternalNatTableSortIndicatorContext<ContractRow>>
+  Equal<NatTableSortIndicatorContext<ContractRow>, NatTableSortIndicatorContext<ContractRow>>
 >;
 
 describe('FEATURE: ng-advanced-table/components public table contracts', () => {

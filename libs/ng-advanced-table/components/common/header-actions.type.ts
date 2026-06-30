@@ -1,9 +1,6 @@
 import type { Column, FlexRenderContent, HeaderContext, RowData } from '@tanstack/angular-table';
 
-import type { NatTableColumnMoveDirection as CoreNatTableColumnMoveDirection } from 'ng-advanced-table';
 import type { NatTableAccessibilityHeaderActionLabels } from 'ng-advanced-table/locale';
-
-export type NatTableColumnMoveDirection = CoreNatTableColumnMoveDirection;
 
 /** Current sort direction for a header cell. */
 export type NatTableSortDirection = 'asc' | 'desc' | false;

@@ -2,20 +2,20 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { root, setScrollMetrics } from '../../test-helpers/table-ui-dom.helper';
-import { PaginationToolbarHost, TableUiHost } from '../../test-helpers/table-ui-hosts.helper';
+import { root, setScrollMetrics } from '../../test-helpers/table-dom.helper';
+import { PaginationToolbarHost, TableHost } from '../../test-helpers/table-hosts.helper';
 
 describe('FEATURE: NatTable UI', () => {
-  let fixture: ComponentFixture<TableUiHost>;
-  let host: TableUiHost;
+  let fixture: ComponentFixture<TableHost>;
+  let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost, PaginationToolbarHost],
+      imports: [TableHost, PaginationToolbarHost],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TableUiHost);
+    fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
     await fixture.whenStable();
   });
@@ -54,7 +54,7 @@ describe('FEATURE: NatTable UI', () => {
     describe('WHEN: the component initializes', () => {
       it('THEN: it does not emit stateChange on initialization', async () => {
         fixture.destroy();
-        const newFixture = TestBed.createComponent(TableUiHost);
+        const newFixture = TestBed.createComponent(TableHost);
         const newHost = newFixture.componentInstance;
 
         newFixture.detectChanges();
