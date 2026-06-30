@@ -1,6 +1,7 @@
 import type { ConnectedPosition } from '@angular/cdk/overlay';
 
-import type { NatTableColumnMoveDirection } from '../../common/header-actions.type';
+import type { NatTableColumnMoveDirection } from 'ng-advanced-table';
+
 import type { NatTablePinSide } from '../../utils/header-actions-labels.util';
 
 /** Pin sides offered in the column actions menu for pinnable columns. */

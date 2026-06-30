@@ -8,9 +8,9 @@ import {
   getOpenPinMenu,
   requireOpenMenu,
   textOf
-} from '../../test-helpers/table-ui-dom.helper';
-import { CustomAccessibilityLabelsHost } from '../../test-helpers/table-ui-label-hosts.helper';
-import { ProviderAccessibilityLabelsHost } from '../../test-helpers/table-ui-provider-host.helper';
+} from '../../test-helpers/table-dom.helper';
+import { CustomAccessibilityLabelsHost } from '../../test-helpers/table-label-hosts.helper';
+import { ProviderAccessibilityLabelsHost } from '../../test-helpers/table-provider-host.helper';
 
 describe('FEATURE: NatTable UI', () => {
   beforeEach(async () => {

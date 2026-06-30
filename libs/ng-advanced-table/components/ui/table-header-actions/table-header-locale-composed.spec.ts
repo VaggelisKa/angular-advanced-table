@@ -1,9 +1,9 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { requireOpenMenu, root, textOf } from '../../test-helpers/table-ui-dom.helper';
-import { HeaderActionCompositionHost, MultiSortHost } from '../../test-helpers/table-ui-header-hosts.helper';
-import { LocaleSwitchingHost } from '../../test-helpers/table-ui-label-hosts.helper';
+import { requireOpenMenu, root, textOf } from '../../test-helpers/table-dom.helper';
+import { HeaderActionCompositionHost, MultiSortHost } from '../../test-helpers/table-header-hosts.helper';
+import { LocaleSwitchingHost } from '../../test-helpers/table-label-hosts.helper';
 
 describe('FEATURE: NatTable UI', () => {
   beforeEach(async () => {

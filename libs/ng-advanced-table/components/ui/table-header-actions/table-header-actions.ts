@@ -6,6 +6,7 @@ import { Component, computed, inject, input, viewChild } from '@angular/core';
 import { FlexRender } from '@tanstack/angular-table';
 import type { HeaderContext, RowData } from '@tanstack/angular-table';
 
+import type { NatTableColumnMoveDirection } from 'ng-advanced-table';
 import {
   NAT_EN_LOCALE_ID,
   NAT_TABLE_CONTROLS_INTL,
@@ -20,7 +21,6 @@ import {
   NAT_HEADER_ACTIONS_PIN_SIDES
 } from './table-header-actions.const';
 import type {
-  NatTableColumnMoveDirection,
   NatTableHeaderRenderContent,
   NatTableSortDirection,
   NatTableSortIndicatorContent,

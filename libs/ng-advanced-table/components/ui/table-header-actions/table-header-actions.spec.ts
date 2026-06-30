@@ -14,32 +14,32 @@ import {
   requireOpenMenu,
   root,
   textOf
-} from '../../test-helpers/table-ui-dom.helper';
+} from '../../test-helpers/table-dom.helper';
 import {
   CustomSortIndicatorHost,
   HiddenHeaderActionLabelHost,
   MoveOnlyHeaderActionsHost
-} from '../../test-helpers/table-ui-header-hosts.helper';
-import { TableUiHost } from '../../test-helpers/table-ui-hosts.helper';
+} from '../../test-helpers/table-header-hosts.helper';
+import { TableHost } from '../../test-helpers/table-hosts.helper';
 
 describe('FEATURE: NatTable UI', () => {
-  let fixture: ComponentFixture<TableUiHost>;
-  let host: TableUiHost;
+  let fixture: ComponentFixture<TableHost>;
+  let host: TableHost;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableUiHost, CustomSortIndicatorHost, MoveOnlyHeaderActionsHost, HiddenHeaderActionLabelHost],
+      imports: [TableHost, CustomSortIndicatorHost, MoveOnlyHeaderActionsHost, HiddenHeaderActionLabelHost],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TableUiHost);
+    fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
     await fixture.whenStable();
   });
 
   const recreateHost = async (): Promise<void> => {
     fixture.destroy();
-    fixture = TestBed.createComponent(TableUiHost);
+    fixture = TestBed.createComponent(TableHost);
     host = fixture.componentInstance;
     await fixture.whenStable();
   };
