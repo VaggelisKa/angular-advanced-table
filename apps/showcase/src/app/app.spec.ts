@@ -150,7 +150,7 @@ describe('FEATURE: App', () => {
         expect(docsCapabilitiesBranch.getAttribute('aria-label')).toBe('Capabilities');
         expect(docsCapabilitiesBranch.querySelector(':scope > .showcase-nav-tree-row')?.textContent).toContain('Capabilities');
         expect(docsCapabilitiesBranch.getAttribute('aria-expanded')).toBe('false');
-        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-columns"]')).toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-sticky-header"]')).toBeNull();
         expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
         expect(compiled.querySelector('.showcase-nav-count')).toBeNull();
         expect(compiled.querySelector('.showcase-theme-control')).toBeNull();
@@ -185,27 +185,28 @@ describe('FEATURE: App', () => {
         expect(galleryBranch.getAttribute('role')).toBe('treeitem');
         expect(galleryBranch.getAttribute('aria-expanded')).toBe('false');
         expect(galleryBranch.getAttribute('aria-current')).toBeNull();
-        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-scenarios"]')).toBeNull();
-        expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-sticky-header"]')).toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-link-multiple-features"]')).toBeNull();
 
         galleryBranch.click();
         await fixture.whenStable();
         fixture.detectChanges();
 
         expect(galleryBranch.getAttribute('aria-expanded')).toBe('true');
-        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-scenarios"]')).not.toBeNull();
-        expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-sticky-header"]')).not.toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-link-multiple-features"]')).not.toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-link-sticky-header-max-height"]')).toBeNull();
         expect(readStoredExpandedNavTreeIds()).toContain('docs');
         expect(readStoredExpandedNavTreeIds()).toContain('gallery');
-        expect(readStoredExpandedNavTreeIds()).not.toContain('examples-scenarios');
+        expect(readStoredExpandedNavTreeIds()).not.toContain('examples-sticky-header');
 
         galleryBranch.click();
         await fixture.whenStable();
         fixture.detectChanges();
 
         expect(galleryBranch.getAttribute('aria-expanded')).toBe('false');
-        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-scenarios"]')).toBeNull();
-        expect(compiled.querySelector('[data-testid="showcase-nav-link-sorting"]')).toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-branch-examples-sticky-header"]')).toBeNull();
+        expect(compiled.querySelector('[data-testid="showcase-nav-link-multiple-features"]')).toBeNull();
         expect(readStoredExpandedNavTreeIds()).not.toContain('gallery');
       });
     });
