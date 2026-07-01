@@ -46,9 +46,7 @@ When your application needs to persist, synchronize, or inspect one state slice,
 
 ```ts
 import { Component, computed, signal } from '@angular/core';
-import type { SortingState } from '@tanstack/angular-table';
-
-import type { NatTableUserState } from 'ng-advanced-table';
+import type { NatTableUserState, PaginationState, SortingState, VisibilityState } from 'ng-advanced-table';
 
 export class PositionsTable {
   readonly sorting = signal<SortingState>([]);

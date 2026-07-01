@@ -16,20 +16,20 @@ If your workspace does not already declare Angular framework packages, install t
 npm install ng-advanced-table @angular/core @angular/common @angular/aria @angular/cdk
 ```
 
-`@tanstack/angular-table` ships as a runtime dependency of `ng-advanced-table`. Install it directly only when your app imports TanStack APIs or types from `@tanstack/angular-table`.
+`ng-advanced-table` installs `@tanstack/angular-table` as its table runtime. Import table authoring types and helpers such as `ColumnDef`, state slice types, and `flexRenderComponent` from `ng-advanced-table`.
 
 Resolved published ranges and dependency classifications:
 
-| Package                   | Published range | Classification                                                |
-| ------------------------- | --------------- | ------------------------------------------------------------- |
-| `@angular/core`           | `^22.0.2`       | Required peer; Angular framework singleton                    |
-| `@angular/common`         | `^22.0.2`       | Required peer; Angular framework APIs                         |
-| `@angular/aria`           | `^22.0.2`       | Required peer; grid, toolbar, and menu behaviors              |
-| `@angular/cdk`            | `^22.0.2`       | Required peer; drag-drop, bidi, and overlay integrations      |
-| `@tanstack/angular-table` | `^8.21.4`       | Runtime dependency; table runtime and public column contracts |
-| `tslib`                   | `^2.8.1`        | Runtime dependency installed with `ng-advanced-table`         |
+| Package                   | Published range | Classification                                                             |
+| ------------------------- | --------------- | -------------------------------------------------------------------------- |
+| `@angular/core`           | `^22.0.2`       | Required peer; Angular framework singleton                                 |
+| `@angular/common`         | `^22.0.2`       | Required peer; Angular framework APIs                                      |
+| `@angular/aria`           | `^22.0.2`       | Required peer; grid, toolbar, and menu behaviors                           |
+| `@angular/cdk`            | `^22.0.2`       | Required peer; drag-drop, bidi, and overlay integrations                   |
+| `@tanstack/angular-table` | `^8.21.4`       | Installed runtime dependency; table runtime and forwarded column contracts |
+| `tslib`                   | `^2.8.1`        | Runtime dependency installed with `ng-advanced-table`                      |
 
-No Angular peers are optional. `@angular/aria` and `@angular/cdk` are required by production entry points, not only tests.
+Keep all Angular peers in app dependencies. Production entry points use `@angular/aria` and `@angular/cdk`.
 
 ## Entry points
 

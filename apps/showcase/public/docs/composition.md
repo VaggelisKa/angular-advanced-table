@@ -128,7 +128,7 @@ Global search is intentionally not a packaged UI primitive. Build a search compo
 
 ```ts
 import { Component, DestroyRef, computed, inject, input } from '@angular/core';
-import type { PaginationState, RowData } from '@tanstack/angular-table';
+import type { PaginationState, RowData } from 'ng-advanced-table';
 import { NatTableService, NatToolbarItem } from 'ng-advanced-table/components';
 
 @Component({

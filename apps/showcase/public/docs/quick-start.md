@@ -2,19 +2,20 @@ Start with `NatTable` inside `NatTableSurface`. The table renders the grid; the 
 
 ## Install
 
-Everything ships in one package. The companion controls, utilities, and built-in locale dictionaries are subpath entry points — `ng-advanced-table/components`, `ng-advanced-table/render-metrics`, and `ng-advanced-table/locale` — so you import only what you use and tree-shaking drops the rest.
+Install the table package and Angular companion peers:
 
 ```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
+npm install ng-advanced-table @angular/aria @angular/cdk
 ```
+
+Keep `@angular/core` and `@angular/common` in your Angular app dependencies.
 
 ## First Table
 
-Define a row type, provide TanStack columns, and render `NatTable` inside `NatTableSurface`. Give every table an accessible name or visible caption. Rows with a string or number `id` property get stable table identity automatically; pass `getRowId` only when identity lives somewhere else.
+Create rows and columns, then render `NatTable` inside `NatTableSurface`. Give every table an `accessibleName` or `caption`.
 
 ```ts
-import { Component, signal } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
+import { Component } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
@@ -22,8 +23,7 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 interface PositionRow {
   id: string;
   symbol: string;
-  desk: string;
-  price: number;
+  company: string;
 }
 
 @Component({
@@ -31,56 +31,39 @@ interface PositionRow {
   imports: [NatTable, NatTableSurface],
   template: `
     <nat-table-surface>
-      <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
+      <nat-table [data]="rows" [columns]="columns" accessibleName="Open positions" />
     </nat-table-surface>
   `
 })
 export class PositionsTable {
-  readonly rows = signal<readonly PositionRow[]>([
-    { id: 'pos-1', symbol: 'AAPL', desk: 'Momentum', price: 214.3 },
-    { id: 'pos-2', symbol: 'MSFT', desk: 'Core', price: 489.1 }
-  ]);
+  readonly rows: readonly PositionRow[] = [
+    { id: 'pos-1', symbol: 'AAPL', company: 'Apple' },
+    { id: 'pos-2', symbol: 'MSFT', company: 'Microsoft' }
+  ];
 
-  readonly columns: ColumnDef<PositionRow>[] = [
+  readonly columns = [
     {
       accessorKey: 'symbol',
       header: 'Symbol',
       meta: { label: 'Symbol', rowHeader: true }
     },
     {
-      accessorKey: 'desk',
-      header: 'Desk',
-      meta: { label: 'Desk' }
-    },
-    {
-      accessorKey: 'price',
-      header: 'Price',
-      meta: { label: 'Price', align: 'end' },
-      cell: (context) => `$${context.getValue<number>().toFixed(2)}`
+      accessorKey: 'company',
+      header: 'Company',
+      meta: { label: 'Company' }
     }
   ];
 }
 ```
 
-Use a visible `caption` when the page design needs a table title inside the grid. Use `accessibleName` when the surrounding page already provides visible context.
-
-```html
-<nat-table [data]="rows()" [columns]="columns" caption="Open positions" />
-
-<nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
-```
+Rows with a string or number `id` property get stable table identity automatically. Use `getRowId` when identity lives somewhere else.
 
 ## Core-Only Scope
 
-When you intentionally use only `ng-advanced-table` without `ng-advanced-table/components`, provide `NatTableService` at the local wrapper that owns the table. Most application code should prefer `NatTableSurface` because it provides the same scope and unlocks companion controls later.
-
-```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
-```
+For a core-only table, provide `NatTableService` at the local wrapper that owns the table. Use `NatTableSurface` for the standard scoped controller and companion-control wiring.
 
 ```ts
-import { Component, signal } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
+import { Component } from '@angular/core';
 import { NatTable, NatTableService } from 'ng-advanced-table';
 
 interface PositionRow {
@@ -92,11 +75,11 @@ interface PositionRow {
   selector: 'app-core-only-table',
   imports: [NatTable],
   providers: [NatTableService],
-  template: ` <nat-table [data]="rows()" [columns]="columns" accessibleName="Core-only positions" /> `
+  template: ` <nat-table [data]="rows" [columns]="columns" accessibleName="Core-only positions" /> `
 })
 export class CoreOnlyTable {
-  readonly rows = signal<readonly PositionRow[]>([]);
-  readonly columns: ColumnDef<PositionRow>[] = [
+  readonly rows: readonly PositionRow[] = [];
+  readonly columns = [
     {
       accessorKey: 'symbol',
       header: 'Symbol',
@@ -112,7 +95,6 @@ Use `ng-advanced-table/components` when you want pagination controls, column vis
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable, type NatTableUserState } from 'ng-advanced-table';
 import {
@@ -150,7 +132,7 @@ export class PositionsTable {
     pagination: { pageIndex: 0, pageSize: 25 }
   };
 
-  readonly columns: ColumnDef<PositionRow>[] = withNatTableHeaderActions([
+  readonly columns = withNatTableHeaderActions([
     {
       accessorKey: 'symbol',
       header: 'Symbol',

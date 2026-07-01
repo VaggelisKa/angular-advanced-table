@@ -1,11 +1,11 @@
-Columns are TanStack `ColumnDef<TData>[]` with extra metadata understood by `NatTable` and companion packages. Put product-specific rendering in your column definitions and keep table-wide wiring in the surface.
+Columns are `ColumnDef<TData>[]` imported from `ng-advanced-table`. Put product-specific rendering in your column definitions and keep table-wide wiring in the surface.
 
 ## Basic Column Shape
 
 Use `accessorKey` for fields and `id` for display or computed columns. Provide `meta.label` for every column.
 
 ```ts
-import { type ColumnDef } from '@tanstack/angular-table';
+import { type ColumnDef } from 'ng-advanced-table';
 
 interface PositionRow {
   id: string;
@@ -74,7 +74,7 @@ const priceMeta: PositionColumnMeta = {
 
 ## Sizing
 
-TanStack `size`, `minSize`, and `maxSize` are body-cell sizing fields. Header-only sizing lives in metadata.
+Use `size`, `minSize`, and `maxSize` for body-cell sizing. Header-only sizing lives in metadata.
 
 ```ts
 readonly columns: ColumnDef<PositionRow>[] = [
@@ -145,7 +145,7 @@ Use `flexRenderComponent(...)` when a cell should render an Angular component. K
 ```ts
 import { Component, input, output } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
-import { flexRenderComponent, type ColumnDef } from '@tanstack/angular-table';
+import { flexRenderComponent, type ColumnDef } from 'ng-advanced-table';
 
 @Component({
   selector: 'app-position-actions-cell',
