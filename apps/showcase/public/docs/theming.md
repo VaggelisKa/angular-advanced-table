@@ -107,6 +107,8 @@ For app-wide themes, put table tokens on the app root or theme attribute.
 
 If controls and the table live in different surfaces, put product tokens on their shared ancestor so both surfaces derive the same theme.
 
+The live example below scopes `--nat-table-*` tokens on `NatTableSurface`, with a matching `[data-theme='dark']` override. It intentionally avoids private component classes and `::ng-deep`, so the same CSS can live in a consumer app stylesheet.
+
 ## Core Table Tokens
 
 These are the most common stable `ng-advanced-table` tokens to override directly.

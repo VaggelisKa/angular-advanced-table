@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- topic registry intentionally keeps docs IA, snippets, and embedded examples together */
 import type { DocsCodeSnippet, DocsTopicContent } from './docs-topic.types';
+import { ThemingShowcase } from './theming-showcase';
 import { SimpleSortingPage } from '../simple-sorting-page/simple-sorting-page';
 import { KeyboardInteractionShowcasePage } from '../single-features/keyboard-interaction/keyboard-interaction-showcase';
 import { PaginationShowcasePage } from '../single-features/pagination-showcase';
@@ -255,6 +256,127 @@ const statesSnippets = [
 readonly status = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.loading);
 readonly rows = signal<readonly PositionRow[]>([]);
 readonly error = signal<unknown>(undefined);
+`
+  )
+];
+
+const themingSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface [initialState]="initialState" class="ledger-surface">
+  <nat-table [columns]="columns" [data]="rows" accessibleName="Themed orders table" />
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+readonly rows = generateMockOrderRows(5);
+readonly initialState = {
+  sorting: [{ id: 'total', desc: true }],
+} satisfies Partial<NatTableUserState>;
+
+readonly columns = withNatTableHeaderActions(baseColumns, {
+  enableColumnPinActions: false,
+  sortIndicator: ({ sortState }) => (sortState === 'asc' ? '↑' : sortState === 'desc' ? '↓' : '↕'),
+});
+`
+  ),
+  snippet(
+    'css',
+    'Theme CSS',
+    'css',
+    `
+.ledger-surface {
+  --nat-table-color-text: #26312f;
+  --nat-table-color-text-muted: #667570;
+  --nat-table-color-accent: #0f766e;
+  --nat-table-color-success: #0f766e;
+  --nat-table-color-warning: #9a5b13;
+  --nat-table-color-danger: #a43f43;
+  --nat-table-card-background: #edf3f1;
+  --nat-table-card-border-color: #cbd8d4;
+  --nat-table-card-shadow: 0 18px 42px rgb(31 49 45 / 12%);
+  --nat-table-space-card: 18px;
+  --nat-table-radius-card: 6px;
+  --nat-table-font-family: 'Aptos', 'Segoe UI', system-ui, sans-serif;
+  --nat-table-font-size-header: 0.82rem;
+  --nat-table-letter-spacing-header: 0;
+  --nat-table-text-transform-header: none;
+  --nat-table-line-height-cell: 1.5;
+  --nat-table-font-weight-row-header: 700;
+  --nat-table-region-background: #fbfcfb;
+  --nat-table-region-border-color: #cbd8d4;
+  --nat-table-region-border-width: 1px;
+  --nat-table-header-background: #26312f;
+  --nat-table-header-color: #f8fbfa;
+  --nat-table-header-border-color: #26312f;
+  --nat-table-row-background: #fbfcfb;
+  --nat-table-row-background-hover: #eef6f3;
+  --nat-table-row-background-hover-pinned: #e4efec;
+  --nat-table-row-background-focus: #e4efec;
+  --nat-table-row-background-focus-pinned: #d7e6e1;
+  --nat-table-cell-border-color: #dde7e3;
+  --nat-table-cell-color-positive: #0f766e;
+  --nat-table-cell-color-negative: #a43f43;
+  --nat-table-cell-color-warning: #9a5b13;
+  --nat-table-cell-color-neutral: #667570;
+  --nat-table-focus-ring-color: #0f766e;
+  --nat-table-sort-icon-color-active: #f8fbfa;
+  --nat-table-sort-icon-color-idle: rgb(248 251 250 / 68%);
+  --nat-table-sort-icon-color-hover: #f8fbfa;
+  --nat-table-sort-button-color-sorted: #f8fbfa;
+  --nat-table-space-header-actions-gap: 8px;
+  --nat-table-space-chip-row-gap: 8px;
+  --nat-table-sort-icon-min-width: 1rem;
+  --nat-table-space-cell-y: 15px;
+  --nat-table-space-cell-x: 18px;
+  --nat-table-radius-region: 4px;
+  --nat-table-hover-lift: none;
+  --nat-table-focus-ring-width: 3px;
+
+  display: block;
+  color-scheme: light;
+}
+
+[data-theme='dark'] .ledger-surface {
+  --nat-table-color-text: #dfe8e5;
+  --nat-table-color-text-muted: #9fb1ab;
+  --nat-table-color-accent: #5eead4;
+  --nat-table-color-success: #5eead4;
+  --nat-table-color-warning: #f8c572;
+  --nat-table-color-danger: #f19aa0;
+  --nat-table-card-background: #111c1a;
+  --nat-table-card-border-color: #30413d;
+  --nat-table-card-shadow: 0 18px 44px rgb(3 10 9 / 46%);
+  --nat-table-region-background: #15211f;
+  --nat-table-region-border-color: #30413d;
+  --nat-table-header-background: #dce8e4;
+  --nat-table-header-color: #17211f;
+  --nat-table-header-border-color: #dce8e4;
+  --nat-table-row-background: #15211f;
+  --nat-table-row-background-hover: #1d2d2a;
+  --nat-table-row-background-hover-pinned: #243632;
+  --nat-table-row-background-focus: #243632;
+  --nat-table-row-background-focus-pinned: #30413d;
+  --nat-table-cell-border-color: #253632;
+  --nat-table-cell-color-positive: #5eead4;
+  --nat-table-cell-color-negative: #f19aa0;
+  --nat-table-cell-color-warning: #f8c572;
+  --nat-table-cell-color-neutral: #c5d3cf;
+  --nat-table-focus-ring-color: #5eead4;
+  --nat-table-sort-icon-color-active: #17211f;
+  --nat-table-sort-icon-color-idle: rgb(23 33 31 / 62%);
+  --nat-table-sort-icon-color-hover: #17211f;
+  --nat-table-sort-button-color-sorted: #17211f;
+
+  color-scheme: dark;
+}
 `
   )
 ];
@@ -556,9 +678,20 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     contents: [
       { label: 'Recommended shape', path: '#recommended-shape' },
       { label: 'Theme scope', path: '#theme-scope' },
+      { label: 'Theme example', path: '#docs-example-theme-example-title' },
       { label: 'Tokens', path: '#core-table-tokens' }
     ],
-    blocks: [{ kind: 'markdown', id: 'theming-prose', markdownPath: '/docs/theming.md' }],
+    blocks: [
+      { kind: 'markdown', id: 'theming-prose', markdownPath: '/docs/theming.md' },
+      {
+        kind: 'example',
+        id: 'theme-example',
+        title: 'Theme example',
+        description: 'A scoped consumer theme with a visibly different table treatment and matching token CSS.',
+        component: ThemingShowcase,
+        snippets: themingSnippets
+      }
+    ],
     related: [
       { label: 'Accessibility', path: '/docs/accessibility' },
       { label: 'Composition', path: '/docs/composition' }

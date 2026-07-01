@@ -119,7 +119,11 @@
         </div>
       </div>
 
-      <nat-table-surface [accessibilityText]="accessibilityText" [stickyHeader]="true" [(state)]="tableState" class="table-shell">
+      <nat-table-surface
+        [accessibilityText]="accessibilityText"
+        [stickyHeader]="true"
+        [(state)]="tableState"
+        class="table-shell market-table-theme">
         <div class="kitchen-metrics-controls">
           <nat-render-metrics-filter [controller]="renderMetricsController()" [store]="metricsStore" />
           <nat-render-metrics-panel [controller]="renderMetricsController()" [store]="metricsStore" />
