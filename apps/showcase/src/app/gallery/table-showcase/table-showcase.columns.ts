@@ -14,7 +14,7 @@ import {
   numberTone,
   statusTone
 } from './utils';
-import { NatRowActionsMenu } from '../ui/nat-row-actions-menu/nat-row-actions-menu';
+import { NatRowActionsMenu } from '../../ui/nat-row-actions-menu/nat-row-actions-menu';
 
 export const STATUS_FILTER_ID = 'status';
 

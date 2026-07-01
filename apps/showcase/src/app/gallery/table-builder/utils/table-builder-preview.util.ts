@@ -1,7 +1,7 @@
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 
-import type { DemoItem, TableBuilderFlags } from '../common';
+import type { DemoItem, TableBuilderFlags } from '../common/table-builder.type';
 
 export const buildBuilderColumns = (flags: {
   enableColumnPinActions: boolean;

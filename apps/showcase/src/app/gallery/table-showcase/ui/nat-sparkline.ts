@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
-import type { SparkTrend } from '../common';
+import type { SparkTrend } from '../common/table-simulation.type';
 
 const VIEWBOX_HEIGHT = 100;
 

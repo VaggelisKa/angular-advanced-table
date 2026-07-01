@@ -21,7 +21,7 @@ import {
   formatStateLiteral,
   omitColumnOrder
 } from './utils';
-import { TableSearch } from '../ui/table-search/table-search';
+import { TableSearch } from '../../ui/table-search/table-search';
 
 @Component({
   selector: 'app-table-builder',

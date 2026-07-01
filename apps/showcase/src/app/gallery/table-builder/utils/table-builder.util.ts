@@ -1,6 +1,6 @@
 import type { NatTableUserState } from 'ng-advanced-table';
 
-import type { TableBuilderFlags } from '../common';
+import type { TableBuilderFlags } from '../common/table-builder.type';
 
 const DEFAULT_COLUMN_VISIBILITY = {
   name: true,

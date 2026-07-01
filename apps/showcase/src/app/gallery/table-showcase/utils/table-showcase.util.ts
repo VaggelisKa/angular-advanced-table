@@ -1,6 +1,6 @@
 import type { NatTableUserState } from 'ng-advanced-table';
 
-import type { SimulationStatus } from '../common';
+import type { SimulationStatus } from '../common/table-simulation.type';
 
 const integerFormatter = new Intl.NumberFormat('en-US');
 const compactFormatter = new Intl.NumberFormat('en-US', {

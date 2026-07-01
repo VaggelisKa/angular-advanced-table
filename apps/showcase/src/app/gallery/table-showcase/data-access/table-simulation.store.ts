@@ -1,7 +1,7 @@
 import { Injectable, afterNextRender, computed, effect, signal } from '@angular/core';
 
-import { DEFAULT_SIMULATION_TIMESTAMP, SIMULATION_PROFILES } from '../common';
-import type { SimulationProfile, SimulationRow, SimulationStatusCounts } from '../common';
+import { DEFAULT_SIMULATION_TIMESTAMP, SIMULATION_PROFILES } from '../common/table-simulation.const';
+import type { SimulationProfile, SimulationRow, SimulationStatusCounts } from '../common/table-simulation.type';
 import { buildDataset, mutateRows, roundToSingleDecimal } from '../utils/table-simulation.util';
 
 @Injectable({

@@ -24,7 +24,7 @@ import { TableSimulation } from './data-access';
 import { STATUS_FILTER_ID, showcaseAccessibilityText, simulationColumns } from './table-showcase.columns';
 import { MarketSortIndicator } from './ui';
 import { formatCompact, formatCurrency, formatInteger, formatSignedPercent, formatTime, upsertColumnFilter } from './utils';
-import { TableSearch } from '../ui/table-search/table-search';
+import { TableSearch } from '../../ui/table-search/table-search';
 
 @Component({
   selector: 'app-table-showcase',
