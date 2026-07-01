@@ -1,13 +1,13 @@
 :host {
-  --nat-table-color-text: var(--text, #ecf5fb);
-  --nat-table-color-text-muted: var(--text-soft, #a8c3d7);
-  --nat-table-color-accent: var(--accent, #57d1ff);
-  --nat-table-color-success: var(--success, #5de6a6);
-  --nat-table-color-warning: var(--warning, #ffd166);
-  --nat-table-color-danger: var(--danger, #ff8d7f);
-  --nat-table-color-surface: var(--surface, rgb(7 23 35 / 72%));
-  --nat-table-color-surface-elevated: var(--surface-elevated, rgb(4 14 22 / 92%));
-  --nat-table-color-surface-sticky: var(--surface-contrast, rgb(5 20 31 / 96%));
+  --nat-table-color-text: #ecf5fb;
+  --nat-table-color-text-muted: #a8c3d7;
+  --nat-table-color-accent: #57d1ff;
+  --nat-table-color-success: #5de6a6;
+  --nat-table-color-warning: #ffd166;
+  --nat-table-color-danger: #ff8d7f;
+  --nat-table-color-surface: rgb(7 23 35 / 72%);
+  --nat-table-color-surface-elevated: rgb(4 14 22 / 92%);
+  --nat-table-color-surface-sticky: rgb(5 20 31 / 96%);
   --nat-table-color-border: color-mix(in srgb, var(--nat-table-color-text) 12%, transparent);
   --nat-table-color-divider: color-mix(in srgb, var(--nat-table-color-text) 8%, transparent);
   --nat-table-color-divider-subtle: color-mix(in srgb, var(--nat-table-color-text) 6%, transparent);
@@ -79,7 +79,7 @@
     color-mix(in srgb, var(--nat-table-color-text) 10%, transparent)
   );
   --nat-table-card-border-width: 1px;
-  --nat-table-card-shadow: var(--shadow, 0 28px 60px rgb(1 10 18 / 45%));
+  --nat-table-card-shadow: 0 28px 60px rgb(1 10 18 / 45%);
   --nat-table-card-backdrop-filter: blur(20px);
   --nat-table-card-divider-color: var(--nat-table-color-divider-subtle);
   --nat-table-search-background: color-mix(
@@ -119,6 +119,13 @@
   --nat-table-max-height: inherit;
   --nat-table-height: inherit;
   --nat-table-sticky-top: 0;
+  --nat-table-z-index-sticky-header: 4;
+  --nat-table-z-index-pinned-cell: 5;
+  --nat-table-z-index-pinned-header: 6;
+  --nat-table-z-index-focus-cell: 7;
+  --nat-table-z-index-resize-handle: 8;
+  --nat-table-z-index-resize-guide: 9;
+  --nat-table-z-index-drag-preview: 12;
   --nat-table-region-background: var(--nat-table-color-surface-elevated);
   --nat-table-region-border-color: color-mix(in srgb, var(--nat-table-color-text) 10%, transparent);
   --nat-table-region-border-width: 1px;
@@ -169,6 +176,8 @@
   --nat-table-pinned-background: var(--nat-table-color-surface-sticky);
   --nat-table-pinned-divider-color: color-mix(in srgb, var(--nat-table-color-text) 18%, transparent);
   --nat-table-empty-state-color: var(--nat-table-color-text-muted);
+  --nat-table-loading-state-color: var(--nat-table-empty-state-color);
+  --nat-table-error-state-color: var(--nat-table-cell-color-negative);
 
   display: block;
   font-family: var(--nat-table-font-family);

@@ -8,44 +8,42 @@
   align-items: center;
   padding: 6px 14px;
   font-size: 0.85rem;
-  color: var(--text-soft);
+  color: var(--nat-table-color-text-muted, GrayText);
   white-space: nowrap;
-  background: rgb(236 245 251 / 5%);
-  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
-  border: 1px solid rgb(236 245 251 / 12%);
-  border-color: color-mix(in srgb, var(--text, #ecf5fb) 12%, transparent);
-  border-radius: 999px;
+  background: color-mix(in srgb, var(--nat-table-color-text, currentColor) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--nat-table-color-text, currentColor) 12%, transparent);
+  border-radius: 100vmax;
 }
 
 .render-kpi strong {
   font-variant-numeric: tabular-nums;
-  color: var(--text);
+  color: var(--nat-table-color-text, CanvasText);
 }
 
 .render-kpi-dot {
   flex-shrink: 0;
   width: 7px;
   height: 7px;
-  background: var(--text-soft);
+  background: currentcolor;
   border-radius: 50%;
 }
 
 .render-kpi[data-health='fast'] .render-kpi-dot {
-  background: var(--success, #5de6a6);
-  box-shadow: 0 0 6px rgb(93 230 166 / 40%);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--success, #5de6a6) 40%, transparent);
+  background: var(--nat-table-color-success, currentColor);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--nat-table-color-success, currentColor) 40%, transparent);
 }
 
 .render-kpi[data-health='watch'] .render-kpi-dot {
-  background: var(--warning, #ffd166);
-  box-shadow: 0 0 6px rgb(255 209 102 / 40%);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--warning, #ffd166) 40%, transparent);
+  background: var(--nat-table-color-warning, currentColor);
+  border-radius: 2px;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--nat-table-color-warning, currentColor) 40%, transparent);
+  transform: rotate(45deg);
 }
 
 .render-kpi[data-health='slow'] .render-kpi-dot {
-  background: var(--danger, #ff8d7f);
-  box-shadow: 0 0 6px rgb(255 141 127 / 40%);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--danger, #ff8d7f) 40%, transparent);
+  background: var(--nat-table-color-danger, currentColor);
+  border-radius: 1px;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--nat-table-color-danger, currentColor) 40%, transparent);
 }
 
 .render-kpi-text {
@@ -56,6 +54,6 @@
 
 .render-kpi-detail {
   font-size: 0.78rem;
-  color: var(--text-soft);
+  color: var(--nat-table-color-text-muted, GrayText);
   opacity: 0.7;
 }

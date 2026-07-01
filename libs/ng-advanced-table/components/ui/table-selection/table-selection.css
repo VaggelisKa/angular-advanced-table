@@ -7,6 +7,6 @@
 .nat-selection-checkbox {
   inline-size: var(--nat-table-selection-size, 18px);
   block-size: var(--nat-table-selection-size, 18px);
-  accent-color: var(--nat-table-selection-accent, var(--accent, currentColor));
+  accent-color: var(--nat-table-selection-accent, var(--nat-table-color-accent, currentColor));
   cursor: pointer;
 }

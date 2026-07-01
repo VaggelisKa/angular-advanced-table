@@ -58,8 +58,9 @@
   text-transform: var(--nat-table-text-transform-header, uppercase);
   letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
   white-space: nowrap;
-  background: var(--nat-table-header-background, #f6f8fa);
-  border-bottom: var(--nat-table-header-border-width, 1px) solid var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
+  background: var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas));
+  border-bottom: var(--nat-table-header-border-width, 1px) solid
+    var(--nat-table-header-border-color, var(--nat-table-color-border, rgb(128 128 128 / 30%)));
 }
 
 .header-cell-content {
@@ -117,7 +118,7 @@ tbody .data-row:last-child .data-cell {
   inset-inline-end: 0;
   top: 0;
   bottom: 0;
-  z-index: 8;
+  z-index: var(--nat-table-z-index-resize-handle, 8);
   inline-size: var(--nat-table-resize-handle-hit, 24px);
   touch-action: none;
   cursor: col-resize;
@@ -160,7 +161,7 @@ tbody .data-row:last-child .data-cell {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 9;
+  z-index: var(--nat-table-z-index-resize-guide, 9);
   inline-size: 2px;
   margin-inline-start: -1px;
   pointer-events: none;
@@ -192,10 +193,10 @@ tbody .data-row:last-child .data-cell {
 }
 
 .header-cell.cdk-drag-preview {
-  z-index: 12;
+  z-index: var(--nat-table-z-index-drag-preview, 12);
   display: table-cell;
   color: var(--nat-table-header-color, inherit);
-  background: var(--nat-table-header-background, #f6f8fa);
+  background: var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas));
   border-bottom-color: var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
   box-shadow:
     0 14px 30px rgb(15 23 42 / 16%),
@@ -205,7 +206,7 @@ tbody .data-row:last-child .data-cell {
 
 .header-cell.is-pinned-left.cdk-drag-preview,
 .header-cell.is-pinned-right.cdk-drag-preview {
-  background: var(--nat-table-pinned-background, var(--nat-table-header-background, #f6f8fa));
+  background: var(--nat-table-pinned-background, var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas)));
 }
 
 .header-cell.cdk-drag-placeholder {
@@ -256,16 +257,21 @@ tbody .data-row:last-child .data-cell {
 .has-sticky-header .header-cell {
   position: sticky;
   top: var(--nat-table-sticky-top, 0);
-  z-index: 4;
+  z-index: var(--nat-table-z-index-sticky-header, 4);
 }
 
+/*
+ * Table stacking order, low to high:
+ * sticky header, pinned body cells, pinned headers, focused cells, resize
+ * handle, resize guide, then drag preview.
+ */
 .has-sticky-header .is-pinned-left,
 .has-sticky-header .is-pinned-right,
 .is-pinned-left,
 .is-pinned-right {
   position: sticky;
-  z-index: 5;
-  background: var(--nat-table-pinned-background, var(--nat-table-header-background, #f6f8fa));
+  z-index: var(--nat-table-z-index-pinned-cell, 5);
+  background: var(--nat-table-pinned-background, var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas)));
 }
 
 .has-sticky-header .header-cell.is-pinned-left,
@@ -273,7 +279,7 @@ tbody .data-row:last-child .data-cell {
 .header-cell.is-pinned-left,
 .header-cell.is-pinned-right {
   position: sticky;
-  z-index: 6;
+  z-index: var(--nat-table-z-index-pinned-header, 6);
 }
 
 .has-pinned-edge-left {
@@ -294,26 +300,26 @@ tbody .data-row:last-child .data-cell {
 }
 
 .data-cell[data-tone='positive'] {
-  color: var(--nat-table-cell-color-positive, #1a7f37);
+  color: var(--nat-table-cell-color-positive, var(--nat-table-color-success, currentColor));
 }
 
 .data-cell[data-tone='negative'] {
-  color: var(--nat-table-cell-color-negative, #d1242f);
+  color: var(--nat-table-cell-color-negative, var(--nat-table-color-danger, currentColor));
 }
 
 .data-cell[data-tone='warning'] {
-  color: var(--nat-table-cell-color-warning, #9a6700);
+  color: var(--nat-table-cell-color-warning, var(--nat-table-color-warning, currentColor));
 }
 
 .data-cell[data-tone='neutral'] {
-  color: var(--nat-table-cell-color-neutral, #5b6672);
+  color: var(--nat-table-cell-color-neutral, var(--nat-table-color-text-muted, currentColor));
 }
 
 .table-state {
   padding: var(--nat-table-space-empty-state, 40px 24px);
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
-  color: var(--nat-table-empty-state-color, #5b6672);
+  color: var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText));
   text-align: center;
   white-space: normal;
   animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms) var(--nat-table-state-transition-timing, ease-out)
@@ -321,11 +327,11 @@ tbody .data-row:last-child .data-cell {
 }
 
 .loading-state {
-  color: var(--nat-table-loading-state-color, var(--nat-table-empty-state-color, #5b6672));
+  color: var(--nat-table-loading-state-color, var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText)));
 }
 
 .error-state {
-  color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, #d1242f));
+  color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, var(--nat-table-color-danger, currentColor)));
 }
 
 @keyframes nat-table-state-enter {
@@ -347,7 +353,7 @@ tbody .data-row:last-child .data-cell {
 }
 
 [ngGridCell]:focus-visible {
-  z-index: 7;
+  z-index: var(--nat-table-z-index-focus-cell, 7);
   outline: none;
   box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, 2px) var(--nat-table-focus-ring-color, Highlight);
 }
