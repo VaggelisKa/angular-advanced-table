@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, afterNextRender, inject, signal } from '@angular/core';
 
-import type { ShowcaseTheme } from '../common';
+import type { ShowcaseTheme } from './showcase-theme.type';
 
 const THEME_STORAGE_KEY = 'nat-showcase-theme';
 

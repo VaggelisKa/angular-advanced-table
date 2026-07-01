@@ -6,9 +6,9 @@ import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 import type { NatTableSortIndicatorContext } from 'ng-advanced-table/components';
 
-import type { MockOrderRow } from '../../common';
-import { ShowcaseThemeStore } from '../../domain-logic/showcase-theme';
-import { generateMockOrderRows } from '../../utils';
+import type { MockOrderRow } from '../../mock-order/mock-order.type';
+import { generateMockOrderRows } from '../../mock-order/mock-order.util';
+import { ShowcaseThemeStore } from '../../theme/showcase-theme';
 
 const orderStatusTone = (status: MockOrderRow['status']): 'positive' | 'warning' | 'neutral' => {
   switch (status) {
