@@ -4,9 +4,32 @@ Signals-first Angular data table built on [TanStack Table](https://tanstack.com/
 
 ## Install
 
+For an Angular app that already declares `@angular/core` and `@angular/common`, add the table package plus the required Angular companion peers:
+
 ```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
+npm install ng-advanced-table @angular/aria @angular/cdk
 ```
+
+If your workspace does not already declare Angular framework packages, install the full required peer set:
+
+```bash
+npm install ng-advanced-table @angular/core @angular/common @angular/aria @angular/cdk
+```
+
+`@tanstack/angular-table` ships as a runtime dependency of `ng-advanced-table`. Install it directly only when your app imports TanStack APIs or types from `@tanstack/angular-table`.
+
+Resolved published ranges and dependency classifications:
+
+| Package                   | Published range | Classification                                                |
+| ------------------------- | --------------- | ------------------------------------------------------------- |
+| `@angular/core`           | `^22.0.2`       | Required peer; Angular framework singleton                    |
+| `@angular/common`         | `^22.0.2`       | Required peer; Angular framework APIs                         |
+| `@angular/aria`           | `^22.0.2`       | Required peer; grid, toolbar, and menu behaviors              |
+| `@angular/cdk`            | `^22.0.2`       | Required peer; drag-drop, bidi, and overlay integrations      |
+| `@tanstack/angular-table` | `^8.21.4`       | Runtime dependency; table runtime and public column contracts |
+| `tslib`                   | `^2.8.1`        | Runtime dependency installed with `ng-advanced-table`         |
+
+No Angular peers are optional. `@angular/aria` and `@angular/cdk` are required by production entry points, not only tests.
 
 ## Entry points
 
