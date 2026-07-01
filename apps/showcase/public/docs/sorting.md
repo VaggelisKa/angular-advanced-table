@@ -43,8 +43,8 @@ Use `withNatTableHeaderActions(...)` when you want the bundled sort behavior, la
 
 ```ts
 import { Component, input } from '@angular/core';
-import { flexRenderComponent } from '@tanstack/angular-table';
-import { type NatTableSortIndicatorContext, withNatTableHeaderActions } from 'ng-advanced-table/components';
+import { flexRenderComponent, type NatTableSortIndicatorContext } from 'ng-advanced-table';
+import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 @Component({
   selector: 'app-sort-indicator',
@@ -66,7 +66,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 });
 ```
 
-The indicator receives the current `sortState`, resolved column `label`, `ariaSort` token, and TanStack `column`. Keep the indicator visual only; the generated sort button still owns the accessible name and sort action.
+The indicator receives the current `sortState`, resolved column `label`, `ariaSort` token, and column object. Keep the indicator visual only; the generated sort button still owns the accessible name and sort action.
 
 Override individual columns through `column.meta.headerActions` when one column needs a different indicator or should opt out.
 

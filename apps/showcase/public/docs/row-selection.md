@@ -58,7 +58,7 @@ In single-selection mode, the generated selection column renders the header as a
 Most tables should use `withNatTableSelectionColumn(...)`. Use `NatTableSelectionCheckbox` directly only when you are building a custom selection column or need to place the checkbox in a custom header or cell renderer.
 
 ```ts
-import { flexRenderComponent } from '@tanstack/angular-table';
+import { flexRenderComponent } from 'ng-advanced-table';
 import { NatTableSelectionCheckbox } from 'ng-advanced-table/components';
 
 readonly columns = [
@@ -86,7 +86,7 @@ readonly columns = [
 ];
 ```
 
-The checkbox component expects the TanStack `table` instance in both modes and the current `row` in row mode. Prefer locale providers for shared generated labels; pass `ariaLabel` only for table-specific copy.
+The checkbox component expects the table instance in both modes and the current `row` in row mode. Prefer locale providers for shared generated labels; pass `ariaLabel` only for table-specific copy.
 
 ## Bulk Actions
 

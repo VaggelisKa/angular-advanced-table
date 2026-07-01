@@ -207,6 +207,8 @@ For production request flows, cancel or ignore stale requests when a newer table
 For client-side tables, define column filter functions on the relevant columns and update `columnFilters` from app-owned controls.
 
 ```ts
+import type { ColumnDef, FilterFn } from 'ng-advanced-table';
+
 const statusFilter: FilterFn<PositionRow> = (row, columnId, filterValue) => {
   const selected = (filterValue ?? []) as PositionStatus[];
 

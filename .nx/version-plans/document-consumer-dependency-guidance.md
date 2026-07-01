@@ -1,5 +1,5 @@
 ---
-ng-advanced-table: patch
+ng-advanced-table: minor
 ---
 
-Clarify consumer install guidance for showcase docs after moving TanStack Table to a runtime dependency. Document Angular Aria and CDK as required peers while keeping TanStack Table out of consumer install steps.
+Forward TanStack table types and `flexRenderComponent` through `ng-advanced-table` so consumer docs import table authoring contracts from the package itself. Clarify install guidance by documenting Angular Aria and CDK as required peers while keeping TanStack Table out of consumer install steps.

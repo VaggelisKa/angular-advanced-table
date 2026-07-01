@@ -36,6 +36,8 @@ A visible caption names the rendered grid. `accessibleName` remains the required
 Provide `meta.label` for every column. Mark the primary identifying column as the row header, and align numeric values to the end edge.
 
 ```ts
+import type { ColumnDef } from 'ng-advanced-table';
+
 readonly columns: ColumnDef<PositionRow>[] = [
   {
     accessorKey: 'symbol',
@@ -125,6 +127,8 @@ export const appConfig: ApplicationConfig = {
 When locale changes at runtime, pass the active locale to the surface and rebuild translated column definitions from the same translation source.
 
 ```ts
+import type { ColumnDef } from 'ng-advanced-table';
+
 readonly localeId = signal<'en' | 'da'>('en');
 readonly copy = computed(() => translations[this.localeId()]);
 
