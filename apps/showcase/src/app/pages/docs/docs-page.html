@@ -35,7 +35,7 @@
           "
       class="docs-markdown docs-topic-block">
       @if (markdownState(block.markdownPath).status === 'loaded') {
-      <markdown [data]="markdownState(block.markdownPath).content" (ready)="decorateCodeBlocks()" />
+      <div [innerHTML]="markdownState(block.markdownPath).trustedHtml"></div>
       }
     </section>
     } @case ('example') {

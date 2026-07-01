@@ -1,23 +1,39 @@
+import { isPlatformServer } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, TransferState, inject, makeStateKey, signal } from '@angular/core';
+import type { StateKey } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import type { SafeHtml } from '@angular/platform-browser';
+
+import { firstValueFrom } from 'rxjs';
+
+import { renderMarkdownToHtml } from './docs-markdown-renderer';
 
 export type DocsMarkdownStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
 export type DocsMarkdownState = {
   readonly status: DocsMarkdownStatus;
-  readonly content: string;
+  readonly html: string;
+  readonly trustedHtml: SafeHtml | string;
   readonly error?: unknown;
 };
 
 const EMPTY_DOCS_MARKDOWN_STATE: DocsMarkdownState = {
   status: 'idle',
-  content: ''
+  html: '',
+  trustedHtml: ''
 };
+
+export const getDocsHtmlTransferStateKey = (markdownPath: string): StateKey<string> => makeStateKey(`docs-html:${markdownPath}`);
 
 @Injectable({ providedIn: 'root' })
 export class DocsMarkdownCache {
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly transferState = inject(TransferState);
   private readonly states = signal<ReadonlyMap<string, DocsMarkdownState>>(new Map());
+  private readonly isServer = isPlatformServer(this.platformId);
 
   public getState(markdownPath: string): DocsMarkdownState {
     return this.states().get(markdownPath) ?? EMPTY_DOCS_MARKDOWN_STATE;
@@ -32,24 +48,21 @@ export class DocsMarkdownCache {
 
     this.setState(markdownPath, {
       status: 'loading',
-      content: currentState.content
+      html: currentState.html,
+      trustedHtml: currentState.trustedHtml
     });
 
-    this.http.get(markdownPath, { responseType: 'text' }).subscribe({
-      next: (content) => {
-        this.setState(markdownPath, {
-          status: 'loaded',
-          content
-        });
-      },
-      error: (error: unknown) => {
-        this.setState(markdownPath, {
-          status: 'error',
-          content: currentState.content,
-          error
-        });
-      }
-    });
+    const transferStateKey = getDocsHtmlTransferStateKey(markdownPath);
+    const transferredHtml = this.transferState.get<string | null>(transferStateKey, null);
+
+    if (transferredHtml !== null) {
+      this.transferState.remove(transferStateKey);
+      this.setLoadedState(markdownPath, transferredHtml);
+
+      return;
+    }
+
+    void this.loadRenderedMarkdown(markdownPath, currentState.html, transferStateKey);
   }
 
   public preload(markdownPaths: readonly string[]): void {
@@ -66,5 +79,33 @@ export class DocsMarkdownCache {
 
       return nextStates;
     });
+  }
+
+  private setLoadedState(markdownPath: string, html: string): void {
+    this.setState(markdownPath, {
+      status: 'loaded',
+      html,
+      trustedHtml: this.sanitizer.bypassSecurityTrustHtml(html)
+    });
+  }
+
+  private async loadRenderedMarkdown(markdownPath: string, previousHtml: string, transferStateKey: StateKey<string>): Promise<void> {
+    try {
+      const markdown = await firstValueFrom(this.http.get(markdownPath, { responseType: 'text' }));
+      const html = renderMarkdownToHtml(markdown);
+
+      if (this.isServer) {
+        this.transferState.set(transferStateKey, html);
+      }
+
+      this.setLoadedState(markdownPath, html);
+    } catch (error: unknown) {
+      this.setState(markdownPath, {
+        status: 'error',
+        html: previousHtml,
+        trustedHtml: this.sanitizer.bypassSecurityTrustHtml(previousHtml),
+        error
+      });
+    }
   }
 }

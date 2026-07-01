@@ -1,10 +1,16 @@
 const MARKDOWN_HEADING_SELECTOR = '.docs-markdown h2, .docs-markdown h3, .docs-markdown h4, .docs-markdown h5, .docs-markdown h6';
 
+type PrismGlobal = typeof globalThis & {
+  Prism?: {
+    highlightAllUnder(element: Element | Document): void;
+  };
+};
+
 export function shouldLetBrowserHandleLink(event: MouseEvent): boolean {
   return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function slugifyHeading(text: string): string {
+export function slugifyMarkdownHeading(text: string): string {
   return text
     .trim()
     .toLowerCase()
@@ -13,7 +19,7 @@ function slugifyHeading(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-function getUniqueHeadingId(baseId: string, usedIds: ReadonlySet<string>): string {
+export function getUniqueMarkdownHeadingId(baseId: string, usedIds: ReadonlySet<string>): string {
   let id = baseId;
   let suffix = 2;
 
@@ -33,17 +39,27 @@ export function decorateMarkdownHeadingIds(container: HTMLElement): void {
       continue;
     }
 
-    const baseId = slugifyHeading(heading.textContent);
+    const baseId = slugifyMarkdownHeading(heading.textContent);
 
     if (!baseId) {
       continue;
     }
 
-    const id = getUniqueHeadingId(baseId, usedIds);
+    const id = getUniqueMarkdownHeadingId(baseId, usedIds);
 
     heading.id = id;
     usedIds.add(id);
   }
+}
+
+export function highlightMarkdownCode(container: HTMLElement): void {
+  const prism = (globalThis as PrismGlobal).Prism;
+
+  if (typeof prism?.highlightAllUnder !== 'function') {
+    return;
+  }
+
+  prism.highlightAllUnder(container);
 }
 
 function copyTextWithSelection(document: Document, text: string): boolean {

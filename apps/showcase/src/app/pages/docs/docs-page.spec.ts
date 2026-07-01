@@ -1,20 +1,19 @@
-import { HttpClient, provideHttpClient } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 
-import { MARKED_OPTIONS, provideMarkdown } from 'ngx-markdown';
-
 import { DocsPage } from './docs-page';
 
 async function waitForMarkdownRender(fixture: { detectChanges(): void; whenStable(): Promise<unknown> }): Promise<void> {
-  await fixture.whenStable();
-  fixture.detectChanges();
-  await new Promise((resolve) => setTimeout(resolve));
-  await fixture.whenStable();
-  fixture.detectChanges();
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    await fixture.whenStable();
+    await Promise.resolve();
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve));
+  }
 }
 
 type PrismTestGlobal = typeof globalThis & {
@@ -64,17 +63,6 @@ describe('FEATURE: DocsPage', () => {
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideMarkdown({
-          loader: HttpClient,
-          markedOptions: {
-            provide: MARKED_OPTIONS,
-            useValue: {
-              gfm: true,
-              breaks: false,
-              pedantic: false
-            }
-          }
-        }),
         provideRouter([
           {
             path: '',

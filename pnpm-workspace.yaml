@@ -32,10 +32,7 @@ catalogs:
     '@tanstack/angular-table': '^8.21.4'
     rxjs: '~7.8.2'
     # showcase-only: Markdown docs rendering + Prism syntax highlighting
-    katex: '^0.16.47'
     marked: '^18.0.5'
-    marked-katex-extension: '^5.1.10'
-    ngx-markdown: '22.0.0'
     prismjs: '^1.30.0'
   # published peer ranges for the libs. Decoupled from `frontend` so the app
   # pins exact versions while published tarballs keep caret ranges (pnpm

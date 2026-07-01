@@ -5,13 +5,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { Data } from '@angular/router';
 
-import { MarkdownComponent } from 'ngx-markdown';
 import { map } from 'rxjs';
 
 import { createDocsCodeCopyIcons } from './docs-code-copy-icons';
 import type { DocsMarkdownState } from './docs-markdown-cache';
 import { DocsMarkdownCache } from './docs-markdown-cache';
-import { copyText, decorateMarkdownHeadingIds, shouldLetBrowserHandleLink } from './docs-page-utils';
+import { copyText, decorateMarkdownHeadingIds, highlightMarkdownCode, shouldLetBrowserHandleLink } from './docs-page-utils';
 import { DocsTopicExample } from './docs-topic-example';
 import { findDocsTopicContent } from './docs-topics';
 import { findShowcaseDoc } from '../../showcase-navigation';
@@ -32,7 +31,7 @@ const CODE_COPY_RESET_DELAY_MS = 2000;
 
 @Component({
   selector: 'app-docs-page',
-  imports: [DocsTopicExample, MarkdownComponent, RouterLink],
+  imports: [DocsTopicExample, RouterLink],
   templateUrl: './docs-page.html',
   styleUrl: './docs-page.css'
 })
@@ -66,6 +65,16 @@ export class DocsPage {
       const markdownPaths = this.doc().markdownPaths;
 
       untracked(() => this.docsMarkdownCache.preload(markdownPaths));
+    });
+
+    effect(() => {
+      const hasRenderedMarkdown = this.topic().blocks.some(
+        (block) => block.kind === 'markdown' && this.docsMarkdownCache.getState(block.markdownPath).status === 'loaded'
+      );
+
+      if (hasRenderedMarkdown) {
+        untracked(() => this.decorateCodeBlocks());
+      }
     });
   }
 
@@ -126,10 +135,12 @@ export class DocsPage {
       codeBlock.classList.add(CODE_COPY_BLOCK_CLASS);
       codeBlock.append(button);
     }
+
+    highlightMarkdownCode(container);
   }
 
   private copyDocsCodeBlock(button: HTMLButtonElement, code: HTMLElement): void {
-    void copyText(this.document, code.textContent).then((copied) => this.setCopyButtonState(button, copied));
+    void copyText(this.document, code.textContent.replace(/\n$/, '')).then((copied) => this.setCopyButtonState(button, copied));
   }
 
   private scrollToCurrentFragment(): void {
