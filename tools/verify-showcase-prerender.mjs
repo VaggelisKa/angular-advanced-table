@@ -44,6 +44,8 @@ assertNotBlankShell(quickStartHtml, quickStartRoute);
 assertContains(quickStartHtml, 'Start with', quickStartRoute);
 assertContains(quickStartHtml, 'First Table', quickStartRoute);
 assertContains(quickStartHtml, 'Angular Advanced Table Docs', quickStartRoute);
+assertContains(quickStartHtml, 'property="og:url"', quickStartRoute);
+assertContains(quickStartHtml, 'content="/docs/quick-start"', quickStartRoute);
 
 const docsIndexHtml = readRouteHtml('docs');
 

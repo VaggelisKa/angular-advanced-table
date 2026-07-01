@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, Injector, afterNextRender, inject, signal } from '@angular/core';
+import { Injectable, afterNextRender, inject, signal } from '@angular/core';
 
 export type ShowcaseTheme = 'light' | 'dark';
 
@@ -38,18 +38,14 @@ const readInitialTheme = (): ShowcaseTheme => {
 })
 export class ShowcaseThemeStore {
   private readonly document = inject(DOCUMENT);
-  private readonly injector = inject(Injector);
   private readonly themeState = signal<ShowcaseTheme>('light');
 
   public readonly theme = this.themeState.asReadonly();
 
   public constructor() {
-    afterNextRender(
-      {
-        write: () => this.setThemeState(readInitialTheme())
-      },
-      { injector: this.injector }
-    );
+    afterNextRender({
+      write: () => this.setThemeState(readInitialTheme())
+    });
   }
 
   public setTheme(theme: ShowcaseTheme): void {

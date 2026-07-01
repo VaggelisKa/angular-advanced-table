@@ -6,6 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { DocsPage } from './docs-page';
+import { highlightMarkdownCode } from './docs-page-utils';
 
 async function waitForMarkdownRender(fixture: { detectChanges(): void; whenStable(): Promise<unknown> }): Promise<void> {
   for (let cycle = 0; cycle < 3; cycle += 1) {
@@ -202,6 +203,22 @@ describe('FEATURE: DocsPage', () => {
 
         expect(highlightCalls).toBeGreaterThan(0);
         expect(compiled.querySelector('.docs-markdown .token.keyword')?.textContent).toBe('readonly');
+      });
+    });
+  });
+
+  describe('GIVEN: a markdown code block has already been highlighted', () => {
+    describe('WHEN: markdown decoration runs again', () => {
+      it('THEN: it does not highlight the same code block twice', () => {
+        const container = document.createElement('div');
+
+        container.innerHTML = '<div class="docs-markdown"><pre><code class="language-ts">readonly rows = [];</code></pre></div>';
+
+        highlightMarkdownCode(container);
+        highlightMarkdownCode(container);
+
+        expect(highlightCalls).toBe(1);
+        expect(container.querySelectorAll('.token .token')).toHaveLength(0);
       });
     });
   });

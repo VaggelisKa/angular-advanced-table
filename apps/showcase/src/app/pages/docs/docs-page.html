@@ -32,7 +32,7 @@
             markdownState(block.markdownPath).status === 'idle' || markdownState(block.markdownPath).status === 'loading'
               ? 'true'
               : null
-          "
+      "
       class="docs-markdown docs-topic-block">
       @if (markdownState(block.markdownPath).status === 'loaded') {
       <div [innerHTML]="markdownState(block.markdownPath).trustedHtml"></div>

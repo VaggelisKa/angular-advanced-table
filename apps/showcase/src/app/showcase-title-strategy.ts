@@ -6,6 +6,7 @@ import type { ActivatedRouteSnapshot, Data, RouterStateSnapshot } from '@angular
 const DEFAULT_SHOWCASE_TITLE = 'Angular Advanced Table';
 const DEFAULT_SHOWCASE_DESCRIPTION = 'Angular Advanced Table documentation and interactive examples.';
 const DEFAULT_OPEN_GRAPH_TYPE = 'website';
+const DEFAULT_OPEN_GRAPH_URL = '/';
 
 type ShowcaseRouteMetaData = {
   readonly description?: unknown;
@@ -35,6 +36,13 @@ function normalizeMetaContent(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.trim() ? value : fallback;
 }
 
+function normalizeOpenGraphUrl(url: string): string {
+  const [routeUrl = DEFAULT_OPEN_GRAPH_URL] = url.split('#', 1);
+  const normalizedRouteUrl = routeUrl || DEFAULT_OPEN_GRAPH_URL;
+
+  return normalizedRouteUrl.startsWith('/') ? normalizedRouteUrl : `/${normalizedRouteUrl}`;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ShowcaseTitleStrategy extends TitleStrategy {
   private readonly title = inject(Title);
@@ -45,11 +53,13 @@ export class ShowcaseTitleStrategy extends TitleStrategy {
     const routeData = readRouteMetaData(findDeepestPrimaryRoute(snapshot.root).data);
     const description = normalizeMetaContent(routeData.description, DEFAULT_SHOWCASE_DESCRIPTION);
     const ogType = normalizeMetaContent(routeData.ogType, DEFAULT_OPEN_GRAPH_TYPE);
+    const ogUrl = normalizeOpenGraphUrl(snapshot.url);
 
     this.title.setTitle(title);
     this.meta.updateTag({ name: 'description', content: description });
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:type', content: ogType });
+    this.meta.updateTag({ property: 'og:url', content: ogUrl });
   }
 }

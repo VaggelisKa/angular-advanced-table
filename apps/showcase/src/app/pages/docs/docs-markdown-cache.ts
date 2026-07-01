@@ -1,6 +1,6 @@
 import { isPlatformServer } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Injectable, PLATFORM_ID, TransferState, inject, makeStateKey, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, SecurityContext, TransferState, inject, makeStateKey, signal } from '@angular/core';
 import type { StateKey } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import type { SafeHtml } from '@angular/platform-browser';
@@ -8,6 +8,7 @@ import type { SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 
 import { renderMarkdownToHtml } from './docs-markdown-renderer';
+import type { RenderedMarkdownHeading } from './docs-markdown-renderer';
 
 export type DocsMarkdownStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -25,6 +26,22 @@ const EMPTY_DOCS_MARKDOWN_STATE: DocsMarkdownState = {
 };
 
 export const getDocsHtmlTransferStateKey = (markdownPath: string): StateKey<string> => makeStateKey(`docs-html:${markdownPath}`);
+
+const restoreSanitizedHeadingIds = (html: string, headings: readonly RenderedMarkdownHeading[]): string => {
+  let headingIndex = 0;
+
+  return html.replace(/<h([1-6])>/g, (match: string, depth: string) => {
+    if (headingIndex >= headings.length || headings[headingIndex].depth !== Number(depth)) {
+      return match;
+    }
+
+    const heading = headings[headingIndex];
+
+    headingIndex += 1;
+
+    return `<h${depth} id="${heading.id}">`;
+  });
+};
 
 @Injectable({ providedIn: 'root' })
 export class DocsMarkdownCache {
@@ -89,10 +106,15 @@ export class DocsMarkdownCache {
     });
   }
 
+  private sanitizeRenderedMarkdown(html: string, headings: readonly RenderedMarkdownHeading[]): string {
+    return restoreSanitizedHeadingIds(this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '', headings);
+  }
+
   private async loadRenderedMarkdown(markdownPath: string, previousHtml: string, transferStateKey: StateKey<string>): Promise<void> {
     try {
       const markdown = await firstValueFrom(this.http.get(markdownPath, { responseType: 'text' }));
-      const html = renderMarkdownToHtml(markdown);
+      const renderedMarkdown = renderMarkdownToHtml(markdown);
+      const html = this.sanitizeRenderedMarkdown(renderedMarkdown.html, renderedMarkdown.headings);
 
       if (this.isServer) {
         this.transferState.set(transferStateKey, html);

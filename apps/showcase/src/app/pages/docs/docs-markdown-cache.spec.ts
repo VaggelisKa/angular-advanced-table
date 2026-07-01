@@ -46,7 +46,7 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
-          html: '<h1 id="quick-start">Quick start</h1>\n<p>Loaded <strong>markdown</strong> docs.</p>\n'
+          html: '<h1 id="quick-start">Quick start</h1>&#10;<p>Loaded <strong>markdown</strong> docs.</p>&#10;'
         });
       });
     });
@@ -62,15 +62,15 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
-          html: '<h2 id="first-table">First Table</h2>\n<h2 id="first-table-2">First Table</h2>\n'
+          html: '<h2 id="first-table">First Table</h2>&#10;<h2 id="first-table-2">First Table</h2>&#10;'
         });
       });
     });
   });
 
   describe('GIVEN: a docs markdown cache receives raw markdown HTML', () => {
-    describe('WHEN: it renders markdown to trusted HTML', () => {
-      it('THEN: it escapes raw HTML before exposing the rendered output', async () => {
+    describe('WHEN: it renders markdown to sanitized HTML', () => {
+      it('THEN: it preserves safe raw HTML in the rendered output', async () => {
         cache.load('/docs/quick-start.md');
 
         http.expectOne('/docs/quick-start.md').flush('Press <kbd>Shift</kbd> to extend sorting.');
@@ -78,15 +78,15 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
-          html: '<p>Press &lt;kbd&gt;Shift&lt;/kbd&gt; to extend sorting.</p>\n'
+          html: '<p>Press <kbd>Shift</kbd> to extend sorting.</p>&#10;'
         });
       });
     });
   });
 
   describe('GIVEN: a docs markdown cache receives markdown links', () => {
-    describe('WHEN: it renders links before trusting HTML', () => {
-      it('THEN: it keeps safe links and removes unsafe link targets', async () => {
+    describe('WHEN: it renders links before trusting sanitized HTML', () => {
+      it('THEN: it keeps safe links and marks unsafe link targets', async () => {
         cache.load('/docs/quick-start.md');
 
         http.expectOne('/docs/quick-start.md').flush('Read [state](/docs/state) and [unsafe](javascript:alert(1)).');
@@ -94,7 +94,7 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
-          html: '<p>Read <a href="/docs/state">state</a> and unsafe.</p>\n'
+          html: '<p>Read <a href="/docs/state">state</a> and <a href="unsafe:javascript:alert(1)">unsafe</a>.</p>&#10;'
         });
       });
     });
@@ -135,7 +135,7 @@ describe('FEATURE: DocsMarkdownCache', () => {
         http.expectNone('/docs/quick-start.md');
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
-          html: '<h1 id="quick-start">Quick start</h1>\n'
+          html: '<h1 id="quick-start">Quick start</h1>&#10;'
         });
       });
     });
@@ -171,7 +171,7 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
-          html: '<h1 id="quick-start">Quick start</h1>\n'
+          html: '<h1 id="quick-start">Quick start</h1>&#10;'
         });
       });
     });

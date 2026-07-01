@@ -2,9 +2,12 @@ const MARKDOWN_HEADING_SELECTOR = '.docs-markdown h2, .docs-markdown h3, .docs-m
 
 type PrismGlobal = typeof globalThis & {
   Prism?: {
-    highlightAllUnder(element: Element | Document): void;
+    highlightElement?(element: Element): void;
+    highlightAllUnder?(element: Element | Document): void;
   };
 };
+
+const HIGHLIGHTED_CODE_SELECTOR = 'code[class*="language-"]:not([data-docs-prism-highlighted])';
 
 export function shouldLetBrowserHandleLink(event: MouseEvent): boolean {
   return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
@@ -54,12 +57,21 @@ export function decorateMarkdownHeadingIds(container: HTMLElement): void {
 
 export function highlightMarkdownCode(container: HTMLElement): void {
   const prism = (globalThis as PrismGlobal).Prism;
+  const codeElements = Array.from(container.querySelectorAll<HTMLElement>(HIGHLIGHTED_CODE_SELECTOR));
 
-  if (typeof prism?.highlightAllUnder !== 'function') {
+  if (!prism || (!prism.highlightElement && !prism.highlightAllUnder)) {
     return;
   }
 
-  prism.highlightAllUnder(container);
+  for (const codeElement of codeElements) {
+    if (typeof prism.highlightElement === 'function') {
+      prism.highlightElement(codeElement);
+    } else if (typeof prism.highlightAllUnder === 'function') {
+      prism.highlightAllUnder(codeElement.parentElement ?? codeElement);
+    }
+
+    codeElement.setAttribute('data-docs-prism-highlighted', '');
+  }
 }
 
 function copyTextWithSelection(document: Document, text: string): boolean {

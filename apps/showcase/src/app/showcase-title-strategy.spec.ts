@@ -5,8 +5,9 @@ import type { RouterStateSnapshot } from '@angular/router';
 
 import { ShowcaseTitleStrategy } from './showcase-title-strategy';
 
-const createSnapshot = (data: Record<string, unknown>): RouterStateSnapshot =>
+const createSnapshot = (data: Record<string, unknown>, url = '/docs/quick-start'): RouterStateSnapshot =>
   ({
+    url,
     root: {
       outlet: PRIMARY_OUTLET,
       data: {},
@@ -41,10 +42,13 @@ describe('FEATURE: ShowcaseTitleStrategy', () => {
         vi.spyOn(strategy, 'buildTitle').mockReturnValue('Quick start | Angular Advanced Table Docs');
 
         strategy.updateTitle(
-          createSnapshot({
-            description: 'Install and first table',
-            ogType: 'article'
-          })
+          createSnapshot(
+            {
+              description: 'Install and first table',
+              ogType: 'article'
+            },
+            '/docs/quick-start#install'
+          )
         );
 
         expect(title.getTitle()).toBe('Quick start | Angular Advanced Table Docs');
@@ -52,6 +56,7 @@ describe('FEATURE: ShowcaseTitleStrategy', () => {
         expect(meta.getTag('property="og:title"')?.content).toBe('Quick start | Angular Advanced Table Docs');
         expect(meta.getTag('property="og:description"')?.content).toBe('Install and first table');
         expect(meta.getTag('property="og:type"')?.content).toBe('article');
+        expect(meta.getTag('property="og:url"')?.content).toBe('/docs/quick-start');
       });
     });
   });

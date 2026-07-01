@@ -48,13 +48,6 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     markdownPaths: ['/docs/columns.md']
   },
   {
-    id: 'sticky-header-alternatives',
-    label: 'Sticky header alternatives',
-    description: 'Scrolling, max-height, and pagination',
-    path: '/docs/sticky-header-alternatives',
-    markdownPaths: ['/docs/sticky-header-alternatives.md']
-  },
-  {
     id: 'state',
     label: 'State',
     description: 'Controlled and uncontrolled slices',
@@ -238,8 +231,7 @@ const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
       getShowcaseDoc('pagination'),
       getShowcaseDoc('column-layout'),
       getShowcaseDoc('row-selection'),
-      getShowcaseDoc('toolbar-actions'),
-      getShowcaseDoc('sticky-header-alternatives')
+      getShowcaseDoc('toolbar-actions')
     ]
   },
   {

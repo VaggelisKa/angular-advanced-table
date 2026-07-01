@@ -107,7 +107,10 @@ describe('FEATURE: docs topic example code tabs', () => {
         const codeTab = queryRequiredElement<HTMLButtonElement>(compiled, '#docs-example-pagination-code-tab');
         const previewPanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-preview-panel');
         const codePanel = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-code-panel');
+        const heading = queryRequiredElement<HTMLElement>(compiled, '#docs-example-pagination-title');
 
+        expect(heading.getAttribute('data-testid')).toBe('docs-example-pagination-title');
+        expect(previewPanel.getAttribute('data-testid')).toBe('docs-example-pagination-preview-panel');
         expect(previewTab.getAttribute('aria-controls')).toBe(previewPanel.id);
         expect(codeTab.getAttribute('aria-controls')).toBe(codePanel.id);
         expect(previewPanel.hidden).toBe(false);
