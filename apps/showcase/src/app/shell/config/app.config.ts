@@ -5,7 +5,7 @@ import { TitleStrategy, provideRouter, withInMemoryScrolling } from '@angular/ro
 
 import { provideNatTableControlsLocales, provideNatTableLocales, provideNatTableRenderMetricsLocales } from 'ng-advanced-table/locale';
 
-import { AppTitleStrategy } from '../domain-logic/app.title-strategy';
+import { AppTitleStrategy } from '../app.title-strategy';
 import { routes } from '../routing/app.routes';
 
 export const appConfig: ApplicationConfig = {

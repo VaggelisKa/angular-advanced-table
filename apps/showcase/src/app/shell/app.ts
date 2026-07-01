@@ -3,9 +3,9 @@ import type { ElementRef } from '@angular/core';
 import { Component, Injector, afterNextRender, inject, signal, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { resolveFocusTrapTarget } from './utils/app.util';
-import type { ShowcaseTheme } from '../common/showcase-theme.type';
-import { ShowcaseThemeStore } from '../domain-logic/showcase-theme';
+import { resolveFocusTrapTarget } from './app.util';
+import { ShowcaseThemeStore } from '../theme/showcase-theme';
+import type { ShowcaseTheme } from '../theme/showcase-theme.type';
 import { NavTree } from './nav-tree/nav-tree';
 
 @Component({

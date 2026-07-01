@@ -74,54 +74,54 @@ export const routes: Routes = [
     pathMatch: 'full',
     title: multipleFeaturesRoute.title,
     data: getRouteData(multipleFeaturesRoute),
-    loadComponent: async () => import('../../table-showcase/table-showcase').then((module) => module.TableShowcase)
+    loadComponent: async () => import('../../gallery/table-showcase/table-showcase').then((module) => module.TableShowcase)
   },
   {
     path: multipleFeaturesRoute.path,
     title: multipleFeaturesRoute.title,
     data: getRouteData(multipleFeaturesRoute),
-    loadComponent: async () => import('../../table-showcase/table-showcase').then((module) => module.TableShowcase)
+    loadComponent: async () => import('../../gallery/table-showcase/table-showcase').then((module) => module.TableShowcase)
   },
   {
     path: builderRoute.path,
     title: builderRoute.title,
     data: getRouteData(builderRoute),
-    loadComponent: async () => import('../../table-builder/table-builder').then((module) => module.TableBuilderPage)
+    loadComponent: async () => import('../../gallery/table-builder/table-builder').then((module) => module.TableBuilderPage)
   },
   {
     path: stickyHeaderMaxHeightRoute.path,
     title: stickyHeaderMaxHeightRoute.title,
     data: getRouteData(stickyHeaderMaxHeightRoute),
     loadComponent: async () =>
-      import('../../feature/sticky-header-max-height/sticky-header-max-height').then((module) => module.StickyHeaderMaxHeight)
+      import('../../gallery/sticky-header-max-height/sticky-header-max-height').then((module) => module.StickyHeaderMaxHeight)
   },
   {
     path: paginationStickyAltRoute.path,
     title: paginationStickyAltRoute.title,
     data: getRouteData(paginationStickyAltRoute),
     loadComponent: async () =>
-      import('../../feature/pagination-sticky-alt/pagination-sticky-alt').then((module) => module.PaginationStickyAlt)
+      import('../../gallery/pagination-sticky-alt/pagination-sticky-alt').then((module) => module.PaginationStickyAlt)
   },
   {
     path: stickyNoOverflowXRoute.path,
     title: stickyNoOverflowXRoute.title,
     data: getRouteData(stickyNoOverflowXRoute),
     loadComponent: async () =>
-      import('../../feature/sticky-no-overflow-x/sticky-no-overflow-x').then((module) => module.StickyNoOverflowX)
+      import('../../gallery/sticky-no-overflow-x/sticky-no-overflow-x').then((module) => module.StickyNoOverflowX)
   },
   {
     path: stickyShowDetailedViewRoute.path,
     title: stickyShowDetailedViewRoute.title,
     data: getRouteData(stickyShowDetailedViewRoute),
     loadComponent: async () =>
-      import('../../feature/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
+      import('../../gallery/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
   },
   {
     path: stickyShowDetailedViewDetailsRoute.path,
     title: stickyShowDetailedViewDetailsRoute.title,
     data: getRouteData(stickyShowDetailedViewDetailsRoute),
     loadComponent: async () =>
-      import('../../feature/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
+      import('../../gallery/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
   },
   {
     path: '**',
