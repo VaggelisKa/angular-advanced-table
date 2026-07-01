@@ -18,7 +18,7 @@ npm install ng-advanced-table @angular/core @angular/common @angular/aria @angul
 
 `@tanstack/angular-table` ships as a runtime dependency of `ng-advanced-table`. Install it directly only when your app imports TanStack APIs or types from `@tanstack/angular-table`.
 
-Published `catalog:` refs currently resolve to these install requirements:
+Resolved published ranges and dependency classifications:
 
 | Package                   | Published range | Classification                                                |
 | ------------------------- | --------------- | ------------------------------------------------------------- |
