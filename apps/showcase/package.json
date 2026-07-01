@@ -10,16 +10,17 @@
     "@angular/core": "catalog:frontend",
     "@angular/forms": "catalog:frontend",
     "@angular/platform-browser": "catalog:frontend",
+    "@angular/platform-server": "catalog:frontend",
     "@angular/router": "catalog:frontend",
+    "@angular/ssr": "catalog:frontend",
     "@tanstack/angular-table": "catalog:frontend",
-    "katex": "catalog:frontend",
-    "marked": "catalog:frontend",
-    "marked-katex-extension": "catalog:frontend",
-    "ngx-markdown": "catalog:frontend",
     "prismjs": "catalog:frontend",
     "rxjs": "catalog:frontend",
     "tslib": "catalog:shared",
     "ng-advanced-table": "workspace:*"
+  },
+  "devDependencies": {
+    "marked": "catalog:frontend-dev"
   },
   "nx": {
     "name": "showcase",
@@ -33,7 +34,9 @@
     ],
     "targets": {
       "build": {
-        "dependsOn": [],
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:application",
         "outputs": [
           "{options.outputPath}"
@@ -41,6 +44,8 @@
         "options": {
           "outputPath": "dist/apps/showcase",
           "browser": "apps/showcase/src/main.ts",
+          "server": "apps/showcase/src/main.server.ts",
+          "outputMode": "static",
           "tsConfig": "apps/showcase/tsconfig.app.json",
           "assets": [
             {
@@ -69,7 +74,7 @@
             "budgets": [
               {
                 "type": "initial",
-                "maximumWarning": "500kB",
+                "maximumWarning": "1MB",
                 "maximumError": "1MB"
               },
               {
@@ -87,6 +92,16 @@
           }
         },
         "defaultConfiguration": "production"
+      },
+      "generate-docs": {
+        "executor": "nx:run-commands",
+        "outputs": [
+          "{workspaceRoot}/apps/showcase/src/app/pages/docs/docs-html-registry.ts"
+        ],
+        "options": {
+          "command": "node tools/generate-showcase-docs.mjs",
+          "cwd": "{workspaceRoot}"
+        }
       },
       "serve": {
         "executor": "@angular/build:dev-server",
@@ -114,6 +129,9 @@
         "defaultConfiguration": "development"
       },
       "test": {
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:unit-test",
         "options": {
           "tsConfig": "apps/showcase/tsconfig.spec.json"

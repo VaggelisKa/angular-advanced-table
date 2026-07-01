@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Column pinning accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/column-layout');
+    await loadDocsExamplePreview(page, 'column-pinning', 'Column pinning');
   });
 
   test.describe('GIVEN: the column pinning example is loaded', () => {

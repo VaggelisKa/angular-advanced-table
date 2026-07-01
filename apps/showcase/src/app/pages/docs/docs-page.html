@@ -7,9 +7,7 @@
     <p class="description">{{ doc().description }}</p>
   </header>
 
-  @if (loadFailed()) {
-  <p class="docs-error" role="alert">Documentation could not be loaded.</p>
-  } @if (topic().contents; as contents) { @if (contents.length) {
+  @if (topic().contents; as contents) { @if (contents.length) {
   <nav aria-label="On this page" class="docs-topic-toc">
     <span class="docs-topic-toc-label">On this page</span>
     <div class="docs-topic-toc-links">
@@ -26,17 +24,9 @@
   } }
 
   <section #markdownContainer aria-labelledby="docs-page-title" class="docs-topic-body">
-    @for (block of topic().blocks; track block.id) { @switch (block.kind) { @case ('markdown') {
-    <section
-      [attr.aria-busy]="
-            markdownState(block.markdownPath).status === 'idle' || markdownState(block.markdownPath).status === 'loading'
-              ? 'true'
-              : null
-          "
-      class="docs-markdown docs-topic-block">
-      @if (markdownState(block.markdownPath).status === 'loaded') {
-      <markdown [data]="markdownState(block.markdownPath).content" (ready)="decorateCodeBlocks()" />
-      }
+    @for (block of renderedBlocks(); track block.id) { @switch (block.kind) { @case ('markdown') {
+    <section class="docs-markdown docs-topic-block">
+      <div [innerHTML]="block.trustedHtml"></div>
     </section>
     } @case ('example') {
     <app-docs-topic-example [example]="block" />

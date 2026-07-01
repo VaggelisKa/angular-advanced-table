@@ -1,24 +1,33 @@
+/* eslint-disable max-lines -- docs page owns route selection, generated HTML decoration, and code-copy behavior */
 import { DOCUMENT } from '@angular/common';
-import { Component, computed, effect, inject, untracked, viewChild } from '@angular/core';
+import { Component, Injector, SecurityContext, afterNextRender, computed, effect, inject, untracked, viewChild } from '@angular/core';
 import type { ElementRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { DomSanitizer } from '@angular/platform-browser';
+import type { SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { Data } from '@angular/router';
 
-import { MarkdownComponent } from 'ngx-markdown';
 import { map } from 'rxjs';
 
 import { createDocsCodeCopyIcons } from './docs-code-copy-icons';
-import type { DocsMarkdownState } from './docs-markdown-cache';
-import { DocsMarkdownCache } from './docs-markdown-cache';
-import { copyText, decorateMarkdownHeadingIds, shouldLetBrowserHandleLink } from './docs-page-utils';
+import { findDocsHtmlEntry } from './docs-html-registry';
+import type { DocsHtmlHeading } from './docs-html-registry';
+import { copyText, highlightMarkdownCode, shouldLetBrowserHandleLink } from './docs-page-utils';
 import { DocsTopicExample } from './docs-topic-example';
+import type { DocsMarkdownBlock, DocsTopicBlock, DocsTopicExampleBlock } from './docs-topic.types';
 import { findDocsTopicContent } from './docs-topics';
 import { findShowcaseDoc } from '../../showcase-navigation';
 
 type DocsRouteData = {
   readonly docId?: unknown;
 };
+
+type RenderedDocsMarkdownBlock = DocsMarkdownBlock & {
+  readonly trustedHtml: SafeHtml;
+};
+
+type RenderedDocsTopicBlock = RenderedDocsMarkdownBlock | DocsTopicExampleBlock;
 
 const readDocsRouteData = (data: Data): DocsRouteData => ({ docId: data['docId'] });
 const CODE_COPY_BUTTON_SELECTOR = '[data-docs-code-copy]';
@@ -30,17 +39,34 @@ const CODE_COPY_LABEL = 'Copy code block';
 const CODE_COPIED_LABEL = 'Copied code block';
 const CODE_COPY_RESET_DELAY_MS = 2000;
 
+const restoreSanitizedHeadingIds = (html: string, headings: readonly DocsHtmlHeading[]): string => {
+  let headingIndex = 0;
+
+  return html.replace(/<h([1-6])>/g, (match: string, depth: string) => {
+    if (headingIndex >= headings.length || headings[headingIndex].depth !== Number(depth)) {
+      return match;
+    }
+
+    const heading = headings[headingIndex];
+
+    headingIndex += 1;
+
+    return `<h${depth} id="${heading.id}">`;
+  });
+};
+
 @Component({
   selector: 'app-docs-page',
-  imports: [DocsTopicExample, MarkdownComponent, RouterLink],
+  imports: [DocsTopicExample, RouterLink],
   templateUrl: './docs-page.html',
   styleUrl: './docs-page.css'
 })
 export class DocsPage {
   private readonly document = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly docsMarkdownCache = inject(DocsMarkdownCache);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly markdownContainer = viewChild<ElementRef<HTMLElement>>('markdownContainer');
   private readonly copiedResetTimers = new WeakMap<HTMLButtonElement, ReturnType<typeof setTimeout>>();
   private readonly routeData = toSignal(this.route.data.pipe(map(readDocsRouteData)), {
@@ -54,22 +80,19 @@ export class DocsPage {
   });
 
   protected readonly topic = computed(() => findDocsTopicContent(this.doc().id));
-  protected readonly loadFailed = computed(() =>
-    this.topic().blocks.some(
-      (block) => block.kind === 'markdown' && this.docsMarkdownCache.getState(block.markdownPath).status === 'error'
-    )
+
+  protected readonly renderedBlocks = computed<readonly RenderedDocsTopicBlock[]>(() =>
+    this.topic().blocks.map((block) => this.renderTopicBlock(block))
   );
 
   public constructor() {
     effect(() => {
-      const markdownPaths = this.doc().markdownPaths;
+      const hasRenderedMarkdown = this.renderedBlocks().some((block) => block.kind === 'markdown');
 
-      untracked(() => this.docsMarkdownCache.preload(markdownPaths));
+      if (hasRenderedMarkdown) {
+        untracked(() => this.decorateCodeBlocks());
+      }
     });
-  }
-
-  protected markdownState(markdownPath: string): DocsMarkdownState {
-    return this.docsMarkdownCache.getState(markdownPath);
   }
 
   protected tableOfContentsHref(path: string): string {
@@ -89,13 +112,36 @@ export class DocsPage {
   }
 
   protected decorateCodeBlocks(): void {
+    afterNextRender({ write: () => this.decorateRenderedMarkdown() }, { injector: this.injector });
+  }
+
+  private renderTopicBlock(block: DocsTopicBlock): RenderedDocsTopicBlock {
+    if (block.kind === 'example') {
+      return block;
+    }
+
+    const entry = findDocsHtmlEntry(block.markdownPath);
+
+    if (!entry) {
+      throw new Error(`Missing generated docs HTML for ${block.markdownPath}`);
+    }
+
+    const sanitizedHtml = this.sanitizer.sanitize(SecurityContext.HTML, entry.html) ?? '';
+    const html = restoreSanitizedHeadingIds(sanitizedHtml, entry.headings);
+
+    return {
+      ...block,
+      trustedHtml: this.sanitizer.bypassSecurityTrustHtml(html)
+    };
+  }
+
+  private decorateRenderedMarkdown(): void {
     const container = this.markdownContainer()?.nativeElement;
 
     if (!container) {
       return;
     }
 
-    decorateMarkdownHeadingIds(container);
     this.scrollToCurrentFragment();
 
     for (const codeBlock of Array.from(container.querySelectorAll('.docs-markdown pre'))) {
@@ -121,10 +167,12 @@ export class DocsPage {
       codeBlock.classList.add(CODE_COPY_BLOCK_CLASS);
       codeBlock.append(button);
     }
+
+    highlightMarkdownCode(container);
   }
 
   private copyDocsCodeBlock(button: HTMLButtonElement, code: HTMLElement): void {
-    void copyText(this.document, code.textContent).then((copied) => this.setCopyButtonState(button, copied));
+    void copyText(this.document, code.textContent.replace(/\n$/, '')).then((copied) => this.setCopyButtonState(button, copied));
   }
 
   private scrollToCurrentFragment(): void {

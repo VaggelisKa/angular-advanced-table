@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Sorting accessibility', () => {
   test.describe('GIVEN: the sorting example is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/sorting');
+      await loadDocsExamplePreview(page, 'sorting', 'Single and multi-column sorting');
     });
 
     test.describe('WHEN: programmatic sort buttons are activated via keyboard', () => {

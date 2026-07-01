@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Column reordering', () => {
   const visibleColumnIds = async (page: Page): Promise<string[]> =>
     page
@@ -10,6 +12,7 @@ test.describe('FEATURE: Column reordering', () => {
   test.describe('GIVEN: the reordering example is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/column-layout');
+      await loadDocsExamplePreview(page, 'column-reordering', 'Column reordering');
     });
 
     test.describe('WHEN: a column header is focused and Mod+Shift+ArrowRight is pressed', () => {

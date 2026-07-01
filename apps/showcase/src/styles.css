@@ -1,14 +1,88 @@
 :root {
-  --showcase-document-bg: #f6f7f9;
-  --showcase-document-text: #0f1419;
+  --showcase-page-bg: #f6f7f9;
+  --showcase-page-text: #0f1419;
+  --showcase-page-text-soft: #5b6672;
+
+  /* WCAG AA: >=4.5:1 on white and on --showcase-page-surface-muted (#f4f5f7). */
+  --showcase-page-text-muted: #646e7b;
+  --showcase-page-surface: #fff;
+  --showcase-page-surface-elevated: #fff;
+  --showcase-page-surface-contrast: #fafbfc;
+  --showcase-page-surface-muted: #f4f5f7;
+  --showcase-page-surface-hover: #f1f3f5;
+  --showcase-page-border: #e4e7eb;
+  --showcase-page-border-strong: #d4d8dd;
+  --showcase-page-accent: #1f6feb;
+  --showcase-page-accent-strong: #1354c9;
+  --showcase-page-accent-soft: #e7f0fe;
+  --showcase-page-positive: #127a3b;
+  --showcase-page-negative: #b42318;
+  --showcase-page-warning: #9a6700;
+  --showcase-page-focus: rgb(31 111 235 / 32%);
+  --showcase-code-bg: #f8fafc;
+  --showcase-code-border: #d8dee7;
+  --showcase-code-text: #24292f;
+  --showcase-code-inline-bg: #eef2f7;
+  --showcase-code-token-comment: #57606a;
+  --showcase-code-token-punctuation: #57606a;
+  --showcase-code-token-keyword: #cf222e;
+  --showcase-code-token-string: #116329;
+  --showcase-code-token-function: #8250df;
+  --showcase-code-token-class: #953800;
+  --showcase-code-token-number: #0550ae;
+  --showcase-code-token-property: #0550ae;
+  --showcase-code-token-operator: #57606a;
+  --showcase-code-token-tag: #116329;
+  --showcase-page-radius: 10px;
+  --showcase-page-radius-sm: 6px;
+  --showcase-page-radius-xs: 4px;
+  --showcase-page-mono-font: 'JetBrains Mono', 'SFMono-Regular', menlo, monaco, consolas, ui-monospace, monospace;
+  --showcase-page-shadow: 0 1px 2px rgb(15 20 25 / 4%), 0 8px 24px rgb(15 20 25 / 6%);
+  --showcase-page-shadow-sm: 0 1px 2px rgb(15 20 25 / 4%);
+  --showcase-document-bg: var(--showcase-page-bg);
+  --showcase-document-text: var(--showcase-page-text);
 
   color-scheme: light;
   background: var(--showcase-document-bg);
 }
 
 :root[data-theme='dark'] {
-  --showcase-document-bg: #0b0d10;
-  --showcase-document-text: #e6eaef;
+  --showcase-page-bg: #0b0d10;
+  --showcase-page-text: #e6eaef;
+  --showcase-page-text-soft: #9aa4b1;
+
+  /* WCAG AA: >=4.5:1 on dark surfaces (#14171c, #1a1e24). */
+  --showcase-page-text-muted: #7d8794;
+  --showcase-page-surface: #14171c;
+  --showcase-page-surface-elevated: #14171c;
+  --showcase-page-surface-contrast: #1a1e24;
+  --showcase-page-surface-muted: #1a1e24;
+  --showcase-page-surface-hover: #1f242b;
+  --showcase-page-border: #262b33;
+  --showcase-page-border-strong: #343b45;
+  --showcase-page-accent: #4f8bff;
+  --showcase-page-accent-strong: #6a9dff;
+  --showcase-page-accent-soft: #16243f;
+  --showcase-page-positive: #3dd68c;
+  --showcase-page-negative: #f15b5b;
+  --showcase-page-warning: #e5b452;
+  --showcase-page-focus: rgb(79 139 255 / 36%);
+  --showcase-code-bg: #0f1419;
+  --showcase-code-border: #30363d;
+  --showcase-code-text: #d5dbe3;
+  --showcase-code-inline-bg: #1a1e24;
+  --showcase-code-token-comment: #8b949e;
+  --showcase-code-token-punctuation: #c9d1d9;
+  --showcase-code-token-keyword: #ff7b72;
+  --showcase-code-token-string: #a5d6ff;
+  --showcase-code-token-function: #d2a8ff;
+  --showcase-code-token-class: #ffa657;
+  --showcase-code-token-number: #79c0ff;
+  --showcase-code-token-property: #79c0ff;
+  --showcase-code-token-operator: #c9d1d9;
+  --showcase-code-token-tag: #7ee787;
+  --showcase-page-shadow: 0 1px 2px rgb(0 0 0 / 36%), 0 14px 34px rgb(0 0 0 / 28%);
+  --showcase-page-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
 
   color-scheme: dark;
 }
@@ -35,6 +109,9 @@ body {
     sans-serif;
   color: var(--showcase-document-text);
   background: var(--showcase-document-bg);
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -83,94 +160,11 @@ input {
   min-height: 100vh;
   padding: 24px;
   color: var(--showcase-page-text);
-  color-scheme: light;
+  color-scheme: inherit;
   background: var(--showcase-page-bg);
-}
-
-.showcase-shell {
-  --showcase-page-bg: #f6f7f9;
-  --showcase-page-text: #0f1419;
-  --showcase-page-text-soft: #5b6672;
-
-  /* WCAG AA: >=4.5:1 on white and on --showcase-page-surface-muted (#f4f5f7). */
-  --showcase-page-text-muted: #646e7b;
-  --showcase-page-surface: #fff;
-  --showcase-page-surface-elevated: #fff;
-  --showcase-page-surface-contrast: #fafbfc;
-  --showcase-page-surface-muted: #f4f5f7;
-  --showcase-page-surface-hover: #f1f3f5;
-  --showcase-page-border: #e4e7eb;
-  --showcase-page-border-strong: #d4d8dd;
-  --showcase-page-accent: #1f6feb;
-  --showcase-page-accent-strong: #1354c9;
-  --showcase-page-accent-soft: #e7f0fe;
-  --showcase-page-positive: #127a3b;
-  --showcase-page-negative: #b42318;
-  --showcase-page-warning: #9a6700;
-  --showcase-page-focus: rgb(31 111 235 / 32%);
-  --showcase-code-bg: #f8fafc;
-  --showcase-code-border: #d8dee7;
-  --showcase-code-text: #24292f;
-  --showcase-code-inline-bg: #eef2f7;
-  --showcase-code-token-comment: #57606a;
-  --showcase-code-token-punctuation: #57606a;
-  --showcase-code-token-keyword: #cf222e;
-  --showcase-code-token-string: #116329;
-  --showcase-code-token-function: #8250df;
-  --showcase-code-token-class: #953800;
-  --showcase-code-token-number: #0550ae;
-  --showcase-code-token-property: #0550ae;
-  --showcase-code-token-operator: #57606a;
-  --showcase-code-token-tag: #116329;
-  --showcase-page-radius: 10px;
-  --showcase-page-radius-sm: 6px;
-  --showcase-page-radius-xs: 4px;
-  --showcase-page-mono-font: 'JetBrains Mono', 'SFMono-Regular', menlo, monaco, consolas, ui-monospace, monospace;
-  --showcase-page-shadow: 0 1px 2px rgb(15 20 25 / 4%), 0 8px 24px rgb(15 20 25 / 6%);
-  --showcase-page-shadow-sm: 0 1px 2px rgb(15 20 25 / 4%);
-}
-
-.showcase-shell[data-theme='dark'],
-.showcase-shell[data-theme='dark'] .showcase-page,
-.showcase-page[data-theme='dark'] {
-  --showcase-page-bg: #0b0d10;
-  --showcase-page-text: #e6eaef;
-  --showcase-page-text-soft: #9aa4b1;
-
-  /* WCAG AA: >=4.5:1 on dark surfaces (#14171c, #1a1e24). */
-  --showcase-page-text-muted: #7d8794;
-  --showcase-page-surface: #14171c;
-  --showcase-page-surface-elevated: #14171c;
-  --showcase-page-surface-contrast: #1a1e24;
-  --showcase-page-surface-muted: #1a1e24;
-  --showcase-page-surface-hover: #1f242b;
-  --showcase-page-border: #262b33;
-  --showcase-page-border-strong: #343b45;
-  --showcase-page-accent: #4f8bff;
-  --showcase-page-accent-strong: #6a9dff;
-  --showcase-page-accent-soft: #16243f;
-  --showcase-page-positive: #3dd68c;
-  --showcase-page-negative: #f15b5b;
-  --showcase-page-warning: #e5b452;
-  --showcase-page-focus: rgb(79 139 255 / 36%);
-  --showcase-code-bg: #0f1419;
-  --showcase-code-border: #30363d;
-  --showcase-code-text: #d5dbe3;
-  --showcase-code-inline-bg: #1a1e24;
-  --showcase-code-token-comment: #8b949e;
-  --showcase-code-token-punctuation: #c9d1d9;
-  --showcase-code-token-keyword: #ff7b72;
-  --showcase-code-token-string: #a5d6ff;
-  --showcase-code-token-function: #d2a8ff;
-  --showcase-code-token-class: #ffa657;
-  --showcase-code-token-number: #79c0ff;
-  --showcase-code-token-property: #79c0ff;
-  --showcase-code-token-operator: #c9d1d9;
-  --showcase-code-token-tag: #7ee787;
-  --showcase-page-shadow: 0 1px 2px rgb(0 0 0 / 36%), 0 14px 34px rgb(0 0 0 / 28%);
-  --showcase-page-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
-
-  color-scheme: dark;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
 }
 
 .showcase-page.showcase-container {
@@ -1179,5 +1173,12 @@ input {
   .showcase-page .column-control {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .showcase-page {
+    transition: none;
   }
 }

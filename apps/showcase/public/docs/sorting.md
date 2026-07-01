@@ -33,7 +33,7 @@ readonly tableState = signal<Partial<NatTableUserState>>({
 });
 ```
 
-Use the `sorting` array as the source of truth for priority. Header sort buttons add another sorted column when the user holds <kbd>Shift</kbd> while clicking, or <kbd>Shift</kbd> while pressing <kbd>Enter</kbd> on a focused sort button. Programmatic presets should write the same ordered array instead of keeping a separate priority model.
+Use the `sorting` array as the source of truth for priority. Header sort buttons add another sorted column when the user holds `Shift` while clicking, or `Shift` while pressing `Enter` on a focused sort button. Programmatic presets should write the same ordered array instead of keeping a separate priority model.
 
 When multi-sort changes the meaning of the result set, show the priority near the table or in the sorted headers. The bundled header actions render a priority badge for sorted columns when more than one column is active.
 
@@ -43,8 +43,8 @@ Use `withNatTableHeaderActions(...)` when you want the bundled sort behavior, la
 
 ```ts
 import { Component, input } from '@angular/core';
-import { flexRenderComponent } from '@tanstack/angular-table';
-import { type NatTableSortIndicatorContext, withNatTableHeaderActions } from 'ng-advanced-table/ui';
+import { flexRenderComponent, type NatTableSortIndicatorContext } from 'ng-advanced-table';
+import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 @Component({
   selector: 'app-sort-indicator',
@@ -66,7 +66,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 });
 ```
 
-The indicator receives the current `sortState`, resolved column `label`, `ariaSort` token, and TanStack `column`. Keep the indicator visual only; the generated sort button still owns the accessible name and sort action.
+The indicator receives the current `sortState`, resolved column `label`, `ariaSort` token, and column object. Keep the indicator visual only; the generated sort button still owns the accessible name and sort action.
 
 Override individual columns through `column.meta.headerActions` when one column needs a different indicator or should opt out.
 

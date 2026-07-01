@@ -1,48 +1,32 @@
-const MARKDOWN_HEADING_SELECTOR = '.docs-markdown h2, .docs-markdown h3, .docs-markdown h4, .docs-markdown h5, .docs-markdown h6';
+type PrismGlobal = typeof globalThis & {
+  Prism?: {
+    highlightElement?(element: Element): void;
+    highlightAllUnder?(element: Element | Document): void;
+  };
+};
+
+const HIGHLIGHTED_CODE_SELECTOR = 'code[class*="language-"]:not([data-docs-prism-highlighted])';
 
 export function shouldLetBrowserHandleLink(event: MouseEvent): boolean {
   return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function slugifyHeading(text: string): string {
-  return text
-    .trim()
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+export function highlightMarkdownCode(container: HTMLElement): void {
+  const prism = (globalThis as PrismGlobal).Prism;
+  const codeElements = Array.from(container.querySelectorAll<HTMLElement>(HIGHLIGHTED_CODE_SELECTOR));
 
-function getUniqueHeadingId(baseId: string, usedIds: ReadonlySet<string>): string {
-  let id = baseId;
-  let suffix = 2;
-
-  while (usedIds.has(id)) {
-    id = `${baseId}-${suffix}`;
-    suffix += 1;
+  if (!prism || (!prism.highlightElement && !prism.highlightAllUnder)) {
+    return;
   }
 
-  return id;
-}
-
-export function decorateMarkdownHeadingIds(container: HTMLElement): void {
-  const usedIds = new Set(Array.from(container.querySelectorAll<HTMLElement>('[id]')).map((element) => element.id));
-
-  for (const heading of Array.from(container.querySelectorAll<HTMLElement>(MARKDOWN_HEADING_SELECTOR))) {
-    if (heading.id) {
-      continue;
+  for (const codeElement of codeElements) {
+    if (typeof prism.highlightElement === 'function') {
+      prism.highlightElement(codeElement);
+    } else if (typeof prism.highlightAllUnder === 'function') {
+      prism.highlightAllUnder(codeElement.parentElement ?? codeElement);
     }
 
-    const baseId = slugifyHeading(heading.textContent);
-
-    if (!baseId) {
-      continue;
-    }
-
-    const id = getUniqueHeadingId(baseId, usedIds);
-
-    heading.id = id;
-    usedIds.add(id);
+    codeElement.setAttribute('data-docs-prism-highlighted', '');
   }
 }
 

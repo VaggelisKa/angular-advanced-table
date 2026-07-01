@@ -1,7 +1,7 @@
 <section [attr.aria-labelledby]="headingId()" class="docs-example">
   <div class="docs-example-header">
     <div class="docs-example-title-group">
-      <h2 [id]="headingId()" class="docs-example-title">{{ example().title }}</h2>
+      <h2 [attr.data-testid]="headingId()" [id]="headingId()" class="docs-example-title">{{ example().title }}</h2>
       <p class="docs-example-description">{{ example().description }}</p>
     </div>
 
@@ -33,11 +33,29 @@
 
   <div
     [attr.aria-labelledby]="previewTabId()"
+    [attr.data-testid]="previewPanelId()"
     [hidden]="activePanel() !== 'preview'"
     [id]="previewPanelId()"
     class="docs-example-panel"
     role="tabpanel">
+    @defer (on viewport) {
     <ng-container *ngComponentOutlet="example().component" />
+    } @placeholder {
+    <div [attr.data-testid]="previewPlaceholderId()" class="docs-example-preview-placeholder" role="status">
+      {{ example().title }} preview loads when it enters the viewport.
+    </div>
+    } @loading (after 150ms; minimum 300ms) {
+    <div [attr.data-testid]="previewPlaceholderId()" class="docs-example-preview-placeholder" role="status">
+      Loading {{ example().title }} preview.
+    </div>
+    } @error {
+    <div
+      [attr.data-testid]="previewPlaceholderId()"
+      class="docs-example-preview-placeholder docs-example-preview-placeholder--error"
+      role="alert">
+      {{ example().title }} preview could not be loaded.
+    </div>
+    }
   </div>
   <div
     #codePanel
