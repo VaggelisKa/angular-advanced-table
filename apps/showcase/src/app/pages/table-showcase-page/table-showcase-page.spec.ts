@@ -4,7 +4,6 @@ import { TestBed } from '@angular/core/testing';
 
 import { TableShowcasePage } from './table-showcase-page';
 import { TableSimulation } from './table-simulation';
-import { ShowcaseThemeStore } from '../../showcase-theme';
 
 describe('FEATURE: TableShowcasePage', () => {
   let component: TableShowcasePage;
@@ -142,23 +141,12 @@ describe('FEATURE: TableShowcasePage', () => {
 
   describe('GIVEN: the table showcase page is rendered with the shared showcase theme', () => {
     describe('WHEN: inherit the shared showcase theme', () => {
-      it('THEN: it uses the shared showcase theme class', () => {
+      it('THEN: it does not create a second component-level theme source', () => {
         fixture.detectChanges();
 
-        const themeStore = TestBed.inject(ShowcaseThemeStore);
         const demoSurface = query<HTMLDivElement>('.demo-surface');
 
-        expect(demoSurface.getAttribute('data-theme')).toMatch(/^(light|dark)$/);
-
-        themeStore.setTheme('dark');
-        fixture.detectChanges();
-
-        expect(demoSurface.getAttribute('data-theme')).toBe('dark');
-
-        themeStore.setTheme('light');
-        fixture.detectChanges();
-
-        expect(demoSurface.getAttribute('data-theme')).toBe('light');
+        expect(demoSurface.getAttribute('data-theme')).toBeNull();
       });
     });
   });

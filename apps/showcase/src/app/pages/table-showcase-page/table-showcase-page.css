@@ -43,9 +43,7 @@
     color 180ms ease;
 }
 
-:host-context([data-theme='dark']) .demo-surface,
-:host-context(.showcase-shell[data-theme='dark']) .demo-surface,
-.demo-surface[data-theme='dark'] {
+:host-context([data-theme='dark']) .demo-surface {
   --bg: #0b0d10;
   --surface: #14171c;
   --surface-elevated: #14171c;

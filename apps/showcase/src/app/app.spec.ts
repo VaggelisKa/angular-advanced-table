@@ -398,16 +398,18 @@ describe('FEATURE: App', () => {
         const darkOption = compiled.querySelectorAll('.showcase-theme-option')[1] as HTMLButtonElement;
         const lightOption = compiled.querySelectorAll('.showcase-theme-option')[0] as HTMLButtonElement;
 
+        expect(shell.getAttribute('data-theme')).toBeNull();
+
         darkOption.click();
         fixture.detectChanges();
 
-        expect(shell.getAttribute('data-theme')).toBe('dark');
+        expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
         expect(darkOption.getAttribute('aria-pressed')).toBe('true');
 
         lightOption.click();
         fixture.detectChanges();
 
-        expect(shell.getAttribute('data-theme')).toBe('light');
+        expect(document.documentElement.getAttribute('data-theme')).toBe('light');
         expect(lightOption.getAttribute('aria-pressed')).toBe('true');
       });
     });

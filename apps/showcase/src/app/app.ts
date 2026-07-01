@@ -158,6 +158,7 @@ export class App {
 
   protected readonly navSections = showcaseNavSections;
   protected readonly expandedNavTreeBranchIds = signal<ReadonlySet<string>>(readInitialExpandedNavTreeBranchIds());
+  protected readonly navTreeHydrated = signal(false);
   protected readonly mobileNavOpen = signal(false);
   protected readonly theme = this.themeStore.theme;
   protected readonly activeNavRoutePath = computed(() => normalizeRoutePath(this.currentUrl()));
@@ -186,6 +187,8 @@ export class App {
 
     afterNextRender(
       () => {
+        this.navTreeHydrated.set(true);
+
         globalThis.setTimeout(() => {
           void loadDocsPage();
         });
@@ -206,6 +209,10 @@ export class App {
     const activeRoutePath = this.activeNavRoutePath();
 
     return branchContainsRoute(branch, activeRoutePath);
+  }
+
+  protected navItemIsCurrentRoute(item: ShowcaseNavItem): boolean {
+    return item.path === this.activeNavRoutePath();
   }
 
   protected setNavTreeBranchExpanded(branchId: string, expanded: boolean): void {

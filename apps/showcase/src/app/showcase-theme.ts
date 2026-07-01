@@ -58,8 +58,8 @@ export class ShowcaseThemeStore {
   }
 
   private setThemeState(theme: ShowcaseTheme): void {
-    this.themeState.set(theme);
     this.applyThemeToDocument(theme);
+    this.themeState.set(theme);
   }
 
   private applyThemeToDocument(theme: ShowcaseTheme): void {

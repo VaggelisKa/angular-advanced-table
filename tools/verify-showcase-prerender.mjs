@@ -49,9 +49,17 @@ const docsIndexHtml = readRouteHtml('docs');
 
 assertContains(docsIndexHtml, 'id="showcase-initial-theme"', 'docs');
 assertContains(docsIndexHtml, '--showcase-page-bg: #0b0d10', 'docs');
+assertContains(docsIndexHtml, 'data-testid="showcase-nav-link-quick-start"', 'docs');
+assertContains(docsIndexHtml, 'aria-current="page"', 'docs');
 
 for (const routePath of ['', 'docs', 'examples']) {
-  assertNotRedirectDocument(readRouteHtml(routePath), routePath);
+  const routeHtml = readRouteHtml(routePath);
+
+  assertNotRedirectDocument(routeHtml, routePath);
+
+  if (routePath === '' || routePath === 'docs') {
+    assertContains(routeHtml, 'data-testid="showcase-nav-link-quick-start"', routePath);
+  }
 }
 
 console.log(`Verified prerendered showcase docs HTML in ${outputRoot}.`);

@@ -33,8 +33,7 @@
       })();
     </script>
     <style id="showcase-initial-theme">
-      :root[data-theme='dark'] .showcase-shell,
-      :root[data-theme='dark'] .showcase-shell .showcase-page {
+      :root[data-theme='dark'] {
         --showcase-page-bg: #0b0d10;
         --showcase-page-text: #e6eaef;
         --showcase-page-text-soft: #9aa4b1;
@@ -69,8 +68,11 @@
         --showcase-code-token-tag: #7ee787;
         --showcase-page-shadow: 0 1px 2px rgb(0 0 0 / 36%), 0 14px 34px rgb(0 0 0 / 28%);
         --showcase-page-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+        --showcase-document-bg: var(--showcase-page-bg);
+        --showcase-document-text: var(--showcase-page-text);
 
         color-scheme: dark;
+        background: var(--showcase-document-bg);
       }
     </style>
     <link href="favicon.svg" rel="icon" type="image/svg+xml" />

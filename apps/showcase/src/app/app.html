@@ -1,5 +1,5 @@
 <!-- eslint-disable max-lines -->
-<div [attr.data-theme]="theme()" [class.is-nav-open]="mobileNavOpen()" class="showcase-shell">
+<div [class.is-nav-open]="mobileNavOpen()" class="showcase-shell">
   <header [attr.inert]="mobileNavOpen() ? '' : null" class="showcase-mobile-header">
     <span class="showcase-mobile-brand">
       <span class="showcase-brand-copy">
@@ -85,6 +85,19 @@
           </span>
 
           <div [attr.aria-label]="section.ariaLabel" class="showcase-nav-tree-group showcase-nav-tree-branch-group" role="group">
+            @for (item of section.items; track item.path) { @if (!navTreeHydrated() && navItemIsCurrentRoute(item)) {
+            <a
+              [attr.data-testid]="`showcase-nav-link-${item.id}`"
+              [routerLink]="item.path"
+              aria-current="page"
+              class="showcase-nav-tree-link showcase-nav-tree-link--ssg-fallback"
+              (click)="closeMobileNav(false)"
+              (focus)="prefetchNavItem(item)"
+              (pointerenter)="prefetchNavItem(item)">
+              <span aria-hidden="true" class="showcase-nav-tree-connector"></span>
+              <span class="showcase-nav-tree-label">{{ item.label }}</span>
+            </a>
+            } }
             <ng-template #sectionTreeGroup="ngTreeItemGroup" [ownedBy]="sectionTreeItem" ngTreeItemGroup>
               @for (item of section.items; track item.path) {
               <a
