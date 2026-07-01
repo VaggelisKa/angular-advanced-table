@@ -89,9 +89,6 @@ catalogs:
     '@angular/core':
       specifier: ^22.0.2
       version: 22.0.2
-    '@tanstack/angular-table':
-      specifier: ^8.21.4
-      version: 8.21.4
   shared:
     tslib:
       specifier: ^2.8.1
@@ -271,7 +268,7 @@ importers:
         specifier: catalog:peers
         version: 22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2)
       '@tanstack/angular-table':
-        specifier: catalog:peers
+        specifier: catalog:frontend
         version: 8.21.4(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))
       tslib:
         specifier: catalog:shared
