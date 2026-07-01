@@ -1,73 +1,128 @@
 import type { Routes } from '@angular/router';
 
+import {
+  SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH,
+  SHOWCASE_DEFAULT_ROUTE_PATH,
+  SHOWCASE_DOCS_INDEX_ROUTE_PATH,
+  SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH,
+  showcaseDocRouteDescriptors,
+  showcaseExampleRouteDescriptors
+} from './app.route-paths';
+import type { ShowcaseDocRouteDescriptor, ShowcaseRouteDescriptor } from './app.route-paths';
 import type { DocsPage } from './pages/docs/docs-page';
-import { showcaseDocs } from './showcase-navigation';
 
 export const loadDocsPage = async (): Promise<typeof DocsPage> => import('./pages/docs/docs-page').then((module) => module.DocsPage);
+
+const getRouteData = (route: { readonly description: string; readonly ogType: string }): Record<string, string> => ({
+  description: route.description,
+  ogType: route.ogType
+});
+
+const findExampleRoute = (path: string): ShowcaseRouteDescriptor => {
+  const route = showcaseExampleRouteDescriptors.find((descriptor) => descriptor.path === path);
+
+  if (!route) {
+    throw new Error(`Unknown showcase example route: ${path}`);
+  }
+
+  return route;
+};
+
+const findDocRoute = (path: string): ShowcaseDocRouteDescriptor => {
+  const route = showcaseDocRouteDescriptors.find((descriptor) => descriptor.path === path);
+
+  if (!route) {
+    throw new Error(`Unknown showcase docs route: ${path}`);
+  }
+
+  return route;
+};
+
+const quickStartRoute = findDocRoute(SHOWCASE_DEFAULT_ROUTE_PATH);
+const multipleFeaturesRoute = findExampleRoute(SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH);
+const builderRoute = findExampleRoute('examples/builder');
+const stickyHeaderMaxHeightRoute = findExampleRoute('examples/sticky-header-max-height');
+const paginationStickyAltRoute = findExampleRoute('examples/pagination-sticky-alt');
+const stickyNoOverflowXRoute = findExampleRoute('examples/sticky-no-overflow-x');
+const stickyShowDetailedViewRoute = findExampleRoute('examples/sticky-show-detailed-view');
+const stickyShowDetailedViewDetailsRoute = findExampleRoute('examples/sticky-show-detailed-view/details');
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'docs/quick-start'
+    title: quickStartRoute.title,
+    data: { ...getRouteData(quickStartRoute), docId: quickStartRoute.docId },
+    loadComponent: loadDocsPage
   },
   {
-    path: 'docs',
+    path: SHOWCASE_DOCS_INDEX_ROUTE_PATH,
     pathMatch: 'full',
-    redirectTo: 'docs/quick-start'
+    title: quickStartRoute.title,
+    data: { ...getRouteData(quickStartRoute), docId: quickStartRoute.docId },
+    loadComponent: loadDocsPage
   },
-  ...showcaseDocs.map((doc) => ({
-    path: doc.path.slice(1),
-    title: `${doc.label} | Angular Advanced Table Docs`,
-    data: { docId: doc.id },
+  ...showcaseDocRouteDescriptors.map((doc) => ({
+    path: doc.path,
+    title: doc.title,
+    data: { ...getRouteData(doc), docId: doc.docId },
     loadComponent: loadDocsPage
   })),
   {
-    path: 'examples',
+    path: SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH,
     pathMatch: 'full',
-    redirectTo: 'examples/multiple-features'
-  },
-  {
-    path: 'examples/multiple-features',
-    title: 'Multiple features | Angular Advanced Table',
+    title: multipleFeaturesRoute.title,
+    data: getRouteData(multipleFeaturesRoute),
     loadComponent: async () => import('./pages/table-showcase-page/table-showcase-page').then((module) => module.TableShowcasePage)
   },
   {
-    path: 'examples/builder',
-    title: 'Table builder | Angular Advanced Table',
+    path: multipleFeaturesRoute.path,
+    title: multipleFeaturesRoute.title,
+    data: getRouteData(multipleFeaturesRoute),
+    loadComponent: async () => import('./pages/table-showcase-page/table-showcase-page').then((module) => module.TableShowcasePage)
+  },
+  {
+    path: builderRoute.path,
+    title: builderRoute.title,
+    data: getRouteData(builderRoute),
     loadComponent: async () => import('./pages/table-builder/table-builder').then((module) => module.TableBuilderPage)
   },
   {
-    path: 'examples/sticky-header-max-height',
-    title: 'Sticky header max height | Angular Advanced Table',
+    path: stickyHeaderMaxHeightRoute.path,
+    title: stickyHeaderMaxHeightRoute.title,
+    data: getRouteData(stickyHeaderMaxHeightRoute),
     loadComponent: async () =>
       import('./pages/sticky-header-max-height/sticky-header-max-height').then((module) => module.StickyHeaderMaxHeight)
   },
   {
-    path: 'examples/pagination-sticky-alt',
-    title: 'Pagination sticky alt | Angular Advanced Table',
+    path: paginationStickyAltRoute.path,
+    title: paginationStickyAltRoute.title,
+    data: getRouteData(paginationStickyAltRoute),
     loadComponent: async () =>
       import('./pages/pagination-sticky-alt/pagination-sticky-alt').then((module) => module.PaginationStickyAlt)
   },
   {
-    path: 'examples/sticky-no-overflow-x',
-    title: 'Sticky header no overflow x | Angular Advanced Table',
+    path: stickyNoOverflowXRoute.path,
+    title: stickyNoOverflowXRoute.title,
+    data: getRouteData(stickyNoOverflowXRoute),
     loadComponent: async () => import('./pages/sticky-no-overflow-x/sticky-no-overflow-x').then((module) => module.StickyNoOverflowX)
   },
   {
-    path: 'examples/sticky-show-detailed-view',
-    title: 'Sticky header show detailed view | Angular Advanced Table',
+    path: stickyShowDetailedViewRoute.path,
+    title: stickyShowDetailedViewRoute.title,
+    data: getRouteData(stickyShowDetailedViewRoute),
     loadComponent: async () =>
       import('./pages/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
   },
   {
-    path: 'examples/sticky-show-detailed-view/details',
-    title: 'Detailed view | Angular Advanced Table',
+    path: stickyShowDetailedViewDetailsRoute.path,
+    title: stickyShowDetailedViewDetailsRoute.title,
+    data: getRouteData(stickyShowDetailedViewDetailsRoute),
     loadComponent: async () =>
       import('./pages/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
   },
   {
     path: '**',
-    redirectTo: 'docs/quick-start'
+    redirectTo: SHOWCASE_DEFAULT_ROUTE_PATH
   }
 ];

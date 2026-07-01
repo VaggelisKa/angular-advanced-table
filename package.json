@@ -19,10 +19,11 @@
     "lint:styles:fix": "stylelint \"apps/**/*.css\" \"libs/**/*.css\" --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "verify:showcase-prerender": "node tools/verify-showcase-prerender.mjs",
     "release:check": "nx release plan:check --base=${NX_BASE:-main} --head=${NX_HEAD:-HEAD} && nx release --dry-run",
     "release": "nx release",
     "pack:dry-run": "node tools/strip-nx-manifest.mjs dist/libs/ng-advanced-table && npm pack --dry-run ./dist/libs/ng-advanced-table",
-    "verify": "pnpm run build:packages && pnpm run build:showcase && pnpm run release:check && pnpm run pack:dry-run"
+    "verify": "pnpm run build:packages && pnpm run build:showcase && pnpm run verify:showcase-prerender && pnpm run release:check && pnpm run pack:dry-run"
   },
   "private": true,
   "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26",

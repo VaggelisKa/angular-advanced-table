@@ -39,7 +39,6 @@ import {
 import { DATASET_OPTIONS, PAGE_SIZE_OPTIONS, SIMULATION_PROFILES, SIMULATION_STATUSES, TableSimulation } from './table-simulation';
 import type { SimulationProfile, SimulationRow, SimulationStatus } from './table-simulation';
 import { TableSearch } from '../../components/table-search/table-search';
-import { ShowcaseThemeStore } from '../../showcase-theme';
 
 const STATUS_FILTER_ID = 'status';
 
@@ -322,8 +321,6 @@ class MarketSortIndicator {
   styleUrl: './table-showcase-page.css'
 })
 export class TableShowcasePage {
-  private readonly themeStore = inject(ShowcaseThemeStore);
-
   protected readonly simulation = inject(TableSimulation);
   protected readonly datasetOptions = DATASET_OPTIONS;
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
@@ -343,7 +340,6 @@ export class TableShowcasePage {
   });
 
   protected readonly accessibilityText = showcaseAccessibilityText;
-  protected readonly theme = this.themeStore.theme;
   public readonly tableState = signal<Partial<NatTableUserState>>({
     columnFilters: []
   });

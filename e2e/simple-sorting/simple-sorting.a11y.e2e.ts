@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Simple sorting accessibility', () => {
   test.describe('GIVEN: the simple-sorting example is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/sorting');
+      await loadDocsExamplePreview(page, 'sorting-pinned-columns', 'Sorting with pinned columns');
     });
 
     test.describe('WHEN: the Customer header is activated via keyboard', () => {

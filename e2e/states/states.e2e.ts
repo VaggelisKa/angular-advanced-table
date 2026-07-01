@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Table states', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/data-lifecycle');
+    await loadDocsExamplePreview(page, 'table-states', 'State rows stay inside the table');
   });
 
   test.describe('GIVEN: the states example is loaded', () => {

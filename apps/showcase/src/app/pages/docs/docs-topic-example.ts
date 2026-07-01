@@ -52,6 +52,7 @@ export class DocsTopicExample {
   protected readonly previewTabId = computed(() => `docs-example-${this.example().id}-preview-tab`);
   protected readonly codeTabId = computed(() => `docs-example-${this.example().id}-code-tab`);
   protected readonly previewPanelId = computed(() => `docs-example-${this.example().id}-preview-panel`);
+  protected readonly previewPlaceholderId = computed(() => `docs-example-${this.example().id}-preview-placeholder`);
   protected readonly codePanelId = computed(() => `docs-example-${this.example().id}-code-panel`);
 
   public constructor() {

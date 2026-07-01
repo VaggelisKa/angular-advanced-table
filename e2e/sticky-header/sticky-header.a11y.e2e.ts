@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Sticky header', () => {
   test.describe('GIVEN: the sticky header demo page is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/column-layout');
+      await loadDocsExamplePreview(page, 'sticky-header', 'Sticky header');
     });
 
     test.describe('WHEN: the sticky-header checkbox is toggled via the keyboard', () => {

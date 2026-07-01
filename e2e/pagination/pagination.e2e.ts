@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Pagination', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/pagination');
+    await loadDocsExamplePreview(page, 'pagination', 'Client and manual pagination');
   });
 
   test.describe('GIVEN: the pagination example is loaded', () => {

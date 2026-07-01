@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+import { loadDocsExamplePreview } from './support/docs-example';
+
 test.describe('FEATURE: Column reordering', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/column-layout');
+    await loadDocsExamplePreview(page, 'column-reordering', 'Column reordering');
   });
 
   const headerColumnIds = async (page: Page): Promise<string[]> =>

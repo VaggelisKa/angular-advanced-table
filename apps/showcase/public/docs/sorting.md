@@ -33,7 +33,7 @@ readonly tableState = signal<Partial<NatTableUserState>>({
 });
 ```
 
-Use the `sorting` array as the source of truth for priority. Header sort buttons add another sorted column when the user holds <kbd>Shift</kbd> while clicking, or <kbd>Shift</kbd> while pressing <kbd>Enter</kbd> on a focused sort button. Programmatic presets should write the same ordered array instead of keeping a separate priority model.
+Use the `sorting` array as the source of truth for priority. Header sort buttons add another sorted column when the user holds `Shift` while clicking, or `Shift` while pressing `Enter` on a focused sort button. Programmatic presets should write the same ordered array instead of keeping a separate priority model.
 
 When multi-sort changes the meaning of the result set, show the priority near the table or in the sorted headers. The bundled header actions render a priority badge for sorted columns when more than one column is active.
 

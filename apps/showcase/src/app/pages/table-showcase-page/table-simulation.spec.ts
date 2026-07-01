@@ -5,6 +5,7 @@ import { SPARK_HISTORY_LENGTH, TableSimulation } from './table-simulation';
 
 describe('FEATURE: TableSimulation', () => {
   let service: TableSimulation;
+  const expectedInitialTick = Date.UTC(2026, 0, 2, 9, 30, 0);
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -26,6 +27,8 @@ describe('FEATURE: TableSimulation', () => {
     describe('WHEN: create a dataset that matches the default size', () => {
       it('THEN: it creates the default number of rows', () => {
         expect(service.rows()).toHaveLength(service.datasetSize());
+        expect(service.lastTickAt()).toBe(expectedInitialTick);
+        expect(service.rows()[0].updatedAt).toBe(expectedInitialTick);
       });
     });
   });
