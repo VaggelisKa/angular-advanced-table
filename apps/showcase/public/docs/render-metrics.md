@@ -2,11 +2,13 @@ Render metrics are optional diagnostics from `ng-advanced-table/render-metrics`.
 
 ## Install
 
-Render metrics live in the `ng-advanced-table/render-metrics` entry point of the single `ng-advanced-table` package — no separate install:
+Install the table package and Angular companion peers:
 
 ```bash
-npm install ng-advanced-table @tanstack/angular-table @angular/common @angular/aria @angular/cdk
+npm install ng-advanced-table @angular/aria @angular/cdk
 ```
+
+Keep `@angular/core` and `@angular/common` in your Angular app dependencies.
 
 ## Basic Wiring
 
@@ -14,7 +16,6 @@ Create one `NatTableRenderMetricsStore`, enable row render events on the table, 
 
 ```ts
 import { Component, viewChild } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
@@ -40,7 +41,7 @@ import { NatRenderMetricsPanel, NatTableRenderMetricsStore, type NatTableRenderM
 export class PositionsTable {
   readonly metricsStore = new NatTableRenderMetricsStore();
   readonly metricsTable = viewChild<NatTable<PositionRow>>('metricsTable');
-  readonly columns: ColumnDef<PositionRow>[] = [];
+  readonly columns = [];
 
   protected onRowRendered(event: NatTableRenderMetricsEvent): void {
     this.metricsStore.record(event);
