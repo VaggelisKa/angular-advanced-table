@@ -4,8 +4,8 @@ import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTablePagination, NatTableSurface } from 'ng-advanced-table/components';
 
-import { mockOrderColumns } from '../../ui';
-import { generateMockOrderRows, getMockOrderRowId } from '../../utils';
+import { mockOrderColumns } from '../../mock-order/mock-order-columns';
+import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
 
 const mockOrderRows = generateMockOrderRows(50);
 

@@ -6,9 +6,10 @@ import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
-import type { MockOrderRow } from '../../common';
-import { NatRowActionsMenu, OrderCode } from '../../ui';
-import { generateMockOrderRows, getMockOrderRowId } from '../../utils';
+import type { MockOrderRow } from '../../mock-order/mock-order.type';
+import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { NatRowActionsMenu } from '../../ui/nat-row-actions-menu/nat-row-actions-menu';
+import { OrderCode } from '../../ui/order-code/order-code';
 
 const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderActions([
   {
