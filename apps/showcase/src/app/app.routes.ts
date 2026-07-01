@@ -7,7 +7,7 @@ import {
   showcaseDocRouteDescriptors,
   showcaseExampleRouteDescriptors
 } from './app.route-paths';
-import type { ShowcaseRouteDescriptor } from './app.route-paths';
+import type { ShowcaseDocRouteDescriptor, ShowcaseRouteDescriptor } from './app.route-paths';
 import type { DocsPage } from './pages/docs/docs-page';
 
 export const loadDocsPage = async (): Promise<typeof DocsPage> => import('./pages/docs/docs-page').then((module) => module.DocsPage);
@@ -27,6 +27,17 @@ const findExampleRoute = (path: string): ShowcaseRouteDescriptor => {
   return route;
 };
 
+const findDocRoute = (path: string): ShowcaseDocRouteDescriptor => {
+  const route = showcaseDocRouteDescriptors.find((descriptor) => descriptor.path === path);
+
+  if (!route) {
+    throw new Error(`Unknown showcase docs route: ${path}`);
+  }
+
+  return route;
+};
+
+const quickStartRoute = findDocRoute(SHOWCASE_DEFAULT_ROUTE_PATH);
 const multipleFeaturesRoute = findExampleRoute('examples/multiple-features');
 const builderRoute = findExampleRoute('examples/builder');
 const stickyHeaderMaxHeightRoute = findExampleRoute('examples/sticky-header-max-height');
@@ -39,12 +50,16 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: SHOWCASE_DEFAULT_ROUTE_PATH
+    title: quickStartRoute.title,
+    data: { ...getRouteData(quickStartRoute), docId: quickStartRoute.docId },
+    loadComponent: loadDocsPage
   },
   {
     path: SHOWCASE_DOCS_INDEX_ROUTE_PATH,
     pathMatch: 'full',
-    redirectTo: SHOWCASE_DEFAULT_ROUTE_PATH
+    title: quickStartRoute.title,
+    data: { ...getRouteData(quickStartRoute), docId: quickStartRoute.docId },
+    loadComponent: loadDocsPage
   },
   ...showcaseDocRouteDescriptors.map((doc) => ({
     path: doc.path,
@@ -55,7 +70,9 @@ export const routes: Routes = [
   {
     path: SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH,
     pathMatch: 'full',
-    redirectTo: multipleFeaturesRoute.path
+    title: multipleFeaturesRoute.title,
+    data: getRouteData(multipleFeaturesRoute),
+    loadComponent: async () => import('./pages/table-showcase-page/table-showcase-page').then((module) => module.TableShowcasePage)
   },
   {
     path: multipleFeaturesRoute.path,

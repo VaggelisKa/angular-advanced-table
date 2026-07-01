@@ -31,6 +31,12 @@ function assertNotBlankShell(html, routePath) {
   }
 }
 
+function assertNotRedirectDocument(html, routePath) {
+  if (html.includes('<title>Redirecting</title>') || html.includes('Redirecting to <a')) {
+    throw new Error(`Expected /${routePath || ''} to contain prerendered app content, but it is a static redirect document.`);
+  }
+}
+
 const quickStartRoute = 'docs/quick-start';
 const quickStartHtml = readRouteHtml(quickStartRoute);
 
@@ -38,5 +44,9 @@ assertNotBlankShell(quickStartHtml, quickStartRoute);
 assertContains(quickStartHtml, 'Start with', quickStartRoute);
 assertContains(quickStartHtml, 'First Table', quickStartRoute);
 assertContains(quickStartHtml, 'Angular Advanced Table Docs', quickStartRoute);
+
+for (const routePath of ['', 'docs', 'examples']) {
+  assertNotRedirectDocument(readRouteHtml(routePath), routePath);
+}
 
 console.log(`Verified prerendered showcase docs HTML in ${outputRoot}.`);
