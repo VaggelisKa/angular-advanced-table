@@ -1,5 +1,3 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
@@ -8,7 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { DocsPage } from './docs-page';
 import { highlightMarkdownCode } from './docs-page-utils';
 
-async function waitForMarkdownRender(fixture: { detectChanges(): void; whenStable(): Promise<unknown> }): Promise<void> {
+async function waitForDocsRender(fixture: { detectChanges(): void; whenStable(): Promise<unknown> }): Promise<void> {
   for (let cycle = 0; cycle < 3; cycle += 1) {
     await fixture.whenStable();
     await Promise.resolve();
@@ -62,8 +60,6 @@ describe('FEATURE: DocsPage', () => {
     await TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
         provideRouter([
           {
             path: '',
@@ -92,7 +88,6 @@ describe('FEATURE: DocsPage', () => {
       });
     }
 
-    TestBed.inject(HttpTestingController).verify();
     delete (globalThis as PrismTestGlobal).Prism;
     vi.restoreAllMocks();
   });
@@ -103,86 +98,53 @@ describe('FEATURE: DocsPage', () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
-
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/quick-start.md').flush('# Quick start\n\nLoaded **markdown** docs.');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
 
-        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Loaded markdown docs.');
-        expect(compiled.querySelector('h1')?.textContent).toContain('Quick start');
+        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Start with NatTable inside NatTableSurface.');
+        expect(compiled.querySelector('h2')?.textContent).toContain('Install');
       });
     });
   });
 
-  describe('GIVEN: the docs page host is rendered with route-driven markdown sources', () => {
-    describe('WHEN: updates the markdown source when navigating between docs routes', () => {
-      it('THEN: it loads the next route markdown source', async () => {
+  describe('GIVEN: the docs page host is rendered with route-driven bundled markdown', () => {
+    describe('WHEN: navigating between docs routes', () => {
+      it('THEN: it renders the next route markdown content', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/quick-start.md').flush('# Quick start');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         await harness.navigateByUrl('/docs/state', DocsPage);
-        http.expectOne('/docs/state.md').flush('# State');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
 
-        expect(compiled.querySelector('h1')?.textContent).toContain('State');
+        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain(
+          'NatTableUserState contains the serializable view state'
+        );
       });
     });
   });
 
-  describe('GIVEN: the docs page host is rendered with cached markdown content', () => {
-    describe('WHEN: reuses cached markdown when returning to a docs route', () => {
-      it('THEN: it serves markdown from cache on return navigation', async () => {
+  describe('GIVEN: the docs page host is rendered with bundled markdown content', () => {
+    describe('WHEN: returning to a docs route', () => {
+      it('THEN: it renders the route content again without a markdown request dependency', async () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/quick-start.md').flush('# Quick start\n\nCached docs.');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         await harness.navigateByUrl('/docs/state', DocsPage);
-        http.expectOne('/docs/state.md').flush('# State');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
-        http.expectNone('/docs/quick-start.md');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
 
-        expect(compiled.querySelector('h1')?.textContent).toContain('Quick start');
-        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Cached docs.');
-      });
-    });
-  });
-
-  describe('GIVEN: the docs page host is rendered with a failing markdown request', () => {
-    describe('WHEN: renders an error message when markdown cannot be loaded', () => {
-      it('THEN: it shows the markdown loading error state', async () => {
-        const harness = await RouterTestingHarness.create();
-
-        await harness.navigateByUrl('/docs/quick-start', DocsPage);
-
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/quick-start.md').flush('Not found', { status: 404, statusText: 'Not Found' });
-        await waitForMarkdownRender(harness.fixture);
-
-        const compiled = harness.fixture.nativeElement as HTMLElement;
-        const error = compiled.querySelector('.docs-error');
-
-        expect(error?.getAttribute('role')).toBe('alert');
-        expect(error?.textContent).toContain('Documentation could not be loaded.');
+        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Start with NatTable inside NatTableSurface.');
       });
     });
   });
@@ -193,11 +155,7 @@ describe('FEATURE: DocsPage', () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
-
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/quick-start.md').flush('```ts\nreadonly rows = [];\n```');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
 
@@ -229,11 +187,7 @@ describe('FEATURE: DocsPage', () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/state', DocsPage);
-
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/state.md').flush('## State Slices\n\n## Own One Slice\n\n## Manual Data Handling');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
         const firstTocLink = queryRequiredElement<HTMLAnchorElement>(compiled, '.docs-topic-toc-link');
@@ -241,7 +195,7 @@ describe('FEATURE: DocsPage', () => {
         expect(firstTocLink.getAttribute('href')).toBe('/docs/state#state-slices');
 
         firstTocLink.click();
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         expect(TestBed.inject(Router).url).toBe('/docs/state#state-slices');
       });
@@ -260,11 +214,7 @@ describe('FEATURE: DocsPage', () => {
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/state#manual-data-handling', DocsPage);
-
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/state.md').flush('## State Slices\n\n## Own One Slice\n\n## Manual Data Handling');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
         const manualDataHeading = queryRequiredElement<HTMLElement>(compiled, '#manual-data-handling');
@@ -289,11 +239,7 @@ describe('FEATURE: DocsPage', () => {
         shouldRestoreClipboard = true;
 
         await harness.navigateByUrl('/docs/quick-start', DocsPage);
-
-        const http = TestBed.inject(HttpTestingController);
-
-        http.expectOne('/docs/quick-start.md').flush('```ts\nreadonly rows = [];\n```');
-        await waitForMarkdownRender(harness.fixture);
+        await waitForDocsRender(harness.fixture);
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
         const codeBlock = queryRequiredElement<HTMLElement>(compiled, 'pre.docs-code-block');
@@ -302,7 +248,7 @@ describe('FEATURE: DocsPage', () => {
 
         expect(copyButton.parentElement).toBe(codeBlock);
         expect(codeScroller.parentElement).toBe(codeBlock);
-        expect(queryRequiredElement<HTMLElement>(codeScroller, 'code').textContent).toBe('readonly rows = [];');
+        expect(queryRequiredElement<HTMLElement>(codeScroller, 'code').textContent).toContain('npm install ng-advanced-table');
         expect(queryRequiredElement<SVGElement>(copyButton, '.docs-code-copy-icon--copy')).toBeTruthy();
         expect(queryRequiredElement<SVGElement>(copyButton, '.docs-code-copy-icon--check')).toBeTruthy();
         expect(copyButton.getAttribute('aria-label')).toBe('Copy code block');
@@ -312,7 +258,7 @@ describe('FEATURE: DocsPage', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        expect(writeText).toHaveBeenCalledWith('readonly rows = [];');
+        expect(writeText).toHaveBeenCalledWith(expect.stringContaining('npm install ng-advanced-table'));
         expect(copyButton.classList.contains('is-copied')).toBe(true);
         expect(copyButton.getAttribute('aria-label')).toBe('Copied code block');
         expect(copyButton.title).toBe('Copied code block');

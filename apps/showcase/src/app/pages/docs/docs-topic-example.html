@@ -41,11 +41,18 @@
     @defer (on viewport) {
     <ng-container *ngComponentOutlet="example().component" />
     } @placeholder {
-    <div class="docs-example-preview-placeholder" role="status">{{ example().title }} preview loads when it enters the viewport.</div>
+    <div [attr.data-testid]="previewPlaceholderId()" class="docs-example-preview-placeholder" role="status">
+      {{ example().title }} preview loads when it enters the viewport.
+    </div>
     } @loading (after 150ms; minimum 300ms) {
-    <div class="docs-example-preview-placeholder" role="status">Loading {{ example().title }} preview.</div>
+    <div [attr.data-testid]="previewPlaceholderId()" class="docs-example-preview-placeholder" role="status">
+      Loading {{ example().title }} preview.
+    </div>
     } @error {
-    <div class="docs-example-preview-placeholder docs-example-preview-placeholder--error" role="alert">
+    <div
+      [attr.data-testid]="previewPlaceholderId()"
+      class="docs-example-preview-placeholder docs-example-preview-placeholder--error"
+      role="alert">
       {{ example().title }} preview could not be loaded.
     </div>
     }

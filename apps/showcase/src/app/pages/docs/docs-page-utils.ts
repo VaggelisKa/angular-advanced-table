@@ -1,5 +1,3 @@
-const MARKDOWN_HEADING_SELECTOR = '.docs-markdown h2, .docs-markdown h3, .docs-markdown h4, .docs-markdown h5, .docs-markdown h6';
-
 type PrismGlobal = typeof globalThis & {
   Prism?: {
     highlightElement?(element: Element): void;
@@ -11,48 +9,6 @@ const HIGHLIGHTED_CODE_SELECTOR = 'code[class*="language-"]:not([data-docs-prism
 
 export function shouldLetBrowserHandleLink(event: MouseEvent): boolean {
   return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
-}
-
-export function slugifyMarkdownHeading(text: string): string {
-  return text
-    .trim()
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-export function getUniqueMarkdownHeadingId(baseId: string, usedIds: ReadonlySet<string>): string {
-  let id = baseId;
-  let suffix = 2;
-
-  while (usedIds.has(id)) {
-    id = `${baseId}-${suffix}`;
-    suffix += 1;
-  }
-
-  return id;
-}
-
-export function decorateMarkdownHeadingIds(container: HTMLElement): void {
-  const usedIds = new Set(Array.from(container.querySelectorAll<HTMLElement>('[id]')).map((element) => element.id));
-
-  for (const heading of Array.from(container.querySelectorAll<HTMLElement>(MARKDOWN_HEADING_SELECTOR))) {
-    if (heading.id) {
-      continue;
-    }
-
-    const baseId = slugifyMarkdownHeading(heading.textContent);
-
-    if (!baseId) {
-      continue;
-    }
-
-    const id = getUniqueMarkdownHeadingId(baseId, usedIds);
-
-    heading.id = id;
-    usedIds.add(id);
-  }
 }
 
 export function highlightMarkdownCode(container: HTMLElement): void {

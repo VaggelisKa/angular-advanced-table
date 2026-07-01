@@ -8,5 +8,5 @@ export async function loadDocsExamplePreview(page: Page, exampleId: string, head
   await previewPanel.scrollIntoViewIfNeeded();
   await expect(exampleHeading).toHaveText(heading);
   await expect(exampleHeading).toBeVisible();
-  await expect(previewPanel.locator('.docs-example-preview-placeholder')).toHaveCount(0);
+  await expect(page.getByTestId(`docs-example-${exampleId}-preview-placeholder`)).toHaveCount(0);
 }

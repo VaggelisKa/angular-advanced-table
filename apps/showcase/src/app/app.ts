@@ -16,9 +16,8 @@ import {
 } from './app.route-paths';
 import { loadDocsPage } from './app.routes';
 import { resolveFocusTrapTarget } from './app.util';
-import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
 import { showcaseNavSections } from './showcase-navigation';
-import type { ShowcaseDoc, ShowcaseNavGroup, ShowcaseNavItem, ShowcaseNavSection } from './showcase-navigation';
+import type { ShowcaseNavGroup, ShowcaseNavItem, ShowcaseNavSection } from './showcase-navigation';
 import { ShowcaseThemeStore } from './showcase-theme';
 import type { ShowcaseTheme } from './showcase-theme';
 
@@ -31,9 +30,9 @@ const SHOWCASE_NAV_BRANCH_IDS = getShowcaseNavBranchIds(showcaseNavSections);
 const SHOWCASE_NAV_BRANCH_ID_SET = new Set(SHOWCASE_NAV_BRANCH_IDS);
 const DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS = ['docs'];
 
-function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
+function readStoredExpandedNavTreeBranchIds(storage: Storage): ReadonlySet<string> {
   try {
-    const stored = globalThis.localStorage.getItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY);
+    const stored = storage.getItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY);
 
     if (!stored) {
       return new Set(DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS);
@@ -52,6 +51,24 @@ function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
     // Storage access can throw in private/sandboxed contexts; default to top-level branches.
     return new Set(DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS);
   }
+}
+
+function readBrowserStorage(): Storage | null {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function readInitialRouteUrl(document: Document, routerUrl: string): string {
+  if (routerUrl !== '' && routerUrl !== '/') {
+    return routerUrl;
+  }
+
+  const routeUrl = `${document.location.pathname}${document.location.search}${document.location.hash}`;
+
+  return routeUrl.startsWith('/') ? routeUrl : routerUrl;
 }
 
 function normalizeRoutePath(url: string): string {
@@ -95,8 +112,8 @@ function branchContainsRoute(branch: ShowcaseNavSection | ShowcaseNavGroup, rout
   return branch.items.some((item) => item.path === routePath);
 }
 
-function isShowcaseDoc(item: ShowcaseNavItem): item is ShowcaseDoc {
-  return 'markdownPaths' in item;
+function isDocsNavItem(item: ShowcaseNavItem): boolean {
+  return item.path.startsWith('/docs/');
 }
 
 function setExpandedNavTreeBranches(
@@ -121,9 +138,9 @@ function setExpandedNavTreeBranches(
   return nextBranchIds;
 }
 
-function persistExpandedNavTreeBranchIds(expandedBranchIds: ReadonlySet<string>): void {
+function persistExpandedNavTreeBranchIds(storage: Storage, expandedBranchIds: ReadonlySet<string>): void {
   try {
-    globalThis.localStorage.setItem(
+    storage.setItem(
       EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY,
       JSON.stringify(SHOWCASE_NAV_BRANCH_IDS.filter((branchId) => expandedBranchIds.has(branchId)))
     );
@@ -142,8 +159,9 @@ export class App {
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
-  private readonly docsMarkdownCache = inject(DocsMarkdownCache);
   private readonly themeStore = inject(ShowcaseThemeStore);
+  private navTreeStorage: Storage | null = null;
+  private readonly initialRouteUrl = readInitialRouteUrl(this.document, this.router.url);
   private readonly mobileMenuButton = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuButton');
   private readonly mobileNavCloseButton = viewChild<ElementRef<HTMLButtonElement>>('mobileNavCloseButton');
   private readonly mobileNavPanel = viewChild<ElementRef<HTMLElement>>('mobileNavPanel');
@@ -151,14 +169,15 @@ export class App {
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       map((event) => event.urlAfterRedirects),
-      startWith(this.router.url)
+      startWith(this.initialRouteUrl)
     ),
-    { initialValue: this.router.url }
+    { initialValue: this.initialRouteUrl }
   );
 
   protected readonly navSections = showcaseNavSections;
-  protected readonly expandedNavTreeBranchIds = signal<ReadonlySet<string>>(readInitialExpandedNavTreeBranchIds());
+  protected readonly expandedNavTreeBranchIds = signal<ReadonlySet<string>>(new Set(DEFAULT_EXPANDED_NAV_TREE_BRANCH_IDS));
   protected readonly navTreeHydrated = signal(false);
+  protected readonly docsPagePrefetched = signal(false);
   protected readonly mobileNavOpen = signal(false);
   protected readonly theme = this.themeStore.theme;
   protected readonly activeNavRoutePath = computed(() => normalizeRoutePath(this.currentUrl()));
@@ -185,16 +204,10 @@ export class App {
       untracked(() => this.setNavTreeBranchesExpanded(activeBranchIds, true));
     });
 
-    afterNextRender(
-      () => {
-        this.navTreeHydrated.set(true);
-
-        globalThis.setTimeout(() => {
-          void loadDocsPage();
-        });
-      },
-      { injector: this.injector }
-    );
+    afterNextRender(() => {
+      this.restoreExpandedNavTreeBranches();
+      this.navTreeHydrated.set(true);
+    });
   }
 
   protected setTheme(theme: ShowcaseTheme): void {
@@ -220,8 +233,9 @@ export class App {
   }
 
   protected prefetchNavItem(item: ShowcaseNavItem): void {
-    if (isShowcaseDoc(item)) {
-      this.docsMarkdownCache.preload(item.markdownPaths);
+    if (isDocsNavItem(item) && !this.docsPagePrefetched()) {
+      this.docsPagePrefetched.set(true);
+      void loadDocsPage();
     }
   }
 
@@ -233,7 +247,24 @@ export class App {
     const nextBranchIds = setExpandedNavTreeBranches(this.expandedNavTreeBranchIds(), branchIds, expanded);
 
     this.expandedNavTreeBranchIds.set(nextBranchIds);
-    persistExpandedNavTreeBranchIds(nextBranchIds);
+
+    if (this.navTreeStorage) {
+      persistExpandedNavTreeBranchIds(this.navTreeStorage, nextBranchIds);
+    }
+  }
+
+  private restoreExpandedNavTreeBranches(): void {
+    const storage = readBrowserStorage();
+
+    if (!storage) {
+      return;
+    }
+
+    this.navTreeStorage = storage;
+    const storedBranchIds = readStoredExpandedNavTreeBranchIds(storage);
+    const expandedBranchIds = setExpandedNavTreeBranches(storedBranchIds, this.activeNavBranchIds(), true);
+
+    this.expandedNavTreeBranchIds.set(expandedBranchIds);
   }
 
   protected toggleMobileNav(): void {

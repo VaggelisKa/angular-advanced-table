@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { Injectable, Injector, afterNextRender, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, afterNextRender, computed, effect, signal } from '@angular/core';
 
 export type SimulationStatus = 'Advancing' | 'Watching' | 'Declining' | 'Halted';
 
@@ -242,7 +242,6 @@ const buildDataset = (size: number, baseTimestamp = DEFAULT_SIMULATION_TIMESTAMP
   providedIn: 'root'
 })
 export class TableSimulation {
-  private readonly injector = inject(Injector);
   private readonly datasetSizeSignal = signal<number>(12000);
   private readonly profileSignal = signal<SimulationProfile>('balanced');
   private readonly isRunningSignal = signal(true);
@@ -298,7 +297,7 @@ export class TableSimulation {
   public readonly positiveMoverCount = computed(() => this.marketSnapshot().positiveMoverCount);
 
   public constructor() {
-    afterNextRender({ write: () => this.browserReadySignal.set(true) }, { injector: this.injector });
+    afterNextRender({ write: () => this.browserReadySignal.set(true) });
 
     effect((onCleanup) => {
       if (!this.browserReadySignal() || !this.isRunningSignal()) {

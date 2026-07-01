@@ -90,7 +90,7 @@
               [attr.data-testid]="`showcase-nav-link-${item.id}`"
               [routerLink]="item.path"
               aria-current="page"
-              class="showcase-nav-tree-link showcase-nav-tree-link--ssg-fallback"
+              class="showcase-nav-tree-link"
               (click)="closeMobileNav(false)"
               (focus)="prefetchNavItem(item)"
               (pointerenter)="prefetchNavItem(item)">

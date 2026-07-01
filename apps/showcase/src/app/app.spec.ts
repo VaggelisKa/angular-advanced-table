@@ -4,7 +4,6 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
 import { App } from './app';
-import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
 
 const EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY = 'nat-showcase-expanded-nav-tree-items';
 
@@ -60,15 +59,12 @@ function getElement<T extends Element>(container: HTMLElement, selector: string)
 }
 
 describe('FEATURE: App', () => {
-  let preloadCalls: readonly string[][] = [];
-
   beforeEach(async () => {
-    preloadCalls = [];
+    globalThis.history.replaceState(null, '', '/');
     vi.stubGlobal('localStorage', createTestStorage());
 
     try {
       globalThis.localStorage.removeItem('nat-showcase-theme');
-      globalThis.localStorage.removeItem('nat-showcase-collapsed-nav-sections');
       globalThis.localStorage.removeItem(EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY);
     } catch {
       // ignore
@@ -78,17 +74,6 @@ describe('FEATURE: App', () => {
       imports: [App],
       providers: [
         provideZonelessChangeDetection(),
-        {
-          provide: DocsMarkdownCache,
-          useValue: {
-            load: (): undefined => undefined,
-            preload: (paths: readonly string[]): undefined => {
-              preloadCalls = [...preloadCalls, [...paths]];
-
-              return undefined;
-            }
-          }
-        },
         provideRouter([
           {
             path: '',
@@ -129,17 +114,6 @@ describe('FEATURE: App', () => {
         const app = fixture.componentInstance;
 
         expect(app).toBeTruthy();
-      });
-    });
-
-    describe('WHEN: browser idle preloading runs', () => {
-      it('THEN: it does not eagerly request every docs markdown asset', async () => {
-        const fixture = TestBed.createComponent(App);
-
-        await fixture.whenStable();
-        await new Promise((resolve) => setTimeout(resolve));
-
-        expect(preloadCalls).toStrictEqual([]);
       });
     });
   });
@@ -327,6 +301,27 @@ describe('FEATURE: App', () => {
         expect(docsBranch.getAttribute('aria-current')).toBeNull();
         expect(quickStartLink.getAttribute('role')).toBe('treeitem');
         expect(quickStartLink.getAttribute('aria-current')).toBe('page');
+      });
+    });
+  });
+
+  describe('GIVEN: the browser URL already points at a docs route', () => {
+    describe('WHEN: render before the router emits navigation events', () => {
+      it('THEN: it marks the browser URL route active on the first render', async () => {
+        globalThis.history.replaceState(null, '', '/docs/state');
+
+        const fixture = TestBed.createComponent(App);
+
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const docsCoreModelBranch = getElement<HTMLElement>(compiled, '[data-testid="showcase-nav-branch-docs-core-model"]');
+        const quickStartLink = getElement<HTMLAnchorElement>(compiled, '[data-testid="showcase-nav-link-quick-start"]');
+        const stateLink = getElement<HTMLAnchorElement>(compiled, '[data-testid="showcase-nav-link-state"]');
+
+        expect(docsCoreModelBranch.getAttribute('aria-expanded')).toBe('true');
+        expect(quickStartLink.getAttribute('aria-current')).toBeNull();
+        expect(stateLink.getAttribute('aria-current')).toBe('page');
       });
     });
   });

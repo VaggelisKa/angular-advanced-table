@@ -111,6 +111,9 @@ describe('FEATURE: docs topic example code tabs', () => {
 
         expect(heading.getAttribute('data-testid')).toBe('docs-example-pagination-title');
         expect(previewPanel.getAttribute('data-testid')).toBe('docs-example-pagination-preview-panel');
+        expect(compiled.querySelector('.docs-example-preview-placeholder')?.getAttribute('data-testid')).toBe(
+          'docs-example-pagination-preview-placeholder'
+        );
         expect(previewTab.getAttribute('aria-controls')).toBe(previewPanel.id);
         expect(codeTab.getAttribute('aria-controls')).toBe(codePanel.id);
         expect(previewPanel.hidden).toBe(false);

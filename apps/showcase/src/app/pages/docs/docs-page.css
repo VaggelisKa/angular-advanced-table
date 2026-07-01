@@ -21,17 +21,6 @@
   letter-spacing: 0.06em;
 }
 
-.docs-error {
-  padding: 12px 14px;
-  margin: 0;
-  font-size: 0.86rem;
-  line-height: 1.45;
-  color: var(--showcase-page-negative);
-  background: color-mix(in srgb, var(--showcase-page-negative) 10%, var(--showcase-page-surface));
-  border: 1px solid color-mix(in srgb, var(--showcase-page-negative) 42%, transparent);
-  border-radius: var(--showcase-page-radius-sm);
-}
-
 .docs-topic-toc,
 .docs-related {
   display: grid;

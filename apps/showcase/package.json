@@ -14,11 +14,13 @@
     "@angular/router": "catalog:frontend",
     "@angular/ssr": "catalog:frontend",
     "@tanstack/angular-table": "catalog:frontend",
-    "marked": "catalog:frontend",
     "prismjs": "catalog:frontend",
     "rxjs": "catalog:frontend",
     "tslib": "catalog:shared",
     "ng-advanced-table": "workspace:*"
+  },
+  "devDependencies": {
+    "marked": "catalog:frontend-dev"
   },
   "nx": {
     "name": "showcase",
@@ -32,7 +34,9 @@
     ],
     "targets": {
       "build": {
-        "dependsOn": [],
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:application",
         "outputs": [
           "{options.outputPath}"
@@ -89,6 +93,16 @@
         },
         "defaultConfiguration": "production"
       },
+      "generate-docs": {
+        "executor": "nx:run-commands",
+        "outputs": [
+          "{workspaceRoot}/apps/showcase/src/app/pages/docs/docs-html-registry.ts"
+        ],
+        "options": {
+          "command": "node tools/generate-showcase-docs.mjs",
+          "cwd": "{workspaceRoot}"
+        }
+      },
       "serve": {
         "executor": "@angular/build:dev-server",
         "continuous": true,
@@ -115,6 +129,9 @@
         "defaultConfiguration": "development"
       },
       "test": {
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:unit-test",
         "options": {
           "tsConfig": "apps/showcase/tsconfig.spec.json"

@@ -31,8 +31,7 @@ catalogs:
     '@angular/ssr': '22.0.3'
     '@tanstack/angular-table': '^8.21.4'
     rxjs: '~7.8.2'
-    # showcase-only: Markdown docs rendering + Prism syntax highlighting
-    marked: '^18.0.5'
+    # showcase-only: Prism syntax highlighting
     prismjs: '^1.30.0'
   # published peer ranges for the libs. Decoupled from `frontend` so the app
   # pins exact versions while published tarballs keep caret ranges (pnpm
@@ -52,6 +51,7 @@ catalogs:
     '@nx/playwright': '23.1.0-beta.0'
     '@playwright/test': '^1.50.1'
     jsdom: '^29.1.1'
+    marked: '^18.0.5'
     ng-packagr: '22.0.0'
   # runtime: cross-cutting helpers
   shared:
