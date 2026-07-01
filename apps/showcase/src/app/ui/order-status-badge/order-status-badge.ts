@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-import type { MockOrderRow } from '../../common';
+import type { MockOrderRow } from '../../mock-order/mock-order.type';
 
 @Component({
   selector: 'app-order-status-badge',

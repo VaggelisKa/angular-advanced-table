@@ -1,4 +1,4 @@
-import type { MockOrderRow } from '../common';
+import type { MockOrderRow } from './mock-order.type';
 
 export const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',

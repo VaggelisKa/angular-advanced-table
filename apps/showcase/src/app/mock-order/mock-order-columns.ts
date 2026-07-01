@@ -2,11 +2,11 @@ import { flexRenderComponent } from '@tanstack/angular-table';
 import type { ColumnDef } from '@tanstack/angular-table';
 import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 
-import type { MockOrderRow } from '../../common';
-import { currencyFormatter, dateFormatter, integerFormatter } from '../../utils';
-import { NatRowActionsMenu } from '../nat-row-actions-menu/nat-row-actions-menu';
-import { OrderCode } from '../order-code/order-code';
-import { OrderStatusBadge } from '../order-status-badge/order-status-badge';
+import type { MockOrderRow } from './mock-order.type';
+import { currencyFormatter, dateFormatter, integerFormatter } from './mock-order.util';
+import { NatRowActionsMenu } from '../ui/nat-row-actions-menu/nat-row-actions-menu';
+import { OrderCode } from '../ui/order-code/order-code';
+import { OrderStatusBadge } from '../ui/order-status-badge/order-status-badge';
 
 export const mockOrderColumns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderActions([
   {
