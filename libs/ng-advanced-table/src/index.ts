@@ -14,30 +14,9 @@ export { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate }
 
 export { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './common/table.type';
 
-export { flexRenderComponent } from '@tanstack/angular-table';
+export * from '@tanstack/angular-table';
 
 export type { NatTableRowRenderedEvent } from './common/events.type';
-
-export type {
-  CellContext,
-  Column,
-  ColumnDef,
-  ColumnFiltersState,
-  ColumnOrderState,
-  ColumnPinningState,
-  ColumnSizingState,
-  FilterFn,
-  FlexRenderContent,
-  HeaderContext,
-  PaginationState,
-  Row,
-  RowData,
-  RowSelectionState,
-  SortingState,
-  Table,
-  Updater,
-  VisibilityState
-} from '@tanstack/angular-table';
 
 export type {
   NatTableAccessibilityText,

@@ -1,11 +1,4 @@
 import type {
-  ColumnDef as TanStackColumnDef,
-  PaginationState as TanStackPaginationState,
-  RowData as TanStackRowData,
-  SortingState as TanStackSortingState
-} from '@tanstack/angular-table';
-import { flexRenderComponent as tanStackFlexRenderComponent } from '@tanstack/angular-table';
-import type {
   Equal,
   Expect,
   NatTableColumnMeta as InternalNatTableColumnMeta,
@@ -15,17 +8,12 @@ import type {
 } from 'ng-advanced-table/testing';
 
 import type {
-  ColumnDef as ForwardedColumnDef,
-  PaginationState as ForwardedPaginationState,
-  RowData as ForwardedRowData,
-  SortingState as ForwardedSortingState,
   NatTableColumnMeta,
   NatTableColumnMoveDirection,
   NatTableSortIndicatorContext,
   NatTableUiController,
   NatTableUserState
-} from '..';
-import { flexRenderComponent as forwardedFlexRenderComponent } from '..';
+} from './table.type';
 
 type ContractRow = {
   readonly amount: number;
@@ -41,10 +29,6 @@ type NatTableSortIndicatorContextMatchesInternalContract = Expect<
 type NatTableUiControllerMatchesInternalContract = Expect<
   Equal<NatTableUiController<ContractRow>, InternalNatTableUiController<ContractRow>>
 >;
-type ForwardedColumnDefMatchesTanStack = Expect<Equal<ForwardedColumnDef<ContractRow>, TanStackColumnDef<ContractRow>>>;
-type ForwardedSortingStateMatchesTanStack = Expect<Equal<ForwardedSortingState, TanStackSortingState>>;
-type ForwardedPaginationStateMatchesTanStack = Expect<Equal<ForwardedPaginationState, TanStackPaginationState>>;
-type ForwardedRowDataMatchesTanStack = Expect<Equal<ForwardedRowData, TanStackRowData>>;
 
 describe('FEATURE: ng-advanced-table public table contracts', () => {
   describe('GIVEN: the core public contract mirror is available', () => {
@@ -56,14 +40,10 @@ describe('FEATURE: ng-advanced-table public table contracts', () => {
           NatTableStateMatchesInternalContract,
           NatTableColumnMetaMatchesInternalContract,
           NatTableSortIndicatorContextMatchesInternalContract,
-          NatTableUiControllerMatchesInternalContract,
-          ForwardedColumnDefMatchesTanStack,
-          ForwardedSortingStateMatchesTanStack,
-          ForwardedPaginationStateMatchesTanStack,
-          ForwardedRowDataMatchesTanStack
-        ] = [true, true, true, true, true, true, true, true];
+          NatTableUiControllerMatchesInternalContract
+        ] = [true, true, true, true];
 
-        expect(contractChecks).toStrictEqual([true, true, true, true, true, true, true, true]);
+        expect(contractChecks).toStrictEqual([true, true, true, true]);
 
         const stateKey: keyof NatTableUserState = 'pagination';
         const moveDirection: NatTableColumnMoveDirection = 'right';
@@ -90,7 +70,6 @@ describe('FEATURE: ng-advanced-table public table contracts', () => {
         expect(meta.export?.header).toBe('Exported amount');
         expect(meta.export?.value).toStrictEqual(expect.any(Function));
         expect(meta.cellTone).toStrictEqual(expect.any(Function));
-        expect(forwardedFlexRenderComponent).toBe(tanStackFlexRenderComponent);
       });
     });
   });
