@@ -116,6 +116,8 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | Token                              | Purpose                              |
 | ---------------------------------- | ------------------------------------ |
 | `--nat-table-color-text`           | Base table text color                |
+| `--nat-table-color-border`         | Shared surface and control border    |
+| `--nat-table-color-divider`        | Shared row and cell divider          |
 | `--nat-table-font-family`          | Table font family                    |
 | `--nat-table-region-background`    | Scrollable table region background   |
 | `--nat-table-region-border-color`  | Scrollable table region border       |
@@ -168,29 +170,31 @@ Render-metrics widgets intentionally do not expose their own component-specific 
 
 ### Palette And Core
 
-| Token                                | Stock default                             |
-| ------------------------------------ | ----------------------------------------- |
-| `--nat-table-color-text`             | `#ecf5fb`                                 |
-| `--nat-table-color-text-muted`       | `#a8c3d7`                                 |
-| `--nat-table-color-accent`           | `#57d1ff`                                 |
-| `--nat-table-color-success`          | `#5de6a6`                                 |
-| `--nat-table-color-warning`          | `#ffd166`                                 |
-| `--nat-table-color-danger`           | `#ff8d7f`                                 |
-| `--nat-table-color-surface`          | `rgb(7 23 35 / 72%)`                      |
-| `--nat-table-color-surface-elevated` | `rgb(4 14 22 / 92%)`                      |
-| `--nat-table-color-surface-sticky`   | `rgb(5 20 31 / 96%)`                      |
-| `--nat-table-region-background`      | `var(--nat-table-color-surface-elevated)` |
-| `--nat-table-header-background`      | `var(--nat-table-color-surface-sticky)`   |
-| `--nat-table-header-color`           | `var(--nat-table-color-text-muted)`       |
-| `--nat-table-cell-border-color`      | `var(--nat-table-color-divider)`          |
-| `--nat-table-cell-color-positive`    | `var(--nat-table-color-success)`          |
-| `--nat-table-cell-color-negative`    | `var(--nat-table-color-danger)`           |
-| `--nat-table-cell-color-warning`     | `var(--nat-table-color-warning)`          |
-| `--nat-table-cell-color-neutral`     | `var(--nat-table-color-text-muted)`       |
-| `--nat-table-empty-state-color`      | `var(--nat-table-color-text-muted)`       |
-| `--nat-table-loading-state-color`    | `var(--nat-table-empty-state-color)`      |
-| `--nat-table-error-state-color`      | `var(--nat-table-cell-color-negative)`    |
-| `--nat-table-focus-ring-color`       | `var(--nat-table-color-accent)`           |
+| Token                                | Stock default                                                      |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| `--nat-table-color-text`             | `#ecf5fb`                                                          |
+| `--nat-table-color-text-muted`       | `#a8c3d7`                                                          |
+| `--nat-table-color-accent`           | `#57d1ff`                                                          |
+| `--nat-table-color-success`          | `#5de6a6`                                                          |
+| `--nat-table-color-warning`          | `#ffd166`                                                          |
+| `--nat-table-color-danger`           | `#ff8d7f`                                                          |
+| `--nat-table-color-surface`          | `rgb(7 23 35 / 72%)`                                               |
+| `--nat-table-color-surface-elevated` | `rgb(4 14 22 / 92%)`                                               |
+| `--nat-table-color-surface-sticky`   | `rgb(5 20 31 / 96%)`                                               |
+| `--nat-table-color-border`           | `color-mix(in srgb, var(--nat-table-color-text) 12%, transparent)` |
+| `--nat-table-color-divider`          | `color-mix(in srgb, var(--nat-table-color-text) 8%, transparent)`  |
+| `--nat-table-region-background`      | `var(--nat-table-color-surface-elevated)`                          |
+| `--nat-table-header-background`      | `var(--nat-table-color-surface-sticky)`                            |
+| `--nat-table-header-color`           | `var(--nat-table-color-text-muted)`                                |
+| `--nat-table-cell-border-color`      | `var(--nat-table-color-divider)`                                   |
+| `--nat-table-cell-color-positive`    | `var(--nat-table-color-success)`                                   |
+| `--nat-table-cell-color-negative`    | `var(--nat-table-color-danger)`                                    |
+| `--nat-table-cell-color-warning`     | `var(--nat-table-color-warning)`                                   |
+| `--nat-table-cell-color-neutral`     | `var(--nat-table-color-text-muted)`                                |
+| `--nat-table-empty-state-color`      | `var(--nat-table-color-text-muted)`                                |
+| `--nat-table-loading-state-color`    | `var(--nat-table-empty-state-color)`                               |
+| `--nat-table-error-state-color`      | `var(--nat-table-cell-color-negative)`                             |
+| `--nat-table-focus-ring-color`       | `var(--nat-table-color-accent)`                                    |
 
 ### Controls
 

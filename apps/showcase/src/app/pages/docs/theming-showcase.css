@@ -58,7 +58,7 @@
   color-scheme: light;
 }
 
-:host-context([data-theme='dark']) .ledger-surface {
+:host(.is-dark-theme) .ledger-surface {
   --nat-table-color-text: #dfe8e5;
   --nat-table-color-text-muted: #9fb1ab;
   --nat-table-color-accent: #5eead4;

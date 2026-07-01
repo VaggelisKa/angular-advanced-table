@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
@@ -6,6 +6,7 @@ import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 import type { NatTableSortIndicatorContext } from 'ng-advanced-table/components';
 
+import { ShowcaseThemeStore } from '../../showcase-theme';
 import { generateMockOrderRows } from '../mock-order-data';
 import type { MockOrderRow } from '../mock-order-data';
 
@@ -40,10 +41,16 @@ const ledgerSortIndicator = ({ sortState }: NatTableSortIndicatorContext): strin
 @Component({
   selector: 'app-theming-showcase',
   imports: [NatTable, NatTableSurface],
+  host: {
+    '[class.is-dark-theme]': 'isDarkTheme()'
+  },
   templateUrl: './theming-showcase.html',
   styleUrl: './theming-showcase.css'
 })
 export class ThemingShowcase {
+  private readonly themeStore = inject(ShowcaseThemeStore);
+
+  protected readonly isDarkTheme = computed(() => this.themeStore.theme() === 'dark');
   protected readonly rows = generateMockOrderRows(5);
 
   protected readonly initialState = {
