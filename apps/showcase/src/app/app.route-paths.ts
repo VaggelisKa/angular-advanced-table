@@ -4,6 +4,8 @@ const toRoutePath = (path: string): string => path.replace(/^\/+/, '');
 
 export const SHOWCASE_DEFAULT_ROUTE_PATH = 'docs/quick-start';
 
+export const SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH = 'examples/multiple-features';
+
 export const SHOWCASE_DOCS_INDEX_ROUTE_PATH = 'docs';
 
 export const SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH = 'examples';

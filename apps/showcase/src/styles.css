@@ -130,6 +130,8 @@ input {
   --showcase-page-shadow-sm: 0 1px 2px rgb(15 20 25 / 4%);
 }
 
+:root[data-theme='dark'] .showcase-shell,
+:root[data-theme='dark'] .showcase-shell .showcase-page,
 .showcase-shell[data-theme='dark'],
 .showcase-shell[data-theme='dark'] .showcase-page,
 .showcase-page[data-theme='dark'] {

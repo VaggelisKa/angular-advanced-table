@@ -93,10 +93,20 @@ describe('FEATURE: App', () => {
           {
             path: '',
             pathMatch: 'full',
-            redirectTo: 'docs/quick-start'
+            component: TestExamplePage
+          },
+          {
+            path: 'docs',
+            pathMatch: 'full',
+            component: TestExamplePage
           },
           {
             path: 'docs/quick-start',
+            component: TestExamplePage
+          },
+          {
+            path: 'examples',
+            pathMatch: 'full',
             component: TestExamplePage
           },
           {
@@ -321,6 +331,60 @@ describe('FEATURE: App', () => {
     });
   });
 
+  describe('GIVEN: the showcase app shell is rendered with active index routes', () => {
+    describe('WHEN: mark the root index as the quick start navigation leaf', () => {
+      it('THEN: it highlights the quick start link from the home page', async () => {
+        const router = TestBed.inject(Router);
+
+        await router.navigateByUrl('/');
+        const fixture = TestBed.createComponent(App);
+
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const quickStartLink = getElement<HTMLAnchorElement>(compiled, '[data-testid="showcase-nav-link-quick-start"]');
+
+        expect(quickStartLink.getAttribute('aria-current')).toBe('page');
+      });
+    });
+
+    describe('WHEN: mark docs index as the quick start navigation leaf', () => {
+      it('THEN: it highlights the quick start link', async () => {
+        const router = TestBed.inject(Router);
+
+        await router.navigateByUrl('/docs');
+        const fixture = TestBed.createComponent(App);
+
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const docsBranch = getElement<HTMLElement>(compiled, '[data-testid="showcase-nav-branch-docs"]');
+        const quickStartLink = getElement<HTMLAnchorElement>(compiled, '[data-testid="showcase-nav-link-quick-start"]');
+
+        expect(docsBranch.classList.contains('has-current-route')).toBe(true);
+        expect(quickStartLink.getAttribute('aria-current')).toBe('page');
+      });
+    });
+
+    describe('WHEN: mark examples index as the multiple features navigation leaf', () => {
+      it('THEN: it highlights the multiple features link', async () => {
+        const router = TestBed.inject(Router);
+
+        await router.navigateByUrl('/examples');
+        const fixture = TestBed.createComponent(App);
+
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const galleryBranch = getElement<HTMLElement>(compiled, '[data-testid="showcase-nav-branch-gallery"]');
+        const multipleFeaturesLink = getElement<HTMLAnchorElement>(compiled, '[data-testid="showcase-nav-link-multiple-features"]');
+
+        expect(galleryBranch.classList.contains('has-current-route')).toBe(true);
+        expect(multipleFeaturesLink.getAttribute('aria-current')).toBe('page');
+      });
+    });
+  });
+
   describe('GIVEN: the showcase app shell is rendered with sidenav theme controls', () => {
     describe('WHEN: toggle the showcase theme from the sidenav', () => {
       it('THEN: it updates theme state and button copy', async () => {
@@ -445,8 +509,8 @@ describe('FEATURE: App', () => {
   });
 
   describe('GIVEN: the showcase app shell is rendered with the default route configured', () => {
-    describe('WHEN: route the default page to the quick start docs', () => {
-      it('THEN: it navigates to the quick start docs route', async () => {
+    describe('WHEN: route the default page as the quick start docs alias', () => {
+      it('THEN: it renders the page without redirecting', async () => {
         const fixture = TestBed.createComponent(App);
         const router = TestBed.inject(Router);
 
@@ -456,6 +520,7 @@ describe('FEATURE: App', () => {
 
         const compiled = fixture.nativeElement as HTMLElement;
 
+        expect(router.url).toBe('/');
         expect(compiled.querySelector('router-outlet')).not.toBeNull();
         expect(compiled.textContent).toContain('Example route');
       });

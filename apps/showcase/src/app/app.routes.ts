@@ -1,6 +1,7 @@
 import type { Routes } from '@angular/router';
 
 import {
+  SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH,
   SHOWCASE_DEFAULT_ROUTE_PATH,
   SHOWCASE_DOCS_INDEX_ROUTE_PATH,
   SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH,
@@ -38,7 +39,7 @@ const findDocRoute = (path: string): ShowcaseDocRouteDescriptor => {
 };
 
 const quickStartRoute = findDocRoute(SHOWCASE_DEFAULT_ROUTE_PATH);
-const multipleFeaturesRoute = findExampleRoute('examples/multiple-features');
+const multipleFeaturesRoute = findExampleRoute(SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH);
 const builderRoute = findExampleRoute('examples/builder');
 const stickyHeaderMaxHeightRoute = findExampleRoute('examples/sticky-header-max-height');
 const paginationStickyAltRoute = findExampleRoute('examples/pagination-sticky-alt');

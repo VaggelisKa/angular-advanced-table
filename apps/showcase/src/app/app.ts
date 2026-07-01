@@ -8,6 +8,12 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 
 import { filter, map, startWith } from 'rxjs';
 
+import {
+  SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH,
+  SHOWCASE_DEFAULT_ROUTE_PATH,
+  SHOWCASE_DOCS_INDEX_ROUTE_PATH,
+  SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH
+} from './app.route-paths';
 import { loadDocsPage } from './app.routes';
 import { resolveFocusTrapTarget } from './app.util';
 import { DocsMarkdownCache } from './pages/docs/docs-markdown-cache';
@@ -49,7 +55,18 @@ function readInitialExpandedNavTreeBranchIds(): ReadonlySet<string> {
 }
 
 function normalizeRoutePath(url: string): string {
-  return url.split(/[?#]/, 1)[0] ?? url;
+  const routePath = url.split(/[?#]/, 1)[0] ?? url;
+  const routePathWithoutSlash = routePath.replace(/^\/+/, '');
+
+  if (routePathWithoutSlash === '' || routePathWithoutSlash === SHOWCASE_DOCS_INDEX_ROUTE_PATH) {
+    return `/${SHOWCASE_DEFAULT_ROUTE_PATH}`;
+  }
+
+  if (routePathWithoutSlash === SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH) {
+    return `/${SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH}`;
+  }
+
+  return routePath.startsWith('/') ? routePath : `/${routePath}`;
 }
 
 function findNavBranchIdsByRoute(sections: readonly ShowcaseNavSection[], routePath: string): string[] {

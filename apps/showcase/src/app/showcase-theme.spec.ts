@@ -55,13 +55,14 @@ describe('FEATURE: ShowcaseThemeStore', () => {
 
   describe('GIVEN: a showcase theme store is initialized', () => {
     describe('WHEN: apply the stable default theme during initial render', () => {
-      it('THEN: it starts from light mode before browser preference hydration', () => {
+      it('THEN: it starts from light mode without overwriting the pre-hydration document theme', () => {
         globalThis.localStorage.setItem(themeStorageKey, 'dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
 
         const themeStore = TestBed.inject(ShowcaseThemeStore);
 
         expect(themeStore.theme()).toBe('light');
-        expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+        expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
       });
     });
   });

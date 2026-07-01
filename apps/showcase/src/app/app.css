@@ -156,6 +156,7 @@
     color 180ms ease;
 }
 
+:host-context([data-theme='dark']) .showcase-shell,
 .showcase-shell[data-theme='dark'] {
   --shell-bg: #0b0d10;
   --shell-nav: #111419;
@@ -674,6 +675,7 @@
     transition: transform 180ms ease;
   }
 
+  :host-context([data-theme='dark']) .showcase-nav,
   .showcase-shell[data-theme='dark'] .showcase-nav {
     box-shadow: 20px 0 50px rgb(0 0 0 / 46%);
   }
@@ -686,6 +688,7 @@
     background: rgb(15 20 25 / 42%);
   }
 
+  :host-context([data-theme='dark']) .showcase-nav-backdrop,
   .showcase-shell[data-theme='dark'] .showcase-nav-backdrop {
     background: rgb(0 0 0 / 58%);
   }

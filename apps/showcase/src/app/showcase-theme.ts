@@ -44,8 +44,6 @@ export class ShowcaseThemeStore {
   public readonly theme = this.themeState.asReadonly();
 
   public constructor() {
-    this.applyThemeToDocument(this.themeState());
-
     afterNextRender(
       {
         write: () => this.setThemeState(readInitialTheme())
