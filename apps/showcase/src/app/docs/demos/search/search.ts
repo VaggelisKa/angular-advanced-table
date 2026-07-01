@@ -1,9 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
+
+import { TableSearch } from '../../../ui/table-search/table-search';
 
 type DemoItem = {
   readonly id: string;
@@ -29,17 +31,27 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-sorting-showcase',
-  imports: [NatTable, NatTableSurface],
-  templateUrl: './sorting-showcase.html',
-  styles: `
-    :host {
-      display: grid;
-      gap: 24px;
-    }
+  selector: 'app-search',
+  imports: [NatTable, NatTableSurface, TableSearch],
+  template: `
+    <div class="grid-layout">
+      <div class="card">
+        <h2 class="card-title">Searchable Grid</h2>
+
+        <nat-table-surface [(state)]="tableState">
+          <div class="search-panel">
+            <app-table-search
+              label="Fuzzy search symbol, name, status, or category"
+              placeholder="Search e.g. Analytics, Active, Delta..." />
+          </div>
+
+          <nat-table [columns]="columns" [data]="data" accessibleName="Search demo table" />
+        </nat-table-surface>
+      </div>
+    </div>
   `
 })
-export class SortingShowcasePage {
+export class Search {
   protected readonly data = DEMO_DATA;
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
@@ -67,56 +79,6 @@ export class SortingShowcasePage {
   ]);
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({
-    sorting: [{ id: 'name', desc: false }]
+    globalFilter: ''
   });
-
-  protected readonly currentSortLabel = computed(() => {
-    const sorting = this.tableState().sorting;
-
-    if (!sorting?.length) return 'None';
-
-    const entry = sorting[0];
-
-    return `${entry.id} (${entry.desc ? 'desc' : 'asc'})`;
-  });
-
-  protected sortBy(id: string, dir: 'asc' | 'desc'): void {
-    this.tableState.update((current) => ({
-      ...current,
-      sorting: [{ id, desc: dir === 'desc' }]
-    }));
-  }
-
-  protected clearSort(): void {
-    this.tableState.update((current) => ({
-      ...current,
-      sorting: []
-    }));
-  }
-
-  protected readonly multiSortState = signal<Partial<NatTableUserState>>({
-    sorting: []
-  });
-
-  protected readonly multiSortLabel = computed(() => {
-    const sorting = this.multiSortState().sorting;
-
-    if (!sorting?.length) return 'None';
-
-    return sorting.map((entry, index) => `${index + 1}. ${entry.id} (${entry.desc ? 'desc' : 'asc'})`).join(', ');
-  });
-
-  protected applyMultiPreset(): void {
-    this.multiSortState.update((current) => ({
-      ...current,
-      sorting: [
-        { id: 'category', desc: false },
-        { id: 'value', desc: true }
-      ]
-    }));
-  }
-
-  protected clearMultiSort(): void {
-    this.multiSortState.update((current) => ({ ...current, sorting: [] }));
-  }
 }

@@ -11,7 +11,7 @@ import {
 import type { NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
-import { formatError } from './states-showcase.util';
+import { formatError } from './states.util';
 
 type IncidentRow = {
   readonly id: string;
@@ -30,12 +30,12 @@ const DEMO_DATA: IncidentRow[] = [
 const ERROR_RETRY_DELAY_MS = 900;
 
 @Component({
-  selector: 'app-states-showcase',
+  selector: 'app-states',
   imports: [NatTable, NatTableSurface, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
-  templateUrl: './states-showcase.html',
-  styleUrl: './states-showcase.css'
+  templateUrl: './states.html',
+  styleUrl: './states.css'
 })
-export class StatesShowcasePage {
+export class States {
   private readonly destroyRef = inject(DestroyRef);
   private retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
 

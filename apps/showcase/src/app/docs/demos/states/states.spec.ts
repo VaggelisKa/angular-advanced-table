@@ -2,7 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { StatesShowcasePage } from './states-showcase';
+import { States } from './states';
 
 const clickCardButton = (card: HTMLElement, label: string): void => {
   const button = Array.from(card.querySelectorAll('button')).find(
@@ -12,16 +12,16 @@ const clickCardButton = (card: HTMLElement, label: string): void => {
   button.click();
 };
 
-describe('FEATURE: StatesShowcasePage', () => {
-  let fixture: ComponentFixture<StatesShowcasePage>;
+describe('FEATURE: States', () => {
+  let fixture: ComponentFixture<States>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StatesShowcasePage],
+      imports: [States],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(StatesShowcasePage);
+    fixture = TestBed.createComponent(States);
     await fixture.whenStable();
   });
 
@@ -30,7 +30,7 @@ describe('FEATURE: StatesShowcasePage', () => {
     vi.useRealTimers();
   });
 
-  describe('GIVEN: the states showcase page is rendered', () => {
+  describe('GIVEN: the states page is rendered', () => {
     describe('WHEN: renders loading, empty, error, transition, and refresh state examples', () => {
       it('THEN: it shows each table state example', () => {
         fixture.detectChanges();
@@ -49,7 +49,7 @@ describe('FEATURE: StatesShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: the states showcase page is rendered with transition preview controls', () => {
+  describe('GIVEN: the states page is rendered with transition preview controls', () => {
     describe('WHEN: switches the transition preview between table states', () => {
       it('THEN: it updates the transition preview state', () => {
         fixture.detectChanges();
@@ -80,7 +80,7 @@ describe('FEATURE: StatesShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: the states showcase page is rendered with an error state retry action', () => {
+  describe('GIVEN: the states page is rendered with an error state retry action', () => {
     describe('WHEN: lets keyboard users enter the retry action from the state cell', () => {
       it('THEN: it activates retry from the keyboard path', async () => {
         fixture.detectChanges();
@@ -108,7 +108,7 @@ describe('FEATURE: StatesShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: the states showcase page is rendered with retry state cycling enabled', () => {
+  describe('GIVEN: the states page is rendered with retry state cycling enabled', () => {
     describe('WHEN: loops retry through loading and back to error', () => {
       it('THEN: it cycles retry state through loading and error', () => {
         vi.useFakeTimers();

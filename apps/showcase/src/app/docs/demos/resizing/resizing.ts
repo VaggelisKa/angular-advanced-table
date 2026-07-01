@@ -34,13 +34,13 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-resizing-showcase',
+  selector: 'app-resizing',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NatTable, NatTableSurface],
-  templateUrl: './resizing-showcase.html',
-  styleUrl: './resizing-showcase.css'
+  templateUrl: './resizing.html',
+  styleUrl: './resizing.css'
 })
-export class ResizingShowcasePage {
+export class Resizing {
   protected readonly data = DEMO_DATA;
 
   // Base definitions never set enableResizing: resizing is opt-in per column, driven

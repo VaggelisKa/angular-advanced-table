@@ -5,8 +5,8 @@ import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table/components';
 
-import type { DemoItem, RowSelectionSource } from './selection-showcase.type';
-import { computeRowSelection } from './selection-showcase.util';
+import type { DemoItem, RowSelectionSource } from './selection.type';
+import { computeRowSelection } from './selection.util';
 
 const DEMO_DATA: DemoItem[] = [
   { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
@@ -24,11 +24,11 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-selection-showcase',
+  selector: 'app-selection',
   imports: [NatTable, NatTableSurface, NatTableToolbar, NatToolbarItem],
-  templateUrl: './selection-showcase.html'
+  templateUrl: './selection.html'
 })
-export class SelectionShowcasePage {
+export class Selection {
   protected readonly data = signal<DemoItem[]>(DEMO_DATA);
   protected readonly selectionMode = signal<'single' | 'multiple'>('multiple');
 

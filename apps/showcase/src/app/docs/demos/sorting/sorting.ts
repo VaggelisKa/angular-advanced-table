@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
-import { NatTableColumnVisibility, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 type DemoItem = {
   readonly id: string;
@@ -29,25 +29,17 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-visibility-showcase',
-  imports: [NatTable, NatTableSurface, NatTableColumnVisibility],
-  template: `
-    <div class="grid-layout">
-      <div class="card">
-        <h2 class="card-title">Visibility Grid Control</h2>
-
-        <nat-table-surface [(state)]="tableState">
-          <div class="visibility-panel">
-            <nat-table-column-visibility />
-          </div>
-
-          <nat-table [columns]="columns" [data]="data" accessibleName="Visibility demo table" />
-        </nat-table-surface>
-      </div>
-    </div>
+  selector: 'app-sorting',
+  imports: [NatTable, NatTableSurface],
+  templateUrl: './sorting.html',
+  styles: `
+    :host {
+      display: grid;
+      gap: 24px;
+    }
   `
 })
-export class VisibilityShowcasePage {
+export class Sorting {
   protected readonly data = DEMO_DATA;
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
@@ -75,11 +67,56 @@ export class VisibilityShowcasePage {
   ]);
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({
-    columnVisibility: {
-      name: true,
-      category: true,
-      status: false,
-      value: true
-    }
+    sorting: [{ id: 'name', desc: false }]
   });
+
+  protected readonly currentSortLabel = computed(() => {
+    const sorting = this.tableState().sorting;
+
+    if (!sorting?.length) return 'None';
+
+    const entry = sorting[0];
+
+    return `${entry.id} (${entry.desc ? 'desc' : 'asc'})`;
+  });
+
+  protected sortBy(id: string, dir: 'asc' | 'desc'): void {
+    this.tableState.update((current) => ({
+      ...current,
+      sorting: [{ id, desc: dir === 'desc' }]
+    }));
+  }
+
+  protected clearSort(): void {
+    this.tableState.update((current) => ({
+      ...current,
+      sorting: []
+    }));
+  }
+
+  protected readonly multiSortState = signal<Partial<NatTableUserState>>({
+    sorting: []
+  });
+
+  protected readonly multiSortLabel = computed(() => {
+    const sorting = this.multiSortState().sorting;
+
+    if (!sorting?.length) return 'None';
+
+    return sorting.map((entry, index) => `${index + 1}. ${entry.id} (${entry.desc ? 'desc' : 'asc'})`).join(', ');
+  });
+
+  protected applyMultiPreset(): void {
+    this.multiSortState.update((current) => ({
+      ...current,
+      sorting: [
+        { id: 'category', desc: false },
+        { id: 'value', desc: true }
+      ]
+    }));
+  }
+
+  protected clearMultiSort(): void {
+    this.multiSortState.update((current) => ({ ...current, sorting: [] }));
+  }
 }

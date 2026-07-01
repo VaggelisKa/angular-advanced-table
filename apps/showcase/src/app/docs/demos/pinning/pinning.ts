@@ -29,7 +29,7 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-pinning-showcase',
+  selector: 'app-pinning',
   imports: [NatTable, NatTableSurface],
   template: `
     <div class="grid-layout grid-layout-with-panel">
@@ -72,7 +72,7 @@ const DEMO_DATA: DemoItem[] = [
     </div>
   `
 })
-export class PinningShowcasePage {
+export class Pinning {
   protected readonly data = DEMO_DATA;
 
   protected readonly targetColumns = [

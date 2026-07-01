@@ -1,6 +1,6 @@
 import type { RowSelectionState } from '@tanstack/angular-table';
 
-import type { RowSelectionSource } from './selection-showcase.type';
+import type { RowSelectionSource } from './selection.type';
 
 export const computeRowSelection = (
   source: RowSelectionSource,

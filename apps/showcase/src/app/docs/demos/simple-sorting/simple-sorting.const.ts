@@ -1,6 +1,6 @@
 import type { NatTableUserState } from 'ng-advanced-table';
 
-import type { MockOrderRow } from '../../common';
+import type { MockOrderRow } from '../../../mock-order/mock-order.type';
 
 export const mockOrderRows: readonly MockOrderRow[] = [
   {

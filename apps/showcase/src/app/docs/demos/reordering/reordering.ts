@@ -30,7 +30,7 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-reordering-showcase',
+  selector: 'app-reordering',
   imports: [NatTable, NatTableSurface, TitleCasePipe],
   template: `
     <div class="grid-layout grid-layout-with-panel">
@@ -64,7 +64,7 @@ const DEMO_DATA: DemoItem[] = [
     </div>
   `
 })
-export class ReorderingShowcasePage {
+export class Reordering {
   protected readonly data = DEMO_DATA;
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(

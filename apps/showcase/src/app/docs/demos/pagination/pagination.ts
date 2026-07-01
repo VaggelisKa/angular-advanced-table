@@ -32,7 +32,7 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-pagination-showcase',
+  selector: 'app-pagination',
   imports: [NatTable, NatTableSurface, NatTablePagination],
   styles: `
     .description-spaced {
@@ -67,7 +67,7 @@ const DEMO_DATA: DemoItem[] = [
     </div>
   `
 })
-export class PaginationShowcasePage {
+export class Pagination {
   protected readonly data = DEMO_DATA;
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([

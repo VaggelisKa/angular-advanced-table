@@ -1,19 +1,19 @@
 /* eslint-disable max-lines -- topic registry intentionally keeps docs IA, snippets, and embedded examples together */
 import type { DocsCodeSnippet, DocsTopicContent } from './docs-topic.type';
 import { ThemingShowcase } from './theming-showcase';
-import { KeyboardInteractionShowcasePage } from '../../feature/keyboard-interaction/keyboard-interaction-showcase';
-import { PaginationShowcasePage } from '../../feature/pagination-showcase/pagination-showcase';
-import { PinningShowcasePage } from '../../feature/pinning-showcase/pinning-showcase';
-import { ReorderingShowcasePage } from '../../feature/reordering-showcase/reordering-showcase';
-import { ResizingShowcasePage } from '../../feature/resizing-showcase/resizing-showcase';
-import { SearchShowcasePage } from '../../feature/search-showcase/search-showcase';
-import { SelectionShowcasePage } from '../../feature/selection/selection-showcase';
-import { SimpleSorting } from '../../feature/simple-sorting/simple-sorting';
-import { SortingShowcasePage } from '../../feature/sorting/sorting-showcase';
-import { StatesShowcasePage } from '../../feature/states-showcase/states-showcase';
-import { StickyHeaderShowcasePage } from '../../feature/sticky-header-showcase/sticky-header-showcase';
-import { ToolbarShowcasePage } from '../../feature/toolbar-showcase/toolbar-showcase';
-import { VisibilityShowcasePage } from '../../feature/visibility-showcase/visibility-showcase';
+import { KeyboardInteraction } from '../demos/keyboard-interaction/keyboard-interaction';
+import { Pagination } from '../demos/pagination/pagination';
+import { Pinning } from '../demos/pinning/pinning';
+import { Reordering } from '../demos/reordering/reordering';
+import { Resizing } from '../demos/resizing/resizing';
+import { Search } from '../demos/search/search';
+import { Selection } from '../demos/selection/selection';
+import { SimpleSorting } from '../demos/simple-sorting/simple-sorting';
+import { Sorting } from '../demos/sorting/sorting';
+import { States } from '../demos/states/states';
+import { StickyHeader } from '../demos/sticky-header/sticky-header';
+import { Toolbar } from '../demos/toolbar/toolbar';
+import { Visibility } from '../demos/visibility/visibility';
 
 const snippet = (id: string, label: string, language: string, code: string): DocsCodeSnippet => ({
   id,
@@ -434,7 +434,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'table-states',
         title: 'State rows stay inside the table',
         description: 'Loading, empty, error, transition, and refresh states use table-owned body rows with app-owned lifecycle logic.',
-        component: StatesShowcasePage,
+        component: States,
         snippets: statesSnippets
       }
     ],
@@ -459,7 +459,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'sorting',
         title: 'Single and multi-column sorting',
         description: 'The table state owns sorting while header actions and app controls can update the same slice.',
-        component: SortingShowcasePage,
+        component: Sorting,
         snippets: sortingSnippets
       },
       {
@@ -490,7 +490,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'filtering-search',
         title: 'Consumer-owned search',
         description: 'A product-owned search input patches table state without becoming a bundled table primitive.',
-        component: SearchShowcasePage,
+        component: Search,
         snippets: filteringSnippets
       }
     ],
@@ -514,7 +514,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'pagination',
         title: 'Client and manual pagination',
         description: 'The pagination companion control can drive automatic row models or an app-owned data pipeline.',
-        component: PaginationShowcasePage,
+        component: Pagination,
         snippets: paginationSnippets
       }
     ],
@@ -538,7 +538,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'column-pinning',
         title: 'Column pinning',
         description: 'Pinning state keeps important columns visible at the left or right boundary.',
-        component: PinningShowcasePage,
+        component: Pinning,
         snippets: columnLayoutSnippets
       },
       {
@@ -546,7 +546,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'column-reordering',
         title: 'Column reordering',
         description: 'Drag, menu actions, and keyboard shortcuts all update the same column order state.',
-        component: ReorderingShowcasePage,
+        component: Reordering,
         snippets: columnLayoutSnippets
       },
       {
@@ -554,7 +554,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'column-resizing',
         title: 'Column resizing',
         description: 'Resizable columns can use fill or fixed width modes with pointer and keyboard input.',
-        component: ResizingShowcasePage,
+        component: Resizing,
         snippets: columnLayoutSnippets
       },
       {
@@ -562,7 +562,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'column-visibility',
         title: 'Column visibility',
         description: 'The visibility companion control patches column visibility without owning table data.',
-        component: VisibilityShowcasePage,
+        component: Visibility,
         snippets: columnLayoutSnippets
       },
       {
@@ -570,7 +570,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'sticky-header',
         title: 'Sticky header',
         description: 'Sticky headers keep column context visible in vertically scrollable table regions.',
-        component: StickyHeaderShowcasePage,
+        component: StickyHeader,
         snippets: columnLayoutSnippets
       }
     ],
@@ -596,7 +596,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'row-selection',
         title: 'Row selection and bulk actions',
         description: 'Selection state is keyed by stable row id and can drive app-owned bulk controls.',
-        component: SelectionShowcasePage,
+        component: Selection,
         snippets: selectionSnippets
       }
     ],
@@ -619,7 +619,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'toolbar-actions',
         title: 'Toolbar groups and action placement',
         description: 'Toolbar items keep DOM, screen-reader, and roving-keyboard order aligned.',
-        component: ToolbarShowcasePage,
+        component: Toolbar,
         snippets: toolbarSnippets
       }
     ],
@@ -655,7 +655,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'keyboard-interaction',
         title: 'Keyboard cell interaction',
         description: 'Grid navigation, interactive controls, and row activation share one keyboard model.',
-        component: KeyboardInteractionShowcasePage,
+        component: KeyboardInteraction,
         snippets: keyboardSnippets
       }
     ],

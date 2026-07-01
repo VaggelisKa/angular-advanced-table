@@ -29,7 +29,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
 });
 
 @Component({
-  selector: 'app-sticky-header-showcase',
+  selector: 'app-sticky-header',
   imports: [NatTable, NatTableSurface],
   styles: `
     nat-table-surface {
@@ -60,7 +60,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
     </div>
   `
 })
-export class StickyHeaderShowcasePage {
+export class StickyHeader {
   protected readonly data = DEMO_DATA;
   protected readonly stickyHeaderEnabled = signal(true);
 

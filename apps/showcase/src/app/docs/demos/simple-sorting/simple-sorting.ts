@@ -4,7 +4,7 @@ import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { mockOrderRows, preconfiguredTableState } from './simple-sorting.const';
-import { mockOrderColumns } from '../../ui';
+import { mockOrderColumns } from '../../../mock-order/mock-order-columns';
 
 @Component({
   selector: 'app-simple-sorting',

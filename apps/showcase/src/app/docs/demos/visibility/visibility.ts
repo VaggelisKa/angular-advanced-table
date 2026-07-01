@@ -3,9 +3,7 @@ import { Component, signal } from '@angular/core';
 import type { CellContext, ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
-
-import { TableSearch } from '../../ui/table-search/table-search';
+import { NatTableColumnVisibility, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 type DemoItem = {
   readonly id: string;
@@ -31,27 +29,25 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-search-showcase',
-  imports: [NatTable, NatTableSurface, TableSearch],
+  selector: 'app-visibility',
+  imports: [NatTable, NatTableSurface, NatTableColumnVisibility],
   template: `
     <div class="grid-layout">
       <div class="card">
-        <h2 class="card-title">Searchable Grid</h2>
+        <h2 class="card-title">Visibility Grid Control</h2>
 
         <nat-table-surface [(state)]="tableState">
-          <div class="search-panel">
-            <app-table-search
-              label="Fuzzy search symbol, name, status, or category"
-              placeholder="Search e.g. Analytics, Active, Delta..." />
+          <div class="visibility-panel">
+            <nat-table-column-visibility />
           </div>
 
-          <nat-table [columns]="columns" [data]="data" accessibleName="Search demo table" />
+          <nat-table [columns]="columns" [data]="data" accessibleName="Visibility demo table" />
         </nat-table-surface>
       </div>
     </div>
   `
 })
-export class SearchShowcasePage {
+export class Visibility {
   protected readonly data = DEMO_DATA;
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
@@ -79,6 +75,11 @@ export class SearchShowcasePage {
   ]);
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({
-    globalFilter: ''
+    columnVisibility: {
+      name: true,
+      category: true,
+      status: false,
+      value: true
+    }
   });
 }

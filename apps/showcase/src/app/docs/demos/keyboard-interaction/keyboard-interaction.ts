@@ -32,11 +32,11 @@ const DEMO_DATA: DemoItem[] = [
 ];
 
 @Component({
-  selector: 'app-keyboard-interaction-showcase',
+  selector: 'app-keyboard-interaction',
   imports: [NatTable, NatTableSurface],
-  templateUrl: './keyboard-interaction-showcase.html'
+  templateUrl: './keyboard-interaction.html'
 })
-export class KeyboardInteractionShowcasePage {
+export class KeyboardInteraction {
   protected readonly data = signal<DemoItem[]>(DEMO_DATA);
   protected readonly lastAction = signal('None yet');
 

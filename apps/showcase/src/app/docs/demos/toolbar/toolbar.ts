@@ -13,7 +13,7 @@ import {
   withNatTableHeaderActions
 } from 'ng-advanced-table/components';
 
-import { TableSearch } from '../../ui/table-search/table-search';
+import { TableSearch } from '../../../ui/table-search/table-search';
 
 type DemoItem = {
   readonly id: string;
@@ -55,15 +55,15 @@ const FILTER_PRESETS: readonly FilterPreset[] = [
 ];
 
 @Component({
-  selector: 'app-toolbar-showcase',
+  selector: 'app-toolbar',
   imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarGroup, NatToolbarItem, TableSearch],
-  templateUrl: './toolbar-showcase.html',
-  styleUrl: './toolbar-showcase.css',
+  templateUrl: './toolbar.html',
+  styleUrl: './toolbar.css',
   host: {
     '(document:click)': 'onDocumentClick($event)'
   }
 })
-export class ToolbarShowcasePage {
+export class Toolbar {
   protected readonly lastAction = signal('none');
 
   protected readonly data = DEMO_DATA;

@@ -2,18 +2,18 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { SelectionShowcasePage } from './selection-showcase';
+import { Selection } from './selection';
 
-describe('FEATURE: SelectionShowcasePage', () => {
-  let fixture: ComponentFixture<SelectionShowcasePage>;
+describe('FEATURE: Selection', () => {
+  let fixture: ComponentFixture<Selection>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SelectionShowcasePage],
+      imports: [Selection],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SelectionShowcasePage);
+    fixture = TestBed.createComponent(Selection);
     await fixture.whenStable();
     fixture.detectChanges();
   });
@@ -51,7 +51,7 @@ describe('FEATURE: SelectionShowcasePage', () => {
     fixture.detectChanges();
   }
 
-  describe('GIVEN: the selection showcase page is rendered', () => {
+  describe('GIVEN: the selection page is rendered', () => {
     describe('WHEN: clears the selection when the mode changes and restores a correct partial header', () => {
       it('THEN: it resets selection state and header checkbox state', async () => {
         rowCheckbox(0).click();
@@ -86,7 +86,7 @@ describe('FEATURE: SelectionShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: the selection showcase page is rendered with deletable selected rows', () => {
+  describe('GIVEN: the selection page is rendered with deletable selected rows', () => {
     describe('WHEN: prunes the selection when selected rows are deleted', () => {
       it('THEN: it removes deleted rows from selection state', async () => {
         const header = headerCheckbox();
@@ -108,7 +108,7 @@ describe('FEATURE: SelectionShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: the selection showcase page is rendered with a partially selected row set', () => {
+  describe('GIVEN: the selection page is rendered with a partially selected row set', () => {
     describe('WHEN: drops a deleted row from a partial selection without leaving a stale id', () => {
       it('THEN: it removes the stale partial-selection id', async () => {
         rowCheckbox(0).click();
@@ -130,7 +130,7 @@ describe('FEATURE: SelectionShowcasePage', () => {
     });
   });
 
-  describe('GIVEN: the selection showcase page is rendered with selected checkboxes', () => {
+  describe('GIVEN: the selection page is rendered with selected checkboxes', () => {
     describe('WHEN: clears every checkbox when selection is cleared', () => {
       it('THEN: it unchecks all rendered selection controls', async () => {
         rowCheckbox(0).click();
