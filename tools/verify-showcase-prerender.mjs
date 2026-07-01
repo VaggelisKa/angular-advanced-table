@@ -45,6 +45,11 @@ assertContains(quickStartHtml, 'Start with', quickStartRoute);
 assertContains(quickStartHtml, 'First Table', quickStartRoute);
 assertContains(quickStartHtml, 'Angular Advanced Table Docs', quickStartRoute);
 
+const docsIndexHtml = readRouteHtml('docs');
+
+assertContains(docsIndexHtml, 'id="showcase-initial-theme"', 'docs');
+assertContains(docsIndexHtml, '--showcase-page-bg: #0b0d10', 'docs');
+
 for (const routePath of ['', 'docs', 'examples']) {
   assertNotRedirectDocument(readRouteHtml(routePath), routePath);
 }
