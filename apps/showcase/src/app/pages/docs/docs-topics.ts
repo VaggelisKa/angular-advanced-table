@@ -298,7 +298,6 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-color-accent: #0f766e;
   --nat-table-color-success: #0f766e;
   --nat-table-color-warning: #9a5b13;
-  --nat-table-color-danger: #a43f43;
   --nat-table-card-background: #edf3f1;
   --nat-table-card-border-color: #cbd8d4;
   --nat-table-card-shadow: 0 18px 42px rgb(31 49 45 / 12%);
@@ -318,12 +317,9 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-header-border-color: #26312f;
   --nat-table-row-background: #fbfcfb;
   --nat-table-row-background-hover: #eef6f3;
-  --nat-table-row-background-hover-pinned: #e4efec;
   --nat-table-row-background-focus: #e4efec;
-  --nat-table-row-background-focus-pinned: #d7e6e1;
   --nat-table-cell-border-color: #dde7e3;
   --nat-table-cell-color-positive: #0f766e;
-  --nat-table-cell-color-negative: #a43f43;
   --nat-table-cell-color-warning: #9a5b13;
   --nat-table-cell-color-neutral: #667570;
   --nat-table-focus-ring-color: #0f766e;
@@ -332,7 +328,6 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-sort-icon-color-hover: #f8fbfa;
   --nat-table-sort-button-color-sorted: #f8fbfa;
   --nat-table-space-header-actions-gap: 8px;
-  --nat-table-space-chip-row-gap: 8px;
   --nat-table-sort-icon-min-width: 1rem;
   --nat-table-space-cell-y: 15px;
   --nat-table-space-cell-x: 18px;
@@ -350,7 +345,6 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-color-accent: #5eead4;
   --nat-table-color-success: #5eead4;
   --nat-table-color-warning: #f8c572;
-  --nat-table-color-danger: #f19aa0;
   --nat-table-card-background: #111c1a;
   --nat-table-card-border-color: #30413d;
   --nat-table-card-shadow: 0 18px 44px rgb(3 10 9 / 46%);
@@ -361,12 +355,9 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-header-border-color: #dce8e4;
   --nat-table-row-background: #15211f;
   --nat-table-row-background-hover: #1d2d2a;
-  --nat-table-row-background-hover-pinned: #243632;
   --nat-table-row-background-focus: #243632;
-  --nat-table-row-background-focus-pinned: #30413d;
   --nat-table-cell-border-color: #253632;
   --nat-table-cell-color-positive: #5eead4;
-  --nat-table-cell-color-negative: #f19aa0;
   --nat-table-cell-color-warning: #f8c572;
   --nat-table-cell-color-neutral: #c5d3cf;
   --nat-table-focus-ring-color: #5eead4;
