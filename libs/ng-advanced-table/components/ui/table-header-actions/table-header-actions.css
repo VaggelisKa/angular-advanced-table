@@ -74,7 +74,7 @@
   cursor: pointer;
   background: transparent;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--nat-table-radius-chip, 100vmax);
 }
 
 .sort-button,
@@ -161,7 +161,7 @@
      chip keeps the accent tint via the shared active-sort token. */
   color: var(--nat-table-sort-priority-color, inherit);
   background: var(--nat-table-sort-icon-chip-background-active);
-  border-radius: 999px;
+  border-radius: var(--nat-table-radius-chip, 100vmax);
 }
 
 .menu-button__icon {

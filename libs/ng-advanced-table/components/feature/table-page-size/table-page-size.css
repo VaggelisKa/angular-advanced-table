@@ -18,12 +18,19 @@
   cursor: pointer;
   outline: none;
   background-color: var(--nat-table-chip-background, transparent);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%236b7280' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/></svg>");
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--nat-table-color-text-muted, currentColor) 50%),
+    linear-gradient(135deg, var(--nat-table-color-text-muted, currentColor) 50%, transparent 50%);
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px;
-  border: 1px solid var(--nat-table-chip-border-color, var(--nat-table-color-border, #e4e7eb));
-  border-radius: var(--nat-table-radius-chip, 999px);
+  background-position:
+    right 18px center,
+    right 12px center;
+  background-size:
+    6px 6px,
+    6px 6px;
+  border: 1px solid
+    var(--nat-table-chip-border-color, var(--nat-table-color-border, color-mix(in srgb, currentColor 16%, transparent)));
+  border-radius: var(--nat-table-radius-chip, 100vmax);
   transition:
     background-color var(--nat-table-transition-medium, 180ms ease),
     border-color var(--nat-table-transition-medium, 180ms ease),
@@ -38,7 +45,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .page-size-select:hover {
-    background-color: var(--nat-table-chip-background-hover, rgb(0 0 0 / 4%));
+    background-color: var(--nat-table-chip-background-hover, color-mix(in srgb, currentColor 8%, transparent));
     border-color: var(--nat-table-chip-border-color-hover, currentColor);
     transform: var(--nat-table-hover-lift, translateY(-1px));
   }

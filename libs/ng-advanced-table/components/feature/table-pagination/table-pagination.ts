@@ -32,7 +32,7 @@ type PageSizeOption = {
   selector: 'nat-table-pagination',
   imports: [NatTableToolbar, NatToolbarGroup, NatToolbarItem],
   templateUrl: './table-pagination.html',
-  styleUrl: './table-pagination.css'
+  styleUrls: ['../table-page-size/table-page-size.css', '../table-pager/table-pager.css', './table-pagination.css']
 })
 export class NatTablePagination<TData extends RowData = RowData> {
   public readonly locale = input<string | undefined>(undefined);

@@ -313,7 +313,6 @@ input {
   border-top: 1px solid var(--showcase-page-border);
 }
 
-.showcase-page nat-table,
 .showcase-page nat-table-surface {
   /* Palette */
   --nat-table-color-text: var(--showcase-page-text);

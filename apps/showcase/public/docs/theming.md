@@ -2,37 +2,51 @@ The table theme contract is CSS custom properties. Put tokens on an ancestor of 
 
 ## Recommended Shape
 
-Use `NatTableSurface` when you want the stock surface and companion-control theme.
+Use `NatTableSurface` when you want the stock surface and companion-control theme. Scope inherited `--nat-table-*` custom properties on a wrapper around the table, controls, and optional render-metrics UI.
 
 ```html
 <section class="orders-table-theme">
   <nat-table-surface>
     <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
-    <nat-table [data]="rows()" [columns]="columns" accessibleName="Orders" />
+    <nat-table #table [data]="rows()" [columns]="columns" accessibleName="Orders" />
 
     <nat-table-scroll-control />
     <nat-table-column-visibility />
+    <nat-render-metrics-panel [controller]="table" [store]="renderMetricsStore" />
   </nat-table-surface>
 </section>
 ```
 
-Start with product-level tokens. `NatTableSurface` maps common product tokens into the `--nat-table-*` token set.
+Start with the semantic table palette. The table, bundled controls, and render-metrics components inherit these values.
 
 ```css
 .orders-table-theme {
-  --text: #172033;
-  --text-soft: #64748b;
-  --accent: #2563eb;
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --surface-contrast: #f8fafc;
-  --success: #15803d;
-  --warning: #a16207;
-  --danger: #b91c1c;
+  --nat-table-color-text: #111827;
+  --nat-table-color-text-muted: #4b5563;
+  --nat-table-color-accent: #2563eb;
+  --nat-table-color-success: #166534;
+  --nat-table-color-warning: #a16207;
+  --nat-table-color-danger: #b91c1c;
+  --nat-table-color-surface: #ffffff;
+  --nat-table-color-surface-elevated: #ffffff;
+  --nat-table-color-surface-sticky: #f9fafb;
 
-  color: var(--text);
   color-scheme: light;
+}
+
+[data-theme='dark'] .orders-table-theme {
+  --nat-table-color-text: #f9fafb;
+  --nat-table-color-text-muted: #cbd5e1;
+  --nat-table-color-accent: #60a5fa;
+  --nat-table-color-success: #86efac;
+  --nat-table-color-warning: #fde68a;
+  --nat-table-color-danger: #fca5a5;
+  --nat-table-color-surface: rgb(15 23 42 / 92%);
+  --nat-table-color-surface-elevated: #111827;
+  --nat-table-color-surface-sticky: #1f2937;
+
+  color-scheme: dark;
 }
 ```
 
@@ -43,6 +57,7 @@ Use direct `--nat-table-*` overrides when the table needs a table-specific decis
   --nat-table-header-background: #eef2ff;
   --nat-table-row-background-hover: #f8fafc;
   --nat-table-focus-ring-color: #1d4ed8;
+  --nat-table-radius-chip: 0.75rem;
 }
 ```
 
@@ -52,45 +67,47 @@ Choose the narrowest scope that matches the product decision.
 
 ```css
 .risk-table {
-  --accent: #7c3aed;
+  --nat-table-color-accent: #7c3aed;
   --nat-table-header-background: #f5f3ff;
   --nat-table-pinned-divider-color: #c4b5fd;
 }
 ```
 
-For app-wide themes, put product tokens on the app root or theme attribute.
+For app-wide themes, put table tokens on the app root or theme attribute.
 
 ```css
 :root {
-  --text: #111827;
-  --text-soft: #6b7280;
-  --accent: #2563eb;
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --surface-contrast: #f9fafb;
-  --success: #15803d;
-  --warning: #a16207;
-  --danger: #b91c1c;
+  --nat-table-color-text: #111827;
+  --nat-table-color-text-muted: #6b7280;
+  --nat-table-color-accent: #2563eb;
+  --nat-table-color-surface: #ffffff;
+  --nat-table-color-surface-elevated: #ffffff;
+  --nat-table-color-surface-sticky: #f9fafb;
+  --nat-table-color-success: #15803d;
+  --nat-table-color-warning: #a16207;
+  --nat-table-color-danger: #b91c1c;
 
   color-scheme: light;
 }
 
 [data-theme='dark'] {
-  --text: #f9fafb;
-  --text-soft: #9ca3af;
-  --accent: #60a5fa;
-  --surface: #111827;
-  --surface-elevated: #1f2937;
-  --surface-contrast: #374151;
-  --success: #86efac;
-  --warning: #fde68a;
-  --danger: #fca5a5;
+  --nat-table-color-text: #f9fafb;
+  --nat-table-color-text-muted: #9ca3af;
+  --nat-table-color-accent: #60a5fa;
+  --nat-table-color-surface: #111827;
+  --nat-table-color-surface-elevated: #1f2937;
+  --nat-table-color-surface-sticky: #374151;
+  --nat-table-color-success: #86efac;
+  --nat-table-color-warning: #fde68a;
+  --nat-table-color-danger: #fca5a5;
 
   color-scheme: dark;
 }
 ```
 
 If controls and the table live in different surfaces, put product tokens on their shared ancestor so both surfaces derive the same theme.
+
+The live example below scopes `--nat-table-*` tokens on `NatTableSurface`, with a matching `[data-theme='dark']` override. It intentionally avoids private component classes and `::ng-deep`, so the same CSS can live in a consumer app stylesheet.
 
 ## Core Table Tokens
 
@@ -99,6 +116,8 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | Token                              | Purpose                              |
 | ---------------------------------- | ------------------------------------ |
 | `--nat-table-color-text`           | Base table text color                |
+| `--nat-table-color-border`         | Shared surface and control border    |
+| `--nat-table-color-divider`        | Shared row and cell divider          |
 | `--nat-table-font-family`          | Table font family                    |
 | `--nat-table-region-background`    | Scrollable table region background   |
 | `--nat-table-region-border-color`  | Scrollable table region border       |
@@ -139,8 +158,78 @@ Set the border-width tokens to `0` when a design needs to remove the outer table
 | Pager          | `--nat-table-pager-background`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-min-height`                    |
 | Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-pin-color-pinned`                                       |
 | Motion         | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-disabled-opacity`                                                 |
+| Stacking       | `--nat-table-z-index-sticky-header`, `--nat-table-z-index-pinned-cell`, `--nat-table-z-index-drag-preview`                                     |
 
-Prefer product tokens first. Reach for these direct tokens when a table control needs a local exception.
+Reach for these direct tokens when a table control needs a local exception.
+
+Render-metrics widgets intentionally do not expose their own component-specific tokens. They inherit the shared semantic palette (`--nat-table-color-*`) so they remain readable in light and dark themes, while their compact KPI/chip styling stays internal.
+
+## Stock Defaults
+
+`NatTableSurface` provides the stock default token set. Core-only tables render with conservative system-color fallbacks when no theme is present, but product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme.
+
+### Palette And Core
+
+| Token                                | Stock default                                                      |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| `--nat-table-color-text`             | `#ecf5fb`                                                          |
+| `--nat-table-color-text-muted`       | `#a8c3d7`                                                          |
+| `--nat-table-color-accent`           | `#57d1ff`                                                          |
+| `--nat-table-color-success`          | `#5de6a6`                                                          |
+| `--nat-table-color-warning`          | `#ffd166`                                                          |
+| `--nat-table-color-danger`           | `#ff8d7f`                                                          |
+| `--nat-table-color-surface`          | `rgb(7 23 35 / 72%)`                                               |
+| `--nat-table-color-surface-elevated` | `rgb(4 14 22 / 92%)`                                               |
+| `--nat-table-color-surface-sticky`   | `rgb(5 20 31 / 96%)`                                               |
+| `--nat-table-color-border`           | `color-mix(in srgb, var(--nat-table-color-text) 12%, transparent)` |
+| `--nat-table-color-divider`          | `color-mix(in srgb, var(--nat-table-color-text) 8%, transparent)`  |
+| `--nat-table-region-background`      | `var(--nat-table-color-surface-elevated)`                          |
+| `--nat-table-header-background`      | `var(--nat-table-color-surface-sticky)`                            |
+| `--nat-table-header-color`           | `var(--nat-table-color-text-muted)`                                |
+| `--nat-table-cell-border-color`      | `var(--nat-table-color-divider)`                                   |
+| `--nat-table-cell-color-positive`    | `var(--nat-table-color-success)`                                   |
+| `--nat-table-cell-color-negative`    | `var(--nat-table-color-danger)`                                    |
+| `--nat-table-cell-color-warning`     | `var(--nat-table-color-warning)`                                   |
+| `--nat-table-cell-color-neutral`     | `var(--nat-table-color-text-muted)`                                |
+| `--nat-table-empty-state-color`      | `var(--nat-table-color-text-muted)`                                |
+| `--nat-table-loading-state-color`    | `var(--nat-table-empty-state-color)`                               |
+| `--nat-table-error-state-color`      | `var(--nat-table-cell-color-negative)`                             |
+| `--nat-table-focus-ring-color`       | `var(--nat-table-color-accent)`                                    |
+
+### Controls
+
+| Token                                 | Stock default                                                        |
+| ------------------------------------- | -------------------------------------------------------------------- |
+| `--nat-table-radius-card`             | `28px`                                                               |
+| `--nat-table-radius-region`           | `24px`                                                               |
+| `--nat-table-radius-input`            | `18px`                                                               |
+| `--nat-table-radius-chip`             | `999px`                                                              |
+| `--nat-table-space-card`              | `28px`                                                               |
+| `--nat-table-space-card-compact`      | `20px`                                                               |
+| `--nat-table-space-control-block-gap` | `10px`                                                               |
+| `--nat-table-space-chip-row-gap`      | `10px`                                                               |
+| `--nat-table-chip-background`         | `color-mix(in srgb, var(--nat-table-color-text) 5%, transparent)`    |
+| `--nat-table-chip-background-active`  | `color-mix(in srgb, var(--nat-table-color-accent) 18%, transparent)` |
+| `--nat-table-chip-border-color`       | `color-mix(in srgb, var(--nat-table-color-text) 14%, transparent)`   |
+| `--nat-table-pager-background`        | `color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent)` |
+| `--nat-table-pager-border-color`      | `color-mix(in srgb, var(--nat-table-color-accent) 28%, transparent)` |
+
+### Layout And Stacking
+
+| Token                               | Stock default |
+| ----------------------------------- | ------------- |
+| `--nat-table-region-overflow-x`     | `auto`        |
+| `--nat-table-region-overflow-y`     | `auto`        |
+| `--nat-table-max-height`            | `inherit`     |
+| `--nat-table-height`                | `inherit`     |
+| `--nat-table-sticky-top`            | `0`           |
+| `--nat-table-z-index-sticky-header` | `4`           |
+| `--nat-table-z-index-pinned-cell`   | `5`           |
+| `--nat-table-z-index-pinned-header` | `6`           |
+| `--nat-table-z-index-focus-cell`    | `7`           |
+| `--nat-table-z-index-resize-handle` | `8`           |
+| `--nat-table-z-index-resize-guide`  | `9`           |
+| `--nat-table-z-index-drag-preview`  | `12`          |
 
 ## Core-Only Tables
 
@@ -205,7 +294,7 @@ Do not encode business meaning only through color. Include signs, labels, icons 
 ## Theming Checklist
 
 - Put tokens on a wrapper, feature shell, or app theme root.
-- Prefer product tokens (`--text`, `--accent`, `--surface`, and state colors) before direct table tokens.
+- Prefer `--nat-table-*` tokens for new themes.
 - Keep table, companion controls, and render metrics under the same theme scope.
 - Use `color-scheme` for light and dark scopes.
 - Verify focus-visible states after changing focus, border, header, chip, pager, or semantic colors.

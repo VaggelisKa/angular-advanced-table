@@ -444,106 +444,8 @@
   min-width: 0;
 }
 
-/* Flatten the utils render-metrics components to match the finance look. */
-.demo-surface ::ng-deep nat-render-metrics-filter .control-block {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .control-heading {
-  display: inline-flex;
-  flex: 0 0 auto;
-  gap: 8px;
-  align-items: center;
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .control-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .control-caption {
-  font-size: 0.75rem;
-  color: var(--text-soft);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .chip-row {
-  gap: 6px;
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .chip {
-  gap: 6px;
-  min-width: auto;
-  min-height: 28px;
-  padding: 0 10px;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--text-soft);
-  background: var(--surface);
-  border-color: var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: none;
-  transform: none;
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .chip.is-active {
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-  box-shadow: none;
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .chip-count {
-  font-family: var(--mono-font);
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-filter .chip.is-active .chip-count {
-  color: var(--accent);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-panel .render-kpi {
-  height: 28px;
-  padding: 0 10px;
-  font-size: 0.78rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-soft);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-panel .render-kpi strong {
-  font-family: var(--mono-font);
-  color: var(--text);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-panel .render-kpi-dot {
-  box-shadow: none !important;
-}
-
-.demo-surface ::ng-deep nat-render-metrics-panel .render-kpi[data-health='fast'] .render-kpi-dot {
-  background: var(--positive);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-panel .render-kpi[data-health='watch'] .render-kpi-dot {
-  background: var(--warning);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-panel .render-kpi[data-health='slow'] .render-kpi-dot {
-  background: var(--negative);
-}
-
-.demo-surface ::ng-deep nat-render-metrics-panel .render-kpi-detail {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  opacity: 1;
+.kitchen-metrics-controls nat-render-metrics-panel {
+  flex: 0 1 auto;
 }
 
 /* ---------- Table card ---------- */
@@ -601,23 +503,6 @@
   border-top: 1px solid var(--border);
 }
 
-.demo-surface .table-card .table-controls-surface ::ng-deep .surface {
-  padding: 12px 20px;
-  border: 0;
-  border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-}
-
-.demo-surface .table-card .table-shell ::ng-deep .surface {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-}
-
 .kitchen-metrics-controls,
 .kitchen-table-toolbar {
   display: flex;
@@ -643,12 +528,7 @@
   --nat-table-color-surface: transparent;
 }
 
-/*
- * Drive the `--nat-table-*` theming API. The library re-declares these on its
- * own :host, so we set them on <nat-table> and <nat-table-surface> to win specificity.
- */
-.demo-surface nat-table,
-.demo-surface nat-table-surface {
+.market-table-theme {
   --nat-table-color-text: var(--text);
   --nat-table-color-text-muted: var(--text-soft);
   --nat-table-color-accent: var(--accent);
@@ -676,8 +556,8 @@
   --nat-table-letter-spacing-label: 0.06em;
   --nat-table-letter-spacing-pin-button: 0.04em;
   --nat-table-letter-spacing-pager: 0;
-  --nat-table-space-card: 18px 22px;
-  --nat-table-space-card-compact: 14px 16px;
+  --nat-table-space-card: 0;
+  --nat-table-space-card-compact: 0;
   --nat-table-space-controls-gap: 16px;
   --nat-table-space-control-block-gap: 12px;
   --nat-table-space-toolbar-gap: 14px;
@@ -820,14 +700,6 @@
   .filter-pill:hover {
     color: var(--text);
     background: var(--surface-hover);
-  }
-
-  .demo-surface ::ng-deep nat-render-metrics-filter .chip:hover {
-    color: var(--text);
-    background: var(--surface-hover);
-    border-color: var(--border-strong);
-    box-shadow: none;
-    transform: none;
   }
 }
 

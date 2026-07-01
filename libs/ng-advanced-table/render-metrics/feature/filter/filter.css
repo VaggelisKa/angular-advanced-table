@@ -17,14 +17,14 @@
 
 .control-label {
   font-size: 0.85rem;
-  color: var(--text-soft);
+  color: var(--nat-table-color-text-muted, GrayText);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .control-caption {
   font-size: 0.82rem;
-  color: var(--text-soft);
+  color: var(--nat-table-color-text-muted, GrayText);
 }
 
 .chip-row {
@@ -41,12 +41,10 @@
   padding: 0 14px;
   color: inherit;
   cursor: pointer;
-  background: rgb(236 245 251 / 5%);
-  background: color-mix(in srgb, var(--text, #ecf5fb) 5%, transparent);
+  background: color-mix(in srgb, var(--nat-table-color-text, currentColor) 5%, transparent);
   border: 1px solid transparent;
-  border-color: rgb(236 245 251 / 14%);
-  border-color: color-mix(in srgb, var(--text, #ecf5fb) 14%, transparent);
-  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--nat-table-color-text, currentColor) 14%, transparent);
+  border-radius: 100vmax;
   transition:
     background-color 180ms ease,
     border-color 180ms ease,
@@ -56,17 +54,14 @@
 }
 
 .chip.is-active {
-  background: rgb(87 209 255 / 18%);
-  background: color-mix(in srgb, var(--accent, #57d1ff) 18%, transparent);
-  border-color: rgb(87 209 255 / 34%);
-  border-color: color-mix(in srgb, var(--accent, #57d1ff) 34%, transparent);
-  box-shadow: 0 0 16px rgb(87 209 255 / 14%);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--accent, #57d1ff) 14%, transparent);
+  background: color-mix(in srgb, var(--nat-table-color-accent, currentColor) 18%, transparent);
+  border-color: color-mix(in srgb, var(--nat-table-color-accent, currentColor) 34%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--nat-table-color-accent, currentColor) 14%, transparent);
 }
 
 .chip-count {
   font-size: 0.82rem;
-  color: var(--text-soft);
+  color: var(--nat-table-color-text-muted, GrayText);
 }
 
 .render-chip {
@@ -75,16 +70,14 @@
 }
 
 .chip:focus-visible {
-  outline: 2px solid var(--accent, #57d1ff);
-  outline-offset: 2px;
+  outline: var(--nat-table-focus-ring-width, 2px) solid var(--nat-table-focus-ring-color, currentColor);
+  outline-offset: var(--nat-table-focus-ring-offset, 2px);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .chip:hover {
-    background: rgb(236 245 251 / 8%);
-    background: color-mix(in srgb, var(--text, #ecf5fb) 8%, transparent);
-    border-color: rgb(236 245 251 / 20%);
-    border-color: color-mix(in srgb, var(--text, #ecf5fb) 20%, transparent);
+    background: color-mix(in srgb, var(--nat-table-color-text, currentColor) 8%, transparent);
+    border-color: color-mix(in srgb, var(--nat-table-color-text, currentColor) 20%, transparent);
     transform: translateY(-1px);
   }
 }
