@@ -5,7 +5,8 @@ import type { StateKey } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import type { SafeHtml } from '@angular/platform-browser';
 
-import { firstValueFrom } from 'rxjs';
+import { EMPTY, firstValueFrom } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 import { renderMarkdownToHtml } from './docs-markdown-renderer';
 import type { RenderedMarkdownHeading } from './docs-markdown-renderer';
@@ -79,7 +80,7 @@ export class DocsMarkdownCache {
       return;
     }
 
-    void this.loadRenderedMarkdown(markdownPath, currentState.html, transferStateKey);
+    this.loadRenderedMarkdown(markdownPath, currentState.html, transferStateKey);
   }
 
   public preload(markdownPaths: readonly string[]): void {
@@ -110,9 +111,21 @@ export class DocsMarkdownCache {
     return restoreSanitizedHeadingIds(this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '', headings);
   }
 
-  private async loadRenderedMarkdown(markdownPath: string, previousHtml: string, transferStateKey: StateKey<string>): Promise<void> {
+  private loadRenderedMarkdown(markdownPath: string, previousHtml: string, transferStateKey: StateKey<string>): void {
+    void firstValueFrom(
+      this.http.get(markdownPath, { responseType: 'text' }).pipe(
+        tap((markdown) => this.setRenderedMarkdown(markdownPath, markdown, transferStateKey)),
+        catchError((error: unknown) => {
+          this.setErrorState(markdownPath, previousHtml, error);
+
+          return EMPTY;
+        })
+      )
+    ).catch(() => undefined);
+  }
+
+  private setRenderedMarkdown(markdownPath: string, markdown: string, transferStateKey: StateKey<string>): void {
     try {
-      const markdown = await firstValueFrom(this.http.get(markdownPath, { responseType: 'text' }));
       const renderedMarkdown = renderMarkdownToHtml(markdown);
       const html = this.sanitizeRenderedMarkdown(renderedMarkdown.html, renderedMarkdown.headings);
 
@@ -122,12 +135,16 @@ export class DocsMarkdownCache {
 
       this.setLoadedState(markdownPath, html);
     } catch (error: unknown) {
-      this.setState(markdownPath, {
-        status: 'error',
-        html: previousHtml,
-        trustedHtml: this.sanitizer.bypassSecurityTrustHtml(previousHtml),
-        error
-      });
+      this.setErrorState(markdownPath, this.getState(markdownPath).html, error);
     }
+  }
+
+  private setErrorState(markdownPath: string, previousHtml: string, error: unknown): void {
+    this.setState(markdownPath, {
+      status: 'error',
+      html: previousHtml,
+      trustedHtml: this.sanitizer.bypassSecurityTrustHtml(previousHtml),
+      error
+    });
   }
 }

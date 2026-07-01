@@ -5,10 +5,6 @@ import { TestBed } from '@angular/core/testing';
 
 import { DocsMarkdownCache, getDocsHtmlTransferStateKey } from './docs-markdown-cache';
 
-async function waitForRenderedMarkdown(): Promise<void> {
-  await Promise.resolve();
-}
-
 describe('FEATURE: DocsMarkdownCache', () => {
   let cache: DocsMarkdownCache;
   let http: HttpTestingController;
@@ -28,7 +24,7 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
   describe('GIVEN: a docs markdown cache is created', () => {
     describe('WHEN: loads markdown and exposes the cached content synchronously', () => {
-      it('THEN: it stores loaded markdown for synchronous reads', async () => {
+      it('THEN: it stores loaded markdown for synchronous reads', () => {
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'idle',
           html: ''
@@ -42,7 +38,6 @@ describe('FEATURE: DocsMarkdownCache', () => {
         });
 
         http.expectOne('/docs/quick-start.md').flush('# Quick start\n\nLoaded **markdown** docs.');
-        await waitForRenderedMarkdown();
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
@@ -54,11 +49,10 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
   describe('GIVEN: a docs markdown cache receives headings', () => {
     describe('WHEN: it renders markdown to HTML', () => {
-      it('THEN: it adds deterministic heading ids during rendering', async () => {
+      it('THEN: it adds deterministic heading ids during rendering', () => {
         cache.load('/docs/quick-start.md');
 
         http.expectOne('/docs/quick-start.md').flush('## First Table\n\n## First Table');
-        await waitForRenderedMarkdown();
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
@@ -70,11 +64,10 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
   describe('GIVEN: a docs markdown cache receives raw markdown HTML', () => {
     describe('WHEN: it renders markdown to sanitized HTML', () => {
-      it('THEN: it preserves safe raw HTML in the rendered output', async () => {
+      it('THEN: it preserves safe raw HTML in the rendered output', () => {
         cache.load('/docs/quick-start.md');
 
         http.expectOne('/docs/quick-start.md').flush('Press <kbd>Shift</kbd> to extend sorting.');
-        await waitForRenderedMarkdown();
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
@@ -86,11 +79,10 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
   describe('GIVEN: a docs markdown cache receives markdown links', () => {
     describe('WHEN: it renders links before trusting sanitized HTML', () => {
-      it('THEN: it keeps safe links and marks unsafe link targets', async () => {
+      it('THEN: it keeps safe links and marks unsafe link targets', () => {
         cache.load('/docs/quick-start.md');
 
         http.expectOne('/docs/quick-start.md').flush('Read [state](/docs/state) and [unsafe](javascript:alert(1)).');
-        await waitForRenderedMarkdown();
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
@@ -121,7 +113,7 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
   describe('GIVEN: a docs markdown cache is created with duplicate markdown requests', () => {
     describe('WHEN: dedupes loading and loaded markdown requests', () => {
-      it('THEN: it shares one request for repeated markdown loads', async () => {
+      it('THEN: it shares one request for repeated markdown loads', () => {
         cache.load('/docs/quick-start.md');
         cache.load('/docs/quick-start.md');
 
@@ -129,7 +121,6 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
         expect(req.request.method).toBe('GET');
         req.flush('# Quick start');
-        await waitForRenderedMarkdown();
 
         cache.load('/docs/quick-start.md');
         http.expectNone('/docs/quick-start.md');
@@ -143,12 +134,11 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
   describe('GIVEN: a docs markdown cache is created with uncached markdown paths', () => {
     describe('WHEN: preloads each uncached markdown path', () => {
-      it('THEN: it starts loading only uncached markdown paths', async () => {
+      it('THEN: it starts loading only uncached markdown paths', () => {
         cache.preload(['/docs/quick-start.md', '/docs/state.md']);
 
         http.expectOne('/docs/quick-start.md').flush('# Quick start');
         http.expectOne('/docs/state.md').flush('# State');
-        await waitForRenderedMarkdown();
 
         expect(cache.getState('/docs/quick-start.md').status).toBe('loaded');
         expect(cache.getState('/docs/state.md').status).toBe('loaded');
@@ -158,16 +148,14 @@ describe('FEATURE: DocsMarkdownCache', () => {
 
   describe('GIVEN: a docs markdown cache is created with a recoverable markdown load failure', () => {
     describe('WHEN: records load failures and allows a later retry', () => {
-      it('THEN: it stores failures and permits retry loads', async () => {
+      it('THEN: it stores failures and permits retry loads', () => {
         cache.load('/docs/quick-start.md');
         http.expectOne('/docs/quick-start.md').flush('Not found', { status: 404, statusText: 'Not Found' });
-        await waitForRenderedMarkdown();
 
         expect(cache.getState('/docs/quick-start.md').status).toBe('error');
 
         cache.load('/docs/quick-start.md');
         http.expectOne('/docs/quick-start.md').flush('# Quick start');
-        await waitForRenderedMarkdown();
 
         expect(cache.getState('/docs/quick-start.md')).toMatchObject({
           status: 'loaded',
