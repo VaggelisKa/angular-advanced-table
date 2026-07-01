@@ -96,7 +96,7 @@
       "generate-docs": {
         "executor": "nx:run-commands",
         "outputs": [
-          "{workspaceRoot}/apps/showcase/src/app/pages/docs/docs-html-registry.ts"
+          "{workspaceRoot}/apps/showcase/src/app/docs/docs-html-registry.ts"
         ],
         "options": {
           "command": "node tools/generate-showcase-docs.mjs",

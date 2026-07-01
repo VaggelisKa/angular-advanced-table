@@ -1,0 +1,31 @@
+:host {
+  display: inline-flex;
+  gap: 0.42rem;
+  align-items: center;
+  min-height: 1.75rem;
+  padding-inline: 0.62rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--showcase-page-text-soft);
+  background: color-mix(in srgb, currentcolor 9%, transparent);
+  border: 1px solid color-mix(in srgb, currentcolor 22%, transparent);
+  border-radius: 999px;
+}
+
+:host::before {
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  content: '';
+  background: currentcolor;
+  border-radius: 999px;
+}
+
+:host([data-status='Ready']) {
+  color: var(--showcase-page-positive);
+}
+
+:host([data-status='Review']) {
+  color: var(--showcase-page-warning);
+}

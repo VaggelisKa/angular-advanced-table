@@ -1,0 +1,111 @@
+<nav aria-label="Showcase pages" class="showcase-nav-scroll">
+  <div
+    #showcaseTree="ngTree"
+    [value]="activeNavTreeValues()"
+    aria-label="Docs and examples"
+    class="showcase-nav-tree"
+    currentType="page"
+    data-testid="showcase-nav-tree"
+    focusMode="roving"
+    nav
+    ngTree>
+    @for (section of navSections; track section.id) {
+    <div
+      #sectionTreeItem="ngTreeItem"
+      [attr.aria-label]="section.label"
+      [attr.data-testid]="`showcase-nav-branch-${section.id}`"
+      [class.has-current-route]="navTreeBranchContainsCurrentRoute(section)"
+      [expanded]="isNavTreeBranchExpanded(section.id)"
+      [label]="section.label"
+      [parent]="showcaseTree"
+      [selectable]="false"
+      [value]="section.id"
+      class="showcase-nav-tree-branch"
+      ngTreeItem
+      (expandedChange)="setNavTreeBranchExpanded(section.id, $event)">
+      <span class="showcase-nav-tree-row">
+        <span class="showcase-nav-tree-label">{{ section.label }}</span>
+        <svg aria-hidden="true" class="showcase-nav-tree-chevron" focusable="false" viewBox="0 0 16 16">
+          <path d="M6 3.75 10.25 8 6 12.25" />
+        </svg>
+      </span>
+
+      <div [attr.aria-label]="section.ariaLabel" class="showcase-nav-tree-group showcase-nav-tree-branch-group" role="group">
+        @for (item of section.items; track item.path) { @if (!navTreeHydrated() && navItemIsCurrentRoute(item)) {
+        <a
+          [attr.data-testid]="`showcase-nav-link-${item.id}`"
+          [routerLink]="item.path"
+          aria-current="page"
+          class="showcase-nav-tree-link"
+          (click)="navigate.emit()"
+          (focus)="prefetchNavItem(item)"
+          (pointerenter)="prefetchNavItem(item)">
+          <span aria-hidden="true" class="showcase-nav-tree-connector"></span>
+          <span class="showcase-nav-tree-label">{{ item.label }}</span>
+        </a>
+        } }
+        <ng-template #sectionTreeGroup="ngTreeItemGroup" [ownedBy]="sectionTreeItem" ngTreeItemGroup>
+          @for (item of section.items; track item.path) {
+          <a
+            [attr.data-testid]="`showcase-nav-link-${item.id}`"
+            [label]="item.label"
+            [parent]="sectionTreeGroup"
+            [routerLink]="item.path"
+            [value]="item.path"
+            class="showcase-nav-tree-link"
+            ngTreeItem
+            (click)="navigate.emit()"
+            (focus)="prefetchNavItem(item)"
+            (pointerenter)="prefetchNavItem(item)">
+            <span aria-hidden="true" class="showcase-nav-tree-connector"></span>
+            <span class="showcase-nav-tree-label">{{ item.label }}</span>
+          </a>
+          } @for (group of section.groups; track group.id) {
+          <div
+            #navGroupTreeItem="ngTreeItem"
+            [attr.aria-label]="group.label"
+            [attr.data-testid]="`showcase-nav-branch-${group.id}`"
+            [class.has-current-route]="navTreeBranchContainsCurrentRoute(group)"
+            [expanded]="isNavTreeBranchExpanded(group.id)"
+            [label]="group.label"
+            [parent]="sectionTreeGroup"
+            [selectable]="false"
+            [value]="group.id"
+            class="showcase-nav-tree-branch showcase-nav-tree-subbranch"
+            ngTreeItem
+            (expandedChange)="setNavTreeBranchExpanded(group.id, $event)">
+            <span class="showcase-nav-tree-row">
+              <span class="showcase-nav-tree-label">{{ group.label }}</span>
+              <svg aria-hidden="true" class="showcase-nav-tree-chevron" focusable="false" viewBox="0 0 16 16">
+                <path d="M6 3.75 10.25 8 6 12.25" />
+              </svg>
+            </span>
+
+            <div [attr.aria-label]="group.ariaLabel" class="showcase-nav-tree-group showcase-nav-tree-link-group" role="group">
+              <ng-template #navGroupTreeGroup="ngTreeItemGroup" [ownedBy]="navGroupTreeItem" ngTreeItemGroup>
+                @for (item of group.items; track item.path) {
+                <a
+                  [attr.data-testid]="`showcase-nav-link-${item.id}`"
+                  [label]="item.label"
+                  [parent]="navGroupTreeGroup"
+                  [routerLink]="item.path"
+                  [value]="item.path"
+                  class="showcase-nav-tree-link"
+                  ngTreeItem
+                  (click)="navigate.emit()"
+                  (focus)="prefetchNavItem(item)"
+                  (pointerenter)="prefetchNavItem(item)">
+                  <span aria-hidden="true" class="showcase-nav-tree-connector"></span>
+                  <span class="showcase-nav-tree-label">{{ item.label }}</span>
+                </a>
+                }
+              </ng-template>
+            </div>
+          </div>
+          }
+        </ng-template>
+      </div>
+    </div>
+    }
+  </div>
+</nav>

@@ -1,0 +1,21 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  min-height: 1.75rem;
+  padding-inline: 0.62rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--showcase-page-text);
+  letter-spacing: 0;
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--showcase-page-text) 4%, var(--showcase-page-surface));
+  border: 1px solid color-mix(in srgb, var(--showcase-page-text) 12%, transparent);
+  border-radius: 6px;
+}

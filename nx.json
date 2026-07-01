@@ -43,7 +43,10 @@
     "test": {
       "cache": true,
       "inputs": ["default", "^production"],
-      "executor": "@angular/build:unit-test"
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "watch": false
+      }
     },
     "stylelint": {
       "cache": true,

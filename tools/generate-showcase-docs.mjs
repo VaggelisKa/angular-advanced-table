@@ -6,7 +6,7 @@ import { format, resolveConfig } from 'prettier';
 
 const workspaceRoot = new URL('../', import.meta.url);
 const docsInputDirectory = new URL('apps/showcase/public/docs/', workspaceRoot);
-const docsOutputFile = new URL('apps/showcase/src/app/pages/docs/docs-html-registry.ts', workspaceRoot);
+const docsOutputFile = new URL('apps/showcase/src/app/docs/docs-html-registry.ts', workspaceRoot);
 
 const slugifyMarkdownHeading = (value) =>
   value
@@ -96,9 +96,9 @@ export const docsHtmlRegistry = ${JSON.stringify(Object.fromEntries(entries), nu
   Record<string, DocsHtmlEntry>
 >;
 
-export function findDocsHtmlEntry(markdownPath: string): DocsHtmlEntry | undefined {
+export const findDocsHtmlEntry = (markdownPath: string): DocsHtmlEntry | undefined => {
   return (docsHtmlRegistry as Readonly<Record<string, DocsHtmlEntry>>)[markdownPath];
-}
+};
 `,
   { ...prettierOptions, filepath: docsOutputFile.pathname, parser: 'typescript' }
 );
