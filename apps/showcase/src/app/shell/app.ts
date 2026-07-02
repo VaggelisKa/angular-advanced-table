@@ -4,10 +4,10 @@ import { Component, Injector, afterNextRender, inject, signal, viewChild } from 
 import { RouterOutlet } from '@angular/router';
 
 import { resolveFocusTrapTarget } from './app.util';
+import { ShowcaseWebMcp } from './app.webmcp';
 import { ShowcaseThemeStore } from '../theme/showcase-theme';
 import type { ShowcaseTheme } from '../theme/showcase-theme.type';
 import { NavTree } from './nav-tree/nav-tree';
-import { ShowcaseWebMcp } from './app.webmcp';
 
 @Component({
   selector: 'app-root',

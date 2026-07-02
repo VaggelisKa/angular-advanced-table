@@ -1,4 +1,4 @@
-import { createShowcaseWebMcpTools } from './app.webmcp';
+import { createShowcaseWebMcpTools } from './app.webmcp-tools';
 
 type ShowcaseWebMcpTool = ReturnType<typeof createShowcaseWebMcpTools>[number];
 
@@ -13,7 +13,7 @@ const getTool = (tools: readonly ShowcaseWebMcpTool[], name: string): ShowcaseWe
 };
 
 const expectRecord = (value: unknown): Record<string, unknown> => {
-  expect(value).toEqual(expect.any(Object));
+  expect(value).toStrictEqual(expect.any(Object));
 
   return value as Record<string, unknown>;
 };
@@ -30,6 +30,7 @@ describe('FEATURE: Showcase WebMCP tools', () => {
     navigatedUrls = [];
     navigateByUrl = async (url: string): Promise<boolean> => {
       navigatedUrls.push(url);
+      await Promise.resolve();
 
       return true;
     };
@@ -43,16 +44,16 @@ describe('FEATURE: Showcase WebMCP tools', () => {
   describe('GIVEN: agents inspect the page tools', () => {
     describe('WHEN: create tool definitions for the showcase', () => {
       it('THEN: it exposes named WebMCP tools with schemas and execute callbacks', () => {
-        expect(tools.map((tool) => tool.name)).toEqual([
+        expect(tools.map((tool) => tool.name)).toStrictEqual([
           'angular_advanced_table.get_current_page',
           'angular_advanced_table.search_showcase',
           'angular_advanced_table.navigate'
         ]);
 
         for (const tool of tools) {
-          expect(tool.description).toEqual(expect.any(String));
-          expect(tool.inputSchema).toEqual(expect.objectContaining({ type: 'object' }));
-          expect(tool.execute).toEqual(expect.any(Function));
+          expect(tool.description).toStrictEqual(expect.any(String));
+          expect(tool.inputSchema).toStrictEqual(expect.objectContaining({ type: 'object' }));
+          expect(tool.execute).toStrictEqual(expect.any(Function));
         }
       });
     });
@@ -66,7 +67,7 @@ describe('FEATURE: Showcase WebMCP tools', () => {
         expect(result['path']).toBe('/docs/quick-start');
         expect(result['title']).toBe('Quick start | Angular Advanced Table Docs');
         expect(result['heading']).toBe('Quick start');
-        expect(result['route']).toEqual(
+        expect(result['route']).toStrictEqual(
           expect.objectContaining({
             id: 'quick-start',
             path: '/docs/quick-start'
@@ -77,7 +78,7 @@ describe('FEATURE: Showcase WebMCP tools', () => {
 
         const rootResult = expectRecord(await getTool(tools, 'angular_advanced_table.get_current_page').execute({}));
 
-        expect(rootResult['route']).toEqual(
+        expect(rootResult['route']).toStrictEqual(
           expect.objectContaining({
             id: 'quick-start',
             path: '/docs/quick-start'
@@ -100,7 +101,7 @@ describe('FEATURE: Showcase WebMCP tools', () => {
         const results = result['results'] as readonly Record<string, unknown>[];
 
         expect(result['count']).toBeGreaterThan(0);
-        expect(results[0]).toEqual(
+        expect(results[0]).toStrictEqual(
           expect.objectContaining({
             id: 'sorting',
             path: '/docs/sorting'
@@ -119,9 +120,9 @@ describe('FEATURE: Showcase WebMCP tools', () => {
           })
         );
 
-        expect(navigatedUrls).toEqual(['/docs/sorting']);
+        expect(navigatedUrls).toStrictEqual(['/docs/sorting']);
         expect(result['ok']).toBe(true);
-        expect(result['route']).toEqual(
+        expect(result['route']).toStrictEqual(
           expect.objectContaining({
             id: 'sorting',
             path: '/docs/sorting'
