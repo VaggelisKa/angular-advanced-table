@@ -13,6 +13,28 @@ import type {
 } from '../common/table.type';
 import { createNatTableKeyboard, mergeNatTableKeybindings } from '../utils/keybindings';
 
+export type NatTableColumnResizeMode = 'onEnd' | 'onChange';
+
+export type NatTableColumnSizingMode = 'fill' | 'fixed';
+
+export type NatTableDirection = 'ltr' | 'rtl';
+
+export type NatTableConfig = {
+  state: Partial<NatTableUserState>;
+  initialState: Partial<NatTableUserState>;
+  mode: NatTableMode | NatTableModeConfiguration;
+  manualPageCount: number | undefined;
+  enableAnnouncements: boolean;
+  stickyHeader: boolean;
+  enableMultiSort: boolean;
+  locale: string | undefined;
+  accessibilityText: NatTableAccessibilityText;
+  keybindings: NatTableKeybindings;
+  columnResizeMode: NatTableColumnResizeMode;
+  columnSizingMode: NatTableColumnSizingMode;
+  direction: NatTableDirection | undefined;
+};
+
 /**
  * Scoped service to share the active table controller instance within a DI hierarchy.
  */
@@ -104,6 +126,35 @@ export class NatTableService<TData extends RowData = RowData> {
 
   public setState(value: Partial<NatTableUserState>): void {
     this.stateSignal.set(value);
+  }
+
+  // eslint-disable-next-line -- complexity threshold exceeded but ignored because it is not worth splitting
+  public patchState(config: Partial<NatTableConfig>): void {
+    if (config.state !== undefined) this.stateSignal.set(config.state);
+
+    if (config.initialState !== undefined) this.surfaceInitialState.set(config.initialState);
+
+    if (config.mode !== undefined) this.surfaceMode.set(config.mode);
+
+    if (config.manualPageCount !== undefined) this.manualPageCount.set(config.manualPageCount);
+
+    if (config.enableAnnouncements !== undefined) this.enableAnnouncements.set(config.enableAnnouncements);
+
+    if (config.stickyHeader !== undefined) this.stickyHeader.set(config.stickyHeader);
+
+    if (config.enableMultiSort !== undefined) this.enableMultiSort.set(config.enableMultiSort);
+
+    if (config.locale !== undefined) this.locale.set(config.locale);
+
+    if (config.accessibilityText !== undefined) this.accessibilityText.set(config.accessibilityText);
+
+    if (config.keybindings !== undefined) this.surfaceKeybindings.set(config.keybindings);
+
+    if (config.columnResizeMode !== undefined) this.columnResizeMode.set(config.columnResizeMode);
+
+    if (config.columnSizingMode !== undefined) this.columnSizingMode.set(config.columnSizingMode);
+
+    if (config.direction !== undefined) this.direction.set(config.direction);
   }
 
   public registerPagination(): void {
