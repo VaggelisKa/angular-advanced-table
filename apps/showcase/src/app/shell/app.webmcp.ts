@@ -11,14 +11,14 @@ type WebMcpContexts = {
 };
 
 const getRegisterContext = (
-  navigatorContext: WebMcpContext | undefined,
-  documentContext: WebMcpContext | undefined
+  documentContext: WebMcpContext | undefined,
+  navigatorContext: WebMcpContext | undefined
 ): WebMcpContext | undefined => {
-  if (navigatorContext?.registerTool) {
-    return navigatorContext;
+  if (documentContext?.registerTool) {
+    return documentContext;
   }
 
-  return documentContext?.registerTool ? documentContext : undefined;
+  return navigatorContext?.registerTool ? navigatorContext : undefined;
 };
 
 @Service()
@@ -60,6 +60,10 @@ export class ShowcaseWebMcp {
     });
     const registrations = this.createRegistrations(tools, contexts);
 
+    if (registrations.length === 0) {
+      return;
+    }
+
     this.registered = true;
     await this.resolveRegistrations(registrations);
   }
@@ -72,10 +76,13 @@ export class ShowcaseWebMcp {
   }
 
   private createRegistrations(tools: readonly WebMcpTool[], contexts: WebMcpContexts): readonly Promise<void>[] {
-    const registrations = this.createContextRegistrations(tools, contexts.navigatorContext);
-    const registerContext = getRegisterContext(contexts.navigatorContext, contexts.documentContext);
+    if (contexts.navigatorContext?.provideContext) {
+      return this.createContextRegistrations(tools, contexts.navigatorContext);
+    }
 
-    return [...registrations, ...this.createToolRegistrations(tools, registerContext)];
+    const registerContext = getRegisterContext(contexts.documentContext, contexts.navigatorContext);
+
+    return this.createToolRegistrations(tools, registerContext);
   }
 
   private createContextRegistrations(

@@ -9,6 +9,7 @@ const SERVER_INFO = {
 };
 const SUPPORTED_PROTOCOL_VERSION = '2025-06-18';
 const DEFAULT_RESOURCE_DESCRIPTION = 'Public Angular Advanced Table showcase page.';
+const MAX_JSON_BODY_BYTES = 64 * 1024;
 const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'content-type, mcp-protocol-version',
   'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
@@ -108,19 +109,34 @@ const findMarkdownPage = (uri) => {
     : undefined;
 };
 
+class PayloadTooLargeError extends Error {}
+
+const assertJsonBodySize = (byteLength) => {
+  if (byteLength > MAX_JSON_BODY_BYTES) {
+    throw new PayloadTooLargeError('Request body is too large.');
+  }
+};
+
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === 'object' && !Buffer.isBuffer(request.body)) {
     return request.body;
   }
 
   if (typeof request.body === 'string' || Buffer.isBuffer(request.body)) {
+    assertJsonBodySize(Buffer.byteLength(request.body));
+
     return JSON.parse(String(request.body));
   }
 
   const chunks = [];
+  let byteLength = 0;
 
   for await (const chunk of request) {
-    chunks.push(Buffer.from(chunk));
+    const buffer = Buffer.from(chunk);
+
+    byteLength += buffer.byteLength;
+    assertJsonBodySize(byteLength);
+    chunks.push(buffer);
   }
 
   const rawBody = Buffer.concat(chunks).toString('utf8').trim();
@@ -273,7 +289,12 @@ export default async function handler(request, response) {
 
   try {
     payload = await readJsonBody(request);
-  } catch {
+  } catch (error) {
+    if (error instanceof PayloadTooLargeError) {
+      sendJson(request, response, 413, createError(null, -32000, 'Request body too large.'));
+      return;
+    }
+
     sendJson(request, response, 400, createError(null, -32700, 'Parse error.'));
     return;
   }

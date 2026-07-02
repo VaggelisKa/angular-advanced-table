@@ -82,7 +82,7 @@ const getFrontmatterString = (markdown, key) => {
   }
 };
 
-const createFrontmatter = ({ canonicalUrl, description, title }) => [
+const createAgentMarkdownFrontmatter = ({ canonicalUrl, description, title }) => [
   '---',
   `title: ${JSON.stringify(title)}`,
   `description: ${JSON.stringify(description)}`,
@@ -90,9 +90,9 @@ const createFrontmatter = ({ canonicalUrl, description, title }) => [
   '---'
 ];
 
-const createMarkdownDocument = ({ body, canonicalUrl, description, title }) =>
+const createAgentMarkdownDocument = ({ body, canonicalUrl, description, title }) =>
   [
-    ...createFrontmatter({ canonicalUrl, description, title }),
+    ...createAgentMarkdownFrontmatter({ canonicalUrl, description, title }),
     '',
     `# ${title}`,
     '',
@@ -104,14 +104,20 @@ const createMarkdownDocument = ({ body, canonicalUrl, description, title }) =>
     ''
   ].join('\n');
 
-const createDocMarkdownDocument = ({ canonicalUrl, docId, description, title }) => {
-  const body = readFileSync(new URL(`${docId}.md`, docsDirectory), 'utf8');
+const readDocMarkdownSource = (docId) => readFileSync(new URL(`${docId}.md`, docsDirectory), 'utf8');
 
-  return createMarkdownDocument({ body, canonicalUrl, description, title });
+const createDocMarkdownDocument = ({ canonicalUrl, docId, description, title }) => {
+  // Docs already live as Markdown; only add discovery metadata and canonical route context.
+  return createAgentMarkdownDocument({
+    body: readDocMarkdownSource(docId),
+    canonicalUrl,
+    description,
+    title
+  });
 };
 
 const createExampleMarkdownDocument = ({ canonicalUrl, description, siteUrl, title }) =>
-  createMarkdownDocument({
+  createAgentMarkdownDocument({
     canonicalUrl,
     description,
     title,

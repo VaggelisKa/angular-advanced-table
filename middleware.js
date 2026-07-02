@@ -82,13 +82,10 @@ export default function middleware(request) {
   const headers = {
     'Content-Length': String(new TextEncoder().encode(page.markdown).byteLength),
     'Content-Type': 'text/markdown; charset=utf-8',
+    Link: DISCOVERY_LINK_HEADER,
     Vary: 'Accept',
     'x-markdown-tokens': String(page.tokenCount)
   };
-
-  if (pathname !== '/') {
-    headers.Link = DISCOVERY_LINK_HEADER;
-  }
 
   return new Response(request.method === 'HEAD' ? null : page.markdown, {
     status: 200,
