@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Injectable, afterNextRender, inject } from '@angular/core';
+import { DestroyRef, Service, afterNextRender, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { createShowcaseWebMcpTools } from './app.webmcp-tools';
@@ -21,18 +21,25 @@ const getRegisterContext = (
   return documentContext?.registerTool ? documentContext : undefined;
 };
 
-@Injectable({
-  providedIn: 'root'
-})
+@Service()
 export class ShowcaseWebMcp {
   private readonly abortController = new AbortController();
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
+  private initialized = false;
   private registered = false;
 
   public constructor() {
     this.destroyRef.onDestroy(() => this.abortController.abort());
+  }
+
+  public initialize(): void {
+    if (this.initialized) {
+      return;
+    }
+
+    this.initialized = true;
     afterNextRender({ write: () => void this.registerTools() });
   }
 

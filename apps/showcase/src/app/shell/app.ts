@@ -28,7 +28,7 @@ export class App {
   protected readonly theme = this.themeStore.theme;
 
   public constructor() {
-    void this.webMcp;
+    this.webMcp.initialize();
   }
 
   protected setTheme(theme: ShowcaseTheme): void {
