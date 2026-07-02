@@ -9,7 +9,7 @@
 
   @if (topic().contents; as contents) { @if (contents.length) {
   <nav aria-label="On this page" class="docs-topic-toc">
-    <span class="docs-topic-toc-label">On this page</span>
+    <span class="docs-eyebrow docs-topic-toc-label">On this page</span>
     <div class="docs-topic-toc-links">
       @for (item of contents; track item.path) {
       <a
@@ -35,7 +35,7 @@
 
   @if (topic().related; as relatedTopics) { @if (relatedTopics.length) {
   <nav aria-label="Related topics" class="docs-related">
-    <span class="docs-related-label">Related topics</span>
+    <span class="docs-eyebrow docs-related-label">Related topics</span>
     <div class="docs-related-links">
       @for (item of relatedTopics; track item.path) {
       <a [routerLink]="item.path" class="docs-related-link">{{ item.label }}</a>
