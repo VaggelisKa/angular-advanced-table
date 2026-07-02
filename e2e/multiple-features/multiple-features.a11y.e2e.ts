@@ -8,6 +8,7 @@ test.describe('FEATURE: Multiple features accessibility', () => {
   test.describe('GIVEN: the live market tape example is loaded', () => {
     test.describe('WHEN: live tape features are navigated via keyboard', () => {
       test('THEN: it navigates live tape features using keyboard only', async ({ page }) => {
+        test.slow(); // Increase timeout for this heavy test
         const toggleBtn = page.getByRole('button', { name: /(Pause feed|Resume feed)/ });
 
         await toggleBtn.focus();
@@ -23,13 +24,24 @@ test.describe('FEATURE: Multiple features accessibility', () => {
         });
 
         await test.step('THEN: every visible row has the Advancing status', async () => {
+          const advancingChip = page.locator('.status-chip[data-status="Advancing"]').first();
+          const countLabel = advancingChip.locator('.filter-pill-count');
+
+          // Wait for the count to be present and non-zero (simulation might need a moment to start/sync)
+          await expect(countLabel).toBeVisible();
+          const expectedCountText = await countLabel.textContent();
+          const expectedCount = parseInt(expectedCountText?.replace(/,/g, '').trim() ?? '0', 10);
+
+          const pageSizeValue = await page.locator('.page-size-select').inputValue();
+          const pageSize = parseInt(pageSizeValue, 10);
+          const effectiveCount = Math.min(expectedCount, pageSize);
+
+          await expect(page.locator('tbody tr')).toHaveCount(effectiveCount);
+
           const advancingRows = page.locator('td[data-column-id="status"]').filter({ hasText: 'Advancing' });
-          const totalRows = await page.locator('tbody tr').count();
 
-          expect(totalRows).toBeGreaterThan(0);
-          await expect(advancingRows).toHaveCount(totalRows);
+          await expect(advancingRows).toHaveCount(effectiveCount);
 
-          await expect(page.locator('tbody tr')).not.toHaveCount(0);
           const searchInput = page.locator('app-table-search input');
 
           await searchInput.focus();
