@@ -1,15 +1,8 @@
 /* eslint-disable max-lines -- cohesive table state store: state ownership, TanStack wiring, column widths, resize/reorder state, and derived computeds kept together to preserve the signal graph. */
 import { Directionality } from '@angular/cdk/bidi';
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import type { ElementRef } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
-import {
-  createAngularTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel
-} from '@tanstack/angular-table';
 import type {
   Column,
   ColumnDef,
@@ -27,6 +20,13 @@ import type {
   Updater,
   VisibilityState
 } from '@tanstack/angular-table';
+import {
+  createAngularTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel
+} from '@tanstack/angular-table';
 
 import {
   NAT_EN_LOCALE_ID,
@@ -36,7 +36,6 @@ import {
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
-import { NatTableService } from './table.service';
 import type {
   ColumnRenderStateContext,
   ColumnReorderKeyboardDirection,
@@ -76,6 +75,7 @@ import {
   resolveSeedState,
   resolveUpdater
 } from '../utils/table-utils';
+import { NatTableService } from './table.service';
 
 // ─── Constants ───
 
@@ -842,7 +842,6 @@ export class NatTableState<TData extends RowData = RowData> {
       pagination: resolveUpdater(currentState.pagination, updaters.pagination)
     };
 
-    console.log('[NatTableState] updateState', updaters, '->', nextState);
     this.commitInternalState(nextState);
     this.natTableService.notifyStateChange(nextState);
   }
