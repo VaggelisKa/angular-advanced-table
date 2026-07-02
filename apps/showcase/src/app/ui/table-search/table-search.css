@@ -45,10 +45,10 @@
 .table-search-input--toolbar {
   width: clamp(180px, 28vw, 280px);
   min-height: 2.25rem;
-  padding: 0 12px;
-  background: var(--showcase-page-surface, transparent);
-  border: 1px solid var(--showcase-page-border, currentColor);
-  border-radius: 10px;
+  padding: 0 var(--sc-space-3, 12px);
+  background: var(--sc-surface, transparent);
+  border: 1px solid var(--sc-border, currentColor);
+  border-radius: var(--sc-radius-md, 10px);
 }
 
 @media (hover: hover) and (pointer: fine) {

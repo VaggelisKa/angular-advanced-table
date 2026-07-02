@@ -11,10 +11,10 @@
   inline-size: 2rem;
   block-size: 2rem;
   padding: 0;
-  color: var(--text-soft, #5b6672);
+  color: var(--sc-text-soft);
   cursor: pointer;
-  background: color-mix(in srgb, var(--surface, #fff) 92%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border, #d4d8dd) 88%, transparent);
+  background: color-mix(in srgb, var(--sc-surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sc-border) 88%, transparent);
   border-radius: 999px;
   transition:
     border-color 140ms ease,
@@ -25,15 +25,15 @@
 
 .row-actions-trigger:hover,
 .row-actions-trigger[aria-expanded='true'] {
-  color: var(--text, #0f1419);
-  background: color-mix(in srgb, var(--accent-soft, #e7f0fe) 72%, transparent);
-  border-color: color-mix(in srgb, var(--accent, #1f6feb) 44%, var(--border, #d4d8dd));
+  color: var(--sc-text);
+  background: color-mix(in srgb, var(--sc-accent-soft) 72%, transparent);
+  border-color: color-mix(in srgb, var(--sc-accent) 44%, var(--sc-border));
 }
 
 .row-actions-trigger:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent, #1f6feb) 38%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--sc-accent) 38%, transparent);
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #1f6feb) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sc-accent) 18%, transparent);
 }
 
 .row-actions-icon {
@@ -47,12 +47,14 @@
   gap: 4px;
   min-inline-size: 14rem;
   padding: 8px;
-  background: color-mix(in srgb, var(--surface-elevated, #fff) 96%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border, #d4d8dd) 88%, transparent);
+  background: color-mix(in srgb, var(--sc-surface) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--sc-border) 88%, transparent);
   border-radius: 14px;
   box-shadow:
     0 16px 36px rgb(15 20 25 / 16%),
     0 2px 8px rgb(15 20 25 / 8%);
+  /* stylelint-disable-next-line property-no-vendor-prefix -- Safari 16.5 requires the prefix; unprefixed lands in Safari 18 */
+  -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
 
@@ -60,20 +62,20 @@
   display: grid;
   gap: 2px;
   padding: 4px 6px 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border, #d4d8dd) 72%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--sc-border) 72%, transparent);
 }
 
 .row-actions-menu-symbol {
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text, #0f1419);
+  color: var(--sc-text);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .row-actions-menu-caption {
   font-size: 0.72rem;
-  color: var(--text-muted, #616b78);
+  color: var(--sc-text-muted);
 }
 
 .row-actions-item {
@@ -81,7 +83,7 @@
   gap: 2px;
   inline-size: 100%;
   padding: 9px 10px;
-  color: var(--text, #0f1419);
+  color: var(--sc-text);
   text-align: left;
   cursor: pointer;
   background: transparent;
@@ -95,7 +97,7 @@
 .row-actions-item:hover,
 .row-actions-item:focus-visible {
   outline: none;
-  background: color-mix(in srgb, var(--surface-hover, #f1f3f5) 86%, transparent);
+  background: color-mix(in srgb, var(--sc-surface-hover) 86%, transparent);
 }
 
 .row-actions-item-label {
@@ -107,5 +109,5 @@
 .row-actions-item-hint {
   font-size: 0.72rem;
   line-height: 1.25;
-  color: var(--text-muted, #616b78);
+  color: var(--sc-text-muted);
 }
