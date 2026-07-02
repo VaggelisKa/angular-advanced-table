@@ -7,10 +7,10 @@
   font-size: 0.78rem;
   font-weight: 650;
   line-height: 1;
-  color: var(--showcase-page-text-soft);
+  color: var(--sc-text-soft);
   background: color-mix(in srgb, currentcolor 9%, transparent);
   border: 1px solid color-mix(in srgb, currentcolor 22%, transparent);
-  border-radius: 999px;
+  border-radius: var(--sc-radius-pill);
 }
 
 :host::before {
@@ -19,13 +19,13 @@
   height: 0.45rem;
   content: '';
   background: currentcolor;
-  border-radius: 999px;
+  border-radius: var(--sc-radius-pill);
 }
 
 :host([data-status='Ready']) {
-  color: var(--showcase-page-positive);
+  color: var(--sc-positive);
 }
 
 :host([data-status='Review']) {
-  color: var(--showcase-page-warning);
+  color: var(--sc-warning);
 }
