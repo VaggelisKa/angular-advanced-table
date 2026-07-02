@@ -6,15 +6,15 @@ import type { RowRenderFilterValue, RowRenderTone } from '../common/type';
  * @param durationMs Row render duration in milliseconds.
  */
 export const getRowRenderTone = (durationMs: number): RowRenderTone => {
-  if (durationMs < 4) {
-    return 'fast';
+  if (durationMs > 16.66) {
+    return 'slow';
   }
 
-  if (durationMs <= 8) {
+  if (durationMs > 12) {
     return 'watch';
   }
 
-  return 'slow';
+  return 'fast';
 };
 
 /**

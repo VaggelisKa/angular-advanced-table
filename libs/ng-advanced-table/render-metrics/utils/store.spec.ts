@@ -87,7 +87,7 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
         expect(measurement.rowCount).toBe(1);
         expect(measurement.durationMs).toBe(10);
         expect(requireMetric(store.rowMetric('row-1')).durationMs).toBe(2);
-        expect(requireMetric(store.rowMetric('row-3')).tone).toBe('slow');
+        expect(requireMetric(store.rowMetric('row-3')).tone).toBe('fast');
       });
     });
   });
@@ -162,9 +162,9 @@ describe('FEATURE: NatTableRenderMetricsStore', () => {
   describe('GIVEN: a render metrics store is created with render duration thresholds', () => {
     describe('WHEN: classifies durations into render tones', () => {
       it('THEN: it returns the expected tone for each duration', () => {
-        store.record({ rowId: 'fast', renderToken: 1, durationMs: 1.2 });
-        store.record({ rowId: 'watch', renderToken: 1, durationMs: 6 });
-        store.record({ rowId: 'slow', renderToken: 1, durationMs: 15 });
+        store.record({ rowId: 'fast', renderToken: 1, durationMs: 10 });
+        store.record({ rowId: 'watch', renderToken: 1, durationMs: 14 });
+        store.record({ rowId: 'slow', renderToken: 1, durationMs: 18 });
 
         expect(requireMetric(store.rowMetric('fast')).tone).toBe('fast');
         expect(requireMetric(store.rowMetric('watch')).tone).toBe('watch');
