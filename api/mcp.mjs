@@ -117,8 +117,14 @@ const assertJsonBodySize = (byteLength) => {
   }
 };
 
+const assertParsedJsonBodySize = (body) => {
+  assertJsonBodySize(Buffer.byteLength(JSON.stringify(body)));
+};
+
 const readJsonBody = async (request) => {
   if (request.body && typeof request.body === 'object' && !Buffer.isBuffer(request.body)) {
+    assertParsedJsonBodySize(request.body);
+
     return request.body;
   }
 
@@ -205,8 +211,7 @@ const handleJsonRpcMessage = (message) => {
   switch (message.method) {
     case 'initialize':
       return createResult(message.id, {
-        protocolVersion:
-          typeof message.params?.protocolVersion === 'string' ? message.params.protocolVersion : SUPPORTED_PROTOCOL_VERSION,
+        protocolVersion: SUPPORTED_PROTOCOL_VERSION,
         capabilities: {
           resources: {
             listChanged: false

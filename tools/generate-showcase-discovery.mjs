@@ -289,7 +289,6 @@ const mcpResources = mcpResourceEntries.map(([routePath, page]) => ({
   mimeType: 'text/markdown'
 }));
 const mcpServerCard = {
-  $schema: 'https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127',
   name: 'app.ng-advanced-table/showcase',
   title: 'Angular Advanced Table Showcase',
   description:

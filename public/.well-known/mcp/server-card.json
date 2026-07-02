@@ -1,5 +1,4 @@
 {
-  "$schema": "https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127",
   "name": "app.ng-advanced-table/showcase",
   "title": "Angular Advanced Table Showcase",
   "description": "Read-only MCP server exposing public Angular Advanced Table showcase documentation and examples as markdown resources.",
