@@ -1,29 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
-    {
-      "source": "/index.html",
-      "has": [
-        {
-          "type": "header",
-          "key": "accept",
-          "value": ".*[Tt][Ee][Xx][Tt]/[Mm][Aa][Rr][Kk][Dd][Oo][Ww][Nn].*"
-        }
-      ],
-      "destination": "/api/markdown?route=/"
-    },
-    {
-      "source": "^/(?<route>(?:docs(?:/.*)?|examples(?:/.*)?)?)$",
-      "has": [
-        {
-          "type": "header",
-          "key": "accept",
-          "value": ".*[Tt][Ee][Xx][Tt]/[Mm][Aa][Rr][Kk][Dd][Oo][Ww][Nn].*"
-        }
-      ],
-      "destination": "/api/markdown?route=/$route"
-    }
-  ],
   "headers": [
     {
       "source": "/",
