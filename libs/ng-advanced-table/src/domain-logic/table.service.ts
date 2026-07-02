@@ -129,7 +129,7 @@ export class NatTableService<TData extends RowData = RowData> {
     this.stateSignal.set(value);
   }
 
-  // eslint-disable-next-line -- complexity threshold exceeded but ignored because it is not worth splitting
+  // eslint-disable-next-line complexity -- threshold exceeded but ignored because it is not worth splitting
   public patchState(config: Partial<NatTableConfig>): void {
     if (config.state !== undefined && hasNatTableStateValueChanged(this.stateSignal(), config.state)) {
       this.stateSignal.update((current) => ({ ...current, ...config.state }));
@@ -143,7 +143,7 @@ export class NatTableService<TData extends RowData = RowData> {
       this.surfaceMode.set(config.mode);
     }
 
-    if (config.manualPageCount !== undefined && this.manualPageCount() !== config.manualPageCount) {
+    if (this.manualPageCount() !== config.manualPageCount) {
       this.manualPageCount.set(config.manualPageCount);
     }
 
@@ -159,7 +159,7 @@ export class NatTableService<TData extends RowData = RowData> {
       this.enableMultiSort.set(config.enableMultiSort);
     }
 
-    if (config.locale !== undefined && this.locale() !== config.locale) {
+    if (this.locale() !== config.locale) {
       this.locale.set(config.locale);
     }
 
@@ -179,7 +179,7 @@ export class NatTableService<TData extends RowData = RowData> {
       this.columnSizingMode.set(config.columnSizingMode);
     }
 
-    if (config.direction !== undefined && this.direction() !== config.direction) {
+    if (this.direction() !== config.direction) {
       this.direction.set(config.direction);
     }
   }
