@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- cohesive table state store: state ownership, TanStack wiring, column widths, resize/reorder state, and derived computeds kept together to preserve the signal graph. */
+/* eslint-disable max-lines -- irreducible per-instance reactive store: a single @Injectable owns the signal graph + TanStack table instance; further splitting only relocates coupling into cross-service signal reads and Injector.get() cycles. Pure arithmetic (widths, resize math, const defaults) already extracted to utils/common. */
 import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
@@ -37,101 +37,47 @@ import {
 } from 'ng-advanced-table/locale';
 
 import { NatTableService } from './table.service';
+import type { NatTableColumnMoveDirection } from '../common/column-meta.type';
 import type {
   ColumnRenderStateContext,
   ColumnReorderKeyboardDirection,
   ColumnReorderZone,
-  NatTableBodyState,
-  NatTableColumnMoveDirection,
-  NatTableColumnReorderResult,
-  NatTableDataStatus,
-  NatTableRowIdGetter,
-  NatTableUserState,
-  TableColumnRenderState,
-  TableColumnSizingState
-} from '../common/table.type';
-import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table.type';
+  TableColumnRenderState
+} from '../common/column-render.type';
+import type { NatTableRowIdGetter } from '../common/row.type';
+import { DEFAULT_TABLE_STATE } from '../common/table-state.const';
+import type { NatTableUserState } from '../common/table-state.type';
+import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
+import type { NatTableBodyState, NatTableDataStatus } from '../common/table-status.type';
+import {
+  clampColumnSizingWidths,
+  clampWidth,
+  computeKeyboardResizeWidth,
+  getColumnResizeBounds
+} from '../resize/utils/column-resize.util';
+import { getColumnDefLeafIds, getUserColumnSizing, readColumnEntry } from '../utils/column-def.util';
 import {
   accumulatePinnedOffsets,
-  buildColumnRenderState,
-  firstPageUpdater,
-  getColumnDefLeafIds,
   getColumnMoveTargetIndex,
   getColumnZone,
-  getNumericColumnWidth,
-  getUserColumnSizing,
   hasSameStringOrder,
-  isColumnResizable,
-  matchesFilterQuery,
   moveItemInArrayCopy,
   normalizeColumnOrder,
   normalizeColumnPinning,
-  normalizeDataStatus,
-  normalizeRowSelection,
-  normalizeSortingState,
-  readColumnEntry,
   replaceIdsInSlots,
-  resolveDefaultRowId,
-  resolvePinnedZoneColumns,
-  resolveSeedState,
-  resolveUpdater
-} from '../utils/table-utils';
+  resolvePinnedZoneColumns
+} from '../utils/column-order.util';
+import { buildColumnRenderState } from '../utils/column-render-state.util';
+import { computeFillFlexWidths, computeIntrinsicWidths } from '../utils/column-width.util';
+import { genericGlobalFilter } from '../utils/global-filter.util';
+import { isColumnResizable } from '../utils/interaction.util';
+import { normalizeDataStatus, normalizeRowSelection, resolveDefaultRowId } from '../utils/row-state.util';
+import { normalizeSortingState } from '../utils/sorting.util';
+import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
 
 // ─── Constants ───
 
-const EMPTY_COLUMN_PINNING: ColumnPinningState = {
-  left: [],
-  right: []
-};
-const DEFAULT_PAGINATION: PaginationState = {
-  pageIndex: 0,
-  pageSize: 10
-};
-const DEFAULT_COLUMN_ORDER: ColumnOrderState = [];
-const EMPTY_COLUMN_SIZING: ColumnSizingState = {};
-
-/** @internal */
-export const DEFAULT_TABLE_STATE: NatTableUserState = {
-  sorting: [],
-  globalFilter: '',
-  columnFilters: [],
-  columnVisibility: {},
-  columnOrder: DEFAULT_COLUMN_ORDER,
-  columnPinning: EMPTY_COLUMN_PINNING,
-  columnSizing: EMPTY_COLUMN_SIZING,
-  rowSelection: {},
-  pagination: DEFAULT_PAGINATION
-};
-
-export const RESIZE_KEYBOARD_STEP = 8;
-
-export const RESIZE_KEYBOARD_STEP_LARGE = 40;
-
-/**
- * Minimum resize width for a column that does not declare its own `minSize`.
- * TanStack defaults `minSize` to 20px, which is narrower than the resize handle
- * hit area (`--nat-table-resize-handle-hit`, 24px / the WCAG 2.5.8 AA target):
- * a column dragged that small swallows its own handle (it overflows the cell and
- * stops being grabbable) and, in fill layout, collapses every neighbour to the
- * same sliver while the grown column overflows the region. Twice the hit target
- * keeps the handle fully inside the column plus a grabbable header strip. An
- * explicit `minSize` is always honoured as-is.
- */
-export const DEFAULT_MIN_COLUMN_WIDTH = 48;
-
 let nextTableId = 0;
-
-const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
-  const query = String(filterValue ?? '')
-    .trim()
-    .toLowerCase();
-
-  if (!query) {
-    return true;
-  }
-
-  return matchesFilterQuery(row.getValue(columnId), query) || matchesFilterQuery(row.id, query);
-};
 
 /**
  * Per-table state store that owns TanStack table creation, all internal state
@@ -448,10 +394,23 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly resolvedColumnWidths = computed<Record<string, number>>(() => {
     const visibleColumns = this.visibleColumns();
     const columnSizing = this.mergedState().columnSizing;
+    const clamp = (column: Column<TData, unknown>, width: number): number => this.clampColumnWidth(column, width);
 
-    return this.isFillFlexLayout()
-      ? this.computeFillFlexWidths(visibleColumns, columnSizing)
-      : this.computeIntrinsicWidths(visibleColumns, columnSizing);
+    if (this.isFillFlexLayout()) {
+      return computeFillFlexWidths(visibleColumns, columnSizing, {
+        container: this.regionViewportWidth(),
+        clamp,
+        getBounds: (column) => this.getResizeBounds(column),
+        getColumn: (columnId) => this.table.getColumn(columnId)
+      });
+    }
+
+    return computeIntrinsicWidths(visibleColumns, columnSizing, {
+      measured: this.measuredHeaderWidths(),
+      userSizing: this.userColumnSizing(),
+      usesAuthoritativeLayout: this.usesAuthoritativeLayout(),
+      clamp
+    });
   });
 
   public readonly fixedLayoutTableWidth = computed(() => {
@@ -504,13 +463,7 @@ export class NatTableState<TData extends RowData = RowData> {
   public resizeCommit: { readonly columnId: string; readonly width: number } | null = null;
 
   public getResizeBounds(column: Column<TData, unknown>): { readonly min: number; readonly max: number | null } {
-    const explicitMin = readColumnEntry(this.userColumnSizing(), column.id)?.hasMinSize === true;
-    const rawMin = explicitMin ? column.columnDef.minSize : DEFAULT_MIN_COLUMN_WIDTH;
-    const min = Math.max(Math.round(rawMin ?? DEFAULT_MIN_COLUMN_WIDTH), 1);
-    const rawMax = column.columnDef.maxSize;
-    const max = typeof rawMax === 'number' && Number.isFinite(rawMax) && rawMax < Number.MAX_SAFE_INTEGER ? Math.round(rawMax) : null;
-
-    return { min, max };
+    return getColumnResizeBounds(column, this.userColumnSizing());
   }
 
   public getResizeFitBounds(column: Column<TData, unknown>): { readonly min: number; readonly max: number | null } {
@@ -546,28 +499,15 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   public clampColumnWidth(column: Column<TData, unknown>, width: number): number {
-    const { min, max } = this.getResizeBounds(column);
-    const clamped = Math.max(min, max !== null ? Math.min(max, width) : width);
-
-    return Math.max(Math.round(clamped), 1);
+    return clampWidth(width, this.getResizeBounds(column));
   }
 
   public clampColumnSizing(sizing: ColumnSizingState): ColumnSizingState {
-    let result: ColumnSizingState | null = null;
-
-    for (const columnId of Object.keys(sizing)) {
-      const column = this.table.getColumn(columnId);
-
-      if (!column) continue;
-
-      const clamped = this.clampColumnWidth(column, sizing[columnId]);
-
-      if (clamped !== sizing[columnId]) {
-        (result ??= { ...sizing })[columnId] = clamped;
-      }
-    }
-
-    return result ?? sizing;
+    return clampColumnSizingWidths(
+      sizing,
+      (columnId) => this.table.getColumn(columnId),
+      (column, width) => this.clampColumnWidth(column, width)
+    );
   }
 
   public getColumnEffectiveWidth(column: Column<TData, unknown>): number {
@@ -610,31 +550,20 @@ export class NatTableState<TData extends RowData = RowData> {
 
     const { min, max } = this.getResizeFitBounds(column);
     const current = this.getColumnEffectiveWidth(column);
-    const step = RESIZE_KEYBOARD_STEP;
-    const towardEdge = this.resolvedDirection() === 'rtl' ? -step : step;
-    let next: number;
+    const clamped = computeKeyboardResizeWidth({
+      key: event.key,
+      current,
+      min,
+      max,
+      isRtl: this.resolvedDirection() === 'rtl'
+    });
 
-    switch (event.key) {
-      case 'ArrowLeft':
-        next = current - towardEdge;
-        break;
-      case 'ArrowRight':
-        next = current + towardEdge;
-        break;
-      case 'Home':
-        next = min;
-        break;
-      case 'End':
-        next = max ?? current + RESIZE_KEYBOARD_STEP_LARGE;
-        break;
-      default:
-        return null;
+    if (clamped === null) {
+      return null;
     }
 
     event.preventDefault();
     event.stopPropagation();
-
-    const clamped = Math.max(min, max !== null ? Math.min(max, next) : next);
 
     if (clamped === current) {
       return { width: current, changed: false };
@@ -920,101 +849,6 @@ export class NatTableState<TData extends RowData = RowData> {
     const getRowIdFn = this.getRowId();
 
     return getRowIdFn ? getRowIdFn(row, index, parent) : resolveDefaultRowId(row, index, parent);
-  }
-
-  private computeFillFlexWidths(
-    visibleColumns: readonly Column<TData, unknown>[],
-    columnSizing: ColumnSizingState
-  ): Record<string, number> {
-    const container = this.regionViewportWidth();
-    const widths: Record<string, number> = {};
-    const flex: { readonly id: string; readonly weight: number; readonly min: number }[] = [];
-    let sumPinned = 0;
-    let totalWeight = 0;
-    let sumFlexMins = 0;
-
-    for (const column of visibleColumns) {
-      const resizedWidth = readColumnEntry(columnSizing, column.id);
-
-      if (resizedWidth !== undefined) {
-        const width = this.clampColumnWidth(column, resizedWidth);
-
-        widths[column.id] = width;
-        sumPinned += width;
-      } else {
-        const weight = Math.max(Math.round(column.getSize()), 1);
-        const min = this.getResizeBounds(column).min;
-
-        flex.push({ id: column.id, weight, min });
-        totalWeight += weight;
-        sumFlexMins += min;
-      }
-    }
-
-    if (flex.length === 0) {
-      return widths;
-    }
-
-    const surplus = Math.max(0, container - sumPinned - sumFlexMins);
-    let distributedSurplus = 0;
-
-    flex.forEach(({ id, weight, min }, index) => {
-      const extra = index === flex.length - 1 ? surplus - distributedSurplus : Math.floor((surplus * weight) / totalWeight);
-
-      distributedSurplus += extra;
-      const flexColumn = this.table.getColumn(id);
-      const flexMax = flexColumn ? this.getResizeBounds(flexColumn).max : null;
-      const width = min + Math.max(0, extra);
-
-      widths[id] = flexMax !== null ? Math.min(width, flexMax) : width;
-    });
-
-    return widths;
-  }
-
-  private computeIntrinsicWidths(
-    visibleColumns: readonly Column<TData, unknown>[],
-    columnSizing: ColumnSizingState
-  ): Record<string, number> {
-    const measured = this.measuredHeaderWidths();
-    const userSizing = this.userColumnSizing();
-    const usesAuth = this.usesAuthoritativeLayout();
-    const result: Record<string, number> = {};
-
-    for (const column of visibleColumns) {
-      result[column.id] = this.resolveIntrinsicColumnWidth(column, {
-        measuredWidth: measured[column.id],
-        sizing: userSizing[column.id],
-        resizedWidth: columnSizing[column.id],
-        usesAuthoritativeLayout: usesAuth
-      });
-    }
-
-    return result;
-  }
-
-  private resolveIntrinsicColumnWidth(
-    column: Column<TData, unknown>,
-    context: {
-      readonly measuredWidth: number | undefined;
-      readonly sizing: TableColumnSizingState | undefined;
-      readonly resizedWidth: number | undefined;
-      readonly usesAuthoritativeLayout: boolean;
-    }
-  ): number {
-    const { measuredWidth, sizing, resizedWidth, usesAuthoritativeLayout } = context;
-
-    if (resizedWidth !== undefined) {
-      return this.clampColumnWidth(column, resizedWidth);
-    }
-
-    if (!usesAuthoritativeLayout && measuredWidth !== undefined && measuredWidth > 0) {
-      return measuredWidth;
-    }
-
-    const fixedWidth = sizing?.hasSize === true ? getNumericColumnWidth(column.getSize()) : null;
-
-    return fixedWidth ?? Math.max(Math.round(column.getSize()), 1);
   }
 
   // ─── Lifecycle effects (seed + render cycle) ───
