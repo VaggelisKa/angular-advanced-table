@@ -35,9 +35,17 @@
     "targets": {
       "build": {
         "dependsOn": [
-          "generate-docs"
+          "generate-docs",
+          "generate-discovery"
         ],
         "executor": "@angular/build:application",
+        "inputs": [
+          "production",
+          "{workspaceRoot}/public/**/*",
+          {
+            "env": "SHOWCASE_SITE_URL"
+          }
+        ],
         "outputs": [
           "{options.outputPath}"
         ],
@@ -92,6 +100,20 @@
           }
         },
         "defaultConfiguration": "production"
+      },
+      "generate-discovery": {
+        "cache": false,
+        "executor": "nx:run-commands",
+        "outputs": [
+          "{workspaceRoot}/api/markdown-pages.generated.json",
+          "{workspaceRoot}/public/robots.txt",
+          "{workspaceRoot}/public/.well-known/api-catalog",
+          "{workspaceRoot}/public/sitemap.xml"
+        ],
+        "options": {
+          "command": "node tools/generate-showcase-discovery.mjs",
+          "cwd": "{workspaceRoot}"
+        }
       },
       "generate-docs": {
         "executor": "nx:run-commands",
