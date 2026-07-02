@@ -248,7 +248,7 @@ describe('FEATURE: DocsPage', () => {
 
         expect(copyButton.parentElement).toBe(codeBlock);
         expect(codeScroller.parentElement).toBe(codeBlock);
-        expect(queryRequiredElement<HTMLElement>(codeScroller, 'code').textContent).toContain('npm install ng-advanced-table');
+        expect(queryRequiredElement<HTMLElement>(codeScroller, 'code').textContent).toContain('pnpm add ng-advanced-table');
         expect(queryRequiredElement<SVGElement>(copyButton, '.docs-code-copy-icon--copy')).toBeTruthy();
         expect(queryRequiredElement<SVGElement>(copyButton, '.docs-code-copy-icon--check')).toBeTruthy();
         expect(copyButton.getAttribute('aria-label')).toBe('Copy code block');
@@ -258,7 +258,7 @@ describe('FEATURE: DocsPage', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        expect(writeText).toHaveBeenCalledWith(expect.stringContaining('npm install ng-advanced-table'));
+        expect(writeText).toHaveBeenCalledWith(expect.stringContaining('pnpm add ng-advanced-table'));
         expect(copyButton.classList.contains('is-copied')).toBe(true);
         expect(copyButton.getAttribute('aria-label')).toBe('Copied code block');
         expect(copyButton.title).toBe('Copied code block');

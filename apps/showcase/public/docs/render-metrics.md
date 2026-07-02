@@ -5,7 +5,7 @@ Render metrics are optional diagnostics from `ng-advanced-table/render-metrics`.
 Install the table package and Angular companion peers:
 
 ```bash
-npm install ng-advanced-table @angular/aria @angular/cdk
+pnpm add ng-advanced-table @angular/aria @angular/cdk
 ```
 
 Keep `@angular/core` and `@angular/common` in your Angular app dependencies.
@@ -135,7 +135,7 @@ The latest measurement includes:
 | `rowCount`             | Number of visible rows sampled                     |
 | `rowsPerSecond`        | Approximate rendered rows per second               |
 
-Row metrics include `durationMs`, `measuredAt`, and a derived tone: `fast`, `watch`, or `slow`.
+Row metrics include `durationMs`, `measuredAt`, and a derived tone: `fast` up to `12ms`, `watch` above `12ms`, or `slow` above `16.66ms`.
 
 Set `maxRetainedRowMetrics` to a higher finite value when a table needs a longer diagnostic window. Set it to `Infinity` only when the row-id space is known to be bounded.
 

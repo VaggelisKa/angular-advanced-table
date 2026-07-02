@@ -5,7 +5,7 @@ Start with `NatTable` inside `NatTableSurface`. The table renders the grid; the 
 Install the table package and Angular companion peers:
 
 ```bash
-npm install ng-advanced-table @angular/aria @angular/cdk
+pnpm add ng-advanced-table @angular/aria @angular/cdk
 ```
 
 Keep `@angular/core` and `@angular/common` in your Angular app dependencies.
