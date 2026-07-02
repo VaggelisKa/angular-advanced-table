@@ -43,12 +43,7 @@
   width: min(240px, 80%);
   height: 8px;
   margin-top: 6px;
-  background: linear-gradient(
-    90deg,
-    var(--sc-surface-muted),
-    var(--sc-border-strong),
-    var(--sc-surface-muted)
-  );
+  background: linear-gradient(90deg, var(--sc-surface-muted), var(--sc-border-strong), var(--sc-surface-muted));
   border-radius: 999px;
 }
 
