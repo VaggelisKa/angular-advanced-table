@@ -2,8 +2,8 @@ import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Service, afterNextRender, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { createShowcaseWebMcpTools } from './app.webmcp-tools';
-import type { WebMcpContext, WebMcpDocument, WebMcpNavigator, WebMcpTool } from './app.webmcp-types';
+import { createShowcaseWebMcpTools } from './tools';
+import type { WebMcpContext, WebMcpDocument, WebMcpNavigator, WebMcpTool } from './types';
 
 type WebMcpContexts = {
   readonly navigatorContext: WebMcpContext | undefined;

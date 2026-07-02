@@ -13,8 +13,8 @@ import {
   readSearchLimit,
   readStringInput,
   toRouteResult
-} from './app.webmcp-route-utils';
-import type { WebMcpTool, WebMcpToolInput, WebMcpToolResult } from './app.webmcp-types';
+} from './route-utils';
+import type { WebMcpTool, WebMcpToolInput, WebMcpToolResult } from './types';
 
 type ShowcaseWebMcpToolDependencies = {
   readonly document: Document;

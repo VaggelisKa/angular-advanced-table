@@ -1,4 +1,4 @@
-import type { JsonSchema, WebMcpToolInput, WebMcpToolResult } from './app.webmcp-types';
+import type { JsonSchema, WebMcpToolInput, WebMcpToolResult } from './types';
 import {
   SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH,
   SHOWCASE_DEFAULT_ROUTE_PATH,
@@ -6,8 +6,8 @@ import {
   SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH,
   showcaseDocRouteDescriptors,
   showcaseExampleRouteDescriptors
-} from './routing/app.route-paths';
-import type { ShowcaseRouteDescriptor } from './routing/app.route-paths';
+} from '../shell/routing/app.route-paths';
+import type { ShowcaseRouteDescriptor } from '../shell/routing/app.route-paths';
 
 export const SITE_ORIGIN = 'https://angular-advanced-table.vercel.app';
 

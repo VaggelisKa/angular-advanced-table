@@ -1,4 +1,4 @@
-import { createShowcaseWebMcpTools } from './app.webmcp-tools';
+import { createShowcaseWebMcpTools } from './tools';
 
 type ShowcaseWebMcpTool = ReturnType<typeof createShowcaseWebMcpTools>[number];
 
