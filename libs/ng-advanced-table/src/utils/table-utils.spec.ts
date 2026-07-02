@@ -1,6 +1,7 @@
 import type { ColumnFiltersState } from '@tanstack/angular-table';
 
-import { resolveDefaultRowId, serializeColumnFilters } from './table-utils';
+import { resolveDefaultRowId } from './row-state.util';
+import { serializeColumnFilters } from './sorting.util';
 
 describe('FEATURE: table utilities', () => {
   describe('GIVEN: column filter serialization', () => {
