@@ -2,7 +2,11 @@ import { Directive, TemplateRef, inject } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
-import type { NatTableEmptyTemplateContext, NatTableErrorTemplateContext, NatTableLoadingTemplateContext } from '../common/table.type';
+import type {
+  NatTableEmptyTemplateContext,
+  NatTableErrorTemplateContext,
+  NatTableLoadingTemplateContext
+} from '../common/table-status.type';
 
 // State slots must be templates because NatTable renders them inside its generated tbody row.
 /**
