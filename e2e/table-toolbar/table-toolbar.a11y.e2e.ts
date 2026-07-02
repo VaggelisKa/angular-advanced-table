@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { applyDocumentDirection } from '../support/document-direction';
 
 test.describe('FEATURE: Table toolbar', () => {
@@ -135,6 +136,12 @@ test.describe('FEATURE: Table toolbar', () => {
           await exportButton.press('ArrowLeft');
           await expect(refreshButton).toBeFocused();
         });
+      });
+    });
+
+    test.describe('WHEN: the table toolbar example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-toolbar-actions-preview-panel"]');
       });
     });
   });

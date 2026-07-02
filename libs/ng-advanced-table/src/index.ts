@@ -1,50 +1,25 @@
-export { NatTable } from './feature/table';
+export type * from '@tanstack/angular-table';
 
-export { NatTableA11yService } from './domain-logic/table-a11y.service';
+export * from './ui';
 
-export { NatTableHeaderMeasurementService } from './domain-logic/table-header-measurement.service';
+export * from './common';
 
-export { NatTableReorderService } from './domain-logic/table-reorder.service';
+export * from './domain-logic';
 
-export { NatTableResizeService } from './domain-logic/table-resize.service';
+export { NatTable } from './table/table';
 
-export { NatTableService } from './domain-logic/table.service';
+export { NatTableHotkeyA11y } from './hotkey-a11y/hotkey-a11y.directive';
 
-export { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from './ui/table-state-templates';
+export { NAT_TABLE_KEYBINDINGS } from './hotkey-a11y/common/keybindings.const';
 
-export { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from './common/table.type';
+export { provideNatTableKeybindings } from './hotkey-a11y/keybindings.provider';
 
-export * from '@tanstack/angular-table';
+export { createNatTableKeyboard, serializeShortcutValue } from './hotkey-a11y/utils/keybindings.util';
 
-export type { NatTableRowRenderedEvent } from './common/events.type';
+export type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut } from './hotkey-a11y/common/keybindings.type';
 
-export type {
-  NatTableAccessibilityText,
-  NatTableBodyState,
-  NatTableCellTone,
-  NatTableColumnMoveDirection,
-  NatTableColumnMeta,
-  NatTableColumnReorderResult,
-  NatTableDataStatus,
-  NatTableEmptyTemplateContext,
-  NatTableErrorTemplateContext,
-  NatTableLoadingTemplateContext,
-  NatTableRowActivateEvent,
-  NatTableRowIdGetter,
-  NatTableSortIndicatorContext,
-  NatTableMode,
-  NatTableModeConfiguration,
-  NatTableUserState,
-  NatTableUiController,
-  NatTableUiState
-} from './common/table.type';
+export { NatTableReorderService } from './reorder/table-reorder.service';
 
-export { NatTableHotkeyA11y } from './feature/hotkey-a11y.directive';
-
-export { NAT_TABLE_KEYBINDINGS, provideNatTableKeybindings } from './common/keybindings.provider';
-
-export { createNatTableKeyboard, serializeShortcutValue } from './utils/keybindings';
-
-export type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut } from './common/keybindings.type';
+export { NatTableResizeService } from './resize/table-resize.service';
 
 export { hasNatTableStateValueChanged } from './utils/table-state-value-equality.util';

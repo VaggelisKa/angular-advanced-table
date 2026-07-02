@@ -2,16 +2,13 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
-import { NAT_TABLE_KEYBINDINGS } from '../common/keybindings.provider';
-import type { NatTableKeybindings } from '../common/keybindings.type';
-import type {
-  NatTableAccessibilityText,
-  NatTableMode,
-  NatTableModeConfiguration,
-  NatTableUiController,
-  NatTableUserState
-} from '../common/table.type';
-import { createNatTableKeyboard, mergeNatTableKeybindings } from '../utils/keybindings';
+import type { NatTableAccessibilityText } from 'ng-advanced-table/locale';
+
+import type { NatTableMode, NatTableModeConfiguration, NatTableUserState } from '../common/table-state.type';
+import type { NatTableUiController } from '../common/ui-controller.type';
+import { NAT_TABLE_KEYBINDINGS } from '../hotkey-a11y/common/keybindings.const';
+import type { NatTableKeybindings } from '../hotkey-a11y/common/keybindings.type';
+import { createNatTableKeyboard, mergeNatTableKeybindings } from '../hotkey-a11y/utils/keybindings.util';
 import { hasNatTableStateValueChanged } from '../utils/table-state-value-equality.util';
 
 export type NatTableColumnResizeMode = 'onEnd' | 'onChange';

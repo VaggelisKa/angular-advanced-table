@@ -65,7 +65,7 @@ const buildAreaPath = (points: readonly number[]): string => {
       display: inline-flex;
       width: 72px;
       height: 22px;
-      color: var(--text-muted, #8a94a0);
+      color: var(--text-muted, #616b78);
     }
 
     :host([data-trend='up']) {

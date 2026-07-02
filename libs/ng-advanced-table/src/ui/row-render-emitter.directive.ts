@@ -1,6 +1,6 @@
 import { Directive, afterRenderEffect, booleanAttribute, input, output } from '@angular/core';
 
-import type { NatTableRowRenderedEvent } from '../common/events.type';
+import type { NatTableRowRenderedEvent } from '../common/row-render.type';
 
 const roundToSingleDecimal = (value: number): number => Number(value.toFixed(1));
 

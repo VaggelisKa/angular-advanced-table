@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import type { RowData, Table } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
-import type { NatTableUiController } from '../common/table.type';
+import type { NatTableUiController } from '../common/ui-controller.type';
 
 const createController = (id: string): NatTableUiController => {
   return {

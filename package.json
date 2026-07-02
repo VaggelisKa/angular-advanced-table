@@ -34,6 +34,7 @@
     "@angular/build": "catalog:frontend-dev",
     "@angular/cli": "catalog:frontend-dev",
     "@angular/compiler-cli": "catalog:frontend-dev",
+    "@axe-core/playwright": "catalog:frontend-dev",
     "@nx/angular": "catalog:frontend-dev",
     "@nx/eslint": "catalog:shared-dev",
     "@nx/js": "catalog:shared-dev",

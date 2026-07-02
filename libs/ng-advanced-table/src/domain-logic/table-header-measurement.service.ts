@@ -3,7 +3,7 @@ import { DestroyRef, Injectable, afterNextRender, afterRenderEffect, inject } fr
 import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableState } from './table.state';
-import { hasSameWidths } from '../utils/table-utils';
+import { hasSameWidths } from '../utils/row-state.util';
 
 /**
  * Per-table service that manages header-cell ResizeObserver lifecycle and

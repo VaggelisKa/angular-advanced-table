@@ -21,7 +21,8 @@
         [data]="data()"
         [enableRowSelection]="true"
         [selectionMode]="selectionMode()"
-        accessibleName="Row selection demo table" />
+        accessibleName="Row selection demo table"
+        (rowActivate)="onRowActivate($event)" />
     </nat-table-surface>
   </div>
 
@@ -54,6 +55,7 @@
     <div class="info-tags">
       <div class="info-tag">Mode: {{ selectionMode() }}</div>
       <div class="info-tag">Selected ({{ selectedNames().length }}): {{ selectedSummary() }}</div>
+      <div class="info-tag" data-testid="last-activated">Last activated: {{ lastActivatedName() ?? 'None' }}</div>
     </div>
   </div>
 </div>

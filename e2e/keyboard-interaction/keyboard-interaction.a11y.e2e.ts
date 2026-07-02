@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
+
 test.describe('FEATURE: Keyboard interaction accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/keyboard-interaction');
@@ -37,6 +39,12 @@ test.describe('FEATURE: Keyboard interaction accessibility', () => {
           await expect(checkbox).toBeChecked();
           await expect(lastAction).toContainText('Last action: Resumed Alpha Searcher');
         });
+      });
+    });
+
+    test.describe('WHEN: the keyboard interaction example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-keyboard-interaction-preview-panel"]');
       });
     });
   });

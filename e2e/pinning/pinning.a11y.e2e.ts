@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Column pinning accessibility', () => {
@@ -46,6 +47,12 @@ test.describe('FEATURE: Column pinning accessibility', () => {
         await test.step('THEN: Right is active', async () => {
           await expect(nameRightBtn).toHaveClass(/active/);
         });
+      });
+    });
+
+    test.describe('WHEN: the column pinning example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-column-pinning-preview-panel"]');
       });
     });
   });

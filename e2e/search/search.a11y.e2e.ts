@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Global search accessibility', () => {
@@ -39,6 +40,12 @@ test.describe('FEATURE: Global search accessibility', () => {
           // All 6 rows are back
           await expect(table.locator('tbody tr')).toHaveCount(6);
         });
+      });
+    });
+
+    test.describe('WHEN: the search example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-filtering-search-preview-panel"]');
       });
     });
   });

@@ -54,6 +54,8 @@
 
 .render-kpi-detail {
   font-size: 0.78rem;
+
+  /* Secondary emphasis comes from the muted token, not opacity: opacity on text
+     blends it toward the background and drops contrast below WCAG AA. */
   color: var(--nat-table-color-text-muted, GrayText);
-  opacity: 0.7;
 }
