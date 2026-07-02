@@ -97,6 +97,6 @@ Within the core `ng-advanced-table` entry, leaf capabilities live in flat folder
 
 ## Browser Compatibility
 
-- The project must support Safari 16.2 and newer.
-- Before using newer browser APIs, CSS features, or Angular/browser platform features, verify compatibility with Safari 16.2 and provide a compatible fallback or choose an older-supported approach.
+- The project must support Safari 16.5 and newer.
+- Before using newer browser APIs, CSS features, or Angular/browser platform features, verify compatibility with Safari 16.5 and provide a compatible fallback or choose an older-supported approach.
 - Be especially cautious with recently introduced CSS APIs such as `@starting-style`, View Transitions, newer selectors, and animation features.

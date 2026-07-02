@@ -1,5 +1,9 @@
 :host {
   display: block;
+
+  --sc-detail-header: 68px;
+  --sc-detail-container-offset: 62px;
+  --sc-detail-radius: 8px;
 }
 
 nat-table-surface {
@@ -36,7 +40,7 @@ nat-table-surface {
   margin-bottom: 0.5rem;
   font-size: 1.25rem;
   font-weight: 650;
-  color: var(--showcase-page-text);
+  color: var(--sc-text);
 }
 
 .example-card-surface .description {
@@ -45,7 +49,7 @@ nat-table-surface {
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: var(--showcase-page-text-soft);
+  color: var(--sc-text-soft);
 }
 
 .example-card-surface footer {
@@ -53,9 +57,9 @@ nat-table-surface {
   justify-content: flex-end;
   padding: 0.5rem;
   background: var(--nat-table-region-background, transparent);
-  border: 1px solid var(--showcase-page-border);
+  border: 1px solid var(--sc-border);
   border-top: 0;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 var(--sc-detail-radius) var(--sc-detail-radius);
 }
 
 .example-card-surface footer button,
@@ -66,9 +70,9 @@ nat-table-surface {
   font-weight: 600;
   color: white;
   cursor: pointer;
-  background: var(--showcase-page-accent);
+  background: var(--sc-accent);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--sc-radius-sm);
   transition:
     background var(--nat-table-transition-fast),
     transform var(--nat-table-transition-fast);
@@ -77,7 +81,7 @@ nat-table-surface {
 .example-card-surface footer button:hover,
 .detailed-page-header .back-button:hover,
 .dialog-header button:hover {
-  background: var(--showcase-page-accent-strong);
+  background: var(--sc-accent-strong);
   transform: translateY(-1px);
 }
 
@@ -103,15 +107,15 @@ dialog {
   margin: 0;
   overflow: hidden;
   overscroll-behavior-y: contain;
-  color: var(--showcase-page-text);
-  background: var(--showcase-page-surface);
+  color: var(--sc-text);
+  background: var(--sc-surface);
   border: none;
   border-radius: 0;
   box-shadow: none;
 }
 
 dialog::backdrop {
-  background: var(--showcase-page-surface);
+  background: var(--sc-surface);
 }
 
 .dialog-content {
@@ -125,9 +129,9 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
+  height: var(--sc-detail-header);
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--showcase-page-border);
+  border-bottom: 1px solid var(--sc-border);
 }
 
 .dialog-header h2 {
@@ -137,19 +141,19 @@ dialog::backdrop {
 }
 
 .dialog-header button {
-  color: var(--showcase-page-text);
-  background: var(--showcase-page-surface-muted);
-  border: 1px solid var(--showcase-page-border);
+  color: var(--sc-text);
+  background: var(--sc-surface-muted);
+  border: 1px solid var(--sc-border);
 }
 
 .dialog-header button:hover {
-  background: var(--showcase-page-surface-hover);
+  background: var(--sc-surface-hover);
 }
 
 .dialog-body {
   flex: 1;
   min-height: 0;
-  background: var(--showcase-page-bg);
+  background: var(--sc-bg);
 }
 
 /* Detailed Page Styles */
@@ -158,7 +162,7 @@ dialog::backdrop {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 62px);
+  height: calc(100vh - var(--sc-detail-container-offset));
   overflow: hidden;
 }
 
@@ -166,7 +170,7 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
+  height: var(--sc-detail-header);
   padding: 1rem;
 }
 
@@ -177,13 +181,13 @@ dialog::backdrop {
 }
 
 .detailed-page-header .back-button {
-  color: var(--showcase-page-text);
-  background: var(--showcase-page-surface-muted);
-  border: 1px solid var(--showcase-page-border);
+  color: var(--sc-text);
+  background: var(--sc-surface-muted);
+  border: 1px solid var(--sc-border);
 }
 
 .detailed-page-header .back-button:hover {
-  background: var(--showcase-page-surface-hover);
+  background: var(--sc-surface-hover);
 }
 
 .detailed-page-body {
@@ -193,54 +197,26 @@ dialog::backdrop {
 
 /* Detailed Table Surface styles using max height CSS variable */
 nat-table-surface.dialog-table-surface {
-  --nat-table-max-height: calc(100vh - 68px);
+  --nat-table-max-height: calc(100vh - var(--sc-detail-header));
+
+  /* Flat surface inside the dialog/detail shell. Replaces the former
+     shadow-piercing .surface reset (padding/background/border/border-radius = 0)
+     by driving the same properties through the library's public card tokens.
+     -compact variants zero the <=720px media override too. Card shadow /
+     backdrop-filter are deliberately left at their inherited values. */
+  --nat-table-space-card: 0;
+  --nat-table-space-card-compact: 0;
+  --nat-table-card-background: none;
+  --nat-table-card-border-width: 0;
+  --nat-table-radius-card: 0;
+  --nat-table-radius-card-compact: 0;
 }
 
 .detailed-page-body nat-table-surface.dialog-table-surface {
-  --nat-table-max-height: calc(100vh - 68px);
+  --nat-table-max-height: calc(100vh - var(--sc-detail-header));
 }
 
-nat-table-surface.dialog-table-surface ::ng-deep .surface {
-  padding: 0;
-  background: none;
-  border: 0;
-  border-radius: 0;
-}
-
-.simple-table ::ng-deep .table-region {
-  overscroll-behavior-y: contain;
-}
-
-.simple-table {
-  display: block;
-  width: 100%;
-  min-width: 0;
-
-  --text: var(--showcase-page-text);
-  --text-soft: var(--showcase-page-text-soft);
-  --surface: var(--showcase-page-surface);
-  --surface-elevated: var(--showcase-page-surface-elevated);
-  --surface-contrast: var(--showcase-page-surface-contrast);
-  --accent: var(--showcase-page-accent);
-  --shadow: var(--showcase-page-shadow);
-  --nat-table-cell-border-color: color-mix(in srgb, var(--showcase-page-border) 74%, transparent);
-  --nat-table-focus-ring-color: var(--showcase-page-focus);
-  --nat-table-focus-ring-width: 3px;
-  --nat-table-radius-region: 8px 8px 0 0;
-  --nat-table-space-cell-y: 7px;
-  --nat-table-space-cell-x: 9px;
-  --nat-table-space-header-content-gap: 8px;
-  --nat-table-header-background: var(--showcase-page-surface-contrast);
-  --nat-table-header-border-color: var(--showcase-page-border);
-  --nat-table-region-background: var(--showcase-page-surface);
-  --nat-table-region-border-color: var(--showcase-page-border);
-  --nat-table-row-background-hover: color-mix(in srgb, var(--showcase-page-accent) 7%, transparent);
-  --nat-table-sort-icon-chip-background-active: color-mix(in srgb, var(--showcase-page-accent) 15%, transparent);
-}
-
-@media (width >= 768px) {
-  .simple-table {
-    --nat-table-space-cell-y: 12px;
-    --nat-table-space-header-content-gap: 12px;
-  }
+.sc-demo-table {
+  --nat-table-radius-region: var(--sc-detail-radius) var(--sc-detail-radius) 0 0;
+  --nat-table-region-overscroll-behavior-y: contain;
 }

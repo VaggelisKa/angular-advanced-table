@@ -116,6 +116,7 @@
   --nat-table-pager-disabled-opacity: var(--nat-table-disabled-opacity);
   --nat-table-region-overflow-x: auto;
   --nat-table-region-overflow-y: auto;
+  --nat-table-region-overscroll-behavior-y: auto;
   --nat-table-max-height: inherit;
   --nat-table-height: inherit;
   --nat-table-sticky-top: 0;

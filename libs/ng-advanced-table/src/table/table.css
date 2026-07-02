@@ -10,6 +10,7 @@
   max-height: var(--nat-table-max-height, inherit);
   overflow: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto))
     var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
+  overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y, auto);
   background: var(--nat-table-region-background, transparent);
   border: var(--nat-table-region-border-width, 1px) solid var(--nat-table-region-border-color, rgb(128 128 128 / 24%));
   border-radius: var(--nat-table-radius-region, 16px);

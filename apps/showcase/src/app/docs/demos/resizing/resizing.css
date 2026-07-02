@@ -1,21 +1,21 @@
 .resize-toggles {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--sc-space-3);
+  padding: var(--sc-space-3) var(--sc-space-5);
   margin: 0;
-  border: 1px solid var(--app-border-color, rgb(128 128 128 / 32%));
-  border-radius: 12px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
 }
 
 .resize-toggles legend {
-  padding: 0 6px;
-  font-weight: 600;
+  padding: 0 var(--sc-space-sm);
+  font-weight: var(--sc-weight-semibold);
 }
 
 .resize-toggle {
   display: inline-flex;
-  gap: 6px;
+  gap: var(--sc-space-sm);
   align-items: center;
   cursor: pointer;
 }
