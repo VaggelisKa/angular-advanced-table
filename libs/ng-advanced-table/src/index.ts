@@ -45,3 +45,5 @@ export { NAT_TABLE_KEYBINDINGS, provideNatTableKeybindings } from './common/keyb
 export { createNatTableKeyboard, serializeShortcutValue } from './utils/keybindings';
 
 export type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut } from './common/keybindings.type';
+
+export { hasNatTableStateValueChanged } from './utils/table-state-value-equality.util';

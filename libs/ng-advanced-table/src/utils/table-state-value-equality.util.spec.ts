@@ -1,0 +1,33 @@
+import { hasNatTableStateValueChanged } from './table-state-value-equality.util';
+
+class FilterToken {
+  public readonly value = 'same';
+}
+
+describe('table state value equality', () => {
+  it('compares non-JSON table state values without stringifying them', () => {
+    expect(hasNatTableStateValueChanged([{ id: 'status', value: 1n }], [{ id: 'status', value: 1n }])).toBe(false);
+    expect(
+      hasNatTableStateValueChanged([{ id: 'status', value: new Set(['Healthy']) }], [{ id: 'status', value: new Set(['Healthy']) }])
+    ).toBe(false);
+    expect(
+      hasNatTableStateValueChanged(
+        [{ id: 'status', value: new Set(['Healthy', 'Warning']) }],
+        [{ id: 'status', value: new Set(['Warning', 'Healthy']) }]
+      )
+    ).toBe(false);
+    expect(
+      hasNatTableStateValueChanged(
+        [{ id: 'status', value: new Set([{ value: 'Healthy' }, { value: 'Warning' }]) }],
+        [{ id: 'status', value: new Set([{ value: 'Warning' }, { value: 'Healthy' }]) }]
+      )
+    ).toBe(false);
+    expect(hasNatTableStateValueChanged([{ id: 'status', value: 1n }], [{ id: 'status', value: 2n }])).toBe(true);
+    expect(
+      hasNatTableStateValueChanged([{ id: 'status', value: new Set(['Healthy']) }], [{ id: 'status', value: new Set(['Alert']) }])
+    ).toBe(true);
+    expect(
+      hasNatTableStateValueChanged([{ id: 'status', value: new FilterToken() }], [{ id: 'status', value: new FilterToken() }])
+    ).toBe(true);
+  });
+});

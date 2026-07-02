@@ -12,6 +12,7 @@ import type {
   NatTableUserState
 } from '../common/table.type';
 import { createNatTableKeyboard, mergeNatTableKeybindings } from '../utils/keybindings';
+import { hasNatTableStateValueChanged } from '../utils/table-state-value-equality.util';
 
 export type NatTableColumnResizeMode = 'onEnd' | 'onChange';
 
@@ -130,36 +131,57 @@ export class NatTableService<TData extends RowData = RowData> {
 
   // eslint-disable-next-line -- complexity threshold exceeded but ignored because it is not worth splitting
   public patchState(config: Partial<NatTableConfig>): void {
-
-    if (config.state !== undefined) {
+    if (config.state !== undefined && hasNatTableStateValueChanged(this.stateSignal(), config.state)) {
       this.stateSignal.update((current) => ({ ...current, ...config.state }));
     }
 
-    if (config.initialState !== undefined) {
+    if (config.initialState !== undefined && hasNatTableStateValueChanged(this.surfaceInitialState(), config.initialState)) {
       this.surfaceInitialState.update((current) => ({ ...current, ...config.initialState }));
     }
 
-    if (config.mode !== undefined) this.surfaceMode.set(config.mode);
+    if (config.mode !== undefined && hasNatTableStateValueChanged(this.surfaceMode(), config.mode)) {
+      this.surfaceMode.set(config.mode);
+    }
 
-    if (config.manualPageCount !== undefined) this.manualPageCount.set(config.manualPageCount);
+    if (config.manualPageCount !== undefined && this.manualPageCount() !== config.manualPageCount) {
+      this.manualPageCount.set(config.manualPageCount);
+    }
 
-    if (config.enableAnnouncements !== undefined) this.enableAnnouncements.set(config.enableAnnouncements);
+    if (config.enableAnnouncements !== undefined && this.enableAnnouncements() !== config.enableAnnouncements) {
+      this.enableAnnouncements.set(config.enableAnnouncements);
+    }
 
-    if (config.stickyHeader !== undefined) this.stickyHeader.set(config.stickyHeader);
+    if (config.stickyHeader !== undefined && this.stickyHeader() !== config.stickyHeader) {
+      this.stickyHeader.set(config.stickyHeader);
+    }
 
-    if (config.enableMultiSort !== undefined) this.enableMultiSort.set(config.enableMultiSort);
+    if (config.enableMultiSort !== undefined && this.enableMultiSort() !== config.enableMultiSort) {
+      this.enableMultiSort.set(config.enableMultiSort);
+    }
 
-    if (config.locale !== undefined) this.locale.set(config.locale);
+    if (config.locale !== undefined && this.locale() !== config.locale) {
+      this.locale.set(config.locale);
+    }
 
-    if (config.accessibilityText !== undefined) this.accessibilityText.set(config.accessibilityText);
+    if (config.accessibilityText !== undefined && hasNatTableStateValueChanged(this.accessibilityText(), config.accessibilityText)) {
+      this.accessibilityText.set(config.accessibilityText);
+    }
 
-    if (config.keybindings !== undefined) this.surfaceKeybindings.set(config.keybindings);
+    if (config.keybindings !== undefined && hasNatTableStateValueChanged(this.surfaceKeybindings(), config.keybindings)) {
+      this.surfaceKeybindings.set(config.keybindings);
+    }
 
-    if (config.columnResizeMode !== undefined) this.columnResizeMode.set(config.columnResizeMode);
+    if (config.columnResizeMode !== undefined && this.columnResizeMode() !== config.columnResizeMode) {
+      this.columnResizeMode.set(config.columnResizeMode);
+    }
 
-    if (config.columnSizingMode !== undefined) this.columnSizingMode.set(config.columnSizingMode);
+    if (config.columnSizingMode !== undefined && this.columnSizingMode() !== config.columnSizingMode) {
+      this.columnSizingMode.set(config.columnSizingMode);
+    }
 
-    if (config.direction !== undefined) this.direction.set(config.direction);
+    if (config.direction !== undefined && this.direction() !== config.direction) {
+      this.direction.set(config.direction);
+    }
   }
 
   public registerPagination(): void {
