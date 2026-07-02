@@ -216,20 +216,21 @@ Render-metrics widgets intentionally do not expose their own component-specific 
 
 ### Layout And Stacking
 
-| Token                               | Stock default |
-| ----------------------------------- | ------------- |
-| `--nat-table-region-overflow-x`     | `auto`        |
-| `--nat-table-region-overflow-y`     | `auto`        |
-| `--nat-table-max-height`            | `inherit`     |
-| `--nat-table-height`                | `inherit`     |
-| `--nat-table-sticky-top`            | `0`           |
-| `--nat-table-z-index-sticky-header` | `4`           |
-| `--nat-table-z-index-pinned-cell`   | `5`           |
-| `--nat-table-z-index-pinned-header` | `6`           |
-| `--nat-table-z-index-focus-cell`    | `7`           |
-| `--nat-table-z-index-resize-handle` | `8`           |
-| `--nat-table-z-index-resize-guide`  | `9`           |
-| `--nat-table-z-index-drag-preview`  | `12`          |
+| Token                                      | Stock default |
+| ------------------------------------------ | ------------- |
+| `--nat-table-region-overflow-x`            | `auto`        |
+| `--nat-table-region-overflow-y`            | `auto`        |
+| `--nat-table-region-overscroll-behavior-y` | `auto`        |
+| `--nat-table-max-height`                   | `inherit`     |
+| `--nat-table-height`                       | `inherit`     |
+| `--nat-table-sticky-top`                   | `0`           |
+| `--nat-table-z-index-sticky-header`        | `4`           |
+| `--nat-table-z-index-pinned-cell`          | `5`           |
+| `--nat-table-z-index-pinned-header`        | `6`           |
+| `--nat-table-z-index-focus-cell`           | `7`           |
+| `--nat-table-z-index-resize-handle`        | `8`           |
+| `--nat-table-z-index-resize-guide`         | `9`           |
+| `--nat-table-z-index-drag-preview`         | `12`          |
 
 ## Core-Only Tables
 
