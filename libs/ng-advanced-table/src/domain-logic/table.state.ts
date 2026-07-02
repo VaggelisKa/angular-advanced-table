@@ -36,6 +36,7 @@ import {
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
+import { NatTableService } from './table.service';
 import type {
   ColumnRenderStateContext,
   ColumnReorderKeyboardDirection,
@@ -75,7 +76,6 @@ import {
   resolveSeedState,
   resolveUpdater
 } from '../utils/table-utils';
-import { NatTableService } from './table.service';
 
 // ─── Constants ───
 
