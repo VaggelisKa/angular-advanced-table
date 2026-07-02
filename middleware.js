@@ -18,6 +18,48 @@ const normalizePathname = (pathname) => {
   return normalizedPathname || '/';
 };
 
+const parseAcceptQuality = (acceptEntry) => {
+  const [mediaRange, ...parameters] = acceptEntry.split(';').map((part) => part.trim());
+  const qParameter = parameters.find((parameter) => parameter.toLowerCase().startsWith('q='));
+
+  if (!qParameter) {
+    return {
+      mediaRange: mediaRange.toLowerCase(),
+      quality: 1
+    };
+  }
+
+  const quality = Number(qParameter.slice(2));
+
+  return {
+    mediaRange: mediaRange.toLowerCase(),
+    quality: Number.isFinite(quality) ? Math.min(1, Math.max(0, quality)) : 0
+  };
+};
+
+const getAcceptedQuality = (acceptEntries, mediaType) => {
+  return Math.max(0, ...acceptEntries.filter((entry) => entry.mediaRange === mediaType).map((entry) => entry.quality));
+};
+
+const getHtmlQuality = (acceptEntries) => {
+  return Math.max(
+    getAcceptedQuality(acceptEntries, 'text/html'),
+    getAcceptedQuality(acceptEntries, 'text/*'),
+    getAcceptedQuality(acceptEntries, '*/*')
+  );
+};
+
+const acceptsMarkdown = (accept) => {
+  const acceptEntries = accept
+    .split(',')
+    .map(parseAcceptQuality)
+    .filter((entry) => entry.mediaRange);
+  const markdownQuality = getAcceptedQuality(acceptEntries, 'text/markdown');
+  const htmlQuality = getHtmlQuality(acceptEntries);
+
+  return markdownQuality > 0 && markdownQuality >= htmlQuality;
+};
+
 export default function middleware(request) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return;
@@ -25,7 +67,7 @@ export default function middleware(request) {
 
   const accept = request.headers.get('accept') ?? '';
 
-  if (!/text\/markdown/i.test(accept)) {
+  if (!acceptsMarkdown(accept)) {
     return;
   }
 
