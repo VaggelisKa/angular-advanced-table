@@ -35,18 +35,18 @@ import { Component, computed, input } from '@angular/core';
       letter-spacing: 0.06em;
       line-height: 1;
       text-transform: uppercase;
-      background: var(--accent-soft, color-mix(in srgb, var(--accent, #1f6feb) 14%, transparent));
-      color: var(--accent-strong, var(--accent, #1f6feb));
-      font-family: var(--mono-font, ui-monospace, monospace);
+      background: var(--sc-accent-soft, color-mix(in srgb, var(--sc-accent, #1f6feb) 14%, transparent));
+      color: var(--sc-accent-strong, var(--sc-accent, #1f6feb));
+      font-family: var(--sc-mono-font, ui-monospace, monospace);
     }
 
     .ticker-symbol {
-      font-family: var(--mono-font, ui-monospace, monospace);
+      font-family: var(--sc-mono-font, ui-monospace, monospace);
       font-weight: 600;
       font-size: 0.82rem;
       font-variant-numeric: lining-nums tabular-nums;
       letter-spacing: 0.01em;
-      color: var(--text, inherit);
+      color: var(--sc-text, inherit);
       overflow: hidden;
       text-overflow: ellipsis;
     }

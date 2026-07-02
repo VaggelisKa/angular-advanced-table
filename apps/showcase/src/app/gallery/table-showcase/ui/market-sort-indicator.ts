@@ -9,7 +9,7 @@ import type { NatTableSortIndicatorContext } from 'ng-advanced-table/components'
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      --msi-accent: var(--accent, currentColor);
+      --msi-accent: var(--sc-accent, currentColor);
       --msi-idle: color-mix(in srgb, currentColor 55%, transparent);
       --msi-muted: color-mix(in srgb, currentColor 22%, transparent);
       --msi-hover: color-mix(in srgb, currentColor 85%, transparent);

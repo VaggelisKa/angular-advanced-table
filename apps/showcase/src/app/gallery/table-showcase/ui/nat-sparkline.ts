@@ -65,15 +65,15 @@ const buildAreaPath = (points: readonly number[]): string => {
       display: inline-flex;
       width: 72px;
       height: 22px;
-      color: var(--text-muted, #616b78);
+      color: var(--sc-text-muted, #616b78);
     }
 
     :host([data-trend='up']) {
-      color: var(--positive, #127a3b);
+      color: var(--sc-positive, #127a3b);
     }
 
     :host([data-trend='down']) {
-      color: var(--negative, #b42318);
+      color: var(--sc-negative, #b42318);
     }
 
     .sparkline {
