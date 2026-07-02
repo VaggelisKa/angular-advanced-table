@@ -2,9 +2,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import {
-  root
-} from '../../test-helpers/table-dom.helper';
+import { root } from '../../test-helpers/table-dom.helper';
 import {
   CustomSortIndicatorHost,
   HiddenHeaderActionLabelHost,

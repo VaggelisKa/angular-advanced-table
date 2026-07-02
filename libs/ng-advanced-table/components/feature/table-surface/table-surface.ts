@@ -84,15 +84,12 @@ export class NatTableSurface {
     columnPinning: { left: [], right: [] },
     columnSizing: {},
     rowSelection: {},
-    pagination: { pageIndex: 0, pageSize: 10 }
+    pagination: { pageIndex: 0, pageSize: 0 }
   };
 
   private firstStateChange = true;
 
   public constructor() {
-    this.syncInputsToService();
-
-    // Detect internal state changes from the table and emit slice outputs.
     effect(() => {
       const nextState = this.natTableService.stateChangeEvent();
 
@@ -100,10 +97,7 @@ export class NatTableSurface {
         this.emitStateSliceChanges(nextState);
       }
     });
-  }
 
-  /** Mirror each surface input into the table service, one effect per input. */
-  private syncInputsToService(): void {
     effect(() => {
       this.natTableService.patchState({
         state: this.state(),
