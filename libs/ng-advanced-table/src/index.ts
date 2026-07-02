@@ -1,4 +1,4 @@
-export * from '@tanstack/angular-table';
+export type * from '@tanstack/angular-table';
 
 export * from './ui';
 
