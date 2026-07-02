@@ -42,6 +42,7 @@ import type {
   ColumnRenderStateContext,
   ColumnReorderKeyboardDirection,
   ColumnReorderZone,
+  NatTableColumnReorderResult,
   TableColumnRenderState
 } from '../common/column-render.type';
 import type { NatTableRowIdGetter } from '../common/row.type';

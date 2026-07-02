@@ -1,5 +1,7 @@
 import type { CellContext, Column, Row, RowData } from '@tanstack/angular-table';
 
+import type { NatTableColumnReorderResult } from './column-render.type';
+
 /** Semantic tone that can be applied to a rendered body cell. */
 export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
 
@@ -72,7 +74,7 @@ declare module '@tanstack/table-core' {
     readonly natTableLocaleId?: string;
     /** Returns whether a visible column can move within its current pinned region. */
     readonly natTableCanMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => boolean;
-    /** Moves a visible column within its current pinned region and announces the change. */
-    readonly natTableMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => void;
+    /** Moves a visible column within its current pinned region. Returns the reorder result, or null if no move occurred. */
+    readonly natTableMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => NatTableColumnReorderResult | null;
   }
 }

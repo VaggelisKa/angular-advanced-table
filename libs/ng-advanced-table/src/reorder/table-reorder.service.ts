@@ -4,6 +4,7 @@ import { Injectable, Injector, afterNextRender, inject } from '@angular/core';
 import type { Column, HeaderGroup, RowData } from '@tanstack/angular-table';
 
 import type { ColumnReorderKeyboardDirection } from '../common/column-render.type';
+import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { getHeaderRowColumnIds } from '../utils/column-label.util';
 import { getColumnZone, moveItemInArrayCopy } from '../utils/column-order.util';
@@ -13,7 +14,8 @@ import { resolveDraggedColumnId, scrollElementHorizontallyIntoView } from '../ut
  * Per-table service that manages column-reorder logic and scroll-into-view behavior.
  *
  * After a column is reordered (drag-drop or keyboard), this service applies
- * the state change and scrolls the moved header into the visible viewport.
+ * the state change, announces the move for screen readers, and scrolls the
+ * moved header into the visible viewport.
  *
  * Provided alongside `NatTableState` in the component's `providers`.
  */
@@ -22,6 +24,7 @@ import { resolveDraggedColumnId, scrollElementHorizontallyIntoView } from '../ut
 export class NatTableReorderService<TData extends RowData = RowData> {
   private readonly injector = inject(Injector);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
+  private readonly a11yService = inject<NatTableA11yService<TData>>(NatTableA11yService);
 
   // ─── Template-facing helpers ───
 
@@ -56,7 +59,12 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     const reorderedRowColumnIds = moveItemInArrayCopy(rowColumnIds, event.previousIndex, event.currentIndex);
     const nextVisibleZoneOrder = reorderedRowColumnIds.filter((columnId) => this.state.getColumnZoneById(columnId) === zone);
 
-    this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
+    const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
+
+    if (result) {
+      this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
+    }
+
     this.scrollHeaderIntoView(movingColumnId);
   }
 
@@ -80,7 +88,12 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     event.preventDefault();
     event.stopPropagation();
 
-    this.state.moveColumnByDelta(column.id, directionDelta);
+    const result = this.state.moveColumnByDelta(column.id, directionDelta);
+
+    if (result) {
+      this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
+    }
+
     this.scrollHeaderIntoView(column.id);
 
     return true;

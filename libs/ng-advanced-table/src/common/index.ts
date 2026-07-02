@@ -14,6 +14,8 @@ export type {
 
 export type { NatTableCellTone, NatTableColumnMeta, NatTableColumnMoveDirection } from './column-meta.type';
 
+export type { NatTableColumnReorderResult } from './column-render.type';
+
 export type { NatTableRowActivateEvent, NatTableRowIdGetter } from './row.type';
 
 export type { NatTableSortIndicatorContext } from './sort.type';

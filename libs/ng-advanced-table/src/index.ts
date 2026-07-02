@@ -21,3 +21,5 @@ export type { NatTableKeybindings, NatTableKeyboard, NatTableShortcut } from './
 export { NatTableReorderService } from './reorder/table-reorder.service';
 
 export { NatTableResizeService } from './resize/table-resize.service';
+
+export { hasNatTableStateValueChanged } from './utils/table-state-value-equality.util';

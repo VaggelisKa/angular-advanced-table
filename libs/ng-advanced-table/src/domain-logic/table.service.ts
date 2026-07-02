@@ -9,6 +9,29 @@ import type { NatTableUiController } from '../common/ui-controller.type';
 import { NAT_TABLE_KEYBINDINGS } from '../hotkey-a11y/common/keybindings.const';
 import type { NatTableKeybindings } from '../hotkey-a11y/common/keybindings.type';
 import { createNatTableKeyboard, mergeNatTableKeybindings } from '../hotkey-a11y/utils/keybindings.util';
+import { hasNatTableStateValueChanged } from '../utils/table-state-value-equality.util';
+
+export type NatTableColumnResizeMode = 'onEnd' | 'onChange';
+
+export type NatTableColumnSizingMode = 'fill' | 'fixed';
+
+export type NatTableDirection = 'ltr' | 'rtl';
+
+export type NatTableConfig = {
+  state: Partial<NatTableUserState>;
+  initialState: Partial<NatTableUserState>;
+  mode: NatTableMode | NatTableModeConfiguration;
+  manualPageCount: number | undefined;
+  enableAnnouncements: boolean;
+  stickyHeader: boolean;
+  enableMultiSort: boolean;
+  locale: string | undefined;
+  accessibilityText: NatTableAccessibilityText;
+  keybindings: NatTableKeybindings;
+  columnResizeMode: NatTableColumnResizeMode;
+  columnSizingMode: NatTableColumnSizingMode;
+  direction: NatTableDirection | undefined;
+};
 
 /**
  * Scoped service to share the active table controller instance within a DI hierarchy.

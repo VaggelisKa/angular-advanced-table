@@ -8,6 +8,13 @@ export type ColumnReorderZone = 'left' | 'center' | 'right';
 /** Keyboard reorder direction for a column (-1 = left, 1 = right). */
 export type ColumnReorderKeyboardDirection = -1 | 1;
 
+/** Result of a column reorder operation — returned so callers can announce the change. */
+export type NatTableColumnReorderResult = {
+  readonly movingColumnId: string;
+  readonly zone: ColumnReorderZone;
+  readonly nextVisibleZoneOrder: readonly string[];
+};
+
 /** Per-column accessibility descriptor used by the column-visibility summary. */
 export type TableColumnAccessibilityState = {
   readonly id: string;

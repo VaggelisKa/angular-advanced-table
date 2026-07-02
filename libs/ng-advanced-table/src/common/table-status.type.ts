@@ -1,7 +1,5 @@
 import type { RowData, Table } from '@tanstack/angular-table';
 
-import type { NAT_TABLE_BODY_STATE } from './table-status.const';
-
 /** Data lifecycle state rendered by `<nat-table>` when rows are unavailable. */
 export type NatTableDataStatus = 'loading' | 'error' | 'success';
 
@@ -25,17 +23,17 @@ type NatTableStateTemplateContext<TData extends RowData = RowData> = {
 /** Context passed to `ng-template[natTableLoading]`. */
 export type NatTableLoadingTemplateContext<TData extends RowData = RowData> = NatTableStateTemplateContext<TData> & {
   /** Alias for `status`, useful for `let-status` style template bindings. */
-  readonly $implicit: typeof NAT_TABLE_BODY_STATE.loading;
+  readonly $implicit: 'loading';
   /** Current state row status. */
-  readonly status: typeof NAT_TABLE_BODY_STATE.loading;
+  readonly status: 'loading';
 };
 
 /** Context passed to `ng-template[natTableEmpty]`. */
 export type NatTableEmptyTemplateContext<TData extends RowData = RowData> = NatTableStateTemplateContext<TData> & {
   /** Alias for `status`, useful for `let-status` style template bindings. */
-  readonly $implicit: typeof NAT_TABLE_BODY_STATE.empty;
+  readonly $implicit: 'empty';
   /** Current state row status. */
-  readonly status: typeof NAT_TABLE_BODY_STATE.empty;
+  readonly status: 'empty';
 };
 
 /** Context passed to `ng-template[natTableError]`. */
@@ -43,7 +41,7 @@ export type NatTableErrorTemplateContext<TData extends RowData = RowData> = NatT
   /** Alias for `error`, useful for `let-error` style template bindings. */
   readonly $implicit: unknown;
   /** Current state row status. */
-  readonly status: typeof NAT_TABLE_BODY_STATE.error;
+  readonly status: 'error';
   /** Consumer-supplied error payload. */
   readonly error: unknown;
 };
