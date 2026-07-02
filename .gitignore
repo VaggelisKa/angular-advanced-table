@@ -36,6 +36,7 @@ package-lock.json
 /.angular/cache
 /.nx/cache
 /.nx/workspace-data
+/api/markdown-pages.generated.json
 .sass-cache/
 /connect.lock
 /coverage

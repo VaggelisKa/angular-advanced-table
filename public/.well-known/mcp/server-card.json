@@ -1,0 +1,208 @@
+{
+  "name": "app.ng-advanced-table/showcase",
+  "title": "Angular Advanced Table Showcase",
+  "description": "Read-only MCP server exposing public Angular Advanced Table showcase documentation and examples as markdown resources.",
+  "websiteUrl": "https://angular-advanced-table.vercel.app/",
+  "version": "0.0.1",
+  "serverInfo": {
+    "name": "angular-advanced-table-showcase",
+    "version": "0.0.1"
+  },
+  "supportedProtocolVersions": ["2025-06-18"],
+  "endpoint": "https://angular-advanced-table.vercel.app/mcp",
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://angular-advanced-table.vercel.app/mcp"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://angular-advanced-table.vercel.app/mcp"
+    }
+  ],
+  "authentication": { "type": "none" },
+  "capabilities": {
+    "resources": { "list": true, "read": true },
+    "tools": { "list": true, "items": [] },
+    "prompts": { "list": true, "items": [] }
+  },
+  "resources": [
+    {
+      "uri": "https://angular-advanced-table.vercel.app/",
+      "name": "home",
+      "title": "Quick start | Angular Advanced Table Docs",
+      "description": "Install and first table",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/quick-start",
+      "name": "docs-quick-start",
+      "title": "Quick start | Angular Advanced Table Docs",
+      "description": "Install and first table",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/composition",
+      "name": "docs-composition",
+      "title": "Composition | Angular Advanced Table Docs",
+      "description": "Core table and companion controls",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/columns",
+      "name": "docs-columns",
+      "title": "Columns | Angular Advanced Table Docs",
+      "description": "Metadata, sizing, and cells",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/state",
+      "name": "docs-state",
+      "title": "State | Angular Advanced Table Docs",
+      "description": "Controlled and uncontrolled slices",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/data-lifecycle",
+      "name": "docs-data-lifecycle",
+      "title": "Data lifecycle | Angular Advanced Table Docs",
+      "description": "Loading, empty, error, and manual data",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/sorting",
+      "name": "docs-sorting",
+      "title": "Sorting | Angular Advanced Table Docs",
+      "description": "Single, multi, and controlled sorting",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/filtering-search",
+      "name": "docs-filtering-search",
+      "title": "Filtering and search | Angular Advanced Table Docs",
+      "description": "Consumer-owned search and filters",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/pagination",
+      "name": "docs-pagination",
+      "title": "Pagination | Angular Advanced Table Docs",
+      "description": "Client and manual pagination",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/column-layout",
+      "name": "docs-column-layout",
+      "title": "Column layout | Angular Advanced Table Docs",
+      "description": "Pinning, resizing, order, visibility",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/row-selection",
+      "name": "docs-row-selection",
+      "title": "Row selection | Angular Advanced Table Docs",
+      "description": "Selection state and bulk workflows",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/toolbar-actions",
+      "name": "docs-toolbar-actions",
+      "title": "Toolbar and actions | Angular Advanced Table Docs",
+      "description": "Toolbar shell and table actions",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/accessibility",
+      "name": "docs-accessibility",
+      "title": "Accessibility | Angular Advanced Table Docs",
+      "description": "Names, state rows, and custom cells",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/keyboard-interaction",
+      "name": "docs-keyboard-interaction",
+      "title": "Keyboard interaction | Angular Advanced Table Docs",
+      "description": "Grid navigation and shortcuts",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/theming",
+      "name": "docs-theming",
+      "title": "Theming | Angular Advanced Table Docs",
+      "description": "CSS token scopes and states",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/localization",
+      "name": "docs-localization",
+      "title": "Localization | Angular Advanced Table Docs",
+      "description": "Locale providers and accessible copy",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/export",
+      "name": "docs-export",
+      "title": "Export | Angular Advanced Table Docs",
+      "description": "CSV defaults and custom handlers",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/render-metrics",
+      "name": "docs-render-metrics",
+      "title": "Render metrics | Angular Advanced Table Docs",
+      "description": "Opt-in row render diagnostics",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/multiple-features",
+      "name": "examples-multiple-features",
+      "title": "Multiple features | Angular Advanced Table",
+      "description": "Kitchen sink demo",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/builder",
+      "name": "examples-builder",
+      "title": "Table builder | Angular Advanced Table",
+      "description": "Interactive config",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/sticky-header-max-height",
+      "name": "examples-sticky-header-max-height",
+      "title": "Sticky header max height | Angular Advanced Table",
+      "description": "Sticky header with max height",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/pagination-sticky-alt",
+      "name": "examples-pagination-sticky-alt",
+      "title": "Pagination sticky alt | Angular Advanced Table",
+      "description": "Different layout of pagination controls",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/sticky-no-overflow-x",
+      "name": "examples-sticky-no-overflow-x",
+      "title": "Sticky no overflow x | Angular Advanced Table",
+      "description": "Sticky header with no overflow x",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/sticky-show-detailed-view",
+      "name": "examples-sticky-show-detailed-view",
+      "title": "Sticky show detailed view | Angular Advanced Table",
+      "description": "Sticky header with show detailed view",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/sticky-show-detailed-view/details",
+      "name": "examples-sticky-show-detailed-view-details",
+      "title": "Detailed view | Angular Advanced Table",
+      "description": "Sticky header detailed view route",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "tools": [],
+  "prompts": []
+}

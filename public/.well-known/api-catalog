@@ -1,0 +1,127 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://angular-advanced-table.vercel.app/.well-known/api-catalog",
+      "item": [
+        {
+          "href": "https://angular-advanced-table.vercel.app/",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/quick-start",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/composition",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/columns",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/state",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/data-lifecycle",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/sorting",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/filtering-search",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/pagination",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/column-layout",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/row-selection",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/toolbar-actions",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/accessibility",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/keyboard-interaction",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/theming",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/localization",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/export",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/render-metrics",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/multiple-features",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/builder",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/sticky-header-max-height",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/pagination-sticky-alt",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/sticky-no-overflow-x",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/sticky-show-detailed-view",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/sticky-show-detailed-view/details",
+          "type": "text/html"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/quick-start",
+          "type": "text/html"
+        }
+      ],
+      "describedby": [
+        {
+          "href": "https://angular-advanced-table.vercel.app/sitemap.xml",
+          "type": "application/xml"
+        }
+      ],
+      "service-desc": [
+        {
+          "href": "https://angular-advanced-table.vercel.app/.well-known/mcp/server-card.json",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}

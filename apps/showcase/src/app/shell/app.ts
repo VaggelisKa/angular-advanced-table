@@ -4,6 +4,7 @@ import { Component, Injector, afterNextRender, inject, signal, viewChild } from 
 import { RouterOutlet } from '@angular/router';
 
 import { resolveFocusTrapTarget } from './app.util';
+import { ShowcaseWebMcp } from '../mcp/webmcp';
 import { ShowcaseThemeStore } from '../theme/showcase-theme';
 import type { ShowcaseTheme } from '../theme/showcase-theme.type';
 import { NavTree } from './nav-tree/nav-tree';
@@ -18,12 +19,17 @@ export class App {
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly themeStore = inject(ShowcaseThemeStore);
+  private readonly webMcp = inject(ShowcaseWebMcp);
   private readonly mobileMenuButton = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuButton');
   private readonly mobileNavCloseButton = viewChild<ElementRef<HTMLButtonElement>>('mobileNavCloseButton');
   private readonly mobileNavPanel = viewChild<ElementRef<HTMLElement>>('mobileNavPanel');
 
   protected readonly mobileNavOpen = signal(false);
   protected readonly theme = this.themeStore.theme;
+
+  public constructor() {
+    this.webMcp.initialize();
+  }
 
   protected setTheme(theme: ShowcaseTheme): void {
     this.themeStore.setTheme(theme);

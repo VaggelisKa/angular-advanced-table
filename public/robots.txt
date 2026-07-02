@@ -1,0 +1,15 @@
+User-agent: *
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Allow: /
+Allow: /docs/
+Allow: /examples/
+Allow: /favicon.svg
+Allow: /.well-known/api-catalog
+Allow: /.well-known/mcp/
+Allow: /mcp
+Allow: /robots.txt
+Allow: /sitemap.xml
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Sitemap: https://angular-advanced-table.vercel.app/sitemap.xml
