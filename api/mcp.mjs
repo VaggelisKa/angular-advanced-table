@@ -5,7 +5,7 @@ const markdownPages = require('./markdown-pages.generated.json');
 
 const SERVER_INFO = {
   name: 'angular-advanced-table-showcase',
-  version: '0.0.0'
+  version: '0.0.1'
 };
 const SUPPORTED_PROTOCOL_VERSION = '2025-06-18';
 const DEFAULT_RESOURCE_DESCRIPTION = 'Public Angular Advanced Table showcase page.';

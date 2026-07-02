@@ -8,7 +8,7 @@ const DEFAULT_SITE_URL = 'https://angular-advanced-table.vercel.app';
 const NON_CANONICAL_ROUTE_PATHS = new Set(['docs', 'examples']);
 const MCP_SERVER_INFO = {
   name: 'angular-advanced-table-showcase',
-  version: '0.0.0'
+  version: '0.0.1'
 };
 const MCP_SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18'];
 

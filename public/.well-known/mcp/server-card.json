@@ -4,10 +4,10 @@
   "title": "Angular Advanced Table Showcase",
   "description": "Read-only MCP server exposing public Angular Advanced Table showcase documentation and examples as markdown resources.",
   "websiteUrl": "https://angular-advanced-table.vercel.app/",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "serverInfo": {
     "name": "angular-advanced-table-showcase",
-    "version": "0.0.0"
+    "version": "0.0.1"
   },
   "supportedProtocolVersions": ["2025-06-18"],
   "endpoint": "https://angular-advanced-table.vercel.app/mcp",
