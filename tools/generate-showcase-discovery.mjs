@@ -141,6 +141,7 @@ const sitemapXml = [
 
 const robotsTxt = [
   'User-agent: *',
+  'Content-Signal: ai-train=yes, search=yes, ai-input=yes',
   'Allow: /',
   'Allow: /docs/',
   'Allow: /examples/',
