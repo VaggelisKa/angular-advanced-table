@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Sorting accessibility', () => {
@@ -100,6 +101,12 @@ test.describe('FEATURE: Sorting accessibility', () => {
         await test.step('THEN: the state is cleared', async () => {
           await expect(multiStateTag).toContainText('None');
         });
+      });
+    });
+
+    test.describe('WHEN: the sorting example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-sorting-preview-panel"]');
       });
     });
   });

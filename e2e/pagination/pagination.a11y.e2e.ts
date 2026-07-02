@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Pagination accessibility', () => {
@@ -47,6 +48,12 @@ test.describe('FEATURE: Pagination accessibility', () => {
 
           await expect(prevBtn).toBeEnabled();
         });
+      });
+    });
+
+    test.describe('WHEN: the pagination example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-pagination-preview-panel"]');
       });
     });
   });

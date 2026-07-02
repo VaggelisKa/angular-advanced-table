@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Simple sorting accessibility', () => {
@@ -48,6 +49,12 @@ test.describe('FEATURE: Simple sorting accessibility', () => {
             'Pioneer Labs'
           ]);
         });
+      });
+    });
+
+    test.describe('WHEN: the simple sorting example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-sorting-pinned-columns-preview-panel"]');
       });
     });
   });

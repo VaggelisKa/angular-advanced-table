@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
+
 test.describe('FEATURE: Table builder', () => {
   test.describe('GIVEN: the table builder page is loaded', () => {
     test.beforeEach(async ({ page }) => {
@@ -40,6 +42,12 @@ test.describe('FEATURE: Table builder', () => {
 
           await expect(copyBtn).toHaveText('Copied');
         });
+      });
+    });
+
+    test.describe('WHEN: the table builder example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '.table-builder-page');
       });
     });
   });

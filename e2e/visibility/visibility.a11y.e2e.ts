@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Column visibility', () => {
@@ -50,6 +51,12 @@ test.describe('FEATURE: Column visibility', () => {
           await expect(nameChip).not.toHaveClass(/is-active/);
           await expect(table.getByRole('columnheader', { name: 'Name' })).toBeHidden();
         });
+      });
+    });
+
+    test.describe('WHEN: the column visibility example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-column-visibility-preview-panel"]');
       });
     });
   });

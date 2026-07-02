@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Column reordering accessibility', () => {
@@ -33,6 +34,12 @@ test.describe('FEATURE: Column reordering accessibility', () => {
           // Order should now be: Category, Name, Status, Value
           await expect.poll(async () => visibleColumnIds(page)).toEqual(['category', 'name', 'status', 'value']);
         });
+      });
+    });
+
+    test.describe('WHEN: the column reordering example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-column-reordering-preview-panel"]');
       });
     });
   });

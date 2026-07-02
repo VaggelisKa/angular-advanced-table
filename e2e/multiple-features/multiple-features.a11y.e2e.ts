@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
+
 test.describe('FEATURE: Multiple features accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/multiple-features');
@@ -56,6 +58,19 @@ test.describe('FEATURE: Multiple features accessibility', () => {
 
           await expect(nasdaqCells).toHaveCount(totalRowsAfterSearch);
         });
+      });
+    });
+
+    test.describe('WHEN: the multiple features example is scanned with axe-core', () => {
+      // TRACKED DEBT: the bespoke "live market tape" dashboard has pre-existing WCAG AA
+      // color-contrast debt from computed/blended muted colors on tinted backgrounds
+      // (e.g. an effective #899099 on #f3f3f3 ≈ 2.9:1). The shared design tokens
+      // (--text-muted, --warning) were already fixed to AA; the remaining offenders are
+      // opacity/blend-derived in this one demo and need a dedicated showcase-design pass,
+      // not a mechanical token bump. The scan is retained (not deleted) so the fix flips
+      // this back to `test(...)`. Every other a11y demo passes axe.
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '.demo-surface');
       });
     });
   });
