@@ -47,7 +47,7 @@ describe('FEATURE: SimpleSorting', () => {
         const sortButtons = queryAll('.sort-button');
 
         expect(table).toBeTruthy();
-        expect(table.classList.contains('simple-table')).toBe(true);
+        expect(table.classList.contains('sc-demo-table')).toBe(true);
         expect(host().querySelector('nat-table-surface')).toBeTruthy();
         expect(rows).toHaveLength(5);
         expect(sortButtons).toHaveLength(9);
@@ -182,7 +182,7 @@ describe('FEATURE: SimpleSorting', () => {
       it('THEN: it shows the embeddable demo surface', () => {
         fixture.detectChanges();
 
-        const page = query<HTMLDivElement>('.simple-sorting-page');
+        const page = query<HTMLDivElement>('.sc-demo-page');
 
         expect(page.classList.contains('showcase-page')).toBe(false);
         expect(page.getAttribute('data-theme')).toBeNull();
