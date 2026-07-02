@@ -8,16 +8,12 @@ For an Angular app that already declares `@angular/core` and `@angular/common`, 
 
 ```bash
 pnpm add ng-advanced-table @angular/aria @angular/cdk
-# or: npm install ng-advanced-table @angular/aria @angular/cdk
-# or: yarn add ng-advanced-table @angular/aria @angular/cdk
 ```
 
 If your workspace does not already declare Angular framework packages, install the full required peer set:
 
 ```bash
 pnpm add ng-advanced-table @angular/core @angular/common @angular/aria @angular/cdk
-# or: npm install ng-advanced-table @angular/core @angular/common @angular/aria @angular/cdk
-# or: yarn add ng-advanced-table @angular/core @angular/common @angular/aria @angular/cdk
 ```
 
 `ng-advanced-table` installs `@tanstack/angular-table` as its table runtime. Import table authoring types and helpers such as `ColumnDef`, state slice types, and `flexRenderComponent` from `ng-advanced-table`.
