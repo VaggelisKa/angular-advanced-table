@@ -1,0 +1,10 @@
+# Browser support floor: Safari 16.5+ (see AGENTS.md "Browser Compatibility").
+# Pins the build's compile targets to what we support, so authored CSS nesting
+# and other modern features are compiled to flat, Safari 16.5-safe CSS. Without
+# this the toolchain targets only the newest browsers and would ship native
+# nesting that breaks Safari.
+chrome >= 111
+edge >= 111
+firefox >= 115
+safari >= 16.5
+ios_saf >= 16.5
