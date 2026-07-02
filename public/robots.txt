@@ -5,6 +5,8 @@ Allow: /docs/
 Allow: /examples/
 Allow: /favicon.svg
 Allow: /.well-known/api-catalog
+Allow: /.well-known/mcp/
+Allow: /mcp
 Allow: /robots.txt
 Allow: /sitemap.xml
 Disallow: /admin/

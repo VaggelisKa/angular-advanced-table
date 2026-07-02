@@ -7,6 +7,7 @@ import { resolveFocusTrapTarget } from './app.util';
 import { ShowcaseThemeStore } from '../theme/showcase-theme';
 import type { ShowcaseTheme } from '../theme/showcase-theme.type';
 import { NavTree } from './nav-tree/nav-tree';
+import { ShowcaseWebMcp } from './app.webmcp';
 
 @Component({
   selector: 'app-root',
@@ -18,12 +19,17 @@ export class App {
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly themeStore = inject(ShowcaseThemeStore);
+  private readonly webMcp = inject(ShowcaseWebMcp);
   private readonly mobileMenuButton = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuButton');
   private readonly mobileNavCloseButton = viewChild<ElementRef<HTMLButtonElement>>('mobileNavCloseButton');
   private readonly mobileNavPanel = viewChild<ElementRef<HTMLElement>>('mobileNavPanel');
 
   protected readonly mobileNavOpen = signal(false);
   protected readonly theme = this.themeStore.theme;
+
+  public constructor() {
+    void this.webMcp;
+  }
 
   protected setTheme(theme: ShowcaseTheme): void {
     this.themeStore.setTheme(theme);

@@ -115,6 +115,12 @@
           "href": "https://angular-advanced-table.vercel.app/sitemap.xml",
           "type": "application/xml"
         }
+      ],
+      "service-desc": [
+        {
+          "href": "https://angular-advanced-table.vercel.app/.well-known/mcp/server-card.json",
+          "type": "application/json"
+        }
       ]
     }
   ]

@@ -1,12 +1,18 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/mcp",
+      "destination": "/api/mcp"
+    }
+  ],
   "headers": [
     {
       "source": "/",
       "headers": [
         {
           "key": "Link",
-          "value": "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/api-catalog>; rel=\"service-desc\"; type=\"application/linkset+json\", </docs/quick-start>; rel=\"service-doc\"; type=\"text/html\", </sitemap.xml>; rel=\"describedby\"; type=\"application/xml\""
+          "value": "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/api-catalog>; rel=\"service-desc\"; type=\"application/linkset+json\", </.well-known/mcp/server-card.json>; rel=\"service-desc\"; type=\"application/json\", </docs/quick-start>; rel=\"service-doc\"; type=\"text/html\", </sitemap.xml>; rel=\"describedby\"; type=\"application/xml\""
         },
         {
           "key": "Vary",
@@ -19,7 +25,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/api-catalog>; rel=\"service-desc\"; type=\"application/linkset+json\", </docs/quick-start>; rel=\"service-doc\"; type=\"text/html\", </sitemap.xml>; rel=\"describedby\"; type=\"application/xml\""
+          "value": "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/api-catalog>; rel=\"service-desc\"; type=\"application/linkset+json\", </.well-known/mcp/server-card.json>; rel=\"service-desc\"; type=\"application/json\", </docs/quick-start>; rel=\"service-doc\"; type=\"text/html\", </sitemap.xml>; rel=\"describedby\"; type=\"application/xml\""
         },
         {
           "key": "Vary",
@@ -73,6 +79,19 @@
         {
           "key": "Link",
           "value": "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\""
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/mcp/server-card.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json; charset=utf-8"
+        },
+        {
+          "key": "Link",
+          "value": "</mcp>; rel=\"service-desc\"; type=\"application/json\""
         }
       ]
     }

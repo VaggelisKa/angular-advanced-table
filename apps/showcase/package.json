@@ -108,6 +108,7 @@
           "{workspaceRoot}/api/markdown-pages.generated.json",
           "{workspaceRoot}/public/robots.txt",
           "{workspaceRoot}/public/.well-known/api-catalog",
+          "{workspaceRoot}/public/.well-known/mcp/server-card.json",
           "{workspaceRoot}/public/sitemap.xml"
         ],
         "options": {
