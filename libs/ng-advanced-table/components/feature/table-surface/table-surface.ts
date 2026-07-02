@@ -131,6 +131,7 @@ export class NatTableSurface {
     const diff = computeNatTableStateDiff(prev, nextState);
 
     if (Object.values(diff).some((changed) => changed)) {
+      console.log('[NatTableSurface] updating state model', nextState);
       this.state.set(nextState);
     }
 

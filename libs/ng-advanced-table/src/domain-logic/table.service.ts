@@ -131,15 +131,15 @@ export class NatTableService<TData extends RowData = RowData> {
 
   // eslint-disable-next-line complexity -- threshold exceeded but ignored because it is not worth splitting
   public patchState(config: Partial<NatTableConfig>): void {
-    if (config.state !== undefined && hasNatTableStateValueChanged(this.stateSignal(), config.state)) {
-      this.stateSignal.update((current) => ({ ...current, ...config.state }));
+    if (config.state !== undefined) {
+      this.stateSignal.set(config.state);
     }
 
-    if (config.initialState !== undefined && hasNatTableStateValueChanged(this.surfaceInitialState(), config.initialState)) {
-      this.surfaceInitialState.update((current) => ({ ...current, ...config.initialState }));
+    if (config.initialState !== undefined) {
+      this.surfaceInitialState.set(config.initialState);
     }
 
-    if (config.mode !== undefined && hasNatTableStateValueChanged(this.surfaceMode(), config.mode)) {
+    if (config.mode !== undefined) {
       this.surfaceMode.set(config.mode);
     }
 

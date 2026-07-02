@@ -842,6 +842,7 @@ export class NatTableState<TData extends RowData = RowData> {
       pagination: resolveUpdater(currentState.pagination, updaters.pagination)
     };
 
+    console.log('[NatTableState] updateState', updaters, '->', nextState);
     this.commitInternalState(nextState);
     this.natTableService.notifyStateChange(nextState);
   }

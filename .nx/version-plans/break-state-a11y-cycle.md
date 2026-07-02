@@ -1,6 +1,5 @@
 ---
-ng-advanced-table-core: patch
-ng-advanced-table-components: patch
+ng-advanced-table: patch
 ---
 
 refactor(core,components): break NatTableState ↔ NatTableA11yService circular import
