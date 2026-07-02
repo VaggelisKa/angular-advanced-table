@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- cohesive table state store: state ownership, TanStack wiring, column widths, resize/reorder state, and derived computeds kept together to preserve the signal graph. */
 import { Directionality } from '@angular/cdk/bidi';
-import { Injectable, Injector, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import type { ElementRef } from '@angular/core';
 
 import {
@@ -36,8 +36,6 @@ import {
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
-// eslint-disable-next-line import-x/no-cycle -- intentional: NatTableState ↔ NatTableA11yService cycle is broken at runtime via Injector.get() in this class.
-import { NatTableA11yService } from './table-a11y.service';
 import { NatTableService } from './table.service';
 import type {
   ColumnRenderStateContext,
@@ -45,6 +43,7 @@ import type {
   ColumnReorderZone,
   NatTableBodyState,
   NatTableColumnMoveDirection,
+  NatTableColumnReorderResult,
   NatTableDataStatus,
   NatTableRowIdGetter,
   NatTableUserState,
@@ -146,13 +145,7 @@ const genericGlobalFilter: FilterFn<RowData> = (row, columnId, filterValue) => {
 @Injectable()
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
-  private readonly injector = inject(Injector);
   private readonly directionality = inject(Directionality, { optional: true });
-
-  /** Lazily resolved to break the NatTableState → NatTableA11yService → NatTableState cycle. */
-  private get a11yService(): NatTableA11yService<TData> {
-    return this.injector.get<NatTableA11yService<TData>>(NatTableA11yService);
-  }
 
   // ─── Input bridging signals (written by the NatTable component) ───
 
@@ -691,8 +684,8 @@ export class NatTableState<TData extends RowData = RowData> {
     return this.canMoveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
   }
 
-  public moveColumn(columnId: string, direction: NatTableColumnMoveDirection): void {
-    this.moveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
+  public moveColumn(columnId: string, direction: NatTableColumnMoveDirection): NatTableColumnReorderResult | null {
+    return this.moveColumnByDelta(columnId, direction === 'left' ? -1 : 1);
   }
 
   public canMoveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): boolean {
@@ -705,23 +698,27 @@ export class NatTableState<TData extends RowData = RowData> {
     return getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta) !== null;
   }
 
-  public moveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): void {
+  public moveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): NatTableColumnReorderResult | null {
     const zone = this.getColumnZoneById(columnId);
 
-    if (!zone) return;
+    if (!zone) return null;
 
     const visibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(columnId);
     const nextIndex = getColumnMoveTargetIndex(visibleZoneColumnIds, columnId, directionDelta);
 
-    if (nextIndex === null) return;
+    if (nextIndex === null) return null;
 
     const nextVisibleZoneOrder = moveItemInArrayCopy(visibleZoneColumnIds, currentIndex, nextIndex);
 
-    this.applyVisibleZoneReorder(zone, columnId, nextVisibleZoneOrder);
+    return this.applyVisibleZoneReorder(zone, columnId, nextVisibleZoneOrder);
   }
 
-  public applyVisibleZoneReorder(zone: ColumnReorderZone, movingColumnId: string, nextVisibleZoneOrder: readonly string[]): void {
+  public applyVisibleZoneReorder(
+    zone: ColumnReorderZone,
+    movingColumnId: string,
+    nextVisibleZoneOrder: readonly string[]
+  ): NatTableColumnReorderResult | null {
     const currentState = this.mergedState();
     const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const movingColumn = this.table.getColumn(movingColumnId);
@@ -731,28 +728,28 @@ export class NatTableState<TData extends RowData = RowData> {
       !currentVisibleZoneColumnIds.length ||
       hasSameStringOrder(currentVisibleZoneColumnIds, nextVisibleZoneOrder)
     ) {
-      return;
+      return null;
     }
+
+    const result: NatTableColumnReorderResult = { movingColumnId, zone, nextVisibleZoneOrder };
 
     if (zone === 'center') {
       const nextColumnOrder = replaceIdsInSlots(currentState.columnOrder, nextVisibleZoneOrder, new Set(currentVisibleZoneColumnIds));
 
       if (hasSameStringOrder(currentState.columnOrder, nextColumnOrder)) {
-        return;
+        return null;
       }
 
       this.updateState({ columnOrder: nextColumnOrder });
 
-      this.a11yService.announceColumnReorder(movingColumnId, zone, nextVisibleZoneOrder);
-
-      return;
+      return result;
     }
 
     const currentPinnedZoneOrder = (zone === 'left' ? currentState.columnPinning.left : currentState.columnPinning.right) ?? [];
     const nextPinnedZoneOrder = replaceIdsInSlots(currentPinnedZoneOrder, nextVisibleZoneOrder, new Set(currentVisibleZoneColumnIds));
 
     if (hasSameStringOrder(currentPinnedZoneOrder, nextPinnedZoneOrder)) {
-      return;
+      return null;
     }
 
     this.updateState({
@@ -762,7 +759,7 @@ export class NatTableState<TData extends RowData = RowData> {
       }
     });
 
-    this.a11yService.announceColumnReorder(movingColumnId, zone, nextVisibleZoneOrder);
+    return result;
   }
 
   public isDropIndexWithinZone(rowColumnIds: readonly string[], zone: ColumnReorderZone, currentIndex: number): boolean {

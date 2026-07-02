@@ -24,6 +24,7 @@ export type {
   NatTableCellTone,
   NatTableColumnMoveDirection,
   NatTableColumnMeta,
+  NatTableColumnReorderResult,
   NatTableDataStatus,
   NatTableEmptyTemplateContext,
   NatTableErrorTemplateContext,

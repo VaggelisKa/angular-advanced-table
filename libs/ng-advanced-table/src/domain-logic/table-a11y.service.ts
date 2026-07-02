@@ -4,7 +4,6 @@ import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, sig
 import type { Column, PaginationState, RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
-// eslint-disable-next-line import-x/no-cycle -- intentional: NatTableA11yService ↔ NatTableState cycle is broken at runtime via Injector.get() in the state class.
 import { NatTableState } from './table.state';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
@@ -100,8 +99,8 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   }
 
   /**
-   * Announce a column reorder. Called by `NatTableState.applyVisibleZoneReorder`
-   * and `NatTableState.moveColumnByDelta` after applying the column order change.
+   * Announce a column reorder. Called by `NatTableReorderService` and
+   * companion header-action controls after applying the column order change.
    */
   public announceColumnReorder(
     movingColumnId: string,
