@@ -1,0 +1,381 @@
+:host {
+  display: block;
+  font-family: var(--nat-table-font-family, inherit);
+  color: var(--nat-table-color-text, inherit);
+}
+
+.table-region {
+  position: relative;
+  height: var(--nat-table-height, inherit);
+  max-height: var(--nat-table-max-height, inherit);
+  overflow: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto))
+    var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
+  background: var(--nat-table-region-background, transparent);
+  border: var(--nat-table-region-border-width, 1px) solid var(--nat-table-region-border-color, rgb(128 128 128 / 24%));
+  border-radius: var(--nat-table-radius-region, 16px);
+}
+
+.table-region:has(:focus-visible) {
+  border-color: var(--nat-table-focus-ring-color, Highlight);
+}
+
+.data-table {
+  min-width: 100%;
+  table-layout: auto;
+  border-spacing: 0;
+  border-collapse: separate;
+}
+
+.data-table.is-fixed-layout {
+  min-width: 0;
+
+  /*
+   * Fixed layout makes the <colgroup> widths authoritative and the table exactly
+   * as wide as their sum, so the region scrolls instead of stretching columns —
+   * the precondition for pixel-exact column resizing.
+   */
+  table-layout: fixed;
+}
+
+.header-cell,
+.data-cell {
+  box-sizing: border-box;
+  padding: var(--nat-table-space-cell-y, 0) var(--nat-table-space-cell-x, 0);
+  text-align: start;
+  border-bottom: var(--nat-table-cell-border-width, 1px) solid var(--nat-table-cell-border-color, rgb(128 128 128 / 24%));
+}
+
+.header-cell.is-width-constrained,
+.data-cell.is-width-constrained {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-cell {
+  font-size: var(--nat-table-font-size-header, 0.84rem);
+  font-weight: 600;
+  color: var(--nat-table-header-color, inherit);
+  text-transform: var(--nat-table-text-transform-header, uppercase);
+  letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
+  white-space: nowrap;
+  background: var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas));
+  border-bottom: var(--nat-table-header-border-width, 1px) solid
+    var(--nat-table-header-border-color, var(--nat-table-color-border, rgb(128 128 128 / 30%)));
+}
+
+.header-cell-content {
+  display: flex;
+  gap: var(--nat-table-space-header-content-gap, 8px);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.header-cell-primary {
+  display: block;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.header-cell.is-width-constrained .header-cell-primary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-cell-content {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.data-cell {
+  line-height: var(--nat-table-line-height-cell, 1.4);
+  vertical-align: middle;
+  white-space: normal;
+}
+
+tbody .data-row:last-child .data-cell {
+  border-bottom: 0;
+}
+
+.data-cell.is-cell-clamped .data-cell-content {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--nat-table-cell-max-lines, 2);
+  line-clamp: var(--nat-table-cell-max-lines, 2);
+}
+
+.column-resize-handle {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 0;
+  bottom: 0;
+  z-index: var(--nat-table-z-index-resize-handle, 8);
+  inline-size: var(--nat-table-resize-handle-hit, 24px);
+  touch-action: none;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.column-resize-handle::after {
+  position: absolute;
+  inset-inline-end: calc(50% - 1px);
+  top: 18%;
+  bottom: 18%;
+  inline-size: 2px;
+  content: '';
+  background: var(--nat-table-resize-handle-color, color-mix(in srgb, currentColor 24%, transparent));
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.header-cell:hover .column-resize-handle:not(.is-resizing)::after,
+.column-resize-handle:not(.is-resizing):hover::after,
+.column-resize-handle:not(.is-resizing):active::after {
+  opacity: 1;
+}
+
+/*
+ * During an active drag the full-height guide line takes over (.column-resize-guide).
+ * Hide the handle's header-only stub so it doesn't double up beside the guide.
+ */
+.column-resize-handle.is-resizing::after {
+  opacity: 0;
+}
+
+/*
+ * Drag guide: a full-table-height accent line marking where the column edge will
+ * land. The sticky `<th>` clips the handle's own line to header height, so this
+ * sits on .table-region instead and follows the pointer via translateX(delta).
+ */
+.column-resize-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: var(--nat-table-z-index-resize-guide, 9);
+  inline-size: 2px;
+  margin-inline-start: -1px;
+  pointer-events: none;
+  background: var(--nat-table-resize-handle-active-color, var(--nat-table-focus-ring-color, Highlight));
+}
+
+.header-cell.is-reorderable {
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+
+.header-cell.is-reorderable:active {
+  cursor: grabbing;
+}
+
+/*
+ * While a column resize drag is active, keep the resize cursor across the whole
+ * region — otherwise the cursor reverts to default the moment the pointer leaves
+ * the header and drops into the body.
+ */
+.table-region.is-resizing,
+.table-region.is-resizing * {
+  cursor: col-resize;
+}
+
+.table-region.is-resizing {
+  user-select: none;
+}
+
+.header-cell.cdk-drag-preview {
+  z-index: var(--nat-table-z-index-drag-preview, 12);
+  display: table-cell;
+  color: var(--nat-table-header-color, inherit);
+  background: var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas));
+  border-bottom-color: var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
+  box-shadow:
+    0 14px 30px rgb(15 23 42 / 16%),
+    0 0 0 1px rgb(128 128 128 / 30%);
+  opacity: 0.98;
+}
+
+.header-cell.is-pinned-left.cdk-drag-preview,
+.header-cell.is-pinned-right.cdk-drag-preview {
+  background: var(--nat-table-pinned-background, var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas)));
+}
+
+.header-cell.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+.cdk-drop-list-dragging .header-cell.is-reorderable:not(.cdk-drag-placeholder) {
+  transition: transform 180ms ease;
+}
+
+.header-cell.cdk-drag-animating {
+  transition: transform 180ms ease;
+}
+
+.data-row {
+  background: var(--nat-table-row-background, transparent);
+  transition: background-color 120ms ease;
+}
+
+.data-row:has(:focus-visible) {
+  background: var(--nat-table-row-background-focus, rgb(128 128 128 / 12%));
+}
+
+.data-row:has(:focus-visible) .is-pinned-left,
+.data-row:has(:focus-visible) .is-pinned-right {
+  background: var(--nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .data-row:hover {
+    background: var(--nat-table-row-background-hover, rgb(128 128 128 / 8%));
+  }
+
+  .data-row:hover .is-pinned-left,
+  .data-row:hover .is-pinned-right {
+    background: var(--nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%));
+  }
+}
+
+.data-cell {
+  transition: background-color 120ms ease;
+}
+
+.data-row-header {
+  font-weight: var(--nat-table-font-weight-row-header, 600);
+}
+
+.has-sticky-header .header-cell {
+  position: sticky;
+  top: var(--nat-table-sticky-top, 0);
+  z-index: var(--nat-table-z-index-sticky-header, 4);
+}
+
+/*
+ * Table stacking order, low to high:
+ * sticky header, pinned body cells, pinned headers, focused cells, resize
+ * handle, resize guide, then drag preview.
+ */
+.has-sticky-header .is-pinned-left,
+.has-sticky-header .is-pinned-right,
+.is-pinned-left,
+.is-pinned-right {
+  position: sticky;
+  z-index: var(--nat-table-z-index-pinned-cell, 5);
+  background: var(--nat-table-pinned-background, var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas)));
+}
+
+.has-sticky-header .header-cell.is-pinned-left,
+.has-sticky-header .header-cell.is-pinned-right,
+.header-cell.is-pinned-left,
+.header-cell.is-pinned-right {
+  position: sticky;
+  z-index: var(--nat-table-z-index-pinned-header, 6);
+}
+
+.has-pinned-edge-left {
+  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color, rgb(128 128 128 / 34%));
+}
+
+.has-pinned-edge-right {
+  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color, rgb(128 128 128 / 34%));
+}
+
+.header-cell.is-align-end,
+.data-cell.is-align-end {
+  text-align: right;
+}
+
+.data-cell.is-align-end {
+  font-variant-numeric: tabular-nums;
+}
+
+.data-cell[data-tone='positive'] {
+  color: var(--nat-table-cell-color-positive, var(--nat-table-color-success, currentColor));
+}
+
+.data-cell[data-tone='negative'] {
+  color: var(--nat-table-cell-color-negative, var(--nat-table-color-danger, currentColor));
+}
+
+.data-cell[data-tone='warning'] {
+  color: var(--nat-table-cell-color-warning, var(--nat-table-color-warning, currentColor));
+}
+
+.data-cell[data-tone='neutral'] {
+  color: var(--nat-table-cell-color-neutral, var(--nat-table-color-text-muted, currentColor));
+}
+
+.table-state {
+  padding: var(--nat-table-space-empty-state, 40px 24px);
+  font-size: var(--nat-table-font-size-empty-state, 1rem);
+  line-height: var(--nat-table-line-height-empty-state, 1.6);
+  color: var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText));
+  text-align: center;
+  white-space: normal;
+  animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms) var(--nat-table-state-transition-timing, ease-out)
+    both;
+}
+
+.loading-state {
+  color: var(--nat-table-loading-state-color, var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText)));
+}
+
+.error-state {
+  color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, var(--nat-table-color-danger, currentColor)));
+}
+
+@keyframes nat-table-state-enter {
+  from {
+    opacity: var(--nat-table-state-transition-opacity-from, 0);
+    transform: translateY(var(--nat-table-state-transition-distance, 2px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table-state {
+    animation: none;
+  }
+}
+
+[ngGridCell]:focus-visible {
+  z-index: var(--nat-table-z-index-focus-cell, 7);
+  outline: none;
+  box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, 2px) var(--nat-table-focus-ring-color, Highlight);
+}
+
+/*
+ * Regular body cells are statically positioned, so z-index alone does not
+ * establish stacking. Keep the relative positioning scoped to them so that
+ * sticky headers and pinned cells retain their `position: sticky` context
+ * when focused.
+ */
+[ngGridCell]:focus-visible:not(.is-pinned-left, .is-pinned-right, .header-cell) {
+  position: relative;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip-path: inset(50%);
+}
