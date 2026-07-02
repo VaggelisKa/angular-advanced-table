@@ -7,7 +7,7 @@ Composition is the main design point of the table entry points. `ng-advanced-tab
 | `ng-advanced-table`                | Core table, keyboard grid behavior, TanStack integration, state rows, row activation, accessibility announcements    |
 | `ng-advanced-table/components`     | Surface, pagination, column visibility, scroll controls, toolbar, header actions, selection column, export directive |
 | `ng-advanced-table/render-metrics` | Optional render-metrics store, filter, panel, and synthetic metrics column                                           |
-| `ng-advanced-table/locale`         | Built-in locale dictionaries and provider helpers for core, UI, and utilities copy                                   |
+| `ng-advanced-table/locale`         | Built-in locale dictionaries and provider helpers for core accessibility, controls, and render-metrics copy          |
 | Your app                           | Search inputs, domain filters, row menus, bulk actions, fetch/retry flows, dialogs, routing, permissions             |
 
 Keeping this boundary clear makes the reusable packages stable while still letting product-specific workflows feel native to your application.
@@ -128,8 +128,8 @@ Global search is intentionally not a packaged UI primitive. Build a search compo
 
 ```ts
 import { Component, DestroyRef, computed, inject, input } from '@angular/core';
-import type { PaginationState, RowData } from 'ng-advanced-table';
-import { NatTableService, NatToolbarItem } from 'ng-advanced-table/components';
+import { NatTableService, type PaginationState, type RowData } from 'ng-advanced-table';
+import { NatToolbarItem } from 'ng-advanced-table/components';
 
 @Component({
   selector: 'app-table-search',
