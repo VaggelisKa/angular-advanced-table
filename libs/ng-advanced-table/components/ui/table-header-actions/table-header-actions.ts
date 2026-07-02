@@ -6,6 +6,7 @@ import { Component, computed, inject, input, viewChild } from '@angular/core';
 import { FlexRender } from '@tanstack/angular-table';
 import type { HeaderContext, RowData } from '@tanstack/angular-table';
 
+import { NatTableA11yService } from 'ng-advanced-table';
 import type { NatTableColumnMoveDirection } from 'ng-advanced-table';
 import {
   NAT_EN_LOCALE_ID,
@@ -46,6 +47,7 @@ import type { NatTablePinSide } from '../../utils/header-actions-labels.util';
   styleUrl: './table-header-actions.css'
 })
 export class NatTableHeaderActions {
+  private readonly a11yService = inject(NatTableA11yService);
   private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
   private readonly localeId = computed(() => this.locale() ?? NAT_EN_LOCALE_ID);
   private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
@@ -83,9 +85,7 @@ export class NatTableHeaderActions {
   }
 
   protected isPinned(side?: NatTablePinSide): boolean {
-    const pinnedSide = this.pinnedSide();
-
-    return side ? pinnedSide === side : pinnedSide !== null;
+    return side ? this.pinnedSide() === side : this.pinnedSide() !== null;
   }
 
   protected isAlignedEnd(): boolean {
@@ -93,9 +93,7 @@ export class NatTableHeaderActions {
   }
 
   protected hasCustomSortIndicator(): boolean {
-    const indicator = this.sortIndicator();
-
-    return indicator !== undefined && indicator !== null;
+    return this.sortIndicator() != null;
   }
 
   protected sortState(): NatTableSortDirection {
@@ -149,11 +147,13 @@ export class NatTableHeaderActions {
   }
 
   protected moveColumn(direction: NatTableColumnMoveDirection): void {
-    if (!this.canMoveColumn(direction)) {
-      return;
-    }
+    if (!this.canMoveColumn(direction)) return;
 
-    this.context().table.options.meta?.natTableMoveColumn?.(this.column().id, direction);
+    const result = this.context().table.options.meta?.natTableMoveColumn?.(this.column().id, direction) ?? null;
+
+    if (result) {
+      this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
+    }
   }
 
   protected getMoveLabel(direction: NatTableColumnMoveDirection): string {

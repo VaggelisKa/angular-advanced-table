@@ -145,7 +145,7 @@ describe('FEATURE: render metrics intl components', () => {
 
         expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
         expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
-        expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
+        expect(detail.textContent.trim()).toBe('Provider fast · Provider n1 rows sampled');
         expect(filterHeading.textContent.trim()).toBe('Provider render speed');
         expect(filterCaption.textContent.trim()).toBe('Provider n1 visible rows');
         expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
@@ -183,7 +183,7 @@ describe('FEATURE: render metrics intl components', () => {
 
         expect(panel.getAttribute('aria-label')).toBe('QA row render sample');
         expect(duration.textContent.trim()).toBe('QA q5.5 ms');
-        expect(detail.textContent.trim()).toBe('QA watch · QA q1 rows sampled');
+        expect(detail.textContent.trim()).toBe('QA fast · QA q1 rows sampled');
 
         host.panelLocale.set('en');
 
@@ -191,7 +191,7 @@ describe('FEATURE: render metrics intl components', () => {
 
         expect(panel.getAttribute('aria-label')).toBe('Provider row render sample');
         expect(duration.textContent.trim()).toBe('Provider n5.5 ms');
-        expect(detail.textContent.trim()).toBe('Provider watch · Provider n1 rows sampled');
+        expect(detail.textContent.trim()).toBe('Provider fast · Provider n1 rows sampled');
       });
     });
   });

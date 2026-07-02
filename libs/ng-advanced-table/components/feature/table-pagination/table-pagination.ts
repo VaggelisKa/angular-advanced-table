@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, input } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, input } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -52,6 +52,16 @@ export class NatTablePagination<TData extends RowData = RowData> {
     this.natTableService.registerPagination();
     this.destroyRef.onDestroy(() => {
       this.natTableService.unregisterPagination();
+    });
+
+    // Ensure we have a valid page size selected from the available options.
+    effect(() => {
+      const selected = this.selectedPageSize();
+      const options = this.resolvedPageSizeOptions();
+
+      if (options.length > 0 && !options.some((opt) => opt.pageSize === selected)) {
+        this.setPageSize(options[0].pageSize);
+      }
     });
   }
 

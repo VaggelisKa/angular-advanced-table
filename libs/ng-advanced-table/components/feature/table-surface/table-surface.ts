@@ -11,7 +11,6 @@ import type {
   VisibilityState
 } from '@tanstack/angular-table';
 
-import { NatTableService } from 'ng-advanced-table';
 import type {
   NatTableAccessibilityText,
   NatTableKeybindings,
@@ -19,9 +18,10 @@ import type {
   NatTableModeConfiguration,
   NatTableUserState
 } from 'ng-advanced-table';
+import { NatTableService } from 'ng-advanced-table';
 
-import { computeNatTableStateDiff } from '../../utils/table-state-diff.util';
 import type { SliceEmitter } from '../../utils/table-state-diff.util';
+import { computeNatTableStateDiff } from '../../utils/table-state-diff.util';
 
 @Component({
   selector: 'nat-table-surface',
@@ -84,15 +84,12 @@ export class NatTableSurface {
     columnPinning: { left: [], right: [] },
     columnSizing: {},
     rowSelection: {},
-    pagination: { pageIndex: 0, pageSize: 10 }
+    pagination: { pageIndex: 0, pageSize: 0 }
   };
 
   private firstStateChange = true;
 
   public constructor() {
-    this.syncInputsToService();
-
-    // Detect internal state changes from the table and emit slice outputs.
     effect(() => {
       const nextState = this.natTableService.stateChangeEvent();
 
@@ -100,49 +97,23 @@ export class NatTableSurface {
         this.emitStateSliceChanges(nextState);
       }
     });
-  }
-
-  /** Mirror each surface input into the table service, one effect per input. */
-  private syncInputsToService(): void {
-    effect(() => {
-      this.natTableService.setState(this.state());
-    });
 
     effect(() => {
-      this.natTableService.surfaceInitialState.set(this.initialState());
-    });
-    effect(() => {
-      this.natTableService.surfaceMode.set(this.mode());
-    });
-    effect(() => {
-      this.natTableService.manualPageCount.set(this.manualPageCount());
-    });
-    effect(() => {
-      this.natTableService.enableAnnouncements.set(this.enableAnnouncements());
-    });
-    effect(() => {
-      this.natTableService.stickyHeader.set(this.stickyHeader());
-    });
-    effect(() => {
-      this.natTableService.enableMultiSort.set(this.enableMultiSort());
-    });
-    effect(() => {
-      this.natTableService.locale.set(this.locale());
-    });
-    effect(() => {
-      this.natTableService.accessibilityText.set(this.accessibilityText());
-    });
-    effect(() => {
-      this.natTableService.surfaceKeybindings.set(this.keybindings());
-    });
-    effect(() => {
-      this.natTableService.columnResizeMode.set(this.columnResizeMode());
-    });
-    effect(() => {
-      this.natTableService.columnSizingMode.set(this.columnSizingMode());
-    });
-    effect(() => {
-      this.natTableService.direction.set(this.direction());
+      this.natTableService.patchState({
+        state: this.state(),
+        initialState: this.initialState(),
+        mode: this.mode(),
+        manualPageCount: this.manualPageCount(),
+        enableAnnouncements: this.enableAnnouncements(),
+        stickyHeader: this.stickyHeader(),
+        enableMultiSort: this.enableMultiSort(),
+        locale: this.locale(),
+        accessibilityText: this.accessibilityText(),
+        keybindings: this.keybindings(),
+        columnResizeMode: this.columnResizeMode(),
+        columnSizingMode: this.columnSizingMode(),
+        direction: this.direction()
+      });
     });
   }
 

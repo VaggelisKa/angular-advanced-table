@@ -66,7 +66,7 @@ describe('FEATURE: TableShowcase', () => {
           throw new Error('Expected the Chg % header to render.');
         }
 
-        expect(rows).toHaveLength(10);
+        expect(rows).toHaveLength(12);
         expect(firstMenuButton.getAttribute('aria-label')).toBe('Open column actions for Symbol column');
         expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
         expect(firstReorderableHeader).toBeTruthy();
@@ -158,7 +158,7 @@ describe('FEATURE: TableShowcase', () => {
 
         const sparkCells = queryAll('tbody td[data-column-id="spark"] nat-sparkline svg');
 
-        expect(sparkCells).toHaveLength(10);
+        expect(sparkCells).toHaveLength(12);
       });
     });
   });
@@ -170,7 +170,7 @@ describe('FEATURE: TableShowcase', () => {
 
         const marks = queryAll('tbody th[data-column-id="symbol"] nat-ticker-mark');
 
-        expect(marks).toHaveLength(10);
+        expect(marks).toHaveLength(12);
       });
     });
   });
@@ -182,7 +182,7 @@ describe('FEATURE: TableShowcase', () => {
 
         const actionTriggers = queryAll<HTMLButtonElement>('tbody td[data-column-id="actions"] .row-actions-trigger');
 
-        expect(actionTriggers).toHaveLength(10);
+        expect(actionTriggers).toHaveLength(12);
 
         const firstTrigger = actionTriggers[0];
 

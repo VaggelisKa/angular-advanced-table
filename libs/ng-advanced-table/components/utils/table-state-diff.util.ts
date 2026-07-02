@@ -1,6 +1,5 @@
+import { hasNatTableStateValueChanged } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
-
-import { hasNatTableStateValueChanged } from './table-state-value-equality.util';
 
 const serializeSelectedRowIds = (selection: NatTableUserState['rowSelection']): string =>
   Object.keys(selection)
