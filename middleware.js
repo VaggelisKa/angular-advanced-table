@@ -80,6 +80,7 @@ export default function middleware(request) {
   }
 
   const headers = {
+    'Cache-Control': 'public, max-age=0, must-revalidate',
     'Content-Length': String(new TextEncoder().encode(page.markdown).byteLength),
     'Content-Type': 'text/markdown; charset=utf-8',
     Link: DISCOVERY_LINK_HEADER,
