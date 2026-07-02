@@ -1,7 +1,7 @@
 import { Component, computed, linkedSignal, signal } from '@angular/core';
 
 import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
-import type { NatTableUserState } from 'ng-advanced-table';
+import type { NatTableRowActivateEvent, NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
 import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table/components';
 
@@ -95,6 +95,18 @@ export class Selection {
 
     return names.length ? names.join(', ') : 'None';
   });
+
+  /**
+   * Name of the row most recently activated by `(rowActivate)` — a primary
+   * click or Enter/Space on a non-interactive cell. Demonstrates that the
+   * selection checkbox is an interactive descendant, so toggling it does not
+   * also activate the row.
+   */
+  protected readonly lastActivatedName = signal<string | null>(null);
+
+  protected onRowActivate(event: NatTableRowActivateEvent<DemoItem>): void {
+    this.lastActivatedName.set(event.rowData.name);
+  }
 
   protected onRowSelectionChange(rowSelection: RowSelectionState): void {
     this.rowSelection.set(rowSelection);
