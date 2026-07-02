@@ -68,11 +68,21 @@ class TestHost {
   };
 }
 
+// jsdom has no IntersectionObserver. A never-firing stub keeps the `@defer (on viewport)`
+// preview in its @placeholder instead of throwing and scheduling a lazy import() that
+// resolves after Vitest tears the environment down (unhandled rejection, non-zero exit).
+class NoopIntersectionObserver {
+  public readonly root = null;
+  public readonly rootMargin = '';
+  public readonly thresholds: readonly number[] = [];
+}
+
 describe('FEATURE: docs topic example code tabs', () => {
   let highlightCalls = 0;
 
   beforeEach(async () => {
     highlightCalls = 0;
+    globalThis.IntersectionObserver = NoopIntersectionObserver as unknown as typeof IntersectionObserver;
     (globalThis as PrismTestGlobal).Prism = {
       highlightAllUnder: (element): void => {
         highlightCalls += 1;
@@ -92,6 +102,7 @@ describe('FEATURE: docs topic example code tabs', () => {
 
   afterEach(() => {
     delete (globalThis as PrismTestGlobal).Prism;
+    globalThis.IntersectionObserver = undefined as unknown as typeof IntersectionObserver;
   });
 
   describe('GIVEN: an example with multiple snippets', () => {
