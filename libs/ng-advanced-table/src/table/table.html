@@ -138,25 +138,31 @@
       } } @case ('loading') {
       <tr ngGridRow>
         <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableCell ngGridCell>
-          @if (loadingTemplateRef(); as templateRef) {
-          <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
-          } @else { {{ resolvedLoadingState() }} }
+          <div class="table-state-content">
+            @if (loadingTemplateRef(); as templateRef) {
+            <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
+            } @else { {{ resolvedLoadingState() }} }
+          </div>
         </td>
       </tr>
       } @case ('error') {
       <tr ngGridRow>
         <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableCell ngGridCell>
-          @if (errorTemplateRef(); as templateRef) {
-          <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
-          } @else { {{ resolvedErrorState() }} }
+          <div class="table-state-content">
+            @if (errorTemplateRef(); as templateRef) {
+            <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
+            } @else { {{ resolvedErrorState() }} }
+          </div>
         </td>
       </tr>
       } @case ('empty') {
       <tr ngGridRow>
         <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableCell ngGridCell>
-          @if (emptyTemplateRef(); as templateRef) {
-          <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
-          } @else { {{ resolvedEmptyState() }} }
+          <div class="table-state-content">
+            @if (emptyTemplateRef(); as templateRef) {
+            <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
+            } @else { {{ resolvedEmptyState() }} }
+          </div>
         </td>
       </tr>
       } }
