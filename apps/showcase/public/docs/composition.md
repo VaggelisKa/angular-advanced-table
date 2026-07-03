@@ -163,7 +163,7 @@ Global search is intentionally not a packaged UI primitive. Build a search compo
 
 ```ts
 import { Component, DestroyRef, computed, inject, input } from '@angular/core';
-import { NatTableService, type PaginationState, type RowData } from 'ng-advanced-table';
+import { NatTableService, type RowData } from 'ng-advanced-table';
 import { NatToolbarItem } from 'ng-advanced-table/components';
 
 @Component({
@@ -201,10 +201,7 @@ export class TableSearch<TData extends RowData = RowData> {
       return;
     }
 
-    this.controller()?.patchState({
-      globalFilter: target.value,
-      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 })
-    });
+    this.controller()?.setGlobalFilter(target.value);
   }
 }
 ```

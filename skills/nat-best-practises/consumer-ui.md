@@ -6,18 +6,18 @@ Put product controls in the app: search, filters, bulk actions, density, refresh
 
 - Put controls inside `<nat-table-surface>` when they need the active table controller through dependency injection.
 - Inject the public `NatTableService` from `ng-advanced-table` in descendant controls that need table state.
-- Use `controller()?.patchState(...)` to update table slices from consumer controls.
+- Use typed controller commands (`setGlobalFilter`, `setColumnFilter`, `setPageSize`, `goToPage`, `nextPage`, `previousPage`) to update table state from consumer controls.
 - Use `natToolbarItem` or `NatToolbarGroup` for controls inside `<nat-table-toolbar>`.
 - Pass `[for]` to companion controls that support it when a control lives outside the surface or needs an explicit table controller.
 - Keep unrelated controls as ordinary Angular components with inputs and outputs.
 
 ## Search Control Pattern
 
-A search field can register global filtering, read the table controller, patch `globalFilter`, and reset pagination.
+A search field can register global filtering, read the table controller, and set the global filter (which resets pagination to the first page).
 
 ```ts
 import { Component, DestroyRef, computed, inject, input } from '@angular/core';
-import type { PaginationState, RowData } from 'ng-advanced-table';
+import type { RowData } from 'ng-advanced-table';
 import { NatTableService } from 'ng-advanced-table';
 import { NatToolbarItem } from 'ng-advanced-table/components';
 
@@ -57,10 +57,7 @@ export class TableSearch<TData extends RowData = RowData> {
 
     if (!(target instanceof HTMLInputElement) || target.value === this.value()) return;
 
-    this.controller()?.patchState({
-      globalFilter: target.value,
-      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 })
-    });
+    this.controller()?.setGlobalFilter(target.value);
   }
 }
 ```
