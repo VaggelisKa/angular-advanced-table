@@ -2,17 +2,12 @@ import { DOCUMENT, NgComponentOutlet } from '@angular/common';
 import { Component, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import type { ElementRef } from '@angular/core';
 
+import { highlightWithin } from '../../shared/prism.util';
 import type { DocsCodeSnippet, DocsTopicExampleBlock } from '../topics/docs-topic.type';
 
 const COPY_LABEL = 'Copy example code';
 const COPIED_LABEL = 'Copied example code';
 const COPY_RESET_DELAY_MS = 2000;
-
-type PrismGlobal = typeof globalThis & {
-  Prism?: {
-    highlightAllUnder(element: Element | Document): void;
-  };
-};
 
 @Component({
   selector: 'app-docs-topic-example',
@@ -179,12 +174,9 @@ export class DocsTopicExample {
 
   private highlightCodePanel(): void {
     const codePanel = this.codePanel()?.nativeElement;
-    const prism = (globalThis as PrismGlobal).Prism;
 
-    if (!codePanel || typeof prism?.highlightAllUnder !== 'function') {
-      return;
-    }
+    if (!codePanel) return;
 
-    prism.highlightAllUnder(this.document.getElementById(this.snippetPanelId(this.activeSnippet())) ?? codePanel);
+    highlightWithin(this.document.getElementById(this.snippetPanelId(this.activeSnippet())) ?? codePanel);
   }
 }

@@ -1,4 +1,5 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, afterRenderEffect, computed, signal, viewChild } from '@angular/core';
+import type { ElementRef } from '@angular/core';
 
 import type { ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
@@ -21,6 +22,7 @@ import {
   formatStateLiteral,
   omitColumnOrder
 } from './utils';
+import { highlightElement } from '../../shared/prism.util';
 import { TableSearch } from '../../ui/table-search/table-search';
 
 @Component({
@@ -56,6 +58,8 @@ export class TableBuilderPage {
     showScrollControl: this.showScrollControl(),
     withStickyHeader: this.withStickyHeader()
   }));
+
+  private readonly codeElement = viewChild<ElementRef<HTMLElement>>('codeEl');
 
   // Active Code Tab ('html' | 'ts')
   protected readonly activeTab = signal<'html' | 'ts'>('html');
@@ -101,6 +105,22 @@ export class TableBuilderPage {
     buildComponentSource(this.flags(), formatStateLiteral(buildStateObject(this.flags(), this.tableState())))
   );
 
+  // Code shown in the active tab
+  protected readonly activeCode = computed(() => (this.activeTab() === 'html' ? this.generatedHtml() : this.generatedTs()));
+
+  public constructor() {
+    afterRenderEffect(() => {
+      // Re-run Prism whenever the generated source or active tab changes, after Angular writes textContent.
+      this.activeCode();
+
+      const codeElement = this.codeElement()?.nativeElement;
+
+      if (codeElement) {
+        highlightElement(codeElement);
+      }
+    });
+  }
+
   protected toggleColumnPinning(): void {
     const nextValue = !this.withColumnPinning();
 
@@ -139,10 +159,8 @@ export class TableBuilderPage {
   }
 
   protected copyCode(): void {
-    const code = this.activeTab() === 'html' ? this.generatedHtml() : this.generatedTs();
-
     navigator.clipboard
-      .writeText(code)
+      .writeText(this.activeCode())
       .then(() => {
         this.copied.set(true);
         setTimeout(() => this.copied.set(false), 2000);

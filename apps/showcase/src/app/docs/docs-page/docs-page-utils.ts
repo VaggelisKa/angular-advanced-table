@@ -1,9 +1,4 @@
-type PrismGlobal = typeof globalThis & {
-  Prism?: {
-    highlightElement?(element: Element): void;
-    highlightAllUnder?(element: Element | Document): void;
-  };
-};
+import { getPrism, highlightElement } from '../../shared/prism.util';
 
 const HIGHLIGHTED_CODE_SELECTOR = 'code[class*="language-"]:not([data-docs-prism-highlighted])';
 
@@ -12,20 +7,16 @@ export const shouldLetBrowserHandleLink = (event: MouseEvent): boolean => {
 };
 
 export const highlightMarkdownCode = (container: HTMLElement): void => {
-  const prism = (globalThis as PrismGlobal).Prism;
-  const codeElements = Array.from(container.querySelectorAll<HTMLElement>(HIGHLIGHTED_CODE_SELECTOR));
+  const prism = getPrism();
 
   if (!prism || (!prism.highlightElement && !prism.highlightAllUnder)) {
     return;
   }
 
-  for (const codeElement of codeElements) {
-    if (typeof prism.highlightElement === 'function') {
-      prism.highlightElement(codeElement);
-    } else if (typeof prism.highlightAllUnder === 'function') {
-      prism.highlightAllUnder(codeElement.parentElement ?? codeElement);
-    }
+  const codeElements = Array.from(container.querySelectorAll<HTMLElement>(HIGHLIGHTED_CODE_SELECTOR));
 
+  for (const codeElement of codeElements) {
+    highlightElement(codeElement);
     codeElement.setAttribute('data-docs-prism-highlighted', '');
   }
 };

@@ -1108,7 +1108,7 @@ input {
   }
 }
 
-:is(.docs-markdown, .docs-example) {
+:is(.docs-markdown, .docs-example, .table-builder-page) {
   & .token.comment,
   & .token.prolog,
   & .token.doctype,
