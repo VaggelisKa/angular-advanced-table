@@ -1,3 +1,14 @@
+## 2.2.0 (2026-07-03)
+
+### 🚀 Features
+
+- Center empty/error/loading state content within the visible scroll viewport instead of the full table width. Add `--nat-table-min-height` token for setting a minimum region height. State rows now fill the full region height and vertically center their content. ([#232](https://github.com/VaggelisKa/angular-advanced-table/pull/232))
+
+### 🩹 Fixes
+
+- Publish an Agent Skills discovery index and archive for the `nat-best-practises` skill at the `.well-known/agent-skills` endpoint. ([#235](https://github.com/VaggelisKa/angular-advanced-table/pull/235))
+- Add the root `nat-best-practises` agent skill and Quick Start guidance that presents agent-assisted setup as the recommended path before manual setup. Addresses #161. ([#234](https://github.com/VaggelisKa/angular-advanced-table/pull/234))
+
 ## 2.1.0 (2026-07-03)
 
 ### 🚀 Features
