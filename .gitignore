@@ -37,6 +37,7 @@ package-lock.json
 /.nx/cache
 /.nx/workspace-data
 /api/markdown-pages.generated.json
+/public/.well-known/agent-skills/*.tar.gz
 .sass-cache/
 /connect.lock
 /coverage
