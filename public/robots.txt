@@ -4,6 +4,7 @@ Allow: /
 Allow: /docs/
 Allow: /examples/
 Allow: /favicon.svg
+Allow: /.well-known/agent-skills/
 Allow: /.well-known/api-catalog
 Allow: /.well-known/mcp/
 Allow: /mcp
