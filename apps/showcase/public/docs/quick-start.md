@@ -1,6 +1,6 @@
-Start with `NatTable` inside `NatTableSurface`. The table renders the grid; the surface provides the scoped controller used for state, accessibility copy, locale, and optional companion controls.
+Using an AI assistant? Start with the `/nat-best-practises` skill so generated code follows the table API, state model, accessibility rules, and styling contract.
 
-## Install
+## Recommended Agent Setup
 
 Install the table package and Angular companion peers:
 
@@ -11,6 +11,24 @@ pnpm add ng-advanced-table @angular/aria @angular/cdk
 ```
 
 Keep `@angular/core` and `@angular/common` in your Angular app dependencies.
+
+Install the agent skill:
+
+```bash
+npx skills add VaggelisKa/angular-advanced-table --skill nat-best-practises
+```
+
+Start by asking for the table contract:
+
+```text
+Use /nat-best-practises to build an Angular table for invoices with columns for number, customer, status, and total. Start with the row type, row id, columns, and accessibility checks.
+```
+
+Review that contract before generating code.
+
+## Manual Setup
+
+If you are wiring the table by hand, start with `NatTable` inside `NatTableSurface`.
 
 ## First Table
 
@@ -178,6 +196,6 @@ Start with these defaults unless the feature needs something else:
 - Use `/docs/columns` for column metadata, sizing, custom cell components, header actions, and row activation.
 - Use `/docs/state` for controlled and uncontrolled state patterns.
 - Use `/docs/data-lifecycle` for loading, empty, error, background refresh, and Manual Data Handling.
-- Use `/docs/filtering-search` for consumer-owned search and filtering controls.
+- Use `/docs/filtering-search` for search and filtering controls.
 - Use `/docs/row-selection` for selection checkboxes and bulk state.
 - Use `/docs/export` for CSV defaults and custom export handlers.

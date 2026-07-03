@@ -31,7 +31,6 @@
 
   **Breaking:** The public API no longer exports `NatTableA11yDirective`, `NatTableResizeDirective`, `NatTableReorderDirective`, or `NatTableHeaderObservationDirective`. These were internal implementation details and should not have been consumed directly.
 
-
 ### 🩹 Fixes
 
 - Fix vanishing page sizer on reload by ensuring initial library-seeded state synchronizes correctly back to consumer signals. ([#225](https://github.com/VaggelisKa/angular-advanced-table/pull/225))
