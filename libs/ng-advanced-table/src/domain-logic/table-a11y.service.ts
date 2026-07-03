@@ -1,48 +1,17 @@
-/* eslint-disable max-lines -- cohesive a11y service: live announcements, snapshot capture, state-change diffing, per-feature describe methods, and ARIA multiselectable management. */
+/* eslint-disable max-lines -- a11y service residual (194 code lines): DI + the liveMessage signal + snapshot capture that must read live signals + the tableSummary computed + five effect/afterRenderEffect registrations that must run in the constructor injection context, plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
 import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 
-import type { Column, PaginationState, RowData } from '@tanstack/angular-table';
+import type { Column, RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
 import { NatTableState } from './table.state';
-import type {
-  NatTableAccessibilityColumnReorderAnnouncementContext,
-  NatTableAccessibilityColumnResizeAnnouncementContext,
-  NatTableAccessibilityColumnVisibilityAnnouncementChange,
-  NatTableAccessibilityColumnVisibilityAnnouncementContext,
-  NatTableAccessibilityFilteringAnnouncementContext,
-  NatTableAccessibilityPaginationAnnouncementContext,
-  NatTableAccessibilitySelectionAnnouncementContext,
-  NatTableAccessibilitySortingAnnouncementContext,
-  NatTableAccessibilitySummaryContext,
-  NatTableDataStatus,
-  TableColumnAccessibilityState
-} from '../common/table.type';
-import { NAT_TABLE_DATA_STATUS } from '../common/table.type';
-import { validateKeybindings } from '../utils/keybindings';
-import {
-  hasSameColumnVisibility,
-  resolveColumnLabel,
-  resolveFilterState,
-  serializeColumnFilters,
-  serializeRowSelection,
-  serializeSorting,
-  sortDirection
-} from '../utils/table-utils';
-
-type TableAccessibilitySnapshot = {
-  readonly dataStatus: NatTableDataStatus;
-  readonly sortingKey: string;
-  readonly globalFilter: string;
-  readonly columnFiltersKey: string;
-  readonly rowSelectionKey: string;
-  readonly selectedRowCount: number;
-  readonly pagination: PaginationState;
-  readonly pageCount: number;
-  readonly visibleRows: number;
-  readonly totalRows: number;
-  readonly columns: TableColumnAccessibilityState[];
-};
+import type { TableAccessibilitySnapshot } from '../common/table-a11y.type';
+import { validateKeybindings } from '../hotkey-a11y/utils/keybindings.util';
+import { resolveColumnLabel } from '../utils/column-label.util';
+import { serializeRowSelection } from '../utils/row-state.util';
+import { serializeColumnFilters, serializeSorting } from '../utils/sorting.util';
+import { describeAccessibilityChange } from '../utils/table-announcement.util';
+import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext } from '../utils/table-summary.util';
 
 /**
  * Cross-cutting accessibility service for the table.
@@ -119,15 +88,16 @@ export class NatTableA11yService<TData extends RowData = RowData> {
     }
 
     const formatter = this.state.resolvedAccessibilityText().columnReorder;
-    const context: NatTableAccessibilityColumnReorderAnnouncementContext = {
-      columnId: movingColumnId,
-      label,
-      zone,
-      positionValue: nextIndex + 1,
-      positionText: this.formatAccessibilityNumber(nextIndex + 1),
-      totalValue: nextVisibleZoneOrder.length,
-      totalText: this.formatAccessibilityNumber(nextVisibleZoneOrder.length)
-    };
+    const context = buildColumnReorderContext(
+      {
+        columnId: movingColumnId,
+        label,
+        zone,
+        positionValue: nextIndex + 1,
+        totalValue: nextVisibleZoneOrder.length
+      },
+      (value) => this.formatAccessibilityNumber(value)
+    );
 
     this.announce(formatter?.(context) ?? '');
   }
@@ -141,20 +111,21 @@ export class NatTableA11yService<TData extends RowData = RowData> {
     const formatter = this.state.resolvedAccessibilityText().columnResize;
     const { min } = this.state.getResizeBounds(column);
     const { max } = this.state.getResizeFitBounds(column);
-    const context: NatTableAccessibilityColumnResizeAnnouncementContext = {
-      columnId: column.id,
-      label,
-      widthValue: width,
-      widthText: this.formatAccessibilityNumber(width),
-      atMinimum: width <= min,
-      atMaximum: max !== null && width >= max
-    };
+    const context = buildColumnResizeContext(
+      {
+        columnId: column.id,
+        label,
+        widthValue: width,
+        min,
+        max
+      },
+      (value) => this.formatAccessibilityNumber(value)
+    );
 
     this.announce(formatter?.(context) ?? '');
   }
 
   // ─── State-change announcement effect ───
-
   private registerAnnouncementEffect(): void {
     effect(() => {
       if (!this.state.hasSeededInitialState()) {
@@ -170,7 +141,12 @@ export class NatTableA11yService<TData extends RowData = RowData> {
         return;
       }
 
-      const message = this.describeAccessibilityChange(previousSnapshot, snapshot);
+      const message = describeAccessibilityChange(
+        previousSnapshot,
+        snapshot,
+        () => this.state.resolvedAccessibilityText(),
+        (value) => this.formatAccessibilityNumber(value)
+      );
 
       if (message) {
         this.announce(message);
@@ -238,44 +214,31 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   // ─── Summary ───
 
   private buildTableSummary(): string {
-    const summaryContext = this.getSummaryContext();
+    const summaryContext = getSummaryContext(
+      {
+        visibleRows: this.state.renderedVisibleRowCount(),
+        totalRows: this.state.stateTotalRowCount(),
+        visibleColumns: this.state.visibleColumnCount(),
+        pageIndex: this.state.renderedPageIndex(),
+        pageCount: this.state.renderedPageCount(),
+        isFiltered: this.state.isFiltered(),
+        paginationEnabled: this.state.enablePagination()
+      },
+      (value) => this.formatAccessibilityNumber(value)
+    );
     const formatter = this.state.resolvedAccessibilityText().tableSummary;
 
     return formatter?.(summaryContext) ?? '';
   }
 
-  private getSummaryContext(): NatTableAccessibilitySummaryContext {
-    const visibleRows = this.state.renderedVisibleRowCount();
-    const totalRows = this.state.stateTotalRowCount();
-    const visibleColumns = this.state.visibleColumnCount();
-    const pageIndex = this.state.renderedPageIndex();
-    const page = pageIndex + 1;
-    const pageCount = this.state.renderedPageCount();
-
-    return {
-      visibleRowsValue: visibleRows,
-      visibleRowsText: this.formatAccessibilityNumber(visibleRows),
-      totalRowsValue: totalRows,
-      totalRowsText: this.formatAccessibilityNumber(totalRows),
-      visibleColumnsValue: visibleColumns,
-      visibleColumnsText: this.formatAccessibilityNumber(visibleColumns),
-      pageIndex,
-      pageValue: page,
-      pageText: this.formatAccessibilityNumber(page),
-      pageCountValue: pageCount,
-      pageCountText: this.formatAccessibilityNumber(pageCount),
-      filterState: this.state.isFiltered() ? 'filtered' : 'unfiltered',
-      paginationState: this.state.enablePagination() ? 'enabled' : 'disabled'
-    };
-  }
-
-  // ─── Snapshot and diffing ───
+  // ─── Snapshot capture ───
 
   private captureAccessibilitySnapshot(): TableAccessibilitySnapshot {
     const state = this.state.mergedState();
 
     return {
       dataStatus: this.state.resolvedDataStatus(),
+      sorting: state.sorting,
       sortingKey: serializeSorting(state.sorting),
       globalFilter: state.globalFilter.trim(),
       columnFiltersKey: serializeColumnFilters(state.columnFilters),
@@ -293,185 +256,6 @@ export class NatTableA11yService<TData extends RowData = RowData> {
         label: resolveColumnLabel(column),
         visible: column.getIsVisible()
       }))
-    };
-  }
-
-  private describeAccessibilityChange(previous: TableAccessibilitySnapshot, next: TableAccessibilitySnapshot): string | null {
-    if (previous.dataStatus !== next.dataStatus) {
-      return this.describeDataStatusChange(next);
-    }
-
-    if (previous.sortingKey !== next.sortingKey) {
-      return this.describeSortingChange(next);
-    }
-
-    if (previous.globalFilter !== next.globalFilter || previous.columnFiltersKey !== next.columnFiltersKey) {
-      return this.describeFilteringChange(next);
-    }
-
-    if (!hasSameColumnVisibility(previous.columns, next.columns)) {
-      return this.describeColumnVisibilityChange(previous.columns, next.columns);
-    }
-
-    if (previous.rowSelectionKey !== next.rowSelectionKey) {
-      return this.describeSelectionChange(next);
-    }
-
-    if (previous.pagination.pageSize !== next.pagination.pageSize) {
-      return this.describePageSizeChange(next);
-    }
-
-    if (previous.pagination.pageIndex !== next.pagination.pageIndex) {
-      return this.describePageChange(next);
-    }
-
-    return null;
-  }
-
-  // ─── Per-change-type describe methods ───
-
-  private describeDataStatusChange(snapshot: TableAccessibilitySnapshot): string {
-    if (snapshot.dataStatus === NAT_TABLE_DATA_STATUS.loading) {
-      return this.state.resolvedLoadingState();
-    }
-
-    if (snapshot.dataStatus === NAT_TABLE_DATA_STATUS.error) {
-      return this.state.resolvedErrorState();
-    }
-
-    if (snapshot.visibleRows === 0) {
-      return this.state.resolvedEmptyState();
-    }
-
-    return '';
-  }
-
-  private describeSortingChange(snapshot: TableAccessibilitySnapshot): string {
-    const sortingState = this.state.mergedState().sorting;
-    const formatter = this.state.resolvedAccessibilityText().sortingChange;
-    const entry = sortingState.at(0);
-    const columnLabel = entry ? (snapshot.columns.find((column) => column.id === entry.id)?.label ?? entry.id) : null;
-    const sortState = entry ? sortDirection(entry.desc) : 'none';
-    const sortedColumns = sortingState.map((sortEntry) => ({
-      id: sortEntry.id,
-      label: snapshot.columns.find((column) => column.id === sortEntry.id)?.label ?? sortEntry.id,
-      sortState: sortDirection(sortEntry.desc)
-    }));
-    const context: NatTableAccessibilitySortingAnnouncementContext = {
-      columnId: entry?.id ?? null,
-      columnLabel,
-      sortState,
-      sortedColumns
-    };
-
-    return formatter?.(context) ?? '';
-  }
-
-  private describeFilteringChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.state.resolvedAccessibilityText().filteringChange;
-    const query = snapshot.globalFilter;
-    const hasColumnFilters = !!snapshot.columnFiltersKey;
-    const context: NatTableAccessibilityFilteringAnnouncementContext = {
-      query: snapshot.globalFilter,
-      filterState: resolveFilterState(!!query, hasColumnFilters),
-      visibleRowsValue: snapshot.visibleRows,
-      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows),
-      totalRowsValue: snapshot.totalRows,
-      totalRowsText: this.formatAccessibilityNumber(snapshot.totalRows)
-    };
-
-    if (formatter) {
-      return formatter(context);
-    }
-
-    return '';
-  }
-
-  private describeColumnVisibilityChange(
-    previous: readonly TableColumnAccessibilityState[],
-    next: readonly TableColumnAccessibilityState[]
-  ): string {
-    const changedColumns = next.reduce<NatTableAccessibilityColumnVisibilityAnnouncementChange[]>((result, column) => {
-      const previousColumn = previous.find((candidate) => candidate.id === column.id);
-
-      if (previousColumn && previousColumn.visible !== column.visible) {
-        result.push({
-          id: column.id,
-          label: column.label,
-          visibilityState: column.visible ? 'visible' : 'hidden'
-        });
-      }
-
-      return result;
-    }, []);
-    const visibleCount = next.filter((column) => column.visible).length;
-    const formatter = this.state.resolvedAccessibilityText().columnVisibilityChange;
-    const context: NatTableAccessibilityColumnVisibilityAnnouncementContext = {
-      changedColumns,
-      visibleColumnsValue: visibleCount,
-      visibleColumnsText: this.formatAccessibilityNumber(visibleCount),
-      totalColumnsValue: next.length,
-      totalColumnsText: this.formatAccessibilityNumber(next.length)
-    };
-
-    if (formatter) {
-      return formatter(context);
-    }
-
-    return '';
-  }
-
-  private describeSelectionChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.state.resolvedAccessibilityText().selectionChange;
-    const count = snapshot.selectedRowCount;
-    const total = snapshot.totalRows;
-    const context: NatTableAccessibilitySelectionAnnouncementContext = {
-      selectedCountValue: count,
-      selectedCountText: this.formatAccessibilityNumber(count),
-      totalRowsValue: total,
-      totalRowsText: this.formatAccessibilityNumber(total)
-    };
-
-    return formatter?.(context) ?? '';
-  }
-
-  private describePageSizeChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.state.resolvedAccessibilityText().pageSizeChange;
-    const context = this.getPaginationAnnouncementContext(snapshot);
-
-    if (formatter) {
-      return formatter(context);
-    }
-
-    return '';
-  }
-
-  private describePageChange(snapshot: TableAccessibilitySnapshot): string {
-    const formatter = this.state.resolvedAccessibilityText().pageChange;
-    const context = this.getPaginationAnnouncementContext(snapshot);
-
-    if (formatter) {
-      return formatter(context);
-    }
-
-    return '';
-  }
-
-  private getPaginationAnnouncementContext(snapshot: TableAccessibilitySnapshot): NatTableAccessibilityPaginationAnnouncementContext {
-    const page = snapshot.pagination.pageIndex + 1;
-    const pageCount = snapshot.pageCount;
-    const pageSize = snapshot.pagination.pageSize;
-
-    return {
-      pageIndex: snapshot.pagination.pageIndex,
-      pageValue: page,
-      pageText: this.formatAccessibilityNumber(page),
-      pageCountValue: pageCount,
-      pageCountText: this.formatAccessibilityNumber(pageCount),
-      pageSizeValue: pageSize,
-      pageSizeText: this.formatAccessibilityNumber(pageSize),
-      visibleRowsValue: snapshot.visibleRows,
-      visibleRowsText: this.formatAccessibilityNumber(snapshot.visibleRows)
     };
   }
 

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Table states accessibility', () => {
@@ -74,6 +75,12 @@ test.describe('FEATURE: Table states accessibility', () => {
         await test.step('THEN: the populated grid shows', async () => {
           await expect(previewTable.locator('tbody tr')).toHaveCount(3);
         });
+      });
+    });
+
+    test.describe('WHEN: the states example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-table-states-preview-panel"]');
       });
     });
   });

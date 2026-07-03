@@ -6,6 +6,8 @@ Install the table package and Angular companion peers:
 
 ```bash
 pnpm add ng-advanced-table @angular/aria @angular/cdk
+# or: npm install ng-advanced-table @angular/aria @angular/cdk
+# or: yarn add ng-advanced-table @angular/aria @angular/cdk
 ```
 
 Keep `@angular/core` and `@angular/common` in your Angular app dependencies.

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Sticky header', () => {
@@ -38,6 +39,12 @@ test.describe('FEATURE: Sticky header', () => {
           await expect(checkbox).toBeChecked();
           await expect(table).toHaveClass(/has-sticky-header/);
         });
+      });
+    });
+
+    test.describe('WHEN: the sticky header example is scanned with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
+        await expectNoAxeViolations(page, '[data-testid="docs-example-sticky-header-preview-panel"]');
       });
     });
   });

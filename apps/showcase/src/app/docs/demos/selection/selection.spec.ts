@@ -149,4 +149,28 @@ describe('FEATURE: Selection', () => {
       });
     });
   });
+
+  describe('GIVEN: the selection page is rendered with row activation wired', () => {
+    const categoryCell = (index: number): HTMLElement =>
+      element().querySelectorAll<HTMLElement>('tbody td[data-column-id="category"]')[index];
+
+    describe('WHEN: a non-interactive cell in a row is clicked', () => {
+      it('THEN: it reports that row as the last activated row', async () => {
+        categoryCell(0).click();
+        await flush();
+
+        expect(element().textContent).toContain('Last activated: Alpha Searcher');
+      });
+    });
+
+    describe('WHEN: the row selection checkbox is clicked', () => {
+      it('THEN: it does not report a row activation', async () => {
+        rowCheckbox(0).click();
+        await flush();
+
+        expect(selectedRowCount()).toBe(1);
+        expect(element().textContent).toContain('Last activated: None');
+      });
+    });
+  });
 });

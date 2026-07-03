@@ -1,6 +1,6 @@
 import { Directive, computed, input } from '@angular/core';
 
-import type { TableColumnRenderState } from '../common/table.type';
+import type { TableColumnRenderState } from '../common/column-render.type';
 
 /** Resize-guide geometry consumed by {@link NatTableResizeGuide}. */
 type NatTableResizeGuideGeometry = {

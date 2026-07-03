@@ -1,3 +1,68 @@
+## 2.1.0 (2026-07-03)
+
+### 🚀 Features
+
+- Replace page size selection button chips with an HTML select dropdown in the bundled pagination controls. ([#188](https://github.com/VaggelisKa/angular-advanced-table/pull/188), [#196](https://github.com/VaggelisKa/angular-advanced-table/issues/196))
+- Mark object type properties as `readonly` across the library public contracts, companion entry points, locale dictionaries, render-metrics contracts, internal testing contract mirror, showcase examples, and e2e type helpers. Keep only compiler-proven mutable helper shapes writable where code assigns to marker or recursive column properties. ([#185](https://github.com/VaggelisKa/angular-advanced-table/pull/185), [#198](https://github.com/VaggelisKa/angular-advanced-table/pull/198), [#190](https://github.com/VaggelisKa/angular-advanced-table/issues/190))
+- Rename two companion subpath entry points for clarity (breaking import change): `ng-advanced-table/ui` → `ng-advanced-table/components` and `ng-advanced-table/utils` → `ng-advanced-table/render-metrics`. `/utils` was a misnomer — it only ever exported the render-metrics store, filter, panel, and column builder. The `.` (core) and `/locale` entry points are unchanged. Consumers update their import specifiers accordingly. ([#185](https://github.com/VaggelisKa/angular-advanced-table/pull/185), [#198](https://github.com/VaggelisKa/angular-advanced-table/pull/198), [#190](https://github.com/VaggelisKa/angular-advanced-table/issues/190))
+- Replace the separate built-in English locale alias constants with the single `NAT_EN_LOCALE_ID` export. Update core, companion UI, render-metrics, and locale internals to use the shared locale id directly. ([#203](https://github.com/VaggelisKa/angular-advanced-table/pull/203))
+- Unify the bundled table, companion control, and render-metrics CSS theme contract around the shared `--nat-table-*` semantic palette. ([#219](https://github.com/VaggelisKa/angular-advanced-table/pull/219))
+
+  Document the published theming API with a distinct light/dark consumer theme example, remove the legacy shorthand CSS variable fallbacks, add table stacking tokens, and deduplicate pagination control styles so page-size and pager controls share one CSS source.
+
+- Update render metrics health thresholds to 12ms (watch) and 16.66ms (slow) to align with 60fps frame budgets. ([#225](https://github.com/VaggelisKa/angular-advanced-table/pull/225))
+- Forward the TanStack Angular Table export surface through `ng-advanced-table` so consumer docs import table authoring contracts and helpers from the package itself. Clarify install guidance by documenting Angular Aria and CDK as required peers while keeping TanStack Table out of consumer install steps. ([#221](https://github.com/VaggelisKa/angular-advanced-table/pull/221))
+- Ship `@tanstack/angular-table` as a runtime dependency while keeping Angular framework, Aria, and CDK packages as required peers. Document the resolved published ranges plus required Angular peer install requirements. ([#220](https://github.com/VaggelisKa/angular-advanced-table/pull/220))
+- Extract NatTableState as a per-table-instance state owner, consolidating TanStack wiring, internal state signals, column width resolution, resize/reorder state, and a11y announcements out of the NatTable component. The component becomes a thin template consumer + DOM-coupled lifecycle manager. Also merges the duplicate `table.util.ts` into `table-utils.ts`. ([#204](https://github.com/VaggelisKa/angular-advanced-table/pull/204))
+
+  Renames the public API type `NatTableState` → `NatTableUserState` to disambiguate from the new internal `NatTableState` class. The `NatTableUiState` alias continues to work as before.
+
+- refactor: convert host directives to injectable services ([#204](https://github.com/VaggelisKa/angular-advanced-table/pull/204))
+
+  Replace `NatTableA11yDirective`, `NatTableResizeDirective`, `NatTableReorderDirective`, and `NatTableHeaderObservationDirective` with injectable services (`NatTableA11yService`, `NatTableResizeService`, `NatTableReorderService`, `NatTableHeaderMeasurementService`).
+
+  The directives were not using any directive-specific features (host bindings, host listeners, ElementRef). They all accessed the DOM through a manually-wired `tableRegionRef` signal, making them effectively services wrapped in `@Directive`. Converting them to `@Injectable` services:
+
+  - Removes the `hostDirectives` array and the 4-way `tableRegionRef` fan-out effect
+  - Consolidates `tableRegionRef` on `NatTableState` as a single shared signal
+  - Merges the a11y directive's snapshot/diffing/announce logic into the existing `NatTableA11yService`
+  - Makes all services injectable from anywhere in the DI subtree
+  - Moves the component closer to a pure presentational shell
+
+  **Breaking:** The public API no longer exports `NatTableA11yDirective`, `NatTableResizeDirective`, `NatTableReorderDirective`, or `NatTableHeaderObservationDirective`. These were internal implementation details and should not have been consumed directly.
+
+### 🩹 Fixes
+
+- Fix vanishing page sizer on reload by ensuring initial library-seeded state synchronizes correctly back to consumer signals. ([#225](https://github.com/VaggelisKa/angular-advanced-table/pull/225))
+- Move locale parameter interpolation from plain describe wrappers into the parameterized test titles so unit test output reports the active locale id. ([#193](https://github.com/VaggelisKa/angular-advanced-table/pull/193))
+- Update the package test script to cover the current core, components, render-metrics, and locale Nx projects after the companion entry-point rename. ([#206](https://github.com/VaggelisKa/angular-advanced-table/pull/206))
+- fix(core): allow nullable `patchState` fields to be cleared back to `undefined` ([#225](https://github.com/VaggelisKa/angular-advanced-table/pull/225))
+
+  Remove the `!== undefined` guard from `manualPageCount`, `locale`, and `direction` in `NatTableService.patchState()` so that transitioning these optional inputs from a concrete value back to `undefined` propagates correctly instead of silently retaining the stale value.
+
+- Hide the bottom separator on the final rendered table body row so the last row does not double up against the table region border. ([9117009](https://github.com/VaggelisKa/angular-advanced-table/commit/9117009))
+
+  Honor the table border-width design tokens so consumers can remove the outer table boundary or dividers without retaining a transparent one-pixel gap.
+
+- Adopt module-boundary enforcement and an internal element-layer structure (#185). Each subpath entry point is now a tagged Nx project (`type:core`/`ui`/`utils`/`locale`) guarded by `@nx/enforce-module-boundaries`, and source within each entry point is organized into `common`/`utils`/`domain-logic`/`ui`/`feature` element folders enforced by `eslint-plugin-boundaries`. Internal refactor and tooling only — no public API, `exports`, or runtime behavior change; the published bundles are unchanged. ([#185](https://github.com/VaggelisKa/angular-advanced-table/pull/185), [#198](https://github.com/VaggelisKa/angular-advanced-table/pull/198), [#190](https://github.com/VaggelisKa/angular-advanced-table/issues/190))
+- Refactor large spec files, unify input synchronization in `NatTableSurface`, and ensure `patchState` merges state/initialState instead of replacing them. ([#225](https://github.com/VaggelisKa/angular-advanced-table/pull/225))
+- Migrate the remaining unit specs to the formal Gherkin Given/When/Then structure while preserving existing assertions and source test counts. ([#193](https://github.com/VaggelisKa/angular-advanced-table/pull/193))
+- Define Documentation Topic, Documentation Group, Table Capability, Manual Data Handling, Example Gallery, Topic Example, Docs Block, Topic Layout, and Usage Boundary as the canonical language for the topic-first documentation structure. ([#190](https://github.com/VaggelisKa/angular-advanced-table/pull/190))
+
+  Move feature guidance into topic pages with curated local TOCs, embedded live examples, preview/code tabs, and manually curated snippets. Keep Quick start directly under Docs, group Composition with the Core principles topics, keep only broad scenarios in the gallery, and record the decision to defer generated API reference.
+
+- Document the core table border-width theme tokens so consumers can remove the table boundary or dividers intentionally. ([#194](https://github.com/VaggelisKa/angular-advanced-table/pull/194))
+- Correct maintainer and consumer documentation for current stylelint scripts, package install examples, locale domain wording, controller imports, and render-metrics tone thresholds. ([#230](https://github.com/VaggelisKa/angular-advanced-table/pull/230))
+- Reorganize the core `ng-advanced-table` entry into feature folders. Leaf capabilities move under `src/feature/<name>/` — `hotkey-a11y/`, `cell-interaction/`, `reorder/`, and `resize/` — each nesting its own `common`/`utils`/`domain-logic` element folders so their consts, pure helpers, services, and directives are boundary-typed by the deepest folder. The shared `common`/`utils`/`ui`/`domain-logic` layers, the `src/feature/table.ts` shell, and the per-instance state hub (`src/domain-logic/table.state.ts` plus the TanStack table instance) stay core. Internal refactor and file layout only — no public API, `exports`, or runtime behavior change; the published bundles are unchanged. ([#224](https://github.com/VaggelisKa/angular-advanced-table/pull/224))
+- refactor(core,components): break NatTableState ↔ NatTableA11yService circular import ([#225](https://github.com/VaggelisKa/angular-advanced-table/pull/225))
+
+  Move column reorder announcements from `NatTableState.applyVisibleZoneReorder` to the
+  interaction-site callers (`NatTableReorderService` for drag-drop/keyboard and
+  `NatTableHeaderActions` for header-action menus). `applyVisibleZoneReorder` and
+  `moveColumnByDelta` now return a `NatTableColumnReorderResult | null` so callers can
+  announce the move themselves. This eliminates the static import cycle between
+  `table.state.ts` and `table-a11y.service.ts`.
+
 # 2.0.0 (2026-06-26)
 
 ### 🚀 Features

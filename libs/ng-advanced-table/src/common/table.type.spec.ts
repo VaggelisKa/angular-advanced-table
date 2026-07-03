@@ -7,13 +7,10 @@ import type {
   NatTableUiController as InternalNatTableUiController
 } from 'ng-advanced-table/testing';
 
-import type {
-  NatTableColumnMeta,
-  NatTableColumnMoveDirection,
-  NatTableSortIndicatorContext,
-  NatTableUiController,
-  NatTableUserState
-} from './table.type';
+import type { NatTableColumnMeta, NatTableColumnMoveDirection } from './column-meta.type';
+import type { NatTableSortIndicatorContext } from './sort.type';
+import type { NatTableUserState } from './table-state.type';
+import type { NatTableUiController } from './ui-controller.type';
 
 type ContractRow = {
   readonly amount: number;

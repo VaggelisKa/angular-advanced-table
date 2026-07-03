@@ -73,7 +73,7 @@
 
 .row-actions-menu-caption {
   font-size: 0.72rem;
-  color: var(--text-muted, #8a94a0);
+  color: var(--text-muted, #616b78);
 }
 
 .row-actions-item {
@@ -107,5 +107,5 @@
 .row-actions-item-hint {
   font-size: 0.72rem;
   line-height: 1.25;
-  color: var(--text-muted, #8a94a0);
+  color: var(--text-muted, #616b78);
 }
