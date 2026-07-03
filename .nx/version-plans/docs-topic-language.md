@@ -1,7 +1,0 @@
----
-ng-advanced-table: patch
----
-
-Define Documentation Topic, Documentation Group, Table Capability, Manual Data Handling, Example Gallery, Topic Example, Docs Block, Topic Layout, and Usage Boundary as the canonical language for the topic-first documentation structure.
-
-Move feature guidance into topic pages with curated local TOCs, embedded live examples, preview/code tabs, and manually curated snippets. Keep Quick start directly under Docs, group Composition with the Core principles topics, keep only broad scenarios in the gallery, and record the decision to defer generated API reference.
