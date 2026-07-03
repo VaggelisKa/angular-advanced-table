@@ -6,11 +6,11 @@
   margin: 0;
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-lg);
-}
 
-.resize-toggles legend {
-  padding: 0 var(--sc-space-sm);
-  font-weight: var(--sc-weight-semibold);
+  .resize-toggles-legend {
+    padding: 0 var(--sc-space-sm);
+    font-weight: var(--sc-weight-semibold);
+  }
 }
 
 .resize-toggle {
@@ -18,8 +18,8 @@
   gap: var(--sc-space-sm);
   align-items: center;
   cursor: pointer;
-}
 
-.resize-toggle input {
-  cursor: pointer;
+  .resize-toggle-input {
+    cursor: pointer;
+  }
 }

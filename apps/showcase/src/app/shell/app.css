@@ -39,9 +39,9 @@
   border: 1px solid var(--sc-border);
   border-radius: 8px;
   transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease;
+    background-color var(--sc-transition-fast) ease,
+    border-color var(--sc-transition-fast) ease,
+    color var(--sc-transition-fast) ease;
 }
 
 .showcase-menu-button,
@@ -76,16 +76,20 @@
   color: currentcolor;
 }
 
-.showcase-nav-close .showcase-menu-icon {
-  width: 16px;
-  height: 16px;
+.showcase-nav-close {
+  .showcase-menu-icon {
+    width: 16px;
+    height: 16px;
+  }
 }
 
-.showcase-menu-icon path {
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
+.showcase-menu-icon {
+  .showcase-menu-icon-path {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
 }
 
 .showcase-nav {
@@ -127,13 +131,6 @@
   letter-spacing: 0.06em;
 }
 
-.showcase-nav h1 {
-  margin: 0;
-  font-size: 1.08rem;
-  line-height: 1.25;
-  color: var(--sc-text);
-}
-
 .showcase-nav-utilities {
   display: flex;
   flex: 0 0 auto;
@@ -168,20 +165,20 @@
   border: 0;
   border-radius: var(--sc-radius-sm);
   transition:
-    background-color 140ms ease,
-    color 140ms ease,
-    box-shadow 140ms ease;
-}
+    background-color var(--sc-transition-fast) ease,
+    color var(--sc-transition-fast) ease,
+    box-shadow var(--sc-transition-fast) ease;
 
-.showcase-theme-option.is-active {
-  color: var(--sc-text);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow-sm);
-}
+  &.is-active {
+    color: var(--sc-text);
+    background: var(--sc-surface);
+    box-shadow: var(--sc-shadow-sm);
+  }
 
-.showcase-theme-option:focus-visible {
-  outline: var(--sc-focus-ring-width) solid var(--sc-focus);
-  outline-offset: var(--sc-focus-ring-offset);
+  &:focus-visible {
+    outline: var(--sc-focus-ring-width) solid var(--sc-focus);
+    outline-offset: var(--sc-focus-ring-offset);
+  }
 }
 
 .showcase-theme-icon {
@@ -197,17 +194,17 @@
   padding: 0;
   color: var(--sc-text-soft);
   text-decoration: none;
-}
 
-.showcase-github-link:hover {
-  color: var(--sc-text);
-  background: var(--sc-surface-hover);
-  border-color: var(--sc-border-strong);
-}
+  &:hover {
+    color: var(--sc-text);
+    background: var(--sc-surface-hover);
+    border-color: var(--sc-border-strong);
+  }
 
-.showcase-github-link:focus-visible {
-  outline: var(--sc-focus-ring-width) solid var(--sc-focus);
-  outline-offset: var(--sc-focus-ring-offset);
+  &:focus-visible {
+    outline: var(--sc-focus-ring-width) solid var(--sc-focus);
+    outline-offset: var(--sc-focus-ring-offset);
+  }
 }
 
 .showcase-github-icon {

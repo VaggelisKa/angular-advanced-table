@@ -12,7 +12,7 @@
   <div class="examples-grid">
     @for (item of tables; track $index) {
     <nat-table-surface [(state)]="tableState" class="example-card-surface">
-      <h3>{{ item.label }}</h3>
+      <h3 class="example-card-title">{{ item.label }}</h3>
       <p class="description">{{ item.description }}</p>
       <nat-table
         [columns]="columns"
@@ -21,8 +21,8 @@
         accessibleName="Sortable order table with pinned company and row action columns"
         class="sc-demo-table" />
 
-      <footer>
-        <button type="button" (click)="openDetail(item.type)">Detailed view</button>
+      <footer class="example-card-footer">
+        <button class="example-card-footer-button" type="button" (click)="openDetail(item.type)">Detailed view</button>
       </footer>
     </nat-table-surface>
     }
@@ -31,13 +31,16 @@
   <dialog
     #detailDialog
     aria-label="Detailed order table"
+    class="detail-dialog"
     closedby="any"
     tabindex="-1"
     (click)="onDialogClick($event)"
     (keydown)="onDialogKeyDown($event)">
     <div class="dialog-content">
       <header class="dialog-header">
-        <button aria-label="Back to Examples" type="button" (click)="closeDialog()">Back to Examples</button>
+        <button aria-label="Back to Examples" class="dialog-back-button" type="button" (click)="closeDialog()">
+          Back to Examples
+        </button>
       </header>
       <div class="dialog-body">
         <ng-container [ngTemplateOutlet]="viewDetailed" />

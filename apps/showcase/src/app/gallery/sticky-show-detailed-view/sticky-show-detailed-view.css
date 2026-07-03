@@ -33,38 +33,38 @@ nat-table-surface {
   display: flex;
   flex-direction: column;
   height: 100%;
+
+  .example-card-title {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 650;
+    color: var(--sc-text);
+  }
+
+  .description {
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--sc-text-soft);
+  }
+
+  .example-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem;
+    background: var(--nat-table-region-background, transparent);
+    border: 1px solid var(--sc-border);
+    border-top: 0;
+    border-radius: 0 0 var(--sc-detail-radius) var(--sc-detail-radius);
+  }
 }
 
-.example-card-surface h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 650;
-  color: var(--sc-text);
-}
-
-.example-card-surface .description {
-  padding: 0;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: var(--sc-text-soft);
-}
-
-.example-card-surface footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0.5rem;
-  background: var(--nat-table-region-background, transparent);
-  border: 1px solid var(--sc-border);
-  border-top: 0;
-  border-radius: 0 0 var(--sc-detail-radius) var(--sc-detail-radius);
-}
-
-.example-card-surface footer button,
+.example-card-footer-button,
 .detailed-page-header .back-button,
-.dialog-header button {
+.dialog-header .dialog-back-button {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   font-weight: 600;
@@ -78,21 +78,21 @@ nat-table-surface {
     transform var(--nat-table-transition-fast);
 }
 
-.example-card-surface footer button:hover,
+.example-card-footer-button:hover,
 .detailed-page-header .back-button:hover,
-.dialog-header button:hover {
+.dialog-header .dialog-back-button:hover {
   background: var(--sc-accent-strong);
   transform: translateY(-1px);
 }
 
-.example-card-surface footer button:active,
+.example-card-footer-button:active,
 .detailed-page-header .back-button:active,
-.dialog-header button:active {
+.dialog-header .dialog-back-button:active {
   transform: translateY(0);
 }
 
 /* Dialog Styles */
-dialog {
+.detail-dialog {
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -112,10 +112,10 @@ dialog {
   border: none;
   border-radius: 0;
   box-shadow: none;
-}
 
-dialog::backdrop {
-  background: var(--sc-surface);
+  &::backdrop {
+    background: var(--sc-surface);
+  }
 }
 
 .dialog-content {
@@ -132,22 +132,16 @@ dialog::backdrop {
   height: var(--sc-detail-header);
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--sc-border);
-}
 
-.dialog-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 650;
-}
+  .dialog-back-button {
+    color: var(--sc-text);
+    background: var(--sc-surface-muted);
+    border: 1px solid var(--sc-border);
 
-.dialog-header button {
-  color: var(--sc-text);
-  background: var(--sc-surface-muted);
-  border: 1px solid var(--sc-border);
-}
-
-.dialog-header button:hover {
-  background: var(--sc-surface-hover);
+    &:hover {
+      background: var(--sc-surface-hover);
+    }
+  }
 }
 
 .dialog-body {
@@ -172,22 +166,16 @@ dialog::backdrop {
   justify-content: space-between;
   height: var(--sc-detail-header);
   padding: 1rem;
-}
 
-.detailed-page-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 650;
-}
+  .back-button {
+    color: var(--sc-text);
+    background: var(--sc-surface-muted);
+    border: 1px solid var(--sc-border);
 
-.detailed-page-header .back-button {
-  color: var(--sc-text);
-  background: var(--sc-surface-muted);
-  border: 1px solid var(--sc-border);
-}
-
-.detailed-page-header .back-button:hover {
-  background: var(--sc-surface-hover);
+    &:hover {
+      background: var(--sc-surface-hover);
+    }
+  }
 }
 
 .detailed-page-body {
@@ -212,8 +200,10 @@ nat-table-surface.dialog-table-surface {
   --nat-table-radius-card-compact: 0;
 }
 
-.detailed-page-body nat-table-surface.dialog-table-surface {
-  --nat-table-max-height: calc(100vh - var(--sc-detail-header));
+.detailed-page-body {
+  nat-table-surface.dialog-table-surface {
+    --nat-table-max-height: calc(100vh - var(--sc-detail-header));
+  }
 }
 
 .sc-demo-table {

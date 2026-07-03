@@ -70,7 +70,7 @@
   color: var(--sc-text-soft);
   background: var(--sc-surface-muted);
   border: 1px solid var(--sc-border);
-  border-radius: 999px;
+  border-radius: var(--sc-radius-pill);
 }
 
 .session-dot {
@@ -79,11 +79,11 @@
   background: var(--sc-text-muted);
   border-radius: 50%;
   transition: background-color 180ms ease;
-}
 
-.session-dot.is-live {
-  background: var(--sc-positive);
-  animation: session-pulse 2s ease-in-out infinite;
+  &.is-live {
+    background: var(--sc-positive);
+    animation: session-pulse 2s ease-in-out infinite;
+  }
 }
 
 .session-label {
@@ -135,21 +135,21 @@
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-sm);
   transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease;
+    background-color var(--sc-transition-fast) ease,
+    border-color var(--sc-transition-fast) ease,
+    color var(--sc-transition-fast) ease;
 }
 
 .btn-primary {
   color: #fff;
   background: var(--sc-accent);
   border-color: var(--sc-accent);
-}
 
-.btn-primary.is-paused {
-  color: var(--sc-accent);
-  background: var(--sc-surface);
-  border-color: var(--sc-accent);
+  &.is-paused {
+    color: var(--sc-accent);
+    background: var(--sc-surface);
+    border-color: var(--sc-accent);
+  }
 }
 
 .btn-ghost {
@@ -184,10 +184,10 @@
   min-width: 0;
   padding: 14px 18px;
   border-right: 1px solid var(--sc-border);
-}
 
-.kpi:last-child {
-  border-right: 0;
+  &:last-child {
+    border-right: 0;
+  }
 }
 
 .kpi-label {
@@ -205,14 +205,14 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
   color: var(--sc-text);
-}
 
-.kpi-value[data-tone='positive'] {
-  color: var(--sc-positive);
-}
+  &[data-tone='positive'] {
+    color: var(--sc-positive);
+  }
 
-.kpi-value[data-tone='negative'] {
-  color: var(--sc-negative);
+  &[data-tone='negative'] {
+    color: var(--sc-negative);
+  }
 }
 
 .kpi-unit {
@@ -285,14 +285,14 @@
   border: 0;
   border-radius: var(--sc-radius-xs);
   transition:
-    background-color 140ms ease,
-    color 140ms ease;
-}
+    background-color var(--sc-transition-fast) ease,
+    color var(--sc-transition-fast) ease;
 
-.segment.is-active {
-  color: var(--sc-text);
-  background: var(--sc-surface);
-  box-shadow: var(--sc-shadow-sm);
+  &.is-active {
+    color: var(--sc-text);
+    background: var(--sc-surface);
+    box-shadow: var(--sc-shadow-sm);
+  }
 }
 
 .pill-row {
@@ -315,9 +315,9 @@
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-sm);
   transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease;
+    background-color var(--sc-transition-fast) ease,
+    border-color var(--sc-transition-fast) ease,
+    color var(--sc-transition-fast) ease;
 }
 
 .filter-pill-dot {
@@ -334,26 +334,28 @@
   color: var(--sc-text-muted);
 }
 
-.filter-pill.is-active {
-  color: var(--sc-text);
-}
+.filter-pill {
+  &.is-active {
+    color: var(--sc-text);
+  }
 
-/* Tone-driven statuses share one active treatment; per-status tone + bespoke
-   wash. Wash stays literal — the soft colors are hand-tuned, not a color-mix
-   of the tone (channel ratios differ). Watching is a separate skin below. */
-.filter-pill[data-status='Advancing'] {
-  --sc-pill-tone: var(--sc-positive);
-  --sc-pill-wash: #e6f4ec;
-}
+  /* Tone-driven statuses share one active treatment; per-status tone + bespoke
+     wash. Wash stays literal — the soft colors are hand-tuned, not a color-mix
+     of the tone (channel ratios differ). Watching is a separate skin below. */
+  &[data-status='Advancing'] {
+    --sc-pill-tone: var(--sc-positive);
+    --sc-pill-wash: #e6f4ec;
+  }
 
-.filter-pill[data-status='Declining'] {
-  --sc-pill-tone: var(--sc-negative);
-  --sc-pill-wash: #fdecea;
-}
+  &[data-status='Declining'] {
+    --sc-pill-tone: var(--sc-negative);
+    --sc-pill-wash: #fdecea;
+  }
 
-.filter-pill[data-status='Halted'] {
-  --sc-pill-tone: var(--sc-warning);
-  --sc-pill-wash: #fff4d6;
+  &[data-status='Halted'] {
+    --sc-pill-tone: var(--sc-warning);
+    --sc-pill-wash: #fff4d6;
+  }
 }
 
 :host-context([data-theme='dark']) .filter-pill[data-status='Advancing'] {
@@ -430,14 +432,14 @@
   flex-wrap: wrap;
   gap: 12px;
   align-items: baseline;
-}
 
-.table-card-title h2 {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--sc-text);
-  letter-spacing: -0.005em;
+  .table-card-heading {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--sc-text);
+    letter-spacing: -0.005em;
+  }
 }
 
 .table-card-subtitle {
@@ -456,10 +458,12 @@
   gap: 14px;
 }
 
-.table-shell nat-table-scroll-control {
-  display: block;
-  padding: 12px 20px;
-  border-top: 1px solid var(--sc-border);
+.table-shell {
+  nat-table-scroll-control {
+    display: block;
+    padding: 12px 20px;
+    border-top: 1px solid var(--sc-border);
+  }
 }
 
 .kitchen-metrics-controls,
@@ -672,14 +676,14 @@
   .kpi {
     border-right: 0;
     border-bottom: 1px solid var(--sc-border);
-  }
 
-  .kpi:nth-child(odd) {
-    border-right: 1px solid var(--sc-border);
-  }
+    &:nth-child(odd) {
+      border-right: 1px solid var(--sc-border);
+    }
 
-  .kpi:nth-last-child(-n + 2) {
-    border-bottom: 0;
+    &:nth-last-child(-n + 2) {
+      border-bottom: 0;
+    }
   }
 }
 
@@ -709,10 +713,10 @@
   .kpi {
     border-right: 0;
     border-bottom: 1px solid var(--sc-border);
-  }
 
-  .kpi:last-child {
-    border-bottom: 0;
+    &:last-child {
+      border-bottom: 0;
+    }
   }
 
   .toolbar {

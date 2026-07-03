@@ -82,9 +82,11 @@
   }
 }
 
-.docs-code-copy:focus-visible {
-  outline: 3px solid var(--sc-focus);
-  outline-offset: 2px;
+.docs-code-copy {
+  &:focus-visible {
+    outline: 3px solid var(--sc-focus);
+    outline-offset: 2px;
+  }
 }
 
 .docs-example-panel {
@@ -121,8 +123,10 @@
   background: var(--sc-code-bg);
 }
 
-.docs-example [hidden] {
-  display: none;
+.docs-example {
+  [hidden] {
+    display: none;
+  }
 }
 
 .docs-code-header {
@@ -154,19 +158,19 @@
   border: 1px solid var(--sc-code-border);
   border-radius: var(--sc-radius-xs);
   transition:
-    color 140ms ease,
-    background-color 140ms ease,
-    border-color 140ms ease;
-}
+    color var(--sc-transition-fast) ease,
+    background-color var(--sc-transition-fast) ease,
+    border-color var(--sc-transition-fast) ease;
 
-.docs-code-copy:hover {
-  color: var(--sc-text);
-  background: var(--sc-surface-hover);
-}
+  &:hover {
+    color: var(--sc-text);
+    background: var(--sc-surface-hover);
+  }
 
-.docs-code-copy.is-copied {
-  color: var(--sc-positive);
-  border-color: var(--sc-positive);
+  &.is-copied {
+    color: var(--sc-positive);
+    border-color: var(--sc-positive);
+  }
 }
 
 .docs-code-copy-icon {
@@ -179,8 +183,8 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   transition:
-    opacity 140ms ease,
-    transform 140ms ease;
+    opacity var(--sc-transition-fast) ease,
+    transform var(--sc-transition-fast) ease;
 }
 
 .docs-code-copy-icon--check {
@@ -188,14 +192,18 @@
   transform: scale(0.6) rotate(-12deg);
 }
 
-.docs-code-copy.is-copied .docs-code-copy-icon--copy {
-  opacity: 0;
-  transform: scale(0.6) rotate(12deg);
-}
+.docs-code-copy {
+  &.is-copied {
+    .docs-code-copy-icon--copy {
+      opacity: 0;
+      transform: scale(0.6) rotate(12deg);
+    }
 
-.docs-code-copy.is-copied .docs-code-copy-icon--check {
-  opacity: 1;
-  transform: scale(1) rotate(0deg);
+    .docs-code-copy-icon--check {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
 }
 
 .docs-code-block {
@@ -210,13 +218,13 @@
   background: var(--sc-code-bg);
   border: 1px solid var(--sc-code-border);
   border-radius: var(--sc-radius-sm);
-}
 
-.docs-code-block code {
-  font-family: var(--sc-mono-font);
-  font-size: 0.82rem;
-  line-height: 1.6;
-  white-space: pre;
+  .docs-code-block-code {
+    font-family: var(--sc-mono-font);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
 }
 
 @media (width <= 720px) {
@@ -224,9 +232,11 @@
   .docs-example-panel {
     padding: 16px;
   }
+}
 
-  .docs-example-tab,
-  .docs-code-tab {
+.docs-example-tab,
+.docs-code-tab {
+  @media (width <= 720px) {
     flex: 0 0 auto;
   }
 }
