@@ -1,6 +1,11 @@
 :host {
   display: block;
 
+  /* Two heights that differ on purpose — don't collapse to one.
+     --sc-detail-header is the header bar *inside* the dialog/detail view (and the
+     full-screen dialog's 100vh offset). --sc-detail-container-offset is the outer
+     offset from 100vh for the shell-embedded .detailed-page-container — it tracks
+     the showcase shell chrome above it, not the inner header. Carried from main. */
   --sc-detail-header: 68px;
   --sc-detail-container-offset: 62px;
   --sc-detail-radius: 8px;
