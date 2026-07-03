@@ -15,25 +15,25 @@
   cursor: pointer;
   background: color-mix(in srgb, var(--sc-surface) 92%, transparent);
   border: 1px solid color-mix(in srgb, var(--sc-border) 88%, transparent);
-  border-radius: 999px;
+  border-radius: var(--sc-radius-pill);
   transition:
-    border-color 140ms ease,
-    background-color 140ms ease,
-    color 140ms ease,
-    box-shadow 140ms ease;
-}
+    border-color var(--sc-transition-fast) ease,
+    background-color var(--sc-transition-fast) ease,
+    color var(--sc-transition-fast) ease,
+    box-shadow var(--sc-transition-fast) ease;
 
-.row-actions-trigger:hover,
-.row-actions-trigger[aria-expanded='true'] {
-  color: var(--sc-text);
-  background: color-mix(in srgb, var(--sc-accent-soft) 72%, transparent);
-  border-color: color-mix(in srgb, var(--sc-accent) 44%, var(--sc-border));
-}
+  &:hover,
+  &[aria-expanded='true'] {
+    color: var(--sc-text);
+    background: color-mix(in srgb, var(--sc-accent-soft) 72%, transparent);
+    border-color: color-mix(in srgb, var(--sc-accent) 44%, var(--sc-border));
+  }
 
-.row-actions-trigger:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--sc-accent) 38%, transparent);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sc-accent) 18%, transparent);
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--sc-accent) 38%, transparent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sc-accent) 18%, transparent);
+  }
 }
 
 .row-actions-icon {
@@ -90,14 +90,14 @@
   border: 0;
   border-radius: 10px;
   transition:
-    background-color 140ms ease,
-    color 140ms ease;
-}
+    background-color var(--sc-transition-fast) ease,
+    color var(--sc-transition-fast) ease;
 
-.row-actions-item:hover,
-.row-actions-item:focus-visible {
-  outline: none;
-  background: color-mix(in srgb, var(--sc-surface-hover) 86%, transparent);
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    background: color-mix(in srgb, var(--sc-surface-hover) 86%, transparent);
+  }
 }
 
 .row-actions-item-label {

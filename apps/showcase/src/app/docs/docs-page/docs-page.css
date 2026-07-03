@@ -58,24 +58,22 @@
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-sm);
   transition:
-    color 140ms ease,
-    background-color 140ms ease,
-    border-color 140ms ease,
-    transform 140ms ease;
-}
+    color var(--sc-transition-fast) ease,
+    background-color var(--sc-transition-fast) ease,
+    border-color var(--sc-transition-fast) ease,
+    transform var(--sc-transition-fast) ease;
 
-.docs-topic-toc-link:hover,
-.docs-related-link:hover {
-  color: var(--sc-text);
-  background: var(--sc-surface-hover);
-  border-color: var(--sc-border-strong);
-  transform: translateY(-1px);
-}
+  &:hover {
+    color: var(--sc-text);
+    background: var(--sc-surface-hover);
+    border-color: var(--sc-border-strong);
+    transform: translateY(-1px);
+  }
 
-.docs-topic-toc-link:focus-visible,
-.docs-related-link:focus-visible {
-  outline: 3px solid var(--sc-focus);
-  outline-offset: 2px;
+  &:focus-visible {
+    outline: 3px solid var(--sc-focus);
+    outline-offset: 2px;
+  }
 }
 
 .docs-topic-body {
@@ -94,9 +92,9 @@
   border-bottom: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .docs-topic-toc-link,
-  .docs-related-link {
+.docs-topic-toc-link,
+.docs-related-link {
+  @media (prefers-reduced-motion: reduce) {
     transition: none;
   }
 }

@@ -11,15 +11,15 @@
   background: color-mix(in srgb, currentcolor 9%, transparent);
   border: 1px solid color-mix(in srgb, currentcolor 22%, transparent);
   border-radius: var(--sc-radius-pill);
-}
 
-:host::before {
-  flex: 0 0 auto;
-  width: 0.45rem;
-  height: 0.45rem;
-  content: '';
-  background: currentcolor;
-  border-radius: var(--sc-radius-pill);
+  &::before {
+    flex: 0 0 auto;
+    width: 0.45rem;
+    height: 0.45rem;
+    content: '';
+    background: currentcolor;
+    border-radius: var(--sc-radius-pill);
+  }
 }
 
 :host([data-status='Ready']) {
