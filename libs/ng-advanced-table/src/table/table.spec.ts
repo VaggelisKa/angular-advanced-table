@@ -36,6 +36,7 @@ import {
   TableHost,
   TestTableSurface,
   createTableHostFixture,
+  getInternalStore,
   getInternalTable
 } from '../test-helpers/table-hosts.helper';
 import type { RecreateHostOptions } from '../test-helpers/table-hosts.helper';
@@ -364,10 +365,8 @@ describe('FEATURE: NatTable', () => {
         // when:
         fixture.detectChanges();
 
-        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
-
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           globalFilter: 'gamma',
           pagination: (currentPagination) => ({
             ...currentPagination,
@@ -394,8 +393,6 @@ describe('FEATURE: NatTable', () => {
         await recreateHost({ enablePagination: true });
         fixture.detectChanges();
 
-        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
-
         host.sortingEvents.length = 0;
         host.paginationEvents.length = 0;
         host.globalFilterEvents.length = 0;
@@ -405,7 +402,7 @@ describe('FEATURE: NatTable', () => {
         host.columnPinningEvents.length = 0;
 
         // when:
-        table.patchState({ sorting: [{ id: 'name', desc: false }] });
+        getInternalStore(fixture).updateState({ sorting: [{ id: 'name', desc: false }] });
         fixture.detectChanges();
 
         // then:
@@ -418,14 +415,14 @@ describe('FEATURE: NatTable', () => {
         expect(host.columnPinningEvents).toStrictEqual([]);
 
         // when:
-        table.patchState({ sorting: [{ id: 'name', desc: false }] });
+        getInternalStore(fixture).updateState({ sorting: [{ id: 'name', desc: false }] });
         fixture.detectChanges();
 
         // then:
         expect(host.sortingEvents).toHaveLength(1);
 
         // when:
-        table.patchState({ globalFilter: 'gamma' });
+        getInternalStore(fixture).updateState({ globalFilter: 'gamma' });
         fixture.detectChanges();
 
         // then:
@@ -445,7 +442,7 @@ describe('FEATURE: NatTable', () => {
         const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 1 })
         });
         fixture.detectChanges();
@@ -493,10 +490,8 @@ describe('FEATURE: NatTable', () => {
         // when:
         fixture.detectChanges();
 
-        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
-
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           globalFilter: 'svc-00003',
           pagination: (currentPagination) => ({
             ...currentPagination,
@@ -565,13 +560,11 @@ describe('FEATURE: NatTable', () => {
         });
         fixture.detectChanges();
 
-        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
-
         // then:
         expect(query(fixture, 'thead')?.textContent).not.toContain('Region');
 
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           columnVisibility: (currentVisibility) => ({
             ...currentVisibility,
             region: true
@@ -630,7 +623,7 @@ describe('FEATURE: NatTable', () => {
         expect(liveRegion.textContent.trim()).toBe('Side 2/3:2');
 
         // when:
-        tableComponent.patchState({
+        getInternalStore(fixture).updateState({
           globalFilter: 'gamma',
           pagination: (currentPagination) => ({
             ...currentPagination,
@@ -645,7 +638,7 @@ describe('FEATURE: NatTable', () => {
         expect(liveRegion.textContent.trim()).toBe('Filter gamma:1');
 
         // when:
-        tableComponent.patchState({
+        getInternalStore(fixture).updateState({
           sorting: [{ id: 'name', desc: false }]
         });
         fixture.detectChanges();
@@ -993,7 +986,7 @@ describe('FEATURE: NatTable', () => {
         const table = getInternalTable(fixture);
 
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           sorting: [
             { id: 'name', desc: false },
             { id: 'region', desc: true },
@@ -1051,10 +1044,8 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const table = getInternalTable(fixture);
-
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           sorting: [
             { id: 'name', desc: false },
             { id: 'region', desc: true }
@@ -1171,10 +1162,8 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const table = getInternalTable(fixture);
-
         // when:
-        table.patchState({ rowSelection: { 'svc-00001': true } });
+        getInternalStore(fixture).updateState({ rowSelection: { 'svc-00001': true } });
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -1205,12 +1194,12 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         // Select a row rendered on the first page.
-        table.patchState({ rowSelection: { 'svc-00001': true } });
+        getInternalStore(fixture).updateState({ rowSelection: { 'svc-00001': true } });
         fixture.detectChanges();
 
         // when:
         // Page past it so the selected row is no longer rendered.
-        table.patchState({ pagination: (pagination) => ({ ...pagination, pageIndex: 2 }) });
+        getInternalStore(fixture).updateState({ pagination: (pagination) => ({ ...pagination, pageIndex: 2 }) });
         fixture.detectChanges();
 
         // then:
@@ -1218,7 +1207,7 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         // Returning to the first page still shows the row selected.
-        table.patchState({ pagination: (pagination) => ({ ...pagination, pageIndex: 0 }) });
+        getInternalStore(fixture).updateState({ pagination: (pagination) => ({ ...pagination, pageIndex: 0 }) });
         fixture.detectChanges();
 
         const firstRow = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row');
@@ -1240,12 +1229,12 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         // Select Alpha (svc-00001).
-        table.patchState({ rowSelection: { 'svc-00001': true } });
+        getInternalStore(fixture).updateState({ rowSelection: { 'svc-00001': true } });
         fixture.detectChanges();
 
         // when:
         // Filter to "gamma" so Alpha is no longer rendered.
-        table.patchState({ globalFilter: 'gamma' });
+        getInternalStore(fixture).updateState({ globalFilter: 'gamma' });
         fixture.detectChanges();
 
         const visibleRows = queryAll(fixture, 'tbody tr.data-row');
@@ -1258,7 +1247,7 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         // Clearing the filter brings Alpha back, still selected.
-        table.patchState({ globalFilter: '' });
+        getInternalStore(fixture).updateState({ globalFilter: '' });
         fixture.detectChanges();
 
         const selectedRows = queryAll(fixture, 'tbody tr.data-row').filter((row) => row.getAttribute('aria-selected') === 'true');
@@ -1685,10 +1674,9 @@ describe('FEATURE: NatTable', () => {
         expect(rows[0].textContent).toContain('Alpha');
 
         // Trigger pagination change
-        const table = getInternalTable(fixture);
 
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           pagination: { pageIndex: 1, pageSize: 2 }
         });
         fixture.detectChanges();
@@ -1705,7 +1693,7 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         // Trigger sorting change
-        table.patchState({
+        getInternalStore(fixture).updateState({
           sorting: [{ id: 'name', desc: false }]
         });
         fixture.detectChanges();
@@ -1755,10 +1743,9 @@ describe('FEATURE: NatTable', () => {
         expect(rows[0].textContent).toContain('Zeta');
 
         // Trigger pagination change
-        const table = getInternalTable(fixture);
 
         // when:
-        table.patchState({
+        getInternalStore(fixture).updateState({
           pagination: { pageIndex: 1, pageSize: 2 }
         });
         fixture.detectChanges();

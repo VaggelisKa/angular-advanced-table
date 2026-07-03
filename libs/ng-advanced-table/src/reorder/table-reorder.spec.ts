@@ -1,12 +1,9 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 
-import { NatTable } from '../table/table';
-import type { Row } from '../test-helpers/table-data.helper';
 import { createDropEvent, getHeaderColumnIds, mockClientRect, queryRequired } from '../test-helpers/table-dom.helper';
-import { TableHost, createTableHostFixture, getInternalTable } from '../test-helpers/table-hosts.helper';
+import { TableHost, createTableHostFixture, getInternalStore, getInternalTable } from '../test-helpers/table-hosts.helper';
 import type { RecreateHostOptions } from '../test-helpers/table-hosts.helper';
 
 describe('FEATURE: NatTable', () => {
@@ -38,11 +35,11 @@ describe('FEATURE: NatTable', () => {
         });
         fixture.detectChanges();
 
-        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
-
+        // then:
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'throughput', 'region', 'status']);
 
-        table.patchState({
+        // when:
+        getInternalStore(fixture).updateState({
           columnOrder: ['name', 'region', 'status', 'throughput']
         });
         fixture.detectChanges();
@@ -60,7 +57,8 @@ describe('FEATURE: NatTable', () => {
 
         const table = getInternalTable(fixture);
 
-        table.patchState({
+        // when:
+        getInternalStore(fixture).updateState({
           columnVisibility: {
             status: false
           }
@@ -76,7 +74,8 @@ describe('FEATURE: NatTable', () => {
         table.onHeaderDrop(createDropEvent('throughput', 2, 1), updatedLeafHeaderGroup);
         fixture.detectChanges();
 
-        table.patchState({
+        // when:
+        getInternalStore(fixture).updateState({
           columnVisibility: {
             status: true
           }

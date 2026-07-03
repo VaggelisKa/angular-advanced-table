@@ -13,7 +13,6 @@ import type {
   RowSelectionState,
   SortingState,
   Table,
-  Updater,
   VisibilityState
 } from '@tanstack/angular-table';
 
@@ -39,18 +38,31 @@ export type NatTableRenderMetricsState = {
  * Minimal controller contract required by the render-metrics helpers.
  *
  * This keeps the utils package structurally compatible with `NatTable` or any
- * custom wrapper that exposes the same `table` instance and `patchState(...)`
- * behavior.
+ * custom wrapper that exposes the same `table` instance and typed command
+ * methods.
  */
 export type NatTableRenderMetricsController<TData extends RowData = RowData> = {
   readonly table: Table<TData>;
+  /** Current pagination slice (page index and size). */
+  readonly pagination: Signal<PaginationState>;
+  /** Total page count, floored at 1. */
+  readonly pageCount: Signal<number>;
+  /** Whether a previous page is available. */
+  readonly canPreviousPage: Signal<boolean>;
+  /** Whether a next page is available. */
+  readonly canNextPage: Signal<boolean>;
+  /** Current global filter query (empty string when unset). */
+  readonly globalFilter: Signal<string>;
+  /** Active column filters. */
+  readonly columnFilters: Signal<ColumnFiltersState>;
   /** Locale id used by generated render-metrics labels, when available. */
   readonly localeId?: Signal<string>;
-  patchState(
-    updaters: Partial<{
-      [K in keyof NatTableRenderMetricsState]: Updater<NatTableRenderMetricsState[K]>;
-    }>
-  ): void;
+  setGlobalFilter(value: string): void;
+  setColumnFilter(columnId: string, value: unknown): void;
+  setPageSize(size: number): void;
+  goToPage(pageIndex: number): void;
+  nextPage(): void;
+  previousPage(): void;
 };
 
 /** Event payload consumed by `NatTableRenderMetricsStore.record(...)`. */

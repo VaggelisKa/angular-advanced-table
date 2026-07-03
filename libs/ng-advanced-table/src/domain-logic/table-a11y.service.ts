@@ -3,6 +3,7 @@ import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, sig
 
 import type { Column, RowData } from '@tanstack/angular-table';
 
+import { NatTableIntlService } from './table-intl.service';
 import { NatTableService } from './table.service';
 import { NatTableState } from './table.state';
 import type { TableAccessibilitySnapshot } from '../common/table-a11y.type';
@@ -27,6 +28,7 @@ import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext 
 export class NatTableA11yService<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
+  private readonly intlService = inject<NatTableIntlService<TData>>(NatTableIntlService);
 
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
   private previousResizingColumnId: string | null = null;
@@ -39,6 +41,52 @@ export class NatTableA11yService<TData extends RowData = RowData> {
 
   /** Table summary string for `aria-describedby`. */
   public readonly tableSummary = computed(() => this.buildTableSummary());
+
+  // ─── ARIA element ids ───
+
+  public readonly tableCaptionId = computed(() => `${this.state.tableElementId()}-caption`);
+  public readonly tableSummaryId = computed(() => `${this.state.tableElementId()}-summary`);
+  public readonly tableDescriptionId = computed(() => `${this.state.tableElementId()}-description`);
+  public readonly tableKeyboardInstructionsId = computed(() => `${this.state.tableElementId()}-instructions`);
+
+  // ─── Resolved a11y text ───
+
+  public readonly resolvedDescription = computed(() => this.intlService.resolvedAccessibilityText().description ?? '');
+  public readonly resolvedEmptyState = computed(() => this.intlService.resolvedAccessibilityText().emptyState ?? '');
+  public readonly resolvedLoadingState = computed(() => this.intlService.resolvedAccessibilityText().loadingState ?? '');
+  public readonly resolvedErrorState = computed(() => this.intlService.resolvedAccessibilityText().errorState ?? '');
+
+  // ─── ARIA attribute computeds ───
+
+  public readonly resolvedKeyboardInstructions = computed(() => {
+    const text = this.intlService.resolvedAccessibilityText();
+    const instructions = (text.keyboardInstructions ?? '').trim();
+    const reorderInstructions = text.reorderKeyboardInstructions?.trim() ?? '';
+    const resizeInstructions = text.resizeKeyboardInstructions?.trim() ?? '';
+    const parts = [instructions];
+
+    if (this.state.hasReorderableColumns()) {
+      parts.push(reorderInstructions);
+    }
+
+    if (this.state.hasResizableColumns()) {
+      parts.push(resizeInstructions);
+    }
+
+    return parts.filter((value) => !!value).join(' ');
+  });
+
+  public readonly tableAriaLabel = computed(() => {
+    if (this.state.resolvedCaption()) {
+      return null;
+    }
+
+    const name = this.state.accessibleName()?.trim();
+
+    return name === undefined || name === '' ? null : name;
+  });
+
+  public readonly tableAriaLabelledBy = computed(() => (this.state.resolvedCaption() ? this.tableCaptionId() : null));
 
   public constructor() {
     this.registerAnnouncementEffect();
@@ -64,7 +112,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
    * Format a number for screen-reader readout using the resolved locale.
    */
   public formatAccessibilityNumber(value: number): string {
-    return this.state.formatAccessibilityNumber(value);
+    return this.intlService.formatAccessibilityNumber(value);
   }
 
   /**
@@ -87,7 +135,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
       return;
     }
 
-    const formatter = this.state.resolvedAccessibilityText().columnReorder;
+    const formatter = this.intlService.resolvedAccessibilityText().columnReorder;
     const context = buildColumnReorderContext(
       {
         columnId: movingColumnId,
@@ -108,7 +156,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
    */
   public announceColumnResize(column: Column<TData, unknown>, width: number): void {
     const label = resolveColumnLabel(column);
-    const formatter = this.state.resolvedAccessibilityText().columnResize;
+    const formatter = this.intlService.resolvedAccessibilityText().columnResize;
     const { min } = this.state.getResizeBounds(column);
     const { max } = this.state.getResizeFitBounds(column);
     const context = buildColumnResizeContext(
@@ -144,7 +192,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
       const message = describeAccessibilityChange(
         previousSnapshot,
         snapshot,
-        () => this.state.resolvedAccessibilityText(),
+        () => this.intlService.resolvedAccessibilityText(),
         (value) => this.formatAccessibilityNumber(value)
       );
 
@@ -174,8 +222,6 @@ export class NatTableA11yService<TData extends RowData = RowData> {
     }
 
     const commit = this.state.resizeCommit;
-
-    this.state.resizeCommit = null;
 
     if (commit?.columnId !== previous) {
       return;
@@ -226,7 +272,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
       },
       (value) => this.formatAccessibilityNumber(value)
     );
-    const formatter = this.state.resolvedAccessibilityText().tableSummary;
+    const formatter = this.intlService.resolvedAccessibilityText().tableSummary;
 
     return formatter?.(summaryContext) ?? '';
   }

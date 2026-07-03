@@ -40,7 +40,7 @@ export class TableSearch<TData extends RowData = RowData> {
   protected readonly resolvedPlaceholder = computed(() => this.placeholder() ?? this.tableUiIntl().search?.placeholder ?? '');
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly value = computed<string>(() => String(this.table()?.getState().globalFilter ?? ''));
+  protected readonly value = computed<string>(() => this.controller()?.globalFilter() ?? '');
 
   public constructor() {
     this.natTableService.registerSearch();
@@ -53,9 +53,6 @@ export class TableSearch<TData extends RowData = RowData> {
 
     if (!isInstanceOfInput || target.value === this.value()) return;
 
-    this.controller()?.patchState({
-      globalFilter: target.value,
-      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 })
-    });
+    this.controller()?.setGlobalFilter(target.value);
   }
 }

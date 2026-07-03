@@ -131,14 +131,23 @@ class RenderMetricsIntlHost {
   protected readonly store = new NatTableRenderMetricsStore();
   public readonly controllerLocale = signal('en');
   public readonly controller: NatTableUiController<Row> = {
-    table: {
-      getState: () => ({ columnFilters: [] })
-    } as unknown as Table<Row>,
+    table: {} as unknown as Table<Row>,
+    pagination: signal({ pageIndex: 0, pageSize: 10 }),
+    pageCount: signal(1),
+    canPreviousPage: signal(false),
+    canNextPage: signal(false),
+    globalFilter: signal(''),
+    columnFilters: signal([]),
     localeId: this.controllerLocale,
     tableElementId: signal('nat-table-mock'),
     enableGlobalFilter: () => true,
     enablePagination: () => true,
-    patchState: () => undefined
+    setGlobalFilter: () => undefined,
+    setColumnFilter: () => undefined,
+    setPageSize: () => undefined,
+    goToPage: () => undefined,
+    nextPage: () => undefined,
+    previousPage: () => undefined
   };
 
   public readonly panelLabels = signal<NatTableRenderMetricsPanelIntl | undefined>(undefined);

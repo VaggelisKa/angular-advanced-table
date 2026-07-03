@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- irreducible per-instance reactive store: a single @Injectable owns the signal graph + TanStack table instance; further splitting only relocates coupling into cross-service signal reads and Injector.get() cycles. Pure arithmetic (widths, resize math, const defaults) already extracted to utils/common. */
+/* eslint-disable max-lines -- residual per-instance reactive hub: owns the 9-slice controlled/internal signal graph + the single TanStack table instance + the resize/reorder orchestration that all reads `this.table`. Splitting that orchestration into separate injectables would recreate a DI cycle (TanStack `meta` -> reorder/resize methods -> read `this.table` -> store), and the clamp-on-write knot (`updateState` -> `clampColumnSizing` -> `table.getColumn`) binds the mutation path to live table geometry across any such boundary. Already extracted: pure arithmetic (widths, resize/sizing math, const defaults) to utils/common, the controlled/internal merge rule to `controlledSlice`, the TanStack-instance construction to `table-instance.factory`, and intl + a11y-text derivation to `NatTableIntlService` / `NatTableA11yService`. */
 import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
@@ -12,7 +12,6 @@ import type {
   ColumnSizingState,
   FilterFn,
   PaginationState,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
@@ -20,22 +19,9 @@ import type {
   Updater,
   VisibilityState
 } from '@tanstack/angular-table';
-import {
-  createAngularTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel
-} from '@tanstack/angular-table';
 
-import {
-  NAT_EN_LOCALE_ID,
-  NAT_TABLE_INTL,
-  formatNatTableNumber,
-  mergeNatTableAccessibilityText,
-  resolveNatTableIntl
-} from 'ng-advanced-table/locale';
-
+import { createNatTableInstance } from './table-instance.factory';
+import { NatTableIntlService } from './table-intl.service';
 import { NatTableService } from './table.service';
 import type { NatTableColumnMoveDirection } from '../common/column-meta.type';
 import type {
@@ -70,11 +56,11 @@ import {
 } from '../utils/column-order.util';
 import { buildColumnRenderState } from '../utils/column-render-state.util';
 import { computeFillFlexWidths, computeIntrinsicWidths } from '../utils/column-width.util';
-import { genericGlobalFilter } from '../utils/global-filter.util';
+import { controlledSlice } from '../utils/controlled-slice.util';
 import { isColumnReorderable, isColumnResizable } from '../utils/interaction.util';
-import { normalizeDataStatus, normalizeRowSelection, resolveDefaultRowId } from '../utils/row-state.util';
+import { normalizeDataStatus, normalizeRowSelection } from '../utils/row-state.util';
 import { normalizeSortingState } from '../utils/sorting.util';
-import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
+import { resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
 
 // ─── Constants ───
 
@@ -83,7 +69,9 @@ let nextTableId = 0;
 /**
  * Per-table state store that owns TanStack table creation, all internal state
  * signals, column width resolution, resize/reorder state logic, and derived
- * computeds.
+ * computeds. Intl resolution and a11y-text/ARIA derivation are delegated to the
+ * sibling `NatTableIntlService` / `NatTableA11yService`; the controlled/internal
+ * merge rule lives in `controlledSlice`.
  *
  * The `NatTable` component and its companion directives consume this store's
  * signals for rendering and delegate user actions to its methods.
@@ -93,6 +81,7 @@ let nextTableId = 0;
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly directionality = inject(Directionality, { optional: true });
+  private readonly intlService = inject<NatTableIntlService<TData>>(NatTableIntlService);
 
   // ─── Input bridging signals (written by the NatTable component) ───
 
@@ -132,8 +121,6 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly enableAnnouncements = computed(() => this.natTableService.enableAnnouncements());
   public readonly stickyHeader = computed(() => this.natTableService.stickyHeader());
   public readonly enableMultiSort = computed(() => this.natTableService.enableMultiSort());
-  public readonly locale = computed(() => this.natTableService.locale());
-  public readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
   public readonly columnResizeMode = computed(() => this.natTableService.columnResizeMode());
   public readonly columnSizingMode = computed(() => this.natTableService.columnSizingMode());
   public readonly resizingEnabled = computed(() => this.natTableService.enableColumnResizing());
@@ -143,136 +130,112 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly isFixedLayout = computed(() => this.columnSizingMode() === 'fixed');
   public readonly direction = computed(() => this.natTableService.direction());
 
-  // ─── Internal state signals ───
+  // ─── Controlled/internal state slices ───
 
-  private readonly internalSorting = signal<SortingState>(DEFAULT_TABLE_STATE.sorting);
-  private readonly internalGlobalFilter = signal(DEFAULT_TABLE_STATE.globalFilter);
-  private readonly internalColumnFilters = signal<ColumnFiltersState>(DEFAULT_TABLE_STATE.columnFilters);
-  private readonly internalColumnVisibility = signal<VisibilityState>(DEFAULT_TABLE_STATE.columnVisibility);
-  private readonly internalColumnOrder = signal<ColumnOrderState>(DEFAULT_TABLE_STATE.columnOrder);
-  private readonly internalColumnPinning = signal<ColumnPinningState>(DEFAULT_TABLE_STATE.columnPinning);
-  private readonly internalColumnSizing = signal<ColumnSizingState>(DEFAULT_TABLE_STATE.columnSizing);
   public readonly resizeSeedSizing = signal<ColumnSizingState>({});
-  private readonly internalRowSelection = signal<RowSelectionState>(DEFAULT_TABLE_STATE.rowSelection);
-  private readonly internalPagination = signal<PaginationState>(DEFAULT_TABLE_STATE.pagination);
   public readonly hasSeededInitialState = signal(false);
+
+  private readonly sorting = controlledSlice<SortingState>(() => this.state().sorting, DEFAULT_TABLE_STATE.sorting, {
+    read: (value) => normalizeSortingState(value, this.enableMultiSort()),
+    write: (value) => normalizeSortingState(value, this.enableMultiSort())
+  });
+
+  private readonly globalFilter = controlledSlice(() => this.state().globalFilter, DEFAULT_TABLE_STATE.globalFilter, {
+    read: (value) => (this.enableGlobalFilter() ? value : '')
+  });
+
+  private readonly columnFilters = controlledSlice<ColumnFiltersState>(
+    () => this.state().columnFilters,
+    DEFAULT_TABLE_STATE.columnFilters
+  );
+
+  private readonly columnVisibility = controlledSlice<VisibilityState>(
+    () => this.state().columnVisibility,
+    DEFAULT_TABLE_STATE.columnVisibility
+  );
+
+  private readonly columnOrder = controlledSlice<ColumnOrderState>(() => this.state().columnOrder, DEFAULT_TABLE_STATE.columnOrder, {
+    read: (value) => normalizeColumnOrder(value, this.allLeafColumnIds()),
+    write: (value) => normalizeColumnOrder(value, this.allLeafColumnIds())
+  });
+
+  private readonly columnPinning = controlledSlice<ColumnPinningState>(
+    () => this.state().columnPinning,
+    DEFAULT_TABLE_STATE.columnPinning,
+    {
+      read: (value) => normalizeColumnPinning(value, this.allLeafColumnIds()),
+      write: (value) => normalizeColumnPinning(value, this.allLeafColumnIds())
+    }
+  );
+
+  private readonly columnSizing = controlledSlice<ColumnSizingState>(
+    () => this.state().columnSizing,
+    DEFAULT_TABLE_STATE.columnSizing,
+    {
+      read: (resolved) => {
+        const seed = this.resizeSeedSizing();
+
+        let merged: ColumnSizingState | null = null;
+
+        for (const columnId of Object.keys(seed)) {
+          if (!(columnId in resolved)) {
+            (merged ??= { ...resolved })[columnId] = seed[columnId];
+          }
+        }
+
+        return merged ?? resolved;
+      },
+      write: (value) => this.clampColumnSizing(value)
+    }
+  );
+
+  private readonly rowSelection = controlledSlice<RowSelectionState>(
+    () => this.state().rowSelection,
+    DEFAULT_TABLE_STATE.rowSelection,
+    {
+      read: (value) => normalizeRowSelection(value, this.selectionMode() === 'multiple'),
+      write: (value) => normalizeRowSelection(value, this.selectionMode() === 'multiple')
+    }
+  );
+
+  private readonly pagination = controlledSlice<PaginationState>(() => this.state().pagination, DEFAULT_TABLE_STATE.pagination);
 
   // ─── Stable DOM id ───
 
   public readonly tableElementId = signal(`nat-table-${nextTableId++}`);
 
-  // ─── ARIA element ids ───
+  // ─── Intl/locale (delegated; the TanStack factory reads localeId) ───
 
-  public readonly tableCaptionId = computed(() => `${this.tableElementId()}-caption`);
-  public readonly tableSummaryId = computed(() => `${this.tableElementId()}-summary`);
-  public readonly tableDescriptionId = computed(() => `${this.tableElementId()}-description`);
-  public readonly tableKeyboardInstructionsId = computed(() => `${this.tableElementId()}-instructions`);
-
-  // ─── Intl/locale ───
-
-  private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
-  public readonly localeId = computed(() => this.locale() ?? NAT_EN_LOCALE_ID);
-  private readonly tableIntl = computed(() => resolveNatTableIntl(this.tableIntlConfig, this.localeId()));
-  public readonly resolvedAccessibilityText = computed(() =>
-    mergeNatTableAccessibilityText(this.tableIntl().accessibilityText, this.accessibilityText())
-  );
+  public readonly localeId = this.intlService.localeId;
 
   // ─── Derived column state ───
 
   public readonly allLeafColumnIds = computed(() => getColumnDefLeafIds(this.columnDefs()));
   public readonly userColumnSizing = computed(() => getUserColumnSizing(this.columnDefs()));
 
-  private readonly resolvedColumnOrder = computed(() =>
-    normalizeColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds())
-  );
-
-  private readonly resolvedColumnPinning = computed(() =>
-    normalizeColumnPinning(this.state().columnPinning ?? this.internalColumnPinning(), this.allLeafColumnIds())
-  );
-
-  private readonly resolvedColumnSizing = computed<ColumnSizingState>(() => {
-    const resolved = this.state().columnSizing ?? this.internalColumnSizing();
-    const seed = this.resizeSeedSizing();
-
-    let merged: ColumnSizingState | null = null;
-
-    for (const columnId of Object.keys(seed)) {
-      if (!(columnId in resolved)) {
-        (merged ??= { ...resolved })[columnId] = seed[columnId];
-      }
-    }
-
-    return merged ?? resolved;
-  });
-
   // ─── Merged state ───
 
   public readonly mergedState = computed<NatTableUserState>(() => ({
-    sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting(), this.enableMultiSort()),
-    globalFilter: this.enableGlobalFilter() ? (this.state().globalFilter ?? this.internalGlobalFilter()) : '',
-    columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),
-    columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
-    columnOrder: this.resolvedColumnOrder(),
-    columnPinning: this.resolvedColumnPinning(),
-    columnSizing: this.resolvedColumnSizing(),
-    rowSelection: normalizeRowSelection(this.state().rowSelection ?? this.internalRowSelection(), this.selectionMode() === 'multiple'),
-    pagination: this.state().pagination ?? this.internalPagination()
+    sorting: this.sorting.merged(),
+    globalFilter: this.globalFilter.merged(),
+    columnFilters: this.columnFilters.merged(),
+    columnVisibility: this.columnVisibility.merged(),
+    columnOrder: this.columnOrder.merged(),
+    columnPinning: this.columnPinning.merged(),
+    columnSizing: this.columnSizing.merged(),
+    rowSelection: this.rowSelection.merged(),
+    pagination: this.pagination.merged()
   }));
 
-  // ─── Resolved a11y text / status computeds ───
+  // ─── Resolved status computeds ───
 
-  public readonly resolvedDescription = computed(() => this.resolvedAccessibilityText().description ?? '');
-  public readonly resolvedEmptyState = computed(() => this.resolvedAccessibilityText().emptyState ?? '');
-  public readonly resolvedLoadingState = computed(() => this.resolvedAccessibilityText().loadingState ?? '');
-  public readonly resolvedErrorState = computed(() => this.resolvedAccessibilityText().errorState ?? '');
   public readonly resolvedDataStatus = computed(() => normalizeDataStatus(this.dataStatus()));
   public readonly resolvedCaption = computed(() => this.caption()?.trim() ?? '');
   public readonly resolvedDirection = computed<'ltr' | 'rtl'>(() => this.direction() ?? this.directionality?.value ?? 'ltr');
 
   // ─── TanStack table instance ───
 
-  public readonly table: Table<TData> = createAngularTable<TData>(() => ({
-    data: this.data() as TData[],
-    columns: this.columnDefs() as ColumnDef<TData, unknown>[],
-    state: this.mergedState(),
-    pageCount: this.manualPagination() ? this.manualPageCount() : undefined,
-    manualPagination: this.manualPagination(),
-    manualSorting: this.manualSorting(),
-    manualFiltering: this.manualFiltering(),
-    enableMultiSort: this.enableMultiSort(),
-    isMultiSortEvent: (event) => this.enableMultiSort() && (event as { readonly shiftKey?: boolean }).shiftKey === true,
-    enableSorting: true,
-    enableColumnPinning: true,
-    enableColumnOrdering: this.hasReorderableColumns(),
-    enableColumnResizing: true,
-    columnResizeMode: this.columnResizeMode(),
-    columnResizeDirection: this.resolvedDirection(),
-    enableRowSelection: this.enableRowSelection(),
-    enableMultiRowSelection: this.selectionMode() === 'multiple',
-    meta: {
-      natTableLocaleId: this.localeId(),
-      natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
-      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
-      natTableSortingEnabled: this.enableSorting(),
-      natTablePinningEnabled: this.enablePinning()
-    },
-    autoResetPageIndex: false,
-    globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
-    getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
-    getSortedRowModel: this.manualSorting() ? undefined : getSortedRowModel(),
-    getPaginationRowModel: !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
-    onSortingChange: (updater) => this.updateState({ sorting: updater }),
-    onGlobalFilterChange: (updater: Updater<string>) => this.updateState({ globalFilter: updater, pagination: firstPageUpdater }),
-    onColumnFiltersChange: (updater) => this.updateState({ columnFilters: updater, pagination: firstPageUpdater }),
-    onColumnVisibilityChange: (updater: Updater<VisibilityState>) => this.updateState({ columnVisibility: updater }),
-    onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
-    onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
-    onColumnSizingChange: (updater) => this.applyColumnSizingChange(updater),
-    onRowSelectionChange: (updater) => this.updateState({ rowSelection: updater }),
-    onPaginationChange: (updater) => this.updateState({ pagination: updater })
-  })) as Table<TData>;
+  public readonly table: Table<TData> = createNatTableInstance(this);
 
   // ─── Derived TanStack computeds ───
 
@@ -354,37 +317,7 @@ export class NatTableState<TData extends RowData = RowData> {
   /** Scrollable wrapper around the rendered `<table>`. Set by the component after render. */
   public readonly tableRegionRef = signal<ElementRef<HTMLElement> | undefined>(undefined);
 
-  // ─── ARIA attribute computeds ───
-
-  public readonly resolvedKeyboardInstructions = computed(() => {
-    const text = this.resolvedAccessibilityText();
-    const instructions = (text.keyboardInstructions ?? '').trim();
-    const reorderInstructions = text.reorderKeyboardInstructions?.trim() ?? '';
-    const resizeInstructions = text.resizeKeyboardInstructions?.trim() ?? '';
-    const parts = [instructions];
-
-    if (this.hasReorderableColumns()) {
-      parts.push(reorderInstructions);
-    }
-
-    if (this.hasResizableColumns()) {
-      parts.push(resizeInstructions);
-    }
-
-    return parts.filter((value) => !!value).join(' ');
-  });
-
-  public readonly tableAriaLabel = computed(() => {
-    if (this.resolvedCaption()) {
-      return null;
-    }
-
-    const name = this.accessibleName()?.trim();
-
-    return name === undefined || name === '' ? null : name;
-  });
-
-  public readonly tableAriaLabelledBy = computed(() => (this.resolvedCaption() ? this.tableCaptionId() : null));
+  // ─── Layout class computed ───
 
   public readonly tableClassMap = computed(() =>
     ['data-table', this.stickyHeader() && 'has-sticky-header', this.usesAuthoritativeLayout() && 'is-fixed-layout']
@@ -485,10 +418,17 @@ export class NatTableState<TData extends RowData = RowData> {
   // ─── Resize state (no DOM) ───
 
   /**
-   * Commit info from the in-progress pointer/touch resize drag, used by the
-   * resize directive for announcing the final width on drag end.
+   * Commit info from the in-progress pointer/touch resize drag. Set by
+   * `applyColumnSizingChange`, read by the a11y service to announce the final
+   * width on drag end, and cleared by the resize service at the start of a new
+   * drag. The a11y service only reads it — it never mutates this field.
    */
   public resizeCommit: { readonly columnId: string; readonly width: number } | null = null;
+
+  /** Clears the pending resize commit. Called by the resize service when a new pointer resize starts. */
+  public clearResizeCommit(): void {
+    this.resizeCommit = null;
+  }
 
   public getResizeBounds(column: Column<TData, unknown>): { readonly min: number; readonly max: number | null } {
     return getColumnResizeBounds(column, this.userColumnSizing());
@@ -764,26 +704,18 @@ export class NatTableState<TData extends RowData = RowData> {
   public seedInitialState(initialState: Partial<NatTableUserState>): void {
     const seed = resolveSeedState(initialState, DEFAULT_TABLE_STATE);
 
-    this.internalSorting.set(normalizeSortingState(seed.sorting, this.enableMultiSort()));
-    this.internalGlobalFilter.set(this.enableGlobalFilter() ? seed.globalFilter : '');
-    this.internalColumnFilters.set(seed.columnFilters);
-    this.internalColumnVisibility.set(seed.columnVisibility);
-    this.internalColumnOrder.set(seed.columnOrder);
-    this.internalColumnPinning.set(seed.columnPinning);
-    this.internalColumnSizing.set(seed.columnSizing);
-    this.internalRowSelection.set(normalizeRowSelection(seed.rowSelection, this.selectionMode() === 'multiple'));
-    this.internalPagination.set(seed.pagination);
+    this.sorting.seed(normalizeSortingState(seed.sorting, this.enableMultiSort()));
+    this.globalFilter.seed(this.enableGlobalFilter() ? seed.globalFilter : '');
+    this.columnFilters.seed(seed.columnFilters);
+    this.columnVisibility.seed(seed.columnVisibility);
+    this.columnOrder.seed(seed.columnOrder);
+    this.columnPinning.seed(seed.columnPinning);
+    this.columnSizing.seed(seed.columnSizing);
+    this.rowSelection.seed(normalizeRowSelection(seed.rowSelection, this.selectionMode() === 'multiple'));
+    this.pagination.seed(seed.pagination);
     this.hasSeededInitialState.set(true);
 
     this.natTableService.notifyStateChange(this.mergedState());
-  }
-
-  public patchState(
-    updaters: Partial<{
-      [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
-    }>
-  ): void {
-    this.updateState(updaters);
   }
 
   public updateState(
@@ -791,67 +723,29 @@ export class NatTableState<TData extends RowData = RowData> {
       [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
     }>
   ): void {
-    const currentState = this.mergedState();
     const nextState: NatTableUserState = {
-      sorting: normalizeSortingState(resolveUpdater(currentState.sorting, updaters.sorting), this.enableMultiSort()),
-      globalFilter: resolveUpdater(currentState.globalFilter, updaters.globalFilter),
-      columnFilters: resolveUpdater(currentState.columnFilters, updaters.columnFilters),
-      columnVisibility: resolveUpdater(currentState.columnVisibility, updaters.columnVisibility),
-      columnOrder: normalizeColumnOrder(resolveUpdater(currentState.columnOrder, updaters.columnOrder), this.allLeafColumnIds()),
-      columnPinning: normalizeColumnPinning(
-        resolveUpdater(currentState.columnPinning, updaters.columnPinning),
-        this.allLeafColumnIds()
-      ),
-      columnSizing: this.clampColumnSizing(resolveUpdater(currentState.columnSizing, updaters.columnSizing)),
-      rowSelection: normalizeRowSelection(
-        resolveUpdater(currentState.rowSelection, updaters.rowSelection),
-        this.selectionMode() === 'multiple'
-      ),
-      pagination: resolveUpdater(currentState.pagination, updaters.pagination)
+      sorting: this.sorting.resolve(updaters.sorting),
+      globalFilter: this.globalFilter.resolve(updaters.globalFilter),
+      columnFilters: this.columnFilters.resolve(updaters.columnFilters),
+      columnVisibility: this.columnVisibility.resolve(updaters.columnVisibility),
+      columnOrder: this.columnOrder.resolve(updaters.columnOrder),
+      columnPinning: this.columnPinning.resolve(updaters.columnPinning),
+      columnSizing: this.columnSizing.resolve(updaters.columnSizing),
+      rowSelection: this.rowSelection.resolve(updaters.rowSelection),
+      pagination: this.pagination.resolve(updaters.pagination)
     };
 
-    this.commitInternalState(nextState);
+    this.sorting.commit(nextState.sorting);
+    this.globalFilter.commit(nextState.globalFilter);
+    this.columnFilters.commit(nextState.columnFilters);
+    this.columnVisibility.commit(nextState.columnVisibility);
+    this.columnOrder.commit(nextState.columnOrder);
+    this.columnPinning.commit(nextState.columnPinning);
+    this.columnSizing.commit(nextState.columnSizing);
+    this.rowSelection.commit(nextState.rowSelection);
+    this.pagination.commit(nextState.pagination);
+
     this.natTableService.notifyStateChange(nextState);
-  }
-
-  private commitInternalState(nextState: NatTableUserState): void {
-    const controlled = this.state();
-
-    if (controlled.sorting === undefined) {
-      this.internalSorting.set(nextState.sorting);
-    }
-
-    if (controlled.globalFilter === undefined) {
-      this.internalGlobalFilter.set(nextState.globalFilter);
-    }
-
-    if (controlled.columnFilters === undefined) {
-      this.internalColumnFilters.set(nextState.columnFilters);
-    }
-
-    if (controlled.columnVisibility === undefined) {
-      this.internalColumnVisibility.set(nextState.columnVisibility);
-    }
-
-    if (controlled.columnOrder === undefined) {
-      this.internalColumnOrder.set(nextState.columnOrder);
-    }
-
-    if (controlled.columnPinning === undefined) {
-      this.internalColumnPinning.set(nextState.columnPinning);
-    }
-
-    if (controlled.columnSizing === undefined) {
-      this.internalColumnSizing.set(nextState.columnSizing);
-    }
-
-    if (controlled.rowSelection === undefined) {
-      this.internalRowSelection.set(nextState.rowSelection);
-    }
-
-    if (controlled.pagination === undefined) {
-      this.internalPagination.set(nextState.pagination);
-    }
   }
 
   // ─── Template state contexts ───
@@ -876,18 +770,6 @@ export class NatTableState<TData extends RowData = RowData> {
     const state = this.mergedState();
 
     return !!state.globalFilter.trim() || state.columnFilters.length > 0;
-  }
-
-  public formatAccessibilityNumber(value: number): string {
-    return formatNatTableNumber(this.tableIntl(), value, undefined, this.localeId());
-  }
-
-  // ─── Private helpers ───
-
-  private resolveRowId(row: TData, index: number, parent?: Row<TData>): string {
-    const getRowIdFn = this.getRowId();
-
-    return getRowIdFn ? getRowIdFn(row, index, parent) : resolveDefaultRowId(row, index, parent);
   }
 
   // ─── Lifecycle effects (seed + render cycle) ───

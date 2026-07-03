@@ -58,6 +58,7 @@ export class NatTableResizeService<TData extends RowData = RowData> {
     if (!canResizeColumn(header, this.state.resizingEnabled())) return;
 
     event.stopPropagation();
+    this.state.clearResizeCommit();
     this.state.seedColumnSizingFromMeasuredWidth(header.column);
     this.captureGuideOrigin(event);
     header.getResizeHandler()(event);

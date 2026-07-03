@@ -1,7 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
 
-import type { ColumnFiltersState } from '@tanstack/angular-table';
-
 import {
   NAT_EN_LOCALE_ID,
   NAT_TABLE_RENDER_METRICS_INTL,
@@ -17,16 +15,6 @@ import { RENDER_METRIC_COLUMN_ID } from '../../common/type';
 import type { RowRenderFilterValue } from '../../common/type';
 import type { NatTableRenderMetricsStore } from '../../utils/store';
 import { isRenderFilterValue } from '../../utils/tone';
-
-const upsertColumnFilter = (currentFilters: ColumnFiltersState, columnId: string, value: unknown | null): ColumnFiltersState => {
-  const nextFilters = currentFilters.filter((filter) => filter.id !== columnId);
-
-  if (value === null) {
-    return nextFilters;
-  }
-
-  return [...nextFilters, { id: columnId, value }];
-};
 
 /**
  * Filter chip group that drives the synthetic render-metrics column created by
@@ -69,7 +57,7 @@ export class NatRenderMetricsFilter<TData = unknown> {
       return 'all';
     }
     const columnId = this.columnId();
-    const filters = controller.table.getState().columnFilters as ColumnFiltersState;
+    const filters = controller.columnFilters();
     const activeFilter = filters.find((entry) => entry.id === columnId);
 
     return isRenderFilterValue(activeFilter?.value) ? activeFilter.value : 'all';
@@ -100,11 +88,8 @@ export class NatRenderMetricsFilter<TData = unknown> {
       return;
     }
     const columnId = this.columnId();
-    const nextValue: unknown = value === 'all' ? null : value;
+    const nextValue: unknown = value === 'all' ? undefined : value;
 
-    controller.patchState({
-      columnFilters: (currentFilters) => upsertColumnFilter(currentFilters, columnId, nextValue),
-      pagination: (currentPagination) => ({ ...currentPagination, pageIndex: 0 })
-    });
+    controller.setColumnFilter(columnId, nextValue);
   }
 }

@@ -9,9 +9,20 @@ import type { NatTableUiController } from '../common/ui-controller.type';
 const createController = (id: string): NatTableUiController => {
   return {
     table: {} as Table<RowData>,
+    pagination: signal({ pageIndex: 0, pageSize: 10 }),
+    pageCount: signal(1),
+    canPreviousPage: signal(false),
+    canNextPage: signal(false),
+    globalFilter: signal(''),
+    columnFilters: signal([]),
     enableGlobalFilter: () => false,
     enablePagination: () => false,
-    patchState: () => undefined,
+    setGlobalFilter: () => undefined,
+    setColumnFilter: () => undefined,
+    setPageSize: () => undefined,
+    goToPage: () => undefined,
+    nextPage: () => undefined,
+    previousPage: () => undefined,
     tableElementId: signal(id)
   };
 };

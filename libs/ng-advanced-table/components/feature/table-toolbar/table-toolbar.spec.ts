@@ -26,9 +26,20 @@ class ToolbarControllerHost {
 const createControllerStub = (): NatTableUiController => {
   return {
     table: {} as NatTableUiController['table'],
+    pagination: signal({ pageIndex: 0, pageSize: 10 }),
+    pageCount: signal(1),
+    canPreviousPage: signal(false),
+    canNextPage: signal(false),
+    globalFilter: signal(''),
+    columnFilters: signal([]),
     enableGlobalFilter: () => true,
     enablePagination: () => true,
-    patchState: () => undefined,
+    setGlobalFilter: () => undefined,
+    setColumnFilter: () => undefined,
+    setPageSize: () => undefined,
+    goToPage: () => undefined,
+    nextPage: () => undefined,
+    previousPage: () => undefined,
     tableElementId: signal('nat-table-el-1'),
     localeId: signal('en')
   };

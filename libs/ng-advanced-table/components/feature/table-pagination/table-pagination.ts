@@ -70,11 +70,10 @@ export class NatTablePagination<TData extends RowData = RowData> {
 
   private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
 
-  protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
 
   // Page Size Logic
-  protected readonly selectedPageSize = computed(() => this.table()?.getState().pagination.pageSize ?? 0);
+  protected readonly selectedPageSize = computed(() => this.controller()?.pagination().pageSize ?? 0);
 
   private readonly resolvedPageSizeAccessibilityLabels = computed(() =>
     mergePageSizeLabels(this.tableUiIntl().pageSize?.accessibilityLabels, this.pageSizeAccessibilityLabels())
@@ -111,20 +110,15 @@ export class NatTablePagination<TData extends RowData = RowData> {
       return;
     }
 
-    this.controller()?.patchState({
-      pagination: () => ({
-        pageIndex: 0,
-        pageSize
-      })
-    });
+    this.controller()?.setPageSize(pageSize);
   }
 
   // Pager Logic
-  protected readonly pageIndex = computed(() => this.table()?.getState().pagination.pageIndex ?? 0);
-  protected readonly pageCount = computed(() => Math.max(1, this.table()?.getPageCount() ?? 0));
+  protected readonly pageIndex = computed(() => this.controller()?.pagination().pageIndex ?? 0);
+  protected readonly pageCount = computed(() => this.controller()?.pageCount() ?? 1);
   protected readonly currentPage = computed(() => this.pageIndex() + 1);
-  protected readonly canPreviousPage = computed(() => this.table()?.getCanPreviousPage() ?? false);
-  protected readonly canNextPage = computed(() => this.table()?.getCanNextPage() ?? false);
+  protected readonly canPreviousPage = computed(() => this.controller()?.canPreviousPage() ?? false);
+  protected readonly canNextPage = computed(() => this.controller()?.canNextPage() ?? false);
   private readonly resolvedPagerAccessibilityLabels = computed(() =>
     mergePagerLabels(this.tableUiIntl().pager?.accessibilityLabels, this.pagerAccessibilityLabels())
   );
@@ -165,13 +159,13 @@ export class NatTablePagination<TData extends RowData = RowData> {
     if (!this.canPreviousPage()) {
       return;
     }
-    this.table()?.previousPage();
+    this.controller()?.previousPage();
   }
 
   protected nextPage(): void {
     if (!this.canNextPage()) {
       return;
     }
-    this.table()?.nextPage();
+    this.controller()?.nextPage();
   }
 }

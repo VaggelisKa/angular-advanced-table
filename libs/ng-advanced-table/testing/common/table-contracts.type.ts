@@ -13,7 +13,6 @@ import type {
   RowSelectionState,
   SortingState,
   Table,
-  Updater,
   VisibilityState
 } from '@tanstack/angular-table';
 
@@ -90,26 +89,55 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
  */
 export type NatTableRenderMetricsController<TData extends RowData = RowData> = {
   readonly table: Table<TData>;
+  /** Current pagination slice (page index and size). */
+  readonly pagination: Signal<PaginationState>;
+  /** Total page count, floored at 1. */
+  readonly pageCount: Signal<number>;
+  /** Whether a previous page is available. */
+  readonly canPreviousPage: Signal<boolean>;
+  /** Whether a next page is available. */
+  readonly canNextPage: Signal<boolean>;
+  /** Current global filter query (empty string when unset). */
+  readonly globalFilter: Signal<string>;
+  /** Active column filters. */
+  readonly columnFilters: Signal<ColumnFiltersState>;
   readonly localeId?: Signal<string>;
-  patchState(
-    updaters: Partial<{
-      [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
-    }>
-  ): void;
+  setGlobalFilter(value: string): void;
+  setColumnFilter(columnId: string, value: unknown): void;
+  setPageSize(size: number): void;
+  goToPage(pageIndex: number): void;
+  nextPage(): void;
+  previousPage(): void;
 };
 
 /**
  * Minimal table-controller contract consumed by UI companion controls.
  */
 export type NatTableUiController<TData extends RowData = RowData> = {
+  /**
+   * @deprecated Prefer the typed selectors; retained for rich column-object reads (column-visibility).
+   */
   readonly table: Table<TData>;
+  /** Current pagination slice (page index and size). */
+  readonly pagination: Signal<PaginationState>;
+  /** Total page count, floored at 1. */
+  readonly pageCount: Signal<number>;
+  /** Whether a previous page is available. */
+  readonly canPreviousPage: Signal<boolean>;
+  /** Whether a next page is available. */
+  readonly canNextPage: Signal<boolean>;
+  /** Current global filter query (empty string when unset). */
+  readonly globalFilter: Signal<string>;
+  /** Active column filters. */
+  readonly columnFilters: Signal<ColumnFiltersState>;
   enableGlobalFilter(): boolean;
   enablePagination(): boolean;
-  patchState(
-    updaters: Partial<{
-      [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
-    }>
-  ): void;
+  setGlobalFilter(value: string): void;
+  setColumnFilter(columnId: string, value: unknown): void;
+  setPageSize(size: number): void;
+  goToPage(pageIndex: number): void;
+  nextPage(): void;
+  previousPage(): void;
   readonly tableElementId: Signal<string>;
   readonly tableScrollContainer?: Signal<HTMLElement | null>;
   readonly localeId?: Signal<string>;
