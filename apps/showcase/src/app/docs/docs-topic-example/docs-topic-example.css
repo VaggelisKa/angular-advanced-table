@@ -219,7 +219,9 @@
   border: 1px solid var(--sc-code-border);
   border-radius: var(--sc-radius-sm);
 
-  .docs-code-block-code {
+  /* Element selector kept on purpose: Prism owns this <code>'s class
+     (`language-*`) as its highlight contract, so it can't take a styling class. */
+  code {
     font-family: var(--sc-mono-font);
     font-size: 0.82rem;
     line-height: 1.6;

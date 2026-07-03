@@ -50,8 +50,8 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
         <div class="control-panel">
           <label class="toggle-label toggle-switch">
             <input
-              class="toggle-switch-input"
               [checked]="stickyHeaderEnabled()"
+              class="toggle-switch-input"
               type="checkbox"
               (change)="toggleStickyHeader($event)" />
             <span>Enable Sticky Header</span>

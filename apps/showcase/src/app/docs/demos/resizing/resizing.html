@@ -15,8 +15,8 @@
       <label class="resize-toggle">
         <input
           #resizeToggle
-          class="resize-toggle-input"
           [checked]="resizableColumnIds().has(toggle.id)"
+          class="resize-toggle-input"
           type="checkbox"
           (change)="toggleResizable(toggle.id, resizeToggle.checked)" />
         <span>{{ toggle.label }}</span>
