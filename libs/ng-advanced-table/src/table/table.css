@@ -6,8 +6,12 @@
 
 .table-region {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: var(--nat-table-height, inherit);
+  min-height: var(--nat-table-min-height, auto);
   max-height: var(--nat-table-max-height, inherit);
+  container-type: inline-size;
   overflow: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto))
     var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
   background: var(--nat-table-region-background, transparent);
@@ -24,6 +28,16 @@
   table-layout: auto;
   border-spacing: 0;
   border-collapse: separate;
+}
+
+/*
+ * When the table shows a state row (empty / loading / error) and the region has
+ * a min-height, grow the table to fill the available height so the state
+ * message vertically centers (via the browser's default vertical-align: middle
+ * on <td>). Data tables keep their natural height.
+ */
+.data-table:has(.table-state) {
+  flex: 1 1 auto;
 }
 
 .data-table.is-fixed-layout {
@@ -320,14 +334,31 @@ tbody .data-row:last-child .data-cell {
   font-size: var(--nat-table-font-size-empty-state, 1rem);
   line-height: var(--nat-table-line-height-empty-state, 1.6);
   color: var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText));
-  text-align: center;
   white-space: normal;
   animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms) var(--nat-table-state-transition-timing, ease-out)
     both;
 }
 
+/*
+ * Pin state content to the visible scroll viewport so it centers within the
+ * region the user actually sees, not the full (possibly very wide) table.
+ */
+.table-state-content {
+  position: sticky;
+  left: 0;
+  width: 100cqi;
+  text-align: center;
+}
+
 .loading-state {
   color: var(--nat-table-loading-state-color, var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText)));
+}
+
+.empty-state,
+.error-state,
+.loading-state {
+  padding-right: 0;
+  padding-left: 0;
 }
 
 .error-state {

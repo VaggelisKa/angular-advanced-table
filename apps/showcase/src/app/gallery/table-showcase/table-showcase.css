@@ -567,6 +567,7 @@
   --nat-table-space-cell-y: 10px;
   --nat-table-space-cell-x: 14px;
   --nat-table-space-empty-state: 32px 20px;
+  --nat-table-min-height: 400px;
   --nat-table-space-host-top: 0;
   --nat-table-radius-card: 0;
   --nat-table-radius-card-compact: 0;

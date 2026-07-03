@@ -221,6 +221,7 @@ Render-metrics widgets intentionally do not expose their own component-specific 
 | `--nat-table-region-overflow-x`     | `auto`        |
 | `--nat-table-region-overflow-y`     | `auto`        |
 | `--nat-table-max-height`            | `inherit`     |
+| `--nat-table-min-height`            | `auto`        |
 | `--nat-table-height`                | `inherit`     |
 | `--nat-table-sticky-top`            | `0`           |
 | `--nat-table-z-index-sticky-header` | `4`           |

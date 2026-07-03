@@ -11,3 +11,6 @@
 # Lockfiles are managed by their package managers, not Prettier
 package-lock.json
 pnpm-lock.yaml
+
+# Generated changelogs are machine-written; don't reformat
+CHANGELOG.md
