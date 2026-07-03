@@ -48,8 +48,12 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
       <div class="card">
         <h2 class="card-title">Configure Sticky State</h2>
         <div class="control-panel">
-          <label class="toggle-label">
-            <input [checked]="stickyHeaderEnabled()" type="checkbox" (change)="toggleStickyHeader($event)" />
+          <label class="toggle-label toggle-switch">
+            <input
+              [checked]="stickyHeaderEnabled()"
+              class="toggle-switch-input"
+              type="checkbox"
+              (change)="toggleStickyHeader($event)" />
             <span>Enable Sticky Header</span>
           </label>
           <div class="tip">

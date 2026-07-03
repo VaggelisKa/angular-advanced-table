@@ -9,27 +9,29 @@
   width: min(360px, 100%);
   margin: 0 auto;
   line-height: 1.45;
-  color: var(--showcase-page-text);
+  color: var(--sc-text);
+
+  .state-template-title {
+    font-size: 0.95rem;
+    font-weight: 650;
+  }
+
+  .state-template-message {
+    font-size: 0.82rem;
+    color: var(--sc-text-soft);
+  }
 }
 
-.state-template strong {
-  font-size: 0.95rem;
-  font-weight: 650;
-}
-
-.state-template span {
-  font-size: 0.82rem;
-  color: var(--showcase-page-text-soft);
-}
-
-.state-template-error span {
-  color: var(--showcase-page-negative);
+.state-template-error {
+  .state-template-message {
+    color: var(--sc-negative);
+  }
 }
 
 .transition-controls {
   display: flex;
   padding: 14px 20px;
-  border-bottom: 1px solid var(--showcase-page-border);
+  border-bottom: 1px solid var(--sc-border);
 }
 
 .transition-preview-surface {
@@ -43,21 +45,16 @@
   width: min(240px, 80%);
   height: 8px;
   margin-top: 6px;
-  background: linear-gradient(
-    90deg,
-    var(--showcase-page-surface-muted),
-    var(--showcase-page-border-strong),
-    var(--showcase-page-surface-muted)
-  );
-  border-radius: 999px;
+  background: linear-gradient(90deg, var(--sc-surface-muted), var(--sc-border-strong), var(--sc-surface-muted));
+  border-radius: var(--sc-radius-pill);
 }
 
 .state-reference-card {
   grid-column: 1 / -1;
 }
 
-@media (width <= 900px) {
-  .state-grid {
+.state-grid {
+  @media (width <= 900px) {
     grid-template-columns: minmax(0, 1fr);
   }
 }

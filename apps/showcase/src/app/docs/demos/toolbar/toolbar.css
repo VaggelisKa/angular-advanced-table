@@ -29,14 +29,14 @@
   padding: 0 12px;
   cursor: pointer;
   background: transparent;
-  border: 1px solid var(--showcase-page-border);
-  border-radius: 10px;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-md);
   transition: background-color 180ms ease;
-}
 
-.toolbar-button:focus-visible {
-  outline: 2px solid currentcolor;
-  outline-offset: 2px;
+  &:focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: 2px;
+  }
 }
 
 /* Icon-only button -> square (the svg renders at its own 16x16 attrs) */
@@ -46,9 +46,11 @@
   padding: 0;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .toolbar-button:hover {
-    background: var(--showcase-page-surface-hover);
+.toolbar-button {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--sc-surface-hover);
+    }
   }
 }
 
@@ -79,15 +81,15 @@
   gap: 2px;
   min-width: 184px;
   padding: 6px;
-  background: var(--showcase-page-surface);
-  border: 1px solid var(--showcase-page-border);
-  border-radius: 12px;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
   box-shadow: 0 12px 28px rgb(0 0 0 / 18%);
-}
 
-/* `display: flex` above would otherwise beat the [hidden] UA rule. */
-.toolbar-menu-panel[hidden] {
-  display: none;
+  /* `display: flex` above would otherwise beat the [hidden] UA rule. */
+  &[hidden] {
+    display: none;
+  }
 }
 
 .toolbar-menu-item {
@@ -99,21 +101,21 @@
   cursor: pointer;
   background: transparent;
   border: none;
-  border-radius: 8px;
-}
+  border-radius: 8px; /* no scale step matches 8px exactly; kept literal (spec's own no-distort rule) */
 
-.toolbar-menu-item:focus-visible {
-  outline: 2px solid currentcolor;
-  outline-offset: -2px;
-}
+  &:focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: -2px;
+  }
 
-.toolbar-menu-item[aria-current='true'] {
-  font-weight: 600;
-  color: var(--showcase-page-accent);
-}
+  &[aria-current='true'] {
+    font-weight: 600;
+    color: var(--sc-accent);
+  }
 
-@media (hover: hover) and (pointer: fine) {
-  .toolbar-menu-item:hover {
-    background: var(--showcase-page-surface-hover);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--sc-surface-hover);
+    }
   }
 }

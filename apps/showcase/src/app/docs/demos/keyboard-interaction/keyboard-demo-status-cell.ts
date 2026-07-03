@@ -12,7 +12,7 @@ import { Component, computed, input, output } from '@angular/core';
     .status-toggle {
       width: 16px;
       height: 16px;
-      accent-color: var(--showcase-page-accent);
+      accent-color: var(--sc-accent);
     }
   `,
   template: `

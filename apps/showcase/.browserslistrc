@@ -1,0 +1,10 @@
+# Showcase DEMO only — not the shipped library. Deliberately decoupled from the
+# repo-wide Safari 16.5 floor (root .browserslistrc / AGENTS.md) so the demo can
+# use modern CSS (light-dark(), native nesting) untranspiled. The published
+# ng-advanced-table library keeps the 16.5 floor via the root config.
+# Floor here = light-dark() support: Chrome/Edge 123, Firefox 120, Safari 17.5.
+chrome >= 123
+edge >= 123
+firefox >= 120
+safari >= 17.5
+ios_saf >= 17.5

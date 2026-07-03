@@ -10,12 +10,13 @@
     <h2 class="card-title">Configure</h2>
 
     <fieldset class="resize-toggles">
-      <legend>Resizable columns</legend>
+      <legend class="resize-toggles-legend">Resizable columns</legend>
       @for (toggle of columnToggles; track toggle.id) {
       <label class="resize-toggle">
         <input
           #resizeToggle
           [checked]="resizableColumnIds().has(toggle.id)"
+          class="resize-toggle-input"
           type="checkbox"
           (change)="toggleResizable(toggle.id, resizeToggle.checked)" />
         <span>{{ toggle.label }}</span>
