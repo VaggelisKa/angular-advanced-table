@@ -178,19 +178,6 @@ input {
     background-color 180ms ease,
     color 180ms ease;
 
-  &.showcase-container {
-    box-sizing: border-box;
-    gap: 16px;
-    align-content: start;
-    width: min(1200px, 100%);
-    padding: 20px 24px 48px;
-    margin: 0 auto;
-
-    &.table-builder-page {
-      width: min(1360px, 100%);
-    }
-  }
-
   .header-section {
     display: flex;
     flex-wrap: wrap;
@@ -226,10 +213,10 @@ input {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
     align-items: start;
+  }
 
-    &.grid-layout-with-panel {
-      grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
-    }
+  .grid-layout.grid-layout-with-panel {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
   }
 
   .builder-layout {
@@ -409,11 +396,11 @@ input {
     padding: 0 0 10px 44px;
     margin: -6px 0 4px;
     border-bottom: 1px solid var(--sc-border);
+  }
 
-    &:last-child {
-      padding-bottom: 0;
-      border-bottom: 0;
-    }
+  .option-help:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
   }
 
   .toggle-control {
@@ -442,18 +429,19 @@ input {
       background-color var(--sc-transition-fast) ease,
       border-color var(--sc-transition-fast) ease;
 
-    &::before {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 12px;
-      height: 12px;
-      content: '';
-      background: var(--sc-surface);
-      border-radius: var(--sc-radius-pill);
-      box-shadow: var(--sc-shadow-sm);
-      transition: transform var(--sc-transition-fast) ease;
-    }
+  }
+
+  .slider::before {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    content: '';
+    background: var(--sc-surface);
+    border-radius: var(--sc-radius-pill);
+    box-shadow: var(--sc-shadow-sm);
+    transition: transform var(--sc-transition-fast) ease;
   }
 
   /* Split from the .toggle-control block above to preserve source order:
@@ -533,10 +521,6 @@ input {
   @media (width <= 640px) {
     padding: 14px;
 
-    &.showcase-container {
-      padding: 14px;
-    }
-
     .header-section {
       align-items: flex-start;
     }
@@ -558,6 +542,25 @@ input {
       flex-direction: column;
       align-items: flex-start;
     }
+  }
+}
+
+.showcase-page.showcase-container {
+  box-sizing: border-box;
+  gap: 16px;
+  align-content: start;
+  width: min(1200px, 100%);
+  padding: 20px 24px 48px;
+  margin: 0 auto;
+}
+
+.showcase-page.showcase-container.table-builder-page {
+  width: min(1360px, 100%);
+}
+
+@media (width <= 640px) {
+  .showcase-page.showcase-container {
+    padding: 14px;
   }
 }
 
