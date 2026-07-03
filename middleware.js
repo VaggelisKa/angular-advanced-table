@@ -3,6 +3,7 @@ import markdownPages from './api/markdown-pages.generated.json';
 const DISCOVERY_LINK_HEADER = [
   '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
   '</.well-known/api-catalog>; rel="service-desc"; type="application/linkset+json"',
+  '</.well-known/agent-skills/index.json>; rel="service-desc"; type="application/json"',
   '</.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"',
   '</docs/quick-start>; rel="service-doc"; type="text/html"',
   '</sitemap.xml>; rel="describedby"; type="application/xml"'
