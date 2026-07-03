@@ -23,7 +23,7 @@ Before coding, identify:
 
 ```ts
 import { signal } from '@angular/core';
-import { ColumnDef, NatTableUserState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 type PositionRow = {
