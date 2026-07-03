@@ -102,8 +102,8 @@ describe('FEATURE: DocsPage', () => {
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
 
-        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Start with NatTable inside NatTableSurface.');
-        expect(compiled.querySelector('h2')?.textContent).toContain('Install');
+        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Using an AI assistant?');
+        expect(compiled.querySelector('h2')?.textContent).toContain('Recommended Agent Setup');
       });
     });
   });
@@ -144,7 +144,7 @@ describe('FEATURE: DocsPage', () => {
 
         const compiled = harness.fixture.nativeElement as HTMLElement;
 
-        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Start with NatTable inside NatTableSurface.');
+        expect(compiled.querySelector('.docs-markdown')?.textContent).toContain('Using an AI assistant?');
       });
     });
   });
