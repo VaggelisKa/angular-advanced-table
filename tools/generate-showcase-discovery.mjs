@@ -142,15 +142,36 @@ const writeTarOctal = (header, offset, length, value) => {
   writeTarString(header, offset, length, `${octalValue.padStart(length - 1, '0')}\0`);
 };
 
-const createTarHeader = ({ archivePath, size }) => {
-  const header = Buffer.alloc(512);
-  const encodedPathLength = Buffer.byteLength(archivePath, 'utf8');
-
-  if (encodedPathLength > 100) {
-    throw new Error(`Tar archive path exceeds 100 bytes: ${archivePath}`);
+const getTarPathParts = (archivePath) => {
+  if (Buffer.byteLength(archivePath, 'utf8') <= 100) {
+    return {
+      name: archivePath,
+      prefix: ''
+    };
   }
 
-  writeTarString(header, 0, 100, archivePath);
+  const segments = archivePath.split('/');
+
+  for (let index = segments.length - 1; index > 0; index -= 1) {
+    const prefix = segments.slice(0, index).join('/');
+    const name = segments.slice(index).join('/');
+
+    if (Buffer.byteLength(prefix, 'utf8') <= 155 && Buffer.byteLength(name, 'utf8') <= 100) {
+      return {
+        name,
+        prefix
+      };
+    }
+  }
+
+  throw new Error(`Tar archive path exceeds the ustar path limit: ${archivePath}`);
+};
+
+const createTarHeader = ({ archivePath, size }) => {
+  const header = Buffer.alloc(512);
+  const { name, prefix } = getTarPathParts(archivePath);
+
+  writeTarString(header, 0, 100, name);
   writeTarOctal(header, 100, 8, 0o644);
   writeTarOctal(header, 108, 8, 0);
   writeTarOctal(header, 116, 8, 0);
@@ -160,6 +181,7 @@ const createTarHeader = ({ archivePath, size }) => {
   writeTarString(header, 156, 1, '0');
   writeTarString(header, 257, 6, 'ustar\0');
   writeTarString(header, 263, 2, '00');
+  writeTarString(header, 345, 155, prefix);
 
   const checksum = header
     .reduce((sum, byte) => sum + byte, 0)
