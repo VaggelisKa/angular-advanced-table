@@ -159,7 +159,7 @@ Keep DOM order aligned with screen-reader and roving-keyboard order. Use start, 
 
 ## Consumer-Owned Search
 
-Global search is intentionally not a packaged UI primitive. Build a search component in your app, inject `NatTableService`, register search while the component is alive, and patch the table `globalFilter` state.
+Global search is intentionally not a packaged UI primitive. Build a search component in your app, inject `NatTableService`, register search while the component is alive, read the current query from the controller's typed `globalFilter` selector, and update it through the `setGlobalFilter` command.
 
 ```ts
 import { Component, DestroyRef, computed, inject, input } from '@angular/core';
@@ -187,7 +187,7 @@ export class TableSearch<TData extends RowData = RowData> {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly controller = computed(() => this.tableService.controller());
-  protected readonly value = computed(() => this.controller()?.table.getState().globalFilter ?? '');
+  protected readonly value = computed(() => this.controller()?.globalFilter() ?? '');
 
   constructor() {
     this.tableService.registerSearch();
