@@ -19,7 +19,7 @@ npx skills add VaggelisKa/angular-advanced-table --skill nat-best-practises
 Start by asking for the table contract:
 
 ```text
-Use /nat-best-practises to build an Angular table for invoices. It needs server-side sorting, search, CSV export, loading and empty rows, and row actions. Start with the row type, row id, columns, controlled state, custom controls, and accessibility checks.
+Use /nat-best-practises to build an Angular table for invoices with columns for number, customer, status, and total. Start with the row type, row id, columns, and accessibility checks.
 ```
 
 Review that contract before generating code.
