@@ -5,13 +5,13 @@
 }
 
 .table-region {
+  position: relative;
   display: flex;
   flex-direction: column;
-  position: relative;
-  container-type: inline-size;
   height: var(--nat-table-height, inherit);
   min-height: var(--nat-table-min-height, auto);
   max-height: var(--nat-table-max-height, inherit);
+  container-type: inline-size;
   overflow: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto))
     var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
   background: var(--nat-table-region-background, transparent);
@@ -355,9 +355,10 @@ tbody .data-row:last-child .data-cell {
 }
 
 .empty-state,
-.error-state {
-  padding-left: 0;
+.error-state,
+.loading-state {
   padding-right: 0;
+  padding-left: 0;
 }
 
 .error-state {
