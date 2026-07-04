@@ -2,4 +2,4 @@
 ng-advanced-table: minor
 ---
 
-Correct maintainer and package documentation for the current flat core capability folder layout and related generated-discovery guidance, and make the documented TanStack helper forwarding available as runtime exports from `ng-advanced-table`.
+Correct maintainer and package documentation for the current flat core capability folder layout and generated-discovery guidance, and expose the documented consumer `flexRenderComponent` helper through `ng-advanced-table`.

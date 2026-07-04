@@ -190,6 +190,7 @@ Use `flexRenderComponent(...)` for Angular component cells. Put `ngGridCellWidge
 ```ts
 import { Component, input, output } from '@angular/core';
 import { GridCellWidget } from '@angular/aria/grid';
+import { flexRenderComponent } from 'ng-advanced-table';
 
 @Component({
   selector: 'app-trade-button',

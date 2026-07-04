@@ -16,7 +16,7 @@ If your workspace does not already declare Angular framework packages, install t
 pnpm add ng-advanced-table @angular/core @angular/common @angular/aria @angular/cdk
 ```
 
-`ng-advanced-table` installs `@tanstack/angular-table` as its table runtime. Import table authoring types and helpers such as `ColumnDef`, state slice types, and `flexRenderComponent` from `ng-advanced-table`.
+`ng-advanced-table` installs `@tanstack/angular-table` as its table runtime. Consumer apps should import table authoring types, state slice types, and supported helper exports such as `ColumnDef`, `NatTableUserState`, and `flexRenderComponent` from `ng-advanced-table`.
 
 Resolved published ranges and dependency classifications:
 
