@@ -36,8 +36,8 @@ Inside each entry point, source is organized into element folders enforced by `e
 - `domain-logic` → `data-access`, `utils`, `common` — stateful services, controllers, intl resolution, `with*` mixins.
 - `data-access` → `utils`, `common` — raw stores / API. Currently unused in this library (see below).
 - `ui` → `utils`, `common` — presentational components/directives that inject no app service.
-- `utils` → `common` — pure, stateless functions.
-- `common` → `common` — types, consts, tokens, i18n data.
+- `utils` → `common` — pure, stateless functions. Never export a type from `utils`: a type used only inside one util file may stay local (unexported), but any type another module imports must be declared in `common` (a `*.type.ts`).
+- `common` → `common` — types, consts, tokens, i18n data. `common` is the only layer that may export types.
 
 `feature → data-access` is forbidden, so a stateful store/service injected directly by a feature component is classified `domain-logic` (e.g. `NatTableService`, `NatTableRenderMetricsStore`), not `data-access` — that tier is intentionally empty here because per-instance table state lives in the `domain-logic` hub (`src/domain-logic/table.state.ts`), a single signal store that, per its own header comment, resists splitting: doing so "only relocates coupling into cross-service signal reads and `Injector.get()` cycles." Only `*.stories.ts` files are exempt (`boundaries/dependencies: off`, set in `lint-suite/eslint.js`); `*.spec.ts` files are **not** exempt — they pass because a spec is typed by its own deepest element folder (most live under `feature/`, which may import every lower layer), so their cross-layer imports are already legal. The entry barrels (`*/index.ts`) need no exemption because the entry folder names (`components`, `render-metrics`, `src`, `locale`) match no element pattern, so they sit unmatched. When adding a file, place it in the element folder that matches its role; if its imports would cross the direction above, the lint fails — split the file or relocate the dependency rather than disabling the rule.
 

@@ -128,11 +128,12 @@
         </header>
 
         <div class="code-editor">
-          @if (activeTab() === 'html') {
-          <pre class="code-content"><code class="code-content-code">{{ generatedHtml() }}</code></pre>
-          } @else {
-          <pre class="code-content"><code class="code-content-code">{{ generatedTs() }}</code></pre>
-          }
+          <pre class="code-content"><code
+              #codeEl
+              [class.language-markup]="activeTab() === 'html'"
+              [class.language-typescript]="activeTab() === 'ts'"
+              [textContent]="activeCode()"
+              class="code-content-code"></code></pre>
         </div>
       </section>
     </main>
