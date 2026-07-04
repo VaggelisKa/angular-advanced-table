@@ -1,6 +1,5 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 
-import type { ColumnDef } from '@tanstack/angular-table';
 import {
   NAT_TABLE_DATA_STATUS,
   NatTable,
@@ -8,7 +7,7 @@ import {
   NatTableErrorTemplate,
   NatTableLoadingTemplate
 } from 'ng-advanced-table';
-import type { NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
+import type { ColumnDef, NatTableAccessibilityText, NatTableDataStatus } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { formatError } from './states.util';

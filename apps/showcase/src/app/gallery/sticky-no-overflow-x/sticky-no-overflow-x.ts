@@ -1,9 +1,7 @@
 import { Component, signal } from '@angular/core';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-import { flexRenderComponent } from '@tanstack/angular-table';
-import type { NatTableUserState } from 'ng-advanced-table';
-import { NatTable } from 'ng-advanced-table';
+import { NatTable, flexRenderComponent } from 'ng-advanced-table';
+import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 import type { MockOrderRow } from '../../mock-order/mock-order.type';

@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
 
-import { flexRenderComponent } from '@tanstack/angular-table';
-import { NatTable } from 'ng-advanced-table';
+import { NatTable, flexRenderComponent } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
 import {
   NatTablePagination,

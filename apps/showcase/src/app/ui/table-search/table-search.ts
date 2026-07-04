@@ -1,7 +1,7 @@
 import { Component, DestroyRef, booleanAttribute, computed, inject, input } from '@angular/core';
 
-import type { PaginationState, RowData } from '@tanstack/angular-table';
 import { NatTableService } from 'ng-advanced-table';
+import type { PaginationState, RowData } from 'ng-advanced-table';
 import { NatToolbarItem } from 'ng-advanced-table/components';
 
 let nextSearchFieldId = 0;

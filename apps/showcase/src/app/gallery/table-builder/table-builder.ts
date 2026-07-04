@@ -1,8 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 
-import type { ColumnDef } from '@tanstack/angular-table';
 import { NatTable } from 'ng-advanced-table';
-import type { NatTableUserState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import {
   NatTableColumnVisibility,
   NatTablePagination,

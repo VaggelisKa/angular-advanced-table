@@ -57,8 +57,7 @@ export const omitColumnOrder = (state: Partial<NatTableUserState>): Partial<NatT
 
 const buildSourceHeader = (uiImports: string[], extraImports: string): string =>
   `import { Component, signal } from '@angular/core';
-import { type ColumnDef } from '@tanstack/angular-table';
-import { NatTable, NatTableUserState } from 'ng-advanced-table';
+import { NatTable, type ColumnDef, type NatTableUserState } from 'ng-advanced-table';
 import {
   ${uiImports.join(',\n  ')}
 } from 'ng-advanced-table/components';

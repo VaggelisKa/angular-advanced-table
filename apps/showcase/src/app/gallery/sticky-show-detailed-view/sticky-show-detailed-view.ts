@@ -3,8 +3,8 @@ import type { ElementRef } from '@angular/core';
 import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
-import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';

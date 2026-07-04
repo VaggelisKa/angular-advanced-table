@@ -1,5 +1,5 @@
-import { flexRenderComponent } from '@tanstack/angular-table';
-import type { ColumnDef } from '@tanstack/angular-table';
+import { flexRenderComponent } from 'ng-advanced-table';
+import type { ColumnDef } from 'ng-advanced-table';
 import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 import type { MockOrderRow } from './mock-order.type';

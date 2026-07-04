@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 
-import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTablePagination, NatTableSurface } from 'ng-advanced-table/components';
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
