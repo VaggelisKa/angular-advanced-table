@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- single cohesive column schema for the market simulation table */
-import { flexRenderComponent } from '@tanstack/angular-table';
-import type { ColumnDef, FilterFn } from '@tanstack/angular-table';
+import { flexRenderComponent } from 'ng-advanced-table';
+import type { ColumnDef, FilterFn } from 'ng-advanced-table';
 
 import type { SimulationRow, SimulationStatus } from './common';
 import { NatSparkline, NatTickerMark } from './ui';

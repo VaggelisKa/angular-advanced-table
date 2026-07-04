@@ -1,8 +1,7 @@
 import { Component, signal } from '@angular/core';
 
-import { flexRenderComponent } from '@tanstack/angular-table';
-import type { CellContext, ColumnDef } from '@tanstack/angular-table';
-import { NatTable } from 'ng-advanced-table';
+import { NatTable, flexRenderComponent } from 'ng-advanced-table';
+import type { CellContext, ColumnDef } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 import { KeyboardDemoAcknowledgeButton } from './keyboard-demo-acknowledge-button';

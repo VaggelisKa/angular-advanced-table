@@ -1,4 +1,7 @@
+/* eslint-disable import-x/export -- TypeScript keeps the type-only TanStack surface separate from the supported runtime helper export. */
 export type * from '@tanstack/angular-table';
+
+export { flexRenderComponent } from '@tanstack/angular-table';
 
 export * from './ui';
 

@@ -1,4 +1,4 @@
-import type { RowSelectionState } from '@tanstack/angular-table';
+import type { RowSelectionState } from 'ng-advanced-table';
 
 import type { RowSelectionSource } from './selection.type';
 

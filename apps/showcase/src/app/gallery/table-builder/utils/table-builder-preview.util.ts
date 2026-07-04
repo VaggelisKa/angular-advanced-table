@@ -1,4 +1,4 @@
-import type { CellContext, ColumnDef } from '@tanstack/angular-table';
+import type { CellContext, ColumnDef } from 'ng-advanced-table';
 import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 
 import type { DemoItem, TableBuilderFlags } from '../common/table-builder.type';

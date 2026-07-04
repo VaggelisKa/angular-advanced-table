@@ -1,8 +1,7 @@
 import { Component, computed, linkedSignal, signal } from '@angular/core';
 
-import type { CellContext, ColumnDef, RowSelectionState } from '@tanstack/angular-table';
-import type { NatTableRowActivateEvent, NatTableUserState } from 'ng-advanced-table';
 import { NatTable } from 'ng-advanced-table';
+import type { CellContext, ColumnDef, NatTableRowActivateEvent, NatTableUserState, RowSelectionState } from 'ng-advanced-table';
 import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table/components';
 
 import type { DemoItem, RowSelectionSource } from './selection.type';
