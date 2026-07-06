@@ -87,7 +87,9 @@ describe('FEATURE: TableSearch (user-defined)', () => {
     return input;
   };
 
-  const toolbarSearchElements = (toolbarFixture: ComponentFixture<ToolbarHost>): { label: HTMLLabelElement; input: HTMLInputElement } => {
+  const toolbarSearchElements = (
+    toolbarFixture: ComponentFixture<ToolbarHost>
+  ): { label: HTMLLabelElement; input: HTMLInputElement } => {
     const element = toolbarFixture.nativeElement as HTMLElement;
     const label = element.querySelector<HTMLLabelElement>('.table-search-label');
     const input = element.querySelector<HTMLInputElement>('app-table-search input[type="search"]');

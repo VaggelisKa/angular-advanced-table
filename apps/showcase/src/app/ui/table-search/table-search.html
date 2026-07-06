@@ -1,13 +1,13 @@
 @if (controller()?.enableGlobalFilter()) { @if (toolbar()) {
 <div class="table-search">
   @if (showLabel()) {
-  <label [attr.for]="inputId" class="table-search-label">{{ label() }}</label>
+  <label [attr.for]="inputId" class="table-search-label">{{ resolvedLabel() }}</label>
   }
   <input
     [attr.aria-controls]="tableElementId()"
-    [attr.aria-label]="showLabel() ? null : label()"
+    [attr.aria-label]="showLabel() ? null : resolvedLabel()"
     [id]="inputId"
-    [placeholder]="placeholder()"
+    [placeholder]="resolvedPlaceholder()"
     [value]="value()"
     class="table-search-input table-search-input--toolbar"
     natToolbarItem
@@ -16,11 +16,11 @@
 </div>
 } @else {
 <div class="table-search">
-  <label [attr.for]="inputId" class="table-search-label">{{ label() }}</label>
+  <label [attr.for]="inputId" class="table-search-label">{{ resolvedLabel() }}</label>
   <input
     [attr.aria-controls]="tableElementId()"
     [id]="inputId"
-    [placeholder]="placeholder()"
+    [placeholder]="resolvedPlaceholder()"
     [value]="value()"
     class="table-search-input"
     type="search"

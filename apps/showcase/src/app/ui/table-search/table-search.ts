@@ -3,6 +3,7 @@ import { Component, DestroyRef, booleanAttribute, computed, inject, input } from
 import { NatTableService } from 'ng-advanced-table';
 import type { PaginationState, RowData } from 'ng-advanced-table';
 import { NatToolbarItem } from 'ng-advanced-table/components';
+import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
 let nextSearchFieldId = 0;
 
@@ -21,17 +22,22 @@ let nextSearchFieldId = 0;
   styleUrl: './table-search.css'
 })
 export class TableSearch<TData extends RowData = RowData> {
-  public readonly label = input('Search table');
-  public readonly placeholder = input('Type to search...');
+  public readonly label = input<string>();
+  public readonly placeholder = input<string>();
 
   public readonly toolbar = input(false, { transform: booleanAttribute });
   public readonly showLabel = input(false, { transform: booleanAttribute });
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly inputId = `app-table-search-${nextSearchFieldId++}`;
   protected readonly controller = computed(() => this.natTableService.controller());
+  private readonly localeId = computed(() => this.controller()?.localeId?.() ?? NAT_EN_LOCALE_ID);
+  private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
+  protected readonly resolvedLabel = computed(() => this.label() ?? this.tableUiIntl().search?.label ?? 'Search');
+  protected readonly resolvedPlaceholder = computed(() => this.placeholder() ?? this.tableUiIntl().search?.placeholder ?? '');
   protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
   protected readonly value = computed<string>(() => String(this.table()?.getState().globalFilter ?? ''));
