@@ -67,6 +67,12 @@
 }
 
 .header-cell {
+  /* Containing block for the absolutely-positioned resize handle so it anchors to
+     this cell's right edge. Without it (no sticky header, not pinned) the handle's
+     containing block becomes .table-region and every handle collapses onto the
+     table's right edge — appearing to sit on the last column. The sticky-header and
+     pinned rules override this to position: sticky, itself a valid containing block. */
+  position: relative;
   font-size: var(--nat-table-font-size-header, 0.84rem);
   font-weight: 600;
   color: var(--nat-table-header-color, inherit);
