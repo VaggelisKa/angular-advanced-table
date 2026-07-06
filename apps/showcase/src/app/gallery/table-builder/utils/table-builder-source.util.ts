@@ -5,7 +5,7 @@ import type { TableBuilderFlags } from '../common/table-builder.type';
 const buildUiImports = (flags: TableBuilderFlags): string[] => {
   const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
 
-  if (flags.withGlobalFilter || flags.showColumnVisibility) {
+  if (flags.withGlobalFilter || flags.showColumnVisibility || flags.withExport) {
     uiImports.push('NatTableToolbar');
   }
 
