@@ -278,6 +278,35 @@ input {
     padding: 16px 20px 20px;
   }
 
+  .preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--sc-border);
+  }
+
+  .feature-group {
+    display: grid;
+    gap: 10px;
+  }
+
+  .feature-group-title {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 650;
+    color: var(--sc-text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .state-template {
+    padding: 28px 20px;
+    font-size: 0.85rem;
+    color: var(--sc-text-soft);
+    text-align: center;
+  }
+
   .search-panel,
   .visibility-panel,
   .table-controls-grid {
