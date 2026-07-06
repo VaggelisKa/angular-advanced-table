@@ -405,8 +405,7 @@ input {
   }
 
   .instructions,
-  .tip,
-  .option-help {
+  .tip {
     font-size: 0.8rem;
     line-height: 1.45;
     color: var(--sc-text-soft);
@@ -421,15 +420,36 @@ input {
     border-top: 1px solid var(--sc-border);
   }
 
-  .option-help {
-    padding: 0 0 10px 44px;
-    margin: -6px 0 4px;
-    border-bottom: 1px solid var(--sc-border);
+  .option-info {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin-left: auto;
+    font-size: 0.68rem;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--sc-text-soft);
+    cursor: help;
+    background: var(--sc-surface-muted);
+    border: 1px solid var(--sc-border-strong);
+    border-radius: var(--sc-radius-pill);
+    transition:
+      color var(--sc-transition-fast) ease,
+      border-color var(--sc-transition-fast) ease;
   }
 
-  .option-help:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
+  .option-info:hover {
+    color: var(--sc-accent-strong);
+    border-color: var(--sc-accent);
+  }
+
+  .option-info:focus-visible {
+    outline: var(--sc-focus-ring-width) solid var(--sc-focus);
+    outline-offset: var(--sc-focus-ring-offset);
   }
 
   .toggle-control {

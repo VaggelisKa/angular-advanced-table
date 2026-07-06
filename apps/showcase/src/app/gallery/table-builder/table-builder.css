@@ -1,3 +1,18 @@
 :host {
   display: block;
 }
+
+/* Captioned Export control: mirrors the search / column-visibility label
+   pattern so the toolbar item isn't a bare button among labeled neighbors. */
+.toolbar-field {
+  display: grid;
+  gap: var(--nat-table-space-control-block-gap, 10px);
+  justify-items: start;
+}
+
+.toolbar-field-label {
+  font-size: var(--nat-table-font-size-label, 0.85rem);
+  color: var(--nat-table-color-text-muted, inherit);
+  text-transform: var(--nat-table-text-transform-label, uppercase);
+  letter-spacing: var(--nat-table-letter-spacing-label, 0.08em);
+}
