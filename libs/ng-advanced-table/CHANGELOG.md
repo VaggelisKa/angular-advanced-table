@@ -1,3 +1,9 @@
+## 2.3.0 (2026-07-06)
+
+### 🚀 Features
+
+- Correct maintainer and package documentation for the current flat core capability folder layout and generated-discovery guidance, and expose the documented consumer `flexRenderComponent` helper through `ng-advanced-table`. ([#241](https://github.com/VaggelisKa/angular-advanced-table/pull/241))
+
 ## 2.2.0 (2026-07-03)
 
 ### 🚀 Features
