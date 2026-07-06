@@ -25,6 +25,7 @@ export class TableSearch<TData extends RowData = RowData> {
   public readonly placeholder = input('Type to search...');
 
   public readonly toolbar = input(false, { transform: booleanAttribute });
+  public readonly showLabel = input(false, { transform: booleanAttribute });
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
