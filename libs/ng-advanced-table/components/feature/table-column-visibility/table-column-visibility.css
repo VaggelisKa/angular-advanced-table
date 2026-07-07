@@ -4,7 +4,7 @@
 
 .control-block {
   display: grid;
-  gap: var(--nat-table-space-control-block-gap, 10px);
+  gap: var(--nat-table-space-control-block-gap, var(--sys-nat-table-space-control-block-gap, 10px));
 }
 
 .control-heading {
@@ -16,73 +16,74 @@
 }
 
 .control-label {
-  font-size: var(--nat-table-font-size-label, 0.85rem);
-  color: var(--nat-table-color-text-muted, inherit);
-  text-transform: var(--nat-table-text-transform-label, uppercase);
-  letter-spacing: var(--nat-table-letter-spacing-label, 0.08em);
+  font-size: var(--nat-table-font-size-label, var(--sys-nat-table-font-size-label, 0.85rem));
+  color: var(--nat-table-color-text-muted, var(--sys-nat-table-color-text-muted, inherit));
+  text-transform: var(--nat-table-text-transform-label, var(--sys-nat-table-text-transform-label, uppercase));
+  letter-spacing: var(--nat-table-letter-spacing-label, var(--sys-nat-table-letter-spacing-label, 0.08em));
 }
 
 .control-caption {
-  font-size: var(--nat-table-font-size-caption, 0.82rem);
-  color: var(--nat-table-color-text-muted, inherit);
+  font-size: var(--nat-table-font-size-caption, var(--sys-nat-table-font-size-caption, 0.82rem));
+  color: var(--nat-table-color-text-muted, var(--sys-nat-table-color-text-muted, inherit));
 }
 
 .chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--nat-table-space-chip-row-gap, 10px);
+  gap: var(--nat-table-space-chip-row-gap, var(--sys-nat-table-space-chip-row-gap, 10px));
 }
 
 .chip {
   display: inline-flex;
-  gap: var(--nat-table-space-chip-row-gap, 10px);
+  gap: var(--nat-table-space-chip-row-gap, var(--sys-nat-table-space-chip-row-gap, 10px));
   align-items: center;
-  min-height: var(--nat-table-chip-min-height, 42px);
-  padding: 0 var(--nat-table-chip-padding-x, 14px);
-  color: var(--nat-table-chip-color, inherit);
+  min-height: var(--nat-table-chip-min-height, var(--sys-nat-table-chip-min-height, 42px));
+  padding: 0 var(--nat-table-chip-padding-x, var(--sys-nat-table-chip-padding-x, 14px));
+  color: var(--nat-table-chip-color, var(--sys-nat-table-chip-color, inherit));
   cursor: pointer;
-  background: var(--nat-table-chip-background, transparent);
-  border: 1px solid var(--nat-table-chip-border-color, transparent);
-  border-radius: var(--nat-table-radius-chip, 100vmax);
+  background: var(--nat-table-chip-background, var(--sys-nat-table-chip-background, transparent));
+  border: 1px solid var(--nat-table-chip-border-color, var(--sys-nat-table-chip-border-color, transparent));
+  border-radius: var(--nat-table-radius-chip, var(--sys-nat-table-radius-chip, 100vmax));
   transition:
-    background-color var(--nat-table-transition-medium, 180ms ease),
-    border-color var(--nat-table-transition-medium, 180ms ease),
-    box-shadow var(--nat-table-transition-medium, 180ms ease),
-    transform var(--nat-table-transition-medium, 180ms ease),
-    color var(--nat-table-transition-medium, 180ms ease);
+    background-color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    border-color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    box-shadow var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    transform var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease));
 }
 
 .chip.is-active {
-  background: var(--nat-table-chip-background-active, transparent);
-  border-color: var(--nat-table-chip-border-color-active, currentColor);
-  box-shadow: var(--nat-table-chip-shadow-active, none);
+  background: var(--nat-table-chip-background-active, var(--sys-nat-table-chip-background-active, transparent));
+  border-color: var(--nat-table-chip-border-color-active, var(--sys-nat-table-chip-border-color-active, currentColor));
+  box-shadow: var(--nat-table-chip-shadow-active, var(--sys-nat-table-chip-shadow-active, none));
 }
 
 .chip:disabled {
   cursor: not-allowed;
-  opacity: var(--nat-table-disabled-opacity, 0.45);
+  opacity: var(--nat-table-disabled-opacity, var(--sys-nat-table-disabled-opacity, 0.45));
   transform: none;
 }
 
 .chip:focus-visible {
-  outline: var(--nat-table-focus-ring-width, 2px) solid var(--nat-table-focus-ring-color, currentColor);
-  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+  outline: var(--nat-table-focus-ring-width, var(--sys-nat-table-focus-ring-width, 2px)) solid
+    var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, currentColor));
+  outline-offset: var(--nat-table-focus-ring-offset, var(--sys-nat-table-focus-ring-offset, 2px));
 }
 
 .column-chip {
   justify-content: space-between;
-  min-width: var(--nat-table-chip-min-width-column, 150px);
+  min-width: var(--nat-table-chip-min-width-column, var(--sys-nat-table-chip-min-width-column, 150px));
 }
 
 .chip-count {
-  font-size: var(--nat-table-font-size-chip-meta, 0.82rem);
-  color: var(--nat-table-chip-count-color, currentColor);
+  font-size: var(--nat-table-font-size-chip-meta, var(--sys-nat-table-font-size-chip-meta, 0.82rem));
+  color: var(--nat-table-chip-count-color, var(--sys-nat-table-chip-count-color, currentColor));
 }
 
 @media (hover: hover) and (pointer: fine) {
   .chip:hover:not(:disabled) {
-    background: var(--nat-table-chip-background-hover, transparent);
-    border-color: var(--nat-table-chip-border-color-hover, currentColor);
-    transform: var(--nat-table-hover-lift, translateY(-1px));
+    background: var(--nat-table-chip-background-hover, var(--sys-nat-table-chip-background-hover, transparent));
+    border-color: var(--nat-table-chip-border-color-hover, var(--sys-nat-table-chip-border-color-hover, currentColor));
+    transform: var(--nat-table-hover-lift, var(--sys-nat-table-hover-lift, translateY(-1px)));
   }
 }
