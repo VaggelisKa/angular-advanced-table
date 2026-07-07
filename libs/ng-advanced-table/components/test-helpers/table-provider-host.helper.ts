@@ -70,7 +70,11 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
     })
   ],
   template: `
-    <nat-table-surface [initialState]="initialState" [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface
+      [enableReordering]="true"
+      [initialState]="initialState"
+      [state]="tableState()"
+      (stateChange)="onTableStateChange($event)">
       <nat-table #grid="natTable" [columns]="columns" [data]="rows()" [getRowId]="getRowId" accessibleName="Operations table" />
       <nat-table-column-visibility />
       <nat-table-page-size [groupAriaLabel]="pageSizeGroupAriaLabel()" [pageSizeOptions]="pageSizeOptions" />

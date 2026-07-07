@@ -89,7 +89,11 @@
       <section class="card preview-card">
         <h2 class="card-title">Live Preview</h2>
 
-        <nat-table-surface [stickyHeader]="withStickyHeader()" [(state)]="tableState" class="table-shell">
+        <nat-table-surface
+          [enableReordering]="withColumnReorder()"
+          [stickyHeader]="withStickyHeader()"
+          [(state)]="tableState"
+          class="table-shell">
           @if (withGlobalFilter() || showColumnVisibility()) {
           <nat-table-toolbar accessibleName="Table controls">
             @if (withGlobalFilter()) {

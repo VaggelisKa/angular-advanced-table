@@ -8,12 +8,12 @@ Pinning keeps important columns at a scroll boundary. Visibility lets users remo
 
 ## Reordering And Resizing
 
-Reordering changes the rendered column order. Resizing changes width state. Both need keyboard support because pointer-only layout controls are not accessible enough for this table library.
+Reordering changes the rendered column order. It is disabled by default; set `[enableReordering]="true"` on the surface before exposing drag/drop, header move menus, or keyboard column moves. Resizing changes width state. Both need keyboard support because pointer-only layout controls are not accessible enough for this table library.
 
 Use `columnSizingMode="fill"` when columns should stretch to the available width. Use `columnSizingMode="fixed"` when column widths should stay authoritative and the table may scroll horizontally.
 
 ```html
-<nat-table-surface columnSizingMode="fixed" columnResizeMode="onEnd">
+<nat-table-surface [enableReordering]="true" columnSizingMode="fixed" columnResizeMode="onEnd">
   <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
   <nat-table-scroll-control />
 </nat-table-surface>

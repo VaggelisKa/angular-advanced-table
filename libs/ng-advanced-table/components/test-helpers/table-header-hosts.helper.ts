@@ -34,7 +34,7 @@ export class CustomSortIndicatorHost {
   selector: 'nat-move-only-header-actions-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface [enableReordering]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `

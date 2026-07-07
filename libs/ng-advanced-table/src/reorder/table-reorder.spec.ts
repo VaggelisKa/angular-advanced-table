@@ -60,7 +60,7 @@ describe('FEATURE: NatTable', () => {
       it('THEN: it keeps hidden columns in their stored order when they are shown again', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
-        await recreateHost();
+        await recreateHost({ enableReordering: true });
         fixture.detectChanges();
 
         const table = getInternalTable(fixture);
@@ -102,6 +102,7 @@ describe('FEATURE: NatTable', () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
         await recreateHost({
+          enableReordering: true,
           initialState: {
             ...host.initialState,
             columnPinning: {
@@ -139,6 +140,7 @@ describe('FEATURE: NatTable', () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
         await recreateHost({
+          enableReordering: true,
           initialState: {
             ...host.initialState,
             columnPinning: {
@@ -169,12 +171,54 @@ describe('FEATURE: NatTable', () => {
     });
   });
 
+  describe('GIVEN: a table whose column reordering is disabled', () => {
+    describe('WHEN: drag/drop and keyboard reordering are attempted', () => {
+      it('THEN: it ignores both paths without consuming keyboard shortcuts', async () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        // when:
+        await recreateHost();
+        fixture.detectChanges();
+
+        const table = getInternalTable(fixture);
+        const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
+        const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+
+        if (!leafHeaderGroup) {
+          throw new Error('Expected a leaf header group.');
+        }
+
+        host.stateEvents.length = 0;
+
+        // when:
+        table.onHeaderDrop(createDropEvent('region', 1, 2), leafHeaderGroup);
+        fixture.detectChanges();
+
+        const reorderEvent = new KeyboardEvent('keydown', {
+          key: 'ArrowRight',
+          ctrlKey: true,
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true
+        });
+
+        regionHeader.focus();
+        regionHeader.dispatchEvent(reorderEvent);
+        fixture.detectChanges();
+
+        // then:
+        expect(reorderEvent.defaultPrevented).toBe(false);
+        expect(host.stateEvents).toStrictEqual([]);
+        expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'region', 'status', 'throughput']);
+      });
+    });
+  });
+
   describe('GIVEN: a table whose columns can be reordered from the keyboard', () => {
     describe('WHEN: Ctrl+Shift+Arrow is pressed on a header', () => {
       it('THEN: it reorders columns with Ctrl+Shift+Arrow from the keyboard and announces the move', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
-        await recreateHost();
+        await recreateHost({ enableReordering: true });
         fixture.detectChanges();
 
         const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
@@ -220,7 +264,7 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         try {
-          await recreateHost();
+          await recreateHost({ enableReordering: true });
           fixture.detectChanges();
 
           const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
@@ -259,7 +303,7 @@ describe('FEATURE: NatTable', () => {
       it('THEN: it scrolls the reordered header into view when keyboard moving right past the viewport edge', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
-        await recreateHost();
+        await recreateHost({ enableReordering: true });
         fixture.detectChanges();
 
         const tableRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
@@ -295,7 +339,7 @@ describe('FEATURE: NatTable', () => {
       it('THEN: it does not reorder columns unless a single primary modifier and Shift are used', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
-        await recreateHost();
+        await recreateHost({ enableReordering: true });
         fixture.detectChanges();
 
         const statusHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="status"]');
@@ -332,7 +376,7 @@ describe('FEATURE: NatTable', () => {
       it('THEN: it consumes keyboard reorder shortcuts at region edges without moving focus', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
-        await recreateHost();
+        await recreateHost({ enableReordering: true });
         fixture.detectChanges();
 
         const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');

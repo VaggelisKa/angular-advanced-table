@@ -65,7 +65,7 @@ const columnLayoutSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [stickyHeader]="true" [(state)]="tableState">
+<nat-table-surface [enableReordering]="true" [stickyHeader]="true" [(state)]="tableState">
   <nat-table [columns]="columns" [data]="data" accessibleName="Column layout demo table" />
 </nat-table-surface>
 `
@@ -76,15 +76,19 @@ const columnLayoutSnippets = [
     'typescript',
     `
 readonly tableState = signal<Partial<NatTableUserState>>({
+  columnOrder: ['name', 'status', 'value'],
   columnPinning: { left: ['name'], right: ['value'] },
   columnVisibility: { status: false }
 });
 
-readonly columns = withNatTableHeaderActions([
-  { accessorKey: 'name', header: 'Name', enablePinning: true, enableResizing: true },
-  { accessorKey: 'status', header: 'Status', enablePinning: true },
-  { accessorKey: 'value', header: 'Value', enablePinning: true, enableResizing: true }
-]);
+readonly columns = withNatTableHeaderActions(
+  [
+    { accessorKey: 'name', header: 'Name', enablePinning: true, enableResizing: true },
+    { accessorKey: 'status', header: 'Status', enablePinning: true },
+    { accessorKey: 'value', header: 'Value', enablePinning: true, enableResizing: true }
+  ],
+  { enableColumnReorderActions: true }
+);
 `
   )
 ];

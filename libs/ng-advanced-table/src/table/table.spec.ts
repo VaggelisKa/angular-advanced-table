@@ -1,4 +1,5 @@
 /* eslint-disable max-lines -- large integration spec */
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
@@ -298,8 +299,29 @@ describe('FEATURE: NatTable', () => {
       });
     });
 
-    describe('WHEN: the rendered table exposes reorder handles', () => {
-      it('THEN: it renders reorder handles on headers by default', () => {
+    describe('WHEN: column reordering is disabled by default', () => {
+      it('THEN: it removes drag/drop affordances and reorder instructions', async () => {
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const dragDirectives = fixture.debugElement.queryAll(By.directive(CdkDrag)).map((element) => element.injector.get(CdkDrag));
+        const dropList = fixture.debugElement.query(By.directive(CdkDropList)).injector.get(CdkDropList);
+        const screenReaderText = queryAll<HTMLParagraphElement>(fixture, 'p.sr-only')
+          .map((element) => element.textContent.trim())
+          .join(' ');
+
+        expect(queryAll(fixture, '.header-cell.is-reorderable')).toHaveLength(0);
+        expect(dragDirectives).toHaveLength(4);
+        expect(dragDirectives.every((drag) => drag.disabled)).toBe(true);
+        expect(dropList.disabled).toBe(true);
+        expect(screenReaderText).not.toContain('reorder columns');
+      });
+    });
+
+    describe('WHEN: column reordering is enabled', () => {
+      it('THEN: it renders reorder handles on movable headers', async () => {
+        await recreateHost({ enableReordering: true });
         fixture.detectChanges();
 
         expect(queryAll(fixture, '.header-cell.is-reorderable')).toHaveLength(3);
@@ -444,7 +466,7 @@ describe('FEATURE: NatTable', () => {
       it('THEN: it reorders visible center columns and emits the next column order when uncontrolled', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
-        await recreateHost();
+        await recreateHost({ enableReordering: true });
         fixture.detectChanges();
 
         const table = getInternalTable(fixture);
@@ -578,6 +600,7 @@ describe('FEATURE: NatTable', () => {
 
         // when:
         await recreateHost({
+          enableReordering: true,
           enablePagination: true,
           accessibilityText
         });

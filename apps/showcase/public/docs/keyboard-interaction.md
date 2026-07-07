@@ -10,7 +10,7 @@ Cells whose entire content is one arrow-safe control can delegate directly to th
 
 ## Column Shortcuts
 
-Column reordering and resizing expose keyboard paths. Keep visible instructions and configured shortcuts aligned with `aria-keyshortcuts` when you customize keybindings.
+Column reordering exposes keyboard paths when `[enableReordering]="true"` is set on the table surface. Resizing exposes keyboard paths for resizable columns. Keep visible instructions and configured shortcuts aligned with `aria-keyshortcuts` when you customize keybindings.
 
 ## Custom Keybindings
 

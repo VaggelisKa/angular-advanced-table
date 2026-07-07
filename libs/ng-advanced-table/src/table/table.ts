@@ -257,6 +257,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   protected readonly onCellFocusIn = handleCellInteractionFocusIn;
   protected readonly canResizeColumn = canResizeColumn<TData>;
   protected readonly isLeafHeaderRow = (headerGroup: HeaderGroup<TData>): boolean => this.reorderService.isLeafHeaderRow(headerGroup);
+  protected readonly isReorderingEnabled = (): boolean => this.reorderService.isReorderingEnabled();
   protected readonly canReorderHeader = (header: Header<TData, unknown>): boolean =>
     !header.isPlaceholder && this.reorderService.canReorderHeader(header.column);
 

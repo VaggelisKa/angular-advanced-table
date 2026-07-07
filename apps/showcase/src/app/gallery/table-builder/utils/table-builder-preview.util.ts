@@ -71,6 +71,10 @@ export const buildTemplateSource = (flags: TableBuilderFlags): string => {
     surfaceAttributes = ' [stickyHeader]="true"';
   }
 
+  if (flags.withColumnReorder) {
+    surfaceAttributes += ' [enableReordering]="true"';
+  }
+
   let tableAttributes = '';
 
   tableAttributes += '\n    [data]="data"';
