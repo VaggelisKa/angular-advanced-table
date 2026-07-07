@@ -8,16 +8,16 @@
   align-items: center;
   padding: 6px 14px;
   font-size: 0.85rem;
-  color: var(--nat-table-color-text-muted, GrayText);
+  color: var(--nat-table-color-text-muted, var(--sys-nat-table-color-text-muted, GrayText));
   white-space: nowrap;
-  background: color-mix(in srgb, var(--nat-table-color-text, currentColor) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--nat-table-color-text, currentColor) 12%, transparent);
+  background: color-mix(in srgb, var(--nat-table-color-text, var(--sys-nat-table-color-text, currentColor)) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--nat-table-color-text, var(--sys-nat-table-color-text, currentColor)) 12%, transparent);
   border-radius: 100vmax;
 }
 
 .render-kpi strong {
   font-variant-numeric: tabular-nums;
-  color: var(--nat-table-color-text, CanvasText);
+  color: var(--nat-table-color-text, var(--sys-nat-table-color-text, CanvasText));
 }
 
 .render-kpi-dot {
@@ -29,21 +29,24 @@
 }
 
 .render-kpi[data-health='fast'] .render-kpi-dot {
-  background: var(--nat-table-color-success, currentColor);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--nat-table-color-success, currentColor) 40%, transparent);
+  background: var(--nat-table-color-success, var(--sys-nat-table-color-success, currentColor));
+  box-shadow: 0 0 6px
+    color-mix(in srgb, var(--nat-table-color-success, var(--sys-nat-table-color-success, currentColor)) 40%, transparent);
 }
 
 .render-kpi[data-health='watch'] .render-kpi-dot {
-  background: var(--nat-table-color-warning, currentColor);
+  background: var(--nat-table-color-warning, var(--sys-nat-table-color-warning, currentColor));
   border-radius: 2px;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--nat-table-color-warning, currentColor) 40%, transparent);
+  box-shadow: 0 0 6px
+    color-mix(in srgb, var(--nat-table-color-warning, var(--sys-nat-table-color-warning, currentColor)) 40%, transparent);
   transform: rotate(45deg);
 }
 
 .render-kpi[data-health='slow'] .render-kpi-dot {
-  background: var(--nat-table-color-danger, currentColor);
+  background: var(--nat-table-color-danger, var(--sys-nat-table-color-danger, currentColor));
   border-radius: 1px;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--nat-table-color-danger, currentColor) 40%, transparent);
+  box-shadow: 0 0 6px
+    color-mix(in srgb, var(--nat-table-color-danger, var(--sys-nat-table-color-danger, currentColor)) 40%, transparent);
 }
 
 .render-kpi-text {
@@ -57,5 +60,5 @@
 
   /* Secondary emphasis comes from the muted token, not opacity: opacity on text
      blends it toward the background and drops contrast below WCAG AA. */
-  color: var(--nat-table-color-text-muted, GrayText);
+  color: var(--nat-table-color-text-muted, var(--sys-nat-table-color-text-muted, GrayText));
 }

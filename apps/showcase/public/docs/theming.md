@@ -125,6 +125,7 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-radius-region`        | Scrollable table region radius       |
 | `--nat-table-header-background`    | Header background                    |
 | `--nat-table-header-color`         | Header text color                    |
+| `--nat-table-font-weight-header`   | Header text font weight              |
 | `--nat-table-header-border-color`  | Header divider                       |
 | `--nat-table-header-border-width`  | Header divider width                 |
 | `--nat-table-row-background`       | Default body row background          |
@@ -166,7 +167,9 @@ Render-metrics widgets intentionally do not expose their own component-specific 
 
 ## Stock Defaults
 
-`NatTableSurface` provides the stock default token set. Core-only tables render with conservative system-color fallbacks when no theme is present, but product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme.
+`NatTableSurface` provides the stock default token set as fallbacks, never as declarations of the public tokens. A `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) therefore always wins over the stock theme, and derived stock defaults (borders, dividers, mixed colors) recompute from your overridden palette tokens. If you inspect computed styles you may see internal `--sys-nat-table-*` bridge variables — they are implementation detail; never set them, set the matching `--nat-table-*` token instead.
+
+Core-only tables render with conservative system-color fallbacks when no theme is present, but product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme.
 
 ### Palette And Core
 

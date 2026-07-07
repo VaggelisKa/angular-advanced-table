@@ -5,8 +5,11 @@
 }
 
 .nat-selection-checkbox {
-  inline-size: var(--nat-table-selection-size, 18px);
-  block-size: var(--nat-table-selection-size, 18px);
-  accent-color: var(--nat-table-selection-accent, var(--nat-table-color-accent, currentColor));
+  inline-size: var(--nat-table-selection-size, var(--sys-nat-table-selection-size, 18px));
+  block-size: var(--nat-table-selection-size, var(--sys-nat-table-selection-size, 18px));
+  accent-color: var(
+    --nat-table-selection-accent,
+    var(--sys-nat-table-selection-accent, var(--nat-table-color-accent, var(--sys-nat-table-color-accent, currentColor)))
+  );
   cursor: pointer;
 }

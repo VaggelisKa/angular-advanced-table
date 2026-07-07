@@ -26,7 +26,7 @@ test.describe('FEATURE: Multiple features accessibility', () => {
         });
 
         await test.step('THEN: every visible row has the Advancing status', async () => {
-          const advancingChip = page.locator('.status-chip[data-status="Advancing"]').first();
+          const advancingChip = page.locator('.status-chip[data-status="Advancing"]');
           const countLabel = advancingChip.locator('.filter-pill-count');
 
           // Wait for the count to be present and non-zero (simulation might need a moment to start/sync)

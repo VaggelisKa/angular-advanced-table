@@ -2,12 +2,12 @@
   box-sizing: border-box;
   display: flex;
   flex-wrap: nowrap;
-  gap: var(--nat-table-toolbar-gap, 12px);
+  gap: var(--nat-table-toolbar-gap, var(--sys-nat-table-toolbar-gap, 12px));
   align-items: center;
   width: 100%;
   min-width: 0;
-  padding: var(--nat-table-toolbar-padding, 10px);
-  background: var(--nat-table-toolbar-background, transparent);
+  padding: var(--nat-table-toolbar-padding, var(--sys-nat-table-toolbar-padding, 10px));
+  background: var(--nat-table-toolbar-background, var(--sys-nat-table-toolbar-background, transparent));
 }
 
 /* Static flex pivots between the ng-content slots: start slot before the

@@ -73,7 +73,7 @@ test.describe('FEATURE: Multiple features', () => {
         await advancingChip.click();
 
         await test.step('THEN: the table is filtered to show only rows with that status', async () => {
-          const advancingChipInStep = page.locator('.status-chip[data-status="Advancing"]').first();
+          const advancingChipInStep = page.locator('.status-chip[data-status="Advancing"]');
           const countLabel = advancingChipInStep.locator('.filter-pill-count');
 
           // Wait for the count to be present and non-zero (simulation might need a moment to start/sync)

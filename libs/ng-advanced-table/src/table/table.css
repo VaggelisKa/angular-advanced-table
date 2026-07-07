@@ -1,27 +1,34 @@
 :host {
   display: block;
-  font-family: var(--nat-table-font-family, inherit);
-  color: var(--nat-table-color-text, inherit);
+  font-family: var(--nat-table-font-family, var(--sys-nat-table-font-family, inherit));
+  color: var(--nat-table-color-text, var(--sys-nat-table-color-text, inherit));
 }
 
 .table-region {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: var(--nat-table-height, inherit);
-  min-height: var(--nat-table-min-height, auto);
-  max-height: var(--nat-table-max-height, inherit);
+  height: var(--nat-table-height, var(--sys-nat-table-height, inherit));
+  min-height: var(--nat-table-min-height, var(--sys-nat-table-min-height, auto));
+  max-height: var(--nat-table-max-height, var(--sys-nat-table-max-height, inherit));
   container-type: inline-size;
-  overflow: var(--nat-table-region-overflow-x, var(--nat-table-region-overflow, auto))
-    var(--nat-table-region-overflow-y, var(--nat-table-region-overflow, auto));
-  overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y, auto);
-  background: var(--nat-table-region-background, transparent);
-  border: var(--nat-table-region-border-width, 1px) solid var(--nat-table-region-border-color, rgb(128 128 128 / 24%));
-  border-radius: var(--nat-table-radius-region, 16px);
+  overflow: var(
+      --nat-table-region-overflow-x,
+      var(--sys-nat-table-region-overflow-x, var(--nat-table-region-overflow, var(--sys-nat-table-region-overflow, auto)))
+    )
+    var(
+      --nat-table-region-overflow-y,
+      var(--sys-nat-table-region-overflow-y, var(--nat-table-region-overflow, var(--sys-nat-table-region-overflow, auto)))
+    );
+  overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y, var(--sys-nat-table-region-overscroll-behavior-y, auto));
+  background: var(--nat-table-region-background, var(--sys-nat-table-region-background, transparent));
+  border: var(--nat-table-region-border-width, var(--sys-nat-table-region-border-width, 1px)) solid
+    var(--nat-table-region-border-color, var(--sys-nat-table-region-border-color, rgb(128 128 128 / 24%)));
+  border-radius: var(--nat-table-radius-region, var(--sys-nat-table-radius-region, 16px));
 }
 
 .table-region:has(:focus-visible) {
-  border-color: var(--nat-table-focus-ring-color, Highlight);
+  border-color: var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, Highlight));
 }
 
 .data-table {
@@ -55,9 +62,11 @@
 .header-cell,
 .data-cell {
   box-sizing: border-box;
-  padding: var(--nat-table-space-cell-y, 0) var(--nat-table-space-cell-x, 0);
+  padding: var(--nat-table-space-cell-y, var(--sys-nat-table-space-cell-y, 0))
+    var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 0));
   text-align: start;
-  border-bottom: var(--nat-table-cell-border-width, 1px) solid var(--nat-table-cell-border-color, rgb(128 128 128 / 24%));
+  border-bottom: var(--nat-table-cell-border-width, var(--sys-nat-table-cell-border-width, 1px)) solid
+    var(--nat-table-cell-border-color, var(--sys-nat-table-cell-border-color, rgb(128 128 128 / 24%)));
 }
 
 .header-cell.is-width-constrained,
@@ -73,20 +82,29 @@
      table's right edge — appearing to sit on the last column. The sticky-header and
      pinned rules override this to position: sticky, itself a valid containing block. */
   position: relative;
-  font-size: var(--nat-table-font-size-header, 0.84rem);
-  font-weight: 600;
-  color: var(--nat-table-header-color, inherit);
-  text-transform: var(--nat-table-text-transform-header, uppercase);
-  letter-spacing: var(--nat-table-letter-spacing-header, 0.08em);
+  font-size: var(--nat-table-font-size-header, var(--sys-nat-table-font-size-header, 0.84rem));
+  font-weight: var(--nat-table-font-weight-header, var(--sys-nat-table-font-weight-header, 600));
+  color: var(--nat-table-header-color, var(--sys-nat-table-header-color, inherit));
+  text-transform: var(--nat-table-text-transform-header, var(--sys-nat-table-text-transform-header, uppercase));
+  letter-spacing: var(--nat-table-letter-spacing-header, var(--sys-nat-table-letter-spacing-header, 0.08em));
   white-space: nowrap;
-  background: var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas));
-  border-bottom: var(--nat-table-header-border-width, 1px) solid
-    var(--nat-table-header-border-color, var(--nat-table-color-border, rgb(128 128 128 / 30%)));
+  background: var(
+    --nat-table-header-background,
+    var(--sys-nat-table-header-background, var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas)))
+  );
+  border-bottom: var(--nat-table-header-border-width, var(--sys-nat-table-header-border-width, 1px)) solid
+    var(
+      --nat-table-header-border-color,
+      var(
+        --sys-nat-table-header-border-color,
+        var(--nat-table-color-border, var(--sys-nat-table-color-border, rgb(128 128 128 / 30%)))
+      )
+    );
 }
 
 .header-cell-content {
   display: flex;
-  gap: var(--nat-table-space-header-content-gap, 8px);
+  gap: var(--nat-table-space-header-content-gap, var(--sys-nat-table-space-header-content-gap, 8px));
   align-items: center;
   justify-content: space-between;
   min-width: 0;
@@ -118,7 +136,7 @@
 }
 
 .data-cell {
-  line-height: var(--nat-table-line-height-cell, 1.4);
+  line-height: var(--nat-table-line-height-cell, var(--sys-nat-table-line-height-cell, 1.4));
   vertical-align: middle;
   white-space: normal;
 }
@@ -130,8 +148,8 @@ tbody .data-row:last-child .data-cell {
 .data-cell.is-cell-clamped .data-cell-content {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--nat-table-cell-max-lines, 2);
-  line-clamp: var(--nat-table-cell-max-lines, 2);
+  -webkit-line-clamp: var(--nat-table-cell-max-lines, var(--sys-nat-table-cell-max-lines, 2));
+  line-clamp: var(--nat-table-cell-max-lines, var(--sys-nat-table-cell-max-lines, 2));
 }
 
 .column-resize-handle {
@@ -139,8 +157,8 @@ tbody .data-row:last-child .data-cell {
   inset-inline-end: 0;
   top: 0;
   bottom: 0;
-  z-index: var(--nat-table-z-index-resize-handle, 8);
-  inline-size: var(--nat-table-resize-handle-hit, 24px);
+  z-index: var(--nat-table-z-index-resize-handle, var(--sys-nat-table-z-index-resize-handle, 8));
+  inline-size: var(--nat-table-resize-handle-hit, var(--sys-nat-table-resize-handle-hit, 24px));
   touch-action: none;
   cursor: col-resize;
   user-select: none;
@@ -153,7 +171,10 @@ tbody .data-row:last-child .data-cell {
   bottom: 18%;
   inline-size: 2px;
   content: '';
-  background: var(--nat-table-resize-handle-color, color-mix(in srgb, currentColor 24%, transparent));
+  background: var(
+    --nat-table-resize-handle-color,
+    var(--sys-nat-table-resize-handle-color, color-mix(in srgb, currentColor 24%, transparent))
+  );
   border-radius: 1px;
   opacity: 0;
   transition: opacity 120ms ease;
@@ -182,11 +203,17 @@ tbody .data-row:last-child .data-cell {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: var(--nat-table-z-index-resize-guide, 9);
+  z-index: var(--nat-table-z-index-resize-guide, var(--sys-nat-table-z-index-resize-guide, 9));
   inline-size: 2px;
   margin-inline-start: -1px;
   pointer-events: none;
-  background: var(--nat-table-resize-handle-active-color, var(--nat-table-focus-ring-color, Highlight));
+  background: var(
+    --nat-table-resize-handle-active-color,
+    var(
+      --sys-nat-table-resize-handle-active-color,
+      var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, Highlight))
+    )
+  );
 }
 
 .header-cell.is-reorderable {
@@ -214,11 +241,14 @@ tbody .data-row:last-child .data-cell {
 }
 
 .header-cell.cdk-drag-preview {
-  z-index: var(--nat-table-z-index-drag-preview, 12);
+  z-index: var(--nat-table-z-index-drag-preview, var(--sys-nat-table-z-index-drag-preview, 12));
   display: table-cell;
-  color: var(--nat-table-header-color, inherit);
-  background: var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas));
-  border-bottom-color: var(--nat-table-header-border-color, rgb(128 128 128 / 30%));
+  color: var(--nat-table-header-color, var(--sys-nat-table-header-color, inherit));
+  background: var(
+    --nat-table-header-background,
+    var(--sys-nat-table-header-background, var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas)))
+  );
+  border-bottom-color: var(--nat-table-header-border-color, var(--sys-nat-table-header-border-color, rgb(128 128 128 / 30%)));
   box-shadow:
     0 14px 30px rgb(15 23 42 / 16%),
     0 0 0 1px rgb(128 128 128 / 30%);
@@ -227,7 +257,19 @@ tbody .data-row:last-child .data-cell {
 
 .header-cell.is-pinned-left.cdk-drag-preview,
 .header-cell.is-pinned-right.cdk-drag-preview {
-  background: var(--nat-table-pinned-background, var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas)));
+  background: var(
+    --nat-table-pinned-background,
+    var(
+      --sys-nat-table-pinned-background,
+      var(
+        --nat-table-header-background,
+        var(
+          --sys-nat-table-header-background,
+          var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
+        )
+      )
+    )
+  );
 }
 
 .header-cell.cdk-drag-placeholder {
@@ -243,27 +285,27 @@ tbody .data-row:last-child .data-cell {
 }
 
 .data-row {
-  background: var(--nat-table-row-background, transparent);
+  background: var(--nat-table-row-background, var(--sys-nat-table-row-background, transparent));
   transition: background-color 120ms ease;
 }
 
 .data-row:has(:focus-visible) {
-  background: var(--nat-table-row-background-focus, rgb(128 128 128 / 12%));
+  background: var(--nat-table-row-background-focus, var(--sys-nat-table-row-background-focus, rgb(128 128 128 / 12%)));
 }
 
 .data-row:has(:focus-visible) .is-pinned-left,
 .data-row:has(:focus-visible) .is-pinned-right {
-  background: var(--nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%));
+  background: var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%)));
 }
 
 @media (hover: hover) and (pointer: fine) {
   .data-row:hover {
-    background: var(--nat-table-row-background-hover, rgb(128 128 128 / 8%));
+    background: var(--nat-table-row-background-hover, var(--sys-nat-table-row-background-hover, rgb(128 128 128 / 8%)));
   }
 
   .data-row:hover .is-pinned-left,
   .data-row:hover .is-pinned-right {
-    background: var(--nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%));
+    background: var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%)));
   }
 }
 
@@ -272,13 +314,13 @@ tbody .data-row:last-child .data-cell {
 }
 
 .data-row-header {
-  font-weight: var(--nat-table-font-weight-row-header, 600);
+  font-weight: var(--nat-table-font-weight-row-header, var(--sys-nat-table-font-weight-row-header, 600));
 }
 
 .has-sticky-header .header-cell {
   position: sticky;
-  top: var(--nat-table-sticky-top, 0);
-  z-index: var(--nat-table-z-index-sticky-header, 4);
+  top: var(--nat-table-sticky-top, var(--sys-nat-table-sticky-top, 0));
+  z-index: var(--nat-table-z-index-sticky-header, var(--sys-nat-table-z-index-sticky-header, 4));
 }
 
 /*
@@ -291,8 +333,20 @@ tbody .data-row:last-child .data-cell {
 .is-pinned-left,
 .is-pinned-right {
   position: sticky;
-  z-index: var(--nat-table-z-index-pinned-cell, 5);
-  background: var(--nat-table-pinned-background, var(--nat-table-header-background, var(--nat-table-color-surface-sticky, canvas)));
+  z-index: var(--nat-table-z-index-pinned-cell, var(--sys-nat-table-z-index-pinned-cell, 5));
+  background: var(
+    --nat-table-pinned-background,
+    var(
+      --sys-nat-table-pinned-background,
+      var(
+        --nat-table-header-background,
+        var(
+          --sys-nat-table-header-background,
+          var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
+        )
+      )
+    )
+  );
 }
 
 .has-sticky-header .header-cell.is-pinned-left,
@@ -300,15 +354,15 @@ tbody .data-row:last-child .data-cell {
 .header-cell.is-pinned-left,
 .header-cell.is-pinned-right {
   position: sticky;
-  z-index: var(--nat-table-z-index-pinned-header, 6);
+  z-index: var(--nat-table-z-index-pinned-header, var(--sys-nat-table-z-index-pinned-header, 6));
 }
 
 .has-pinned-edge-left {
-  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color, rgb(128 128 128 / 34%));
+  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%)));
 }
 
 .has-pinned-edge-right {
-  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color, rgb(128 128 128 / 34%));
+  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%)));
 }
 
 .header-cell.is-align-end,
@@ -321,29 +375,44 @@ tbody .data-row:last-child .data-cell {
 }
 
 .data-cell[data-tone='positive'] {
-  color: var(--nat-table-cell-color-positive, var(--nat-table-color-success, currentColor));
+  color: var(
+    --nat-table-cell-color-positive,
+    var(--sys-nat-table-cell-color-positive, var(--nat-table-color-success, var(--sys-nat-table-color-success, currentColor)))
+  );
 }
 
 .data-cell[data-tone='negative'] {
-  color: var(--nat-table-cell-color-negative, var(--nat-table-color-danger, currentColor));
+  color: var(
+    --nat-table-cell-color-negative,
+    var(--sys-nat-table-cell-color-negative, var(--nat-table-color-danger, var(--sys-nat-table-color-danger, currentColor)))
+  );
 }
 
 .data-cell[data-tone='warning'] {
-  color: var(--nat-table-cell-color-warning, var(--nat-table-color-warning, currentColor));
+  color: var(
+    --nat-table-cell-color-warning,
+    var(--sys-nat-table-cell-color-warning, var(--nat-table-color-warning, var(--sys-nat-table-color-warning, currentColor)))
+  );
 }
 
 .data-cell[data-tone='neutral'] {
-  color: var(--nat-table-cell-color-neutral, var(--nat-table-color-text-muted, currentColor));
+  color: var(
+    --nat-table-cell-color-neutral,
+    var(--sys-nat-table-cell-color-neutral, var(--nat-table-color-text-muted, var(--sys-nat-table-color-text-muted, currentColor)))
+  );
 }
 
 .table-state {
-  padding: var(--nat-table-space-empty-state, 40px 24px);
-  font-size: var(--nat-table-font-size-empty-state, 1rem);
-  line-height: var(--nat-table-line-height-empty-state, 1.6);
-  color: var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText));
+  padding: var(--nat-table-space-empty-state, var(--sys-nat-table-space-empty-state, 40px 24px));
+  font-size: var(--nat-table-font-size-empty-state, var(--sys-nat-table-font-size-empty-state, 1rem));
+  line-height: var(--nat-table-line-height-empty-state, var(--sys-nat-table-line-height-empty-state, 1.6));
+  color: var(
+    --nat-table-empty-state-color,
+    var(--sys-nat-table-empty-state-color, var(--nat-table-color-text-muted, var(--sys-nat-table-color-text-muted, GrayText)))
+  );
   white-space: normal;
-  animation: nat-table-state-enter var(--nat-table-state-transition-duration, 140ms) var(--nat-table-state-transition-timing, ease-out)
-    both;
+  animation: nat-table-state-enter var(--nat-table-state-transition-duration, var(--sys-nat-table-state-transition-duration, 140ms))
+    var(--nat-table-state-transition-timing, var(--sys-nat-table-state-transition-timing, ease-out)) both;
 }
 
 /*
@@ -358,7 +427,16 @@ tbody .data-row:last-child .data-cell {
 }
 
 .loading-state {
-  color: var(--nat-table-loading-state-color, var(--nat-table-empty-state-color, var(--nat-table-color-text-muted, GrayText)));
+  color: var(
+    --nat-table-loading-state-color,
+    var(
+      --sys-nat-table-loading-state-color,
+      var(
+        --nat-table-empty-state-color,
+        var(--sys-nat-table-empty-state-color, var(--nat-table-color-text-muted, var(--sys-nat-table-color-text-muted, GrayText)))
+      )
+    )
+  );
 }
 
 .empty-state,
@@ -369,13 +447,22 @@ tbody .data-row:last-child .data-cell {
 }
 
 .error-state {
-  color: var(--nat-table-error-state-color, var(--nat-table-cell-color-negative, var(--nat-table-color-danger, currentColor)));
+  color: var(
+    --nat-table-error-state-color,
+    var(
+      --sys-nat-table-error-state-color,
+      var(
+        --nat-table-cell-color-negative,
+        var(--sys-nat-table-cell-color-negative, var(--nat-table-color-danger, var(--sys-nat-table-color-danger, currentColor)))
+      )
+    )
+  );
 }
 
 @keyframes nat-table-state-enter {
   from {
-    opacity: var(--nat-table-state-transition-opacity-from, 0);
-    transform: translateY(var(--nat-table-state-transition-distance, 2px));
+    opacity: var(--nat-table-state-transition-opacity-from, var(--sys-nat-table-state-transition-opacity-from, 0));
+    transform: translateY(var(--nat-table-state-transition-distance, var(--sys-nat-table-state-transition-distance, 2px)));
   }
 
   to {
@@ -391,9 +478,10 @@ tbody .data-row:last-child .data-cell {
 }
 
 [ngGridCell]:focus-visible {
-  z-index: var(--nat-table-z-index-focus-cell, 7);
+  z-index: var(--nat-table-z-index-focus-cell, var(--sys-nat-table-z-index-focus-cell, 7));
   outline: none;
-  box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, 2px) var(--nat-table-focus-ring-color, Highlight);
+  box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, var(--sys-nat-table-focus-ring-width, 2px))
+    var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, Highlight));
 }
 
 /*
