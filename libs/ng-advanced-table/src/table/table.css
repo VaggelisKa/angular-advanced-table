@@ -249,9 +249,10 @@ tbody .data-row:last-child .data-cell {
     var(--sys-nat-table-header-background, var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas)))
   );
   border-bottom-color: var(--nat-table-header-border-color, var(--sys-nat-table-header-border-color, rgb(128 128 128 / 30%)));
-  box-shadow:
-    0 14px 30px rgb(15 23 42 / 16%),
-    0 0 0 1px rgb(128 128 128 / 30%);
+  box-shadow: var(
+    --nat-table-drag-preview-shadow,
+    var(--sys-nat-table-drag-preview-shadow, 0 14px 30px rgb(15 23 42 / 16%), 0 0 0 1px rgb(128 128 128 / 30%))
+  );
   opacity: 0.98;
 }
 
