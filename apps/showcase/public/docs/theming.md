@@ -125,6 +125,7 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-radius-region`        | Scrollable table region radius       |
 | `--nat-table-header-background`    | Header background                    |
 | `--nat-table-header-color`         | Header text color                    |
+| `--nat-table-font-weight-header`   | Header text font weight              |
 | `--nat-table-header-border-color`  | Header divider                       |
 | `--nat-table-header-border-width`  | Header divider width                 |
 | `--nat-table-row-background`       | Default body row background          |

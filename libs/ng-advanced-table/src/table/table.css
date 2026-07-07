@@ -83,7 +83,7 @@
      pinned rules override this to position: sticky, itself a valid containing block. */
   position: relative;
   font-size: var(--nat-table-font-size-header, var(--sys-nat-table-font-size-header, 0.84rem));
-  font-weight: 600;
+  font-weight: var(--nat-table-font-weight-header, var(--sys-nat-table-font-weight-header, 600));
   color: var(--nat-table-header-color, var(--sys-nat-table-header-color, inherit));
   text-transform: var(--nat-table-text-transform-header, var(--sys-nat-table-text-transform-header, uppercase));
   letter-spacing: var(--nat-table-letter-spacing-header, var(--sys-nat-table-letter-spacing-header, 0.08em));
