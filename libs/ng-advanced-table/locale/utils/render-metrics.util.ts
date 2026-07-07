@@ -6,7 +6,7 @@ import type {
   NatTableRenderMetricsFilterIntl,
   NatTableRenderMetricsIntl,
   NatTableRenderMetricsIntlConfig,
-  NatTableRenderMetricsIntlProviderConfig,
+  NatTableRenderMetricsIntlStaticProviderConfig,
   NatTableRenderMetricsLocalesMap,
   NatTableRenderMetricsPanelIntl,
   NatTableRenderMetricsWidgetsIntl
@@ -135,11 +135,11 @@ const mergeLocaleMaps = (
   return merged;
 };
 
-const isRenderMetricsIntlConfig = (config: NatTableRenderMetricsIntlProviderConfig): config is NatTableRenderMetricsIntlConfig =>
+const isRenderMetricsIntlConfig = (config: NatTableRenderMetricsIntlStaticProviderConfig): config is NatTableRenderMetricsIntlConfig =>
   'locales' in config;
 
 const normalizeRenderMetricsIntlProviderConfig = (
-  config: NatTableRenderMetricsIntlProviderConfig
+  config: NatTableRenderMetricsIntlStaticProviderConfig
 ): NatTableRenderMetricsIntlConfig => {
   if (isRenderMetricsIntlConfig(config)) return config;
 
@@ -153,7 +153,7 @@ const normalizeRenderMetricsIntlProviderConfig = (
 /** Merges a parent render-metrics intl config with a provider override, field by field. */
 export const mergeNatTableRenderMetricsIntlConfig = (
   parent: NatTableRenderMetricsIntlConfig,
-  override: NatTableRenderMetricsIntlProviderConfig
+  override: NatTableRenderMetricsIntlStaticProviderConfig
 ): NatTableRenderMetricsIntlConfig => {
   const overrideConfig = normalizeRenderMetricsIntlProviderConfig(override);
 

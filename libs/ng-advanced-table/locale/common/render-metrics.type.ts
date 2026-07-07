@@ -84,7 +84,14 @@ export type NatTableRenderMetricsIntlConfig = {
   readonly locales?: Record<string, NatTableRenderMetricsIntl>;
 };
 
-export type NatTableRenderMetricsIntlProviderConfig = NatTableRenderMetricsIntl | NatTableRenderMetricsIntlConfig;
+export type NatTableRenderMetricsIntlStaticProviderConfig = NatTableRenderMetricsIntl | NatTableRenderMetricsIntlConfig;
+
+/** Factory resolved inside Angular dependency injection. Use `inject(...)` to read services. */
+export type NatTableRenderMetricsIntlProviderFactory = () => NatTableRenderMetricsIntlStaticProviderConfig;
+
+export type NatTableRenderMetricsIntlProviderConfig =
+  | NatTableRenderMetricsIntlStaticProviderConfig
+  | NatTableRenderMetricsIntlProviderFactory;
 
 /** Render-metrics locale dictionaries keyed by locale id. */
 export type NatTableRenderMetricsLocalesMap = Record<string, NatTableRenderMetricsIntl>;

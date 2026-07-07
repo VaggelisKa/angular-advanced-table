@@ -226,7 +226,12 @@ export type NatTableIntlConfig = {
   readonly locales?: Record<string, NatTableIntl>;
 };
 
-export type NatTableIntlProviderConfig = NatTableIntl | NatTableIntlConfig;
+export type NatTableIntlStaticProviderConfig = NatTableIntl | NatTableIntlConfig;
+
+/** Factory resolved inside Angular dependency injection. Use `inject(...)` to read services. */
+export type NatTableIntlProviderFactory = () => NatTableIntlStaticProviderConfig;
+
+export type NatTableIntlProviderConfig = NatTableIntlStaticProviderConfig | NatTableIntlProviderFactory;
 
 /** Locale dictionaries keyed by locale id. */
 export type NatTableLocalesMap = Record<string, NatTableIntl>;

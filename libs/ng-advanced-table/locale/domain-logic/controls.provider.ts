@@ -1,6 +1,7 @@
-import { InjectionToken, Optional, SkipSelf } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 import type { Provider } from '@angular/core';
 
+import { createNatTableMergedProvider } from './provider-factory';
 import { NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
 import type {
   NatTableControlsIntlConfig,
@@ -26,14 +27,9 @@ export const NAT_TABLE_CONTROLS_INTL = new InjectionToken<NatTableControlsIntlCo
  * Nested providers merge with parent defaults, so feature-level providers can
  * override a subset of app-level copy without replacing the entire bag.
  */
-export const provideNatTableControlsIntl = (intl: NatTableControlsIntlProviderConfig): Provider[] => [
-  {
-    provide: NAT_TABLE_CONTROLS_INTL,
-    deps: [[new Optional(), new SkipSelf(), NAT_TABLE_CONTROLS_INTL]],
-    useFactory: (parent: NatTableControlsIntlConfig | null) =>
-      mergeNatTableControlsIntlConfig(parent ?? NAT_TABLE_CONTROLS_DEFAULT_INTL, intl)
-  }
-];
+export function provideNatTableControlsIntl(intl: NatTableControlsIntlProviderConfig): Provider[] {
+  return createNatTableMergedProvider(NAT_TABLE_CONTROLS_INTL, NAT_TABLE_CONTROLS_DEFAULT_INTL, intl, mergeNatTableControlsIntlConfig);
+}
 
 /**
  * Registers every companion components locale shipped by `ng-advanced-table/locale`.

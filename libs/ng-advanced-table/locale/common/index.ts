@@ -16,7 +16,9 @@ export type {
   NatTableAccessibilityText,
   NatTableIntl,
   NatTableIntlConfig,
+  NatTableIntlProviderFactory,
   NatTableIntlProviderConfig,
+  NatTableIntlStaticProviderConfig,
   NatTableLocalesMap,
   NatTableNumberFormatter
 } from './accessibility.type';
@@ -51,7 +53,9 @@ export type {
   NatTableSelectionIntl,
   NatTableControlsIntl,
   NatTableControlsIntlConfig,
+  NatTableControlsIntlProviderFactory,
   NatTableControlsIntlProviderConfig,
+  NatTableControlsIntlStaticProviderConfig,
   NatTableControlsLocalesMap,
   NatTableControlsNumberFormatter
 } from './controls.type';
@@ -72,7 +76,9 @@ export type {
   NatTableRenderMetricsRowCountContext,
   NatTableRenderMetricsIntl,
   NatTableRenderMetricsIntlConfig,
+  NatTableRenderMetricsIntlProviderFactory,
   NatTableRenderMetricsIntlProviderConfig,
+  NatTableRenderMetricsIntlStaticProviderConfig,
   NatTableRenderMetricsLocalesMap,
   NatTableRenderMetricsNumberFormatter,
   RowRenderFilterOption,

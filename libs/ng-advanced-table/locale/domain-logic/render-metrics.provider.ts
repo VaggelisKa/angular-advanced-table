@@ -1,6 +1,7 @@
-import { InjectionToken, Optional, SkipSelf, inject } from '@angular/core';
+import { InjectionToken, inject } from '@angular/core';
 import type { Provider } from '@angular/core';
 
+import { createNatTableMergedProvider } from './provider-factory';
 import { NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES } from '../common/render-metrics.const';
 import type {
   NatTableRenderMetricsIntlConfig,
@@ -29,14 +30,14 @@ const isMissingInjectionContextError = (error: unknown): boolean =>
  * Nested providers merge with parent defaults, so feature-level providers can
  * override a subset of app-level copy without replacing the entire bag.
  */
-export const provideNatTableRenderMetricsIntl = (intl: NatTableRenderMetricsIntlProviderConfig): Provider[] => [
-  {
-    provide: NAT_TABLE_RENDER_METRICS_INTL,
-    deps: [[new Optional(), new SkipSelf(), NAT_TABLE_RENDER_METRICS_INTL]],
-    useFactory: (parent: NatTableRenderMetricsIntlConfig | null) =>
-      mergeNatTableRenderMetricsIntlConfig(parent ?? NAT_TABLE_RENDER_METRICS_DEFAULT_INTL, intl)
-  }
-];
+export function provideNatTableRenderMetricsIntl(intl: NatTableRenderMetricsIntlProviderConfig): Provider[] {
+  return createNatTableMergedProvider(
+    NAT_TABLE_RENDER_METRICS_INTL,
+    NAT_TABLE_RENDER_METRICS_DEFAULT_INTL,
+    intl,
+    mergeNatTableRenderMetricsIntlConfig
+  );
+}
 
 /**
  * Registers every render-metrics locale shipped by `ng-advanced-table/locale`.

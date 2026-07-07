@@ -265,7 +265,12 @@ export type NatTableControlsIntlConfig = {
   readonly locales?: Record<string, NatTableControlsIntl>;
 };
 
-export type NatTableControlsIntlProviderConfig = NatTableControlsIntl | NatTableControlsIntlConfig;
+export type NatTableControlsIntlStaticProviderConfig = NatTableControlsIntl | NatTableControlsIntlConfig;
+
+/** Factory resolved inside Angular dependency injection. Use `inject(...)` to read services. */
+export type NatTableControlsIntlProviderFactory = () => NatTableControlsIntlStaticProviderConfig;
+
+export type NatTableControlsIntlProviderConfig = NatTableControlsIntlStaticProviderConfig | NatTableControlsIntlProviderFactory;
 
 /** Components locale dictionaries keyed by locale id. */
 export type NatTableControlsLocalesMap = Record<string, NatTableControlsIntl>;
