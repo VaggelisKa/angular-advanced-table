@@ -1,6 +1,6 @@
 import type { NatTableUserState } from 'ng-advanced-table';
 
-import type { TableBuilderFlags } from '../common/table-builder.type';
+import type { TableBuilderFlagKey, TableBuilderFlags } from '../common/table-builder.type';
 
 const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
@@ -9,34 +9,33 @@ const DEFAULT_COLUMN_VISIBILITY = {
   value: true
 } as const;
 
-const buildUiImports = (flags: TableBuilderFlags): string[] => {
-  const uiImports = ['NatTableSurface', 'withNatTableHeaderActions'];
+export const buildSeedState = (flags: TableBuilderFlags): Partial<NatTableUserState> => ({
+  columnVisibility: { name: true, category: true, status: true, value: true },
+  ...(flags.withPagination ? { pagination: { pageIndex: 0, pageSize: 3 } } : {}),
+  ...(flags.withSorting ? { sorting: [{ id: 'name', desc: false }] } : {}),
+  ...(flags.withColumnPinning ? { columnPinning: { left: ['name'], right: [] } } : {}),
+  ...(flags.withColumnReorder ? { columnOrder: ['name', 'category', 'status', 'value'] } : {}),
+  ...(flags.withColumnResizing ? { columnSizing: {} } : {}),
+  ...(flags.withRowSelection ? { rowSelection: {} } : {})
+});
 
-  if (flags.withGlobalFilter || flags.showColumnVisibility) {
-    uiImports.push('NatTableToolbar');
-  }
-
-  // app-table-search is a user-defined component, not a library import.
-  if (flags.showColumnVisibility) {
-    uiImports.push('NatTableColumnVisibility');
-  }
-
-  if (flags.withPagination) {
-    uiImports.push('NatTablePagination');
-  }
-
-  if (flags.showScrollControl) {
-    uiImports.push('NatTableScrollControl');
-  }
-
-  return uiImports;
-};
-
-export const buildStateObject = (flags: TableBuilderFlags, currentState: Partial<NatTableUserState>): Partial<NatTableUserState> => ({
-  columnVisibility: currentState.columnVisibility ?? { ...DEFAULT_COLUMN_VISIBILITY },
-  ...(flags.withPagination ? { pagination: currentState.pagination ?? { pageIndex: 0, pageSize: 3 } } : {}),
+const buildColumnLayoutState = (flags: TableBuilderFlags, currentState: Partial<NatTableUserState>): Partial<NatTableUserState> => ({
   ...(flags.withColumnPinning && currentState.columnPinning ? { columnPinning: currentState.columnPinning } : {}),
   ...(flags.withColumnReorder && currentState.columnOrder ? { columnOrder: currentState.columnOrder } : {})
+});
+
+const buildDataFilterState = (flags: TableBuilderFlags, currentState: Partial<NatTableUserState>): Partial<NatTableUserState> => ({
+  ...(flags.withGlobalFilter ? { globalFilter: currentState.globalFilter ?? '' } : {}),
+  ...(flags.withSorting ? { sorting: currentState.sorting ?? [{ id: 'name', desc: false }] } : {}),
+  ...(flags.withColumnResizing ? { columnSizing: currentState.columnSizing ?? {} } : {}),
+  ...(flags.withRowSelection ? { rowSelection: currentState.rowSelection ?? {} } : {})
+});
+
+export const buildStateObject = (flags: TableBuilderFlags, currentState: Partial<NatTableUserState>): Partial<NatTableUserState> => ({
+  ...buildDataFilterState(flags, currentState),
+  ...(flags.showColumnVisibility ? { columnVisibility: currentState.columnVisibility ?? { ...DEFAULT_COLUMN_VISIBILITY } } : {}),
+  ...(flags.withPagination ? { pagination: currentState.pagination ?? { pageIndex: 0, pageSize: 3 } } : {}),
+  ...buildColumnLayoutState(flags, currentState)
 });
 
 export const formatStateLiteral = (stateObj: Partial<NatTableUserState>): string =>
@@ -55,71 +54,82 @@ export const omitColumnOrder = (state: Partial<NatTableUserState>): Partial<NatT
   return next;
 };
 
-const buildSourceHeader = (uiImports: string[], extraImports: string): string =>
-  `import { Component, signal } from '@angular/core';
-import { NatTable, type ColumnDef, type NatTableUserState } from 'ng-advanced-table';
-import {
-  ${uiImports.join(',\n  ')}
-} from 'ng-advanced-table/components';
+const omitSorting = (state: Partial<NatTableUserState>): Partial<NatTableUserState> => {
+  const next = { ...state };
 
-interface DemoItem {
-  id: string;
-  name: string;
-  category: string;
-  status: string;
-  value: number;
-}
+  delete next.sorting;
 
-@Component({
-  selector: 'app-custom-table',
-  imports: [
-    NatTable,
-    NatTableSurface,${extraImports}
-  ],
-  templateUrl: './custom-table.html',
-  styleUrl: './custom-table.css',
-})`;
-
-const buildSourceBody = (headerOptions: string, formattedState: string): string =>
-  `export class CustomTableComponent {
-  readonly data: DemoItem[] = [
-    { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
-    { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200 },
-  ];
-
-  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
-    { accessorKey: 'name', header: 'Name', meta: { label: 'Name', rowHeader: true } },
-    { accessorKey: 'category', header: 'Category', meta: { label: 'Category' } },
-    { accessorKey: 'status', header: 'Status', meta: { label: 'Status' } },
-    {
-      accessorKey: 'value',
-      header: 'Value',
-      meta: { label: 'Value', align: 'end' },
-      cell: (ctx) => \`$\${ctx.getValue<number>().toLocaleString()}\`,
-    },
-  ]${headerOptions});
-
-  readonly tableState = signal<Partial<NatTableUserState>>(${formattedState});
-
-  onTableStateChange(state: NatTableUserState): void {
-    this.tableState.set(state);
-  }
-}`;
-
-export const buildComponentSource = (flags: TableBuilderFlags, formattedState: string): string => {
-  const uiImports = buildUiImports(flags);
-  const extraImports = uiImports
-    .filter((imp) => imp !== 'NatTableSurface' && imp !== 'withNatTableHeaderActions')
-    .map((imp) => `\n    ${imp},`)
-    .join('');
-  const headerOptions =
-    flags.withColumnReorder || !flags.withColumnPinning
-      ? `, {
-    enableColumnPinActions: ${flags.withColumnPinning ? 'true' : 'false'},
-    enableColumnReorderActions: ${flags.withColumnReorder ? 'true' : 'false'},
-  }`
-      : '';
-
-  return `${buildSourceHeader(uiImports, extraImports)}
-${buildSourceBody(headerOptions, formattedState)}`;
+  return next;
 };
+
+const omitColumnSizing = (state: Partial<NatTableUserState>): Partial<NatTableUserState> => {
+  const next = { ...state };
+
+  delete next.columnSizing;
+
+  return next;
+};
+
+const omitRowSelection = (state: Partial<NatTableUserState>): Partial<NatTableUserState> => {
+  const next = { ...state };
+
+  delete next.rowSelection;
+
+  return next;
+};
+
+const seedToggleState = (state: Partial<NatTableUserState>, key: TableBuilderFlagKey): Partial<NatTableUserState> => {
+  if (key === 'withColumnPinning') {
+    return { ...state, columnPinning: { left: ['name'], right: [] } };
+  }
+
+  if (key === 'withColumnReorder') {
+    return { ...state, columnOrder: ['name', 'category', 'status', 'value'] };
+  }
+
+  if (key === 'withSorting') {
+    return { ...state, sorting: [{ id: 'name', desc: false }] };
+  }
+
+  if (key === 'withColumnResizing') {
+    return { ...state, columnSizing: {} };
+  }
+
+  if (key === 'withRowSelection') {
+    return { ...state, rowSelection: {} };
+  }
+
+  return state;
+};
+
+const clearToggleState = (state: Partial<NatTableUserState>, key: TableBuilderFlagKey): Partial<NatTableUserState> => {
+  if (key === 'withColumnPinning') {
+    return { ...state, columnPinning: { left: [], right: [] } };
+  }
+
+  if (key === 'withColumnReorder') {
+    return omitColumnOrder(state);
+  }
+
+  if (key === 'withSorting') {
+    return omitSorting(state);
+  }
+
+  if (key === 'withColumnResizing') {
+    return omitColumnSizing(state);
+  }
+
+  if (key === 'withRowSelection') {
+    return omitRowSelection(state);
+  }
+
+  return state;
+};
+
+// Seed or clear the tableState slice that a toggled feature owns (pinning/reorder/
+// sorting/resizing/row-selection); other keys leave the state untouched.
+export const reconcileToggleState = (
+  state: Partial<NatTableUserState>,
+  key: TableBuilderFlagKey,
+  next: boolean
+): Partial<NatTableUserState> => (next ? seedToggleState(state, key) : clearToggleState(state, key));

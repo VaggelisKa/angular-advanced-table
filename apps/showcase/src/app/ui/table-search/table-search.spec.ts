@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { NatTable } from 'ng-advanced-table';
 import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
-import { NatTablePageSize, NatTablePager, NatTableSurface } from 'ng-advanced-table/components';
+import { NatTablePageSize, NatTablePager, NatTableSurface, NatTableToolbar } from 'ng-advanced-table/components';
 
 import { TableSearch } from './table-search';
 
@@ -54,6 +54,24 @@ class Host {
   }
 }
 
+@Component({
+  selector: 'app-table-search-toolbar-host',
+  imports: [NatTable, NatTableSurface, NatTableToolbar, TableSearch],
+  template: `
+    <nat-table-surface>
+      <nat-table-toolbar accessibleName="Table controls">
+        <app-table-search label="Search rows" placeholder="Search rows" showLabel toolbar />
+      </nat-table-toolbar>
+
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Demo table" />
+    </nat-table-surface>
+  `
+})
+class ToolbarHost {
+  protected readonly rows: Row[] = [{ id: 'r1', name: 'Alpha', region: 'us-east-1' }];
+  protected readonly columns = columns;
+}
+
 describe('FEATURE: TableSearch (user-defined)', () => {
   let fixture: ComponentFixture<Host>;
   let host: Host;
@@ -69,9 +87,23 @@ describe('FEATURE: TableSearch (user-defined)', () => {
     return input;
   };
 
+  const toolbarSearchElements = (
+    toolbarFixture: ComponentFixture<ToolbarHost>
+  ): { label: HTMLLabelElement; input: HTMLInputElement } => {
+    const element = toolbarFixture.nativeElement as HTMLElement;
+    const label = element.querySelector<HTMLLabelElement>('.table-search-label');
+    const input = element.querySelector<HTMLInputElement>('app-table-search input[type="search"]');
+
+    if (!label || !input) {
+      throw new Error('Expected the labeled search input to render inside the toolbar.');
+    }
+
+    return { label, input };
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Host],
+      imports: [Host, ToolbarHost],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
@@ -120,6 +152,22 @@ describe('FEATURE: TableSearch (user-defined)', () => {
         expect(host.tableState().globalFilter).toBe('gamma');
         expect(host.tableState().pagination?.pageIndex).toBe(0);
         expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
+      });
+    });
+  });
+
+  describe('GIVEN: a table search host is rendered inside a toolbar with the visible label opted in', () => {
+    describe('WHEN: toolbar and showLabel are both set', () => {
+      it('THEN: it renders a visible label naming the input and omits aria-label', async () => {
+        const toolbarFixture = TestBed.createComponent(ToolbarHost);
+
+        toolbarFixture.detectChanges();
+        await toolbarFixture.whenStable();
+
+        const { label, input } = toolbarSearchElements(toolbarFixture);
+
+        expect(label.textContent.trim()).toBe('Search rows');
+        expect(input.hasAttribute('aria-label')).toBe(false);
       });
     });
   });

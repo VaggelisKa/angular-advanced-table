@@ -11,75 +11,25 @@
     <aside class="config-card">
       <h2 class="card-title">Configure Features</h2>
       <div class="config-options">
-        <label class="toggle-control">
-          <input
-            [checked]="withGlobalFilter()"
-            class="toggle-checkbox"
-            type="checkbox"
-            (change)="withGlobalFilter.set(!withGlobalFilter())" />
-          <span class="slider"></span>
-          <span class="toggle-label">Global Search</span>
-        </label>
-        <span class="option-help">Adds fuzzy-search inputs to query row content globally.</span>
+        <div class="preset-row">
+          @for (preset of presets; track preset.key) {
+          <button class="btn btn-sm" type="button" (click)="applyPreset(preset.key)">{{ preset.label }}</button>
+          }
+        </div>
 
-        <label class="toggle-control">
-          <input
-            [checked]="showColumnVisibility()"
-            class="toggle-checkbox"
-            type="checkbox"
-            (change)="showColumnVisibility.set(!showColumnVisibility())" />
-          <span class="slider"></span>
-          <span class="toggle-label">Column Visibility</span>
-        </label>
-        <span class="option-help">Renders interactive visibility chips to toggle columns.</span>
-
-        <label class="toggle-control">
-          <input
-            [checked]="withPagination()"
-            class="toggle-checkbox"
-            type="checkbox"
-            (change)="withPagination.set(!withPagination())" />
-          <span class="slider"></span>
-          <span class="toggle-label">Pagination</span>
-        </label>
-        <span class="option-help">Enables paging logic with page-size chips and pager navigation.</span>
-        <label class="toggle-control">
-          <input [checked]="withColumnPinning()" class="toggle-checkbox" type="checkbox" (change)="toggleColumnPinning()" />
-          <span class="slider"></span>
-          <span class="toggle-label">Column Pinning</span>
-        </label>
-        <span class="option-help">Allows columns to be stuck to the left/right boundaries.</span>
-
-        <label class="toggle-control">
-          <input [checked]="withColumnReorder()" class="toggle-checkbox" type="checkbox" (change)="toggleColumnReorder()" />
-          <span class="slider"></span>
-          <span class="toggle-label">Column Reordering</span>
-        </label>
-        <span class="option-help">
-          Enables drag-and-drop, header-menu move actions, and Ctrl+Shift+Arrow keyboard column reordering (Command+Shift+Arrow on
-          macOS).
-        </span>
-        <label class="toggle-control">
-          <input
-            [checked]="showScrollControl()"
-            class="toggle-checkbox"
-            type="checkbox"
-            (change)="showScrollControl.set(!showScrollControl())" />
-          <span class="slider"></span>
-          <span class="toggle-label">Scroll Control</span>
-        </label>
-        <span class="option-help">Renders a horizontal scrolling slider for wide tables.</span>
-
-        <label class="toggle-control">
-          <input
-            [checked]="withStickyHeader()"
-            class="toggle-checkbox"
-            type="checkbox"
-            (change)="withStickyHeader.set(!withStickyHeader())" />
-          <span class="slider"></span>
-          <span class="toggle-label">Sticky Header</span>
-        </label>
-        <span class="option-help">Pins the table header to the top of the viewport during scroll.</span>
+        @for (category of featureCategories; track category.id) {
+        <div class="feature-group">
+          <h3 class="feature-group-title">{{ category.label }}</h3>
+          @for (feature of featuresFor(category.id); track feature.key) {
+          <label class="toggle-control">
+            <input [checked]="flags()[feature.key]" class="toggle-checkbox" type="checkbox" (change)="toggleFeature(feature.key)" />
+            <span class="slider"></span>
+            <span class="toggle-label">{{ feature.label }}</span>
+            <button [title]="feature.help" class="option-info" type="button"><span aria-hidden="true">i</span></button>
+          </label>
+          }
+        </div>
+        }
       </div>
     </aside>
 
@@ -89,22 +39,70 @@
       <section class="card preview-card">
         <h2 class="card-title">Live Preview</h2>
 
-        <nat-table-surface [stickyHeader]="withStickyHeader()" [(state)]="tableState" class="table-shell">
-          @if (withGlobalFilter() || showColumnVisibility()) {
+        @if (flags().withDataStates) {
+        <div aria-label="Preview data state" class="preset-row" role="group">
+          @for (state of dataStatePreviews; track state.value) {
+          <button
+            [class.is-active]="previewState() === state.value"
+            class="btn btn-sm"
+            type="button"
+            (click)="previewState.set(state.value)">
+            {{ state.label }}
+          </button>
+          }
+        </div>
+        } @if (flags().withLocalization) {
+        <div aria-label="Preview language" class="preset-row" role="group">
+          @for (locale of localePreviews; track locale.value) {
+          <button
+            [class.is-active]="previewLocale() === locale.value"
+            class="btn btn-sm"
+            type="button"
+            (click)="previewLocale.set(locale.value)">
+            {{ locale.label }}
+          </button>
+          }
+        </div>
+        }
+
+        <nat-table-surface
+          [locale]="surfaceLocale()"
+          [stickyHeader]="flags().withStickyHeader"
+          [(state)]="tableState"
+          class="table-shell"
+          columnSizingMode="fill">
+          @if (flags().withGlobalFilter || flags().showColumnVisibility || flags().withExport) {
           <nat-table-toolbar accessibleName="Table controls">
-            @if (withGlobalFilter()) {
-            <app-table-search label="Search rows" placeholder="Try 'Alpha' or 'Security'..." />
-            } @if (showColumnVisibility()) {
-            <nat-table-column-visibility />
+            @if (flags().withGlobalFilter) {
+            <app-table-search [label]="searchLabel()" [placeholder]="searchPlaceholder()" showLabel toolbar />
+            } @if (flags().withExport) {
+            <div class="toolbar-field">
+              <span class="toolbar-field-label">Actions</span>
+              <button class="btn" exportFileName="table-export" natTableExport natToolbarItem type="button">Export</button>
+            </div>
+            } @if (flags().showColumnVisibility) {
+            <nat-table-column-visibility natToolbarItemPosition="end" />
             }
           </nat-table-toolbar>
-          } @if (withPagination()) {
+          } @if (flags().withPagination) {
           <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
           }
 
-          <nat-table [columns]="columns()" [data]="data" accessibleName="Custom configured table preview" />
+          <nat-table
+            [columns]="columns()"
+            [data]="previewData()"
+            [dataStatus]="previewDataStatus()"
+            [enableRowSelection]="flags().withRowSelection"
+            [error]="previewError()"
+            accessibleName="Custom configured table preview">
+            @if (flags().withDataStates) {
+            <ng-template natTableLoading><div class="state-template">Loading rows...</div></ng-template>
+            <ng-template natTableEmpty><div class="state-template">No rows to display.</div></ng-template>
+            <ng-template let-error natTableError><div class="state-template">Failed to load rows.</div></ng-template>
+            }
+          </nat-table>
 
-          @if (showScrollControl()) {
+          @if (flags().showScrollControl) {
           <nat-table-scroll-control />
           }
         </nat-table-surface>
