@@ -32,6 +32,37 @@
     </colgroup>
     }
     <thead>
+      <ng-template #headerCellContent let-columnState="columnState" let-header="header">
+        @if (!header.isPlaceholder) { @let headerContext = header.getContext(); @let hidePrimitiveHeaderLabel =
+        shouldHidePrimitiveHeaderLabel(header, columnState); @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
+        <div class="header-cell-content">
+          <span class="header-cell-primary">
+            @if (hiddenHeaderLabel) {
+            <span class="sr-only">{{ hiddenHeaderLabel }}</span>
+            } @if (!hidePrimitiveHeaderLabel) {
+            <ng-container
+              *flexRender="
+                header.column.columnDef.header;
+                props: headerContext;
+                let rendered
+              ">
+              {{ rendered }}
+            </ng-container>
+            }
+          </span>
+        </div>
+        @if (canResizeColumn(header)) {
+        <span
+          [attr.data-testid]="`nat-table-resize-handle-${header.column.id}`"
+          [class.is-resizing]="header.column.getIsResizing()"
+          aria-hidden="true"
+          class="column-resize-handle"
+          (click)="$event.stopPropagation()"
+          (mousedown)="onResizeStart($event, header)"
+          (pointerdown)="$event.stopPropagation()"
+          (touchstart)="onResizeStart($event, header)"></span>
+        } }
+      </ng-template>
       @let tableHeaderGroups = headerGroups(); @for (headerGroup of tableHeaderGroups; track headerGroup.id) { @let
       isReorderableHeaderRow = isReorderingEnabled() && isLeafHeaderRow(headerGroup); @if (isReorderableHeaderRow) {
       <tr
@@ -58,35 +89,10 @@
           scope="col"
           (focusin)="onCellFocusIn($event)"
           (keydown)="onHeaderKeydown($event, header.column)">
-          @if (!header.isPlaceholder) { @let headerContext = header.getContext(); @let hidePrimitiveHeaderLabel =
-          shouldHidePrimitiveHeaderLabel(header, columnState); @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
-          <div class="header-cell-content">
-            <span class="header-cell-primary">
-              @if (hiddenHeaderLabel) {
-              <span class="sr-only">{{ hiddenHeaderLabel }}</span>
-              } @if (!hidePrimitiveHeaderLabel) {
-              <ng-container
-                *flexRender="
-                  header.column.columnDef.header;
-                  props: headerContext;
-                  let rendered
-                ">
-                {{ rendered }}
-              </ng-container>
-              }
-            </span>
-          </div>
-          @if (canResizeColumn(header)) {
-          <span
-            [attr.data-testid]="`nat-table-resize-handle-${header.column.id}`"
-            [class.is-resizing]="header.column.getIsResizing()"
-            aria-hidden="true"
-            class="column-resize-handle"
-            (click)="$event.stopPropagation()"
-            (mousedown)="onResizeStart($event, header)"
-            (pointerdown)="$event.stopPropagation()"
-            (touchstart)="onResizeStart($event, header)"></span>
-          } }
+          <ng-container
+            [ngTemplateOutlet]="headerCellContent"
+            [ngTemplateOutletContext]="{ header, columnState }"
+            ngTemplateOutletInjector="outlet" />
         </th>
         }
       </tr>
@@ -104,35 +110,10 @@
           scope="col"
           (focusin)="onCellFocusIn($event)"
           (keydown)="onHeaderKeydown($event, header.column)">
-          @if (!header.isPlaceholder) { @let headerContext = header.getContext(); @let hidePrimitiveHeaderLabel =
-          shouldHidePrimitiveHeaderLabel(header, columnState); @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
-          <div class="header-cell-content">
-            <span class="header-cell-primary">
-              @if (hiddenHeaderLabel) {
-              <span class="sr-only">{{ hiddenHeaderLabel }}</span>
-              } @if (!hidePrimitiveHeaderLabel) {
-              <ng-container
-                *flexRender="
-                  header.column.columnDef.header;
-                  props: headerContext;
-                  let rendered
-                ">
-                {{ rendered }}
-              </ng-container>
-              }
-            </span>
-          </div>
-          @if (canResizeColumn(header)) {
-          <span
-            [attr.data-testid]="`nat-table-resize-handle-${header.column.id}`"
-            [class.is-resizing]="header.column.getIsResizing()"
-            aria-hidden="true"
-            class="column-resize-handle"
-            (click)="$event.stopPropagation()"
-            (mousedown)="onResizeStart($event, header)"
-            (pointerdown)="$event.stopPropagation()"
-            (touchstart)="onResizeStart($event, header)"></span>
-          } }
+          <ng-container
+            [ngTemplateOutlet]="headerCellContent"
+            [ngTemplateOutletContext]="{ header, columnState }"
+            ngTemplateOutletInjector="outlet" />
         </th>
         }
       </tr>
