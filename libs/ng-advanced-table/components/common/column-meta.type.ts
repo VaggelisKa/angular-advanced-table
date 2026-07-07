@@ -57,7 +57,8 @@ declare module '@tanstack/table-core' {
      * Controls the shared header action wrapper for this column.
      *
      * Set to `false` to opt out of `withNatTableHeaderActions(...)`, or provide
-     * overrides that merge with the helper-level options for this column only.
+     * overrides such as a per-column `sortIndicator` that merge with the
+     * helper-level options for this column only.
      */
     readonly headerActions?: false | NatTableHeaderActionsColumnOptions;
   }

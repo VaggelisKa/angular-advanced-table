@@ -41,6 +41,8 @@ When multi-sort changes the meaning of the result set, show the priority near th
 
 Use `withNatTableHeaderActions(...)` when you want the bundled sort behavior, labels, and menu actions, but need indicator content that matches your product or design system.
 
+Keep the table header structure intact. The composable pattern is to leave each column's label or component in `column.header`, wrap the final columns with `withNatTableHeaderActions(...)`, and pass replacement icon or badge content through `sortIndicator`. Do not add another header row, style a row to look like a header, or wire a separate sort button just to change the icon.
+
 ```ts
 import { Component, input } from '@angular/core';
 import { flexRenderComponent, type NatTableSortIndicatorContext } from 'ng-advanced-table';
@@ -49,7 +51,7 @@ import { withNatTableHeaderActions } from 'ng-advanced-table/components';
 @Component({
   selector: 'app-sort-indicator',
   template: `
-    <span [attr.data-sort-state]="context().sortState || 'none'" class="sort-indicator">
+    <span aria-hidden="true" [attr.data-sort-state]="context().sortState || 'none'" class="sort-indicator">
       {{ context().sortState === 'asc' ? 'Asc' : context().sortState === 'desc' ? 'Desc' : 'Sort' }}
     </span>
   `,
@@ -66,7 +68,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 });
 ```
 
-The indicator receives the current `sortState`, resolved column `label`, `ariaSort` token, and column object. Keep the indicator visual only; the generated sort button still owns the accessible name and sort action.
+The indicator receives the current `sortState`, resolved column `label`, `ariaSort` token, and column object. Keep the indicator visual only; the generated sort button still owns the click handler, keyboard behavior, accessible name, multi-sort state, and `aria-sort`.
 
 Override individual columns through `column.meta.headerActions` when one column needs a different indicator or should opt out.
 

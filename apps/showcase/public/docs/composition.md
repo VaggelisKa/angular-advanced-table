@@ -83,7 +83,38 @@ readonly columns = withNatTableHeaderActions<PositionRow>(
 );
 ```
 
-The helper preserves original header content and can be applied repeatedly. For utility columns, use `hiddenHeaderLabel` to keep a screen-reader label while hiding redundant visible header text.
+The helper preserves original header content and can be applied repeatedly. It is the intended composition point for header controls: keep the real header in `column.header`, add `meta.label`, then wrap the final column array. Do not add a second styled header row or replace the table header DOM to customize sort icons.
+
+Use `sortIndicator` when the design needs custom sort icon, badge, or text content while keeping the bundled sort behavior and labels.
+
+```ts
+import { Component, input } from '@angular/core';
+import { flexRenderComponent, type NatTableSortIndicatorContext } from 'ng-advanced-table';
+import { withNatTableHeaderActions } from 'ng-advanced-table/components';
+
+@Component({
+  selector: 'app-sort-indicator',
+  template: `
+    <span aria-hidden="true" [attr.data-sort-state]="context().sortState || 'none'">
+      {{ context().sortState === 'asc' ? 'Asc' : context().sortState === 'desc' ? 'Desc' : 'Sort' }}
+    </span>
+  `,
+})
+export class SortIndicator {
+  readonly context = input.required<NatTableSortIndicatorContext>();
+}
+
+readonly columns = withNatTableHeaderActions(baseColumns, {
+  sortIndicator: (context) =>
+    flexRenderComponent(SortIndicator, {
+      inputs: { context },
+    }),
+});
+```
+
+The custom indicator is visual only. The generated sort button still owns the click handler, keyboard behavior, accessible name, multi-sort state, and `aria-sort`.
+
+For utility columns, use `hiddenHeaderLabel` to keep a screen-reader label while hiding redundant visible header text.
 
 ```ts
 {
