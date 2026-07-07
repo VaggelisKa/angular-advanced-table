@@ -305,16 +305,15 @@ describe('FEATURE: NatTable', () => {
         await fixture.whenStable();
         fixture.detectChanges();
 
-        const dragDirectives = fixture.debugElement.queryAll(By.directive(CdkDrag)).map((element) => element.injector.get(CdkDrag));
-        const dropList = fixture.debugElement.query(By.directive(CdkDropList)).injector.get(CdkDropList);
+        const dragDirectives = fixture.debugElement.queryAll(By.directive(CdkDrag));
+        const dropLists = fixture.debugElement.queryAll(By.directive(CdkDropList));
         const screenReaderText = queryAll<HTMLParagraphElement>(fixture, 'p.sr-only')
           .map((element) => element.textContent.trim())
           .join(' ');
 
         expect(queryAll(fixture, '.header-cell.is-reorderable')).toHaveLength(0);
-        expect(dragDirectives).toHaveLength(4);
-        expect(dragDirectives.every((drag) => drag.disabled)).toBe(true);
-        expect(dropList.disabled).toBe(true);
+        expect(dragDirectives).toStrictEqual([]);
+        expect(dropLists).toStrictEqual([]);
         expect(screenReaderText).not.toContain('reorder columns');
       });
     });
@@ -325,6 +324,8 @@ describe('FEATURE: NatTable', () => {
         fixture.detectChanges();
 
         expect(queryAll(fixture, '.header-cell.is-reorderable')).toHaveLength(3);
+        expect(fixture.debugElement.queryAll(By.directive(CdkDrag))).toHaveLength(4);
+        expect(fixture.debugElement.queryAll(By.directive(CdkDropList))).toHaveLength(1);
       });
     });
   });

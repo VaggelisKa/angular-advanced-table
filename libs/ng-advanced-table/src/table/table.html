@@ -32,10 +32,41 @@
     </colgroup>
     }
     <thead>
-      @let tableHeaderGroups = headerGroups(); @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
+      <ng-template #headerCellContent let-columnState="columnState" let-header="header">
+        @if (!header.isPlaceholder) { @let headerContext = header.getContext(); @let hidePrimitiveHeaderLabel =
+        shouldHidePrimitiveHeaderLabel(header, columnState); @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
+        <div class="header-cell-content">
+          <span class="header-cell-primary">
+            @if (hiddenHeaderLabel) {
+            <span class="sr-only">{{ hiddenHeaderLabel }}</span>
+            } @if (!hidePrimitiveHeaderLabel) {
+            <ng-container
+              *flexRender="
+                        header.column.columnDef.header;
+                        props: headerContext;
+                        let rendered
+                      ">
+              {{ rendered }}
+            </ng-container>
+            }
+          </span>
+        </div>
+        @if (canResizeColumn(header)) {
+        <span
+          [attr.data-testid]="`nat-table-resize-handle-${header.column.id}`"
+          [class.is-resizing]="header.column.getIsResizing()"
+          aria-hidden="true"
+          class="column-resize-handle"
+          (click)="$event.stopPropagation()"
+          (mousedown)="onResizeStart($event, header)"
+          (pointerdown)="$event.stopPropagation()"
+          (touchstart)="onResizeStart($event, header)"></span>
+        } }
+      </ng-template>
+      @let tableHeaderGroups = headerGroups(); @for (headerGroup of tableHeaderGroups; track headerGroup.id) { @let
+      isReorderableHeaderRow = isReorderingEnabled() && isLeafHeaderRow(headerGroup); @if (isReorderableHeaderRow) {
       <tr
         [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
-        [cdkDropListDisabled]="!isReorderingEnabled() || !isLeafHeaderRow(headerGroup)"
         cdkDropList
         cdkDropListOrientation="horizontal"
         ngGridRow
@@ -58,39 +89,29 @@
           scope="col"
           (focusin)="onCellFocusIn($event)"
           (keydown)="onHeaderKeydown($event, header.column)">
-          @if (!header.isPlaceholder) { @let headerContext = header.getContext(); @let hidePrimitiveHeaderLabel =
-          shouldHidePrimitiveHeaderLabel(header, columnState); @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
-          <div class="header-cell-content">
-            <span class="header-cell-primary">
-              @if (hiddenHeaderLabel) {
-              <span class="sr-only">{{ hiddenHeaderLabel }}</span>
-              } @if (!hidePrimitiveHeaderLabel) {
-              <ng-container
-                *flexRender="
-                          header.column.columnDef.header;
-                          props: headerContext;
-                          let rendered
-                        ">
-                {{ rendered }}
-              </ng-container>
-              }
-            </span>
-          </div>
-          @if (canResizeColumn(header)) {
-          <span
-            [attr.data-testid]="`nat-table-resize-handle-${header.column.id}`"
-            [class.is-resizing]="header.column.getIsResizing()"
-            aria-hidden="true"
-            class="column-resize-handle"
-            (click)="$event.stopPropagation()"
-            (mousedown)="onResizeStart($event, header)"
-            (pointerdown)="$event.stopPropagation()"
-            (touchstart)="onResizeStart($event, header)"></span>
-          } }
+          <ng-container [ngTemplateOutlet]="headerCellContent" [ngTemplateOutletContext]="{ header, columnState }" />
         </th>
         }
       </tr>
-      }
+      } @else {
+      <tr ngGridRow>
+        @for (header of headerGroup.headers; track header.id) { @let columnState = columnStates[header.column.id];
+        <th
+          [attr.aria-sort]="columnState?.ariaSort"
+          [attr.data-column-id]="header.column.id"
+          [attr.data-testid]="`nat-table-header-${header.column.id}`"
+          [class]="columnState?.headerClassMap"
+          [natTableHeaderCellLayout]="columnState"
+          ngGridCell
+          role="columnheader"
+          scope="col"
+          (focusin)="onCellFocusIn($event)"
+          (keydown)="onHeaderKeydown($event, header.column)">
+          <ng-container [ngTemplateOutlet]="headerCellContent" [ngTemplateOutletContext]="{ header, columnState }" />
+        </th>
+        }
+      </tr>
+      } }
     </thead>
     <tbody>
       @let rows = bodyRows(); @switch (bodyState()) { @case ('rows') { @for (row of rows; track row.id) { @let visibleCells =
