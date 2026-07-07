@@ -166,7 +166,9 @@ Render-metrics widgets intentionally do not expose their own component-specific 
 
 ## Stock Defaults
 
-`NatTableSurface` provides the stock default token set. Core-only tables render with conservative system-color fallbacks when no theme is present, but product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme.
+`NatTableSurface` provides the stock default token set as fallbacks, not as declarations of the public tokens: internally the surface bridges each token through a private `--sys-nat-table-*` variable that resolves your `--nat-table-*` value first and only then falls back to the stock default. A `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) therefore always wins over the stock theme, and derived stock defaults (borders, dividers, mixed colors) recompute from your overridden palette tokens. Do not set or override `--sys-nat-table-*` variables — they are internal.
+
+Core-only tables render with conservative system-color fallbacks when no theme is present, but product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme.
 
 ### Palette And Core
 
