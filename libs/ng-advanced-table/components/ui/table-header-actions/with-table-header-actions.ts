@@ -183,7 +183,9 @@ const wrapColumnHeader = <TData extends RowData>(
  *
  * The helper preserves the original header content, applies the wrapper
  * recursively to grouped columns, and optionally injects custom sort-indicator
- * content through `options.sortIndicator`.
+ * content through `options.sortIndicator`. Use this composable instead of
+ * adding extra header rows or replacing the table header DOM when the design
+ * only needs custom sort icons or badges.
  *
  * Applying the helper repeatedly is safe. Wrapped headers are unwrapped before
  * the next wrapper is installed, so reactive column builders can compose this
@@ -192,6 +194,10 @@ const wrapColumnHeader = <TData extends RowData>(
  * Set `column.meta.headerActions` to `false` to opt a column out, or provide an
  * object to override `sortIndicator`, `enableColumnPinActions`,
  * `enableColumnReorderActions`, or `accessibilityLabels` for that column.
+ *
+ * For Angular sort indicator components, return `flexRenderComponent(...)`
+ * from `sortIndicator`; the generated sort button keeps ownership of sorting,
+ * focus, keyboard, accessible-name, multi-sort, and `aria-sort` behavior.
  */
 export const withNatTableHeaderActions = <TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],

@@ -20,7 +20,7 @@ Use this skill to generate consumer code that uses the public `ng-advanced-table
 
 ## Context Pointers
 
-- For setup, imports, columns, state, and table rows, read [table-patterns.md](table-patterns.md).
+- For setup, imports, columns, header actions, custom sort indicators, state, and table rows, read [table-patterns.md](table-patterns.md).
 - For server-side sorting, filtering, pagination, requests, and retries, read [manual-data.md](manual-data.md).
 - For search fields, filter menus, toolbar widgets, and bulk controls, read [consumer-ui.md](consumer-ui.md).
 - For custom cells, row actions, interactive controls inside cells, or `flexRenderComponent`, read [custom-cells.md](custom-cells.md).

@@ -61,8 +61,56 @@ readonly columns: ColumnDef<PositionRow, unknown>[] = withNatTableHeaderActions(
 - Add `meta.label` to every visible column.
 - Set `meta.rowHeader` on the identifying column.
 - Add `hiddenHeaderLabel` for icon-only or component headers.
-- Use `withNatTableHeaderActions(...)` for bundled sorting, pinning, move, and visibility actions.
+- Use `withNatTableHeaderActions(...)` for bundled sorting, pinning, and move actions.
 - Use `withNatTableSelectionColumn(...)` for the bundled selection column.
+
+## Header Actions Composable
+
+Use `withNatTableHeaderActions(...)` to compose header controls with column definitions. Do not add extra header rows, restyle body rows as headers, or rebuild the table header DOM to customize sort icons.
+
+The pattern is:
+
+1. Keep each column's real header in `column.header`.
+2. Add `meta.label` for the accessible column name.
+3. Apply helpers that add synthetic columns first.
+4. Wrap the final columns with `withNatTableHeaderActions(...)`.
+5. Pass custom sort icon or badge content through `sortIndicator`.
+
+```ts
+import { Component, input } from '@angular/core';
+import { flexRenderComponent, type ColumnDef, type NatTableSortIndicatorContext } from 'ng-advanced-table';
+import { withNatTableHeaderActions } from 'ng-advanced-table/components';
+
+@Component({
+  selector: 'app-sort-indicator',
+  template: `
+    <span aria-hidden="true" [attr.data-sort-state]="context().sortState || 'none'">
+      {{ context().sortState === 'asc' ? 'Asc' : context().sortState === 'desc' ? 'Desc' : 'Sort' }}
+    </span>
+  `
+})
+export class SortIndicator {
+  readonly context = input.required<NatTableSortIndicatorContext>();
+}
+
+const baseColumns: ColumnDef<PositionRow, unknown>[] = [
+  {
+    accessorKey: 'title',
+    header: 'Title',
+    meta: { label: 'Title', rowHeader: true }
+  }
+];
+
+readonly columns = withNatTableHeaderActions(baseColumns, {
+  sortIndicator: (context) =>
+    flexRenderComponent(SortIndicator, {
+      inputs: { context }
+    }),
+  enableColumnReorderActions: true
+});
+```
+
+`sortIndicator` content is visual. The generated sort button still owns the click handler, keyboard behavior, accessible name, multi-sort handling, and `aria-sort` state. Use `column.meta.headerActions` for per-column overrides, or set it to `false` for utility/action columns that should keep their original header.
 
 ## State Rules
 
