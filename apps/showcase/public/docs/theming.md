@@ -2,7 +2,7 @@ The table theme contract is CSS custom properties. Put tokens on an ancestor of 
 
 ## Recommended Shape
 
-Use `NatTableSurface` when you want the stock surface and companion-control theme. Scope inherited `--nat-table-*` custom properties on a wrapper around the table, controls, and optional render-metrics UI.
+Use `NatTableSurface` when you want the shared controller scope and companion-control wiring. The core table is visually headless by default; import the opt-in stock theme (see Opt-in Stock Theme) or scope inherited `--nat-table-*` custom properties on a wrapper around the table, controls, and optional render-metrics UI.
 
 ```html
 <section class="orders-table-theme">
@@ -165,15 +165,25 @@ Reach for these direct tokens when a table control needs a local exception.
 
 Render-metrics widgets intentionally do not expose their own component-specific tokens. They inherit the shared semantic palette (`--nat-table-color-*`) so they remain readable in light and dark themes, while their compact KPI/chip styling stays internal.
 
-## Stock Defaults
+## Opt-in Stock Theme
 
-`NatTableSurface` provides the stock default token set as fallbacks, never as declarations of the public tokens. A `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) therefore always wins over the stock theme, and derived stock defaults (borders, dividers, mixed colors) recompute from your overridden palette tokens. If you inspect computed styles you may see internal `--sys-nat-table-*` bridge variables — they are implementation detail; never set them, set the matching `--nat-table-*` token instead.
+`ng-advanced-table` core is headless by default: with no theme applied, the table and companion controls render with conservative system-color fallbacks and inherit the page's colors. Neither the core table nor `NatTableSurface` ships the dark-teal stock look as a built-in default.
 
-Core-only tables render with conservative system-color fallbacks when no theme is present, but product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme.
+To get the polished stock look, import the opt-in stylesheet once, for example in your app's global styles or `main.ts`:
+
+```ts
+import 'ng-advanced-table/components/theme.css';
+```
+
+Token precedence is unchanged: a `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) still wins over the opt-in theme, and derived stock values (borders, dividers, mixed colors) recompute from your overridden palette tokens. If you inspect computed styles you may see internal `--sys-nat-table-*` bridge variables — they are implementation detail; never set them, set the matching `--nat-table-*` token instead.
+
+Product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme, whether or not the opt-in stylesheet is imported.
+
+The tables below list the values the opt-in stock theme applies. Use them as a reference if you want to replicate the stock look, override individual tokens on top of it, or build your own theme from scratch without importing `theme.css` at all.
 
 ### Palette And Core
 
-| Token                                | Stock default                                                      |
+| Token                                | Opt-in theme value                                                 |
 | ------------------------------------ | ------------------------------------------------------------------ |
 | `--nat-table-color-text`             | `#ecf5fb`                                                          |
 | `--nat-table-color-text-muted`       | `#a8c3d7`                                                          |
@@ -201,7 +211,7 @@ Core-only tables render with conservative system-color fallbacks when no theme i
 
 ### Controls
 
-| Token                                 | Stock default                                                        |
+| Token                                 | Opt-in theme value                                                    |
 | ------------------------------------- | -------------------------------------------------------------------- |
 | `--nat-table-radius-card`             | `28px`                                                               |
 | `--nat-table-radius-region`           | `24px`                                                               |
@@ -219,7 +229,7 @@ Core-only tables render with conservative system-color fallbacks when no theme i
 
 ### Layout And Stacking
 
-| Token                                      | Stock default |
+| Token                                      | Opt-in theme value |
 | ------------------------------------------ | ------------- |
 | `--nat-table-region-overflow-x`            | `auto`        |
 | `--nat-table-region-overflow-y`            | `auto`        |
@@ -238,7 +248,7 @@ Core-only tables render with conservative system-color fallbacks when no theme i
 
 ## Core-Only Tables
 
-If you do not use `NatTableSurface`, the core table still renders with fallbacks. For a polished core-only table, provide the core tokens yourself.
+The core table is unstyled by default whether or not you use `NatTableSurface` — with or without the surface, it renders with system-color fallbacks unless you import the opt-in theme or provide tokens yourself. For a polished core-only table, import `ng-advanced-table/components/theme.css` or provide the core tokens yourself.
 
 ```html
 <section class="plain-table">

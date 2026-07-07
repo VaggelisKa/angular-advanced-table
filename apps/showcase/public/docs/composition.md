@@ -43,7 +43,7 @@ Prefer the scoped surface for normal pages. Use direct controller binding only w
 
 | Control                             | Use it for                                                |
 | ----------------------------------- | --------------------------------------------------------- |
-| `NatTableSurface`                   | Controller scope, default theme tokens, and state binding |
+| `NatTableSurface`                   | Controller scope, companion-control wiring, and state binding (styling is opt-in — see Theming) |
 | `NatTableColumnVisibility`          | Hide and show hideable columns                            |
 | `NatTablePageSize`                  | Page-size chips                                           |
 | `NatTablePager`                     | Previous and next page controls                           |

@@ -78,6 +78,8 @@ export class PositionsTable {
 
 Rows with a string or number `id` property get stable table identity automatically. Use `getRowId` when identity lives somewhere else.
 
+The table above is visually headless: it inherits page colors and system defaults. For the polished stock look, `import 'ng-advanced-table/components/theme.css'` once (see `/docs/theming`), or theme it yourself with `--nat-table-*` tokens.
+
 ## Core-Only Scope
 
 For a core-only table, provide `NatTableService` at the local wrapper that owns the table. Use `NatTableSurface` for the standard scoped controller and companion-control wiring.
