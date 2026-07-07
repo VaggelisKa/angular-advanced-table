@@ -33,4 +33,4 @@ Use this skill to generate consumer code that uses the public `ng-advanced-table
 - Keep app-specific fetching, actions, dialogs, routing, and analytics outside the table primitives.
 - Patch the intended state slice and preserve unrelated slices.
 - Always include table names, column labels, keyboard-reachable controls, and WCAG AA contrast.
-- Style through `--nat-table-*` custom properties, not private classes or removed shorthand tokens.
+- Style through `--nat-table-*` custom properties set on a wrapper ancestor — these always win over the stock theme. Never target library elements from outside (`nat-table-surface { ... }`), private classes, `::ng-deep`, or removed shorthand tokens.
