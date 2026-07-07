@@ -136,7 +136,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 });
 ```
 
-The header actions helper adds sort buttons when a column can sort, pin menu items when the column can pin, and move menu items when `enableColumnReorderActions` is enabled.
+The header actions helper adds sort buttons when a column can sort, pin menu items when the column can pin, and move menu items when `enableColumnReorderActions` is enabled. It also accepts custom sort indicator content through `sortIndicator`, so custom sort icons should compose through the helper rather than through extra header rows.
 
 Enable table-owned reordering on the surface for tables that should expose move affordances.
 
@@ -260,5 +260,6 @@ Disable export for columns that are useful only on screen.
 - Do not omit `meta.label` because the visible `header` happens to be a string today.
 - Do not rely on namespaced positional fallback ids for interactive tables.
 - Do not make clickable `<div>` or `<span>` content inside cells; use real controls.
+- Do not add fake header rows to customize sorting; use `withNatTableHeaderActions(..., { sortIndicator })`.
 - Do not enable resizing on every column automatically. Choose the columns where resizing is useful.
 - Do not move workflow state such as filters, dialogs, or mutations into cell components.

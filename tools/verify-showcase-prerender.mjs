@@ -50,7 +50,7 @@ assertContains(quickStartHtml, 'content="/docs/quick-start"', quickStartRoute);
 const docsIndexHtml = readRouteHtml('docs');
 
 assertContains(docsIndexHtml, 'id="showcase-initial-theme"', 'docs');
-assertContains(docsIndexHtml, '--showcase-page-bg: #0b0d10', 'docs');
+assertContains(docsIndexHtml, '--sc-bg: #0b0d10', 'docs');
 assertContains(docsIndexHtml, 'data-testid="showcase-nav-link-quick-start"', 'docs');
 assertContains(docsIndexHtml, 'aria-current="page"', 'docs');
 

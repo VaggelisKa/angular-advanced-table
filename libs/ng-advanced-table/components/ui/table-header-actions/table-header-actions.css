@@ -12,7 +12,7 @@
 .header-actions-row {
   display: flex;
   flex-wrap: nowrap;
-  gap: var(--nat-table-space-header-actions-gap, 12px);
+  gap: var(--nat-table-space-header-actions-gap, var(--sys-nat-table-space-header-actions-gap, 12px));
   align-items: center;
   justify-content: space-between;
   inline-size: 100%;
@@ -34,7 +34,7 @@
   display: inline-flex;
   flex: 0 0 auto;
   flex-wrap: nowrap;
-  gap: var(--nat-table-space-header-controls-gap, 6px);
+  gap: var(--nat-table-space-header-controls-gap, var(--sys-nat-table-space-header-controls-gap, 6px));
   align-items: center;
 }
 
@@ -74,22 +74,22 @@
   cursor: pointer;
   background: transparent;
   border: 0;
-  border-radius: var(--nat-table-radius-chip, 100vmax);
+  border-radius: var(--nat-table-radius-chip, var(--sys-nat-table-radius-chip, 100vmax));
 }
 
 .sort-button,
 .menu-button {
   transition:
-    background-color var(--nat-table-transition-medium, 180ms ease),
-    border-color var(--nat-table-transition-medium, 180ms ease),
-    box-shadow var(--nat-table-transition-medium, 180ms ease),
-    transform var(--nat-table-transition-medium, 180ms ease),
-    color var(--nat-table-transition-medium, 180ms ease);
+    background-color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    border-color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    box-shadow var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    transform var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
+    color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease));
 }
 
 .sort-button {
   display: inline-flex;
-  gap: var(--nat-table-space-chip-row-gap, 10px);
+  gap: var(--nat-table-space-chip-row-gap, var(--sys-nat-table-space-chip-row-gap, 10px));
   align-items: center;
   min-width: 0;
   max-width: 100%;
@@ -108,7 +108,7 @@
 }
 
 .sort-button.is-sorted {
-  color: var(--nat-table-sort-button-color-sorted, inherit);
+  color: var(--nat-table-sort-button-color-sorted, var(--sys-nat-table-sort-button-color-sorted, inherit));
 }
 
 .menu-button[aria-expanded='true'] {
@@ -119,7 +119,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .sort-button:hover {
-    transform: var(--nat-table-hover-lift, translateY(-1px));
+    transform: var(--nat-table-hover-lift, var(--sys-nat-table-hover-lift, translateY(-1px)));
   }
 
   .menu-button:hover {
@@ -131,8 +131,9 @@
 
 .sort-button:focus-visible,
 .menu-button:focus-visible {
-  outline: var(--nat-table-focus-ring-width, 2px) solid var(--nat-table-focus-ring-color, currentColor);
-  outline-offset: var(--nat-table-focus-ring-offset, 2px);
+  outline: var(--nat-table-focus-ring-width, var(--sys-nat-table-focus-ring-width, 2px)) solid
+    var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, currentColor));
+  outline-offset: var(--nat-table-focus-ring-offset, var(--sys-nat-table-focus-ring-offset, 2px));
 }
 
 .sort-icon {
@@ -140,7 +141,7 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  min-width: var(--nat-table-sort-icon-min-width, 1.05rem);
+  min-width: var(--nat-table-sort-icon-min-width, var(--sys-nat-table-sort-icon-min-width, 1.05rem));
   line-height: 0;
 }
 
@@ -159,9 +160,9 @@
 
   /* Digit inherits text color (WCAG 1.4.3: accents too light for small text);
      chip keeps the accent tint via the shared active-sort token. */
-  color: var(--nat-table-sort-priority-color, inherit);
-  background: var(--nat-table-sort-icon-chip-background-active);
-  border-radius: var(--nat-table-radius-chip, 100vmax);
+  color: var(--nat-table-sort-priority-color, var(--sys-nat-table-sort-priority-color, inherit));
+  background: var(--nat-table-sort-icon-chip-background-active, var(--sys-nat-table-sort-icon-chip-background-active));
+  border-radius: var(--nat-table-radius-chip, var(--sys-nat-table-radius-chip, 100vmax));
 }
 
 .menu-button__icon {
@@ -175,60 +176,75 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--nat-table-sort-icon-chip-padding, 2px 3px);
+  padding: var(--nat-table-sort-icon-chip-padding, var(--sys-nat-table-sort-icon-chip-padding, 2px 3px));
   line-height: 0;
-  background: var(--nat-table-sort-icon-chip-background, transparent);
-  border-radius: var(--nat-table-sort-icon-chip-radius, 6px);
+  background: var(--nat-table-sort-icon-chip-background, var(--sys-nat-table-sort-icon-chip-background, transparent));
+  border-radius: var(--nat-table-sort-icon-chip-radius, var(--sys-nat-table-sort-icon-chip-radius, 6px));
   transition:
-    background-color var(--nat-table-transition-fast, 120ms ease),
-    box-shadow var(--nat-table-transition-fast, 120ms ease);
+    background-color var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease)),
+    box-shadow var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease));
 }
 
 .nat-default-sort[data-sort-state='asc'],
 .nat-default-sort[data-sort-state='desc'] {
   background: var(
     --nat-table-sort-icon-chip-background-active,
-    color-mix(in srgb, var(--nat-table-sort-icon-color, currentColor) 14%, transparent)
+    var(
+      --sys-nat-table-sort-icon-chip-background-active,
+      color-mix(in srgb, var(--nat-table-sort-icon-color, var(--sys-nat-table-sort-icon-color, currentColor)) 14%, transparent)
+    )
   );
 }
 
 .nat-default-sort__svg {
   display: block;
   flex-shrink: 0;
-  width: var(--nat-table-sort-icon-svg-width, 10px);
-  height: var(--nat-table-sort-icon-svg-height, 12px);
+  width: var(--nat-table-sort-icon-svg-width, var(--sys-nat-table-sort-icon-svg-width, 10px));
+  height: var(--nat-table-sort-icon-svg-height, var(--sys-nat-table-sort-icon-svg-height, 12px));
   overflow: visible;
 }
 
 /* Solid chevrons read with stronger contrast than thin outlines. */
 .nat-default-sort__up,
 .nat-default-sort__down {
-  fill: var(--nat-table-sort-icon-color-idle, color-mix(in srgb, currentColor 45%, transparent));
+  fill: var(
+    --nat-table-sort-icon-color-idle,
+    var(--sys-nat-table-sort-icon-color-idle, color-mix(in srgb, currentColor 45%, transparent))
+  );
   stroke: none;
   transform-origin: center;
   transition:
-    fill var(--nat-table-transition-fast, 120ms ease),
-    opacity var(--nat-table-transition-fast, 120ms ease),
-    transform var(--nat-table-transition-fast, 120ms ease);
+    fill var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease)),
+    opacity var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease)),
+    transform var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease));
 }
 
 /* Sorted: active direction is the accent color; inactive direction fades back. */
 .nat-default-sort[data-sort-state='asc'] .nat-default-sort__up,
 .nat-default-sort[data-sort-state='desc'] .nat-default-sort__down {
-  fill: var(--nat-table-sort-icon-color-active, var(--nat-table-sort-icon-color, currentColor));
+  fill: var(
+    --nat-table-sort-icon-color-active,
+    var(--sys-nat-table-sort-icon-color-active, var(--nat-table-sort-icon-color, var(--sys-nat-table-sort-icon-color, currentColor)))
+  );
   transform: scale(1.05);
 }
 
 .nat-default-sort[data-sort-state='asc'] .nat-default-sort__down,
 .nat-default-sort[data-sort-state='desc'] .nat-default-sort__up {
-  opacity: var(--nat-table-sort-icon-muted-opacity, 0.75);
-  fill: var(--nat-table-sort-icon-color-muted, color-mix(in srgb, currentColor 22%, transparent));
+  opacity: var(--nat-table-sort-icon-muted-opacity, var(--sys-nat-table-sort-icon-muted-opacity, 0.75));
+  fill: var(
+    --nat-table-sort-icon-color-muted,
+    var(--sys-nat-table-sort-icon-color-muted, color-mix(in srgb, currentColor 22%, transparent))
+  );
 }
 
 .sort-button[disabled] .nat-default-sort__up,
 .sort-button[disabled] .nat-default-sort__down {
   opacity: 1;
-  fill: var(--nat-table-sort-icon-color-disabled, color-mix(in srgb, currentColor 22%, transparent));
+  fill: var(
+    --nat-table-sort-icon-color-disabled,
+    var(--sys-nat-table-sort-icon-color-disabled, color-mix(in srgb, currentColor 22%, transparent))
+  );
   transform: none;
 }
 
@@ -237,11 +253,11 @@
   gap: 2px;
   min-width: 12rem;
   padding: 6px;
-  color: var(--nat-table-header-color, inherit);
+  color: var(--nat-table-header-color, var(--sys-nat-table-header-color, inherit));
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 96%, currentcolor 4%),
-    color-mix(in srgb, var(--nat-table-region-background, canvas) 90%, currentcolor 10%)
+    color-mix(in srgb, var(--nat-table-region-background, var(--sys-nat-table-region-background, canvas)) 96%, currentcolor 4%),
+    color-mix(in srgb, var(--nat-table-region-background, var(--sys-nat-table-region-background, canvas)) 90%, currentcolor 10%)
   );
   border: 1px solid color-mix(in srgb, currentcolor 12%, transparent);
   border-radius: 14px;
@@ -267,9 +283,9 @@
   border: 0;
   border-radius: 10px;
   transition:
-    background-color var(--nat-table-transition-fast, 120ms ease),
-    color var(--nat-table-transition-fast, 120ms ease),
-    transform var(--nat-table-transition-fast, 120ms ease);
+    background-color var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease)),
+    color var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease)),
+    transform var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease));
 }
 
 .column-menu-item[data-active='true']:not([disabled]),
@@ -280,12 +296,18 @@
 
 @media (hover: hover) and (pointer: fine) {
   .sort-button:hover:not([disabled]) .nat-default-sort {
-    background: var(--nat-table-sort-icon-chip-background-hover, color-mix(in srgb, currentColor 8%, transparent));
+    background: var(
+      --nat-table-sort-icon-chip-background-hover,
+      var(--sys-nat-table-sort-icon-chip-background-hover, color-mix(in srgb, currentColor 8%, transparent))
+    );
   }
 
   .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__up,
   .sort-button:hover:not([disabled]) .nat-default-sort[data-sort-state='none'] .nat-default-sort__down {
-    fill: var(--nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent));
+    fill: var(
+      --nat-table-sort-icon-color-hover,
+      var(--sys-nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent))
+    );
   }
 
   .column-menu-item:hover:not([disabled]) {
@@ -299,8 +321,12 @@
 }
 
 .column-menu-item.is-active {
-  color: var(--nat-table-pin-color-pinned, inherit);
-  background: color-mix(in srgb, var(--nat-table-pin-color-pinned, currentColor) 12%, transparent);
+  color: var(--nat-table-pin-color-pinned, var(--sys-nat-table-pin-color-pinned, inherit));
+  background: color-mix(
+    in srgb,
+    var(--nat-table-pin-color-pinned, var(--sys-nat-table-pin-color-pinned, currentColor)) 12%,
+    transparent
+  );
 }
 
 .column-menu-item[disabled] {
@@ -313,8 +339,8 @@
   opacity: 0;
   transform: scale(0.75);
   transition:
-    opacity var(--nat-table-transition-fast, 120ms ease),
-    transform var(--nat-table-transition-fast, 120ms ease);
+    opacity var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease)),
+    transform var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease));
 }
 
 .column-menu-item__check.is-visible {

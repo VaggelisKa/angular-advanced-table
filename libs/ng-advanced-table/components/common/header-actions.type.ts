@@ -23,7 +23,9 @@ export type NatTableSortIndicatorContext<TData extends RowData = RowData> = {
  * Custom content accepted by `withNatTableHeaderActions(..., { sortIndicator })`.
  *
  * Return a string/number for simple glyph swaps, or a FlexRender-compatible
- * renderer for richer Angular content.
+ * renderer for richer Angular content, usually via `flexRenderComponent(...)`.
+ * The generated sort button still owns sorting behavior, keyboard handling,
+ * accessible names, and `aria-sort`; this content should stay visual.
  */
 export type NatTableSortIndicatorContent =
   | string
@@ -44,7 +46,8 @@ export type NatTableHeaderRenderContent =
  * Options for {@link withNatTableHeaderActions}.
  *
  * Use `sortIndicator` to replace the built-in unsorted/ascending/descending glyphs
- * while keeping the same sort, pin, and move-column menu behavior.
+ * while keeping the same sort, pin, and move-column menu behavior. Do not create
+ * extra header rows or custom header DOM just to swap the sort icon.
  */
 export type NatTableHeaderActionsOptions = {
   /** Custom content rendered inside the sort button for each sortable column. */

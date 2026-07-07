@@ -55,6 +55,25 @@ describe('FEATURE: NatTable UI', () => {
       });
     });
 
+    describe('WHEN: the surface theme stylesheet is registered', () => {
+      it('THEN: it declares internal --sys-nat-table-* bridges and never public --nat-table-* tokens', () => {
+        fixture.detectChanges();
+
+        const cssText = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .map((rule) => rule.cssText)
+          .join('\n');
+
+        // Runtime twin of the property-disallowed-list rule in the library
+        // stylelint config (#243): a public token DECLARED by library CSS is
+        // applied directly to the element and masks consumer values inherited
+        // from wrapper ancestors. Reads (`var(--nat-table-…)`) are expected
+        // everywhere; declarations must use the --sys-nat-table-* bridge.
+        expect(cssText).toMatch(/--sys-nat-table-color-text:\s*var\(\s*--nat-table-color-text/);
+        expect(cssText).not.toMatch(/[{;]\s*--nat-table-[a-z-]+\s*:/);
+      });
+    });
+
     describe('WHEN: the component initializes', () => {
       it('THEN: it does not emit stateChange on initialization', async () => {
         fixture.destroy();

@@ -1,19 +1,26 @@
 @if (controller()?.enableGlobalFilter()) { @if (toolbar()) {
-<input
-  [attr.aria-label]="label()"
-  [placeholder]="placeholder()"
-  [value]="value()"
-  class="table-search-input table-search-input--toolbar"
-  natToolbarItem
-  type="search"
-  (input)="onInput($event)" />
+<div class="table-search">
+  @if (showLabel()) {
+  <label [attr.for]="inputId" class="table-search-label">{{ resolvedLabel() }}</label>
+  }
+  <input
+    [attr.aria-controls]="tableElementId()"
+    [attr.aria-label]="showLabel() ? null : resolvedLabel()"
+    [id]="inputId"
+    [placeholder]="resolvedPlaceholder()"
+    [value]="value()"
+    class="table-search-input table-search-input--toolbar"
+    natToolbarItem
+    type="search"
+    (input)="onInput($event)" />
+</div>
 } @else {
 <div class="table-search">
-  <label [attr.for]="inputId" class="table-search-label">{{ label() }}</label>
+  <label [attr.for]="inputId" class="table-search-label">{{ resolvedLabel() }}</label>
   <input
     [attr.aria-controls]="tableElementId()"
     [id]="inputId"
-    [placeholder]="placeholder()"
+    [placeholder]="resolvedPlaceholder()"
     [value]="value()"
     class="table-search-input"
     type="search"

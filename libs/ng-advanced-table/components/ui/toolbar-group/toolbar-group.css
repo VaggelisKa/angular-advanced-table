@@ -3,7 +3,7 @@
   flex-wrap: nowrap;
 
   /* Tighter than the toolbar gap by default — group members read as one unit. */
-  gap: var(--nat-table-toolbar-group-gap, 4px);
+  gap: var(--nat-table-toolbar-group-gap, var(--sys-nat-table-toolbar-group-gap, 4px));
   align-items: center;
   min-width: 0;
 }

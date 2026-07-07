@@ -5,7 +5,26 @@ Use this reference for themes, density, cell alignment, semantic tones, and layo
 ## Theme Contract
 
 - Use the public `--nat-table-*` CSS custom-property contract.
-- Scope product themes on a wrapper around `<nat-table-surface>` or the table feature component.
+- Scope product themes on a wrapper around `<nat-table-surface>` or the table feature component. Tokens set on any ancestor always win over the stock surface theme.
+- Canonical shape — copy this, then override more tokens as needed:
+
+```html
+<section class="orders-theme">
+  <nat-table-surface>
+    <nat-table [data]="rows()" [columns]="columns" accessibleName="Orders" />
+  </nat-table-surface>
+</section>
+```
+
+```css
+.orders-theme {
+  --nat-table-color-text: #111827;
+  --nat-table-color-accent: #2563eb;
+  --nat-table-color-surface: #ffffff;
+  --nat-table-header-background: #f9fafb;
+}
+```
+
 - Keep overrides local unless you intentionally define a global table theme.
 - Do not target private library classes.
 - Do not use removed shorthand tokens such as `--text`, `--accent`, or `--surface`.
