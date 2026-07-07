@@ -5,7 +5,8 @@ Use this reference for themes, density, cell alignment, semantic tones, and layo
 ## Theme Contract
 
 - Use the public `--nat-table-*` CSS custom-property contract.
-- Scope product themes on a wrapper around `<nat-table-surface>` or the table feature component. Tokens set on any ancestor always win over the stock surface theme.
+- Scope product themes on a wrapper around `<nat-table-surface>` or the table feature component. Wrapper tokens always win over the stock surface theme: the library never declares public tokens, only internal `--sys-nat-table-*` fallback bridges.
+- Do not set or reference internal `--sys-nat-table-*` variables.
 - Canonical shape — copy this, then override more tokens as needed:
 
 ```html
