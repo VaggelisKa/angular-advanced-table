@@ -229,22 +229,23 @@ The tables below list the values the opt-in stock theme applies. Use them as a r
 
 ### Layout And Stacking
 
-| Token                                      | Opt-in theme value |
-| ------------------------------------------ | ------------------ |
-| `--nat-table-region-overflow-x`            | `auto`             |
-| `--nat-table-region-overflow-y`            | `auto`             |
-| `--nat-table-region-overscroll-behavior-y` | `auto`             |
-| `--nat-table-max-height`                   | `inherit`          |
-| `--nat-table-min-height`                   | `auto`             |
-| `--nat-table-height`                       | `inherit`          |
-| `--nat-table-sticky-top`                   | `0`                |
-| `--nat-table-z-index-sticky-header`        | `4`                |
-| `--nat-table-z-index-pinned-cell`          | `5`                |
-| `--nat-table-z-index-pinned-header`        | `6`                |
-| `--nat-table-z-index-focus-cell`           | `7`                |
-| `--nat-table-z-index-resize-handle`        | `8`                |
-| `--nat-table-z-index-resize-guide`         | `9`                |
-| `--nat-table-z-index-drag-preview`         | `12`               |
+| Token                                      | Opt-in theme value               |
+| ------------------------------------------ | -------------------------------- |
+| `--nat-table-region-overflow-x`            | `auto`                           |
+| `--nat-table-region-overflow-y`            | `auto`                           |
+| `--nat-table-region-overscroll-behavior-y` | `auto`                           |
+| `--nat-table-max-height`                   | `inherit`                        |
+| `--nat-table-min-height`                   | `auto`                           |
+| `--nat-table-state-min-height`             | `var(--nat-table-min-height, 0)` |
+| `--nat-table-height`                       | `inherit`                        |
+| `--nat-table-sticky-top`                   | `0`                              |
+| `--nat-table-z-index-sticky-header`        | `4`                              |
+| `--nat-table-z-index-pinned-cell`          | `5`                              |
+| `--nat-table-z-index-pinned-header`        | `6`                              |
+| `--nat-table-z-index-focus-cell`           | `7`                              |
+| `--nat-table-z-index-resize-handle`        | `8`                              |
+| `--nat-table-z-index-resize-guide`         | `9`                              |
+| `--nat-table-z-index-drag-preview`         | `12`                             |
 
 ## Core-Only Tables
 

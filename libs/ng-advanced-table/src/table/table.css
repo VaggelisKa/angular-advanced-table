@@ -420,10 +420,23 @@ tbody .data-row:last-child .data-cell {
  * Pin state content to the visible scroll viewport so it centers within the
  * region the user actually sees, not the full (possibly very wide) table.
  */
+
+/*
+ * Flex (not grid) so projected inline component hosts are blockified and their
+ * internal `width: 100%` resolves against this box (100cqi) instead of collapsing.
+ */
 .table-state-content {
   position: sticky;
   left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100cqi;
+  min-height: var(
+    --nat-table-state-min-height,
+    var(--sys-nat-table-state-min-height, var(--nat-table-min-height, var(--sys-nat-table-min-height, 0)))
+  );
   text-align: center;
 }
 
