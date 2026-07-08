@@ -20,7 +20,20 @@
       --nat-table-region-overflow-y,
       var(--sys-nat-table-region-overflow-y, var(--nat-table-region-overflow, var(--sys-nat-table-region-overflow, auto)))
     );
-  overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y, var(--sys-nat-table-region-overscroll-behavior-y, auto));
+  overscroll-behavior: var(
+      --nat-table-region-overscroll-behavior-x,
+      var(
+        --sys-nat-table-region-overscroll-behavior-x,
+        var(--nat-table-region-overscroll-behavior, var(--sys-nat-table-region-overscroll-behavior, none))
+      )
+    )
+    var(
+      --nat-table-region-overscroll-behavior-y,
+      var(
+        --sys-nat-table-region-overscroll-behavior-y,
+        var(--nat-table-region-overscroll-behavior, var(--sys-nat-table-region-overscroll-behavior, none))
+      )
+    );
   background: var(--nat-table-region-background, var(--sys-nat-table-region-background, transparent));
   border: var(--nat-table-region-border-width, var(--sys-nat-table-region-border-width, 1px)) solid
     var(--nat-table-region-border-color, var(--sys-nat-table-region-border-color, rgb(128 128 128 / 24%)));
