@@ -1,3 +1,10 @@
+## 2.5.0 (2026-07-08)
+
+### 🚀 Features
+
+- Make the core table visually headless by default and ship the stock look as an opt-in theme. `NatTableSurface` no longer bakes the opinionated dark-teal palette and card chrome (background, border, radius, shadow, backdrop-filter) into its `--sys-nat-table-*` bridge defaults, so an unthemed table now inherits page/system colors and renders structurally. Import `ng-advanced-table/components/theme.css` once to restore the previous stock appearance, or set `--nat-table-*` tokens on a wrapper as before. The public `--nat-table-*` token contract and all token names are unchanged. Behavioral note: consumers who relied on the built-in default appearance without providing any tokens will now see an unstyled table until they import the opt-in theme or supply their own tokens. (#245) ([#257](https://github.com/VaggelisKa/angular-advanced-table/pull/257))
+- Lay out empty/loading/error state content in a centered flex column so projected rich content (custom elements, block/flex layouts) no longer collapses to zero size. Add a `--nat-table-state-min-height` token to reserve vertical space for state rows (defaults to `--nat-table-min-height`, else `0`). ([#264](https://github.com/VaggelisKa/angular-advanced-table/pull/264), [#255](https://github.com/VaggelisKa/angular-advanced-table/issues/255))
+
 ## 2.4.0 (2026-07-08)
 
 ### 🚀 Features
