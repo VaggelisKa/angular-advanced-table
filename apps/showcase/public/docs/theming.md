@@ -178,19 +178,19 @@ To get the polished stock look, import the opt-in stylesheet once, for example i
 import 'ng-advanced-table/components/theme.css';
 ```
 
-The stock theme is light/dark responsive: its palette uses `light-dark()` and the theme sets `color-scheme: light dark` on `:root`, so it follows the operating-system preference out of the box. To pin or toggle the mode, set `color-scheme` (and optionally a `[data-theme]` attribute) on a wrapper. Every stock token follows the resolved scheme, including the card shadow, whose color is set with `light-dark()`.
+The stock theme is light/dark responsive: its palette uses `light-dark()` and the theme sets `color-scheme: light dark` on `:root`, so it follows the operating-system preference out of the box. To pin or toggle the mode, set `color-scheme` (and optionally a `[data-theme]` attribute) on a wrapper. The opt-in theme is intentionally outside the Safari 16.5 baseline for core table behavior; Safari 16.5 consumers can theme through their own `--nat-table-*` tokens instead of importing `theme.css`.
 
 Token precedence is unchanged: a `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) still wins over the opt-in theme, and derived stock values (borders, dividers, mixed colors) recompute from your overridden palette tokens. If you inspect computed styles you may see internal `--sys-nat-table-*` bridge variables — they are implementation detail; never set them, set the matching `--nat-table-*` token instead.
 
 Product UI should scope tokens on a wrapper or `NatTableSurface` ancestor so all companion controls inherit the same theme, whether or not the opt-in stylesheet is imported.
 
-The tables below list the values the opt-in stock theme applies. Use them as a reference if you want to replicate the stock look, override individual tokens on top of it, or build your own theme from scratch without importing `theme.css` at all.
+The tables below list the main stock values and resolved core defaults. Use them as a reference if you want to replicate the stock look, override individual tokens on top of it, or build your own theme from scratch without importing `theme.css` at all.
 
 ### Palette And Core
 
 The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 
-| Token                                | Opt-in theme value                                                                             |
+| Token                                | Stock value or resolved default                                                                |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | `--nat-table-font-family`            | `'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, helvetica, arial, sans-serif` |
 | `--nat-table-color-text`             | `light-dark(#0f1419, #e6eaef)`                                                                 |
@@ -219,7 +219,7 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 
 ### Controls
 
-| Token                                 | Opt-in theme value                                                                      |
+| Token                                 | Stock value or resolved default                                                         |
 | ------------------------------------- | --------------------------------------------------------------------------------------- |
 | `--nat-table-radius-card`             | `12px`                                                                                  |
 | `--nat-table-radius-region`           | `8px`                                                                                   |
@@ -237,7 +237,7 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 
 ### Layout And Stacking
 
-| Token                                      | Opt-in theme value               |
+| Token                                      | Stock value or resolved default  |
 | ------------------------------------------ | -------------------------------- |
 | `--nat-table-region-overflow-x`            | `auto`                           |
 | `--nat-table-region-overflow-y`            | `auto`                           |
