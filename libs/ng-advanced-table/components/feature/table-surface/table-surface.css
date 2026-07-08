@@ -150,6 +150,7 @@
   --sys-nat-table-cell-color-warning: var(--nat-table-cell-color-warning);
   --sys-nat-table-cell-color-neutral: var(--nat-table-cell-color-neutral);
   --sys-nat-table-pinned-background: var(--nat-table-pinned-background);
+  --sys-nat-table-pinned-header-background: var(--nat-table-pinned-header-background);
   --sys-nat-table-pinned-divider-color: var(--nat-table-pinned-divider-color);
   --sys-nat-table-empty-state-color: var(--nat-table-empty-state-color);
   --sys-nat-table-loading-state-color: var(--nat-table-loading-state-color);
