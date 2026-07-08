@@ -75,8 +75,7 @@
 .header-cell,
 .data-cell {
   box-sizing: border-box;
-  padding: var(--nat-table-space-cell-y, var(--sys-nat-table-space-cell-y, 0))
-    var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 0));
+  padding-block: var(--nat-table-space-cell-y, var(--sys-nat-table-space-cell-y, 0));
   text-align: start;
   border-bottom: var(--nat-table-cell-border-width, var(--sys-nat-table-cell-border-width, 1px)) solid
     var(--nat-table-cell-border-color, var(--sys-nat-table-cell-border-color, rgb(128 128 128 / 24%)));
@@ -95,6 +94,10 @@
      table's right edge — appearing to sit on the last column. The sticky-header and
      pinned rules override this to position: sticky, itself a valid containing block. */
   position: relative;
+  padding-inline: var(
+    --nat-table-space-header-cell-x,
+    var(--sys-nat-table-space-header-cell-x, var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 0)))
+  );
   font-size: var(--nat-table-font-size-header, var(--sys-nat-table-font-size-header, 0.84rem));
   font-weight: var(--nat-table-font-weight-header, var(--sys-nat-table-font-weight-header, 600));
   color: var(--nat-table-header-color, var(--sys-nat-table-header-color, inherit));
@@ -149,6 +152,10 @@
 }
 
 .data-cell {
+  padding-inline: var(
+    --nat-table-space-data-cell-x,
+    var(--sys-nat-table-space-data-cell-x, var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 0)))
+  );
   line-height: var(--nat-table-line-height-cell, var(--sys-nat-table-line-height-cell, 1.4));
   vertical-align: middle;
   white-space: normal;

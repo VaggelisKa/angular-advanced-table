@@ -44,6 +44,8 @@
   --sys-nat-table-space-header-content-gap: var(--nat-table-space-header-content-gap);
   --sys-nat-table-space-cell-y: var(--nat-table-space-cell-y);
   --sys-nat-table-space-cell-x: var(--nat-table-space-cell-x);
+  --sys-nat-table-space-header-cell-x: var(--nat-table-space-header-cell-x);
+  --sys-nat-table-space-data-cell-x: var(--nat-table-space-data-cell-x);
   --sys-nat-table-space-empty-state: var(--nat-table-space-empty-state);
   --sys-nat-table-radius-card: var(--nat-table-radius-card);
   --sys-nat-table-radius-card-compact: var(--nat-table-radius-card-compact);

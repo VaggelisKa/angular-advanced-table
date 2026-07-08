@@ -144,7 +144,9 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-focus-ring-color`         | Keyboard focus indicator                                                      |
 | `--nat-table-focus-ring-width`         | Keyboard focus indicator width                                                |
 | `--nat-table-space-cell-y`             | Cell block padding                                                            |
-| `--nat-table-space-cell-x`             | Cell inline padding                                                           |
+| `--nat-table-space-cell-x`             | Cell inline padding (shared base)                                             |
+| `--nat-table-space-header-cell-x`      | Header cell inline padding (falls back to `--nat-table-space-cell-x`)         |
+| `--nat-table-space-data-cell-x`        | Data cell inline padding (falls back to `--nat-table-space-cell-x`)           |
 
 Set the border-width tokens to `0` when a design needs to remove the outer table boundary or internal dividers.
 
