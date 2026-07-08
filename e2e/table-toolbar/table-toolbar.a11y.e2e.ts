@@ -21,9 +21,20 @@ test.describe('FEATURE: Table toolbar', () => {
     shareButton: page.getByTestId('share-button')
   });
 
+  // The toolbar docs example lazy-renders via `@defer (on viewport)`. Scroll its
+  // preview panel into view so the toolbar renders deterministically — a short
+  // headless viewport won't trigger the defer on its own once doc copy grows
+  // above the example, and the roving-focus assertions would time out on an
+  // unrendered placeholder.
+  const revealToolbarExample = async (page: Page): Promise<void> => {
+    await page.getByTestId('docs-example-toolbar-actions-preview-panel').scrollIntoViewIfNeeded();
+    await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+  };
+
   test.describe('GIVEN: the toolbar showcase page is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/toolbar-actions');
+      await revealToolbarExample(page);
     });
 
     test.describe('WHEN: keyboard activates a toolbar item', () => {
@@ -127,7 +138,7 @@ test.describe('FEATURE: Table toolbar', () => {
         // re-navigates with RTL direction inside this body (rule 5) — not hoisted to the shared GIVEN
         await applyDocumentDirection(page, 'rtl');
         await page.goto('/docs/toolbar-actions');
-        await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+        await revealToolbarExample(page);
 
         const { exportButton, refreshButton } = buttons(page);
 
@@ -135,6 +146,48 @@ test.describe('FEATURE: Table toolbar', () => {
           await exportButton.focus();
           await exportButton.press('ArrowLeft');
           await expect(refreshButton).toBeFocused();
+        });
+      });
+    });
+
+    test.describe('WHEN: focus is on a text input toolbar item', () => {
+      // Documents the by-design contract for #249: a text field keeps Left/Right
+      // for its caret, so arrows never move roving focus off it. Tab — not an
+      // arrow — is the way out. The field is a deliberate dead-end for arrow
+      // navigation, not a keyboard trap, because Tab always exits.
+      test('THEN: arrows stay in the field and Tab exits the toolbar', async ({ page }) => {
+        const searchToolbar = page.getByRole('toolbar', { name: 'Table actions toolbar' });
+        const search = searchToolbar.getByRole('searchbox', { name: 'Search by name, category or status' });
+        const menuTrigger = page.getByTestId('menu-trigger');
+
+        await test.step('GIVEN: focus lands on the search input', async () => {
+          await search.focus();
+          await expect(search).toBeFocused();
+        });
+
+        await test.step('THEN: Left/Right drive the caret, roving focus stays on the input', async () => {
+          await search.fill('Security');
+
+          await search.press('ArrowLeft');
+          await expect(search).toBeFocused();
+          await expect(menuTrigger).not.toBeFocused();
+
+          await search.press('ArrowRight');
+          await expect(search).toBeFocused();
+          await expect(menuTrigger).not.toBeFocused();
+        });
+
+        await test.step('THEN: Tab is the escape — focus leaves the toolbar entirely', async () => {
+          await search.press('Tab');
+
+          await expect(search).not.toBeFocused();
+          // roving tabindex keeps sibling items at tabindex -1, so Tab exits the
+          // toolbar rather than advancing to the next item
+          await expect(menuTrigger).not.toBeFocused();
+
+          const focusInsideToolbar = await searchToolbar.evaluate((toolbar) => toolbar.contains(document.activeElement));
+
+          expect(focusInsideToolbar).toBe(false);
         });
       });
     });
