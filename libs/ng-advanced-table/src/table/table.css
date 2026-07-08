@@ -24,7 +24,7 @@
   background: var(--nat-table-region-background, var(--sys-nat-table-region-background, transparent));
   border: var(--nat-table-region-border-width, var(--sys-nat-table-region-border-width, 1px)) solid
     var(--nat-table-region-border-color, var(--sys-nat-table-region-border-color, rgb(128 128 128 / 24%)));
-  border-radius: var(--nat-table-radius-region, var(--sys-nat-table-radius-region, 16px));
+  border-radius: var(--nat-table-radius-region, var(--sys-nat-table-radius-region, 0));
 }
 
 .table-region:has(:focus-visible) {
