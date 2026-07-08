@@ -110,7 +110,12 @@
   --nat-table-card-border-color: var(--nat-table-color-border);
   --nat-table-card-border-color-hover: var(--nat-table-color-border-strong);
   --nat-table-card-border-width: 1px;
-  --nat-table-card-shadow: 0 1px 2px rgb(15 20 25 / 4%), 0 8px 24px rgb(15 20 25 / 6%);
+
+  /* Only the shadow color varies by mode; light-dark() in the color slot keeps
+     the shadow in sync with color-scheme (system default or a forced wrapper),
+     matching how the palette resolves. */
+  --nat-table-card-shadow:
+    0 1px 2px light-dark(rgb(15 20 25 / 4%), rgb(0 0 0 / 40%)), 0 8px 24px light-dark(rgb(15 20 25 / 6%), rgb(0 0 0 / 32%));
   --nat-table-card-backdrop-filter: none;
   --nat-table-card-divider-color: var(--nat-table-color-divider);
 
@@ -197,15 +202,4 @@
   --nat-table-empty-state-color: var(--nat-table-color-text-muted);
   --nat-table-loading-state-color: var(--nat-table-empty-state-color);
   --nat-table-error-state-color: var(--nat-table-cell-color-negative);
-}
-
-/*
- * box-shadow is not a <color>, so light-dark() cannot hold it; deepen the card
- * shadow when the resolved scheme is dark. Mirrors the system-preference default
- * set by color-scheme: light dark above.
- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --nat-table-card-shadow: 0 1px 2px rgb(0 0 0 / 36%), 0 14px 34px rgb(0 0 0 / 28%);
-  }
 }

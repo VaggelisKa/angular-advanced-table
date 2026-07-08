@@ -178,7 +178,7 @@ To get the polished stock look, import the opt-in stylesheet once, for example i
 import 'ng-advanced-table/components/theme.css';
 ```
 
-The stock theme is light/dark responsive: its palette uses `light-dark()` and the theme sets `color-scheme: light dark` on `:root`, so it follows the operating-system preference out of the box. To pin or toggle the mode, set `color-scheme` (and optionally a `[data-theme]` attribute) on a wrapper — the table follows the resolved scheme.
+The stock theme is light/dark responsive: its palette uses `light-dark()` and the theme sets `color-scheme: light dark` on `:root`, so it follows the operating-system preference out of the box. To pin or toggle the mode, set `color-scheme` (and optionally a `[data-theme]` attribute) on a wrapper. Every stock token follows the resolved scheme, including the card shadow, whose color is set with `light-dark()`.
 
 Token precedence is unchanged: a `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) still wins over the opt-in theme, and derived stock values (borders, dividers, mixed colors) recompute from your overridden palette tokens. If you inspect computed styles you may see internal `--sys-nat-table-*` bridge variables — they are implementation detail; never set them, set the matching `--nat-table-*` token instead.
 
