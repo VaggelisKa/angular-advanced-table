@@ -123,14 +123,14 @@
 
           <div [hidden]="!menuOpen()" aria-label="Quick filters" class="toolbar-menu-panel" id="toolbar-overflow-menu" role="group">
             @for (preset of filterPresets; track preset.key) {
-            <button
-              [attr.aria-current]="preset.key === activePresetKey() ? 'true' : null"
-              [attr.data-testid]="`filter-${preset.key}`"
-              class="toolbar-menu-item"
-              type="button"
-              (click)="applyPreset(preset.key)">
-              {{ preset.label }}
-            </button>
+              <button
+                [attr.aria-current]="preset.key === activePresetKey() ? 'true' : null"
+                [attr.data-testid]="`filter-${preset.key}`"
+                class="toolbar-menu-item"
+                type="button"
+                (click)="applyPreset(preset.key)">
+                {{ preset.label }}
+              </button>
             }
           </div>
         </div>

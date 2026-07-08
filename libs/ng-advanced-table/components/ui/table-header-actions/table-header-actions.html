@@ -6,130 +6,139 @@
   <div class="header-actions-row">
     <div class="header-leading">
       @if (canSort()) {
-      <button
-        [attr.aria-label]="getSortLabel()"
-        [class.is-sorted]="!!column().getIsSorted()"
-        class="sort-button"
-        type="button"
-        (click)="onSortClick($event)"
-        (pointerdown)="$event.stopPropagation()">
-        <span [class.sr-only]="hideLabel()" class="header-label">
-          @if (hideLabel()) { {{ label() }} } @else {
-          <ng-container *flexRender="content(); props: context(); let rendered"> {{ rendered }} </ng-container>
-          }
-        </span>
-        <span aria-hidden="true" class="sort-icon">
-          @if (hasCustomSortIndicator()) {
-          <ng-container *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"> {{ rendered }} </ng-container>
-          } @else {
-          <span [attr.data-sort-state]="sortState() === false ? 'none' : sortState()" class="nat-default-sort">
-            <svg aria-hidden="true" class="nat-default-sort__svg" focusable="false" viewBox="0 0 12 14">
-              <path class="nat-default-sort__up" d="M6 2 10 6 H2z" />
-              <path class="nat-default-sort__down" d="M6 12 2 8 H10z" />
-            </svg>
+        <button
+          [attr.aria-label]="getSortLabel()"
+          [class.is-sorted]="!!column().getIsSorted()"
+          class="sort-button"
+          type="button"
+          (click)="onSortClick($event)"
+          (pointerdown)="$event.stopPropagation()">
+          <span [class.sr-only]="hideLabel()" class="header-label">
+            @if (hideLabel()) {
+              {{ label() }}
+            } @else {
+              <ng-container *flexRender="content(); props: context(); let rendered"> {{ rendered }} </ng-container>
+            }
           </span>
+          <span aria-hidden="true" class="sort-icon">
+            @if (hasCustomSortIndicator()) {
+              <ng-container *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"> {{ rendered }} </ng-container>
+            } @else {
+              <span [attr.data-sort-state]="sortState() === false ? 'none' : sortState()" class="nat-default-sort">
+                <svg aria-hidden="true" class="nat-default-sort__svg" focusable="false" viewBox="0 0 12 14">
+                  <path class="nat-default-sort__up" d="M6 2 10 6 H2z" />
+                  <path class="nat-default-sort__down" d="M6 12 2 8 H10z" />
+                </svg>
+              </span>
+            }
+          </span>
+          @if (sortPriority() !== null) {
+            <span aria-hidden="true" class="sort-priority">{{ sortPriority() }}</span>
+          }
+        </button>
+      } @else {
+        <span [class.sr-only]="hideLabel()" class="header-label">
+          @if (hideLabel()) {
+            {{ label() }}
+          } @else {
+            <ng-container *flexRender="content(); props: context(); let rendered"> {{ rendered }} </ng-container>
           }
         </span>
-        @if (sortPriority() !== null) {
-        <span aria-hidden="true" class="sort-priority">{{ sortPriority() }}</span>
-        }
-      </button>
-      } @else {
-      <span [class.sr-only]="hideLabel()" class="header-label">
-        @if (hideLabel()) { {{ label() }} } @else {
-        <ng-container *flexRender="content(); props: context(); let rendered"> {{ rendered }} </ng-container>
-        }
-      </span>
       }
     </div>
 
     @if (canShowMenu()) {
-    <div class="header-controls">
-      <button
-        #menuOrigin
-        #menuTrigger="ngMenuTrigger"
-        [attr.aria-label]="getMenuButtonLabel()"
-        [attr.data-testid]="`nat-table-header-actions-menu-${column().id}`"
-        [menu]="pinMenu()"
-        class="menu-button"
-        ngMenuTrigger
-        type="button"
-        (pointerdown)="$event.stopPropagation()">
-        <svg aria-hidden="true" class="menu-button__icon" focusable="false" viewBox="0 0 14 14">
-          <circle cx="7" cy="2.25" r="1.15" />
-          <circle cx="7" cy="7" r="1.15" />
-          <circle cx="7" cy="11.75" r="1.15" />
-        </svg>
-      </button>
+      <div class="header-controls">
+        <button
+          #menuOrigin
+          #menuTrigger="ngMenuTrigger"
+          [attr.aria-label]="getMenuButtonLabel()"
+          [attr.data-testid]="`nat-table-header-actions-menu-${column().id}`"
+          [menu]="pinMenu()"
+          class="menu-button"
+          ngMenuTrigger
+          type="button"
+          (pointerdown)="$event.stopPropagation()">
+          <svg aria-hidden="true" class="menu-button__icon" focusable="false" viewBox="0 0 14 14">
+            <circle cx="7" cy="2.25" r="1.15" />
+            <circle cx="7" cy="7" r="1.15" />
+            <circle cx="7" cy="11.75" r="1.15" />
+          </svg>
+        </button>
 
-      <ng-template
-        [cdkConnectedOverlay]="{ origin: menuOrigin, usePopover: 'inline' }"
-        [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
-        [cdkConnectedOverlayPositions]="pinMenuPositions"
-        cdkAttachPopoverAsChild>
-        <div #pinMenu="ngMenu" [attr.aria-label]="getMenuLabel()" class="column-menu" ngMenu>
-          <ng-template ngMenuContent>
-            @if (canPin()) { @for (side of pinSides; track side) {
-            <button
-              [attr.aria-label]="getPinLabel(side)"
-              [attr.data-pin-side]="side"
-              [attr.data-testid]="`nat-table-header-pin-${side}-${column().id}`"
-              [class.is-active]="isPinned(side)"
-              [value]="getPinLabel(side)"
-              class="column-menu-item"
-              ngMenuItem
-              type="button"
-              (click)="togglePin(side); menuTrigger.close()">
-              <span [class.is-visible]="isPinned(side)" aria-hidden="true" class="column-menu-item__check">
-                <svg aria-hidden="true" focusable="false" viewBox="0 0 12 12">
-                  <path d="M2 6.25 4.55 8.8 10 3.35" />
-                </svg>
-              </span>
-              <span class="column-menu-item__label">{{ getPinText(side) }}</span>
-              <span [attr.data-pin-side]="side" aria-hidden="true" class="column-menu-item__dock">
-                @if (side === 'left') {
-                <svg aria-hidden="true" focusable="false" viewBox="0 0 18 18">
-                  <path class="column-menu-item__dock-rail" d="M3.25 4.25v9.5" />
-                  <rect class="column-menu-item__dock-panel" height="7.5" rx="2" width="8.5" x="6.25" y="5.25" />
-                </svg>
-                } @else {
-                <svg aria-hidden="true" focusable="false" viewBox="0 0 18 18">
-                  <path class="column-menu-item__dock-rail" d="M14.75 4.25v9.5" />
-                  <rect class="column-menu-item__dock-panel" height="7.5" rx="2" width="8.5" x="3.25" y="5.25" />
-                </svg>
+        <ng-template
+          [cdkConnectedOverlay]="{ origin: menuOrigin, usePopover: 'inline' }"
+          [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
+          [cdkConnectedOverlayPositions]="pinMenuPositions"
+          cdkAttachPopoverAsChild>
+          <div #pinMenu="ngMenu" [attr.aria-label]="getMenuLabel()" class="column-menu" ngMenu>
+            <ng-template ngMenuContent>
+              @if (canPin()) {
+                @for (side of pinSides; track side) {
+                  <button
+                    [attr.aria-label]="getPinLabel(side)"
+                    [attr.data-pin-side]="side"
+                    [attr.data-testid]="`nat-table-header-pin-${side}-${column().id}`"
+                    [class.is-active]="isPinned(side)"
+                    [value]="getPinLabel(side)"
+                    class="column-menu-item"
+                    ngMenuItem
+                    type="button"
+                    (click)="togglePin(side); menuTrigger.close()">
+                    <span [class.is-visible]="isPinned(side)" aria-hidden="true" class="column-menu-item__check">
+                      <svg aria-hidden="true" focusable="false" viewBox="0 0 12 12">
+                        <path d="M2 6.25 4.55 8.8 10 3.35" />
+                      </svg>
+                    </span>
+                    <span class="column-menu-item__label">{{ getPinText(side) }}</span>
+                    <span [attr.data-pin-side]="side" aria-hidden="true" class="column-menu-item__dock">
+                      @if (side === 'left') {
+                        <svg aria-hidden="true" focusable="false" viewBox="0 0 18 18">
+                          <path class="column-menu-item__dock-rail" d="M3.25 4.25v9.5" />
+                          <rect class="column-menu-item__dock-panel" height="7.5" rx="2" width="8.5" x="6.25" y="5.25" />
+                        </svg>
+                      } @else {
+                        <svg aria-hidden="true" focusable="false" viewBox="0 0 18 18">
+                          <path class="column-menu-item__dock-rail" d="M14.75 4.25v9.5" />
+                          <rect class="column-menu-item__dock-panel" height="7.5" rx="2" width="8.5" x="3.25" y="5.25" />
+                        </svg>
+                      }
+                    </span>
+                  </button>
                 }
-              </span>
-            </button>
-            } } @if (hasColumnMoveActions()) { @for (direction of moveDirections; track direction) {
-            <button
-              [attr.aria-label]="getMoveLabel(direction)"
-              [attr.data-move-direction]="direction"
-              [attr.data-testid]="`nat-table-header-move-${direction}-${column().id}`"
-              [disabled]="!canMoveColumn(direction)"
-              [value]="getMoveLabel(direction)"
-              class="column-menu-item"
-              ngMenuItem
-              type="button"
-              (click)="moveColumn(direction); menuTrigger.close()">
-              <span aria-hidden="true" class="column-menu-item__check"></span>
-              <span class="column-menu-item__label">{{ getMoveText(direction) }}</span>
-              <span [attr.data-move-direction]="direction" aria-hidden="true" class="column-menu-item__move">
-                <svg aria-hidden="true" focusable="false" viewBox="0 0 18 18">
-                  @if (direction === 'left') {
-                  <path d="M10.75 4.25 6 9l4.75 4.75" />
-                  <path d="M6.5 9h7" />
-                  } @else {
-                  <path d="M7.25 4.25 12 9l-4.75 4.75" />
-                  <path d="M11.5 9h-7" />
-                  }
-                </svg>
-              </span>
-            </button>
-            } }
-          </ng-template>
-        </div>
-      </ng-template>
-    </div>
+              }
+              @if (hasColumnMoveActions()) {
+                @for (direction of moveDirections; track direction) {
+                  <button
+                    [attr.aria-label]="getMoveLabel(direction)"
+                    [attr.data-move-direction]="direction"
+                    [attr.data-testid]="`nat-table-header-move-${direction}-${column().id}`"
+                    [disabled]="!canMoveColumn(direction)"
+                    [value]="getMoveLabel(direction)"
+                    class="column-menu-item"
+                    ngMenuItem
+                    type="button"
+                    (click)="moveColumn(direction); menuTrigger.close()">
+                    <span aria-hidden="true" class="column-menu-item__check"></span>
+                    <span class="column-menu-item__label">{{ getMoveText(direction) }}</span>
+                    <span [attr.data-move-direction]="direction" aria-hidden="true" class="column-menu-item__move">
+                      <svg aria-hidden="true" focusable="false" viewBox="0 0 18 18">
+                        @if (direction === 'left') {
+                          <path d="M10.75 4.25 6 9l4.75 4.75" />
+                          <path d="M6.5 9h7" />
+                        } @else {
+                          <path d="M7.25 4.25 12 9l-4.75 4.75" />
+                          <path d="M11.5 9h-7" />
+                        }
+                      </svg>
+                    </span>
+                  </button>
+                }
+              }
+            </ng-template>
+          </div>
+        </ng-template>
+      </div>
     }
   </div>
 </div>

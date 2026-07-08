@@ -7,40 +7,49 @@
     <p class="description">{{ doc().description }}</p>
   </header>
 
-  @if (topic().contents; as contents) { @if (contents.length) {
-  <nav aria-label="On this page" class="docs-topic-toc">
-    <span class="docs-eyebrow docs-topic-toc-label">On this page</span>
-    <div class="docs-topic-toc-links">
-      @for (item of contents; track item.path) {
-      <a
-        [attr.href]="tableOfContentsHref(item.path)"
-        class="docs-topic-toc-link"
-        (click)="navigateToTableOfContentsItem($event, item.path)">
-        {{ item.label }}
-      </a>
-      }
-    </div>
-  </nav>
-  } }
+  @if (topic().contents; as contents) {
+    @if (contents.length) {
+      <nav aria-label="On this page" class="docs-topic-toc">
+        <span class="docs-eyebrow docs-topic-toc-label">On this page</span>
+        <div class="docs-topic-toc-links">
+          @for (item of contents; track item.path) {
+            <a
+              [attr.href]="tableOfContentsHref(item.path)"
+              class="docs-topic-toc-link"
+              (click)="navigateToTableOfContentsItem($event, item.path)">
+              {{ item.label }}
+            </a>
+          }
+        </div>
+      </nav>
+    }
+  }
 
   <section #markdownContainer aria-labelledby="docs-page-title" class="docs-topic-body">
-    @for (block of renderedBlocks(); track block.id) { @switch (block.kind) { @case ('markdown') {
-    <section class="docs-markdown docs-topic-block">
-      <div [innerHTML]="block.trustedHtml"></div>
-    </section>
-    } @case ('example') {
-    <app-docs-topic-example [example]="block" />
-    } } }
+    @for (block of renderedBlocks(); track block.id) {
+      @switch (block.kind) {
+        @case ('markdown') {
+          <section class="docs-markdown docs-topic-block">
+            <div [innerHTML]="block.trustedHtml"></div>
+          </section>
+        }
+        @case ('example') {
+          <app-docs-topic-example [example]="block" />
+        }
+      }
+    }
   </section>
 
-  @if (topic().related; as relatedTopics) { @if (relatedTopics.length) {
-  <nav aria-label="Related topics" class="docs-related">
-    <span class="docs-eyebrow docs-related-label">Related topics</span>
-    <div class="docs-related-links">
-      @for (item of relatedTopics; track item.path) {
-      <a [routerLink]="item.path" class="docs-related-link">{{ item.label }}</a>
-      }
-    </div>
-  </nav>
-  } }
+  @if (topic().related; as relatedTopics) {
+    @if (relatedTopics.length) {
+      <nav aria-label="Related topics" class="docs-related">
+        <span class="docs-eyebrow docs-related-label">Related topics</span>
+        <div class="docs-related-links">
+          @for (item of relatedTopics; track item.path) {
+            <a [routerLink]="item.path" class="docs-related-link">{{ item.label }}</a>
+          }
+        </div>
+      </nav>
+    }
+  }
 </article>
