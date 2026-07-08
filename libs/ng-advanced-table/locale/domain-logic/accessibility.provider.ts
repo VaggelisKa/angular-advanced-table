@@ -1,6 +1,7 @@
-import { InjectionToken, Optional, SkipSelf } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 import type { Provider } from '@angular/core';
 
+import { createNatTableMergedProvider } from './provider-factory';
 import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/accessibility.const';
 import type { NatTableIntlConfig, NatTableIntlProviderConfig, NatTableLocalesMap } from '../common/accessibility.type';
 import { mergeNatTableIntlConfig } from '../utils/accessibility.util';
@@ -22,13 +23,8 @@ export const NAT_TABLE_INTL = new InjectionToken<NatTableIntlConfig>('NAT_TABLE_
  * Nested providers merge with parent defaults, so feature-level providers can
  * override a subset of app-level copy without replacing the entire bag.
  */
-export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[] => [
-  {
-    provide: NAT_TABLE_INTL,
-    deps: [[new Optional(), new SkipSelf(), NAT_TABLE_INTL]],
-    useFactory: (parent: NatTableIntlConfig | null) => mergeNatTableIntlConfig(parent ?? NAT_TABLE_DEFAULT_INTL, intl)
-  }
-];
+export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[] =>
+  createNatTableMergedProvider(NAT_TABLE_INTL, NAT_TABLE_DEFAULT_INTL, intl, mergeNatTableIntlConfig);
 
 /**
  * Registers every table locale shipped by `ng-advanced-table/locale`.

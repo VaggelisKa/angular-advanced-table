@@ -3,7 +3,7 @@ import type {
   NatTableAccessibilityText,
   NatTableIntl,
   NatTableIntlConfig,
-  NatTableIntlProviderConfig,
+  NatTableIntlStaticProviderConfig,
   NatTableLocalesMap
 } from '../common/accessibility.type';
 import { DEFAULT_NUMBER_FORMATTER } from '../common/locale-formatter.const';
@@ -99,9 +99,9 @@ const mergeLocaleMaps = (parentLocales: NatTableLocalesMap, overrideLocales: Nat
   return merged;
 };
 
-const isIntlConfig = (config: NatTableIntlProviderConfig): config is NatTableIntlConfig => 'locales' in config;
+const isIntlConfig = (config: NatTableIntlStaticProviderConfig): config is NatTableIntlConfig => 'locales' in config;
 
-const normalizeIntlProviderConfig = (config: NatTableIntlProviderConfig): NatTableIntlConfig => {
+const normalizeIntlProviderConfig = (config: NatTableIntlStaticProviderConfig): NatTableIntlConfig => {
   if (isIntlConfig(config)) return config;
 
   return {
@@ -112,7 +112,10 @@ const normalizeIntlProviderConfig = (config: NatTableIntlProviderConfig): NatTab
 };
 
 /** Merges a parent intl config with a provider override, field by field. */
-export const mergeNatTableIntlConfig = (parent: NatTableIntlConfig, override: NatTableIntlProviderConfig): NatTableIntlConfig => {
+export const mergeNatTableIntlConfig = (
+  parent: NatTableIntlConfig,
+  override: NatTableIntlStaticProviderConfig
+): NatTableIntlConfig => {
   const overrideConfig = normalizeIntlProviderConfig(override);
 
   return {

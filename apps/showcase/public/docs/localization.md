@@ -10,8 +10,53 @@ provideNatTableRenderMetricsLocales(...);
 
 Core table copy, companion UI controls, and render-metrics utilities have separate locale sections so applications can adopt them independently.
 
+Provider helpers also accept a factory callback when copy comes from an injectable translation service. The callback runs inside Angular dependency injection, and its return value is merged with parent providers the same way static config is merged.
+
+```ts
+import { inject } from '@angular/core';
+import { provideNatTableIntl, provideNatTableControlsIntl, provideNatTableRenderMetricsIntl } from 'ng-advanced-table/locale';
+
+providers: [
+  provideNatTableIntl(() => {
+    const translate = inject(TranslateService);
+
+    return {
+      accessibilityText: {
+        emptyState: translate.instant('table.empty'),
+        loadingState: translate.instant('table.loading')
+      }
+    };
+  }),
+  provideNatTableControlsIntl(() => {
+    const translate = inject(TranslateService);
+
+    return {
+      headerActions: {
+        accessibilityLabels: {
+          sortButton: ({ label }) => translate.instant('table.sortButton', { label })
+        }
+      }
+    };
+  }),
+  provideNatTableRenderMetricsIntl(() => {
+    const translate = inject(TranslateService);
+
+    return {
+      renderMetrics: {
+        panel: {
+          ariaLabel: translate.instant('table.renderMetrics.panel')
+        }
+      }
+    };
+  })
+];
+```
+
+Return a single locale dictionary to override English defaults, or return `{ locales: { ... } }` when registering several locale ids.
+
 ## Runtime Locale Changes
 
+Provider factory callbacks are resolved once per injector, so calls such as `translate.instant(...)` capture the copy for the active language at provider resolution time.
 Pass the active locale to `NatTableSurface` when the locale can change at runtime. Rebuild translated column definitions from the same translation source so headers, metadata labels, and generated helper text stay aligned.
 
 ## Accessible Names
