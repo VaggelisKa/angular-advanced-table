@@ -1,3 +1,15 @@
+## 2.4.0 (2026-07-08)
+
+### 🚀 Features
+
+- Expose `--nat-table-font-weight-header` so consumers can theme table header text weight without targeting internal table classes. ([#260](https://github.com/VaggelisKa/angular-advanced-table/pull/260))
+- Add an `enableReordering` table-surface flag, disabled by default, that opts tables into column drag/drop, keyboard reordering, move-column metadata, reorder instructions, and grab affordances. ([#252](https://github.com/VaggelisKa/angular-advanced-table/pull/252))
+
+### 🩹 Fixes
+
+- Let consumer `--nat-table-*` theme tokens set on wrapper ancestors flow through `NatTableSurface`: the surface now provides its stock theme via internal `--sys-nat-table-*` bridge variables instead of declaring public tokens on its host, so the documented wrapper theming contract works. Behavioral note: wrapper-scoped tokens that were previously silently masked when a surface was present will now apply. Also anchor header resize handles to their own header cells in non-sticky, unpinned tables so each handle stays on the column it resizes. ([#253](https://github.com/VaggelisKa/angular-advanced-table/pull/253), [#254](https://github.com/VaggelisKa/angular-advanced-table/issues/254))
+- Clarify the `withNatTableHeaderActions(...)` composition pattern for custom sort indicators in public docs, API comments, and the packaged agent skill. ([#251](https://github.com/VaggelisKa/angular-advanced-table/pull/251))
+
 ## 2.3.0 (2026-07-06)
 
 ### 🚀 Features
