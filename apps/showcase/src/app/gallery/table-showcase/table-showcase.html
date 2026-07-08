@@ -60,14 +60,14 @@
         <span class="toolbar-label">Rows</span>
         <div aria-label="Dataset size" class="segmented" role="group">
           @for (size of datasetOptions; track size) {
-          <button
-            [attr.aria-pressed]="simulation.datasetSize() === size"
-            [class.is-active]="simulation.datasetSize() === size"
-            class="segment"
-            type="button"
-            (click)="setDatasetSize(size)">
-            {{ formatCompact(size) }}
-          </button>
+            <button
+              [attr.aria-pressed]="simulation.datasetSize() === size"
+              [class.is-active]="simulation.datasetSize() === size"
+              class="segment"
+              type="button"
+              (click)="setDatasetSize(size)">
+              {{ formatCompact(size) }}
+            </button>
           }
         </div>
       </div>
@@ -76,15 +76,15 @@
         <span class="toolbar-label">Tempo</span>
         <div aria-label="Simulation profile" class="segmented" role="group">
           @for (profile of profiles; track profile.value) {
-          <button
-            [attr.aria-pressed]="simulation.profile() === profile.value"
-            [class.is-active]="simulation.profile() === profile.value"
-            [title]="profile.description"
-            class="segment"
-            type="button"
-            (click)="setProfile(profile.value)">
-            {{ profile.label }}
-          </button>
+            <button
+              [attr.aria-pressed]="simulation.profile() === profile.value"
+              [class.is-active]="simulation.profile() === profile.value"
+              [title]="profile.description"
+              class="segment"
+              type="button"
+              (click)="setProfile(profile.value)">
+              {{ profile.label }}
+            </button>
           }
         </div>
       </div>
@@ -93,17 +93,17 @@
         <span class="toolbar-label">Signal</span>
         <div aria-label="Signal filter" class="pill-row" role="group">
           @for (status of statuses; track status) {
-          <button
-            [attr.aria-pressed]="isStatusActive(status)"
-            [attr.data-status]="status"
-            [class.is-active]="isStatusActive(status)"
-            class="filter-pill status-chip"
-            type="button"
-            (click)="toggleStatus(status)">
-            <span aria-hidden="true" class="filter-pill-dot"></span>
-            <span>{{ status }}</span>
-            <span class="filter-pill-count"> {{ formatInteger(simulation.statusCounts()[status]) }} </span>
-          </button>
+            <button
+              [attr.aria-pressed]="isStatusActive(status)"
+              [attr.data-status]="status"
+              [class.is-active]="isStatusActive(status)"
+              class="filter-pill status-chip"
+              type="button"
+              (click)="toggleStatus(status)">
+              <span aria-hidden="true" class="filter-pill-dot"></span>
+              <span>{{ status }}</span>
+              <span class="filter-pill-count"> {{ formatInteger(simulation.statusCounts()[status]) }} </span>
+            </button>
           }
         </div>
       </div>

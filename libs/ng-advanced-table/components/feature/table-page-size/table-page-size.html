@@ -1,14 +1,16 @@
-@if (controller(); as ctrl) { @if (ctrl.enablePagination()) {
-<div [attr.aria-label]="resolvedAriaLabel()" class="page-size-container" role="group">
-  <select
-    [attr.aria-controls]="tableElementId()"
-    [attr.aria-label]="resolvedAriaLabel()"
-    [value]="selectedPageSize()"
-    class="page-size-select"
-    (change)="setPageSize(+$any($event.target).value)">
-    @for (option of resolvedPageSizeOptions(); track option.pageSize) {
-    <option [attr.aria-label]="option.ariaLabel" [value]="option.pageSize">{{ option.text }}</option>
-    }
-  </select>
-</div>
-} }
+@if (controller(); as ctrl) {
+  @if (ctrl.enablePagination()) {
+    <div [attr.aria-label]="resolvedAriaLabel()" class="page-size-container" role="group">
+      <select
+        [attr.aria-controls]="tableElementId()"
+        [attr.aria-label]="resolvedAriaLabel()"
+        [value]="selectedPageSize()"
+        class="page-size-select"
+        (change)="setPageSize(+$any($event.target).value)">
+        @for (option of resolvedPageSizeOptions(); track option.pageSize) {
+          <option [attr.aria-label]="option.ariaLabel" [value]="option.pageSize">{{ option.text }}</option>
+        }
+      </select>
+    </div>
+  }
+}

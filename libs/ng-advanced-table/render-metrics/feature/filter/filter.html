@@ -5,16 +5,16 @@
   </div>
   <div [attr.aria-label]="groupAriaLabel()" class="chip-row" role="group">
     @for (option of options(); track option.value) {
-    <button
-      [attr.aria-pressed]="selected() === option.value"
-      [attr.data-render-filter]="option.value"
-      [class.is-active]="selected() === option.value"
-      class="chip render-chip"
-      type="button"
-      (click)="setFilter(option.value)">
-      <span>{{ option.label }}</span>
-      <span class="chip-count">{{ option.description }}</span>
-    </button>
+      <button
+        [attr.aria-pressed]="selected() === option.value"
+        [attr.data-render-filter]="option.value"
+        [class.is-active]="selected() === option.value"
+        class="chip render-chip"
+        type="button"
+        (click)="setFilter(option.value)">
+        <span>{{ option.label }}</span>
+        <span class="chip-count">{{ option.description }}</span>
+      </button>
     }
   </div>
 </div>

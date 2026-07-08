@@ -13,22 +13,26 @@
       <div class="config-options">
         <div class="preset-row">
           @for (preset of presets; track preset.key) {
-          <button class="btn btn-sm" type="button" (click)="applyPreset(preset.key)">{{ preset.label }}</button>
+            <button class="btn btn-sm" type="button" (click)="applyPreset(preset.key)">{{ preset.label }}</button>
           }
         </div>
 
         @for (category of featureCategories; track category.id) {
-        <div class="feature-group">
-          <h3 class="feature-group-title">{{ category.label }}</h3>
-          @for (feature of featuresFor(category.id); track feature.key) {
-          <label class="toggle-control">
-            <input [checked]="flags()[feature.key]" class="toggle-checkbox" type="checkbox" (change)="toggleFeature(feature.key)" />
-            <span class="slider"></span>
-            <span class="toggle-label">{{ feature.label }}</span>
-            <button [title]="feature.help" class="option-info" type="button"><span aria-hidden="true">i</span></button>
-          </label>
-          }
-        </div>
+          <div class="feature-group">
+            <h3 class="feature-group-title">{{ category.label }}</h3>
+            @for (feature of featuresFor(category.id); track feature.key) {
+              <label class="toggle-control">
+                <input
+                  [checked]="flags()[feature.key]"
+                  class="toggle-checkbox"
+                  type="checkbox"
+                  (change)="toggleFeature(feature.key)" />
+                <span class="slider"></span>
+                <span class="toggle-label">{{ feature.label }}</span>
+                <button [title]="feature.help" class="option-info" type="button"><span aria-hidden="true">i</span></button>
+              </label>
+            }
+          </div>
         }
       </div>
     </aside>
@@ -40,29 +44,30 @@
         <h2 class="card-title">Live Preview</h2>
 
         @if (flags().withDataStates) {
-        <div aria-label="Preview data state" class="preset-row" role="group">
-          @for (state of dataStatePreviews; track state.value) {
-          <button
-            [class.is-active]="previewState() === state.value"
-            class="btn btn-sm"
-            type="button"
-            (click)="previewState.set(state.value)">
-            {{ state.label }}
-          </button>
-          }
-        </div>
-        } @if (flags().withLocalization) {
-        <div aria-label="Preview language" class="preset-row" role="group">
-          @for (locale of localePreviews; track locale.value) {
-          <button
-            [class.is-active]="previewLocale() === locale.value"
-            class="btn btn-sm"
-            type="button"
-            (click)="previewLocale.set(locale.value)">
-            {{ locale.label }}
-          </button>
-          }
-        </div>
+          <div aria-label="Preview data state" class="preset-row" role="group">
+            @for (state of dataStatePreviews; track state.value) {
+              <button
+                [class.is-active]="previewState() === state.value"
+                class="btn btn-sm"
+                type="button"
+                (click)="previewState.set(state.value)">
+                {{ state.label }}
+              </button>
+            }
+          </div>
+        }
+        @if (flags().withLocalization) {
+          <div aria-label="Preview language" class="preset-row" role="group">
+            @for (locale of localePreviews; track locale.value) {
+              <button
+                [class.is-active]="previewLocale() === locale.value"
+                class="btn btn-sm"
+                type="button"
+                (click)="previewLocale.set(locale.value)">
+                {{ locale.label }}
+              </button>
+            }
+          </div>
         }
 
         <nat-table-surface
@@ -73,20 +78,23 @@
           class="table-shell"
           columnSizingMode="fill">
           @if (flags().withGlobalFilter || flags().showColumnVisibility || flags().withExport) {
-          <nat-table-toolbar accessibleName="Table controls">
-            @if (flags().withGlobalFilter) {
-            <app-table-search [label]="searchLabel()" [placeholder]="searchPlaceholder()" showLabel toolbar />
-            } @if (flags().withExport) {
-            <div class="toolbar-field">
-              <span class="toolbar-field-label">Actions</span>
-              <button class="btn" exportFileName="table-export" natTableExport natToolbarItem type="button">Export</button>
-            </div>
-            } @if (flags().showColumnVisibility) {
-            <nat-table-column-visibility natToolbarItemPosition="end" />
-            }
-          </nat-table-toolbar>
-          } @if (flags().withPagination) {
-          <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
+            <nat-table-toolbar accessibleName="Table controls">
+              @if (flags().withGlobalFilter) {
+                <app-table-search [label]="searchLabel()" [placeholder]="searchPlaceholder()" showLabel toolbar />
+              }
+              @if (flags().withExport) {
+                <div class="toolbar-field">
+                  <span class="toolbar-field-label">Actions</span>
+                  <button class="btn" exportFileName="table-export" natTableExport natToolbarItem type="button">Export</button>
+                </div>
+              }
+              @if (flags().showColumnVisibility) {
+                <nat-table-column-visibility natToolbarItemPosition="end" />
+              }
+            </nat-table-toolbar>
+          }
+          @if (flags().withPagination) {
+            <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
           }
 
           <nat-table
@@ -97,14 +105,14 @@
             [error]="previewError()"
             accessibleName="Custom configured table preview">
             @if (flags().withDataStates) {
-            <ng-template natTableLoading><div class="state-template">Loading rows...</div></ng-template>
-            <ng-template natTableEmpty><div class="state-template">No rows to display.</div></ng-template>
-            <ng-template let-error natTableError><div class="state-template">Failed to load rows.</div></ng-template>
+              <ng-template natTableLoading><div class="state-template">Loading rows...</div></ng-template>
+              <ng-template natTableEmpty><div class="state-template">No rows to display.</div></ng-template>
+              <ng-template let-error natTableError><div class="state-template">Failed to load rows.</div></ng-template>
             }
           </nat-table>
 
           @if (flags().showScrollControl) {
-          <nat-table-scroll-control />
+            <nat-table-scroll-control />
           }
         </nat-table-surface>
       </section>

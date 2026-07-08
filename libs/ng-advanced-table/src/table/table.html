@@ -1,11 +1,13 @@
 <!-- eslint-disable max-lines -- single cohesive table template (header/body/state rows + resize guide); splitting into partials would fragment the grid structure. -->
 <div #tableRegion [class.is-resizing]="isColumnResizing()" class="table-region" data-testid="nat-table-region">
   @if (tableSummary().trim()) {
-  <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
-  } @if (resolvedDescription().trim()) {
-  <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
-  } @if (resolvedKeyboardInstructions().trim()) {
-  <p [id]="tableKeyboardInstructionsId()" class="sr-only">{{ resolvedKeyboardInstructions() }}</p>
+    <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
+  }
+  @if (resolvedDescription().trim()) {
+    <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
+  }
+  @if (resolvedKeyboardInstructions().trim()) {
+    <p [id]="tableKeyboardInstructionsId()" class="sr-only">{{ resolvedKeyboardInstructions() }}</p>
   }
 
   <table
@@ -21,18 +23,22 @@
     ngGrid
     rowWrap="nowrap">
     @if (resolvedCaption(); as caption) {
-    <caption [id]="tableCaptionId()">
-      {{ caption }}
-    </caption>
-    } @let columnStates = columnRenderStates(); @if (usesAuthoritativeLayout()) { @let layoutWidths = resolvedColumnWidths();
-    <colgroup>
-      @for (column of visibleColumns(); track column.id) {
-      <col [natTablePxWidth]="layoutWidths[column.id]" />
-      }
-    </colgroup>
+      <caption [id]="tableCaptionId()">
+        {{
+          caption
+        }}
+      </caption>
+    }
+    @let columnStates = columnRenderStates();
+    @if (usesAuthoritativeLayout()) {
+      @let layoutWidths = resolvedColumnWidths();
+      <colgroup>
+        @for (column of visibleColumns(); track column.id) {
+          <col [natTablePxWidth]="layoutWidths[column.id]" />
+        }
+      </colgroup>
     }
     <thead>
-      <!-- prettier-ignore -->
       <ng-template #headerCellContent let-columnState="columnState" let-header="header">
         @if (!header.isPlaceholder) {
           @let headerContext = header.getContext();
@@ -46,12 +52,7 @@
               }
 
               @if (!hidePrimitiveHeaderLabel) {
-                <ng-container
-                  *flexRender="
-                    header.column.columnDef.header;
-                    props: headerContext;
-                    let rendered
-                  ">
+                <ng-container *flexRender="header.column.columnDef.header; props: headerContext; let rendered">
                   {{ rendered }}
                 </ng-container>
               }
@@ -71,141 +72,167 @@
           }
         }
       </ng-template>
-      @let tableHeaderGroups = headerGroups(); @for (headerGroup of tableHeaderGroups; track headerGroup.id) { @let
-      isReorderableHeaderRow = isReorderingEnabled() && isLeafHeaderRow(headerGroup); @if (isReorderableHeaderRow) {
-      <tr
-        [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
-        cdkDropList
-        cdkDropListOrientation="horizontal"
-        ngGridRow
-        (cdkDropListDropped)="onHeaderDrop($event, headerGroup)">
-        @for (header of headerGroup.headers; track header.id) { @let columnState = columnStates[header.column.id];
-        <th
-          [attr.aria-sort]="columnState?.ariaSort"
-          [attr.data-column-id]="header.column.id"
-          [attr.data-testid]="`nat-table-header-${header.column.id}`"
-          [cdkDragData]="header.column.id"
-          [cdkDragDisabled]="!canReorderHeader(header)"
-          [class]="columnState?.headerClassMap"
-          [class.is-reorderable]="canReorderHeader(header)"
-          [natTableHeaderCellLayout]="columnState"
-          cdkDrag
-          cdkDragLockAxis="x"
-          cdkDragPreviewContainer="parent"
-          ngGridCell
-          role="columnheader"
-          scope="col"
-          (focusin)="onCellFocusIn($event)"
-          (keydown)="onHeaderKeydown($event, header.column)">
-          <ng-container
-            [ngTemplateOutlet]="headerCellContent"
-            [ngTemplateOutletContext]="{ header, columnState }"
-            ngTemplateOutletInjector="outlet" />
-        </th>
+      @let tableHeaderGroups = headerGroups();
+      @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
+        @let isReorderableHeaderRow = isReorderingEnabled() && isLeafHeaderRow(headerGroup);
+        @if (isReorderableHeaderRow) {
+          <tr
+            [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            ngGridRow
+            (cdkDropListDropped)="onHeaderDrop($event, headerGroup)">
+            @for (header of headerGroup.headers; track header.id) {
+              @let columnState = columnStates[header.column.id];
+              <th
+                [attr.aria-sort]="columnState?.ariaSort"
+                [attr.data-column-id]="header.column.id"
+                [attr.data-testid]="`nat-table-header-${header.column.id}`"
+                [cdkDragData]="header.column.id"
+                [cdkDragDisabled]="!canReorderHeader(header)"
+                [class]="columnState?.headerClassMap"
+                [class.is-reorderable]="canReorderHeader(header)"
+                [natTableHeaderCellLayout]="columnState"
+                cdkDrag
+                cdkDragLockAxis="x"
+                cdkDragPreviewContainer="parent"
+                ngGridCell
+                role="columnheader"
+                scope="col"
+                (focusin)="onCellFocusIn($event)"
+                (keydown)="onHeaderKeydown($event, header.column)">
+                <ng-container
+                  [ngTemplateOutlet]="headerCellContent"
+                  [ngTemplateOutletContext]="{ header, columnState }"
+                  ngTemplateOutletInjector="outlet" />
+              </th>
+            }
+          </tr>
+        } @else {
+          <tr ngGridRow>
+            @for (header of headerGroup.headers; track header.id) {
+              @let columnState = columnStates[header.column.id];
+              <th
+                [attr.aria-sort]="columnState?.ariaSort"
+                [attr.data-column-id]="header.column.id"
+                [attr.data-testid]="`nat-table-header-${header.column.id}`"
+                [class]="columnState?.headerClassMap"
+                [natTableHeaderCellLayout]="columnState"
+                ngGridCell
+                role="columnheader"
+                scope="col"
+                (focusin)="onCellFocusIn($event)"
+                (keydown)="onHeaderKeydown($event, header.column)">
+                <ng-container
+                  [ngTemplateOutlet]="headerCellContent"
+                  [ngTemplateOutletContext]="{ header, columnState }"
+                  ngTemplateOutletInjector="outlet" />
+              </th>
+            }
+          </tr>
         }
-      </tr>
-      } @else {
-      <tr ngGridRow>
-        @for (header of headerGroup.headers; track header.id) { @let columnState = columnStates[header.column.id];
-        <th
-          [attr.aria-sort]="columnState?.ariaSort"
-          [attr.data-column-id]="header.column.id"
-          [attr.data-testid]="`nat-table-header-${header.column.id}`"
-          [class]="columnState?.headerClassMap"
-          [natTableHeaderCellLayout]="columnState"
-          ngGridCell
-          role="columnheader"
-          scope="col"
-          (focusin)="onCellFocusIn($event)"
-          (keydown)="onHeaderKeydown($event, header.column)">
-          <ng-container
-            [ngTemplateOutlet]="headerCellContent"
-            [ngTemplateOutletContext]="{ header, columnState }"
-            ngTemplateOutletInjector="outlet" />
-        </th>
-        }
-      </tr>
-      } }
+      }
     </thead>
     <tbody>
-      @let rows = bodyRows(); @switch (bodyState()) { @case ('rows') { @for (row of rows; track row.id) { @let visibleCells =
-      row.getVisibleCells();
-      <tr
-        [attr.aria-selected]="rowAriaSelected(row)"
-        [natTableRowRenderEmitter]="row.id"
-        [natTableRowRenderEnabled]="emitRowRenderEvents()"
-        [natTableRowRenderStartedAt]="renderCycleStartedAt()"
-        [natTableRowRenderToken]="renderCycleToken()"
-        class="data-row"
-        ngGridRow
-        (click)="onRowClick($event, row)"
-        (keydown)="onRowKeydown($event, row)"
-        (natTableRowRendered)="onRowRendered($event)">
-        @for (cell of visibleCells; track cell.id) { @let columnState = columnStates[cell.column.id]; @let cellContext =
-        cell.getContext(); @let cellTone = getCellTone(cell.column, cellContext); @if (columnState?.rowHeader) {
-        <th
-          [attr.data-column-id]="cell.column.id"
-          [attr.data-tone]="cellTone"
-          [class]="columnState?.cellClassMap"
-          [natTableBodyCellLayout]="columnState"
-          natTableCell
-          ngGridCell
-          role="rowheader"
-          scope="row">
-          <span class="data-cell-content">
-            <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"> {{ rendered }} </ng-container>
-          </span>
-        </th>
-        } @else {
-        <td
-          [attr.data-column-id]="cell.column.id"
-          [attr.data-tone]="cellTone"
-          [class]="columnState?.cellClassMap"
-          [natTableBodyCellLayout]="columnState"
-          natTableCell
-          ngGridCell>
-          <span class="data-cell-content">
-            <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered"> {{ rendered }} </ng-container>
-          </span>
-        </td>
-        } }
-      </tr>
-      } } @case ('loading') {
-      <tr ngGridRow>
-        <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableCell ngGridCell>
-          <div class="table-state-content">
-            @if (loadingTemplateRef(); as templateRef) {
-            <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
-            } @else { {{ resolvedLoadingState() }} }
-          </div>
-        </td>
-      </tr>
-      } @case ('error') {
-      <tr ngGridRow>
-        <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableCell ngGridCell>
-          <div class="table-state-content">
-            @if (errorTemplateRef(); as templateRef) {
-            <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
-            } @else { {{ resolvedErrorState() }} }
-          </div>
-        </td>
-      </tr>
-      } @case ('empty') {
-      <tr ngGridRow>
-        <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableCell ngGridCell>
-          <div class="table-state-content">
-            @if (emptyTemplateRef(); as templateRef) {
-            <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
-            } @else { {{ resolvedEmptyState() }} }
-          </div>
-        </td>
-      </tr>
-      } }
+      @let rows = bodyRows();
+      @switch (bodyState()) {
+        @case ('rows') {
+          @for (row of rows; track row.id) {
+            @let visibleCells = row.getVisibleCells();
+            <tr
+              [attr.aria-selected]="rowAriaSelected(row)"
+              [natTableRowRenderEmitter]="row.id"
+              [natTableRowRenderEnabled]="emitRowRenderEvents()"
+              [natTableRowRenderStartedAt]="renderCycleStartedAt()"
+              [natTableRowRenderToken]="renderCycleToken()"
+              class="data-row"
+              ngGridRow
+              (click)="onRowClick($event, row)"
+              (keydown)="onRowKeydown($event, row)"
+              (natTableRowRendered)="onRowRendered($event)">
+              @for (cell of visibleCells; track cell.id) {
+                @let columnState = columnStates[cell.column.id]; @let cellContext = cell.getContext();
+                @let cellTone = getCellTone(cell.column, cellContext);
+                @if (columnState?.rowHeader) {
+                  <th
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                    [class]="columnState?.cellClassMap"
+                    [natTableBodyCellLayout]="columnState"
+                    natTableCell
+                    ngGridCell
+                    role="rowheader"
+                    scope="row">
+                    <span class="data-cell-content">
+                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                        {{ rendered }}
+                      </ng-container>
+                    </span>
+                  </th>
+                } @else {
+                  <td
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                    [class]="columnState?.cellClassMap"
+                    [natTableBodyCellLayout]="columnState"
+                    natTableCell
+                    ngGridCell>
+                    <span class="data-cell-content">
+                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                        {{ rendered }}
+                      </ng-container>
+                    </span>
+                  </td>
+                }
+              }
+            </tr>
+          }
+        }
+        @case ('loading') {
+          <tr ngGridRow>
+            <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableCell ngGridCell>
+              <div class="table-state-content">
+                @if (loadingTemplateRef(); as templateRef) {
+                  <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
+                } @else {
+                  {{ resolvedLoadingState() }}
+                }
+              </div>
+            </td>
+          </tr>
+        }
+        @case ('error') {
+          <tr ngGridRow>
+            <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableCell ngGridCell>
+              <div class="table-state-content">
+                @if (errorTemplateRef(); as templateRef) {
+                  <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
+                } @else {
+                  {{ resolvedErrorState() }}
+                }
+              </div>
+            </td>
+          </tr>
+        }
+        @case ('empty') {
+          <tr ngGridRow>
+            <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableCell ngGridCell>
+              <div class="table-state-content">
+                @if (emptyTemplateRef(); as templateRef) {
+                  <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
+                } @else {
+                  {{ resolvedEmptyState() }}
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      }
     </tbody>
   </table>
 
   @if (columnResizeGuide(); as guide) {
-  <div [natTableResizeGuide]="guide" aria-hidden="true" class="column-resize-guide"></div>
+    <div [natTableResizeGuide]="guide" aria-hidden="true" class="column-resize-guide"></div>
   }
 
   <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-table-live-region">{{ liveMessage() }}</p>

@@ -60,14 +60,14 @@
     <div class="transition-controls">
       <div aria-label="Preview table state" class="btn-group">
         @for (option of transitionPreviewOptions; track option.state) {
-        <button
-          [attr.aria-pressed]="isTransitionPreviewState(option.state)"
-          [class.active]="isTransitionPreviewState(option.state)"
-          class="btn-sm"
-          type="button"
-          (click)="showTransitionPreviewState(option.state)">
-          {{ option.label }}
-        </button>
+          <button
+            [attr.aria-pressed]="isTransitionPreviewState(option.state)"
+            [class.active]="isTransitionPreviewState(option.state)"
+            class="btn-sm"
+            type="button"
+            (click)="showTransitionPreviewState(option.state)">
+            {{ option.label }}
+          </button>
         }
       </div>
     </div>
