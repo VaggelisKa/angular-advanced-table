@@ -11,7 +11,7 @@ import type {
   NatTableColumnVisibilityIntl,
   NatTableControlsIntl,
   NatTableControlsIntlConfig,
-  NatTableControlsIntlProviderConfig,
+  NatTableControlsIntlStaticProviderConfig,
   NatTableControlsLocalesMap,
   NatTableHeaderActionsIntl,
   NatTablePageSizeIntl,
@@ -111,9 +111,10 @@ const mergeLocaleMaps = (
   return merged;
 };
 
-const isControlsIntlConfig = (config: NatTableControlsIntlProviderConfig): config is NatTableControlsIntlConfig => 'locales' in config;
+const isControlsIntlConfig = (config: NatTableControlsIntlStaticProviderConfig): config is NatTableControlsIntlConfig =>
+  'locales' in config;
 
-const normalizeControlsIntlProviderConfig = (config: NatTableControlsIntlProviderConfig): NatTableControlsIntlConfig => {
+const normalizeControlsIntlProviderConfig = (config: NatTableControlsIntlStaticProviderConfig): NatTableControlsIntlConfig => {
   if (isControlsIntlConfig(config)) return config;
 
   return {
@@ -126,7 +127,7 @@ const normalizeControlsIntlProviderConfig = (config: NatTableControlsIntlProvide
 /** Merges a parent components intl config with a provider override, field by field. */
 export const mergeNatTableControlsIntlConfig = (
   parent: NatTableControlsIntlConfig,
-  override: NatTableControlsIntlProviderConfig
+  override: NatTableControlsIntlStaticProviderConfig
 ): NatTableControlsIntlConfig => {
   const overrideConfig = normalizeControlsIntlProviderConfig(override);
 
