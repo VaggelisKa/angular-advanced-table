@@ -136,6 +136,7 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
   public readonly columnResizeMode = computed(() => this.natTableService.columnResizeMode());
   public readonly columnSizingMode = computed(() => this.natTableService.columnSizingMode());
+  public readonly enableReordering = computed(() => this.natTableService.enableReordering());
   public readonly isFixedLayout = computed(() => this.columnSizingMode() === 'fixed');
   public readonly direction = computed(() => this.natTableService.direction());
 
@@ -238,7 +239,7 @@ export class NatTableState<TData extends RowData = RowData> {
     enableMultiSort: this.enableMultiSort(),
     isMultiSortEvent: (event) => this.enableMultiSort() && (event as { readonly shiftKey?: boolean }).shiftKey === true,
     enableColumnPinning: true,
-    enableColumnOrdering: true,
+    enableColumnOrdering: this.enableReordering(),
     enableColumnResizing: true,
     columnResizeMode: this.columnResizeMode(),
     columnResizeDirection: this.resolvedDirection(),
@@ -338,7 +339,11 @@ export class NatTableState<TData extends RowData = RowData> {
     const instructions = (text.keyboardInstructions ?? '').trim();
     const reorderInstructions = text.reorderKeyboardInstructions?.trim() ?? '';
     const resizeInstructions = text.resizeKeyboardInstructions?.trim() ?? '';
-    const parts = [instructions, reorderInstructions];
+    const parts = [instructions];
+
+    if (this.enableReordering()) {
+      parts.push(reorderInstructions);
+    }
 
     if (this.hasResizableColumns()) {
       parts.push(resizeInstructions);
@@ -619,6 +624,8 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   public canMoveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): boolean {
+    if (!this.enableReordering()) return false;
+
     const zone = this.getColumnZoneById(columnId);
 
     if (!zone) return false;
@@ -629,6 +636,8 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   public moveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): NatTableColumnReorderResult | null {
+    if (!this.enableReordering()) return null;
+
     const zone = this.getColumnZoneById(columnId);
 
     if (!zone) return null;
@@ -649,6 +658,8 @@ export class NatTableState<TData extends RowData = RowData> {
     movingColumnId: string,
     nextVisibleZoneOrder: readonly string[]
   ): NatTableColumnReorderResult | null {
+    if (!this.enableReordering()) return null;
+
     const currentState = this.mergedState();
     const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const movingColumn = this.table.getColumn(movingColumnId);

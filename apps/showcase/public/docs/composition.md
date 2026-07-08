@@ -57,7 +57,13 @@ Prefer the scoped surface for normal pages. Use direct controller binding only w
 
 ## Header Actions
 
-Wrap column definitions with `withNatTableHeaderActions(...)` when you want shared header controls for sorting, pinning, or menu-based reordering.
+Wrap column definitions with `withNatTableHeaderActions(...)` when you want shared header controls for sorting, pinning, or menu-based reordering. Menu-based reordering still requires `[enableReordering]="true"` on the table surface.
+
+```html
+<nat-table-surface [enableReordering]="true">
+  <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
+</nat-table-surface>
+```
 
 ```ts
 import { withNatTableHeaderActions } from 'ng-advanced-table/components';

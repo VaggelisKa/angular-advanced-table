@@ -24,7 +24,11 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
   selector: 'nat-custom-accessibility-labels-host',
   imports: [NatTable, NatTableColumnVisibility, NatTablePageSize, NatTablePager, NatTableScrollControl, NatTableSurface],
   template: `
-    <nat-table-surface [initialState]="initialState" [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface
+      [enableReordering]="true"
+      [initialState]="initialState"
+      [state]="tableState()"
+      (stateChange)="onTableStateChange($event)">
       <nat-table #grid="natTable" [columns]="columns" [data]="rows()" [getRowId]="getRowId" accessibleName="Operations table" />
       <nat-table-column-visibility [accessibilityLabels]="columnVisibilityLabels" />
       <nat-table-page-size [accessibilityLabels]="pageSizeLabels" [pageSizeOptions]="pageSizeOptions" />

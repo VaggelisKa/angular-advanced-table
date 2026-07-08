@@ -118,7 +118,7 @@ Configure the table width model on the surface.
 
 ## Pinning And Reordering
 
-Pinning is enabled where the column allows it. Reordering stays inside the current pinning zone: left, center, or right.
+Pinning is enabled where the column allows it. Reordering is disabled by default; enable it on the surface when a table should expose drag/drop, keyboard column moves, or companion move actions. Reordering stays inside the current pinning zone: left, center, or right.
 
 ```ts
 readonly initialState: Partial<NatTableUserState> = {
@@ -137,6 +137,14 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 ```
 
 The header actions helper adds sort buttons when a column can sort, pin menu items when the column can pin, and move menu items when `enableColumnReorderActions` is enabled. It also accepts custom sort indicator content through `sortIndicator`, so custom sort icons should compose through the helper rather than through extra header rows.
+
+Enable table-owned reordering on the surface for tables that should expose move affordances.
+
+```html
+<nat-table-surface [enableReordering]="true">
+  <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
+</nat-table-surface>
+```
 
 ## Custom Cell Components
 

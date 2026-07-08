@@ -30,6 +30,7 @@ export type NatTableConfig = {
   keybindings: NatTableKeybindings;
   columnResizeMode: NatTableColumnResizeMode;
   columnSizingMode: NatTableColumnSizingMode;
+  enableReordering: boolean;
   direction: NatTableDirection | undefined;
 };
 
@@ -57,6 +58,7 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly accessibilityText = signal<NatTableAccessibilityText>({});
   public readonly columnResizeMode = signal<'onEnd' | 'onChange'>('onEnd');
   public readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
+  public readonly enableReordering = signal(false);
   public readonly direction = signal<'ltr' | 'rtl' | undefined>(undefined);
 
   private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
@@ -174,6 +176,10 @@ export class NatTableService<TData extends RowData = RowData> {
 
     if (config.columnSizingMode !== undefined && this.columnSizingMode() !== config.columnSizingMode) {
       this.columnSizingMode.set(config.columnSizingMode);
+    }
+
+    if (config.enableReordering !== undefined && this.enableReordering() !== config.enableReordering) {
+      this.enableReordering.set(config.enableReordering);
     }
 
     if (this.direction() !== config.direction) {

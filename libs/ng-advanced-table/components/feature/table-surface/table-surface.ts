@@ -59,6 +59,8 @@ export class NatTableSurface {
   public readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   /** Width model: `'fill'` (default — columns stretch to fill the container) or `'fixed'` (column widths are authoritative and the region scrolls horizontally, giving pixel-exact resizing). */
   public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
+  /** Enables column drag/drop, keyboard reordering, and table-owned move-column metadata. */
+  public readonly enableReordering = input(false, { transform: booleanAttribute });
   /** Text direction. Falls back to the inherited CDK direction, then `'ltr'`. */
   public readonly direction = input<'ltr' | 'rtl'>();
 
@@ -112,6 +114,7 @@ export class NatTableSurface {
         keybindings: this.keybindings(),
         columnResizeMode: this.columnResizeMode(),
         columnSizingMode: this.columnSizingMode(),
+        enableReordering: this.enableReordering(),
         direction: this.direction()
       });
     });

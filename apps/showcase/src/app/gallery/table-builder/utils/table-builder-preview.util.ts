@@ -150,6 +150,10 @@ export const buildTemplateSource = (flags: TableBuilderFlags): string => {
     surfaceAttributes += ' [stickyHeader]="true"';
   }
 
+  if (flags.withColumnReorder) {
+    surfaceAttributes += ' [enableReordering]="true"';
+  }
+
   if (flags.withColumnResizing) {
     surfaceAttributes += ` [columnSizingMode]="'fill'"`;
   }

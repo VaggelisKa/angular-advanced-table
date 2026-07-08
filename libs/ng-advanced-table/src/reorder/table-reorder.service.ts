@@ -32,14 +32,18 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     return headerGroup.id === this.state.leafHeaderRowId();
   }
 
+  public isReorderingEnabled(): boolean {
+    return this.state.enableReordering();
+  }
+
   public canReorderHeader(column: Column<TData, unknown>): boolean {
-    return this.state.getVisibleZoneColumnIds(getColumnZone(column)).length > 1;
+    return this.isReorderingEnabled() && this.state.getVisibleZoneColumnIds(getColumnZone(column)).length > 1;
   }
 
   // ─── Drag-drop reorder ───
 
   public onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
-    if (!this.isLeafHeaderRow(headerGroup) || event.previousIndex === event.currentIndex) {
+    if (!this.isReorderingEnabled() || !this.isLeafHeaderRow(headerGroup) || event.previousIndex === event.currentIndex) {
       return;
     }
 
@@ -79,6 +83,8 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     column: Column<TData, unknown>,
     directionDelta: ColumnReorderKeyboardDirection
   ): boolean {
+    if (!this.isReorderingEnabled()) return false;
+
     const zone = getColumnZone(column);
     const visibleZoneColumnIds = this.state.getVisibleZoneColumnIds(zone);
     const currentIndex = visibleZoneColumnIds.indexOf(column.id);

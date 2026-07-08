@@ -119,6 +119,7 @@ export class TestTableSurface {
   public readonly keybindings = input<NatTableKeybindings>({});
   public readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
+  public readonly enableReordering = input(false, { transform: booleanAttribute });
   public readonly direction = input<'ltr' | 'rtl'>();
 
   public readonly stateChange = output<NatTableUserState>();
@@ -171,6 +172,9 @@ export class TestTableSurface {
     });
     effect(() => {
       this.natTableService.columnSizingMode.set(this.columnSizingMode());
+    });
+    effect(() => {
+      this.natTableService.enableReordering.set(this.enableReordering());
     });
     effect(() => {
       this.natTableService.direction.set(this.direction());
@@ -233,6 +237,7 @@ export class TestTableSurface {
       [columnSizingMode]="columnSizingMode"
       [direction]="direction"
       [enableMultiSort]="enableMultiSort"
+      [enableReordering]="enableReordering"
       [initialState]="initialState"
       [manualPageCount]="manualPageCount"
       [mode]="mode"
@@ -294,6 +299,7 @@ export class TableHost {
   public stickyHeader = true;
   public direction: 'ltr' | 'rtl' | undefined = undefined;
   public columnSizingMode: 'fill' | 'fixed' = 'fill';
+  public enableReordering = false;
   public accessibilityText: NatTableAccessibilityText = {};
   public mode: NatTableMode | NatTableModeConfiguration = 'auto';
   public manualPageCount: number | undefined = undefined;
@@ -368,7 +374,7 @@ export class TableHost {
     })
   ],
   template: `
-    <nat-table-surface [accessibilityText]="accessibilityText()">
+    <nat-table-surface [accessibilityText]="accessibilityText()" [enableReordering]="true">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Provider table" />
     </nat-table-surface>
   `
@@ -520,6 +526,7 @@ export type RecreateHostOptions = {
   readonly stickyHeader?: boolean;
   readonly direction?: 'ltr' | 'rtl';
   readonly columnSizingMode?: 'fill' | 'fixed';
+  readonly enableReordering?: boolean;
   readonly accessibilityText?: NatTableAccessibilityText;
   readonly initialState?: Partial<NatTableUserState>;
   readonly state?: Partial<NatTableUserState>;

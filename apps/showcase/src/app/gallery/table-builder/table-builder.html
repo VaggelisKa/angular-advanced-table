@@ -66,6 +66,7 @@
         }
 
         <nat-table-surface
+          [enableReordering]="flags().withColumnReorder"
           [locale]="surfaceLocale()"
           [stickyHeader]="flags().withStickyHeader"
           [(state)]="tableState"
