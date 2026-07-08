@@ -658,9 +658,7 @@ export class NatTableState<TData extends RowData = RowData> {
     movingColumnId: string,
     nextVisibleZoneOrder: readonly string[]
   ): NatTableColumnReorderResult | null {
-    if (!this.enableReordering()) {
-      return null;
-    }
+    if (!this.enableReordering()) return null;
 
     const currentState = this.mergedState();
     const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
