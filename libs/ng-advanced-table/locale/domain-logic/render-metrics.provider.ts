@@ -30,14 +30,13 @@ const isMissingInjectionContextError = (error: unknown): boolean =>
  * Nested providers merge with parent defaults, so feature-level providers can
  * override a subset of app-level copy without replacing the entire bag.
  */
-export function provideNatTableRenderMetricsIntl(intl: NatTableRenderMetricsIntlProviderConfig): Provider[] {
-  return createNatTableMergedProvider(
+export const provideNatTableRenderMetricsIntl = (intl: NatTableRenderMetricsIntlProviderConfig): Provider[] =>
+  createNatTableMergedProvider(
     NAT_TABLE_RENDER_METRICS_INTL,
     NAT_TABLE_RENDER_METRICS_DEFAULT_INTL,
     intl,
     mergeNatTableRenderMetricsIntlConfig
   );
-}
 
 /**
  * Registers every render-metrics locale shipped by `ng-advanced-table/locale`.

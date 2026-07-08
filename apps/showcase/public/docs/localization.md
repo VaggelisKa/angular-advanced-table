@@ -56,6 +56,7 @@ Return a single locale dictionary to override English defaults, or return `{ loc
 
 ## Runtime Locale Changes
 
+Provider factory callbacks are resolved once per injector, so calls such as `translate.instant(...)` capture the copy for the active language at provider resolution time.
 Pass the active locale to `NatTableSurface` when the locale can change at runtime. Rebuild translated column definitions from the same translation source so headers, metadata labels, and generated helper text stay aligned.
 
 ## Accessible Names

@@ -23,9 +23,8 @@ export const NAT_TABLE_INTL = new InjectionToken<NatTableIntlConfig>('NAT_TABLE_
  * Nested providers merge with parent defaults, so feature-level providers can
  * override a subset of app-level copy without replacing the entire bag.
  */
-export function provideNatTableIntl(intl: NatTableIntlProviderConfig): Provider[] {
-  return createNatTableMergedProvider(NAT_TABLE_INTL, NAT_TABLE_DEFAULT_INTL, intl, mergeNatTableIntlConfig);
-}
+export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[] =>
+  createNatTableMergedProvider(NAT_TABLE_INTL, NAT_TABLE_DEFAULT_INTL, intl, mergeNatTableIntlConfig);
 
 /**
  * Registers every table locale shipped by `ng-advanced-table/locale`.
