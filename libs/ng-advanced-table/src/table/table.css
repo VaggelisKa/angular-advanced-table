@@ -356,6 +356,25 @@ tbody .data-row:last-child .data-cell {
 .header-cell.is-pinned-right {
   position: sticky;
   z-index: var(--nat-table-z-index-pinned-header, var(--sys-nat-table-z-index-pinned-header, 6));
+  background: var(
+    --nat-table-pinned-header-background,
+    var(
+      --sys-nat-table-pinned-header-background,
+      var(
+        --nat-table-pinned-background,
+        var(
+          --sys-nat-table-pinned-background,
+          var(
+            --nat-table-header-background,
+            var(
+              --sys-nat-table-header-background,
+              var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
+            )
+          )
+        )
+      )
+    )
+  );
 }
 
 .has-pinned-edge-left {
