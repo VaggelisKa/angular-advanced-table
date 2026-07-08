@@ -49,10 +49,17 @@ test.describe('FEATURE: Theming inheritance', () => {
       });
     });
 
-    test.describe('WHEN: no consumer tokens are set', () => {
-      test('THEN: it renders the stock surface theme', async ({ page }) => {
-        // stock --nat-table-color-text default: #ecf5fb
-        await expect.poll(async () => computedStyle(dataCell(page), 'color')).toBe('rgb(236, 245, 251)');
+    test.describe('WHEN: no consumer tokens or opt-in theme are present', () => {
+      test('THEN: the headless surface inherits the ancestor text color', async ({ page }) => {
+        // #245: NatTableSurface ships no built-in stock theme. With no --nat-table-*
+        // tokens and no opt-in theme.css, the table host color falls back to
+        // `inherit`, so table text picks up the surrounding page/ancestor color
+        // rather than a bundled default.
+        await wrapper(page).evaluate((element) => {
+          element.style.color = 'rgb(200, 10, 10)';
+        });
+
+        await expect.poll(async () => computedStyle(dataCell(page), 'color')).toBe('rgb(200, 10, 10)');
       });
     });
 

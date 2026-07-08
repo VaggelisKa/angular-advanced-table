@@ -41,19 +41,19 @@ Prefer the scoped surface for normal pages. Use direct controller binding only w
 
 ## Stock Controls
 
-| Control                             | Use it for                                                |
-| ----------------------------------- | --------------------------------------------------------- |
-| `NatTableSurface`                   | Controller scope, default theme tokens, and state binding |
-| `NatTableColumnVisibility`          | Hide and show hideable columns                            |
-| `NatTablePageSize`                  | Page-size chips                                           |
-| `NatTablePager`                     | Previous and next page controls                           |
-| `NatTablePagination`                | Combined page-size and pager toolbar                      |
-| `NatTableScrollControl`             | Horizontal scroll buttons and range control               |
-| `NatTableToolbar`                   | Roving-keyboard toolbar shell for table actions           |
-| `NatToolbarGroup`, `natToolbarItem` | Toolbar grouping and item registration                    |
-| `withNatTableHeaderActions(...)`    | Header sort buttons plus pin and move menus               |
-| `withNatTableSelectionColumn(...)`  | Select-all and per-row checkbox column                    |
-| `NatTableExport`                    | CSV export or app-provided export operation               |
+| Control                             | Use it for                                                                                      |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `NatTableSurface`                   | Controller scope, companion-control wiring, and state binding (styling is opt-in — see Theming) |
+| `NatTableColumnVisibility`          | Hide and show hideable columns                                                                  |
+| `NatTablePageSize`                  | Page-size chips                                                                                 |
+| `NatTablePager`                     | Previous and next page controls                                                                 |
+| `NatTablePagination`                | Combined page-size and pager toolbar                                                            |
+| `NatTableScrollControl`             | Horizontal scroll buttons and range control                                                     |
+| `NatTableToolbar`                   | Roving-keyboard toolbar shell for table actions                                                 |
+| `NatToolbarGroup`, `natToolbarItem` | Toolbar grouping and item registration                                                          |
+| `withNatTableHeaderActions(...)`    | Header sort buttons plus pin and move menus                                                     |
+| `withNatTableSelectionColumn(...)`  | Select-all and per-row checkbox column                                                          |
+| `NatTableExport`                    | CSV export or app-provided export operation                                                     |
 
 ## Header Actions
 

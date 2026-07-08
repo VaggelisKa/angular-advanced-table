@@ -12,6 +12,15 @@ const boundingWidth = async (locator: Locator): Promise<number> => {
   return box.width;
 };
 
+/** Yields one animation frame, pacing synthetic input to the render loop. */
+const nextFrame = async (page: Page): Promise<void> => {
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+  });
+};
+
 /** Drags a resize handle horizontally by `deltaX` pixels via a real pointer sequence. */
 const dragResizeHandle = async (page: Page, handle: Locator, deltaX: number): Promise<void> => {
   const box = await handle.boundingBox();
@@ -23,7 +32,18 @@ const dragResizeHandle = async (page: Page, handle: Locator, deltaX: number): Pr
 
   await page.mouse.move(startX, startY);
   await page.mouse.down();
-  await page.mouse.move(startX + deltaX, startY, { steps: 8 });
+  // Pace the synthetic drag to the render loop (not a wait on app state): the
+  // resize handler seeds column sizing on mousedown and needs a frame for that
+  // reactive update to settle before it can accumulate a drag delta. A
+  // zero-latency burst fires before the seed settles and the resize silently
+  // no-ops, so let a frame pass after pressing and between moves, like a real
+  // pointer would.
+  await nextFrame(page);
+  await nextFrame(page);
+  await page.mouse.move(startX + deltaX / 2, startY);
+  await nextFrame(page);
+  await page.mouse.move(startX + deltaX, startY);
+  await nextFrame(page);
   await page.mouse.up();
 };
 
@@ -49,16 +69,14 @@ test.describe('FEATURE: Column resizing', () => {
 
           await dragResizeHandle(page, nameHandle, 80);
 
+          await expect.poll(async () => boundingWidth(nameHeader)).toBeGreaterThan(widthBeforeGrow);
           widthAfterGrow = await boundingWidth(nameHeader);
-          expect(widthAfterGrow).toBeGreaterThan(widthBeforeGrow);
         });
 
         await test.step('THEN: dragging the handle left shrinks the Name column back down', async () => {
           await dragResizeHandle(page, nameHandle, -80);
 
-          const widthAfterShrink = await boundingWidth(nameHeader);
-
-          expect(widthAfterShrink).toBeLessThan(widthAfterGrow);
+          await expect.poll(async () => boundingWidth(nameHeader)).toBeLessThan(widthAfterGrow);
         });
       });
     });
@@ -119,9 +137,7 @@ test.describe('FEATURE: Column resizing', () => {
 
           await dragResizeHandle(page, nameHandle, 100);
 
-          const categoryWidthAfter = await boundingWidth(categoryHeader);
-
-          expect(categoryWidthAfter).toBeLessThan(categoryWidthBefore);
+          await expect.poll(async () => boundingWidth(categoryHeader)).toBeLessThan(categoryWidthBefore);
         });
 
         await test.step('THEN: after switching to Fixed mode, widening Name again leaves Category unchanged', async () => {
@@ -153,17 +169,13 @@ test.describe('FEATURE: Column resizing', () => {
 
           await dragResizeHandle(page, nameHandle, 100);
 
-          const widthAfterDrag = await boundingWidth(nameHeader);
-
-          expect(widthAfterDrag).toBeGreaterThan(initialWidth);
+          await expect.poll(async () => boundingWidth(nameHeader)).toBeGreaterThan(initialWidth);
         });
 
         await test.step('THEN: clicking Reset Widths restores the initial width', async () => {
           await resetBtn.click();
 
-          const widthAfterReset = await boundingWidth(nameHeader);
-
-          expect(Math.round(widthAfterReset)).toBe(Math.round(initialWidth));
+          await expect.poll(async () => Math.round(await boundingWidth(nameHeader))).toBe(Math.round(initialWidth));
         });
       });
     });

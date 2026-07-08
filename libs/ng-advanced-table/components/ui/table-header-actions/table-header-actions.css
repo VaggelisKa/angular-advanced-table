@@ -161,7 +161,7 @@
   /* Digit inherits text color (WCAG 1.4.3: accents too light for small text);
      chip keeps the accent tint via the shared active-sort token. */
   color: var(--nat-table-sort-priority-color, var(--sys-nat-table-sort-priority-color, inherit));
-  background: var(--nat-table-sort-icon-chip-background-active, var(--sys-nat-table-sort-icon-chip-background-active));
+  background: var(--nat-table-sort-icon-chip-background-active, var(--sys-nat-table-sort-icon-chip-background-active, transparent));
   border-radius: var(--nat-table-radius-chip, var(--sys-nat-table-radius-chip, 100vmax));
 }
 
