@@ -79,6 +79,8 @@ export class PositionsTable {
 
 Focusable controls inside state templates are managed by the table. Use normal buttons, links, and inputs.
 
+State template content is placed in a centered flex column that fills the visible table width, so projected rich content (illustrations, custom elements, block/flex layouts) lays out with a resolvable width — no consumer CSS gymnastics required. Reserve vertical space with `--nat-table-state-min-height` (defaults to `--nat-table-min-height`, else `0`) so the state row does not collapse when the table has no data.
+
 ## Background Refresh
 
 When refreshing existing data, keep the rows visible and set `dataStatus="loading"`.
