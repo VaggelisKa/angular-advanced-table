@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
 import { applyDocumentDirection } from '../support/document-direction';
 
 test.describe('FEATURE: Table toolbar', () => {
@@ -48,20 +49,10 @@ test.describe('FEATURE: Table toolbar', () => {
     return box;
   };
 
-  // The toolbar docs example lazy-renders via `@defer (on viewport)`. Scroll its
-  // preview panel into view so the toolbar renders deterministically — a short
-  // headless viewport won't trigger the defer on its own once doc copy grows
-  // above the example, and the assertions would time out on an unrendered
-  // placeholder.
-  const revealToolbarExample = async (page: Page): Promise<void> => {
-    await page.getByTestId('docs-example-toolbar-actions-preview-panel').scrollIntoViewIfNeeded();
-    await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
-  };
-
   test.describe('GIVEN: the toolbar showcase page is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/toolbar-actions');
-      await revealToolbarExample(page);
+      await loadDocsExamplePreview(page, 'toolbar-actions', 'Toolbar groups and action placement');
     });
 
     test.describe('WHEN: the page is rendered', () => {
@@ -201,7 +192,7 @@ test.describe('FEATURE: Table toolbar', () => {
         // re-navigates with RTL direction inside this body (rule 5) — not hoisted to the shared GIVEN
         await applyDocumentDirection(page, 'rtl');
         await page.goto('/docs/toolbar-actions');
-        await revealToolbarExample(page);
+        await loadDocsExamplePreview(page, 'toolbar-actions', 'Toolbar groups and action placement');
 
         const { exportButton, refreshButton } = buttons(page);
 
