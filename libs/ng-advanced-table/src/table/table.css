@@ -20,11 +20,24 @@
       --nat-table-region-overflow-y,
       var(--sys-nat-table-region-overflow-y, var(--nat-table-region-overflow, var(--sys-nat-table-region-overflow, auto)))
     );
-  overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y, var(--sys-nat-table-region-overscroll-behavior-y, auto));
+  overscroll-behavior: var(
+      --nat-table-region-overscroll-behavior-x,
+      var(
+        --sys-nat-table-region-overscroll-behavior-x,
+        var(--nat-table-region-overscroll-behavior, var(--sys-nat-table-region-overscroll-behavior, none))
+      )
+    )
+    var(
+      --nat-table-region-overscroll-behavior-y,
+      var(
+        --sys-nat-table-region-overscroll-behavior-y,
+        var(--nat-table-region-overscroll-behavior, var(--sys-nat-table-region-overscroll-behavior, none))
+      )
+    );
   background: var(--nat-table-region-background, var(--sys-nat-table-region-background, transparent));
   border: var(--nat-table-region-border-width, var(--sys-nat-table-region-border-width, 1px)) solid
     var(--nat-table-region-border-color, var(--sys-nat-table-region-border-color, rgb(128 128 128 / 24%)));
-  border-radius: var(--nat-table-radius-region, var(--sys-nat-table-radius-region, 16px));
+  border-radius: var(--nat-table-radius-region, var(--sys-nat-table-radius-region, 0));
 }
 
 .table-region:has(:focus-visible) {
@@ -363,6 +376,25 @@ tbody .data-row:last-child .data-cell {
 .header-cell.is-pinned-right {
   position: sticky;
   z-index: var(--nat-table-z-index-pinned-header, var(--sys-nat-table-z-index-pinned-header, 6));
+  background: var(
+    --nat-table-pinned-header-background,
+    var(
+      --sys-nat-table-pinned-header-background,
+      var(
+        --nat-table-pinned-background,
+        var(
+          --sys-nat-table-pinned-background,
+          var(
+            --nat-table-header-background,
+            var(
+              --sys-nat-table-header-background,
+              var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
+            )
+          )
+        )
+      )
+    )
+  );
 }
 
 .has-pinned-edge-left {

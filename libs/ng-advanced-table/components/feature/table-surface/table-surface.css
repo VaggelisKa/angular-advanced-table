@@ -107,6 +107,7 @@
   --sys-nat-table-pager-disabled-opacity: var(--nat-table-pager-disabled-opacity);
   --sys-nat-table-region-overflow-x: var(--nat-table-region-overflow-x);
   --sys-nat-table-region-overflow-y: var(--nat-table-region-overflow-y);
+  --sys-nat-table-region-overscroll-behavior-x: var(--nat-table-region-overscroll-behavior-x);
   --sys-nat-table-region-overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y);
   --sys-nat-table-min-height: var(--nat-table-min-height);
   --sys-nat-table-sticky-top: var(--nat-table-sticky-top);
@@ -152,6 +153,7 @@
   --sys-nat-table-cell-color-warning: var(--nat-table-cell-color-warning);
   --sys-nat-table-cell-color-neutral: var(--nat-table-cell-color-neutral);
   --sys-nat-table-pinned-background: var(--nat-table-pinned-background);
+  --sys-nat-table-pinned-header-background: var(--nat-table-pinned-header-background);
   --sys-nat-table-pinned-divider-color: var(--nat-table-pinned-divider-color);
   --sys-nat-table-empty-state-color: var(--nat-table-empty-state-color);
   --sys-nat-table-loading-state-color: var(--nat-table-loading-state-color);
