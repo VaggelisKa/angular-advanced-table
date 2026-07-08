@@ -170,13 +170,15 @@ Render-metrics widgets intentionally do not expose their own component-specific 
 
 ## Opt-in Stock Theme
 
-`ng-advanced-table` core is headless by default: with no theme applied, the table and companion controls render with conservative system-color fallbacks and inherit the page's colors. Neither the core table nor `NatTableSurface` ships the dark-teal stock look as a built-in default.
+`ng-advanced-table` core is headless by default: with no theme applied, the table and companion controls render with conservative system-color fallbacks and inherit the page's colors. Neither the core table nor `NatTableSurface` ships the stock look as a built-in default.
 
 To get the polished stock look, import the opt-in stylesheet once, for example in your app's global styles or `main.ts`:
 
 ```ts
 import 'ng-advanced-table/components/theme.css';
 ```
+
+The stock theme is light/dark responsive: its palette uses `light-dark()` and the theme sets `color-scheme: light dark` on `:root`, so it follows the operating-system preference out of the box. To pin or toggle the mode, set `color-scheme` (and optionally a `[data-theme]` attribute) on a wrapper. Every stock token follows the resolved scheme, including the card shadow, whose color is set with `light-dark()`.
 
 Token precedence is unchanged: a `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) still wins over the opt-in theme, and derived stock values (borders, dividers, mixed colors) recompute from your overridden palette tokens. If you inspect computed styles you may see internal `--sys-nat-table-*` bridge variables — they are implementation detail; never set them, set the matching `--nat-table-*` token instead.
 
@@ -186,49 +188,52 @@ The tables below list the values the opt-in stock theme applies. Use them as a r
 
 ### Palette And Core
 
-| Token                                | Opt-in theme value                                                 |
-| ------------------------------------ | ------------------------------------------------------------------ |
-| `--nat-table-color-text`             | `#ecf5fb`                                                          |
-| `--nat-table-color-text-muted`       | `#a8c3d7`                                                          |
-| `--nat-table-color-accent`           | `#57d1ff`                                                          |
-| `--nat-table-color-success`          | `#5de6a6`                                                          |
-| `--nat-table-color-warning`          | `#ffd166`                                                          |
-| `--nat-table-color-danger`           | `#ff8d7f`                                                          |
-| `--nat-table-color-surface`          | `rgb(7 23 35 / 72%)`                                               |
-| `--nat-table-color-surface-elevated` | `rgb(4 14 22 / 92%)`                                               |
-| `--nat-table-color-surface-sticky`   | `rgb(5 20 31 / 96%)`                                               |
-| `--nat-table-color-border`           | `color-mix(in srgb, var(--nat-table-color-text) 12%, transparent)` |
-| `--nat-table-color-divider`          | `color-mix(in srgb, var(--nat-table-color-text) 8%, transparent)`  |
-| `--nat-table-region-background`      | `var(--nat-table-color-surface-elevated)`                          |
-| `--nat-table-header-background`      | `var(--nat-table-color-surface-sticky)`                            |
-| `--nat-table-header-color`           | `var(--nat-table-color-text-muted)`                                |
-| `--nat-table-cell-border-color`      | `var(--nat-table-color-divider)`                                   |
-| `--nat-table-cell-color-positive`    | `var(--nat-table-color-success)`                                   |
-| `--nat-table-cell-color-negative`    | `var(--nat-table-color-danger)`                                    |
-| `--nat-table-cell-color-warning`     | `var(--nat-table-color-warning)`                                   |
-| `--nat-table-cell-color-neutral`     | `var(--nat-table-color-text-muted)`                                |
-| `--nat-table-empty-state-color`      | `var(--nat-table-color-text-muted)`                                |
-| `--nat-table-loading-state-color`    | `var(--nat-table-empty-state-color)`                               |
-| `--nat-table-error-state-color`      | `var(--nat-table-cell-color-negative)`                             |
-| `--nat-table-focus-ring-color`       | `var(--nat-table-color-accent)`                                    |
+The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
+
+| Token                                | Opt-in theme value                                                                             |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `--nat-table-font-family`            | `'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, helvetica, arial, sans-serif` |
+| `--nat-table-color-text`             | `light-dark(#0f1419, #e6eaef)`                                                                 |
+| `--nat-table-color-text-muted`       | `light-dark(#5b6672, #9aa4b1)`                                                                 |
+| `--nat-table-color-accent`           | `light-dark(#1f6feb, #4f8bff)`                                                                 |
+| `--nat-table-color-success`          | `light-dark(#127a3b, #3dd68c)`                                                                 |
+| `--nat-table-color-warning`          | `light-dark(#8f5f00, #e5b452)`                                                                 |
+| `--nat-table-color-danger`           | `light-dark(#b42318, #f15b5b)`                                                                 |
+| `--nat-table-color-surface`          | `light-dark(#fff, #14171c)`                                                                    |
+| `--nat-table-color-surface-elevated` | `light-dark(#fff, #14171c)`                                                                    |
+| `--nat-table-color-surface-sticky`   | `light-dark(#f4f5f7, #1a1e24)`                                                                 |
+| `--nat-table-color-border`           | `light-dark(#e4e7eb, #262b33)`                                                                 |
+| `--nat-table-color-divider`          | `light-dark(#e4e7eb, #262b33)`                                                                 |
+| `--nat-table-region-background`      | `var(--nat-table-color-surface)`                                                               |
+| `--nat-table-header-background`      | `var(--nat-table-color-surface-sticky)`                                                        |
+| `--nat-table-header-color`           | `var(--nat-table-color-text-muted)`                                                            |
+| `--nat-table-cell-border-color`      | `var(--nat-table-color-divider)`                                                               |
+| `--nat-table-cell-color-positive`    | `var(--nat-table-color-success)`                                                               |
+| `--nat-table-cell-color-negative`    | `var(--nat-table-color-danger)`                                                                |
+| `--nat-table-cell-color-warning`     | `var(--nat-table-color-warning)`                                                               |
+| `--nat-table-cell-color-neutral`     | `var(--nat-table-color-text-muted)`                                                            |
+| `--nat-table-empty-state-color`      | `var(--nat-table-color-text-muted)`                                                            |
+| `--nat-table-loading-state-color`    | `var(--nat-table-empty-state-color)`                                                           |
+| `--nat-table-error-state-color`      | `var(--nat-table-cell-color-negative)`                                                         |
+| `--nat-table-focus-ring-color`       | `var(--nat-table-color-accent)`                                                                |
 
 ### Controls
 
-| Token                                 | Opt-in theme value                                                   |
-| ------------------------------------- | -------------------------------------------------------------------- |
-| `--nat-table-radius-card`             | `28px`                                                               |
-| `--nat-table-radius-region`           | `24px`                                                               |
-| `--nat-table-radius-input`            | `18px`                                                               |
-| `--nat-table-radius-chip`             | `999px`                                                              |
-| `--nat-table-space-card`              | `28px`                                                               |
-| `--nat-table-space-card-compact`      | `20px`                                                               |
-| `--nat-table-space-control-block-gap` | `10px`                                                               |
-| `--nat-table-space-chip-row-gap`      | `10px`                                                               |
-| `--nat-table-chip-background`         | `color-mix(in srgb, var(--nat-table-color-text) 5%, transparent)`    |
-| `--nat-table-chip-background-active`  | `color-mix(in srgb, var(--nat-table-color-accent) 18%, transparent)` |
-| `--nat-table-chip-border-color`       | `color-mix(in srgb, var(--nat-table-color-text) 14%, transparent)`   |
-| `--nat-table-pager-background`        | `color-mix(in srgb, var(--nat-table-color-accent) 16%, transparent)` |
-| `--nat-table-pager-border-color`      | `color-mix(in srgb, var(--nat-table-color-accent) 28%, transparent)` |
+| Token                                 | Opt-in theme value                                                                      |
+| ------------------------------------- | --------------------------------------------------------------------------------------- |
+| `--nat-table-radius-card`             | `12px`                                                                                  |
+| `--nat-table-radius-region`           | `8px`                                                                                   |
+| `--nat-table-radius-input`            | `6px`                                                                                   |
+| `--nat-table-radius-chip`             | `6px`                                                                                   |
+| `--nat-table-space-card`              | `18px 22px`                                                                             |
+| `--nat-table-space-card-compact`      | `14px 16px`                                                                             |
+| `--nat-table-space-control-block-gap` | `12px`                                                                                  |
+| `--nat-table-space-chip-row-gap`      | `10px`                                                                                  |
+| `--nat-table-chip-background`         | `var(--nat-table-color-surface)`                                                        |
+| `--nat-table-chip-background-active`  | `color-mix(in srgb, var(--nat-table-color-accent) 12%, var(--nat-table-color-surface))` |
+| `--nat-table-chip-border-color`       | `var(--nat-table-color-border)`                                                         |
+| `--nat-table-pager-background`        | `var(--nat-table-color-surface)`                                                        |
+| `--nat-table-pager-border-color`      | `var(--nat-table-color-border)`                                                         |
 
 ### Layout And Stacking
 
