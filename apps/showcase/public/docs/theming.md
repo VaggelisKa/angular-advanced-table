@@ -233,7 +233,9 @@ The tables below list the values the opt-in stock theme applies. Use them as a r
 | ------------------------------------------ | -------------------------------- |
 | `--nat-table-region-overflow-x`            | `auto`                           |
 | `--nat-table-region-overflow-y`            | `auto`                           |
-| `--nat-table-region-overscroll-behavior-y` | `auto`                           |
+| `--nat-table-region-overscroll-behavior`   | `none`                           |
+| `--nat-table-region-overscroll-behavior-x` | `none`                           |
+| `--nat-table-region-overscroll-behavior-y` | `none`                           |
 | `--nat-table-max-height`                   | `inherit`                        |
 | `--nat-table-min-height`                   | `auto`                           |
 | `--nat-table-state-min-height`             | `var(--nat-table-min-height, 0)` |

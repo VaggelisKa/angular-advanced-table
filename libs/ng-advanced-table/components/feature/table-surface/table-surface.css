@@ -105,6 +105,7 @@
   --sys-nat-table-pager-disabled-opacity: var(--nat-table-pager-disabled-opacity);
   --sys-nat-table-region-overflow-x: var(--nat-table-region-overflow-x);
   --sys-nat-table-region-overflow-y: var(--nat-table-region-overflow-y);
+  --sys-nat-table-region-overscroll-behavior-x: var(--nat-table-region-overscroll-behavior-x);
   --sys-nat-table-region-overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y);
   --sys-nat-table-min-height: var(--nat-table-min-height);
   --sys-nat-table-sticky-top: var(--nat-table-sticky-top);
