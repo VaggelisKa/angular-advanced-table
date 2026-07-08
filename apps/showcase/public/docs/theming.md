@@ -190,50 +190,50 @@ The tables below list the values the opt-in stock theme applies. Use them as a r
 
 The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 
-| Token                                | Opt-in theme value                                             |
-| ------------------------------------ | ------------------------------------------------------------- |
+| Token                                | Opt-in theme value                                                                             |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | `--nat-table-font-family`            | `'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, helvetica, arial, sans-serif` |
-| `--nat-table-color-text`             | `light-dark(#0f1419, #e6eaef)`                                |
-| `--nat-table-color-text-muted`       | `light-dark(#5b6672, #9aa4b1)`                                |
-| `--nat-table-color-accent`           | `light-dark(#1f6feb, #4f8bff)`                                |
-| `--nat-table-color-success`          | `light-dark(#127a3b, #3dd68c)`                                |
-| `--nat-table-color-warning`          | `light-dark(#8f5f00, #e5b452)`                                |
-| `--nat-table-color-danger`           | `light-dark(#b42318, #f15b5b)`                                |
-| `--nat-table-color-surface`          | `light-dark(#fff, #14171c)`                                   |
-| `--nat-table-color-surface-elevated` | `light-dark(#fff, #14171c)`                                   |
-| `--nat-table-color-surface-sticky`   | `light-dark(#f4f5f7, #1a1e24)`                                |
-| `--nat-table-color-border`           | `light-dark(#e4e7eb, #262b33)`                                |
-| `--nat-table-color-divider`          | `light-dark(#e4e7eb, #262b33)`                                |
-| `--nat-table-region-background`      | `var(--nat-table-color-surface)`                              |
-| `--nat-table-header-background`      | `var(--nat-table-color-surface-sticky)`                       |
-| `--nat-table-header-color`           | `var(--nat-table-color-text-muted)`                                |
-| `--nat-table-cell-border-color`      | `var(--nat-table-color-divider)`                                   |
-| `--nat-table-cell-color-positive`    | `var(--nat-table-color-success)`                                   |
-| `--nat-table-cell-color-negative`    | `var(--nat-table-color-danger)`                                    |
-| `--nat-table-cell-color-warning`     | `var(--nat-table-color-warning)`                                   |
-| `--nat-table-cell-color-neutral`     | `var(--nat-table-color-text-muted)`                                |
-| `--nat-table-empty-state-color`      | `var(--nat-table-color-text-muted)`                                |
-| `--nat-table-loading-state-color`    | `var(--nat-table-empty-state-color)`                               |
-| `--nat-table-error-state-color`      | `var(--nat-table-cell-color-negative)`                             |
-| `--nat-table-focus-ring-color`       | `var(--nat-table-color-accent)`                                    |
+| `--nat-table-color-text`             | `light-dark(#0f1419, #e6eaef)`                                                                 |
+| `--nat-table-color-text-muted`       | `light-dark(#5b6672, #9aa4b1)`                                                                 |
+| `--nat-table-color-accent`           | `light-dark(#1f6feb, #4f8bff)`                                                                 |
+| `--nat-table-color-success`          | `light-dark(#127a3b, #3dd68c)`                                                                 |
+| `--nat-table-color-warning`          | `light-dark(#8f5f00, #e5b452)`                                                                 |
+| `--nat-table-color-danger`           | `light-dark(#b42318, #f15b5b)`                                                                 |
+| `--nat-table-color-surface`          | `light-dark(#fff, #14171c)`                                                                    |
+| `--nat-table-color-surface-elevated` | `light-dark(#fff, #14171c)`                                                                    |
+| `--nat-table-color-surface-sticky`   | `light-dark(#f4f5f7, #1a1e24)`                                                                 |
+| `--nat-table-color-border`           | `light-dark(#e4e7eb, #262b33)`                                                                 |
+| `--nat-table-color-divider`          | `light-dark(#e4e7eb, #262b33)`                                                                 |
+| `--nat-table-region-background`      | `var(--nat-table-color-surface)`                                                               |
+| `--nat-table-header-background`      | `var(--nat-table-color-surface-sticky)`                                                        |
+| `--nat-table-header-color`           | `var(--nat-table-color-text-muted)`                                                            |
+| `--nat-table-cell-border-color`      | `var(--nat-table-color-divider)`                                                               |
+| `--nat-table-cell-color-positive`    | `var(--nat-table-color-success)`                                                               |
+| `--nat-table-cell-color-negative`    | `var(--nat-table-color-danger)`                                                                |
+| `--nat-table-cell-color-warning`     | `var(--nat-table-color-warning)`                                                               |
+| `--nat-table-cell-color-neutral`     | `var(--nat-table-color-text-muted)`                                                            |
+| `--nat-table-empty-state-color`      | `var(--nat-table-color-text-muted)`                                                            |
+| `--nat-table-loading-state-color`    | `var(--nat-table-empty-state-color)`                                                           |
+| `--nat-table-error-state-color`      | `var(--nat-table-cell-color-negative)`                                                         |
+| `--nat-table-focus-ring-color`       | `var(--nat-table-color-accent)`                                                                |
 
 ### Controls
 
-| Token                                 | Opt-in theme value                                                       |
-| ------------------------------------- | ------------------------------------------------------------------------ |
-| `--nat-table-radius-card`             | `12px`                                                                   |
-| `--nat-table-radius-region`           | `8px`                                                                    |
-| `--nat-table-radius-input`            | `6px`                                                                    |
-| `--nat-table-radius-chip`             | `6px`                                                                    |
-| `--nat-table-space-card`              | `18px 22px`                                                              |
-| `--nat-table-space-card-compact`      | `14px 16px`                                                              |
-| `--nat-table-space-control-block-gap` | `12px`                                                                   |
-| `--nat-table-space-chip-row-gap`      | `10px`                                                                   |
-| `--nat-table-chip-background`         | `var(--nat-table-color-surface)`                                         |
+| Token                                 | Opt-in theme value                                                                      |
+| ------------------------------------- | --------------------------------------------------------------------------------------- |
+| `--nat-table-radius-card`             | `12px`                                                                                  |
+| `--nat-table-radius-region`           | `8px`                                                                                   |
+| `--nat-table-radius-input`            | `6px`                                                                                   |
+| `--nat-table-radius-chip`             | `6px`                                                                                   |
+| `--nat-table-space-card`              | `18px 22px`                                                                             |
+| `--nat-table-space-card-compact`      | `14px 16px`                                                                             |
+| `--nat-table-space-control-block-gap` | `12px`                                                                                  |
+| `--nat-table-space-chip-row-gap`      | `10px`                                                                                  |
+| `--nat-table-chip-background`         | `var(--nat-table-color-surface)`                                                        |
 | `--nat-table-chip-background-active`  | `color-mix(in srgb, var(--nat-table-color-accent) 12%, var(--nat-table-color-surface))` |
-| `--nat-table-chip-border-color`       | `var(--nat-table-color-border)`                                          |
-| `--nat-table-pager-background`        | `var(--nat-table-color-surface)`                                         |
-| `--nat-table-pager-border-color`      | `var(--nat-table-color-border)`                                          |
+| `--nat-table-chip-border-color`       | `var(--nat-table-color-border)`                                                         |
+| `--nat-table-pager-background`        | `var(--nat-table-color-surface)`                                                        |
+| `--nat-table-pager-border-color`      | `var(--nat-table-color-border)`                                                         |
 
 ### Layout And Stacking
 
