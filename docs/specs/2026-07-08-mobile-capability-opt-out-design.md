@@ -5,6 +5,8 @@
 - **Status:** Approved (brainstorming session)
 - **Branch:** `art/feat/mobile-capability`
 
+> **Superseded in part by [#274](https://github.com/VaggelisKa/angular-advanced-table/issues/274) (2026-07-09).** This design assumed resizing was per-column opt-in via `enableResizing: true` on the `ColumnDef` (see the table row and the `enableResizing: !this.isMobile()` snippet below). #274 made resizing a surface-level feature: enable it on `<nat-table-surface>` with `[enableColumnResizing]`, and opt columns out with `enableResizing: false`. For the mobile pattern, bind `[enableColumnResizing]="!isMobile()"` on the surface instead of mapping it per column. The `enableSortActions` decision and everything else in this document stand.
+
 ## Problem
 
 Responsive tables need to disable specific Table Capabilities on mobile while keeping them active on desktop. Today consumers resort to `::ng-deep` CSS toggles, manual click-handler suppression, or duplicated component logic. Issue #266 asks for a mechanism that is declarative, reactive (signals and media queries), and extensible.
