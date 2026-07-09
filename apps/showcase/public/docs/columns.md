@@ -39,20 +39,20 @@ readonly columns: ColumnDef<PositionRow>[] = [
 
 `NatTableColumnMeta` adds table-specific behavior to `columnDef.meta`.
 
-| Field               | Use it for                                                                                    |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| `label`             | Stable human-readable label for announcements and companion UI                                |
-| `hiddenHeaderLabel` | Screen-reader-only header text for compact utility columns                                    |
-| `align`             | `'start'` or `'end'` header and body alignment                                                |
-| `rowHeader`         | Marks body cells in the column as row headers                                                 |
-| `reorderable`       | Opts the column into reordering (drag, keyboard, move menu) when the table enables reordering |
-| `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells                         |
-| `cellHeight`        | Fixed body-cell height for this column                                                        |
-| `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable                              |
-| `headerSize`        | Header-only width                                                                             |
-| `headerMinSize`     | Header-only minimum width                                                                     |
-| `headerMaxSize`     | Header-only maximum width                                                                     |
-| `export`            | Export participation, header, and value mapping                                               |
+| Field               | Use it for                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `label`             | Stable human-readable label for announcements and companion UI                                                    |
+| `hiddenHeaderLabel` | Screen-reader-only header text for compact utility columns                                                        |
+| `align`             | `'start'` or `'end'` header and body alignment                                                                    |
+| `rowHeader`         | Marks body cells in the column as row headers                                                                     |
+| `reorderable`       | Set to `false` to opt the column out of reordering (drag, keyboard, move menu) while the table enables reordering |
+| `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells                                             |
+| `cellHeight`        | Fixed body-cell height for this column                                                                            |
+| `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable                                                  |
+| `headerSize`        | Header-only width                                                                                                 |
+| `headerMinSize`     | Header-only minimum width                                                                                         |
+| `headerMaxSize`     | Header-only maximum width                                                                                         |
+| `export`            | Export participation, header, and value mapping                                                                   |
 
 ```ts
 import type { NatTableColumnMeta } from 'ng-advanced-table';
@@ -84,7 +84,6 @@ readonly columns: ColumnDef<PositionRow>[] = [
     header: 'Symbol',
     size: 112,
     minSize: 96,
-    enableResizing: true,
     meta: {
       label: 'Symbol',
       rowHeader: true,
@@ -96,7 +95,6 @@ readonly columns: ColumnDef<PositionRow>[] = [
     header: 'Company',
     minSize: 180,
     maxSize: 360,
-    enableResizing: true,
     meta: {
       label: 'Company',
       cellHeight: 64,
@@ -109,19 +107,19 @@ readonly columns: ColumnDef<PositionRow>[] = [
 Configure the table width model on the surface.
 
 ```html
-<nat-table-surface columnSizingMode="fixed" columnResizeMode="onEnd">
+<nat-table-surface columnSizingMode="fixed" columnResizeMode="onEnd" [enableColumnResizing]="true">
   <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
   <nat-table-scroll-control />
 </nat-table-surface>
 ```
 
-`columnSizingMode="fill"` stretches columns to fill the container. `columnSizingMode="fixed"` treats widths as authoritative and lets the table scroll horizontally. `columnResizeMode="onEnd"` commits after pointer release; `"onChange"` updates during the drag.
+`columnSizingMode="fill"` stretches columns to fill the container. `columnSizingMode="fixed"` treats widths as authoritative and lets the table scroll horizontally. Interactive resizing is off until the surface sets `[enableColumnResizing]="true"`; once enabled it applies to every column, and a single column opts out with `enableResizing: false`. `columnResizeMode="onEnd"` commits after pointer release; `"onChange"` updates during the drag.
 
 ## Pinning And Reordering
 
 Pinning is enabled where the column allows it. Reordering is disabled by default; enable it on the surface when a table should expose drag/drop, keyboard column moves, or companion move actions. Reordering stays inside the current pinning zone: left, center, or right.
 
-Reordering is also per-column opt-in. Every column that should move needs `meta: { reorderable: true }`, even when the surface sets `[enableReordering]="true"`. This is a breaking change: previously any column in a reorder-enabled table could move; now a column without the flag stays fixed.
+Reordering is enabled on the surface and applies to every column by default. Opt a column out with `meta: { reorderable: false }`, and it stays fixed while the rest of the table reorders.
 
 ```ts
 readonly initialState: Partial<NatTableUserState> = {
@@ -133,13 +131,14 @@ readonly initialState: Partial<NatTableUserState> = {
 };
 ```
 
-Each movable column in `baseColumns` sets `meta: { reorderable: true }`; columns without the flag keep their place even while reordering is enabled.
+Columns in `baseColumns` reorder by default; add `meta: { reorderable: false }` to any column that should keep its place while reordering is enabled.
 
 ```ts
 const baseColumns: ColumnDef<PositionRow>[] = [
-  { accessorKey: 'symbol', header: 'Symbol', meta: { label: 'Symbol', rowHeader: true, reorderable: true } },
-  { accessorKey: 'company', header: 'Company', meta: { label: 'Company', reorderable: true } },
-  { accessorKey: 'price', header: 'Last', meta: { label: 'Last', align: 'end', reorderable: true } },
+  { accessorKey: 'symbol', header: 'Symbol', meta: { label: 'Symbol', rowHeader: true } },
+  { accessorKey: 'company', header: 'Company', meta: { label: 'Company' } },
+  // Stays put while the other columns reorder.
+  { accessorKey: 'price', header: 'Last', meta: { label: 'Last', align: 'end', reorderable: false } },
 ];
 
 readonly columns = withNatTableHeaderActions(baseColumns, {
@@ -147,7 +146,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 });
 ```
 
-The header actions helper adds sort buttons when a column can sort, pin menu items when the column can pin, and move menu items when `enableColumnReorderActions` is enabled. It also accepts custom sort indicator content through `sortIndicator`, so custom sort icons should compose through the helper rather than through extra header rows.
+The header actions helper adds sort buttons when the surface enables sorting (`[enableSorting]="true"`) and a column can sort, pin menu items when the surface enables pinning (`[enablePinning]="true"`) and the column can pin, and move menu items when the surface sets `[enableReordering]="true"` and `enableColumnReorderActions` is on. Each capability defaults off at the surface and resolves per column as `column.<flag> ?? surface.<enabler>`. It also accepts custom sort indicator content through `sortIndicator`, so custom sort icons should compose through the helper rather than through extra header rows.
 
 Enable table-owned reordering on the surface for tables that should expose move affordances.
 
@@ -272,5 +271,5 @@ Disable export for columns that are useful only on screen.
 - Do not rely on namespaced positional fallback ids for interactive tables.
 - Do not make clickable `<div>` or `<span>` content inside cells; use real controls.
 - Do not add fake header rows to customize sorting; use `withNatTableHeaderActions(..., { sortIndicator })`.
-- Do not enable resizing on every column automatically. Choose the columns where resizing is useful.
+- Do not leave resizing enabled on columns where it is not useful; the surface enables it for all columns, so opt individual ones out with `enableResizing: false`.
 - Do not move workflow state such as filters, dialogs, or mutations into cell components.

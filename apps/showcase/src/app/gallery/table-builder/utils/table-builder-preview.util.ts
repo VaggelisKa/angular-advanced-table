@@ -7,56 +7,53 @@ import type { DemoItem, LocalePreview, TableBuilderFlags } from '../common/table
 type BuilderColumnFlags = {
   enableColumnPinActions: boolean;
   enableColumnReorderActions: boolean;
-  enableSorting: boolean;
   enableColumnResizing: boolean;
   enableRowSelection: boolean;
 };
 
-// Per-column pin/resize/sort props, composed in that order — the single source both
-// the live preview and the generated `buildColumns` string mirror.
+// Per-column size props, composed in that order — the single source both
+// the live preview and the generated `buildColumns` string mirror. Pinning,
+// resizing, and sorting are surface-level opt-out defaults now, so no
+// per-column `true` flag is emitted for them here.
 const buildColumnFeatureProps = (size: number, flags: BuilderColumnFlags): Partial<ColumnDef<DemoItem, unknown>> => ({
   // Resizing needs an explicit start width to drag from, so seed `size` for
   // resizing too — not just pinning (otherwise there is nothing to resize).
-  ...(flags.enableColumnPinActions || flags.enableColumnResizing ? { size } : {}),
-  ...(flags.enableColumnPinActions ? { enablePinning: true } : {}),
-  ...(flags.enableColumnResizing ? { enableResizing: true } : {}),
-  ...(flags.enableSorting ? {} : { enableSorting: false })
+  ...(flags.enableColumnPinActions || flags.enableColumnResizing ? { size } : {})
 });
 
 export const buildBuilderColumns = (flags: BuilderColumnFlags, locale: LocalePreview): ColumnDef<DemoItem, unknown>[] => {
   const intl = DEMO_COLUMN_INTL[locale];
-  // Reordering is per-column opt-in: every movable column needs `meta.reorderable`,
-  // otherwise the reorder-enabled surface has nothing to move.
-  const reorderMeta = flags.enableColumnReorderActions ? { reorderable: true } : {};
+  // Reordering is surface-level opt-out now: columns are reorderable by default when
+  // the surface enables reordering, so no per-column `meta.reorderable` is needed.
   const baseColumns: ColumnDef<DemoItem, unknown>[] = [
     {
       accessorKey: 'name',
       header: intl.headers.name,
       ...buildColumnFeatureProps(150, flags),
-      meta: { label: intl.headers.name, rowHeader: true, ...reorderMeta }
+      meta: { label: intl.headers.name, rowHeader: true }
     },
     {
       accessorKey: 'category',
       header: intl.headers.category,
       ...buildColumnFeatureProps(150, flags),
-      meta: { label: intl.headers.category, ...reorderMeta }
+      meta: { label: intl.headers.category }
     },
     {
       accessorKey: 'status',
       header: intl.headers.status,
       ...buildColumnFeatureProps(120, flags),
-      meta: { label: intl.headers.status, ...reorderMeta }
+      meta: { label: intl.headers.status }
     },
     {
       accessorKey: 'value',
       header: intl.headers.value,
       ...buildColumnFeatureProps(150, flags),
-      // The table enables resizing globally, so the last column must opt OUT explicitly
-      // (an omitted flag still inherits resizable). Non-resizable = the fill sink that
-      // absorbs surplus width instead of letting the table overflow the region.
+      // Resizing is enabled globally and on by default, so the last column must opt
+      // OUT explicitly. Non-resizable = the fill sink that absorbs surplus width
+      // instead of letting the table overflow the region.
       ...(flags.enableColumnResizing ? { enableResizing: false } : {}),
-      meta: { label: intl.headers.value, align: 'end', ...reorderMeta },
-      cell: (context: CellContext<DemoItem, number>): string => `$${context.getValue().toLocaleString()}`
+      meta: { label: intl.headers.value, align: 'end' },
+      cell: (context: CellContext<DemoItem, unknown>): string => `$${(context.getValue() as number).toLocaleString()}`
     }
   ];
 
@@ -79,7 +76,6 @@ export const buildBuilderColumns = (flags: BuilderColumnFlags, locale: LocalePre
 export const toBuilderColumnFlags = (flags: TableBuilderFlags): BuilderColumnFlags => ({
   enableColumnPinActions: flags.withColumnPinning,
   enableColumnReorderActions: flags.withColumnReorder,
-  enableSorting: flags.withSorting,
   enableColumnResizing: flags.withColumnResizing,
   enableRowSelection: flags.withRowSelection
 });
@@ -153,11 +149,23 @@ export const buildTemplateSource = (flags: TableBuilderFlags): string => {
     surfaceAttributes += ' [stickyHeader]="true"';
   }
 
+  // Sorting, pinning, reordering, and resizing are surface-level enablers that default
+  // OFF now, so emit the positive `="true"` binding only when the feature is on and
+  // nothing when it is off — the default already covers the off case.
+  if (flags.withSorting) {
+    surfaceAttributes += ' [enableSorting]="true"';
+  }
+
+  if (flags.withColumnPinning) {
+    surfaceAttributes += ' [enablePinning]="true"';
+  }
+
   if (flags.withColumnReorder) {
     surfaceAttributes += ' [enableReordering]="true"';
   }
 
   if (flags.withColumnResizing) {
+    surfaceAttributes += ' [enableColumnResizing]="true"';
     surfaceAttributes += ` [columnSizingMode]="'fill'"`;
   }
 

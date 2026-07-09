@@ -42,8 +42,9 @@ const DEMO_DATA: DemoItem[] = [
 export class Resizing {
   protected readonly data = DEMO_DATA;
 
-  // Base definitions never set enableResizing: resizing is opt-in per column, driven
-  // by the toggle list below — not switched on for the whole table.
+  // Resizing is enabled table-wide at the surface via [enableColumnResizing]="true".
+  // Base definitions carry no per-column flag; the toggle list below opts individual
+  // columns OUT by setting enableResizing: false on the unchecked ones.
   private readonly baseColumns: ColumnDef<DemoItem, unknown>[] = [
     {
       id: 'name',
@@ -84,7 +85,8 @@ export class Resizing {
   // runtime as the user toggles columns, so a Set (not a static Record) fits.
   protected readonly resizableColumnIds = signal<ReadonlySet<string>>(new Set(['name', 'category', 'status']));
 
-  // enableResizing is derived per column from the toggle set, never set table-wide.
+  // Resizing is switched on at the surface; per column enableResizing is derived from
+  // the toggle set, so unchecked columns emit enableResizing: false to opt out.
   protected readonly columns = computed<ColumnDef<DemoItem, unknown>[]>(() => {
     const resizable = this.resizableColumnIds();
 

@@ -37,7 +37,7 @@ const DEMO_DATA: DemoItem[] = [
       <div class="card">
         <h2 class="card-title">Searchable Grid</h2>
 
-        <nat-table-surface [(state)]="tableState">
+        <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
           <div class="search-panel">
             <app-table-search
               label="Fuzzy search symbol, name, status, or category"

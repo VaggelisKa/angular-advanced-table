@@ -35,7 +35,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 120,
     minSize: 100,
     meta: { label: 'Symbol', rowHeader: true },
-    enablePinning: true,
     sortingFn: (left, right) => compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
     cell: (info) =>
       flexRenderComponent(NatTickerMark, {
@@ -52,7 +51,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       cellHeight: 72,
       cellMaxLines: 2
     },
-    enablePinning: true,
     sortingFn: (left, right) => compareSortKeys(left.original.companySortKey, right.original.companySortKey),
     cell: (info) => `${info.getValue<string>()} liquidity review with multi-venue routing notes for ${info.row.original.symbol}`
   },
@@ -62,7 +60,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 120,
     minSize: 100,
     meta: { label: 'Exchange' },
-    enablePinning: true,
     cell: (info) => info.getValue<string>()
   },
   {
@@ -82,7 +79,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       label: 'Signal',
       cellTone: (context) => statusTone(context.getValue<SimulationStatus>())
     },
-    enablePinning: true,
     filterFn: statusFilter,
     cell: (info) => info.getValue<string>()
   },
@@ -96,7 +92,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       align: 'end',
       cellTone: (context) => numberTone(context.row.original.changePercent)
     },
-    enablePinning: true,
     cell: (info) => formatCurrency(info.getValue<number>())
   },
   {
@@ -109,7 +104,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       align: 'end',
       cellTone: (context) => (context.row.original.status === 'Halted' ? 'warning' : numberTone(context.getValue<number>()))
     },
-    enablePinning: true,
     cell: (info) => formatSignedCurrency(info.getValue<number>())
   },
   {
@@ -122,7 +116,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       align: 'end',
       cellTone: (context) => (context.row.original.status === 'Halted' ? 'warning' : numberTone(context.getValue<number>()))
     },
-    enablePinning: true,
     cell: (info) => formatSignedPercent(info.getValue<number>())
   },
   {
@@ -148,7 +141,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 130,
     minSize: 100,
     meta: { label: 'Volume', align: 'end' },
-    enablePinning: true,
     cell: (info) => formatCompact(info.getValue<number>())
   },
   {
@@ -165,7 +157,6 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 130,
     minSize: 100,
     meta: { label: 'Updated', align: 'end' },
-    enablePinning: true,
     cell: (info) => formatTime(info.getValue<number>())
   },
   {
@@ -187,12 +178,9 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   }
 ];
 
-// Every simulation column opts into per-column reordering so the showcase keeps
-// its drag/keyboard/Move-button behavior under the `meta.reorderable` gate.
-export const simulationColumns: ColumnDef<SimulationRow, unknown>[] = rawSimulationColumns.map((column) => ({
-  ...column,
-  meta: { ...column.meta, reorderable: true }
-}));
+// Columns reorder by default under the surface's `[enableReordering]="true"`; no
+// per-column `meta.reorderable` flag is needed. Aliased so the export name stays stable.
+export const simulationColumns: ColumnDef<SimulationRow, unknown>[] = rawSimulationColumns;
 
 export const showcaseAccessibilityText = {
   emptyState: 'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.'

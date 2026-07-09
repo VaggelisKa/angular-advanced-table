@@ -8,18 +8,10 @@ const collectColumnProps = (size: number, flags: TableBuilderFlags, resizingValu
     props.push(`size: ${size}`);
   }
 
-  if (flags.withColumnPinning) {
-    props.push('enablePinning: true');
-  }
-
-  if (flags.withColumnResizing) {
-    // Emit the flag explicitly: the table enables resizing globally, so an omitted
-    // value inherits resizable. The trailing column passes 'false' to opt out.
-    props.push(`enableResizing: ${resizingValue}`);
-  }
-
-  if (!flags.withSorting) {
-    props.push('enableSorting: false');
+  if (flags.withColumnResizing && resizingValue === 'false') {
+    // Resizing is enabled globally and on by default, so participating columns need
+    // no flag at all. Only the trailing (fill-sink) column opts out explicitly.
+    props.push('enableResizing: false');
   }
 
   return props;
@@ -60,18 +52,17 @@ export const buildColumns = (flags: TableBuilderFlags, headerOptions: string): s
   const selectionOpen = flags.withRowSelection ? 'withNatTableSelectionColumn(' : '';
   const selectionClose = flags.withRowSelection ? buildSelectionOptions(flags) : '';
   const headers = DEMO_COLUMN_INTL[flags.withLocalization ? 'da' : 'en'].headers;
-  // Reordering is per-column opt-in: append `reorderable: true` to every meta so the
-  // reorder-enabled surface actually has movable columns.
-  const reorderMeta = flags.withColumnReorder ? ', reorderable: true' : '';
+  // Reordering is surface-level opt-out now: columns are reorderable by default when
+  // the surface enables reordering, so no per-column `meta.reorderable` is emitted.
 
   return `  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(${selectionOpen}[
-    { accessorKey: 'name', header: '${headers.name}', ${buildColumnProps(150, flags)}meta: { label: '${headers.name}', rowHeader: true${reorderMeta} } },
-    { accessorKey: 'category', header: '${headers.category}', ${buildColumnProps(150, flags)}meta: { label: '${headers.category}'${reorderMeta} } },
-    { accessorKey: 'status', header: '${headers.status}', ${buildColumnProps(120, flags)}meta: { label: '${headers.status}'${reorderMeta} } },
+    { accessorKey: 'name', header: '${headers.name}', ${buildColumnProps(150, flags)}meta: { label: '${headers.name}', rowHeader: true } },
+    { accessorKey: 'category', header: '${headers.category}', ${buildColumnProps(150, flags)}meta: { label: '${headers.category}' } },
+    { accessorKey: 'status', header: '${headers.status}', ${buildColumnProps(120, flags)}meta: { label: '${headers.status}' } },
     {
       accessorKey: 'value',
       header: '${headers.value}',
-      ${buildColumnPropsBlock(150, flags)}meta: { label: '${headers.value}', align: 'end'${reorderMeta} },
+      ${buildColumnPropsBlock(150, flags)}meta: { label: '${headers.value}', align: 'end' },
       cell: (context: CellContext<DemoItem, number>) => \`$\${context.getValue().toLocaleString()}\`,
     },
   ]${selectionClose}${headerOptions});`;

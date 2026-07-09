@@ -43,7 +43,7 @@ const DEMO_DATA: DemoItem[] = [
       <div class="card">
         <h2 class="card-title">Paginated Grid (Client-Side)</h2>
 
-        <nat-table-surface [(state)]="tableState">
+        <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
           <nat-table-pagination [pageSizeOptions]="[3, 5, 10]" />
 
           <nat-table [columns]="columns" [data]="data" accessibleName="Pagination demo table" />
@@ -55,6 +55,8 @@ const DEMO_DATA: DemoItem[] = [
         <p class="description description-spaced">Pagination is handled externally, while sorting remains automatic client-side.</p>
 
         <nat-table-surface
+          [enablePinning]="true"
+          [enableSorting]="true"
           [manualPageCount]="manualPageCount()"
           [mode]="{ pagination: 'manual', sorting: 'auto' }"
           [(state)]="manualTableState">

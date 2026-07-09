@@ -12,14 +12,14 @@ readonly tableState = signal<Partial<NatTableUserState>>({
 });
 ```
 
-Header sort controls are added by wrapping columns with `withNatTableHeaderActions(...)`. Programmatic controls should update the same state slice instead of keeping a second sort model.
+Header sort controls are added by wrapping columns with `withNatTableHeaderActions(...)` and enabling sorting on the surface with `[enableSorting]="true"` — sorting UI is off by default. A column's control availability resolves as `column.enableSorting ?? surface.enableSorting`, so opt a single column in or out with `enableSorting` on its definition regardless of the surface default. Programmatic controls should update the same state slice instead of keeping a second sort model.
 
 ## Multi-Column Sorting
 
 Enable multi-sort on the surface when users need priority order across multiple columns. The first sorting entry has the highest priority. Keep the priority visible when the workflow depends on it.
 
 ```html
-<nat-table-surface [enableMultiSort]="true" [(state)]="tableState">
+<nat-table-surface [enableSorting]="true" [enableMultiSort]="true" [(state)]="tableState">
   <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
 </nat-table-surface>
 ```

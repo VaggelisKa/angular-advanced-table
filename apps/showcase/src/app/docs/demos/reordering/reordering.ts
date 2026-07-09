@@ -35,7 +35,7 @@ const DEMO_DATA: DemoItem[] = [
     <div class="grid-layout grid-layout-with-panel">
       <div class="card">
         <h2 class="card-title">Drag & Reorder Grid</h2>
-        <nat-table-surface [enableReordering]="true" [(state)]="tableState" data-testid="reordering-demo-table">
+        <nat-table-surface [enableReordering]="true" [enableSorting]="true" [(state)]="tableState" data-testid="reordering-demo-table">
           <nat-table [columns]="columns" [data]="data" accessibleName="Reordering demo table" />
         </nat-table-surface>
       </div>
@@ -60,9 +60,9 @@ const DEMO_DATA: DemoItem[] = [
           reorder without dragging.
         </div>
         <div class="instructions">
-          <strong>Per-column opt-in (breaking change):</strong> Reordering now applies only to columns whose def sets
-          <code>meta: &#123; reorderable: true &#125;</code>. In a reorder-enabled table, columns without the flag can no longer be
-          dragged, keyboard-moved, or moved via the header menu. Every column above opts in.
+          <strong>Reorder by default:</strong> With <code>[enableReordering]="true"</code> on the surface, every column reorders by
+          default. Opt a column out with <code>meta: &#123; reorderable: false &#125;</code> and it can no longer be dragged,
+          keyboard-moved, or moved via the header menu. Every column above participates.
         </div>
       </div>
     </div>
@@ -76,22 +76,22 @@ export class Reordering {
       {
         accessorKey: 'name',
         header: 'Name',
-        meta: { label: 'Name', rowHeader: true, reorderable: true }
+        meta: { label: 'Name', rowHeader: true }
       },
       {
         accessorKey: 'category',
         header: 'Category',
-        meta: { label: 'Category', reorderable: true }
+        meta: { label: 'Category' }
       },
       {
         accessorKey: 'status',
         header: 'Status',
-        meta: { label: 'Status', reorderable: true }
+        meta: { label: 'Status' }
       },
       {
         accessorKey: 'value',
         header: 'Value',
-        meta: { label: 'Value', align: 'end', reorderable: true },
+        meta: { label: 'Value', align: 'end' },
         cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
       }
     ],

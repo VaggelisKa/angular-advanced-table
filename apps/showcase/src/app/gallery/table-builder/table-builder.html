@@ -71,7 +71,10 @@
         }
 
         <nat-table-surface
+          [enableColumnResizing]="flags().withColumnResizing"
+          [enablePinning]="flags().withColumnPinning"
           [enableReordering]="flags().withColumnReorder"
+          [enableSorting]="flags().withSorting"
           [locale]="surfaceLocale()"
           [stickyHeader]="flags().withStickyHeader"
           [(state)]="tableState"
