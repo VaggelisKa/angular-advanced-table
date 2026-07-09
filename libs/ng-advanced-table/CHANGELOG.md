@@ -1,3 +1,13 @@
+## 2.7.0 (2026-07-09)
+
+### 🚀 Features
+
+- Allow locale provider helpers to accept DI-backed factory callbacks, so `provideNatTableIntl(...)`, `provideNatTableControlsIntl(...)`, and `provideNatTableRenderMetricsIntl(...)` can build translated copy from injectable runtime services while preserving parent merge semantics. ([#259](https://github.com/VaggelisKa/angular-advanced-table/pull/259))
+
+### 🩹 Fixes
+
+- Document the current opt-in stock theme ownership model and its explicit browser-support exception from the core table Safari 16.5 baseline. ([#276](https://github.com/VaggelisKa/angular-advanced-table/pull/276))
+
 ## 2.6.0 (2026-07-08)
 
 ### 🚀 Features
