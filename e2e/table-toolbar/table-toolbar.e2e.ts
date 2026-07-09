@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
 import { applyDocumentDirection } from '../support/document-direction';
 
 test.describe('FEATURE: Table toolbar', () => {
@@ -51,6 +52,7 @@ test.describe('FEATURE: Table toolbar', () => {
   test.describe('GIVEN: the toolbar showcase page is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/toolbar-actions');
+      await loadDocsExamplePreview(page, 'toolbar-actions', 'Toolbar groups and action placement');
     });
 
     test.describe('WHEN: the page is rendered', () => {
@@ -190,7 +192,7 @@ test.describe('FEATURE: Table toolbar', () => {
         // re-navigates with RTL direction inside this body (rule 5) — not hoisted to the shared GIVEN
         await applyDocumentDirection(page, 'rtl');
         await page.goto('/docs/toolbar-actions');
-        await expect(page.getByRole('toolbar', { name: 'Products toolbar' })).toBeVisible();
+        await loadDocsExamplePreview(page, 'toolbar-actions', 'Toolbar groups and action placement');
 
         const { exportButton, refreshButton } = buttons(page);
 

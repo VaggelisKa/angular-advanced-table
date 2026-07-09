@@ -34,6 +34,45 @@ const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
   return target instanceof HTMLInputElement && NAT_TOOLBAR_TEXT_INPUT_TYPES.has(target.type);
 };
 
+/** Any modifier that changes an arrow's meaning inside a text field (word-jump, select, …). */
+const hasCaretModifier = (event: KeyboardEvent): boolean => event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
+
+/** Collapsed caret sits at the value edge the arrow would exit toward (RTL flips which arrow is "forward"). */
+const caretAtExitEdge = (field: HTMLInputElement, key: string, rtl: boolean): boolean => {
+  const { selectionStart, value } = field;
+  const forwardKey = rtl ? 'ArrowLeft' : 'ArrowRight';
+  const backwardKey = rtl ? 'ArrowRight' : 'ArrowLeft';
+
+  if (key === forwardKey) return selectionStart === value.length;
+
+  if (key === backwardKey) return selectionStart === 0;
+
+  return false;
+};
+
+/**
+ * Boundary-aware handoff for a single-line text `<input>`: true when the pressed
+ * arrow should give up the caret and let roving navigation advance — i.e. the
+ * caret is collapsed at the value edge in the arrow's travel direction (#249).
+ */
+const shouldHandOffCaretToToolbar = (event: KeyboardEvent, rtl: boolean): boolean => {
+  const { target } = event;
+
+  // Only a single-line text input exposes a logical caret we can trust;
+  // textarea / select / contentEditable keep every key.
+  // ponytail: number/date/email inputs report selectionStart === null, so they
+  // stay dead-ends here — the platform gives us no caret position to test.
+  if (!(target instanceof HTMLInputElement)) return false;
+
+  if (hasCaretModifier(event)) return false;
+
+  const { selectionStart, selectionEnd } = target;
+
+  if (selectionStart === null || selectionStart !== selectionEnd) return false;
+
+  return caretAtExitEdge(target, event.key, rtl);
+};
+
 @Component({
   selector: 'nat-table-toolbar',
   templateUrl: './table-toolbar.html',
@@ -110,8 +149,14 @@ export class NatTableToolbar<TData extends RowData = RowData> {
       // here) — that would kill native button activation and Space typing.
       if (event.key === 'Enter' || event.key === ' ') return;
 
-      // Text-entry widgets keep their caret keys (arrows, Home/End).
-      if (isNatToolbarTextEntryElement(event.target)) return;
+      // Text-entry widgets keep their caret keys — but a single-line <input>
+      // hands Left/Right off to roving nav once the caret sits at the matching
+      // edge, so the input isn't a dead-end for arrow traversal (#249).
+      if (isNatToolbarTextEntryElement(event.target)) {
+        const rtl = pattern.inputs.textDirection() === 'rtl';
+
+        if (!shouldHandOffCaretToToolbar(event, rtl)) return;
+      }
 
       originalOnKeydown(event);
     };

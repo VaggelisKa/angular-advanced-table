@@ -158,18 +158,62 @@ describe('FEATURE: NatTableToolbar keyboard navigation', () => {
   });
 
   describe('GIVEN: a roving toolbar host is rendered with a text input inside the toolbar', () => {
-    describe('WHEN: does not intercept arrows or Home/End while focus is inside a text input', () => {
-      it('THEN: it preserves native text-entry key handling', async () => {
+    // Boundary-aware handoff (#249): a single-line input keeps Left/Right for its
+    // caret while the caret has room to travel, then hands the arrow off to
+    // roving nav once the caret sits at the value edge in the arrow's direction.
+    // Visual order: start-a, text-entry, end-a, end-b.
+    const searchInput = (): HTMLInputElement => element('text-entry') as HTMLInputElement;
+
+    describe('WHEN: the caret sits mid-value and an arrow is pressed', () => {
+      it('THEN: it keeps the caret key and roving focus stays on the input', async () => {
         await focusItem('text-entry');
+        const input = searchInput();
 
-        const arrowEvent = pressKey(element('text-entry'), 'ArrowRight');
+        input.value = 'abc';
+        input.setSelectionRange(1, 1);
 
-        expect(document.activeElement).toBe(element('text-entry'));
+        const arrowEvent = pressKey(input, 'ArrowRight');
+
+        expect(document.activeElement).toBe(input);
         expect(arrowEvent.defaultPrevented).toBe(false);
+      });
+    });
 
-        const homeEvent = pressKey(element('text-entry'), 'Home');
+    describe('WHEN: the caret reaches the value edge in the arrow direction', () => {
+      it('THEN: it hands Left/Right off to the adjacent roving item', async () => {
+        await focusItem('text-entry');
+        const input = searchInput();
 
-        expect(document.activeElement).toBe(element('text-entry'));
+        input.value = 'abc';
+
+        // when: caret at the end, ArrowRight advances to the next visual item
+        input.setSelectionRange(3, 3);
+        const forwardEvent = pressKey(input, 'ArrowRight');
+
+        expect(document.activeElement).toBe(element('end-a'));
+        expect(forwardEvent.defaultPrevented).toBe(true);
+
+        // when: caret at the start, ArrowLeft steps back to the previous item
+        await focusItem('text-entry');
+        input.setSelectionRange(0, 0);
+        const backwardEvent = pressKey(input, 'ArrowLeft');
+
+        expect(document.activeElement).toBe(element('start-a'));
+        expect(backwardEvent.defaultPrevented).toBe(true);
+      });
+    });
+
+    describe('WHEN: Home/End are pressed inside the text input', () => {
+      it('THEN: it preserves native caret shortcuts', async () => {
+        await focusItem('text-entry');
+        const input = searchInput();
+
+        input.value = 'abc';
+        input.setSelectionRange(1, 1);
+
+        const homeEvent = pressKey(input, 'Home');
+
+        expect(document.activeElement).toBe(input);
         expect(homeEvent.defaultPrevented).toBe(false);
       });
     });
