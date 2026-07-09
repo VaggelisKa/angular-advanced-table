@@ -7,7 +7,7 @@ Use this reference for themes, density, cell alignment, semantic tones, and layo
 - Core is headless by default: it inherits page colors and system defaults, with no built-in stock theme.
 - For the polished stock look, import the opt-in stylesheet once: `import 'ng-advanced-table/components/theme.css';`
 - Use the public `--nat-table-*` CSS custom-property contract.
-- Scope product themes on a wrapper around `<nat-table-surface>` or the table feature component. Wrapper tokens always win over the opt-in stock theme: the library never declares public tokens, only internal `--sys-nat-table-*` fallback bridges.
+- Scope product themes on a wrapper around `<nat-table-surface>` or the table feature component. Wrapper tokens always win over the opt-in stock theme: only the exported stock `theme.css` declares public `--nat-table-*` defaults; component styles forward public tokens through internal `--sys-nat-table-*` fallback bridges.
 - Do not set or reference internal `--sys-nat-table-*` variables.
 - Canonical shape — copy this, then override more tokens as needed:
 

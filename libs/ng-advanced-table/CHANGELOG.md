@@ -1,7 +1,12 @@
 ## 2.7.1 (2026-07-09)
 
+### 🚀 Features
+
+- Add `enableSortActions` to `withNatTableHeaderActions(...)` and per-column `meta.headerActions` so responsive tables can hide the built-in sort button and indicator while keeping programmatic sorting and `aria-sort` state intact. ([#278](https://github.com/VaggelisKa/angular-advanced-table/pull/278))
+
 ### 🩹 Fixes
 
+- Let single-line text inputs inside `<nat-table-toolbar>` hand Left/Right arrow navigation back to the toolbar once the caret reaches the matching value edge, and restore the documented vertical overscroll fallback to `auto`. ([#272](https://github.com/VaggelisKa/angular-advanced-table/pull/272))
 - Mark the opt-in stock theme stylesheet as side-effectful so production bundlers retain `ng-advanced-table/components/theme.css` imports. ([#277](https://github.com/VaggelisKa/angular-advanced-table/pull/277))
 
 ## 2.7.0 (2026-07-09)
