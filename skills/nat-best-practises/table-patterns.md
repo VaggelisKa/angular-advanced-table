@@ -112,6 +112,44 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 
 `sortIndicator` content is visual. The generated sort button still owns the click handler, keyboard behavior, accessible name, multi-sort handling, and `aria-sort` state. Use `column.meta.headerActions` for per-column overrides, or set it to `false` for utility/action columns that should keep their original header.
 
+Set `enableSortActions: false` to remove the built-in sort button/indicator for wrapped columns. Programmatic sorting via `NatTable.patchState({ sorting })` (or `natTable.table.setSorting(...)` on the underlying TanStack instance) and columnDef-level `enableSorting` are unaffected. Defaults to `true`. Override per column with `column.meta.headerActions.enableSortActions`.
+
+## Responsive Capabilities
+
+The table is viewport-agnostic; it has no built-in breakpoint concept. Detect the viewport in the consuming app (`BreakpointObserver`, `matchMedia`, or an app layout service) and rebuild columns inside a `computed()` keyed on that signal.
+
+```ts
+import { computed, signal } from '@angular/core';
+import type { ColumnDef } from 'ng-advanced-table';
+import { withNatTableHeaderActions } from 'ng-advanced-table/components';
+
+readonly isCompact = signal(false); // driven by BreakpointObserver or matchMedia
+
+readonly columns = computed<ColumnDef<PositionRow, unknown>[]>(() =>
+  withNatTableHeaderActions(
+    [
+      {
+        accessorKey: 'title',
+        header: 'Title',
+        meta: { label: 'Title', rowHeader: true },
+        enableResizing: !isCompact()
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        meta: { label: 'Status' }
+      }
+    ],
+    {
+      enableSortActions: !isCompact(),
+      enableColumnPinActions: !isCompact()
+    }
+  )
+);
+```
+
+Never map a mobile/compact opt-out to TanStack table-level `enableSorting`. Setting `enableSorting: false` on the table or a column makes `getCanSort()` return `false`, and `getSortedRowModel` then silently drops programmatic sort state: state writes succeed but rows never sort. Use `enableSortActions: false` instead — it only removes the UI affordance and leaves `enableSorting` and programmatic sorting intact.
+
 ## State Rules
 
 - Store controlled table state as `Partial<NatTableUserState>`.
