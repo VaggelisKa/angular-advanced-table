@@ -142,22 +142,30 @@ test.describe('FEATURE: Table toolbar', () => {
     });
 
     test.describe('WHEN: focus is on a text input toolbar item', () => {
-      // Documents the by-design contract for #249: a text field keeps Left/Right
-      // for its caret, so arrows never move roving focus off it. Tab — not an
-      // arrow — is the way out. The field is a deliberate dead-end for arrow
-      // navigation, not a keyboard trap, because Tab always exits.
-      test('THEN: arrows stay in the field and Tab exits the toolbar', async ({ page }) => {
+      // Boundary-aware handoff contract for #249: a text field keeps Left/Right
+      // for its own caret while the caret has room to travel, then hands the
+      // arrow off to roving navigation once the caret sits at the value edge in
+      // the arrow's direction — so the field is not a dead-end. Tab still exits
+      // the whole toolbar regardless of caret position.
+      // The 'Table actions toolbar' holds two roving items: the search (first)
+      // and the menu trigger (last). With wrap enabled, both the end-edge
+      // ArrowRight and the start-edge ArrowLeft-wrap land on the menu trigger.
+      test('THEN: arrows hand off to the sibling at the caret edge, Tab exits', async ({ page }) => {
         const searchToolbar = page.getByRole('toolbar', { name: 'Table actions toolbar' });
         const search = searchToolbar.getByRole('searchbox', { name: 'Search by name, category or status' });
         const menuTrigger = page.getByTestId('menu-trigger');
 
-        await test.step('GIVEN: focus lands on the search input', async () => {
+        await test.step('GIVEN: focus lands on the search input with text', async () => {
           await search.focus();
+          await search.fill('Security');
           await expect(search).toBeFocused();
         });
 
-        await test.step('THEN: Left/Right drive the caret, roving focus stays on the input', async () => {
-          await search.fill('Security');
+        await test.step('THEN: with the caret mid-value, Left/Right drive the caret and focus stays', async () => {
+          // caret to the middle: Home, then step right a couple of characters
+          await search.press('Home');
+          await search.press('ArrowRight');
+          await search.press('ArrowRight');
 
           await search.press('ArrowLeft');
           await expect(search).toBeFocused();
@@ -168,7 +176,27 @@ test.describe('FEATURE: Table toolbar', () => {
           await expect(menuTrigger).not.toBeFocused();
         });
 
-        await test.step('THEN: Tab is the escape — focus leaves the toolbar entirely', async () => {
+        await test.step('THEN: at the END caret, ArrowRight hands off to the next item', async () => {
+          await search.press('End');
+          await search.press('ArrowRight');
+
+          await expect(search).not.toBeFocused();
+          await expect(menuTrigger).toBeFocused();
+        });
+
+        await test.step('THEN: at the START caret, ArrowLeft wraps to the last item', async () => {
+          await search.focus();
+          await search.press('Home');
+          await search.press('ArrowLeft');
+
+          // search is the first roving item; with wrap enabled ArrowLeft off the
+          // start edge wraps to the last item — the menu trigger
+          await expect(search).not.toBeFocused();
+          await expect(menuTrigger).toBeFocused();
+        });
+
+        await test.step('THEN: Tab still exits the whole toolbar regardless of caret', async () => {
+          await search.focus();
           await search.press('Tab');
 
           await expect(search).not.toBeFocused();

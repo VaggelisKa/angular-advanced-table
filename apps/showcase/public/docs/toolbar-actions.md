@@ -14,7 +14,7 @@ Toolbar items use roving focus. Put controls in the order users should encounter
 
 ## Text Inputs In The Toolbar
 
-A text field such as a search box keeps Left/Right for its own caret, so arrow keys do not advance roving focus off it. Press Tab to leave the field and the toolbar (Shift+Tab to step back out the other side). This matches the WAI-ARIA toolbar pattern for editable items: the input is a deliberate stop for arrow navigation, not a keyboard trap, because Tab always exits.
+A text field such as a search box keeps Left/Right for moving its own caret through the text. Once the caret reaches the edge of the value, pressing the same arrow again advances roving focus to the adjacent toolbar item, so the field is not a dead-end for arrow navigation. Tab still leaves the field and the toolbar entirely (Shift+Tab steps back out the other side). Multi-value inputs such as number or date pickers keep all their arrow keys, so use Tab to leave those.
 
 ## Common Uses
 
