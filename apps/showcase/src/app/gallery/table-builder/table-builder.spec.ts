@@ -238,6 +238,41 @@ describe('FEATURE: table builder code snippet highlighting', () => {
       });
     });
 
+    describe('WHEN: column reordering is toggled off', () => {
+      it('THEN: the generated TS snippet opts columns into meta.reorderable while on and drops it when off', async () => {
+        const fixture = TestBed.createComponent(TableBuilderPage);
+
+        await flushRender(fixture);
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const tsTab = findRequired(
+          Array.from(compiled.querySelectorAll<HTMLButtonElement>('.tab-btn')),
+          (button) => button.textContent.includes('custom-table.ts'),
+          'Expected the custom-table.ts tab button to exist.'
+        );
+
+        // when: the user switches to the TypeScript source tab (reordering is on by default)
+        tsTab.click();
+        await flushRender(fixture);
+
+        // then: the generated columns opt into reordering via meta.reorderable
+        expect(queryRequiredElement<HTMLElement>(compiled, 'code.code-content-code').textContent).toContain('reorderable: true');
+
+        const reorderToggle = findRequired(
+          Array.from(compiled.querySelectorAll<HTMLLabelElement>('.toggle-control')),
+          (control) => control.querySelector('.toggle-label')?.textContent === 'Column Reordering',
+          'Expected the Column Reordering feature toggle to exist.'
+        );
+
+        // when: the user disables column reordering
+        queryRequiredElement<HTMLInputElement>(reorderToggle, 'input.toggle-checkbox').click();
+        await flushRender(fixture);
+
+        // then: the snippet no longer mentions reorderable
+        expect(queryRequiredElement<HTMLElement>(compiled, 'code.code-content-code').textContent).not.toContain('reorderable');
+      });
+    });
+
     describe('WHEN: the Minimal preset is applied then column resizing is enabled', () => {
       it('THEN: resize handles render on name, category and status but not value', async () => {
         const fixture = TestBed.createComponent(TableBuilderPage);

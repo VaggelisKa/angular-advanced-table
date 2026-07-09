@@ -25,24 +25,27 @@ const buildColumnFeatureProps = (size: number, flags: BuilderColumnFlags): Parti
 
 export const buildBuilderColumns = (flags: BuilderColumnFlags, locale: LocalePreview): ColumnDef<DemoItem, unknown>[] => {
   const intl = DEMO_COLUMN_INTL[locale];
+  // Reordering is per-column opt-in: every movable column needs `meta.reorderable`,
+  // otherwise the reorder-enabled surface has nothing to move.
+  const reorderMeta = flags.enableColumnReorderActions ? { reorderable: true } : {};
   const baseColumns: ColumnDef<DemoItem, unknown>[] = [
     {
       accessorKey: 'name',
       header: intl.headers.name,
       ...buildColumnFeatureProps(150, flags),
-      meta: { label: intl.headers.name, rowHeader: true }
+      meta: { label: intl.headers.name, rowHeader: true, ...reorderMeta }
     },
     {
       accessorKey: 'category',
       header: intl.headers.category,
       ...buildColumnFeatureProps(150, flags),
-      meta: { label: intl.headers.category }
+      meta: { label: intl.headers.category, ...reorderMeta }
     },
     {
       accessorKey: 'status',
       header: intl.headers.status,
       ...buildColumnFeatureProps(120, flags),
-      meta: { label: intl.headers.status }
+      meta: { label: intl.headers.status, ...reorderMeta }
     },
     {
       accessorKey: 'value',
@@ -52,7 +55,7 @@ export const buildBuilderColumns = (flags: BuilderColumnFlags, locale: LocalePre
       // (an omitted flag still inherits resizable). Non-resizable = the fill sink that
       // absorbs surplus width instead of letting the table overflow the region.
       ...(flags.enableColumnResizing ? { enableResizing: false } : {}),
-      meta: { label: intl.headers.value, align: 'end' },
+      meta: { label: intl.headers.value, align: 'end', ...reorderMeta },
       cell: (context: CellContext<DemoItem, number>): string => `$${context.getValue().toLocaleString()}`
     }
   ];
