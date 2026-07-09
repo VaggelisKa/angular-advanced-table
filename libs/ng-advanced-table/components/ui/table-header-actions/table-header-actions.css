@@ -118,14 +118,9 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .sort-button:hover {
-    transform: var(--nat-table-hover-lift, var(--sys-nat-table-hover-lift, translateY(-1px)));
-  }
-
   .menu-button:hover {
     color: inherit;
     background: color-mix(in srgb, currentcolor 8%, transparent);
-    transform: translateY(-1px);
   }
 }
 
