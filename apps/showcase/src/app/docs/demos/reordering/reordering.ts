@@ -59,6 +59,11 @@ const DEMO_DATA: DemoItem[] = [
           <strong>Pointer usage:</strong> Open a header actions menu and choose <span>Move left</span> or <span>Move right</span> to
           reorder without dragging.
         </div>
+        <div class="instructions">
+          <strong>Per-column opt-in (breaking change):</strong> Reordering now applies only to columns whose def sets
+          <code>meta: &#123; reorderable: true &#125;</code>. In a reorder-enabled table, columns without the flag can no longer be
+          dragged, keyboard-moved, or moved via the header menu. Every column above opts in.
+        </div>
       </div>
     </div>
   `
@@ -71,22 +76,22 @@ export class Reordering {
       {
         accessorKey: 'name',
         header: 'Name',
-        meta: { label: 'Name', rowHeader: true }
+        meta: { label: 'Name', rowHeader: true, reorderable: true }
       },
       {
         accessorKey: 'category',
         header: 'Category',
-        meta: { label: 'Category' }
+        meta: { label: 'Category', reorderable: true }
       },
       {
         accessorKey: 'status',
         header: 'Status',
-        meta: { label: 'Status' }
+        meta: { label: 'Status', reorderable: true }
       },
       {
         accessorKey: 'value',
         header: 'Value',
-        meta: { label: 'Value', align: 'end' },
+        meta: { label: 'Value', align: 'end', reorderable: true },
         cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
       }
     ],

@@ -84,9 +84,10 @@ readonly tableState = signal<Partial<NatTableUserState>>({
 
 readonly columns = withNatTableHeaderActions(
   [
-    { accessorKey: 'name', header: 'Name', enablePinning: true, enableResizing: true },
-    { accessorKey: 'status', header: 'Status', enablePinning: true },
-    { accessorKey: 'value', header: 'Value', enablePinning: true, enableResizing: true }
+    // Reordering is per-column opt-in: add meta.reorderable to every column that should move.
+    { accessorKey: 'name', header: 'Name', enablePinning: true, enableResizing: true, meta: { reorderable: true } },
+    { accessorKey: 'status', header: 'Status', enablePinning: true, meta: { reorderable: true } },
+    { accessorKey: 'value', header: 'Value', enablePinning: true, enableResizing: true, meta: { reorderable: true } }
   ],
   { enableColumnReorderActions: true }
 );
@@ -601,7 +602,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         kind: 'example',
         id: 'column-reordering',
         title: 'Column reordering',
-        description: 'Drag, menu actions, and keyboard shortcuts all update the same column order state.',
+        description:
+          'Drag, menu actions, and keyboard shortcuts all update the same column order state. Breaking change: a column now reorders only when its def sets meta.reorderable: true, even while the table has enableReordering.',
         component: Reordering,
         snippets: columnLayoutSnippets
       },

@@ -28,7 +28,7 @@ const statusFilter: FilterFn<SimulationRow> = (row, columnId, filterValue) => {
   return selectedStatuses.includes(row.getValue(columnId) as SimulationStatus);
 };
 
-export const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
+const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
   {
     accessorKey: 'symbol',
     header: 'Symbol',
@@ -186,6 +186,13 @@ export const simulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       })
   }
 ];
+
+// Every simulation column opts into per-column reordering so the showcase keeps
+// its drag/keyboard/Move-button behavior under the `meta.reorderable` gate.
+export const simulationColumns: ColumnDef<SimulationRow, unknown>[] = rawSimulationColumns.map((column) => ({
+  ...column,
+  meta: { ...column.meta, reorderable: true }
+}));
 
 export const showcaseAccessibilityText = {
   emptyState: 'No instruments match the current filters. Clear the search query or signal chips to repopulate the tape.'
