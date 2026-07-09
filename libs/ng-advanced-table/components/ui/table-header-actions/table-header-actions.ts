@@ -65,11 +65,12 @@ export class NatTableHeaderActions {
   public readonly sortIndicator = input<NatTableSortIndicatorContent>(undefined);
   public readonly accessibilityLabels = input<NatTableAccessibilityHeaderActionLabels | undefined>(undefined);
 
+  public readonly enableSortActions = input(true);
   public readonly enableColumnPinActions = input(true);
   public readonly enableColumnReorderActions = input(false);
 
   protected canSort(): boolean {
-    return this.column().getCanSort();
+    return this.enableSortActions() && this.column().getCanSort();
   }
 
   protected canPin(): boolean {
@@ -109,9 +110,7 @@ export class NatTableHeaderActions {
   }
 
   protected togglePin(side: NatTablePinSide): void {
-    const column = this.column();
-
-    column.pin(this.isPinned(side) ? false : side);
+    this.column().pin(this.isPinned(side) ? false : side);
   }
 
   protected onSortClick(event: MouseEvent): void {

@@ -1,7 +1,11 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
+import { NatTable } from 'ng-advanced-table';
+
+import type { Row } from '../../test-helpers/table-data.helper';
 import {
   attrOf,
   getHeaderColumnIds,
@@ -12,10 +16,11 @@ import {
   textOf
 } from '../../test-helpers/table-dom.helper';
 import {
-  CustomSortIndicatorHost,
-  HiddenHeaderActionLabelHost,
-  MoveOnlyHeaderActionsHost
-} from '../../test-helpers/table-header-hosts.helper';
+  PinOnlyHeaderActionsHost,
+  SortActionsOverrideDisabledHost,
+  SortActionsOverrideEnabledHost
+} from '../../test-helpers/table-header-hosts-sort-actions.helper';
+import { CustomSortIndicatorHost, HiddenHeaderActionLabelHost, MoveOnlyHeaderActionsHost } from '../../test-helpers/table-header-hosts.helper';
 import { TableHost } from '../../test-helpers/table-hosts.helper';
 
 describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
@@ -24,7 +29,15 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableHost, CustomSortIndicatorHost, MoveOnlyHeaderActionsHost, HiddenHeaderActionLabelHost],
+      imports: [
+        TableHost,
+        CustomSortIndicatorHost,
+        MoveOnlyHeaderActionsHost,
+        HiddenHeaderActionLabelHost,
+        PinOnlyHeaderActionsHost,
+        SortActionsOverrideDisabledHost,
+        SortActionsOverrideEnabledHost
+      ],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
@@ -193,6 +206,99 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
         sortIcon = root(customFixture).querySelector('thead th[data-column-id="name"] .sort-icon') as HTMLElement;
 
         expect(sortIcon.textContent.trim()).toBe('A');
+      });
+    });
+
+    describe('WHEN: enableSortActions is not set', () => {
+      it('THEN: it renders the sort button as before (default true)', () => {
+        fixture.detectChanges();
+
+        const sortButton = root(fixture).querySelector('thead th[data-column-id="name"] .sort-button');
+
+        expect(sortButton).toBeTruthy();
+      });
+    });
+  });
+
+  describe('GIVEN: a table with sort actions disabled at the helper level', () => {
+    describe('WHEN: the table renders', () => {
+      it('THEN: it hides the sort button, keeps the header label, and keeps the pin menu functional', async () => {
+        const disabledFixture = TestBed.createComponent(PinOnlyHeaderActionsHost);
+
+        disabledFixture.detectChanges();
+
+        const headerLabel = root(disabledFixture).querySelector('thead th[data-column-id="name"] .header-label') as HTMLElement;
+        const sortButton = root(disabledFixture).querySelector('thead th[data-column-id="name"] .sort-button');
+        const menuButton = root(disabledFixture).querySelector('thead th[data-column-id="name"] .menu-button') as HTMLButtonElement;
+
+        expect(headerLabel.textContent.trim()).toBe('Service');
+        expect(sortButton).toBeNull();
+        expect(menuButton).toBeTruthy();
+
+        menuButton.click();
+        disabledFixture.detectChanges();
+        await disabledFixture.whenStable();
+        disabledFixture.detectChanges();
+
+        const menu = await getOpenMenuHarness(disabledFixture);
+
+        expect(await menu.isOpen()).toBe(true);
+        expect(getOpenMenuItem('left')).toBeTruthy();
+      });
+    });
+
+    describe('WHEN: sorting is applied programmatically', () => {
+      it('THEN: rows still reorder and aria-sort is still reflected on the header', async () => {
+        const disabledFixture = TestBed.createComponent(PinOnlyHeaderActionsHost);
+
+        disabledFixture.detectChanges();
+
+        const table = disabledFixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        table.patchState({ sorting: [{ id: 'name', desc: false }] });
+        disabledFixture.detectChanges();
+        await disabledFixture.whenStable();
+        disabledFixture.detectChanges();
+
+        expect(attrOf(root(disabledFixture), 'thead th[data-column-id="name"]', 'aria-sort')).toBe('ascending');
+
+        const rowNames = Array.from(root(disabledFixture).querySelectorAll('tbody td[data-column-id="name"]')).map((cell) =>
+          cell.textContent.trim()
+        );
+
+        expect(rowNames).toStrictEqual([...rowNames].sort());
+      });
+    });
+  });
+
+  describe('GIVEN: a column overriding a helper-level enableSortActions: true with false', () => {
+    describe('WHEN: the table renders', () => {
+      it('THEN: it hides the sort button only for the overriding column', () => {
+        const overrideFixture = TestBed.createComponent(SortActionsOverrideDisabledHost);
+
+        overrideFixture.detectChanges();
+
+        const nameSortButton = root(overrideFixture).querySelector('thead th[data-column-id="name"] .sort-button');
+        const regionSortButton = root(overrideFixture).querySelector('thead th[data-column-id="region"] .sort-button');
+
+        expect(nameSortButton).toBeNull();
+        expect(regionSortButton).toBeTruthy();
+      });
+    });
+  });
+
+  describe('GIVEN: a column overriding a helper-level enableSortActions: false with true', () => {
+    describe('WHEN: the table renders', () => {
+      it('THEN: it shows the sort button only for the overriding column', () => {
+        const overrideFixture = TestBed.createComponent(SortActionsOverrideEnabledHost);
+
+        overrideFixture.detectChanges();
+
+        const nameSortButton = root(overrideFixture).querySelector('thead th[data-column-id="name"] .sort-button');
+        const regionSortButton = root(overrideFixture).querySelector('thead th[data-column-id="region"] .sort-button');
+
+        expect(nameSortButton).toBeTruthy();
+        expect(regionSortButton).toBeNull();
       });
     });
   });
