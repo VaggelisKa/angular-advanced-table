@@ -11,17 +11,27 @@ const RESIZE_KEYS: ReadonlySet<string> = new Set(['ArrowLeft', 'ArrowRight', 'Ho
 /** Whether a keyboard event's key is one of the column-resize keys. */
 export const isResizeKey = (event: KeyboardEvent): boolean => RESIZE_KEYS.has(event.key);
 
-/** A column is resizable only when its definition opts in with `enableResizing: true`. */
-export const isColumnResizable = <TData extends RowData>(column: Column<TData, unknown>): boolean =>
-  column.columnDef.enableResizing === true;
+/**
+ * Whether a column resolves to resizable: its own `enableResizing` flag when set,
+ * otherwise the surface enabler. Surface on → resizable unless the column opts out
+ * with `enableResizing: false`; surface off → not resizable unless the column opts
+ * in with `enableResizing: true`.
+ */
+export const isColumnResizable = <TData extends RowData>(column: Column<TData, unknown>, surfaceEnabled: boolean): boolean =>
+  column.columnDef.enableResizing ?? surfaceEnabled;
 
-/** A column reorders only when its def opts in with `meta.reorderable: true`. */
-export const isColumnReorderable = <TData extends RowData>(column: Column<TData, unknown>): boolean =>
-  column.columnDef.meta?.reorderable === true;
+/**
+ * Whether a column resolves to reorderable: its own `meta.reorderable` flag when set,
+ * otherwise the surface enabler. Surface on → reorderable unless the column opts out
+ * with `meta.reorderable: false`; surface off → not reorderable unless the column opts
+ * in with `meta.reorderable: true`.
+ */
+export const isColumnReorderable = <TData extends RowData>(column: Column<TData, unknown>, surfaceEnabled: boolean): boolean =>
+  column.columnDef.meta?.reorderable ?? surfaceEnabled;
 
-/** A non-placeholder header whose column opts into resizing. */
-export const canResizeColumn = <TData extends RowData>(header: Header<TData, unknown>): boolean =>
-  !header.isPlaceholder && isColumnResizable(header.column);
+/** A non-placeholder header whose column resolves to resizable under the surface enabler. */
+export const canResizeColumn = <TData extends RowData>(header: Header<TData, unknown>, surfaceEnabled: boolean): boolean =>
+  !header.isPlaceholder && isColumnResizable(header.column, surfaceEnabled);
 
 /** Resolves the per-cell tone from the column's `meta.cellTone` callback. */
 export const getCellTone = <TData extends RowData>(

@@ -71,7 +71,9 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
   ],
   template: `
     <nat-table-surface
+      [enablePinning]="true"
       [enableReordering]="true"
+      [enableSorting]="true"
       [initialState]="initialState"
       [state]="tableState()"
       (stateChange)="onTableStateChange($event)">

@@ -12,7 +12,7 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
   selector: 'nat-pin-only-header-actions-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `
@@ -35,7 +35,7 @@ export class PinOnlyHeaderActionsHost {
   selector: 'nat-sort-actions-override-disabled-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `
@@ -57,7 +57,7 @@ export class SortActionsOverrideDisabledHost {
   selector: 'nat-sort-actions-override-enabled-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `

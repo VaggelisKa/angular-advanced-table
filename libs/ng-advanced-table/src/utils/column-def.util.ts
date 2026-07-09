@@ -38,6 +38,25 @@ export const getColumnDefLeafIds = <TData extends RowData>(columns: readonly Col
   });
 };
 
+/**
+ * Whether any leaf column definition satisfies `predicate`. Recurses into grouped
+ * columns so nested leaves are checked. Reads the raw column defs (not the TanStack
+ * table), so it is safe to call from within the table's options factory.
+ */
+export const someLeafColumnDef = <TData extends RowData>(
+  columns: readonly ColumnDef<TData, unknown>[],
+  predicate: (column: ColumnDef<TData, unknown>) => boolean
+): boolean =>
+  columns.some((column) => {
+    const childColumns = (
+      column as ColumnDef<TData, unknown> & {
+        readonly columns?: readonly ColumnDef<TData, unknown>[];
+      }
+    ).columns;
+
+    return childColumns?.length ? someLeafColumnDef(childColumns, predicate) : predicate(column);
+  });
+
 export const getUserColumnSizing = <TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[]
 ): Record<string, TableColumnSizingState> => {

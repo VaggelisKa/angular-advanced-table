@@ -119,7 +119,12 @@ export class TestTableSurface {
   public readonly keybindings = input<NatTableKeybindings>({});
   public readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
+  public readonly enableColumnResizing = input(false, { transform: booleanAttribute });
   public readonly enableReordering = input(false, { transform: booleanAttribute });
+  // Sorting/pinning default on so the shared specs exercise a surface with those
+  // controls enabled (the library defaults them off; a consumer opts the surface in).
+  public readonly enableSorting = input(true, { transform: booleanAttribute });
+  public readonly enablePinning = input(true, { transform: booleanAttribute });
   public readonly direction = input<'ltr' | 'rtl'>();
 
   public readonly stateChange = output<NatTableUserState>();
@@ -174,7 +179,16 @@ export class TestTableSurface {
       this.natTableService.columnSizingMode.set(this.columnSizingMode());
     });
     effect(() => {
+      this.natTableService.enableColumnResizing.set(this.enableColumnResizing());
+    });
+    effect(() => {
       this.natTableService.enableReordering.set(this.enableReordering());
+    });
+    effect(() => {
+      this.natTableService.enableSorting.set(this.enableSorting());
+    });
+    effect(() => {
+      this.natTableService.enablePinning.set(this.enablePinning());
     });
     effect(() => {
       this.natTableService.direction.set(this.direction());
@@ -236,6 +250,7 @@ export class TestTableSurface {
       [accessibilityText]="accessibilityText"
       [columnSizingMode]="columnSizingMode"
       [direction]="direction"
+      [enableColumnResizing]="enableColumnResizing"
       [enableMultiSort]="enableMultiSort"
       [enableReordering]="enableReordering"
       [initialState]="initialState"
@@ -299,6 +314,7 @@ export class TableHost {
   public stickyHeader = true;
   public direction: 'ltr' | 'rtl' | undefined = undefined;
   public columnSizingMode: 'fill' | 'fixed' = 'fill';
+  public enableColumnResizing = false;
   public enableReordering = false;
   public accessibilityText: NatTableAccessibilityText = {};
   public mode: NatTableMode | NatTableModeConfiguration = 'auto';
@@ -526,6 +542,7 @@ export type RecreateHostOptions = {
   readonly stickyHeader?: boolean;
   readonly direction?: 'ltr' | 'rtl';
   readonly columnSizingMode?: 'fill' | 'fixed';
+  readonly enableColumnResizing?: boolean;
   readonly enableReordering?: boolean;
   readonly accessibilityText?: NatTableAccessibilityText;
   readonly initialState?: Partial<NatTableUserState>;

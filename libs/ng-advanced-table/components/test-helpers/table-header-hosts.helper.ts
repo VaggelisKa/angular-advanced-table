@@ -18,7 +18,7 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
   selector: 'nat-custom-sort-indicator-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `
@@ -40,7 +40,12 @@ export class CustomSortIndicatorHost {
   selector: 'nat-move-only-header-actions-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [enableReordering]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface
+      [enablePinning]="true"
+      [enableReordering]="true"
+      [enableSorting]="true"
+      [state]="tableState()"
+      (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `
@@ -63,7 +68,7 @@ export class MoveOnlyHeaderActionsHost {
   selector: 'nat-hidden-header-action-label-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `
@@ -99,7 +104,7 @@ export class HiddenHeaderActionLabelHost {
   selector: 'nat-header-action-composition-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `
@@ -136,7 +141,12 @@ export class HeaderActionCompositionHost {
   selector: 'nat-multi-sort-host',
   imports: [NatTable, NatTableSurface],
   template: `
-    <nat-table-surface [enableMultiSort]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
+    <nat-table-surface
+      [enableMultiSort]="true"
+      [enablePinning]="true"
+      [enableSorting]="true"
+      [state]="tableState()"
+      (stateChange)="onTableStateChange($event)">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
     </nat-table-surface>
   `

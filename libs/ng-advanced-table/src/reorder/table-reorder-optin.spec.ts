@@ -10,17 +10,17 @@ import { getHeaderColumnIds, queryRequired } from '../test-helpers/table-dom.hel
 import { TableHost, createTableHostFixture, getInternalStore } from '../test-helpers/table-hosts.helper';
 import type { RecreateHostOptions } from '../test-helpers/table-hosts.helper';
 
-// status opts out; its center-zone siblings region and throughput opt in.
+// status opts out with meta.reorderable: false; its center-zone siblings stay reorderable by default.
 const mixedColumns: ColumnDef<Row, unknown>[] = columns.map((column) => {
   const accessorKey = (column as { readonly accessorKey?: unknown }).accessorKey;
 
-  return accessorKey === 'status' ? column : { ...column, meta: { ...column.meta, reorderable: true } };
+  return accessorKey === 'status' ? { ...column, meta: { ...column.meta, reorderable: false } } : column;
 });
 
 const buildReorderEvent = (): KeyboardEvent =>
   new KeyboardEvent('keydown', { key: 'ArrowRight', ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true });
 
-describe('FEATURE: NatTable per-column reorder opt-in', () => {
+describe('FEATURE: NatTable per-column reorder opt-out', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
@@ -35,7 +35,7 @@ describe('FEATURE: NatTable per-column reorder opt-in', () => {
     ({ fixture, host } = await createTableHostFixture(options));
   };
 
-  describe('GIVEN: a reorder-enabled table where only some columns opt into meta.reorderable', () => {
+  describe('GIVEN: a reorder-enabled table where one column opts out of meta.reorderable', () => {
     describe('WHEN: the non-reorderable column is inspected', () => {
       it('THEN: it drops its drag affordance and Move buttons while an opted-in sibling stays movable', async () => {
         await recreateHost({ enableReordering: true, columns: mixedColumns });

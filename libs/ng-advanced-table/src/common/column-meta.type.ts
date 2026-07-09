@@ -78,5 +78,9 @@ declare module '@tanstack/table-core' {
     readonly natTableCanMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => boolean;
     /** Moves a visible column within its current pinned region. Returns the reorder result, or null if no move occurred. */
     readonly natTableMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => NatTableColumnReorderResult | null;
+    /** Whether the surface enables sorting; per-column enableSorting overrides. */
+    readonly natTableSortingEnabled?: boolean;
+    /** Whether the surface enables pinning; per-column enablePinning overrides. */
+    readonly natTablePinningEnabled?: boolean;
   }
 }
