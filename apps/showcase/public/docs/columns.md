@@ -39,19 +39,20 @@ readonly columns: ColumnDef<PositionRow>[] = [
 
 `NatTableColumnMeta` adds table-specific behavior to `columnDef.meta`.
 
-| Field               | Use it for                                                            |
-| ------------------- | --------------------------------------------------------------------- |
-| `label`             | Stable human-readable label for announcements and companion UI        |
-| `hiddenHeaderLabel` | Screen-reader-only header text for compact utility columns            |
-| `align`             | `'start'` or `'end'` header and body alignment                        |
-| `rowHeader`         | Marks body cells in the column as row headers                         |
-| `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells |
-| `cellHeight`        | Fixed body-cell height for this column                                |
-| `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable      |
-| `headerSize`        | Header-only width                                                     |
-| `headerMinSize`     | Header-only minimum width                                             |
-| `headerMaxSize`     | Header-only maximum width                                             |
-| `export`            | Export participation, header, and value mapping                       |
+| Field               | Use it for                                                                                    |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `label`             | Stable human-readable label for announcements and companion UI                                |
+| `hiddenHeaderLabel` | Screen-reader-only header text for compact utility columns                                    |
+| `align`             | `'start'` or `'end'` header and body alignment                                                |
+| `rowHeader`         | Marks body cells in the column as row headers                                                 |
+| `reorderable`       | Opts the column into reordering (drag, keyboard, move menu) when the table enables reordering |
+| `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells                         |
+| `cellHeight`        | Fixed body-cell height for this column                                                        |
+| `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable                              |
+| `headerSize`        | Header-only width                                                                             |
+| `headerMinSize`     | Header-only minimum width                                                                     |
+| `headerMaxSize`     | Header-only maximum width                                                                     |
+| `export`            | Export participation, header, and value mapping                                               |
 
 ```ts
 import type { NatTableColumnMeta } from 'ng-advanced-table';
@@ -120,6 +121,8 @@ Configure the table width model on the surface.
 
 Pinning is enabled where the column allows it. Reordering is disabled by default; enable it on the surface when a table should expose drag/drop, keyboard column moves, or companion move actions. Reordering stays inside the current pinning zone: left, center, or right.
 
+Reordering is also per-column opt-in. Every column that should move needs `meta: { reorderable: true }`, even when the surface sets `[enableReordering]="true"`. This is a breaking change: previously any column in a reorder-enabled table could move; now a column without the flag stays fixed.
+
 ```ts
 readonly initialState: Partial<NatTableUserState> = {
   columnPinning: {
@@ -130,7 +133,15 @@ readonly initialState: Partial<NatTableUserState> = {
 };
 ```
 
+Each movable column in `baseColumns` sets `meta: { reorderable: true }`; columns without the flag keep their place even while reordering is enabled.
+
 ```ts
+const baseColumns: ColumnDef<PositionRow>[] = [
+  { accessorKey: 'symbol', header: 'Symbol', meta: { label: 'Symbol', rowHeader: true, reorderable: true } },
+  { accessorKey: 'company', header: 'Company', meta: { label: 'Company', reorderable: true } },
+  { accessorKey: 'price', header: 'Last', meta: { label: 'Last', align: 'end', reorderable: true } },
+];
+
 readonly columns = withNatTableHeaderActions(baseColumns, {
   enableColumnReorderActions: true,
 });
