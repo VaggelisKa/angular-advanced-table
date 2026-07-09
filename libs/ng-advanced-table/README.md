@@ -40,7 +40,7 @@ Keep all Angular peers in app dependencies. Production entry points use `@angula
 | `ng-advanced-table/render-metrics` | Optional render-metrics store, filter, panel, and synthetic metrics column                                                          |
 | `ng-advanced-table/locale`         | Built-in locale registry and `provide*Locales()` helpers                                                                            |
 
-Each entry point is built and tree-shaken independently (`sideEffects: false`), so importing `ng-advanced-table/components` never pulls in `ng-advanced-table/render-metrics`.
+Each JavaScript entry point is built and tree-shaken independently, so importing `ng-advanced-table/components` never pulls in `ng-advanced-table/render-metrics`. The optional stock theme CSS is marked side-effectful so `import 'ng-advanced-table/components/theme.css'` is retained by production bundlers.
 
 ```ts
 import { NatTable } from 'ng-advanced-table';

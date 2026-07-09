@@ -36,7 +36,9 @@
     "@tanstack/angular-table": "catalog:frontend",
     "tslib": "catalog:shared"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./components/theme.css"
+  ],
   "exports": {
     "./package.json": {
       "default": "./package.json"
