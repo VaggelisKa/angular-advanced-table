@@ -132,7 +132,7 @@ readonly columns = computed<ColumnDef<PositionRow, unknown>[]>(() =>
         accessorKey: 'title',
         header: 'Title',
         meta: { label: 'Title', rowHeader: true },
-        enableResizing: !isCompact()
+        enableResizing: !this.isCompact()
       },
       {
         accessorKey: 'status',
@@ -141,8 +141,8 @@ readonly columns = computed<ColumnDef<PositionRow, unknown>[]>(() =>
       }
     ],
     {
-      enableSortActions: !isCompact(),
-      enableColumnPinActions: !isCompact()
+      enableSortActions: !this.isCompact(),
+      enableColumnPinActions: !this.isCompact()
     }
   )
 );
