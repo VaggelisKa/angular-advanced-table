@@ -35,8 +35,7 @@ const isNatToolbarTextEntryElement = (target: EventTarget | null): boolean => {
 };
 
 /** Any modifier that changes an arrow's meaning inside a text field (word-jump, select, …). */
-const hasCaretModifier = (event: KeyboardEvent): boolean =>
-  event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
+const hasCaretModifier = (event: KeyboardEvent): boolean => event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
 
 /** Collapsed caret sits at the value edge the arrow would exit toward (RTL flips which arrow is "forward"). */
 const caretAtExitEdge = (field: HTMLInputElement, key: string, rtl: boolean): boolean => {
