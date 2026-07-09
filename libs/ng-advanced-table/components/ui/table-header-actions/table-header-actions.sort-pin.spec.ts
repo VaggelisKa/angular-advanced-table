@@ -20,7 +20,11 @@ import {
   SortActionsOverrideDisabledHost,
   SortActionsOverrideEnabledHost
 } from '../../test-helpers/table-header-hosts-sort-actions.helper';
-import { CustomSortIndicatorHost, HiddenHeaderActionLabelHost, MoveOnlyHeaderActionsHost } from '../../test-helpers/table-header-hosts.helper';
+import {
+  CustomSortIndicatorHost,
+  HiddenHeaderActionLabelHost,
+  MoveOnlyHeaderActionsHost
+} from '../../test-helpers/table-header-hosts.helper';
 import { TableHost } from '../../test-helpers/table-hosts.helper';
 
 describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {

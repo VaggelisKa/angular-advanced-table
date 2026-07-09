@@ -649,7 +649,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         kind: 'example',
         id: 'responsive-capabilities',
         title: 'Opt out of capability UI on mobile',
-        description: 'Rebuilding columns in a computed() hides sort, pin, and resize UI on mobile while programmatic sorting stays live.',
+        description:
+          'Rebuilding columns in a computed() hides sort, pin, and resize UI on mobile while programmatic sorting stays live.',
         component: Responsive,
         snippets: responsiveSnippets
       }

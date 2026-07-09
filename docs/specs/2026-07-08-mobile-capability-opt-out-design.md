@@ -32,7 +32,7 @@ columns = computed(() =>
     {
       enableSortActions: !this.isMobile(), // NEW
       enableColumnPinActions: !this.isMobile(), // exists
-      enableColumnReorderActions: !this.isMobile(), // exists
+      enableColumnReorderActions: !this.isMobile() // exists
     }
   )
 );
@@ -47,13 +47,13 @@ isMobile = toSignal(
 
 When the breakpoint signal flips, the `computed` re-wraps the columns and the headers re-render. `withNatTableHeaderActions` already documents that "reactive column builders can compose this helper" and unwraps previously wrapped headers, so repeated application is safe.
 
-| Capability | Mobile opt-out | Library change |
-| --- | --- | --- |
-| Sorting UI (button, indicator, click, keyboard) | `enableSortActions: false` (helper option) | **NEW — the only code change** |
-| Column resizing (handle, drag, Alt+arrow keys) | `enableResizing: false` (columnDef) | none — gated at `interaction.util.ts:15-20`, opt-in per column |
-| Pin menu | `enableColumnPinActions: false` (helper option) | none — exists |
-| Reorder menu | `enableColumnReorderActions: false` (helper option) | none — exists |
-| Programmatic sorting (`setSorting`, sort sheet) | always live | none — verified by repro |
+| Capability                                      | Mobile opt-out                                      | Library change                                                 |
+| ----------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| Sorting UI (button, indicator, click, keyboard) | `enableSortActions: false` (helper option)          | **NEW — the only code change**                                 |
+| Column resizing (handle, drag, Alt+arrow keys)  | `enableResizing: false` (columnDef)                 | none — gated at `interaction.util.ts:15-20`, opt-in per column |
+| Pin menu                                        | `enableColumnPinActions: false` (helper option)     | none — exists                                                  |
+| Reorder menu                                    | `enableColumnReorderActions: false` (helper option) | none — exists                                                  |
+| Programmatic sorting (`setSorting`, sort sheet) | always live                                         | none — verified by repro                                       |
 
 ## The one library change: `enableSortActions`
 
@@ -65,7 +65,7 @@ Behavior when `false` for a column:
 - No click or keyboard sort interaction exists (the button is gone, so this falls out naturally — no `pointer-events` hacks).
 - If pin/reorder actions are also disabled (or were never enabled) the header renders only the plain header label, identical to today's non-sortable columns.
 - TanStack sorting stays fully enabled: `table.setSorting(...)` and column-def-level `enableSorting` behave exactly as before.
-- `aria-sort` on the `<th>` (owned by the core table, `table.html:88/116` via `resolveAriaSort`) is **kept**. It announces sort *state*, not affordance — when an app-owned sort sheet sorts a column, screen readers still hear the column is sorted. This is correct WAI-ARIA usage.
+- `aria-sort` on the `<th>` (owned by the core table, `table.html:88/116` via `resolveAriaSort`) is **kept**. It announces sort _state_, not affordance — when an app-owned sort sheet sorts a column, screen readers still hear the column is sorted. This is correct WAI-ARIA usage.
 
 Resolution order follows the existing `resolveBooleanOption` pattern (`with-table-header-actions.ts:59-60`): per-column `meta.headerActions.enableSortActions` overrides the helper-level option, which defaults to `true`.
 
