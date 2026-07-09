@@ -84,6 +84,7 @@ const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
       getShowcaseDoc('filtering-search'),
       getShowcaseDoc('pagination'),
       getShowcaseDoc('column-layout'),
+      getShowcaseDoc('responsive-capabilities'),
       getShowcaseDoc('row-selection'),
       getShowcaseDoc('toolbar-actions')
     ]

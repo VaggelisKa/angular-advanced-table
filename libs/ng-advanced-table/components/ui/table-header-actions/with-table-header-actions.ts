@@ -72,6 +72,7 @@ const resolveHeaderActionsOptions = <TData extends RowData>(
   return {
     sortIndicator: columnOptions?.sortIndicator ?? options.sortIndicator,
     locale: options.locale,
+    enableSortActions: resolveBooleanOption(columnOptions?.enableSortActions, options.enableSortActions, true),
     enableColumnPinActions: resolveBooleanOption(columnOptions?.enableColumnPinActions, options.enableColumnPinActions, true),
     enableColumnReorderActions: resolveBooleanOption(
       columnOptions?.enableColumnReorderActions,
@@ -161,6 +162,7 @@ const wrapColumnHeader = <TData extends RowData>(
         locale: actionOptions.locale ?? resolveTableLocale(context),
         accessibilityLabels: actionOptions.accessibilityLabels,
         sortIndicator: actionOptions.sortIndicator,
+        enableSortActions: actionOptions.enableSortActions,
         enableColumnPinActions: actionOptions.enableColumnPinActions,
         enableColumnReorderActions: actionOptions.enableColumnReorderActions
       }
@@ -192,12 +194,19 @@ const wrapColumnHeader = <TData extends RowData>(
  * helper with other column helpers without nesting the generated controls.
  *
  * Set `column.meta.headerActions` to `false` to opt a column out, or provide an
- * object to override `sortIndicator`, `enableColumnPinActions`,
+ * object to override `sortIndicator`, `enableSortActions`, `enableColumnPinActions`,
  * `enableColumnReorderActions`, or `accessibilityLabels` for that column.
  *
  * For Angular sort indicator components, return `flexRenderComponent(...)`
  * from `sortIndicator`; the generated sort button keeps ownership of sorting,
  * focus, keyboard, accessible-name, multi-sort, and `aria-sort` behavior.
+ *
+ * Set `enableSortActions: false` to remove the sort button/indicator for wrapped
+ * columns while keeping programmatic sorting (`NatTable.patchState({ sorting })`, or
+ * `natTable.table.setSorting(...)` on the underlying TanStack instance) and columnDef-level
+ * `enableSorting` working. To toggle this reactively (e.g. per breakpoint), rebuild the
+ * columns inside a `computed()` keyed on the breakpoint signal rather than mutating the
+ * wrapped columns in place.
  */
 export const withNatTableHeaderActions = <TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[],

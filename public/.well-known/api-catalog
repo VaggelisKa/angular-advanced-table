@@ -44,6 +44,10 @@
           "type": "text/html"
         },
         {
+          "href": "https://angular-advanced-table.vercel.app/docs/responsive-capabilities",
+          "type": "text/html"
+        },
+        {
           "href": "https://angular-advanced-table.vercel.app/docs/row-selection",
           "type": "text/html"
         },

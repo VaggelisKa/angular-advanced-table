@@ -1,0 +1,28 @@
+<div class="grid-layout grid-layout-with-panel">
+  <div class="card">
+    <h2 class="card-title">Responsive Capability Grid</h2>
+    <nat-table-surface [(state)]="tableState">
+      <nat-table [columns]="columns()" [data]="data" accessibleName="Responsive capabilities demo table" />
+    </nat-table-surface>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title">Simulate Viewport</h2>
+    <div class="actions-panel">
+      <button class="btn btn-outline" type="button" (click)="toggleMobile()">
+        {{ isMobile() ? 'Switch to Desktop' : 'Simulate Mobile' }}
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="sortByValue()">Sort by Value</button>
+    </div>
+
+    <div class="info-tag">Mode: {{ isMobile() ? 'Mobile (sort, pin, and resize UI hidden)' : 'Desktop' }}</div>
+    <div class="info-tag">Current sort: {{ currentSortLabel() }}</div>
+
+    <div class="instructions">
+      <p>
+        Sort buttons, pin menus, and resize handles disappear from the header on mobile, but "Sort by Value" still updates table state
+        programmatically. That proves an app-owned sort sheet keeps working while the built-in sort UI is hidden.
+      </p>
+    </div>
+  </div>
+</div>

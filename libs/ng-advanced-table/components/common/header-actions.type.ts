@@ -56,6 +56,12 @@ export type NatTableHeaderActionsOptions = {
   readonly locale?: string;
   /** Optional accessibility label overrides for the built-in sort, pin, and move actions. */
   readonly accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
+  /**
+   * Removes the built-in sort button/indicator for wrapped columns. Programmatic sorting via
+   * `NatTable.patchState({ sorting })` (or `natTable.table.setSorting(...)` on the underlying
+   * TanStack instance) and columnDef-level `enableSorting` are unaffected. Defaults to `true`.
+   */
+  readonly enableSortActions?: boolean;
   /** Enables left/right pin menu items when the controlled table can pin this column. */
   readonly enableColumnPinActions?: boolean;
   /** Enables Move left / Move right menu items when the controlled table can reorder this column. */

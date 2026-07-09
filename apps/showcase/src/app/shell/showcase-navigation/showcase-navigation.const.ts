@@ -56,6 +56,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     path: '/docs/column-layout'
   },
   {
+    id: 'responsive-capabilities',
+    label: 'Responsive capabilities',
+    description: 'Opt out of capability UI per viewport',
+    path: '/docs/responsive-capabilities'
+  },
+  {
     id: 'row-selection',
     label: 'Row selection',
     description: 'Selection state and bulk workflows',

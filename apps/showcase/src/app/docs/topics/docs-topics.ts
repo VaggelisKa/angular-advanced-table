@@ -6,6 +6,7 @@ import { Pagination } from '../demos/pagination/pagination';
 import { Pinning } from '../demos/pinning/pinning';
 import { Reordering } from '../demos/reordering/reordering';
 import { Resizing } from '../demos/resizing/resizing';
+import { Responsive } from '../demos/responsive/responsive';
 import { Search } from '../demos/search/search';
 import { Selection } from '../demos/selection/selection';
 import { SimpleSorting } from '../demos/simple-sorting/simple-sorting';
@@ -376,6 +377,55 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   )
 ];
 
+const responsiveSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface [(state)]="tableState">
+  <nat-table [columns]="columns()" [data]="data" accessibleName="Responsive capabilities demo table" />
+</nat-table-surface>
+
+<button type="button" (click)="sortByValue()">Sort by Value</button>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+readonly isMobile = toSignal(
+  inject(BreakpointObserver)
+    .observe('(max-width: 767px)')
+    .pipe(map((result) => result.matches)),
+  { initialValue: false }
+);
+
+readonly columns = computed(() => {
+  const mobile = this.isMobile();
+
+  return withNatTableHeaderActions(
+    baseColumns.map((column) => ({ ...column, enableResizing: !mobile })),
+    {
+      enableSortActions: !mobile,
+      enableColumnPinActions: !mobile
+    }
+  );
+});
+
+// The sort sheet writes the same state slice the (now hidden) header sort
+// button would have written, so sorting keeps working when the UI is hidden.
+sortByValue(): void {
+  this.tableState.update((current) => ({
+    ...current,
+    sorting: [{ id: 'value', desc: true }]
+  }));
+}
+`
+  )
+];
+
 const TOPIC_CONTENT: readonly DocsTopicContent[] = [
   {
     id: 'quick-start',
@@ -454,7 +504,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Controlled sorting', path: '#controlled-sorting' },
       { label: 'Multi-column sorting', path: '#multi-column-sorting' },
       { label: 'Custom sort indicators', path: '#custom-sort-indicators' },
-      { label: 'Pinned columns variant', path: '#pinned-columns-variant' }
+      { label: 'Pinned columns variant', path: '#pinned-columns-variant' },
+      { label: 'Hiding sort UI does not disable sorting', path: '#hiding-sort-ui-does-not-disable-sorting' }
     ],
     blocks: [
       { kind: 'markdown', id: 'sorting-prose', markdownPath: '/docs/sorting.md' },
@@ -477,7 +528,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     ],
     related: [
       { label: 'State', path: '/docs/state' },
-      { label: 'Column layout', path: '/docs/column-layout' }
+      { label: 'Column layout', path: '/docs/column-layout' },
+      { label: 'Responsive capabilities', path: '/docs/responsive-capabilities' }
     ]
   },
   {
@@ -580,7 +632,32 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     ],
     related: [
       { label: 'Columns', path: '/docs/columns' },
-      { label: 'Keyboard interaction', path: '/docs/keyboard-interaction' }
+      { label: 'Keyboard interaction', path: '/docs/keyboard-interaction' },
+      { label: 'Responsive capabilities', path: '/docs/responsive-capabilities' }
+    ]
+  },
+  {
+    id: 'responsive-capabilities',
+    contents: [
+      { label: 'The computed-columns pattern', path: '#the-computed-columns-pattern' },
+      { label: 'Capability opt-out table', path: '#capability-opt-out-table' },
+      { label: 'Usage boundary', path: '#usage-boundary' }
+    ],
+    blocks: [
+      { kind: 'markdown', id: 'responsive-capabilities-prose', markdownPath: '/docs/responsive-capabilities.md' },
+      {
+        kind: 'example',
+        id: 'responsive-capabilities',
+        title: 'Opt out of capability UI on mobile',
+        description:
+          'Rebuilding columns in a computed() hides sort, pin, and resize UI on mobile while programmatic sorting stays live.',
+        component: Responsive,
+        snippets: responsiveSnippets
+      }
+    ],
+    related: [
+      { label: 'Sorting', path: '/docs/sorting' },
+      { label: 'Column layout', path: '/docs/column-layout' }
     ]
   },
   {

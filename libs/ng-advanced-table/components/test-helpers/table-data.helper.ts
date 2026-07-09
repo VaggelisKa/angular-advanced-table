@@ -125,3 +125,20 @@ export const buildHeaderActionCompositionColumns = (): ColumnDef<Row, unknown>[]
 
     return column;
   });
+
+export const buildSortActionsColumnOverrideColumns = (enableSortActions: boolean): ColumnDef<Row, unknown>[] =>
+  baseColumns.map((column) => {
+    const accessorKey = (column as { readonly accessorKey?: unknown }).accessorKey;
+
+    if (accessorKey !== 'name') {
+      return column;
+    }
+
+    return {
+      ...column,
+      meta: {
+        ...column.meta,
+        headerActions: { enableSortActions }
+      }
+    };
+  });
