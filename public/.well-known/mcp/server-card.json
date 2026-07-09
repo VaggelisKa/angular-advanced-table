@@ -98,6 +98,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/responsive-capabilities",
+      "name": "docs-responsive-capabilities",
+      "title": "Responsive capabilities | Angular Advanced Table Docs",
+      "description": "Opt out of capability UI per viewport",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/row-selection",
       "name": "docs-row-selection",
       "title": "Row selection | Angular Advanced Table Docs",

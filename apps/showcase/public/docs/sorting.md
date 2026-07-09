@@ -91,3 +91,7 @@ Set `meta.headerActions` to `false` for action columns or utility columns that s
 ## Pinned Columns Variant
 
 Sorting and pinning can coexist. Pinning affects where columns render; sorting still uses column ids and row data. Keep pinned columns stable when they carry row identity or row actions.
+
+## Hiding Sort UI Does Not Disable Sorting
+
+`withNatTableHeaderActions(columns, { enableSortActions: false })` removes the sort button and indicator from the header, but sorting itself keeps working: `table.setSorting(...)` and columnDef-level `enableSorting` are unaffected, and `aria-sort` still reflects the applied sort. This is the mechanism behind hiding capability UI on mobile while an app-owned control (a sort sheet, for example) drives sorting programmatically. See the Responsive Capabilities topic for the full pattern.
