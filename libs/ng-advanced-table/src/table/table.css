@@ -31,7 +31,7 @@
       --nat-table-region-overscroll-behavior-y,
       var(
         --sys-nat-table-region-overscroll-behavior-y,
-        var(--nat-table-region-overscroll-behavior, var(--sys-nat-table-region-overscroll-behavior, none))
+        var(--nat-table-region-overscroll-behavior, var(--sys-nat-table-region-overscroll-behavior, auto))
       )
     );
   background: var(--nat-table-region-background, var(--sys-nat-table-region-background, transparent));

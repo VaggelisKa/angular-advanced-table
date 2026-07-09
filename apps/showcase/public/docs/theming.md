@@ -243,7 +243,7 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 | `--nat-table-region-overflow-y`            | `auto`                           |
 | `--nat-table-region-overscroll-behavior`   | `none`                           |
 | `--nat-table-region-overscroll-behavior-x` | `none`                           |
-| `--nat-table-region-overscroll-behavior-y` | `none`                           |
+| `--nat-table-region-overscroll-behavior-y` | `auto`                           |
 | `--nat-table-max-height`                   | `inherit`                        |
 | `--nat-table-min-height`                   | `auto`                           |
 | `--nat-table-state-min-height`             | `var(--nat-table-min-height, 0)` |
