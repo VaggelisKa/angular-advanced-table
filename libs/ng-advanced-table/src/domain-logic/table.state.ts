@@ -71,7 +71,7 @@ import {
 import { buildColumnRenderState } from '../utils/column-render-state.util';
 import { computeFillFlexWidths, computeIntrinsicWidths } from '../utils/column-width.util';
 import { genericGlobalFilter } from '../utils/global-filter.util';
-import { isColumnResizable } from '../utils/interaction.util';
+import { isColumnReorderable, isColumnResizable } from '../utils/interaction.util';
 import { normalizeDataStatus, normalizeRowSelection, resolveDefaultRowId } from '../utils/row-state.util';
 import { normalizeSortingState } from '../utils/sorting.util';
 import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
@@ -626,6 +626,10 @@ export class NatTableState<TData extends RowData = RowData> {
   public canMoveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): boolean {
     if (!this.enableReordering()) return false;
 
+    const column = this.table.getColumn(columnId);
+
+    if (!column || !isColumnReorderable(column)) return false;
+
     const zone = this.getColumnZoneById(columnId);
 
     if (!zone) return false;
@@ -637,6 +641,10 @@ export class NatTableState<TData extends RowData = RowData> {
 
   public moveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): NatTableColumnReorderResult | null {
     if (!this.enableReordering()) return null;
+
+    const column = this.table.getColumn(columnId);
+
+    if (!column || !isColumnReorderable(column)) return null;
 
     const zone = this.getColumnZoneById(columnId);
 
@@ -660,15 +668,14 @@ export class NatTableState<TData extends RowData = RowData> {
   ): NatTableColumnReorderResult | null {
     if (!this.enableReordering()) return null;
 
-    const currentState = this.mergedState();
-    const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
     const movingColumn = this.table.getColumn(movingColumnId);
 
-    if (
-      !movingColumn ||
-      !currentVisibleZoneColumnIds.length ||
-      hasSameStringOrder(currentVisibleZoneColumnIds, nextVisibleZoneOrder)
-    ) {
+    if (!movingColumn || !isColumnReorderable(movingColumn)) return null;
+
+    const currentState = this.mergedState();
+    const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);
+
+    if (!currentVisibleZoneColumnIds.length || hasSameStringOrder(currentVisibleZoneColumnIds, nextVisibleZoneOrder)) {
       return null;
     }
 
@@ -686,7 +693,8 @@ export class NatTableState<TData extends RowData = RowData> {
       return result;
     }
 
-    const currentPinnedZoneOrder = (zone === 'left' ? currentState.columnPinning.left : currentState.columnPinning.right) ?? [];
+    // `zone` narrows to 'left' | 'right' here because the center branch above returns.
+    const currentPinnedZoneOrder = currentState.columnPinning[zone] ?? [];
     const nextPinnedZoneOrder = replaceIdsInSlots(currentPinnedZoneOrder, nextVisibleZoneOrder, new Set(currentVisibleZoneColumnIds));
 
     if (hasSameStringOrder(currentPinnedZoneOrder, nextPinnedZoneOrder)) {

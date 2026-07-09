@@ -12,7 +12,7 @@ import type {
 } from 'ng-advanced-table/locale';
 
 import type { Row } from './table-data.helper';
-import { baseColumns, buildRows, danishPinLabel, getRowId } from './table-data.helper';
+import { baseColumns, buildRows, danishPinLabel, getRowId, reorderableColumns } from './table-data.helper';
 import { NatTableColumnVisibility } from '../feature/table-column-visibility/table-column-visibility';
 import { NatTablePageSize } from '../feature/table-page-size/table-page-size';
 import { NatTablePager } from '../feature/table-pager/table-pager';
@@ -79,7 +79,7 @@ export class CustomAccessibilityLabelsHost {
     moveButtonText: ({ direction }) => (direction === 'left' ? 'Flyt til venstre' : 'Flyt til højre')
   };
 
-  protected readonly columns = withNatTableHeaderActions(baseColumns, {
+  protected readonly columns = withNatTableHeaderActions(reorderableColumns, {
     enableColumnReorderActions: true,
     accessibilityLabels: this.headerActionLabels
   });

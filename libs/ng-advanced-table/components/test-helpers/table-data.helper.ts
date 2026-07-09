@@ -82,6 +82,11 @@ export const baseColumns: ColumnDef<Row, unknown>[] = [
   }
 ];
 
+export const reorderableColumns: ColumnDef<Row, unknown>[] = baseColumns.map((column) => ({
+  ...column,
+  meta: { ...column.meta, reorderable: true }
+}));
+
 export const buildRows = (size: number): Row[] => {
   const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
 
