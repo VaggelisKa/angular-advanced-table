@@ -85,7 +85,3 @@ Other useful files:
 
 - `CONTEXT.md` — canonical terminology used across the project and docs.
 - `skills/nat-best-practises/` — guidance for AI/agent usage of the library.
-
-## License
-
-MIT
