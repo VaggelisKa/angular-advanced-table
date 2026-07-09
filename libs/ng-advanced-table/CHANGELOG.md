@@ -1,3 +1,9 @@
+## 2.7.1 (2026-07-09)
+
+### 🩹 Fixes
+
+- Mark the opt-in stock theme stylesheet as side-effectful so production bundlers retain `ng-advanced-table/components/theme.css` imports. ([#277](https://github.com/VaggelisKa/angular-advanced-table/pull/277))
+
 ## 2.7.0 (2026-07-09)
 
 ### 🚀 Features
