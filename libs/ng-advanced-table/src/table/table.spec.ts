@@ -1153,7 +1153,7 @@ describe('FEATURE: NatTable', () => {
       });
     });
 
-    describe('WHEN: a row is selected via patchState', () => {
+    describe('WHEN: a row is selected via updateState', () => {
       it('THEN: it emits rowSelectionChange and announces the selection', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:

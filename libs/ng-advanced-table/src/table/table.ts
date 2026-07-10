@@ -137,11 +137,16 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   /** Public: NatTableUiController consumers (surface `[for]="grid"`) need these. */
   public readonly enablePagination = this.state.enablePagination;
   public readonly enableGlobalFilter = this.state.enableGlobalFilter;
+  /**
+   * @deprecated Prefer the typed commands/selectors (sorting, column visibility, and row selection
+   * now have typed alternatives). Retained for custom export-handler context and advanced raw reads
+   * against the underlying TanStack instance.
+   */
   public readonly table = this.state.table;
   /** Current pagination slice sourced from the live table state. */
   public readonly pagination = computed(() => this.state.table.getState().pagination);
   /** Total page count, floored at 1 so companion controls always render at least one page. */
-  public readonly pageCount = computed(() => Math.max(1, this.state.table.getPageCount()));
+  public readonly pageCount = computed(() => Math.max(1, this.state.resolvedPageCount()));
   /** Whether a previous page is available for navigation. */
   public readonly canPreviousPage = computed(() => this.state.table.getCanPreviousPage());
   /** Whether a next page is available for navigation. */
@@ -320,29 +325,29 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   // ─── NatTableUiController command implementation (public API, thin delegations to the TanStack table) ───
 
   public setGlobalFilter(value: string): void {
-    this.table.setGlobalFilter(value);
+    this.state.table.setGlobalFilter(value);
   }
 
   public setColumnFilter(columnId: string, value: unknown): void {
-    this.table.getColumn(columnId)?.setFilterValue(value);
+    this.state.table.getColumn(columnId)?.setFilterValue(value);
   }
 
   public setPageSize(size: number): void {
     // Atomic reset (page size + first page in one state transition) so controlled-state
     // consumers receive a single absolute update, matching the prior patchState behavior.
-    this.table.setPagination({ pageIndex: 0, pageSize: size });
+    this.state.table.setPagination({ pageIndex: 0, pageSize: size });
   }
 
   public goToPage(pageIndex: number): void {
-    this.table.setPageIndex(pageIndex);
+    this.state.table.setPageIndex(Math.min(Math.max(0, pageIndex), this.pageCount() - 1));
   }
 
   public nextPage(): void {
-    this.table.nextPage();
+    if (this.canNextPage()) this.state.table.nextPage();
   }
 
   public previousPage(): void {
-    this.table.previousPage();
+    this.state.table.previousPage();
   }
 
   // ─── Template event handlers ───
