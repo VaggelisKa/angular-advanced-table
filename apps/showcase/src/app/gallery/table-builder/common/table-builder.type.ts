@@ -3,6 +3,7 @@ export type DemoItem = {
   readonly name: string;
   readonly category: string;
   readonly status: string;
+  readonly owner: string;
   readonly value: number;
 };
 
