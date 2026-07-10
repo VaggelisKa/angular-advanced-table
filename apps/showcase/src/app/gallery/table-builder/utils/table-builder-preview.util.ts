@@ -166,7 +166,7 @@ export const buildTemplateSource = (flags: TableBuilderFlags): string => {
 
   if (flags.withColumnResizing) {
     surfaceAttributes += ' [enableColumnResizing]="true"';
-    surfaceAttributes += ` [columnSizingMode]="'fill'"`;
+    surfaceAttributes += ` [columnSizingMode]="'${flags.columnSizingMode}'"`;
   }
 
   if (flags.withLocalization) {

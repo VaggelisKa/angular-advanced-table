@@ -6,6 +6,7 @@ export { DEMO_COLUMN_INTL, DEMO_LOCALE_ID, LOCALE_PREVIEWS, NAT_DA_CONTROLS_LABE
 
 export type {
   DataStatePreview,
+  TableBuilderColumnSizingMode,
   DemoItem,
   FeatureCategory,
   FeatureCategoryDescriptor,
