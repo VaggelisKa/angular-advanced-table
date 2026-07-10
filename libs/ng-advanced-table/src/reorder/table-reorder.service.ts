@@ -80,10 +80,9 @@ export class NatTableReorderService<TData extends RowData = RowData> {
 
     const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
 
-    if (result) {
-      this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
-    }
+    if (!result) return;
 
+    this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
     this.scrollHeaderIntoView(movingColumnId);
   }
 
@@ -110,10 +109,15 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     if (typeof dropX === 'number' && Number.isFinite(dropX)) {
       const centers = neighborIds.map((id) => this.getHeaderCenterX(id));
 
-      if (centers.every((center): center is number => center !== null)) {
+      // Use geometry whenever the layout is real (at least one neighbor has a
+      // laid-out rect). Only pure jsdom, where every center is null, falls
+      // through to the CDK index path — a degenerate rect in a real browser
+      // must not re-trigger the scroll-skew bug (#288).
+      if (!centers.every((center) => center === null)) {
+        const rightOfDrop = centers.findIndex((center) => center !== null && dropX < center);
         const nextOrder = [...neighborIds];
 
-        nextOrder.splice(centers.filter((center) => center < dropX).length, 0, movingColumnId);
+        nextOrder.splice(rightOfDrop === -1 ? neighborIds.length : rightOfDrop, 0, movingColumnId);
 
         return nextOrder;
       }
