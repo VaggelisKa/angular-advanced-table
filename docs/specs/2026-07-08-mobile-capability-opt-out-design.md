@@ -5,7 +5,7 @@
 - **Status:** Approved (brainstorming session)
 - **Branch:** `art/feat/mobile-capability`
 
-> **Superseded in part by [#274](https://github.com/VaggelisKa/angular-advanced-table/issues/274) (2026-07-09).** This design assumed resizing was per-column opt-in via `enableResizing: true` on the `ColumnDef` (see the table row and the `enableResizing: !this.isMobile()` snippet below). #274 made resizing a surface-level feature: enable it on `<nat-table-surface>` with `[enableColumnResizing]`, and opt columns out with `enableResizing: false`. For the mobile pattern, bind `[enableColumnResizing]="!isMobile()"` on the surface instead of mapping it per column. The `enableSortActions` decision and everything else in this document stand.
+> **Superseded in part by [#274](https://github.com/VaggelisKa/angular-advanced-table/issues/274) (2026-07-09) and [#284](https://github.com/VaggelisKa/angular-advanced-table/pull/284) (2026-07-10).** This design assumed resizing was per-column opt-in via `enableResizing: true` on the `ColumnDef` (see the table row and the `enableResizing: !this.isMobile()` snippet below). #274 made resizing a surface-level feature: enable it on `<nat-table-surface>` with `[enableColumnResizing]`, and opt columns out with `enableResizing: false`. #284 then unified sorting, pinning, resizing, and reordering under surface enablers plus per-column overrides. For the mobile pattern, bind the relevant surface enablers (`[enableSorting]`, `[enablePinning]`, `[enableColumnResizing]`, `[enableReordering]`) instead of mapping every capability per column. The `enableSortActions` decision and everything else in this document stand.
 
 ## Problem
 

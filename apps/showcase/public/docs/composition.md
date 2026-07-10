@@ -57,7 +57,7 @@ Prefer the scoped surface for normal pages. Use direct controller binding only w
 
 ## Header Actions
 
-Wrap column definitions with `withNatTableHeaderActions(...)` to compose shared header controls, then enable each capability on the surface: `[enableSorting]="true"` for sort buttons, `[enablePinning]="true"` for the pin menu, and `[enableReordering]="true"` for menu-based reordering. All three default off, and a column's control availability resolves as `column.<flag> ?? surface.<enabler>` — so a column can opt in or out individually regardless of the surface default. Once reordering is enabled, every column reorders by default; opt a column out with `meta: { reorderable: false }` and its menu and keyboard move controls disappear.
+Wrap column definitions with `withNatTableHeaderActions(...)` to compose shared header controls, then enable each capability on the surface: `[enableSorting]="true"` for sort buttons, `[enablePinning]="true"` for the pin menu, and `[enableReordering]="true"` for menu-based reordering. Sorting and pinning resolve as `column.<flag> ?? surface.<enabler>`; reordering resolves as `column.meta.reorderable ?? surface.enableReordering`. Once reordering is enabled, every column reorders by default; opt a column out with `meta: { reorderable: false }` and its menu and keyboard move controls disappear.
 
 ```html
 <nat-table-surface [enableSorting]="true" [enablePinning]="true" [enableReordering]="true">
