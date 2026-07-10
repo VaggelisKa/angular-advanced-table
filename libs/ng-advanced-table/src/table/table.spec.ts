@@ -658,7 +658,7 @@ describe('FEATURE: NatTable', () => {
     });
 
     describe('WHEN: provider defaults and table inputs supply accessibility text', () => {
-      it('THEN: it uses provider accessibility defaults and lets table inputs override them', () => {
+      it('THEN: it reacts to provider accessibility defaults without remounting and lets table inputs override them', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
         const providerFixture = TestBed.createComponent(ProviderAccessibilityHost);
@@ -670,13 +670,88 @@ describe('FEATURE: NatTable', () => {
         let summary = queryRequired<HTMLElement>(providerFixture, 'p[id$="-summary"]');
         let emptyState = queryRequired<HTMLElement>(providerFixture, '.empty-state');
         let instructions = queryRequired<HTMLElement>(providerFixture, 'p[id$="-instructions"]');
+        const tableElement = queryRequired<HTMLTableElement>(providerFixture, 'table');
+        const tableComponent = providerFixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+        const tableController = tableComponent.table;
+        const tableElementId = tableElement.id;
+        const tableService = providerFixture.debugElement.query(By.directive(TestTableSurface)).injector.get(NatTableService);
+        const surfaceController = tableService.controller();
+        const statusHeader = queryRequired<HTMLTableCellElement>(providerFixture, 'thead th[data-column-id="status"]');
+        const liveRegion = queryRequired<HTMLElement>(providerFixture, '[data-testid="nat-table-live-region"]');
 
         // then:
+        expect(tableElementId).not.toBe('');
+        expect(surfaceController).toBe(tableComponent);
         expect(summary.textContent.trim()).toBe('Provider summary n0/n0');
         expect(emptyState.textContent.trim()).toBe('Provider empty state');
         expect(instructions.textContent.trim()).toBe(
           'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
         );
+
+        // when: existing controller state and a live-region message are established before the translation changes
+        tableComponent.patchState({
+          sorting: [{ id: 'name', desc: false }]
+        });
+        providerFixture.detectChanges();
+        await providerFixture.whenStable();
+        providerFixture.detectChanges();
+        statusHeader.focus();
+
+        const liveMessageBeforeProviderUpdate = liveRegion.textContent.trim();
+
+        // then:
+        expect(liveMessageBeforeProviderUpdate).toBe('Sorted by Service ascending.');
+        expect(document.activeElement).toBe(statusHeader);
+
+        // when: the consumer publishes a new provider value through its signal
+        providerHost.providerIntl.set({
+          formatNumber: (value) => `r${value}`,
+          accessibilityText: {
+            emptyState: 'Reactive provider empty state',
+            loadingState: 'Reactive provider loading state',
+            errorState: 'Reactive provider error state',
+            keyboardInstructions: 'Reactive provider keyboard instructions.',
+            tableSummary: ({ visibleRowsText, totalRowsText }) => `Reactive provider summary ${visibleRowsText}/${totalRowsText}`,
+            columnReorder: ({ label, positionText, totalText }) => `Reactive provider moved ${label} to ${positionText}/${totalText}`
+          }
+        });
+        providerFixture.detectChanges();
+        await providerFixture.whenStable();
+        providerFixture.detectChanges();
+
+        // then: the existing table, controller state, DOM, and focus remain in place without a new announcement
+        expect(providerFixture.debugElement.query(By.directive(NatTable)).componentInstance).toBe(tableComponent);
+        expect(tableComponent.table).toBe(tableController);
+        expect(tableService.controller()).toBe(surfaceController);
+        expect(tableController.getState().sorting).toStrictEqual([{ id: 'name', desc: false }]);
+        expect(queryRequired<HTMLTableElement>(providerFixture, 'table')).toBe(tableElement);
+        expect(tableElement.id).toBe(tableElementId);
+        expect(queryRequired<HTMLElement>(providerFixture, '.empty-state')).toBe(emptyState);
+        expect(document.activeElement).toBe(statusHeader);
+        expect(liveRegion.textContent.trim()).toBe(liveMessageBeforeProviderUpdate);
+        expect(summary.textContent.trim()).toBe('Reactive provider summary r0/r0');
+        expect(emptyState.textContent.trim()).toBe('Reactive provider empty state');
+        expect(instructions.textContent.trim()).toBe(
+          'Reactive provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
+        );
+
+        // when: the next user interaction requests a column move
+        statusHeader.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowRight',
+            ctrlKey: true,
+            shiftKey: true,
+            bubbles: true,
+            cancelable: true
+          })
+        );
+        providerFixture.detectChanges();
+        await providerFixture.whenStable();
+        providerFixture.detectChanges();
+
+        // then: its announcement uses the latest formatter and number formatting
+        expect(getHeaderColumnIds(providerFixture)).toStrictEqual(['name', 'region', 'throughput', 'status']);
+        expect(liveRegion.textContent.trim()).toBe('Reactive provider moved Status to r4/r4');
 
         // when:
         providerHost.accessibilityText.set({
@@ -690,11 +765,37 @@ describe('FEATURE: NatTable', () => {
         instructions = queryRequired<HTMLElement>(providerFixture, 'p[id$="-instructions"]');
 
         // then:
-        expect(summary.textContent.trim()).toBe('Input summary n0');
+        expect(summary.textContent.trim()).toBe('Input summary r0');
         expect(emptyState.textContent.trim()).toBe('Input empty state');
         expect(instructions.textContent.trim()).toBe(
-          'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
+          'Reactive provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
         );
+
+        // when: table-owned loading and error rows render after the provider update
+        providerHost.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+        providerFixture.detectChanges();
+        await providerFixture.whenStable();
+        providerFixture.detectChanges();
+
+        // then:
+        expect(queryRequired<HTMLElement>(providerFixture, '.loading-state').textContent.trim()).toBe(
+          'Reactive provider loading state'
+        );
+        expect(queryRequired<HTMLTableElement>(providerFixture, 'table')).toBe(tableElement);
+        expect(liveRegion.textContent.trim()).toBe('Reactive provider loading state');
+
+        // when:
+        providerHost.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+        providerFixture.detectChanges();
+        await providerFixture.whenStable();
+        providerFixture.detectChanges();
+
+        // then:
+        expect(queryRequired<HTMLElement>(providerFixture, '.error-state').textContent.trim()).toBe('Reactive provider error state');
+        expect(queryRequired<HTMLTableElement>(providerFixture, 'table')).toBe(tableElement);
+        expect(liveRegion.textContent.trim()).toBe('Reactive provider error state');
+
+        providerFixture.destroy();
       });
     });
   });

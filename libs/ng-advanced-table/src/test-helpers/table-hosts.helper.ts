@@ -1,6 +1,18 @@
 /* eslint-disable max-lines -- cohesive set of NatTable integration-test host components extracted from table.spec.ts; splitting fragments the shared test harness */
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, DestroyRef, booleanAttribute, computed, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  InjectionToken,
+  booleanAttribute,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal
+} from '@angular/core';
+import type { WritableSignal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -17,7 +29,7 @@ import type {
 } from '@tanstack/angular-table';
 
 import { provideNatTableIntl } from 'ng-advanced-table/locale';
-import type { NatTableAccessibilityText } from 'ng-advanced-table/locale';
+import type { NatTableAccessibilityText, NatTableIntlStaticProviderConfig } from 'ng-advanced-table/locale';
 
 import { buildRows, columns, formatErrorMessage, reorderableColumns } from './table-data.helper';
 import type { Row } from './table-data.helper';
@@ -376,22 +388,30 @@ export class TableHost {
   }
 }
 
+const createProviderAccessibilityIntl = (): WritableSignal<NatTableIntlStaticProviderConfig> =>
+  signal<NatTableIntlStaticProviderConfig>({
+    formatNumber: (value) => `n${value}`,
+    accessibilityText: {
+      emptyState: 'Provider empty state',
+      keyboardInstructions: 'Provider keyboard instructions.',
+      tableSummary: ({ visibleRowsText, totalRowsText }) => `Provider summary ${visibleRowsText}/${totalRowsText}`
+    }
+  });
+
+const PROVIDER_ACCESSIBILITY_INTL = new InjectionToken<ReturnType<typeof createProviderAccessibilityIntl>>(
+  'PROVIDER_ACCESSIBILITY_INTL'
+);
+
 @Component({
   selector: 'test-provider-accessibility-host',
   imports: [NatTable, TestTableSurface],
   providers: [
-    provideNatTableIntl({
-      formatNumber: (value) => `n${value}`,
-      accessibilityText: {
-        emptyState: 'Provider empty state',
-        keyboardInstructions: 'Provider keyboard instructions.',
-        tableSummary: ({ visibleRowsText, totalRowsText }) => `Provider summary ${visibleRowsText}/${totalRowsText}`
-      }
-    })
+    { provide: PROVIDER_ACCESSIBILITY_INTL, useFactory: createProviderAccessibilityIntl },
+    provideNatTableIntl(() => inject(PROVIDER_ACCESSIBILITY_INTL))
   ],
   template: `
     <nat-table-surface [accessibilityText]="accessibilityText()" [enableReordering]="true">
-      <nat-table [columns]="columns" [data]="rows()" accessibleName="Provider table" />
+      <nat-table [columns]="columns" [data]="rows()" [dataStatus]="dataStatus()" accessibleName="Provider table" />
     </nat-table-surface>
   `
 })
@@ -399,6 +419,8 @@ export class ProviderAccessibilityHost {
   protected readonly rows = signal<Row[]>([]);
   protected readonly columns = columns;
   public readonly accessibilityText = signal<NatTableAccessibilityText>({});
+  public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  public readonly providerIntl = inject(PROVIDER_ACCESSIBILITY_INTL);
 }
 
 @Component({

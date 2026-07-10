@@ -18,8 +18,12 @@ export type {
   NatTableIntlConfig,
   NatTableIntlProviderFactory,
   NatTableIntlProviderConfig,
+  NatTableIntlProviderSource,
   NatTableIntlStaticProviderConfig,
   NatTableLocalesMap,
+  NatTableLocalesProviderConfig,
+  NatTableLocalesProviderFactory,
+  NatTableLocalesProviderSource,
   NatTableNumberFormatter
 } from './accessibility.type';
 
@@ -53,12 +57,19 @@ export type {
   NatTableSelectionIntl,
   NatTableControlsIntl,
   NatTableControlsIntlConfig,
-  NatTableControlsIntlProviderFactory,
-  NatTableControlsIntlProviderConfig,
   NatTableControlsIntlStaticProviderConfig,
   NatTableControlsLocalesMap,
   NatTableControlsNumberFormatter
 } from './controls.type';
+
+export type {
+  NatTableControlsIntlProviderConfig,
+  NatTableControlsIntlProviderFactory,
+  NatTableControlsIntlProviderSource,
+  NatTableControlsLocalesProviderConfig,
+  NatTableControlsLocalesProviderFactory,
+  NatTableControlsLocalesProviderSource
+} from './controls-provider.type';
 
 // render-metrics boundary
 export {
@@ -78,8 +89,12 @@ export type {
   NatTableRenderMetricsIntlConfig,
   NatTableRenderMetricsIntlProviderFactory,
   NatTableRenderMetricsIntlProviderConfig,
+  NatTableRenderMetricsIntlProviderSource,
   NatTableRenderMetricsIntlStaticProviderConfig,
   NatTableRenderMetricsLocalesMap,
+  NatTableRenderMetricsLocalesProviderConfig,
+  NatTableRenderMetricsLocalesProviderFactory,
+  NatTableRenderMetricsLocalesProviderSource,
   NatTableRenderMetricsNumberFormatter,
   RowRenderFilterOption,
   RowRenderTone

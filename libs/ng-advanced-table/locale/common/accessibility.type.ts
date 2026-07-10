@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 /** Formats numbers used in generated table accessibility copy. */
 export type NatTableNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
 
@@ -228,10 +230,22 @@ export type NatTableIntlConfig = {
 
 export type NatTableIntlStaticProviderConfig = NatTableIntl | NatTableIntlConfig;
 
-/** Factory resolved inside Angular dependency injection. Use `inject(...)` to read services. */
-export type NatTableIntlProviderFactory = () => NatTableIntlStaticProviderConfig;
+/** Static or signal-backed table intl configuration. */
+export type NatTableIntlProviderSource = NatTableIntlStaticProviderConfig | Signal<NatTableIntlStaticProviderConfig>;
 
-export type NatTableIntlProviderConfig = NatTableIntlStaticProviderConfig | NatTableIntlProviderFactory;
+/** Factory resolved once inside Angular dependency injection. Use `inject(...)` to read services. */
+export type NatTableIntlProviderFactory = () => NatTableIntlProviderSource;
+
+export type NatTableIntlProviderConfig = NatTableIntlProviderSource | NatTableIntlProviderFactory;
 
 /** Locale dictionaries keyed by locale id. */
 export type NatTableLocalesMap = Record<string, NatTableIntl>;
+
+/** Static or signal-backed table locale dictionaries. */
+export type NatTableLocalesProviderSource = NatTableLocalesMap | Signal<NatTableLocalesMap>;
+
+/** Factory resolved once inside Angular dependency injection. */
+export type NatTableLocalesProviderFactory = () => NatTableLocalesProviderSource;
+
+/** Configuration accepted by `provideNatTableLocales(...)`. */
+export type NatTableLocalesProviderConfig = NatTableLocalesProviderSource | NatTableLocalesProviderFactory;
