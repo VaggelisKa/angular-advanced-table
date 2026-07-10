@@ -78,8 +78,13 @@ test.describe('FEATURE: Row virtualization', () => {
         await test.step('THEN: the middle scroll position replaces the mounted rows while preserving the DOM bound', async () => {
           await scrollTo(region, 'middle');
 
-          await expect.poll(async () => Math.min(...(await ariaRowIndexes(rows)))).toBeGreaterThan(4000);
-          await expect.poll(async () => Math.max(...(await ariaRowIndexes(rows)))).toBeLessThan(6000);
+          await expect
+            .poll(async () => {
+              const indexes = await ariaRowIndexes(rows);
+
+              return indexes.length > 0 && Math.min(...indexes) > 4000 && Math.max(...indexes) < 6000;
+            })
+            .toBe(true);
           await expect.poll(async () => rows.count()).toBeLessThan(40);
           await expect(spacers).toHaveCount(2);
 

@@ -344,6 +344,32 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
       });
     });
 
+    describe('WHEN: filter state changes without changing the resulting row IDs', () => {
+      it('THEN: it still resets the virtual range and scroll position', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        region.scrollTop = 2000;
+        region.dispatchEvent(new Event('scroll'));
+        await fixture.whenStable();
+
+        const rowIdsBeforeFilter = table.table.getRowModel().rows.map((row) => row.id);
+
+        table.table.setColumnFilters([{ id: 'status', value: ['Healthy', 'Pending', 'Alert'] }]);
+        await fixture.whenStable();
+
+        expect(table.table.getRowModel().rows.map((row) => row.id)).toStrictEqual(rowIdsBeforeFilter);
+        expect(region.scrollTop).toBe(0);
+        expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']).toBe('0');
+
+        fixture.destroy();
+      });
+    });
+
     describe('WHEN: a row in a scrolled window is activated', () => {
       it('THEN: it emits the stable logical TanStack row identity', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);

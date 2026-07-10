@@ -142,13 +142,27 @@ const virtualizationSnippets = [
     'TS',
     'typescript',
     `
-import { NatTable, NatTableVirtualize } from 'ng-advanced-table';
+import { Component } from '@angular/core';
+
+import { NatTable, NatTableVirtualize, type ColumnDef } from 'ng-advanced-table';
+import { NatTableSurface } from 'ng-advanced-table/components';
+
+type Order = { id: string; total: number };
+
+const generateOrders = (count: number): Order[] =>
+  Array.from({ length: count }, (_, index) => ({ id: \`order-\${index + 1}\`, total: index * 10 }));
 
 @Component({
-  imports: [NatTable, NatTableSurface, NatTableVirtualize]
+  selector: 'app-orders-table',
+  imports: [NatTable, NatTableSurface, NatTableVirtualize],
+  templateUrl: './orders-table.html'
 })
 export class OrdersTable {
   readonly rows = generateOrders(10_000);
+  readonly columns: ColumnDef<Order, unknown>[] = [
+    { accessorKey: 'id', header: 'Order', meta: { label: 'Order', rowHeader: true } },
+    { accessorKey: 'total', header: 'Total', meta: { label: 'Total', align: 'end' } }
+  ];
 }
 `
   ),

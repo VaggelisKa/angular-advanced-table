@@ -19,7 +19,11 @@ import {
   includeVirtualIndex,
   normalizeNatTableVirtualizationOptions
 } from './utils/table-virtualization.util';
+import type { NatTableUserState } from '../common/table-state.type';
 import { NatTableState } from '../domain-logic/table.state';
+import { hasNatTableStateValueChanged } from '../utils/table-state-value-equality.util';
+
+type NatTableVirtualRowModelState = Pick<NatTableUserState, 'sorting' | 'globalFilter' | 'columnFilters' | 'pagination'>;
 
 @Directive({
   selector: 'nat-table[natTableVirtualize]',
@@ -103,6 +107,7 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
   private registerRowModelResetEffect(): void {
     let previousData: readonly TData[] | null = null;
     let previousRowKey: string | null = null;
+    let previousRowModelState: NatTableVirtualRowModelState | null = null;
 
     effect(() => {
       const data = this.state.data();
@@ -110,11 +115,16 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
         .bodyRows()
         .map((row) => row.id)
         .join('\u0000');
+      const { sorting, globalFilter, columnFilters, pagination } = this.state.mergedState();
+      const rowModelState = { sorting, globalFilter, columnFilters, pagination };
       const rowHeight = this.rowHeight();
-      const shouldReset = previousData !== null && (previousData !== data || previousRowKey !== rowKey);
+      const shouldReset =
+        previousRowModelState !== null &&
+        (previousData !== data || previousRowKey !== rowKey || hasNatTableStateValueChanged(previousRowModelState, rowModelState));
 
       previousData = data;
       previousRowKey = rowKey;
+      previousRowModelState = rowModelState;
 
       untracked(() => {
         this.controller.measure();
