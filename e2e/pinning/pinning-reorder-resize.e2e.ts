@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 test.use({ viewport: { width: 640, height: 900 } });
-
 /** Yields one animation frame, pacing synthetic input to the render loop. */
 const nextFrame = async (page: Page): Promise<void> => {
   await page.evaluate(async () => {
@@ -122,11 +121,11 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
 
       const categoryCell = grid.locator('thead th[data-column-id="category"]');
       const nameCell = grid.locator('thead th[data-column-id="name"]');
-
       const categoryWidthBefore = (await boxOf(categoryCell)).width;
       const nameWidthBefore = (await boxOf(nameCell)).width;
 
       await dragResizeEdge(page, categoryCell, 80);
+
 
       await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
       expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
@@ -148,7 +147,6 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
       const nameWidthBefore = (await boxOf(nameCell)).width;
 
       await dragResizeEdge(page, categoryCell, 80);
-
       await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
       expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
     });
@@ -172,7 +170,6 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         element.scrollLeft = Math.min(200, element.scrollWidth - element.clientWidth);
       });
       await nextFrame(page);
-
       const regionBox = await boxOf(region);
       const nameBox = await boxOf(nameCell);
       const categoryBox = await boxOf(categoryCell);
@@ -181,4 +178,5 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
       expect(Math.abs(categoryBox.x - (regionBox.x + nameBox.width))).toBeLessThanOrEqual(2);
     });
   });
+
 });
