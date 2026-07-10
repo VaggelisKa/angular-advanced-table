@@ -207,9 +207,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         await nextFrame(page);
 
         await test.step('THEN: scrolling slides the center columns under the pinned pair', async () => {
-          await expect
-            .poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth))
-            .toBeGreaterThan(150);
+          await expect.poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeGreaterThan(150);
           await region.evaluate((element) => {
             element.scrollLeft = 200;
           });
