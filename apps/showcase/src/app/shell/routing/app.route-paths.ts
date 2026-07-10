@@ -10,10 +10,6 @@ export const SHOWCASE_DOCS_INDEX_ROUTE_PATH = 'docs';
 
 export const SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH = 'examples';
 
-export const SHOWCASE_PIN_REORDER_RESIZE_FIXTURE_ROUTE_PATH = 'fixtures/pin-reorder-resize';
-
-export const showcaseClientOnlyRoutePaths: readonly string[] = [SHOWCASE_PIN_REORDER_RESIZE_FIXTURE_ROUTE_PATH];
-
 export type ShowcaseRouteDescriptor = {
   readonly id: string;
   readonly path: string;

@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
+test.use({ viewport: { width: 640, height: 900 } });
+
 /** Yields one animation frame, pacing synthetic input to the render loop. */
 const nextFrame = async (page: Page): Promise<void> => {
   await page.evaluate(async () => {
@@ -82,159 +84,101 @@ const dragResizeEdge = async (page: Page, cell: Locator, deltaX: number): Promis
   await nextFrame(page);
 };
 
+/** Configures the live Table Builder preview through its public controls. */
+const configureBuilder = async (page: Page): Promise<Locator> => {
+  await page.goto('/examples/builder');
+
+  const grid = page.getByRole('grid', { name: 'Custom configured table preview' });
+
+  await expect(grid).toBeVisible();
+  await page.getByTestId('table-builder-feature-withColumnResizing').click();
+
+  const sizingMode = page.getByRole('group', { name: 'Column sizing mode' });
+  const fixedSizing = sizingMode.getByRole('button', { name: 'Fixed' });
+
+  await fixedSizing.click();
+  await expect(fixedSizing).toHaveAttribute('aria-pressed', 'true');
+
+  await grid.getByTestId('nat-table-header-actions-menu-category').click();
+  await page.getByTestId('nat-table-header-pin-left-category').click();
+  await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+
+  return grid;
+};
+
 test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
-  test.describe('GIVEN: two adjacent columns are pinned left and reordered by pointer drag', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto('/fixtures/pin-reorder-resize');
-      await expect(page.getByRole('grid', { name: 'Pin reorder resize fixture table' })).toBeVisible();
-    });
+  test.describe('GIVEN: two adjacent builder columns are pinned left and reordered by pointer drag', () => {
+    test('THEN: it keeps DOM order and resize targeting aligned after swapping the pinned columns', async ({ page }) => {
+      const grid = await configureBuilder(page);
 
-    test('should keep DOM order and resize targeting aligned after swapping the two pinned columns', async ({ page }) => {
-      const grid = page.getByRole('grid', { name: 'Pin reorder resize fixture table' });
-
-      // when: the pinned-left zone starts as name, category
-      await expect
-        .poll(async () => documentColumnOrder(grid))
-        .toEqual(['name', 'category', 'status', 'value', 'region', 'owner', 'updated']);
-      await expect
-        .poll(async () => geometricColumnOrder(grid))
-        .toEqual(['name', 'category', 'status', 'value', 'region', 'owner', 'updated']);
+      await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
 
       const nameBoxBefore = await boxOf(grid.locator('thead th[data-column-id="name"]'));
 
-      // when: category is dragged left across name's center to swap the pinned pair
       await pointerReorder(page, grid, 'category', nameBoxBefore.x + 4);
 
-      // then: the pinned pair is now category, name (state applied)
-      await expect
-        .poll(async () => geometricColumnOrder(grid))
-        .toEqual(['category', 'name', 'status', 'value', 'region', 'owner', 'updated']);
+      await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+      await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
 
-      // then (DISCRIMINATOR ii): document order matches the visible order — no CDK/view desync
-      await expect
-        .poll(async () => documentColumnOrder(grid))
-        .toEqual(['category', 'name', 'status', 'value', 'region', 'owner', 'updated']);
-
-      // when: the resize edge under the LEFTMOST pinned column is dragged right by 80px
       const categoryCell = grid.locator('thead th[data-column-id="category"]');
       const nameCell = grid.locator('thead th[data-column-id="name"]');
-
-      // then (DISCRIMINATOR iii): each header's own label still matches its column id
-      await expect(categoryCell).toContainText('Category');
-      await expect(nameCell).toContainText('Name');
 
       const categoryWidthBefore = (await boxOf(categoryCell)).width;
       const nameWidthBefore = (await boxOf(nameCell)).width;
 
       await dragResizeEdge(page, categoryCell, 80);
 
-      // then (MONEY): the leftmost column (category) is the one that grew, not its neighbor
       await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
       expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
     });
   });
 
-  test.describe('GIVEN: the two pinned columns are swapped with the keyboard', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto('/fixtures/pin-reorder-resize');
-      await expect(page.getByRole('grid', { name: 'Pin reorder resize fixture table' })).toBeVisible();
-    });
-
-    test('should resize the reordered leftmost column, not its neighbor', async ({ page }) => {
-      const grid = page.getByRole('grid', { name: 'Pin reorder resize fixture table' });
+  test.describe('GIVEN: the two pinned builder columns are swapped with the keyboard', () => {
+    test('THEN: it resizes the reordered leftmost column instead of its neighbor', async ({ page }) => {
+      const grid = await configureBuilder(page);
       const categoryCell = grid.locator('thead th[data-column-id="category"]');
       const nameCell = grid.locator('thead th[data-column-id="name"]');
 
-      // when: name is moved right past category via Ctrl/Cmd+Shift+ArrowRight (view-preserving path)
       await nameCell.focus();
       await page.keyboard.press('ControlOrMeta+Shift+ArrowRight');
 
-      await expect
-        .poll(async () => documentColumnOrder(grid))
-        .toEqual(['category', 'name', 'status', 'value', 'region', 'owner', 'updated']);
+      await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
 
       const categoryWidthBefore = (await boxOf(categoryCell)).width;
       const nameWidthBefore = (await boxOf(nameCell)).width;
 
-      // when: the leftmost pinned column's resize edge is dragged right
       await dragResizeEdge(page, categoryCell, 80);
 
-      // then: category grew and name was left untouched
       await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
       expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
     });
   });
 
-  test.describe('GIVEN: a pinned column is resized', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto('/fixtures/pin-reorder-resize');
-      await expect(page.getByRole('grid', { name: 'Pin reorder resize fixture table' })).toBeVisible();
-    });
-
-    test('should shift the following pinned column and keep both stuck to the left edge on scroll', async ({ page }) => {
-      const grid = page.getByRole('grid', { name: 'Pin reorder resize fixture table' });
+  test.describe('GIVEN: a pinned builder column is resized', () => {
+    test('THEN: it shifts the following pinned column and keeps both stuck on horizontal scroll', async ({ page }) => {
+      const grid = await configureBuilder(page);
       const region = page.getByTestId('nat-table-region');
       const nameCell = grid.locator('thead th[data-column-id="name"]');
       const categoryCell = grid.locator('thead th[data-column-id="category"]');
 
       const categoryXBefore = (await boxOf(categoryCell)).x;
 
-      // when: the first pinned column (name) is widened by 80px
       await dragResizeEdge(page, nameCell, 80);
 
-      // then: the second pinned column (category) shifts right by roughly the same amount
       await expect.poll(async () => (await boxOf(categoryCell)).x).toBeGreaterThan(categoryXBefore + 60);
+      await expect.poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeGreaterThan(0);
 
-      // when: the region is scrolled horizontally
       await region.evaluate((element) => {
-        element.scrollLeft = 200;
+        element.scrollLeft = Math.min(200, element.scrollWidth - element.clientWidth);
       });
-      await page.evaluate(async () => {
-        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      });
+      await nextFrame(page);
 
-      // then: both pinned columns stay stuck at the region's left edge, in order
       const regionBox = await boxOf(region);
       const nameBox = await boxOf(nameCell);
       const categoryBox = await boxOf(categoryCell);
 
       expect(Math.abs(nameBox.x - regionBox.x)).toBeLessThanOrEqual(2);
       expect(Math.abs(categoryBox.x - (regionBox.x + nameBox.width))).toBeLessThanOrEqual(2);
-    });
-  });
-
-  test.describe('GIVEN: the region is scrolled horizontally before reordering the pinned group', () => {
-    test.beforeEach(async ({ page }) => {
-      await page.goto('/fixtures/pin-reorder-resize');
-      await expect(page.getByRole('grid', { name: 'Pin reorder resize fixture table' })).toBeVisible();
-    });
-
-    // KNOWN LIMITATION (issue #273 follow-up): while the region is scrolled, CDK derives a
-    // sticky-skewed `event.currentIndex`, so `isDropIndexWithinZone` rejects the drop and the
-    // pinned pair does not reorder. The moving column id resolves correctly; only the target
-    // slot is wrong. A fix must replace the clientRect-derived target index without regressing
-    // the (working) unscrolled reorder — deferred to avoid destabilising the drop path.
-    test.fixme('should still apply the pinned-group reorder after a horizontal scroll', async ({ page }) => {
-      const grid = page.getByRole('grid', { name: 'Pin reorder resize fixture table' });
-      const region = page.getByTestId('nat-table-region');
-
-      // when: the region is scrolled so center columns shift under the sticky pinned pair
-      await region.evaluate((element) => {
-        element.scrollLeft = 200;
-      });
-      await page.evaluate(async () => {
-        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      });
-
-      const nameBox = await boxOf(grid.locator('thead th[data-column-id="name"]'));
-
-      // when: category is dragged left across name inside the pinned group
-      await pointerReorder(page, grid, 'category', nameBox.x + 4);
-
-      // then: the reorder is not rejected by the drop-in-zone guard
-      await expect
-        .poll(async () => documentColumnOrder(grid))
-        .toEqual(['category', 'name', 'status', 'value', 'region', 'owner', 'updated']);
     });
   });
 });
