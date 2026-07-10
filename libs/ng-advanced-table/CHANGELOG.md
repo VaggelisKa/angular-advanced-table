@@ -2,10 +2,10 @@
 
 ### 🚀 Features
 
-- Unify the four header controls (sorting, pinning, reordering, resizing) under a single "surface enabler + per-column override" model. Each control is enabled on `<nat-table-surface>` and a column's availability resolves as `column.<flag> ?? surface.<enabler>`: ([#284](https://github.com/VaggelisKa/angular-advanced-table/pull/284))
+- Unify the four header controls (sorting, pinning, reordering, resizing) under a single "surface enabler + per-column override" model. Each control is enabled on `<nat-table-surface>`; sorting, pinning, and resizing resolve as `column.<flag> ?? surface.<enabler>`, while reordering resolves as `column.meta.reorderable ?? surface.enableReordering`: ([#284](https://github.com/VaggelisKa/angular-advanced-table/pull/284))
 
   - Surface enabler on: every column has the control; opt a column out with `enableSorting: false` / `enablePinning: false` / `enableResizing: false` / `meta: { reorderable: false }`.
-  - Surface enabler off (the default): opt a column in with `enableSorting: true` / `enablePinning: true` / `enableResizing: true` / `meta: { reorderable: true }`.
+  - Surface enabler off (the default): opt a column in with `enableSorting: true` / `enablePinning: true` / `enableResizing: true` / `meta: { reorderable: true }` (keyboard/menu movement only for reordering until #291 is fixed).
 
   `<nat-table-surface>` exposes four enabler inputs, all defaulting to `false`: `enableSorting`, `enablePinning`, `enableReordering`, `enableColumnResizing`.
 
@@ -17,7 +17,7 @@
   Non-breaking additions in the same model:
 
   - Resizing keeps its per-column behaviour: `enableResizing: true` still makes a column resizable. The re-introduced `enableColumnResizing` surface input additionally enables resizing for every column at once (opt one out with `enableResizing: false`).
-  - Reordering keeps its surface-gated behaviour under `[enableReordering]="true"` and gains a per-column opt-out via `meta: { reorderable: false }`. A column can also opt in while the surface enabler is off with `meta: { reorderable: true }`.
+  - Reordering keeps table-wide enablement under `[enableReordering]="true"` and gains a per-column opt-out via `meta: { reorderable: false }`. Setting `false` removes that column's drag, keyboard, and header-menu move affordances, but a neighboring reorderable column can still move past it. A column can also opt in while the surface enabler is off with `meta: { reorderable: true }`; drag/drop currently still requires the surface enabler, tracked in [#291](https://github.com/VaggelisKa/angular-advanced-table/issues/291).
 
   Note on sorting/pinning opt-in while the surface is off: because TanStack gates `getCanSort`/`getCanPin` with AND semantics, the surface-off plus per-column opt-in path is handled in the library's own header-actions gating (the sort button and pin menu), while table-level sorting/pinning stay enabled so the operations still work. A column with `enableSorting: true` / `enablePinning: true` is sortable/pinnable even when the surface enabler is off.
 

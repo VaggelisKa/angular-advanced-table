@@ -114,10 +114,10 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 
 Set `enableSortActions: false` to remove the built-in sort button/indicator for wrapped columns. Programmatic sorting via `NatTable.patchState({ sorting })` (or `natTable.table.setSorting(...)` on the underlying TanStack instance) and columnDef-level `enableSorting` are unaffected. Defaults to `true`. Override per column with `column.meta.headerActions.enableSortActions`.
 
-The four header controls — sorting, pinning, reordering, resizing — share one model: each is enabled on `<nat-table-surface>` (`[enableSorting]`, `[enablePinning]`, `[enableReordering]`, `[enableColumnResizing]`), and all default **off**. A column's availability resolves as `column.<flag> ?? surface.<enabler>`:
+The four header controls — sorting, pinning, reordering, resizing — share one model: each is enabled on `<nat-table-surface>` (`[enableSorting]`, `[enablePinning]`, `[enableReordering]`, `[enableColumnResizing]`), and all default **off**. Sorting, pinning, and resizing resolve as `column.<flag> ?? surface.<enabler>`; reordering resolves as `column.meta.reorderable ?? surface.enableReordering`:
 
 - Surface enabler on → every column has the control; opt one out with `enableSorting: false` / `enablePinning: false` / `enableResizing: false` / `meta: { reorderable: false }`.
-- Surface enabler off (default) → opt a column in with `enableSorting: true` / `enablePinning: true` / `enableResizing: true` / `meta: { reorderable: true }`.
+- Surface enabler off (default) → opt a column in with `enableSorting: true` / `enablePinning: true` / `enableResizing: true` / `meta: { reorderable: true }` (keyboard/menu movement only for reordering until #291 is fixed).
 
 So a table that should show the sort/pin UI must set `[enableSorting]="true"` / `[enablePinning]="true"` on the surface. `enableSortActions` is separate — it hides only the sort UI while leaving programmatic sorting intact; use it when a column should still be sortable programmatically but without the built-in header button.
 
@@ -162,7 +162,7 @@ Sorting, pinning, and resizing are surface-level: enable them on the surface and
 </nat-table-surface>
 ```
 
-With resizing enabled at the surface, every column is resizable by default; opt a specific column out with `enableResizing: false`. Reordering follows the same model — `[enableReordering]="true"` makes columns reorderable by default, and a column opts out with `meta: { reorderable: false }`.
+With resizing enabled at the surface, every column is resizable by default; opt a specific column out with `enableResizing: false`. Reordering follows the same model — `[enableReordering]="true"` makes columns reorderable by default, and `meta: { reorderable: false }` removes one column's drag, keyboard, and menu move affordances without locking its visual position against neighboring columns.
 
 Never map a mobile/compact opt-out to TanStack table-level `enableSorting`. Setting `enableSorting: false` on the table or a column makes `getCanSort()` return `false`, and `getSortedRowModel` then silently drops programmatic sort state: state writes succeed but rows never sort. Use `enableSortActions: false` instead — it only removes the UI affordance and leaves `enableSorting` and programmatic sorting intact.
 

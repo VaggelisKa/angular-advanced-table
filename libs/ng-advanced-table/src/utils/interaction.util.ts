@@ -23,8 +23,9 @@ export const isColumnResizable = <TData extends RowData>(column: Column<TData, u
 /**
  * Whether a column resolves to reorderable: its own `meta.reorderable` flag when set,
  * otherwise the surface enabler. Surface on → reorderable unless the column opts out
- * with `meta.reorderable: false`; surface off → not reorderable unless the column opts
- * in with `meta.reorderable: true`.
+ * with `meta.reorderable: false`; surface off → keyboard/menu movement is disabled
+ * unless the column opts in with `meta.reorderable: true`. Drag/drop still requires
+ * the surface enabler; see #291.
  */
 export const isColumnReorderable = <TData extends RowData>(column: Column<TData, unknown>, surfaceEnabled: boolean): boolean =>
   column.columnDef.meta?.reorderable ?? surfaceEnabled;
