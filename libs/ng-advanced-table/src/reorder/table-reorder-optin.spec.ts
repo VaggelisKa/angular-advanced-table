@@ -10,17 +10,24 @@ import { getHeaderColumnIds, queryRequired } from '../test-helpers/table-dom.hel
 import { TableHost, createTableHostFixture, getInternalStore } from '../test-helpers/table-hosts.helper';
 import type { RecreateHostOptions } from '../test-helpers/table-hosts.helper';
 
-// status opts out; its center-zone siblings region and throughput opt in.
+// status opts out with meta.reorderable: false; its center-zone siblings stay reorderable by default.
 const mixedColumns: ColumnDef<Row, unknown>[] = columns.map((column) => {
   const accessorKey = (column as { readonly accessorKey?: unknown }).accessorKey;
 
-  return accessorKey === 'status' ? column : { ...column, meta: { ...column.meta, reorderable: true } };
+  return accessorKey === 'status' ? { ...column, meta: { ...column.meta, reorderable: false } } : column;
+});
+
+// surface reordering OFF; region opts IN with meta.reorderable: true, siblings stay non-reorderable.
+const optInColumns: ColumnDef<Row, unknown>[] = columns.map((column) => {
+  const accessorKey = (column as { readonly accessorKey?: unknown }).accessorKey;
+
+  return accessorKey === 'region' ? { ...column, meta: { ...column.meta, reorderable: true } } : column;
 });
 
 const buildReorderEvent = (): KeyboardEvent =>
   new KeyboardEvent('keydown', { key: 'ArrowRight', ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true });
 
-describe('FEATURE: NatTable per-column reorder opt-in', () => {
+describe('FEATURE: NatTable per-column reorder opt-out', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
@@ -35,7 +42,7 @@ describe('FEATURE: NatTable per-column reorder opt-in', () => {
     ({ fixture, host } = await createTableHostFixture(options));
   };
 
-  describe('GIVEN: a reorder-enabled table where only some columns opt into meta.reorderable', () => {
+  describe('GIVEN: a reorder-enabled table where one column opts out of meta.reorderable', () => {
     describe('WHEN: the non-reorderable column is inspected', () => {
       it('THEN: it drops its drag affordance and Move buttons while an opted-in sibling stays movable', async () => {
         await recreateHost({ enableReordering: true, columns: mixedColumns });
@@ -87,6 +94,28 @@ describe('FEATURE: NatTable per-column reorder opt-in', () => {
 
         // then: the opted-in sibling reorders
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
+      });
+    });
+  });
+
+  describe('GIVEN: a reorder-disabled table where one column opts in with meta.reorderable', () => {
+    describe('WHEN: the opted-in column and a default sibling are inspected', () => {
+      it('THEN: only the opted-in column exposes its drag affordance and can move', async () => {
+        await recreateHost({ enableReordering: false, columns: optInColumns });
+        fixture.detectChanges();
+
+        const store = getInternalStore(fixture);
+        const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+        const statusHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="status"]');
+
+        // then: the opted-in column keeps its reorder affordance and can move despite the surface being off
+        expect(regionHeader.classList.contains('is-reorderable')).toBe(true);
+        expect(store.canMoveColumn('region', 'right')).toBe(true);
+
+        // then: a default sibling stays non-reorderable
+        expect(statusHeader.classList.contains('is-reorderable')).toBe(false);
+        expect(store.canMoveColumn('status', 'left')).toBe(false);
+        expect(store.canMoveColumn('status', 'right')).toBe(false);
       });
     });
   });

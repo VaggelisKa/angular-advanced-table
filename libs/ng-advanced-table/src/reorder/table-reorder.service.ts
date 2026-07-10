@@ -36,9 +36,13 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     return this.state.enableReordering();
   }
 
+  public hasReorderableColumns(): boolean {
+    return this.state.hasReorderableColumns();
+  }
+
   public canReorderHeader(column: Column<TData, unknown>): boolean {
     return (
-      this.isReorderingEnabled() && isColumnReorderable(column) && this.state.getVisibleZoneColumnIds(getColumnZone(column)).length > 1
+      isColumnReorderable(column, this.isReorderingEnabled()) && this.state.getVisibleZoneColumnIds(getColumnZone(column)).length > 1
     );
   }
 
@@ -53,6 +57,12 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
 
     if (!movingColumnId) {
+      return;
+    }
+
+    const movingColumn = this.state.table.getColumn(movingColumnId);
+
+    if (!movingColumn || !isColumnReorderable(movingColumn, this.isReorderingEnabled())) {
       return;
     }
 
@@ -85,9 +95,7 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     column: Column<TData, unknown>,
     directionDelta: ColumnReorderKeyboardDirection
   ): boolean {
-    if (!this.isReorderingEnabled()) return false;
-
-    if (!isColumnReorderable(column)) return false;
+    if (!isColumnReorderable(column, this.isReorderingEnabled())) return false;
 
     const zone = getColumnZone(column);
     const visibleZoneColumnIds = this.state.getVisibleZoneColumnIds(zone);

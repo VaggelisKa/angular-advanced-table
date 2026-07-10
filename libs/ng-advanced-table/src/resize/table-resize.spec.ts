@@ -32,25 +32,29 @@ describe('FEATURE: NatTable', () => {
     ({ fixture, host } = await createTableHostFixture());
   });
 
+  // These specs exercise a resize-enabled surface, so the gate defaults on; a
+  // test opts back out by passing enableColumnResizing: false explicitly.
   const recreateHost = async (options: RecreateHostOptions = {}): Promise<void> => {
     fixture.destroy();
-    ({ fixture, host } = await createTableHostFixture(options));
+    ({ fixture, host } = await createTableHostFixture({ enableColumnResizing: true, ...options }));
   };
 
   describe('GIVEN: a table with resizable columns', () => {
     describe('WHEN: the table renders resize handles', () => {
-      it('THEN: it renders resize handles only on columns that opt in with enableResizing', async () => {
+      it('THEN: it renders resize handles on every column when the surface enables resizing', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         // when:
-        // Default columns do not opt in, so no handles render.
+        // Columns that leave `enableResizing` unset fall back to the surface enabler, so
+        // with the surface off none are resizable and no handles render.
+        await recreateHost({ enableColumnResizing: false, columns });
         fixture.detectChanges();
 
         // then:
         expect(query(fixture, '.column-resize-handle')).toBeNull();
 
         // when:
-        // Every resizable column declares enableResizing: true on its def.
-        await recreateHost({ columns: resizableColumns });
+        // With the surface resize gate on, those same fallback columns become resizable.
+        await recreateHost({ columns });
         fixture.detectChanges();
 
         // then:
@@ -59,12 +63,12 @@ describe('FEATURE: NatTable', () => {
     });
 
     describe('WHEN: an opted-out column receives Alt+Arrow keyboard resize', () => {
-      it('THEN: it renders a handle and allows keyboard resize only on opted-in columns', async () => {
+      it('THEN: it renders handles on every column except opt-outs and blocks their keyboard resize', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
-        // Mirror the showcase: opt some columns in, leave others out. Resizing must be
-        // strictly per column, not all-or-nothing.
+        // Resizing is per column: one column opts out with enableResizing: false while the
+        // rest stay resizable by default. Not all-or-nothing.
         const mixedColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
-          'accessorKey' in column && column.accessorKey === 'name' ? { ...column, enableResizing: true } : column
+          'accessorKey' in column && column.accessorKey === 'region' ? { ...column, enableResizing: false } : column
         );
 
         // when:
@@ -76,7 +80,7 @@ describe('FEATURE: NatTable', () => {
         // then:
         expect(query(fixture, 'thead th[data-column-id="name"] .column-resize-handle')).not.toBeNull();
         expect(query(fixture, 'thead th[data-column-id="region"] .column-resize-handle')).toBeNull();
-        expect(queryAll(fixture, '.column-resize-handle')).toHaveLength(1);
+        expect(queryAll(fixture, '.column-resize-handle')).toHaveLength(3);
 
         // The opted-out column ignores Alt+Arrow keyboard resize.
         const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');

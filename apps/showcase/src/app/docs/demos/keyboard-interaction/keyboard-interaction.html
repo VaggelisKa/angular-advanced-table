@@ -1,7 +1,7 @@
 <div class="grid-layout grid-layout-with-panel">
   <div class="card">
     <h2 class="card-title">Interactive Cells Grid</h2>
-    <nat-table-surface>
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true">
       <nat-table [columns]="columns" [data]="data()" accessibleName="Keyboard interaction demo table" />
     </nat-table-surface>
   </div>

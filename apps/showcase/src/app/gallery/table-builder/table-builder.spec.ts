@@ -239,7 +239,7 @@ describe('FEATURE: table builder code snippet highlighting', () => {
     });
 
     describe('WHEN: column reordering is toggled off', () => {
-      it('THEN: the generated TS snippet opts columns into meta.reorderable while on and drops it when off', async () => {
+      it('THEN: the generated TS snippet never mentions meta.reorderable (reordering is a surface-level default)', async () => {
         const fixture = TestBed.createComponent(TableBuilderPage);
 
         await flushRender(fixture);
@@ -255,8 +255,8 @@ describe('FEATURE: table builder code snippet highlighting', () => {
         tsTab.click();
         await flushRender(fixture);
 
-        // then: the generated columns opt into reordering via meta.reorderable
-        expect(queryRequiredElement<HTMLElement>(compiled, 'code.code-content-code').textContent).toContain('reorderable: true');
+        // then: the generated columns carry no per-column reorderable flag
+        expect(queryRequiredElement<HTMLElement>(compiled, 'code.code-content-code').textContent).not.toContain('reorderable');
 
         const reorderToggle = findRequired(
           Array.from(compiled.querySelectorAll<HTMLLabelElement>('.toggle-control')),
@@ -268,7 +268,7 @@ describe('FEATURE: table builder code snippet highlighting', () => {
         queryRequiredElement<HTMLInputElement>(reorderToggle, 'input.toggle-checkbox').click();
         await flushRender(fixture);
 
-        // then: the snippet no longer mentions reorderable
+        // then: the snippet still never mentions reorderable
         expect(queryRequiredElement<HTMLElement>(compiled, 'code.code-content-code').textContent).not.toContain('reorderable');
       });
     });

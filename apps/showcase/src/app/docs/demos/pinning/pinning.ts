@@ -34,7 +34,7 @@ const DEMO_DATA: DemoItem[] = [
     <div class="grid-layout grid-layout-with-panel">
       <div class="card">
         <h2 class="card-title">Scrollable Grid with Pinning</h2>
-        <nat-table-surface [(state)]="tableState">
+        <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
           <nat-table [columns]="columns" [data]="data" accessibleName="Pinning demo table" />
         </nat-table-surface>
       </div>
@@ -86,28 +86,24 @@ export class Pinning {
       accessorKey: 'name',
       header: 'Name',
       size: 150,
-      enablePinning: true,
       meta: { label: 'Name', rowHeader: true }
     },
     {
       accessorKey: 'category',
       header: 'Category',
       size: 150,
-      enablePinning: true,
       meta: { label: 'Category' }
     },
     {
       accessorKey: 'status',
       header: 'Status',
       size: 120,
-      enablePinning: true,
       meta: { label: 'Status' }
     },
     {
       accessorKey: 'value',
       header: 'Value',
       size: 150,
-      enablePinning: true,
       meta: { label: 'Value', align: 'end' },
       cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
     }

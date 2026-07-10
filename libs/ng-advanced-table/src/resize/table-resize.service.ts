@@ -55,7 +55,7 @@ export class NatTableResizeService<TData extends RowData = RowData> {
    * Called by the component's template `(mousedown)` / `(touchstart)` handler.
    */
   public startResize(event: MouseEvent | TouchEvent, header: Header<TData, unknown>): void {
-    if (!canResizeColumn(header)) return;
+    if (!canResizeColumn(header, this.state.resizingEnabled())) return;
 
     event.stopPropagation();
     this.state.seedColumnSizingFromMeasuredWidth(header.column);

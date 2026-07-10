@@ -6,14 +6,16 @@ Column layout covers how columns present at runtime: pinning, ordering, sizing, 
 
 Pinning keeps important columns at a scroll boundary. Visibility lets users remove columns that are not useful for the current task. Both are state slices, so app-owned controls and companion controls should patch the same table state.
 
+Pin controls are disabled by default; set `[enablePinning]="true"` on the surface to expose the pin menu for all header-action columns, then opt a single column out with `enablePinning: false`. A column's pin availability resolves as `column.enablePinning ?? surface.enablePinning`.
+
 ## Reordering And Resizing
 
-Reordering changes the rendered column order. It is disabled by default; set `[enableReordering]="true"` on the surface before exposing drag/drop, header move menus, or keyboard column moves. Reordering now also requires each movable column to opt in with `meta: { reorderable: true }`; the surface `[enableReordering]="true"` flag alone no longer makes columns draggable (breaking change). Resizing changes width state. Both need keyboard support because pointer-only layout controls are not accessible enough for this table library.
+Reordering changes the rendered column order. It is disabled by default; set `[enableReordering]="true"` on the surface before exposing drag/drop, header move menus, or keyboard column moves. Once the surface enables it, every column reorders by default — opt one out with `meta: { reorderable: false }`. Resizing changes width state and is also disabled by default; set `[enableColumnResizing]="true"` on the surface to enable it for all columns, then opt a single column out with `enableResizing: false`. Both need keyboard support because pointer-only layout controls are not accessible enough for this table library.
 
 Use `columnSizingMode="fill"` when columns should stretch to the available width. Use `columnSizingMode="fixed"` when column widths should stay authoritative and the table may scroll horizontally.
 
 ```html
-<nat-table-surface [enableReordering]="true" columnSizingMode="fixed" columnResizeMode="onEnd">
+<nat-table-surface [enableReordering]="true" [enableColumnResizing]="true" columnSizingMode="fixed" columnResizeMode="onEnd">
   <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />
   <nat-table-scroll-control />
 </nat-table-surface>

@@ -106,13 +106,14 @@ export const buildComponentSource = (flags: TableBuilderFlags, formattedState: s
     .filter((imp) => imp !== 'NatTableSurface' && !imp.startsWith('with'))
     .map((imp) => `\n    ${imp},`)
     .join('');
-  const headerOptions =
-    flags.withColumnReorder || !flags.withColumnPinning
-      ? `, {
-    enableColumnPinActions: ${flags.withColumnPinning ? 'true' : 'false'},
-    enableColumnReorderActions: ${flags.withColumnReorder ? 'true' : 'false'},
+  // Sorting and pinning are surface-driven now, so the helper needs no options for them.
+  // The reorder menu is the exception: `enableColumnReorderActions` defaults to false, so
+  // opt it in explicitly when reordering is on to expose the move-left/move-right menu items.
+  const headerOptions = flags.withColumnReorder
+    ? `, {
+    enableColumnReorderActions: true,
   }`
-      : '';
+    : '';
   const columnsBlock = buildColumns(flags, headerOptions);
 
   return `${buildSourceHeader(uiImports, extraImports, flags)}

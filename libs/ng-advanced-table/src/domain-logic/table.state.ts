@@ -56,7 +56,7 @@ import {
   computeKeyboardResizeWidth,
   getColumnResizeBounds
 } from '../resize/utils/column-resize.util';
-import { getColumnDefLeafIds, getUserColumnSizing, readColumnEntry } from '../utils/column-def.util';
+import { getColumnDefLeafIds, getUserColumnSizing, readColumnEntry, someLeafColumnDef } from '../utils/column-def.util';
 import {
   accumulatePinnedOffsets,
   getColumnMoveTargetIndex,
@@ -136,7 +136,10 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly accessibilityText = computed(() => this.natTableService.accessibilityText());
   public readonly columnResizeMode = computed(() => this.natTableService.columnResizeMode());
   public readonly columnSizingMode = computed(() => this.natTableService.columnSizingMode());
+  public readonly resizingEnabled = computed(() => this.natTableService.enableColumnResizing());
   public readonly enableReordering = computed(() => this.natTableService.enableReordering());
+  public readonly enableSorting = computed(() => this.natTableService.enableSorting());
+  public readonly enablePinning = computed(() => this.natTableService.enablePinning());
   public readonly isFixedLayout = computed(() => this.columnSizingMode() === 'fixed');
   public readonly direction = computed(() => this.natTableService.direction());
 
@@ -238,8 +241,9 @@ export class NatTableState<TData extends RowData = RowData> {
     manualFiltering: this.manualFiltering(),
     enableMultiSort: this.enableMultiSort(),
     isMultiSortEvent: (event) => this.enableMultiSort() && (event as { readonly shiftKey?: boolean }).shiftKey === true,
+    enableSorting: true,
     enableColumnPinning: true,
-    enableColumnOrdering: this.enableReordering(),
+    enableColumnOrdering: this.hasReorderableColumns(),
     enableColumnResizing: true,
     columnResizeMode: this.columnResizeMode(),
     columnResizeDirection: this.resolvedDirection(),
@@ -248,7 +252,9 @@ export class NatTableState<TData extends RowData = RowData> {
     meta: {
       natTableLocaleId: this.localeId(),
       natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
-      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction)
+      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
+      natTableSortingEnabled: this.enableSorting(),
+      natTablePinningEnabled: this.enablePinning()
     },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
@@ -273,7 +279,14 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly headerGroups = computed(() => this.table.getHeaderGroups());
   public readonly bodyRows = computed(() => this.table.getRowModel().rows);
   public readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
-  public readonly hasResizableColumns = computed(() => this.allLeafColumns().some((column) => isColumnResizable(column)));
+  public readonly hasResizableColumns = computed(() =>
+    this.allLeafColumns().some((column) => isColumnResizable(column, this.resizingEnabled()))
+  );
+
+  public readonly hasReorderableColumns = computed(() =>
+    someLeafColumnDef(this.columnDefs(), (column) => column.meta?.reorderable ?? this.enableReordering())
+  );
+
   public readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
   public readonly leafHeaderRowId = computed(() => this.table.getHeaderGroups().at(-1)?.id ?? null);
 
@@ -341,7 +354,7 @@ export class NatTableState<TData extends RowData = RowData> {
     const resizeInstructions = text.resizeKeyboardInstructions?.trim() ?? '';
     const parts = [instructions];
 
-    if (this.enableReordering()) {
+    if (this.hasReorderableColumns()) {
       parts.push(reorderInstructions);
     }
 
@@ -552,7 +565,7 @@ export class NatTableState<TData extends RowData = RowData> {
     event: KeyboardEvent,
     column: Column<TData, unknown>
   ): { readonly width: number; readonly changed: boolean } | null {
-    if (!isColumnResizable(column)) return null;
+    if (!isColumnResizable(column, this.resizingEnabled())) return null;
 
     const { min, max } = this.getResizeFitBounds(column);
     const current = this.getColumnEffectiveWidth(column);
@@ -624,11 +637,9 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   public canMoveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): boolean {
-    if (!this.enableReordering()) return false;
-
     const column = this.table.getColumn(columnId);
 
-    if (!column || !isColumnReorderable(column)) return false;
+    if (!column || !isColumnReorderable(column, this.enableReordering())) return false;
 
     const zone = this.getColumnZoneById(columnId);
 
@@ -640,11 +651,9 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   public moveColumnByDelta(columnId: string, directionDelta: ColumnReorderKeyboardDirection): NatTableColumnReorderResult | null {
-    if (!this.enableReordering()) return null;
-
     const column = this.table.getColumn(columnId);
 
-    if (!column || !isColumnReorderable(column)) return null;
+    if (!column || !isColumnReorderable(column, this.enableReordering())) return null;
 
     const zone = this.getColumnZoneById(columnId);
 
@@ -666,11 +675,9 @@ export class NatTableState<TData extends RowData = RowData> {
     movingColumnId: string,
     nextVisibleZoneOrder: readonly string[]
   ): NatTableColumnReorderResult | null {
-    if (!this.enableReordering()) return null;
-
     const movingColumn = this.table.getColumn(movingColumnId);
 
-    if (!movingColumn || !isColumnReorderable(movingColumn)) return null;
+    if (!movingColumn || !isColumnReorderable(movingColumn, this.enableReordering())) return null;
 
     const currentState = this.mergedState();
     const currentVisibleZoneColumnIds = this.getVisibleZoneColumnIds(zone);

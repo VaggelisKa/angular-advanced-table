@@ -13,14 +13,23 @@ readonly isMobile = toSignal(
 );
 
 readonly columns = computed(() =>
-  withNatTableHeaderActions(
-    baseColumns.map((column) => ({ ...column, enableResizing: !this.isMobile() })),
-    {
-      enableSortActions: !this.isMobile(),
-      enableColumnPinActions: !this.isMobile()
-    }
-  )
+  withNatTableHeaderActions(baseColumns, {
+    enableSortActions: !this.isMobile(),
+    enableColumnPinActions: !this.isMobile()
+  })
 );
+```
+
+Sort, pin, and resize UI are all gated by surface enablers that default off. Bind the same breakpoint signal to `[enableSorting]`, `[enablePinning]`, and `[enableColumnResizing]` so every capability's header UI drops out together on mobile. The `enableSortActions` / `enableColumnPinActions` helper options above are a complementary per-column-action layer: the header control shows only when both the surface enabler and the helper option resolve true.
+
+```html
+<nat-table-surface
+  [enableSorting]="!isMobile()"
+  [enablePinning]="!isMobile()"
+  [enableColumnResizing]="!isMobile()"
+  [(state)]="tableState">
+  <nat-table [columns]="columns()" [data]="data" accessibleName="Responsive capabilities demo table" />
+</nat-table-surface>
 ```
 
 When the breakpoint signal flips, the `computed` re-wraps the columns and the headers re-render. Applying `withNatTableHeaderActions(...)` repeatedly is safe: it unwraps previously wrapped headers before installing the next wrapper, so reactive column builders can compose it without nesting the generated controls.
@@ -30,7 +39,7 @@ When the breakpoint signal flips, the `computed` re-wraps the columns and the he
 | Capability                                      | Mobile opt-out                                      |
 | ----------------------------------------------- | --------------------------------------------------- |
 | Sort button and indicator                       | `enableSortActions: false` (helper option)          |
-| Column resizing (handle, drag, keyboard)        | `enableResizing: false` (columnDef)                 |
+| Column resizing (handle, drag, keyboard)        | `[enableColumnResizing]="false"` (surface)          |
 | Pin menu                                        | `enableColumnPinActions: false` (helper option)     |
 | Reorder menu                                    | `enableColumnReorderActions: false` (helper option) |
 | Programmatic sorting (`setSorting`, sort sheet) | Never disabled                                      |

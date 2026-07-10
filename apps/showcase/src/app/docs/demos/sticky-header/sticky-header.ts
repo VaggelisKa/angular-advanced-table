@@ -40,7 +40,7 @@ const DEMO_DATA: DemoItem[] = Array.from({ length: 40 }, (_, index) => {
     <div class="grid-layout grid-layout-with-panel">
       <div class="card">
         <h2 class="card-title">Scrollable Grid</h2>
-        <nat-table-surface [stickyHeader]="stickyHeaderEnabled()">
+        <nat-table-surface [enablePinning]="true" [enableSorting]="true" [stickyHeader]="stickyHeaderEnabled()">
           <nat-table [columns]="columns" [data]="data" accessibleName="Sticky header demo table" />
         </nat-table-surface>
       </div>

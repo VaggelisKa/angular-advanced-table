@@ -1,7 +1,7 @@
 <div class="grid-layout grid-layout-with-panel">
   <div class="card">
     <h2 class="card-title">Interactive Resizing Grid ({{ columnSizingMode() }})</h2>
-    <nat-table-surface [columnSizingMode]="columnSizingMode()" [(state)]="tableState">
+    <nat-table-surface [columnSizingMode]="columnSizingMode()" [enableColumnResizing]="true" [(state)]="tableState">
       <nat-table [columns]="columns()" [data]="data" accessibleName="Column resizing demo table" />
     </nat-table-surface>
   </div>

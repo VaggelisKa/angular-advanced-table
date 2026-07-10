@@ -4,6 +4,8 @@
     <h2 class="card-title">Slots &amp; roving focus</h2>
 
     <nat-table-surface
+      [enablePinning]="true"
+      [enableSorting]="true"
       [state]="tableState()"
       (columnVisibilityChange)="onColumnVisibilityChange($event)"
       (sortingChange)="onSortingChange($event)">
@@ -98,7 +100,7 @@
       table — it composes with the free-text search. Both controls join the toolbar's roving focus.
     </p>
 
-    <nat-table-surface>
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true">
       <nat-table-toolbar accessibleName="Table actions toolbar">
         <app-table-search
           label="Search by name, category or status"

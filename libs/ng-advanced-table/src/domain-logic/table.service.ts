@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import type { WritableSignal } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -17,6 +18,20 @@ export type NatTableColumnSizingMode = 'fill' | 'fixed';
 
 export type NatTableDirection = 'ltr' | 'rtl';
 
+/** Set `target` to `value` when they differ, treating `undefined` as a real value. */
+const setSignalIfChanged = <T>(target: WritableSignal<T>, value: T): void => {
+  if (target() !== value) {
+    target.set(value);
+  }
+};
+
+/** Set `target` only when `value` is defined and differs from the current value. */
+const setSignalIfDefinedChanged = <T>(target: WritableSignal<T>, value: T | undefined): void => {
+  if (value !== undefined && target() !== value) {
+    target.set(value);
+  }
+};
+
 export type NatTableConfig = {
   state: Partial<NatTableUserState>;
   initialState: Partial<NatTableUserState>;
@@ -30,7 +45,10 @@ export type NatTableConfig = {
   keybindings: NatTableKeybindings;
   columnResizeMode: NatTableColumnResizeMode;
   columnSizingMode: NatTableColumnSizingMode;
+  enableColumnResizing: boolean;
   enableReordering: boolean;
+  enableSorting: boolean;
+  enablePinning: boolean;
   direction: NatTableDirection | undefined;
 };
 
@@ -58,7 +76,10 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly accessibilityText = signal<NatTableAccessibilityText>({});
   public readonly columnResizeMode = signal<'onEnd' | 'onChange'>('onEnd');
   public readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
+  public readonly enableColumnResizing = signal(false);
   public readonly enableReordering = signal(false);
+  public readonly enableSorting = signal(false);
+  public readonly enablePinning = signal(false);
   public readonly direction = signal<'ltr' | 'rtl' | undefined>(undefined);
 
   private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
@@ -71,31 +92,19 @@ export class NatTableService<TData extends RowData = RowData> {
   public readonly manualPagination = computed(() => {
     const mode = this.surfaceMode();
 
-    if (typeof mode === 'string') {
-      return mode === 'manual';
-    }
-
-    return mode.pagination === 'manual';
+    return typeof mode === 'string' ? mode === 'manual' : mode.pagination === 'manual';
   });
 
   public readonly manualSorting = computed(() => {
     const mode = this.surfaceMode();
 
-    if (typeof mode === 'string') {
-      return mode === 'manual';
-    }
-
-    return mode.sorting === 'manual';
+    return typeof mode === 'string' ? mode === 'manual' : mode.sorting === 'manual';
   });
 
   public readonly manualFiltering = computed(() => {
     const mode = this.surfaceMode();
 
-    if (typeof mode === 'string') {
-      return mode === 'manual';
-    }
-
-    return mode.filtering === 'manual';
+    return typeof mode === 'string' ? mode === 'manual' : mode.filtering === 'manual';
   });
 
   // Self-registrations for components
@@ -128,7 +137,6 @@ export class NatTableService<TData extends RowData = RowData> {
     this.stateSignal.set(value);
   }
 
-  // eslint-disable-next-line complexity -- threshold exceeded but ignored because it is not worth splitting
   public patchState(config: Partial<NatTableConfig>): void {
     if (config.state !== undefined) {
       this.stateSignal.set(config.state);
@@ -142,26 +150,6 @@ export class NatTableService<TData extends RowData = RowData> {
       this.surfaceMode.set(config.mode);
     }
 
-    if (this.manualPageCount() !== config.manualPageCount) {
-      this.manualPageCount.set(config.manualPageCount);
-    }
-
-    if (config.enableAnnouncements !== undefined && this.enableAnnouncements() !== config.enableAnnouncements) {
-      this.enableAnnouncements.set(config.enableAnnouncements);
-    }
-
-    if (config.stickyHeader !== undefined && this.stickyHeader() !== config.stickyHeader) {
-      this.stickyHeader.set(config.stickyHeader);
-    }
-
-    if (config.enableMultiSort !== undefined && this.enableMultiSort() !== config.enableMultiSort) {
-      this.enableMultiSort.set(config.enableMultiSort);
-    }
-
-    if (this.locale() !== config.locale) {
-      this.locale.set(config.locale);
-    }
-
     if (config.accessibilityText !== undefined && hasNatTableStateValueChanged(this.accessibilityText(), config.accessibilityText)) {
       this.accessibilityText.set(config.accessibilityText);
     }
@@ -170,21 +158,21 @@ export class NatTableService<TData extends RowData = RowData> {
       this.surfaceKeybindings.set(config.keybindings);
     }
 
-    if (config.columnResizeMode !== undefined && this.columnResizeMode() !== config.columnResizeMode) {
-      this.columnResizeMode.set(config.columnResizeMode);
-    }
+    // `manualPageCount`, `locale`, and `direction` treat `undefined` as a real value.
+    setSignalIfChanged(this.manualPageCount, config.manualPageCount);
+    setSignalIfChanged(this.locale, config.locale);
+    setSignalIfChanged(this.direction, config.direction);
 
-    if (config.columnSizingMode !== undefined && this.columnSizingMode() !== config.columnSizingMode) {
-      this.columnSizingMode.set(config.columnSizingMode);
-    }
-
-    if (config.enableReordering !== undefined && this.enableReordering() !== config.enableReordering) {
-      this.enableReordering.set(config.enableReordering);
-    }
-
-    if (this.direction() !== config.direction) {
-      this.direction.set(config.direction);
-    }
+    // Defined-only scalar options: applied when present in the config and actually changed.
+    setSignalIfDefinedChanged(this.enableAnnouncements, config.enableAnnouncements);
+    setSignalIfDefinedChanged(this.stickyHeader, config.stickyHeader);
+    setSignalIfDefinedChanged(this.enableMultiSort, config.enableMultiSort);
+    setSignalIfDefinedChanged(this.columnResizeMode, config.columnResizeMode);
+    setSignalIfDefinedChanged(this.columnSizingMode, config.columnSizingMode);
+    setSignalIfDefinedChanged(this.enableColumnResizing, config.enableColumnResizing);
+    setSignalIfDefinedChanged(this.enableReordering, config.enableReordering);
+    setSignalIfDefinedChanged(this.enableSorting, config.enableSorting);
+    setSignalIfDefinedChanged(this.enablePinning, config.enablePinning);
   }
 
   public registerPagination(): void {

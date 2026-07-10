@@ -52,26 +52,26 @@ describe('FEATURE: table builder localization codegen', () => {
 
   describe('GIVEN: column reordering is enabled', () => {
     describe('WHEN: building the preview columns', () => {
-      it('THEN: every column opts into reordering via meta.reorderable', () => {
+      it('THEN: no column carries meta.reorderable (reordering is a surface-level opt-out default)', () => {
         // when: building columns with reordering on
         const columns = buildBuilderColumns(toBuilderColumnFlags({ ...DEFAULT_FLAGS, withColumnReorder: true }), 'en');
 
-        // then: each column carries meta.reorderable so the reorder-enabled surface can move it
+        // then: columns are reorderable by default, so no per-column meta flag is needed
         expect(columns.length).toBeGreaterThan(0);
 
         for (const column of columns) {
-          expect(column.meta?.reorderable).toBe(true);
+          expect(column.meta?.reorderable).toBeUndefined();
         }
       });
     });
 
     describe('WHEN: generating the snippet with reordering', () => {
-      it('THEN: each meta literal includes reorderable: true', () => {
+      it('THEN: no meta literal mentions reorderable', () => {
         // when: generating the columns block with reordering on
         const snippet = buildColumns({ ...DEFAULT_FLAGS, withColumnReorder: true }, '');
 
-        // then: reorderable is injected into the emitted meta literals
-        expect(snippet).toContain('reorderable: true');
+        // then: reordering is a surface-level default, so no meta literal mentions it
+        expect(snippet).not.toContain('reorderable');
       });
     });
   });
@@ -102,18 +102,18 @@ describe('FEATURE: table builder localization codegen', () => {
 
   describe('GIVEN: column resizing is enabled', () => {
     describe('WHEN: building the preview columns', () => {
-      it('THEN: name, category and status resize but the last column (value) stays the non-resizable fill sink', () => {
+      it('THEN: name, category and status inherit resizing from the surface but the last column (value) opts out', () => {
         // when: building columns with resizing on
         const columns = buildBuilderColumns(toBuilderColumnFlags({ ...DEFAULT_FLAGS, withColumnResizing: true }), 'en');
         const resizingByKey = (key: string): boolean | undefined =>
           columns.find((column) => (column as { accessorKey?: string }).accessorKey === key)?.enableResizing;
 
-        // then: the three leading columns are resizable; value explicitly opts out (so it
-        // absorbs surplus width). value must be `false`, not omitted — the table enables
-        // resizing globally, so an omitted flag would inherit resizable.
-        expect(resizingByKey('name')).toBe(true);
-        expect(resizingByKey('category')).toBe(true);
-        expect(resizingByKey('status')).toBe(true);
+        // then: the three leading columns carry no per-column flag — resizing is on by
+        // default at the surface level. value explicitly opts out (`false`, not omitted)
+        // so it stays the fill sink that absorbs surplus width.
+        expect(resizingByKey('name')).toBeUndefined();
+        expect(resizingByKey('category')).toBeUndefined();
+        expect(resizingByKey('status')).toBeUndefined();
         expect(resizingByKey('value')).toBe(false);
       });
     });
@@ -123,11 +123,12 @@ describe('FEATURE: table builder localization codegen', () => {
         // when: generating the columns block with resizing on (no pinning)
         const snippet = buildColumns({ ...DEFAULT_FLAGS, withColumnResizing: true, withColumnPinning: false }, '');
         const valueBlock = snippet.slice(snippet.indexOf("accessorKey: 'value'"));
+        const leadingBlock = snippet.slice(0, snippet.indexOf("accessorKey: 'value'"));
 
-        // then: leading columns resize, the trailing value column opts out explicitly
-        expect(snippet).toContain('enableResizing: true');
+        // then: leading columns emit no resize flag (default-on), the trailing value
+        // column opts out explicitly
+        expect(leadingBlock).not.toContain('enableResizing');
         expect(valueBlock).toContain('enableResizing: false');
-        expect(valueBlock).not.toContain('enableResizing: true');
       });
     });
   });

@@ -29,7 +29,7 @@ const sortingSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [(state)]="tableState">
+<nat-table-surface [enableSorting]="true" [enablePinning]="true" [(state)]="tableState">
   <nat-table [columns]="columns" [data]="data" accessibleName="Sorting demo table" />
 </nat-table-surface>
 
@@ -66,7 +66,7 @@ const columnLayoutSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [enableReordering]="true" [stickyHeader]="true" [(state)]="tableState">
+<nat-table-surface [enableSorting]="true" [enablePinning]="true" [enableReordering]="true" [enableColumnResizing]="true" [stickyHeader]="true" [(state)]="tableState">
   <nat-table [columns]="columns" [data]="data" accessibleName="Column layout demo table" />
 </nat-table-surface>
 `
@@ -84,10 +84,12 @@ readonly tableState = signal<Partial<NatTableUserState>>({
 
 readonly columns = withNatTableHeaderActions(
   [
-    // Reordering is per-column opt-in: add meta.reorderable to every column that should move.
-    { accessorKey: 'name', header: 'Name', enablePinning: true, enableResizing: true, meta: { reorderable: true } },
-    { accessorKey: 'status', header: 'Status', enablePinning: true, meta: { reorderable: true } },
-    { accessorKey: 'value', header: 'Value', enablePinning: true, enableResizing: true, meta: { reorderable: true } }
+    // Columns pin, reorder, and resize by default once the surface enables them; a
+    // participating column carries no flag. Opt one out with meta: { reorderable: false },
+    // enablePinning: false, or enableResizing: false.
+    { accessorKey: 'name', header: 'Name', meta: { label: 'Name' } },
+    { accessorKey: 'status', header: 'Status', meta: { label: 'Status' } },
+    { accessorKey: 'value', header: 'Value', meta: { label: 'Value', align: 'end' } }
   ],
   { enableColumnReorderActions: true }
 );
@@ -125,7 +127,7 @@ const filteringSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [(state)]="tableState">
+<nat-table-surface [enableSorting]="true" [enablePinning]="true" [(state)]="tableState">
   <app-table-search label="Search rows" placeholder="Type to filter" />
   <nat-table [columns]="columns" [data]="rows" accessibleName="Searchable table" />
 </nat-table-surface>
@@ -154,7 +156,7 @@ const selectionSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
+<nat-table-surface [enableSorting]="true" [enablePinning]="true" [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
   <nat-table-toolbar accessibleName="Bulk actions">
     <button type="button" natToolbarItem [disabled]="selectedRows().length === 0">Delete selected</button>
   </nat-table-toolbar>
@@ -272,7 +274,7 @@ const themingSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [initialState]="initialState" class="ledger-surface">
+<nat-table-surface [enableSorting]="true" [initialState]="initialState" class="ledger-surface">
   <nat-table [columns]="columns" [data]="rows" accessibleName="Themed orders table" />
 </nat-table-surface>
 `
@@ -384,7 +386,7 @@ const responsiveSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [(state)]="tableState">
+<nat-table-surface [enableSorting]="!isMobile()" [enablePinning]="!isMobile()" [enableColumnResizing]="!isMobile()" [(state)]="tableState">
   <nat-table [columns]="columns()" [data]="data" accessibleName="Responsive capabilities demo table" />
 </nat-table-surface>
 
@@ -406,13 +408,10 @@ readonly isMobile = toSignal(
 readonly columns = computed(() => {
   const mobile = this.isMobile();
 
-  return withNatTableHeaderActions(
-    baseColumns.map((column) => ({ ...column, enableResizing: !mobile })),
-    {
-      enableSortActions: !mobile,
-      enableColumnPinActions: !mobile
-    }
-  );
+  return withNatTableHeaderActions(baseColumns, {
+    enableSortActions: !mobile,
+    enableColumnPinActions: !mobile
+  });
 });
 
 // The sort sheet writes the same state slice the (now hidden) header sort
@@ -603,7 +602,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'column-reordering',
         title: 'Column reordering',
         description:
-          'Drag, menu actions, and keyboard shortcuts all update the same column order state. Breaking change: a column now reorders only when its def sets meta.reorderable: true, even while the table has enableReordering.',
+          'Drag, menu actions, and keyboard shortcuts all update the same column order state. Columns reorder by default when the surface sets [enableReordering]="true"; opt a column out with meta: { reorderable: false }.',
         component: Reordering,
         snippets: columnLayoutSnippets
       },

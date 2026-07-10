@@ -59,8 +59,14 @@ export class NatTableSurface {
   public readonly columnResizeMode = input<'onEnd' | 'onChange'>('onEnd');
   /** Width model: `'fill'` (default — columns stretch to fill the container) or `'fixed'` (column widths are authoritative and the region scrolls horizontally, giving pixel-exact resizing). */
   public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
-  /** Enables column drag/drop, keyboard reordering, and table-owned move-column metadata. */
+  /** Enables column resizing across the surface. Off by default; a column opts in with `enableResizing: true` or, once the surface is on, opts out with `enableResizing: false`. */
+  public readonly enableColumnResizing = input(false, { transform: booleanAttribute });
+  /** Enables column drag/drop, keyboard reordering, and table-owned move-column metadata across the surface. Off by default; a column opts in with `meta.reorderable: true` or, once the surface is on, opts out with `meta.reorderable: false`. */
   public readonly enableReordering = input(false, { transform: booleanAttribute });
+  /** Enables the built-in header sort UI across the surface. Off by default; a column opts in with `enableSorting: true` or, once the surface is on, opts out with `enableSorting: false`. Gates only the sort button and indicator — sort state and programmatic `setSorting` work regardless of this flag. (`enableSortActions` on the header-actions helper is a second, independent UI gate.) */
+  public readonly enableSorting = input(false, { transform: booleanAttribute });
+  /** Enables column pinning across the surface. Off by default; a column opts in with `enablePinning: true` or, once the surface is on, opts out with `enablePinning: false`. */
+  public readonly enablePinning = input(false, { transform: booleanAttribute });
   /** Text direction. Falls back to the inherited CDK direction, then `'ltr'`. */
   public readonly direction = input<'ltr' | 'rtl'>();
 
@@ -114,7 +120,10 @@ export class NatTableSurface {
         keybindings: this.keybindings(),
         columnResizeMode: this.columnResizeMode(),
         columnSizingMode: this.columnSizingMode(),
+        enableColumnResizing: this.enableColumnResizing(),
         enableReordering: this.enableReordering(),
+        enableSorting: this.enableSorting(),
+        enablePinning: this.enablePinning(),
         direction: this.direction()
       });
     });

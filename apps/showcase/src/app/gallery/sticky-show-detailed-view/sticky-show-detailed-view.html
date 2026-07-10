@@ -11,7 +11,7 @@
   <main class="showcase-page simple-sorting-page">
     <div class="examples-grid">
       @for (item of tables; track $index) {
-        <nat-table-surface [(state)]="tableState" class="example-card-surface">
+        <nat-table-surface [enableSorting]="true" [(state)]="tableState" class="example-card-surface">
           <h3 class="example-card-title">{{ item.label }}</h3>
           <p class="description">{{ item.description }}</p>
           <nat-table
@@ -51,7 +51,7 @@
 }
 
 <ng-template #viewDetailed>
-  <nat-table-surface [stickyHeader]="true" [(state)]="detailedTableState" class="dialog-table-surface">
+  <nat-table-surface [enableSorting]="true" [stickyHeader]="true" [(state)]="detailedTableState" class="dialog-table-surface">
     <nat-table
       [columns]="columns"
       [data]="detailedRows"

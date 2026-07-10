@@ -41,7 +41,7 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly align?: 'start' | 'end';
   /** Marks the body cell for this column as the row header announced by screen readers. */
   readonly rowHeader?: boolean;
-  /** Whether this column may be reordered (drag, keyboard, Move buttons) when the table enables reordering. Defaults to false. */
+  /** Per-column override for the reorder surface enabler (drag, keyboard, Move buttons). When unset, falls back to the surface `enableReordering`: surface on → reorderable unless set to `false`; surface off → not reorderable unless set to `true`. */
   readonly reorderable?: boolean;
   /** Optional callback that maps a cell to a semantic tone class. */
   readonly cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
@@ -78,5 +78,9 @@ declare module '@tanstack/table-core' {
     readonly natTableCanMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => boolean;
     /** Moves a visible column within its current pinned region. Returns the reorder result, or null if no move occurred. */
     readonly natTableMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => NatTableColumnReorderResult | null;
+    /** Whether the surface enables sorting; per-column enableSorting overrides. */
+    readonly natTableSortingEnabled?: boolean;
+    /** Whether the surface enables pinning; per-column enablePinning overrides. */
+    readonly natTablePinningEnabled?: boolean;
   }
 }

@@ -27,6 +27,7 @@ import type {
   NatTableSortIndicatorContent,
   NatTableSortIndicatorContext
 } from '../../common/header-actions.type';
+import { canPinColumn, canSortColumn } from '../../utils/header-actions-gating.util';
 import {
   buildSortIndicatorContext,
   resolveMenuButtonLabel,
@@ -69,12 +70,15 @@ export class NatTableHeaderActions {
   public readonly enableColumnPinActions = input(true);
   public readonly enableColumnReorderActions = input(false);
 
+  // `!= null` (not `!== null`) so an unset (`undefined`) indicator falls through to the default arrow.
+  protected readonly hasCustomSortIndicator = computed(() => this.sortIndicator() != null);
+
   protected canSort(): boolean {
-    return this.enableSortActions() && this.column().getCanSort();
+    return canSortColumn(this.column(), this.context().table.options.meta?.natTableSortingEnabled, this.enableSortActions());
   }
 
   protected canPin(): boolean {
-    return this.enableColumnPinActions() && this.column().getCanPin();
+    return canPinColumn(this.column(), this.context().table.options.meta?.natTablePinningEnabled, this.enableColumnPinActions());
   }
 
   protected canShowMenu(): boolean {
@@ -91,10 +95,6 @@ export class NatTableHeaderActions {
 
   protected isAlignedEnd(): boolean {
     return this.column().columnDef.meta?.align === 'end';
-  }
-
-  protected hasCustomSortIndicator(): boolean {
-    return this.sortIndicator() != null;
   }
 
   protected sortState(): NatTableSortDirection {

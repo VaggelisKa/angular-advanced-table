@@ -138,7 +138,7 @@ interface PositionRow {
   selector: 'app-positions-table',
   imports: [NatTable, NatTableColumnVisibility, NatTablePagination, NatTableScrollControl, NatTableSurface],
   template: `
-    <nat-table-surface [initialState]="initialState">
+    <nat-table-surface [enableSorting]="true" [enablePinning]="true" [initialState]="initialState">
       <nat-table-pagination [pageSizeOptions]="[25, 50, 100]" />
 
       <nat-table [data]="rows()" [columns]="columns" accessibleName="Open positions" />

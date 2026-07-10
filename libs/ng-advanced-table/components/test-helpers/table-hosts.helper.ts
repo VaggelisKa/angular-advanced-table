@@ -18,7 +18,9 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
   imports: [NatTable, NatTableColumnVisibility, NatTablePageSize, NatTablePager, NatTableScrollControl, NatTableSurface],
   template: `
     <nat-table-surface
+      [enablePinning]="true"
       [enableReordering]="true"
+      [enableSorting]="true"
       [initialState]="initialState"
       [state]="tableState()"
       (stateChange)="onTableStateChange($event)">
@@ -59,7 +61,7 @@ export class TableHost {
   selector: 'nat-pagination-toolbar-host',
   imports: [NatTable, NatTablePagination, NatTableSurface],
   template: `
-    <nat-table-surface [initialState]="initialState">
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [initialState]="initialState">
       <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
       <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
     </nat-table-surface>

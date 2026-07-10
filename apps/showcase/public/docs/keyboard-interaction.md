@@ -10,7 +10,7 @@ Cells whose entire content is one arrow-safe control can delegate directly to th
 
 ## Column Shortcuts
 
-Column reordering exposes keyboard paths when `[enableReordering]="true"` is set on the table surface and the column opts in with `meta: { reorderable: true }`; both are required for keyboard reordering. Resizing exposes keyboard paths for resizable columns. Keep visible instructions and configured shortcuts aligned with `aria-keyshortcuts` when you customize keybindings.
+Column reordering exposes keyboard paths when `[enableReordering]="true"` is set on the table surface; every column then reorders by default unless it opts out with `meta: { reorderable: false }`. Resizing exposes keyboard paths once the surface sets `[enableColumnResizing]="true"`, for every column except those with `enableResizing: false`. Keep visible instructions and configured shortcuts aligned with `aria-keyshortcuts` when you customize keybindings.
 
 ## Custom Keybindings
 

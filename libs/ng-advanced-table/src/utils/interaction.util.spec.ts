@@ -5,6 +5,7 @@ import type { CellContext, Column, Header } from '@tanstack/angular-table';
 import {
   canResizeColumn,
   getCellTone,
+  isColumnReorderable,
   isColumnResizable,
   isResizeKey,
   originatesFromInteractiveDescendant,
@@ -19,6 +20,9 @@ type Row = { readonly id: string; readonly amount: number };
 
 const createColumn = (enableResizing?: boolean): Column<Row, unknown> =>
   ({ columnDef: { enableResizing } }) as unknown as Column<Row, unknown>;
+
+const createReorderableColumn = (reorderable?: boolean): Column<Row, unknown> =>
+  ({ columnDef: { meta: reorderable === undefined ? undefined : { reorderable } } }) as unknown as Column<Row, unknown>;
 
 const createHeader = (options: { readonly isPlaceholder?: boolean; readonly enableResizing?: boolean }): Header<Row, unknown> =>
   ({
@@ -81,35 +85,79 @@ describe('FEATURE: interaction utilities', () => {
   });
 
   describe('GIVEN: isColumnResizable', () => {
-    describe('WHEN: the column def opts into resizing', () => {
-      it('THEN: it reports the column as resizable', () => {
-        expect(isColumnResizable(createColumn(true))).toBe(true);
+    describe('WHEN: the column def leaves resizing unset and the surface enables resizing', () => {
+      it('THEN: it falls back to the surface enabler (resizable)', () => {
+        expect(isColumnResizable(createColumn(undefined), true)).toBe(true);
       });
     });
 
-    describe('WHEN: the column def does not opt into resizing', () => {
-      it('THEN: it reports the column as not resizable', () => {
-        expect(isColumnResizable(createColumn(undefined))).toBe(false);
+    describe('WHEN: the column def leaves resizing unset and the surface disables resizing', () => {
+      it('THEN: it falls back to the surface enabler (not resizable)', () => {
+        expect(isColumnResizable(createColumn(undefined), false)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the column opts out with enableResizing false while the surface is on', () => {
+      it('THEN: the column flag overrides the surface (not resizable)', () => {
+        expect(isColumnResizable(createColumn(false), true)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the column opts in with enableResizing true while the surface is off', () => {
+      it('THEN: the column flag overrides the surface (resizable)', () => {
+        expect(isColumnResizable(createColumn(true), false)).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN: isColumnReorderable', () => {
+    describe('WHEN: the column meta leaves reordering unset and the surface enables reordering', () => {
+      it('THEN: it falls back to the surface enabler (reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(undefined), true)).toBe(true);
+      });
+    });
+
+    describe('WHEN: the column meta leaves reordering unset and the surface disables reordering', () => {
+      it('THEN: it falls back to the surface enabler (not reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(undefined), false)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the column opts out with meta.reorderable false while the surface is on', () => {
+      it('THEN: the column flag overrides the surface (not reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(false), true)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the column opts in with meta.reorderable true while the surface is off', () => {
+      it('THEN: the column flag overrides the surface (reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(true), false)).toBe(true);
       });
     });
   });
 
   describe('GIVEN: canResizeColumn', () => {
-    describe('WHEN: the header is not a placeholder and its column is resizable', () => {
+    describe('WHEN: the header is not a placeholder and its column opts in while the surface is off', () => {
       it('THEN: it reports the header as resizable', () => {
-        expect(canResizeColumn(createHeader({ enableResizing: true }))).toBe(true);
+        expect(canResizeColumn(createHeader({ enableResizing: true }), false)).toBe(true);
       });
     });
 
     describe('WHEN: the header is a placeholder', () => {
       it('THEN: it reports the header as not resizable even if the column opts in', () => {
-        expect(canResizeColumn(createHeader({ isPlaceholder: true, enableResizing: true }))).toBe(false);
+        expect(canResizeColumn(createHeader({ isPlaceholder: true, enableResizing: true }), true)).toBe(false);
       });
     });
 
-    describe('WHEN: the header column does not opt into resizing', () => {
+    describe('WHEN: the header column opts out of resizing while the surface is on', () => {
       it('THEN: it reports the header as not resizable', () => {
-        expect(canResizeColumn(createHeader({ enableResizing: false }))).toBe(false);
+        expect(canResizeColumn(createHeader({ enableResizing: false }), true)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the header column leaves resizing unset and the surface is off', () => {
+      it('THEN: it falls back to the surface enabler (not resizable)', () => {
+        expect(canResizeColumn(createHeader({}), false)).toBe(false);
       });
     });
   });

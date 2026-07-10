@@ -53,43 +53,37 @@ export class Responsive {
     {
       accessorKey: 'name',
       header: 'Name',
-      enablePinning: true,
       meta: { label: 'Name', rowHeader: true }
     },
     {
       accessorKey: 'category',
       header: 'Category',
-      enablePinning: true,
       meta: { label: 'Category' }
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      enablePinning: true,
       meta: { label: 'Status' }
     },
     {
       accessorKey: 'value',
       header: 'Value',
-      enablePinning: true,
       meta: { label: 'Value', align: 'end' },
       cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
     }
   ];
 
   // The opt-out is column composition: rebuild columns inside a computed() keyed on
-  // the viewport signal. Sort/pin header UI and per-column resizing drop out on
-  // mobile while TanStack sorting itself — driven programmatically below — stays live.
+  // the viewport signal. Sort and pin header UI drop out on mobile (resizing is
+  // toggled at the surface via [enableColumnResizing]="!isMobile()") while TanStack
+  // sorting itself — driven programmatically below — stays live.
   protected readonly columns = computed<ColumnDef<DemoItem, unknown>[]>(() => {
     const mobile = this.isMobile();
 
-    return withNatTableHeaderActions(
-      this.baseColumns.map((column) => ({ ...column, enableResizing: !mobile })),
-      {
-        enableSortActions: !mobile,
-        enableColumnPinActions: !mobile
-      }
-    );
+    return withNatTableHeaderActions(this.baseColumns, {
+      enableSortActions: !mobile,
+      enableColumnPinActions: !mobile
+    });
   });
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({

@@ -1,7 +1,11 @@
 <div class="grid-layout grid-layout-with-panel">
   <div class="card">
     <h2 class="card-title">Responsive Capability Grid</h2>
-    <nat-table-surface [(state)]="tableState">
+    <nat-table-surface
+      [enableColumnResizing]="!isMobile()"
+      [enablePinning]="!isMobile()"
+      [enableSorting]="!isMobile()"
+      [(state)]="tableState">
       <nat-table [columns]="columns()" [data]="data" accessibleName="Responsive capabilities demo table" />
     </nat-table-surface>
   </div>
