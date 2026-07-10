@@ -96,6 +96,26 @@ describe('FEATURE: NatTable per-column reorder opt-out', () => {
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
       });
     });
+
+    describe('WHEN: a reorderable sibling is moved across the opted-out column', () => {
+      it('THEN: the opted-out column is displaced even though it cannot be grabbed', async () => {
+        await recreateHost({ enableReordering: true, columns: mixedColumns });
+        fixture.detectChanges();
+
+        const store = getInternalStore(fixture);
+
+        // given: status opts out of grabbing and starts at index 2
+        expect(store.canMoveColumn('status', 'left')).toBe(false);
+        expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'region', 'status', 'throughput']);
+
+        // when: its reorderable neighbor region is moved right, across status
+        store.moveColumnByDelta('region', 1);
+        fixture.detectChanges();
+
+        // then: status is pushed one slot left despite never being grabbed
+        expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
+      });
+    });
   });
 
   describe('GIVEN: a reorder-disabled table where one column opts in with meta.reorderable', () => {

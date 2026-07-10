@@ -287,7 +287,16 @@ export class NatTableState<TData extends RowData = RowData> {
     someLeafColumnDef(this.columnDefs(), (column) => column.meta?.reorderable ?? this.enableReordering())
   );
 
-  public readonly visibleColumns = computed(() => this.table.getVisibleLeafColumns());
+  // Physical left-to-right render order: pinned zones follow their `columnPinning`
+  // array order, which `getVisibleLeafColumns()` ignores (it stays in `columnOrder`).
+  // The `<colgroup>` maps `<col>` widths to columns by position, so it must match the
+  // header/body order or a reordered pinned column resizes its neighbor (issue #273).
+  public readonly visibleColumns = computed(() => [
+    ...this.table.getLeftVisibleLeafColumns(),
+    ...this.table.getCenterVisibleLeafColumns(),
+    ...this.table.getRightVisibleLeafColumns()
+  ]);
+
   public readonly leafHeaderRowId = computed(() => this.table.getHeaderGroups().at(-1)?.id ?? null);
 
   public readonly visibleColumnCount = computed(() => this.visibleColumns().length);
