@@ -14,7 +14,6 @@
     "@angular/router": "catalog:frontend",
     "@angular/ssr": "catalog:frontend",
     "@tanstack/angular-table": "catalog:frontend",
-    "@tanstack/angular-virtual": "catalog:frontend",
     "prismjs": "catalog:frontend",
     "rxjs": "catalog:frontend",
     "tslib": "catalog:shared",

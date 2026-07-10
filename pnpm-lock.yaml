@@ -92,9 +92,6 @@ catalogs:
     '@angular/core':
       specifier: ^22.0.2
       version: 22.0.2
-    '@tanstack/angular-virtual':
-      specifier: ^5.0.7
-      version: 5.0.7
   shared:
     tslib:
       specifier: ^2.8.1
@@ -251,9 +248,6 @@ importers:
       '@tanstack/angular-table':
         specifier: catalog:frontend
         version: 8.21.4(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))
-      '@tanstack/angular-virtual':
-        specifier: catalog:frontend
-        version: 5.0.7(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))
       ng-advanced-table:
         specifier: workspace:*
         version: link:../../libs/ng-advanced-table
@@ -289,7 +283,7 @@ importers:
         specifier: catalog:frontend
         version: 8.21.4(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))
       '@tanstack/angular-virtual':
-        specifier: catalog:peers
+        specifier: catalog:frontend
         version: 5.0.7(@angular/core@22.0.2(@angular/compiler@22.0.2)(rxjs@7.8.2)(zone.js@0.16.2))
       tslib:
         specifier: catalog:shared

@@ -52,7 +52,6 @@ catalogs:
     '@angular/cdk': '^22.0.2'
     '@angular/common': '^22.0.2'
     '@angular/core': '^22.0.2'
-    '@tanstack/angular-virtual': '^5.0.7'
   # dev: Angular build/CLI, Nx Angular plugin, packaging, test runners
   frontend-dev:
     '@angular/build': '22.0.3'

@@ -30,11 +30,11 @@
     "@angular/cdk": "catalog:peers",
     "@angular/aria": "catalog:peers",
     "@angular/common": "catalog:peers",
-    "@angular/core": "catalog:peers",
-    "@tanstack/angular-virtual": "catalog:peers"
+    "@angular/core": "catalog:peers"
   },
   "dependencies": {
     "@tanstack/angular-table": "catalog:frontend",
+    "@tanstack/angular-virtual": "catalog:frontend",
     "tslib": "catalog:shared"
   },
   "sideEffects": [

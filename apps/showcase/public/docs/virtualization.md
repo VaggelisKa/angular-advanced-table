@@ -6,13 +6,11 @@ Virtualization changes rendering only. Sorting, filtering, selection, pagination
 
 ## Install
 
-`NatTableVirtualize` uses TanStack Virtual as a required companion peer.
+Virtualization is exposed entirely through `ng-advanced-table`. TanStack Virtual is an internal, tree-shakeable runtime dependency; applications do not install or import it directly.
 
 ```bash
-pnpm add ng-advanced-table @angular/aria @angular/cdk @tanstack/angular-virtual
+pnpm add ng-advanced-table @angular/aria @angular/cdk
 ```
-
-Keep the TanStack Virtual major compatible with the peer range declared by your installed `ng-advanced-table` version.
 
 ## Basic Wiring
 
