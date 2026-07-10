@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 test.use({ viewport: { width: 640, height: 900 } });
+
+const DEFAULT_BUILDER_COLUMN_ORDER = ['name', 'category', 'status', 'owner', 'value'] as const;
+const SWAPPED_PINNED_BUILDER_COLUMN_ORDER = ['category', 'name', 'status', 'owner', 'value'] as const;
 /** Yields one animation frame, pacing synthetic input to the render loop. */
 const nextFrame = async (page: Page): Promise<void> => {
   await page.evaluate(async () => {
@@ -100,7 +103,7 @@ const configureBuilder = async (page: Page): Promise<Locator> => {
 
   await grid.getByTestId('nat-table-header-actions-menu-category').click();
   await page.getByTestId('nat-table-header-pin-left-category').click();
-  await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+  await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
 
   return grid;
 };
@@ -114,7 +117,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         const nameCell = grid.locator('thead th[data-column-id="name"]');
 
         await test.step('THEN: the pinned columns render in their default left order', async () => {
-          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
         });
 
         await test.step('THEN: dragging category left of name swaps both DOM and visual order', async () => {
@@ -122,8 +125,8 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
 
           await pointerReorder(page, grid, 'category', nameBoxBefore.x + 4);
 
-          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
 
         await test.step('THEN: resizing category grows it without resizing name', async () => {
@@ -148,7 +151,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           await nameCell.focus();
           await page.keyboard.press('ControlOrMeta+Shift+ArrowRight');
 
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
 
         await test.step('THEN: resizing category grows it without resizing name', async () => {
@@ -223,7 +226,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           // Document order is the reorder invariant here; geometric (visual-x)
           // order is not asserted because while scrolled the sticky pinned pair
           // visually overlaps the scrolled-under center columns.
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
       });
     });
@@ -237,7 +240,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           const nameBox = await boxOf(nameCell);
 
           await pointerReorder(page, grid, 'category', nameBox.x + 4);
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
 
         // The reverse drag used to be rejected as a no-op: the zone-order lookup
@@ -247,7 +250,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           const nameBox = await boxOf(nameCell);
 
           await pointerReorder(page, grid, 'category', nameBox.x + nameBox.width - 4);
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
         });
       });
     });
@@ -273,7 +276,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         // scrolls away with the center columns.
         await pointerReorder(page, grid, 'category', categoryXBefore + (await boxOf(categoryCell)).width / 2);
 
-        await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+        await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
         await expect.poll(async () => Math.abs((await boxOf(categoryCell)).x - categoryXBefore)).toBeLessThanOrEqual(1);
         await expect.poll(async () => categoryCell.evaluate((cell) => cell.style.left)).not.toBe('');
       });
