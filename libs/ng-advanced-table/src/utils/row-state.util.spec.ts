@@ -126,6 +126,12 @@ describe('FEATURE: row-state utilities', () => {
       });
     });
 
+    describe('WHEN: the value is an invalid Date', () => {
+      it('THEN: it reports no match without throwing during ISO conversion', () => {
+        expect(matchesFilterQuery(new Date('invalid'), 'invalid')).toBe(false);
+      });
+    });
+
     describe('WHEN: the value is an array containing a matching item', () => {
       it('THEN: it reports a match', () => {
         expect(matchesFilterQuery(['Healthy', 'Pending'], 'pending')).toBe(true);
