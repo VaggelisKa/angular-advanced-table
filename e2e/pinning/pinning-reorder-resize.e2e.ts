@@ -106,75 +106,92 @@ const configureBuilder = async (page: Page): Promise<Locator> => {
 };
 
 test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
-  test.describe('GIVEN: two adjacent builder columns are pinned left and reordered by pointer drag', () => {
-    test('THEN: it keeps DOM order and resize targeting aligned after swapping the pinned columns', async ({ page }) => {
-      const grid = await configureBuilder(page);
+  test.describe('GIVEN: two adjacent builder columns are pinned left', () => {
+    test.describe('WHEN: they are reordered by pointer drag and the new leftmost column is resized', () => {
+      test('THEN: it keeps DOM order and resize targeting aligned after swapping the pinned columns', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const categoryCell = grid.locator('thead th[data-column-id="category"]');
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
 
-      await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+        await test.step('THEN: the pinned columns render in their default left order', async () => {
+          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+        });
 
-      const nameBoxBefore = await boxOf(grid.locator('thead th[data-column-id="name"]'));
+        await test.step('THEN: dragging category left of name swaps both DOM and visual order', async () => {
+          const nameBoxBefore = await boxOf(nameCell);
 
-      await pointerReorder(page, grid, 'category', nameBoxBefore.x + 4);
+          await pointerReorder(page, grid, 'category', nameBoxBefore.x + 4);
 
-      await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
-      await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+        });
 
-      const categoryCell = grid.locator('thead th[data-column-id="category"]');
-      const nameCell = grid.locator('thead th[data-column-id="name"]');
-      const categoryWidthBefore = (await boxOf(categoryCell)).width;
-      const nameWidthBefore = (await boxOf(nameCell)).width;
+        await test.step('THEN: resizing category grows it without resizing name', async () => {
+          const categoryWidthBefore = (await boxOf(categoryCell)).width;
+          const nameWidthBefore = (await boxOf(nameCell)).width;
 
-      await dragResizeEdge(page, categoryCell, 80);
+          await dragResizeEdge(page, categoryCell, 80);
 
-      await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
-      expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
-    });
-  });
-
-  test.describe('GIVEN: the two pinned builder columns are swapped with the keyboard', () => {
-    test('THEN: it resizes the reordered leftmost column instead of its neighbor', async ({ page }) => {
-      const grid = await configureBuilder(page);
-      const categoryCell = grid.locator('thead th[data-column-id="category"]');
-      const nameCell = grid.locator('thead th[data-column-id="name"]');
-
-      await nameCell.focus();
-      await page.keyboard.press('ControlOrMeta+Shift+ArrowRight');
-
-      await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
-
-      const categoryWidthBefore = (await boxOf(categoryCell)).width;
-      const nameWidthBefore = (await boxOf(nameCell)).width;
-
-      await dragResizeEdge(page, categoryCell, 80);
-      await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
-      expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
-    });
-  });
-
-  test.describe('GIVEN: a pinned builder column is resized', () => {
-    test('THEN: it shifts the following pinned column and keeps both stuck on horizontal scroll', async ({ page }) => {
-      const grid = await configureBuilder(page);
-      const region = page.getByTestId('nat-table-region');
-      const nameCell = grid.locator('thead th[data-column-id="name"]');
-      const categoryCell = grid.locator('thead th[data-column-id="category"]');
-
-      const categoryXBefore = (await boxOf(categoryCell)).x;
-
-      await dragResizeEdge(page, nameCell, 80);
-
-      await expect.poll(async () => (await boxOf(categoryCell)).x).toBeGreaterThan(categoryXBefore + 60);
-      await expect.poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeGreaterThan(0);
-
-      await region.evaluate((element) => {
-        element.scrollLeft = Math.min(200, element.scrollWidth - element.clientWidth);
+          await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
+          expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
+        });
       });
-      await nextFrame(page);
-      const regionBox = await boxOf(region);
-      const nameBox = await boxOf(nameCell);
-      const categoryBox = await boxOf(categoryCell);
+    });
 
-      expect(Math.abs(nameBox.x - regionBox.x)).toBeLessThanOrEqual(2);
-      expect(Math.abs(categoryBox.x - (regionBox.x + nameBox.width))).toBeLessThanOrEqual(2);
+    test.describe('WHEN: they are swapped with the keyboard and the new leftmost column is resized', () => {
+      test('THEN: it resizes the reordered leftmost column instead of its neighbor', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const categoryCell = grid.locator('thead th[data-column-id="category"]');
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
+
+        await test.step('THEN: the keyboard swap moves category ahead of name', async () => {
+          await nameCell.focus();
+          await page.keyboard.press('ControlOrMeta+Shift+ArrowRight');
+
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+        });
+
+        await test.step('THEN: resizing category grows it without resizing name', async () => {
+          const categoryWidthBefore = (await boxOf(categoryCell)).width;
+          const nameWidthBefore = (await boxOf(nameCell)).width;
+
+          await dragResizeEdge(page, categoryCell, 80);
+
+          await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
+          expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
+        });
+      });
+    });
+
+    test.describe('WHEN: the leftmost pinned column is resized and the region is scrolled horizontally', () => {
+      test('THEN: it shifts the following pinned column and keeps both stuck on horizontal scroll', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const region = page.getByTestId('nat-table-region');
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
+        const categoryCell = grid.locator('thead th[data-column-id="category"]');
+
+        await test.step('THEN: resizing name shifts category right and makes the region scrollable', async () => {
+          const categoryXBefore = (await boxOf(categoryCell)).x;
+
+          await dragResizeEdge(page, nameCell, 80);
+
+          await expect.poll(async () => (await boxOf(categoryCell)).x).toBeGreaterThan(categoryXBefore + 60);
+          await expect.poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeGreaterThan(0);
+        });
+
+        await test.step('THEN: both pinned columns stay stuck after horizontal scroll', async () => {
+          await region.evaluate((element) => {
+            element.scrollLeft = Math.min(200, element.scrollWidth - element.clientWidth);
+          });
+          await nextFrame(page);
+          const regionBox = await boxOf(region);
+          const nameBox = await boxOf(nameCell);
+          const categoryBox = await boxOf(categoryCell);
+
+          expect(Math.abs(nameBox.x - regionBox.x)).toBeLessThanOrEqual(2);
+          expect(Math.abs(categoryBox.x - (regionBox.x + nameBox.width))).toBeLessThanOrEqual(2);
+        });
+      });
     });
   });
 });
