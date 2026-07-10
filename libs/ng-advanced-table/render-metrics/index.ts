@@ -6,8 +6,6 @@ export { NatRenderMetricsPanel } from './feature/panel/panel';
 
 export { withRenderMetricsColumn } from './utils/column';
 
-export type { WithRenderMetricsColumnOptions } from './utils/column';
-
 export type {
   NatTableColumnMeta,
   NatTableRenderMetricsController,
@@ -23,5 +21,6 @@ export {
   type RowRenderMeasurement,
   type RowRenderMetric,
   type RowRenderMetrics,
-  type RowRenderTone
+  type RowRenderTone,
+  type WithRenderMetricsColumnOptions
 } from './common/type';

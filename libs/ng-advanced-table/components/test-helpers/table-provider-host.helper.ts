@@ -1,14 +1,12 @@
-/* eslint-disable max-lines, max-lines-per-function -- one cohesive provider snapshot and host keep the reactive controls integration flow auditable */
-import { Component, InjectionToken, inject, signal } from '@angular/core';
-import type { WritableSignal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
 import { provideNatTableControlsIntl } from 'ng-advanced-table/locale';
-import type { NatTableControlsIntlStaticProviderConfig } from 'ng-advanced-table/locale';
 
 import type { Row } from './table-data.helper';
 import { buildRows, getRowId, reorderableColumns } from './table-data.helper';
+import { PROVIDER_CONTROLS_INTL, REACTIVE_CONTROLS_INTL, createProviderControlsIntl } from './table-provider-intl.helper';
 import { NatTableColumnVisibility } from '../feature/table-column-visibility/table-column-visibility';
 import { NatTablePageSize } from '../feature/table-page-size/table-page-size';
 import { NatTablePager } from '../feature/table-pager/table-pager';
@@ -18,79 +16,6 @@ import { NatTableToolbar } from '../feature/table-toolbar/table-toolbar';
 import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table-header-actions';
 import { withNatTableSelectionColumn } from '../ui/table-selection/with-table-selection-column';
 import { NatToolbarItem } from '../ui/toolbar-item/toolbar-item.directive';
-
-type ProviderIntlVariant = {
-  readonly prefix: 'Provider' | 'Reactive';
-  readonly numberPrefix: 'n' | 'r';
-  readonly rowAdjective: 'provider' | 'reactive';
-};
-
-const buildProviderControlsIntl = (variant: ProviderIntlVariant): NatTableControlsIntlStaticProviderConfig => ({
-  formatNumber: (value) => `${variant.numberPrefix}${value}`,
-  columnVisibility: {
-    label: `${variant.prefix} columns`,
-    groupAriaLabel: `${variant.prefix} column visibility`,
-    accessibilityLabels: {
-      visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-        `${variant.prefix} ${visibleColumnCountText}/${totalColumnCountText}`
-    }
-  },
-  pageSize: {
-    groupAriaLabel: `${variant.prefix} page size`,
-    accessibilityLabels: {
-      groupAriaLabel: `${variant.prefix} page size group`,
-      pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} ${variant.rowAdjective} rows`,
-      pageSizeOptionAriaLabel: ({ pageSizeText }) => `${variant.prefix} show ${pageSizeText} rows`
-    }
-  },
-  pager: {
-    groupAriaLabel: `${variant.prefix} pager`,
-    accessibilityLabels: {
-      previousPageAriaLabel: `${variant.prefix} previous`,
-      nextPageAriaLabel: `${variant.prefix} next`,
-      pageIndicator: ({ pageText, pageCountText }) => `${variant.prefix} page ${pageText}/${pageCountText}`
-    }
-  },
-  scrollControl: {
-    groupAriaLabel: `${variant.prefix} horizontal scroll`,
-    accessibilityLabels: {
-      scrollLeftAriaLabel: `${variant.prefix} scroll left`,
-      scrollRightAriaLabel: `${variant.prefix} scroll right`,
-      scrollPositionAriaLabel: `${variant.prefix} scroll position`,
-      scrollPositionText: ({ percentageText }) => `${variant.prefix} ${percentageText} percent`
-    }
-  },
-  headerActions: {
-    accessibilityLabels: {
-      sortButton: ({ label }) => `${variant.prefix} sort ${label}`,
-      menuButton: ({ label }) => `${variant.prefix} actions for ${label}`,
-      menuLabel: ({ label }) => `${variant.prefix} menu for ${label}`,
-      pinButton: ({ label, pinSide }) => `${variant.prefix} pin ${label} ${pinSide}`,
-      pinButtonText: ({ pinSide }) => `${variant.prefix} ${pinSide}`,
-      moveButton: ({ label, direction }) => `${variant.prefix} move ${label} ${direction}`,
-      moveButtonText: ({ direction }) => `${variant.prefix} move ${direction}`
-    }
-  },
-  toolbar: {
-    toolbarLabel: `${variant.prefix} table toolbar`
-  },
-  selection: {
-    columnLabel: `${variant.prefix} selection`,
-    accessibilityLabels: {
-      selectAllAriaLabel: `${variant.prefix} select all rows`,
-      selectRowAriaLabel: ({ rowId }) => `${variant.prefix} select row ${rowId}`
-    }
-  }
-});
-
-const createProviderControlsIntl = (): WritableSignal<NatTableControlsIntlStaticProviderConfig> =>
-  signal<NatTableControlsIntlStaticProviderConfig>(
-    buildProviderControlsIntl({ prefix: 'Provider', numberPrefix: 'n', rowAdjective: 'provider' })
-  );
-
-const PROVIDER_CONTROLS_INTL = new InjectionToken<ReturnType<typeof createProviderControlsIntl>>('PROVIDER_CONTROLS_INTL');
-
-const reactiveControlsIntl = buildProviderControlsIntl({ prefix: 'Reactive', numberPrefix: 'r', rowAdjective: 'reactive' });
 
 @Component({
   selector: 'nat-provider-accessibility-labels-host',
@@ -155,7 +80,7 @@ export class ProviderAccessibilityLabelsHost {
   private readonly providerIntl = inject(PROVIDER_CONTROLS_INTL);
 
   public useReactiveProviderIntl(): void {
-    this.providerIntl.set(reactiveControlsIntl);
+    this.providerIntl.set(REACTIVE_CONTROLS_INTL);
   }
 
   protected onTableStateChange(state: Partial<NatTableUserState>): void {
