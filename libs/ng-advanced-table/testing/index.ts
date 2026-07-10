@@ -1,5 +1,6 @@
 export type {
   NatTableColumnMeta,
+  NatTableColumnVisibilityItem,
   NatTableRenderMetricsController,
   NatTableSortIndicatorContext,
   NatTableUserState,

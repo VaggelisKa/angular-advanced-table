@@ -17,7 +17,7 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData } from '@tanstack/angular-table';
+import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, RowSelectionState, SortingState } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
@@ -31,7 +31,7 @@ import type {
   NatTableErrorTemplateContext,
   NatTableLoadingTemplateContext
 } from '../common/table-status.type';
-import type { NatTableUiController } from '../common/ui-controller.type';
+import type { NatTableColumnVisibilityItem, NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableHeaderMeasurementService } from '../domain-logic/table-header-measurement.service';
 import { NatTableIntlService } from '../domain-logic/table-intl.service';
@@ -43,7 +43,7 @@ import { NatTableResizeService } from '../resize/table-resize.service';
 import { NatTableRowRenderEmitter } from '../ui/row-render-emitter.directive';
 import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NatTableResizeGuide } from '../ui/table-layout.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
-import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
+import { getHeaderRowColumnIds, resolveColumnLabel, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
 
 /**
@@ -155,6 +155,20 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public readonly globalFilter = computed<string>(() => String(this.state.table.getState().globalFilter ?? ''));
   /** Active column filters from the live table state. */
   public readonly columnFilters = computed(() => this.state.table.getState().columnFilters);
+  /** Current sorting state from the live table state. */
+  public readonly sorting = computed<SortingState>(() => this.state.table.getState().sorting);
+  /** All leaf columns in order, with resolved labels and visibility. */
+  public readonly columnVisibility = computed<readonly NatTableColumnVisibilityItem[]>(() =>
+    this.state.table.getAllLeafColumns().map((column) => ({
+      id: column.id,
+      label: resolveColumnLabel(column),
+      visible: column.getIsVisible(),
+      canHide: column.getCanHide()
+    }))
+  );
+
+  /** Current row-selection state from the live table state. */
+  public readonly rowSelection = computed<RowSelectionState>(() => this.state.table.getState().rowSelection);
   /** Stable DOM id for the rendered `<table>` element. */
   public readonly tableElementId = this.state.tableElementId;
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
@@ -330,6 +344,45 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   public setColumnFilter(columnId: string, value: unknown): void {
     this.state.table.getColumn(columnId)?.setFilterValue(value);
+  }
+
+  public setColumnSort(columnId: string, direction: 'asc' | 'desc' | false): void {
+    if (!this.state.table.getColumn(columnId)) return;
+
+    if (direction === false) {
+      // Remove only this column's entry, leaving any other columns' sort entries intact.
+      this.state.table.setSorting((sorting) => sorting.filter((entry) => entry.id !== columnId));
+
+      return;
+    }
+
+    // Single-column absolute sort: replace the whole state with just this column.
+    this.state.table.setSorting([{ id: columnId, desc: direction === 'desc' }]);
+  }
+
+  public setColumnVisible(columnId: string, visible: boolean): void {
+    const column = this.state.table.getColumn(columnId);
+
+    if (!column || (!visible && !column.getCanHide())) return;
+
+    column.toggleVisibility(visible);
+  }
+
+  public setRowSelected(rowId: string, selected: boolean): void {
+    if (!this.state.enableRowSelection()) return;
+
+    // Look up via the core row model instead of `getRow`, which throws on unknown ids —
+    // the no-op-on-unknown convention matches setColumnFilter/setColumnSort/setColumnVisible.
+    // `rowsById` is typed as a total record, so guard with `in` (the index type hides the runtime miss).
+    const rowsById = this.state.table.getCoreRowModel().rowsById;
+
+    if (!(rowId in rowsById)) return;
+
+    rowsById[rowId].toggleSelected(selected);
+  }
+
+  public clearRowSelection(): void {
+    this.state.table.setRowSelection({});
   }
 
   public setPageSize(size: number): void {

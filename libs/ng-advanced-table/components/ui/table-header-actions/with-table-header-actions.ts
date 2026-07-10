@@ -202,9 +202,10 @@ const wrapColumnHeader = <TData extends RowData>(
  * focus, keyboard, accessible-name, multi-sort, and `aria-sort` behavior.
  *
  * Set `enableSortActions: false` to remove the sort button/indicator for wrapped
- * columns while keeping programmatic sorting (`NatTable.patchState({ sorting })`, or
- * `natTable.table.setSorting(...)` on the underlying TanStack instance) and columnDef-level
- * `enableSorting` working. To toggle this reactively (e.g. per breakpoint), rebuild the
+ * columns while keeping programmatic sorting (`natTable.setColumnSort(...)`, or
+ * `natTable.table.setSorting(...)` on the underlying TanStack instance for multi-column sorts)
+ * and columnDef-level `enableSorting` working. To toggle
+ * this reactively (e.g. per breakpoint), rebuild the
  * columns inside a `computed()` keyed on the breakpoint signal rather than mutating the
  * wrapped columns in place.
  */

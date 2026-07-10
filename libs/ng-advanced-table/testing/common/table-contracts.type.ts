@@ -110,12 +110,26 @@ export type NatTableRenderMetricsController<TData extends RowData = RowData> = {
   previousPage(): void;
 };
 
+/** One leaf column's visibility descriptor, in table order. */
+export type NatTableColumnVisibilityItem = {
+  /** Column id. */
+  readonly id: string;
+  /** Resolved companion-control label for the column. */
+  readonly label: string;
+  /** Whether the column is currently visible. */
+  readonly visible: boolean;
+  /** Whether the column may be hidden (`getCanHide()`). */
+  readonly canHide: boolean;
+};
+
 /**
  * Minimal table-controller contract consumed by UI companion controls.
  */
 export type NatTableUiController<TData extends RowData = RowData> = {
   /**
-   * @deprecated Prefer the typed selectors; retained for rich column-object reads (column-visibility).
+   * @deprecated Prefer the typed commands/selectors (sorting, column visibility, and row selection
+   * now have typed alternatives). Retained for custom export-handler context and advanced raw reads
+   * against the underlying TanStack instance.
    */
   readonly table: Table<TData>;
   /** Current pagination slice (page index and size). */
@@ -130,10 +144,20 @@ export type NatTableUiController<TData extends RowData = RowData> = {
   readonly globalFilter: Signal<string>;
   /** Active column filters. */
   readonly columnFilters: Signal<ColumnFiltersState>;
+  /** Current sorting state. */
+  readonly sorting: Signal<SortingState>;
+  /** All leaf columns in order, with resolved labels and visibility. */
+  readonly columnVisibility: Signal<readonly NatTableColumnVisibilityItem[]>;
+  /** Current row-selection state. */
+  readonly rowSelection: Signal<RowSelectionState>;
   enableGlobalFilter(): boolean;
   enablePagination(): boolean;
   setGlobalFilter(value: string): void;
   setColumnFilter(columnId: string, value: unknown): void;
+  setColumnSort(columnId: string, direction: 'asc' | 'desc' | false): void;
+  setColumnVisible(columnId: string, visible: boolean): void;
+  setRowSelected(rowId: string, selected: boolean): void;
+  clearRowSelection(): void;
   setPageSize(size: number): void;
   goToPage(pageIndex: number): void;
   nextPage(): void;

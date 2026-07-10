@@ -123,6 +123,8 @@ export class NatTableExport<TData extends RowData = RowData> {
   }
 
   private createExportContext(controller: NatTableUiController<TData>): NatTableExportContext<TData> {
+    // Known exception to the typed-command migration: custom export handlers receive the raw
+    // TanStack `table` by contract, so this directive reads `controller.table` deliberately.
     const table = controller.table;
     let data: NatTableExportData | undefined;
     const context: NatTableExportContext<TData> = {

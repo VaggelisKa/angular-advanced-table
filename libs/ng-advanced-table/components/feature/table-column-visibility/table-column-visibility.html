@@ -6,12 +6,12 @@
         <span class="control-caption"> {{ visibilitySummary() }} </span>
       </div>
       <div [attr.aria-label]="resolvedAriaLabel()" class="chip-row" role="group">
-        @for (column of columns(); track column.column.id) {
+        @for (column of columns(); track column.id) {
           <button
             [attr.aria-controls]="tableElementId()"
             [attr.aria-label]="column.actionLabel"
             [attr.aria-pressed]="column.visible"
-            [attr.data-column-id]="column.column.id"
+            [attr.data-column-id]="column.id"
             [class.is-active]="column.visible"
             [disabled]="!column.canToggle"
             class="chip column-chip"

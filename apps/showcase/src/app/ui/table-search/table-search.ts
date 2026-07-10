@@ -38,7 +38,6 @@ export class TableSearch<TData extends RowData = RowData> {
   private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
   protected readonly resolvedLabel = computed(() => this.label() ?? this.tableUiIntl().search?.label ?? 'Search');
   protected readonly resolvedPlaceholder = computed(() => this.placeholder() ?? this.tableUiIntl().search?.placeholder ?? '');
-  protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
   protected readonly value = computed<string>(() => this.controller()?.globalFilter() ?? '');
 
