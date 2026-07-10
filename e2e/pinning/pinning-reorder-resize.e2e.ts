@@ -39,6 +39,14 @@ const documentColumnOrder = async (grid: Locator): Promise<string[]> =>
 /** Drags the header cell for `columnId` horizontally to `targetClientX` via a real pointer sequence. */
 const pointerReorder = async (page: Page, grid: Locator, columnId: string, targetClientX: number): Promise<void> => {
   const source = grid.locator(`thead th[data-column-id="${columnId}"]`);
+
+  // Raw page.mouse does not auto-scroll, and on Linux CI the grid header's center
+  // sits just past the viewport fold — the mousedown would land outside the viewport
+  // and the drag would silently never start. Centering the cell also keeps the pointer
+  // clear of CDK's window auto-scroll band at the viewport bottom.
+  await source.evaluate((cell) => cell.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await nextFrame(page);
+
   const box = await boxOf(source);
   const startX = box.x + box.width / 2;
   const startY = box.y + box.height / 2;
@@ -67,6 +75,10 @@ const pointerReorder = async (page: Page, grid: Locator, columnId: string, targe
 
 /** Drags the resize edge that sits under the right border of `cell` by `deltaX` px, targeting whatever header owns that pixel. */
 const dragResizeEdge = async (page: Page, cell: Locator, deltaX: number): Promise<void> => {
+  // Same fold guard as pointerReorder: ensure the cell is inside the viewport before raw mouse math.
+  await cell.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await nextFrame(page);
+
   const box = await boxOf(cell);
   const startX = box.x + box.width - 2;
   const startY = box.y + box.height / 2;
