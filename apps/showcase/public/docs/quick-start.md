@@ -2,12 +2,12 @@ Using an AI assistant? Start with the `/nat-best-practises` skill so generated c
 
 ## Recommended Agent Setup
 
-Install the table package and Angular companion peers:
+Install the table package and its required peers:
 
 ```bash
-pnpm add ng-advanced-table @angular/aria @angular/cdk
-# or: npm install ng-advanced-table @angular/aria @angular/cdk
-# or: yarn add ng-advanced-table @angular/aria @angular/cdk
+pnpm add ng-advanced-table @angular/aria @angular/cdk @tanstack/angular-virtual
+# or: npm install ng-advanced-table @angular/aria @angular/cdk @tanstack/angular-virtual
+# or: yarn add ng-advanced-table @angular/aria @angular/cdk @tanstack/angular-virtual
 ```
 
 Keep `@angular/core` and `@angular/common` in your Angular app dependencies.

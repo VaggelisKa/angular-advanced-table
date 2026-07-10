@@ -41,10 +41,17 @@ import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatTableReorderService } from '../reorder/table-reorder.service';
 import { NatTableResizeService } from '../resize/table-resize.service';
 import { NatTableRowRenderEmitter } from '../ui/row-render-emitter.directive';
-import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NatTableResizeGuide } from '../ui/table-layout.directive';
+import {
+  NatTableBodyCellLayout,
+  NatTableHeaderCellLayout,
+  NatTablePxHeight,
+  NatTablePxWidth,
+  NatTableResizeGuide
+} from '../ui/table-layout.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
+import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-render-strategy.service';
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
@@ -74,10 +81,18 @@ import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDes
     NatTableCell,
     NatTableHeaderCellLayout,
     NatTableBodyCellLayout,
+    NatTablePxHeight,
     NatTablePxWidth,
     NatTableResizeGuide
   ],
-  providers: [NatTableState, NatTableA11yService, NatTableResizeService, NatTableReorderService, NatTableHeaderMeasurementService],
+  providers: [
+    NatTableRowRenderStrategyRegistry,
+    NatTableState,
+    NatTableA11yService,
+    NatTableResizeService,
+    NatTableReorderService,
+    NatTableHeaderMeasurementService
+  ],
   templateUrl: './table.html',
   styleUrl: './table.css'
 })
@@ -139,6 +154,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected readonly headerGroups = this.state.headerGroups;
   protected readonly bodyRows = this.state.bodyRows;
+  protected readonly bodyRenderPlan = this.state.bodyRenderPlan;
+  protected readonly headerRowCount = this.state.headerRowCount;
+  protected readonly gridRowCount = this.state.gridRowCount;
   protected readonly visibleColumns = this.state.visibleColumns;
   protected readonly bodyState = this.state.bodyState;
   protected readonly resolvedDataStatus = this.state.resolvedDataStatus;
