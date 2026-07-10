@@ -61,7 +61,7 @@ export class NatTableSurface {
   public readonly columnSizingMode = input<'fill' | 'fixed'>('fill');
   /** Enables column resizing across the surface. Off by default; a column opts in with `enableResizing: true` or, once the surface is on, opts out with `enableResizing: false`. */
   public readonly enableColumnResizing = input(false, { transform: booleanAttribute });
-  /** Enables column drag/drop, keyboard reordering, and table-owned move-column metadata across the surface. Off by default; `meta.reorderable: true` opts one column into keyboard/menu movement while the surface is off (drag/drop still requires the surface enabler; see #291), and `meta.reorderable: false` opts one column out once the surface is on. */
+  /** Enables column drag/drop, keyboard reordering, and table-owned move-column metadata across the surface. Off by default; `meta.reorderable: true` opts one column into reordering (drag, keyboard, menu) while the surface is off, and `meta.reorderable: false` opts one column out once the surface is on. */
   public readonly enableReordering = input(false, { transform: booleanAttribute });
   /** Enables the built-in header sort UI across the surface. Off by default; a column opts in with `enableSorting: true` or, once the surface is on, opts out with `enableSorting: false`. Gates only the sort button and indicator — sort state and programmatic `setSorting` work regardless of this flag. (`enableSortActions` on the header-actions helper is a second, independent UI gate.) */
   public readonly enableSorting = input(false, { transform: booleanAttribute });

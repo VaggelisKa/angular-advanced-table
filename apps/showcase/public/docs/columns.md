@@ -39,20 +39,20 @@ readonly columns: ColumnDef<PositionRow>[] = [
 
 `NatTableColumnMeta` adds table-specific behavior to `columnDef.meta`.
 
-| Field               | Use it for                                                                                                                                      |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `label`             | Stable human-readable label for announcements and companion UI                                                                                  |
-| `hiddenHeaderLabel` | Screen-reader-only header text for compact utility columns                                                                                      |
-| `align`             | `'start'` or `'end'` header and body alignment                                                                                                  |
-| `rowHeader`         | Marks body cells in the column as row headers                                                                                                   |
-| `reorderable`       | Per-column reordering override; `false` blocks grabbing/moving this column, while `true` opts keyboard/menu movement in when the surface is off |
-| `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells                                                                           |
-| `cellHeight`        | Fixed body-cell height for this column                                                                                                          |
-| `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable                                                                                |
-| `headerSize`        | Header-only width                                                                                                                               |
-| `headerMinSize`     | Header-only minimum width                                                                                                                       |
-| `headerMaxSize`     | Header-only maximum width                                                                                                                       |
-| `export`            | Export participation, header, and value mapping                                                                                                 |
+| Field               | Use it for                                                                                                                                                      |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`             | Stable human-readable label for announcements and companion UI                                                                                                  |
+| `hiddenHeaderLabel` | Screen-reader-only header text for compact utility columns                                                                                                      |
+| `align`             | `'start'` or `'end'` header and body alignment                                                                                                                  |
+| `rowHeader`         | Marks body cells in the column as row headers                                                                                                                   |
+| `reorderable`       | Per-column reordering override; `false` blocks grabbing/moving this column, while `true` opts it into reordering (drag, keyboard, menu) when the surface is off |
+| `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells                                                                                           |
+| `cellHeight`        | Fixed body-cell height for this column                                                                                                                          |
+| `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable                                                                                                |
+| `headerSize`        | Header-only width                                                                                                                                               |
+| `headerMinSize`     | Header-only minimum width                                                                                                                                       |
+| `headerMaxSize`     | Header-only maximum width                                                                                                                                       |
+| `export`            | Export participation, header, and value mapping                                                                                                                 |
 
 ```ts
 import type { NatTableColumnMeta } from 'ng-advanced-table';

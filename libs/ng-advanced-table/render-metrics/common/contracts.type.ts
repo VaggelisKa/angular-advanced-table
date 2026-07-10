@@ -100,7 +100,7 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly align?: 'start' | 'end';
   /** Marks the body cell for this column as the row header announced by screen readers. */
   readonly rowHeader?: boolean;
-  /** Per-column override for the reorder surface enabler (drag, keyboard, Move buttons). When unset, falls back to the surface `enableReordering`: surface on → reorderable unless set to `false`; surface off → keyboard/menu movement is disabled unless set to `true` (drag/drop still requires the surface enabler; see #291). Setting `false` only blocks grabbing this column; a neighbor reordered past it can still displace it. */
+  /** Per-column override for the reorder surface enabler (drag, keyboard, Move buttons). When unset, falls back to the surface `enableReordering`: surface on → reorderable unless set to `false`; surface off → not reorderable unless set to `true`. Setting `false` only blocks grabbing this column; a neighbor reordered past it can still displace it. */
   readonly reorderable?: boolean;
   /** Optional callback that maps a cell to a semantic tone. */
   readonly cellTone?: (context: CellContext<TData, TValue>) => 'positive' | 'negative' | 'neutral' | 'warning' | null;
