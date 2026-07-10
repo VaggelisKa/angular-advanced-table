@@ -51,9 +51,7 @@ export class NatTableReorderService<TData extends RowData = RowData> {
 
   public onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
     try {
-      if (!this.isReorderingEnabled() || !this.isLeafHeaderRow(headerGroup)) {
-        return;
-      }
+      if (!this.isLeafHeaderRow(headerGroup)) return;
 
       const rowColumnIds = getHeaderRowColumnIds<TData>(headerGroup);
       const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);

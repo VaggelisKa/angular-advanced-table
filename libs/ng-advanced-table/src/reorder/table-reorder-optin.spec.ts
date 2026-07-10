@@ -6,8 +6,8 @@ import type { ColumnDef } from '@tanstack/angular-table';
 
 import { columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
-import { getHeaderColumnIds, queryRequired } from '../test-helpers/table-dom.helper';
-import { TableHost, createTableHostFixture, getInternalStore } from '../test-helpers/table-hosts.helper';
+import { createDropEvent, getHeaderColumnIds, queryRequired } from '../test-helpers/table-dom.helper';
+import { TableHost, createTableHostFixture, getInternalStore, getInternalTable } from '../test-helpers/table-hosts.helper';
 import type { RecreateHostOptions } from '../test-helpers/table-hosts.helper';
 
 // status opts out with meta.reorderable: false; its center-zone siblings stay reorderable by default.
@@ -125,6 +125,48 @@ describe('FEATURE: NatTable per-column reorder opt-out', () => {
         expect(statusHeader.classList.contains('is-reorderable')).toBe(false);
         expect(store.canMoveColumn('status', 'left')).toBe(false);
         expect(store.canMoveColumn('status', 'right')).toBe(false);
+      });
+    });
+
+    describe('WHEN: the opted-in column is dropped via drag/drop', () => {
+      it('THEN: it reorders the opted-in column even though drag/drop is off at the surface', async () => {
+        await recreateHost({ enableReordering: false, columns: optInColumns });
+        fixture.detectChanges();
+
+        const table = getInternalTable(fixture);
+        const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
+
+        if (!leafHeaderGroup) {
+          throw new Error('Expected a leaf header group.');
+        }
+
+        table.onHeaderDrop(createDropEvent('region', 1, 2), leafHeaderGroup);
+        fixture.detectChanges();
+
+        expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
+        expect(host.stateEvents.at(-1)?.columnOrder).toStrictEqual(['name', 'status', 'region', 'throughput']);
+      });
+    });
+
+    describe('WHEN: the non-opted-in column is dropped via drag/drop', () => {
+      it('THEN: it ignores the drop and leaves the header order unchanged', async () => {
+        await recreateHost({ enableReordering: false, columns: optInColumns });
+        fixture.detectChanges();
+
+        const table = getInternalTable(fixture);
+        const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
+
+        if (!leafHeaderGroup) {
+          throw new Error('Expected a leaf header group.');
+        }
+
+        host.stateEvents.length = 0;
+
+        table.onHeaderDrop(createDropEvent('status', 2, 1), leafHeaderGroup);
+        fixture.detectChanges();
+
+        expect(host.stateEvents).toStrictEqual([]);
+        expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'region', 'status', 'throughput']);
       });
     });
   });
