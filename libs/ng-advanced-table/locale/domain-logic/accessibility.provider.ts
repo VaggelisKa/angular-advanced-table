@@ -1,9 +1,9 @@
 import { InjectionToken } from '@angular/core';
 import type { Provider } from '@angular/core';
 
-import { createNatTableMergedProvider } from './provider-factory';
+import { createNatTableMergedProvider, mapNatTableProviderConfig } from './provider-factory';
 import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/accessibility.const';
-import type { NatTableIntlConfig, NatTableIntlProviderConfig, NatTableLocalesMap } from '../common/accessibility.type';
+import type { NatTableIntlConfig, NatTableIntlProviderConfig, NatTableLocalesProviderConfig } from '../common/accessibility.type';
 import { mergeNatTableIntlConfig } from '../utils/accessibility.util';
 
 /** Built-in locale defaults used when no provider is configured. */
@@ -20,8 +20,10 @@ export const NAT_TABLE_INTL = new InjectionToken<NatTableIntlConfig>('NAT_TABLE_
 /**
  * Provides default table labels, announcement formatters, and number formatting.
  *
+ * Static configs, direct signals, and factories returning either are supported.
  * Nested providers merge with parent defaults, so feature-level providers can
- * override a subset of app-level copy without replacing the entire bag.
+ * override a subset of app-level copy without replacing the entire bag. Signal
+ * updates flow through that hierarchy without recreating an injector.
  */
 export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[] =>
   createNatTableMergedProvider(NAT_TABLE_INTL, NAT_TABLE_DEFAULT_INTL, intl, mergeNatTableIntlConfig);
@@ -34,4 +36,5 @@ export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[
  * captions, descriptions, and column labels should stay on component inputs or
  * column definitions.
  */
-export const provideNatTableLocales = (overrides: NatTableLocalesMap = {}): Provider[] => provideNatTableIntl({ locales: overrides });
+export const provideNatTableLocales = (overrides: NatTableLocalesProviderConfig = {}): Provider[] =>
+  provideNatTableIntl(mapNatTableProviderConfig(overrides, (locales) => ({ locales })));

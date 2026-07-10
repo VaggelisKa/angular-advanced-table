@@ -7,7 +7,7 @@ import {
   mergeRenderMetricsColumnIntl,
   resolveNatTableRenderMetricsIntl
 } from 'ng-advanced-table/locale';
-import type { NatTableRenderMetricsColumnIntl } from 'ng-advanced-table/locale';
+import type { NatTableRenderMetricsColumnIntl, NatTableRenderMetricsIntlConfig } from 'ng-advanced-table/locale';
 
 import type { NatTableRenderMetricsStore } from './store';
 import { isRenderFilterValue } from './tone';
@@ -16,9 +16,17 @@ import { RENDER_METRIC_COLUMN_ID } from '../common/type';
 /**
  * Configuration for {@link withRenderMetricsColumn}.
  */
-type WithRenderMetricsColumnOptions = {
+export type WithRenderMetricsColumnOptions = {
   /** Locale id used when resolving provider defaults at helper-call time. */
   readonly locale?: string;
+  /**
+   * Captured render-metrics locale config used by reactive column builders.
+   *
+   * Read this with `injectNatTableRenderMetricsIntl()` during construction,
+   * then pass it from a `computed(...)` column builder so provider changes are
+   * tracked without calling `inject(...)` outside an injection context.
+   */
+  readonly intlConfig?: NatTableRenderMetricsIntlConfig;
   /** Column identifier. Defaults to `__rowRenderMetric`. */
   readonly columnId?: string;
   /** Optional TanStack size override. */
@@ -28,6 +36,9 @@ type WithRenderMetricsColumnOptions = {
   /** Optional TanStack max-size override. */
   readonly maxSize?: number;
 } & NatTableRenderMetricsColumnIntl;
+
+const resolveRenderMetricsIntlConfig = (intlConfig: NatTableRenderMetricsIntlConfig | undefined): NatTableRenderMetricsIntlConfig =>
+  intlConfig ?? injectNatTableRenderMetricsIntl();
 
 /**
  * Builds the metrics column filter predicate that keeps rows whose latest
@@ -111,10 +122,12 @@ const createMetricsCell = <TData extends RowData>(config: MetricsCellConfig): ((
  * @param options Optional labels, sizing, and identifier overrides.
  *
  * Call this helper from an Angular injection context to apply
- * `provideNatTableRenderMetricsIntl(...)` defaults. Pass `options.locale` or rebuild
- * columns from a computed value when the table locale changes. Calls outside DI
- * still work, but use built-in defaults plus the explicit `options` passed
- * here.
+ * `provideNatTableRenderMetricsIntl(...)` defaults. For a reactive column
+ * builder, capture the config with `injectNatTableRenderMetricsIntl()` during
+ * construction and pass it through `options.intlConfig`; this lets the
+ * surrounding `computed(...)` track provider and locale changes. Calls outside
+ * DI without an explicit config still use built-in defaults plus the explicit
+ * labels passed here.
  *
  * @returns A shallow copy of `columns` with the metrics column appended.
  */
@@ -123,7 +136,7 @@ export const withRenderMetricsColumn = <TData extends RowData>(
   store: NatTableRenderMetricsStore,
   options: WithRenderMetricsColumnOptions = {}
 ): ColumnDef<TData, unknown>[] => {
-  const utilsIntlConfig = injectNatTableRenderMetricsIntl();
+  const utilsIntlConfig = resolveRenderMetricsIntlConfig(options.intlConfig);
   const locale = options.locale ?? NAT_EN_LOCALE_ID;
   const utilsIntl = resolveNatTableRenderMetricsIntl(utilsIntlConfig, locale);
   const columnIntl = mergeRenderMetricsColumnIntl(utilsIntl.renderMetrics?.column, options);
