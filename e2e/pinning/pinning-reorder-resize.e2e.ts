@@ -193,5 +193,41 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         });
       });
     });
+
+    test.describe('WHEN: the pinned group is reordered while the region is scrolled horizontally (issue #288)', () => {
+      test('THEN: it swaps the pinned columns despite sticky rects overlapping the scrolled center columns', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const region = page.getByTestId('nat-table-region');
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
+
+        // A narrow viewport overflows the four columns so the center pair can be
+        // scrolled deep under the sticky pinned pair — the layout that skews
+        // CDK's clientRect-derived drop index (issue #288).
+        await page.setViewportSize({ width: 360, height: 900 });
+        await nextFrame(page);
+
+        await test.step('THEN: scrolling slides the center columns under the pinned pair', async () => {
+          await expect
+            .poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth))
+            .toBeGreaterThan(150);
+          await region.evaluate((element) => {
+            element.scrollLeft = 200;
+          });
+          await nextFrame(page);
+          await expect.poll(async () => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(150);
+        });
+
+        await test.step('THEN: dragging category left of name swaps the pinned order', async () => {
+          const nameBoxBefore = await boxOf(nameCell);
+
+          await pointerReorder(page, grid, 'category', nameBoxBefore.x + 4);
+
+          // Document order is the reorder invariant here; geometric (visual-x)
+          // order is not asserted because while scrolled the sticky pinned pair
+          // visually overlaps the scrolled-under center columns.
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+        });
+      });
+    });
   });
 });
