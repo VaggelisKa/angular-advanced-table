@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 test.describe('FEATURE: Keyboard interaction', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/docs/keyboard-interaction');
+    await loadDocsExamplePreview(page, 'keyboard-interaction', 'Keyboard cell interaction');
   });
 
   test.describe('GIVEN: the keyboard interaction example is loaded', () => {

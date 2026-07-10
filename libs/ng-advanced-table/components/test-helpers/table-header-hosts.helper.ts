@@ -3,7 +3,13 @@ import { Component, signal } from '@angular/core';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
 
-import { baseColumns, buildHeaderActionCompositionColumns, buildRows, sortIndicatorGlyph } from './table-data.helper';
+import {
+  baseColumns,
+  buildHeaderActionCompositionColumns,
+  buildRows,
+  reorderableColumns,
+  sortIndicatorGlyph
+} from './table-data.helper';
 import type { Row } from './table-data.helper';
 import { NatTableSurface } from '../feature/table-surface/table-surface';
 import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table-header-actions';
@@ -41,7 +47,7 @@ export class CustomSortIndicatorHost {
 })
 export class MoveOnlyHeaderActionsHost {
   protected readonly rows = signal<Row[]>(buildRows(6));
-  protected readonly columns = withNatTableHeaderActions(baseColumns, {
+  protected readonly columns = withNatTableHeaderActions(reorderableColumns, {
     enableColumnPinActions: false,
     enableColumnReorderActions: true
   });

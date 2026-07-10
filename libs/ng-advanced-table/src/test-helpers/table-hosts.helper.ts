@@ -19,7 +19,7 @@ import type {
 import { provideNatTableIntl } from 'ng-advanced-table/locale';
 import type { NatTableAccessibilityText } from 'ng-advanced-table/locale';
 
-import { buildRows, columns, formatErrorMessage } from './table-data.helper';
+import { buildRows, columns, formatErrorMessage, reorderableColumns } from './table-data.helper';
 import type { Row } from './table-data.helper';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableMode, NatTableModeConfiguration, NatTableUserState } from '../common/table-state.type';
@@ -548,6 +548,13 @@ export const createTableHostFixture = async (
   const { state, ...fieldOverrides } = options;
   const entries = Object.entries(fieldOverrides) as [string, unknown][];
   const providedFields = Object.fromEntries(entries.filter(([, value]) => value !== undefined));
+
+  // Reorder specs need columns that opt into `meta.reorderable`; when a host
+  // enables reordering without supplying its own columns, feed the reorderable
+  // fixture so existing reorder assertions keep passing under the per-column gate.
+  if (options.enableReordering && options.columns === undefined) {
+    providedFields['columns'] = reorderableColumns;
+  }
 
   Object.assign(host, providedFields);
 

@@ -100,6 +100,8 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly align?: 'start' | 'end';
   /** Marks the body cell for this column as the row header announced by screen readers. */
   readonly rowHeader?: boolean;
+  /** Whether this column may be reordered (drag, keyboard, Move buttons) when the table enables reordering. Defaults to false. */
+  readonly reorderable?: boolean;
   /** Optional callback that maps a cell to a semantic tone. */
   readonly cellTone?: (context: CellContext<TData, TValue>) => 'positive' | 'negative' | 'neutral' | 'warning' | null;
   /** Optional body-cell height in pixels or any CSS length. Does not affect header cells. */

@@ -15,6 +15,10 @@ export const isResizeKey = (event: KeyboardEvent): boolean => RESIZE_KEYS.has(ev
 export const isColumnResizable = <TData extends RowData>(column: Column<TData, unknown>): boolean =>
   column.columnDef.enableResizing === true;
 
+/** A column reorders only when its def opts in with `meta.reorderable: true`. */
+export const isColumnReorderable = <TData extends RowData>(column: Column<TData, unknown>): boolean =>
+  column.columnDef.meta?.reorderable === true;
+
 /** A non-placeholder header whose column opts into resizing. */
 export const canResizeColumn = <TData extends RowData>(header: Header<TData, unknown>): boolean =>
   !header.isPlaceholder && isColumnResizable(header.column);

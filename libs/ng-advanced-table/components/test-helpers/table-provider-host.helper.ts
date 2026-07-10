@@ -5,7 +5,7 @@ import type { NatTableUserState } from 'ng-advanced-table';
 import { provideNatTableControlsIntl } from 'ng-advanced-table/locale';
 
 import type { Row } from './table-data.helper';
-import { baseColumns, buildRows, getRowId } from './table-data.helper';
+import { buildRows, getRowId, reorderableColumns } from './table-data.helper';
 import { NatTableColumnVisibility } from '../feature/table-column-visibility/table-column-visibility';
 import { NatTablePageSize } from '../feature/table-page-size/table-page-size';
 import { NatTablePager } from '../feature/table-pager/table-pager';
@@ -85,7 +85,7 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
 })
 export class ProviderAccessibilityLabelsHost {
   protected readonly rows = signal<Row[]>(buildRows(6));
-  protected readonly columns = withNatTableHeaderActions(baseColumns, {
+  protected readonly columns = withNatTableHeaderActions(reorderableColumns, {
     enableColumnReorderActions: true
   });
 

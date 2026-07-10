@@ -75,6 +75,7 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly hiddenHeaderLabel?: string;
   readonly align?: 'start' | 'end';
   readonly rowHeader?: boolean;
+  readonly reorderable?: boolean;
   readonly cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
   readonly cellHeight?: number | string;
   readonly cellMaxLines?: number;

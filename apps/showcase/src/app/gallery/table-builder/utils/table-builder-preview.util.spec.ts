@@ -50,6 +50,56 @@ describe('FEATURE: table builder localization codegen', () => {
     });
   });
 
+  describe('GIVEN: column reordering is enabled', () => {
+    describe('WHEN: building the preview columns', () => {
+      it('THEN: every column opts into reordering via meta.reorderable', () => {
+        // when: building columns with reordering on
+        const columns = buildBuilderColumns(toBuilderColumnFlags({ ...DEFAULT_FLAGS, withColumnReorder: true }), 'en');
+
+        // then: each column carries meta.reorderable so the reorder-enabled surface can move it
+        expect(columns.length).toBeGreaterThan(0);
+
+        for (const column of columns) {
+          expect(column.meta?.reorderable).toBe(true);
+        }
+      });
+    });
+
+    describe('WHEN: generating the snippet with reordering', () => {
+      it('THEN: each meta literal includes reorderable: true', () => {
+        // when: generating the columns block with reordering on
+        const snippet = buildColumns({ ...DEFAULT_FLAGS, withColumnReorder: true }, '');
+
+        // then: reorderable is injected into the emitted meta literals
+        expect(snippet).toContain('reorderable: true');
+      });
+    });
+  });
+
+  describe('GIVEN: column reordering is disabled', () => {
+    describe('WHEN: building the preview columns', () => {
+      it('THEN: no column carries meta.reorderable', () => {
+        // when: building columns with reordering off
+        const columns = buildBuilderColumns(toBuilderColumnFlags({ ...DEFAULT_FLAGS, withColumnReorder: false }), 'en');
+
+        // then: reorderable is absent from every column meta
+        for (const column of columns) {
+          expect(column.meta?.reorderable).toBeUndefined();
+        }
+      });
+    });
+
+    describe('WHEN: generating the snippet without reordering', () => {
+      it('THEN: no meta literal mentions reorderable', () => {
+        // when: generating the columns block with reordering off
+        const snippet = buildColumns({ ...DEFAULT_FLAGS, withColumnReorder: false }, '');
+
+        // then: the emitted snippet never mentions reorderable
+        expect(snippet).not.toContain('reorderable');
+      });
+    });
+  });
+
   describe('GIVEN: column resizing is enabled', () => {
     describe('WHEN: building the preview columns', () => {
       it('THEN: name, category and status resize but the last column (value) stays the non-resizable fill sink', () => {

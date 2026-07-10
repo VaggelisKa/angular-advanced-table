@@ -70,6 +70,11 @@ export const resizableColumns: ColumnDef<Row, unknown>[] = columns.map((column) 
   enableResizing: true
 }));
 
+export const reorderableColumns: ColumnDef<Row, unknown>[] = columns.map((column) => ({
+  ...column,
+  meta: { ...column.meta, reorderable: true }
+}));
+
 export const getRowIdValue = (row: Row): string => row.id;
 
 export const formatErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : 'Request failed');

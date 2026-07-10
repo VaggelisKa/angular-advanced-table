@@ -3,7 +3,7 @@ import { Component, signal } from '@angular/core';
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
 
-import { baseColumns, buildRows, getRowId } from './table-data.helper';
+import { baseColumns, buildRows, getRowId, reorderableColumns } from './table-data.helper';
 import type { Row } from './table-data.helper';
 import { NatTableColumnVisibility } from '../feature/table-column-visibility/table-column-visibility';
 import { NatTablePageSize } from '../feature/table-page-size/table-page-size';
@@ -34,7 +34,7 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
 })
 export class TableHost {
   protected readonly rows = signal<Row[]>(buildRows(6));
-  protected readonly columns = withNatTableHeaderActions(baseColumns, {
+  protected readonly columns = withNatTableHeaderActions(reorderableColumns, {
     enableColumnReorderActions: true
   });
 

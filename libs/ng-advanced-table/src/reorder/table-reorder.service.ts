@@ -8,7 +8,7 @@ import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { getHeaderRowColumnIds } from '../utils/column-label.util';
 import { getColumnZone, moveItemInArrayCopy } from '../utils/column-order.util';
-import { resolveDraggedColumnId, scrollElementHorizontallyIntoView } from '../utils/interaction.util';
+import { isColumnReorderable, resolveDraggedColumnId, scrollElementHorizontallyIntoView } from '../utils/interaction.util';
 
 /**
  * Per-table service that manages column-reorder logic and scroll-into-view behavior.
@@ -37,7 +37,9 @@ export class NatTableReorderService<TData extends RowData = RowData> {
   }
 
   public canReorderHeader(column: Column<TData, unknown>): boolean {
-    return this.isReorderingEnabled() && this.state.getVisibleZoneColumnIds(getColumnZone(column)).length > 1;
+    return (
+      this.isReorderingEnabled() && isColumnReorderable(column) && this.state.getVisibleZoneColumnIds(getColumnZone(column)).length > 1
+    );
   }
 
   // ─── Drag-drop reorder ───
@@ -84,6 +86,8 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     directionDelta: ColumnReorderKeyboardDirection
   ): boolean {
     if (!this.isReorderingEnabled()) return false;
+
+    if (!isColumnReorderable(column)) return false;
 
     const zone = getColumnZone(column);
     const visibleZoneColumnIds = this.state.getVisibleZoneColumnIds(zone);

@@ -57,7 +57,7 @@ Prefer the scoped surface for normal pages. Use direct controller binding only w
 
 ## Header Actions
 
-Wrap column definitions with `withNatTableHeaderActions(...)` when you want shared header controls for sorting, pinning, or menu-based reordering. Menu-based reordering still requires `[enableReordering]="true"` on the table surface.
+Wrap column definitions with `withNatTableHeaderActions(...)` when you want shared header controls for sorting, pinning, or menu-based reordering. Menu-based reordering still requires `[enableReordering]="true"` on the table surface, and each movable column must opt in with `meta: { reorderable: true }`; menu and keyboard reordering are inert on columns without the flag.
 
 ```html
 <nat-table-surface [enableReordering]="true">
@@ -74,13 +74,13 @@ readonly columns = withNatTableHeaderActions<PositionRow>(
       accessorKey: 'symbol',
       header: 'Symbol',
       enablePinning: true,
-      meta: { label: 'Symbol', rowHeader: true },
+      meta: { label: 'Symbol', rowHeader: true, reorderable: true },
     },
     {
       accessorKey: 'price',
       header: 'Price',
       enablePinning: true,
-      meta: { label: 'Price', align: 'end' },
+      meta: { label: 'Price', align: 'end', reorderable: true },
     },
   ],
   {
@@ -271,4 +271,4 @@ readonly columns = withNatTableHeaderActions(
 );
 ```
 
-This prevents utility columns from being wrapped more than intended and lets header actions see the final column list.
+This prevents utility columns from being wrapped more than intended and lets header actions see the final column list. As above, each column in `baseColumns` that should move still needs `meta: { reorderable: true }` for `enableColumnReorderActions` to expose its move controls.

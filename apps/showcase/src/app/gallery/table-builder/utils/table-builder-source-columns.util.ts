@@ -60,15 +60,18 @@ export const buildColumns = (flags: TableBuilderFlags, headerOptions: string): s
   const selectionOpen = flags.withRowSelection ? 'withNatTableSelectionColumn(' : '';
   const selectionClose = flags.withRowSelection ? buildSelectionOptions(flags) : '';
   const headers = DEMO_COLUMN_INTL[flags.withLocalization ? 'da' : 'en'].headers;
+  // Reordering is per-column opt-in: append `reorderable: true` to every meta so the
+  // reorder-enabled surface actually has movable columns.
+  const reorderMeta = flags.withColumnReorder ? ', reorderable: true' : '';
 
   return `  readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(${selectionOpen}[
-    { accessorKey: 'name', header: '${headers.name}', ${buildColumnProps(150, flags)}meta: { label: '${headers.name}', rowHeader: true } },
-    { accessorKey: 'category', header: '${headers.category}', ${buildColumnProps(150, flags)}meta: { label: '${headers.category}' } },
-    { accessorKey: 'status', header: '${headers.status}', ${buildColumnProps(120, flags)}meta: { label: '${headers.status}' } },
+    { accessorKey: 'name', header: '${headers.name}', ${buildColumnProps(150, flags)}meta: { label: '${headers.name}', rowHeader: true${reorderMeta} } },
+    { accessorKey: 'category', header: '${headers.category}', ${buildColumnProps(150, flags)}meta: { label: '${headers.category}'${reorderMeta} } },
+    { accessorKey: 'status', header: '${headers.status}', ${buildColumnProps(120, flags)}meta: { label: '${headers.status}'${reorderMeta} } },
     {
       accessorKey: 'value',
       header: '${headers.value}',
-      ${buildColumnPropsBlock(150, flags)}meta: { label: '${headers.value}', align: 'end' },
+      ${buildColumnPropsBlock(150, flags)}meta: { label: '${headers.value}', align: 'end'${reorderMeta} },
       cell: (context: CellContext<DemoItem, number>) => \`$\${context.getValue().toLocaleString()}\`,
     },
   ]${selectionClose}${headerOptions});`;
