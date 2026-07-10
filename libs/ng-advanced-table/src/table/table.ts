@@ -17,7 +17,17 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, RowSelectionState, SortingState } from '@tanstack/angular-table';
+import type {
+  Column,
+  ColumnDef,
+  FilterFn,
+  Header,
+  HeaderGroup,
+  Row,
+  RowData,
+  RowSelectionState,
+  SortingState
+} from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
