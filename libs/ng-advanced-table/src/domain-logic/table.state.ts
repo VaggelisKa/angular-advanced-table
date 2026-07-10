@@ -496,16 +496,70 @@ export class NatTableState<TData extends RowData = RowData> {
 
   public getResizeFitBounds(column: Column<TData, unknown>): { readonly min: number; readonly max: number | null } {
     const { min, max: ownMax } = this.getResizeBounds(column);
-    const region = this.regionViewportWidth();
+    const fit = this.getViewportFitMax(column, this.regionViewportWidth());
+
+    if (fit === null) return { min, max: ownMax };
+
+    const cappedMax = ownMax !== null ? Math.min(ownMax, fit) : fit;
+
+    return { min, max: Math.max(Math.round(cappedMax), min) };
+  }
+
+  /**
+   * Viewport cap on a column's resize, or `null` when no cap applies (the column may grow to
+   * its own maxSize and scroll). Fixed layout caps only pinned columns (see getPinnedFixedFitMax);
+   * fill/flex caps every column so the table fills the region without overflowing (getFillFitMax).
+   */
+  private getViewportFitMax(column: Column<TData, unknown>, region: number): number | null {
+    if (region <= 0) return null;
 
     if (this.isFixedLayout()) {
-      return { min, max: ownMax };
+      return column.getIsPinned() !== false ? this.getPinnedFixedFitMax(column, region) : null;
     }
 
-    if (region <= 0) {
-      return { min, max: ownMax };
+    return this.getFillFitMax(column, region);
+  }
+
+  /**
+   * Largest width a pinned column may take in fixed layout while all pinned columns still fit
+   * within the viewport AND leave a scrollable strip for the non-pinned columns. Never below the
+   * column's current width, so an already-overflowing pin set doesn't force a shrink.
+   *
+   * A pinned column is sticky: growing it past the viewport pushes the following pinned columns'
+   * sticky offsets beyond the viewport edge (an empty band opens on the left). And if the pinned
+   * columns cover the entire viewport, the sticky cells hide the non-pinned columns for good —
+   * no amount of scrolling can reveal them. So reserve room for the widest non-pinned column (up
+   * to half the viewport) so it can be scrolled fully into view. Non-pinned columns themselves
+   * keep growing and scrolling freely — fixed mode's intended overflow.
+   */
+  private getPinnedFixedFitMax(column: Column<TData, unknown>, region: number): number {
+    const widths = this.resolvedColumnWidths();
+    let sumOtherPinned = 0;
+    let widestNonPinned = 0;
+
+    for (const other of this.visibleColumns()) {
+      if (other.id === column.id) continue;
+
+      if (other.getIsPinned() === false) {
+        widestNonPinned = Math.max(widestNonPinned, widths[other.id] ?? 0);
+      } else {
+        sumOtherPinned += widths[other.id] ?? 0;
+      }
     }
 
+    const nonPinnedReserve = Math.min(widestNonPinned, region / 2);
+    const current = widths[column.id] ?? this.getColumnEffectiveWidth(column);
+
+    return Math.max(current, region - sumOtherPinned - nonPinnedReserve);
+  }
+
+  /**
+   * Largest width a column may take in fill/flex layout: the viewport minus what the other
+   * columns can yield (their minimums when unsized in fill flex, otherwise their current
+   * widths), so the table fills the region without overflowing. Never below the column's
+   * current width.
+   */
+  private getFillFitMax(column: Column<TData, unknown>, region: number): number {
     const widths = this.resolvedColumnWidths();
     const columnSizing = this.mergedState().columnSizing;
     let sumOthers = 0;
@@ -520,10 +574,8 @@ export class NatTableState<TData extends RowData = RowData> {
     }
 
     const current = widths[column.id] ?? this.getColumnEffectiveWidth(column);
-    const fitMax = Math.max(current, region - sumOthers);
-    const cappedMax = ownMax !== null ? Math.min(ownMax, fitMax) : fitMax;
 
-    return { min, max: Math.max(Math.round(cappedMax), min) };
+    return Math.max(current, region - sumOthers);
   }
 
   public clampColumnWidth(column: Column<TData, unknown>, width: number): number {
