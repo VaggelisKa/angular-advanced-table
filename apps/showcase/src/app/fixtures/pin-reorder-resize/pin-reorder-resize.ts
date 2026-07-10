@@ -16,12 +16,66 @@ type FixtureItem = {
 };
 
 const FIXTURE_DATA: FixtureItem[] = [
-  { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500, region: 'EMEA', owner: 'Rae', updated: '2026-01-04' },
-  { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200, region: 'APAC', owner: 'Ivo', updated: '2026-01-05' },
-  { id: 'item-3', name: 'Gamma Processor', category: 'Data Science', status: 'Paused', value: 7800, region: 'AMER', owner: 'Sena', updated: '2026-01-06' },
-  { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100, region: 'EMEA', owner: 'Tom', updated: '2026-01-07' },
-  { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200, region: 'APAC', owner: 'Uma', updated: '2026-01-08' },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500, region: 'AMER', owner: 'Wei', updated: '2026-01-09' }
+  {
+    id: 'item-1',
+    name: 'Alpha Searcher',
+    category: 'Analytics',
+    status: 'Active',
+    value: 4500,
+    region: 'EMEA',
+    owner: 'Rae',
+    updated: '2026-01-04'
+  },
+  {
+    id: 'item-2',
+    name: 'Beta Runner',
+    category: 'Infrastructure',
+    status: 'Active',
+    value: 1200,
+    region: 'APAC',
+    owner: 'Ivo',
+    updated: '2026-01-05'
+  },
+  {
+    id: 'item-3',
+    name: 'Gamma Processor',
+    category: 'Data Science',
+    status: 'Paused',
+    value: 7800,
+    region: 'AMER',
+    owner: 'Sena',
+    updated: '2026-01-06'
+  },
+  {
+    id: 'item-4',
+    name: 'Delta Watcher',
+    category: 'Security',
+    status: 'Alert',
+    value: 3100,
+    region: 'EMEA',
+    owner: 'Tom',
+    updated: '2026-01-07'
+  },
+  {
+    id: 'item-5',
+    name: 'Epsilon Shield',
+    category: 'Security',
+    status: 'Active',
+    value: 9200,
+    region: 'APAC',
+    owner: 'Uma',
+    updated: '2026-01-08'
+  },
+  {
+    id: 'item-6',
+    name: 'Zeta Pipeline',
+    category: 'Data Science',
+    status: 'Halted',
+    value: 500,
+    region: 'AMER',
+    owner: 'Wei',
+    updated: '2026-01-09'
+  }
 ];
 
 /**
