@@ -541,9 +541,9 @@ export class NatTableState<TData extends RowData = RowData> {
       if (other.id === column.id) continue;
 
       if (other.getIsPinned() === false) {
-        widestNonPinned = Math.max(widestNonPinned, widths[other.id] ?? 0);
+        widestNonPinned = Math.max(widestNonPinned, widths[other.id] ?? this.getColumnEffectiveWidth(other));
       } else {
-        sumOtherPinned += widths[other.id] ?? 0;
+        sumOtherPinned += widths[other.id] ?? this.getColumnEffectiveWidth(other);
       }
     }
 
