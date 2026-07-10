@@ -6,6 +6,7 @@ import type { Column, HeaderGroup, RowData } from '@tanstack/angular-table';
 import type { ColumnReorderKeyboardDirection, ColumnReorderZone } from '../common/column-render.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableState } from '../domain-logic/table.state';
+import { readColumnEntry } from '../utils/column-def.util';
 import { getHeaderRowColumnIds } from '../utils/column-label.util';
 import { getColumnZone, moveItemInArrayCopy } from '../utils/column-order.util';
 import { isColumnReorderable, resolveDraggedColumnId, scrollElementHorizontallyIntoView } from '../utils/interaction.util';
@@ -49,41 +50,65 @@ export class NatTableReorderService<TData extends RowData = RowData> {
   // ─── Drag-drop reorder ───
 
   public onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
-    if (!this.isReorderingEnabled() || !this.isLeafHeaderRow(headerGroup)) {
-      return;
+    try {
+      if (!this.isReorderingEnabled() || !this.isLeafHeaderRow(headerGroup)) {
+        return;
+      }
+
+      const rowColumnIds = getHeaderRowColumnIds<TData>(headerGroup);
+      const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
+
+      if (!movingColumnId) {
+        return;
+      }
+
+      const movingColumn = this.state.table.getColumn(movingColumnId);
+
+      if (!movingColumn || !isColumnReorderable(movingColumn, this.isReorderingEnabled())) {
+        return;
+      }
+
+      const zone = this.state.getColumnZoneById(movingColumnId);
+
+      if (!zone) {
+        return;
+      }
+
+      const nextVisibleZoneOrder = this.resolveDropZoneOrder(event, rowColumnIds, zone, movingColumnId);
+
+      if (!nextVisibleZoneOrder) {
+        return;
+      }
+
+      const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
+
+      if (!result) return;
+
+      this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
+      this.scrollHeaderIntoView(movingColumnId);
+    } finally {
+      this.restoreDraggedHeaderPinnedOffset(event);
     }
+  }
 
-    const rowColumnIds = getHeaderRowColumnIds<TData>(headerGroup);
-    const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
+  /**
+   * CDK hides the dragged header mid-drag by stomping its inline `left` and
+   * restores it to `''` before emitting `dropped`. Angular rewrites the
+   * `[style.left.px]` host binding only when its value changes, so a rejected
+   * (no-op) drop would leave a pinned header without its sticky offset — it
+   * then scrolls away with the center columns. Re-apply it on every drop.
+   */
+  private restoreDraggedHeaderPinnedOffset(event: CdkDragDrop<string[]>): void {
+    const draggedColumnId = typeof event.item.data === 'string' ? event.item.data : null;
 
-    if (!movingColumnId) {
-      return;
+    if (!draggedColumnId) return;
+
+    const headerElement = this.getHeaderElement(draggedColumnId);
+    const left = readColumnEntry(this.state.columnRenderStates(), draggedColumnId)?.left ?? null;
+
+    if (headerElement && left !== null) {
+      headerElement.style.left = `${left}px`;
     }
-
-    const movingColumn = this.state.table.getColumn(movingColumnId);
-
-    if (!movingColumn || !isColumnReorderable(movingColumn, this.isReorderingEnabled())) {
-      return;
-    }
-
-    const zone = this.state.getColumnZoneById(movingColumnId);
-
-    if (!zone) {
-      return;
-    }
-
-    const nextVisibleZoneOrder = this.resolveDropZoneOrder(event, rowColumnIds, zone, movingColumnId);
-
-    if (!nextVisibleZoneOrder) {
-      return;
-    }
-
-    const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
-
-    if (!result) return;
-
-    this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
-    this.scrollHeaderIntoView(movingColumnId);
   }
 
   /**
