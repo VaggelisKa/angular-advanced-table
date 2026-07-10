@@ -89,11 +89,25 @@ const renderMetricsPanelIntl = (
 const renderMetricsColumnIntl = (intl: NatTableRenderMetricsIntlConfig): NonNullable<NatTableRenderMetricsWidgetsIntl['column']> =>
   expectDefined(renderMetricsWidgets(intl).column, 'render-metrics column copy');
 
+type HasOnlyLocalesProperty<T> = Exclude<keyof T, 'locales'> extends never ? ('locales' extends keyof T ? true : false) : false;
+
 afterEach(() => {
   TestBed.resetTestingModule();
 });
 
 describe('FEATURE: reactive intl provider sources', () => {
+  describe('GIVEN: the three injected locale-domain configuration types', () => {
+    describe('WHEN: constraining their common outer contract', () => {
+      it('THEN: it keeps locales as their only public configuration property', () => {
+        const tableContract: HasOnlyLocalesProperty<NatTableIntlConfig> = true;
+        const controlsContract: HasOnlyLocalesProperty<NatTableControlsIntlConfig> = true;
+        const renderMetricsContract: HasOnlyLocalesProperty<NatTableRenderMetricsIntlConfig> = true;
+
+        expect([tableContract, controlsContract, renderMetricsContract]).toStrictEqual([true, true, true]);
+      });
+    });
+  });
+
   describe('GIVEN: static full-config and locale-map providers', () => {
     beforeEach(() => {
       configure(
@@ -114,17 +128,24 @@ describe('FEATURE: reactive intl provider sources', () => {
   });
 
   describe('GIVEN: a direct signal-backed table intl config', () => {
+    let sourceValue: { accessibilityText: { emptyState: string } };
     let source: WritableSignal<NatTableIntlStaticProviderConfig>;
 
     beforeEach(() => {
-      source = signal<NatTableIntlStaticProviderConfig>({ accessibilityText: { emptyState: 'First empty state' } });
+      sourceValue = { accessibilityText: { emptyState: 'First empty state' } };
+      source = signal<NatTableIntlStaticProviderConfig>(sourceValue);
       configure(provideNatTableIntl(source));
     });
 
-    describe('WHEN: replacing the signal value after the token is resolved', () => {
-      it('THEN: it reads updated copy through the same config facade', () => {
+    describe('WHEN: mutating the current value before replacing it', () => {
+      it('THEN: it ignores same-reference mutation and reacts to an immutable replacement', () => {
         const intl = TestBed.inject(NAT_TABLE_INTL);
         const emptyState = computed(() => tableAccess(intl).emptyState);
+
+        expect(emptyState()).toBe('First empty state');
+
+        sourceValue.accessibilityText.emptyState = 'Mutated empty state';
+        source.set(sourceValue);
 
         expect(emptyState()).toBe('First empty state');
 
@@ -132,6 +153,31 @@ describe('FEATURE: reactive intl provider sources', () => {
 
         expect(TestBed.inject(NAT_TABLE_INTL)).toBe(intl);
         expect(emptyState()).toBe('Second empty state');
+      });
+    });
+  });
+
+  describe('GIVEN: a signal-backed table intl config with custom equality', () => {
+    let source: WritableSignal<NatTableIntlStaticProviderConfig>;
+
+    beforeEach(() => {
+      source = signal<NatTableIntlStaticProviderConfig>(
+        { accessibilityText: { emptyState: 'Equality-selected empty state' } },
+        { equal: () => true }
+      );
+      configure(provideNatTableIntl(source));
+    });
+
+    describe('WHEN: its equality policy suppresses a replacement value', () => {
+      it('THEN: it leaves the resolved provider copy unchanged', () => {
+        const intl = TestBed.inject(NAT_TABLE_INTL);
+        const emptyState = computed(() => tableAccess(intl).emptyState);
+
+        expect(emptyState()).toBe('Equality-selected empty state');
+
+        source.set({ accessibilityText: { emptyState: 'Suppressed replacement empty state' } });
+
+        expect(emptyState()).toBe('Equality-selected empty state');
       });
     });
   });
@@ -217,6 +263,14 @@ describe('FEATURE: reactive intl provider sources', () => {
         expect(tableAccess(tableIntl, 'qa').emptyState).toBe('Second QA table');
         expect(searchIntl(controlsIntl, 'qa').label).toBe('Second QA search');
         expect(renderMetricsPanelIntl(renderMetricsIntl, 'qa').ariaLabel).toBe('Second QA metrics');
+
+        tableLocales.set({});
+        controlsLocales.set({});
+        renderMetricsLocales.set({});
+
+        expect(expectDefined(tableIntl.locales, 'table locale map')['qa']).toBeUndefined();
+        expect(expectDefined(controlsIntl.locales, 'controls locale map')['qa']).toBeUndefined();
+        expect(expectDefined(renderMetricsIntl.locales, 'render-metrics locale map')['qa']).toBeUndefined();
       });
     });
   });
@@ -234,7 +288,9 @@ describe('FEATURE: reactive intl provider hierarchy', () => {
 
     beforeEach(() => {
       parentTable = signal<NatTableIntlStaticProviderConfig>({ accessibilityText: { emptyState: 'Parent empty' } });
-      childTable = signal<NatTableIntlStaticProviderConfig>({ accessibilityText: { description: 'Child description' } });
+      childTable = signal<NatTableIntlStaticProviderConfig>({
+        accessibilityText: { description: 'Child description', emptyState: 'Child empty' }
+      });
       parentControls = signal<NatTableControlsIntlStaticProviderConfig>({ toolbar: { toolbarLabel: 'Parent toolbar' } });
       childControls = signal<NatTableControlsIntlStaticProviderConfig>({ search: { label: 'Child search' } });
       parentRenderMetrics = signal<NatTableRenderMetricsIntlStaticProviderConfig>({
@@ -265,10 +321,12 @@ describe('FEATURE: reactive intl provider hierarchy', () => {
     });
 
     describe('WHEN: parent and child sources change after resolving the child tokens', () => {
-      it('THEN: it reactively re-merges parent and child table, controls, and render-metrics copy', () => {
+      it('THEN: it re-merges all domains and reveals parent copy when a child field is omitted', () => {
         const tableIntl = childInjector.get(NAT_TABLE_INTL);
         const controlsIntl = childInjector.get(NAT_TABLE_CONTROLS_INTL);
         const renderMetricsIntl = childInjector.get(NAT_TABLE_RENDER_METRICS_INTL);
+
+        expect(tableAccess(tableIntl).emptyState).toBe('Child empty');
 
         parentTable.set({ accessibilityText: { emptyState: 'Updated parent empty' } });
         childTable.set({ accessibilityText: { description: 'Updated child description' } });

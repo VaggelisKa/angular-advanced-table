@@ -107,7 +107,32 @@ consumer signal
 
 The injected token remains one stable configuration object. Reading its locale dictionaries from a library `computed(...)` reads the latest provider signal value, so Angular records the dependency. When the consumer signal changes, Angular invalidates the provider merge and the affected table computations. The provider factory, injector, table component, controller state, focus, and DOM node do not need to be recreated.
 
-Treat each signal value as the complete current override for that provider scope. Replace it immutably with `set(...)` or `update(...)`; mutating a nested property on the current object does not notify Angular.
+## Provider Source Snapshot Semantics
+
+Each signal value is the complete current override for its injector scope:
+
+- A new value replaces the previous local override; provider emissions are not accumulated as patches.
+- Omitting a field that existed in the previous value removes that local override, revealing the closest parent value or built-in default.
+- The library performs no deep comparison and does not observe nested mutation.
+- Angular's source-signal equality decides whether the source invalidates. With the default equality, setting the same object reference again is not an update.
+- A consumer-provided computed signal may use custom equality; the provider honors that decision and does not add another equality policy.
+
+Publish immutable replacement objects with `set(...)` or `update(...)`:
+
+```ts
+intl.set({
+  accessibilityText: {
+    emptyState: 'No matching rows'
+  }
+});
+
+// The previous emptyState override is removed; it now falls back.
+intl.set({
+  accessibilityText: {
+    loadingState: 'Loading translated rows'
+  }
+});
+```
 
 ## Observable-Backed Translation Services
 
@@ -147,6 +172,8 @@ providers: [
 
 Calling `toSignal` inside the provider factory gives it the provider's injection context, so Angular disposes the subscription with that injector. Handle Observable errors before returning the signal: an unhandled Observable error is thrown when `toSignal` is read and could otherwise surface from a table template.
 
+The provider does not add an async state machine around the adapted signal. The adapter determines whether a reload retains the last successful value, temporarily exposes `{}`, or emits another fallback. If it exposes `{}` during a reload, generated copy temporarily falls back to the parent or built-in locale and may visibly change. Retain the last good value in the adapter when that flicker is undesirable.
+
 ## Promise-Backed Translation Loaders
 
 Adapt asynchronous loading to a synchronous signal before returning it. Angular [`resource`](https://angular.dev/guide/signals/resource) is a good fit when the request depends on a reactive locale id.
@@ -181,7 +208,9 @@ Every provider signal must always expose a synchronous configuration value. Reco
 
 The locale provider does not use the table's `dataStatus` for translation loading. `dataStatus` continues to describe table data only.
 
-For SSR, create sources per application injector so requests cannot share mutable locale state. A static or synchronously seeded signal renders deterministically. For asynchronous copy, either preload/transfer the resolved value (a resource `id` can participate in SSR transfer) or ensure server and client render the same fallback first and update after hydration.
+Core, controls, and render-metrics sources settle independently. Updating them from separate asynchronous requests can temporarily produce mixed-language copy. For an atomic language switch, load one application translation bundle and derive all three provider signals from that single bundle value.
+
+For SSR, create sources per application injector so requests cannot share mutable locale state. Passing a signal directly does not make that signal injector-local: a module-global signal remains shared by every injector that receives it. Prefer a provider factory that reads request-scoped state. A static or synchronously seeded signal renders deterministically. For asynchronous copy, either preload/transfer the resolved value (a resource `id` can participate in SSR transfer) or ensure server and client render the same fallback first and update after hydration.
 
 ## Provider Hierarchy And Precedence
 
@@ -245,7 +274,9 @@ The same rule applies to consumer-owned translated column headers and `meta.labe
 
 When visible text changes, keep visible words inside accessible names. This matters for toolbar controls, selection checkboxes, export buttons, render-metrics controls, and custom icon-only buttons.
 
-A provider signal update changes labels and accessible names together. It does not create a live-region announcement by itself; the next sorting, filtering, pagination, resizing, reordering, or selection interaction uses the latest announcement formatter.
+A copy-only provider update changes visible labels and accessible names together. It preserves the existing table/controller state, DOM nodes, open menus, and focused control. It does not create a live-region announcement by itself; the next sorting, filtering, pagination, resizing, reordering, or selection interaction uses the latest announcement formatter.
+
+That stability guarantee assumes structural keys remain stable. Replacing option identifiers, adding or removing options, or otherwise changing control structure can legitimately create or remove DOM nodes. Applications making structural locale changes are responsible for the resulting focus transition.
 
 ## Column Labels
 
