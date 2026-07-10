@@ -6,10 +6,13 @@ runs:
   steps:
     - name: Resolve Nx base/head refs
       shell: bash
+      env:
+        BASE_REF: ${{ github.base_ref }}
+        EVENT_NAME: ${{ github.event_name }}
       run: |
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          echo "NX_BASE=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+        if [ "$EVENT_NAME" = "pull_request" ]; then
+          git fetch origin "$BASE_REF" --depth=1
+          echo "NX_BASE=origin/$BASE_REF" >> "$GITHUB_ENV"
         else
           echo "NX_BASE=HEAD~1" >> "$GITHUB_ENV"
         fi

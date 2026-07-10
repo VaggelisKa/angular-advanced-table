@@ -16,6 +16,16 @@ verifyDepsBeforeRun: false
 # too. Links the showcase's `ng-advanced-table: "workspace:*"` dep to local
 # source instead of resolving the published tarball during re-resolution.
 linkWorkspacePackages: true
+# Keep vulnerable transitive versions out of the graph until their direct
+# parents publish releases that include the fixes. Parent-scoped overrides
+# avoid replacing unrelated major versions elsewhere in the workspace.
+overrides:
+  '@angular/build>piscina': '5.2.0'
+  '@nx/webpack@23.1.0-beta.0>less': '4.6.7'
+  'nx@22.7.3>brace-expansion': '5.0.6'
+  'nx@22.7.3>form-data': '4.0.6'
+  'nx@22.7.3>tmp': '0.2.7'
+  'nx@22.7.3>yaml': '2.9.0'
 catalogs:
   # runtime: Angular + table/reactivity packages
   frontend:
@@ -70,21 +80,17 @@ catalogs:
     typescript: '6.0.3'
     typescript-eslint: '^8.61.1'
     vitest: '^4.1.9'
-# pnpm 11 enables a 24h supply-chain cooldown (minimumReleaseAge: 1440) by
-# default: newly published versions are rejected until they are a day old.
-# TEMPORARILY disabled (0) so the frozen lockfile installs — the deliberately
-# fresh Angular 22.0.3 and Nx 23.1.0-beta.0 pins were published <24h ago and
-# trip the gate on `pnpm install --frozen-lockfile` / CI.
-# NOTE: while this is 0 the cooldown protection is off repo-wide for every
-# package, not just these pins. Restore to 1440 once the migration's pins have
-# aged out (or add a minimumReleaseAgeExclude for @angular/@nx instead).
-minimumReleaseAge: 0
-# Native packages permitted to run lifecycle scripts (pnpm blocks them by
-# default). This is exactly the set pnpm reported as ignored on a clean install.
+# Reject newly published packages for 24 hours. The temporary migration
+# exception is no longer needed now that all pinned releases have aged in.
+minimumReleaseAge: 1440
+# Explicit lifecycle-script policy: permit only required native/tool builds,
+# deny known-unnecessary hooks, and fail installation for any unlisted build.
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
-  less: true
+  # Less is a pure JavaScript compiler. Explicitly block lifecycle scripts;
+  # less@4.5.1 used its hook to invoke a network-capable Playwright install.
+  less: false
   lmdb: true
   msgpackr-extract: true
   nx: true

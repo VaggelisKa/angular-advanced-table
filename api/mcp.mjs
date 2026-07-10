@@ -9,6 +9,7 @@ const SERVER_INFO = {
 };
 const SUPPORTED_PROTOCOL_VERSION = '2025-06-18';
 const DEFAULT_RESOURCE_DESCRIPTION = 'Public Angular Advanced Table showcase page.';
+const DEFAULT_SITE_ORIGIN = 'https://angular-advanced-table.vercel.app';
 const MAX_JSON_BODY_BYTES = 64 * 1024;
 const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'content-type, mcp-protocol-version',
@@ -171,15 +172,41 @@ const createError = (id, code, message) => ({
   }
 });
 
-const getServiceDocument = (request) => {
-  const origin = `${request.headers['x-forwarded-proto'] ?? 'https'}://${request.headers.host ?? 'angular-advanced-table.vercel.app'}`;
+const getServiceOrigin = () => {
+  const deploymentHost = process.env['VERCEL_URL'] ?? process.env['VERCEL_PROJECT_PRODUCTION_URL'];
+
+  if (!deploymentHost) {
+    return DEFAULT_SITE_ORIGIN;
+  }
+
+  try {
+    const deploymentUrl = new URL(`https://${deploymentHost}`);
+
+    if (
+      deploymentUrl.username ||
+      deploymentUrl.password ||
+      deploymentUrl.pathname !== '/' ||
+      deploymentUrl.search ||
+      deploymentUrl.hash
+    ) {
+      return DEFAULT_SITE_ORIGIN;
+    }
+
+    return deploymentUrl.origin;
+  } catch {
+    return DEFAULT_SITE_ORIGIN;
+  }
+};
+
+const getServiceDocument = () => {
+  const endpoint = new URL('/mcp', getServiceOrigin()).toString();
 
   return {
     serverInfo: SERVER_INFO,
-    endpoint: `${origin}/mcp`,
+    endpoint,
     transport: {
       type: 'streamable-http',
-      endpoint: `${origin}/mcp`
+      endpoint
     },
     capabilities: {
       resources: {
@@ -276,7 +303,7 @@ export default async function handler(request, response) {
   }
 
   if (request.method === 'GET' || request.method === 'HEAD') {
-    sendJson(request, response, 200, getServiceDocument(request));
+    sendJson(request, response, 200, getServiceDocument());
     return;
   }
 

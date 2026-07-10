@@ -62,7 +62,7 @@ export const matchesFilterQuery = (value: unknown, query: string): boolean => {
   }
 
   if (value instanceof Date) {
-    return value.toISOString().toLowerCase().includes(normalizedQuery);
+    return Number.isFinite(value.getTime()) && value.toISOString().toLowerCase().includes(normalizedQuery);
   }
 
   if (Array.isArray(value)) {

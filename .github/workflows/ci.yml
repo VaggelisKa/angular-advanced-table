@@ -20,9 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
 
   # Gate: formatting fails fast before any heavier job starts.
@@ -31,9 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - name: Check formatting
         run: pnpm exec prettier --check .
@@ -44,22 +46,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/nx-refs
       # Persist the Nx local cache so the release job's `verify` reuses these
       # build/test results instead of rebuilding on its fresh runner. The
       # restore-keys fallback also warms `checks` itself run-to-run.
       - name: Cache Nx results
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: .nx/cache
           key: nx-cache-${{ github.run_id }}
           restore-keys: nx-cache-
       - name: Lint, stylelint, test, build (affected)
         run: pnpm exec nx affected -t stylelint,lint,test,build --base="$NX_BASE" --head="$NX_HEAD"
+      - name: Test MCP endpoint security boundaries
+        run: pnpm run test:mcp
 
   # Atomized Playwright e2e, in parallel with checks.
   e2e:
@@ -67,13 +72,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/nx-refs
       - name: Install Playwright Chrome
-        run: npx playwright install --with-deps chrome
+        run: pnpm exec playwright install --with-deps chrome
       - name: Atomized e2e (affected)
         # NX_SKIP_ATOMIZER_VALIDATION opts the e2e-ci tasks out of the Nx Cloud
         # requirement (they run serially on this single runner). The showcase is
@@ -105,7 +111,7 @@ jobs:
       # dist/.playwright/e2e/{test-output,playwright-report,blob-report}.
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-report
           path: dist/.playwright
@@ -122,15 +128,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/nx-refs
       # Reuse the Nx cache saved by `checks` this run, so the build tasks hit
       # cache (showcase + the package) instead of rebuilding on a fresh runner.
       - name: Restore Nx cache
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: .nx/cache
           key: nx-cache-${{ github.run_id }}
