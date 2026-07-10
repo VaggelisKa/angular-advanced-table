@@ -70,8 +70,8 @@ describe('FEATURE: MCP endpoint security boundaries', () => {
     });
   });
 
-  describe('GIVEN: Vercel supplies a deployment host', () => {
-    describe('WHEN: requesting the service document', () => {
+  describe('GIVEN: Vercel supplies a preview deployment host', () => {
+    describe('WHEN: requesting the service document without a production URL', () => {
       it('THEN: it advertises the validated HTTPS deployment endpoint', async () => {
         process.env['VERCEL_URL'] = 'preview-angular-advanced-table.vercel.app';
 
@@ -79,6 +79,20 @@ describe('FEATURE: MCP endpoint security boundaries', () => {
 
         assert.equal(result.statusCode, 200);
         assert.equal(result.body.endpoint, 'https://preview-angular-advanced-table.vercel.app/mcp');
+      });
+    });
+  });
+
+  describe('GIVEN: Vercel supplies a production and preview deployment host', () => {
+    describe('WHEN: requesting the service document', () => {
+      it('THEN: it advertises the validated HTTPS production endpoint', async () => {
+        process.env['VERCEL_PROJECT_PRODUCTION_URL'] = 'angular-advanced-table.vercel.app';
+        process.env['VERCEL_URL'] = 'preview-angular-advanced-table.vercel.app';
+
+        const result = await invoke();
+
+        assert.equal(result.statusCode, 200);
+        assert.equal(result.body.endpoint, 'https://angular-advanced-table.vercel.app/mcp');
       });
     });
   });

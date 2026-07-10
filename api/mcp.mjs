@@ -173,7 +173,7 @@ const createError = (id, code, message) => ({
 });
 
 const getServiceOrigin = () => {
-  const deploymentHost = process.env['VERCEL_URL'] ?? process.env['VERCEL_PROJECT_PRODUCTION_URL'];
+  const deploymentHost = process.env['VERCEL_PROJECT_PRODUCTION_URL'] ?? process.env['VERCEL_URL'];
 
   if (!deploymentHost) {
     return DEFAULT_SITE_ORIGIN;
