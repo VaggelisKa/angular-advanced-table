@@ -1,3 +1,10 @@
+## 2.7.2 (2026-07-10)
+
+### 🩹 Fixes
+
+- Repair the 2.7.1 package changelog so it lists the shipped toolbar keyboard behavior and `enableSortActions` public API alongside the stock theme CSS retention fix. ([#283](https://github.com/VaggelisKa/angular-advanced-table/pull/283))
+- Remove the default hover translate/lift effect (`translateY(-1px)`) from table header sort buttons and menu buttons in `withNatTableHeaderActions`. Header cells no longer shift vertically on hover by default. ([#281](https://github.com/VaggelisKa/angular-advanced-table/pull/281))
+
 ## 2.7.1 (2026-07-09)
 
 ### 🚀 Features
