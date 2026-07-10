@@ -5,6 +5,7 @@ import {
   SHOWCASE_DEFAULT_ROUTE_PATH,
   SHOWCASE_DOCS_INDEX_ROUTE_PATH,
   SHOWCASE_EXAMPLES_INDEX_ROUTE_PATH,
+  SHOWCASE_PIN_REORDER_RESIZE_FIXTURE_ROUTE_PATH,
   showcaseDocRouteDescriptors,
   showcaseExampleRouteDescriptors
 } from './app.route-paths';
@@ -125,7 +126,7 @@ export const routes: Routes = [
   },
   {
     // Client-only e2e fixture (issue #273); intentionally not prerendered or listed in navigation.
-    path: 'fixtures/pin-reorder-resize',
+    path: SHOWCASE_PIN_REORDER_RESIZE_FIXTURE_ROUTE_PATH,
     loadComponent: async () =>
       import('../../fixtures/pin-reorder-resize/pin-reorder-resize').then((module) => module.PinReorderResizeFixture)
   },
