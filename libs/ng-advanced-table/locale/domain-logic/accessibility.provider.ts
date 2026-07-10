@@ -3,7 +3,12 @@ import type { Provider } from '@angular/core';
 
 import { createNatTableMergedProvider, mapNatTableProviderConfig } from './provider-factory';
 import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/accessibility.const';
-import type { NatTableIntlConfig, NatTableIntlProviderConfig, NatTableLocalesProviderConfig } from '../common/accessibility.type';
+import type {
+  NatTableIntlConfig,
+  NatTableIntlProviderConfig,
+  NatTableIntlStaticProviderConfig,
+  NatTableLocalesProviderConfig
+} from '../common/accessibility.type';
 import { mergeNatTableIntlConfig } from '../utils/accessibility.util';
 
 /** Built-in locale defaults used when no provider is configured. */
@@ -26,7 +31,12 @@ export const NAT_TABLE_INTL = new InjectionToken<NatTableIntlConfig>('NAT_TABLE_
  * updates flow through that hierarchy without recreating an injector.
  */
 export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[] =>
-  createNatTableMergedProvider(NAT_TABLE_INTL, NAT_TABLE_DEFAULT_INTL, intl, mergeNatTableIntlConfig);
+  createNatTableMergedProvider<NatTableIntlConfig, NatTableIntlStaticProviderConfig>(
+    NAT_TABLE_INTL,
+    NAT_TABLE_DEFAULT_INTL,
+    intl,
+    mergeNatTableIntlConfig
+  );
 
 /**
  * Registers every table locale shipped by `ng-advanced-table/locale`.

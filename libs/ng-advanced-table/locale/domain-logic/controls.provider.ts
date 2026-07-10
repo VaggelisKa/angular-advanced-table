@@ -4,7 +4,7 @@ import type { Provider } from '@angular/core';
 import { createNatTableMergedProvider, mapNatTableProviderConfig } from './provider-factory';
 import type { NatTableControlsIntlProviderConfig, NatTableControlsLocalesProviderConfig } from '../common/controls-provider.type';
 import { NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
-import type { NatTableControlsIntlConfig } from '../common/controls.type';
+import type { NatTableControlsIntlConfig, NatTableControlsIntlStaticProviderConfig } from '../common/controls.type';
 import { mergeNatTableControlsIntlConfig } from '../utils/controls.util';
 
 /** Built-in locale defaults used when no components locale provider is configured. */
@@ -27,7 +27,12 @@ export const NAT_TABLE_CONTROLS_INTL = new InjectionToken<NatTableControlsIntlCo
  * updates flow through that hierarchy without recreating an injector.
  */
 export const provideNatTableControlsIntl = (intl: NatTableControlsIntlProviderConfig): Provider[] =>
-  createNatTableMergedProvider(NAT_TABLE_CONTROLS_INTL, NAT_TABLE_CONTROLS_DEFAULT_INTL, intl, mergeNatTableControlsIntlConfig);
+  createNatTableMergedProvider<NatTableControlsIntlConfig, NatTableControlsIntlStaticProviderConfig>(
+    NAT_TABLE_CONTROLS_INTL,
+    NAT_TABLE_CONTROLS_DEFAULT_INTL,
+    intl,
+    mergeNatTableControlsIntlConfig
+  );
 
 /**
  * Registers every companion components locale shipped by `ng-advanced-table/locale`.

@@ -93,12 +93,14 @@ const renderMetricsCell = (column: ColumnDef<Row, unknown> | undefined, rowId: s
 
 describe('FEATURE: withRenderMetricsColumn', () => {
   describe('GIVEN: render metrics column helpers are configured', () => {
-    describe('WHEN: sets TanStack sizing defaults', () => {
-      it('THEN: it adds default sizing values to the metrics column', () => {
+    describe('WHEN: building outside an Angular injection context', () => {
+      it('THEN: it uses built-in labels and TanStack sizing defaults', () => {
         const columns = withRenderMetricsColumn<Row>([], new NatTableRenderMetricsStore());
         const metricsColumn = requireDefined(columns.at(-1));
 
         expect(metricsColumn.id).toBe(RENDER_METRIC_COLUMN_ID);
+        expect(metricsColumn.header).toBe('Render');
+        expect(renderMetricsCell(metricsColumn, 'missing')).toBe('Pending');
         expect(metricsColumn.size).toBe(110);
         expect(metricsColumn.minSize).toBe(80);
         expect(metricsColumn.maxSize).toBeUndefined();

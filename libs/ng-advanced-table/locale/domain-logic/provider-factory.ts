@@ -9,9 +9,12 @@ type NatTableProviderConfig<TStaticConfig extends object> =
   | NatTableProviderSource<TStaticConfig>
   | NatTableProviderFactory<TStaticConfig>;
 
-type NatTableLiveConfig = {
-  readonly locales?: unknown;
+type NatTableLiveConfig<TLocales = unknown> = {
+  readonly locales?: TLocales;
 };
+
+type NatTableLocaleOnlyConfig<TConfig extends NatTableLiveConfig> =
+  Exclude<keyof TConfig, keyof NatTableLiveConfig> extends never ? TConfig : never;
 
 const isSignalOf = <T>(value: unknown): value is Signal<T> => isSignal(value);
 
@@ -27,16 +30,13 @@ const resolveNatTableProviderConfig = <TStaticConfig extends object>(
   return isSignalOf<TStaticConfig>(resolved) ? resolved : computed(() => resolved);
 };
 
-const createLiveConfigFacade = <TConfig extends NatTableLiveConfig>(config: Signal<TConfig>): TConfig => {
-  const liveConfig = {
-    get locales(): TConfig['locales'] {
-      return config().locales;
-    }
-  };
-
-  // The three supported configs contain only `locales`; the generic preserves each token's precise dictionary type.
-  return liveConfig as TConfig;
-};
+const createLiveConfigFacade = <TConfig extends NatTableLiveConfig>(
+  config: Signal<TConfig>
+): NatTableLiveConfig<TConfig['locales']> => ({
+  get locales(): TConfig['locales'] {
+    return config().locales;
+  }
+});
 
 export const mapNatTableProviderConfig = <TSource extends object, TResult extends object>(
   config: NatTableProviderConfig<TSource>,
@@ -59,7 +59,8 @@ export const mapNatTableProviderConfig = <TSource extends object, TResult extend
 
 export const createNatTableMergedProvider = <TConfig extends NatTableLiveConfig, TStaticConfig extends object>(
   token: InjectionToken<TConfig>,
-  defaultConfig: TConfig,
+  // Adding another top-level config key makes this parameter `never`, forcing the facade contract to be updated.
+  defaultConfig: NatTableLocaleOnlyConfig<TConfig>,
   config: NatTableProviderConfig<TStaticConfig>,
   mergeConfig: (parent: TConfig, override: TStaticConfig) => TConfig
 ): Provider[] => {
@@ -67,7 +68,7 @@ export const createNatTableMergedProvider = <TConfig extends NatTableLiveConfig,
     {
       provide: token,
       deps: [[new Optional(), new SkipSelf(), token]],
-      useFactory: (parent: TConfig | null): TConfig => {
+      useFactory: (parent: TConfig | null): NatTableLiveConfig<TConfig['locales']> => {
         const source = resolveNatTableProviderConfig(config);
         const merged = computed(() => mergeConfig(parent ?? defaultConfig, source()));
 
