@@ -1,7 +1,7 @@
 import { Component, DestroyRef, booleanAttribute, computed, inject, input } from '@angular/core';
 
 import { NatTableService } from 'ng-advanced-table';
-import type { PaginationState, RowData } from 'ng-advanced-table';
+import type { RowData } from 'ng-advanced-table';
 import { NatToolbarItem } from 'ng-advanced-table/components';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
