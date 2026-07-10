@@ -124,12 +124,6 @@ export const routes: Routes = [
       import('../../gallery/sticky-show-detailed-view/sticky-show-detailed-view').then((module) => module.StickyShowDetailedView)
   },
   {
-    // Client-only e2e fixture (issue #273); intentionally not prerendered or listed in navigation.
-    path: 'fixtures/pin-reorder-resize',
-    loadComponent: async () =>
-      import('../../fixtures/pin-reorder-resize/pin-reorder-resize').then((module) => module.PinReorderResizeFixture)
-  },
-  {
     path: '**',
     redirectTo: SHOWCASE_DEFAULT_ROUTE_PATH
   }

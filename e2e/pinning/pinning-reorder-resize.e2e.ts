@@ -126,7 +126,6 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
 
       await dragResizeEdge(page, categoryCell, 80);
 
-
       await expect.poll(async () => (await boxOf(categoryCell)).width).toBeGreaterThan(categoryWidthBefore + 40);
       expect((await boxOf(nameCell)).width).toBeLessThanOrEqual(nameWidthBefore + 2);
     });
@@ -178,5 +177,4 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
       expect(Math.abs(categoryBox.x - (regionBox.x + nameBox.width))).toBeLessThanOrEqual(2);
     });
   });
-
 });
