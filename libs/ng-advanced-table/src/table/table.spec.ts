@@ -682,9 +682,7 @@ describe('FEATURE: NatTable', () => {
         );
 
         // when: existing controller state and a live-region message are established before the translation changes
-        tableComponent.patchState({
-          sorting: [{ id: 'name', desc: false }]
-        });
+        tableComponent.setColumnSort('name', 'asc');
         providerFixture.detectChanges();
         await providerFixture.whenStable();
         providerFixture.detectChanges();
