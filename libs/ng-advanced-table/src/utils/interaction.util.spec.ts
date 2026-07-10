@@ -5,6 +5,7 @@ import type { CellContext, Column, Header } from '@tanstack/angular-table';
 import {
   canResizeColumn,
   getCellTone,
+  isColumnReorderable,
   isColumnResizable,
   isResizeKey,
   originatesFromInteractiveDescendant,
@@ -19,6 +20,9 @@ type Row = { readonly id: string; readonly amount: number };
 
 const createColumn = (enableResizing?: boolean): Column<Row, unknown> =>
   ({ columnDef: { enableResizing } }) as unknown as Column<Row, unknown>;
+
+const createReorderableColumn = (reorderable?: boolean): Column<Row, unknown> =>
+  ({ columnDef: { meta: reorderable === undefined ? undefined : { reorderable } } }) as unknown as Column<Row, unknown>;
 
 const createHeader = (options: { readonly isPlaceholder?: boolean; readonly enableResizing?: boolean }): Header<Row, unknown> =>
   ({
@@ -102,6 +106,32 @@ describe('FEATURE: interaction utilities', () => {
     describe('WHEN: the column opts in with enableResizing true while the surface is off', () => {
       it('THEN: the column flag overrides the surface (resizable)', () => {
         expect(isColumnResizable(createColumn(true), false)).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN: isColumnReorderable', () => {
+    describe('WHEN: the column meta leaves reordering unset and the surface enables reordering', () => {
+      it('THEN: it falls back to the surface enabler (reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(undefined), true)).toBe(true);
+      });
+    });
+
+    describe('WHEN: the column meta leaves reordering unset and the surface disables reordering', () => {
+      it('THEN: it falls back to the surface enabler (not reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(undefined), false)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the column opts out with meta.reorderable false while the surface is on', () => {
+      it('THEN: the column flag overrides the surface (not reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(false), true)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the column opts in with meta.reorderable true while the surface is off', () => {
+      it('THEN: the column flag overrides the surface (reorderable)', () => {
+        expect(isColumnReorderable(createReorderableColumn(true), false)).toBe(true);
       });
     });
   });

@@ -74,7 +74,7 @@
       </ng-template>
       @let tableHeaderGroups = headerGroups();
       @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
-        @let isReorderableHeaderRow = isReorderingEnabled() && isLeafHeaderRow(headerGroup);
+        @let isReorderableHeaderRow = hasReorderableColumns() && isLeafHeaderRow(headerGroup);
         @if (isReorderableHeaderRow) {
           <tr
             [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"

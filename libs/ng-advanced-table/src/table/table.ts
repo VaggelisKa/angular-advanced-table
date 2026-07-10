@@ -259,7 +259,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     canResizeColumn(header, this.state.resizingEnabled());
 
   protected readonly isLeafHeaderRow = (headerGroup: HeaderGroup<TData>): boolean => this.reorderService.isLeafHeaderRow(headerGroup);
-  protected readonly isReorderingEnabled = (): boolean => this.reorderService.isReorderingEnabled();
+  protected readonly hasReorderableColumns = (): boolean => this.reorderService.hasReorderableColumns();
   protected readonly canReorderHeader = (header: Header<TData, unknown>): boolean =>
     !header.isPlaceholder && this.reorderService.canReorderHeader(header.column);
 

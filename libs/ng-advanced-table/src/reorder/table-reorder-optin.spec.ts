@@ -17,6 +17,13 @@ const mixedColumns: ColumnDef<Row, unknown>[] = columns.map((column) => {
   return accessorKey === 'status' ? { ...column, meta: { ...column.meta, reorderable: false } } : column;
 });
 
+// surface reordering OFF; region opts IN with meta.reorderable: true, siblings stay non-reorderable.
+const optInColumns: ColumnDef<Row, unknown>[] = columns.map((column) => {
+  const accessorKey = (column as { readonly accessorKey?: unknown }).accessorKey;
+
+  return accessorKey === 'region' ? { ...column, meta: { ...column.meta, reorderable: true } } : column;
+});
+
 const buildReorderEvent = (): KeyboardEvent =>
   new KeyboardEvent('keydown', { key: 'ArrowRight', ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true });
 
@@ -87,6 +94,28 @@ describe('FEATURE: NatTable per-column reorder opt-out', () => {
 
         // then: the opted-in sibling reorders
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
+      });
+    });
+  });
+
+  describe('GIVEN: a reorder-disabled table where one column opts in with meta.reorderable', () => {
+    describe('WHEN: the opted-in column and a default sibling are inspected', () => {
+      it('THEN: only the opted-in column exposes its drag affordance and can move', async () => {
+        await recreateHost({ enableReordering: false, columns: optInColumns });
+        fixture.detectChanges();
+
+        const store = getInternalStore(fixture);
+        const regionHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="region"]');
+        const statusHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="status"]');
+
+        // then: the opted-in column keeps its reorder affordance and can move despite the surface being off
+        expect(regionHeader.classList.contains('is-reorderable')).toBe(true);
+        expect(store.canMoveColumn('region', 'right')).toBe(true);
+
+        // then: a default sibling stays non-reorderable
+        expect(statusHeader.classList.contains('is-reorderable')).toBe(false);
+        expect(store.canMoveColumn('status', 'left')).toBe(false);
+        expect(store.canMoveColumn('status', 'right')).toBe(false);
       });
     });
   });

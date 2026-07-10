@@ -1,5 +1,5 @@
 ---
-ng-advanced-table: major
+ng-advanced-table: minor
 ---
 
 Unify the four header controls (sorting, pinning, reordering, resizing) under a single "surface enabler + per-column override" model. Each control is enabled on `<nat-table-surface>` and a column's availability resolves as `column.<flag> ?? surface.<enabler>`:
@@ -9,7 +9,7 @@ Unify the four header controls (sorting, pinning, reordering, resizing) under a 
 
 `<nat-table-surface>` exposes four enabler inputs, all defaulting to `false`: `enableSorting`, `enablePinning`, `enableReordering`, `enableColumnResizing`.
 
-BREAKING CHANGE: sorting and pinning are no longer on by default.
+Behavior change (opt-in required): sorting and pinning are no longer on by default.
 
 - Sorting was previously on by default. Tables that relied on the built-in header sort UI must now set `[enableSorting]="true"` on the surface (or `enableSorting: true` on specific columns). Programmatic sorting via `setSorting` and sort state is unaffected; `enableSortActions` still hides only the sort UI while keeping programmatic sorting.
 - Pinning was previously always available. Tables that expose the pin menu must now set `[enablePinning]="true"` (or `enablePinning: true` per column). The new `enablePinning` surface input replaces the previously hardcoded table-level pinning.
