@@ -3,9 +3,10 @@ import { Injectable, Injector, afterNextRender, inject } from '@angular/core';
 
 import type { Column, HeaderGroup, RowData } from '@tanstack/angular-table';
 
-import type { ColumnReorderKeyboardDirection } from '../common/column-render.type';
+import type { ColumnReorderKeyboardDirection, ColumnReorderZone } from '../common/column-render.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableState } from '../domain-logic/table.state';
+import { readColumnEntry } from '../utils/column-def.util';
 import { getHeaderRowColumnIds } from '../utils/column-label.util';
 import { getColumnZone, moveItemInArrayCopy } from '../utils/column-order.util';
 import { isColumnReorderable, resolveDraggedColumnId, scrollElementHorizontallyIntoView } from '../utils/interaction.util';
@@ -49,39 +50,118 @@ export class NatTableReorderService<TData extends RowData = RowData> {
   // ─── Drag-drop reorder ───
 
   public onHeaderDrop(event: CdkDragDrop<string[]>, headerGroup: HeaderGroup<TData>): void {
-    if (!this.isReorderingEnabled() || !this.isLeafHeaderRow(headerGroup) || event.previousIndex === event.currentIndex) {
-      return;
-    }
+    try {
+      if (!this.isReorderingEnabled() || !this.isLeafHeaderRow(headerGroup)) {
+        return;
+      }
 
-    const rowColumnIds = getHeaderRowColumnIds<TData>(headerGroup);
-    const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
+      const rowColumnIds = getHeaderRowColumnIds<TData>(headerGroup);
+      const movingColumnId = resolveDraggedColumnId(event, rowColumnIds);
 
-    if (!movingColumnId) {
-      return;
-    }
+      if (!movingColumnId) {
+        return;
+      }
 
-    const movingColumn = this.state.table.getColumn(movingColumnId);
+      const movingColumn = this.state.table.getColumn(movingColumnId);
 
-    if (!movingColumn || !isColumnReorderable(movingColumn, this.isReorderingEnabled())) {
-      return;
-    }
+      if (!movingColumn || !isColumnReorderable(movingColumn, this.isReorderingEnabled())) {
+        return;
+      }
 
-    const zone = this.state.getColumnZoneById(movingColumnId);
+      const zone = this.state.getColumnZoneById(movingColumnId);
 
-    if (!zone || !this.state.isDropIndexWithinZone(rowColumnIds, zone, event.currentIndex)) {
-      return;
-    }
+      if (!zone) {
+        return;
+      }
 
-    const reorderedRowColumnIds = moveItemInArrayCopy(rowColumnIds, event.previousIndex, event.currentIndex);
-    const nextVisibleZoneOrder = reorderedRowColumnIds.filter((columnId) => this.state.getColumnZoneById(columnId) === zone);
+      const nextVisibleZoneOrder = this.resolveDropZoneOrder(event, rowColumnIds, zone, movingColumnId);
 
-    const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
+      if (!nextVisibleZoneOrder) {
+        return;
+      }
 
-    if (result) {
+      const result = this.state.applyVisibleZoneReorder(zone, movingColumnId, nextVisibleZoneOrder);
+
+      if (!result) return;
+
       this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
+      this.scrollHeaderIntoView(movingColumnId);
+    } finally {
+      this.restoreDraggedHeaderPinnedOffset(event);
+    }
+  }
+
+  /**
+   * CDK hides the dragged header mid-drag by stomping its inline `left` and
+   * restores it to `''` before emitting `dropped`. Angular rewrites the
+   * `[style.left.px]` host binding only when its value changes, so a rejected
+   * (no-op) drop would leave a pinned header without its sticky offset — it
+   * then scrolls away with the center columns. Re-apply it on every drop.
+   */
+  private restoreDraggedHeaderPinnedOffset(event: CdkDragDrop<string[]>): void {
+    const draggedColumnId = typeof event.item.data === 'string' ? event.item.data : null;
+
+    if (!draggedColumnId) return;
+
+    const headerElement = this.getHeaderElement(draggedColumnId);
+    const left = readColumnEntry(this.state.columnRenderStates(), draggedColumnId)?.left ?? null;
+
+    if (headerElement && left !== null) {
+      headerElement.style.left = `${left}px`;
+    }
+  }
+
+  /**
+   * Resolves the moving column's next in-zone order at drop time.
+   *
+   * CDK's `event.currentIndex` comes from live clientRects, which the sticky
+   * pinned headers skew under horizontal scroll — wrongly rejecting valid
+   * in-zone drops (issue #288). So prefer the drop point: slot the moving column
+   * among its same-zone neighbors by their header centers. Fall back to
+   * `currentIndex` when no geometry is available (jsdom / synthetic unit-test
+   * events with no drop point). Returns `null` to reject the drop.
+   */
+  private resolveDropZoneOrder(
+    event: CdkDragDrop<string[]>,
+    rowColumnIds: readonly string[],
+    zone: ColumnReorderZone,
+    movingColumnId: string
+  ): string[] | null {
+    const neighborIds = rowColumnIds.filter((id) => id !== movingColumnId && this.state.getColumnZoneById(id) === zone);
+    // CDK types `dropPoint` as always-present, but synthetic unit-test events omit it.
+    const dropX = (event as { readonly dropPoint?: { readonly x: number } }).dropPoint?.x;
+
+    if (typeof dropX === 'number' && Number.isFinite(dropX)) {
+      const centers = neighborIds.map((id) => this.getHeaderCenterX(id));
+
+      // Use geometry whenever the layout is real (at least one neighbor has a
+      // laid-out rect). Only pure jsdom, where every center is null, falls
+      // through to the CDK index path — a degenerate rect in a real browser
+      // must not re-trigger the scroll-skew bug (#288).
+      if (!centers.every((center) => center === null)) {
+        const rightOfDrop = centers.findIndex((center) => center !== null && dropX < center);
+        const nextOrder = [...neighborIds];
+
+        nextOrder.splice(rightOfDrop === -1 ? neighborIds.length : rightOfDrop, 0, movingColumnId);
+
+        return nextOrder;
+      }
     }
 
-    this.scrollHeaderIntoView(movingColumnId);
+    if (!this.state.isDropIndexWithinZone(rowColumnIds, zone, event.currentIndex)) {
+      return null;
+    }
+
+    return moveItemInArrayCopy(rowColumnIds, event.previousIndex, event.currentIndex).filter(
+      (id) => this.state.getColumnZoneById(id) === zone
+    );
+  }
+
+  /** Viewport-x center of a column's header cell, or `null` when it has no laid-out rect (jsdom). */
+  private getHeaderCenterX(columnId: string): number | null {
+    const rect = this.getHeaderElement(columnId)?.getBoundingClientRect();
+
+    return rect && rect.width > 0 ? rect.left + rect.width / 2 : null;
   }
 
   // ─── Keyboard reorder ───

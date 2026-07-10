@@ -750,8 +750,11 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   public getVisibleZoneColumnIds(zone: ColumnReorderZone): string[] {
-    return this.table
-      .getVisibleLeafColumns()
+    // visibleColumns() is pin-aware (left/center/right zone getters); TanStack's
+    // getVisibleLeafColumns() orders pinned columns by columnOrder, not by the
+    // columnPinning arrays, so after a pinned reorder it reports the stale order
+    // and the next reorder in that zone is wrongly rejected as a no-op.
+    return this.visibleColumns()
       .filter((column) => getColumnZone(column) === zone)
       .map((column) => column.id);
   }

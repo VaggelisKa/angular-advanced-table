@@ -193,5 +193,90 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         });
       });
     });
+
+    test.describe('WHEN: the pinned group is reordered while the region is scrolled horizontally (issue #288)', () => {
+      test('THEN: it swaps the pinned columns despite sticky rects overlapping the scrolled center columns', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const region = page.getByTestId('nat-table-region');
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
+
+        // A narrow viewport overflows the four columns so the center pair can be
+        // scrolled deep under the sticky pinned pair — the layout that skews
+        // CDK's clientRect-derived drop index (issue #288).
+        await page.setViewportSize({ width: 360, height: 900 });
+        await nextFrame(page);
+
+        await test.step('THEN: scrolling slides the center columns under the pinned pair', async () => {
+          await expect.poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeGreaterThan(150);
+          await region.evaluate((element) => {
+            element.scrollLeft = 200;
+          });
+          await nextFrame(page);
+          await expect.poll(async () => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(150);
+        });
+
+        await test.step('THEN: dragging category left of name swaps the pinned order', async () => {
+          const nameBoxBefore = await boxOf(nameCell);
+
+          await pointerReorder(page, grid, 'category', nameBoxBefore.x + 4);
+
+          // Document order is the reorder invariant here; geometric (visual-x)
+          // order is not asserted because while scrolled the sticky pinned pair
+          // visually overlaps the scrolled-under center columns.
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+        });
+      });
+    });
+
+    test.describe('WHEN: the pinned pair is swapped and then swapped back', () => {
+      test('THEN: it restores the original pinned order on the reverse drag', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
+
+        await test.step('THEN: dragging category left of name swaps the pinned pair', async () => {
+          const nameBox = await boxOf(nameCell);
+
+          await pointerReorder(page, grid, 'category', nameBox.x + 4);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+        });
+
+        // The reverse drag used to be rejected as a no-op: the zone-order lookup
+        // read TanStack's pin-agnostic column order, which never reflects a
+        // pinned reorder, so the current order always "equaled" the target.
+        await test.step('THEN: dragging category back right of name restores the original order', async () => {
+          const nameBox = await boxOf(nameCell);
+
+          await pointerReorder(page, grid, 'category', nameBox.x + nameBox.width - 4);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+        });
+      });
+    });
+
+    test.describe('WHEN: a pinned column drag ends without changing the order while the region is scrolled', () => {
+      test('THEN: it keeps the sticky offset so the pinned column does not scroll away', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const region = page.getByTestId('nat-table-region');
+        const categoryCell = grid.locator('thead th[data-column-id="category"]');
+
+        await page.setViewportSize({ width: 360, height: 900 });
+        await nextFrame(page);
+        await region.evaluate((element) => {
+          element.scrollLeft = 200;
+        });
+        await nextFrame(page);
+
+        const categoryXBefore = (await boxOf(categoryCell)).x;
+
+        // Drop category back onto its own slot — a rejected no-op drop. CDK
+        // stomps the dragged header's inline `left` during the drag and restores
+        // it to '', so without an explicit re-apply the header unsticks and
+        // scrolls away with the center columns.
+        await pointerReorder(page, grid, 'category', categoryXBefore + (await boxOf(categoryCell)).width / 2);
+
+        await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+        await expect.poll(async () => Math.abs((await boxOf(categoryCell)).x - categoryXBefore)).toBeLessThanOrEqual(1);
+        await expect.poll(async () => categoryCell.evaluate((cell) => cell.style.left)).not.toBe('');
+      });
+    });
   });
 });
