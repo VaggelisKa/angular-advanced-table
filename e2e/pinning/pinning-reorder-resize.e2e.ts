@@ -93,8 +93,12 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
       const grid = page.getByRole('grid', { name: 'Pin reorder resize fixture table' });
 
       // when: the pinned-left zone starts as name, category
-      await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value', 'region', 'owner', 'updated']);
-      await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value', 'region', 'owner', 'updated']);
+      await expect
+        .poll(async () => documentColumnOrder(grid))
+        .toEqual(['name', 'category', 'status', 'value', 'region', 'owner', 'updated']);
+      await expect
+        .poll(async () => geometricColumnOrder(grid))
+        .toEqual(['name', 'category', 'status', 'value', 'region', 'owner', 'updated']);
 
       const nameBoxBefore = await boxOf(grid.locator('thead th[data-column-id="name"]'));
 
