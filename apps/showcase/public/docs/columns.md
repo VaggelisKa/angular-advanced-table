@@ -117,9 +117,9 @@ Configure the table width model on the surface.
 
 ## Pinning And Reordering
 
-Pinning is enabled where the column allows it. Reordering is disabled by default; enable it on the surface when a table should expose drag/drop, keyboard column moves, or companion move actions. Reordering stays inside the current pinning zone: left, center, or right.
+Pinning is enabled where the column allows it. Reordering is disabled by default. Set `[enableReordering]="true"` to enable drag/drop, keyboard moves, and companion move actions for every column, or leave it off and set `meta: { reorderable: true }` on only the columns that should move. Reordering stays inside the current pinning zone: left, center, or right.
 
-Reordering is enabled on the surface and applies to every column by default. Opt a column out with `meta: { reorderable: false }` to remove its drag, keyboard, and header-menu move affordances. The column is not itself grabbed, but another reorderable column can still move past it and displace it.
+With surface reordering enabled, every column is reorderable by default. Opt a column out with `meta: { reorderable: false }` to remove its drag, keyboard, and header-menu move affordances. The column is not itself grabbed, but another reorderable column can still move past it and displace it.
 
 ```ts
 readonly initialState: Partial<NatTableUserState> = {
@@ -131,7 +131,7 @@ readonly initialState: Partial<NatTableUserState> = {
 };
 ```
 
-Columns in `baseColumns` reorder by default; add `meta: { reorderable: false }` to any column that should not be grabbed or moved directly while reordering is enabled.
+With surface reordering enabled, columns in `baseColumns` reorder by default; add `meta: { reorderable: false }` to any column that should not be grabbed or moved directly.
 
 ```ts
 const baseColumns: ColumnDef<PositionRow>[] = [
@@ -146,9 +146,9 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 });
 ```
 
-The header actions helper adds sort buttons when the surface enables sorting (`[enableSorting]="true"`) and a column can sort, pin menu items when the surface enables pinning (`[enablePinning]="true"`) and the column can pin, and move menu items when the surface sets `[enableReordering]="true"` and `enableColumnReorderActions` is on. Sorting, pinning, and resizing resolve per column as `column.<flag> ?? surface.<enabler>`; reordering uses `column.meta.reorderable ?? surface.enableReordering`. It also accepts custom sort indicator content through `sortIndicator`, so custom sort icons should compose through the helper rather than through extra header rows.
+The header actions helper adds sort buttons when the surface enables sorting (`[enableSorting]="true"`) and a column can sort, pin menu items when the surface enables pinning (`[enablePinning]="true"`) and the column can pin, and move menu items when `enableColumnReorderActions` is on and `column.meta.reorderable ?? surface.enableReordering` resolves to `true`. Sorting, pinning, and resizing resolve per column as `column.<flag> ?? surface.<enabler>`; reordering uses `column.meta.reorderable ?? surface.enableReordering`. It also accepts custom sort indicator content through `sortIndicator`, so custom sort icons should compose through the helper rather than through extra header rows.
 
-Enable table-owned reordering on the surface for tables that should expose move affordances.
+Use the surface flag for table-wide reordering.
 
 ```html
 <nat-table-surface [enableReordering]="true">
