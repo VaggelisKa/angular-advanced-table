@@ -238,6 +238,39 @@ describe('FEATURE: table builder code snippet highlighting', () => {
       });
     });
 
+    describe('WHEN: fixed sizing is selected while resizing is enabled', () => {
+      it('THEN: it marks Fixed active and emits fixed sizing in the generated HTML', async () => {
+        const fixture = TestBed.createComponent(TableBuilderPage);
+
+        await flushRender(fixture);
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const resizingToggle = findRequired(
+          Array.from(compiled.querySelectorAll<HTMLLabelElement>('.toggle-control')),
+          (control) => control.querySelector('.toggle-label')?.textContent === 'Column Resizing',
+          'Expected the Column Resizing feature toggle to exist.'
+        );
+
+        queryRequiredElement<HTMLInputElement>(resizingToggle, 'input.toggle-checkbox').click();
+        await flushRender(fixture);
+
+        const sizingMode = queryRequiredElement<HTMLElement>(compiled, '[aria-label="Column sizing mode"]');
+        const fixedButton = findRequired(
+          Array.from(sizingMode.querySelectorAll<HTMLButtonElement>('button')),
+          (button) => button.textContent.trim() === 'Fixed',
+          'Expected the Fixed column sizing mode button to exist.'
+        );
+
+        fixedButton.click();
+        await flushRender(fixture);
+
+        expect(fixedButton.getAttribute('aria-pressed')).toBe('true');
+        expect(queryRequiredElement<HTMLElement>(compiled, 'code.code-content-code').textContent).toContain(
+          `[columnSizingMode]="'fixed'"`
+        );
+      });
+    });
+
     describe('WHEN: column reordering is toggled off', () => {
       it('THEN: the generated TS snippet never mentions meta.reorderable (reordering is a surface-level default)', async () => {
         const fixture = TestBed.createComponent(TableBuilderPage);

@@ -21,7 +21,7 @@
           <div class="feature-group">
             <h3 class="feature-group-title">{{ category.label }}</h3>
             @for (feature of featuresFor(category.id); track feature.key) {
-              <label class="toggle-control">
+              <label [attr.data-testid]="`table-builder-feature-${feature.key}`" class="toggle-control">
                 <input
                   [checked]="flags()[feature.key]"
                   class="toggle-checkbox"
@@ -33,6 +33,9 @@
               </label>
             }
           </div>
+        }
+        @if (flags().withColumnResizing) {
+          <app-table-builder-sizing-mode [mode]="flags().columnSizingMode" (modeChange)="setColumnSizingMode($event)" />
         }
       </div>
     </aside>
@@ -71,6 +74,7 @@
         }
 
         <nat-table-surface
+          [columnSizingMode]="flags().columnSizingMode"
           [enableColumnResizing]="flags().withColumnResizing"
           [enablePinning]="flags().withColumnPinning"
           [enableReordering]="flags().withColumnReorder"
@@ -78,8 +82,7 @@
           [locale]="surfaceLocale()"
           [stickyHeader]="flags().withStickyHeader"
           [(state)]="tableState"
-          class="table-shell"
-          columnSizingMode="fill">
+          class="table-shell">
           @if (flags().withGlobalFilter || flags().showColumnVisibility || flags().withExport) {
             <nat-table-toolbar accessibleName="Table controls">
               @if (flags().withGlobalFilter) {

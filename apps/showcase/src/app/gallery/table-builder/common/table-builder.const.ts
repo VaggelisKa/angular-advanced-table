@@ -29,6 +29,7 @@ export const DEFAULT_FLAGS: TableBuilderFlags = {
   withColumnPinning: true,
   withColumnReorder: true,
   withColumnResizing: false,
+  columnSizingMode: 'fill',
   showScrollControl: true,
   withStickyHeader: false,
   withExport: false,
