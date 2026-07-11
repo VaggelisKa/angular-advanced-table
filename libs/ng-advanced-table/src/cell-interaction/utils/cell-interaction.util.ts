@@ -93,6 +93,10 @@ const delegatedCellControl = (cell: HTMLElement): HTMLElement | null => {
   return hasContentOutsideControl(cell, control) ? null : control;
 };
 
+/** Whether `target` is the arrow-safe control acting as this grid cell's focus stop. */
+export const isNatTableDelegatedCellControl = (cell: HTMLElement, target: HTMLElement): boolean =>
+  delegatedCellControl(cell) === target;
+
 /** Enter on a focused cell steps into the cell's first control. */
 const enterFirstCellControl = (event: KeyboardEvent, cell: HTMLElement, target: HTMLElement): boolean => {
   // Enter on a control keeps its native behavior.

@@ -40,6 +40,10 @@
           "type": "text/html"
         },
         {
+          "href": "https://angular-advanced-table.vercel.app/docs/virtualization",
+          "type": "text/html"
+        },
+        {
           "href": "https://angular-advanced-table.vercel.app/docs/column-layout",
           "type": "text/html"
         },

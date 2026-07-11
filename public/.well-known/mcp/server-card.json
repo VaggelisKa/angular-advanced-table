@@ -91,6 +91,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/virtualization",
+      "name": "docs-virtualization",
+      "title": "Virtualization | Angular Advanced Table Docs",
+      "description": "Large client-side row windows",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/column-layout",
       "name": "docs-column-layout",
       "title": "Column layout | Angular Advanced Table Docs",

@@ -310,6 +310,23 @@ tbody .data-row:last-child .data-cell {
   transition: background-color 120ms ease;
 }
 
+.data-table.is-virtualized .data-row,
+.data-table.is-virtualized .data-cell {
+  height: var(--sys-nat-table-virtual-row-height);
+}
+
+.data-table.is-virtualized .data-cell-content {
+  max-height: var(--sys-nat-table-virtual-row-height);
+}
+
+.virtual-spacer-row,
+.virtual-spacer-cell {
+  padding: 0;
+  line-height: 0;
+  pointer-events: none;
+  border: 0;
+}
+
 .data-row:has(:focus-visible) {
   background: var(--nat-table-row-background-focus, var(--sys-nat-table-row-background-focus, rgb(128 128 128 / 12%)));
 }
