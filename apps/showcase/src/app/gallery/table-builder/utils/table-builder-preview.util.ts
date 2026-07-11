@@ -45,6 +45,12 @@ export const buildBuilderColumns = (flags: BuilderColumnFlags, locale: LocalePre
       meta: { label: intl.headers.status }
     },
     {
+      accessorKey: 'owner',
+      header: intl.headers.owner,
+      ...buildColumnFeatureProps(150, flags),
+      meta: { label: intl.headers.owner }
+    },
+    {
       accessorKey: 'value',
       header: intl.headers.value,
       ...buildColumnFeatureProps(150, flags),

@@ -209,7 +209,7 @@ describe('FEATURE: table builder code snippet highlighting', () => {
     });
 
     describe('WHEN: column resizing is enabled', () => {
-      it('THEN: resize handles render on name, category and status but not value', async () => {
+      it('THEN: resize handles render on name, category, status, and owner but not value', async () => {
         const fixture = TestBed.createComponent(TableBuilderPage);
 
         await flushRender(fixture);
@@ -226,7 +226,7 @@ describe('FEATURE: table builder code snippet highlighting', () => {
         resizingCheckbox.click();
         await flushRender(fixture);
 
-        // then: resize handles render on the three leading columns, not on the trailing value column
+        // then: resize handles render on the four leading columns, not on the trailing value column
         const handleIds = Array.from(compiled.querySelectorAll<HTMLElement>('.column-resize-handle')).map((handle) =>
           handle.getAttribute('data-testid')
         );
@@ -234,6 +234,7 @@ describe('FEATURE: table builder code snippet highlighting', () => {
         expect(handleIds).toContain('nat-table-resize-handle-name');
         expect(handleIds).toContain('nat-table-resize-handle-category');
         expect(handleIds).toContain('nat-table-resize-handle-status');
+        expect(handleIds).toContain('nat-table-resize-handle-owner');
         expect(handleIds).not.toContain('nat-table-resize-handle-value');
       });
     });
