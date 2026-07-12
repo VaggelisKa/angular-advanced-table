@@ -117,7 +117,7 @@ Set `enableSortActions: false` to remove the built-in sort button/indicator for 
 The four header controls — sorting, pinning, reordering, resizing — share one model: each is enabled on `<nat-table-surface>` (`[enableSorting]`, `[enablePinning]`, `[enableReordering]`, `[enableColumnResizing]`), and all default **off**. Sorting, pinning, and resizing resolve as `column.<flag> ?? surface.<enabler>`; reordering resolves as `column.meta.reorderable ?? surface.enableReordering`:
 
 - Surface enabler on → every column has the control; opt one out with `enableSorting: false` / `enablePinning: false` / `enableResizing: false` / `meta: { reorderable: false }`.
-- Surface enabler off (default) → opt a column in with `enableSorting: true` / `enablePinning: true` / `enableResizing: true` / `meta: { reorderable: true }` (keyboard/menu movement only for reordering until #291 is fixed).
+- Surface enabler off (default) → opt a column in with `enableSorting: true` / `enablePinning: true` / `enableResizing: true` / `meta: { reorderable: true }`.
 
 So a table that should show the sort/pin UI must set `[enableSorting]="true"` / `[enablePinning]="true"` on the surface. `enableSortActions` is separate — it hides only the sort UI while leaving programmatic sorting intact; use it when a column should still be sortable programmatically but without the built-in header button.
 
