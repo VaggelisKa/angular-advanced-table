@@ -43,18 +43,18 @@ export const LOCALE_PREVIEWS: { value: LocalePreview; label: string }[] = [
 export const DEMO_COLUMN_INTL: Record<
   LocalePreview,
   {
-    readonly headers: Record<'name' | 'category' | 'status' | 'value', string>;
+    readonly headers: Record<'name' | 'category' | 'status' | 'owner' | 'value', string>;
     readonly selectAllAriaLabel: string;
     readonly selectRowAriaLabel: (name: string) => string;
   }
 > = {
   en: {
-    headers: { name: 'Name', category: 'Category', status: 'Status', value: 'Value' },
+    headers: { name: 'Name', category: 'Category', status: 'Status', owner: 'Owner', value: 'Value' },
     selectAllAriaLabel: 'Select all rows',
     selectRowAriaLabel: (name) => `Select ${name}`
   },
   da: {
-    headers: { name: 'Navn', category: 'Kategori', status: 'Status', value: 'Værdi' },
+    headers: { name: 'Navn', category: 'Kategori', status: 'Status', owner: 'Ejer', value: 'Værdi' },
     selectAllAriaLabel: 'Vælg alle rækker',
     selectRowAriaLabel: (name) => `Vælg ${name}`
   }

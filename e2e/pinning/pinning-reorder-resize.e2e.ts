@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 test.use({ viewport: { width: 640, height: 900 } });
+
+const DEFAULT_BUILDER_COLUMN_ORDER = ['name', 'category', 'status', 'owner', 'value'] as const;
+const SWAPPED_PINNED_BUILDER_COLUMN_ORDER = ['category', 'name', 'status', 'owner', 'value'] as const;
 /** Yields one animation frame, pacing synthetic input to the render loop. */
 const nextFrame = async (page: Page): Promise<void> => {
   await page.evaluate(async () => {
@@ -36,6 +39,14 @@ const documentColumnOrder = async (grid: Locator): Promise<string[]> =>
 /** Drags the header cell for `columnId` horizontally to `targetClientX` via a real pointer sequence. */
 const pointerReorder = async (page: Page, grid: Locator, columnId: string, targetClientX: number): Promise<void> => {
   const source = grid.locator(`thead th[data-column-id="${columnId}"]`);
+
+  // Raw page.mouse does not auto-scroll, and on Linux CI the grid header's center
+  // sits just past the viewport fold — the mousedown would land outside the viewport
+  // and the drag would silently never start. Centering the cell also keeps the pointer
+  // clear of CDK's window auto-scroll band at the viewport bottom.
+  await source.evaluate((cell) => cell.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await nextFrame(page);
+
   const box = await boxOf(source);
   const startX = box.x + box.width / 2;
   const startY = box.y + box.height / 2;
@@ -64,6 +75,10 @@ const pointerReorder = async (page: Page, grid: Locator, columnId: string, targe
 
 /** Drags the resize edge that sits under the right border of `cell` by `deltaX` px, targeting whatever header owns that pixel. */
 const dragResizeEdge = async (page: Page, cell: Locator, deltaX: number): Promise<void> => {
+  // Same fold guard as pointerReorder: ensure the cell is inside the viewport before raw mouse math.
+  await cell.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await nextFrame(page);
+
   const box = await boxOf(cell);
   const startX = box.x + box.width - 2;
   const startY = box.y + box.height / 2;
@@ -100,7 +115,7 @@ const configureBuilder = async (page: Page): Promise<Locator> => {
 
   await grid.getByTestId('nat-table-header-actions-menu-category').click();
   await page.getByTestId('nat-table-header-pin-left-category').click();
-  await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+  await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
 
   return grid;
 };
@@ -114,7 +129,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         const nameCell = grid.locator('thead th[data-column-id="name"]');
 
         await test.step('THEN: the pinned columns render in their default left order', async () => {
-          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
         });
 
         await test.step('THEN: dragging category left of name swaps both DOM and visual order', async () => {
@@ -122,8 +137,8 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
 
           await pointerReorder(page, grid, 'category', nameBoxBefore.x + 4);
 
-          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => geometricColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
 
         await test.step('THEN: resizing category grows it without resizing name', async () => {
@@ -148,7 +163,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           await nameCell.focus();
           await page.keyboard.press('ControlOrMeta+Shift+ArrowRight');
 
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
 
         await test.step('THEN: resizing category grows it without resizing name', async () => {
@@ -223,7 +238,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           // Document order is the reorder invariant here; geometric (visual-x)
           // order is not asserted because while scrolled the sticky pinned pair
           // visually overlaps the scrolled-under center columns.
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
       });
     });
@@ -237,7 +252,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           const nameBox = await boxOf(nameCell);
 
           await pointerReorder(page, grid, 'category', nameBox.x + 4);
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['category', 'name', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
 
         // The reverse drag used to be rejected as a no-op: the zone-order lookup
@@ -247,7 +262,7 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
           const nameBox = await boxOf(nameCell);
 
           await pointerReorder(page, grid, 'category', nameBox.x + nameBox.width - 4);
-          await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+          await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
         });
       });
     });
@@ -273,9 +288,103 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
         // scrolls away with the center columns.
         await pointerReorder(page, grid, 'category', categoryXBefore + (await boxOf(categoryCell)).width / 2);
 
-        await expect.poll(async () => documentColumnOrder(grid)).toEqual(['name', 'category', 'status', 'value']);
+        await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
         await expect.poll(async () => Math.abs((await boxOf(categoryCell)).x - categoryXBefore)).toBeLessThanOrEqual(1);
         await expect.poll(async () => categoryCell.evaluate((cell) => cell.style.left)).not.toBe('');
+      });
+    });
+
+    test.describe('WHEN: a pinned column resize drag is held while the region scrolls horizontally', () => {
+      test('THEN: the resize guide stays glued to the sticky pinned edge instead of drifting (issue #289)', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const region = page.getByTestId('nat-table-region');
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
+        const guide = page.locator('.column-resize-guide');
+
+        // Region-relative x of the guide line; a pinned (sticky) edge is region-fixed, so this
+        // must not move when only the scroll offset changes mid-drag.
+        const guideRegionX = async (): Promise<number> => (await boxOf(guide)).x - (await boxOf(region)).x;
+
+        await test.step('GIVEN: growing the pinned name column makes the region horizontally scrollable', async () => {
+          await dragResizeEdge(page, nameCell, 120);
+          await expect.poll(async () => region.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeGreaterThan(50);
+        });
+
+        // Press and hold a fresh resize on name's right edge, nudging just enough to show the guide.
+        const startBox = await boxOf(nameCell);
+        const startX = startBox.x + startBox.width - 2;
+        const startY = startBox.y + startBox.height / 2;
+
+        await page.mouse.move(startX, startY);
+        await page.mouse.down();
+        await nextFrame(page);
+        await nextFrame(page);
+        await page.mouse.move(startX + 10, startY);
+        await nextFrame(page);
+
+        await expect(guide).toBeVisible();
+        const guideXBefore = await guideRegionX();
+
+        // Scroll horizontally WITHOUT moving the pointer — the drift trigger from #289. The
+        // guide recomputes from live scrollLeft, so it must hold its region-relative position.
+        await region.evaluate((element) => {
+          element.scrollLeft = Math.min(150, element.scrollWidth - element.clientWidth);
+        });
+        await nextFrame(page);
+        await nextFrame(page);
+
+        const guideXAfter = await guideRegionX();
+
+        // Pre-fix: the guide scrolled with content and drifted by ~scrollLeft (~150px).
+        expect(Math.abs(guideXAfter - guideXBefore)).toBeLessThanOrEqual(2);
+
+        await page.mouse.up();
+        await nextFrame(page);
+      });
+    });
+
+    test.describe('WHEN: a pinned column is resized far past the viewport in fixed mode', () => {
+      test('THEN: the pinned columns stay within the viewport instead of pushing the next pin off-screen', async ({ page }) => {
+        const grid = await configureBuilder(page);
+        const region = page.getByTestId('nat-table-region');
+        const nameCell = grid.locator('thead th[data-column-id="name"]');
+        const categoryCell = grid.locator('thead th[data-column-id="category"]');
+
+        // Drag the leftmost pinned column (name) far wider than the viewport. Pre-fix this let
+        // category's sticky offset exceed the viewport, hiding it until the region scrolled to the
+        // end (an empty band opened on the left, issue #289 follow-up).
+        await dragResizeEdge(page, nameCell, 1400);
+        await nextFrame(page);
+
+        const regionBox = await boxOf(region);
+        const clientWidth = await region.evaluate((element) => element.clientWidth);
+        const nameBox = await boxOf(nameCell);
+        const categoryBox = await boxOf(categoryCell);
+
+        // The following pinned column stays visible in the viewport without scrolling.
+        expect(categoryBox.x - regionBox.x).toBeLessThan(clientWidth);
+        // Both pinned widths fit within the viewport — no oversized pinned column, no empty gap.
+        expect(nameBox.width + categoryBox.width).toBeLessThanOrEqual(clientWidth + 2);
+        // category still sits flush against name's right edge (pins stay contiguous).
+        expect(Math.abs(categoryBox.x - (regionBox.x + nameBox.width))).toBeLessThanOrEqual(2);
+
+        // The pinned block must leave a scrollable strip so the non-pinned columns stay reachable —
+        // pins covering the whole viewport would hide them behind the sticky cells forever.
+        const pinnedRight = categoryBox.x - regionBox.x + categoryBox.width;
+
+        expect(clientWidth - pinnedRight).toBeGreaterThan(20);
+
+        // Scrolling to the end brings a non-pinned column fully into that strip, clear of the pins.
+        await region.evaluate((element) => {
+          element.scrollLeft = element.scrollWidth - element.clientWidth;
+        });
+        await nextFrame(page);
+
+        const valueBox = await boxOf(grid.locator('thead th[data-column-id="value"]'));
+        const valueLeft = valueBox.x - (await boxOf(region)).x;
+
+        expect(valueLeft).toBeGreaterThanOrEqual(pinnedRight - 2);
+        expect(valueLeft + valueBox.width).toBeLessThanOrEqual(clientWidth + 2);
       });
     });
   });

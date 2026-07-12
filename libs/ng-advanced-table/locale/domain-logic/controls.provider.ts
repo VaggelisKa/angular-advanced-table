@@ -1,13 +1,10 @@
 import { InjectionToken } from '@angular/core';
 import type { Provider } from '@angular/core';
 
-import { createNatTableMergedProvider } from './provider-factory';
+import { createNatTableMergedProvider, mapNatTableProviderConfig } from './provider-factory';
+import type { NatTableControlsIntlProviderConfig, NatTableControlsLocalesProviderConfig } from '../common/controls-provider.type';
 import { NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
-import type {
-  NatTableControlsIntlConfig,
-  NatTableControlsIntlProviderConfig,
-  NatTableControlsLocalesMap
-} from '../common/controls.type';
+import type { NatTableControlsIntlConfig, NatTableControlsIntlStaticProviderConfig } from '../common/controls.type';
 import { mergeNatTableControlsIntlConfig } from '../utils/controls.util';
 
 /** Built-in locale defaults used when no components locale provider is configured. */
@@ -24,16 +21,23 @@ export const NAT_TABLE_CONTROLS_INTL = new InjectionToken<NatTableControlsIntlCo
 /**
  * Provides default labels and number formatting for the companion controls in `ng-advanced-table/components`.
  *
+ * Static configs, direct signals, and factories returning either are supported.
  * Nested providers merge with parent defaults, so feature-level providers can
- * override a subset of app-level copy without replacing the entire bag.
+ * override a subset of app-level copy without replacing the entire bag. Signal
+ * updates flow through that hierarchy without recreating an injector.
  */
 export const provideNatTableControlsIntl = (intl: NatTableControlsIntlProviderConfig): Provider[] =>
-  createNatTableMergedProvider(NAT_TABLE_CONTROLS_INTL, NAT_TABLE_CONTROLS_DEFAULT_INTL, intl, mergeNatTableControlsIntlConfig);
+  createNatTableMergedProvider<NatTableControlsIntlConfig, NatTableControlsIntlStaticProviderConfig>(
+    NAT_TABLE_CONTROLS_INTL,
+    NAT_TABLE_CONTROLS_DEFAULT_INTL,
+    intl,
+    mergeNatTableControlsIntlConfig
+  );
 
 /**
  * Registers every companion components locale shipped by `ng-advanced-table/locale`.
  *
  * Call this only when using `ng-advanced-table/components`.
  */
-export const provideNatTableControlsLocales = (overrides: NatTableControlsLocalesMap = {}): Provider[] =>
-  provideNatTableControlsIntl({ locales: overrides });
+export const provideNatTableControlsLocales = (overrides: NatTableControlsLocalesProviderConfig = {}): Provider[] =>
+  provideNatTableControlsIntl(mapNatTableProviderConfig(overrides, (locales) => ({ locales })));

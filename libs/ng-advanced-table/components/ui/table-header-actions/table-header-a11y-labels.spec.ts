@@ -21,8 +21,8 @@ describe('FEATURE: NatTable UI', () => {
   });
 
   describe('GIVEN: custom and provider accessibility labels', () => {
-    describe('WHEN: the table with custom accessibility labels renders', () => {
-      it('THEN: it renders caller-provided accessibility labels across the UI controls', async () => {
+    describe('WHEN: custom accessibility labels drive the table controls and their interactions', () => {
+      it('THEN: it uses caller-provided labels throughout the interaction flow', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         const customFixture = TestBed.createComponent(CustomAccessibilityLabelsHost);
 
@@ -48,7 +48,6 @@ describe('FEATURE: NatTable UI', () => {
         const sortButton = nativeElement.querySelector('thead th[data-column-id="name"] .sort-button') as HTMLButtonElement;
         const menuButton = nativeElement.querySelector('thead th[data-column-id="name"] .menu-button') as HTMLButtonElement;
 
-        // then: all custom labels are rendered in the UI controls
         expect(visibilityHeading.textContent.trim()).toBe('Kolonner');
         expect(visibilityCaption.textContent.trim()).toBe('4 af 4 synlige');
         expect(visibilityGroup.getAttribute('aria-label')).toBe('Kolonnesynlighed');
@@ -75,13 +74,11 @@ describe('FEATURE: NatTable UI', () => {
         expect(sortButton.getAttribute('aria-label')).toBe('Sorter Service');
         expect(menuButton.getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
 
-        // when: the column actions menu is opened
         menuButton.click();
         customFixture.detectChanges();
         await customFixture.whenStable();
         customFixture.detectChanges();
 
-        // then: menu and pin items use custom labels
         expect(requireOpenMenu().getAttribute('aria-label')).toBe('Kolonnehandlinger for Service');
 
         const leftPinMenuItem = getOpenMenuItem('left');
@@ -97,13 +94,11 @@ describe('FEATURE: NatTable UI', () => {
         expect(rightMoveMenuItem.getAttribute('aria-label')).toBe('Flyt kolonne Service til højre');
         expect(textOf(rightMoveMenuItem, '.column-menu-item__label')).toBe('Flyt til højre');
 
-        // when: the left pin item is clicked then the menu is reopened
         leftPinMenuItem.click();
         customFixture.detectChanges();
         await customFixture.whenStable();
         customFixture.detectChanges();
 
-        // when: menu is reopened after pinning
         menuButton.click();
         customFixture.detectChanges();
         await customFixture.whenStable();
@@ -112,17 +107,14 @@ describe('FEATURE: NatTable UI', () => {
         const updatedLeftPinMenuItem = getOpenMenuItem('left');
         const updatedRightPinMenuItem = getOpenMenuItem('right');
 
-        // then: unpin label is shown with custom text
         expect(updatedLeftPinMenuItem.getAttribute('aria-label')).toBe('Frigør kolonne Service fra venstre');
         expect(textOf(updatedLeftPinMenuItem, '.column-menu-item__label')).toBe('Venstre');
         expect(updatedRightPinMenuItem.getAttribute('aria-label')).toBe('Fastgør kolonne Service til højre');
         expect(textOf(updatedRightPinMenuItem, '.column-menu-item__label')).toBe('Højre');
 
-        // when: the column chip is clicked to hide the column
         firstColumnChip.click();
         customFixture.detectChanges();
 
-        // then: chip label and state update
         expect(firstColumnChip.getAttribute('aria-label')).toBe('Vis kolonne Service');
         expect(firstColumnState.textContent.trim()).toBe('Skjult');
 
@@ -130,8 +122,8 @@ describe('FEATURE: NatTable UI', () => {
       });
     });
 
-    describe('WHEN: the table with provider accessibility labels renders', () => {
-      it('THEN: it uses provider accessibility labels and lets component inputs override them', async () => {
+    describe('WHEN: provider accessibility labels update before a component input overrides them', () => {
+      it('THEN: it updates existing controls before honoring the component input', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
         const providerFixture = TestBed.createComponent(ProviderAccessibilityLabelsHost);
         const providerHost = providerFixture.componentInstance;
@@ -139,6 +131,7 @@ describe('FEATURE: NatTable UI', () => {
         providerFixture.detectChanges();
 
         const nativeElement = providerFixture.nativeElement as HTMLElement;
+        const toolbar = nativeElement.querySelector('nat-table-toolbar') as HTMLElement;
         const visibilityHeading = nativeElement.querySelector('nat-table-column-visibility .control-label') as HTMLElement;
         const visibilityCaption = nativeElement.querySelector('nat-table-column-visibility .control-caption') as HTMLElement;
         const visibilityGroup = nativeElement.querySelector('nat-table-column-visibility .chip-row') as HTMLElement;
@@ -152,10 +145,16 @@ describe('FEATURE: NatTable UI', () => {
         const scrollPosition = nativeElement.querySelector('nat-table-scroll-control .scroll-range-copy') as HTMLElement;
         const sortButton = nativeElement.querySelector('thead th[data-column-id="name"] .sort-button') as HTMLButtonElement;
         const menuButton = nativeElement.querySelector('thead th[data-column-id="name"] .menu-button') as HTMLButtonElement;
+        const selectAllCheckbox = nativeElement.querySelector(
+          'thead th[data-column-id="__natSelect"] input.nat-selection-checkbox'
+        ) as HTMLInputElement;
+        const firstRowCheckbox = nativeElement.querySelector(
+          'tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox'
+        ) as HTMLInputElement;
 
-        // then: provider labels are rendered
+        expect(toolbar.getAttribute('aria-label')).toBe('Provider table toolbar');
         expect(visibilityHeading.textContent.trim()).toBe('Provider columns');
-        expect(visibilityCaption.textContent.trim()).toBe('Provider n4/n4');
+        expect(visibilityCaption.textContent.trim()).toBe('Provider n5/n5');
         expect(visibilityGroup.getAttribute('aria-label')).toBe('Provider column visibility');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Provider page size group');
         const firstProviderOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
@@ -170,8 +169,9 @@ describe('FEATURE: NatTable UI', () => {
         expect(scrollPosition.textContent.trim()).toBe('Provider n0 percent');
         expect(sortButton.getAttribute('aria-label')).toBe('Provider sort Service');
         expect(menuButton.getAttribute('aria-label')).toBe('Provider actions for Service');
+        expect(selectAllCheckbox.getAttribute('aria-label')).toBe('Provider select all rows');
+        expect(firstRowCheckbox.getAttribute('aria-label')).toBe('Provider select row svc-00003');
 
-        // when: the menu is opened
         menuButton.click();
         providerFixture.detectChanges();
         await providerFixture.whenStable();
@@ -179,16 +179,57 @@ describe('FEATURE: NatTable UI', () => {
 
         const providerMenu = await getOpenMenuHarness(providerFixture);
 
-        // then: provider menu labels are used
-        expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Provider menu for Service');
+        const openMenu = getOpenPinMenu();
+        const focusedMenuItem = getOpenMenuItem('left');
+
+        expect(openMenu?.getAttribute('aria-label')).toBe('Provider menu for Service');
         expect(await (await providerMenu.getItems({ text: /Provider left/ }))[0].getText()).toContain('Provider left');
         expect(await (await providerMenu.getItems({ text: /Provider move right/ }))[0].getText()).toContain('Provider move right');
 
-        // when: a component-input label overrides the provider label
-        providerHost.pageSizeGroupAriaLabel.set('Input page size');
-        providerFixture.detectChanges();
+        focusedMenuItem.focus();
 
-        // then: component input takes precedence
+        expect(document.activeElement).toBe(focusedMenuItem);
+
+        providerHost.useReactiveProviderIntl();
+        await providerFixture.whenStable();
+
+        const firstReactiveOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
+        const reactiveMenu = await getOpenMenuHarness(providerFixture);
+
+        expect(nativeElement.querySelector('nat-table-toolbar')).toBe(toolbar);
+        expect(nativeElement.querySelector('thead th[data-column-id="__natSelect"] input.nat-selection-checkbox')).toBe(
+          selectAllCheckbox
+        );
+        expect(nativeElement.querySelector('tbody td[data-column-id="__natSelect"] input.nat-selection-checkbox')).toBe(
+          firstRowCheckbox
+        );
+        expect(getOpenPinMenu()).toBe(openMenu);
+        expect(getOpenMenuItem('left')).toBe(focusedMenuItem);
+        expect(document.activeElement).toBe(focusedMenuItem);
+        expect(toolbar.getAttribute('aria-label')).toBe('Reactive table toolbar');
+        expect(visibilityHeading.textContent.trim()).toBe('Reactive columns');
+        expect(visibilityCaption.textContent.trim()).toBe('Reactive r5/r5');
+        expect(visibilityGroup.getAttribute('aria-label')).toBe('Reactive column visibility');
+        expect(pageSizeGroup.getAttribute('aria-label')).toBe('Reactive page size group');
+        expect(firstReactiveOption.textContent.trim()).toBe('r2 reactive rows');
+        expect(firstReactiveOption.getAttribute('aria-label')).toBe('Reactive show r2 rows');
+        expect(pager.getAttribute('aria-label')).toBe('Reactive pager');
+        expect(pagerLabel.textContent.trim()).toBe('Reactive page r2/r3');
+        expect(previousButton.getAttribute('aria-label')).toBe('Reactive previous');
+        expect(nextButton.getAttribute('aria-label')).toBe('Reactive next');
+        expect(scrollControl.getAttribute('aria-label')).toBe('Reactive horizontal scroll');
+        expect(scrollPosition.textContent.trim()).toBe('Reactive r0 percent');
+        expect(sortButton.getAttribute('aria-label')).toBe('Reactive sort Service');
+        expect(menuButton.getAttribute('aria-label')).toBe('Reactive actions for Service');
+        expect(selectAllCheckbox.getAttribute('aria-label')).toBe('Reactive select all rows');
+        expect(firstRowCheckbox.getAttribute('aria-label')).toBe('Reactive select row svc-00003');
+        expect(getOpenPinMenu()?.getAttribute('aria-label')).toBe('Reactive menu for Service');
+        expect(await (await reactiveMenu.getItems({ text: /Reactive left/ }))[0].getText()).toContain('Reactive left');
+        expect(await (await reactiveMenu.getItems({ text: /Reactive move right/ }))[0].getText()).toContain('Reactive move right');
+
+        providerHost.pageSizeGroupAriaLabel.set('Input page size');
+        await providerFixture.whenStable();
+
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Input page size');
 
         providerFixture.destroy();
