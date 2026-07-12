@@ -139,10 +139,11 @@ export class NatTableReorderService<TData extends RowData = RowData> {
       // through to the CDK index path — a degenerate rect in a real browser
       // must not re-trigger the scroll-skew bug (#288).
       if (!centers.every((center) => center === null)) {
-        const rightOfDrop = centers.findIndex((center) => center !== null && dropX < center);
+        const isRtl = this.state.resolvedDirection() === 'rtl';
+        const beyondDrop = centers.findIndex((center) => center !== null && (isRtl ? dropX > center : dropX < center));
         const nextOrder = [...neighborIds];
 
-        nextOrder.splice(rightOfDrop === -1 ? neighborIds.length : rightOfDrop, 0, movingColumnId);
+        nextOrder.splice(beyondDrop === -1 ? neighborIds.length : beyondDrop, 0, movingColumnId);
 
         return nextOrder;
       }
