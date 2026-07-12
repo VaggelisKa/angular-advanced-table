@@ -1,12 +1,14 @@
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
 import type { ColumnDef } from '@tanstack/angular-table';
 
 import { columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
-import { createDropEvent, getHeaderColumnIds, queryRequired } from '../test-helpers/table-dom.helper';
+import { createDropEvent, getHeaderColumnIds, queryAll, queryRequired } from '../test-helpers/table-dom.helper';
 import { TableHost, createTableHostFixture, getInternalStore, getInternalTable } from '../test-helpers/table-hosts.helper';
 import type { RecreateHostOptions } from '../test-helpers/table-hosts.helper';
 
@@ -27,7 +29,7 @@ const optInColumns: ColumnDef<Row, unknown>[] = columns.map((column) => {
 const buildReorderEvent = (): KeyboardEvent =>
   new KeyboardEvent('keydown', { key: 'ArrowRight', ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true });
 
-describe('FEATURE: NatTable per-column reorder opt-out', () => {
+describe('FEATURE: NatTable per-column reorder opt-in/out', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
 
@@ -125,6 +127,17 @@ describe('FEATURE: NatTable per-column reorder opt-out', () => {
         expect(statusHeader.classList.contains('is-reorderable')).toBe(false);
         expect(store.canMoveColumn('status', 'left')).toBe(false);
         expect(store.canMoveColumn('status', 'right')).toBe(false);
+
+        // The per-column opt-in must cause the drag/drop row infrastructure to render
+        // even though the surface enableReordering flag is off.
+
+        const dropLists = fixture.debugElement.queryAll(By.directive(CdkDropList));
+        const drags = fixture.debugElement.queryAll(By.directive(CdkDrag));
+        const reorderableCells = queryAll(fixture, '.header-cell.is-reorderable');
+
+        expect(dropLists).toHaveLength(1);
+        expect(drags.length).toBeGreaterThan(0);
+        expect(reorderableCells).toHaveLength(1);
       });
     });
 
@@ -132,6 +145,16 @@ describe('FEATURE: NatTable per-column reorder opt-out', () => {
       it('THEN: it reorders the opted-in column even though drag/drop is off at the surface', async () => {
         await recreateHost({ enableReordering: false, columns: optInColumns });
         fixture.detectChanges();
+
+        // The opt-in must have activated the full drag row + directives.
+
+        const dropLists = fixture.debugElement.queryAll(By.directive(CdkDropList));
+        const drags = fixture.debugElement.queryAll(By.directive(CdkDrag));
+        const reorderableCells = queryAll(fixture, '.header-cell.is-reorderable');
+
+        expect(dropLists).toHaveLength(1);
+        expect(drags.length).toBeGreaterThan(0);
+        expect(reorderableCells).toHaveLength(1);
 
         const table = getInternalTable(fixture);
         const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
@@ -152,6 +175,19 @@ describe('FEATURE: NatTable per-column reorder opt-out', () => {
       it('THEN: it ignores the drop and leaves the header order unchanged', async () => {
         await recreateHost({ enableReordering: false, columns: optInColumns });
         fixture.detectChanges();
+
+        // The drop list row must still be present (sibling opt-in enables the row),
+        // but the individual non-opted column must be disabled for drag.
+
+        const dropLists = fixture.debugElement.queryAll(By.directive(CdkDropList));
+        const drags = fixture.debugElement.queryAll(By.directive(CdkDrag));
+        const reorderableCells = queryAll(fixture, '.header-cell.is-reorderable');
+        const statusHeader = queryRequired<HTMLTableCellElement>(fixture, 'thead th[data-column-id="status"]');
+
+        expect(dropLists).toHaveLength(1);
+        expect(drags.length).toBeGreaterThan(0);
+        expect(reorderableCells).toHaveLength(1);
+        expect(statusHeader.classList.contains('is-reorderable')).toBe(false);
 
         const table = getInternalTable(fixture);
         const leafHeaderGroup = table.table.getHeaderGroups().at(-1);
