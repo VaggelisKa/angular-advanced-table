@@ -1,6 +1,6 @@
 {
   "name": "ng-advanced-table",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "Signals-first Angular data table built on TanStack Table — core primitives plus composable UI, utilities, and i18n via subpath entry points (ng-advanced-table/components, /render-metrics, /locale).",
   "typings": "src/index.ts",
   "license": "MIT",

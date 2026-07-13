@@ -1,3 +1,18 @@
+## 2.9.0 (2026-07-13)
+
+### 🚀 Features
+
+- Allow the core, companion-control, and render-metrics intl and locale-map providers to consume signal-backed configurations. Reactive provider values now merge through nested injector scopes and update generated copy, accessible names, and formatters without remounting the table or provider scope, while existing static and dependency-injection factory forms continue to work. ([#286](https://github.com/VaggelisKa/angular-advanced-table/pull/286))
+
+### 🩹 Fixes
+
+- Fix pointer column reordering in right-to-left tables by resolving drop geometry in visual RTL order. ([#296](https://github.com/VaggelisKa/angular-advanced-table/pull/296))
+- Honor per-column `meta.reorderable: true` for drag/drop reordering while the surface `enableReordering` flag is off, matching keyboard and menu movement. ([#295](https://github.com/VaggelisKa/angular-advanced-table/pull/295))
+- Document current repository guidance for future coding agents and keep the MCP security test independent of ignored generated discovery output. ([#282](https://github.com/VaggelisKa/angular-advanced-table/pull/282))
+- Make colgroup order match visible pinned column order so resize targets the selected column. ([#287](https://github.com/VaggelisKa/angular-advanced-table/pull/287), [#273](https://github.com/VaggelisKa/angular-advanced-table/issues/273))
+- Clarify the documented per-column reordering contract and root verification command coverage. ([#292](https://github.com/VaggelisKa/angular-advanced-table/pull/292))
+- Fix column resizing constraints for non-pinned columns and keep resize guides aligned while resizing pinned columns. ([#293](https://github.com/VaggelisKa/angular-advanced-table/pull/293), [#289](https://github.com/VaggelisKa/angular-advanced-table/issues/289))
+
 ## 2.8.0 (2026-07-10)
 
 ### 🚀 Features
