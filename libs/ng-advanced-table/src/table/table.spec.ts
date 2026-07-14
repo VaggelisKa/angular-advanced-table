@@ -40,6 +40,16 @@ import {
 } from '../test-helpers/table-hosts.helper';
 import type { RecreateHostOptions } from '../test-helpers/table-hosts.helper';
 
+const requireStyleRule = (rules: readonly CSSStyleRule[], selector: string): CSSStyleRule => {
+  const rule = rules.find((candidate) => candidate.selectorText.includes(selector));
+
+  if (!rule) {
+    throw new Error(`Expected a style rule matching ${selector}.`);
+  }
+
+  return rule;
+};
+
 describe('FEATURE: NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
@@ -195,17 +205,28 @@ describe('FEATURE: NatTable', () => {
         expect(finalRowRule?.style.borderBottom).toBe('0px');
       });
 
-      it('THEN: it keeps table boundary and divider widths configurable', () => {
+      it('THEN: it keeps table boundaries configurable without enabling pinned-edge shadows by default', () => {
         fixture.detectChanges();
 
         const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
           Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
         );
         const cssText = tableStyles.map((rule) => rule.cssText).join('\n');
+        const leftPinnedEdgeRule = requireStyleRule(tableStyles, '.has-pinned-edge-left');
+        const rightPinnedEdgeRule = requireStyleRule(tableStyles, '.has-pinned-edge-right');
+        const constrainedPinnedEdgeRule = requireStyleRule(tableStyles, '.has-pinned-edge-left.is-width-constrained');
 
         expect(cssText).toContain('--nat-table-region-border-width');
         expect(cssText).toContain('--nat-table-cell-border-width');
         expect(cssText).toContain('--nat-table-header-border-width');
+        expect(leftPinnedEdgeRule.style.boxShadow).toContain('inset -1px 0 0');
+        expect(rightPinnedEdgeRule.style.boxShadow).toContain('inset 1px 0 0');
+        expect(constrainedPinnedEdgeRule.style.overflow).toBe('visible');
+        expect(cssText).toContain('linear-gradient(');
+        expect(cssText).toContain('to right');
+        expect(cssText).toContain('to left');
+        expect(cssText).toContain('--nat-table-pinned-divider-shadow-color');
+        expect(cssText).toContain('transparent');
       });
     });
 

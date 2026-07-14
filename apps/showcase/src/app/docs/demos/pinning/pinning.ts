@@ -30,11 +30,16 @@ const DEMO_DATA: DemoItem[] = [
 @Component({
   selector: 'app-pinning',
   imports: [NatTable, NatTableSurface],
+  styles: `
+    .pinning-shadow-example {
+      --nat-table-pinned-divider-shadow-color: light-dark(rgb(232 235 238 / 35%), rgb(17 20 24 / 50%));
+    }
+  `,
   template: `
     <div class="grid-layout grid-layout-with-panel">
       <div class="card">
         <h2 class="card-title">Scrollable Grid with Pinning</h2>
-        <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
+        <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState" class="pinning-shadow-example">
           <nat-table [columns]="columns" [data]="data" accessibleName="Pinning demo table" />
         </nat-table-surface>
       </div>

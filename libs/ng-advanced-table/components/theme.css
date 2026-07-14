@@ -181,6 +181,7 @@
   --nat-table-pin-border-color-pinned: color-mix(in srgb, var(--nat-table-color-accent) 40%, transparent);
   --nat-table-pin-shadow-pinned: none;
   --nat-table-pinned-background: var(--nat-table-color-surface);
+  --nat-table-pinned-header-background: var(--nat-table-header-background);
   --nat-table-pinned-divider-color: var(--nat-table-color-border);
 
   /* Rows */
