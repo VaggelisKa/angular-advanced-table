@@ -205,7 +205,7 @@ describe('FEATURE: NatTable', () => {
         expect(finalRowRule?.style.borderBottom).toBe('0px');
       });
 
-      it('THEN: it keeps table boundaries configurable without enabling pinned-edge shadows by default', () => {
+      it('THEN: it keeps constrained pinned content clipped without enabling pinned-edge shadows by default', () => {
         fixture.detectChanges();
 
         const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
@@ -214,17 +214,17 @@ describe('FEATURE: NatTable', () => {
         const cssText = tableStyles.map((rule) => rule.cssText).join('\n');
         const leftPinnedEdgeRule = requireStyleRule(tableStyles, '.has-pinned-edge-left');
         const rightPinnedEdgeRule = requireStyleRule(tableStyles, '.has-pinned-edge-right');
-        const constrainedPinnedEdgeRule = requireStyleRule(tableStyles, '.has-pinned-edge-left.is-width-constrained');
+        const constrainedCellRule = requireStyleRule(tableStyles, '.header-cell.is-width-constrained');
 
         expect(cssText).toContain('--nat-table-region-border-width');
         expect(cssText).toContain('--nat-table-cell-border-width');
         expect(cssText).toContain('--nat-table-header-border-width');
         expect(leftPinnedEdgeRule.style.boxShadow).toContain('inset -1px 0 0');
         expect(rightPinnedEdgeRule.style.boxShadow).toContain('inset 1px 0 0');
-        expect(constrainedPinnedEdgeRule.style.overflow).toBe('visible');
-        expect(cssText).toContain('linear-gradient(');
-        expect(cssText).toContain('to right');
-        expect(cssText).toContain('to left');
+        expect(constrainedCellRule.style.overflow).toBe('hidden');
+        expect(leftPinnedEdgeRule.style.boxShadow).toContain('10px 0 0');
+        expect(rightPinnedEdgeRule.style.boxShadow).toContain('-10px 0 0');
+        expect(cssText).toContain('color-mix(');
         expect(cssText).toContain('--nat-table-pinned-divider-shadow-color');
         expect(cssText).toContain('transparent');
       });
