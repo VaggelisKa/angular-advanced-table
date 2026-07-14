@@ -20,6 +20,7 @@ import {
 import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
+import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
@@ -77,7 +78,14 @@ import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDes
     NatTablePxWidth,
     NatTableResizeGuide
   ],
-  providers: [NatTableState, NatTableA11yService, NatTableResizeService, NatTableReorderService, NatTableHeaderMeasurementService],
+  providers: [
+    NatTableState,
+    NatTableA11yService,
+    NatTableResizeService,
+    NatTableReorderService,
+    NatTableHeaderMeasurementService,
+    NatTableCellControlManager
+  ],
   templateUrl: './table.html',
   styleUrl: './table.css'
 })
@@ -268,6 +276,8 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public constructor() {
     // NatTableHeaderMeasurementService is self-contained; injecting triggers its constructor lifecycle.
     inject<NatTableHeaderMeasurementService<TData>>(NatTableHeaderMeasurementService);
+    // NatTableCellControlManager owns one initial control sweep and one observer per table.
+    inject(NatTableCellControlManager);
 
     this.natTableService.setController(this);
 
