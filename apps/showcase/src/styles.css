@@ -796,6 +796,7 @@ input {
 
     /* Pinned & empty state */
     --nat-table-pinned-background: var(--sc-surface);
+    --nat-table-pinned-header-background: var(--nat-table-header-background);
     --nat-table-pinned-divider-color: var(--sc-border);
     --nat-table-empty-state-color: var(--sc-text-soft);
 

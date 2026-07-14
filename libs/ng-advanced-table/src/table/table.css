@@ -397,12 +397,54 @@ tbody .data-row:last-child .data-cell {
   );
 }
 
+/* Zero-blur layers fade horizontally without escaping the cell's content clipping
+   or creating vertical seams between stacked pinned cells. */
 .has-pinned-edge-left {
-  box-shadow: inset -1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%)));
+  box-shadow:
+    inset -1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%))),
+    1px 0 0 var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)),
+    3px 0 0
+      color-mix(
+        in srgb,
+        var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)) 70%,
+        transparent
+      ),
+    6px 0 0
+      color-mix(
+        in srgb,
+        var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)) 35%,
+        transparent
+      ),
+    10px 0 0
+      color-mix(
+        in srgb,
+        var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)) 12%,
+        transparent
+      );
 }
 
 .has-pinned-edge-right {
-  box-shadow: inset 1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%)));
+  box-shadow:
+    inset 1px 0 0 var(--nat-table-pinned-divider-color, var(--sys-nat-table-pinned-divider-color, rgb(128 128 128 / 34%))),
+    -1px 0 0 var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)),
+    -3px 0 0
+      color-mix(
+        in srgb,
+        var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)) 70%,
+        transparent
+      ),
+    -6px 0 0
+      color-mix(
+        in srgb,
+        var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)) 35%,
+        transparent
+      ),
+    -10px 0 0
+      color-mix(
+        in srgb,
+        var(--nat-table-pinned-divider-shadow-color, var(--sys-nat-table-pinned-divider-shadow-color, transparent)) 12%,
+        transparent
+      );
 }
 
 .header-cell.is-align-end,
