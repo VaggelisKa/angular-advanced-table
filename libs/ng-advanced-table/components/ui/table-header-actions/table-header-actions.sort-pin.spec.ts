@@ -259,7 +259,7 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
 
         const table = disabledFixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
 
-        table.patchState({ sorting: [{ id: 'name', desc: false }] });
+        table.table.setSorting([{ id: 'name', desc: false }]);
         disabledFixture.detectChanges();
         await disabledFixture.whenStable();
         disabledFixture.detectChanges();

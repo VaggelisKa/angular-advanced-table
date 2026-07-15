@@ -13,8 +13,8 @@ type NatTableHeaderActionsColumnOptions = {
   readonly accessibilityLabels?: NatTableAccessibilityHeaderActionLabels;
   /**
    * Removes the built-in sort button/indicator for this column. Programmatic sorting via
-   * `NatTable.patchState({ sorting })` (or `natTable.table.setSorting(...)` on the underlying
-   * TanStack instance) and columnDef-level `enableSorting` are unaffected. Defaults to `true`.
+   * `natTable.setColumnSort(...)` (or `natTable.table.setSorting(...)` on the underlying TanStack
+   * instance for multi-column sorts) and columnDef-level `enableSorting` are unaffected. Defaults to `true`.
    */
   readonly enableSortActions?: boolean;
   /** Enables left/right pin menu items for this column when the table can pin it. */

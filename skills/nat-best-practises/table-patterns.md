@@ -112,7 +112,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 
 `sortIndicator` content is visual. The generated sort button still owns the click handler, keyboard behavior, accessible name, multi-sort handling, and `aria-sort` state. Use `column.meta.headerActions` for per-column overrides, or set it to `false` for utility/action columns that should keep their original header.
 
-Set `enableSortActions: false` to remove the built-in sort button/indicator for wrapped columns. Programmatic sorting via `NatTable.patchState({ sorting })` (or `natTable.table.setSorting(...)` on the underlying TanStack instance) and columnDef-level `enableSorting` are unaffected. Defaults to `true`. Override per column with `column.meta.headerActions.enableSortActions`.
+Set `enableSortActions: false` to remove the built-in sort button/indicator for wrapped columns. Programmatic sorting via `natTable.setColumnSort(columnId, 'asc' | 'desc' | false)` (or `natTable.table.setSorting(...)` on the underlying TanStack instance for multi-column sorts) and columnDef-level `enableSorting` are unaffected. Defaults to `true`. Override per column with `column.meta.headerActions.enableSortActions`.
 
 The four header controls — sorting, pinning, reordering, resizing — share one model: each is enabled on `<nat-table-surface>` (`[enableSorting]`, `[enablePinning]`, `[enableReordering]`, `[enableColumnResizing]`), and all default **off**. Sorting, pinning, and resizing resolve as `column.<flag> ?? surface.<enabler>`; reordering resolves as `column.meta.reorderable ?? surface.enableReordering`:
 

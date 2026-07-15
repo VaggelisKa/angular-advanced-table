@@ -43,9 +43,8 @@ export class NatTablePageSize<TData extends RowData = RowData> {
 
   private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
 
-  protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly selectedPageSize = computed(() => this.table()?.getState().pagination.pageSize ?? 0);
+  protected readonly selectedPageSize = computed(() => this.controller()?.pagination().pageSize ?? 0);
 
   private readonly resolvedAccessibilityLabels = computed(() =>
     mergePageSizeLabels(this.tableUiIntl().pageSize?.accessibilityLabels, this.accessibilityLabels())
@@ -82,11 +81,6 @@ export class NatTablePageSize<TData extends RowData = RowData> {
       return;
     }
 
-    this.controller()?.patchState({
-      pagination: () => ({
-        pageIndex: 0,
-        pageSize
-      })
-    });
+    this.controller()?.setPageSize(pageSize);
   }
 }

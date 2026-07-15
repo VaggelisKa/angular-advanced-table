@@ -36,17 +36,17 @@ When the breakpoint signal flips, the `computed` re-wraps the columns and the he
 
 ## Capability Opt-Out Table
 
-| Capability                                      | Mobile opt-out                                      |
-| ----------------------------------------------- | --------------------------------------------------- |
-| Sort button and indicator                       | `enableSortActions: false` (helper option)          |
-| Column resizing (handle, drag, keyboard)        | `[enableColumnResizing]="false"` (surface)          |
-| Pin menu                                        | `enableColumnPinActions: false` (helper option)     |
-| Reorder menu                                    | `enableColumnReorderActions: false` (helper option) |
-| Programmatic sorting (`setSorting`, sort sheet) | Never disabled                                      |
+| Capability                                         | Mobile opt-out                                      |
+| -------------------------------------------------- | --------------------------------------------------- |
+| Sort button and indicator                          | `enableSortActions: false` (helper option)          |
+| Column resizing (handle, drag, keyboard)           | `[enableColumnResizing]="false"` (surface)          |
+| Pin menu                                           | `enableColumnPinActions: false` (helper option)     |
+| Reorder menu                                       | `enableColumnReorderActions: false` (helper option) |
+| Programmatic sorting (`setColumnSort`, sort sheet) | Never disabled                                      |
 
 `enableSortActions: false` removes the sort button and indicator from the header; there is no click or keyboard sort interaction because the control that would host it is gone. `aria-sort` on the header cell is unaffected — it announces the column's sort _state_, not its affordance, so screen readers still hear that a column is sorted when an app-owned control drove the sort. Per-column `meta.headerActions.enableSortActions` overrides the helper-level option for a single column, following the same resolution order as `enableColumnPinActions` and `enableColumnReorderActions`.
 
-TanStack sorting stays fully enabled behind `enableSortActions: false`: `table.setSorting(...)` and columnDef-level `enableSorting` behave exactly as before. This library never maps the mobile opt-out to TanStack's table-level `enableSorting` option — see the Usage Boundary below for why.
+Sorting stays fully enabled behind `enableSortActions: false`: the typed `setColumnSort(...)` command, raw `table.setSorting(...)`, and columnDef-level `enableSorting` behave exactly as before. This library never maps the mobile opt-out to TanStack's table-level `enableSorting` option — see the Usage Boundary below for why.
 
 ## Usage Boundary
 

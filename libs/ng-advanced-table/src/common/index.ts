@@ -22,4 +22,4 @@ export type { NatTableSortIndicatorContext } from './sort.type';
 
 export type { NatTableMode, NatTableModeConfiguration, NatTableUiState, NatTableUserState } from './table-state.type';
 
-export type { NatTableUiController } from './ui-controller.type';
+export type { NatTableColumnVisibilityItem, NatTableUiController } from './ui-controller.type';

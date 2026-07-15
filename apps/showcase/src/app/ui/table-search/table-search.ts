@@ -1,7 +1,7 @@
 import { Component, DestroyRef, booleanAttribute, computed, inject, input } from '@angular/core';
 
 import { NatTableService } from 'ng-advanced-table';
-import type { PaginationState, RowData } from 'ng-advanced-table';
+import type { RowData } from 'ng-advanced-table';
 import { NatToolbarItem } from 'ng-advanced-table/components';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
@@ -38,9 +38,8 @@ export class TableSearch<TData extends RowData = RowData> {
   private readonly tableUiIntl = computed(() => resolveNatTableControlsIntl(this.tableUiIntlConfig, this.localeId()));
   protected readonly resolvedLabel = computed(() => this.label() ?? this.tableUiIntl().search?.label ?? 'Search');
   protected readonly resolvedPlaceholder = computed(() => this.placeholder() ?? this.tableUiIntl().search?.placeholder ?? '');
-  protected readonly table = computed(() => this.controller()?.table);
   protected readonly tableElementId = computed(() => this.controller()?.tableElementId() ?? '');
-  protected readonly value = computed<string>(() => String(this.table()?.getState().globalFilter ?? ''));
+  protected readonly value = computed<string>(() => this.controller()?.globalFilter() ?? '');
 
   public constructor() {
     this.natTableService.registerSearch();
@@ -53,9 +52,6 @@ export class TableSearch<TData extends RowData = RowData> {
 
     if (!isInstanceOfInput || target.value === this.value()) return;
 
-    this.controller()?.patchState({
-      globalFilter: target.value,
-      pagination: (current: PaginationState) => ({ ...current, pageIndex: 0 })
-    });
+    this.controller()?.setGlobalFilter(target.value);
   }
 }

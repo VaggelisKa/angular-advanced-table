@@ -75,6 +75,12 @@ export const reorderableColumns: ColumnDef<Row, unknown>[] = columns.map((column
   meta: { ...column.meta, reorderable: true }
 }));
 
+// Same shape as `columns` but pins the `name` column as non-hideable, so specs can
+// exercise the `getCanHide() === false` guard on visibility commands/selectors.
+export const nonHideableColumns: ColumnDef<Row, unknown>[] = columns.map((column) =>
+  (column as { readonly accessorKey?: string }).accessorKey === 'name' ? { ...column, enableHiding: false } : column
+);
+
 export const getRowIdValue = (row: Row): string => row.id;
 
 export const formatErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : 'Request failed');

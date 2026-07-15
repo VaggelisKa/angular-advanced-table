@@ -17,14 +17,23 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, Updater } from '@tanstack/angular-table';
+import type {
+  Column,
+  ColumnDef,
+  FilterFn,
+  Header,
+  HeaderGroup,
+  Row,
+  RowData,
+  RowSelectionState,
+  SortingState
+} from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
-import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type {
   NatTableDataStatus,
@@ -32,9 +41,10 @@ import type {
   NatTableErrorTemplateContext,
   NatTableLoadingTemplateContext
 } from '../common/table-status.type';
-import type { NatTableUiController } from '../common/ui-controller.type';
+import type { NatTableColumnVisibilityItem, NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableHeaderMeasurementService } from '../domain-logic/table-header-measurement.service';
+import { NatTableIntlService } from '../domain-logic/table-intl.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
@@ -43,7 +53,7 @@ import { NatTableResizeService } from '../resize/table-resize.service';
 import { NatTableRowRenderEmitter } from '../ui/row-render-emitter.directive';
 import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NatTableResizeGuide } from '../ui/table-layout.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
-import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
+import { getHeaderRowColumnIds, resolveColumnLabel, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
 
 /**
@@ -77,7 +87,14 @@ import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDes
     NatTablePxWidth,
     NatTableResizeGuide
   ],
-  providers: [NatTableState, NatTableA11yService, NatTableResizeService, NatTableReorderService, NatTableHeaderMeasurementService],
+  providers: [
+    NatTableState,
+    NatTableIntlService,
+    NatTableA11yService,
+    NatTableResizeService,
+    NatTableReorderService,
+    NatTableHeaderMeasurementService
+  ],
   templateUrl: './table.html',
   styleUrl: './table.css'
 })
@@ -119,6 +136,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
   private readonly a11yService = inject<NatTableA11yService<TData>>(NatTableA11yService);
+  private readonly intlService = inject<NatTableIntlService<TData>>(NatTableIntlService);
   private readonly resizeService = inject<NatTableResizeService<TData>>(NatTableResizeService);
   private readonly reorderService = inject<NatTableReorderService<TData>>(NatTableReorderService);
   private readonly destroyRef = inject(DestroyRef);
@@ -129,13 +147,44 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   /** Public: NatTableUiController consumers (surface `[for]="grid"`) need these. */
   public readonly enablePagination = this.state.enablePagination;
   public readonly enableGlobalFilter = this.state.enableGlobalFilter;
+  /**
+   * @deprecated Prefer the typed commands/selectors (sorting, column visibility, and row selection
+   * now have typed alternatives). Retained for custom export-handler context and advanced raw reads
+   * against the underlying TanStack instance.
+   */
   public readonly table = this.state.table;
+  /** Current pagination slice sourced from the live table state. */
+  public readonly pagination = computed(() => this.state.table.getState().pagination);
+  /** Total page count, floored at 1 so companion controls always render at least one page. */
+  public readonly pageCount = computed(() => Math.max(1, this.state.resolvedPageCount()));
+  /** Whether a previous page is available for navigation. */
+  public readonly canPreviousPage = computed(() => this.state.table.getCanPreviousPage());
+  /** Whether a next page is available for navigation. */
+  public readonly canNextPage = computed(() => this.state.table.getCanNextPage());
+  /** Current global filter query (empty string when unset). */
+  public readonly globalFilter = computed<string>(() => String(this.state.table.getState().globalFilter ?? ''));
+  /** Active column filters from the live table state. */
+  public readonly columnFilters = computed(() => this.state.table.getState().columnFilters);
+  /** Current sorting state from the live table state. */
+  public readonly sorting = computed<SortingState>(() => this.state.table.getState().sorting);
+  /** All leaf columns in order, with resolved labels and visibility. */
+  public readonly columnVisibility = computed<readonly NatTableColumnVisibilityItem[]>(() =>
+    this.state.table.getAllLeafColumns().map((column) => ({
+      id: column.id,
+      label: resolveColumnLabel(column),
+      visible: column.getIsVisible(),
+      canHide: column.getCanHide()
+    }))
+  );
+
+  /** Current row-selection state from the live table state. */
+  public readonly rowSelection = computed<RowSelectionState>(() => this.state.table.getState().rowSelection);
   /** Stable DOM id for the rendered `<table>` element. */
   public readonly tableElementId = this.state.tableElementId;
   /** Scrollable wrapper around the rendered `<table>` for companion scroll controls. */
   public readonly tableScrollContainer = computed(() => this.tableRegionRef()?.nativeElement ?? null);
   /** Resolved locale id (from the surface or the built-in English default). */
-  public readonly localeId = this.state.localeId;
+  public readonly localeId = this.intlService.localeId;
 
   protected readonly headerGroups = this.state.headerGroups;
   protected readonly bodyRows = this.state.bodyRows;
@@ -155,20 +204,20 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   protected readonly tableAriaBusy = this.state.tableAriaBusy;
   protected readonly renderCycleToken = this.state.renderCycleToken;
   protected readonly renderCycleStartedAt = this.state.renderCycleStartedAt;
-  protected readonly resolvedDescription = this.state.resolvedDescription;
-  protected readonly resolvedEmptyState = this.state.resolvedEmptyState;
-  protected readonly resolvedLoadingState = this.state.resolvedLoadingState;
-  protected readonly resolvedErrorState = this.state.resolvedErrorState;
+  protected readonly resolvedDescription = this.a11yService.resolvedDescription;
+  protected readonly resolvedEmptyState = this.a11yService.resolvedEmptyState;
+  protected readonly resolvedLoadingState = this.a11yService.resolvedLoadingState;
+  protected readonly resolvedErrorState = this.a11yService.resolvedErrorState;
 
-  // ─── ARIA computeds (delegated to state, except ariaDescribedBy which bridges state + service) ───
+  // ─── ARIA computeds (delegated to the a11y service, except ariaDescribedBy which bridges component-level aliases) ───
 
-  protected readonly tableCaptionId = this.state.tableCaptionId;
-  protected readonly tableSummaryId = this.state.tableSummaryId;
-  protected readonly tableDescriptionId = this.state.tableDescriptionId;
-  protected readonly tableKeyboardInstructionsId = this.state.tableKeyboardInstructionsId;
-  protected readonly tableAriaLabel = this.state.tableAriaLabel;
-  protected readonly tableAriaLabelledBy = this.state.tableAriaLabelledBy;
-  protected readonly resolvedKeyboardInstructions = this.state.resolvedKeyboardInstructions;
+  protected readonly tableCaptionId = this.a11yService.tableCaptionId;
+  protected readonly tableSummaryId = this.a11yService.tableSummaryId;
+  protected readonly tableDescriptionId = this.a11yService.tableDescriptionId;
+  protected readonly tableKeyboardInstructionsId = this.a11yService.tableKeyboardInstructionsId;
+  protected readonly tableAriaLabel = this.a11yService.tableAriaLabel;
+  protected readonly tableAriaLabelledBy = this.a11yService.tableAriaLabelledBy;
+  protected readonly resolvedKeyboardInstructions = this.a11yService.resolvedKeyboardInstructions;
 
   protected readonly ariaDescribedBy = computed(() => {
     const ids: string[] = [];
@@ -297,14 +346,71 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     });
   }
 
-  // ─── NatTableUiController implementation (public API, delegates to state) ───
+  // ─── NatTableUiController command implementation (public API, thin delegations to the TanStack table) ───
 
-  public patchState(
-    updaters: Partial<{
-      [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
-    }>
-  ): void {
-    this.state.patchState(updaters);
+  public setGlobalFilter(value: string): void {
+    this.state.table.setGlobalFilter(value);
+  }
+
+  public setColumnFilter(columnId: string, value: unknown): void {
+    this.state.table.getColumn(columnId)?.setFilterValue(value);
+  }
+
+  public setColumnSort(columnId: string, direction: 'asc' | 'desc' | false): void {
+    if (!this.state.table.getColumn(columnId)) return;
+
+    if (direction === false) {
+      // Remove only this column's entry, leaving any other columns' sort entries intact.
+      this.state.table.setSorting((sorting) => sorting.filter((entry) => entry.id !== columnId));
+
+      return;
+    }
+
+    // Single-column absolute sort: replace the whole state with just this column.
+    this.state.table.setSorting([{ id: columnId, desc: direction === 'desc' }]);
+  }
+
+  public setColumnVisible(columnId: string, visible: boolean): void {
+    const column = this.state.table.getColumn(columnId);
+
+    if (!column || (!visible && !column.getCanHide())) return;
+
+    column.toggleVisibility(visible);
+  }
+
+  public setRowSelected(rowId: string, selected: boolean): void {
+    if (!this.state.enableRowSelection()) return;
+
+    // Look up via the core row model instead of `getRow`, which throws on unknown ids —
+    // the no-op-on-unknown convention matches setColumnFilter/setColumnSort/setColumnVisible.
+    // `rowsById` is typed as a total record, so guard with `in` (the index type hides the runtime miss).
+    const rowsById = this.state.table.getCoreRowModel().rowsById;
+
+    if (!(rowId in rowsById)) return;
+
+    rowsById[rowId].toggleSelected(selected);
+  }
+
+  public clearRowSelection(): void {
+    this.state.table.setRowSelection({});
+  }
+
+  public setPageSize(size: number): void {
+    // Atomic reset (page size + first page in one state transition) so controlled-state
+    // consumers receive a single absolute update, matching the prior patchState behavior.
+    this.state.table.setPagination({ pageIndex: 0, pageSize: size });
+  }
+
+  public goToPage(pageIndex: number): void {
+    this.state.table.setPageIndex(Math.min(Math.max(0, pageIndex), this.pageCount() - 1));
+  }
+
+  public nextPage(): void {
+    if (this.canNextPage()) this.state.table.nextPage();
+  }
+
+  public previousPage(): void {
+    this.state.table.previousPage();
   }
 
   // ─── Template event handlers ───
