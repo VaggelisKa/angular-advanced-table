@@ -22,9 +22,14 @@ export class NatTableCellControlManager {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly destroyRef = inject(DestroyRef);
   private readonly knownCells = new WeakSet<HTMLElement>();
+  private started = false;
   private observer: MutationObserver | null = null;
 
-  public constructor() {
+  public startCellControlPreparation(): void {
+    if (this.started) return;
+
+    this.started = true;
+
     const mutationObserverCtor = globalThis.MutationObserver;
 
     if (typeof mutationObserverCtor === 'undefined') {

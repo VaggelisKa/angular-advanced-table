@@ -276,8 +276,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public constructor() {
     // NatTableHeaderMeasurementService is self-contained; injecting triggers its constructor lifecycle.
     inject<NatTableHeaderMeasurementService<TData>>(NatTableHeaderMeasurementService);
-    // NatTableCellControlManager owns one initial control sweep and one observer per table.
-    inject(NatTableCellControlManager);
+    inject(NatTableCellControlManager).startCellControlPreparation();
 
     this.natTableService.setController(this);
 
