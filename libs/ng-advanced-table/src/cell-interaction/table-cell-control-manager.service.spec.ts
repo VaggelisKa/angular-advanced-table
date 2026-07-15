@@ -8,6 +8,7 @@ import { NAT_TABLE_CELL_SELECTOR, NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from
 import { natTableCellControlPreparation } from './utils/cell-control-preparation.util';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 import { NatTable } from '../table/table';
+import { waitForControlPrepared, waitForMutation } from '../test-helpers/cell-control-dom.helper';
 import { buildRows } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { queryRequired } from '../test-helpers/table-dom.helper';
@@ -37,37 +38,6 @@ class TableCellControlManagerHost {
     }
   ];
 }
-
-const waitForMutation = (target: Node, options: MutationObserverInit): Promise<void> =>
-  new Promise((resolve) => {
-    const observer = new MutationObserver(() => {
-      observer.disconnect();
-      resolve();
-    });
-
-    observer.observe(target, options);
-  });
-
-const waitForControlPrepared = (control: HTMLElement): Promise<void> =>
-  new Promise((resolve) => {
-    if (control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex === -1) {
-      resolve();
-
-      return;
-    }
-
-    const observer = new MutationObserver(() => {
-      if (control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex === -1) {
-        observer.disconnect();
-        resolve();
-      }
-    });
-
-    observer.observe(control, {
-      attributes: true,
-      attributeFilter: [NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE, 'tabindex']
-    });
-  });
 
 describe('FEATURE: NatTable cell-control mutation management', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -237,17 +207,11 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
         nestedKnownCell.remove();
         wrapper.append(button, nestedKnownCell);
 
-        const contentAdded = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
-
-          observer.observe(outerCell, { childList: true });
-        });
+        const contentAdded = waitForMutation(outerCell, { childList: true });
 
         outerCell.appendChild(wrapper);
         await contentAdded;
+        await waitForControlPrepared(button);
 
         expect(button.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
         expect(button.tabIndex).toBe(-1);

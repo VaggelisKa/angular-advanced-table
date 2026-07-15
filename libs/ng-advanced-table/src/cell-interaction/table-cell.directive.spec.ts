@@ -8,6 +8,7 @@ import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction.cons
 import { natTableCellControlPreparation } from './utils/cell-control-preparation.util';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 import { NatTable } from '../table/table';
+import { prepareButtonsInBodyCells, waitForControlPrepared, waitForMutation } from '../test-helpers/cell-control-dom.helper';
 import { buildRows } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
@@ -102,59 +103,6 @@ class TableCellRenderCallbackHost {
   }
 }
 
-const waitForMutation = (target: Node, options: MutationObserverInit): Promise<void> =>
-  new Promise((resolve) => {
-    const observer = new MutationObserver(() => {
-      observer.disconnect();
-      resolve();
-    });
-
-    observer.observe(target, options);
-  });
-
-const waitForControlPrepared = (control: HTMLElement): Promise<void> =>
-  new Promise((resolve) => {
-    if (control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex === -1) {
-      resolve();
-
-      return;
-    }
-
-    const observer = new MutationObserver(() => {
-      if (control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex === -1) {
-        observer.disconnect();
-        resolve();
-      }
-    });
-
-    observer.observe(control, {
-      attributes: true,
-      attributeFilter: [NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE, 'tabindex']
-    });
-  });
-
-const prepareButtonsInBodyCells = async (fixture: { nativeElement: HTMLElement }): Promise<HTMLButtonElement[]> => {
-  const cells = Array.from(fixture.nativeElement.querySelectorAll<HTMLElement>('tbody th, tbody td'));
-  const contentAdded = Promise.all(cells.map((cell) => waitForMutation(cell, { childList: true, subtree: true })));
-
-  for (const cell of cells) {
-    cell.innerHTML = '<button type="button">Edit</button>';
-  }
-
-  await contentAdded;
-
-  const buttons = Array.from(fixture.nativeElement.querySelectorAll<HTMLButtonElement>('tbody button'));
-
-  await Promise.all(buttons.map((button) => waitForControlPrepared(button)));
-
-  for (const button of buttons) {
-    expect(button.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
-    expect(button.tabIndex).toBe(-1);
-  }
-
-  return buttons;
-};
-
 describe('FEATURE: NatTable cell control preparation', () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -209,20 +157,14 @@ describe('FEATURE: NatTable cell control preparation', () => {
         await fixture.whenStable();
 
         const cell = queryRequired<HTMLTableCellElement>(fixture, 'tbody td');
-        const contentAdded = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
-
-          observer.observe(cell, { childList: true, subtree: true });
-        });
+        const contentAdded = waitForMutation(cell, { childList: true, subtree: true });
 
         cell.innerHTML = '<button type="button">Edit</button>';
         await contentAdded;
 
         const button = cell.querySelector('button') as HTMLButtonElement;
 
+        await waitForControlPrepared(button);
         expect(button.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
         expect(button.tabIndex).toBe(-1);
 
@@ -290,6 +232,12 @@ describe('FEATURE: NatTable cell control preparation', () => {
         await fixture.whenStable();
 
         const buttons = await prepareButtonsInBodyCells(fixture);
+
+        for (const button of buttons) {
+          expect(button.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+          expect(button.tabIndex).toBe(-1);
+        }
+
         const bodyCellCount = queryAll(fixture, 'tbody th, tbody td').length;
         const tbody = queryRequired<HTMLTableSectionElement>(fixture, 'tbody');
         const rowsMoved = waitForMutation(tbody, { childList: true });
@@ -339,14 +287,7 @@ describe('FEATURE: NatTable cell control preparation', () => {
         await fixture.whenStable();
 
         const cell = queryRequired<HTMLTableCellElement>(fixture, 'tbody td');
-        const contentAdded = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
-
-          observer.observe(cell, { childList: true, subtree: true });
-        });
+        const contentAdded = waitForMutation(cell, { childList: true, subtree: true });
 
         cell.innerHTML = '<button disabled type="button">Edit</button>';
         await contentAdded;
@@ -355,19 +296,7 @@ describe('FEATURE: NatTable cell control preparation', () => {
 
         expect(button.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe(false);
 
-        const controlPrepared = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            if (button.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) {
-              observer.disconnect();
-              resolve();
-            }
-          });
-
-          observer.observe(button, {
-            attributes: true,
-            attributeFilter: [NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE, 'tabindex']
-          });
-        });
+        const controlPrepared = waitForControlPrepared(button);
 
         button.disabled = false;
         await controlPrepared;
@@ -388,15 +317,7 @@ describe('FEATURE: NatTable cell control preparation', () => {
         await fixture.whenStable();
 
         const nextCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child td');
-
-        const tabindexChanged = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
-
-          observer.observe(nextCell, { attributes: true, attributeFilter: ['tabindex'] });
-        });
+        const tabindexChanged = waitForMutation(nextCell, { attributes: true, attributeFilter: ['tabindex'] });
 
         nextCell.tabIndex = 0;
         await tabindexChanged;
