@@ -25,6 +25,12 @@ export class NatTableCellControlManager {
   private started = false;
   private observer: MutationObserver | null = null;
 
+  /**
+   * Starts the one-time initial sweep and MutationObserver for this table.
+   *
+   * Called only from the `NatTable` constructor after the manager is provided on
+   * the table injector. Safe to call more than once; subsequent calls no-op.
+   */
   public startCellControlPreparation(): void {
     if (this.started) return;
 

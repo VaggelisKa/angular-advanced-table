@@ -1,9 +1,24 @@
 import { getNatTableCellsWithin, getOutermostElementRoots, prepareNatTableCellControl } from './cell-control-preparation.util';
-import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from '../cell-interaction.const';
+import { NAT_TABLE_CELL_CONTROL_ATTRIBUTE_FILTER, NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from '../cell-interaction.const';
 
 const buildButton = (): HTMLButtonElement => document.createElement('button');
 
+/**
+ * Attributes that change interactive-selector eligibility, preparation guards,
+ * or managed tabindex. The MutationObserver filter must stay an exact match so
+ * attribute flips cannot bypass preparation.
+ */
+const PREPARATION_RELEVANT_ATTRIBUTES = ['contenteditable', 'disabled', 'href', 'nggridcellwidget', 'role', 'tabindex'] as const;
+
 describe('FEATURE: NatTable cell-control preparation utilities', () => {
+  describe('GIVEN: the attribute filter contract for preparation-relevant mutations', () => {
+    describe('WHEN: the production filter is compared to preparation rules', () => {
+      it('THEN: it watches exactly the attributes preparation depends on', () => {
+        expect([...NAT_TABLE_CELL_CONTROL_ATTRIBUTE_FILTER]).toStrictEqual([...PREPARATION_RELEVANT_ATTRIBUTES]);
+      });
+    });
+  });
+
   describe('GIVEN: a disabled native control', () => {
     describe('WHEN: control preparation runs', () => {
       it('THEN: it leaves the control unmanaged', () => {

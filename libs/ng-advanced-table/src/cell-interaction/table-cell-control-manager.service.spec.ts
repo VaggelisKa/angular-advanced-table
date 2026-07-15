@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/angular-table';
 import { afterEach, vi } from 'vitest';
 
 import { NAT_TABLE_CELL_SELECTOR, NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction.const';
+import { natTableCellControlPreparation } from './utils/cell-control-preparation.util';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 import { NatTable } from '../table/table';
 import { buildRows } from '../test-helpers/table-data.helper';
@@ -37,6 +38,37 @@ class TableCellControlManagerHost {
   ];
 }
 
+const waitForMutation = (target: Node, options: MutationObserverInit): Promise<void> =>
+  new Promise((resolve) => {
+    const observer = new MutationObserver(() => {
+      observer.disconnect();
+      resolve();
+    });
+
+    observer.observe(target, options);
+  });
+
+const waitForControlPrepared = (control: HTMLElement): Promise<void> =>
+  new Promise((resolve) => {
+    if (control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex === -1) {
+      resolve();
+
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      if (control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex === -1) {
+        observer.disconnect();
+        resolve();
+      }
+    });
+
+    observer.observe(control, {
+      attributes: true,
+      attributeFilter: [NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE, 'tabindex']
+    });
+  });
+
 describe('FEATURE: NatTable cell-control mutation management', () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -49,26 +81,20 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
 
   describe('GIVEN: a known cell containing a prepared native control', () => {
     describe('WHEN: an irrelevant attribute changes on the cell', () => {
-      it('THEN: it does not rescan the cell control subtree', async () => {
+      it('THEN: it does not rescan the cell control subtree or re-prepare controls', async () => {
         const fixture = TestBed.createComponent(TableCellControlManagerHost);
 
         await fixture.whenStable();
 
         const cell = queryRequired<HTMLTableCellElement>(fixture, 'tbody td');
-        const contentAdded = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
-
-          observer.observe(cell, { childList: true });
-        });
+        const contentAdded = waitForMutation(cell, { childList: true });
 
         cell.innerHTML = '<button type="button">Edit</button>';
         await contentAdded;
 
         const originalQuerySelectorAll = Element.prototype.querySelectorAll;
         let cellPreparationScanCount = 0;
+        const prepareSpy = vi.spyOn(natTableCellControlPreparation, 'prepare');
 
         vi.spyOn(Element.prototype, 'querySelectorAll').mockImplementation(function (this: Element, selectors: string) {
           if (selectors === ROW_ACTIVATE_INTERACTIVE_SELECTOR && this.matches(NAT_TABLE_CELL_SELECTOR)) {
@@ -78,19 +104,15 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
           return originalQuerySelectorAll.call(this, selectors);
         });
 
-        const attributeChanged = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
+        prepareSpy.mockClear();
 
-          observer.observe(cell, { attributes: true, attributeFilter: ['aria-label'] });
-        });
+        const attributeChanged = waitForMutation(cell, { attributes: true, attributeFilter: ['aria-label'] });
 
         cell.setAttribute('aria-label', 'Updated consumer label');
         await attributeChanged;
 
         expect(cellPreparationScanCount).toBe(0);
+        expect(prepareSpy).not.toHaveBeenCalled();
 
         fixture.destroy();
       });
@@ -106,27 +128,13 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
 
         const sourceCell = queryRequired<HTMLTableCellElement>(fixture, 'tbody tr:first-child td');
         const targetCell = queryRequired<HTMLTableCellElement>(fixture, 'tbody tr:nth-child(2) td');
-        const contentAdded = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
-
-          observer.observe(sourceCell, { childList: true });
-        });
+        const contentAdded = waitForMutation(sourceCell, { childList: true });
 
         sourceCell.innerHTML = '<button type="button">Edit</button>';
         await contentAdded;
 
         const button = sourceCell.querySelector('button') as HTMLButtonElement;
-        const contentRemoved = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            observer.disconnect();
-            resolve();
-          });
-
-          observer.observe(sourceCell, { childList: true });
-        });
+        const contentRemoved = waitForMutation(sourceCell, { childList: true });
 
         button.remove();
         await contentRemoved;
@@ -135,6 +143,7 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
 
         const originalQuerySelectorAll = Element.prototype.querySelectorAll;
         let cellPreparationScanCount = 0;
+        const prepareSpy = vi.spyOn(natTableCellControlPreparation, 'prepare');
 
         vi.spyOn(Element.prototype, 'querySelectorAll').mockImplementation(function (this: Element, selectors: string) {
           if (selectors === ROW_ACTIVATE_INTERACTIVE_SELECTOR && this.matches(NAT_TABLE_CELL_SELECTOR)) {
@@ -144,16 +153,9 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
           return originalQuerySelectorAll.call(this, selectors);
         });
 
-        const controlPrepared = new Promise<void>((resolve) => {
-          const observer = new MutationObserver(() => {
-            if (button.tabIndex === -1) {
-              observer.disconnect();
-              resolve();
-            }
-          });
+        prepareSpy.mockClear();
 
-          observer.observe(button, { attributes: true, attributeFilter: ['tabindex'] });
-        });
+        const controlPrepared = waitForControlPrepared(button);
 
         targetCell.appendChild(button);
         await controlPrepared;
@@ -162,6 +164,57 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
         expect(button.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
         expect(button.tabIndex).toBe(-1);
         expect(cellPreparationScanCount).toBe(0);
+        expect(prepareSpy).toHaveBeenCalled();
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a non-interactive element already in a known cell', () => {
+    describe('WHEN: an attribute flip makes it match the interactive selector', () => {
+      it('THEN: it prepares role, href, and contenteditable transitions', async () => {
+        const fixture = TestBed.createComponent(TableCellControlManagerHost);
+
+        await fixture.whenStable();
+
+        const cell = queryRequired<HTMLTableCellElement>(fixture, 'tbody td');
+        const contentAdded = waitForMutation(cell, { childList: true });
+
+        // tabIndex 0 so preparation does not treat the element as an author opt-out
+        // once the interactive selector starts matching after the attribute flip.
+        cell.innerHTML = '<span tabindex="0">Role later</span><a tabindex="0">Link later</a><div tabindex="0">Edit later</div>';
+        await contentAdded;
+
+        const roleCandidate = cell.querySelector('span') as HTMLElement;
+        const hrefCandidate = cell.querySelector('a') as HTMLAnchorElement;
+        const editableCandidate = cell.querySelector('div') as HTMLElement;
+
+        expect(roleCandidate.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe(false);
+        expect(hrefCandidate.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe(false);
+        expect(editableCandidate.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe(false);
+
+        const rolePrepared = waitForControlPrepared(roleCandidate);
+
+        roleCandidate.setAttribute('role', 'button');
+        await rolePrepared;
+
+        const hrefPrepared = waitForControlPrepared(hrefCandidate);
+
+        hrefCandidate.setAttribute('href', '#details');
+        await hrefPrepared;
+
+        const editablePrepared = waitForControlPrepared(editableCandidate);
+
+        editableCandidate.setAttribute('contenteditable', 'true');
+        await editablePrepared;
+
+        expect(roleCandidate.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+        expect(roleCandidate.tabIndex).toBe(-1);
+        expect(hrefCandidate.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+        expect(hrefCandidate.tabIndex).toBe(-1);
+        expect(editableCandidate.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+        expect(editableCandidate.tabIndex).toBe(-1);
 
         fixture.destroy();
       });

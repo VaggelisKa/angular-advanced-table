@@ -36,16 +36,26 @@ export const getOutermostElementRoots = (roots: ReadonlySet<HTMLElement>): reado
   });
 };
 
-export const prepareNatTableCellControl = (control: HTMLElement): void => {
-  if (control.hasAttribute('ngGridCellWidget') || control.hasAttribute('disabled')) return;
+/**
+ * Prepares a single interactive control for the cell keyboard model.
+ *
+ * Exposed as a method on an object so unit tests can spy without redefining
+ * the ESM export binding (which Angular/Vitest marks non-configurable).
+ */
+export const natTableCellControlPreparation = {
+  prepare(control: HTMLElement): void {
+    if (control.hasAttribute('ngGridCellWidget') || control.hasAttribute('disabled')) return;
 
-  if (!control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex < 0) return;
+    if (!control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex < 0) return;
 
-  if (!control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) {
-    control.setAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE, '');
-  }
+    if (!control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) {
+      control.setAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE, '');
+    }
 
-  if (control.tabIndex !== -1) {
-    control.tabIndex = -1;
+    if (control.tabIndex !== -1) {
+      control.tabIndex = -1;
+    }
   }
 };
+
+export const prepareNatTableCellControl = (control: HTMLElement): void => natTableCellControlPreparation.prepare(control);
