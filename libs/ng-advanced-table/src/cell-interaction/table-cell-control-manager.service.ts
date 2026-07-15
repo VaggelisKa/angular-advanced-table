@@ -1,6 +1,6 @@
 import { DestroyRef, ElementRef, Injectable, afterEveryRender, afterNextRender, inject } from '@angular/core';
 
-import { NAT_TABLE_CELL_SELECTOR } from './cell-interaction.const';
+import { NAT_TABLE_CELL_CONTROL_ATTRIBUTE_FILTER, NAT_TABLE_CELL_SELECTOR } from './cell-interaction.const';
 import { getNatTableCellsWithin, getOutermostElementRoots, prepareNatTableCellControl } from './utils/cell-control-preparation.util';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 
@@ -33,6 +33,7 @@ export class NatTableCellControlManager {
     const mutationObserverCtor = globalThis.MutationObserver;
 
     if (typeof mutationObserverCtor === 'undefined') {
+      // Retain correctness with one table-level snapshot per render rather than one scan per cell.
       afterEveryRender({
         earlyRead: () => this.readSnapshot(),
         write: (snapshot) => this.prepareSnapshot(snapshot)
@@ -77,12 +78,17 @@ export class NatTableCellControlManager {
     this.observer = new mutationObserverCtor((mutations) => this.prepareMutations(mutations));
     this.observer.observe(this.host, {
       attributes: true,
-      attributeFilter: ['contenteditable', 'disabled', 'href', 'nggridcellwidget', 'role', 'tabindex'],
+      attributeFilter: [...NAT_TABLE_CELL_CONTROL_ATTRIBUTE_FILTER],
       childList: true,
       subtree: true
     });
   }
 
+  /**
+   * Prepare direct interactive attribute targets immediately, then batch child
+   * mutations into new-cell roots or additions within known cells. Known cells
+   * that were only moved produce no preparation work.
+   */
   private prepareMutations(mutations: readonly MutationRecord[]): void {
     const newCells = new Set<HTMLElement>();
     const newCellRoots = new Set<HTMLElement>();

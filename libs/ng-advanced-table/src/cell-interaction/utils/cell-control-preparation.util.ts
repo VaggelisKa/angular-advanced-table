@@ -20,6 +20,7 @@ export const getNatTableCellsWithin = (root: HTMLElement): readonly HTMLElement[
   return cells;
 };
 
+/** Returns shallowest candidate roots while excluding candidates nested below another selected root. */
 export const getOutermostElementRoots = (roots: ReadonlySet<HTMLElement>): readonly HTMLElement[] => {
   const candidates = Array.from(roots).sort((left, right) => elementDepth(left) - elementDepth(right));
   const selectedRoots = new WeakSet<HTMLElement>();
