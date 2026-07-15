@@ -43,10 +43,20 @@ export class NatTableCellControlManager {
     }
 
     afterNextRender({
-      earlyRead: () => this.readSnapshot(),
+      earlyRead: () => {
+        const snapshot = this.readSnapshot();
+
+        // Observe before any write callback can add controls, independent of Angular's callback ordering.
+        this.observe(mutationObserverCtor);
+
+        return snapshot;
+      },
       write: (snapshot) => {
         this.prepareSnapshot(snapshot);
-        this.observe(mutationObserverCtor);
+
+        const pendingMutations = this.observer?.takeRecords() ?? [];
+
+        if (pendingMutations.length > 0) this.prepareMutations(pendingMutations);
       }
     });
 
@@ -110,7 +120,7 @@ export class NatTableCellControlManager {
       const owner = subtree.closest<HTMLElement>(NAT_TABLE_CELL_SELECTOR);
 
       if (owner && !newCells.has(owner) && this.knownCells.has(owner)) {
-        this.prepareSubtree(subtree);
+        this.prepareSubtree(subtree, owner);
       }
     }
   }
@@ -162,7 +172,7 @@ export class NatTableCellControlManager {
       return;
     }
 
-    if (containedCells.length > 0) return;
+    if (addedNode.matches(NAT_TABLE_CELL_SELECTOR)) return;
 
     const owner = addedNode.closest<HTMLElement>(NAT_TABLE_CELL_SELECTOR);
 
@@ -171,13 +181,13 @@ export class NatTableCellControlManager {
     }
   }
 
-  private prepareSubtree(root: HTMLElement): void {
-    if (root.matches(ROW_ACTIVATE_INTERACTIVE_SELECTOR) && this.isOwnedControl(root)) {
+  private prepareSubtree(root: HTMLElement, ownerCell?: HTMLElement): void {
+    if (root.matches(ROW_ACTIVATE_INTERACTIVE_SELECTOR) && this.isOwnedControl(root, ownerCell)) {
       prepareNatTableCellControl(root);
     }
 
     for (const control of root.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR)) {
-      if (this.isOwnedControl(control)) {
+      if (this.isOwnedControl(control, ownerCell)) {
         prepareNatTableCellControl(control);
       }
     }
@@ -187,9 +197,9 @@ export class NatTableCellControlManager {
     return cell.closest('nat-table') === this.host;
   }
 
-  private isOwnedControl(control: HTMLElement): boolean {
+  private isOwnedControl(control: HTMLElement, ownerCell?: HTMLElement): boolean {
     const cell = control.closest<HTMLElement>(NAT_TABLE_CELL_SELECTOR);
 
-    return cell !== null && this.isOwnedCell(cell);
+    return cell !== null && (ownerCell ? cell === ownerCell : this.isOwnedCell(cell));
   }
 }

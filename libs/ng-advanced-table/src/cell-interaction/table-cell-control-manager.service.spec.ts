@@ -167,4 +167,40 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
       });
     });
   });
+
+  describe('GIVEN: an added wrapper inside a known cell containing a control and a nested known cell', () => {
+    describe('WHEN: the wrapper is inserted into the outer cell', () => {
+      it('THEN: it prepares the sibling control', async () => {
+        const fixture = TestBed.createComponent(TableCellControlManagerHost);
+
+        await fixture.whenStable();
+
+        const outerCell = queryRequired<HTMLTableCellElement>(fixture, 'tbody tr:first-child td');
+        const nestedKnownCell = queryRequired<HTMLTableCellElement>(fixture, 'tbody tr:nth-child(2) td');
+        const wrapper = document.createElement('div');
+        const button = document.createElement('button');
+
+        button.textContent = 'Edit';
+        nestedKnownCell.remove();
+        wrapper.append(button, nestedKnownCell);
+
+        const contentAdded = new Promise<void>((resolve) => {
+          const observer = new MutationObserver(() => {
+            observer.disconnect();
+            resolve();
+          });
+
+          observer.observe(outerCell, { childList: true });
+        });
+
+        outerCell.appendChild(wrapper);
+        await contentAdded;
+
+        expect(button.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+        expect(button.tabIndex).toBe(-1);
+
+        fixture.destroy();
+      });
+    });
+  });
 });
