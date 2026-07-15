@@ -1,3 +1,13 @@
+## 2.10.0 (2026-07-15)
+
+### 🚀 Features
+
+- Add an opt-in, shared divider-shadow color for the outer edges of left- and right-pinned column zones while preserving the existing one-pixel divider as the default, and keep stock-theme pinned headers aligned with the regular header background. ([#299](https://github.com/VaggelisKa/angular-advanced-table/pull/299))
+
+### 🩹 Fixes
+
+- Avoid rescanning every table cell after unrelated renders while continuing to prepare controls added or enabled dynamically. ([#300](https://github.com/VaggelisKa/angular-advanced-table/pull/300))
+
 ## 2.9.0 (2026-07-13)
 
 ### 🚀 Features
