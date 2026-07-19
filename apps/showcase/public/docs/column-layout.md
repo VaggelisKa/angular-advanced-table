@@ -20,7 +20,7 @@ The shadow supplements the existing divider. Leave the token unset or set it to 
 
 ## Reordering And Resizing
 
-Reordering changes the rendered column order. It is disabled by default; set `[enableReordering]="true"` on the surface before exposing drag/drop, header move menus, or keyboard column moves. Once the surface enables it, every column reorders by default — opt one out with `meta: { reorderable: false }`. Resizing changes width state and is also disabled by default; set `[enableColumnResizing]="true"` on the surface to enable it for all columns, then opt a single column out with `enableResizing: false`. Both need keyboard support because pointer-only layout controls are not accessible enough for this table library.
+Reordering changes the rendered column order. It is disabled by default; set `[enableReordering]="true"` on the surface to enable drag/drop, header move menus, and keyboard column moves for every column, then opt one out with `meta: { reorderable: false }`. Leave the surface off and set `meta: { reorderable: true }` when only specific columns should expose those reordering paths. Resizing changes width state and is also disabled by default; set `[enableColumnResizing]="true"` on the surface to enable it for all columns, then opt a single column out with `enableResizing: false`. Both need keyboard support because pointer-only layout controls are not accessible enough for this table library.
 
 Use `columnSizingMode="fill"` when columns should stretch to the available width. Use `columnSizingMode="fixed"` when column widths should stay authoritative and the table may scroll horizontally.
 
