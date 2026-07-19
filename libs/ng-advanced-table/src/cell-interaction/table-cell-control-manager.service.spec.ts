@@ -141,6 +141,37 @@ describe('FEATURE: NatTable cell-control mutation management', () => {
     });
   });
 
+  describe('GIVEN: a known cell removed from the table', () => {
+    describe('WHEN: a native control is added while detached and the cell is reinserted later', () => {
+      it('THEN: it prepares the control after the cell returns to the table', async () => {
+        const fixture = TestBed.createComponent(TableCellControlManagerHost);
+
+        await fixture.whenStable();
+
+        const row = queryRequired<HTMLTableRowElement>(fixture, 'tbody tr');
+        const cell = queryRequired<HTMLTableCellElement>(fixture, 'tbody td');
+        const cellRemoved = waitForMutation(row, { childList: true });
+
+        cell.remove();
+        await cellRemoved;
+
+        cell.innerHTML = '<button type="button">Edit</button>';
+
+        const button = cell.querySelector('button') as HTMLButtonElement;
+        const cellReinserted = waitForMutation(row, { childList: true });
+
+        row.appendChild(cell);
+        await cellReinserted;
+        await fixture.whenStable();
+
+        expect(button.getAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe('');
+        expect(button.tabIndex).toBe(-1);
+
+        fixture.destroy();
+      });
+    });
+  });
+
   describe('GIVEN: a non-interactive element already in a known cell', () => {
     describe('WHEN: an attribute flip makes it match the interactive selector', () => {
       it('THEN: it prepares role, href, and contenteditable transitions', async () => {
