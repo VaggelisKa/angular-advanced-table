@@ -57,7 +57,7 @@ Prefer the scoped surface for normal pages. Use direct controller binding only w
 
 ## Header Actions
 
-Wrap column definitions with `withNatTableHeaderActions(...)` to compose shared header controls, then enable each capability on the surface: `[enableSorting]="true"` for sort buttons, `[enablePinning]="true"` for the pin menu, and `[enableReordering]="true"` for menu-based reordering. Sorting and pinning resolve as `column.<flag> ?? surface.<enabler>`; reordering resolves as `column.meta.reorderable ?? surface.enableReordering`. Once reordering is enabled, every column reorders by default; opt a column out with `meta: { reorderable: false }` and its menu and keyboard move controls disappear.
+Wrap column definitions with `withNatTableHeaderActions(...)` to compose shared header controls, then enable each capability on the surface: `[enableSorting]="true"` for sort buttons, `[enablePinning]="true"` for the pin menu, and `[enableReordering]="true"` for menu-based reordering across all columns. Sorting and pinning resolve as `column.<flag> ?? surface.<enabler>`; reordering resolves as `column.meta.reorderable ?? surface.enableReordering`. With the surface on, every column reorders by default; opt a column out with `meta: { reorderable: false }` and its menu and keyboard move controls disappear. With the surface off, set `meta: { reorderable: true }` on the columns that should expose drag/drop, menu moves, and keyboard reordering.
 
 ```html
 <nat-table-surface [enableSorting]="true" [enablePinning]="true" [enableReordering]="true">
@@ -269,4 +269,4 @@ readonly columns = withNatTableHeaderActions(
 );
 ```
 
-This prevents utility columns from being wrapped more than intended and lets header actions see the final column list. As above, columns reorder by default once `[enableReordering]="true"` is set; opt a column out of the generated move controls with `meta: { reorderable: false }`.
+This prevents utility columns from being wrapped more than intended and lets header actions see the final column list. As above, columns reorder by default once `[enableReordering]="true"` is set; opt a column out of the generated move controls with `meta: { reorderable: false }`, or leave the surface off and opt individual columns in with `meta: { reorderable: true }`.
