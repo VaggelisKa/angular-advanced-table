@@ -219,14 +219,34 @@ describe('FEATURE: NatTable', () => {
         expect(cssText).toContain('--nat-table-region-border-width');
         expect(cssText).toContain('--nat-table-cell-border-width');
         expect(cssText).toContain('--nat-table-header-border-width');
-        expect(leftPinnedEdgeRule.style.boxShadow).toContain('inset -1px 0 0');
-        expect(rightPinnedEdgeRule.style.boxShadow).toContain('inset 1px 0 0');
+        expect(leftPinnedEdgeRule.cssText).toContain('inset -1px 0 0');
+        expect(rightPinnedEdgeRule.cssText).toContain('inset 1px 0 0');
         expect(constrainedCellRule.style.overflow).toBe('hidden');
-        expect(leftPinnedEdgeRule.style.boxShadow).toContain('10px 0 0');
-        expect(rightPinnedEdgeRule.style.boxShadow).toContain('-10px 0 0');
-        expect(cssText).toContain('color-mix(');
+        // The shared size token stays direction-agnostic; the library owns
+        // direction, casting the fade outward per zone (+size left, -size right).
+        expect(cssText).toContain('--nat-table-pinned-edge-shadow-size');
+        expect(leftPinnedEdgeRule.cssText).not.toContain('calc(-1 *');
+        expect(rightPinnedEdgeRule.cssText).toContain('calc(-1 * var(--nat-table-pinned-edge-shadow-size');
         expect(cssText).toContain('--nat-table-pinned-divider-shadow-color');
         expect(cssText).toContain('transparent');
+      });
+
+      it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {
+        fixture.detectChanges();
+
+        // Left-pinned by default: the name column's header is the outermost left cell.
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left')).not.toBeNull();
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right')).toBeNull();
+
+        host.state.set({ columnPinning: { left: [], right: ['name'] } });
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        // Re-pinned right: the mirrored right-edge class now applies instead, so the
+        // library-owned direction (asserted at the rule level above) lands on the right zone.
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right')).not.toBeNull();
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left')).toBeNull();
       });
     });
 
