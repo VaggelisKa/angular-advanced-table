@@ -231,35 +231,22 @@ describe('FEATURE: NatTable', () => {
         expect(cssText).toContain('transparent');
       });
 
-      it('THEN: it mirrors the pinned-edge shadow direction so each zone fades onto the scrollable content', async () => {
+      it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {
         fixture.detectChanges();
 
-        const hostElement = fixture.nativeElement as HTMLElement;
+        // Left-pinned by default: the name column's header is the outermost left cell.
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left')).not.toBeNull();
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right')).toBeNull();
 
-        document.body.appendChild(hostElement);
+        host.state.set({ columnPinning: { left: [], right: ['name'] } });
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
 
-        try {
-          const leftEdgeCell = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left');
-          const leftShadow = getComputedStyle(leftEdgeCell).boxShadow;
-
-          // Left zone casts the shared size rightward (bare +size offset), never mirrored.
-          expect(leftShadow).toContain(
-            'var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px)) 0'
-          );
-          expect(leftShadow).not.toContain('calc(-1 *');
-
-          host.state.set({ columnPinning: { left: [], right: ['name'] } });
-          fixture.detectChanges();
-          await fixture.whenStable();
-          fixture.detectChanges();
-
-          const rightEdgeCell = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right');
-
-          // Right zone mirrors that same shared size leftward, not into empty space.
-          expect(getComputedStyle(rightEdgeCell).boxShadow).toContain('calc(-1 * var(--nat-table-pinned-edge-shadow-size');
-        } finally {
-          hostElement.remove();
-        }
+        // Re-pinned right: the mirrored right-edge class now applies instead, so the
+        // library-owned direction (asserted at the rule level above) lands on the right zone.
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right')).not.toBeNull();
+        expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left')).toBeNull();
       });
     });
 
