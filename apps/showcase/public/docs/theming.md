@@ -135,6 +135,7 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-pinned-header-background`    | Pinned header cell background (falls back to `--nat-table-pinned-background`) |
 | `--nat-table-pinned-divider-color`        | Pinned edge divider                                                           |
 | `--nat-table-pinned-divider-shadow-color` | Shared opt-in shadow color for both pinned-zone boundaries                    |
+| `--nat-table-pinned-edge-shadow`          | Shared full `box-shadow` override for both pinned-zone fades (divider kept)   |
 | `--nat-table-cell-border-color`           | Body cell divider                                                             |
 | `--nat-table-cell-border-width`           | Body cell divider width                                                       |
 | `--nat-table-cell-color-positive`         | Positive semantic cell tone                                                   |

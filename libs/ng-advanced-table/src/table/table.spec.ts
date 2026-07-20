@@ -219,12 +219,12 @@ describe('FEATURE: NatTable', () => {
         expect(cssText).toContain('--nat-table-region-border-width');
         expect(cssText).toContain('--nat-table-cell-border-width');
         expect(cssText).toContain('--nat-table-header-border-width');
-        expect(leftPinnedEdgeRule.style.boxShadow).toContain('inset -1px 0 0');
-        expect(rightPinnedEdgeRule.style.boxShadow).toContain('inset 1px 0 0');
+        expect(leftPinnedEdgeRule.cssText).toContain('inset -1px 0 0');
+        expect(rightPinnedEdgeRule.cssText).toContain('inset 1px 0 0');
         expect(constrainedCellRule.style.overflow).toBe('hidden');
-        expect(leftPinnedEdgeRule.style.boxShadow).toContain('10px 0 0');
-        expect(rightPinnedEdgeRule.style.boxShadow).toContain('-10px 0 0');
-        expect(cssText).toContain('color-mix(');
+        expect(leftPinnedEdgeRule.cssText).toContain('6px 0 6px -3px');
+        expect(rightPinnedEdgeRule.cssText).toContain('-6px 0 6px -3px');
+        expect(cssText).toContain('--nat-table-pinned-edge-shadow');
         expect(cssText).toContain('--nat-table-pinned-divider-shadow-color');
         expect(cssText).toContain('transparent');
       });
