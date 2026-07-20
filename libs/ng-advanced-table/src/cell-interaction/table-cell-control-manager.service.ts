@@ -1,7 +1,8 @@
 import { DestroyRef, ElementRef, Injectable, afterEveryRender, afterNextRender, inject } from '@angular/core';
 
-import { NAT_TABLE_CELL_CONTROL_ATTRIBUTE_FILTER, NAT_TABLE_CELL_SELECTOR } from './cell-interaction.const';
+import { NAT_TABLE_CELL_CONTROL_ATTRIBUTE_FILTER, NAT_TABLE_CELL_SELECTOR, NAT_TABLE_HOST_SELECTOR } from './cell-interaction.const';
 import { getNatTableCellsWithin, getOutermostElementRoots, prepareNatTableCellControl } from './utils/cell-control-preparation.util';
+import { forgetDetachedNatTableCells } from './utils/cell-control-tracking.util';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 
 type NatTableCellControlSnapshot = {
@@ -138,16 +139,16 @@ export class NatTableCellControlManager {
     addedSubtrees: Set<HTMLElement>
   ): void {
     if (mutation.type === 'attributes') {
-      if (
-        mutation.target instanceof HTMLElement &&
-        mutation.target.matches(ROW_ACTIVATE_INTERACTIVE_SELECTOR) &&
-        this.isOwnedControl(mutation.target)
-      ) {
-        prepareNatTableCellControl(mutation.target);
+      const target = mutation.target;
+
+      if (target instanceof HTMLElement && target.matches(ROW_ACTIVATE_INTERACTIVE_SELECTOR) && this.isOwnedControl(target)) {
+        prepareNatTableCellControl(target);
       }
 
       return;
     }
+
+    forgetDetachedNatTableCells(mutation.removedNodes, this.knownCells, this.host);
 
     for (const addedNode of mutation.addedNodes) {
       if (addedNode instanceof HTMLElement) {
@@ -200,7 +201,7 @@ export class NatTableCellControlManager {
   }
 
   private isOwnedCell(cell: HTMLElement): boolean {
-    return cell.closest('nat-table') === this.host;
+    return cell.closest(NAT_TABLE_HOST_SELECTOR) === this.host;
   }
 
   private isOwnedControl(control: HTMLElement, ownerCell?: HTMLElement): boolean {

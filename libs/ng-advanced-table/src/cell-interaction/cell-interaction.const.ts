@@ -2,6 +2,9 @@ export const NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE = 'data-nat-table-managed-c
 
 export const NAT_TABLE_CELL_SELECTOR = '[natTableCell]';
 
+/** Table host element, used to tell cells owned by one table from nested or foreign ones. */
+export const NAT_TABLE_HOST_SELECTOR = 'nat-table';
+
 /**
  * Mutable attributes that affect interactive-selector eligibility, preparation
  * guards, or managed tabindex state. Keep this aligned with those rules so
