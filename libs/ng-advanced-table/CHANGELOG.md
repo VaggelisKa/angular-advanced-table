@@ -1,3 +1,11 @@
+## 2.10.1 (2026-07-20)
+
+### 🩹 Fixes
+
+- Document current repository guidance for future coding agents after RTL reorder and cell-control performance fixes. ([#301](https://github.com/VaggelisKa/angular-advanced-table/pull/301))
+- Clarify the per-column `meta.reorderable: true` documentation and internal cell-control wiring notes. ([#303](https://github.com/VaggelisKa/angular-advanced-table/pull/303))
+- Prepare interactive controls added while a table cell is detached when that cell is later reinserted. ([#302](https://github.com/VaggelisKa/angular-advanced-table/pull/302))
+
 ## 2.10.0 (2026-07-15)
 
 ### 🚀 Features
