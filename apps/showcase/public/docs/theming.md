@@ -113,42 +113,42 @@ The live example below scopes `--nat-table-*` tokens on `NatTableSurface`, with 
 
 These are the most common stable `ng-advanced-table` tokens to override directly.
 
-| Token                                     | Purpose                                                                       |
-| ----------------------------------------- | ----------------------------------------------------------------------------- |
-| `--nat-table-color-text`                  | Base table text color                                                         |
-| `--nat-table-color-border`                | Shared surface and control border                                             |
-| `--nat-table-color-divider`               | Shared row and cell divider                                                   |
-| `--nat-table-font-family`                 | Table font family                                                             |
-| `--nat-table-region-background`           | Scrollable table region background                                            |
-| `--nat-table-region-border-color`         | Scrollable table region border                                                |
-| `--nat-table-region-border-width`         | Scrollable table region border width                                          |
-| `--nat-table-radius-region`               | Scrollable table region radius                                                |
-| `--nat-table-header-background`           | Header background                                                             |
-| `--nat-table-header-color`                | Header text color                                                             |
-| `--nat-table-font-weight-header`          | Header text font weight                                                       |
-| `--nat-table-header-border-color`         | Header divider                                                                |
-| `--nat-table-header-border-width`         | Header divider width                                                          |
-| `--nat-table-row-background`              | Default body row background                                                   |
-| `--nat-table-row-background-hover`        | Hovered row background                                                        |
-| `--nat-table-row-background-focus`        | Focus-within row background                                                   |
-| `--nat-table-pinned-background`           | Pinned cell background                                                        |
-| `--nat-table-pinned-header-background`    | Pinned header cell background (falls back to `--nat-table-pinned-background`) |
-| `--nat-table-pinned-divider-color`        | Pinned edge divider                                                           |
-| `--nat-table-pinned-divider-shadow-color` | Shared opt-in shadow color for both pinned-zone boundaries                    |
-| `--nat-table-pinned-edge-shadow`          | Shared full `box-shadow` override for both pinned-zone fades (divider kept)   |
-| `--nat-table-cell-border-color`           | Body cell divider                                                             |
-| `--nat-table-cell-border-width`           | Body cell divider width                                                       |
-| `--nat-table-cell-color-positive`         | Positive semantic cell tone                                                   |
-| `--nat-table-cell-color-negative`         | Negative semantic cell tone                                                   |
-| `--nat-table-cell-color-warning`          | Warning semantic cell tone                                                    |
-| `--nat-table-cell-color-neutral`          | Neutral semantic cell tone                                                    |
-| `--nat-table-empty-state-color`           | Empty, loading, and error row text                                            |
-| `--nat-table-focus-ring-color`            | Keyboard focus indicator                                                      |
-| `--nat-table-focus-ring-width`            | Keyboard focus indicator width                                                |
-| `--nat-table-space-cell-y`                | Cell block padding                                                            |
-| `--nat-table-space-cell-x`                | Cell inline padding (shared base)                                             |
-| `--nat-table-space-header-cell-x`         | Header cell inline padding (falls back to `--nat-table-space-cell-x`)         |
-| `--nat-table-space-data-cell-x`           | Data cell inline padding (falls back to `--nat-table-space-cell-x`)           |
+| Token                                     | Purpose                                                                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------- |
+| `--nat-table-color-text`                  | Base table text color                                                           |
+| `--nat-table-color-border`                | Shared surface and control border                                               |
+| `--nat-table-color-divider`               | Shared row and cell divider                                                     |
+| `--nat-table-font-family`                 | Table font family                                                               |
+| `--nat-table-region-background`           | Scrollable table region background                                              |
+| `--nat-table-region-border-color`         | Scrollable table region border                                                  |
+| `--nat-table-region-border-width`         | Scrollable table region border width                                            |
+| `--nat-table-radius-region`               | Scrollable table region radius                                                  |
+| `--nat-table-header-background`           | Header background                                                               |
+| `--nat-table-header-color`                | Header text color                                                               |
+| `--nat-table-font-weight-header`          | Header text font weight                                                         |
+| `--nat-table-header-border-color`         | Header divider                                                                  |
+| `--nat-table-header-border-width`         | Header divider width                                                            |
+| `--nat-table-row-background`              | Default body row background                                                     |
+| `--nat-table-row-background-hover`        | Hovered row background                                                          |
+| `--nat-table-row-background-focus`        | Focus-within row background                                                     |
+| `--nat-table-pinned-background`           | Pinned cell background                                                          |
+| `--nat-table-pinned-header-background`    | Pinned header cell background (falls back to `--nat-table-pinned-background`)   |
+| `--nat-table-pinned-divider-color`        | Pinned edge divider                                                             |
+| `--nat-table-pinned-divider-shadow-color` | Shared opt-in shadow color for both pinned-zone boundaries                      |
+| `--nat-table-pinned-edge-shadow-size`     | Shared size of the pinned-zone fade; the library mirrors its direction per zone |
+| `--nat-table-cell-border-color`           | Body cell divider                                                               |
+| `--nat-table-cell-border-width`           | Body cell divider width                                                         |
+| `--nat-table-cell-color-positive`         | Positive semantic cell tone                                                     |
+| `--nat-table-cell-color-negative`         | Negative semantic cell tone                                                     |
+| `--nat-table-cell-color-warning`          | Warning semantic cell tone                                                      |
+| `--nat-table-cell-color-neutral`          | Neutral semantic cell tone                                                      |
+| `--nat-table-empty-state-color`           | Empty, loading, and error row text                                              |
+| `--nat-table-focus-ring-color`            | Keyboard focus indicator                                                        |
+| `--nat-table-focus-ring-width`            | Keyboard focus indicator width                                                  |
+| `--nat-table-space-cell-y`                | Cell block padding                                                              |
+| `--nat-table-space-cell-x`                | Cell inline padding (shared base)                                               |
+| `--nat-table-space-header-cell-x`         | Header cell inline padding (falls back to `--nat-table-space-cell-x`)           |
+| `--nat-table-space-data-cell-x`           | Data cell inline padding (falls back to `--nat-table-space-cell-x`)             |
 
 Set the border-width tokens to `0` when a design needs to remove the outer table boundary or internal dividers.
 

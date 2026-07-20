@@ -18,11 +18,12 @@ Pinned boundaries use a one-pixel divider by default. A divider shadow is opt-in
 
 The shadow supplements the existing divider. Leave the token unset or set it to `transparent` to disable the shadow. The stock theme does not enable divider shadows.
 
-To control the whole fade instead of only its color, set the shared `--nat-table-pinned-edge-shadow` token to a full `box-shadow` value. It replaces the built-in fade on both pinned zones while keeping the one-pixel divider, so you can tune blur, spread, and layering without overriding internal class names.
+To make the fade softer or more pronounced, set the shared `--nat-table-pinned-edge-shadow-size` token. It scales the fade for both pinned zones while keeping the one-pixel divider, and the library still mirrors the direction per zone — the left zone fades rightward and the right zone leftward onto the scrollable content — so you never author a side-specific offset.
 
 ```css
 .positions-table {
-  --nat-table-pinned-edge-shadow: 8px 0 10px -6px light-dark(rgb(15 23 42 / 25%), rgb(0 0 0 / 55%));
+  --nat-table-pinned-divider-shadow-color: light-dark(rgb(15 23 42 / 25%), rgb(0 0 0 / 55%));
+  --nat-table-pinned-edge-shadow-size: 10px;
 }
 ```
 

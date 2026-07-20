@@ -222,11 +222,44 @@ describe('FEATURE: NatTable', () => {
         expect(leftPinnedEdgeRule.cssText).toContain('inset -1px 0 0');
         expect(rightPinnedEdgeRule.cssText).toContain('inset 1px 0 0');
         expect(constrainedCellRule.style.overflow).toBe('hidden');
-        expect(leftPinnedEdgeRule.cssText).toContain('6px 0 6px -3px');
-        expect(rightPinnedEdgeRule.cssText).toContain('-6px 0 6px -3px');
-        expect(cssText).toContain('--nat-table-pinned-edge-shadow');
+        // The shared size token stays direction-agnostic; the library owns
+        // direction, casting the fade outward per zone (+size left, -size right).
+        expect(cssText).toContain('--nat-table-pinned-edge-shadow-size');
+        expect(leftPinnedEdgeRule.cssText).not.toContain('calc(-1 *');
+        expect(rightPinnedEdgeRule.cssText).toContain('calc(-1 * var(--nat-table-pinned-edge-shadow-size');
         expect(cssText).toContain('--nat-table-pinned-divider-shadow-color');
         expect(cssText).toContain('transparent');
+      });
+
+      it('THEN: it mirrors the pinned-edge shadow direction so each zone fades onto the scrollable content', async () => {
+        fixture.detectChanges();
+
+        const hostElement = fixture.nativeElement as HTMLElement;
+
+        document.body.appendChild(hostElement);
+
+        try {
+          const leftEdgeCell = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left');
+          const leftShadow = getComputedStyle(leftEdgeCell).boxShadow;
+
+          // Left zone casts the shared size rightward (bare +size offset), never mirrored.
+          expect(leftShadow).toContain(
+            'var(--nat-table-pinned-edge-shadow-size, var(--sys-nat-table-pinned-edge-shadow-size, 6px)) 0'
+          );
+          expect(leftShadow).not.toContain('calc(-1 *');
+
+          host.state.set({ columnPinning: { left: [], right: ['name'] } });
+          fixture.detectChanges();
+          await fixture.whenStable();
+          fixture.detectChanges();
+
+          const rightEdgeCell = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right');
+
+          // Right zone mirrors that same shared size leftward, not into empty space.
+          expect(getComputedStyle(rightEdgeCell).boxShadow).toContain('calc(-1 * var(--nat-table-pinned-edge-shadow-size');
+        } finally {
+          hostElement.remove();
+        }
       });
     });
 

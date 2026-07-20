@@ -156,7 +156,7 @@
   --sys-nat-table-pinned-header-background: var(--nat-table-pinned-header-background);
   --sys-nat-table-pinned-divider-color: var(--nat-table-pinned-divider-color);
   --sys-nat-table-pinned-divider-shadow-color: var(--nat-table-pinned-divider-shadow-color);
-  --sys-nat-table-pinned-edge-shadow: var(--nat-table-pinned-edge-shadow);
+  --sys-nat-table-pinned-edge-shadow-size: var(--nat-table-pinned-edge-shadow-size);
   --sys-nat-table-empty-state-color: var(--nat-table-empty-state-color);
   --sys-nat-table-loading-state-color: var(--nat-table-loading-state-color);
   --sys-nat-table-error-state-color: var(--nat-table-error-state-color);
