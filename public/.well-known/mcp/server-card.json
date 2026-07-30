@@ -175,6 +175,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list",
+      "name": "examples-table-to-list",
+      "title": "Table to list | Angular Advanced Table",
+      "description": "One engine driving table and list views",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/examples/sticky-header-max-height",
       "name": "examples-sticky-header-max-height",
       "title": "Sticky header max height | Angular Advanced Table",

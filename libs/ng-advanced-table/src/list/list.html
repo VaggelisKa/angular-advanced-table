@@ -1,0 +1,53 @@
+<div #listRegion class="list-region" data-testid="nat-list-region">
+  @if (tableSummary().trim()) {
+    <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
+  }
+  @if (resolvedDescription().trim()) {
+    <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
+  }
+
+  <ul
+    [attr.aria-busy]="tableAriaBusy()"
+    [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.aria-label]="listAriaLabel()"
+    [attr.dir]="resolvedDirection()"
+    [id]="tableElementId()"
+    class="nat-list"
+    data-testid="nat-list">
+    @switch (bodyState()) {
+      @case ('rows') {
+        <!-- Iterate the reactive visibleColumns() signal (not row.getVisibleCells())
+             so column order and visibility changes re-render the fields. -->
+        @let listColumns = visibleColumns();
+        @for (row of bodyRows(); track row.id) {
+          <li [attr.data-row-id]="row.id" class="list-item" data-testid="nat-list-item">
+            @for (column of listColumns; track column.id) {
+              @let cell = cellForColumn(row, column.id);
+              @if (cell) {
+                <div [attr.data-column-id]="column.id" class="list-field">
+                  <span class="list-field-label">{{ resolveColumnLabel(column) }}</span>
+                  <span class="list-field-value">
+                    <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
+                      {{ rendered }}
+                    </ng-container>
+                  </span>
+                </div>
+              }
+            }
+          </li>
+        }
+      }
+      @case ('loading') {
+        <li class="list-state loading-state" data-testid="nat-list-loading-state">{{ resolvedLoadingState() }}</li>
+      }
+      @case ('error') {
+        <li class="list-state error-state" data-testid="nat-list-error-state">{{ resolvedErrorState() }}</li>
+      }
+      @case ('empty') {
+        <li class="list-state empty-state" data-testid="nat-list-empty-state">{{ resolvedEmptyState() }}</li>
+      }
+    }
+  </ul>
+
+  <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-list-live-region">{{ liveMessage() }}</p>
+</div>

@@ -1,0 +1,97 @@
+<main class="showcase-page sc-demo-page">
+  <h2>Toggle between list and table with a single config</h2>
+
+  <section aria-label="Minimal code example" class="demo-code">
+    <pre class="demo-code-block"><code>{{ exampleCode }}</code></pre>
+  </section>
+
+  <section aria-label="Demo controls" class="demo-controls">
+    <div aria-label="View mode" class="control-group" role="group">
+      <button
+        [attr.aria-pressed]="view() === 'table'"
+        [class.is-active]="view() === 'table'"
+        data-testid="view-toggle-table"
+        type="button"
+        (click)="view.set('table')">
+        Table
+      </button>
+      <button
+        [attr.aria-pressed]="view() === 'list'"
+        [class.is-active]="view() === 'list'"
+        data-testid="view-toggle-list"
+        type="button"
+        (click)="view.set('list')">
+        List
+      </button>
+    </div>
+
+    <!-- <div aria-label="Sort orders" class="control-group" role="group">
+      <button
+        [attr.aria-pressed]="isSorted('customer', false)"
+        [class.is-active]="isSorted('customer', false)"
+        type="button"
+        (click)="sortBy('customer', false)">
+        Customer A–Z
+      </button>
+      <button
+        [attr.aria-pressed]="isSorted('total', true)"
+        [class.is-active]="isSorted('total', true)"
+        type="button"
+        (click)="sortBy('total', true)">
+        Total high–low
+      </button>
+    </div> -->
+  </section>
+
+  <section aria-label="Field order and visibility" class="field-order">
+    <ul class="field-order-chips">
+      @for (columnId of fieldOrder(); track columnId) {
+        <li class="field-order-chip">
+          <button
+            [attr.aria-label]="`Move ${fieldLabel(columnId)} earlier`"
+            [disabled]="$first"
+            class="field-order-move"
+            type="button"
+            (click)="moveField(columnId, -1)">
+            ◀
+          </button>
+          <button
+            [attr.aria-pressed]="isFieldVisible(columnId)"
+            [class.is-hidden]="!isFieldVisible(columnId)"
+            class="field-order-toggle"
+            type="button"
+            (click)="toggleField(columnId)">
+            {{ fieldLabel(columnId) }}
+          </button>
+          <button
+            [attr.aria-label]="`Move ${fieldLabel(columnId)} later`"
+            [disabled]="$last"
+            class="field-order-move"
+            type="button"
+            (click)="moveField(columnId, 1)">
+            ▶
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <nat-table-surface [enableReordering]="true" [enableSorting]="true" [(state)]="state">
+    <!-- <nat-table-column-visibility class="demo-column-visibility" label="Columns" /> -->
+    @if (view() === 'table') {
+      <nat-table
+        [columns]="columns"
+        [data]="rows"
+        [getRowId]="getRowId"
+        accessibleName="Orders table sharing state with the list view"
+        class="sc-demo-table" />
+    } @else {
+      <nat-list
+        [columns]="columns"
+        [data]="rows"
+        [getRowId]="getRowId"
+        accessibleName="Orders list sharing state with the table view"
+        class="sc-demo-list" />
+    }
+  </nat-table-surface>
+</main>

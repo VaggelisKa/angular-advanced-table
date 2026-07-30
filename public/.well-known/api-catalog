@@ -88,6 +88,10 @@
           "type": "text/html"
         },
         {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list",
+          "type": "text/html"
+        },
+        {
           "href": "https://angular-advanced-table.vercel.app/examples/sticky-header-max-height",
           "type": "text/html"
         },

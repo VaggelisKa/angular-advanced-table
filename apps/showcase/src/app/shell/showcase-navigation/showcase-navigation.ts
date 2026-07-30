@@ -23,6 +23,12 @@ export const showcaseExamples: readonly ShowcaseNavItem[] = [
     path: '/examples/builder'
   },
   {
+    id: 'table-to-list',
+    label: 'Table to list',
+    description: 'One engine driving table and list views',
+    path: '/examples/table-to-list'
+  },
+  {
     id: 'sticky-header-max-height',
     label: 'Sticky header max height',
     description: 'Sticky header with max height',
@@ -134,7 +140,7 @@ export const showcaseNavSections: readonly ShowcaseNavSection[] = [
     id: 'gallery',
     label: 'Gallery',
     ariaLabel: 'Standalone table gallery',
-    items: [getShowcaseExample('multiple-features'), getShowcaseExample('builder')],
+    items: [getShowcaseExample('multiple-features'), getShowcaseExample('builder'), getShowcaseExample('table-to-list')],
     groups: showcaseExampleGroups
   }
 ];

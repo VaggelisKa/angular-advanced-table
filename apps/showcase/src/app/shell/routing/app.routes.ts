@@ -1,5 +1,6 @@
 import type { Routes } from '@angular/router';
 
+import type { ShowcaseDocRouteDescriptor, ShowcaseRouteDescriptor } from './app.route-paths';
 import {
   SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH,
   SHOWCASE_DEFAULT_ROUTE_PATH,
@@ -8,7 +9,6 @@ import {
   showcaseDocRouteDescriptors,
   showcaseExampleRouteDescriptors
 } from './app.route-paths';
-import type { ShowcaseDocRouteDescriptor, ShowcaseRouteDescriptor } from './app.route-paths';
 import type { DocsPage } from '../../docs/docs-page/docs-page';
 
 export const loadDocsPage = async (): Promise<typeof DocsPage> =>
@@ -42,6 +42,7 @@ const findDocRoute = (path: string): ShowcaseDocRouteDescriptor => {
 const quickStartRoute = findDocRoute(SHOWCASE_DEFAULT_ROUTE_PATH);
 const multipleFeaturesRoute = findExampleRoute(SHOWCASE_DEFAULT_EXAMPLE_ROUTE_PATH);
 const builderRoute = findExampleRoute('examples/builder');
+const tableVsListRoute = findExampleRoute('examples/table-to-list');
 const stickyHeaderMaxHeightRoute = findExampleRoute('examples/sticky-header-max-height');
 const paginationStickyAltRoute = findExampleRoute('examples/pagination-sticky-alt');
 const stickyNoOverflowXRoute = findExampleRoute('examples/sticky-no-overflow-x');
@@ -87,6 +88,12 @@ export const routes: Routes = [
     title: builderRoute.title,
     data: getRouteData(builderRoute),
     loadComponent: async () => import('../../gallery/table-builder/table-builder').then((module) => module.TableBuilderPage)
+  },
+  {
+    path: tableVsListRoute.path,
+    title: tableVsListRoute.title,
+    data: getRouteData(tableVsListRoute),
+    loadComponent: async () => import('../../gallery/table-to-list/table-to-list').then((module) => module.TableToList)
   },
   {
     path: stickyHeaderMaxHeightRoute.path,
