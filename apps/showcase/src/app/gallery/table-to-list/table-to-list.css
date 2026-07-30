@@ -18,6 +18,12 @@ main > section {
   padding: 24px;
 }
 
+@media (width <= 768px) {
+  .sc-demo-page {
+    padding: 0;
+  }
+}
+
 .demo-controls {
   display: flex;
   flex-wrap: wrap;
@@ -164,8 +170,14 @@ main > section {
   display: block;
 }
 
+/* The page is a grid; without min-width: 0 this grid item sizes to the
+   pre's intrinsic width and overflows the viewport on mobile instead of
+   letting the code block scroll horizontally. */
 .demo-code {
+  min-width: 0;
+  max-width: 100%;
   margin-block: 0 1.5rem;
+  background: var(--sc-code-bg);
 }
 
 .demo-code-title {
@@ -175,13 +187,13 @@ main > section {
 }
 
 .demo-code-block {
+  max-width: 100%;
   padding: 1rem;
   margin: 0;
   overflow-x: auto;
   font-size: 0.82rem;
   line-height: 1.6;
   color: var(--sc-code-text);
-  background: var(--sc-code-bg);
   border: 1px solid var(--sc-code-border);
   border-radius: 8px;
 }
