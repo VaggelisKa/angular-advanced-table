@@ -38,10 +38,19 @@
   background: var(--nat-table-list-item-background-selected, var(--sys-nat-table-list-item-background-selected, transparent));
 }
 
+/* min-width: 0 lets the field shrink inside its grid area, and wrapping keeps
+   a long value inside the item instead of overflowing into the next area
+   (which also makes contrast undeterminable for automated a11y checks). */
 .list-field {
   display: flex;
   gap: 0.5rem;
   align-items: baseline;
+  min-width: 0;
+}
+
+.list-field-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .list-field-label {
