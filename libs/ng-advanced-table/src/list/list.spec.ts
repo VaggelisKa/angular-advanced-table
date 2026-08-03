@@ -1,7 +1,11 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import type { TemplateRef } from '@angular/core';
+import { Component, computed, input, provideZonelessChangeDetection, signal, viewChild } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+
+import type { ColumnDef, FlexRenderComponent } from '@tanstack/angular-table';
+import { flexRenderComponent } from '@tanstack/angular-table';
 
 import { NatList } from './list';
 import type { NatTableUserState } from '../common/table-state.type';
@@ -17,7 +21,13 @@ import { TestTableSurface } from '../test-helpers/table-hosts.helper';
   imports: [NatList, TestTableSurface],
   template: `
     <nat-table-surface [initialState]="initialState()" enableReordering>
-      <nat-list [columns]="columns" [data]="rows()" [dataStatus]="dataStatus()" accessibleName="Operations list" />
+      <nat-list
+        [columns]="columns"
+        [data]="rows()"
+        [dataStatus]="dataStatus()"
+        [enableRowSelection]="enableRowSelection()"
+        [selectionMode]="selectionMode()"
+        accessibleName="Operations list" />
     </nat-table-surface>
   `
 })
@@ -26,6 +36,67 @@ class ListHost {
   public readonly columns = columns;
   public readonly initialState = signal<Partial<NatTableUserState>>({});
   public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
+  public readonly enableRowSelection = signal(false);
+  public readonly selectionMode = signal<'single' | 'multiple'>('multiple');
+}
+
+@Component({
+  selector: 'test-list-badge',
+  template: `<span class="test-badge">{{ value() }}</span>`
+})
+class TestListBadge {
+  public readonly value = input.required<string>();
+}
+
+@Component({
+  selector: 'test-rich-cells-list-host',
+  imports: [NatList, TestTableSurface],
+  template: `
+    <ng-template #throughputTemplate let-context>
+      <em class="test-template-cell">Throughput: {{ context.getValue() }}</em>
+    </ng-template>
+
+    <nat-table-surface>
+      <nat-list [columns]="richColumns()" [data]="rows()" accessibleName="Rich cells list" />
+    </nat-table-surface>
+  `
+})
+class RichCellsListHost {
+  public readonly rows = signal<Row[]>(buildRows(1));
+
+  private readonly throughputTemplate = viewChild<TemplateRef<unknown>>('throughputTemplate');
+
+  public readonly richColumns = computed<ColumnDef<Row, unknown>[]>(() => [
+    { accessorKey: 'name', header: 'Service', meta: { label: 'Service' }, cell: (info): string => info.getValue<string>() },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      meta: { label: 'Status' },
+      cell: (info): FlexRenderComponent<TestListBadge> =>
+        flexRenderComponent(TestListBadge, { inputs: { value: info.getValue<string>() } })
+    },
+    {
+      accessorKey: 'throughput',
+      header: 'Throughput',
+      meta: { label: 'Throughput' },
+      cell: (): TemplateRef<unknown> | string => this.throughputTemplate() ?? ''
+    },
+    {
+      // No meta.label and a non-string header def: the list renders the
+      // header component as the field label.
+      accessorKey: 'region',
+      header: (): FlexRenderComponent<TestListBadge> => flexRenderComponent(TestListBadge, { inputs: { value: 'Region badge' } }),
+      cell: (info): string => info.getValue<string>()
+    },
+    {
+      // hiddenHeaderLabel keeps the field label screen-reader-only, removing
+      // the visible label from the list item.
+      accessorKey: 'id',
+      header: 'Id',
+      meta: { hiddenHeaderLabel: 'Row id' },
+      cell: (info): string => info.getValue<string>()
+    }
+  ]);
 }
 
 const queryAll = <T extends HTMLElement>(fixture: ComponentFixture<ListHost>, selector: string): T[] =>
@@ -69,6 +140,17 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(items).toHaveLength(6);
         expect(itemFieldLabels(items[0])).toStrictEqual(['Service', 'Region', 'Status', 'Throughput']);
         expect(itemFieldValue(items[0], 'name')).toBe('Alpha');
+      });
+
+      it('THEN: it exposes named grid areas so consumers can lay out item fields', async () => {
+        await render();
+
+        const listHost = queryAll(fixture, 'nat-list')[0];
+        const firstItem = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
+        const firstField = firstItem.querySelector<HTMLElement>('.list-field');
+
+        expect(listHost.style.getPropertyValue('--sys-nat-table-list-item-areas')).toBe("'name' 'region' 'status' 'throughput'");
+        expect(firstField?.style.getPropertyValue('grid-area')).toBe('name');
       });
 
       it('THEN: it registers itself as the surface controller for companion controls', async () => {
@@ -163,6 +245,126 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         await render();
 
         expect(queryAll(fixture, '[data-testid="nat-list-empty-state"]')).toHaveLength(1);
+      });
+    });
+
+    describe('WHEN: each state is rendered', () => {
+      it('THEN: it shares one base class and adds a per-state modifier and indicator', async () => {
+        host.rows.set([]);
+        await render();
+
+        const emptyState = queryAll(fixture, '[data-testid="nat-list-empty-state"]')[0];
+
+        expect(emptyState.classList.contains('list-state')).toBe(true);
+        expect(emptyState.classList.contains('list-state-empty')).toBe(true);
+        expect(emptyState.getAttribute('data-state')).toBe('empty');
+        expect(emptyState.querySelector('.list-state-indicator')?.getAttribute('aria-hidden')).toBe('true');
+        expect(emptyState.querySelector('.list-state-message')?.textContent.trim()).toBe(emptyState.textContent.trim());
+
+        host.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+        await render();
+
+        const errorState = queryAll(fixture, '[data-testid="nat-list-error-state"]')[0];
+
+        expect(errorState.classList.contains('list-state')).toBe(true);
+        expect(errorState.classList.contains('list-state-error')).toBe(true);
+        expect(errorState.getAttribute('data-state')).toBe('error');
+      });
+    });
+  });
+
+  describe('GIVEN: a list with row selection enabled', () => {
+    describe('WHEN: a row is selected through the shared state', () => {
+      it('THEN: it marks the item selected without putting aria-selected on the listitem', async () => {
+        host.enableRowSelection.set(true);
+        await render();
+
+        const firstRowId = getList().table.getRowModel().rows[0].id;
+
+        getList().patchState({ rowSelection: { [firstRowId]: true } });
+        await render();
+
+        const items = queryAll(fixture, '[data-testid="nat-list-item"]');
+
+        expect(items[0].getAttribute('data-selected')).toBe('true');
+        expect(items[1].getAttribute('data-selected')).toBe('false');
+        expect(items[0].hasAttribute('aria-selected')).toBe(false);
+      });
+    });
+
+    describe('WHEN: selection is disabled', () => {
+      it('THEN: it omits the selected marker entirely', async () => {
+        await render();
+
+        const items = queryAll(fixture, '[data-testid="nat-list-item"]');
+
+        expect(items[0].hasAttribute('data-selected')).toBe(false);
+      });
+    });
+
+    describe('WHEN: selection mode is single', () => {
+      it('THEN: it keeps at most one row selected', async () => {
+        host.enableRowSelection.set(true);
+        host.selectionMode.set('single');
+        await render();
+
+        const rows = getList().table.getRowModel().rows;
+
+        getList().patchState({ rowSelection: { [rows[0].id]: true, [rows[1].id]: true } });
+        await render();
+
+        const selectedItems = queryAll(fixture, '[data-testid="nat-list-item"][data-selected="true"]');
+
+        expect(selectedItems).toHaveLength(1);
+      });
+    });
+  });
+
+  describe('GIVEN: a list whose columns use text, component, and template render defs', () => {
+    describe('WHEN: the list is rendered', () => {
+      let richFixture: ComponentFixture<RichCellsListHost>;
+
+      const richRender = async (): Promise<void> => {
+        richFixture.detectChanges();
+        await richFixture.whenStable();
+        richFixture.detectChanges();
+        await richFixture.whenStable();
+      };
+
+      beforeEach(() => {
+        richFixture = TestBed.createComponent(RichCellsListHost);
+      });
+
+      it('THEN: it renders text, component, and template cells through flexRender', async () => {
+        await richRender();
+
+        const item = (richFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testid="nat-list-item"]');
+        const badge = item?.querySelector('[data-column-id="status"] .test-badge');
+        const templateCell = item?.querySelector('[data-column-id="throughput"] .test-template-cell');
+
+        expect(itemFieldValue(item as HTMLElement, 'name')).toBe('Alpha');
+        expect(badge?.textContent.trim()).toBe('Healthy');
+        expect(templateCell?.textContent.trim()).toBe('Throughput: 1000');
+      });
+
+      it('THEN: it renders a non-string header def as the field label', async () => {
+        await richRender();
+
+        const item = (richFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testid="nat-list-item"]');
+        const labelBadge = item?.querySelector('[data-column-id="region"] .list-field-label .test-badge');
+
+        expect(labelBadge?.textContent.trim()).toBe('Region badge');
+      });
+
+      it('THEN: it renders a hiddenHeaderLabel field label as screen-reader-only text', async () => {
+        await richRender();
+
+        const item = (richFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testid="nat-list-item"]');
+        const label = item?.querySelector('[data-column-id="id"] .list-field-label');
+
+        expect(label?.classList.contains('sr-only')).toBe(true);
+        expect(label?.textContent.trim()).toBe('Row id');
+        expect(itemFieldValue(item as HTMLElement, 'id')).toBe('svc-00001');
       });
     });
   });

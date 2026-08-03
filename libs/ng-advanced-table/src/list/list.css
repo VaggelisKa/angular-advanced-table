@@ -5,18 +5,27 @@
 .nat-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--nat-table-list-gap, var(--sys-nat-table-list-gap, 0.5rem));
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
+/* Each item is a grid of named field areas (one area per visible column id;
+   the stacked default comes from the inline --sys bridge). Consumers lay the
+   fields out freely via --nat-table-list-item-areas and -columns. */
 .list-item {
   display: grid;
-  gap: 0.25rem;
-  padding: 0.75rem 1rem;
+  grid-template-areas: var(--nat-table-list-item-areas, var(--sys-nat-table-list-item-areas));
+  grid-template-columns: var(--nat-table-list-item-columns, var(--sys-nat-table-list-item-columns, 1fr));
+  gap: var(--nat-table-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem));
+  padding: var(--nat-table-list-item-padding, var(--sys-nat-table-list-item-padding, 0.75rem 1rem));
   border: 1px solid color-mix(in srgb, currentcolor 15%, transparent);
   border-radius: 8px;
+}
+
+.list-item[data-selected='true'] {
+  background: var(--nat-table-list-item-background-selected, var(--sys-nat-table-list-item-background-selected, transparent));
 }
 
 .list-field {
@@ -29,8 +38,80 @@
   font-weight: 600;
 }
 
+/* ─── Body states ───
+   Loading, empty, and error share this base shape and add one state modifier.
+   Shared look comes from the --nat-table-list-state-* tokens; each state's
+   accent (indicator + emphasis) has its own token and falls back to the
+   matching palette token so states follow a consumer theme with no extra
+   configuration. */
 .list-state {
-  padding: 0.75rem 1rem;
+  display: flex;
+  gap: var(--nat-table-list-state-gap, var(--sys-nat-table-list-state-gap, 0.625rem));
+  align-items: center;
+  justify-content: var(--nat-table-list-state-justify, var(--sys-nat-table-list-state-justify, flex-start));
+  min-height: var(--nat-table-list-state-min-height, var(--sys-nat-table-list-state-min-height, auto));
+  padding: var(--nat-table-list-state-padding, var(--sys-nat-table-list-state-padding, 1.25rem 1rem));
+  color: var(--nat-table-list-state-color, var(--sys-nat-table-list-state-color, inherit));
+  background: var(--nat-table-list-state-background, var(--sys-nat-table-list-state-background, transparent));
+  border: 1px var(--nat-table-list-state-border-style, var(--sys-nat-table-list-state-border-style, dashed))
+    var(
+      --nat-table-list-state-border-color,
+      var(--sys-nat-table-list-state-border-color, color-mix(in srgb, currentcolor 20%, transparent))
+    );
+  border-radius: var(--nat-table-list-state-radius, var(--sys-nat-table-list-state-radius, 8px));
+}
+
+.list-state-indicator {
+  flex: none;
+  width: var(--nat-table-list-state-indicator-size, var(--sys-nat-table-list-state-indicator-size, 0.5rem));
+  height: var(--nat-table-list-state-indicator-size, var(--sys-nat-table-list-state-indicator-size, 0.5rem));
+  border-radius: 999px;
+}
+
+.list-state-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.list-state-loading .list-state-indicator {
+  background: var(
+    --nat-table-list-loading-accent,
+    var(--sys-nat-table-list-loading-accent, var(--nat-table-color-accent, currentcolor))
+  );
+  animation: nat-list-state-pulse 1.2s ease-in-out infinite;
+}
+
+/* Hollow indicator: an empty result reads as an outline rather than a signal. */
+.list-state-empty .list-state-indicator {
+  border: 1px solid
+    var(--nat-table-list-empty-accent, var(--sys-nat-table-list-empty-accent, var(--nat-table-color-text-muted, currentcolor)));
+}
+
+.list-state-error {
+  color: var(--nat-table-list-error-accent, var(--sys-nat-table-list-error-accent, var(--nat-table-color-danger, inherit)));
+}
+
+.list-state-error .list-state-indicator {
+  background: var(--nat-table-list-error-accent, var(--sys-nat-table-list-error-accent, var(--nat-table-color-danger, currentcolor)));
+}
+
+@keyframes nat-list-state-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.45;
+    transform: scale(0.72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-state-loading .list-state-indicator {
+    animation: none;
+  }
 }
 
 .sr-only {

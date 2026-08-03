@@ -19,13 +19,28 @@
         <!-- Iterate the reactive visibleColumns() signal (not row.getVisibleCells())
              so column order and visibility changes re-render the fields. -->
         @let listColumns = visibleColumns();
+        @let headerContexts = leafHeaderContexts();
         @for (row of bodyRows(); track row.id) {
-          <li [attr.data-row-id]="row.id" class="list-item" data-testid="nat-list-item">
+          <li
+            [attr.data-row-id]="row.id"
+            [attr.data-selected]="rowSelectedAttribute(row)"
+            class="list-item"
+            data-testid="nat-list-item">
             @for (column of listColumns; track column.id) {
               @let cell = cellForColumn(row, column.id);
               @if (cell) {
-                <div [attr.data-column-id]="column.id" class="list-field">
-                  <span class="list-field-label">{{ resolveColumnLabel(column) }}</span>
+                <div [attr.data-column-id]="column.id" [natListFieldArea]="column.id" class="list-field">
+                  <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
+                    @let headerDef = column.columnDef.header;
+                    @let headerContext = headerContexts.get(column.id);
+                    @if (!hasStaticLabel(column) && headerDef && headerContext) {
+                      <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
+                        {{ renderedLabel }}
+                      </ng-container>
+                    } @else {
+                      {{ resolveColumnLabel(column) }}
+                    }
+                  </span>
                   <span class="list-field-value">
                     <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
                       {{ rendered }}
@@ -37,14 +52,13 @@
           </li>
         }
       }
-      @case ('loading') {
-        <li class="list-state loading-state" data-testid="nat-list-loading-state">{{ resolvedLoadingState() }}</li>
-      }
-      @case ('error') {
-        <li class="list-state error-state" data-testid="nat-list-error-state">{{ resolvedErrorState() }}</li>
-      }
-      @case ('empty') {
-        <li class="list-state empty-state" data-testid="nat-list-empty-state">{{ resolvedEmptyState() }}</li>
+      @default {
+        @if (stateView(); as state) {
+          <li [attr.data-state]="state.state" [attr.data-testid]="state.testId" [class]="state.className">
+            <span aria-hidden="true" class="list-state-indicator"></span>
+            <span class="list-state-message">{{ state.message }}</span>
+          </li>
+        }
       }
     }
   </ul>
