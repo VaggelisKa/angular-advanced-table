@@ -77,6 +77,40 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
 
       return summary;
     },
+    listSummary: ({
+      filterState,
+      pageCountText,
+      pageText,
+      paginationState,
+      totalRowsValue,
+      totalRowsText,
+      visibleColumnsValue,
+      visibleColumnsText,
+      visibleRowsValue,
+      visibleRowsText
+    }) => {
+      let summary: string;
+
+      if (visibleRowsValue === 0) {
+        summary = `No items are currently shown. ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
+      } else if (filterState === 'filtered' && totalRowsValue !== visibleRowsValue) {
+        summary = `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
+          'item',
+          totalRowsValue
+        )} across ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
+      } else {
+        summary = `Showing ${visibleRowsText} ${pluralize(
+          'item',
+          visibleRowsValue
+        )} across ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
+      }
+
+      if (paginationState === 'enabled') {
+        summary += ` Page ${pageText} of ${pageCountText}.`;
+      }
+
+      return summary;
+    },
     sortingChange: ({ columnLabel, sortState, sortedColumns }) => {
       if (!columnLabel) return 'Sorting cleared.';
 

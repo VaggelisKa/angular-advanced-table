@@ -1,3 +1,6 @@
+/* eslint-disable max-lines -- list component shell, mirroring table.ts: inputs/outputs, the NatTableUiController surface, state-signal aliases, and input bridging. All pure logic (state views, template contexts, column label resolution) lives in ./utils and ./common. */
+import { NgTemplateOutlet } from '@angular/common';
+import type { TemplateRef } from '@angular/core';
 import {
   Component,
   DestroyRef,
@@ -6,20 +9,22 @@ import {
   RendererStyleFlags2,
   booleanAttribute,
   computed,
+  contentChild,
   effect,
   inject,
   input,
+  output,
   viewChild
 } from '@angular/core';
 
 import type { ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
-import { LIST_STATE_VIEWS } from './common/list-state.const';
-import type { NatListStateKey } from './common/list-state.const';
+import type { NatListStateKey } from './common/list-state.type';
 import { NatListFieldArea } from './list-field-area.directive';
 import { findRowCell, hasStaticLabel, isSrOnlyLabel } from './utils/list-column.util';
-import type { NatTableRowIdGetter } from '../common/row.type';
+import { buildListStateTemplateContext, resolveListStateView } from './utils/list-state.util';
+import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';
@@ -27,7 +32,10 @@ import type { NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
+import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
+import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { resolveColumnLabel } from '../utils/column-label.util';
+import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
 
 /**
  * SPIKE: list renderer sharing the table engine (`NatTableState`).
@@ -44,7 +52,7 @@ import { resolveColumnLabel } from '../utils/column-label.util';
 @Component({
   selector: 'nat-list',
   exportAs: 'natList',
-  imports: [FlexRender, NatListFieldArea],
+  imports: [FlexRender, NatListFieldArea, NgTemplateOutlet],
   providers: [NatTableState, NatTableA11yService],
   templateUrl: './list.html',
   styleUrl: './list.css'
@@ -74,6 +82,19 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   public readonly enableRowSelection = input(false, { transform: booleanAttribute });
   /** Selection cardinality when enabled: `'multiple'` (default) or `'single'`. */
   public readonly selectionMode = input<'single' | 'multiple'>('multiple');
+  /**
+   * Makes items activatable, emitting `rowActivate` on click and Enter/Space.
+   *
+   * Opt-in because it makes every item a tab stop: unlike a table row (focusable
+   * through the grid's keyboard model), a plain `<li>` needs `tabindex` to be
+   * keyboard-operable, and a mouse-only activation would fail WCAG 2.1.1.
+   */
+  public readonly enableRowActivation = input(false, { transform: booleanAttribute });
+
+  // ─── Outputs ───
+
+  /** Emits on item click or Enter/Space unless the event started on an interactive descendant. */
+  public readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
   // ─── Injected services ───
 
@@ -126,25 +147,47 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
    * Rendered loading/empty/error item, or `null` while rows are shown. Keeps
    * the three states on one markup shape so they share a base design.
    */
-  protected readonly stateView = computed(() => {
+  protected readonly stateView = computed(() =>
+    resolveListStateView(this.bodyState(), {
+      [NAT_TABLE_BODY_STATE.loading]: this.resolvedLoadingState(),
+      [NAT_TABLE_BODY_STATE.empty]: this.resolvedEmptyState(),
+      [NAT_TABLE_BODY_STATE.error]: this.resolvedErrorState()
+    })
+  );
+
+  // ─── Consumer state templates (same directives the table accepts) ───
+
+  private readonly loadingTemplate = contentChild(NatTableLoadingTemplate);
+  private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
+  private readonly errorTemplate = contentChild(NatTableErrorTemplate);
+
+  /**
+   * Active consumer state template plus its context, or `null` to fall back to
+   * the built-in indicator and message. The template replaces the state item's
+   * content while keeping the shared `list-state` shell and its style tokens.
+   */
+  protected readonly stateTemplateView = computed(() => {
     const bodyState = this.bodyState();
 
     if (bodyState === NAT_TABLE_BODY_STATE.rows) {
       return null;
     }
 
-    const messages: Record<NatListStateKey, string> = {
-      [NAT_TABLE_BODY_STATE.loading]: this.resolvedLoadingState(),
-      [NAT_TABLE_BODY_STATE.empty]: this.resolvedEmptyState(),
-      [NAT_TABLE_BODY_STATE.error]: this.resolvedErrorState()
+    const templateRefs: Record<NatListStateKey, TemplateRef<unknown> | undefined> = {
+      [NAT_TABLE_BODY_STATE.loading]: this.loadingTemplate()?.templateRef,
+      [NAT_TABLE_BODY_STATE.empty]: this.emptyTemplate()?.templateRef,
+      [NAT_TABLE_BODY_STATE.error]: this.errorTemplate()?.templateRef
     };
+    const templateRef = templateRefs[bodyState];
 
-    return { ...LIST_STATE_VIEWS[bodyState], state: bodyState, message: messages[bodyState] };
+    return templateRef
+      ? { templateRef, context: buildListStateTemplateContext(this.state.getStateTemplateBaseContext(), bodyState, this.error()) }
+      : null;
   });
 
   // ─── A11y (delegated to service) ───
 
-  protected readonly tableSummary = this.a11yService.tableSummary;
+  protected readonly tableSummary = this.a11yService.listSummary;
   protected readonly liveMessage = this.a11yService.liveMessage;
 
   protected readonly ariaDescribedBy = computed(() => {
@@ -234,6 +277,32 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);
     });
+  }
+
+  // ─── Row activation ───
+
+  protected onRowClick(event: MouseEvent, row: Row<TData>): void {
+    if (event.button !== 0 || event.defaultPrevented || originatesFromInteractiveDescendant(event)) {
+      return;
+    }
+
+    this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
+  }
+
+  protected onRowKeydown(event: KeyboardEvent, row: Row<TData>): void {
+    if (event.defaultPrevented || !this.natTableService.keyboard().rowActivate(event)) {
+      return;
+    }
+
+    if (originatesFromInteractiveDescendant(event)) {
+      return;
+    }
+
+    if (isSpaceShortcutKey(event.key)) {
+      event.preventDefault();
+    }
+
+    this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
   }
 
   // ─── NatTableUiController implementation (delegates to state) ───

@@ -24,8 +24,12 @@
           <li
             [attr.data-row-id]="row.id"
             [attr.data-selected]="rowSelectedAttribute(row)"
+            [attr.tabindex]="enableRowActivation() ? 0 : null"
+            [class.is-activatable]="enableRowActivation()"
             class="list-item"
-            data-testid="nat-list-item">
+            data-testid="nat-list-item"
+            (click)="enableRowActivation() && onRowClick($event, row)"
+            (keydown)="enableRowActivation() && onRowKeydown($event, row)">
             @for (column of listColumns; track column.id) {
               @let cell = cellForColumn(row, column.id);
               @if (cell) {
@@ -55,8 +59,12 @@
       @default {
         @if (stateView(); as state) {
           <li [attr.data-state]="state.state" [attr.data-testid]="state.testId" [class]="state.className">
-            <span aria-hidden="true" class="list-state-indicator"></span>
-            <span class="list-state-message">{{ state.message }}</span>
+            @if (stateTemplateView(); as stateTemplate) {
+              <ng-container [ngTemplateOutlet]="stateTemplate.templateRef" [ngTemplateOutletContext]="stateTemplate.context" />
+            } @else {
+              <span aria-hidden="true" class="list-state-indicator"></span>
+              <span class="list-state-message">{{ state.message }}</span>
+            }
           </li>
         }
       }

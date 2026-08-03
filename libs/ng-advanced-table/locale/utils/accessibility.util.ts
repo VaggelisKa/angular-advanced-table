@@ -43,6 +43,7 @@ const mergeAccessibilitySummaryAnnouncers = (
   override?: NatTableAccessibilityText
 ): Partial<NatTableAccessibilityText> => ({
   tableSummary: override?.tableSummary ?? parent?.tableSummary,
+  listSummary: override?.listSummary ?? parent?.listSummary,
   sortingChange: override?.sortingChange ?? parent?.sortingChange,
   filteringChange: override?.filteringChange ?? parent?.filteringChange
 });

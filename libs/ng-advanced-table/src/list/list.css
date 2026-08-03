@@ -24,6 +24,16 @@
   border-radius: 8px;
 }
 
+.list-item.is-activatable {
+  cursor: pointer;
+}
+
+.list-item.is-activatable:focus-visible {
+  outline: var(--nat-table-focus-ring-width, var(--sys-nat-table-focus-ring-width, 2px)) solid
+    var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, currentcolor));
+  outline-offset: -2px;
+}
+
 .list-item[data-selected='true'] {
   background: var(--nat-table-list-item-background-selected, var(--sys-nat-table-list-item-background-selected, transparent));
 }

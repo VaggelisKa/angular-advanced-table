@@ -40,6 +40,13 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   /** Table summary string for `aria-describedby`. */
   public readonly tableSummary = computed(() => this.buildTableSummary());
 
+  /**
+   * List summary string for `aria-describedby`, phrased as items and fields.
+   * Falls back to the `tableSummary` formatter when a consumer overrode only
+   * that one.
+   */
+  public readonly listSummary = computed(() => this.buildTableSummary('listSummary'));
+
   public constructor() {
     this.registerAnnouncementEffect();
     this.registerResizeAnnouncementEffect();
@@ -213,7 +220,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
 
   // ─── Summary ───
 
-  private buildTableSummary(): string {
+  private buildTableSummary(formatterKey: 'tableSummary' | 'listSummary' = 'tableSummary'): string {
     const summaryContext = getSummaryContext(
       {
         visibleRows: this.state.renderedVisibleRowCount(),
@@ -226,7 +233,8 @@ export class NatTableA11yService<TData extends RowData = RowData> {
       },
       (value) => this.formatAccessibilityNumber(value)
     );
-    const formatter = this.state.resolvedAccessibilityText().tableSummary;
+    const accessibilityText = this.state.resolvedAccessibilityText();
+    const formatter = accessibilityText[formatterKey] ?? accessibilityText.tableSummary;
 
     return formatter?.(summaryContext) ?? '';
   }

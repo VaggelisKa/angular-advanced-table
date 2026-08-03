@@ -197,6 +197,12 @@ export type NatTableAccessibilityText = {
   readonly resizeKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
   readonly tableSummary?: (context: NatTableAccessibilitySummaryContext) => string;
+  /**
+   * Summary announced through `aria-describedby` for a rendered list. Receives
+   * the same context as `tableSummary`; the default phrases it as items and
+   * fields rather than rows and columns.
+   */
+  readonly listSummary?: (context: NatTableAccessibilitySummaryContext) => string;
   /** Live announcement emitted when sorting changes. */
   readonly sortingChange?: (context: NatTableAccessibilitySortingAnnouncementContext) => string;
   /** Live announcement emitted when filtering changes. */

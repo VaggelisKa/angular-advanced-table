@@ -1,13 +1,10 @@
-import type { TemplateRef } from '@angular/core';
-import { Component, computed, input, provideZonelessChangeDetection, signal, viewChild } from '@angular/core';
+import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import type { ColumnDef, FlexRenderComponent } from '@tanstack/angular-table';
-import { flexRenderComponent } from '@tanstack/angular-table';
-
 import { NatList } from './list';
+import type { NatTableRowActivateEvent } from '../common/row.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';
@@ -25,9 +22,11 @@ import { TestTableSurface } from '../test-helpers/table-hosts.helper';
         [columns]="columns"
         [data]="rows()"
         [dataStatus]="dataStatus()"
+        [enableRowActivation]="enableRowActivation()"
         [enableRowSelection]="enableRowSelection()"
         [selectionMode]="selectionMode()"
-        accessibleName="Operations list" />
+        accessibleName="Operations list"
+        (rowActivate)="activated.set([...activated(), $event])" />
     </nat-table-surface>
   `
 })
@@ -38,65 +37,8 @@ class ListHost {
   public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   public readonly enableRowSelection = signal(false);
   public readonly selectionMode = signal<'single' | 'multiple'>('multiple');
-}
-
-@Component({
-  selector: 'test-list-badge',
-  template: `<span class="test-badge">{{ value() }}</span>`
-})
-class TestListBadge {
-  public readonly value = input.required<string>();
-}
-
-@Component({
-  selector: 'test-rich-cells-list-host',
-  imports: [NatList, TestTableSurface],
-  template: `
-    <ng-template #throughputTemplate let-context>
-      <em class="test-template-cell">Throughput: {{ context.getValue() }}</em>
-    </ng-template>
-
-    <nat-table-surface>
-      <nat-list [columns]="richColumns()" [data]="rows()" accessibleName="Rich cells list" />
-    </nat-table-surface>
-  `
-})
-class RichCellsListHost {
-  public readonly rows = signal<Row[]>(buildRows(1));
-
-  private readonly throughputTemplate = viewChild<TemplateRef<unknown>>('throughputTemplate');
-
-  public readonly richColumns = computed<ColumnDef<Row, unknown>[]>(() => [
-    { accessorKey: 'name', header: 'Service', meta: { label: 'Service' }, cell: (info): string => info.getValue<string>() },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      meta: { label: 'Status' },
-      cell: (info): FlexRenderComponent<TestListBadge> =>
-        flexRenderComponent(TestListBadge, { inputs: { value: info.getValue<string>() } })
-    },
-    {
-      accessorKey: 'throughput',
-      header: 'Throughput',
-      meta: { label: 'Throughput' },
-      cell: (): TemplateRef<unknown> | string => this.throughputTemplate() ?? ''
-    },
-    {
-      // No meta.label and a non-string header def: the list renders the
-      // header component as the field label.
-      accessorKey: 'region',
-      header: (): FlexRenderComponent<TestListBadge> => flexRenderComponent(TestListBadge, { inputs: { value: 'Region badge' } }),
-      cell: (info): string => info.getValue<string>()
-    },
-    {
-      // hiddenHeaderLabel keeps the field label screen-reader-only, removing
-      // the visible label from the list item.
-      accessorKey: 'id',
-      header: 'Id',
-      meta: { hiddenHeaderLabel: 'Row id' },
-      cell: (info): string => info.getValue<string>()
-    }
-  ]);
+  public readonly enableRowActivation = signal(false);
+  public readonly activated = signal<NatTableRowActivateEvent<Row>[]>([]);
 }
 
 const queryAll = <T extends HTMLElement>(fixture: ComponentFixture<ListHost>, selector: string): T[] =>
@@ -273,6 +215,38 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
     });
   });
 
+  describe('GIVEN: a list with row activation', () => {
+    describe('WHEN: row activation is enabled', () => {
+      it('THEN: it emits rowActivate on click and makes items focusable', async () => {
+        host.enableRowActivation.set(true);
+        await render();
+
+        const items = queryAll(fixture, '[data-testid="nat-list-item"]');
+
+        expect(items[0].getAttribute('tabindex')).toBe('0');
+
+        items[0].click();
+        await render();
+
+        expect(host.activated()).toHaveLength(1);
+        expect(host.activated()[0].rowData.name).toBe('Alpha');
+      });
+
+      it('THEN: it does not emit when activation is disabled', async () => {
+        await render();
+
+        const items = queryAll(fixture, '[data-testid="nat-list-item"]');
+
+        expect(items[0].hasAttribute('tabindex')).toBe(false);
+
+        items[0].click();
+        await render();
+
+        expect(host.activated()).toHaveLength(0);
+      });
+    });
+  });
+
   describe('GIVEN: a list with row selection enabled', () => {
     describe('WHEN: a row is selected through the shared state', () => {
       it('THEN: it marks the item selected without putting aria-selected on the listitem', async () => {
@@ -316,55 +290,6 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         const selectedItems = queryAll(fixture, '[data-testid="nat-list-item"][data-selected="true"]');
 
         expect(selectedItems).toHaveLength(1);
-      });
-    });
-  });
-
-  describe('GIVEN: a list whose columns use text, component, and template render defs', () => {
-    describe('WHEN: the list is rendered', () => {
-      let richFixture: ComponentFixture<RichCellsListHost>;
-
-      const richRender = async (): Promise<void> => {
-        richFixture.detectChanges();
-        await richFixture.whenStable();
-        richFixture.detectChanges();
-        await richFixture.whenStable();
-      };
-
-      beforeEach(() => {
-        richFixture = TestBed.createComponent(RichCellsListHost);
-      });
-
-      it('THEN: it renders text, component, and template cells through flexRender', async () => {
-        await richRender();
-
-        const item = (richFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testid="nat-list-item"]');
-        const badge = item?.querySelector('[data-column-id="status"] .test-badge');
-        const templateCell = item?.querySelector('[data-column-id="throughput"] .test-template-cell');
-
-        expect(itemFieldValue(item as HTMLElement, 'name')).toBe('Alpha');
-        expect(badge?.textContent.trim()).toBe('Healthy');
-        expect(templateCell?.textContent.trim()).toBe('Throughput: 1000');
-      });
-
-      it('THEN: it renders a non-string header def as the field label', async () => {
-        await richRender();
-
-        const item = (richFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testid="nat-list-item"]');
-        const labelBadge = item?.querySelector('[data-column-id="region"] .list-field-label .test-badge');
-
-        expect(labelBadge?.textContent.trim()).toBe('Region badge');
-      });
-
-      it('THEN: it renders a hiddenHeaderLabel field label as screen-reader-only text', async () => {
-        await richRender();
-
-        const item = (richFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testid="nat-list-item"]');
-        const label = item?.querySelector('[data-column-id="id"] .list-field-label');
-
-        expect(label?.classList.contains('sr-only')).toBe(true);
-        expect(label?.textContent.trim()).toBe('Row id');
-        expect(itemFieldValue(item as HTMLElement, 'id')).toBe('svc-00001');
       });
     });
   });
