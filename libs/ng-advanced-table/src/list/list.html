@@ -1,6 +1,6 @@
 <div #listRegion class="list-region" data-testid="nat-list-region">
-  @if (tableSummary().trim()) {
-    <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
+  @if (listSummary().trim()) {
+    <p [id]="listSummaryId()" class="sr-only">{{ listSummary() }}</p>
   }
   @if (resolvedDescription().trim()) {
     <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>

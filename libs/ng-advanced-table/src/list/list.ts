@@ -139,7 +139,7 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   protected readonly resolvedEmptyState = this.state.resolvedEmptyState;
   protected readonly resolvedLoadingState = this.state.resolvedLoadingState;
   protected readonly resolvedErrorState = this.state.resolvedErrorState;
-  protected readonly tableSummaryId = this.state.tableSummaryId;
+  protected readonly listSummaryId = this.state.tableSummaryId;
   protected readonly tableDescriptionId = this.state.tableDescriptionId;
   protected readonly listAriaLabel = this.state.tableAriaLabel;
 
@@ -187,14 +187,14 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
 
   // ─── A11y (delegated to service) ───
 
-  protected readonly tableSummary = this.a11yService.listSummary;
+  protected readonly listSummary = this.a11yService.listSummary;
   protected readonly liveMessage = this.a11yService.liveMessage;
 
   protected readonly ariaDescribedBy = computed(() => {
     const ids: string[] = [];
 
-    if (this.tableSummary().trim()) {
-      ids.push(this.tableSummaryId());
+    if (this.listSummary().trim()) {
+      ids.push(this.listSummaryId());
     }
 
     if (this.resolvedDescription().trim()) {
@@ -242,6 +242,12 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
 
   public constructor() {
     this.natTableService.setController(this);
+
+    // ── Accessibility effects ──
+    // Only the shared set: the grid-only effects announce column resizes,
+    // write `aria-multiselectable` onto a rendered `<table>`, and validate
+    // resize/reorder keybindings — none of which a list renderer has.
+    this.a11yService.registerSharedEffects('nat-list', false);
 
     // ── Default item areas bridge ──
     // Written imperatively: Angular host `[style.--*]` bindings silently drop

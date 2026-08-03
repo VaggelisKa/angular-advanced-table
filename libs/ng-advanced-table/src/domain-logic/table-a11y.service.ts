@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- a11y service residual (194 code lines): DI + the liveMessage signal + snapshot capture that must read live signals + the tableSummary computed + five effect/afterRenderEffect registrations that must run in the constructor injection context, plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
+/* eslint-disable max-lines -- a11y service residual: DI + the liveMessage signal + snapshot capture that must read live signals + the summary computeds + five effect/afterRenderEffect registrations that must run in the caller's injection context (grouped into registerSharedEffects/registerGridEffects so a list renderer can skip the grid-only ones), plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
 import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 
 import type { Column, RowData } from '@tanstack/angular-table';
@@ -20,7 +20,9 @@ import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext 
  * and push screen-reader announcements, snapshot capture, state-change diffing,
  * and ARIA multiselectable management.
  *
- * Provided alongside `NatTableState` in the component's `providers`.
+ * Provided alongside `NatTableState` in the component's `providers`. The
+ * renderer opts into its effects: every renderer calls `registerSharedEffects`,
+ * while `registerGridEffects` adds the `<table>`-only behavior.
  */
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table-instance state, provided by NatTable (providers: [NatTableA11yService]), not root.
 @Injectable()
@@ -47,11 +49,29 @@ export class NatTableA11yService<TData extends RowData = RowData> {
    */
   public readonly listSummary = computed(() => this.buildTableSummary('listSummary'));
 
-  public constructor() {
+  /**
+   * Registers the effects every renderer needs: state-change announcements and
+   * the dev-mode accessible-name check. Must be called from an injection
+   * context (constructor or field initializer), like `NatTableState`'s
+   * `register*Effect` methods.
+   *
+   * @param elementName Selector named by the accessible-name warning.
+   * @param supportsCaption Whether that renderer also accepts a `caption`.
+   */
+  public registerSharedEffects(elementName: string, supportsCaption: boolean): void {
     this.registerAnnouncementEffect();
+    this.registerAccessibleNameValidationEffect(elementName, supportsCaption);
+  }
+
+  /**
+   * Registers the grid-only effects: column-resize announcements, the
+   * `aria-multiselectable` writer (which targets the rendered `<table>`), and
+   * keybinding validation for the grid's resize/reorder shortcuts. A list
+   * renderer supports none of these, so it skips them.
+   */
+  public registerGridEffects(): void {
     this.registerResizeAnnouncementEffect();
     this.registerAriaMultiSelectableEffect();
-    this.registerAccessibleNameValidationEffect();
     this.registerKeybindingValidationEffect();
   }
 
@@ -269,13 +289,15 @@ export class NatTableA11yService<TData extends RowData = RowData> {
 
   // ─── Dev-mode validation effects ───
 
-  private registerAccessibleNameValidationEffect(): void {
+  private registerAccessibleNameValidationEffect(elementName: string, supportsCaption: boolean): void {
     afterRenderEffect(() => {
       if (!isDevMode() || this.state.resolvedCaption() || this.state.accessibleName()?.trim()) {
         return;
       }
 
-      console.warn('[ng-advanced-table] <nat-table> requires either `caption` or `accessibleName` for an accessible name.');
+      const requirement = supportsCaption ? 'either `caption` or `accessibleName`' : '`accessibleName`';
+
+      console.warn(`[ng-advanced-table] <${elementName}> requires ${requirement} for an accessible name.`);
     });
   }
 
