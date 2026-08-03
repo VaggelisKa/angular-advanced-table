@@ -1,0 +1,30 @@
+<main class="showcase-page sc-demo-page">
+  <p class="demo-hint">
+    Resize the window: portrait tablet and up (768px and wider) renders the table; below that the same surface swaps to the list,
+    keeping sort and column state. The list items are laid out with the grid-area tokens — every field is a named grid area, so each
+    column can be positioned inside the item freely.
+  </p>
+
+  <section aria-label="Minimal code example" class="demo-code">
+    <h2 class="demo-code-title">Minimal example</h2>
+    <pre class="demo-code-block"><code>{{ exampleCode }}</code></pre>
+  </section>
+
+  <nat-table-surface [enableSorting]="true" [(state)]="state">
+    @if (isTableViewport()) {
+      <nat-table
+        [columns]="columns"
+        [data]="rows"
+        [getRowId]="getRowId"
+        accessibleName="Orders table for tablet viewports and up"
+        class="sc-demo-table" />
+    } @else {
+      <nat-list
+        [columns]="columns"
+        [data]="rows"
+        [getRowId]="getRowId"
+        accessibleName="Orders list for narrow viewports"
+        class="sc-demo-list" />
+    }
+  </nat-table-surface>
+</main>

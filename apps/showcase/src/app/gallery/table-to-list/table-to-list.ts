@@ -33,8 +33,6 @@ const getFieldLabel = (columnId: string): string => DEMO_FIELD_LABELS.get(column
 
 const EXAMPLE_CODE = `<!-- Same surface, same state — swap the renderer. -->
 <nat-table-surface [enableSorting]="true" [enableReordering]="true" [(state)]="state">
-  <nat-table-column-visibility />
-
   @if (view() === 'table') {
     <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
   } @else {

@@ -152,6 +152,40 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 
 Set the border-width tokens to `0` when a design needs to remove the outer table boundary or internal dividers.
 
+### List Renderer Tokens (spike)
+
+The `nat-list` spike renderer lays every item out as a CSS grid whose field areas are named by column id, so consumers can position each column's field freely. These tokens are spike API and may change or be removed with the `NatList` spike.
+
+| Token                           | Purpose                                                                                            |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `--nat-table-list-gap`          | Gap between list items                                                                             |
+| `--nat-table-list-item-areas`   | `grid-template-areas` for one item; area names are column ids (default stacks each visible column) |
+| `--nat-table-list-item-columns` | `grid-template-columns` for one item                                                               |
+| `--nat-table-list-item-gap`     | Gap between fields inside one item                                                                 |
+| `--nat-table-list-item-padding` | Item padding                                                                                       |
+
+When overriding `--nat-table-list-item-areas`, name every visible column in the template (or hide the rest via column visibility) — a field whose column id is missing from the areas template falls back to implicit grid placement.
+
+The loading, empty, and error items share one base shape, so the tokens below restyle all three at once; each state then has its own accent token for the indicator (and, for the error state, the message color).
+
+| Token                                   | Purpose                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------- |
+| `--nat-table-list-state-padding`        | Padding for every state item                                                 |
+| `--nat-table-list-state-gap`            | Gap between the state indicator and its message                              |
+| `--nat-table-list-state-justify`        | `justify-content` for the state item (e.g. `center`)                         |
+| `--nat-table-list-state-min-height`     | Minimum height, useful to stop layout jumping between states                 |
+| `--nat-table-list-state-color`          | Shared state message color                                                   |
+| `--nat-table-list-state-background`     | Shared state background                                                      |
+| `--nat-table-list-state-border-color`   | Shared state border color                                                    |
+| `--nat-table-list-state-border-style`   | Shared state border style (defaults to `dashed`)                             |
+| `--nat-table-list-state-radius`         | Shared state corner radius                                                   |
+| `--nat-table-list-state-indicator-size` | Indicator diameter                                                           |
+| `--nat-table-list-loading-accent`       | Loading indicator color (falls back to `--nat-table-color-accent`)           |
+| `--nat-table-list-empty-accent`         | Empty indicator outline color (falls back to `--nat-table-color-text-muted`) |
+| `--nat-table-list-error-accent`         | Error indicator and message color (falls back to `--nat-table-color-danger`) |
+
+Each state item also carries a `data-state` attribute (`loading`, `empty`, or `error`) for consumer styling hooks. The loading indicator animates and honors `prefers-reduced-motion: reduce`.
+
 ## UI Control Tokens
 
 `ng-advanced-table/components` controls consume the same theme. Common groups include:
