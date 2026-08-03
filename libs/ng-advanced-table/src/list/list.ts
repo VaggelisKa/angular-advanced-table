@@ -247,7 +247,7 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     // Only the shared set: the grid-only effects announce column resizes,
     // write `aria-multiselectable` onto a rendered `<table>`, and validate
     // resize/reorder keybindings — none of which a list renderer has.
-    this.a11yService.registerSharedEffects('nat-list', false);
+    this.a11yService.registerSharedEffects('list');
 
     // ── Default item areas bridge ──
     // Written imperatively: Angular host `[style.--*]` bindings silently drop

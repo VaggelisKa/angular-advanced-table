@@ -5,7 +5,7 @@ import type { Column, RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
 import { NatTableState } from './table.state';
-import type { TableAccessibilitySnapshot } from '../common/table-a11y.type';
+import type { NatTableRendererKind, TableAccessibilitySnapshot } from '../common/table-a11y.type';
 import { validateKeybindings } from '../hotkey-a11y/utils/keybindings.util';
 import { resolveColumnLabel } from '../utils/column-label.util';
 import { serializeRowSelection } from '../utils/row-state.util';
@@ -30,6 +30,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
 
+  private renderer: NatTableRendererKind = 'table';
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
   private previousResizingColumnId: string | null = null;
 
@@ -55,12 +56,13 @@ export class NatTableA11yService<TData extends RowData = RowData> {
    * context (constructor or field initializer), like `NatTableState`'s
    * `register*Effect` methods.
    *
-   * @param elementName Selector named by the accessible-name warning.
-   * @param supportsCaption Whether that renderer also accepts a `caption`.
+   * The renderer kind also selects renderer-specific announcement copy, so a
+   * list announces fields where a grid announces columns.
    */
-  public registerSharedEffects(elementName: string, supportsCaption: boolean): void {
+  public registerSharedEffects(renderer: NatTableRendererKind): void {
+    this.renderer = renderer;
     this.registerAnnouncementEffect();
-    this.registerAccessibleNameValidationEffect(elementName, supportsCaption);
+    this.registerAccessibleNameValidationEffect();
   }
 
   /**
@@ -172,7 +174,8 @@ export class NatTableA11yService<TData extends RowData = RowData> {
         previousSnapshot,
         snapshot,
         () => this.state.resolvedAccessibilityText(),
-        (value) => this.formatAccessibilityNumber(value)
+        (value) => this.formatAccessibilityNumber(value),
+        this.renderer
       );
 
       if (message) {
@@ -289,15 +292,16 @@ export class NatTableA11yService<TData extends RowData = RowData> {
 
   // ─── Dev-mode validation effects ───
 
-  private registerAccessibleNameValidationEffect(elementName: string, supportsCaption: boolean): void {
+  private registerAccessibleNameValidationEffect(): void {
     afterRenderEffect(() => {
       if (!isDevMode() || this.state.resolvedCaption() || this.state.accessibleName()?.trim()) {
         return;
       }
 
-      const requirement = supportsCaption ? 'either `caption` or `accessibleName`' : '`accessibleName`';
+      // Only the grid accepts a `caption`, so a list must not be told to add one.
+      const requirement = this.renderer === 'table' ? 'either `caption` or `accessibleName`' : '`accessibleName`';
 
-      console.warn(`[ng-advanced-table] <${elementName}> requires ${requirement} for an accessible name.`);
+      console.warn(`[ng-advanced-table] <nat-${this.renderer}> requires ${requirement} for an accessible name.`);
     });
   }
 

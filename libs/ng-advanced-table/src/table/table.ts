@@ -281,7 +281,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     this.natTableService.setController(this);
 
     // ── Accessibility effects (shared + grid-only) ──
-    this.a11yService.registerSharedEffects('nat-table', true);
+    this.a11yService.registerSharedEffects('table');
     this.a11yService.registerGridEffects();
 
     // ── Signal-based input bridging ──
