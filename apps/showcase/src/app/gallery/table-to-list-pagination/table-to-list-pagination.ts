@@ -6,6 +6,7 @@ import { NatTablePagination, NatTableSurface } from 'ng-advanced-table/component
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 
 const mockOrderRows = generateMockOrderRows(42);
 
@@ -13,14 +14,14 @@ const mockOrderRows = generateMockOrderRows(42);
 // the table's Aria grid context and cannot render inside the list view.
 const demoColumns = mockOrderColumns.filter((column) => column.id !== 'actions');
 
-const EXAMPLE_CODE = `<!-- The pagination companion resolves the list as its controller and pages it. -->
+const EXAMPLE_MARKUP = `<!-- The pagination companion resolves the list as its controller and pages it. -->
 <nat-table-surface [(state)]="state">
   <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
 
   <nat-table-pagination [pageSizeOptions]="[5, 10, 20]" />
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — nothing list-specific: mounting the pagination control
+const EXAMPLE_TS = `// component.ts — nothing list-specific: mounting the pagination control
 // registers pagination on the surface, and the engine pages the rows.
 protected readonly state = signal<Partial<NatTableUserState>>({});`;
 
@@ -32,7 +33,7 @@ protected readonly state = signal<Partial<NatTableUserState>>({});`;
  */
 @Component({
   selector: 'app-table-to-list-pagination',
-  imports: [NatList, NatTablePagination, NatTableSurface],
+  imports: [DemoCode, NatList, NatTablePagination, NatTableSurface],
   templateUrl: './table-to-list-pagination.html',
   styleUrl: './table-to-list-pagination.css'
 })
@@ -41,5 +42,6 @@ export class TableToListPagination {
   protected readonly columns = demoColumns;
   protected readonly getRowId = getMockOrderRowId;
   protected readonly state = signal<Partial<NatTableUserState>>({});
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
 }

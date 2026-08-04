@@ -6,10 +6,7 @@
     <code>meta.label</code>.
   </p>
 
-  <section aria-label="Minimal code example" class="demo-code">
-    <h2 class="demo-code-title">Minimal example</h2>
-    <pre class="demo-code-block" tabindex="0"><code>{{ exampleCode }}</code></pre>
-  </section>
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
 
   <ng-template #totalTemplate let-context>
     <strong class="template-total" data-testid="template-cell">{{ context.getValue() }} USD</strong>

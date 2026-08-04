@@ -7,6 +7,7 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import type { MockOrderRow } from '../../mock-order/mock-order.type';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 
 const mockOrderRows = generateMockOrderRows(12);
 
@@ -36,16 +37,16 @@ const listColumns = tableColumns
     meta: { ...column.meta, label: undefined, hiddenHeaderLabel: column.meta?.label }
   }));
 
-const EXAMPLE_CODE = `<!-- One surface, one state — a different column config per renderer. -->
+const EXAMPLE_MARKUP = `<!-- One surface, one state — a different column config per renderer. -->
 <nat-table-surface [enableSorting]="true" [(state)]="state">
   @if (view() === 'table') {
     <nat-table [columns]="tableColumns" [data]="rows" accessibleName="Orders" />
   } @else {
     <nat-list [columns]="listColumns" [data]="rows" accessibleName="Orders" />
   }
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — the list gets a condensed config with the same column ids,
+const EXAMPLE_TS = `// component.ts — the list gets a condensed config with the same column ids,
 // so shared state (sorting on a shared column) keeps applying. Moving the
 // visible label to meta.hiddenHeaderLabel removes the field labels from the
 // list only (they stay screen-reader-only); the table keeps its headers.
@@ -67,7 +68,7 @@ type DemoViewMode = 'table' | 'list';
  */
 @Component({
   selector: 'app-table-to-list-multi-config',
-  imports: [NatList, NatTable, NatTableSurface],
+  imports: [DemoCode, NatList, NatTable, NatTableSurface],
   templateUrl: './table-to-list-multi-config.html',
   styleUrl: './table-to-list-multi-config.css'
 })
@@ -79,5 +80,6 @@ export class TableToListMultiConfig {
 
   protected readonly view = signal<DemoViewMode>('table');
   protected readonly state = signal<Partial<NatTableUserState>>({});
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
 }

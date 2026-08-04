@@ -8,20 +8,21 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 import { CustomCellsFieldLabel } from './custom-cells-field-label';
 import type { MockOrderRow } from '../../mock-order/mock-order.type';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 import { OrderStatusBadge } from '../../ui/order-status-badge/order-status-badge';
 
 const mockOrderRows = generateMockOrderRows(6);
 
-const EXAMPLE_CODE = `<!-- The list renders cells through the same *flexRender pipeline as the table. -->
+const EXAMPLE_MARKUP = `<!-- The list renders cells through the same *flexRender pipeline as the table. -->
 <ng-template #totalTemplate let-context>
   <strong class="total">{{ context.getValue() | currency }}</strong>
 </ng-template>
 
 <nat-table-surface>
   <nat-list [columns]="columns()" [data]="rows" accessibleName="Orders" />
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — three cell flavors plus a component field label.
+const EXAMPLE_TS = `// component.ts — three cell flavors plus a component field label.
 private readonly totalTemplate = viewChild<TemplateRef<unknown>>('totalTemplate');
 
 protected readonly columns = computed<ColumnDef<Order, unknown>[]>(() => [
@@ -55,14 +56,15 @@ protected readonly columns = computed<ColumnDef<Order, unknown>[]>(() => [
  */
 @Component({
   selector: 'app-table-to-list-custom-cells',
-  imports: [NatList, NatTableSurface],
+  imports: [DemoCode, NatList, NatTableSurface],
   templateUrl: './table-to-list-custom-cells.html',
   styleUrl: './table-to-list-custom-cells.css'
 })
 export class TableToListCustomCells {
   protected readonly rows = mockOrderRows;
   protected readonly getRowId = getMockOrderRowId;
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
 
   private readonly totalTemplate = viewChild<TemplateRef<unknown>>('totalTemplate');
 

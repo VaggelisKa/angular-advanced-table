@@ -5,10 +5,7 @@
     column can be positioned inside the item freely.
   </p>
 
-  <section aria-label="Minimal code example" class="demo-code">
-    <h2 class="demo-code-title">Minimal example</h2>
-    <pre class="demo-code-block" tabindex="0"><code>{{ exampleCode }}</code></pre>
-  </section>
+  <app-demo-code [css]="exampleCss" [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
 
   <nat-table-surface [enableSorting]="true" [(state)]="state">
     @if (isTableViewport()) {

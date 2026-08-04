@@ -4,10 +4,7 @@
     engine, and pages the rows — no list-specific wiring.
   </p>
 
-  <section aria-label="Minimal code example" class="demo-code">
-    <h2 class="demo-code-title">Minimal example</h2>
-    <pre class="demo-code-block" tabindex="0"><code>{{ exampleCode }}</code></pre>
-  </section>
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
 
   <nat-table-surface [(state)]="state">
     <nat-list [columns]="columns" [data]="rows" [getRowId]="getRowId" accessibleName="Paginated orders list" class="sc-demo-list" />

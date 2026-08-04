@@ -6,6 +6,7 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 
 const mockOrderRows = generateMockOrderRows(12);
 
@@ -31,16 +32,16 @@ const DEMO_FIELD_LABELS = new Map<string, string>(DEMO_FIELDS.map((field) => [fi
 
 const getFieldLabel = (columnId: string): string => DEMO_FIELD_LABELS.get(columnId) ?? columnId;
 
-const EXAMPLE_CODE = `<!-- Same surface, same state — swap the renderer. -->
+const EXAMPLE_MARKUP = `<!-- Same surface, same state — swap the renderer. -->
 <nat-table-surface [enableSorting]="true" [enableReordering]="true" [(state)]="state">
   @if (view() === 'table') {
     <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
   } @else {
     <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
   }
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — the list has no header UI; sort and reorder it by writing the state.
+const EXAMPLE_TS = `// component.ts — the list has no header UI; sort and reorder it by writing the state.
 protected readonly view = signal<'table' | 'list'>('table');
 protected readonly state = signal<Partial<NatTableUserState>>({});
 
@@ -65,7 +66,7 @@ type DemoViewMode = 'table' | 'list';
  */
 @Component({
   selector: 'app-table-to-list',
-  imports: [NatList, NatTable, NatTableSurface],
+  imports: [DemoCode, NatList, NatTable, NatTableSurface],
   templateUrl: './table-to-list.html',
   styleUrl: './table-to-list.css'
 })
@@ -76,7 +77,8 @@ export class TableToList {
 
   protected readonly view = signal<DemoViewMode>('table');
   protected readonly state = signal<Partial<NatTableUserState>>({});
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
 
   /** Current field order: the state's columnOrder first, then any unlisted fields in definition order. */
   protected readonly fieldOrder = computed<string[]>(() => {

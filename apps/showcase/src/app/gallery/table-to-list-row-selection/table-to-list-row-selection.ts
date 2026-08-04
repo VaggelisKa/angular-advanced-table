@@ -6,6 +6,7 @@ import { NatTableSurface, withNatTableSelectionColumn } from 'ng-advanced-table/
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 
 const mockOrderRows = generateMockOrderRows(8);
 
@@ -23,7 +24,7 @@ const selectionColumns = withNatTableSelectionColumn(baseColumns, { columnId: SE
   column.id === SELECTION_COLUMN_ID ? { ...column, meta: { ...column.meta, hiddenHeaderLabel: 'Select order' } } : column
 );
 
-const EXAMPLE_CODE = `<!-- Same selection engine as the table: enable it, add a selection column. -->
+const EXAMPLE_MARKUP = `<!-- Same selection engine as the table: enable it, add a selection column. -->
 <nat-table-surface [(state)]="state">
   <nat-list
     [columns]="columns"
@@ -31,9 +32,9 @@ const EXAMPLE_CODE = `<!-- Same selection engine as the table: enable it, add a 
     [enableRowSelection]="true"
     [selectionMode]="selectionMode()"
     accessibleName="Orders" />
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — withNatTableSelectionColumn renders a real checkbox per item.
+const EXAMPLE_TS = `// component.ts — withNatTableSelectionColumn renders a real checkbox per item.
 // Its header is the select-all checkbox, which a list would otherwise repeat as
 // the field label, so give the column a screen-reader-only label instead.
 protected readonly columns = withNatTableSelectionColumn(orderColumns, { columnId: 'select' }).map((column) =>
@@ -41,9 +42,8 @@ protected readonly columns = withNatTableSelectionColumn(orderColumns, { columnI
 );
 
 // Selection lives in the shared surface state, so it reads back like any slice.
-protected readonly selectedCount = computed(() => Object.values(this.state().rowSelection ?? {}).filter(Boolean).length);
-
-/* Selected items expose data-selected for styling. */
+protected readonly selectedCount = computed(() => Object.values(this.state().rowSelection ?? {}).filter(Boolean).length);`;
+const EXAMPLE_CSS = `/* Selected items expose data-selected for styling. */
 nat-list { --nat-table-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent); }`;
 
 /**
@@ -53,7 +53,7 @@ nat-list { --nat-table-list-item-background-selected: color-mix(in srgb, current
  */
 @Component({
   selector: 'app-table-to-list-row-selection',
-  imports: [NatList, NatTableSurface],
+  imports: [DemoCode, NatList, NatTableSurface],
   templateUrl: './table-to-list-row-selection.html',
   styleUrl: './table-to-list-row-selection.css'
 })
@@ -61,7 +61,9 @@ export class TableToListRowSelection {
   protected readonly rows = mockOrderRows;
   protected readonly columns = selectionColumns;
   protected readonly getRowId = getMockOrderRowId;
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
+  protected readonly exampleCss = EXAMPLE_CSS;
 
   protected readonly selectionMode = signal<'single' | 'multiple'>('multiple');
   protected readonly state = signal<Partial<NatTableUserState>>({});

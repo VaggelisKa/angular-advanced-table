@@ -6,6 +6,7 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 import { TableSearch } from '../../ui/table-search/table-search';
 
 const mockOrderRows = generateMockOrderRows(12);
@@ -27,14 +28,14 @@ const DEMO_FIELDS = [
   { id: 'total', label: 'Total' }
 ] as const;
 
-const EXAMPLE_CODE = `<!-- The list has no header UI — sort, search, and visibility are consumer-owned. -->
+const EXAMPLE_MARKUP = `<!-- The list has no header UI — sort, search, and visibility are consumer-owned. -->
 <nat-table-surface [(state)]="state">
   <app-table-search placeholder="Search orders" />
 
   <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — sorting and visibility write the surface state signal.
+const EXAMPLE_TS = `// component.ts — sorting and visibility write the surface state signal.
 protected sortBy(columnId: string, desc: boolean): void {
   this.state.update((current) => ({ ...current, sorting: [{ id: columnId, desc }] }));
 }
@@ -58,7 +59,7 @@ protected toggleField(columnId: string, visible: boolean): void {
  */
 @Component({
   selector: 'app-table-to-list-controls',
-  imports: [NatList, NatTableSurface, TableSearch],
+  imports: [DemoCode, NatList, NatTableSurface, TableSearch],
   templateUrl: './table-to-list-controls.html',
   styleUrl: './table-to-list-controls.css'
 })
@@ -69,7 +70,8 @@ export class TableToListControls {
   protected readonly fields = DEMO_FIELDS;
 
   protected readonly state = signal<Partial<NatTableUserState>>({});
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
 
   protected isSorted(columnId: string, desc: boolean): boolean {
     const sorting = this.state().sorting ?? [];

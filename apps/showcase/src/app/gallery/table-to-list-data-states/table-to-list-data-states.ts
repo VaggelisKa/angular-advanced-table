@@ -7,6 +7,7 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import type { MockOrderRow } from '../../mock-order/mock-order.type';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 
 const mockOrderRows = generateMockOrderRows(6);
 
@@ -14,12 +15,12 @@ const mockOrderRows = generateMockOrderRows(6);
 // the table's Aria grid context and cannot render inside the list view.
 const demoColumns = mockOrderColumns.filter((column) => column.id !== 'actions');
 
-const EXAMPLE_CODE = `<!-- dataStatus drives the built-in loading, empty, and error list items. -->
+const EXAMPLE_MARKUP = `<!-- dataStatus drives the built-in loading, empty, and error list items. -->
 <nat-table-surface>
   <nat-list [columns]="columns" [data]="rows()" [dataStatus]="dataStatus()" accessibleName="Orders" />
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — the consumer owns fetching, retries, and error handling;
+const EXAMPLE_TS = `// component.ts — the consumer owns fetching, retries, and error handling;
 // the list only renders the state you hand it.
 protected readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.loading);
 protected readonly rows = signal<Order[]>([]);
@@ -33,9 +34,8 @@ private async load(): Promise<void> {
   } catch {
     this.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
   }
-}
-
-/* All three states share one base shape, so shared tokens restyle them
+}`;
+const EXAMPLE_CSS = `/* All three states share one base shape, so shared tokens restyle them
    together and each state keeps its own accent. */
 nat-list {
   --nat-table-list-state-justify: center;
@@ -61,7 +61,7 @@ const DEMO_SCENARIOS: readonly { readonly id: DemoDataScenario; readonly label: 
  */
 @Component({
   selector: 'app-table-to-list-data-states',
-  imports: [NatList, NatTableSurface],
+  imports: [DemoCode, NatList, NatTableSurface],
   templateUrl: './table-to-list-data-states.html',
   styleUrl: './table-to-list-data-states.css'
 })
@@ -69,7 +69,9 @@ export class TableToListDataStates {
   protected readonly columns = demoColumns;
   protected readonly getRowId = getMockOrderRowId;
   protected readonly scenarios = DEMO_SCENARIOS;
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
+  protected readonly exampleCss = EXAMPLE_CSS;
 
   protected readonly scenario = signal<DemoDataScenario>('success');
 

@@ -1,0 +1,37 @@
+/* The host sits in a page grid; without min-width: 0 the grid item sizes to
+   the pre's intrinsic width and overflows the viewport on mobile instead of
+   letting the code block scroll horizontally. */
+:host {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin-block: 0 1.5rem;
+}
+
+.demo-code {
+  min-width: 0;
+  max-width: 100%;
+  background: var(--sc-code-bg);
+}
+
+.demo-code-title {
+  margin-block: 0 0.5rem;
+  font-size: 1rem;
+  color: var(--sc-text);
+}
+
+.demo-code-block {
+  max-width: 100%;
+  padding: 1rem;
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--sc-code-text);
+  border: 1px solid var(--sc-code-border);
+  border-radius: 8px;
+}
+
+.demo-code-block + .demo-code-block {
+  margin-top: 0.5rem;
+}

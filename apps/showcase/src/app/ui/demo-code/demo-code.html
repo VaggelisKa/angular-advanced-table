@@ -1,0 +1,12 @@
+<section [attr.aria-label]="heading()" class="demo-code">
+  <h2 class="demo-code-title">{{ heading() }}</h2>
+  @if (markup().trim()) {
+    <pre class="demo-code-block" tabindex="0"><code #codeEl class="language-markup">{{ markup() }}</code></pre>
+  }
+  @if (typescript().trim()) {
+    <pre class="demo-code-block" tabindex="0"><code #codeEl class="language-typescript">{{ typescript() }}</code></pre>
+  }
+  @if (css().trim()) {
+    <pre class="demo-code-block" tabindex="0"><code #codeEl class="language-css">{{ css() }}</code></pre>
+  }
+</section>

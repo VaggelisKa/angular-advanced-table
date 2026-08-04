@@ -1175,7 +1175,7 @@ input {
   }
 }
 
-:is(.docs-markdown, .docs-example, .table-builder-page) {
+:is(.docs-markdown, .docs-example, .table-builder-page, .demo-code) {
   & .token.comment,
   & .token.prolog,
   & .token.doctype,

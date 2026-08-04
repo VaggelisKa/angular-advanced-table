@@ -4,10 +4,7 @@
     column order with labels resolved from the column defs.
   </p>
 
-  <section aria-label="Minimal code example" class="demo-code">
-    <h2 class="demo-code-title">Minimal example</h2>
-    <pre class="demo-code-block" tabindex="0"><code>{{ exampleCode }}</code></pre>
-  </section>
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
 
   <nat-table-surface>
     <nat-list [columns]="columns" [data]="rows" [getRowId]="getRowId" accessibleName="Orders list" class="sc-demo-list" />

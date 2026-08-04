@@ -5,6 +5,7 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 
 const mockOrderRows = generateMockOrderRows(8);
 
@@ -12,12 +13,12 @@ const mockOrderRows = generateMockOrderRows(8);
 // the table's Aria grid context and cannot render inside the list view.
 const demoColumns = mockOrderColumns.filter((column) => column.id !== 'actions');
 
-const EXAMPLE_CODE = `<!-- Minimal composition: the surface provides the state scope, the list renders. -->
+const EXAMPLE_MARKUP = `<!-- Minimal composition: the surface provides the state scope, the list renders. -->
 <nat-table-surface>
   <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
-</nat-table-surface>
+</nat-table-surface>`;
 
-// component.ts — columns are the same TanStack ColumnDefs the table uses;
+const EXAMPLE_TS = `// component.ts — columns are the same TanStack ColumnDefs the table uses;
 // field labels come from meta.label (falling back to a string header).
 protected readonly rows = orderRows;
 protected readonly columns: ColumnDef<Order, unknown>[] = [
@@ -33,7 +34,7 @@ protected readonly columns: ColumnDef<Order, unknown>[] = [
  */
 @Component({
   selector: 'app-table-to-list-basic',
-  imports: [NatList, NatTableSurface],
+  imports: [DemoCode, NatList, NatTableSurface],
   templateUrl: './table-to-list-basic.html',
   styleUrl: './table-to-list-basic.css'
 })
@@ -41,5 +42,6 @@ export class TableToListBasic {
   protected readonly rows = mockOrderRows;
   protected readonly columns = demoColumns;
   protected readonly getRowId = getMockOrderRowId;
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
 }

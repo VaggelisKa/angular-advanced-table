@@ -9,6 +9,7 @@ import { map } from 'rxjs';
 
 import { mockOrderColumns } from '../../mock-order/mock-order-columns';
 import { generateMockOrderRows, getMockOrderRowId } from '../../mock-order/mock-order.util';
+import { DemoCode } from '../../ui';
 
 const mockOrderRows = generateMockOrderRows(12);
 
@@ -20,22 +21,20 @@ const demoColumns = mockOrderColumns.filter((column) => column.id !== 'actions')
 /** Portrait tablet and up (768px+) renders the table; below that the list takes over. */
 const TABLE_VIEWPORT_QUERY = '(min-width: 768px)';
 
-const EXAMPLE_CODE = `// component.ts — consumer-owned breakpoint: table from 768px up, list below.
-protected readonly isTableViewport = toSignal(
-  inject(BreakpointObserver).observe('(min-width: 768px)').pipe(map((result) => result.matches)),
-  { initialValue: true }
-);
-
-<!-- Same surface, same state — the breakpoint picks the renderer. -->
+const EXAMPLE_MARKUP = `<!-- Same surface, same state — the breakpoint picks the renderer. -->
 <nat-table-surface [enableSorting]="true" [(state)]="state">
   @if (isTableViewport()) {
     <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
   } @else {
     <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
   }
-</nat-table-surface>
-
-/* Lay out the list items: each field is a grid area named by its column id. */
+</nat-table-surface>`;
+const EXAMPLE_TS = `// component.ts — consumer-owned breakpoint: table from 768px up, list below.
+protected readonly isTableViewport = toSignal(
+  inject(BreakpointObserver).observe('(min-width: 768px)').pipe(map((result) => result.matches)),
+  { initialValue: true }
+);`;
+const EXAMPLE_CSS = `/* Lay out the list items: each field is a grid area named by its column id. */
 nat-list {
   --nat-table-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   --nat-table-list-item-areas: 'id id status' 'customer owner total';
@@ -50,7 +49,7 @@ nat-list {
  */
 @Component({
   selector: 'app-table-to-list-breakpoint',
-  imports: [NatList, NatTable, NatTableSurface],
+  imports: [DemoCode, NatList, NatTable, NatTableSurface],
   templateUrl: './table-to-list-breakpoint.html',
   styleUrl: './table-to-list-breakpoint.css'
 })
@@ -59,7 +58,9 @@ export class TableToListBreakpoint {
   protected readonly columns = demoColumns;
   protected readonly getRowId = getMockOrderRowId;
   protected readonly state = signal<Partial<NatTableUserState>>({});
-  protected readonly exampleCode = EXAMPLE_CODE;
+  protected readonly exampleMarkup = EXAMPLE_MARKUP;
+  protected readonly exampleTs = EXAMPLE_TS;
+  protected readonly exampleCss = EXAMPLE_CSS;
 
   protected readonly isTableViewport = toSignal(
     inject(BreakpointObserver)
