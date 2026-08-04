@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- a11y service residual: DI + the liveMessage signal + snapshot capture that must read live signals + the summary computeds + five effect/afterRenderEffect registrations that must run in the caller's injection context (grouped into registerSharedEffects/registerGridEffects so a list renderer can skip the grid-only ones), plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
+/* eslint-disable max-lines -- a11y service residual: DI + the liveMessage signal + snapshot capture that must read live signals + the summary computeds + five effect/afterRenderEffect registrations (the shared pair self-registers in the constructor; the grid-only trio registers through registerGridEffects so a list renderer can skip them), plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
 import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 
 import type { Column, RowData } from '@tanstack/angular-table';
@@ -21,8 +21,10 @@ import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext 
  * and ARIA multiselectable management.
  *
  * Provided alongside `NatTableState` in the component's `providers`. The
- * renderer opts into its effects: every renderer calls `registerSharedEffects`,
- * while `registerGridEffects` adds the `<table>`-only behavior.
+ * effects every renderer needs register themselves in the constructor, so a
+ * renderer that merely provides the service still announces state changes;
+ * `registerGridEffects` adds the `<table>`-only behavior, and a non-grid
+ * renderer selects its announcement copy through `setRenderer`.
  */
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table-instance state, provided by NatTable (providers: [NatTableA11yService]), not root.
 @Injectable()
@@ -50,19 +52,22 @@ export class NatTableA11yService<TData extends RowData = RowData> {
    */
   public readonly listSummary = computed(() => this.buildTableSummary('listSummary'));
 
-  /**
-   * Registers the effects every renderer needs: state-change announcements and
-   * the dev-mode accessible-name check. Must be called from an injection
-   * context (constructor or field initializer), like `NatTableState`'s
-   * `register*Effect` methods.
-   *
-   * The renderer kind also selects renderer-specific announcement copy, so a
-   * list announces fields where a grid announces columns.
-   */
-  public registerSharedEffects(renderer: NatTableRendererKind): void {
-    this.renderer = renderer;
+  public constructor() {
+    // The effects every renderer needs — state-change announcements and the
+    // dev-mode accessible-name check — register here, not behind an opt-in
+    // call: the service is public API, and a renderer that provides it but
+    // forgets a registration call would be silently inert, the hardest kind
+    // of a11y regression to notice.
     this.registerAnnouncementEffect();
     this.registerAccessibleNameValidationEffect();
+  }
+
+  /**
+   * Selects renderer-specific announcement copy, so a list announces items and
+   * fields where a grid (the default) announces rows and columns.
+   */
+  public setRenderer(renderer: NatTableRendererKind): void {
+    this.renderer = renderer;
   }
 
   /**

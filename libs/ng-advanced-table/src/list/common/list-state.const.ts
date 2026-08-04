@@ -11,5 +11,3 @@ export const LIST_STATE_VIEWS = {
   [NAT_TABLE_BODY_STATE.empty]: { className: 'list-state list-state-empty', testId: 'nat-list-empty-state' },
   [NAT_TABLE_BODY_STATE.error]: { className: 'list-state list-state-error', testId: 'nat-list-error-state' }
 } as const;
-
-export type NatListStateKey = keyof typeof LIST_STATE_VIEWS;

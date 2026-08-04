@@ -217,22 +217,81 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
 
   describe('GIVEN: a list with row activation', () => {
     describe('WHEN: row activation is enabled', () => {
-      it('THEN: it emits rowActivate on click and makes items focusable', async () => {
+      it('THEN: it emits rowActivate on activator click and keeps the item itself out of the tab order', async () => {
         host.enableRowActivation.set(true);
         await render();
 
         const items = queryAll(fixture, '[data-testid="nat-list-item"]');
+        const activators = queryAll<HTMLButtonElement>(fixture, '[data-testid="nat-list-item-activator"]');
 
-        expect(items[0].getAttribute('tabindex')).toBe('0');
+        expect(activators).toHaveLength(6);
+        expect(items[0].hasAttribute('tabindex')).toBe(false);
 
-        items[0].click();
+        activators[0].click();
         await render();
 
         expect(host.activated()).toHaveLength(1);
         expect(host.activated()[0].rowData.name).toBe('Alpha');
       });
 
-      it('THEN: it leaves keydown defaults intact when activation is disabled', async () => {
+      it('THEN: it names each activator from its item fields via aria-labelledby', async () => {
+        host.enableRowActivation.set(true);
+        await render();
+
+        const item = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
+        const activator = item.querySelector('[data-testid="nat-list-item-activator"]');
+        const fields = item.querySelector('.list-item-fields');
+
+        expect(fields?.id).toBeTruthy();
+        expect(activator?.getAttribute('aria-labelledby')).toBe(fields?.id);
+      });
+
+      it('THEN: it emits rowActivate on Enter and Space and prevents their native default', async () => {
+        host.enableRowActivation.set(true);
+        await render();
+
+        const activator = queryAll<HTMLButtonElement>(fixture, '[data-testid="nat-list-item-activator"]')[0];
+        const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+        const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+
+        activator.dispatchEvent(enter);
+        await render();
+
+        expect(host.activated()).toHaveLength(1);
+        // preventDefault suppresses the button's own native activation, which
+        // would synthesize a click (double emit) and let Space scroll the page.
+        expect(enter.defaultPrevented).toBe(true);
+
+        activator.dispatchEvent(space);
+        await render();
+
+        expect(host.activated()).toHaveLength(2);
+        expect(space.defaultPrevented).toBe(true);
+      });
+
+      it('THEN: it keeps the activator a sibling of the fields so events from nested controls never reach it', async () => {
+        host.enableRowActivation.set(true);
+        await render();
+
+        const item = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
+        const activator = item.querySelector('[data-testid="nat-list-item-activator"]');
+        const field = item.querySelector<HTMLElement>('.list-field');
+
+        // The activator must never wrap the fields: nested interactive content
+        // inside a button is invalid HTML, and sibling structure (plus the
+        // z-index raise in CSS) is what keeps e.g. a selection checkbox
+        // operable without triggering activation.
+        expect(activator?.contains(field)).toBe(false);
+
+        field?.click();
+        await render();
+
+        expect(host.activated()).toHaveLength(0);
+      });
+    });
+
+    describe('WHEN: row activation is left disabled', () => {
+      it('THEN: it leaves keydown defaults intact', async () => {
         await render();
 
         const item = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
@@ -241,8 +300,6 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         item.dispatchEvent(event);
         await render();
 
-        // An Angular event expression returning `false` makes Angular call
-        // preventDefault(), which cancelled Space on controls inside items.
         expect(event.defaultPrevented).toBe(false);
       });
 
@@ -251,6 +308,7 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
 
         const items = queryAll(fixture, '[data-testid="nat-list-item"]');
 
+        expect(queryAll(fixture, '[data-testid="nat-list-item-activator"]')).toHaveLength(0);
         expect(items[0].hasAttribute('tabindex')).toBe(false);
 
         items[0].click();

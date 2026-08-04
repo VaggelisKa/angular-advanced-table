@@ -1,5 +1,5 @@
 import type { NatTableAccessibilityText } from './accessibility.type';
-import { pluralize } from './pluralize.util.const';
+import { pluralize } from './pluralize.const';
 
 /**
  * Built-in English accessibility copy specific to the list renderer.

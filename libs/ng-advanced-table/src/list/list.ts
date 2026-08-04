@@ -1,12 +1,9 @@
 /* eslint-disable max-lines -- list component shell, mirroring table.ts: inputs/outputs, the NatTableUiController surface, state-signal aliases, and input bridging. All pure logic (state views, template contexts, column label resolution) lives in ./utils and ./common. */
 import { NgTemplateOutlet } from '@angular/common';
-import type { TemplateRef } from '@angular/core';
+import type { ElementRef, TemplateRef } from '@angular/core';
 import {
   Component,
   DestroyRef,
-  ElementRef,
-  Renderer2,
-  RendererStyleFlags2,
   booleanAttribute,
   computed,
   contentChild,
@@ -32,10 +29,8 @@ import type { NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
-import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { resolveColumnLabel } from '../utils/column-label.util';
-import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
 
 /**
  * SPIKE: list renderer sharing the table engine (`NatTableState`).
@@ -52,6 +47,12 @@ import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
 @Component({
   selector: 'nat-list',
   exportAs: 'natList',
+  // A runtime state binding, not a theme default — exempt from the "never
+  // declare --nat-table-* tokens on hosts" rule, and it targets the internal
+  // `--sys-*` bridge anyway.
+  host: {
+    '[style.--sys-nat-table-list-item-areas]': 'defaultItemAreas()'
+  },
   imports: [FlexRender, NatListFieldArea, NgTemplateOutlet],
   providers: [NatTableState, NatTableA11yService],
   templateUrl: './list.html',
@@ -83,17 +84,19 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   /** Selection cardinality when enabled: `'multiple'` (default) or `'single'`. */
   public readonly selectionMode = input<'single' | 'multiple'>('multiple');
   /**
-   * Makes items activatable, emitting `rowActivate` on click and Enter/Space.
+   * Makes items activatable: each item renders a stretched activator button
+   * that emits `rowActivate` on click and Enter/Space.
    *
-   * Opt-in because it makes every item a tab stop: unlike a table row (focusable
-   * through the grid's keyboard model), a plain `<li>` needs `tabindex` to be
-   * keyboard-operable, and a mouse-only activation would fail WCAG 2.1.1.
+   * A real `<button>` rather than a focusable `<li>`: a focusable listitem
+   * exposes no interactive role, so assistive technology would announce it as
+   * plain text with no way to discover that Enter does anything (WCAG 4.1.2).
+   * Opt-in because it adds a tab stop per item.
    */
   public readonly enableRowActivation = input(false, { transform: booleanAttribute });
 
   // ─── Outputs ───
 
-  /** Emits on item click or Enter/Space unless the event started on an interactive descendant. */
+  /** Emits when an item's activator button is clicked or keyboard-activated. */
   public readonly rowActivate = output<NatTableRowActivateEvent<TData>>();
 
   // ─── Injected services ───
@@ -243,27 +246,13 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   public constructor() {
     this.natTableService.setController(this);
 
-    // ── Accessibility effects ──
-    // Only the shared set: the grid-only effects announce column resizes,
-    // write `aria-multiselectable` onto a rendered `<table>`, and validate
-    // resize/reorder keybindings — none of which a list renderer has.
-    this.a11yService.registerSharedEffects('list');
-
-    // ── Default item areas bridge ──
-    // Written imperatively: Angular host `[style.--*]` bindings silently drop
-    // string-valued custom properties on client-side creation, so the `--sys`
-    // bridge would only survive SSR-rendered first loads.
-    const hostElementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-    const renderer = inject(Renderer2);
-
-    effect(() => {
-      renderer.setStyle(
-        hostElementRef.nativeElement,
-        '--sys-nat-table-list-item-areas',
-        this.defaultItemAreas(),
-        RendererStyleFlags2.DashCase
-      );
-    });
+    // ── Accessibility copy ──
+    // The shared a11y effects self-register in the service constructor; the
+    // list only selects its announcement copy (items/fields, not rows/columns)
+    // and skips `registerGridEffects` — column-resize announcements, the
+    // `aria-multiselectable` writer, and resize/reorder keybinding validation
+    // target a rendered `<table>`, which a list renderer has none of.
+    this.a11yService.setRenderer('list');
 
     // ── Signal-based input bridging (same pattern as NatTable) ──
     effect(() => this.state.data.set(this.data()));
@@ -287,34 +276,32 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
 
   // ─── Row activation ───
 
-  // The activation guard lives here, not in the template binding: an Angular
-  // event expression that evaluates to `false` makes Angular call
-  // `preventDefault()`, which cancelled Space on checkboxes inside items.
-  protected onRowClick(event: MouseEvent, row: Row<TData>): void {
-    if (!this.enableRowActivation() || event.button !== 0 || event.defaultPrevented) {
-      return;
-    }
+  /** Id of the item's fields container, naming the activator button via `aria-labelledby`. */
+  protected rowFieldsId(row: Row<TData>): string {
+    return `${this.tableElementId()}-item-${row.id}-fields`;
+  }
 
-    if (originatesFromInteractiveDescendant(event)) {
+  // No interactive-descendant guard here: the activator is a stretched sibling
+  // of the fields, so events from controls inside fields never reach it — they
+  // stack above it in CSS.
+  protected onActivatorClick(event: MouseEvent, row: Row<TData>): void {
+    if (event.defaultPrevented || event.button !== 0) {
       return;
     }
 
     this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
   }
 
-  protected onRowKeydown(event: KeyboardEvent, row: Row<TData>): void {
-    if (!this.enableRowActivation() || event.defaultPrevented || !this.natTableService.keyboard().rowActivate(event)) {
+  protected onActivatorKeydown(event: KeyboardEvent, row: Row<TData>): void {
+    if (event.defaultPrevented || !this.natTableService.keyboard().rowActivate(event)) {
       return;
     }
 
-    if (originatesFromInteractiveDescendant(event)) {
-      return;
-    }
-
-    if (isSpaceShortcutKey(event.key)) {
-      event.preventDefault();
-    }
-
+    // Emit through the configured keybinding (so a surface rebind applies to
+    // the list) and suppress the button's own native activation: without this,
+    // Enter/Space would synthesize a click and emit twice, and Space would
+    // scroll the page.
+    event.preventDefault();
     this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
   }
 

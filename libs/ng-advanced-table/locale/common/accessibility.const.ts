@@ -2,7 +2,7 @@ import { NAT_EN_LIST_ACCESSIBILITY_TEXT } from './accessibility-list.const';
 import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
-import { pluralize } from './pluralize.util.const';
+import { pluralize } from './pluralize.const';
 
 const describeColumnZone = (zone: 'left' | 'center' | 'right'): string => {
   if (zone === 'left') {

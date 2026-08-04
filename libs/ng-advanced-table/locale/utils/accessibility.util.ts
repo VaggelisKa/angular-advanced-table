@@ -44,21 +44,21 @@ const mergeAccessibilitySummaryAnnouncers = (
 ): Partial<NatTableAccessibilityText> => ({
   tableSummary: override?.tableSummary ?? parent?.tableSummary,
   listSummary: override?.listSummary ?? parent?.listSummary,
-  listColumnVisibilityChange: override?.listColumnVisibilityChange ?? parent?.listColumnVisibilityChange,
-  listPageSizeChange: override?.listPageSizeChange ?? parent?.listPageSizeChange,
-  listPageChange: override?.listPageChange ?? parent?.listPageChange,
   sortingChange: override?.sortingChange ?? parent?.sortingChange,
   filteringChange: override?.filteringChange ?? parent?.filteringChange
 });
 
-/** Merges the visibility and pagination announcement formatters, override values winning. */
+/** Merges the visibility and pagination announcement formatters (grid and list variants), override values winning. */
 const mergeAccessibilityPaginationAnnouncers = (
   parent?: NatTableAccessibilityText,
   override?: NatTableAccessibilityText
 ): Partial<NatTableAccessibilityText> => ({
   columnVisibilityChange: override?.columnVisibilityChange ?? parent?.columnVisibilityChange,
+  listColumnVisibilityChange: override?.listColumnVisibilityChange ?? parent?.listColumnVisibilityChange,
   pageSizeChange: override?.pageSizeChange ?? parent?.pageSizeChange,
-  pageChange: override?.pageChange ?? parent?.pageChange
+  listPageSizeChange: override?.listPageSizeChange ?? parent?.listPageSizeChange,
+  pageChange: override?.pageChange ?? parent?.pageChange,
+  listPageChange: override?.listPageChange ?? parent?.listPageChange
 });
 
 /** Merges the column and selection announcement formatters, override values winning. */
