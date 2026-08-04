@@ -277,6 +277,10 @@ const themingSnippets = [
 <nat-table-surface [enableSorting]="true" [initialState]="initialState" class="ledger-surface">
   <nat-table [columns]="columns" [data]="rows" accessibleName="Themed orders table" />
 </nat-table-surface>
+
+<nat-table-surface [initialState]="initialState" class="ledger-surface ledger-list-surface">
+  <nat-list [columns]="columns" [data]="rows" accessibleName="Themed orders list" />
+</nat-table-surface>
 `
   ),
   snippet(
@@ -347,6 +351,17 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   color-scheme: light;
 }
 
+/* The list renderer follows the same ledger palette; the --nat-table-list-*
+   tokens lay each item out as named field areas (area names are column ids). */
+.ledger-list-surface {
+  --nat-table-list-gap: 10px;
+  --nat-table-list-item-areas: 'id total' 'customer status';
+  --nat-table-list-item-columns: 1fr auto;
+  --nat-table-list-item-gap: 6px;
+  --nat-table-list-item-padding: 14px 16px;
+  --nat-table-list-item-background: #fbfcfb;
+}
+
 [data-theme='dark'] .ledger-surface {
   --nat-table-color-text: #dfe8e5;
   --nat-table-color-text-muted: #9fb1ab;
@@ -375,6 +390,10 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-sort-button-color-sorted: #17211f;
 
   color-scheme: dark;
+}
+
+[data-theme='dark'] .ledger-list-surface {
+  --nat-table-list-item-background: #15211f;
 }
 `
   )
