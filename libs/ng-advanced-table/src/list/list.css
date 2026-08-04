@@ -26,15 +26,12 @@
   gap: var(--nat-table-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem));
   padding: var(--nat-table-list-item-padding, var(--sys-nat-table-list-item-padding, 0.75rem 1rem));
   background: var(--nat-table-list-item-background, var(--sys-nat-table-list-item-background, transparent));
-  border: 1px solid color-mix(in srgb, currentcolor 15%, transparent);
-  border-radius: 8px;
-}
-
-/* display: contents keeps the fields direct grid items of the list item while
-   giving the activator's aria-labelledby one referenceable element (Safari
-   exposes display: contents elements in the a11y tree since 15.4). */
-.list-item-fields {
-  display: contents;
+  border: var(--nat-table-list-item-border-width, var(--sys-nat-table-list-item-border-width, 1px)) solid
+    var(
+      --nat-table-list-item-border-color,
+      var(--sys-nat-table-list-item-border-color, color-mix(in srgb, currentcolor 15%, transparent))
+    );
+  border-radius: var(--nat-table-list-item-radius, var(--sys-nat-table-list-item-radius, 8px));
 }
 
 /* The activation affordance: a real button stretched over the whole item.
@@ -60,8 +57,34 @@
 
 /* Interactive controls inside fields stack above the stretched activator so
    they stay clickable and hoverable; events from them never reach the
-   activator, which is what guards activation against e.g. checkbox clicks. */
-.list-item.is-activatable .list-field :is(a, button, input, select, textarea, label, [tabindex]) {
+   activator, which is what guards activation against e.g. checkbox clicks.
+   Mirrors ROW_ACTIVATE_INTERACTIVE_SELECTOR (src/common/interaction.const.ts)
+   plus `label` and `[tabindex]`, which matter for pointer reachability here;
+   a spec asserts the const's selectors all appear in this rule. */
+.list-item.is-activatable
+  .list-field
+  :is(
+    a[href],
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [contenteditable='true'],
+    [role='button'],
+    [role='link'],
+    [role='checkbox'],
+    [role='menuitem'],
+    [role='menuitemcheckbox'],
+    [role='menuitemradio'],
+    [role='tab'],
+    [role='switch'],
+    [role='combobox'],
+    [role='textbox'],
+    [role='searchbox'],
+    label,
+    [tabindex]
+  ) {
   position: relative;
   z-index: 1;
 }
@@ -75,8 +98,8 @@
    (which also makes contrast undeterminable for automated a11y checks). */
 .list-field {
   display: flex;
-  gap: 0.5rem;
-  align-items: baseline;
+  gap: var(--nat-table-list-field-gap, var(--sys-nat-table-list-field-gap, 0.5rem));
+  align-items: var(--nat-table-list-field-align, var(--sys-nat-table-list-field-align, baseline));
   min-width: 0;
 }
 
@@ -86,7 +109,7 @@
 }
 
 .list-field-label {
-  font-weight: 600;
+  font-weight: var(--nat-table-list-label-font-weight, var(--sys-nat-table-list-label-font-weight, 600));
 }
 
 /* ─── Body states ───

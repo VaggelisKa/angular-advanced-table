@@ -406,6 +406,8 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-list-item-gap: 6px;
   --nat-table-list-item-padding: 14px 16px;
   --nat-table-list-item-background: #fbfcfb;
+  --nat-table-list-item-border-color: #cbd8d4;
+  --nat-table-list-item-radius: 6px;
 }
 
 [data-theme='dark'] .ledger-surface {
@@ -440,6 +442,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
 
 [data-theme='dark'] .ledger-list-surface {
   --nat-table-list-item-background: #15211f;
+  --nat-table-list-item-border-color: #30413d;
 }
 `
   )

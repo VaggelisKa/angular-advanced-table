@@ -276,9 +276,15 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
 
   // ─── Row activation ───
 
-  /** Id of the item's fields container, naming the activator button via `aria-labelledby`. */
-  protected rowFieldsId(row: Row<TData>): string {
-    return `${this.tableElementId()}-item-${row.id}-fields`;
+  /**
+   * Id of the item's first visible field, naming the activator button via
+   * `aria-labelledby`. Keyed by render index, not `row.id`: row ids come from
+   * the consumer's `getRowId` and may contain whitespace or other characters
+   * that break an id reference (`aria-labelledby` is a space-separated list),
+   * which would leave the activator with no accessible name.
+   */
+  protected activatorLabelId(index: number): string {
+    return `${this.tableElementId()}-item-${index}-label`;
   }
 
   // No interactive-descendant guard here: the activator is a stretched sibling

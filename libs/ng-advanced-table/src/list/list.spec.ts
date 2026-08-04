@@ -1,45 +1,15 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { NatList } from './list';
-import type { NatTableRowActivateEvent } from '../common/row.type';
-import type { NatTableUserState } from '../common/table-state.type';
+import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
-import type { NatTableDataStatus } from '../common/table-status.type';
 import { NatTableService } from '../domain-logic/table.service';
-import { buildRows, columns } from '../test-helpers/table-data.helper';
+import { ListHost } from '../test-helpers/list-hosts.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { TestTableSurface } from '../test-helpers/table-hosts.helper';
-
-@Component({
-  selector: 'test-list-host',
-  imports: [NatList, TestTableSurface],
-  template: `
-    <nat-table-surface [initialState]="initialState()" enableReordering>
-      <nat-list
-        [columns]="columns"
-        [data]="rows()"
-        [dataStatus]="dataStatus()"
-        [enableRowActivation]="enableRowActivation()"
-        [enableRowSelection]="enableRowSelection()"
-        [selectionMode]="selectionMode()"
-        accessibleName="Operations list"
-        (rowActivate)="activated.set([...activated(), $event])" />
-    </nat-table-surface>
-  `
-})
-class ListHost {
-  public readonly rows = signal<Row[]>(buildRows(6));
-  public readonly columns = columns;
-  public readonly initialState = signal<Partial<NatTableUserState>>({});
-  public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
-  public readonly enableRowSelection = signal(false);
-  public readonly selectionMode = signal<'single' | 'multiple'>('multiple');
-  public readonly enableRowActivation = signal(false);
-  public readonly activated = signal<NatTableRowActivateEvent<Row>[]>([]);
-}
 
 const queryAll = <T extends HTMLElement>(fixture: ComponentFixture<ListHost>, selector: string): T[] =>
   Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<T>(selector));
@@ -234,16 +204,60 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(host.activated()[0].rowData.name).toBe('Alpha');
       });
 
-      it('THEN: it names each activator from its item fields via aria-labelledby', async () => {
+      it('THEN: it names each activator from its item first field via aria-labelledby', async () => {
         host.enableRowActivation.set(true);
         await render();
 
         const item = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
         const activator = item.querySelector('[data-testid="nat-list-item-activator"]');
-        const fields = item.querySelector('.list-item-fields');
+        const firstField = item.querySelector('.list-field');
 
-        expect(fields?.id).toBeTruthy();
-        expect(activator?.getAttribute('aria-labelledby')).toBe(fields?.id);
+        // Named from the FIRST field only, so a screen reader hears a concise
+        // name ("Service Alpha") instead of the whole item content twice.
+        expect(firstField?.id).toBeTruthy();
+        expect(activator?.getAttribute('aria-labelledby')).toBe(firstField?.id);
+        expect(firstField?.textContent).toContain('Alpha');
+      });
+
+      it('THEN: it keeps the accessible name resolvable when row ids contain whitespace', async () => {
+        host.enableRowActivation.set(true);
+        host.getRowId.set((row) => `${row.name} ${row.region}`);
+        await render();
+
+        const item = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
+        const activator = item.querySelector('[data-testid="nat-list-item-activator"]');
+        const labelledby = activator?.getAttribute('aria-labelledby') ?? '';
+
+        // aria-labelledby is a space-separated id list: an id derived from a
+        // whitespace-bearing row id would split into unresolvable tokens and
+        // leave the button with no accessible name.
+        expect(labelledby).toBeTruthy();
+        expect(labelledby).not.toContain(' ');
+        expect(item.querySelector(`[id="${labelledby}"]`)?.textContent).toContain('Alpha');
+      });
+
+      it('THEN: the z-index guard covers every selector row activation exempts', async () => {
+        host.enableRowActivation.set(true);
+        await render();
+
+        // CSS cannot import ROW_ACTIVATE_INTERACTIVE_SELECTOR, so this locks
+        // the parity by hand: every control the event guard exempts must also
+        // be raised above the stretched activator. Normalized because the
+        // emulated-encapsulation compiler interleaves _ngcontent attribute
+        // selectors and drops attribute-value quotes.
+        const normalize = (value: string): string => value.replaceAll(/\[_ngcontent-[^\]]*\]/g, '').replaceAll(/['"]/g, '');
+        const guardRule = Array.from(globalThis.document.querySelectorAll('style'))
+          .map((style) => style.textContent)
+          .join('\n')
+          .split('}')
+          .map(normalize)
+          .find((rule) => rule.includes('.list-field') && rule.includes(':is(') && rule.includes('z-index'));
+
+        expect(guardRule).toBeTruthy();
+
+        for (const selector of ROW_ACTIVATE_INTERACTIVE_SELECTOR.split(',')) {
+          expect(guardRule).toContain(normalize(selector.trim()));
+        }
       });
 
       it('THEN: it emits rowActivate on Enter and Space and prevents their native default', async () => {
@@ -281,6 +295,7 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         // inside a button is invalid HTML, and sibling structure (plus the
         // z-index raise in CSS) is what keeps e.g. a selection checkbox
         // operable without triggering activation.
+        expect(field).toBeTruthy();
         expect(activator?.contains(field)).toBe(false);
 
         field?.click();

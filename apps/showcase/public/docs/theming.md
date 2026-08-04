@@ -156,14 +156,21 @@ Set the border-width tokens to `0` when a design needs to remove the outer table
 
 The `nat-list` spike renderer lays every item out as a CSS grid whose field areas are named by column id, so consumers can position each column's field freely. These tokens are spike API and may change or be removed with the `NatList` spike.
 
-| Token                              | Purpose                                                                                            |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--nat-table-list-gap`             | Gap between list items                                                                             |
-| `--nat-table-list-item-areas`      | `grid-template-areas` for one item; area names are column ids (default stacks each visible column) |
-| `--nat-table-list-item-columns`    | `grid-template-columns` for one item                                                               |
-| `--nat-table-list-item-gap`        | Gap between fields inside one item                                                                 |
-| `--nat-table-list-item-padding`    | Item padding                                                                                       |
-| `--nat-table-list-item-background` | Item background; transparent by default, so items inherit the page background                      |
+| Token                                       | Purpose                                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `--nat-table-list-gap`                      | Gap between list items                                                                             |
+| `--nat-table-list-item-areas`               | `grid-template-areas` for one item; area names are column ids (default stacks each visible column) |
+| `--nat-table-list-item-columns`             | `grid-template-columns` for one item                                                               |
+| `--nat-table-list-item-gap`                 | Gap between fields inside one item                                                                 |
+| `--nat-table-list-item-padding`             | Item padding                                                                                       |
+| `--nat-table-list-item-background`          | Item background; transparent by default, so items inherit the page background                      |
+| `--nat-table-list-item-background-selected` | Item background while the row is selected (`data-selected="true"`)                                 |
+| `--nat-table-list-item-border-width`        | Item border width                                                                                  |
+| `--nat-table-list-item-border-color`        | Item border color; a currentcolor mix by default, so it follows the page text color                |
+| `--nat-table-list-item-radius`              | Item corner radius                                                                                 |
+| `--nat-table-list-field-gap`                | Gap between one field's label and value                                                            |
+| `--nat-table-list-field-align`              | `align-items` for one field (defaults to `baseline`)                                               |
+| `--nat-table-list-label-font-weight`        | Field label weight                                                                                 |
 
 When overriding `--nat-table-list-item-areas`, name every visible column in the template (or hide the rest via column visibility) — a field whose column id is missing from the areas template falls back to implicit grid placement.
 

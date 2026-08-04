@@ -48,6 +48,11 @@ protected sortByTotal(): void {
 
 `enableRowActivation` (opt-in) renders a stretched activator button per item and emits `rowActivate` on click and Enter/Space. It is a real `<button>` because a focusable `<li>` exposes no interactive role to assistive technology; interactive controls inside fields stack above the activator, so a selection checkbox never triggers activation.
 
+Two deliberate consequences of the stretched-button design:
+
+- The activator's accessible name is the item's **first visible field** (label plus value, e.g. "Order ORD-201") — concise on purpose, since the item content is read as the list item body anyway. Order the columns so the identifying field comes first.
+- The overlay owns mousedown across the item, so field text cannot be selected with the mouse while activation is enabled. Leave activation off (or trigger navigation from a dedicated control) when copyable values matter.
+
 ## Data Lifecycle
 
 `dataStatus` drives the same loading, empty, and error model as the table, rendered as list items with a shared base shape. The table's `natTableLoading` / `natTableEmpty` / `natTableError` templates are accepted unchanged, and the `error` input carries the payload into the error template context.

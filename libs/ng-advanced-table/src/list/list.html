@@ -20,7 +20,7 @@
              so column order and visibility changes re-render the fields. -->
         @let listColumns = visibleColumns();
         @let headerContexts = leafHeaderContexts();
-        @for (row of bodyRows(); track row.id) {
+        @for (row of bodyRows(); track row.id; let itemIndex = $index) {
           <li
             [attr.data-row-id]="row.id"
             [attr.data-selected]="rowSelectedAttribute(row)"
@@ -35,42 +35,49 @@
                    be invalid HTML and can hide the nested controls from
                    assistive technology. Interactive descendants stack above it
                    in CSS, which replaces the old event-origin guard. Named by
-                   the item's fields: verbose, but the fields are the item's
-                   identity and add no extra label copy to localize. -->
-              <!-- eslint-disable-next-line @angular-eslint/template/elements-content -- named via aria-labelledby from the item's fields; visible content would duplicate them. -->
+                   the item's FIRST visible field (label + value), so screen
+                   readers get a concise name instead of re-hearing the whole
+                   item; the id is index-keyed because row ids are consumer
+                   input and may contain characters invalid in an id list.
+                   Trade-off, documented in the docs topic: the stretched
+                   overlay owns mousedown, so field text cannot be mouse-
+                   selected while activation is enabled. -->
+              <!-- eslint-disable-next-line @angular-eslint/template/elements-content -- named via aria-labelledby from the item's first field; visible content would duplicate it. -->
               <button
-                [attr.aria-labelledby]="rowFieldsId(row)"
+                [attr.aria-labelledby]="activatorLabelId(itemIndex)"
                 class="list-item-activator"
                 data-testid="nat-list-item-activator"
                 type="button"
                 (click)="onActivatorClick($event, row)"
                 (keydown)="onActivatorKeydown($event, row)"></button>
             }
-            <div [attr.id]="enableRowActivation() ? rowFieldsId(row) : null" class="list-item-fields">
-              @for (column of listColumns; track column.id) {
-                @let cell = cellForColumn(row, column.id);
-                @if (cell) {
-                  <div [attr.data-column-id]="column.id" [natListFieldArea]="column.id" class="list-field">
-                    <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
-                      @let headerDef = column.columnDef.header;
-                      @let headerContext = headerContexts.get(column.id);
-                      @if (!hasStaticLabel(column) && headerDef && headerContext) {
-                        <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
-                          {{ renderedLabel }}
-                        </ng-container>
-                      } @else {
-                        {{ resolveColumnLabel(column) }}
-                      }
-                    </span>
-                    <span class="list-field-value">
-                      <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
-                        {{ rendered }}
+            @for (column of listColumns; track column.id; let fieldIndex = $index) {
+              @let cell = cellForColumn(row, column.id);
+              @if (cell) {
+                <div
+                  [attr.data-column-id]="column.id"
+                  [attr.id]="enableRowActivation() && fieldIndex === 0 ? activatorLabelId(itemIndex) : null"
+                  [natListFieldArea]="column.id"
+                  class="list-field">
+                  <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
+                    @let headerDef = column.columnDef.header;
+                    @let headerContext = headerContexts.get(column.id);
+                    @if (!hasStaticLabel(column) && headerDef && headerContext) {
+                      <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
+                        {{ renderedLabel }}
                       </ng-container>
-                    </span>
-                  </div>
-                }
+                    } @else {
+                      {{ resolveColumnLabel(column) }}
+                    }
+                  </span>
+                  <span class="list-field-value">
+                    <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
+                      {{ rendered }}
+                    </ng-container>
+                  </span>
+                </div>
               }
-            </div>
+            }
           </li>
         }
       }
