@@ -20,6 +20,7 @@
   grid-template-columns: var(--nat-table-list-item-columns, var(--sys-nat-table-list-item-columns, 1fr));
   gap: var(--nat-table-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem));
   padding: var(--nat-table-list-item-padding, var(--sys-nat-table-list-item-padding, 0.75rem 1rem));
+  background: var(--nat-table-list-item-background, var(--sys-nat-table-list-item-background, transparent));
   border: 1px solid color-mix(in srgb, currentcolor 15%, transparent);
   border-radius: 8px;
 }

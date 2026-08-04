@@ -232,6 +232,20 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(host.activated()[0].rowData.name).toBe('Alpha');
       });
 
+      it('THEN: it leaves keydown defaults intact when activation is disabled', async () => {
+        await render();
+
+        const item = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
+        const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+
+        item.dispatchEvent(event);
+        await render();
+
+        // An Angular event expression returning `false` makes Angular call
+        // preventDefault(), which cancelled Space on controls inside items.
+        expect(event.defaultPrevented).toBe(false);
+      });
+
       it('THEN: it does not emit when activation is disabled', async () => {
         await render();
 

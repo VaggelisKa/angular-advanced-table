@@ -45,6 +45,8 @@ const mergeAccessibilitySummaryAnnouncers = (
   tableSummary: override?.tableSummary ?? parent?.tableSummary,
   listSummary: override?.listSummary ?? parent?.listSummary,
   listColumnVisibilityChange: override?.listColumnVisibilityChange ?? parent?.listColumnVisibilityChange,
+  listPageSizeChange: override?.listPageSizeChange ?? parent?.listPageSizeChange,
+  listPageChange: override?.listPageChange ?? parent?.listPageChange,
   sortingChange: override?.sortingChange ?? parent?.sortingChange,
   filteringChange: override?.filteringChange ?? parent?.filteringChange
 });

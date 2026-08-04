@@ -235,6 +235,36 @@ per-instance explicit labels
 
 For an atomic language switch across core, controls, and render metrics, derive all three provider signals from the same application translation-bundle signal.
 
+## Renderer-Specific Announcement Copy
+
+`nat-list` has items and fields where `nat-table` has rows and columns, so a few announcement keys come in pairs. The list key wins for a list; when it is absent the list falls back to the shared key, so a table-only override still reaches both renderers.
+
+| Shared key               | List key                     | Announces                     |
+| ------------------------ | ---------------------------- | ----------------------------- |
+| `tableSummary`           | `listSummary`                | `aria-describedby` summary    |
+| `columnVisibilityChange` | `listColumnVisibilityChange` | A field being shown or hidden |
+| `pageSizeChange`         | `listPageSizeChange`         | A page-size change            |
+| `pageChange`             | `listPageChange`             | A page change                 |
+
+```ts
+provideNatTableIntl({
+  accessibilityText: {
+    listPageChange: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}.`
+  }
+});
+```
+
+Because the built-in English dictionary already supplies the list keys, overriding only the shared key leaves lists on the built-in list copy. To retarget both renderers with one formatter, override the shared key and clear the list key:
+
+```ts
+provideNatTableIntl({
+  accessibilityText: {
+    pageChange: sharedPageChange,
+    listPageChange: undefined
+  }
+});
+```
+
 ## Runtime Locale Changes
 
 The active locale id and the available locale dictionaries are separate reactive inputs:

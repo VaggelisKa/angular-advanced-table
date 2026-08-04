@@ -287,8 +287,15 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
 
   // ─── Row activation ───
 
+  // The activation guard lives here, not in the template binding: an Angular
+  // event expression that evaluates to `false` makes Angular call
+  // `preventDefault()`, which cancelled Space on checkboxes inside items.
   protected onRowClick(event: MouseEvent, row: Row<TData>): void {
-    if (event.button !== 0 || event.defaultPrevented || originatesFromInteractiveDescendant(event)) {
+    if (!this.enableRowActivation() || event.button !== 0 || event.defaultPrevented) {
+      return;
+    }
+
+    if (originatesFromInteractiveDescendant(event)) {
       return;
     }
 
@@ -296,7 +303,7 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   }
 
   protected onRowKeydown(event: KeyboardEvent, row: Row<TData>): void {
-    if (event.defaultPrevented || !this.natTableService.keyboard().rowActivate(event)) {
+    if (!this.enableRowActivation() || event.defaultPrevented || !this.natTableService.keyboard().rowActivate(event)) {
       return;
     }
 

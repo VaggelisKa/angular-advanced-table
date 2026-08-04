@@ -9,7 +9,10 @@ import { pluralize } from './pluralize.util.const';
  * accessibility text; a consumer overriding only the grid formatter still
  * wins, because the renderer falls back to it when the list entry is absent.
  */
-export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<NatTableAccessibilityText, 'listSummary' | 'listColumnVisibilityChange'> = {
+export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
+  NatTableAccessibilityText,
+  'listSummary' | 'listColumnVisibilityChange' | 'listPageSizeChange' | 'listPageChange'
+> = {
   listSummary: ({
     filterState,
     pageCountText,
@@ -54,5 +57,9 @@ export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<NatTableAccessibilityText, 'li
     }
 
     return `${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
-  }
+  },
+  listPageSizeChange: ({ pageCountText, pageSizeValue, pageSizeText, pageText }) =>
+    `Showing ${pageSizeText} ${pluralize('item', pageSizeValue)} per page. Page ${pageText} of ${pageCountText}.`,
+  listPageChange: ({ pageCountText, pageText, visibleRowsValue, visibleRowsText }) =>
+    `Page ${pageText} of ${pageCountText}. ${visibleRowsText} ${pluralize('item', visibleRowsValue)} shown.`
 };

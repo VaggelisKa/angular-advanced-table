@@ -187,11 +187,11 @@ export const describeAccessibilityChange = (
   }
 
   if (previous.pagination.pageSize !== next.pagination.pageSize) {
-    return describePageSizeChange(next, resolveText(), formatNumber);
+    return describePageSizeChange(next, resolveText(), formatNumber, renderer);
   }
 
   if (previous.pagination.pageIndex !== next.pagination.pageIndex) {
-    return describePageChange(next, resolveText(), formatNumber);
+    return describePageChange(next, resolveText(), formatNumber, renderer);
   }
 
   return null;

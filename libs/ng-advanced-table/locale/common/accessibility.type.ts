@@ -215,6 +215,16 @@ export type NatTableAccessibilityText = {
    * it as fields rather than columns.
    */
   readonly listColumnVisibilityChange?: (context: NatTableAccessibilityColumnVisibilityAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when a list's page size changes. Receives the
+   * same context as `pageSizeChange`; the default phrases it as items.
+   */
+  readonly listPageSizeChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when a list's page changes. Receives the same
+   * context as `pageChange`; the default phrases it as items.
+   */
+  readonly listPageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when the page size changes. */
   readonly pageSizeChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when the page index changes. */

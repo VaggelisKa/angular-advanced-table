@@ -169,10 +169,6 @@ main > section {
   min-width: 0;
 }
 
-.sc-demo-list {
-  display: block;
-}
-
 /* The page is a grid; without min-width: 0 this grid item sizes to the
    pre's intrinsic width and overflows the viewport on mobile instead of
    letting the code block scroll horizontally. */

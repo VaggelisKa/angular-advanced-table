@@ -28,8 +28,8 @@
             [class.is-activatable]="enableRowActivation()"
             class="list-item"
             data-testid="nat-list-item"
-            (click)="enableRowActivation() && onRowClick($event, row)"
-            (keydown)="enableRowActivation() && onRowKeydown($event, row)">
+            (click)="onRowClick($event, row)"
+            (keydown)="onRowKeydown($event, row)">
             @for (column of listColumns; track column.id) {
               @let cell = cellForColumn(row, column.id);
               @if (cell) {
