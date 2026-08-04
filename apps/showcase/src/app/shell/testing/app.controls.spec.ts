@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 import { App } from '../app';
-import { configureAppTestBed, getElement, waitForFocusHandoff } from './app.testing';
+import { configureAppTestBed, getElement, settleApp, waitForFocusHandoff } from './app.testing';
 
 describe('FEATURE: App controls', () => {
   beforeEach(configureAppTestBed);
 
-  afterEach(() => {
+  afterEach(async () => {
+    await settleApp();
     vi.unstubAllGlobals();
   });
 

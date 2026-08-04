@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 import { App } from '../app';
-import { configureAppTestBed, getElement } from './app.testing';
+import { configureAppTestBed, getElement, settleApp } from './app.testing';
 
 describe('FEATURE: App active route', () => {
   beforeEach(configureAppTestBed);
 
-  afterEach(() => {
+  afterEach(async () => {
+    await settleApp();
     vi.unstubAllGlobals();
   });
 
