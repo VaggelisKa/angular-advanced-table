@@ -33,11 +33,11 @@ test.describe('FEATURE: Table to list accessibility', () => {
         await waitForHydration(page);
 
         const list = page.getByTestId('nat-list');
-        const summaryId = await list.getAttribute('aria-describedby');
 
-        expect(summaryId).toBeTruthy();
+        await expect(list).toHaveAttribute('aria-describedby', /\S/);
 
-        const summary = page.locator(`#${(summaryId ?? '').split(' ')[0]}`);
+        const summaryId = (await list.getAttribute('aria-describedby')) ?? '';
+        const summary = page.locator(`#${summaryId.split(' ')[0]}`);
 
         await expect(summary).toContainText('item');
         await expect(summary).toContainText('field');

@@ -9,7 +9,7 @@ test.describe('FEATURE: Table to list', () => {
         await page.goto('/examples/table-to-list');
 
         const table = page.locator('table');
-        const list = page.locator('[data-testid="nat-list"]');
+        const list = page.getByTestId('nat-list');
         // The list has no header UI, so the table's own sort control is what
         // proves the sort survives the swap.
         const sortByCustomer = page.getByRole('button', { name: 'Sort by Customer' });
@@ -135,7 +135,7 @@ test.describe('FEATURE: Table to list', () => {
         await page.goto('/examples/table-to-list/pagination');
 
         const items = page.locator(listItems);
-        const nextPage = page.getByRole('button', { name: 'Next page' });
+        const nextPageButton = page.getByRole('button', { name: 'Next page' });
 
         await test.step('THEN: the first page renders the default page size', async () => {
           await expect(items).toHaveCount(10);
@@ -144,7 +144,7 @@ test.describe('FEATURE: Table to list', () => {
         const firstPageText = await items.first().innerText();
 
         await test.step('THEN: advancing the page renders different items', async () => {
-          await nextPage.click();
+          await nextPageButton.click();
 
           await expect(items).toHaveCount(10);
           await expect(items.first()).not.toHaveText(firstPageText);
