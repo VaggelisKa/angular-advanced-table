@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { expectNoAxeViolations } from '../support/axe';
+import { waitForHydration } from '../support/hydration';
 
 const listItems = '[data-testid="nat-list-item"]';
 const listRegion = '[data-testid="nat-list-region"]';
@@ -27,6 +28,9 @@ test.describe('FEATURE: Table to list accessibility', () => {
     test.describe('WHEN: the list renders its screen-reader summary', () => {
       test('THEN: it describes items and fields rather than rows and columns', async ({ page }) => {
         await page.goto('/examples/table-to-list/basic');
+        // The summary id regenerates when hydration claims the prerendered DOM,
+        // so resolve aria-describedby only against the settled client DOM.
+        await waitForHydration(page);
 
         const list = page.getByTestId('nat-list');
         const summaryId = await list.getAttribute('aria-describedby');
@@ -46,6 +50,9 @@ test.describe('FEATURE: Table to list accessibility', () => {
     test.describe('WHEN: selection is driven by keyboard only', () => {
       test('THEN: it selects an item with the keyboard and announces the change', async ({ page }) => {
         await page.goto('/examples/table-to-list/row-selection');
+        // Space pressed while the prerendered DOM is still being claimed can be
+        // swallowed by the hydration/event-replay window; settle first.
+        await waitForHydration(page);
 
         const firstCheckbox = page.locator(`${listItems} input[type="checkbox"]`).first();
         const selectedCount = page.getByTestId('selected-count');
