@@ -48,6 +48,10 @@
           "type": "text/html"
         },
         {
+          "href": "https://angular-advanced-table.vercel.app/docs/list-renderer",
+          "type": "text/html"
+        },
+        {
           "href": "https://angular-advanced-table.vercel.app/docs/row-selection",
           "type": "text/html"
         },

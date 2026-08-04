@@ -105,6 +105,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/list-renderer",
+      "name": "docs-list-renderer",
+      "title": "List renderer | Angular Advanced Table Docs",
+      "description": "nat-list on the shared table engine",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/row-selection",
       "name": "docs-row-selection",
       "title": "Row selection | Angular Advanced Table Docs",

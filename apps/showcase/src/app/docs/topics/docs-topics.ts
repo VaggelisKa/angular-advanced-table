@@ -2,6 +2,7 @@
 import type { DocsCodeSnippet, DocsTopicContent } from './docs-topic.type';
 import { ThemingShowcase } from './theming-showcase';
 import { KeyboardInteraction } from '../demos/keyboard-interaction/keyboard-interaction';
+import { ListRenderer } from '../demos/list/list-renderer';
 import { Pagination } from '../demos/pagination/pagination';
 import { Pinning } from '../demos/pinning/pinning';
 import { Reordering } from '../demos/reordering/reordering';
@@ -264,6 +265,51 @@ const statesSnippets = [
 readonly status = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.loading);
 readonly rows = signal<readonly PositionRow[]>([]);
 readonly error = signal<unknown>(undefined);
+`
+  )
+];
+
+const listRendererSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface [enableSorting]="true" [(state)]="state">
+  @if (view() === 'table') {
+    <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
+  } @else {
+    <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
+  }
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+protected readonly view = signal<'table' | 'list'>('list');
+protected readonly state = signal<Partial<NatTableUserState>>({});
+
+// The list has no header UI — sorting is written through the surface state.
+protected toggleSortByTotal(): void {
+  const sorting = this.isSortedByTotal() ? [] : [{ id: 'total', desc: true }];
+
+  this.state.update((current) => ({ ...current, sorting }));
+}
+`
+  ),
+  snippet(
+    'css',
+    'CSS',
+    'css',
+    `
+/* Named field areas: area names are the column ids from the shared defs. */
+nat-list {
+  --nat-table-list-item-columns: minmax(0, 1fr) auto;
+  --nat-table-list-item-areas: 'id total' 'customer status';
+}
 `
   )
 ];
@@ -678,6 +724,36 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     related: [
       { label: 'Sorting', path: '/docs/sorting' },
       { label: 'Column layout', path: '/docs/column-layout' }
+    ]
+  },
+  {
+    id: 'list-renderer',
+    contents: [
+      { label: 'When to use the list', path: '#when-to-use-the-list' },
+      { label: 'Composition', path: '#composition' },
+      { label: 'Field labels', path: '#field-labels' },
+      { label: 'Shared state and companion controls', path: '#shared-state-and-companion-controls' },
+      { label: 'Selection and activation', path: '#selection-and-activation' },
+      { label: 'Data lifecycle', path: '#data-lifecycle' },
+      { label: 'Item layout and theming', path: '#item-layout-and-theming' },
+      { label: 'Accessibility', path: '#accessibility' },
+      { label: 'Limitations', path: '#limitations' }
+    ],
+    blocks: [
+      { kind: 'markdown', id: 'list-renderer-prose', markdownPath: '/docs/list-renderer.md' },
+      {
+        kind: 'example',
+        id: 'list-renderer',
+        title: 'One surface, two renderers',
+        description: 'Sorting written through the surface state survives swapping between the table and list renderers.',
+        component: ListRenderer,
+        snippets: listRendererSnippets
+      }
+    ],
+    related: [
+      { label: 'Composition', path: '/docs/composition' },
+      { label: 'State', path: '/docs/state' },
+      { label: 'Theming', path: '/docs/theming' }
     ]
   },
   {
