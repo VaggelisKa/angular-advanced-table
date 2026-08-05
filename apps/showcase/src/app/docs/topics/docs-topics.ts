@@ -506,9 +506,10 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
   {
     id: 'composition',
     contents: [
-      { label: 'Package responsibilities', path: '#package-responsibilities' },
+      { label: 'Entry-point responsibilities', path: '#entry-point-responsibilities' },
       { label: 'Surface and controller', path: '#surface-and-controller' },
-      { label: 'Consumer-owned controls', path: '#consumer-owned-controls' }
+      { label: 'Toolbar composition', path: '#toolbar-composition' },
+      { label: 'Consumer-owned search', path: '#consumer-owned-search' }
     ],
     blocks: [{ kind: 'markdown', id: 'composition-prose', markdownPath: '/docs/composition.md' }],
     related: [
