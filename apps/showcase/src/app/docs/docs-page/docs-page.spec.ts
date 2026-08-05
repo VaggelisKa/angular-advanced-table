@@ -207,7 +207,7 @@ describe('FEATURE: DocsPage', () => {
     });
 
     describe('WHEN: activating the same table of contents link again', () => {
-      it('THEN: it scrolls back to the section without a new navigation', async () => {
+      it('THEN: it smooth-scrolls back to the section without a new navigation', async () => {
         Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
           configurable: true,
           value: () => undefined
@@ -234,6 +234,7 @@ describe('FEATURE: DocsPage', () => {
         const headingScrolls = scrollIntoView.mock.contexts.filter((context) => context === targetHeading);
 
         expect(headingScrolls.length).toBeGreaterThanOrEqual(2);
+        expect(scrollIntoView).toHaveBeenLastCalledWith({ behavior: 'smooth', block: 'start' });
       });
     });
   });
@@ -311,7 +312,7 @@ describe('FEATURE: DocsPage', () => {
         const manualDataHeading = queryRequiredElement<HTMLElement>(compiled, '#manual-data-handling');
 
         expect(TestBed.inject(Router).url).toBe('/docs/state#manual-data-handling');
-        expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
+        expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
         expect(scrollIntoView.mock.contexts.at(0)).toBe(manualDataHeading);
       });
     });

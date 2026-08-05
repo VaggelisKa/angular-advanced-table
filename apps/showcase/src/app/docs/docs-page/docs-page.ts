@@ -138,10 +138,13 @@ export class DocsPage {
 
     const fragment = path.slice(1);
 
-    /* Scroll after the router settles: the router's anchor scrolling ignores
-       `scroll-margin-top` (so targets land under the sticky mobile header) and
-       skips same-fragment re-navigations entirely. */
-    void this.router.navigate([], { fragment, relativeTo: this.route }).then(() => this.scrollToFragment(fragment));
+    /* The router's own anchor scrolling is instant and ignores
+       `scroll-margin-top`, so opt this navigation out of it and scroll once
+       the router settles — smoothly, and clear of the sticky mobile header.
+       This also covers same-fragment re-navigations, which the router skips. */
+    void this.router
+      .navigate([], { fragment, relativeTo: this.route, scroll: 'manual' })
+      .then(() => this.scrollToFragment(fragment, this.sectionScrollBehavior()));
   }
 
   protected decorateCodeBlocks(): void {
@@ -281,8 +284,18 @@ export class DocsPage {
     }
   }
 
-  private scrollToFragment(fragment: string): void {
-    this.document.getElementById(fragment)?.scrollIntoView({ block: 'start' });
+  private scrollToFragment(fragment: string, behavior: ScrollBehavior = 'auto'): void {
+    this.document.getElementById(fragment)?.scrollIntoView({ behavior, block: 'start' });
+  }
+
+  private sectionScrollBehavior(): ScrollBehavior {
+    const pageWindow = this.document.defaultView;
+
+    if (typeof pageWindow?.matchMedia !== 'function') {
+      return 'smooth';
+    }
+
+    return pageWindow.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
   }
 
   private setCopyButtonState(button: HTMLButtonElement, copied: boolean): void {
