@@ -184,6 +184,11 @@ describe('FEATURE: DocsPage', () => {
   describe('GIVEN: the docs page host is rendered with table of contents links', () => {
     describe('WHEN: keeps table of contents links on the current docs route', () => {
       it('THEN: it rewrites table of contents links locally', async () => {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: () => undefined
+        });
+
         const harness = await RouterTestingHarness.create();
 
         await harness.navigateByUrl('/docs/state', DocsPage);
@@ -198,6 +203,37 @@ describe('FEATURE: DocsPage', () => {
         await waitForDocsRender(harness.fixture);
 
         expect(TestBed.inject(Router).url).toBe('/docs/state#state-slices');
+      });
+    });
+
+    describe('WHEN: activating the same table of contents link again', () => {
+      it('THEN: it scrolls back to the section without a new navigation', async () => {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+          configurable: true,
+          value: () => undefined
+        });
+
+        const scrollIntoView = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(() => undefined);
+        const harness = await RouterTestingHarness.create();
+
+        await harness.navigateByUrl('/docs/state', DocsPage);
+        await waitForDocsRender(harness.fixture);
+
+        const compiled = harness.fixture.nativeElement as HTMLElement;
+        const firstTocLink = queryRequiredElement<HTMLAnchorElement>(compiled, '.docs-topic-toc-link');
+        const targetHeading = queryRequiredElement<HTMLElement>(compiled, '#state-slices');
+
+        firstTocLink.click();
+        await waitForDocsRender(harness.fixture);
+
+        firstTocLink.click();
+        await waitForDocsRender(harness.fixture);
+
+        expect(TestBed.inject(Router).url).toBe('/docs/state#state-slices');
+
+        const headingScrolls = scrollIntoView.mock.contexts.filter((context) => context === targetHeading);
+
+        expect(headingScrolls.length).toBeGreaterThanOrEqual(2);
       });
     });
   });

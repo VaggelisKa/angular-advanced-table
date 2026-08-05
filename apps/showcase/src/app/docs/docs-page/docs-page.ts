@@ -50,7 +50,9 @@ const CODE_COPY_COPIED_CLASS = 'is-copied';
 const CODE_COPY_LABEL = 'Copy code block';
 const CODE_COPIED_LABEL = 'Copied code block';
 const CODE_COPY_RESET_DELAY_MS = 2000;
-const TOC_ACTIVE_OFFSET_PX = 140;
+/* Must exceed the largest `scroll-margin-top` on anchor targets so a
+   just-scrolled-to section registers as the active one. */
+const TOC_ACTIVE_OFFSET_PX = 100;
 const PAGE_BOTTOM_EPSILON_PX = 2;
 
 type DocsTocAnchor = {
@@ -136,7 +138,10 @@ export class DocsPage {
 
     const fragment = path.slice(1);
 
-    void this.router.navigate([], { fragment, relativeTo: this.route });
+    /* Scroll after the router settles: the router's anchor scrolling ignores
+       `scroll-margin-top` (so targets land under the sticky mobile header) and
+       skips same-fragment re-navigations entirely. */
+    void this.router.navigate([], { fragment, relativeTo: this.route }).then(() => this.scrollToFragment(fragment));
   }
 
   protected decorateCodeBlocks(): void {

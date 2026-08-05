@@ -972,6 +972,17 @@ input {
   padding: 0;
 }
 
+.docs-topic-body [id] {
+  scroll-margin-top: 28px;
+}
+
+/* Keep anchor targets clear of the sticky mobile header. */
+@media (width <= 820px) {
+  .docs-topic-body [id] {
+    scroll-margin-top: 74px;
+  }
+}
+
 .docs-markdown {
   min-width: 0;
   overflow-x: auto;
