@@ -1,4 +1,4 @@
-<article class="showcase-page showcase-container docs-page">
+<article [class.docs-page-has-toc]="hasTableOfContents()" class="showcase-page showcase-container docs-page">
   <header class="header-section docs-header">
     <div class="docs-title-group">
       <span class="docs-eyebrow">Docs</span>
@@ -11,16 +11,20 @@
     @if (contents.length) {
       <nav aria-label="On this page" class="docs-topic-toc">
         <span class="docs-eyebrow docs-topic-toc-label">On this page</span>
-        <div class="docs-topic-toc-links">
+        <ul class="docs-topic-toc-list">
           @for (item of contents; track item.path) {
-            <a
-              [attr.href]="tableOfContentsHref(item.path)"
-              class="docs-topic-toc-link"
-              (click)="navigateToTableOfContentsItem($event, item.path)">
-              {{ item.label }}
-            </a>
+            <li class="docs-topic-toc-item">
+              <a
+                [attr.aria-current]="activeTocPath() === item.path ? 'location' : null"
+                [attr.href]="tableOfContentsHref(item.path)"
+                [class.is-active]="activeTocPath() === item.path"
+                class="docs-topic-toc-link"
+                (click)="navigateToTableOfContentsItem($event, item.path)">
+                {{ item.label }}
+              </a>
+            </li>
           }
-        </div>
+        </ul>
       </nav>
     }
   }

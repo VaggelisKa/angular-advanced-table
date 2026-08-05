@@ -202,6 +202,61 @@ describe('FEATURE: DocsPage', () => {
     });
   });
 
+  describe('GIVEN: the docs page host is rendered with a table of contents scroll spy', () => {
+    const mockHeadingTop = (element: HTMLElement, top: number): void => {
+      vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({ top } as DOMRect);
+    };
+
+    describe('WHEN: the page is scrolled near the top of the topic', () => {
+      it('THEN: it highlights the first section link as current', async () => {
+        const harness = await RouterTestingHarness.create();
+
+        await harness.navigateByUrl('/docs/state', DocsPage);
+        await waitForDocsRender(harness.fixture);
+
+        const compiled = harness.fixture.nativeElement as HTMLElement;
+
+        mockHeadingTop(queryRequiredElement<HTMLElement>(compiled, '#state-slices'), 90);
+        mockHeadingTop(queryRequiredElement<HTMLElement>(compiled, '#own-one-slice'), 480);
+        mockHeadingTop(queryRequiredElement<HTMLElement>(compiled, '#manual-data-handling'), 900);
+        window.dispatchEvent(new Event('scroll'));
+        await waitForDocsRender(harness.fixture);
+
+        const tocLinks = Array.from(compiled.querySelectorAll<HTMLAnchorElement>('.docs-topic-toc-link'));
+
+        expect(tocLinks[0].classList.contains('is-active')).toBe(true);
+        expect(tocLinks[0].getAttribute('aria-current')).toBe('location');
+        expect(tocLinks[1].classList.contains('is-active')).toBe(false);
+        expect(tocLinks[2].classList.contains('is-active')).toBe(false);
+      });
+    });
+
+    describe('WHEN: the page scrolls past a later section heading', () => {
+      it('THEN: it moves the current highlight to that section link', async () => {
+        const harness = await RouterTestingHarness.create();
+
+        await harness.navigateByUrl('/docs/state', DocsPage);
+        await waitForDocsRender(harness.fixture);
+
+        const compiled = harness.fixture.nativeElement as HTMLElement;
+
+        mockHeadingTop(queryRequiredElement<HTMLElement>(compiled, '#state-slices'), -220);
+        mockHeadingTop(queryRequiredElement<HTMLElement>(compiled, '#own-one-slice'), 96);
+        mockHeadingTop(queryRequiredElement<HTMLElement>(compiled, '#manual-data-handling'), 620);
+        window.dispatchEvent(new Event('scroll'));
+        await waitForDocsRender(harness.fixture);
+
+        const tocLinks = Array.from(compiled.querySelectorAll<HTMLAnchorElement>('.docs-topic-toc-link'));
+
+        expect(tocLinks[0].classList.contains('is-active')).toBe(false);
+        expect(tocLinks[0].getAttribute('aria-current')).toBeNull();
+        expect(tocLinks[1].classList.contains('is-active')).toBe(true);
+        expect(tocLinks[1].getAttribute('aria-current')).toBe('location');
+        expect(tocLinks[2].classList.contains('is-active')).toBe(false);
+      });
+    });
+  });
+
   describe('GIVEN: the docs page host is rendered with a routed heading fragment', () => {
     describe('WHEN: scrolls to the current fragment after markdown heading ids are generated', () => {
       it('THEN: it scrolls to the generated heading id', async () => {

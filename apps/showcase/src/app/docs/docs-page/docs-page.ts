@@ -1,6 +1,18 @@
 /* eslint-disable max-lines -- docs page owns route selection, generated HTML decoration, and code-copy behavior */
 import { DOCUMENT } from '@angular/common';
-import { Component, Injector, SecurityContext, afterNextRender, computed, effect, inject, untracked, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  Injector,
+  SecurityContext,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  viewChild
+} from '@angular/core';
 import type { ElementRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -38,6 +50,13 @@ const CODE_COPY_COPIED_CLASS = 'is-copied';
 const CODE_COPY_LABEL = 'Copy code block';
 const CODE_COPIED_LABEL = 'Copied code block';
 const CODE_COPY_RESET_DELAY_MS = 2000;
+const TOC_ACTIVE_OFFSET_PX = 140;
+const PAGE_BOTTOM_EPSILON_PX = 2;
+
+type DocsTocAnchor = {
+  readonly path: string;
+  readonly element: HTMLElement;
+};
 
 const restoreSanitizedHeadingIds = (html: string, headings: readonly DocsHtmlHeading[]): string => {
   let headingIndex = 0;
@@ -63,6 +82,7 @@ const restoreSanitizedHeadingIds = (html: string, headings: readonly DocsHtmlHea
 })
 export class DocsPage {
   private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -81,9 +101,15 @@ export class DocsPage {
 
   protected readonly topic = computed(() => findDocsTopicContent(this.doc().id));
 
+  protected readonly hasTableOfContents = computed(() => (this.topic().contents?.length ?? 0) > 0);
+
+  protected readonly activeTocPath = signal<string | null>(null);
+
   protected readonly renderedBlocks = computed<readonly RenderedDocsTopicBlock[]>(() =>
     this.topic().blocks.map((block) => this.renderTopicBlock(block))
   );
+
+  private tocAnchors: readonly DocsTocAnchor[] = [];
 
   public constructor() {
     effect(() => {
@@ -93,6 +119,8 @@ export class DocsPage {
         untracked(() => this.decorateCodeBlocks());
       }
     });
+
+    afterNextRender(() => this.observePageScroll());
   }
 
   protected tableOfContentsHref(path: string): string {
@@ -143,6 +171,7 @@ export class DocsPage {
     }
 
     this.scrollToCurrentFragment();
+    this.refreshTableOfContentsAnchors();
 
     for (const codeBlock of Array.from(container.querySelectorAll('.docs-markdown pre'))) {
       const code = codeBlock.querySelector('code');
@@ -169,6 +198,70 @@ export class DocsPage {
     }
 
     highlightMarkdownCode(container);
+  }
+
+  private observePageScroll(): void {
+    const pageWindow = this.document.defaultView;
+
+    if (!pageWindow) {
+      return;
+    }
+
+    const updateActiveSection = (): void => this.updateActiveTocPath();
+
+    pageWindow.addEventListener('scroll', updateActiveSection, { passive: true });
+    pageWindow.addEventListener('resize', updateActiveSection);
+    this.destroyRef.onDestroy(() => {
+      pageWindow.removeEventListener('scroll', updateActiveSection);
+      pageWindow.removeEventListener('resize', updateActiveSection);
+    });
+  }
+
+  private refreshTableOfContentsAnchors(): void {
+    const contents = untracked(() => this.topic().contents) ?? [];
+
+    this.tocAnchors = contents.flatMap((item) => {
+      if (!item.path.startsWith('#')) {
+        return [];
+      }
+
+      const element = this.document.getElementById(item.path.slice(1));
+
+      return element ? [{ path: item.path, element }] : [];
+    });
+    this.updateActiveTocPath();
+  }
+
+  private updateActiveTocPath(): void {
+    const anchors = this.tocAnchors;
+    const pageWindow = this.document.defaultView;
+
+    if (!anchors.length || !pageWindow) {
+      this.activeTocPath.set(null);
+
+      return;
+    }
+
+    const pageRoot = this.document.documentElement;
+    const scrollable = pageRoot.scrollHeight > pageWindow.innerHeight + PAGE_BOTTOM_EPSILON_PX;
+
+    if (scrollable && pageWindow.innerHeight + pageWindow.scrollY >= pageRoot.scrollHeight - PAGE_BOTTOM_EPSILON_PX) {
+      this.activeTocPath.set(anchors[anchors.length - 1].path);
+
+      return;
+    }
+
+    let activePath = anchors[0].path;
+
+    for (const anchor of anchors) {
+      if (anchor.element.getBoundingClientRect().top > TOC_ACTIVE_OFFSET_PX) {
+        break;
+      }
+
+      activePath = anchor.path;
+    }
+
+    this.activeTocPath.set(activePath);
   }
 
   private copyDocsCodeBlock(button: HTMLButtonElement, code: HTMLElement): void {
