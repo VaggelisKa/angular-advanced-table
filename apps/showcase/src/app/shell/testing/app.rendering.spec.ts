@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
 import { App } from '../app';
-import { configureAppTestBed, queryText } from './app.testing';
+import { configureAppTestBed, queryText, settleApp } from './app.testing';
 
 describe('FEATURE: App rendering', () => {
   beforeEach(configureAppTestBed);
 
-  afterEach(() => {
+  afterEach(async () => {
+    await settleApp();
     vi.unstubAllGlobals();
   });
 

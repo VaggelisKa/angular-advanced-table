@@ -11,7 +11,7 @@ import { hasSameColumnVisibility } from './row-state.util';
 import { resolveFilterState, sortDirection } from './sorting.util';
 import { describePageChange, describePageSizeChange } from './table-pagination-announcement.util';
 import type { TableColumnAccessibilityState } from '../common/column-render.type';
-import type { FormatAccessibilityNumber, TableAccessibilitySnapshot } from '../common/table-a11y.type';
+import type { FormatAccessibilityNumber, NatTableRendererKind, TableAccessibilitySnapshot } from '../common/table-a11y.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 
 /** Announcement text for a data-lifecycle change captured in the snapshot. */
@@ -83,7 +83,8 @@ export const describeColumnVisibilityChange = (
   previous: readonly TableColumnAccessibilityState[],
   next: readonly TableColumnAccessibilityState[],
   text: NatTableAccessibilityText,
-  formatNumber: FormatAccessibilityNumber
+  formatNumber: FormatAccessibilityNumber,
+  renderer: NatTableRendererKind = 'table'
 ): string => {
   const changedColumns = next.reduce<NatTableAccessibilityColumnVisibilityAnnouncementChange[]>((result, column) => {
     const previousColumn = previous.find((candidate) => candidate.id === column.id);
@@ -113,7 +114,7 @@ export const describeColumnVisibilityChange = (
   }
 
   const visibleCount = next.filter((column) => column.visible).length;
-  const formatter = text.columnVisibilityChange;
+  const formatter = (renderer === 'list' ? text.listColumnVisibilityChange : undefined) ?? text.columnVisibilityChange;
   const context: NatTableAccessibilityColumnVisibilityAnnouncementContext = {
     changedColumns,
     visibleColumnsValue: visibleCount,
@@ -162,7 +163,8 @@ export const describeAccessibilityChange = (
   previous: TableAccessibilitySnapshot,
   next: TableAccessibilitySnapshot,
   resolveText: () => NatTableAccessibilityText,
-  formatNumber: FormatAccessibilityNumber
+  formatNumber: FormatAccessibilityNumber,
+  renderer: NatTableRendererKind = 'table'
 ): string | null => {
   if (previous.dataStatus !== next.dataStatus) {
     return describeDataStatusChange(next, resolveText());
@@ -177,7 +179,7 @@ export const describeAccessibilityChange = (
   }
 
   if (!hasSameColumnVisibility(previous.columns, next.columns)) {
-    return describeColumnVisibilityChange(previous.columns, next.columns, resolveText(), formatNumber);
+    return describeColumnVisibilityChange(previous.columns, next.columns, resolveText(), formatNumber, renderer);
   }
 
   if (previous.rowSelectionKey !== next.rowSelectionKey) {
@@ -185,11 +187,11 @@ export const describeAccessibilityChange = (
   }
 
   if (previous.pagination.pageSize !== next.pagination.pageSize) {
-    return describePageSizeChange(next, resolveText(), formatNumber);
+    return describePageSizeChange(next, resolveText(), formatNumber, renderer);
   }
 
   if (previous.pagination.pageIndex !== next.pagination.pageIndex) {
-    return describePageChange(next, resolveText(), formatNumber);
+    return describePageChange(next, resolveText(), formatNumber, renderer);
   }
 
   return null;

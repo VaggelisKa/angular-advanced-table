@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
 import { App } from '../app';
-import { EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY, configureAppTestBed, readStoredExpandedNavTreeIds } from './app.testing';
+import { EXPANDED_NAV_TREE_ITEMS_STORAGE_KEY, configureAppTestBed, readStoredExpandedNavTreeIds, settleApp } from './app.testing';
 
 describe('FEATURE: App navigation tree', () => {
   beforeEach(configureAppTestBed);
 
-  afterEach(() => {
+  afterEach(async () => {
+    await settleApp();
     vi.unstubAllGlobals();
   });
 

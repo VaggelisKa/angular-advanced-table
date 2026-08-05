@@ -1,0 +1,12 @@
+:host {
+  display: inline-flex;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.field-label-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--sc-accent);
+  border-radius: 999px;
+}

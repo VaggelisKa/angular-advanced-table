@@ -34,6 +34,9 @@
     <loc>https://angular-advanced-table.vercel.app/docs/responsive-capabilities</loc>
   </url>
   <url>
+    <loc>https://angular-advanced-table.vercel.app/docs/list-renderer</loc>
+  </url>
+  <url>
     <loc>https://angular-advanced-table.vercel.app/docs/row-selection</loc>
   </url>
   <url>
@@ -62,6 +65,33 @@
   </url>
   <url>
     <loc>https://angular-advanced-table.vercel.app/examples/builder</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/basic</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/list-controls</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/data-states</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/pagination</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/custom-cells</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/row-selection</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/breakpoint</loc>
+  </url>
+  <url>
+    <loc>https://angular-advanced-table.vercel.app/examples/table-to-list/multi-config</loc>
   </url>
   <url>
     <loc>https://angular-advanced-table.vercel.app/examples/sticky-header-max-height</loc>

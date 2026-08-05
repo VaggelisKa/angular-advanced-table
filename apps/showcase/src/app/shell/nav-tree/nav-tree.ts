@@ -1,6 +1,6 @@
 import { Tree, TreeItem, TreeItemGroup } from '@angular/aria/tree';
 import { DOCUMENT } from '@angular/common';
-import { Component, afterNextRender, computed, effect, inject, output, signal, untracked } from '@angular/core';
+import { Component, PendingTasks, afterNextRender, computed, effect, inject, output, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 
@@ -19,6 +19,7 @@ import type { ShowcaseNavGroup, ShowcaseNavItem, ShowcaseNavSection } from '../s
 })
 export class NavTree {
   private readonly document = inject(DOCUMENT);
+  private readonly pendingTasks = inject(PendingTasks);
   private readonly router = inject(Router);
   private navTreeStorage: Storage | null = null;
   private readonly initialRouteUrl = navUtil.readInitialRouteUrl(this.document, this.router.url);
@@ -87,7 +88,10 @@ export class NavTree {
   protected prefetchNavItem(item: ShowcaseNavItem): void {
     if (navUtil.isDocsNavItem(item) && !this.docsPagePrefetched()) {
       this.docsPagePrefetched.set(true);
-      void loadDocsPage();
+      // Tracked as a pending task so `ApplicationRef.whenStable()` covers the
+      // in-flight chunk download: an untracked fire-and-forget import kept
+      // loading after unit-test environments tore down, rejecting the run.
+      void this.pendingTasks.run(async () => loadDocsPage());
     }
   }
 

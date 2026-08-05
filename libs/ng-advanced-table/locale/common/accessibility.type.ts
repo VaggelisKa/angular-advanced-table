@@ -197,12 +197,34 @@ export type NatTableAccessibilityText = {
   readonly resizeKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
   readonly tableSummary?: (context: NatTableAccessibilitySummaryContext) => string;
+  /**
+   * Summary announced through `aria-describedby` for a rendered list. Receives
+   * the same context as `tableSummary`; the default phrases it as items and
+   * fields rather than rows and columns.
+   */
+  readonly listSummary?: (context: NatTableAccessibilitySummaryContext) => string;
   /** Live announcement emitted when sorting changes. */
   readonly sortingChange?: (context: NatTableAccessibilitySortingAnnouncementContext) => string;
   /** Live announcement emitted when filtering changes. */
   readonly filteringChange?: (context: NatTableAccessibilityFilteringAnnouncementContext) => string;
   /** Live announcement emitted when column visibility changes. */
   readonly columnVisibilityChange?: (context: NatTableAccessibilityColumnVisibilityAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when column visibility changes in a list.
+   * Receives the same context as `columnVisibilityChange`; the default phrases
+   * it as fields rather than columns.
+   */
+  readonly listColumnVisibilityChange?: (context: NatTableAccessibilityColumnVisibilityAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when a list's page size changes. Receives the
+   * same context as `pageSizeChange`; the default phrases it as items.
+   */
+  readonly listPageSizeChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when a list's page changes. Receives the same
+   * context as `pageChange`; the default phrases it as items.
+   */
+  readonly listPageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when the page size changes. */
   readonly pageSizeChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when the page index changes. */

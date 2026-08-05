@@ -7,6 +7,13 @@ import type { NatTableDataStatus } from './table-status.type';
 export type FormatAccessibilityNumber = (value: number) => string;
 
 /**
+ * Which renderer owns the accessibility surface. Selects renderer-specific
+ * copy (a list announces fields and items where a grid announces columns and
+ * rows) and gates the grid-only effects.
+ */
+export type NatTableRendererKind = 'table' | 'list';
+
+/**
  * Captured accessible-state snapshot diffed between reactive updates to build
  * live announcements. Core-internal; produced by the a11y service reading live
  * signals, then consumed by the pure announcement builders.

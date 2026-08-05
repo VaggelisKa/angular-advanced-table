@@ -105,6 +105,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/list-renderer",
+      "name": "docs-list-renderer",
+      "title": "List renderer | Angular Advanced Table Docs",
+      "description": "nat-list on the shared table engine",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/row-selection",
       "name": "docs-row-selection",
       "title": "Row selection | Angular Advanced Table Docs",
@@ -172,6 +179,69 @@
       "name": "examples-builder",
       "title": "Table builder | Angular Advanced Table",
       "description": "Interactive config",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/basic",
+      "name": "examples-table-to-list-basic",
+      "title": "Basic list | Angular Advanced Table",
+      "description": "Standalone nat-list composition",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list",
+      "name": "examples-table-to-list",
+      "title": "Toggle | Angular Advanced Table",
+      "description": "One engine driving table and list views",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/list-controls",
+      "name": "examples-table-to-list-list-controls",
+      "title": "List controls | Angular Advanced Table",
+      "description": "Consumer-owned sort, search, and visibility",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/data-states",
+      "name": "examples-table-to-list-data-states",
+      "title": "Data states | Angular Advanced Table",
+      "description": "Loading, empty, and error list states",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/pagination",
+      "name": "examples-table-to-list-pagination",
+      "title": "Paginated | Angular Advanced Table",
+      "description": "List paged by the pagination companion",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/custom-cells",
+      "name": "examples-table-to-list-custom-cells",
+      "title": "Custom cells | Angular Advanced Table",
+      "description": "Text, component, and template cell rendering",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/row-selection",
+      "name": "examples-table-to-list-row-selection",
+      "title": "Row selection | Angular Advanced Table",
+      "description": "Selection column and shared selection state",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/breakpoint",
+      "name": "examples-table-to-list-breakpoint",
+      "title": "Breakpoint | Angular Advanced Table",
+      "description": "Table from 768px up, list below",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/multi-config",
+      "name": "examples-table-to-list-multi-config",
+      "title": "Multi config | Angular Advanced Table",
+      "description": "Different column configs for table and list",
       "mimeType": "text/markdown"
     },
     {

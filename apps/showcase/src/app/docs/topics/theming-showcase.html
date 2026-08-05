@@ -2,4 +2,8 @@
   <nat-table-surface [enableSorting]="true" [initialState]="initialState" class="ledger-surface">
     <nat-table [columns]="columns" [data]="rows" accessibleName="Themed orders table" />
   </nat-table-surface>
+
+  <nat-table-surface [initialState]="initialState" class="ledger-surface ledger-list-surface">
+    <nat-list [columns]="columns" [data]="rows" accessibleName="Themed orders list" />
+  </nat-table-surface>
 </section>

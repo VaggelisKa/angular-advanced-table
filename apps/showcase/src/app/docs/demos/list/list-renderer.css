@@ -1,0 +1,18 @@
+.list-demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-block-end: 14px;
+}
+
+.list-demo-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+/* Named field areas: area names are the column ids from the shared defs. */
+.list-demo-list {
+  --nat-table-list-item-columns: minmax(0, 1fr) auto;
+  --nat-table-list-item-areas: 'id total' 'customer status';
+}

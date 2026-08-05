@@ -1,0 +1,52 @@
+<main class="showcase-page sc-demo-page">
+  <p class="demo-hint">
+    A standalone list driven entirely by consumer-owned controls: sort buttons and field visibility chips write the surface state
+    signal, and the search field is the showcase's own component — it registers itself on the surface service and filters the list
+    globally.
+  </p>
+
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
+
+  <section aria-label="Demo controls" class="demo-controls">
+    <div aria-label="Sort orders" class="control-group" role="group">
+      <button
+        [attr.aria-pressed]="isSorted('customer', false)"
+        [class.is-active]="isSorted('customer', false)"
+        type="button"
+        (click)="sortBy('customer', false)">
+        Customer A–Z
+      </button>
+      <button
+        [attr.aria-pressed]="isSorted('total', true)"
+        [class.is-active]="isSorted('total', true)"
+        type="button"
+        (click)="sortBy('total', true)">
+        Total high–low
+      </button>
+    </div>
+  </section>
+
+  <section aria-label="Field visibility" class="field-order">
+    <h2 class="field-order-title">Fields — click a name to show or hide it</h2>
+    <ul class="field-order-chips">
+      @for (field of fields; track field.id) {
+        <li class="field-order-chip">
+          <button
+            [attr.aria-pressed]="isFieldVisible(field.id)"
+            [class.is-hidden]="!isFieldVisible(field.id)"
+            class="field-order-toggle"
+            type="button"
+            (click)="toggleField(field.id)">
+            {{ field.label }}
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <nat-table-surface [(state)]="state">
+    <app-table-search class="demo-search" placeholder="Search orders" showLabel />
+
+    <nat-list [columns]="columns" [data]="rows" [getRowId]="getRowId" accessibleName="Orders list" class="sc-demo-list" />
+  </nat-table-surface>
+</main>

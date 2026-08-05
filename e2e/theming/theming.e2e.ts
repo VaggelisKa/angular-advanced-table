@@ -24,14 +24,17 @@ test.describe('FEATURE: Theming inheritance', () => {
       await page.goto('/docs/theming');
       await loadDocsExamplePreview(page, 'theme-example', 'Theme example');
 
-      // The demo themes the surface HOST (`.ledger-surface`) and gallery pages
-      // theme it via `.showcase-page nat-table-surface`. Tokens declared on or
-      // above the host at elevated specificity legitimately win — but the
-      // contract under test (#243) is the documented ancestor-WRAPPER
-      // inheritance path, so strip both and assert against the stock theme.
-      await page.locator('nat-table-surface.ledger-surface').evaluate((element) => {
-        element.classList.remove('ledger-surface');
-        element.closest('.showcase-page')?.classList.remove('showcase-page');
+      // The demo themes the surface HOSTs (`.ledger-surface`, and the list
+      // surface adds `.ledger-list-surface`) and gallery pages theme them via
+      // `.showcase-page nat-table-surface`. Tokens declared on or above a host
+      // at elevated specificity legitimately win — but the contract under test
+      // (#243) is the documented ancestor-WRAPPER inheritance path, so strip
+      // all of them and assert against the stock theme.
+      await page.locator('nat-table-surface.ledger-surface').evaluateAll((elements) => {
+        for (const element of elements) {
+          element.classList.remove('ledger-surface', 'ledger-list-surface');
+          element.closest('.showcase-page')?.classList.remove('showcase-page');
+        }
       });
     });
 

@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 
-import { NatTable } from 'ng-advanced-table';
+import { NatList, NatTable } from 'ng-advanced-table';
 import type { CellContext, ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 import type { NatTableSortIndicatorContext } from 'ng-advanced-table/components';
@@ -39,7 +39,7 @@ const ledgerSortIndicator = ({ sortState }: NatTableSortIndicatorContext): strin
 
 @Component({
   selector: 'app-theming-showcase',
-  imports: [NatTable, NatTableSurface],
+  imports: [NatList, NatTable, NatTableSurface],
   host: {
     '[class.is-dark-theme]': 'isDarkTheme()'
   },

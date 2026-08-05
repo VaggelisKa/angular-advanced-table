@@ -1,0 +1,100 @@
+<div #listRegion class="list-region" data-testid="nat-list-region">
+  @if (listSummary().trim()) {
+    <p [id]="listSummaryId()" class="sr-only">{{ listSummary() }}</p>
+  }
+  @if (resolvedDescription().trim()) {
+    <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
+  }
+
+  <ul
+    [attr.aria-busy]="tableAriaBusy()"
+    [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.aria-label]="listAriaLabel()"
+    [attr.dir]="resolvedDirection()"
+    [id]="tableElementId()"
+    class="nat-list"
+    data-testid="nat-list">
+    @switch (bodyState()) {
+      @case ('rows') {
+        <!-- Iterate the reactive visibleColumns() signal (not row.getVisibleCells())
+             so column order and visibility changes re-render the fields. -->
+        @let listColumns = visibleColumns();
+        @let headerContexts = leafHeaderContexts();
+        @for (row of bodyRows(); track row.id; let itemIndex = $index) {
+          <li
+            [attr.data-row-id]="row.id"
+            [attr.data-selected]="rowSelectedAttribute(row)"
+            [class.is-activatable]="enableRowActivation()"
+            class="list-item"
+            data-testid="nat-list-item">
+            @if (enableRowActivation()) {
+              <!-- A real button, so the activation affordance has an interactive
+                   role (WCAG 4.1.2) — a focusable listitem announces as plain
+                   text. A stretched sibling rather than a wrapper: nesting the
+                   fields (and e.g. a selection checkbox) inside a button would
+                   be invalid HTML and can hide the nested controls from
+                   assistive technology. Interactive descendants stack above it
+                   in CSS, which replaces the old event-origin guard. Named by
+                   the item's FIRST visible field (label + value), so screen
+                   readers get a concise name instead of re-hearing the whole
+                   item; the id is index-keyed because row ids are consumer
+                   input and may contain characters invalid in an id list.
+                   Trade-off, documented in the docs topic: the stretched
+                   overlay owns mousedown, so field text cannot be mouse-
+                   selected while activation is enabled. -->
+              <!-- eslint-disable-next-line @angular-eslint/template/elements-content -- named via aria-labelledby from the item's first field; visible content would duplicate it. -->
+              <button
+                [attr.aria-labelledby]="activatorLabelId(itemIndex)"
+                class="list-item-activator"
+                data-testid="nat-list-item-activator"
+                type="button"
+                (click)="onActivatorClick($event, row)"
+                (keydown)="onActivatorKeydown($event, row)"></button>
+            }
+            @for (column of listColumns; track column.id; let fieldIndex = $index) {
+              @let cell = cellForColumn(row, column.id);
+              @if (cell) {
+                <div
+                  [attr.data-column-id]="column.id"
+                  [attr.id]="enableRowActivation() && fieldIndex === 0 ? activatorLabelId(itemIndex) : null"
+                  [natListFieldArea]="column.id"
+                  class="list-field">
+                  <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
+                    @let headerDef = column.columnDef.header;
+                    @let headerContext = headerContexts.get(column.id);
+                    @if (!hasStaticLabel(column) && headerDef && headerContext) {
+                      <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
+                        {{ renderedLabel }}
+                      </ng-container>
+                    } @else {
+                      {{ resolveColumnLabel(column) }}
+                    }
+                  </span>
+                  <span class="list-field-value">
+                    <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
+                      {{ rendered }}
+                    </ng-container>
+                  </span>
+                </div>
+              }
+            }
+          </li>
+        }
+      }
+      @default {
+        @if (stateView(); as state) {
+          <li [attr.data-state]="state.state" [attr.data-testid]="state.testId" [class]="state.className">
+            @if (stateTemplateView(); as stateTemplate) {
+              <ng-container [ngTemplateOutlet]="stateTemplate.templateRef" [ngTemplateOutletContext]="stateTemplate.context" />
+            } @else {
+              <span aria-hidden="true" class="list-state-indicator"></span>
+              <span class="list-state-message">{{ state.message }}</span>
+            }
+          </li>
+        }
+      }
+    }
+  </ul>
+
+  <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-list-live-region">{{ liveMessage() }}</p>
+</div>

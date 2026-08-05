@@ -62,6 +62,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     path: '/docs/responsive-capabilities'
   },
   {
+    id: 'list-renderer',
+    label: 'List renderer',
+    description: 'nat-list on the shared table engine',
+    path: '/docs/list-renderer'
+  },
+  {
     id: 'row-selection',
     label: 'Row selection',
     description: 'Selection state and bulk workflows',

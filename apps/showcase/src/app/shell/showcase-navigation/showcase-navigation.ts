@@ -1,3 +1,4 @@
+import { showcaseExamples } from './showcase-examples.const';
 import { showcaseDocs } from './showcase-navigation.const';
 import type { ShowcaseDoc, ShowcaseNavGroup, ShowcaseNavItem, ShowcaseNavSection } from './showcase-navigation.type';
 
@@ -9,44 +10,7 @@ if (!firstShowcaseDoc) {
 
 const FALLBACK_SHOWCASE_DOC: ShowcaseDoc = firstShowcaseDoc;
 
-export const showcaseExamples: readonly ShowcaseNavItem[] = [
-  {
-    id: 'multiple-features',
-    label: 'Multiple features',
-    description: 'Kitchen sink demo',
-    path: '/examples/multiple-features'
-  },
-  {
-    id: 'builder',
-    label: 'Table builder',
-    description: 'Interactive config',
-    path: '/examples/builder'
-  },
-  {
-    id: 'sticky-header-max-height',
-    label: 'Sticky header max height',
-    description: 'Sticky header with max height',
-    path: '/examples/sticky-header-max-height'
-  },
-  {
-    id: 'pagination-sticky-alt',
-    label: 'Pagination sticky alt',
-    description: 'Different layout of pagination controls',
-    path: '/examples/pagination-sticky-alt'
-  },
-  {
-    id: 'sticky-no-overflow-x',
-    label: 'Sticky no overflow x',
-    description: 'Sticky header with no overflow x',
-    path: '/examples/sticky-no-overflow-x'
-  },
-  {
-    id: 'sticky-show-detailed-view',
-    label: 'Sticky show detailed view',
-    description: 'Sticky header with show detailed view',
-    path: '/examples/sticky-show-detailed-view'
-  }
-];
+export { showcaseExamples };
 
 const getShowcaseDoc = (docId: string): ShowcaseDoc => {
   const doc = showcaseDocs.find((item) => item.id === docId);
@@ -109,6 +73,22 @@ const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
 ];
 
 const showcaseExampleGroups: readonly ShowcaseNavGroup[] = [
+  {
+    id: 'examples-table-to-list',
+    label: 'Table to list',
+    ariaLabel: 'Table to list examples',
+    items: [
+      getShowcaseExample('table-to-list-basic'),
+      getShowcaseExample('table-to-list'),
+      getShowcaseExample('table-to-list-breakpoint'),
+      getShowcaseExample('table-to-list-multi-config'),
+      getShowcaseExample('table-to-list-controls'),
+      getShowcaseExample('table-to-list-custom-cells'),
+      getShowcaseExample('table-to-list-row-selection'),
+      getShowcaseExample('table-to-list-data-states'),
+      getShowcaseExample('table-to-list-pagination')
+    ]
+  },
   {
     id: 'examples-sticky-header',
     label: 'Sticky headers',
