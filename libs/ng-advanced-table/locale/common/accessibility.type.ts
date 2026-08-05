@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 /** Formats numbers used in generated table accessibility copy. */
 export type NatTableNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
 
@@ -195,12 +197,34 @@ export type NatTableAccessibilityText = {
   readonly resizeKeyboardInstructions?: string;
   /** Summary announced through `aria-describedby` for the rendered grid. */
   readonly tableSummary?: (context: NatTableAccessibilitySummaryContext) => string;
+  /**
+   * Summary announced through `aria-describedby` for a rendered list. Receives
+   * the same context as `tableSummary`; the default phrases it as items and
+   * fields rather than rows and columns.
+   */
+  readonly listSummary?: (context: NatTableAccessibilitySummaryContext) => string;
   /** Live announcement emitted when sorting changes. */
   readonly sortingChange?: (context: NatTableAccessibilitySortingAnnouncementContext) => string;
   /** Live announcement emitted when filtering changes. */
   readonly filteringChange?: (context: NatTableAccessibilityFilteringAnnouncementContext) => string;
   /** Live announcement emitted when column visibility changes. */
   readonly columnVisibilityChange?: (context: NatTableAccessibilityColumnVisibilityAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when column visibility changes in a list.
+   * Receives the same context as `columnVisibilityChange`; the default phrases
+   * it as fields rather than columns.
+   */
+  readonly listColumnVisibilityChange?: (context: NatTableAccessibilityColumnVisibilityAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when a list's page size changes. Receives the
+   * same context as `pageSizeChange`; the default phrases it as items.
+   */
+  readonly listPageSizeChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
+  /**
+   * Live announcement emitted when a list's page changes. Receives the same
+   * context as `pageChange`; the default phrases it as items.
+   */
+  readonly listPageChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when the page size changes. */
   readonly pageSizeChange?: (context: NatTableAccessibilityPaginationAnnouncementContext) => string;
   /** Live announcement emitted when the page index changes. */
@@ -228,10 +252,22 @@ export type NatTableIntlConfig = {
 
 export type NatTableIntlStaticProviderConfig = NatTableIntl | NatTableIntlConfig;
 
-/** Factory resolved inside Angular dependency injection. Use `inject(...)` to read services. */
-export type NatTableIntlProviderFactory = () => NatTableIntlStaticProviderConfig;
+/** Static or signal-backed table intl configuration. */
+export type NatTableIntlProviderSource = NatTableIntlStaticProviderConfig | Signal<NatTableIntlStaticProviderConfig>;
 
-export type NatTableIntlProviderConfig = NatTableIntlStaticProviderConfig | NatTableIntlProviderFactory;
+/** Factory resolved once inside Angular dependency injection. Use `inject(...)` to read services. */
+export type NatTableIntlProviderFactory = () => NatTableIntlProviderSource;
+
+export type NatTableIntlProviderConfig = NatTableIntlProviderSource | NatTableIntlProviderFactory;
 
 /** Locale dictionaries keyed by locale id. */
 export type NatTableLocalesMap = Record<string, NatTableIntl>;
+
+/** Static or signal-backed table locale dictionaries. */
+export type NatTableLocalesProviderSource = NatTableLocalesMap | Signal<NatTableLocalesMap>;
+
+/** Factory resolved once inside Angular dependency injection. */
+export type NatTableLocalesProviderFactory = () => NatTableLocalesProviderSource;
+
+/** Configuration accepted by `provideNatTableLocales(...)`. */
+export type NatTableLocalesProviderConfig = NatTableLocalesProviderSource | NatTableLocalesProviderFactory;

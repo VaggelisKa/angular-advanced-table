@@ -51,17 +51,17 @@ See the package's own `libs/ng-advanced-table/README.md` for install and API det
 
 All commands run from the repository root:
 
-| Command                   | Description                                                           |
-| ------------------------- | --------------------------------------------------------------------- |
-| `pnpm install`            | Install dependencies (uses pnpm + Corepack)                           |
-| `pnpm start`              | Serve the showcase docs site for local development                    |
-| `pnpm run build:packages` | Build the `ng-advanced-table` library                                 |
-| `pnpm run build:showcase` | Build the showcase (runs doc generators)                              |
-| `pnpm test`               | Run all unit tests (library + showcase)                               |
-| `pnpm run e2e`            | Run Playwright e2e + a11y tests                                       |
-| `pnpm run lint`           | Lint everything                                                       |
-| `pnpm run format:check`   | Check Prettier formatting (required before merge)                     |
-| `pnpm run verify`         | Full verification (builds + prerender check + release dry-run + pack) |
+| Command                   | Description                                                            |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `pnpm install`            | Install dependencies (uses pnpm + Corepack)                            |
+| `pnpm start`              | Serve the showcase docs site for local development                     |
+| `pnpm run build:packages` | Build the `ng-advanced-table` library                                  |
+| `pnpm run build:showcase` | Build the showcase (runs doc generators)                               |
+| `pnpm test`               | Run all unit tests (library + showcase)                                |
+| `pnpm run e2e`            | Run Playwright e2e + a11y tests                                        |
+| `pnpm run lint`           | Lint everything                                                        |
+| `pnpm run format:check`   | Check Prettier formatting (required before merge)                      |
+| `pnpm run verify`         | Full verification (MCP security + builds + prerender + release + pack) |
 
 ## Working on the Project
 

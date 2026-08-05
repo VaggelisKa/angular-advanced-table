@@ -21,5 +21,6 @@ export {
   type RowRenderMeasurement,
   type RowRenderMetric,
   type RowRenderMetrics,
-  type RowRenderTone
+  type RowRenderTone,
+  type WithRenderMetricsColumnOptions
 } from './common/type';

@@ -53,6 +53,21 @@
   color-scheme: light;
 }
 
+/* The list renderer follows the same ledger palette; the --nat-table-list-*
+   tokens lay each item out as named field areas (area names are column ids). */
+.ledger-list-surface {
+  --nat-table-list-gap: 10px;
+  --nat-table-list-item-areas: 'id total' 'customer status';
+  --nat-table-list-item-columns: 1fr auto;
+  --nat-table-list-item-gap: 6px;
+  --nat-table-list-item-padding: 14px 16px;
+  --nat-table-list-item-background: #fbfcfb;
+  --nat-table-list-item-border-color: #cbd8d4;
+  --nat-table-list-item-radius: 6px;
+
+  margin-top: 16px;
+}
+
 :host(.is-dark-theme) .ledger-surface {
   --nat-table-color-text: #dfe8e5;
   --nat-table-color-text-muted: #9fb1ab;
@@ -81,4 +96,9 @@
   --nat-table-sort-button-color-sorted: #17211f;
 
   color-scheme: dark;
+}
+
+:host(.is-dark-theme) .ledger-list-surface {
+  --nat-table-list-item-background: #15211f;
+  --nat-table-list-item-border-color: #30413d;
 }

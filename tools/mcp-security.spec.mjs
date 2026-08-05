@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it } from 'node:test';
+import { access, rm, writeFile } from 'node:fs/promises';
+import { after, afterEach, before, describe, it } from 'node:test';
 
-import handler from '../api/mcp.mjs';
+let handler;
+let wroteMarkdownPagesFixture = false;
 
 const originalVercelUrl = process.env['VERCEL_URL'];
 const originalProductionUrl = process.env['VERCEL_PROJECT_PRODUCTION_URL'];
+const markdownPagesFixtureUrl = new URL('../api/markdown-pages.generated.json', import.meta.url);
 
 const restoreEnvironmentValue = (key, value) => {
   if (value === undefined) {
@@ -43,6 +46,23 @@ const invoke = async ({ headers = {} } = {}) => {
     statusCode: target.response.statusCode
   };
 };
+
+before(async () => {
+  try {
+    await access(markdownPagesFixtureUrl);
+  } catch {
+    await writeFile(markdownPagesFixtureUrl, '{}\n');
+    wroteMarkdownPagesFixture = true;
+  }
+
+  ({ default: handler } = await import('../api/mcp.mjs'));
+});
+
+after(async () => {
+  if (wroteMarkdownPagesFixture) {
+    await rm(markdownPagesFixtureUrl, { force: true });
+  }
+});
 
 afterEach(() => {
   restoreEnvironmentValue('VERCEL_URL', originalVercelUrl);

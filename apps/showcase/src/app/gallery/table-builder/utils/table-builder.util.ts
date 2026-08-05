@@ -2,19 +2,22 @@ import type { NatTableUserState } from 'ng-advanced-table';
 
 import type { TableBuilderFlagKey, TableBuilderFlags } from '../common/table-builder.type';
 
+const DEFAULT_COLUMN_ORDER = ['name', 'category', 'status', 'owner', 'value'] as const;
+
 const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   category: true,
   status: true,
+  owner: true,
   value: true
 } as const;
 
 export const buildSeedState = (flags: TableBuilderFlags): Partial<NatTableUserState> => ({
-  columnVisibility: { name: true, category: true, status: true, value: true },
+  columnVisibility: { ...DEFAULT_COLUMN_VISIBILITY },
   ...(flags.withPagination ? { pagination: { pageIndex: 0, pageSize: 3 } } : {}),
   ...(flags.withSorting ? { sorting: [{ id: 'name', desc: false }] } : {}),
   ...(flags.withColumnPinning ? { columnPinning: { left: ['name'], right: [] } } : {}),
-  ...(flags.withColumnReorder ? { columnOrder: ['name', 'category', 'status', 'value'] } : {}),
+  ...(flags.withColumnReorder ? { columnOrder: [...DEFAULT_COLUMN_ORDER] } : {}),
   ...(flags.withColumnResizing ? { columnSizing: {} } : {}),
   ...(flags.withRowSelection ? { rowSelection: {} } : {})
 });
@@ -84,7 +87,7 @@ const seedToggleState = (state: Partial<NatTableUserState>, key: TableBuilderFla
   }
 
   if (key === 'withColumnReorder') {
-    return { ...state, columnOrder: ['name', 'category', 'status', 'value'] };
+    return { ...state, columnOrder: [...DEFAULT_COLUMN_ORDER] };
   }
 
   if (key === 'withSorting') {

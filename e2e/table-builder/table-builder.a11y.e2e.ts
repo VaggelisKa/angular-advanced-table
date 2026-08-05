@@ -50,5 +50,14 @@ test.describe('FEATURE: Table builder', () => {
         await expectNoAxeViolations(page, '.table-builder-page');
       });
     });
+
+    test.describe('WHEN: column resizing is enabled', () => {
+      test('THEN: it has no WCAG A/AA violations with sizing-mode controls visible', async ({ page }) => {
+        await page.getByTestId('table-builder-feature-withColumnResizing').click();
+        await expect(page.getByRole('group', { name: 'Column sizing mode' })).toBeVisible();
+
+        await expectNoAxeViolations(page, '.table-builder-page');
+      });
+    });
   });
 });

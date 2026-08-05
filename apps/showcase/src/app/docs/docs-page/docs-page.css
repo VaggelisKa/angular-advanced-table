@@ -36,7 +36,15 @@
   border-bottom: 1px solid var(--sc-border);
 }
 
-.docs-topic-toc-links,
+.docs-topic-toc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
 .docs-related-links {
   display: flex;
   flex-wrap: wrap;
@@ -76,6 +84,13 @@
   }
 }
 
+/* WCAG AA: accent-strong keeps >=4.5:1 on accent-soft in both themes. */
+.docs-topic-toc-link.is-active {
+  color: var(--sc-accent-strong);
+  background: var(--sc-accent-soft);
+  border-color: color-mix(in srgb, var(--sc-accent) 45%, transparent);
+}
+
 .docs-topic-body {
   display: grid;
   gap: 32px;
@@ -96,5 +111,73 @@
 .docs-related-link {
   @media (prefers-reduced-motion: reduce) {
     transition: none;
+  }
+}
+
+/* Wide viewports: the "On this page" nav leaves the top of the page and becomes
+   a sticky right-hand rail beside the topic body, Vercel-docs style. */
+@media (width >= 1200px) {
+  .docs-page-has-toc.showcase-container {
+    grid-template-areas:
+      'header toc'
+      'body toc'
+      'related toc';
+    grid-template-columns: minmax(0, 1fr) 224px;
+    column-gap: 48px;
+  }
+
+  .docs-page-has-toc .docs-header {
+    grid-area: header;
+  }
+
+  .docs-page-has-toc .docs-topic-body {
+    grid-area: body;
+  }
+
+  .docs-page-has-toc .docs-related {
+    grid-area: related;
+  }
+
+  .docs-page-has-toc .docs-topic-toc {
+    position: sticky;
+    top: 32px;
+    grid-area: toc;
+    gap: 14px;
+    align-self: start;
+    max-height: calc(100vh - 64px);
+    padding: 0;
+    overflow-y: auto;
+    border-bottom: 0;
+  }
+
+  .docs-page-has-toc .docs-topic-toc-list {
+    display: block;
+  }
+
+  .docs-page-has-toc .docs-topic-toc-link {
+    display: block;
+    min-height: 0;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+    background: none;
+    border: 0;
+    border-left: 2px solid var(--sc-border);
+    border-radius: 0;
+
+    &:hover {
+      color: var(--sc-text);
+      background: none;
+      border-left-color: var(--sc-border-strong);
+      transform: none;
+    }
+  }
+
+  .docs-page-has-toc .docs-topic-toc-link.is-active {
+    font-weight: 650;
+    color: var(--sc-accent-strong);
+    background: none;
+    border-left-color: var(--sc-accent);
   }
 }

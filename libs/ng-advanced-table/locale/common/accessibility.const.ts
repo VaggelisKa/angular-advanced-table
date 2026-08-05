@@ -1,8 +1,8 @@
+import { NAT_EN_LIST_ACCESSIBILITY_TEXT } from './accessibility-list.const';
 import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
-
-const pluralize = (label: string, count: number): string => (count === 1 ? label : `${label}s`);
+import { pluralize } from './pluralize.const';
 
 const describeColumnZone = (zone: 'left' | 'center' | 'right'): string => {
   if (zone === 'left') {
@@ -31,6 +31,7 @@ const resizeBoundSuffix = (atMinimum?: boolean, atMaximum?: boolean): string => 
 /** Built-in English labels shipped with the table locale package. */
 export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
   accessibilityText: {
+    ...NAT_EN_LIST_ACCESSIBILITY_TEXT,
     keyboardInstructions:
       'Use arrow keys to move between cells. A cell whose only content is a single button or link ' +
       'focuses it directly. In cells with several controls, press Enter to interact with them, ' +

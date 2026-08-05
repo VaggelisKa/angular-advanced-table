@@ -45,6 +45,12 @@ export const buildBuilderColumns = (flags: BuilderColumnFlags, locale: LocalePre
       meta: { label: intl.headers.status }
     },
     {
+      accessorKey: 'owner',
+      header: intl.headers.owner,
+      ...buildColumnFeatureProps(150, flags),
+      meta: { label: intl.headers.owner }
+    },
+    {
       accessorKey: 'value',
       header: intl.headers.value,
       ...buildColumnFeatureProps(150, flags),
@@ -166,7 +172,7 @@ export const buildTemplateSource = (flags: TableBuilderFlags): string => {
 
   if (flags.withColumnResizing) {
     surfaceAttributes += ' [enableColumnResizing]="true"';
-    surfaceAttributes += ` [columnSizingMode]="'fill'"`;
+    surfaceAttributes += ` [columnSizingMode]="'${flags.columnSizingMode}'"`;
   }
 
   if (flags.withLocalization) {

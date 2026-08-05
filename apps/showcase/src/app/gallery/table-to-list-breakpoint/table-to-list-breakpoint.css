@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.sc-demo-page {
+  --sc-demo-width: 960px;
+
+  padding: 24px;
+}
+
+@media (width <= 768px) {
+  .sc-demo-page {
+    padding: 12px;
+  }
+}
+
+.sc-demo-page nat-table-surface {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.demo-hint {
+  max-width: 70ch;
+  margin-block: 0 1rem;
+  color: var(--sc-text-soft);
+}
+
+/* Card layout for the list: position every column's field by naming its
+   column id in the areas template. Two columns by default so field text is
+   not squeezed; three once there is room for it. */
+.sc-demo-list {
+  --nat-table-list-item-columns: minmax(0, 1fr) auto;
+  --nat-table-list-item-areas: 'id status' 'customer total' 'owner owner' 'channel region' 'items updatedAt';
+  --nat-table-list-item-gap: 0.375rem 1rem;
+
+  display: block;
+}
+
+@media (width >= 560px) {
+  .sc-demo-list {
+    --nat-table-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    --nat-table-list-item-areas: 'id id status' 'customer owner total' 'channel region items' 'updatedAt updatedAt updatedAt';
+  }
+}

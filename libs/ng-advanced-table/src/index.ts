@@ -11,6 +11,9 @@ export * from './domain-logic';
 
 export { NatTable } from './table/table';
 
+// SPIKE: list renderer on the shared table engine (subject to change/removal).
+export { NatList } from './list/list';
+
 export { NatTableHotkeyA11y } from './hotkey-a11y/hotkey-a11y.directive';
 
 export { NAT_TABLE_KEYBINDINGS } from './hotkey-a11y/common/keybindings.const';

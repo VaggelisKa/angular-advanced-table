@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.sc-demo-page {
+  --sc-demo-width: 960px;
+
+  padding: 24px;
+}
+
+@media (width <= 768px) {
+  .sc-demo-page {
+    padding: 12px;
+  }
+}
+
+.sc-demo-page nat-table-surface {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.demo-hint {
+  max-width: 70ch;
+  margin-block: 0 1rem;
+  color: var(--sc-text-soft);
+}

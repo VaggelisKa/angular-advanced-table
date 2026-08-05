@@ -1,0 +1,34 @@
+<main class="showcase-page sc-demo-page">
+  <p class="demo-hint">
+    The list renders the same table-owned data lifecycle: success shows rows, loading and error render the built-in state items, and an
+    empty success result renders the empty state. All three share one base shape with a per-state modifier class and accent, so the
+    <code>--nat-table-list-state-*</code> tokens restyle them together — this demo centers them, gives them a fixed height, and themes
+    each accent. Fetching, retries, and error handling stay in the consuming app.
+  </p>
+
+  <app-demo-code [css]="exampleCss" [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
+
+  <section aria-label="Demo controls" class="demo-controls">
+    <div aria-label="Data scenario" class="control-group" role="group">
+      @for (demoScenario of scenarios; track demoScenario.id) {
+        <button
+          [attr.aria-pressed]="scenario() === demoScenario.id"
+          [class.is-active]="scenario() === demoScenario.id"
+          type="button"
+          (click)="scenario.set(demoScenario.id)">
+          {{ demoScenario.label }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <nat-table-surface>
+    <nat-list
+      [columns]="columns"
+      [data]="rows()"
+      [dataStatus]="dataStatus()"
+      [getRowId]="getRowId"
+      accessibleName="Orders list with data lifecycle states"
+      class="sc-demo-list" />
+  </nat-table-surface>
+</main>

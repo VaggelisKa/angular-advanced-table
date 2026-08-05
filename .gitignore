@@ -55,3 +55,9 @@ Thumbs.db
 # AI
 .omc
 .nx/migrate-runs
+
+# Agent-Native local plans (should not be committed)
+.agent-native/plans/
+
+# Agent-Native plan blocks catalog (generated, keep out of repo)
+.agent-native/plan-blocks.md

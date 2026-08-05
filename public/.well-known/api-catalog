@@ -52,6 +52,10 @@
           "type": "text/html"
         },
         {
+          "href": "https://angular-advanced-table.vercel.app/docs/list-renderer",
+          "type": "text/html"
+        },
+        {
           "href": "https://angular-advanced-table.vercel.app/docs/row-selection",
           "type": "text/html"
         },
@@ -89,6 +93,42 @@
         },
         {
           "href": "https://angular-advanced-table.vercel.app/examples/builder",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/basic",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/list-controls",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/data-states",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/pagination",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/custom-cells",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/row-selection",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/breakpoint",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/examples/table-to-list/multi-config",
           "type": "text/html"
         },
         {

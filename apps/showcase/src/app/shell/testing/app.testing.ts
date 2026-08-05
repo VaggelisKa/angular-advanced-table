@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationRef, Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import type { Routes } from '@angular/router';
@@ -61,6 +61,17 @@ export const configureAppTestBed = async (): Promise<void> => {
     imports: [App],
     providers: [provideZonelessChangeDetection(), provideRouter(APP_TEST_ROUTES)]
   }).compileComponents();
+};
+
+/**
+ * Awaits every scheduled zoneless tick and `afterNextRender` callback. Call it
+ * from `afterEach` in specs that render the app shell: a tick left in the
+ * timer queue when the spec file's environment tears down fires afterwards and
+ * makes the module runner fetch a chunk post-teardown, failing the run with an
+ * unhandled `EnvironmentTeardownError` even though every test passed.
+ */
+export const settleApp = async (): Promise<void> => {
+  await TestBed.inject(ApplicationRef).whenStable();
 };
 
 export const readStoredExpandedNavTreeIds = (): string[] => {

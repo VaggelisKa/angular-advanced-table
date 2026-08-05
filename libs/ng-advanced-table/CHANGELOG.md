@@ -1,3 +1,71 @@
+## 2.11.0 (2026-07-20)
+
+### 🚀 Features
+
+- Render the opt-in pinned-column divider shadow as a single soft, seamless fade off each pinned edge instead of stacked zero-blur bands, and add a shared, direction-agnostic `--nat-table-pinned-edge-shadow-size` token that scales the fade for both pinned zones while the library mirrors its direction per zone and keeps the one-pixel divider. ([#304](https://github.com/VaggelisKa/angular-advanced-table/pull/304), [#305](https://github.com/VaggelisKa/angular-advanced-table/pull/305))
+
+## 2.10.1 (2026-07-20)
+
+### 🩹 Fixes
+
+- Document current repository guidance for future coding agents after RTL reorder and cell-control performance fixes. ([#301](https://github.com/VaggelisKa/angular-advanced-table/pull/301))
+- Clarify the per-column `meta.reorderable: true` documentation and internal cell-control wiring notes. ([#303](https://github.com/VaggelisKa/angular-advanced-table/pull/303))
+- Prepare interactive controls added while a table cell is detached when that cell is later reinserted. ([#302](https://github.com/VaggelisKa/angular-advanced-table/pull/302))
+
+## 2.10.0 (2026-07-15)
+
+### 🚀 Features
+
+- Add an opt-in, shared divider-shadow color for the outer edges of left- and right-pinned column zones while preserving the existing one-pixel divider as the default, and keep stock-theme pinned headers aligned with the regular header background. ([#299](https://github.com/VaggelisKa/angular-advanced-table/pull/299))
+
+### 🩹 Fixes
+
+- Avoid rescanning every table cell after unrelated renders while continuing to prepare controls added or enabled dynamically. ([#300](https://github.com/VaggelisKa/angular-advanced-table/pull/300))
+
+## 2.9.0 (2026-07-13)
+
+### 🚀 Features
+
+- Allow the core, companion-control, and render-metrics intl and locale-map providers to consume signal-backed configurations. Reactive provider values now merge through nested injector scopes and update generated copy, accessible names, and formatters without remounting the table or provider scope, while existing static and dependency-injection factory forms continue to work. ([#286](https://github.com/VaggelisKa/angular-advanced-table/pull/286))
+
+### 🩹 Fixes
+
+- Fix pointer column reordering in right-to-left tables by resolving drop geometry in visual RTL order. ([#296](https://github.com/VaggelisKa/angular-advanced-table/pull/296))
+- Honor per-column `meta.reorderable: true` for drag/drop reordering while the surface `enableReordering` flag is off, matching keyboard and menu movement. ([#295](https://github.com/VaggelisKa/angular-advanced-table/pull/295))
+- Document current repository guidance for future coding agents and keep the MCP security test independent of ignored generated discovery output. ([#282](https://github.com/VaggelisKa/angular-advanced-table/pull/282))
+- Make colgroup order match visible pinned column order so resize targets the selected column. ([#287](https://github.com/VaggelisKa/angular-advanced-table/pull/287), [#273](https://github.com/VaggelisKa/angular-advanced-table/issues/273))
+- Clarify the documented per-column reordering contract and root verification command coverage. ([#292](https://github.com/VaggelisKa/angular-advanced-table/pull/292))
+- Fix column resizing constraints for non-pinned columns and keep resize guides aligned while resizing pinned columns. ([#293](https://github.com/VaggelisKa/angular-advanced-table/pull/293), [#289](https://github.com/VaggelisKa/angular-advanced-table/issues/289))
+
+## 2.8.0 (2026-07-10)
+
+### 🚀 Features
+
+- Unify the four header controls (sorting, pinning, reordering, resizing) under a single "surface enabler + per-column override" model. Each control is enabled on `<nat-table-surface>`; sorting, pinning, and resizing resolve as `column.<flag> ?? surface.<enabler>`, while reordering resolves as `column.meta.reorderable ?? surface.enableReordering`: ([#284](https://github.com/VaggelisKa/angular-advanced-table/pull/284))
+
+  - Surface enabler on: every column has the control; opt a column out with `enableSorting: false` / `enablePinning: false` / `enableResizing: false` / `meta: { reorderable: false }`.
+  - Surface enabler off (the default): opt a column in with `enableSorting: true` / `enablePinning: true` / `enableResizing: true` / `meta: { reorderable: true }` (keyboard/menu movement only for reordering until #291 is fixed).
+
+  `<nat-table-surface>` exposes four enabler inputs, all defaulting to `false`: `enableSorting`, `enablePinning`, `enableReordering`, `enableColumnResizing`.
+
+  Behavior change (opt-in required): sorting and pinning are no longer on by default.
+
+  - Sorting was previously on by default. Tables that relied on the built-in header sort UI must now set `[enableSorting]="true"` on the surface (or `enableSorting: true` on specific columns). Programmatic sorting via `setSorting` and sort state is unaffected; `enableSortActions` still hides only the sort UI while keeping programmatic sorting.
+  - Pinning was previously always available. Tables that expose the pin menu must now set `[enablePinning]="true"` (or `enablePinning: true` per column). The new `enablePinning` surface input replaces the previously hardcoded table-level pinning.
+
+  Non-breaking additions in the same model:
+
+  - Resizing keeps its per-column behaviour: `enableResizing: true` still makes a column resizable. The re-introduced `enableColumnResizing` surface input additionally enables resizing for every column at once (opt one out with `enableResizing: false`).
+  - Reordering keeps table-wide enablement under `[enableReordering]="true"` and gains a per-column opt-out via `meta: { reorderable: false }`. Setting `false` removes that column's drag, keyboard, and header-menu move affordances, but a neighboring reorderable column can still move past it. A column can also opt in while the surface enabler is off with `meta: { reorderable: true }`; drag/drop currently still requires the surface enabler, tracked in [#291](https://github.com/VaggelisKa/angular-advanced-table/issues/291).
+
+  Note on sorting/pinning opt-in while the surface is off: because TanStack gates `getCanSort`/`getCanPin` with AND semantics, the surface-off plus per-column opt-in path is handled in the library's own header-actions gating (the sort button and pin menu), while table-level sorting/pinning stay enabled so the operations still work. A column with `enableSorting: true` / `enablePinning: true` is sortable/pinnable even when the surface enabler is off.
+
+
+### 🩹 Fixes
+
+- Remove high- and moderate-severity development-tool vulnerabilities, block Less lifecycle scripts, and restore pnpm's 24-hour package release cooldown. ([#285](https://github.com/VaggelisKa/angular-advanced-table/pull/285))
+- Prevent global filtering from throwing when a cell contains an invalid Date value. ([#285](https://github.com/VaggelisKa/angular-advanced-table/pull/285))
+
 ## 2.7.2 (2026-07-10)
 
 ### 🩹 Fixes

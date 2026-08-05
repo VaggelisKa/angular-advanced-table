@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
@@ -6,68 +6,32 @@ import { provideNatTableControlsIntl } from 'ng-advanced-table/locale';
 
 import type { Row } from './table-data.helper';
 import { buildRows, getRowId, reorderableColumns } from './table-data.helper';
+import { PROVIDER_CONTROLS_INTL, REACTIVE_CONTROLS_INTL, createProviderControlsIntl } from './table-provider-intl.helper';
 import { NatTableColumnVisibility } from '../feature/table-column-visibility/table-column-visibility';
 import { NatTablePageSize } from '../feature/table-page-size/table-page-size';
 import { NatTablePager } from '../feature/table-pager/table-pager';
 import { NatTableScrollControl } from '../feature/table-scroll-control/table-scroll-control';
 import { NatTableSurface } from '../feature/table-surface/table-surface';
+import { NatTableToolbar } from '../feature/table-toolbar/table-toolbar';
 import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table-header-actions';
+import { withNatTableSelectionColumn } from '../ui/table-selection/with-table-selection-column';
+import { NatToolbarItem } from '../ui/toolbar-item/toolbar-item.directive';
 
 @Component({
   selector: 'nat-provider-accessibility-labels-host',
-  imports: [NatTable, NatTableColumnVisibility, NatTablePageSize, NatTablePager, NatTableScrollControl, NatTableSurface],
+  imports: [
+    NatTable,
+    NatTableColumnVisibility,
+    NatTablePageSize,
+    NatTablePager,
+    NatTableScrollControl,
+    NatTableSurface,
+    NatTableToolbar,
+    NatToolbarItem
+  ],
   providers: [
-    provideNatTableControlsIntl({
-      formatNumber: (value) => `n${value}`,
-      search: {
-        label: 'Provider search',
-        placeholder: 'Provider placeholder'
-      },
-      columnVisibility: {
-        label: 'Provider columns',
-        groupAriaLabel: 'Provider column visibility',
-        accessibilityLabels: {
-          visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
-            `Provider ${visibleColumnCountText}/${totalColumnCountText}`
-        }
-      },
-      pageSize: {
-        groupAriaLabel: 'Provider page size',
-        accessibilityLabels: {
-          groupAriaLabel: 'Provider page size group',
-          pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} provider rows`,
-          pageSizeOptionAriaLabel: ({ pageSizeText }) => `Provider show ${pageSizeText} rows`
-        }
-      },
-      pager: {
-        groupAriaLabel: 'Provider pager',
-        accessibilityLabels: {
-          previousPageAriaLabel: 'Provider previous',
-          nextPageAriaLabel: 'Provider next',
-          pageIndicator: ({ pageText, pageCountText }) => `Provider page ${pageText}/${pageCountText}`
-        }
-      },
-      scrollControl: {
-        groupAriaLabel: 'Provider horizontal scroll',
-        accessibilityLabels: {
-          scrollLeftAriaLabel: 'Provider scroll left',
-          scrollRightAriaLabel: 'Provider scroll right',
-          scrollPositionAriaLabel: 'Provider scroll position',
-          scrollPositionText: ({ percentageText }) => `Provider ${percentageText} percent`
-        }
-      },
-      headerActions: {
-        accessibilityLabels: {
-          sortButton: ({ label }) => `Provider sort ${label}`,
-          menuButton: ({ label }) => `Provider actions for ${label}`,
-          menuLabel: ({ label }) => `Provider menu for ${label}`,
-          pinButton: ({ label, pinSide }) => `Provider pin ${label} ${pinSide}`,
-          pinButtonText: ({ pinSide }) => `Provider ${pinSide}`,
-          moveButton: ({ label, direction }) => `Provider move ${label} ${direction}`,
-          moveButtonText: ({ direction }) => `Provider move ${direction}`
-        }
-      }
-    })
+    { provide: PROVIDER_CONTROLS_INTL, useFactory: createProviderControlsIntl },
+    provideNatTableControlsIntl(() => inject(PROVIDER_CONTROLS_INTL))
   ],
   template: `
     <nat-table-surface
@@ -77,7 +41,16 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
       [initialState]="initialState"
       [state]="tableState()"
       (stateChange)="onTableStateChange($event)">
-      <nat-table #grid="natTable" [columns]="columns" [data]="rows()" [getRowId]="getRowId" accessibleName="Operations table" />
+      <nat-table-toolbar>
+        <button natToolbarItem="provider-action" type="button">Provider action</button>
+      </nat-table-toolbar>
+      <nat-table
+        #grid="natTable"
+        [columns]="columns"
+        [data]="rows()"
+        [enableRowSelection]="true"
+        [getRowId]="getRowId"
+        accessibleName="Operations table" />
       <nat-table-column-visibility />
       <nat-table-page-size [groupAriaLabel]="pageSizeGroupAriaLabel()" [pageSizeOptions]="pageSizeOptions" />
       <nat-table-pager />
@@ -87,9 +60,11 @@ import { withNatTableHeaderActions } from '../ui/table-header-actions/with-table
 })
 export class ProviderAccessibilityLabelsHost {
   protected readonly rows = signal<Row[]>(buildRows(6));
-  protected readonly columns = withNatTableHeaderActions(reorderableColumns, {
-    enableColumnReorderActions: true
-  });
+  protected readonly columns = withNatTableSelectionColumn(
+    withNatTableHeaderActions(reorderableColumns, {
+      enableColumnReorderActions: true
+    })
+  );
 
   protected readonly getRowId = getRowId;
   protected readonly pageSizeOptions = [2, 3, 5] as const;
@@ -102,6 +77,11 @@ export class ProviderAccessibilityLabelsHost {
   };
 
   public readonly pageSizeGroupAriaLabel = signal<string | undefined>(undefined);
+  private readonly providerIntl = inject(PROVIDER_CONTROLS_INTL);
+
+  public useReactiveProviderIntl(): void {
+    this.providerIntl.set(REACTIVE_CONTROLS_INTL);
+  }
 
   protected onTableStateChange(state: Partial<NatTableUserState>): void {
     this.tableState.set(state);

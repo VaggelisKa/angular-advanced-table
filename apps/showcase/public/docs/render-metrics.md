@@ -169,15 +169,25 @@ providers: [
 ];
 ```
 
-`withRenderMetricsColumn(...)` creates static column definitions. If the locale can change at runtime, rebuild the columns from a `computed(...)` value or pass the `locale` option when constructing them.
+`withRenderMetricsColumn(...)` creates static column definitions. If the locale or render-metrics provider copy can change at runtime, capture the live config in an injection context and pass it into a `computed(...)` column builder.
 
 ```ts
+import { computed } from '@angular/core';
+
+import { injectNatTableRenderMetricsIntl } from 'ng-advanced-table/locale';
+import { withRenderMetricsColumn } from 'ng-advanced-table/render-metrics';
+
+private readonly renderMetricsIntl = injectNatTableRenderMetricsIntl();
+
 readonly columns = computed(() =>
   withRenderMetricsColumn(baseColumns(), this.metricsStore, {
     locale: this.localeId(),
+    intlConfig: this.renderMetricsIntl,
   }),
 );
 ```
+
+`injectNatTableRenderMetricsIntl()` returns a stable live config. Reading it through the helper inside the computed tracks provider-signal changes, so the column's header, `meta.label`, pending label, formatter, and cell closure are rebuilt together. Without a computed rebuild, an existing column definition remains a snapshot.
 
 ## Production Guidance
 

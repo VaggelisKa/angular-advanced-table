@@ -209,7 +209,7 @@ describe('FEATURE: table builder code snippet highlighting', () => {
     });
 
     describe('WHEN: column resizing is enabled', () => {
-      it('THEN: resize handles render on name, category and status but not value', async () => {
+      it('THEN: resize handles render on name, category, status, and owner but not value', async () => {
         const fixture = TestBed.createComponent(TableBuilderPage);
 
         await flushRender(fixture);
@@ -226,7 +226,7 @@ describe('FEATURE: table builder code snippet highlighting', () => {
         resizingCheckbox.click();
         await flushRender(fixture);
 
-        // then: resize handles render on the three leading columns, not on the trailing value column
+        // then: resize handles render on the four leading columns, not on the trailing value column
         const handleIds = Array.from(compiled.querySelectorAll<HTMLElement>('.column-resize-handle')).map((handle) =>
           handle.getAttribute('data-testid')
         );
@@ -234,7 +234,41 @@ describe('FEATURE: table builder code snippet highlighting', () => {
         expect(handleIds).toContain('nat-table-resize-handle-name');
         expect(handleIds).toContain('nat-table-resize-handle-category');
         expect(handleIds).toContain('nat-table-resize-handle-status');
+        expect(handleIds).toContain('nat-table-resize-handle-owner');
         expect(handleIds).not.toContain('nat-table-resize-handle-value');
+      });
+    });
+
+    describe('WHEN: fixed sizing is selected while resizing is enabled', () => {
+      it('THEN: it marks Fixed active and emits fixed sizing in the generated HTML', async () => {
+        const fixture = TestBed.createComponent(TableBuilderPage);
+
+        await flushRender(fixture);
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const resizingToggle = findRequired(
+          Array.from(compiled.querySelectorAll<HTMLLabelElement>('.toggle-control')),
+          (control) => control.querySelector('.toggle-label')?.textContent === 'Column Resizing',
+          'Expected the Column Resizing feature toggle to exist.'
+        );
+
+        queryRequiredElement<HTMLInputElement>(resizingToggle, 'input.toggle-checkbox').click();
+        await flushRender(fixture);
+
+        const sizingMode = queryRequiredElement<HTMLElement>(compiled, '[aria-label="Column sizing mode"]');
+        const fixedButton = findRequired(
+          Array.from(sizingMode.querySelectorAll<HTMLButtonElement>('button')),
+          (button) => button.textContent.trim() === 'Fixed',
+          'Expected the Fixed column sizing mode button to exist.'
+        );
+
+        fixedButton.click();
+        await flushRender(fixture);
+
+        expect(fixedButton.getAttribute('aria-pressed')).toBe('true');
+        expect(queryRequiredElement<HTMLElement>(compiled, 'code.code-content-code').textContent).toContain(
+          `[columnSizingMode]="'fixed'"`
+        );
       });
     });
 

@@ -3,8 +3,11 @@ export type DemoItem = {
   readonly name: string;
   readonly category: string;
   readonly status: string;
+  readonly owner: string;
   readonly value: number;
 };
+
+export type TableBuilderColumnSizingMode = 'fill' | 'fixed';
 
 export type TableBuilderFlags = {
   readonly withPagination: boolean;
@@ -14,6 +17,7 @@ export type TableBuilderFlags = {
   readonly withColumnPinning: boolean;
   readonly withColumnReorder: boolean;
   readonly withColumnResizing: boolean;
+  readonly columnSizingMode: TableBuilderColumnSizingMode;
   readonly showScrollControl: boolean;
   readonly withStickyHeader: boolean;
   readonly withExport: boolean;
@@ -22,7 +26,7 @@ export type TableBuilderFlags = {
   readonly withLocalization: boolean;
 };
 
-export type TableBuilderFlagKey = keyof TableBuilderFlags;
+export type TableBuilderFlagKey = Exclude<keyof TableBuilderFlags, 'columnSizingMode'>;
 
 export type FeatureCategory = 'data' | 'columns' | 'layout' | 'controls' | 'states' | 'i18n';
 

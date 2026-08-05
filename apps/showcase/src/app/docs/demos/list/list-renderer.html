@@ -1,0 +1,40 @@
+<div class="card">
+  <h2 class="card-title">One Surface, Two Renderers</h2>
+
+  <div class="list-demo-controls">
+    <div aria-label="Renderer" class="list-demo-toggle" role="group">
+      <button
+        [attr.aria-pressed]="view() === 'list'"
+        [class.is-active]="view() === 'list'"
+        class="btn btn-outline"
+        type="button"
+        (click)="view.set('list')">
+        List
+      </button>
+      <button
+        [attr.aria-pressed]="view() === 'table'"
+        [class.is-active]="view() === 'table'"
+        class="btn btn-outline"
+        type="button"
+        (click)="view.set('table')">
+        Table
+      </button>
+    </div>
+
+    <button [attr.aria-pressed]="isSortedByTotal()" class="btn btn-secondary" type="button" (click)="toggleSortByTotal()">
+      Sort by total
+    </button>
+  </div>
+
+  <nat-table-surface [enableSorting]="true" [(state)]="state">
+    @if (view() === 'table') {
+      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders table sharing state with the list renderer" />
+    } @else {
+      <nat-list
+        [columns]="columns"
+        [data]="rows"
+        accessibleName="Orders list sharing state with the table renderer"
+        class="list-demo-list" />
+    }
+  </nat-table-surface>
+</div>

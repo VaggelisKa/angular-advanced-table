@@ -84,12 +84,12 @@ const buildExtraFields = (flags: TableBuilderFlags): string => {
 const buildSourceBody = (columnsBlock: string, formattedState: string, extraFields: string): string =>
   `export class CustomTableComponent {
   readonly data: DemoItem[] = [
-    { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
-    { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200 },
-    { id: 'item-3', name: 'Gamma Processor', category: 'Data Science', status: 'Paused', value: 7800 },
-    { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
-    { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-    { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 },
+    { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', owner: 'Maya Patel', value: 4500 },
+    { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', owner: 'Liam Chen', value: 1200 },
+    { id: 'item-3', name: 'Gamma Processor', category: 'Data Science', status: 'Paused', owner: 'Sofia Berg', value: 7800 },
+    { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', owner: 'Noah Kim', value: 3100 },
+    { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', owner: 'Amelia Jones', value: 9200 },
+    { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', owner: 'Ethan Okafor', value: 500 },
   ];
 ${extraFields}
 ${columnsBlock}

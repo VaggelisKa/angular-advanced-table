@@ -1,6 +1,6 @@
 import type { NatTableAccessibilityPaginationAnnouncementContext, NatTableAccessibilityText } from 'ng-advanced-table/locale';
 
-import type { FormatAccessibilityNumber, TableAccessibilitySnapshot } from '../common/table-a11y.type';
+import type { FormatAccessibilityNumber, NatTableRendererKind, TableAccessibilitySnapshot } from '../common/table-a11y.type';
 
 /** Pagination context object shared by the page-size and page-index announcements. */
 export const getPaginationAnnouncementContext = (
@@ -28,9 +28,10 @@ export const getPaginationAnnouncementContext = (
 export const describePageSizeChange = (
   snapshot: TableAccessibilitySnapshot,
   text: NatTableAccessibilityText,
-  formatNumber: FormatAccessibilityNumber
+  formatNumber: FormatAccessibilityNumber,
+  renderer: NatTableRendererKind = 'table'
 ): string => {
-  const formatter = text.pageSizeChange;
+  const formatter = (renderer === 'list' ? text.listPageSizeChange : undefined) ?? text.pageSizeChange;
   const context = getPaginationAnnouncementContext(snapshot, formatNumber);
 
   if (formatter) {
@@ -44,9 +45,10 @@ export const describePageSizeChange = (
 export const describePageChange = (
   snapshot: TableAccessibilitySnapshot,
   text: NatTableAccessibilityText,
-  formatNumber: FormatAccessibilityNumber
+  formatNumber: FormatAccessibilityNumber,
+  renderer: NatTableRendererKind = 'table'
 ): string => {
-  const formatter = text.pageChange;
+  const formatter = (renderer === 'list' ? text.listPageChange : undefined) ?? text.pageChange;
   const context = getPaginationAnnouncementContext(snapshot, formatNumber);
 
   if (formatter) {

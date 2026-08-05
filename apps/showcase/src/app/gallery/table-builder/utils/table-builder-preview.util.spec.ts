@@ -13,6 +13,14 @@ describe('FEATURE: table builder localization codegen', () => {
         // then: the name header is localized (meta survives the header-actions wrapper; header does not)
         expect(nameColumn?.meta?.label).toBe('Navn');
       });
+
+      it('THEN: Owner uses the Danish copy in fourth visible-column position', () => {
+        // when: building columns for the Danish preview
+        const columns = buildBuilderColumns(toBuilderColumnFlags(DEFAULT_FLAGS), 'da');
+
+        // then: Owner is the fourth visible data column and uses localized copy
+        expect(columns.at(3)?.meta?.label).toBe('Ejer');
+      });
     });
 
     describe('WHEN: the English preview locale is active', () => {
@@ -35,6 +43,8 @@ describe('FEATURE: table builder localization codegen', () => {
 
         // then: Danish headers appear and no hardcoded English selection label overrides the provider
         expect(snippet).toContain("header: 'Navn'");
+        expect(snippet).toContain("accessorKey: 'owner'");
+        expect(snippet).toContain("header: 'Ejer'");
         expect(snippet).not.toContain("label: 'Selection'");
       });
     });

@@ -33,9 +33,11 @@ import type {
   FeatureDescriptor,
   LocalePreview,
   PresetKey,
+  TableBuilderColumnSizingMode,
   TableBuilderFlagKey,
   TableBuilderFlags
 } from './common';
+import { TableBuilderSizingMode } from './ui/table-builder-sizing-mode';
 import {
   buildBuilderColumns,
   buildComponentSource,
@@ -58,6 +60,7 @@ import { TableSearch } from '../../ui/table-search/table-search';
     NatTable,
     NatTableSurface,
     TableSearch,
+    TableBuilderSizingMode,
     NatTableColumnVisibility,
     NatTableExport,
     NatToolbarItem,
@@ -170,6 +173,9 @@ export class TableBuilderPage {
     this.flags.update((current) => ({ ...current, [key]: next }));
     this.tableState.update((current) => reconcileToggleState(current, key, next));
   }
+
+  protected readonly setColumnSizingMode = (mode: TableBuilderColumnSizingMode): void =>
+    this.flags.update((current) => ({ ...current, columnSizingMode: mode }));
 
   protected applyPreset(key: PresetKey): void {
     const presetFlags = PRESETS[key];

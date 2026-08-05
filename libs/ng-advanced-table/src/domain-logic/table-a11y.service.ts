@@ -1,11 +1,11 @@
-/* eslint-disable max-lines -- a11y service residual (194 code lines): DI + the liveMessage signal + snapshot capture that must read live signals + the tableSummary computed + five effect/afterRenderEffect registrations that must run in the constructor injection context, plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
+/* eslint-disable max-lines -- a11y service residual: DI + the liveMessage signal + snapshot capture that must read live signals + the summary computeds + five effect/afterRenderEffect registrations (the shared pair self-registers in the constructor; the grid-only trio registers through registerGridEffects so a list renderer can skip them), plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
 import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 
 import type { Column, RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
 import { NatTableState } from './table.state';
-import type { TableAccessibilitySnapshot } from '../common/table-a11y.type';
+import type { NatTableRendererKind, TableAccessibilitySnapshot } from '../common/table-a11y.type';
 import { validateKeybindings } from '../hotkey-a11y/utils/keybindings.util';
 import { resolveColumnLabel } from '../utils/column-label.util';
 import { serializeRowSelection } from '../utils/row-state.util';
@@ -20,7 +20,11 @@ import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext 
  * and push screen-reader announcements, snapshot capture, state-change diffing,
  * and ARIA multiselectable management.
  *
- * Provided alongside `NatTableState` in the component's `providers`.
+ * Provided alongside `NatTableState` in the component's `providers`. The
+ * effects every renderer needs register themselves in the constructor, so a
+ * renderer that merely provides the service still announces state changes;
+ * `registerGridEffects` adds the `<table>`-only behavior, and a non-grid
+ * renderer selects its announcement copy through `setRenderer`.
  */
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table-instance state, provided by NatTable (providers: [NatTableA11yService]), not root.
 @Injectable()
@@ -28,6 +32,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
 
+  private renderer: NatTableRendererKind = 'table';
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
   private previousResizingColumnId: string | null = null;
 
@@ -40,11 +45,40 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   /** Table summary string for `aria-describedby`. */
   public readonly tableSummary = computed(() => this.buildTableSummary());
 
+  /**
+   * List summary string for `aria-describedby`, phrased as items and fields.
+   * Falls back to the `tableSummary` formatter when a consumer overrode only
+   * that one.
+   */
+  public readonly listSummary = computed(() => this.buildTableSummary('listSummary'));
+
   public constructor() {
+    // The effects every renderer needs — state-change announcements and the
+    // dev-mode accessible-name check — register here, not behind an opt-in
+    // call: the service is public API, and a renderer that provides it but
+    // forgets a registration call would be silently inert, the hardest kind
+    // of a11y regression to notice.
     this.registerAnnouncementEffect();
+    this.registerAccessibleNameValidationEffect();
+  }
+
+  /**
+   * Selects renderer-specific announcement copy, so a list announces items and
+   * fields where a grid (the default) announces rows and columns.
+   */
+  public setRenderer(renderer: NatTableRendererKind): void {
+    this.renderer = renderer;
+  }
+
+  /**
+   * Registers the grid-only effects: column-resize announcements, the
+   * `aria-multiselectable` writer (which targets the rendered `<table>`), and
+   * keybinding validation for the grid's resize/reorder shortcuts. A list
+   * renderer supports none of these, so it skips them.
+   */
+  public registerGridEffects(): void {
     this.registerResizeAnnouncementEffect();
     this.registerAriaMultiSelectableEffect();
-    this.registerAccessibleNameValidationEffect();
     this.registerKeybindingValidationEffect();
   }
 
@@ -145,7 +179,8 @@ export class NatTableA11yService<TData extends RowData = RowData> {
         previousSnapshot,
         snapshot,
         () => this.state.resolvedAccessibilityText(),
-        (value) => this.formatAccessibilityNumber(value)
+        (value) => this.formatAccessibilityNumber(value),
+        this.renderer
       );
 
       if (message) {
@@ -213,7 +248,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
 
   // ─── Summary ───
 
-  private buildTableSummary(): string {
+  private buildTableSummary(formatterKey: 'tableSummary' | 'listSummary' = 'tableSummary'): string {
     const summaryContext = getSummaryContext(
       {
         visibleRows: this.state.renderedVisibleRowCount(),
@@ -226,7 +261,8 @@ export class NatTableA11yService<TData extends RowData = RowData> {
       },
       (value) => this.formatAccessibilityNumber(value)
     );
-    const formatter = this.state.resolvedAccessibilityText().tableSummary;
+    const accessibilityText = this.state.resolvedAccessibilityText();
+    const formatter = accessibilityText[formatterKey] ?? accessibilityText.tableSummary;
 
     return formatter?.(summaryContext) ?? '';
   }
@@ -267,7 +303,10 @@ export class NatTableA11yService<TData extends RowData = RowData> {
         return;
       }
 
-      console.warn('[ng-advanced-table] <nat-table> requires either `caption` or `accessibleName` for an accessible name.');
+      // Only the grid accepts a `caption`, so a list must not be told to add one.
+      const requirement = this.renderer === 'table' ? 'either `caption` or `accessibleName`' : '`accessibleName`';
+
+      console.warn(`[ng-advanced-table] <nat-${this.renderer}> requires ${requirement} for an accessible name.`);
     });
   }
 

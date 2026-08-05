@@ -1,12 +1,19 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, InjectionToken, inject, provideZonelessChangeDetection, signal } from '@angular/core';
+import type { WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
 import type { Table } from '@tanstack/angular-table';
 import type { NatTableUiController } from 'ng-advanced-table/testing';
 
 import { provideNatTableRenderMetricsIntl } from 'ng-advanced-table/locale';
-import type { NatTableRenderMetricsFilterIntl, NatTableRenderMetricsPanelIntl, RowRenderFilterOption } from 'ng-advanced-table/locale';
+import type {
+  NatTableRenderMetricsFilterIntl,
+  NatTableRenderMetricsIntlStaticProviderConfig,
+  NatTableRenderMetricsPanelIntl,
+  RowRenderFilterOption
+} from 'ng-advanced-table/locale';
 
 import { NatRenderMetricsFilter } from './feature/filter/filter';
 import { NatRenderMetricsPanel } from './feature/panel/panel';
@@ -61,27 +68,59 @@ const qaPanelLabels: NatTableRenderMetricsPanelIntl = {
   duration: ({ durationMsText }) => `QA ${durationMsText} ms`
 };
 
+const reactiveOptions: readonly RowRenderFilterOption[] = providerOptions.map((option) => ({
+  ...option,
+  label: `Reactive ${option.value}`,
+  description: `Reactive ${option.value} description`
+}));
+
+const reactiveRenderMetricsIntl: NatTableRenderMetricsIntlStaticProviderConfig = {
+  formatNumber: (value) => `r${value}`,
+  renderMetrics: {
+    panel: {
+      ariaLabel: 'Reactive row render sample',
+      toneLabel: (tone) => `Reactive ${tone}`,
+      rowSampleSummary: ({ rowCountText }) => `Reactive ${rowCountText} rows sampled`,
+      duration: ({ durationMsText }) => `Reactive ${durationMsText} ms`
+    },
+    filter: {
+      heading: 'Reactive render speed',
+      groupAriaLabel: 'Reactive row render speed',
+      rowSampleCaption: ({ rowCountText }) => `Reactive ${rowCountText} visible rows`,
+      options: reactiveOptions
+    }
+  }
+};
+
+const createProviderRenderMetricsIntl = (): WritableSignal<NatTableRenderMetricsIntlStaticProviderConfig> =>
+  signal<NatTableRenderMetricsIntlStaticProviderConfig>({
+    locales: {
+      en: {
+        formatNumber: (value) => `n${value}`,
+        renderMetrics: {
+          panel: providerPanelLabels,
+          filter: providerFilterLabels
+        }
+      },
+      qa: {
+        formatNumber: (value) => `q${value}`,
+        renderMetrics: {
+          panel: qaPanelLabels
+        }
+      }
+    }
+  });
+
+const PROVIDER_RENDER_METRICS_INTL = new InjectionToken<ReturnType<typeof createProviderRenderMetricsIntl>>(
+  'PROVIDER_RENDER_METRICS_INTL'
+);
+
 @Component({
   selector: 'nat-test-host',
   imports: [NatRenderMetricsFilter, NatRenderMetricsPanel],
   providers: [
-    provideNatTableRenderMetricsIntl({
-      locales: {
-        en: {
-          formatNumber: (value) => `n${value}`,
-          renderMetrics: {
-            panel: providerPanelLabels,
-            filter: providerFilterLabels
-          }
-        },
-        qa: {
-          formatNumber: (value) => `q${value}`,
-          renderMetrics: {
-            panel: qaPanelLabels
-          }
-        }
-      }
-    })
+    { provide: PROVIDER_RENDER_METRICS_INTL, useFactory: createProviderRenderMetricsIntl },
+    provideNatTableRenderMetricsIntl(() => inject(PROVIDER_RENDER_METRICS_INTL))
   ],
   template: `
     <nat-render-metrics-panel [controller]="controller" [labels]="panelLabels()" [locale]="panelLocale()" [store]="store" />
@@ -105,6 +144,7 @@ class RenderMetricsIntlHost {
   public readonly panelLabels = signal<NatTableRenderMetricsPanelIntl | undefined>(undefined);
   public readonly panelLocale = signal<string | undefined>(undefined);
   public readonly filterLabels = signal<NatTableRenderMetricsFilterIntl | undefined>(undefined);
+  private readonly providerIntl = inject(PROVIDER_RENDER_METRICS_INTL);
 
   public constructor() {
     this.store.record({
@@ -112,6 +152,10 @@ class RenderMetricsIntlHost {
       renderToken: 1,
       durationMs: 5.5
     });
+  }
+
+  public useReactiveProviderIntl(): void {
+    this.providerIntl.set(reactiveRenderMetricsIntl);
   }
 }
 
@@ -131,10 +175,16 @@ describe('FEATURE: render metrics intl components', () => {
 
   describe('GIVEN: render metrics components are configured with locale providers', () => {
     describe('WHEN: uses provider render-metrics labels and lets component inputs override them', () => {
-      it('THEN: it prefers component labels over provider defaults', async () => {
+      it('THEN: it reacts to provider labels and prefers component labels over provider defaults', async () => {
         await fixture.whenStable();
 
         const nativeElement = fixture.nativeElement as HTMLElement;
+        const panelHost = nativeElement.querySelector('nat-render-metrics-panel') as HTMLElement;
+        const filterHost = nativeElement.querySelector('nat-render-metrics-filter') as HTMLElement;
+        const panelComponent = fixture.debugElement.query(By.directive(NatRenderMetricsPanel))
+          .componentInstance as NatRenderMetricsPanel;
+        const filterComponent = fixture.debugElement.query(By.directive(NatRenderMetricsFilter))
+          .componentInstance as NatRenderMetricsFilter;
         const panel = nativeElement.querySelector('.render-kpi') as HTMLElement;
         const duration = nativeElement.querySelector('.render-kpi strong') as HTMLElement;
         const detail = nativeElement.querySelector('.render-kpi-detail') as HTMLElement;
@@ -152,6 +202,29 @@ describe('FEATURE: render metrics intl components', () => {
         expect(firstChip.textContent).toContain('Provider all');
         expect(firstChip.textContent).toContain('Provider latest');
 
+        host.useReactiveProviderIntl();
+        await fixture.whenStable();
+
+        expect(fixture.debugElement.query(By.directive(NatRenderMetricsPanel)).componentInstance as NatRenderMetricsPanel).toBe(
+          panelComponent
+        );
+        expect(fixture.debugElement.query(By.directive(NatRenderMetricsFilter)).componentInstance as NatRenderMetricsFilter).toBe(
+          filterComponent
+        );
+        expect(nativeElement.querySelector('nat-render-metrics-panel')).toBe(panelHost);
+        expect(nativeElement.querySelector('nat-render-metrics-filter')).toBe(filterHost);
+        expect(nativeElement.querySelector('.render-kpi')).toBe(panel);
+        expect(nativeElement.querySelector('.chip-row')).toBe(filterGroup);
+        expect(nativeElement.querySelector('.render-chip')).toBe(firstChip);
+        expect(panel.getAttribute('aria-label')).toBe('Reactive row render sample');
+        expect(duration.textContent.trim()).toBe('Reactive r5.5 ms');
+        expect(detail.textContent.trim()).toBe('Reactive fast · Reactive r1 rows sampled');
+        expect(filterHeading.textContent.trim()).toBe('Reactive render speed');
+        expect(filterCaption.textContent.trim()).toBe('Reactive r1 visible rows');
+        expect(filterGroup.getAttribute('aria-label')).toBe('Reactive row render speed');
+        expect(firstChip.textContent).toContain('Reactive all');
+        expect(firstChip.textContent).toContain('Reactive all description');
+
         host.panelLabels.set({
           ariaLabel: 'Input row render sample',
           toneLabel: () => 'Input tone'
@@ -162,9 +235,9 @@ describe('FEATURE: render metrics intl components', () => {
         await fixture.whenStable();
 
         expect(panel.getAttribute('aria-label')).toBe('Input row render sample');
-        expect(detail.textContent.trim()).toBe('Input tone · Provider n1 rows sampled');
+        expect(detail.textContent.trim()).toBe('Input tone · Reactive r1 rows sampled');
         expect(filterHeading.textContent.trim()).toBe('Input render speed');
-        expect(filterGroup.getAttribute('aria-label')).toBe('Provider row render speed');
+        expect(filterGroup.getAttribute('aria-label')).toBe('Reactive row render speed');
       });
     });
   });

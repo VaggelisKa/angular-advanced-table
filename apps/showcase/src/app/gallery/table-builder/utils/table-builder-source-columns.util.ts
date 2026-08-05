@@ -59,6 +59,7 @@ export const buildColumns = (flags: TableBuilderFlags, headerOptions: string): s
     { accessorKey: 'name', header: '${headers.name}', ${buildColumnProps(150, flags)}meta: { label: '${headers.name}', rowHeader: true } },
     { accessorKey: 'category', header: '${headers.category}', ${buildColumnProps(150, flags)}meta: { label: '${headers.category}' } },
     { accessorKey: 'status', header: '${headers.status}', ${buildColumnProps(120, flags)}meta: { label: '${headers.status}' } },
+    { accessorKey: 'owner', header: '${headers.owner}', ${buildColumnProps(150, flags)}meta: { label: '${headers.owner}' } },
     {
       accessorKey: 'value',
       header: '${headers.value}',

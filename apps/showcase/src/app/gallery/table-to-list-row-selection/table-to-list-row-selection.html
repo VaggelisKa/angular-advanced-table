@@ -1,0 +1,47 @@
+<main class="showcase-page sc-demo-page">
+  <p class="demo-hint">
+    Row selection runs on the same engine slice as the table's: enable it on the list and add the
+    <code>withNatTableSelectionColumn</code> companion. The generated checkbox is plain DOM, so it renders inside list items unchanged,
+    and selected items expose <code>data-selected</code> for styling.
+  </p>
+
+  <app-demo-code [css]="exampleCss" [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
+
+  <section aria-label="Demo controls" class="demo-controls">
+    <div aria-label="Selection mode" class="control-group" role="group">
+      <button
+        [attr.aria-pressed]="selectionMode() === 'multiple'"
+        [class.is-active]="selectionMode() === 'multiple'"
+        data-testid="selection-mode-multiple"
+        type="button"
+        (click)="setSelectionMode('multiple')">
+        Multiple
+      </button>
+      <button
+        [attr.aria-pressed]="selectionMode() === 'single'"
+        [class.is-active]="selectionMode() === 'single'"
+        data-testid="selection-mode-single"
+        type="button"
+        (click)="setSelectionMode('single')">
+        Single
+      </button>
+    </div>
+
+    <div class="control-group" role="group">
+      <button data-testid="clear-selection" type="button" (click)="clearSelection()">Clear selection</button>
+    </div>
+  </section>
+
+  <p aria-live="polite" class="selection-readout" data-testid="selected-count">{{ selectedCount() }} selected</p>
+
+  <nat-table-surface [(state)]="state">
+    <nat-list
+      [columns]="columns"
+      [data]="rows"
+      [enableRowSelection]="true"
+      [getRowId]="getRowId"
+      [selectionMode]="selectionMode()"
+      accessibleName="Orders list with row selection"
+      class="sc-demo-list" />
+  </nat-table-surface>
+</main>

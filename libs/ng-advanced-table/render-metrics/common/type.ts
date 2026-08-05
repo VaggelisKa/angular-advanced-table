@@ -1,3 +1,27 @@
+import type { NatTableRenderMetricsColumnIntl, NatTableRenderMetricsIntlConfig } from 'ng-advanced-table/locale';
+
+/** Configuration for `withRenderMetricsColumn`. */
+export type WithRenderMetricsColumnOptions = {
+  /** Locale id used when resolving provider defaults at helper-call time. */
+  readonly locale?: string;
+  /**
+   * Captured render-metrics locale config used by reactive column builders.
+   *
+   * Read this with `injectNatTableRenderMetricsIntl()` during construction,
+   * then pass it from a `computed(...)` column builder so provider changes are
+   * tracked without calling `inject(...)` outside an injection context.
+   */
+  readonly intlConfig?: NatTableRenderMetricsIntlConfig;
+  /** Column identifier. Defaults to `__rowRenderMetric`. */
+  readonly columnId?: string;
+  /** Optional TanStack size override. */
+  readonly size?: number;
+  /** Optional TanStack min-size override. */
+  readonly minSize?: number;
+  /** Optional TanStack max-size override. */
+  readonly maxSize?: number;
+} & NatTableRenderMetricsColumnIntl;
+
 /** Tone assigned to a row based on its latest measured render duration. */
 export type RowRenderTone = 'fast' | 'watch' | 'slow';
 

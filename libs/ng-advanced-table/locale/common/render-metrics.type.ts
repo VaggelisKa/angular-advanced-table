@@ -1,3 +1,5 @@
+import type { Signal } from '@angular/core';
+
 /** Formats numbers used in render-metrics labels and values. */
 export type NatTableRenderMetricsNumberFormatter = (value: number, options?: Intl.NumberFormatOptions, locale?: string) => string;
 
@@ -86,12 +88,28 @@ export type NatTableRenderMetricsIntlConfig = {
 
 export type NatTableRenderMetricsIntlStaticProviderConfig = NatTableRenderMetricsIntl | NatTableRenderMetricsIntlConfig;
 
-/** Factory resolved inside Angular dependency injection. Use `inject(...)` to read services. */
-export type NatTableRenderMetricsIntlProviderFactory = () => NatTableRenderMetricsIntlStaticProviderConfig;
+/** Static or signal-backed render-metrics intl configuration. */
+export type NatTableRenderMetricsIntlProviderSource =
+  | NatTableRenderMetricsIntlStaticProviderConfig
+  | Signal<NatTableRenderMetricsIntlStaticProviderConfig>;
+
+/** Factory resolved once inside Angular dependency injection. Use `inject(...)` to read services. */
+export type NatTableRenderMetricsIntlProviderFactory = () => NatTableRenderMetricsIntlProviderSource;
 
 export type NatTableRenderMetricsIntlProviderConfig =
-  | NatTableRenderMetricsIntlStaticProviderConfig
+  | NatTableRenderMetricsIntlProviderSource
   | NatTableRenderMetricsIntlProviderFactory;
 
 /** Render-metrics locale dictionaries keyed by locale id. */
 export type NatTableRenderMetricsLocalesMap = Record<string, NatTableRenderMetricsIntl>;
+
+/** Static or signal-backed render-metrics locale dictionaries. */
+export type NatTableRenderMetricsLocalesProviderSource = NatTableRenderMetricsLocalesMap | Signal<NatTableRenderMetricsLocalesMap>;
+
+/** Factory resolved once inside Angular dependency injection. */
+export type NatTableRenderMetricsLocalesProviderFactory = () => NatTableRenderMetricsLocalesProviderSource;
+
+/** Configuration accepted by `provideNatTableRenderMetricsLocales(...)`. */
+export type NatTableRenderMetricsLocalesProviderConfig =
+  | NatTableRenderMetricsLocalesProviderSource
+  | NatTableRenderMetricsLocalesProviderFactory;

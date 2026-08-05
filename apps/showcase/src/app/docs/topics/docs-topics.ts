@@ -2,6 +2,7 @@
 import type { DocsCodeSnippet, DocsTopicContent } from './docs-topic.type';
 import { ThemingShowcase } from './theming-showcase';
 import { KeyboardInteraction } from '../demos/keyboard-interaction/keyboard-interaction';
+import { ListRenderer } from '../demos/list/list-renderer';
 import { Pagination } from '../demos/pagination/pagination';
 import { Pinning } from '../demos/pinning/pinning';
 import { Reordering } from '../demos/reordering/reordering';
@@ -325,6 +326,51 @@ readonly error = signal<unknown>(undefined);
   )
 ];
 
+const listRendererSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface [enableSorting]="true" [(state)]="state">
+  @if (view() === 'table') {
+    <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
+  } @else {
+    <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
+  }
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+protected readonly view = signal<'table' | 'list'>('list');
+protected readonly state = signal<Partial<NatTableUserState>>({});
+
+// The list has no header UI — sorting is written through the surface state.
+protected toggleSortByTotal(): void {
+  const sorting = this.isSortedByTotal() ? [] : [{ id: 'total', desc: true }];
+
+  this.state.update((current) => ({ ...current, sorting }));
+}
+`
+  ),
+  snippet(
+    'css',
+    'CSS',
+    'css',
+    `
+/* Named field areas: area names are the column ids from the shared defs. */
+nat-list {
+  --nat-table-list-item-columns: minmax(0, 1fr) auto;
+  --nat-table-list-item-areas: 'id total' 'customer status';
+}
+`
+  )
+];
+
 const themingSnippets = [
   snippet(
     'html',
@@ -333,6 +379,10 @@ const themingSnippets = [
     `
 <nat-table-surface [enableSorting]="true" [initialState]="initialState" class="ledger-surface">
   <nat-table [columns]="columns" [data]="rows" accessibleName="Themed orders table" />
+</nat-table-surface>
+
+<nat-table-surface [initialState]="initialState" class="ledger-surface ledger-list-surface">
+  <nat-list [columns]="columns" [data]="rows" accessibleName="Themed orders list" />
 </nat-table-surface>
 `
   ),
@@ -404,6 +454,19 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   color-scheme: light;
 }
 
+/* The list renderer follows the same ledger palette; the --nat-table-list-*
+   tokens lay each item out as named field areas (area names are column ids). */
+.ledger-list-surface {
+  --nat-table-list-gap: 10px;
+  --nat-table-list-item-areas: 'id total' 'customer status';
+  --nat-table-list-item-columns: 1fr auto;
+  --nat-table-list-item-gap: 6px;
+  --nat-table-list-item-padding: 14px 16px;
+  --nat-table-list-item-background: #fbfcfb;
+  --nat-table-list-item-border-color: #cbd8d4;
+  --nat-table-list-item-radius: 6px;
+}
+
 [data-theme='dark'] .ledger-surface {
   --nat-table-color-text: #dfe8e5;
   --nat-table-color-text-muted: #9fb1ab;
@@ -432,6 +495,11 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-sort-button-color-sorted: #17211f;
 
   color-scheme: dark;
+}
+
+[data-theme='dark'] .ledger-list-surface {
+  --nat-table-list-item-background: #15211f;
+  --nat-table-list-item-border-color: #30413d;
 }
 `
   )
@@ -495,9 +563,10 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
   {
     id: 'composition',
     contents: [
-      { label: 'Package responsibilities', path: '#package-responsibilities' },
+      { label: 'Entry-point responsibilities', path: '#entry-point-responsibilities' },
       { label: 'Surface and controller', path: '#surface-and-controller' },
-      { label: 'Consumer-owned controls', path: '#consumer-owned-controls' }
+      { label: 'Toolbar composition', path: '#toolbar-composition' },
+      { label: 'Consumer-owned search', path: '#consumer-owned-search' }
     ],
     blocks: [{ kind: 'markdown', id: 'composition-prose', markdownPath: '/docs/composition.md' }],
     related: [
@@ -743,6 +812,36 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     related: [
       { label: 'Sorting', path: '/docs/sorting' },
       { label: 'Column layout', path: '/docs/column-layout' }
+    ]
+  },
+  {
+    id: 'list-renderer',
+    contents: [
+      { label: 'When to use the list', path: '#when-to-use-the-list' },
+      { label: 'Composition', path: '#composition' },
+      { label: 'Field labels', path: '#field-labels' },
+      { label: 'Shared state and companion controls', path: '#shared-state-and-companion-controls' },
+      { label: 'Selection and activation', path: '#selection-and-activation' },
+      { label: 'Data lifecycle', path: '#data-lifecycle' },
+      { label: 'Item layout and theming', path: '#item-layout-and-theming' },
+      { label: 'Accessibility', path: '#accessibility' },
+      { label: 'Limitations', path: '#limitations' }
+    ],
+    blocks: [
+      { kind: 'markdown', id: 'list-renderer-prose', markdownPath: '/docs/list-renderer.md' },
+      {
+        kind: 'example',
+        id: 'list-renderer',
+        title: 'One surface, two renderers',
+        description: 'Sorting written through the surface state survives swapping between the table and list renderers.',
+        component: ListRenderer,
+        snippets: listRendererSnippets
+      }
+    ],
+    related: [
+      { label: 'Composition', path: '/docs/composition' },
+      { label: 'State', path: '/docs/state' },
+      { label: 'Theming', path: '/docs/theming' }
     ]
   },
   {

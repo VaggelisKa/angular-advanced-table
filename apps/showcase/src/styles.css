@@ -796,6 +796,7 @@ input {
 
     /* Pinned & empty state */
     --nat-table-pinned-background: var(--sc-surface);
+    --nat-table-pinned-header-background: var(--nat-table-header-background);
     --nat-table-pinned-divider-color: var(--sc-border);
     --nat-table-empty-state-color: var(--sc-text-soft);
 
@@ -949,11 +950,37 @@ input {
   }
 }
 
+/* List demos, matching the table demo theme above. The surface background is
+   not cosmetic: list items are transparent by default, so semantic cell chips
+   would otherwise sit on the page background and fall below the AA contrast
+   floor in light mode. */
+.sc-demo-list {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  --nat-table-list-item-background: var(--sc-surface);
+  --nat-table-list-state-background: var(--sc-surface);
+  --nat-table-focus-ring-color: var(--sc-focus);
+  --nat-table-focus-ring-width: 3px;
+}
+
 .sc-demo-page {
   box-sizing: border-box;
   width: min(var(--sc-demo-width, 600px), 100%);
   min-width: 0;
   padding: 0;
+}
+
+.docs-topic-body [id] {
+  scroll-margin-top: 28px;
+}
+
+/* Keep anchor targets clear of the sticky mobile header. */
+@media (width <= 820px) {
+  .docs-topic-body [id] {
+    scroll-margin-top: 74px;
+  }
 }
 
 .docs-markdown {
@@ -1159,7 +1186,7 @@ input {
   }
 }
 
-:is(.docs-markdown, .docs-example, .table-builder-page) {
+:is(.docs-markdown, .docs-example, .table-builder-page, .demo-code) {
   & .token.comment,
   & .token.prolog,
   & .token.doctype,

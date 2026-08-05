@@ -20,6 +20,7 @@ import {
 import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
+import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
@@ -91,7 +92,8 @@ import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-r
     NatTableA11yService,
     NatTableResizeService,
     NatTableReorderService,
-    NatTableHeaderMeasurementService
+    NatTableHeaderMeasurementService,
+    NatTableCellControlManager
   ],
   templateUrl: './table.html',
   styleUrl: './table.css'
@@ -286,8 +288,15 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public constructor() {
     // NatTableHeaderMeasurementService is self-contained; injecting triggers its constructor lifecycle.
     inject<NatTableHeaderMeasurementService<TData>>(NatTableHeaderMeasurementService);
+    inject(NatTableCellControlManager).startCellControlPreparation();
 
     this.natTableService.setController(this);
+
+    // ── Accessibility effects ──
+    // The shared effects self-register in the service constructor; only the
+    // grid-only trio (resize announcements, aria-multiselectable, keybinding
+    // validation) is opt-in.
+    this.a11yService.registerGridEffects();
 
     // ── Signal-based input bridging ──
     // Sync component inputs → state writable signals via effects (no ngOnChanges).
