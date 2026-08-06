@@ -12,8 +12,15 @@ export const isApplePlatform = (navigator: Navigator | undefined): boolean => {
 };
 
 const getFocusableElements = (container: HTMLElement): HTMLElement[] =>
-  Array.from(container.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]')).filter(
-    (element) => element.tabIndex >= 0 && !element.closest('[hidden]')
+  Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
+    )
+  ).filter(
+    /* `getClientRects()` drops `display: none` candidates (e.g. the search
+       dialog's mobile-only close button on desktop), which would otherwise
+       become unreachable first/last trap targets. */
+    (element) => element.tabIndex >= 0 && !element.closest('[hidden]') && element.getClientRects().length > 0
   );
 
 /**

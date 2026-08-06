@@ -30,6 +30,7 @@ export class App {
   private readonly mobileNavCloseButton = viewChild<ElementRef<HTMLButtonElement>>('mobileNavCloseButton');
   private readonly mobileNavPanel = viewChild<ElementRef<HTMLElement>>('mobileNavPanel');
   private readonly searchTriggerDesktop = viewChild<ElementRef<HTMLButtonElement>>('searchTriggerDesktop');
+  private readonly searchTriggerMobile = viewChild<ElementRef<HTMLButtonElement>>('searchTriggerMobile');
   private searchOpener: HTMLElement | null = null;
 
   protected readonly mobileNavOpen = signal(false);
@@ -97,7 +98,14 @@ export class App {
     this.searchOpener = null;
 
     if (restoreFocus) {
-      this.focusAfterRender(() => opener ?? this.searchTriggerDesktop()?.nativeElement);
+      /* The opener can be unfocusable by now (e.g. the search trigger inside
+         the closed, visibility-hidden mobile nav drawer), so fall through to
+         the first trigger that actually takes focus. */
+      this.focusFirstAfterRender(() => [
+        opener,
+        this.searchTriggerDesktop()?.nativeElement,
+        this.searchTriggerMobile()?.nativeElement
+      ]);
     }
   }
 
@@ -153,5 +161,22 @@ export class App {
 
   private focusAfterRender(getElement: () => HTMLElement | undefined): void {
     afterNextRender({ write: () => getElement()?.focus() }, { injector: this.injector });
+  }
+
+  private focusFirstAfterRender(getCandidates: () => readonly (HTMLElement | null | undefined)[]): void {
+    afterNextRender(
+      {
+        write: () => {
+          for (const candidate of getCandidates()) {
+            candidate?.focus();
+
+            if (candidate && this.document.activeElement === candidate) {
+              return;
+            }
+          }
+        }
+      },
+      { injector: this.injector }
+    );
   }
 }

@@ -54,6 +54,21 @@ test.describe('FEATURE: Docs search accessibility', () => {
       });
     });
 
+    test.describe('WHEN: tabbing through the dialog on a desktop viewport', () => {
+      test('THEN: it keeps focus trapped on the combobox input', async ({ page }) => {
+        const input = page.getByTestId('docs-search-input');
+
+        await page.keyboard.press('ControlOrMeta+KeyK');
+        await expect(input).toBeFocused();
+
+        await page.keyboard.press('Tab');
+        await expect(input).toBeFocused();
+
+        await page.keyboard.press('Shift+Tab');
+        await expect(input).toBeFocused();
+      });
+    });
+
     test.describe('WHEN: scanning the empty state with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations before typing', async ({ page }) => {
         await page.keyboard.press('ControlOrMeta+KeyK');
@@ -89,6 +104,41 @@ test.describe('FEATURE: Docs search accessibility', () => {
 
   test.describe('GIVEN: the docs search dialog is fullscreen on a phone-sized touch viewport', () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+    test.describe('WHEN: tabbing through the fullscreen dialog', () => {
+      test('THEN: it cycles focus between the input and the close button', async ({ page }) => {
+        const input = page.getByTestId('docs-search-input');
+        const closeButton = page.getByTestId('docs-search-close');
+
+        await page.getByTestId('docs-search-trigger-mobile').tap();
+        await expect(input).toBeFocused();
+
+        await page.keyboard.press('Tab');
+        await expect(closeButton).toBeFocused();
+
+        await page.keyboard.press('Tab');
+        await expect(input).toBeFocused();
+
+        await page.keyboard.press('Shift+Tab');
+        await expect(closeButton).toBeFocused();
+      });
+    });
+
+    test.describe('WHEN: the search opened from the nav drawer closes with Escape', () => {
+      test('THEN: it restores focus to a visible search trigger', async ({ page }) => {
+        const drawerSearchTrigger = page.getByTestId('docs-search-trigger');
+
+        await page.getByRole('button', { name: 'Open showcase navigation' }).tap();
+        await drawerSearchTrigger.tap();
+        await expect(page.getByTestId('docs-search-input')).toBeFocused();
+        /* The drawer close transition ends before Escape so the hidden drawer
+           trigger cannot briefly take the restored focus. */
+        await expect(drawerSearchTrigger).toBeHidden();
+
+        await page.keyboard.press('Escape');
+        await expect(page.getByTestId('docs-search-trigger-mobile')).toBeFocused();
+      });
+    });
 
     test.describe('WHEN: scanning the fullscreen results state with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations and exposes an accessible close control', async ({ page }) => {

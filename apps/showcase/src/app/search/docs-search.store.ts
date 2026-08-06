@@ -1,8 +1,20 @@
-import { Injectable, PendingTasks, inject, signal } from '@angular/core';
+import { Injectable, InjectionToken, PendingTasks, inject, signal } from '@angular/core';
 
 import { buildDocsSearchCorpus, buildNavGroupLabelMap } from './docs-search-corpus.util';
 import type { DocsSearchCorpusEntry } from './docs-search.type';
+import type { DocsSearchDocument } from '../docs/docs-search-index';
 import { showcaseDocs, showcaseExamples, showcaseNavSections } from '../shell/showcase-navigation';
+
+type DocsSearchIndexModule = {
+  readonly docsSearchIndex: Readonly<Record<string, DocsSearchDocument>>;
+};
+
+/** Seam over the lazy index chunk import so specs can exercise chunk-load failures. */
+export const DOCS_SEARCH_INDEX_LOADER = new InjectionToken<() => Promise<DocsSearchIndexModule>>('DOCS_SEARCH_INDEX_LOADER', {
+  providedIn: 'root',
+  factory: (): (() => Promise<DocsSearchIndexModule>) => async (): Promise<DocsSearchIndexModule> =>
+    import('../docs/docs-search-index')
+});
 
 /**
  * Owns the lazily loaded docs search corpus. The generated search index lives
@@ -15,6 +27,7 @@ import { showcaseDocs, showcaseExamples, showcaseNavSections } from '../shell/sh
 })
 export class DocsSearchStore {
   private readonly pendingTasks = inject(PendingTasks);
+  private readonly loadIndex = inject(DOCS_SEARCH_INDEX_LOADER);
   private corpusPromise: Promise<readonly DocsSearchCorpusEntry[]> | null = null;
   private readonly corpusState = signal<readonly DocsSearchCorpusEntry[] | null>(null);
 
@@ -23,7 +36,9 @@ export class DocsSearchStore {
 
   /** Fire-and-forget warm-up for trigger hover/focus, mirroring the nav tree's docs-page prefetch. */
   public preloadCorpus(): void {
-    void this.loadCorpus();
+    /* Swallow chunk-load failures here: a failed warm-up must not surface as
+       an unhandled rejection, and `loadCorpus` retries on the next call. */
+    void this.loadCorpus().catch(() => undefined);
   }
 
   public async loadCorpus(): Promise<readonly DocsSearchCorpusEntry[]> {
@@ -35,7 +50,7 @@ export class DocsSearchStore {
     // in-flight chunk download (see NavTree.prefetchNavItem for the rationale).
     const removePendingTask = this.pendingTasks.add();
 
-    this.corpusPromise = import('../docs/docs-search-index')
+    this.corpusPromise = this.loadIndex()
       .then(({ docsSearchIndex }) => {
         const corpus = buildDocsSearchCorpus({
           index: docsSearchIndex,
@@ -47,6 +62,13 @@ export class DocsSearchStore {
         this.corpusState.set(corpus);
 
         return corpus;
+      })
+      .catch((error: unknown) => {
+        /* Do not cache a failed chunk download: dropping the promise lets the
+           next dialog open retry instead of staying stuck on "Loading". */
+        this.corpusPromise = null;
+
+        throw error;
       })
       .finally(removePendingTask);
 
