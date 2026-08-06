@@ -36,6 +36,7 @@
   --sys-nat-table-font-weight-row-header: var(--nat-table-font-weight-row-header);
   --sys-nat-table-space-card: var(--nat-table-space-card);
   --sys-nat-table-space-card-compact: var(--nat-table-space-card-compact);
+  --sys-nat-table-space-card-list: var(--nat-table-space-card-list);
   --sys-nat-table-space-controls-gap: var(--nat-table-space-controls-gap);
   --sys-nat-table-space-control-block-gap: var(--nat-table-space-control-block-gap);
   --sys-nat-table-space-toolbar-gap: var(--nat-table-space-toolbar-gap);
@@ -177,6 +178,16 @@
   transition:
     border-color var(--nat-table-transition-slow, var(--sys-nat-table-transition-slow)),
     background-color var(--nat-table-transition-slow, var(--sys-nat-table-transition-slow));
+}
+
+/*
+ * A projected list renderer draws its own item chrome, so the card padding
+ * collapses to zero around it by default; `--nat-table-space-card-list`
+ * reopens it. Higher specificity than the compact media rule below, so the
+ * collapse (and the token) wins at every viewport width.
+ */
+.surface:has(nat-list) {
+  padding: var(--nat-table-space-card-list, var(--sys-nat-table-space-card-list, 0));
 }
 
 @media (width <= 720px) {
