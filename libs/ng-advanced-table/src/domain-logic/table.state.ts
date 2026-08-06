@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- irreducible per-instance reactive store: a single @Injectable owns the signal graph + TanStack table instance; further splitting only relocates coupling into cross-service signal reads and Injector.get() cycles. Pure arithmetic (widths, resize math, const defaults) already extracted to utils/common. */
 import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, isDevMode, signal } from '@angular/core';
 
 import type {
   Column,
@@ -46,6 +46,7 @@ import type {
   TableColumnRenderState
 } from '../common/column-render.type';
 import type { NatTableRowIdGetter } from '../common/row.type';
+import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import { DEFAULT_TABLE_STATE } from '../common/table-state.const';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
@@ -56,7 +57,13 @@ import {
   computeKeyboardResizeWidth,
   getColumnResizeBounds
 } from '../resize/utils/column-resize.util';
-import { getColumnDefLeafIds, getUserColumnSizing, readColumnEntry, someLeafColumnDef } from '../utils/column-def.util';
+import {
+  getColumnDefLeafIds,
+  getUserColumnSizing,
+  patchLeafColumnDefSorting,
+  readColumnEntry,
+  someLeafColumnDef
+} from '../utils/column-def.util';
 import {
   accumulatePinnedOffsets,
   getColumnMoveTargetIndex,
@@ -75,6 +82,13 @@ import { isColumnReorderable, isColumnResizable } from '../utils/interaction.uti
 import { normalizeDataStatus, normalizeRowSelection, resolveDefaultRowId } from '../utils/row-state.util';
 import { normalizeSortingState } from '../utils/sorting.util';
 import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
+import {
+  buildSubHeaderRowGroups,
+  createSubHeaderOrderSortingFn,
+  prependForcedSortingEntry,
+  resolveSubHeaderValueText,
+  stripNatTableSubHeaderSorting
+} from '../utils/sub-header.util';
 
 // ─── Constants ───
 
@@ -118,6 +132,12 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly caption = signal<string | undefined>(undefined);
   /** Whether to emit row render timing events. */
   public readonly emitRowRenderEvents = signal(false);
+  /** Leaf column id whose value groups rows under sub-header rows, set from the component's input. */
+  public readonly subHeaderColumn = signal<string | undefined>(undefined);
+  /** Optional explicit sub-header group value order, set from the component's input. */
+  public readonly subHeaderOrder = signal<readonly unknown[] | undefined>(undefined);
+  /** Renderer-level sub-header gate: false ignores the sub-header config entirely. */
+  public readonly enableSubHeaders = signal(true);
 
   // ─── Service-derived computeds ───
 
@@ -182,6 +202,35 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly allLeafColumnIds = computed(() => getColumnDefLeafIds(this.columnDefs()));
   public readonly userColumnSizing = computed(() => getUserColumnSizing(this.columnDefs()));
 
+  // ─── Sub-header grouping ───
+
+  /** Active sub-header leaf column id, or null when disabled, unset, or not a leaf column. */
+  public readonly resolvedSubHeaderColumnId = computed<string | null>(() => {
+    const columnId = this.subHeaderColumn();
+
+    if (!this.enableSubHeaders() || columnId === undefined || columnId === '') {
+      return null;
+    }
+
+    return this.allLeafColumnIds().includes(columnId) ? columnId : null;
+  });
+
+  /**
+   * Column defs handed to TanStack: when a sub-header value order is set, the
+   * sub-header column carries the order-aware sorting function; otherwise the
+   * consumer defs pass through by reference.
+   */
+  private readonly resolvedColumnDefs = computed<readonly ColumnDef<TData, unknown>[]>(() => {
+    const columnId = this.resolvedSubHeaderColumnId();
+    const order = this.subHeaderOrder();
+
+    if (columnId === null || !order?.length) {
+      return this.columnDefs();
+    }
+
+    return patchLeafColumnDefSorting(this.columnDefs(), columnId, createSubHeaderOrderSortingFn(order));
+  });
+
   private readonly resolvedColumnOrder = computed(() =>
     normalizeColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds())
   );
@@ -219,6 +268,21 @@ export class NatTableState<TData extends RowData = RowData> {
     pagination: this.state().pagination ?? this.internalPagination()
   }));
 
+  /**
+   * Sorting handed to TanStack: the forced sub-header entry prepended to the
+   * user-visible sorting. Deliberately kept out of `mergedState`, so aria-sort,
+   * a11y snapshots, and `sortingChange` never see the forced entry.
+   */
+  private readonly tanstackSortingState = computed<SortingState>(() => {
+    // Read the order so an order change produces a fresh sorting reference:
+    // TanStack's sorted-row-model memo keys on the sorting state (not on
+    // column-def sortingFn identity), so a changed order would otherwise keep
+    // serving the stale sorted rows.
+    this.subHeaderOrder();
+
+    return prependForcedSortingEntry(this.mergedState().sorting, this.resolvedSubHeaderColumnId());
+  });
+
   // ─── Resolved a11y text / status computeds ───
 
   public readonly resolvedDescription = computed(() => this.resolvedAccessibilityText().description ?? '');
@@ -233,8 +297,8 @@ export class NatTableState<TData extends RowData = RowData> {
 
   public readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.data() as TData[],
-    columns: this.columnDefs() as ColumnDef<TData, unknown>[],
-    state: this.mergedState(),
+    columns: this.resolvedColumnDefs() as ColumnDef<TData, unknown>[],
+    state: { ...this.mergedState(), sorting: this.tanstackSortingState() },
     pageCount: this.manualPagination() ? this.manualPageCount() : undefined,
     manualPagination: this.manualPagination(),
     manualSorting: this.manualSorting(),
@@ -254,7 +318,8 @@ export class NatTableState<TData extends RowData = RowData> {
       natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
       natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
       natTableSortingEnabled: this.enableSorting(),
-      natTablePinningEnabled: this.enablePinning()
+      natTablePinningEnabled: this.enablePinning(),
+      natTableSubHeaderColumnId: this.resolvedSubHeaderColumnId()
     },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
@@ -263,7 +328,7 @@ export class NatTableState<TData extends RowData = RowData> {
     getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
     getSortedRowModel: this.manualSorting() ? undefined : getSortedRowModel(),
     getPaginationRowModel: !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
-    onSortingChange: (updater) => this.updateState({ sorting: updater }),
+    onSortingChange: (updater) => this.applySortingChange(updater),
     onGlobalFilterChange: (updater: Updater<string>) => this.updateState({ globalFilter: updater, pagination: firstPageUpdater }),
     onColumnFiltersChange: (updater) => this.updateState({ columnFilters: updater, pagination: firstPageUpdater }),
     onColumnVisibilityChange: (updater: Updater<VisibilityState>) => this.updateState({ columnVisibility: updater }),
@@ -336,6 +401,20 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly renderedVisibleRowCount = computed(() =>
     this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 0
   );
+
+  /**
+   * Sub-header group segments keyed by the id of the page row that opens each
+   * segment. Empty when no sub-header column is active or no data rows render.
+   */
+  public readonly subHeaderGroups = computed<ReadonlyMap<string, NatTableSubHeaderGroup<TData>>>(() => {
+    const columnId = this.resolvedSubHeaderColumnId();
+
+    if (columnId === null || this.bodyState() !== NAT_TABLE_BODY_STATE.rows) {
+      return new Map<string, NatTableSubHeaderGroup<TData>>();
+    }
+
+    return buildSubHeaderRowGroups(this.bodyRows(), this.table.getPrePaginationRowModel().rows, columnId);
+  });
 
   public readonly stateTotalRowCount = computed(() => {
     const bodyState = this.bodyState();
@@ -838,6 +917,17 @@ export class NatTableState<TData extends RowData = RowData> {
     this.updateState(updaters);
   }
 
+  /**
+   * Commits a sorting change from TanStack. The functional updater runs
+   * against the TanStack-facing sorting (forced sub-header entry included);
+   * the forced entry is then stripped so user-visible state stays clean.
+   */
+  public applySortingChange(updater: Updater<SortingState>): void {
+    const next = resolveUpdater(this.tanstackSortingState(), updater);
+
+    this.updateState({ sorting: stripNatTableSubHeaderSorting(next, this.resolvedSubHeaderColumnId()) });
+  }
+
   public updateState(
     updaters: Partial<{
       [K in keyof NatTableUserState]: Updater<NatTableUserState[K]>;
@@ -924,6 +1014,35 @@ export class NatTableState<TData extends RowData = RowData> {
     };
   }
 
+  /** Template context for a rendered sub-header row. */
+  public getSubHeaderTemplateContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
+    return {
+      $implicit: group.value,
+      value: group.value,
+      rowCountValue: group.rowCountValue,
+      row: group.row,
+      table: this.table
+    };
+  }
+
+  /** Screen-reader announcement text for a sub-header row, phrased per renderer. */
+  public getSubHeaderAnnouncement(group: NatTableSubHeaderGroup<TData>, renderer: 'table' | 'list'): string {
+    const accessibilityText = this.resolvedAccessibilityText();
+    const formatter =
+      renderer === 'list' ? (accessibilityText.listSubHeaderRow ?? accessibilityText.subHeaderRow) : accessibilityText.subHeaderRow;
+
+    if (!formatter) {
+      return '';
+    }
+
+    return formatter({
+      value: group.value,
+      valueText: resolveSubHeaderValueText(group.value),
+      rowCountValue: group.rowCountValue,
+      rowCountText: this.formatAccessibilityNumber(group.rowCountValue)
+    });
+  }
+
   public isFiltered(): boolean {
     const state = this.mergedState();
 
@@ -955,6 +1074,31 @@ export class NatTableState<TData extends RowData = RowData> {
       }
 
       this.seedInitialState(this.initialState());
+    });
+  }
+
+  /**
+   * Dev-mode warnings for sub-header misconfiguration. Must be called in the
+   * injection context (constructor or field initializer).
+   */
+  public registerSubHeaderValidationEffect(): void {
+    effect(() => {
+      // A disabled renderer deliberately ignores the config — no warnings.
+      if (!isDevMode() || !this.enableSubHeaders()) {
+        return;
+      }
+
+      const columnId = this.subHeaderColumn();
+      const hasColumnKey = columnId !== undefined && columnId !== '';
+      const leafColumnIds = this.allLeafColumnIds();
+
+      if (hasColumnKey && leafColumnIds.length > 0 && !leafColumnIds.includes(columnId)) {
+        console.warn(`[ng-advanced-table] subHeaderColumn "${columnId}" does not match any leaf column id; sub-headers are disabled.`);
+      }
+
+      if (!hasColumnKey && this.subHeaderOrder() !== undefined) {
+        console.warn('[ng-advanced-table] subHeaderOrder is set but subHeaderColumn is not; the order has no effect.');
+      }
     });
   }
 

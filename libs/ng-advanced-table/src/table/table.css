@@ -532,6 +532,30 @@ tbody .data-row:last-child .data-cell {
   );
 }
 
+.sub-header-cell {
+  padding: var(
+    --nat-table-space-sub-header,
+    var(--sys-nat-table-space-sub-header, 8px var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 12px)))
+  );
+  font-weight: var(--nat-table-font-weight-sub-header, var(--sys-nat-table-font-weight-sub-header, 600));
+  color: var(--nat-table-sub-header-color, var(--sys-nat-table-sub-header-color, currentColor));
+  white-space: normal;
+  background: var(--nat-table-sub-header-background, var(--sys-nat-table-sub-header-background, transparent));
+}
+
+/*
+ * Sticky-left, shrink-to-fit content (state-row pattern): the group label
+ * stays inside the visible scroll viewport while the full-width cell scrolls
+ * horizontally under pinned columns.
+ */
+.sub-header-content {
+  position: sticky;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100cqi;
+}
+
 @keyframes nat-table-state-enter {
   from {
     opacity: var(--nat-table-state-transition-opacity-from, var(--sys-nat-table-state-transition-opacity-from, 0));

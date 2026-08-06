@@ -12,6 +12,7 @@ export type {
   NatTableAccessibilityPaginationAnnouncementContext,
   NatTableAccessibilitySelectionAnnouncementContext,
   NatTableAccessibilitySortingAnnouncementContext,
+  NatTableAccessibilitySubHeaderContext,
   NatTableAccessibilitySummaryContext,
   NatTableAccessibilityText,
   NatTableIntl,

@@ -1,4 +1,4 @@
-import type { ColumnDef, RowData } from '@tanstack/angular-table';
+import type { ColumnDef, RowData, SortingFn } from '@tanstack/angular-table';
 
 import { DEFAULT_CELL_MAX_LINES } from '../common/column-meta.const';
 import type { TableColumnSizingState } from '../common/column-render.type';
@@ -56,6 +56,36 @@ export const someLeafColumnDef = <TData extends RowData>(
 
     return childColumns?.length ? someLeafColumnDef(childColumns, predicate) : predicate(column);
   });
+
+/**
+ * Returns a copy of `columns` where the leaf definition matching `columnId`
+ * carries `sortingFn`, recursing into grouped columns. Only the changed path
+ * is copied; when no leaf matches, the input array is returned unchanged so
+ * reference equality keeps downstream computeds stable.
+ */
+export const patchLeafColumnDefSorting = <TData extends RowData>(
+  columns: readonly ColumnDef<TData, unknown>[],
+  columnId: string,
+  sortingFn: SortingFn<TData>
+): readonly ColumnDef<TData, unknown>[] => {
+  const patched = columns.map((column) => {
+    const childColumns = (
+      column as ColumnDef<TData, unknown> & {
+        readonly columns?: readonly ColumnDef<TData, unknown>[];
+      }
+    ).columns;
+
+    if (childColumns?.length) {
+      const patchedChildren = patchLeafColumnDefSorting(childColumns, columnId, sortingFn);
+
+      return patchedChildren === childColumns ? column : { ...column, columns: patchedChildren };
+    }
+
+    return resolveColumnDefId(column) === columnId ? { ...column, sortingFn } : column;
+  });
+
+  return patched.some((column, index) => column !== columns[index]) ? patched : columns;
+};
 
 export const getUserColumnSizing = <TData extends RowData>(
   columns: readonly ColumnDef<TData, unknown>[]

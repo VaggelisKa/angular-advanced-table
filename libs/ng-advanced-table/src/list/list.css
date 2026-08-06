@@ -14,6 +14,15 @@
 /* Each item is a grid of named field areas (one area per visible column id;
    the stacked default comes from the inline --sys bridge). Consumers lay the
    fields out freely via --nat-table-list-item-areas and -columns. */
+.list-sub-header {
+  display: flex;
+  align-items: center;
+  padding: var(--nat-table-space-sub-header, var(--sys-nat-table-space-sub-header, 0.5rem 0));
+  font-weight: var(--nat-table-font-weight-sub-header, var(--sys-nat-table-font-weight-sub-header, 600));
+  color: var(--nat-table-sub-header-color, var(--sys-nat-table-sub-header-color, currentColor));
+  background: var(--nat-table-sub-header-background, var(--sys-nat-table-sub-header-background, transparent));
+}
+
 .list-item {
   position: relative;
   display: grid;

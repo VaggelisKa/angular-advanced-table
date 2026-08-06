@@ -20,6 +20,8 @@ export type { NatTableRowActivateEvent, NatTableRowIdGetter } from './row.type';
 
 export type { NatTableSortIndicatorContext } from './sort.type';
 
+export type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from './sub-header.type';
+
 export type { NatTableMode, NatTableModeConfiguration, NatTableUiState, NatTableUserState } from './table-state.type';
 
 export type { NatTableUiController } from './ui-controller.type';
