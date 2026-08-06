@@ -19,9 +19,3 @@
   width: 100%;
   min-width: 0;
 }
-
-.demo-hint {
-  max-width: 70ch;
-  margin-block: 0 1rem;
-  color: var(--sc-text-soft);
-}

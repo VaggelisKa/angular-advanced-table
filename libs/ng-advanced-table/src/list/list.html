@@ -20,7 +20,21 @@
              so column order and visibility changes re-render the fields. -->
         @let listColumns = visibleColumns();
         @let headerContexts = leafHeaderContexts();
+        @let groups = subHeaderGroups();
         @for (row of bodyRows(); track row.id; let itemIndex = $index) {
+          @let subHeader = groups.get(row.id);
+          @if (subHeader) {
+            <li class="list-sub-header" data-testid="nat-list-sub-header">
+              @if (getSubHeaderAriaText(subHeader); as ariaText) {
+                <span class="sr-only">{{ ariaText }}</span>
+              }
+              @if (subHeaderTemplateRef(); as templateRef) {
+                <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
+              } @else {
+                <span aria-hidden="true">{{ subHeader.value }}</span>
+              }
+            </li>
+          }
           <li
             [attr.data-row-id]="row.id"
             [attr.data-selected]="rowSelectedAttribute(row)"

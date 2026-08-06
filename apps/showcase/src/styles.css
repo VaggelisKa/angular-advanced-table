@@ -666,8 +666,8 @@ input {
     --nat-table-letter-spacing-pager: 0;
 
     /* Spacing */
-    --nat-table-space-card: 18px 22px;
-    --nat-table-space-card-compact: 14px 16px;
+    --nat-table-space-card: 0;
+    --nat-table-space-card-compact: 0;
     --nat-table-space-controls-gap: 16px;
     --nat-table-space-control-block-gap: 12px;
     --nat-table-space-toolbar-gap: 14px;

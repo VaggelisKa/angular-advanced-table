@@ -11,8 +11,13 @@ import { pluralize } from './pluralize.const';
  */
 export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
   NatTableAccessibilityText,
-  'listSummary' | 'listColumnVisibilityChange' | 'listPageSizeChange' | 'listPageChange'
+  'listSummary' | 'listColumnVisibilityChange' | 'listPageSizeChange' | 'listPageChange' | 'listSubHeaderRow'
 > = {
+  listSubHeaderRow: ({ valueText, rowCountValue, rowCountText }) => {
+    const groupLabel = valueText.trim() ? `${valueText} group` : 'Group';
+
+    return `${groupLabel}, ${rowCountText} ${pluralize('item', rowCountValue)}.`;
+  },
   listSummary: ({
     filterState,
     pageCountText,

@@ -137,8 +137,26 @@
       @let rows = bodyRows();
       @switch (bodyState()) {
         @case ('rows') {
+          @let groups = subHeaderGroups();
           @for (row of rows; track row.id) {
             @let visibleCells = row.getVisibleCells();
+            @let subHeader = groups.get(row.id);
+            @if (subHeader) {
+              <tr class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
+                <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
+                  <div class="sub-header-content">
+                    @if (getSubHeaderAriaText(subHeader); as ariaText) {
+                      <span class="sr-only">{{ ariaText }}</span>
+                    }
+                    @if (subHeaderTemplateRef(); as templateRef) {
+                      <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
+                    } @else {
+                      <span aria-hidden="true">{{ subHeader.value }}</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
             <tr
               [attr.aria-selected]="rowAriaSelected(row)"
               [natTableRowRenderEmitter]="row.id"

@@ -151,6 +151,18 @@ export type NatTableAccessibilityColumnResizeAnnouncementContext = {
   readonly atMaximum?: boolean;
 };
 
+/** Context passed to custom sub-header row announcement formatters. */
+export type NatTableAccessibilitySubHeaderContext = {
+  /** Raw sub-header group value. */
+  readonly value: unknown;
+  /** Human-readable text for `value` (empty for null/undefined). */
+  readonly valueText: string;
+  /** Rows in the group across the filtered dataset, ignoring pagination. */
+  readonly rowCountValue: number;
+  /** Provider-formatted text for `rowCountValue`. */
+  readonly rowCountText: string;
+};
+
 /** Context passed to custom row-selection announcement formatters. */
 export type NatTableAccessibilitySelectionAnnouncementContext = {
   /** Number of currently selected rows. */
@@ -235,6 +247,13 @@ export type NatTableAccessibilityText = {
   readonly columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
   /** Live announcement emitted when the row selection changes. */
   readonly selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
+  /** Screen-reader text rendered for a table sub-header group row. */
+  readonly subHeaderRow?: (context: NatTableAccessibilitySubHeaderContext) => string;
+  /**
+   * Screen-reader text rendered for a list sub-header group item. Receives the
+   * same context as `subHeaderRow`; the default phrases it as items.
+   */
+  readonly listSubHeaderRow?: (context: NatTableAccessibilitySubHeaderContext) => string;
 };
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */

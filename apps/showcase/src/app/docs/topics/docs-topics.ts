@@ -2,7 +2,11 @@
 import type { DocsCodeSnippet, DocsTopicContent } from './docs-topic.type';
 import { ThemingShowcase } from './theming-showcase';
 import { KeyboardInteraction } from '../demos/keyboard-interaction/keyboard-interaction';
+import { ListControls } from '../demos/list/list-controls';
+import { ListCustomCells } from '../demos/list/list-custom-cells';
+import { ListDataStates } from '../demos/list/list-data-states';
 import { ListRenderer } from '../demos/list/list-renderer';
+import { ListSelection } from '../demos/list/list-selection';
 import { Pagination } from '../demos/pagination/pagination';
 import { Pinning } from '../demos/pinning/pinning';
 import { Reordering } from '../demos/reordering/reordering';
@@ -14,6 +18,7 @@ import { SimpleSorting } from '../demos/simple-sorting/simple-sorting';
 import { Sorting } from '../demos/sorting/sorting';
 import { States } from '../demos/states/states';
 import { StickyHeader } from '../demos/sticky-header/sticky-header';
+import { SubHeaderRows } from '../demos/sub-header-rows/sub-header-rows';
 import { Toolbar } from '../demos/toolbar/toolbar';
 import { Visibility } from '../demos/visibility/visibility';
 
@@ -275,13 +280,15 @@ const listRendererSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [enableSorting]="true" [(state)]="state">
-  @if (view() === 'table') {
-    <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
-  } @else {
+@if (view() === 'list') {
+  <nat-table-surface [(state)]="state">
     <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
-  }
-</nat-table-surface>
+  </nat-table-surface>
+} @else {
+  <nat-table-surface [(state)]="state">
+    <nat-table [columns]="columns" [data]="rows" accessibleName="Orders" />
+  </nat-table-surface>
+}
 `
   ),
   snippet(
@@ -292,9 +299,18 @@ const listRendererSnippets = [
 protected readonly view = signal<'table' | 'list'>('list');
 protected readonly state = signal<Partial<NatTableUserState>>({});
 
-// The list has no header UI — sorting is written through the surface state.
-protected toggleSortByTotal(): void {
-  const sorting = this.isSortedByTotal() ? [] : [{ id: 'total', desc: true }];
+// The list has no header UI — sorting is written through the surface state,
+// so it survives swapping the renderer. The demo button cycles
+// not sorted → descending → ascending and mirrors the direction (↕ / ↓ / ↑).
+protected cycleSortByTotal(): void {
+  const direction = this.sortDirection();
+  let sorting: NatTableUserState['sorting'] = [];
+
+  if (direction === null) {
+    sorting = [{ id: 'total', desc: true }];
+  } else if (direction === 'desc') {
+    sorting = [{ id: 'total', desc: false }];
+  }
 
   this.state.update((current) => ({ ...current, sorting }));
 }
@@ -310,6 +326,225 @@ nat-list {
   --nat-table-list-item-columns: minmax(0, 1fr) auto;
   --nat-table-list-item-areas: 'id total' 'customer status';
 }
+`
+  )
+];
+
+const subHeaderRowsSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface [(state)]="state">
+  <nat-table
+    [columns]="columns"
+    [data]="rows"
+    [subHeaderOrder]="useStatusOrder() ? statusOrder : undefined"
+    accessibleName="Orders grouped by status"
+    subHeaderColumn="status">
+    <ng-template let-count="rowCountValue" let-value natTableSubHeader>
+      <span class="sub-header-demo-label">{{ value }}</span>
+      <span class="sub-header-demo-count">{{ count }} orders</span>
+    </ng-template>
+  </nat-table>
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+protected readonly statusOrder: readonly string[] = ['Ready', 'Review', 'Queued'];
+protected readonly state = signal<Partial<NatTableUserState>>({});
+
+// User sorting stays the visible sort and applies within groups — the forced
+// group sort never appears in the surface state. The demo button cycles
+// not sorted → descending → ascending and mirrors the direction (↕ / ↓ / ↑).
+protected cycleSortByTotal(): void {
+  const direction = this.sortDirection();
+  let sorting: NatTableUserState['sorting'] = [];
+
+  if (direction === null) {
+    sorting = [{ id: 'total', desc: true }];
+  } else if (direction === 'desc') {
+    sorting = [{ id: 'total', desc: false }];
+  }
+
+  this.state.update((current) => ({ ...current, sorting }));
+}
+`
+  ),
+  snippet(
+    'css',
+    'CSS',
+    'css',
+    `
+nat-table,
+nat-list {
+  --nat-table-sub-header-background: color-mix(in srgb, currentcolor 6%, transparent);
+  --nat-table-font-weight-sub-header: 600;
+}
+`
+  )
+];
+
+const listCustomCellsSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<!-- The list renders cells through the same flexRender pipeline as the table. -->
+<ng-template #totalTemplate let-context>
+  <strong>{{ context.getValue() | currency }}</strong>
+</ng-template>
+
+<nat-table-surface>
+  <nat-list [columns]="columns()" [data]="rows" accessibleName="Orders" />
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+private readonly totalTemplate = viewChild<TemplateRef<unknown>>('totalTemplate');
+
+protected readonly columns = computed<ColumnDef<Order, unknown>[]>(() => [
+  // 1. Text: return a string from the cell def.
+  { accessorKey: 'customer', header: 'Customer', meta: { label: 'Customer' }, cell: (info) => info.getValue<string>() },
+
+  // 2. Component: flexRenderComponent with typed inputs.
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    meta: { label: 'Status' },
+    cell: (info) => flexRenderComponent(OrderStatusBadge, { inputs: { status: info.getValue() } })
+  },
+
+  // 3. Template: return a TemplateRef; the cell context is the template's $implicit.
+  { accessorKey: 'total', header: 'Total', meta: { label: 'Total' }, cell: () => this.totalTemplate() }
+]);
+`
+  )
+];
+
+const listDataStatesSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<!-- dataStatus drives the built-in loading, empty, and error list items. -->
+<nat-table-surface>
+  <nat-list [columns]="columns" [data]="rows()" [dataStatus]="dataStatus()" accessibleName="Orders" />
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+// The consumer owns fetching, retries, and error handling; the list only
+// renders the state you hand it.
+protected readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.loading);
+protected readonly rows = signal<Order[]>([]);
+
+private async load(): Promise<void> {
+  this.dataStatus.set(NAT_TABLE_DATA_STATUS.loading);
+
+  try {
+    this.rows.set(await this.api.fetchOrders());
+    this.dataStatus.set(NAT_TABLE_DATA_STATUS.success);
+  } catch {
+    this.dataStatus.set(NAT_TABLE_DATA_STATUS.error);
+  }
+}
+`
+  ),
+  snippet(
+    'css',
+    'CSS',
+    'css',
+    `
+/* All three states share one base shape; shared tokens restyle them together. */
+nat-list {
+  --nat-table-list-state-justify: center;
+  --nat-table-list-state-min-height: 8rem;
+}
+`
+  )
+];
+
+const listSelectionSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<!-- Same selection engine as the table: enable it, add a selection column. -->
+<nat-table-surface [(state)]="state">
+  <nat-list [columns]="columns" [data]="rows" [enableRowSelection]="true" accessibleName="Orders" />
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+// withNatTableSelectionColumn renders a real checkbox per item. Its header is
+// the select-all checkbox, which a list would otherwise repeat as the field
+// label, so give the column a screen-reader-only label instead.
+protected readonly columns = withNatTableSelectionColumn(orderColumns, { columnId: 'select' }).map((column) =>
+  column.id === 'select' ? { ...column, meta: { ...column.meta, hiddenHeaderLabel: 'Select order' } } : column
+);
+
+// Selection lives in the shared surface state, so it reads back like any slice.
+protected readonly selectedCount = computed(() => Object.values(this.state().rowSelection ?? {}).filter(Boolean).length);
+`
+  ),
+  snippet(
+    'css',
+    'CSS',
+    'css',
+    `
+/* Selected items expose data-selected for styling. */
+nat-list {
+  --nat-table-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent);
+}
+`
+  )
+];
+
+const listControlsSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<!-- Companion controls resolve the list as their controller — nothing list-specific. -->
+<nat-table-surface [(state)]="state">
+  <nat-table-column-visibility label="Fields" />
+
+  <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" />
+
+  <nat-table-pagination [pageSizeOptions]="[5, 10, 20]" />
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+// Mounting the pagination companion registers pagination on the surface, and
+// the shared engine pages the list. Column-visibility chips toggle fields.
+protected readonly state = signal<Partial<NatTableUserState>>({});
 `
   )
 ];
@@ -598,7 +833,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     related: [
       { label: 'State', path: '/docs/state' },
       { label: 'Column layout', path: '/docs/column-layout' },
-      { label: 'Responsive capabilities', path: '/docs/responsive-capabilities' }
+      { label: 'Responsive capabilities', path: '/docs/responsive-capabilities' },
+      { label: 'Sub-header rows', path: '/docs/sub-header-rows' }
     ]
   },
   {
@@ -737,6 +973,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Composition', path: '#composition' },
       { label: 'Field labels', path: '#field-labels' },
       { label: 'Shared state and companion controls', path: '#shared-state-and-companion-controls' },
+      { label: 'Sub-header rows', path: '#sub-header-rows' },
       { label: 'Selection and activation', path: '#selection-and-activation' },
       { label: 'Data lifecycle', path: '#data-lifecycle' },
       { label: 'Item layout and theming', path: '#item-layout-and-theming' },
@@ -752,11 +989,75 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         description: 'Sorting written through the surface state survives swapping between the table and list renderers.',
         component: ListRenderer,
         snippets: listRendererSnippets
+      },
+      {
+        kind: 'example',
+        id: 'list-custom-cells',
+        title: 'Custom cells and field values',
+        description: 'Text, component, and template cells all render through the same flexRender pipeline the table uses.',
+        component: ListCustomCells,
+        snippets: listCustomCellsSnippets
+      },
+      {
+        kind: 'example',
+        id: 'list-data-states',
+        title: 'Loading, empty, and error items',
+        description: 'dataStatus drives the built-in list state items; fetching and retry handling stay consumer-owned.',
+        component: ListDataStates,
+        snippets: listDataStatesSnippets
+      },
+      {
+        kind: 'example',
+        id: 'list-selection',
+        title: 'Row selection',
+        description: 'The shared selection slice and withNatTableSelectionColumn render a real checkbox per list item.',
+        component: ListSelection,
+        snippets: listSelectionSnippets
+      },
+      {
+        kind: 'example',
+        id: 'list-controls',
+        title: 'Companion controls',
+        description: 'Pagination and column-visibility companions resolve the list as their controller unchanged.',
+        component: ListControls,
+        snippets: listControlsSnippets
       }
     ],
     related: [
       { label: 'Composition', path: '/docs/composition' },
       { label: 'State', path: '/docs/state' },
+      { label: 'Sub-header rows', path: '/docs/sub-header-rows' },
+      { label: 'Theming', path: '/docs/theming' },
+      { label: 'Table-to-list gallery', path: '/examples/table-to-list' }
+    ]
+  },
+  {
+    id: 'sub-header-rows',
+    contents: [
+      { label: 'When to use sub-headers', path: '#when-to-use-sub-headers' },
+      { label: 'Composition', path: '#composition' },
+      { label: 'Sorting semantics', path: '#sorting-semantics' },
+      { label: 'Custom group order', path: '#custom-group-order' },
+      { label: 'Custom sub-header content', path: '#custom-sub-header-content' },
+      { label: 'Pagination and pinned columns', path: '#pagination-and-pinned-columns' },
+      { label: 'Accessibility', path: '#accessibility' },
+      { label: 'Styling', path: '#styling' }
+    ],
+    blocks: [
+      { kind: 'markdown', id: 'sub-header-rows-prose', markdownPath: '/docs/sub-header-rows.md' },
+      {
+        kind: 'example',
+        id: 'sub-header-rows',
+        title: 'Rows grouped by status',
+        description:
+          'A hidden forced sort keeps groups contiguous in both renderers while user sorting stays visible and applies within groups.',
+        component: SubHeaderRows,
+        snippets: subHeaderRowsSnippets
+      }
+    ],
+    related: [
+      { label: 'Sorting', path: '/docs/sorting' },
+      { label: 'List renderer', path: '/docs/list-renderer' },
       { label: 'Theming', path: '/docs/theming' }
     ]
   },

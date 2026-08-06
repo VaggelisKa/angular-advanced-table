@@ -1,0 +1,7 @@
+<nat-table-surface [(state)]="state">
+  <nat-table-column-visibility class="list-controls-visibility" label="Fields" />
+
+  <nat-list [columns]="columns" [data]="rows" accessibleName="Paginated orders list" />
+
+  <nat-table-pagination [pageSizeOptions]="[5, 10, 20]" />
+</nat-table-surface>

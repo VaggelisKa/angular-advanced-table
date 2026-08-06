@@ -3,12 +3,26 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+  justify-content: space-between;
   margin-block-end: 14px;
 }
 
 .list-demo-toggle {
   display: flex;
   gap: 6px;
+}
+
+/* Active accent for toggled demo controls (renderer choice, sort). */
+.list-demo-controls .btn.is-active {
+  color: var(--sc-accent-strong);
+  background: var(--sc-accent-soft);
+}
+
+.list-demo-sort-arrow {
+  display: inline-block;
+  min-width: 1em;
+  font-size: 0.9em;
+  text-align: center;
 }
 
 /* Named field areas: area names are the column ids from the shared defs. */
