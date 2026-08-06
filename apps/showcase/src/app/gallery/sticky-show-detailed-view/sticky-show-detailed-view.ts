@@ -82,17 +82,23 @@ export class StickyShowDetailedView {
     }
   });
 
-  protected openDetail(type: string): void {
+  protected openDetail(type: string, event?: Event): void {
     if (type === 'dialog') {
       // CDK owns focus trapping, Escape/backdrop dismissal, scroll blocking,
       // background aria-hidden management, and focus restore on close.
       // Closing an already-closed ref is a no-op, so the ref may go stale
       // after Escape/backdrop dismissal without needing a closed-subscription.
+      // Restore focus to the clicked trigger explicitly: Safari and Firefox on
+      // macOS do not focus buttons on click, so CDK's default (the previously
+      // focused element) would restore to `body` there.
+      const trigger = event?.currentTarget;
+
       this.detailDialogRef = this.dialog.open(this.detailDialogTemplate(), {
         ariaLabel: 'Detailed order table',
         viewContainerRef: this.viewContainerRef,
         panelClass: 'sc-detail-dialog-panel',
-        backdropClass: 'sc-detail-dialog-backdrop'
+        backdropClass: 'sc-detail-dialog-backdrop',
+        restoreFocus: trigger instanceof HTMLElement ? trigger : true
       });
     } else {
       void this.router.navigate(['/examples/sticky-show-detailed-view/details']);

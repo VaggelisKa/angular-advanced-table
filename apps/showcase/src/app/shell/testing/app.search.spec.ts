@@ -156,6 +156,30 @@ describe('FEATURE: Docs search dialog', () => {
   });
 
   describe('GIVEN: the docs search dialog is open', () => {
+    describe('WHEN: Escape closes a dialog opened by the shortcut while nothing was focused', () => {
+      it('THEN: it restores focus to a visible search trigger instead of body', async () => {
+        const fixture = await createAppFixture();
+        const compiled = fixture.nativeElement as HTMLElement;
+
+        /* Mirrors Safari/Firefox on macOS, where clicking a button never
+           focuses it: the shortcut fires while `activeElement` is `body`. */
+        (document.activeElement as HTMLElement | null)?.blur();
+        expect(document.activeElement).toBe(document.body);
+
+        pressSearchShortcut();
+        await fixture.whenStable();
+
+        const input = getElement<HTMLInputElement>(document.body, '[data-testid="docs-search-input"]');
+
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true, cancelable: true }));
+        await fixture.whenStable();
+        await waitForFocusHandoff();
+
+        expect(queryDialog()).toBeNull();
+        expect(document.activeElement).toBe(getElement(compiled, '[data-testid="docs-search-trigger"]'));
+      });
+    });
+
     describe('WHEN: Escape is pressed inside the dialog', () => {
       it('THEN: it closes the dialog and restores focus to the trigger', async () => {
         const fixture = await createAppFixture();

@@ -16,7 +16,7 @@
         data-testid="docs-search-trigger-mobile"
         title="Search docs"
         type="button"
-        (click)="openSearch()"
+        (click)="openSearch($event)"
         (focus)="preloadSearch()"
         (pointerenter)="preloadSearch()">
         <svg aria-hidden="true" class="showcase-search-icon" focusable="false" viewBox="0 0 20 20">
@@ -76,7 +76,7 @@
     class="docs-search-trigger"
     data-testid="docs-search-trigger"
     type="button"
-    (click)="openSearch()"
+    (click)="openSearch($event)"
     (focus)="preloadSearch()"
     (pointerenter)="preloadSearch()">
     <svg aria-hidden="true" class="showcase-search-icon" focusable="false" viewBox="0 0 20 20">

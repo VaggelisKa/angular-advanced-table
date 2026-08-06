@@ -6,7 +6,7 @@ import { Component, DestroyRef, Injector, afterNextRender, inject, signal, viewC
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 
-import { isApplePlatform } from './app.util';
+import { isApplePlatform, resolveDialogOpener } from './app.util';
 import { ShowcaseWebMcp } from '../mcp/webmcp';
 import { DocsSearchDialog } from '../search/docs-search-dialog';
 import { DocsSearchStore } from '../search/docs-search.store';
@@ -85,16 +85,14 @@ export class App {
     this.openSearch();
   }
 
-  protected openSearch(): void {
+  protected openSearch(event?: Event): void {
     if (this.searchRef) {
       return;
     }
 
-    /* Capture the opener before the drawer closes: the drawer's dialog content
-       is destroyed on close, so `activeElement` would already have fallen back
-       to `body` afterwards. */
-    const activeElement = this.document.activeElement;
-    const opener = activeElement instanceof HTMLElement ? activeElement : null;
+    /* Captured before the drawer closes: the drawer's dialog content is
+       destroyed on close, so `activeElement` would already be `body` after. */
+    const opener = resolveDialogOpener(event?.currentTarget, this.document);
 
     /* The search dialog is the only modal on screen: a shortcut or drawer
        trigger press while the mobile nav drawer is open closes the drawer
@@ -177,7 +175,7 @@ export class App {
       this.mobileNavOpen.set(false);
 
       if (restoreFocus !== false) {
-        this.focusAfterRender(() => this.mobileMenuButton()?.nativeElement);
+        this.focusFirstAfterRender(() => [this.mobileMenuButton()?.nativeElement]);
       }
     });
   }
@@ -186,18 +184,19 @@ export class App {
     this.mobileNavRef?.close(restoreFocus);
   }
 
-  private focusAfterRender(getElement: () => HTMLElement | undefined): void {
-    afterNextRender({ write: () => getElement()?.focus() }, { injector: this.injector });
-  }
-
   private focusFirstAfterRender(getCandidates: () => readonly (HTMLElement | null | undefined)[]): void {
     afterNextRender(
       {
         write: () => {
           for (const candidate of getCandidates()) {
-            candidate?.focus();
+            /* `body` would trivially pass the check below without restoring anything. */
+            if (!candidate || candidate === this.document.body) {
+              continue;
+            }
 
-            if (candidate && this.document.activeElement === candidate) {
+            candidate.focus();
+
+            if (this.document.activeElement === candidate) {
               return;
             }
           }
