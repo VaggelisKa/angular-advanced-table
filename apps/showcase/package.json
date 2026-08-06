@@ -129,7 +129,15 @@
           "cwd": "{workspaceRoot}"
         }
       },
+      "lint": {
+        "dependsOn": [
+          "generate-docs"
+        ]
+      },
       "serve": {
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:dev-server",
         "continuous": true,
         "configurations": {
@@ -143,6 +151,9 @@
         "defaultConfiguration": "development"
       },
       "serve-e2e": {
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:dev-server",
         "configurations": {
           "production": {

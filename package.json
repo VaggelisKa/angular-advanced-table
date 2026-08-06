@@ -4,6 +4,7 @@
   "description": "Workspace for the ng-advanced-table Angular libraries and showcase application.",
   "license": "MIT",
   "scripts": {
+    "postinstall": "node tools/generate-showcase-docs.mjs",
     "start": "nx serve showcase",
     "build": "nx build showcase",
     "build:showcase": "nx build showcase",
