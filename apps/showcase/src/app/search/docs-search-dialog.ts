@@ -60,6 +60,7 @@ export class DocsSearchDialog {
 
   public constructor() {
     this.store.preloadCorpus();
+    this.lockBodyScroll();
 
     afterNextRender({ write: () => this.searchInput()?.nativeElement.focus() });
 
@@ -137,6 +138,18 @@ export class DocsSearchDialog {
       }
     });
     this.close(false);
+  }
+
+  /* Touch scrolls on the dialog chain to the page behind it even while that
+     page is inert, so the body scrollbar is parked until the dialog closes. */
+  private lockBodyScroll(): void {
+    const body = this.document.body;
+    const previousOverflow = body.style.overflow;
+
+    body.style.overflow = 'hidden';
+    this.destroyRef.onDestroy(() => {
+      body.style.overflow = previousOverflow;
+    });
   }
 
   private scheduleAnnouncement(active: boolean, count: number): void {

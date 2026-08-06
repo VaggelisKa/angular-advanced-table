@@ -32,6 +32,11 @@
       (input)="onQueryInput($event)"
       (keydown)="onInputKeydown($event)" />
     <kbd aria-hidden="true" class="docs-search-esc-hint">Esc</kbd>
+    <button aria-label="Close search" class="docs-search-close" data-testid="docs-search-close" type="button" (click)="close(true)">
+      <svg aria-hidden="true" class="docs-search-close-icon" focusable="false" viewBox="0 0 20 20">
+        <path d="m5.5 5.5 9 9m0-9-9 9" />
+      </svg>
+    </button>
   </div>
 
   @if (showListbox()) {

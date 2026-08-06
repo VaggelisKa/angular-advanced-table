@@ -68,4 +68,56 @@ test.describe('FEATURE: Docs search', () => {
       });
     });
   });
+
+  test.describe('GIVEN: the showcase shell is loaded on a phone-sized touch viewport', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+    test.describe('WHEN: searching from the mobile header trigger', () => {
+      test('THEN: it opens fullscreen, locks the page behind it, and closes from the close button', async ({ page }) => {
+        const dialog = page.getByTestId('docs-search-dialog');
+        const trigger = page.getByTestId('docs-search-trigger-mobile');
+
+        await test.step('THEN: it opens fullscreen without a backdrop', async () => {
+          await trigger.tap();
+          await expect(dialog).toBeVisible();
+          await expect(page.getByTestId('docs-search-backdrop')).toBeHidden();
+
+          const dialogBox = await dialog.boundingBox();
+
+          expect(dialogBox).toEqual(expect.objectContaining({ x: 0, y: 0, width: 390, height: 844 }));
+        });
+
+        await test.step('THEN: it keeps the page behind locked and the input zoom-safe', async () => {
+          await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+
+          const inputFontSize = await page
+            .getByTestId('docs-search-input')
+            .evaluate((element) => window.getComputedStyle(element).fontSize);
+
+          expect(Number.parseFloat(inputFontSize)).toBeGreaterThanOrEqual(16);
+        });
+
+        await test.step('THEN: it scrolls results inside the dialog, not the page', async () => {
+          await page.getByTestId('docs-search-input').fill('table');
+          await expect(page.getByTestId('docs-search-option').first()).toBeVisible();
+
+          await page.getByTestId('docs-search-listbox').hover();
+          await page.mouse.wheel(0, 400);
+
+          const pageScroll = await page.evaluate(() => window.scrollY);
+
+          expect(pageScroll).toBe(0);
+        });
+
+        await test.step('THEN: it closes from the visible close button and restores page scroll', async () => {
+          const closeButton = page.getByTestId('docs-search-close');
+
+          await expect(closeButton).toBeVisible();
+          await closeButton.tap();
+          await expect(dialog).toBeHidden();
+          await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
+        });
+      });
+    });
+  });
 });

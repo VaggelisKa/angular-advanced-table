@@ -86,4 +86,20 @@ test.describe('FEATURE: Docs search accessibility', () => {
       });
     });
   });
+
+  test.describe('GIVEN: the docs search dialog is fullscreen on a phone-sized touch viewport', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+    test.describe('WHEN: scanning the fullscreen results state with axe-core', () => {
+      test('THEN: it has no WCAG A/AA violations and exposes an accessible close control', async ({ page }) => {
+        await page.getByTestId('docs-search-trigger-mobile').tap();
+        await page.getByTestId('docs-search-input').fill('pinning');
+        await expect(page.getByTestId('docs-search-option').first()).toBeVisible();
+        await waitForDialogEnterAnimations(page);
+
+        await expect(page.getByRole('button', { name: 'Close search' })).toBeVisible();
+        await expectNoAxeViolations(page);
+      });
+    });
+  });
 });

@@ -171,5 +171,48 @@ describe('FEATURE: Docs search dialog', () => {
         expect(getElement(compiled, 'main.showcase-content').hasAttribute('inert')).toBe(false);
       });
     });
+
+    describe('WHEN: the close button is tapped', () => {
+      it('THEN: it closes the dialog and restores focus to the trigger', async () => {
+        const fixture = await createAppFixture();
+        const compiled = fixture.nativeElement as HTMLElement;
+        const trigger = getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-trigger"]');
+
+        trigger.focus();
+        trigger.click();
+        await fixture.whenStable();
+        await waitForFocusHandoff();
+
+        getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-close"]').click();
+        await fixture.whenStable();
+        await waitForFocusHandoff();
+
+        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
+        expect(document.activeElement).toBe(trigger);
+      });
+    });
+
+    describe('WHEN: the dialog opens and later closes', () => {
+      it('THEN: it locks body scroll while open and restores it on close', async () => {
+        const fixture = await createAppFixture();
+        const compiled = fixture.nativeElement as HTMLElement;
+        const trigger = getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-trigger"]');
+
+        expect(document.body.style.overflow).toBe('');
+
+        trigger.focus();
+        trigger.click();
+        await fixture.whenStable();
+        await waitForFocusHandoff();
+
+        expect(document.body.style.overflow).toBe('hidden');
+
+        getElement<HTMLElement>(compiled, '[data-testid="docs-search-backdrop"]').click();
+        await fixture.whenStable();
+
+        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
+        expect(document.body.style.overflow).toBe('');
+      });
+    });
   });
 });
