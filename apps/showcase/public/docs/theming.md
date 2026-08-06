@@ -149,6 +149,10 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-space-cell-x`                | Cell inline padding (shared base)                                               |
 | `--nat-table-space-header-cell-x`         | Header cell inline padding (falls back to `--nat-table-space-cell-x`)           |
 | `--nat-table-space-data-cell-x`           | Data cell inline padding (falls back to `--nat-table-space-cell-x`)             |
+| `--nat-table-sub-header-background`       | Sub-header (group) row background (table and list)                              |
+| `--nat-table-sub-header-color`            | Sub-header (group) row text color (table and list)                              |
+| `--nat-table-space-sub-header`            | Sub-header (group) row padding (table and list)                                 |
+| `--nat-table-font-weight-sub-header`      | Sub-header (group) row font weight (table and list)                             |
 
 Set the border-width tokens to `0` when a design needs to remove the outer table boundary or internal dividers.
 
@@ -198,15 +202,15 @@ Each state item also carries a `data-state` attribute (`loading`, `empty`, or `e
 
 `ng-advanced-table/components` controls consume the same theme. Common groups include:
 
-| Group          | Common tokens                                                                                                                                  |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Surface        | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-shadow`, `--nat-table-radius-card`, `--nat-table-space-card` |
-| Controls       | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-space-control-block-gap`                                           |
-| Chips          | `--nat-table-chip-background`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-radius-chip`                |
-| Pager          | `--nat-table-pager-background`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-min-height`                    |
-| Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-pin-color-pinned`                                       |
-| Motion         | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-disabled-opacity`                                                 |
-| Stacking       | `--nat-table-z-index-sticky-header`, `--nat-table-z-index-pinned-cell`, `--nat-table-z-index-drag-preview`                                     |
+| Group          | Common tokens                                                                                                                                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Surface        | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-shadow`, `--nat-table-radius-card`, `--nat-table-space-card`, `--nat-table-space-card-list` (padding when a list renderer is projected; defaults to `0`) |
+| Controls       | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-space-control-block-gap`                                                                                                                                       |
+| Chips          | `--nat-table-chip-background`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-radius-chip`                                                                                                            |
+| Pager          | `--nat-table-pager-background`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-min-height`                                                                                                                |
+| Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-pin-color-pinned`                                                                                                                                   |
+| Motion         | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-disabled-opacity`                                                                                                                                             |
+| Stacking       | `--nat-table-z-index-sticky-header`, `--nat-table-z-index-pinned-cell`, `--nat-table-z-index-drag-preview`                                                                                                                                 |
 
 Reach for these direct tokens when a table control needs a local exception.
 
@@ -269,8 +273,8 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 | `--nat-table-radius-region`           | `8px`                                                                                   |
 | `--nat-table-radius-input`            | `6px`                                                                                   |
 | `--nat-table-radius-chip`             | `6px`                                                                                   |
-| `--nat-table-space-card`              | `18px 22px`                                                                             |
-| `--nat-table-space-card-compact`      | `14px 16px`                                                                             |
+| `--nat-table-space-card`              | `0`                                                                                     |
+| `--nat-table-space-card-compact`      | `0`                                                                                     |
 | `--nat-table-space-control-block-gap` | `12px`                                                                                  |
 | `--nat-table-space-chip-row-gap`      | `10px`                                                                                  |
 | `--nat-table-chip-background`         | `var(--nat-table-color-surface)`                                                        |

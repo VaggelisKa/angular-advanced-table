@@ -1,12 +1,74 @@
-<section [attr.aria-label]="heading()" class="demo-code">
-  <h2 class="demo-code-title">{{ heading() }}</h2>
-  @if (markup().trim()) {
-    <pre class="demo-code-block" tabindex="0"><code #codeEl class="language-markup">{{ markup() }}</code></pre>
-  }
-  @if (typescript().trim()) {
-    <pre class="demo-code-block" tabindex="0"><code #codeEl class="language-typescript">{{ typescript() }}</code></pre>
-  }
-  @if (css().trim()) {
-    <pre class="demo-code-block" tabindex="0"><code #codeEl class="language-css">{{ css() }}</code></pre>
-  }
+<section aria-label="Example" class="demo-example">
+  <div class="demo-example-header">
+    <div aria-label="Example view" class="demo-example-tabs" role="tablist">
+      <button
+        [attr.aria-controls]="`${demoId}-preview-panel`"
+        [attr.aria-selected]="activePanel() === 'preview'"
+        [id]="`${demoId}-preview-tab`"
+        class="demo-example-tab"
+        role="tab"
+        type="button"
+        (click)="activePanel.set('preview')"
+        (keydown)="switchPanelFromKeyboard($event, 'preview')">
+        Preview
+      </button>
+      <button
+        [attr.aria-controls]="`${demoId}-code-panel`"
+        [attr.aria-selected]="activePanel() === 'code'"
+        [id]="`${demoId}-code-tab`"
+        class="demo-example-tab"
+        role="tab"
+        type="button"
+        (click)="activePanel.set('code')"
+        (keydown)="switchPanelFromKeyboard($event, 'code')">
+        Code
+      </button>
+    </div>
+  </div>
+
+  <div
+    [attr.aria-labelledby]="`${demoId}-preview-tab`"
+    [hidden]="activePanel() !== 'preview'"
+    [id]="`${demoId}-preview-panel`"
+    class="demo-example-panel"
+    role="tabpanel">
+    <ng-content />
+  </div>
+
+  <div
+    [attr.aria-labelledby]="`${demoId}-code-tab`"
+    [hidden]="activePanel() !== 'code'"
+    [id]="`${demoId}-code-panel`"
+    class="demo-example-panel demo-example-code-panel"
+    role="tabpanel">
+    @if (snippets().length > 1) {
+      <div aria-label="Example source files" class="demo-code-tabs" role="tablist">
+        @for (snippet of snippets(); track snippet.id) {
+          <button
+            [attr.aria-controls]="snippetPanelId(snippet)"
+            [attr.aria-selected]="selectedSnippetId() === snippet.id"
+            [id]="snippetTabId(snippet)"
+            class="demo-code-tab"
+            role="tab"
+            type="button"
+            (click)="activeSnippetId.set(snippet.id)"
+            (keydown)="switchSnippetFromKeyboard($event, snippet.id)">
+            {{ snippet.label }}
+          </button>
+        }
+      </div>
+    }
+    @for (snippet of snippets(); track snippet.id) {
+      <div
+        [attr.aria-labelledby]="$count > 1 ? snippetTabId(snippet) : null"
+        [hidden]="selectedSnippetId() !== snippet.id"
+        [id]="snippetPanelId(snippet)"
+        class="demo-code-snippet-panel"
+        role="tabpanel">
+        <pre
+          class="demo-code-block"
+          tabindex="0"><code #codeEl [class]="`language-${snippet.language}`">{{ snippet.code }}</code></pre>
+      </div>
+    }
+  </div>
 </section>

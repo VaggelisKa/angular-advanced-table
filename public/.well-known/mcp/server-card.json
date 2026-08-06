@@ -112,6 +112,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/sub-header-rows",
+      "name": "docs-sub-header-rows",
+      "title": "Sub-header rows | Angular Advanced Table Docs",
+      "description": "Group rows under a column-driven header",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/row-selection",
       "name": "docs-row-selection",
       "title": "Row selection | Angular Advanced Table Docs",

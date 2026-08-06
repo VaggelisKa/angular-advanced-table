@@ -1,49 +1,42 @@
 <main class="showcase-page sc-demo-page">
-  <p class="demo-hint">
-    One surface, one shared state, two column configs: the table renders the full column set with headers while the list renders a
-    condensed card config (order, customer, status, total) with no visible field labels — the labels move to
-    <code>meta.hiddenHeaderLabel</code>, so they stay screen-reader-only in the list. Sort a shared column in the table, toggle to the
-    list, and the sort keeps applying.
-  </p>
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs">
+    <section aria-label="Demo controls" class="demo-controls">
+      <div aria-label="View mode" class="control-group" role="group">
+        <button
+          [attr.aria-pressed]="view() === 'table'"
+          [class.is-active]="view() === 'table'"
+          data-testid="view-toggle-table"
+          type="button"
+          (click)="view.set('table')">
+          Table
+        </button>
+        <button
+          [attr.aria-pressed]="view() === 'list'"
+          [class.is-active]="view() === 'list'"
+          data-testid="view-toggle-list"
+          type="button"
+          (click)="view.set('list')">
+          List
+        </button>
+      </div>
+    </section>
 
-  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
-
-  <section aria-label="Demo controls" class="demo-controls">
-    <div aria-label="View mode" class="control-group" role="group">
-      <button
-        [attr.aria-pressed]="view() === 'table'"
-        [class.is-active]="view() === 'table'"
-        data-testid="view-toggle-table"
-        type="button"
-        (click)="view.set('table')">
-        Table
-      </button>
-      <button
-        [attr.aria-pressed]="view() === 'list'"
-        [class.is-active]="view() === 'list'"
-        data-testid="view-toggle-list"
-        type="button"
-        (click)="view.set('list')">
-        List
-      </button>
-    </div>
-  </section>
-
-  <nat-table-surface [enableSorting]="true" [(state)]="state">
-    @if (view() === 'table') {
-      <nat-table
-        [columns]="tableColumns"
-        [data]="rows"
-        [getRowId]="getRowId"
-        accessibleName="Orders table with the full column config"
-        class="sc-demo-table" />
-    } @else {
-      <nat-list
-        [columns]="listColumns"
-        [data]="rows"
-        [getRowId]="getRowId"
-        accessibleName="Orders list with a condensed column config"
-        class="sc-demo-list" />
-    }
-  </nat-table-surface>
+    <nat-table-surface [enableSorting]="true" [(state)]="state">
+      @if (view() === 'table') {
+        <nat-table
+          [columns]="tableColumns"
+          [data]="rows"
+          [getRowId]="getRowId"
+          accessibleName="Orders table with the full column config"
+          class="sc-demo-table" />
+      } @else {
+        <nat-list
+          [columns]="listColumns"
+          [data]="rows"
+          [getRowId]="getRowId"
+          accessibleName="Orders list with a condensed column config"
+          class="sc-demo-list" />
+      }
+    </nat-table-surface>
+  </app-demo-code>
 </main>

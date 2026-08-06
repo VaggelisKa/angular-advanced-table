@@ -1,0 +1,38 @@
+.sub-header-demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 14px;
+}
+
+.sub-header-demo-toggle,
+.sub-header-demo-state-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Active accent for toggled demo controls (renderer choice, workflow order, sort). */
+.sub-header-demo-controls .btn.is-active {
+  color: var(--sc-accent-strong);
+  background: var(--sc-accent-soft);
+}
+
+.sub-header-demo-sort-arrow {
+  display: inline-block;
+  min-width: 1em;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.sub-header-demo-label {
+  font-weight: 600;
+}
+
+.sub-header-demo-count {
+  margin-inline-start: 8px;
+  font-size: 0.85em;
+  opacity: 0.7;
+}

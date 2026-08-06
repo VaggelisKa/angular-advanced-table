@@ -1,0 +1,18 @@
+.list-selection-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 14px;
+}
+
+.list-selection-count {
+  margin: 0;
+  font-size: 0.9em;
+  opacity: 0.75;
+}
+
+/* Selected items expose data-selected for styling. */
+.list-selection-list {
+  --nat-table-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent);
+}

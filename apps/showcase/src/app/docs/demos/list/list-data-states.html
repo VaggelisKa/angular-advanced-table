@@ -1,0 +1,21 @@
+<div aria-label="Data scenario" class="list-states-controls" role="group">
+  @for (option of scenarios; track option.id) {
+    <button
+      [attr.aria-pressed]="scenario() === option.id"
+      [class.is-active]="scenario() === option.id"
+      class="btn btn-outline"
+      type="button"
+      (click)="scenario.set(option.id)">
+      {{ option.label }}
+    </button>
+  }
+</div>
+
+<nat-table-surface>
+  <nat-list
+    [columns]="columns"
+    [data]="rows()"
+    [dataStatus]="dataStatus()"
+    accessibleName="Orders across data lifecycle states"
+    class="list-states-list" />
+</nat-table-surface>

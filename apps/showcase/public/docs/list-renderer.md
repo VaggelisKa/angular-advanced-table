@@ -22,6 +22,8 @@ The smallest composition is a surface for the state scope and the list itself:
 
 `columns` accepts the same TanStack `ColumnDef` array the table uses. Column ids double as grid-area names for item layout (see Item Layout And Theming).
 
+Because list items draw their own chrome, the surface's card padding collapses to `0` around a projected list by default; set `--nat-table-space-card-list` to reopen it. Tables keep the regular `--nat-table-space-card` padding.
+
 ## Field Labels
 
 Each item renders one field per visible column, label first, value second:
@@ -30,7 +32,7 @@ Each item renders one field per visible column, label first, value second:
 - `meta.hiddenHeaderLabel` renders the label screen-reader-only — same contract as the table's hidden headers. Use it when the value is self-describing.
 - A non-string `header` def (component, template, or function) renders through `flexRender` as the field label.
 
-Values render through the same `flexRender` pipeline as table cells: strings, `flexRenderComponent`, and `TemplateRef` cells all work unchanged. Grid-coupled cell widgets (`ngGridCellWidget`) require the table's Aria grid context and cannot render inside a list.
+Values render through the same `flexRender` pipeline as table cells: strings, `flexRenderComponent`, and `TemplateRef` cells all work unchanged — the live example renders its status field with the same badge component the table cells use. Grid-coupled cell widgets (`ngGridCellWidget`) require the table's Aria grid context and cannot render inside a list.
 
 ## Shared State And Companion Controls
 
@@ -41,6 +43,10 @@ protected sortByTotal(): void {
   this.state.update((current) => ({ ...current, sorting: [{ id: 'total', desc: true }] }));
 }
 ```
+
+## Sub-Header Rows
+
+`subHeaderColumn` groups list items under sub-header items exactly as it groups table rows: the shared engine forces a hidden primary sort so groups stay contiguous, user sorting applies within groups, and each group renders an `<li class="list-sub-header">` announced with item-flavored copy. `subHeaderOrder`, the `natTableSubHeader` template, and the per-renderer `enableSubHeaders` gate all work identically. See Sub-header rows for the full semantics.
 
 ## Selection And Activation
 
@@ -73,7 +79,7 @@ The full token list (`--nat-table-list-*`, including the body-state tokens) is d
 ## Accessibility
 
 - `accessibleName` is required (the list takes no `caption`); dev mode warns when it is missing.
-- The list summary announces items and fields where the grid announces rows and columns, via the `listSummary`, `listColumnVisibilityChange`, `listPageSizeChange`, and `listPageChange` locale entries — each falls back to its grid counterpart when only that one is overridden.
+- The list summary announces items and fields where the grid announces rows and columns, via the `listSummary`, `listColumnVisibilityChange`, `listPageSizeChange`, `listPageChange`, and `listSubHeaderRow` locale entries — each falls back to its grid counterpart when only that one is overridden.
 - State changes (sorting, filtering, selection, pagination) are announced through the same live region as the table.
 
 ## Limitations

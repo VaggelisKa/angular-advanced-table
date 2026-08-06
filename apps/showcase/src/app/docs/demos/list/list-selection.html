@@ -1,0 +1,14 @@
+<div class="list-selection-controls">
+  <p aria-live="polite" class="list-selection-count">{{ selectedCount() }} selected</p>
+
+  <button [disabled]="selectedCount() === 0" class="btn btn-outline" type="button" (click)="clearSelection()">Clear selection</button>
+</div>
+
+<nat-table-surface [(state)]="state">
+  <nat-list
+    [columns]="columns"
+    [data]="rows"
+    [enableRowSelection]="true"
+    accessibleName="Selectable orders list"
+    class="list-selection-list" />
+</nat-table-surface>
