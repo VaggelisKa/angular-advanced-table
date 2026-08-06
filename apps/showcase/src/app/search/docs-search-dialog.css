@@ -190,6 +190,38 @@
   color: var(--sc-text-soft);
 }
 
+.docs-search-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  > .docs-search-hint {
+    padding-bottom: var(--sc-space-2);
+  }
+}
+
+.docs-search-retry {
+  padding: var(--sc-space-1) var(--sc-space-3);
+  margin: 0 var(--sc-space-4) var(--sc-space-5);
+  font: inherit;
+  font-size: var(--sc-text-sm);
+  color: var(--sc-text);
+  cursor: pointer;
+  background: var(--sc-surface-muted);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+
+  &:hover {
+    background: var(--sc-surface-hover);
+    border-color: var(--sc-border-strong);
+  }
+
+  &:focus-visible {
+    outline: var(--sc-focus-ring-width) solid var(--sc-focus);
+    outline-offset: var(--sc-focus-ring-offset);
+  }
+}
+
 @media (width <= 820px) {
   .docs-search-input {
     /* iOS Safari zooms the page when a focused input is smaller than 16px. */

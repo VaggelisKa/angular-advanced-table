@@ -79,3 +79,24 @@ export const getNextDocsSearchActiveIndex = (current: number, key: 'ArrowDown' |
 
   return current < 0 ? count - 1 : (current - 1 + count) % count;
 };
+
+/** Debounced live-region copy: failure wins, then result counts; null clears. */
+export const getDocsSearchAnnouncement = ({
+  active,
+  failed,
+  count
+}: {
+  active: boolean;
+  failed: boolean;
+  count: number;
+}): string | null => {
+  if (failed) {
+    return 'Search is unavailable';
+  }
+
+  if (!active) {
+    return null;
+  }
+
+  return count === 1 ? '1 result' : `${count} results`;
+};

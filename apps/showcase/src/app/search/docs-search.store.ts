@@ -30,9 +30,13 @@ export class DocsSearchStore {
   private readonly loadIndex = inject(DOCS_SEARCH_INDEX_LOADER);
   private corpusPromise: Promise<readonly DocsSearchCorpusEntry[]> | null = null;
   private readonly corpusState = signal<readonly DocsSearchCorpusEntry[] | null>(null);
+  private readonly corpusErrorState = signal(false);
 
   /** Null until the index chunk has loaded; the built corpus afterwards. */
   public readonly corpus = this.corpusState.asReadonly();
+
+  /** True while the last chunk download failed; cleared when a retry starts. */
+  public readonly corpusError = this.corpusErrorState.asReadonly();
 
   /** Fire-and-forget warm-up for trigger hover/focus, mirroring the nav tree's docs-page prefetch. */
   public preloadCorpus(): void {
@@ -50,6 +54,7 @@ export class DocsSearchStore {
     // in-flight chunk download (see NavTree.prefetchNavItem for the rationale).
     const removePendingTask = this.pendingTasks.add();
 
+    this.corpusErrorState.set(false);
     this.corpusPromise = this.loadIndex()
       .then(({ docsSearchIndex }) => {
         const corpus = buildDocsSearchCorpus({
@@ -67,6 +72,7 @@ export class DocsSearchStore {
         /* Do not cache a failed chunk download: dropping the promise lets the
            next dialog open retry instead of staying stuck on "Loading". */
         this.corpusPromise = null;
+        this.corpusErrorState.set(true);
 
         throw error;
       })

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 
 import { App } from '../app';
 import { configureAppTestBed, getElement, settleApp, waitForFocusHandoff } from './app.testing';
+import { DOCS_SEARCH_INDEX_LOADER } from '../../search/docs-search.store';
 
 const pressSearchShortcut = (): void => {
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, cancelable: true }));
@@ -189,6 +190,51 @@ describe('FEATURE: Docs search dialog', () => {
 
         expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
         expect(document.activeElement).toBe(trigger);
+      });
+    });
+
+    describe('WHEN: the search index chunk fails to download and retry is pressed', () => {
+      it('THEN: it shows the unavailable state, then recovers and lists results', async () => {
+        /* Both the open-trigger preload and the dialog constructor preload
+           attempt a load, so the loader keeps failing until the test lets the
+           explicit retry succeed. */
+        let attempts = 0;
+        let chunkAvailable = false;
+
+        TestBed.overrideProvider(DOCS_SEARCH_INDEX_LOADER, {
+          useValue: async (): Promise<{ docsSearchIndex: Record<string, { sections: [] }> }> => {
+            await Promise.resolve();
+            attempts += 1;
+
+            if (!chunkAvailable) {
+              throw new Error('docs search index chunk failed to load');
+            }
+
+            return { docsSearchIndex: {} };
+          }
+        });
+
+        const fixture = await createAppFixture();
+        const compiled = fixture.nativeElement as HTMLElement;
+
+        getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-trigger"]').click();
+        await fixture.whenStable();
+
+        await typeSearchQuery(fixture, 'sorting');
+
+        expect(compiled.querySelector('[data-testid="docs-search-error"]')).not.toBeNull();
+        expect(compiled.querySelector('[data-testid="docs-search-no-results"]')).toBeNull();
+
+        chunkAvailable = true;
+
+        const attemptsBeforeRetry = attempts;
+
+        getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-retry"]').click();
+        await fixture.whenStable();
+
+        expect(attempts).toBe(attemptsBeforeRetry + 1);
+        expect(compiled.querySelector('[data-testid="docs-search-error"]')).toBeNull();
+        expect(compiled.querySelectorAll('[data-testid="docs-search-option"]').length).toBeGreaterThan(0);
       });
     });
 

@@ -37,15 +37,18 @@ describe('FEATURE: Docs search store chunk failure', () => {
 
         const store = TestBed.inject(DocsSearchStore);
 
+        expect(store.corpusError()).toBe(false);
         expect(() => store.preloadCorpus()).not.toThrow();
         await expect(store.loadCorpus()).rejects.toThrow('docs search index chunk failed to load');
         expect(store.corpus()).toBeNull();
+        expect(store.corpusError()).toBe(true);
 
         const corpus = await store.loadCorpus();
 
         expect(loader.attempts()).toBe(2);
         expect(corpus.length).toBeGreaterThan(0);
         expect(store.corpus()).toBe(corpus);
+        expect(store.corpusError()).toBe(false);
       });
     });
   });

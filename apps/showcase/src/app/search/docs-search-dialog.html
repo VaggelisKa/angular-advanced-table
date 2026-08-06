@@ -79,6 +79,11 @@
         </div>
       }
     </div>
+  } @else if (corpusFailed()) {
+    <div class="docs-search-error" data-testid="docs-search-error">
+      <p class="docs-search-hint">Search is unavailable because the search index could not load.</p>
+      <button class="docs-search-retry" data-testid="docs-search-retry" type="button" (click)="retryCorpusLoad()">Retry</button>
+    </div>
   } @else if (showNoResults()) {
     <p class="docs-search-hint" data-testid="docs-search-no-results">No results for "{{ query() }}"</p>
   } @else if (hasQuery() && corpusLoading()) {

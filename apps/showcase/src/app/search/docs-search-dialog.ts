@@ -3,7 +3,8 @@ import type { ElementRef } from '@angular/core';
 import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, output, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { buildDocsSearchResultGroupViews, getNextDocsSearchActiveIndex } from './docs-search-view.util';
+import { lockBodyScroll } from './docs-search-dom.util';
+import { buildDocsSearchResultGroupViews, getDocsSearchAnnouncement, getNextDocsSearchActiveIndex } from './docs-search-view.util';
 import { DocsSearchStore } from './docs-search.store';
 import type { DocsSearchResult } from './docs-search.type';
 import { searchDocsCorpus } from './docs-search.util';
@@ -48,8 +49,11 @@ export class DocsSearchDialog {
 
   protected readonly hasQuery = computed(() => this.query().trim().length > 0);
   protected readonly showListbox = computed(() => this.flatResults().length > 0);
-  protected readonly corpusLoading = computed(() => this.store.corpus() === null);
-  protected readonly showNoResults = computed(() => this.hasQuery() && !this.corpusLoading() && this.flatResults().length === 0);
+  protected readonly corpusFailed = computed(() => this.store.corpusError());
+  protected readonly corpusLoading = computed(() => this.store.corpus() === null && !this.corpusFailed());
+  protected readonly showNoResults = computed(
+    () => this.hasQuery() && !this.corpusLoading() && !this.corpusFailed() && this.flatResults().length === 0
+  );
 
   protected readonly activeOptionId = computed(() => {
     const index = this.activeIndex();
@@ -60,13 +64,21 @@ export class DocsSearchDialog {
 
   public constructor() {
     this.store.preloadCorpus();
-    this.lockBodyScroll();
+    this.destroyRef.onDestroy(lockBodyScroll(this.document.body));
 
     afterNextRender({ write: () => this.searchInput()?.nativeElement.focus() });
 
     /* The visible results update instantly per keystroke; only the live-region
        announcement is debounced so assistive technology is not spammed. */
-    effect(() => this.scheduleAnnouncement(this.hasQuery() && !this.corpusLoading(), this.flatResults().length));
+    effect(() =>
+      this.scheduleAnnouncement(
+        getDocsSearchAnnouncement({
+          active: this.hasQuery() && !this.corpusLoading(),
+          failed: this.corpusFailed(),
+          count: this.flatResults().length
+        })
+      )
+    );
 
     this.destroyRef.onDestroy(() => this.clearAnnounceTimer());
   }
@@ -127,6 +139,11 @@ export class DocsSearchDialog {
     this.closed.emit(restoreFocus);
   }
 
+  protected retryCorpusLoad(): void {
+    /* Failures land in the store's `corpusError` signal, which this dialog renders. */
+    void this.store.loadCorpus().catch(() => undefined);
+  }
+
   protected activateResult(result: DocsSearchResult): void {
     void this.router.navigate([result.routePath], { fragment: result.fragment ?? undefined }).then((navigated) => {
       /* The router skips a same-URL navigation, so the anchor scroll it would
@@ -140,30 +157,16 @@ export class DocsSearchDialog {
     this.close(false);
   }
 
-  /* Touch scrolls on the dialog chain to the page behind it even while that
-     page is inert, so the body scrollbar is parked until the dialog closes. */
-  private lockBodyScroll(): void {
-    const body = this.document.body;
-    const previousOverflow = body.style.overflow;
-
-    body.style.overflow = 'hidden';
-    this.destroyRef.onDestroy(() => {
-      body.style.overflow = previousOverflow;
-    });
-  }
-
-  private scheduleAnnouncement(active: boolean, count: number): void {
+  private scheduleAnnouncement(message: string | null): void {
     this.clearAnnounceTimer();
 
-    if (!active) {
+    if (message === null) {
       this.announcement.set('');
 
       return;
     }
 
-    this.announceTimer = setTimeout(() => {
-      this.announcement.set(count === 1 ? '1 result' : `${count} results`);
-    }, ANNOUNCE_DEBOUNCE_MS);
+    this.announceTimer = setTimeout(() => this.announcement.set(message), ANNOUNCE_DEBOUNCE_MS);
   }
 
   private scrollActiveOptionIntoView(): void {
