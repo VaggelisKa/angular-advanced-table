@@ -18,8 +18,12 @@ const createAppFixture = async (): Promise<ComponentFixture<App>> => {
   return fixture;
 };
 
+/* The dialog renders into the CDK overlay container appended to `document.body`,
+   outside the fixture element, so dialog content is queried from the body. */
+const queryDialog = (): HTMLElement | null => document.body.querySelector<HTMLElement>('[data-testid="docs-search-dialog"]');
+
 const typeSearchQuery = async (fixture: ComponentFixture<App>, query: string): Promise<HTMLInputElement> => {
-  const input = getElement<HTMLInputElement>(fixture.nativeElement as HTMLElement, '[data-testid="docs-search-input"]');
+  const input = getElement<HTMLInputElement>(document.body, '[data-testid="docs-search-input"]');
 
   input.value = query;
   input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -38,26 +42,29 @@ describe('FEATURE: Docs search dialog', () => {
 
   describe('GIVEN: the showcase app shell is rendered with docs search triggers', () => {
     describe('WHEN: the sidebar search trigger is activated', () => {
-      it('THEN: it opens the dialog, focuses the input, and inerts the background', async () => {
+      it('THEN: it opens the dialog, focuses the input, and hides the background from assistive technology', async () => {
         const fixture = await createAppFixture();
         const compiled = fixture.nativeElement as HTMLElement;
         const trigger = getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-trigger"]');
 
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
+        expect(queryDialog()).toBeNull();
 
         trigger.focus();
         trigger.click();
         await fixture.whenStable();
         await waitForFocusHandoff();
 
-        const dialog = getElement<HTMLElement>(compiled, '[data-testid="docs-search-dialog"]');
-        const input = getElement<HTMLInputElement>(compiled, '[data-testid="docs-search-input"]');
+        const dialog = getElement<HTMLElement>(document.body, '[data-testid="docs-search-dialog"]');
+        const input = getElement<HTMLInputElement>(document.body, '[data-testid="docs-search-input"]');
+        const container = dialog.closest('cdk-dialog-container');
 
-        expect(dialog.getAttribute('role')).toBe('dialog');
-        expect(dialog.getAttribute('aria-modal')).toBe('true');
+        expect(container?.getAttribute('role')).toBe('dialog');
+        expect(container?.getAttribute('aria-modal')).toBe('true');
         expect(document.activeElement).toBe(input);
-        expect(getElement(compiled, 'main.showcase-content').hasAttribute('inert')).toBe(true);
-        expect(getElement(compiled, 'aside.showcase-nav').hasAttribute('inert')).toBe(true);
+        /* CDK hides every overlay-container sibling (including the app shell)
+           from assistive technology while the dialog is open, replacing the
+           previous manual `inert` bindings. */
+        expect(compiled.closest('[aria-hidden="true"]')).not.toBeNull();
       });
     });
   });
@@ -66,17 +73,16 @@ describe('FEATURE: Docs search dialog', () => {
     describe('WHEN: the shortcut is pressed twice', () => {
       it('THEN: it opens the dialog and then toggles it closed', async () => {
         const fixture = await createAppFixture();
-        const compiled = fixture.nativeElement as HTMLElement;
 
         pressSearchShortcut();
         await fixture.whenStable();
 
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).not.toBeNull();
+        expect(queryDialog()).not.toBeNull();
 
         pressSearchShortcut();
         await fixture.whenStable();
 
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
+        expect(queryDialog()).toBeNull();
       });
     });
 
@@ -89,13 +95,13 @@ describe('FEATURE: Docs search dialog', () => {
         menuButton.click();
         await fixture.whenStable();
 
-        expect(getElement(compiled, 'aside.showcase-nav').classList.contains('is-open')).toBe(true);
+        expect(document.body.querySelector('.showcase-nav-drawer')).not.toBeNull();
 
         pressSearchShortcut();
         await fixture.whenStable();
 
-        expect(getElement(compiled, 'aside.showcase-nav').classList.contains('is-open')).toBe(false);
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).not.toBeNull();
+        expect(document.body.querySelector('.showcase-nav-drawer')).toBeNull();
+        expect(queryDialog()).not.toBeNull();
       });
     });
   });
@@ -110,15 +116,15 @@ describe('FEATURE: Docs search dialog', () => {
         await fixture.whenStable();
         await typeSearchQuery(fixture, 'pinning');
 
-        const options = compiled.querySelectorAll('[data-testid="docs-search-option"]');
+        const options = document.body.querySelectorAll('[data-testid="docs-search-option"]');
 
         expect(options.length).toBeGreaterThan(0);
-        expect(getElement(compiled, '[data-testid="docs-search-listbox"]').getAttribute('role')).toBe('listbox');
-        expect(getElement(compiled, 'mark.docs-search-mark').textContent.toLowerCase()).toContain('pinning');
+        expect(getElement(document.body, '[data-testid="docs-search-listbox"]').getAttribute('role')).toBe('listbox');
+        expect(getElement(document.body, 'mark.docs-search-mark').textContent.toLowerCase()).toContain('pinning');
 
         await new Promise((resolve) => setTimeout(resolve, 250));
 
-        expect(getElement(compiled, '[data-testid="docs-search-status"]').textContent).toMatch(/^\d+ results?$/);
+        expect(getElement(document.body, '[data-testid="docs-search-status"]').textContent).toMatch(/^\d+ results?$/);
       });
     });
 
@@ -137,14 +143,14 @@ describe('FEATURE: Docs search dialog', () => {
         await fixture.whenStable();
 
         expect(input.getAttribute('aria-activedescendant')).toBe('docs-search-option-0');
-        expect(getElement(compiled, '#docs-search-option-0').getAttribute('aria-selected')).toBe('true');
+        expect(getElement(document.body, '#docs-search-option-0').getAttribute('aria-selected')).toBe('true');
 
         input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
         await fixture.whenStable();
         await settleApp();
 
         expect(router.url).toMatch(/^\/docs\/[a-z-]+#[a-z-]+/);
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
+        expect(queryDialog()).toBeNull();
       });
     });
   });
@@ -161,15 +167,19 @@ describe('FEATURE: Docs search dialog', () => {
         await fixture.whenStable();
         await waitForFocusHandoff();
 
-        const input = getElement<HTMLInputElement>(compiled, '[data-testid="docs-search-input"]');
+        const input = getElement<HTMLInputElement>(document.body, '[data-testid="docs-search-input"]');
 
-        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+        /* `keyCode` is required alongside `key` because the CDK dialog still
+           detects Escape through the legacy code. */
+        input.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true, cancelable: true } as KeyboardEventInit)
+        );
         await fixture.whenStable();
         await waitForFocusHandoff();
 
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
+        expect(queryDialog()).toBeNull();
         expect(document.activeElement).toBe(trigger);
-        expect(getElement(compiled, 'main.showcase-content').hasAttribute('inert')).toBe(false);
+        expect(compiled.closest('[aria-hidden="true"]')).toBeNull();
       });
     });
 
@@ -184,11 +194,11 @@ describe('FEATURE: Docs search dialog', () => {
         await fixture.whenStable();
         await waitForFocusHandoff();
 
-        getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-close"]').click();
+        getElement<HTMLButtonElement>(document.body, '[data-testid="docs-search-close"]').click();
         await fixture.whenStable();
         await waitForFocusHandoff();
 
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
+        expect(queryDialog()).toBeNull();
         expect(document.activeElement).toBe(trigger);
       });
     });
@@ -222,42 +232,51 @@ describe('FEATURE: Docs search dialog', () => {
 
         await typeSearchQuery(fixture, 'sorting');
 
-        expect(compiled.querySelector('[data-testid="docs-search-error"]')).not.toBeNull();
-        expect(compiled.querySelector('[data-testid="docs-search-no-results"]')).toBeNull();
+        expect(document.body.querySelector('[data-testid="docs-search-error"]')).not.toBeNull();
+        expect(document.body.querySelector('[data-testid="docs-search-no-results"]')).toBeNull();
 
         chunkAvailable = true;
 
         const attemptsBeforeRetry = attempts;
 
-        getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-retry"]').click();
+        getElement<HTMLButtonElement>(document.body, '[data-testid="docs-search-retry"]').click();
         await fixture.whenStable();
 
         expect(attempts).toBe(attemptsBeforeRetry + 1);
-        expect(compiled.querySelector('[data-testid="docs-search-error"]')).toBeNull();
-        expect(compiled.querySelectorAll('[data-testid="docs-search-option"]').length).toBeGreaterThan(0);
+        expect(document.body.querySelector('[data-testid="docs-search-error"]')).toBeNull();
+        expect(document.body.querySelectorAll('[data-testid="docs-search-option"]').length).toBeGreaterThan(0);
       });
     });
 
     describe('WHEN: the dialog opens and later closes', () => {
-      it('THEN: it locks body scroll while open and restores it on close', async () => {
+      it('THEN: it blocks page scroll while open and restores it on close', async () => {
         const fixture = await createAppFixture();
         const compiled = fixture.nativeElement as HTMLElement;
         const trigger = getElement<HTMLButtonElement>(compiled, '[data-testid="docs-search-trigger"]');
 
-        expect(document.body.style.overflow).toBe('');
+        /* CDK's block scroll strategy only engages when the page actually
+           overflows the viewport; the test DOM has no layout, so the overflow
+           is stubbed to let the strategy run. */
+        Object.defineProperty(document.documentElement, 'scrollHeight', { value: 10_000, configurable: true });
 
-        trigger.focus();
-        trigger.click();
-        await fixture.whenStable();
-        await waitForFocusHandoff();
+        try {
+          expect(document.documentElement.classList.contains('cdk-global-scrollblock')).toBe(false);
 
-        expect(document.body.style.overflow).toBe('hidden');
+          trigger.focus();
+          trigger.click();
+          await fixture.whenStable();
+          await waitForFocusHandoff();
 
-        getElement<HTMLElement>(compiled, '[data-testid="docs-search-backdrop"]').click();
-        await fixture.whenStable();
+          expect(document.documentElement.classList.contains('cdk-global-scrollblock')).toBe(true);
 
-        expect(compiled.querySelector('[data-testid="docs-search-dialog"]')).toBeNull();
-        expect(document.body.style.overflow).toBe('');
+          getElement<HTMLElement>(document.body, '[data-testid="docs-search-backdrop"]').click();
+          await fixture.whenStable();
+
+          expect(queryDialog()).toBeNull();
+          expect(document.documentElement.classList.contains('cdk-global-scrollblock')).toBe(false);
+        } finally {
+          delete (document.documentElement as { scrollHeight?: number }).scrollHeight;
+        }
       });
     });
   });

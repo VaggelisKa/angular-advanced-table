@@ -27,28 +27,19 @@
         </nat-table-surface>
       }
     </div>
-
-    <dialog
-      #detailDialog
-      aria-label="Detailed order table"
-      class="detail-dialog"
-      closedby="any"
-      tabindex="-1"
-      (click)="onDialogClick($event)"
-      (keydown)="onDialogKeyDown($event)">
-      <div class="dialog-content">
-        <header class="dialog-header">
-          <button aria-label="Back to Examples" class="dialog-back-button" type="button" (click)="closeDialog()">
-            Back to Examples
-          </button>
-        </header>
-        <div class="dialog-body">
-          <ng-container [ngTemplateOutlet]="viewDetailed" />
-        </div>
-      </div>
-    </dialog>
   </main>
 }
+
+<ng-template #detailDialogTemplate>
+  <div class="dialog-content">
+    <header class="dialog-header">
+      <button aria-label="Back to Examples" class="dialog-back-button" type="button" (click)="closeDialog()">Back to Examples</button>
+    </header>
+    <div class="dialog-body">
+      <ng-container [ngTemplateOutlet]="viewDetailed" />
+    </div>
+  </div>
+</ng-template>
 
 <ng-template #viewDetailed>
   <nat-table-surface [enableSorting]="true" [stickyHeader]="true" [(state)]="detailedTableState" class="dialog-table-surface">

@@ -50,32 +50,33 @@ describe('FEATURE: App controls', () => {
         await fixture.whenStable();
 
         const compiled = fixture.nativeElement as HTMLElement;
-        const nav = compiled.querySelector('.showcase-nav') as HTMLElement;
         const trigger = compiled.querySelector('.showcase-menu-button') as HTMLButtonElement;
 
         expect(trigger.getAttribute('aria-controls')).toBe('showcase-navigation');
         expect(trigger.getAttribute('aria-expanded')).toBe('false');
-        expect(nav.classList.contains('is-open')).toBe(false);
+        /* The drawer renders through the CDK dialog into the overlay container
+           appended to `document.body`, so drawer content is queried there. */
+        expect(document.body.querySelector('.showcase-nav-drawer')).toBeNull();
 
         trigger.click();
         await fixture.whenStable();
 
-        expect(trigger.getAttribute('aria-expanded')).toBe('true');
-        expect(nav.classList.contains('is-open')).toBe(true);
-        expect(nav.getAttribute('role')).toBe('dialog');
-        expect(nav.getAttribute('aria-modal')).toBe('true');
-        expect(compiled.querySelector('.showcase-nav-backdrop')).not.toBeNull();
+        const drawer = getElement<HTMLElement>(document.body, '.showcase-nav-drawer');
+        const container = drawer.closest('cdk-dialog-container');
 
-        const closeButton = compiled.querySelector('.showcase-nav-close') as HTMLButtonElement;
+        expect(trigger.getAttribute('aria-expanded')).toBe('true');
+        expect(container?.getAttribute('role')).toBe('dialog');
+        expect(container?.getAttribute('aria-modal')).toBe('true');
+        expect(document.body.querySelector('.cdk-overlay-backdrop')).not.toBeNull();
+
+        const closeButton = getElement<HTMLButtonElement>(document.body, '.showcase-nav-close');
 
         closeButton.click();
         await fixture.whenStable();
 
         expect(trigger.getAttribute('aria-expanded')).toBe('false');
-        expect(nav.classList.contains('is-open')).toBe(false);
-        expect(nav.getAttribute('role')).toBeNull();
-        expect(nav.getAttribute('aria-modal')).toBeNull();
-        expect(compiled.querySelector('.showcase-nav-backdrop')).toBeNull();
+        expect(document.body.querySelector('.showcase-nav-drawer')).toBeNull();
+        expect(document.body.querySelector('.cdk-overlay-backdrop')).toBeNull();
       });
     });
   });
@@ -89,12 +90,13 @@ describe('FEATURE: App controls', () => {
 
         const compiled = fixture.nativeElement as HTMLElement;
         const trigger = compiled.querySelector('.showcase-menu-button') as HTMLButtonElement;
-        const closeButton = compiled.querySelector('.showcase-nav-close') as HTMLButtonElement;
 
         trigger.focus();
         trigger.click();
         await fixture.whenStable();
         await waitForFocusHandoff();
+
+        const closeButton = getElement<HTMLButtonElement>(document.body, '.showcase-nav-close');
 
         expect(document.activeElement).toBe(closeButton);
 
@@ -119,19 +121,18 @@ describe('FEATURE: App controls', () => {
 
         const compiled = fixture.nativeElement as HTMLElement;
         const trigger = compiled.querySelector('.showcase-menu-button') as HTMLButtonElement;
-        const nav = compiled.querySelector('.showcase-nav') as HTMLElement;
 
         trigger.click();
         await fixture.whenStable();
 
-        expect(nav.classList.contains('is-open')).toBe(true);
+        expect(document.body.querySelector('.showcase-nav-drawer')).not.toBeNull();
 
-        const firstLink = getElement<HTMLAnchorElement>(compiled, '[data-testid="showcase-nav-link-quick-start"]');
+        const firstLink = getElement<HTMLAnchorElement>(document.body, '[data-testid="showcase-nav-link-quick-start"]');
 
         firstLink.click();
         await fixture.whenStable();
 
-        expect(nav.classList.contains('is-open')).toBe(false);
+        expect(document.body.querySelector('.showcase-nav-drawer')).toBeNull();
         expect(trigger.getAttribute('aria-expanded')).toBe('false');
       });
     });

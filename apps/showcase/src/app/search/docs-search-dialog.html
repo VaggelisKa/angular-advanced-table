@@ -1,15 +1,6 @@
-<div aria-hidden="true" class="docs-search-backdrop" data-testid="docs-search-backdrop" (click)="close(true)"></div>
-
-<div
-  #searchPanel
-  aria-label="Search documentation"
-  aria-modal="true"
-  class="docs-search-panel"
-  data-testid="docs-search-dialog"
-  role="dialog"
-  tabindex="-1"
-  (keydown)="trapDialogFocus($event)"
-  (keydown.escape)="close(true)">
+<!-- Modal shell semantics (role, aria-modal, focus trap, backdrop, Escape)
+     live on the CDK dialog container; this element only styles the panel. -->
+<div class="docs-search-panel" data-testid="docs-search-dialog">
   <div class="docs-search-input-row">
     <svg aria-hidden="true" class="docs-search-input-icon" focusable="false" viewBox="0 0 20 20">
       <circle cx="9" cy="9" r="5.5" />

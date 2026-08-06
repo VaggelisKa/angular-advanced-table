@@ -1,6 +1,8 @@
+import { Dialog } from '@angular/cdk/dialog';
+import type { DialogRef } from '@angular/cdk/dialog';
 import { NgTemplateOutlet } from '@angular/common';
-import type { ElementRef } from '@angular/core';
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import type { TemplateRef } from '@angular/core';
+import { Component, ViewContainerRef, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { NatTable } from 'ng-advanced-table';
@@ -15,13 +17,17 @@ const mockOrderRows = generateMockOrderRows(5);
 @Component({
   selector: 'app-sticky-show-detailed-view',
   imports: [NatTable, NatTableSurface, NgTemplateOutlet],
+  providers: [Dialog],
   templateUrl: './sticky-show-detailed-view.html',
   styleUrl: './sticky-show-detailed-view.css'
 })
 export class StickyShowDetailedView {
   private readonly router = inject(Router);
+  private readonly dialog = inject(Dialog);
+  private readonly viewContainerRef = inject(ViewContainerRef);
+  private detailDialogRef: DialogRef<unknown> | null = null;
 
-  public readonly detailDialog = viewChild.required<ElementRef<HTMLDialogElement>>('detailDialog');
+  public readonly detailDialogTemplate = viewChild.required<TemplateRef<unknown>>('detailDialogTemplate');
 
   protected readonly rows = mockOrderRows;
   protected readonly columns = mockOrderColumns;
@@ -78,40 +84,26 @@ export class StickyShowDetailedView {
 
   protected openDetail(type: string): void {
     if (type === 'dialog') {
-      this.detailDialog().nativeElement.showModal();
+      // CDK owns focus trapping, Escape/backdrop dismissal, scroll blocking,
+      // background aria-hidden management, and focus restore on close.
+      // Closing an already-closed ref is a no-op, so the ref may go stale
+      // after Escape/backdrop dismissal without needing a closed-subscription.
+      this.detailDialogRef = this.dialog.open(this.detailDialogTemplate(), {
+        ariaLabel: 'Detailed order table',
+        viewContainerRef: this.viewContainerRef,
+        panelClass: 'sc-detail-dialog-panel',
+        backdropClass: 'sc-detail-dialog-backdrop'
+      });
     } else {
       void this.router.navigate(['/examples/sticky-show-detailed-view/details']);
     }
   }
 
   protected closeDialog(): void {
-    this.detailDialog().nativeElement.close();
+    this.detailDialogRef?.close();
   }
 
   protected goBack(): void {
     void this.router.navigate(['/examples/sticky-show-detailed-view']);
-  }
-
-  protected onDialogClick(event: MouseEvent): void {
-    const dialog = this.detailDialog().nativeElement;
-
-    if (event.target === dialog) {
-      const rect = dialog.getBoundingClientRect();
-      const isInside =
-        rect.top <= event.clientY &&
-        event.clientY <= rect.top + rect.height &&
-        rect.left <= event.clientX &&
-        event.clientX <= rect.left + rect.width;
-
-      if (!isInside) {
-        dialog.close();
-      }
-    }
-  }
-
-  protected onDialogKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-      this.closeDialog();
-    }
   }
 }

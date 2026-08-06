@@ -5,7 +5,9 @@
      --sc-detail-header is the header bar *inside* the dialog/detail view (and the
      full-screen dialog's 100vh offset). --sc-detail-container-offset is the outer
      offset from 100vh for the shell-embedded .detailed-page-container — it tracks
-     the showcase shell chrome above it, not the inner header. Carried from main. */
+     the showcase shell chrome above it, not the inner header. Carried from main.
+     The CDK overlay panel is not a :host descendant, so .sc-detail-dialog-panel in
+     styles.css re-declares --sc-detail-header/--sc-detail-radius — keep in sync. */
   --sc-detail-header: 68px;
   --sc-detail-container-offset: 62px;
   --sc-detail-radius: 8px;
@@ -96,33 +98,9 @@ nat-table-surface {
   transform: translateY(0);
 }
 
-/* Dialog Styles */
-.detail-dialog {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  width: 100dvw;
-  max-width: 100vw;
-  max-width: 100dvw;
-  height: 100vh;
-  height: 100dvh;
-  max-height: 100vh;
-  max-height: 100dvh;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  overscroll-behavior-y: contain;
-  color: var(--sc-text);
-  background: var(--sc-surface);
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-
-  &::backdrop {
-    background: var(--sc-surface);
-  }
-}
-
+/* Dialog Styles — the full-screen shell (sizing, surface, backdrop) lives on the
+   CDK overlay panel/backdrop classes .sc-detail-dialog-panel/.sc-detail-dialog-backdrop
+   in styles.css; the rules below style the projected dialog content. */
 .dialog-content {
   display: flex;
   flex-direction: column;
