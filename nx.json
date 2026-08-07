@@ -10,7 +10,11 @@
       "!{projectRoot}/eslint.config.mjs",
       "!{projectRoot}/stylelint.config.mjs"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": ["{workspaceRoot}/.browserslistrc", "{workspaceRoot}/tsconfig.base.json", "{workspaceRoot}/tsconfig.paths.json"],
+    "libEntryPointTsConfigs": [
+      "{workspaceRoot}/libs/ng-advanced-table/tsconfig.json",
+      "{workspaceRoot}/libs/ng-advanced-table/tsconfig.spec.json"
+    ]
   },
   "plugins": [
     {
