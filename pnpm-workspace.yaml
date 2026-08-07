@@ -80,6 +80,7 @@ catalogs:
     typescript: '6.0.3'
     typescript-eslint: '^8.61.1'
     vitest: '^4.1.9'
+    '@vitest/coverage-v8': '^4.1.9'
 # Reject newly published packages for 24 hours. The temporary migration
 # exception is no longer needed now that all pinned releases have aged in.
 minimumReleaseAge: 1440

@@ -171,7 +171,30 @@
         ],
         "executor": "@angular/build:unit-test",
         "options": {
-          "tsConfig": "apps/showcase/tsconfig.spec.json"
+          "tsConfig": "apps/showcase/tsconfig.spec.json",
+          "coverage": true,
+          "coverageInclude": [
+            "apps/showcase/src/**/*.ts"
+          ],
+          "coverageExclude": [
+            "**/*.spec.ts",
+            "**/*.testing.ts",
+            "**/test-helpers/**",
+            "**/*.type.ts",
+            "**/index.ts",
+            "apps/showcase/src/app/docs/docs-html-registry.ts",
+            "apps/showcase/src/app/docs/docs-search-index.ts"
+          ],
+          "coverageReporters": [
+            "text-summary",
+            "json-summary"
+          ],
+          "coverageThresholds": {
+            "statements": 68,
+            "branches": 66,
+            "functions": 65,
+            "lines": 68
+          }
         }
       }
     }
