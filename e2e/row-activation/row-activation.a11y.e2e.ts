@@ -3,6 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 
 import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
+import { emulateForcedColors, paintedColorsOf } from '../support/media';
 
 const PREVIEW_PANEL = '[data-testid="docs-example-row-selection-preview-panel"]';
 
@@ -69,7 +70,9 @@ test.describe('FEATURE: Row activation accessibility', () => {
   });
 
   test.describe('GIVEN: a viewer using a forced-colors (high contrast) mode', () => {
-    test.use({ forcedColors: 'active' });
+    test.beforeEach(async ({ page }) => {
+      await emulateForcedColors(page);
+    });
 
     test.describe('WHEN: the example is scanned with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations under forced colors', async ({ page }) => {
@@ -78,14 +81,19 @@ test.describe('FEATURE: Row activation accessibility', () => {
     });
 
     test.describe('WHEN: a row is activated from the keyboard', () => {
-      test('THEN: the activated row stays visible and activation still fires', async ({ page }) => {
+      // Visibility alone would pass even if the forced palette painted the row's text
+      // and background the same colour, so assert the painted pair is distinguishable.
+      test('THEN: activation still fires and the row text stays legible against its background', async ({ page }) => {
         const cell = categoryCell(page, 'Epsilon Shield');
 
         await cell.focus();
         await page.keyboard.press('Enter');
 
         await expect(lastActivated(page)).toContainText('Epsilon Shield');
-        await expect(rowNamed(page, 'Epsilon Shield')).toBeVisible();
+
+        const painted = await paintedColorsOf(cell);
+
+        expect(painted.color).not.toBe(painted.background);
       });
     });
   });

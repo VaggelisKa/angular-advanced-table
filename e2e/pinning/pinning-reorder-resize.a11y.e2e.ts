@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 import { expectNoAxeViolations } from '../support/axe';
+import { emulateForcedColors } from '../support/media';
 
 test.use({ viewport: { width: 640, height: 900 } });
 
@@ -111,7 +112,9 @@ test.describe('FEATURE: Pinned column reorder then resize accessibility', () => 
   });
 
   test.describe('GIVEN: a viewer using a forced-colors (high contrast) mode', () => {
-    test.use({ forcedColors: 'active' });
+    test.beforeEach(async ({ page }) => {
+      await emulateForcedColors(page);
+    });
 
     test.describe('WHEN: the pinned grid is scanned with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations under forced colors', async ({ page }) => {

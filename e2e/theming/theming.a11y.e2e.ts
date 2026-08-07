@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 
 import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
+import { emulateForcedColors, paintedColorsOf } from '../support/media';
 import { waitForTransitions } from '../support/transitions';
 
 const PREVIEW_PANEL = '[data-testid="docs-example-theme-example-preview-panel"]';
@@ -70,9 +71,8 @@ test.describe('FEATURE: Theming accessibility', () => {
   });
 
   test.describe('GIVEN: a viewer using a forced-colors (high contrast) mode', () => {
-    test.use({ forcedColors: 'active' });
-
     test.beforeEach(async ({ page }) => {
+      await emulateForcedColors(page);
       await loadThemingExample(page);
     });
 
@@ -83,11 +83,17 @@ test.describe('FEATURE: Theming accessibility', () => {
     });
 
     test.describe('WHEN: the themed table is displayed', () => {
-      test('THEN: header and body cells stay visible rather than being painted out by the forced palette', async ({ page }) => {
+      // The consumer theme's custom properties are NOT force-adjusted, so a themed
+      // colour can survive into forced-colors mode and land on top of the forced
+      // background. Assert the painted pair differs rather than mere visibility.
+      test('THEN: header and body cell text stays legible against the forced background', async ({ page }) => {
         const table = page.getByRole('grid', { name: 'Themed orders table' });
 
-        await expect(table.getByTestId('nat-table-header-id')).toBeVisible();
-        await expect(table.getByRole('rowheader', { name: 'ORD-10000' })).toBeVisible();
+        const header = await paintedColorsOf(table.getByTestId('nat-table-header-id'));
+        const cell = await paintedColorsOf(table.getByRole('rowheader', { name: 'ORD-10000' }));
+
+        expect(header.color).not.toBe(header.background);
+        expect(cell.color).not.toBe(cell.background);
       });
     });
   });

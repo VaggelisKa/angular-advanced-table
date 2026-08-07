@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 
 import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
+import { emulateForcedColors, emulateReducedMotion, focusIndicatorOf } from '../support/media';
 
 const PREVIEW_PANEL = '[data-testid="docs-example-column-reordering-preview-panel"]';
 
@@ -52,7 +53,9 @@ test.describe('FEATURE: Column reordering accessibility', () => {
   });
 
   test.describe('GIVEN: a viewer who has asked the system to reduce motion', () => {
-    test.use({ reducedMotion: 'reduce' });
+    test.beforeEach(async ({ page }) => {
+      await emulateReducedMotion(page);
+    });
 
     test.describe('WHEN: a column is moved by keyboard', () => {
       test('THEN: it still completes the move and keeps focus on the moved header', async ({ page }) => {
@@ -70,7 +73,9 @@ test.describe('FEATURE: Column reordering accessibility', () => {
   });
 
   test.describe('GIVEN: a viewer using a forced-colors (high contrast) mode', () => {
-    test.use({ forcedColors: 'active' });
+    test.beforeEach(async ({ page }) => {
+      await emulateForcedColors(page);
+    });
 
     test.describe('WHEN: the example is scanned with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations under forced colors', async ({ page }) => {
@@ -79,13 +84,19 @@ test.describe('FEATURE: Column reordering accessibility', () => {
     });
 
     test.describe('WHEN: a reorderable header is focused', () => {
-      test('THEN: the focused header remains visible rather than being painted away', async ({ page }) => {
+      // Forced colors forces `box-shadow` to `none`, and the cell focus ring is a
+      // box-shadow paired with `outline: none`. Asserting the painted outline — not
+      // mere visibility — is what proves a focus indicator actually survives here.
+      test('THEN: it paints an outline focus indicator that survives the forced palette', async ({ page }) => {
         const categoryHeader = page.getByTestId('reordering-demo-table').getByTestId('nat-table-header-category');
 
         await categoryHeader.focus();
-
         await expect(categoryHeader).toBeFocused();
-        await expect(categoryHeader).toBeVisible();
+
+        const indicator = await focusIndicatorOf(categoryHeader);
+
+        expect(indicator.outlineStyle).not.toBe('none');
+        expect(indicator.outlineWidthPx).toBeGreaterThan(0);
       });
     });
   });

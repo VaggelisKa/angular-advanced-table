@@ -102,3 +102,45 @@
   --nat-table-list-item-background: #15211f;
   --nat-table-list-item-border-color: #30413d;
 }
+
+/* Custom properties are not force-adjusted, so in forced-colors (Windows High
+   Contrast) mode this palette would keep its values while the browser forces
+   backgrounds to the system colours — the light header text would end up
+   near-white on white. Hand the colour tokens back to the system keywords so
+   the forced palette governs; the demo is about token plumbing, not the
+   specific colours. Consumers theming the table should do the same. */
+@media (forced-colors: active) {
+  .ledger-surface,
+  [data-theme='dark'] .ledger-surface {
+    --nat-table-color-text: CanvasText;
+    --nat-table-color-text-muted: CanvasText;
+    --nat-table-color-accent: LinkText;
+    --nat-table-color-success: CanvasText;
+    --nat-table-color-warning: CanvasText;
+    --nat-table-card-background: Canvas;
+    --nat-table-card-border-color: CanvasText;
+    --nat-table-card-shadow: none;
+    --nat-table-region-background: Canvas;
+    --nat-table-region-border-color: CanvasText;
+    --nat-table-header-background: Canvas;
+    --nat-table-header-color: CanvasText;
+    --nat-table-header-border-color: CanvasText;
+    --nat-table-row-background: Canvas;
+    --nat-table-row-background-hover: Canvas;
+    --nat-table-row-background-focus: Canvas;
+    --nat-table-cell-border-color: CanvasText;
+    --nat-table-cell-color-positive: CanvasText;
+    --nat-table-cell-color-warning: CanvasText;
+    --nat-table-cell-color-neutral: CanvasText;
+    --nat-table-focus-ring-color: Highlight;
+    --nat-table-sort-icon-color-active: CanvasText;
+    --nat-table-sort-icon-color-idle: CanvasText;
+    --nat-table-sort-icon-color-hover: CanvasText;
+    --nat-table-sort-button-color-sorted: CanvasText;
+  }
+
+  .ledger-list-surface {
+    --nat-table-list-item-background: Canvas;
+    --nat-table-list-item-border-color: CanvasText;
+  }
+}

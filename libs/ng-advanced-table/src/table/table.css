@@ -582,6 +582,29 @@ tbody .data-row:last-child .data-cell {
 }
 
 /*
+ * Forced-colors mode (Windows High Contrast) forces `box-shadow` to `none`.
+ * The focus ring above is a box-shadow paired with `outline: none`, so without
+ * this rule a focused cell carries no visible focus indicator at all in that
+ * mode — a WCAG 2.4.7 (Focus Visible) failure.
+ *
+ * `outline` survives forced colors. The system colour keyword is deliberate:
+ * custom properties are not force-adjusted, so routing this through the
+ * `--nat-table-focus-ring-color` token could paint a themed ring that is
+ * invisible against the forced background. Negative offset keeps the ring
+ * inset, matching the box-shadow it stands in for, so it cannot overlap
+ * neighbouring cells.
+ *
+ * Safari does not implement `forced-colors`; it ignores this block, which
+ * leaves the box-shadow ring in place there.
+ */
+@media (forced-colors: active) {
+  [ngGridCell]:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+
+/*
  * Regular body cells are statically positioned, so z-index alone does not
  * establish stacking. Keep the relative positioning scoped to them so that
  * sticky headers and pinned cells retain their `position: sticky` context
