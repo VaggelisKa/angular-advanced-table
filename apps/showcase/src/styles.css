@@ -1022,6 +1022,14 @@ input {
   margin-top: var(--sc-space-4);
 }
 
+/* The pager draws a bottom divider so it can sit flush against the grid. Once
+   it is spaced away from a region that has its own border and radius, that line
+   detaches and floats. --nat-table-color-border drives nothing else inside the
+   pager, so scoping it to transparent here removes the divider only. */
+.docs-example nat-table-surface nat-table-pagination {
+  --nat-table-color-border: transparent;
+}
+
 /* ---------- Shared demo table + page ---------- */
 .sc-demo-table {
   display: block;
