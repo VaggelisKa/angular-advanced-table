@@ -1,6 +1,26 @@
+/**
+ * Detects Apple platforms for keyboard-shortcut hints (Cmd vs Ctrl). Only call
+ * this in the browser (e.g. from `afterNextRender`); SSR must keep the
+ * non-Apple default because `navigator` is unavailable there.
+ */
+export const isApplePlatform = (navigator: Navigator | undefined): boolean => {
+  if (!navigator) {
+    return false;
+  }
+
+  return /mac|iphone|ipad|ipod/iu.test(navigator.platform || navigator.userAgent);
+};
+
 const getFocusableElements = (container: HTMLElement): HTMLElement[] =>
-  Array.from(container.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]')).filter(
-    (element) => element.tabIndex >= 0 && !element.closest('[hidden]')
+  Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
+    )
+  ).filter(
+    /* `getClientRects()` drops `display: none` candidates (e.g. the search
+       dialog's mobile-only close button on desktop), which would otherwise
+       become unreachable first/last trap targets. */
+    (element) => element.tabIndex >= 0 && !element.closest('[hidden]') && element.getClientRects().length > 0
   );
 
 /**

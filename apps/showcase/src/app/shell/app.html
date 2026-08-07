@@ -1,5 +1,5 @@
 <div [class.is-nav-open]="mobileNavOpen()" class="showcase-shell">
-  <header [attr.inert]="mobileNavOpen() ? '' : null" class="showcase-mobile-header">
+  <header [attr.inert]="mobileNavOpen() || searchOpen() ? '' : null" class="showcase-mobile-header">
     <span class="showcase-mobile-brand">
       <span class="showcase-brand-copy">
         <span class="showcase-eyebrow">Showcase</span>
@@ -7,19 +7,38 @@
       </span>
     </span>
 
-    <button
-      #mobileMenuButton
-      [attr.aria-expanded]="mobileNavOpen()"
-      aria-controls="showcase-navigation"
-      aria-label="Open showcase navigation"
-      class="sc-icon-button showcase-menu-button"
-      title="Open showcase navigation"
-      type="button"
-      (click)="toggleMobileNav()">
-      <svg aria-hidden="true" class="showcase-menu-icon" focusable="false" viewBox="0 0 20 20">
-        <path class="showcase-menu-icon-path" d="M3 5.5h14M3 10h14M3 14.5h14" />
-      </svg>
-    </button>
+    <span class="showcase-mobile-actions">
+      <button
+        #searchTriggerMobile
+        [attr.aria-keyshortcuts]="searchAriaKeyshortcuts()"
+        aria-label="Search docs"
+        class="sc-icon-button showcase-search-button"
+        data-testid="docs-search-trigger-mobile"
+        title="Search docs"
+        type="button"
+        (click)="openSearch()"
+        (focus)="preloadSearch()"
+        (pointerenter)="preloadSearch()">
+        <svg aria-hidden="true" class="showcase-search-icon" focusable="false" viewBox="0 0 20 20">
+          <circle cx="9" cy="9" r="5.5" />
+          <path d="m13.2 13.2 3.8 3.8" />
+        </svg>
+      </button>
+
+      <button
+        #mobileMenuButton
+        [attr.aria-expanded]="mobileNavOpen()"
+        aria-controls="showcase-navigation"
+        aria-label="Open showcase navigation"
+        class="sc-icon-button showcase-menu-button"
+        title="Open showcase navigation"
+        type="button"
+        (click)="toggleMobileNav()">
+        <svg aria-hidden="true" class="showcase-menu-icon" focusable="false" viewBox="0 0 20 20">
+          <path class="showcase-menu-icon-path" d="M3 5.5h14M3 10h14M3 14.5h14" />
+        </svg>
+      </button>
+    </span>
   </header>
 
   @if (mobileNavOpen()) {
@@ -29,6 +48,7 @@
   <aside
     #mobileNavPanel
     [attr.aria-modal]="mobileNavOpen() ? 'true' : null"
+    [attr.inert]="searchOpen() ? '' : null"
     [attr.role]="mobileNavOpen() ? 'dialog' : null"
     [class.is-open]="mobileNavOpen()"
     aria-label="Docs and examples"
@@ -50,6 +70,23 @@
         </svg>
       </button>
     </div>
+
+    <button
+      #searchTriggerDesktop
+      [attr.aria-keyshortcuts]="searchAriaKeyshortcuts()"
+      class="docs-search-trigger"
+      data-testid="docs-search-trigger"
+      type="button"
+      (click)="openSearch()"
+      (focus)="preloadSearch()"
+      (pointerenter)="preloadSearch()">
+      <svg aria-hidden="true" class="showcase-search-icon" focusable="false" viewBox="0 0 20 20">
+        <circle cx="9" cy="9" r="5.5" />
+        <path d="m13.2 13.2 3.8 3.8" />
+      </svg>
+      <span class="docs-search-trigger-label">Search docs</span>
+      <kbd aria-hidden="true" class="docs-search-trigger-kbd">{{ searchShortcutHint() }}</kbd>
+    </button>
 
     <app-nav-tree (navigate)="closeMobileNav(false)" />
 
@@ -104,7 +141,11 @@
     </div>
   </aside>
 
-  <main [attr.inert]="mobileNavOpen() ? '' : null" class="showcase-content">
+  <main [attr.inert]="mobileNavOpen() || searchOpen() ? '' : null" class="showcase-content">
     <router-outlet />
   </main>
+
+  @if (searchOpen()) {
+    <app-docs-search-dialog (closed)="closeSearch($event)" />
+  }
 </div>

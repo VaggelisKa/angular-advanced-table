@@ -1,0 +1,96 @@
+<div aria-hidden="true" class="docs-search-backdrop" data-testid="docs-search-backdrop" (click)="close(true)"></div>
+
+<div
+  #searchPanel
+  aria-label="Search documentation"
+  aria-modal="true"
+  class="docs-search-panel"
+  data-testid="docs-search-dialog"
+  role="dialog"
+  tabindex="-1"
+  (keydown)="trapDialogFocus($event)"
+  (keydown.escape)="close(true)">
+  <div class="docs-search-input-row">
+    <svg aria-hidden="true" class="docs-search-input-icon" focusable="false" viewBox="0 0 20 20">
+      <circle cx="9" cy="9" r="5.5" />
+      <path d="m13.2 13.2 3.8 3.8" />
+    </svg>
+    <input
+      #searchInput
+      [attr.aria-activedescendant]="activeOptionId()"
+      [attr.aria-controls]="showListbox() ? 'docs-search-listbox' : null"
+      [attr.aria-expanded]="showListbox() ? 'true' : 'false'"
+      aria-autocomplete="list"
+      aria-label="Search documentation"
+      autocomplete="off"
+      class="docs-search-input"
+      data-testid="docs-search-input"
+      placeholder="Search docs and examples"
+      role="combobox"
+      spellcheck="false"
+      type="text"
+      (input)="onQueryInput($event)"
+      (keydown)="onInputKeydown($event)" />
+    <kbd aria-hidden="true" class="docs-search-esc-hint">Esc</kbd>
+    <button aria-label="Close search" class="docs-search-close" data-testid="docs-search-close" type="button" (click)="close(true)">
+      <svg aria-hidden="true" class="docs-search-close-icon" focusable="false" viewBox="0 0 20 20">
+        <path d="m5.5 5.5 9 9m0-9-9 9" />
+      </svg>
+    </button>
+  </div>
+
+  @if (showListbox()) {
+    <div
+      aria-label="Search results"
+      class="docs-search-results"
+      data-testid="docs-search-listbox"
+      id="docs-search-listbox"
+      role="listbox"
+      (mousedown)="$event.preventDefault()">
+      @for (group of resultGroups(); track group.label) {
+        <div [attr.aria-label]="group.label" class="docs-search-group" data-testid="docs-search-group" role="group">
+          <div aria-hidden="true" class="docs-search-group-label">{{ group.label }}</div>
+          @for (result of group.results; track result.id) {
+            <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- APG combobox pattern: options are not focusable; keyboard activation happens on the combobox input via aria-activedescendant -->
+            <div
+              [attr.aria-selected]="activeIndex() === result.index"
+              [class.is-active]="activeIndex() === result.index"
+              [id]="result.optionId"
+              class="docs-search-option"
+              data-testid="docs-search-option"
+              role="option"
+              (click)="activateResult(result)"
+              (pointerenter)="setActiveIndex(result.index)">
+              <span class="docs-search-option-title">{{ result.heading ?? result.topicLabel }}</span>
+              @if (result.segments.length > 0) {
+                <span class="docs-search-option-snippet">
+                  @for (segment of result.segments; track $index) {
+                    @if (segment.marked) {
+                      <mark class="docs-search-mark">{{ segment.text }}</mark>
+                    } @else {
+                      {{ segment.text }}
+                    }
+                  }
+                </span>
+              }
+              <span class="docs-search-option-context">{{ result.groupLabel }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  } @else if (corpusFailed()) {
+    <div class="docs-search-error" data-testid="docs-search-error">
+      <p class="docs-search-hint">Search is unavailable because the search index could not load.</p>
+      <button class="docs-search-retry" data-testid="docs-search-retry" type="button" (click)="retryCorpusLoad()">Retry</button>
+    </div>
+  } @else if (showNoResults()) {
+    <p class="docs-search-hint" data-testid="docs-search-no-results">No results for "{{ query() }}"</p>
+  } @else if (hasQuery() && corpusLoading()) {
+    <p class="docs-search-hint" data-testid="docs-search-loading">Loading search index…</p>
+  } @else {
+    <p class="docs-search-hint" data-testid="docs-search-hint">Search the docs and examples by topic, heading, or content.</p>
+  }
+
+  <div aria-live="polite" class="docs-search-status" data-testid="docs-search-status" role="status">{{ announcement() }}</div>
+</div>
