@@ -1,0 +1,13 @@
+<div [attr.aria-label]="accessibleName()" class="btn-group" role="group">
+  @for (option of options(); track option.value) {
+    <button
+      [attr.aria-pressed]="option.value === value()"
+      [attr.data-testid]="option.testId ?? null"
+      [class.active]="option.value === value()"
+      class="btn-sm"
+      type="button"
+      (click)="valueChange.emit(option.value)">
+      {{ option.label }}
+    </button>
+  }
+</div>

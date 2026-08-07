@@ -1,0 +1,26 @@
+/* The host is the query container so the split below reacts to the space the
+   demo actually gets, not to the viewport. Docs examples render inside a card
+   that is far narrower than the window, so a viewport media query would keep a
+   two-column split long after the table has run out of room. */
+:host {
+  display: block;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.demo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sc-space-8);
+  align-items: start;
+  min-width: 0;
+}
+
+/* Only split once the main column can still hold a readable table: below this
+   the 300px rail leaves under ~560px for the table, which is where headers
+   start truncating to single letters. */
+@container (width >= 900px) {
+  .demo-layout--split {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  }
+}

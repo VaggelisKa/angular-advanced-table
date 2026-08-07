@@ -62,7 +62,8 @@ describe('FEATURE: List data states docs demo', () => {
 
         expect(host(fixture).querySelectorAll('[data-testid="nat-list-item"]')).toHaveLength(0);
         expect(host(fixture).querySelector('[data-state="error"]')).not.toBeNull();
-        expect(errorButton?.classList.contains('is-active')).toBe(true);
+        expect(errorButton?.classList.contains('active')).toBe(true);
+        expect(errorButton?.getAttribute('aria-pressed')).toBe('true');
       });
     });
   });
@@ -101,9 +102,11 @@ describe('FEATURE: List companion controls docs demo', () => {
       it('THEN: the companions page the list and toggle its fields', async () => {
         const fixture = await createFixture(ListControls);
         const items = host(fixture).querySelectorAll('[data-testid="nat-list-item"]');
+        const pageSizeSelect = host(fixture).querySelector('nat-table-pagination select') as HTMLSelectElement;
 
-        expect(items.length).toBeLessThan(23);
-        expect(host(fixture).querySelector('nat-table-pagination')).not.toBeNull();
+        // The rendered page and the page-size control must agree on the seeded size.
+        expect(items).toHaveLength(5);
+        expect(pageSizeSelect.value).toBe('5');
 
         const customerChip = host(fixture).querySelector('.column-chip[data-column-id="customer"]') as HTMLButtonElement;
 

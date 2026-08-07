@@ -413,6 +413,69 @@ input {
     color: var(--sc-text-soft);
   }
 
+  /* ---------- Demo section primitives ----------
+     Used inside app-demo-section, which already owns the box padding, so these
+     carry no outer margin of their own (unlike .instructions / .tip, whose
+     margins are tuned for a bare .card). */
+  .demo-button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sc-space-1);
+    min-width: 0;
+  }
+
+  /* Companion control sitting next to a table or list but OUTSIDE the surface.
+     Controls inside a surface are spaced by the .docs-example rule below. */
+  .demo-controls {
+    display: block;
+    min-width: 0;
+    margin-bottom: var(--sc-space-4);
+  }
+
+  /* Label above a bare demo block. Deliberately not .card-title: that one is a
+     card *header* bar (48px, border-bottom) and reads as a divider when used
+     anywhere other than the top of a .card. */
+  .demo-heading {
+    margin: 0 0 var(--sc-space-3);
+    font-size: var(--sc-text-md);
+    font-weight: var(--sc-weight-semibold);
+    line-height: var(--sc-lh-snug);
+    color: var(--sc-text);
+  }
+
+  .demo-note {
+    margin: 0;
+    font-size: var(--sc-text-sm);
+    line-height: var(--sc-lh-normal);
+    color: var(--sc-text-soft);
+
+    p {
+      margin: 0 0 var(--sc-space-1);
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    ol,
+    ul {
+      display: grid;
+      gap: var(--sc-space-sm);
+      padding-inline-start: var(--sc-space-7);
+      margin: 0;
+    }
+
+    code {
+      font-family: var(--sc-mono-font);
+      font-size: 0.95em;
+      color: var(--sc-text);
+    }
+
+    strong {
+      color: var(--sc-text);
+    }
+  }
+
   .instructions {
     margin: 16px 20px 20px;
   }
@@ -460,10 +523,18 @@ input {
     cursor: pointer;
     user-select: none;
 
+    /* Transparent but full-size and above the .slider, so the whole row is the
+       checkbox's own hit target. A 1px input sitting under the slider is only
+       reachable through the wrapping label, which leaves the control with no
+       clickable surface of its own. */
     .toggle-checkbox {
       position: absolute;
-      width: 1px;
-      height: 1px;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
       opacity: 0;
     }
   }
@@ -832,9 +903,21 @@ input {
       box-shadow var(--sc-transition-fast) ease;
   }
 
-  .btn[aria-disabled='true'] {
+  /* Native :disabled matters as much as the ARIA form: a plain `[disabled]`
+     button used to keep full-strength .btn colours and a pointer cursor, so it
+     read as clickable. */
+  .btn[aria-disabled='true'],
+  .btn:disabled,
+  .btn-sm:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+
+  /* Toggled state for a standalone .btn (segmented groups use .btn-sm.active). */
+  .btn.is-active {
+    color: var(--sc-accent-strong);
+    background: var(--sc-accent-soft);
+    border-color: color-mix(in srgb, var(--sc-accent) 45%, transparent);
   }
 
   .btn-primary {
@@ -898,14 +981,18 @@ input {
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .btn:hover,
+    .btn:hover:not(:disabled, [aria-disabled='true'], .is-active),
     .tab-btn:hover,
-    .btn-sm:hover {
+    .btn-sm:hover:not(:disabled, .active) {
       color: var(--sc-text);
       background: var(--sc-surface-hover);
       border-color: var(--sc-border-strong);
       box-shadow: none;
       transform: none;
+    }
+
+    .btn.is-active:hover {
+      background: color-mix(in srgb, var(--sc-accent) 18%, var(--sc-surface));
     }
 
     .btn-primary:hover {
@@ -924,6 +1011,23 @@ input {
       border-color: color-mix(in srgb, var(--sc-positive) 45%, transparent);
     }
   }
+}
+
+/* Docs demos: nat-table-surface lays its children out as a plain block with no
+   gap, so a projected pager, toolbar, search field or visibility chip row would
+   sit flush against the table/list region it belongs to. Spacing every adjacent
+   pair covers controls above and below the region alike. Scoped to
+   .docs-example so gallery routes keep their own bespoke spacing. */
+.docs-example nat-table-surface .surface > * + * {
+  margin-top: var(--sc-space-4);
+}
+
+/* The pager draws a bottom divider so it can sit flush against the grid. Once
+   it is spaced away from a region that has its own border and radius, that line
+   detaches and floats. --nat-table-color-border drives nothing else inside the
+   pager, so scoping it to transparent here removes the divider only. */
+.docs-example nat-table-surface nat-table-pagination {
+  --nat-table-color-border: transparent;
 }
 
 /* ---------- Shared demo table + page ---------- */

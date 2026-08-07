@@ -14,7 +14,7 @@ test.describe('FEATURE: Sorting accessibility', () => {
       test('THEN: it applies and clears single-column sort', async ({ page }) => {
         await expect(page.getByRole('heading', { name: 'Single and multi-column sorting' })).toBeVisible();
 
-        const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
+        const stateTag = page.getByTestId('sorting-current-state');
 
         await test.step('THEN: initial state is name (asc)', async () => {
           await expect(stateTag).toContainText('name (asc)');
@@ -37,9 +37,7 @@ test.describe('FEATURE: Sorting accessibility', () => {
         await test.step('THEN: the state reflects name (desc)', async () => {
           await expect(stateTag).toContainText('name (desc)');
 
-          const clearBtn = page
-            .locator('.card', { hasText: 'Programmatic Sort Actions' })
-            .getByRole('button', { name: 'Clear Sorting' });
+          const clearBtn = page.getByTestId('sorting-single-panel').getByRole('button', { name: 'Clear Sorting' });
 
           await clearBtn.focus();
           await page.keyboard.press('Enter');
@@ -55,7 +53,7 @@ test.describe('FEATURE: Sorting accessibility', () => {
       test('THEN: it cycles from ascending to descending sort', async ({ page }) => {
         const table = page.getByRole('grid', { name: 'Sorting demo table', exact: true });
         const categoryHeaderBtn = table.locator('th[data-column-id="category"] button.sort-button');
-        const stateTag = page.locator('.info-tag', { hasText: 'Current state' });
+        const stateTag = page.getByTestId('sorting-current-state');
 
         await test.step('THEN: initial state is name (asc)', async () => {
           await expect(stateTag).toContainText('name (asc)');
@@ -78,7 +76,7 @@ test.describe('FEATURE: Sorting accessibility', () => {
 
     test.describe('WHEN: the multi-column sort preset and clear are activated via keyboard', () => {
       test('THEN: it applies and clears multi-column sort', async ({ page }) => {
-        const multiStateTag = page.locator('.info-tag', { hasText: 'Current sorting' });
+        const multiStateTag = page.getByTestId('sorting-priority-order');
 
         await test.step('THEN: initial state is None', async () => {
           await expect(multiStateTag).toContainText('None');
@@ -92,7 +90,7 @@ test.describe('FEATURE: Sorting accessibility', () => {
         await test.step('THEN: both sort levels are reflected', async () => {
           await expect(multiStateTag).toContainText('1. category (asc), 2. value (desc)');
 
-          const clearBtn = page.locator('.card', { hasText: 'Sort Priority' }).getByRole('button', { name: 'Clear Sorting' });
+          const clearBtn = page.getByTestId('sorting-multi-panel').getByRole('button', { name: 'Clear Sorting' });
 
           await clearBtn.focus();
           await page.keyboard.press('Space');

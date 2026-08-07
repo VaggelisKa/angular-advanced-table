@@ -1,44 +1,22 @@
 import { Component, signal } from '@angular/core';
 
-import { NatList, NatTable, NatTableSubHeaderTemplate, flexRenderComponent } from 'ng-advanced-table';
-import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
+import { NatList, NatTable, NatTableSubHeaderTemplate } from 'ng-advanced-table';
+import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
-import { OrderStatusBadge } from '../../../ui/order-status-badge/order-status-badge';
+import { DemoToggleGroup } from '../../../ui';
+import type { DemoToggleOption } from '../../../ui';
+import { LIST_DEMO_COLUMNS, LIST_DEMO_ROWS } from '../list/list-demo-data';
+import type { ListDemoOrder } from '../list/list-demo-data';
 
-type DemoOrder = {
-  id: string;
-  customer: string;
-  status: 'Ready' | 'Review' | 'Queued';
-  total: number;
-};
-
-const DEMO_ROWS: DemoOrder[] = [
-  { id: 'ORD-201', customer: 'Aster Logistics', status: 'Ready', total: 4820 },
-  { id: 'ORD-202', customer: 'Briar Supply Co', status: 'Review', total: 1260 },
-  { id: 'ORD-203', customer: 'Cobalt Freight', status: 'Queued', total: 7410 },
-  { id: 'ORD-204', customer: 'Dune Retail', status: 'Ready', total: 3095 },
-  { id: 'ORD-205', customer: 'Ember Works', status: 'Queued', total: 980 },
-  { id: 'ORD-206', customer: 'Fjord Trading', status: 'Review', total: 5150 }
-];
-
-const DEMO_COLUMNS: ColumnDef<DemoOrder, unknown>[] = [
-  { accessorKey: 'id', header: 'Order', meta: { label: 'Order' } },
-  { accessorKey: 'customer', header: 'Customer', meta: { label: 'Customer' } },
-  {
-    accessorKey: 'status',
-    header: 'Status',
-    meta: { label: 'Status' },
-    // Same status badge the list-renderer docs use — cells render through
-    // flexRender in both renderers, so the component works in table and list.
-    cell: (info) => flexRenderComponent(OrderStatusBadge, { inputs: { status: info.getValue<DemoOrder['status']>() } })
-  },
-  { accessorKey: 'total', header: 'Total', meta: { label: 'Total', align: 'end' } }
-];
-
-const STATUS_ORDER: readonly DemoOrder['status'][] = ['Ready', 'Review', 'Queued'];
+const STATUS_ORDER: readonly ListDemoOrder['status'][] = ['Ready', 'Review', 'Queued'];
 
 type DemoView = 'table' | 'list';
+
+const RENDERER_OPTIONS: readonly DemoToggleOption<DemoView>[] = [
+  { value: 'table', label: 'Table' },
+  { value: 'list', label: 'List' }
+];
 
 /**
  * Docs demo: rows grouped under sub-header rows by status. The forced group
@@ -47,14 +25,17 @@ type DemoView = 'table' | 'list';
  */
 @Component({
   selector: 'app-sub-header-rows',
-  imports: [NatList, NatTable, NatTableSubHeaderTemplate, NatTableSurface],
+  imports: [NatList, NatTable, NatTableSubHeaderTemplate, NatTableSurface, DemoToggleGroup],
   templateUrl: './sub-header-rows.html',
   styleUrl: './sub-header-rows.css'
 })
 export class SubHeaderRows {
-  protected readonly rows = DEMO_ROWS;
-  protected readonly columns = DEMO_COLUMNS;
+  // Shared with the list-renderer docs: same rows, same columns, same status
+  // badge, so the two topics never drift on formatting.
+  protected readonly rows = LIST_DEMO_ROWS;
+  protected readonly columns = LIST_DEMO_COLUMNS;
   protected readonly statusOrder = STATUS_ORDER;
+  protected readonly rendererOptions = RENDERER_OPTIONS;
 
   protected readonly view = signal<DemoView>('table');
   protected readonly useStatusOrder = signal(false);

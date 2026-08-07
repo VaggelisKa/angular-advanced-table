@@ -1,0 +1,10 @@
+<label class="toggle-control">
+  <input
+    [attr.data-testid]="testId() ?? null"
+    [checked]="checked()"
+    class="toggle-checkbox"
+    type="checkbox"
+    (change)="onToggle($event)" />
+  <span aria-hidden="true" class="slider"></span>
+  <span class="toggle-label">{{ label() }}</span>
+</label>

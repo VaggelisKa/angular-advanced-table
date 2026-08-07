@@ -1,13 +1,5 @@
-.list-states-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-block-end: 14px;
-}
-
-.list-states-controls .btn.is-active {
-  color: var(--sc-accent-strong);
-  background: var(--sc-accent-soft);
+:host {
+  display: block;
 }
 
 /* All three states share one base shape; shared tokens restyle them together. */

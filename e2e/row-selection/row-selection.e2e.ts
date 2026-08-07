@@ -15,8 +15,9 @@ const rowCheckbox = (page: Page, name: string): Locator => table(page).getByRole
 /** The header select-all checkbox. */
 const selectAllCheckbox = (page: Page): Locator => table(page).getByRole('checkbox', { name: 'Select all services' });
 
-/** The "Selected (N): ..." bulk-actions readout. */
-const selectedInfo = (page: Page): Locator => page.locator('.info-tag', { hasText: 'Selected' });
+/** The bulk-actions readout: the "Selected (N)" label and its value are separate cells of a <dl>. */
+const selectedCount = (page: Page): Locator => page.getByTestId('selected-summary-label');
+const selectedInfo = (page: Page): Locator => page.getByTestId('selected-summary');
 
 test.describe('FEATURE: Row selection', () => {
   test.describe('GIVEN: the row selection example is loaded', () => {
@@ -35,7 +36,8 @@ test.describe('FEATURE: Row selection', () => {
         await test.step('THEN: the row and readout start unselected', async () => {
           await expect(checkbox).not.toBeChecked();
           await expect(row).toHaveAttribute('aria-selected', 'false');
-          await expect(selectedInfo(page)).toHaveText('Selected (0): None');
+          await expect(selectedCount(page)).toHaveText('Selected (0)');
+          await expect(selectedInfo(page)).toHaveText('None');
         });
 
         await test.step('THEN: clicking the checkbox selects the row', async () => {
@@ -43,7 +45,8 @@ test.describe('FEATURE: Row selection', () => {
 
           await expect(checkbox).toBeChecked();
           await expect(row).toHaveAttribute('aria-selected', 'true');
-          await expect(selectedInfo(page)).toHaveText('Selected (1): Alpha Searcher');
+          await expect(selectedCount(page)).toHaveText('Selected (1)');
+          await expect(selectedInfo(page)).toHaveText('Alpha Searcher');
         });
 
         await test.step('THEN: clicking the checkbox again clears the selection', async () => {
@@ -51,7 +54,8 @@ test.describe('FEATURE: Row selection', () => {
 
           await expect(checkbox).not.toBeChecked();
           await expect(row).toHaveAttribute('aria-selected', 'false');
-          await expect(selectedInfo(page)).toHaveText('Selected (0): None');
+          await expect(selectedCount(page)).toHaveText('Selected (0)');
+          await expect(selectedInfo(page)).toHaveText('None');
         });
       });
     });
@@ -68,7 +72,8 @@ test.describe('FEATURE: Row selection', () => {
           await rowCheckbox(page, 'Beta Runner').click();
           await rowCheckbox(page, 'Alpha Searcher').click();
 
-          await expect(selectedInfo(page)).toHaveText('Selected (2): Alpha Searcher, Beta Runner');
+          await expect(selectedCount(page)).toHaveText('Selected (2)');
+          await expect(selectedInfo(page)).toHaveText('Alpha Searcher, Beta Runner');
           await expect(deleteBtn).toBeEnabled();
           await expect(deleteBtn).toHaveText('Delete selected (2)');
         });
@@ -95,8 +100,9 @@ test.describe('FEATURE: Row selection', () => {
 
           await expect(selectAll).toBeChecked();
           await expect(selectedRows).toHaveCount(6);
+          await expect(selectedCount(page)).toHaveText('Selected (6)');
           await expect(selectedInfo(page)).toHaveText(
-            'Selected (6): Alpha Searcher, Beta Runner, Gamma Processor, Delta Watcher, Epsilon Shield, Zeta Pipeline'
+            'Alpha Searcher, Beta Runner, Gamma Processor, Delta Watcher, Epsilon Shield, Zeta Pipeline'
           );
         });
 
@@ -105,7 +111,8 @@ test.describe('FEATURE: Row selection', () => {
 
           await expect(selectAll).not.toBeChecked();
           await expect(selectedRows).toHaveCount(0);
-          await expect(selectedInfo(page)).toHaveText('Selected (0): None');
+          await expect(selectedCount(page)).toHaveText('Selected (0)');
+          await expect(selectedInfo(page)).toHaveText('None');
         });
       });
     });

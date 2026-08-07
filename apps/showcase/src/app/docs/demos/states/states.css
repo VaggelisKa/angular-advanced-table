@@ -1,5 +1,33 @@
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
 .state-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sc-space-8);
+  align-items: start;
+  min-width: 0;
+}
+
+/* Pair the states up only once each half is wide enough to show a full table
+   header row. Queried against the demo's own box, not the viewport, so the
+   docs embed and a full-width route both get the right answer. */
+@container (width >= 700px) {
+  .state-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .state-reference-card {
+    grid-column: 1 / -1;
+  }
+}
+
+.transition-controls {
+  display: flex;
+  padding: var(--sc-space-3) var(--sc-space-5);
+  border-bottom: 1px solid var(--sc-border);
 }
 
 .state-template {
@@ -28,12 +56,6 @@
   }
 }
 
-.transition-controls {
-  display: flex;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--sc-border);
-}
-
 .transition-preview-surface {
   --nat-table-state-transition-duration: 320ms;
   --nat-table-state-transition-distance: 8px;
@@ -47,14 +69,4 @@
   margin-top: 6px;
   background: linear-gradient(90deg, var(--sc-surface-muted), var(--sc-border-strong), var(--sc-surface-muted));
   border-radius: var(--sc-radius-pill);
-}
-
-.state-reference-card {
-  grid-column: 1 / -1;
-}
-
-.state-grid {
-  @media (width <= 900px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

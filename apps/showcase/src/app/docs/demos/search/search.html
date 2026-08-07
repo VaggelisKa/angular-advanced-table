@@ -1,0 +1,5 @@
+<nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
+  <app-table-search label="Fuzzy search name, status, or category" placeholder="Search e.g. Analytics, Active, Delta..." />
+
+  <nat-table [columns]="columns" [data]="data" accessibleName="Search demo table" class="sc-demo-table" />
+</nat-table-surface>

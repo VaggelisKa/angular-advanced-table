@@ -1,27 +1,10 @@
 <div class="list-demo-controls">
-  <div aria-label="Renderer" class="list-demo-toggle" role="group">
-    <button
-      [attr.aria-pressed]="view() === 'list'"
-      [class.is-active]="view() === 'list'"
-      class="btn btn-outline"
-      type="button"
-      (click)="view.set('list')">
-      List
-    </button>
-    <button
-      [attr.aria-pressed]="view() === 'table'"
-      [class.is-active]="view() === 'table'"
-      class="btn btn-outline"
-      type="button"
-      (click)="view.set('table')">
-      Table
-    </button>
-  </div>
+  <app-demo-toggle-group [options]="rendererOptions" [value]="view()" accessibleName="Renderer" (valueChange)="view.set($event)" />
 
   <button
     [attr.aria-label]="sortByTotalLabel()"
     [class.is-active]="sortDirection() !== null"
-    class="btn btn-secondary"
+    class="btn btn-outline"
     type="button"
     (click)="cycleSortByTotal()">
     Sort by total
@@ -29,20 +12,18 @@
   </button>
 </div>
 
-@if (view() === 'list') {
-  <nat-table-surface [(state)]="state">
+<nat-table-surface [(state)]="state">
+  @if (view() === 'list') {
     <nat-list
       [columns]="columns"
       [data]="rows"
       accessibleName="Orders list sharing state with the table renderer"
-      class="list-demo-list" />
-  </nat-table-surface>
-} @else {
-  <div class="card">
-    <h2 class="card-title">Orders</h2>
-
-    <nat-table-surface [(state)]="state">
-      <nat-table [columns]="columns" [data]="rows" accessibleName="Orders table sharing state with the list renderer" />
-    </nat-table-surface>
-  </div>
-}
+      class="sc-demo-list list-demo-list" />
+  } @else {
+    <nat-table
+      [columns]="columns"
+      [data]="rows"
+      accessibleName="Orders table sharing state with the list renderer"
+      class="sc-demo-table" />
+  }
+</nat-table-surface>

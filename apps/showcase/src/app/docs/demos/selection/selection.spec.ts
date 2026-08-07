@@ -28,6 +28,8 @@ describe('FEATURE: Selection', () => {
 
   const dataRowCount = (): number => element().querySelectorAll('tbody tr.data-row').length;
 
+  const fact = (testId: string): string => element().querySelector(`[data-testid="${testId}"]`)?.textContent.trim() ?? '';
+
   const selectedRowCount = (): number =>
     Array.from(element().querySelectorAll<HTMLElement>('tbody tr.data-row')).filter(
       (row) => row.getAttribute('aria-selected') === 'true'
@@ -60,7 +62,7 @@ describe('FEATURE: Selection', () => {
         await flush();
         expect(selectedRowCount()).toBe(2);
 
-        clickButton('Single mode');
+        clickButton('Single');
         await flush();
         // Switching cardinality clears the selection instead of collapsing it.
         expect(selectedRowCount()).toBe(0);
@@ -69,7 +71,7 @@ describe('FEATURE: Selection', () => {
         await flush();
         expect(selectedRowCount()).toBe(1);
 
-        clickButton('Multiple mode');
+        clickButton('Multiple');
         await flush();
         // Switching back to multiple clears again.
         expect(selectedRowCount()).toBe(0);
@@ -103,7 +105,7 @@ describe('FEATURE: Selection', () => {
         await flush();
 
         expect(dataRowCount()).toBe(0);
-        expect(element().textContent).toContain('Selected (0): None');
+        expect(fact('selected-summary')).toBe('None');
       });
     });
   });
@@ -125,7 +127,7 @@ describe('FEATURE: Selection', () => {
         expect(selectedRowCount()).toBe(0);
         expect(headerCheckbox()?.checked).toBe(false);
         expect(headerCheckbox()?.indeterminate).toBe(false);
-        expect(element().textContent).toContain('Selected (0): None');
+        expect(fact('selected-summary')).toBe('None');
       });
     });
   });
@@ -159,7 +161,7 @@ describe('FEATURE: Selection', () => {
         categoryCell(0).click();
         await flush();
 
-        expect(element().textContent).toContain('Last activated: Alpha Searcher');
+        expect(fact('last-activated')).toBe('Alpha Searcher');
       });
     });
 
@@ -169,7 +171,7 @@ describe('FEATURE: Selection', () => {
         await flush();
 
         expect(selectedRowCount()).toBe(1);
-        expect(element().textContent).toContain('Last activated: None');
+        expect(fact('last-activated')).toBe('None');
       });
     });
   });

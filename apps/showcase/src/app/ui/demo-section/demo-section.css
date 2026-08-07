@@ -1,0 +1,37 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.demo-section {
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-md);
+}
+
+.demo-section-heading {
+  padding: var(--sc-space-3) var(--sc-space-5);
+  margin: 0;
+  font-size: var(--sc-text-md);
+  font-weight: var(--sc-weight-semibold);
+  line-height: var(--sc-lh-snug);
+  color: var(--sc-text);
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.demo-section-body {
+  display: grid;
+  gap: var(--sc-space-3);
+  align-content: start;
+  min-width: 0;
+  padding: var(--sc-space-5);
+}
+
+/* Table and list regions draw their own border and radius; padding around them
+   would double the inset. */
+.demo-section-body--flush {
+  padding: 0;
+}

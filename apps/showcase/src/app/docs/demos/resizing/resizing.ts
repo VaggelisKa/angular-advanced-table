@@ -1,84 +1,35 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
-import type { CellContext, ColumnDef, NatTableUserState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
-type DemoItem = {
-  readonly id: string;
-  readonly name: string;
-  readonly category: string;
-  readonly status: string;
-  readonly value: number;
-};
+import { DemoAside, DemoLayout, DemoSection, DemoSwitch, DemoToggleGroup } from '../../../ui';
+import type { DemoToggleOption } from '../../../ui';
+import { DEMO_ITEMS, demoItemBaseColumns } from '../demo-data';
+import type { DemoItem } from '../demo-data';
 
-type ColumnToggle = {
-  readonly id: string;
-  readonly label: string;
-};
+type ColumnSizingMode = 'fill' | 'fixed';
 
-const DEMO_DATA: DemoItem[] = [
-  { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
-  { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200 },
-  {
-    id: 'item-3',
-    name: 'Gamma Processor',
-    category: 'Data Science',
-    status: 'Paused',
-    value: 7800
-  },
-  { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
-  { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
+const SIZING_MODE_OPTIONS: readonly DemoToggleOption<ColumnSizingMode>[] = [
+  { value: 'fill', label: 'Fill' },
+  { value: 'fixed', label: 'Fixed' }
 ];
 
 @Component({
   selector: 'app-resizing',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NatTable, NatTableSurface],
+  imports: [NatTable, NatTableSurface, DemoAside, DemoLayout, DemoSection, DemoSwitch, DemoToggleGroup],
   templateUrl: './resizing.html',
   styleUrl: './resizing.css'
 })
 export class Resizing {
-  protected readonly data = DEMO_DATA;
+  protected readonly data = DEMO_ITEMS;
+  protected readonly sizingModeOptions = SIZING_MODE_OPTIONS;
 
-  // Resizing is enabled table-wide at the surface via [enableColumnResizing]="true".
-  // Base definitions carry no per-column flag; the toggle list below opts individual
-  // columns OUT by setting enableResizing: false on the unchecked ones.
-  private readonly baseColumns: ColumnDef<DemoItem, unknown>[] = [
-    {
-      id: 'name',
-      accessorKey: 'name',
-      header: 'Name',
-      meta: { label: 'Name', rowHeader: true }
-    },
-    {
-      id: 'category',
-      accessorKey: 'category',
-      header: 'Category',
-      meta: { label: 'Category' }
-    },
-    {
-      id: 'status',
-      accessorKey: 'status',
-      header: 'Status',
-      meta: { label: 'Status' }
-    },
-    {
-      id: 'value',
-      accessorKey: 'value',
-      header: 'Value',
-      meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, unknown>) => `$${context.getValue<number>().toLocaleString()}`
-    }
-  ];
-
-  protected readonly columnToggles: readonly ColumnToggle[] = [
-    { id: 'name', label: 'Name' },
-    { id: 'category', label: 'Category' },
-    { id: 'status', label: 'Status' },
-    { id: 'value', label: 'Value' }
-  ];
+  protected readonly columnToggles = demoItemBaseColumns.map((column) => ({
+    id: column.id as string,
+    label: column.meta?.label ?? (column.id as string)
+  }));
 
   // Which columns expose a resize handle. Starts as a subset so the "some columns
   // resize, some don't" per-column behaviour is visible immediately. Mutated at
@@ -90,7 +41,7 @@ export class Resizing {
   protected readonly columns = computed<ColumnDef<DemoItem, unknown>[]>(() => {
     const resizable = this.resizableColumnIds();
 
-    return this.baseColumns.map((column) => ({
+    return demoItemBaseColumns.map((column) => ({
       ...column,
       enableResizing: resizable.has(column.id as string)
     }));
@@ -103,7 +54,7 @@ export class Resizing {
   // Both modes resize pixel-exact. Fill reflows the other columns so the table stays
   // filled; fixed keeps widths authoritative and scrolls the region. Default to fill
   // (the library default) to demonstrate the reflow behaviour.
-  protected readonly columnSizingMode = signal<'fill' | 'fixed'>('fill');
+  protected readonly columnSizingMode = signal<ColumnSizingMode>('fill');
 
   // Reset only the width slice — spread the rest so any other controlled state
   // (sorting/filtering/etc.) survives. The button label promises widths only.

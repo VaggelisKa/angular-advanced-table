@@ -5,8 +5,15 @@ import type { NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { LIST_DEMO_COLUMNS, LIST_DEMO_ROWS } from './list-demo-data';
+import { DemoToggleGroup } from '../../../ui';
+import type { DemoToggleOption } from '../../../ui';
 
 type DemoView = 'table' | 'list';
+
+const RENDERER_OPTIONS: readonly DemoToggleOption<DemoView>[] = [
+  { value: 'list', label: 'List' },
+  { value: 'table', label: 'Table' }
+];
 
 /**
  * Docs demo: one shared state driving either renderer. Sorting is written
@@ -15,13 +22,14 @@ type DemoView = 'table' | 'list';
  */
 @Component({
   selector: 'app-list-renderer',
-  imports: [NatList, NatTable, NatTableSurface],
+  imports: [NatList, NatTable, NatTableSurface, DemoToggleGroup],
   templateUrl: './list-renderer.html',
   styleUrl: './list-renderer.css'
 })
 export class ListRenderer {
   protected readonly rows = LIST_DEMO_ROWS;
   protected readonly columns = LIST_DEMO_COLUMNS;
+  protected readonly rendererOptions = RENDERER_OPTIONS;
 
   protected readonly view = signal<DemoView>('list');
   protected readonly state = signal<Partial<NatTableUserState>>({});

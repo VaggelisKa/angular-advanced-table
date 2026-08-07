@@ -1,0 +1,14 @@
+<app-demo-layout>
+  <nat-table-surface [enablePinning]="true" [enableSorting]="true" [stickyHeader]="stickyHeaderEnabled()" class="sticky-demo-surface">
+    <nat-table [columns]="columns" [data]="data" accessibleName="Sticky header demo table" class="sc-demo-table" />
+  </nat-table-surface>
+
+  <app-demo-section demoAside heading="Configure sticky state">
+    <app-demo-switch
+      [checked]="stickyHeaderEnabled()"
+      label="Enable sticky header"
+      (checkedChange)="stickyHeaderEnabled.set($event)" />
+
+    <p class="demo-note">Scroll the table to verify the sticky behavior, then turn it off to observe standard scrolling logic.</p>
+  </app-demo-section>
+</app-demo-layout>

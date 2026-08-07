@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+/* .btn-group / .btn-sm / .active come from the showcase stylesheet so the
+   segmented control matches every other button in the app. Only wrapping is
+   local: a group inside a narrow demo rail must not overflow its box. */
+.btn-group {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
