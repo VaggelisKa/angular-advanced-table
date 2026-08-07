@@ -52,8 +52,9 @@ describe('FEATURE: App controls', () => {
         const compiled = fixture.nativeElement as HTMLElement;
         const trigger = compiled.querySelector('.showcase-menu-button') as HTMLButtonElement;
 
-        expect(trigger.getAttribute('aria-controls')).toBe('showcase-navigation');
-        expect(trigger.getAttribute('aria-expanded')).toBe('false');
+        /* The drawer opens as a modal CDK dialog, so the trigger advertises a
+           dialog popup instead of an expanded/controls disclosure pair. */
+        expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
         /* The drawer renders through the CDK dialog into the overlay container
            appended to `document.body`, so drawer content is queried there. */
         expect(document.body.querySelector('.showcase-nav-drawer')).toBeNull();
@@ -64,7 +65,6 @@ describe('FEATURE: App controls', () => {
         const drawer = getElement<HTMLElement>(document.body, '.showcase-nav-drawer');
         const container = drawer.closest('cdk-dialog-container');
 
-        expect(trigger.getAttribute('aria-expanded')).toBe('true');
         expect(container?.getAttribute('role')).toBe('dialog');
         expect(container?.getAttribute('aria-modal')).toBe('true');
         expect(document.body.querySelector('.cdk-overlay-backdrop')).not.toBeNull();
@@ -74,7 +74,6 @@ describe('FEATURE: App controls', () => {
         closeButton.click();
         await fixture.whenStable();
 
-        expect(trigger.getAttribute('aria-expanded')).toBe('false');
         expect(document.body.querySelector('.showcase-nav-drawer')).toBeNull();
         expect(document.body.querySelector('.cdk-overlay-backdrop')).toBeNull();
       });
@@ -133,7 +132,6 @@ describe('FEATURE: App controls', () => {
         await fixture.whenStable();
 
         expect(document.body.querySelector('.showcase-nav-drawer')).toBeNull();
-        expect(trigger.getAttribute('aria-expanded')).toBe('false');
       });
     });
   });
