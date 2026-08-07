@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
-import { loadDocsExamplePreview } from './support/docs-example';
+import { loadDocsExamplePreview } from '../support/docs-example';
 
 test.describe('FEATURE: Column reordering', () => {
   test.beforeEach(async ({ page }) => {
