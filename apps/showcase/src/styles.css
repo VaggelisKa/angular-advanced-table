@@ -424,9 +424,8 @@ input {
     min-width: 0;
   }
 
-  /* Companion control sitting above a table or list inside a surface. The
-     surface itself is a plain block with no gap, so the spacing has to come
-     from the control. */
+  /* Companion control sitting next to a table or list but OUTSIDE the surface.
+     Controls inside a surface are spaced by the .docs-example rule below. */
   .demo-controls {
     display: block;
     min-width: 0;
@@ -1012,6 +1011,15 @@ input {
       border-color: color-mix(in srgb, var(--sc-positive) 45%, transparent);
     }
   }
+}
+
+/* Docs demos: nat-table-surface lays its children out as a plain block with no
+   gap, so a projected pager, toolbar, search field or visibility chip row would
+   sit flush against the table/list region it belongs to. Spacing every adjacent
+   pair covers controls above and below the region alike. Scoped to
+   .docs-example so gallery routes keep their own bespoke spacing. */
+.docs-example nat-table-surface .surface > * + * {
+  margin-top: var(--sc-space-4);
 }
 
 /* ---------- Shared demo table + page ---------- */
