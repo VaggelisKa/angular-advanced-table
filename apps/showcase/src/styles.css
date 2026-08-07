@@ -1,3 +1,5 @@
+@import '@angular/cdk/overlay-prebuilt.css';
+
 :root {
   /* Palette — light-dark(<light>, <dark>); resolved by color-scheme, which the
      theme toggle flips via :root[data-theme='dark'] below. One line per token. */
@@ -1293,4 +1295,114 @@ input {
     color: var(--sc-text);
     background: var(--sc-surface-muted);
   }
+}
+
+/* ---------- CDK dialog shells (docs search + mobile nav drawer) ----------
+   Panel and backdrop geometry live on CDK-owned overlay elements, so these
+   rules are global; the dialog components style only their own content. */
+
+/* CDK's block scroll strategy pins <html>; body overflow additionally keeps
+   touch scrolls from chaining to the page behind an open modal. */
+.cdk-global-scrollblock body {
+  overflow: hidden;
+}
+
+/* Top-centered command-palette pane; the wrapper flexbox centers it
+   horizontally and `align-self` pins it to the top. */
+.docs-search-overlay-pane {
+  align-self: flex-start;
+  width: min(640px, calc(100vw - 32px));
+  margin-top: min(14vh, 120px);
+}
+
+.docs-search-overlay-backdrop {
+  background: rgb(15 20 25 / 42%);
+  transition: opacity 120ms ease-out;
+}
+
+:root[data-theme='dark'] .docs-search-overlay-backdrop {
+  background: rgb(0 0 0 / 58%);
+}
+
+@media (width <= 640px) {
+  /* Fullscreen mobile search has no backdrop to tap; the in-dialog close
+     button is the touch equivalent of Escape. */
+  .docs-search-overlay-backdrop {
+    display: none;
+  }
+
+  .docs-search-overlay-pane {
+    width: 100vw;
+    height: 100dvh;
+    margin-top: 0;
+  }
+}
+
+/* Left drawer pane: the auto right margin absorbs the wrapper's free space so
+   the pane sits flush left, and `align-self: stretch` gives it full height. */
+.showcase-nav-overlay-pane {
+  align-self: stretch;
+  width: min(86vw, 320px);
+  max-width: calc(100vw - 40px);
+  margin-right: auto;
+  background: var(--sc-surface);
+  border-right: 1px solid var(--sc-border);
+  box-shadow: 20px 0 50px rgb(15 20 25 / 20%);
+  animation: showcase-nav-slide-in 180ms ease;
+}
+
+:root[data-theme='dark'] .showcase-nav-overlay-pane {
+  box-shadow: 20px 0 50px rgb(0 0 0 / 46%);
+}
+
+@keyframes showcase-nav-slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+/* The hand-rolled drawer backdrop appeared instantly; keep that. */
+.showcase-nav-overlay-backdrop {
+  background: rgb(15 20 25 / 42%);
+  transition: none;
+}
+
+:root[data-theme='dark'] .showcase-nav-overlay-backdrop {
+  background: rgb(0 0 0 / 58%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-search-overlay-backdrop {
+    transition: none;
+  }
+
+  .showcase-nav-overlay-pane {
+    animation: none;
+  }
+}
+
+/* Full-screen CDK dialog shell for the gallery detailed-view example
+   (sticky-show-detailed-view). Global because the CDK overlay renders outside
+   the component; content styles stay in the component's own stylesheet. The
+   --sc-detail-* values mirror the component :host declarations — keep in sync. */
+.sc-detail-dialog-panel {
+  --sc-detail-header: 68px;
+  --sc-detail-radius: 8px;
+
+  width: 100vw;
+  width: 100dvw;
+  max-width: 100vw;
+  max-width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior-y: contain;
+  color: var(--sc-text);
+  background: var(--sc-surface);
+}
+
+.sc-detail-dialog-backdrop {
+  background: var(--sc-surface);
 }

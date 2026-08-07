@@ -11,42 +11,18 @@ export const isApplePlatform = (navigator: Navigator | undefined): boolean => {
   return /mac|iphone|ipad|ipod/iu.test(navigator.platform || navigator.userAgent);
 };
 
-const getFocusableElements = (container: HTMLElement): HTMLElement[] =>
-  Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
-    )
-  ).filter(
-    /* `getClientRects()` drops `display: none` candidates (e.g. the search
-       dialog's mobile-only close button on desktop), which would otherwise
-       become unreachable first/last trap targets. */
-    (element) => element.tabIndex >= 0 && !element.closest('[hidden]') && element.getClientRects().length > 0
-  );
-
 /**
- * Resolve the element that should receive focus to keep a Tab cycle trapped
- * inside `panel`, or `null` when focus can stay where it is.
+ * Resolve the element a closing dialog should restore focus to. Prefers the
+ * click-event target: Safari and Firefox on macOS do not focus buttons on
+ * click, so `activeElement` stays `body` there. Keyboard paths have no event
+ * and fall back to the focused element; `body` is never a restore target.
  */
-export const resolveFocusTrapTarget = (panel: HTMLElement, activeElement: Element | null, shiftKey: boolean): HTMLElement | null => {
-  const focusableElements = getFocusableElements(panel);
-  const firstElement = focusableElements.at(0);
-  const lastElement = focusableElements.at(-1);
-
-  if (!firstElement || !lastElement) {
-    return null;
+export const resolveDialogOpener = (eventTarget: EventTarget | null | undefined, doc: Document): HTMLElement | null => {
+  if (eventTarget instanceof HTMLElement) {
+    return eventTarget;
   }
 
-  if (!(activeElement instanceof HTMLElement) || !panel.contains(activeElement)) {
-    return firstElement;
-  }
+  const activeElement = doc.activeElement;
 
-  if (shiftKey && activeElement === firstElement) {
-    return lastElement;
-  }
-
-  if (!shiftKey && activeElement === lastElement) {
-    return firstElement;
-  }
-
-  return null;
+  return activeElement instanceof HTMLElement && activeElement !== doc.body ? activeElement : null;
 };

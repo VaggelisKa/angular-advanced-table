@@ -1,17 +1,23 @@
+import { DialogRef } from '@angular/cdk/dialog';
 import { DOCUMENT, ViewportScroller } from '@angular/common';
 import type { ElementRef } from '@angular/core';
-import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, output, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, Injector, afterNextRender, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { lockBodyScroll } from './docs-search-dom.util';
 import { buildDocsSearchResultGroupViews, getDocsSearchAnnouncement, getNextDocsSearchActiveIndex } from './docs-search-view.util';
 import { DocsSearchStore } from './docs-search.store';
 import type { DocsSearchResult } from './docs-search.type';
 import { searchDocsCorpus } from './docs-search.util';
-import { resolveFocusTrapTarget } from '../shell/app.util';
 
 const ANNOUNCE_DEBOUNCE_MS = 150;
 
+/**
+ * Docs search palette content, opened through `Dialog` from the app shell. The
+ * CDK dialog owns the modal shell: focus trap, `role`/`aria-modal`, backdrop,
+ * Escape dismissal, and scroll blocking. Closing resolves a boolean result —
+ * `false` when focus must stay where navigation put it, `true` (or `undefined`
+ * for CDK-initiated closes) when the shell should restore trigger focus.
+ */
 @Component({
   selector: 'app-docs-search-dialog',
   templateUrl: './docs-search-dialog.html',
@@ -19,17 +25,14 @@ const ANNOUNCE_DEBOUNCE_MS = 150;
 })
 export class DocsSearchDialog {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialogRef = inject<DialogRef<boolean>>(DialogRef);
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
   private readonly store = inject(DocsSearchStore);
   private readonly viewportScroller = inject(ViewportScroller);
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
-  private readonly searchPanel = viewChild<ElementRef<HTMLElement>>('searchPanel');
   private announceTimer: ReturnType<typeof setTimeout> | null = null;
-
-  /** Emits when the dialog wants to close; the payload says whether focus should return to the trigger. */
-  public readonly closed = output<boolean>();
 
   protected readonly query = signal('');
   protected readonly activeIndex = signal(-1);
@@ -64,8 +67,9 @@ export class DocsSearchDialog {
 
   public constructor() {
     this.store.preloadCorpus();
-    this.destroyRef.onDestroy(lockBodyScroll(this.document.body));
 
+    /* CDK's first-tabbable autofocus also targets the input; this direct write
+       keeps the focus handoff deterministic across environments. */
     afterNextRender({ write: () => this.searchInput()?.nativeElement.focus() });
 
     /* The visible results update instantly per keystroke; only the live-region
@@ -112,31 +116,12 @@ export class DocsSearchDialog {
     }
   }
 
-  protected trapDialogFocus(event: KeyboardEvent): void {
-    if (event.key !== 'Tab') {
-      return;
-    }
-
-    const panel = this.searchPanel()?.nativeElement;
-
-    if (!panel) {
-      return;
-    }
-
-    const target = resolveFocusTrapTarget(panel, this.document.activeElement, event.shiftKey);
-
-    if (target) {
-      event.preventDefault();
-      target.focus();
-    }
-  }
-
   protected setActiveIndex(index: number): void {
     this.activeIndex.set(index);
   }
 
   protected close(restoreFocus: boolean): void {
-    this.closed.emit(restoreFocus);
+    this.dialogRef.close(restoreFocus);
   }
 
   protected retryCorpusLoad(): void {

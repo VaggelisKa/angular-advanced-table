@@ -9,9 +9,20 @@
     color 180ms ease;
 }
 
-.showcase-mobile-header,
-.showcase-nav-backdrop {
+.showcase-mobile-header {
   display: none;
+}
+
+/* Drawer content shell inside the CDK dialog; the pane itself (surface, slide
+   transition, backdrop) is styled globally in styles.css via panelClass. */
+.showcase-nav-drawer {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-3);
+  width: 100%;
+  height: 100%;
+  padding: var(--sc-space-5) var(--sc-space-4) calc(var(--sc-space-5) + env(safe-area-inset-bottom, 0px));
 }
 
 .showcase-mobile-brand {
@@ -323,12 +334,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .showcase-shell.is-nav-open {
-    max-height: 100vh;
-    max-height: 100dvh;
-    overflow: hidden;
-  }
-
   .showcase-mobile-header {
     position: sticky;
     top: 0;
@@ -344,51 +349,9 @@
     box-shadow: var(--sc-shadow-sm);
   }
 
+  /* On phone widths the sidebar is replaced by the CDK dialog drawer. */
   .showcase-nav {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 50;
-    visibility: hidden;
-    gap: var(--sc-space-3);
-    align-self: auto;
-    width: min(86vw, 320px);
-    max-width: calc(100vw - 40px);
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
-    padding: var(--sc-space-5) var(--sc-space-4) calc(var(--sc-space-5) + env(safe-area-inset-bottom, 0px));
-    pointer-events: none;
-    border-right: 1px solid var(--sc-border);
-    border-bottom: 0;
-    box-shadow: 20px 0 50px rgb(15 20 25 / 20%);
-    transform: translateX(-100%);
-    transition:
-      transform 180ms ease,
-      visibility 0s linear 180ms;
-  }
-
-  .showcase-nav.is-open {
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(0);
-    transition: transform 180ms ease;
-  }
-
-  :host-context([data-theme='dark']) .showcase-nav {
-    box-shadow: 20px 0 50px rgb(0 0 0 / 46%);
-  }
-
-  .showcase-nav-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    display: block;
-    background: rgb(15 20 25 / 42%);
-  }
-
-  :host-context([data-theme='dark']) .showcase-nav-backdrop {
-    background: rgb(0 0 0 / 58%);
+    display: none;
   }
 
   .showcase-nav-header {
@@ -410,8 +373,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .showcase-nav,
-  .showcase-nav.is-open,
   .showcase-content {
     transition: none;
     animation: none;
