@@ -18,4 +18,6 @@ import { Component, booleanAttribute, input } from '@angular/core';
 export class DemoSection {
   public readonly heading = input<string>();
   public readonly flush = input(false, { transform: booleanAttribute });
+  /** Stable hook for automated tests, applied to the section element. */
+  public readonly testId = input<string>();
 }

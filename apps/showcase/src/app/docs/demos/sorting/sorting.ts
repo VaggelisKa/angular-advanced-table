@@ -34,7 +34,8 @@ export class Sorting {
     return [
       {
         label: 'Current state',
-        value: entry ? `${entry.id} (${entry.desc ? 'desc' : 'asc'})` : 'None'
+        value: entry ? `${entry.id} (${entry.desc ? 'desc' : 'asc'})` : 'None',
+        testId: 'sorting-current-state'
       }
     ];
   });
@@ -65,7 +66,8 @@ export class Sorting {
         label: 'Priority order',
         value: sorting?.length
           ? sorting.map((entry, index) => `${index + 1}. ${entry.id} (${entry.desc ? 'desc' : 'asc'})`).join(', ')
-          : 'None'
+          : 'None',
+        testId: 'sorting-priority-order'
       }
     ];
   });

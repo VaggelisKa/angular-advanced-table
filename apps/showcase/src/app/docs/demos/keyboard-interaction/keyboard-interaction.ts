@@ -25,7 +25,9 @@ export class KeyboardInteraction {
   protected readonly data = signal<DemoItem[]>([...DEMO_ITEMS]);
   protected readonly lastAction = signal('None yet');
 
-  protected readonly facts = computed<DemoFact[]>(() => [{ label: 'Last action', value: this.lastAction() }]);
+  protected readonly facts = computed<DemoFact[]>(() => [
+    { label: 'Last action', value: this.lastAction(), testId: 'keyboard-last-action' }
+  ]);
 
   private readonly textColumns = demoItemBaseColumns.filter((column) => column.id !== 'status');
 

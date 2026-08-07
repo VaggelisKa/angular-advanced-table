@@ -63,11 +63,13 @@ export class Responsive {
     return [
       {
         label: 'Mode',
-        value: this.isMobile() ? 'Mobile (sort, pin, and resize UI hidden)' : 'Desktop'
+        value: this.isMobile() ? 'Mobile (sort, pin, and resize UI hidden)' : 'Desktop',
+        testId: 'responsive-mode'
       },
       {
         label: 'Current sort',
-        value: entry ? `${entry.id} (${entry.desc ? 'desc' : 'asc'})` : 'None'
+        value: entry ? `${entry.id} (${entry.desc ? 'desc' : 'asc'})` : 'None',
+        testId: 'responsive-current-sort'
       }
     ];
   });

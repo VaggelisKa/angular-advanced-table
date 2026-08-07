@@ -5,7 +5,7 @@
 
   <app-demo-section demoAside heading="Configure pinning state">
     @for (column of targetColumns; track column.id) {
-      <div class="pinning-column">
+      <div [attr.data-testid]="`pinning-column-${column.id}`" class="pinning-column">
         <span class="pinning-column-name">{{ column.label }}</span>
         <app-demo-toggle-group
           [accessibleName]="`Pin ${column.label} column`"

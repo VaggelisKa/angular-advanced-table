@@ -1,7 +1,7 @@
 <dl [attr.aria-live]="live() ? 'polite' : null" class="demo-facts">
   @for (fact of facts(); track fact.label) {
     <div class="demo-fact">
-      <dt class="demo-fact-label">{{ fact.label }}</dt>
+      <dt [attr.data-testid]="fact.testId ? fact.testId + '-label' : null" class="demo-fact-label">{{ fact.label }}</dt>
       <dd [attr.data-testid]="fact.testId ?? null" class="demo-fact-value">{{ fact.value }}</dd>
     </div>
   }

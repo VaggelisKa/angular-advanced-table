@@ -3,7 +3,7 @@
     <nat-table [columns]="columns" [data]="data" accessibleName="Sorting demo table" class="sc-demo-table" />
   </nat-table-surface>
 
-  <app-demo-section demoAside heading="Programmatic sort actions">
+  <app-demo-section demoAside heading="Programmatic sort actions" testId="sorting-single-panel">
     <button class="btn btn-outline" type="button" (click)="sortBy('value', 'asc')">Sort by Value (Asc)</button>
     <button class="btn btn-outline" type="button" (click)="sortBy('name', 'desc')">Sort by Name (Desc)</button>
     <button class="btn btn-secondary" type="button" (click)="clearSort()">Clear Sorting</button>
@@ -17,7 +17,7 @@
     <nat-table [columns]="columns" [data]="data" accessibleName="Multi-column sorting demo table" class="sc-demo-table" />
   </nat-table-surface>
 
-  <app-demo-section demoAside heading="Sort priority">
+  <app-demo-section demoAside heading="Sort priority" testId="sorting-multi-panel">
     <div class="demo-note">
       <ol>
         <li>Click a header's sort button to sort by that column.</li>

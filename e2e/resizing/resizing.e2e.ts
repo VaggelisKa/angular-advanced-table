@@ -23,6 +23,11 @@ const nextFrame = async (page: Page): Promise<void> => {
 
 /** Drags a resize handle horizontally by `deltaX` pixels via a real pointer sequence. */
 const dragResizeHandle = async (page: Page, handle: Locator, deltaX: number): Promise<void> => {
+  // page.mouse works in viewport coordinates and does not auto-scroll the way
+  // locator actions do, so the handle has to be brought into view first — an
+  // off-screen centre point resolves to no element and the drag silently no-ops.
+  await handle.scrollIntoViewIfNeeded();
+
   const box = await handle.boundingBox();
 
   if (!box) throw new Error('Resize handle has no bounding box.');

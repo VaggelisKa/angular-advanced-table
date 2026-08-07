@@ -1,4 +1,4 @@
-<section class="demo-section">
+<section [attr.data-testid]="testId() ?? null" class="demo-section">
   @if (heading(); as text) {
     <h3 class="demo-section-heading">{{ text }}</h3>
   }
