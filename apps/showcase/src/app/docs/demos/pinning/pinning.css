@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.pinning-shadow-example {
+  --nat-table-pinned-divider-shadow-color: light-dark(rgb(232 235 238 / 35%), rgb(17 20 24 / 50%));
+}
+
+.pinning-column {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-1) var(--sc-space-3);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.pinning-column-name {
+  font-size: var(--sc-text-base);
+  font-weight: var(--sc-weight-semibold);
+  color: var(--sc-text);
+}

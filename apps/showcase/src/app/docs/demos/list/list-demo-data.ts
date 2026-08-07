@@ -40,6 +40,13 @@ export const LIST_DEMO_ROWS: ListDemoOrder[] = [
   { id: 'ORD-206', customer: 'Fjord Trading', status: 'Review', total: 5150 }
 ];
 
+/** Shared currency formatting so every list demo renders `total` identically. */
+export const listDemoTotalFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2
+});
+
 /** Shared columns: text cells plus the status badge rendered through flexRender. */
 export const LIST_DEMO_COLUMNS: ColumnDef<ListDemoOrder, unknown>[] = [
   { accessorKey: 'id', header: 'Order', meta: { label: 'Order' } },
@@ -50,5 +57,10 @@ export const LIST_DEMO_COLUMNS: ColumnDef<ListDemoOrder, unknown>[] = [
     meta: { label: 'Status' },
     cell: (info) => flexRenderComponent(OrderStatusBadge, { inputs: { status: info.getValue<ListDemoOrder['status']>() } })
   },
-  { accessorKey: 'total', header: 'Total', meta: { label: 'Total', align: 'end' } }
+  {
+    accessorKey: 'total',
+    header: 'Total',
+    meta: { label: 'Total', align: 'end' },
+    cell: (info) => listDemoTotalFormatter.format(info.getValue<number>())
+  }
 ];

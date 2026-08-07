@@ -44,6 +44,7 @@ describe('FEATURE: List renderer docs demo', () => {
         const controls = host(fixture).querySelector('.list-demo-controls');
 
         expect(items).toHaveLength(6);
+        expect(controls).not.toBeNull();
         expect(host(fixture).querySelector('.card')).toBeNull();
         expect(controls?.closest('.card')).toBeNull();
         expect(host(fixture).querySelectorAll('[data-testid="nat-list-item"] app-order-status-badge')).toHaveLength(6);
@@ -67,7 +68,9 @@ describe('FEATURE: List renderer docs demo', () => {
 
         const firstRowHeader = host(fixture).querySelector('tbody tr th, tbody tr td');
 
-        expect(host(fixture).querySelector('.card nat-table')).not.toBeNull();
+        // The table branch is as bare as the list branch — no card chrome on either.
+        expect(host(fixture).querySelector('nat-table')).not.toBeNull();
+        expect(host(fixture).querySelector('.card')).toBeNull();
         expect(firstRowHeader?.textContent.trim()).toBe('ORD-203');
       });
     });

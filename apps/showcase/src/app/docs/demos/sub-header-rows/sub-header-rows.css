@@ -1,38 +1,36 @@
+:host {
+  display: block;
+}
+
 .sub-header-demo-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--sc-space-2);
   align-items: center;
   justify-content: space-between;
-  margin-block-end: 14px;
+  margin-block-end: var(--sc-space-4);
 }
 
-.sub-header-demo-toggle,
 .sub-header-demo-state-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-}
-
-/* Active accent for toggled demo controls (renderer choice, workflow order, sort). */
-.sub-header-demo-controls .btn.is-active {
-  color: var(--sc-accent-strong);
-  background: var(--sc-accent-soft);
+  gap: var(--sc-space-sm);
 }
 
 .sub-header-demo-sort-arrow {
   display: inline-block;
   min-width: 1em;
+  margin-inline-start: var(--sc-space-sm);
   font-size: 0.9em;
   text-align: center;
 }
 
 .sub-header-demo-label {
-  font-weight: 600;
+  font-weight: var(--sc-weight-semibold);
 }
 
 .sub-header-demo-count {
-  margin-inline-start: 8px;
+  margin-inline-start: var(--sc-space-1);
   font-size: 0.85em;
-  opacity: 0.7;
+  color: var(--sc-text-soft);
 }

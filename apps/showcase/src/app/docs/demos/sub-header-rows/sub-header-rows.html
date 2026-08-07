@@ -1,22 +1,5 @@
 <div class="sub-header-demo-controls">
-  <div aria-label="Renderer" class="sub-header-demo-toggle" role="group">
-    <button
-      [attr.aria-pressed]="view() === 'table'"
-      [class.is-active]="view() === 'table'"
-      class="btn btn-outline"
-      type="button"
-      (click)="view.set('table')">
-      Table
-    </button>
-    <button
-      [attr.aria-pressed]="view() === 'list'"
-      [class.is-active]="view() === 'list'"
-      class="btn btn-outline"
-      type="button"
-      (click)="view.set('list')">
-      List
-    </button>
-  </div>
+  <app-demo-toggle-group [options]="rendererOptions" [value]="view()" accessibleName="Renderer" (valueChange)="view.set($event)" />
 
   <div class="sub-header-demo-state-controls">
     <button
@@ -31,7 +14,7 @@
     <button
       [attr.aria-label]="sortByTotalLabel()"
       [class.is-active]="sortDirection() !== null"
-      class="btn btn-secondary"
+      class="btn btn-outline"
       type="button"
       (click)="cycleSortByTotal()">
       Sort by total
@@ -40,36 +23,32 @@
   </div>
 </div>
 
-@if (view() === 'table') {
-  <div class="card">
-    <h2 class="card-title">Grouped By Status</h2>
-
-    <nat-table-surface [(state)]="state">
-      <nat-table
-        [columns]="columns"
-        [data]="rows"
-        [subHeaderOrder]="useStatusOrder() ? statusOrder : undefined"
-        accessibleName="Orders grouped by status"
-        subHeaderColumn="status">
-        <ng-template let-count="rowCountValue" let-value natTableSubHeader>
-          <span class="sub-header-demo-label">{{ value }}</span>
-          <span class="sub-header-demo-count">{{ count }} orders</span>
-        </ng-template>
-      </nat-table>
-    </nat-table-surface>
-  </div>
-} @else {
-  <nat-table-surface [(state)]="state">
+<nat-table-surface [(state)]="state">
+  @if (view() === 'table') {
+    <nat-table
+      [columns]="columns"
+      [data]="rows"
+      [subHeaderOrder]="useStatusOrder() ? statusOrder : undefined"
+      accessibleName="Orders grouped by status"
+      class="sc-demo-table"
+      subHeaderColumn="status">
+      <ng-template let-count="rowCountValue" let-value natTableSubHeader>
+        <span class="sub-header-demo-label">{{ value }}</span>
+        <span class="sub-header-demo-count">{{ count }} orders</span>
+      </ng-template>
+    </nat-table>
+  } @else {
     <nat-list
       [columns]="columns"
       [data]="rows"
       [subHeaderOrder]="useStatusOrder() ? statusOrder : undefined"
       accessibleName="Orders list grouped by status"
+      class="sc-demo-list"
       subHeaderColumn="status">
       <ng-template let-count="rowCountValue" let-value natTableSubHeader>
         <span class="sub-header-demo-label">{{ value }}</span>
         <span class="sub-header-demo-count">{{ count }} orders</span>
       </ng-template>
     </nat-list>
-  </nat-table-surface>
-}
+  }
+</nat-table-surface>

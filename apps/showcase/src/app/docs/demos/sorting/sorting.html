@@ -1,34 +1,24 @@
-<div class="grid-layout grid-layout-with-panel">
-  <div class="card">
-    <h2 class="card-title">Interactive Sorting Grid</h2>
-    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
-      <nat-table [columns]="columns" [data]="data" accessibleName="Sorting demo table" />
-    </nat-table-surface>
-  </div>
+<app-demo-layout>
+  <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
+    <nat-table [columns]="columns" [data]="data" accessibleName="Sorting demo table" class="sc-demo-table" />
+  </nat-table-surface>
 
-  <div class="card">
-    <h2 class="card-title">Programmatic Sort Actions</h2>
-    <div class="actions-panel">
-      <button class="btn btn-outline" type="button" (click)="sortBy('value', 'asc')">Sort by Value (Asc)</button>
-      <button class="btn btn-outline" type="button" (click)="sortBy('name', 'desc')">Sort by Name (Desc)</button>
-      <button class="btn btn-secondary" type="button" (click)="clearSort()">Clear Sorting</button>
-    </div>
+  <app-demo-section demoAside heading="Programmatic sort actions">
+    <button class="btn btn-outline" type="button" (click)="sortBy('value', 'asc')">Sort by Value (Asc)</button>
+    <button class="btn btn-outline" type="button" (click)="sortBy('name', 'desc')">Sort by Name (Desc)</button>
+    <button class="btn btn-secondary" type="button" (click)="clearSort()">Clear Sorting</button>
 
-    <div class="info-tag">Current state: {{ currentSortLabel() }}</div>
-  </div>
-</div>
+    <app-demo-facts [facts]="sortFacts()" live />
+  </app-demo-section>
+</app-demo-layout>
 
-<div class="grid-layout grid-layout-with-panel">
-  <div class="card">
-    <h2 class="card-title">Multi-Column Sorting Grid</h2>
-    <nat-table-surface [enableMultiSort]="true" [enablePinning]="true" [enableSorting]="true" [(state)]="multiSortState">
-      <nat-table [columns]="columns" [data]="data" accessibleName="Multi-column sorting demo table" />
-    </nat-table-surface>
-  </div>
+<app-demo-layout>
+  <nat-table-surface [enableMultiSort]="true" [enablePinning]="true" [enableSorting]="true" [(state)]="multiSortState">
+    <nat-table [columns]="columns" [data]="data" accessibleName="Multi-column sorting demo table" class="sc-demo-table" />
+  </nat-table-surface>
 
-  <div class="card">
-    <h2 class="card-title">Sort Priority</h2>
-    <div class="instructions">
+  <app-demo-section demoAside heading="Sort priority">
+    <div class="demo-note">
       <ol>
         <li>Click a header's sort button to sort by that column.</li>
         <li>
@@ -38,11 +28,9 @@
       </ol>
     </div>
 
-    <div class="info-tag">Current sorting (priority order): {{ multiSortLabel() }}</div>
+    <app-demo-facts [facts]="multiSortFacts()" live />
 
-    <div class="actions-panel">
-      <button class="btn btn-outline" type="button" (click)="applyMultiPreset()">Sort by Category, then Value</button>
-      <button class="btn btn-secondary" type="button" (click)="clearMultiSort()">Clear Sorting</button>
-    </div>
-  </div>
-</div>
+    <button class="btn btn-outline" type="button" (click)="applyMultiPreset()">Sort by Category, then Value</button>
+    <button class="btn btn-secondary" type="button" (click)="clearMultiSort()">Clear Sorting</button>
+  </app-demo-section>
+</app-demo-layout>

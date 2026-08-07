@@ -1,57 +1,31 @@
 :host {
   display: grid;
-  gap: 24px;
+  gap: 32px;
 }
 
-.position-controls {
-  display: flex;
+.toolbar-example {
+  min-width: 0;
+}
+
+/* The projected menu panel must escape the surface box. */
+.toolbar-menu-host {
+  overflow: visible;
+}
+
+.toolbar-intro {
+  margin-bottom: var(--sc-space-4);
+}
+
+.toolbar-group {
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--sc-space-1);
 }
 
-.demo-state {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 16px;
-  margin: 0;
-}
-
-.demo-state-term {
-  font-weight: 600;
-}
-
-.demo-state-value {
-  margin: 0;
-}
-
-.toolbar-button {
-  min-height: 2.25rem;
-  padding: 0 12px;
-  cursor: pointer;
-  background: transparent;
-  border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-md);
-  transition: background-color 180ms ease;
-
-  &:focus-visible {
-    outline: 2px solid currentcolor;
-    outline-offset: 2px;
-  }
-}
-
-/* Icon-only button -> square (the svg renders at its own 16x16 attrs) */
-.toolbar-button--icon {
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
+/* Icon-only button -> square (the svg renders at its own 16x16 attrs). */
+.toolbar-icon-button {
+  inline-size: 32px;
   padding: 0;
-}
-
-.toolbar-button {
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      background: var(--sc-surface-hover);
-    }
-  }
 }
 
 /* Overflow disclosure menu */
@@ -61,9 +35,7 @@
 }
 
 .toolbar-menu-trigger {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
+  gap: var(--sc-space-sm);
 }
 
 .toolbar-menu-caret {
@@ -80,11 +52,11 @@
   flex-direction: column;
   gap: 2px;
   min-width: 184px;
-  padding: 6px;
+  padding: var(--sc-space-sm);
   background: var(--sc-surface);
   border: 1px solid var(--sc-border);
-  border-radius: var(--sc-radius-lg);
-  box-shadow: 0 12px 28px rgb(0 0 0 / 18%);
+  border-radius: var(--sc-radius-md);
+  box-shadow: var(--sc-shadow);
 
   /* `display: flex` above would otherwise beat the [hidden] UA rule. */
   &[hidden] {
@@ -95,22 +67,25 @@
 .toolbar-menu-item {
   display: block;
   width: 100%;
-  padding: 8px 12px;
-  color: inherit;
+  padding: var(--sc-space-1) var(--sc-space-3);
+  font: inherit;
+  font-size: var(--sc-text-base);
+  color: var(--sc-text);
   text-align: start;
   cursor: pointer;
   background: transparent;
   border: none;
-  border-radius: 8px; /* no scale step matches 8px exactly; kept literal (spec's own no-distort rule) */
+  border-radius: var(--sc-radius-xs);
 
   &:focus-visible {
-    outline: 2px solid currentcolor;
-    outline-offset: -2px;
+    outline: var(--sc-focus-ring-width) solid var(--sc-focus);
+    outline-offset: calc(var(--sc-focus-ring-offset) * -1);
   }
 
   &[aria-current='true'] {
-    font-weight: 600;
-    color: var(--sc-accent);
+    font-weight: var(--sc-weight-semibold);
+    color: var(--sc-accent-strong);
+    background: var(--sc-accent-soft);
   }
 
   @media (hover: hover) and (pointer: fine) {

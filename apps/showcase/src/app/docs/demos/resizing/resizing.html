@@ -1,62 +1,35 @@
-<div class="grid-layout grid-layout-with-panel">
-  <div class="card">
-    <h2 class="card-title">Interactive Resizing Grid ({{ columnSizingMode() }})</h2>
-    <nat-table-surface [columnSizingMode]="columnSizingMode()" [enableColumnResizing]="true" [(state)]="tableState">
-      <nat-table [columns]="columns()" [data]="data" accessibleName="Column resizing demo table" />
-    </nat-table-surface>
-  </div>
+<app-demo-layout>
+  <nat-table-surface [columnSizingMode]="columnSizingMode()" [enableColumnResizing]="true" [(state)]="tableState">
+    <nat-table [columns]="columns()" [data]="data" accessibleName="Column resizing demo table" class="sc-demo-table" />
+  </nat-table-surface>
 
-  <div class="card">
-    <h2 class="card-title">Configure</h2>
+  <app-demo-section demoAside heading="Configure">
+    <app-demo-toggle-group
+      [options]="sizingModeOptions"
+      [value]="columnSizingMode()"
+      accessibleName="Column width mode"
+      (valueChange)="columnSizingMode.set($event)" />
 
     <fieldset class="resize-toggles">
       <legend class="resize-toggles-legend">Resizable columns</legend>
       @for (toggle of columnToggles; track toggle.id) {
-        <label class="resize-toggle">
-          <input
-            #resizeToggle
-            [checked]="resizableColumnIds().has(toggle.id)"
-            class="resize-toggle-input"
-            type="checkbox"
-            (change)="toggleResizable(toggle.id, resizeToggle.checked)" />
-          <span>{{ toggle.label }}</span>
-        </label>
+        <app-demo-switch
+          [checked]="resizableColumnIds().has(toggle.id)"
+          [label]="toggle.label"
+          (checkedChange)="toggleResizable(toggle.id, $event)" />
       }
     </fieldset>
 
-    <h3 class="card-title">How To Resize A Column</h3>
-    <div class="instructions">
+    <button class="btn btn-outline" type="button" (click)="resetWidths()">Reset widths</button>
+
+    <div class="demo-note">
       <p><strong>Drag:</strong> grab the thin handle on a header's edge and drag to resize the column.</p>
       <p><strong>Keyboard:</strong></p>
       <ol>
         <li><strong>Tab</strong> to a column's header.</li>
-        <li>
-          Hold <code>Alt</code> and press <code>Left Arrow</code> / <code>Right Arrow</code> to resize the column in small steps.
-        </li>
+        <li>Hold <code>Alt</code> and press <code>Left Arrow</code> / <code>Right Arrow</code> to resize in small steps.</li>
         <li>Press <code>Alt</code> + <code>Home</code> / <code>End</code> to jump to the minimum or maximum width.</li>
       </ol>
     </div>
-
-    <div class="actions-panel">
-      <div aria-label="Column width mode" class="btn-group" role="group">
-        <button
-          [attr.aria-pressed]="columnSizingMode() === 'fill'"
-          [class.active]="columnSizingMode() === 'fill'"
-          class="btn-sm"
-          type="button"
-          (click)="columnSizingMode.set('fill')">
-          Fill
-        </button>
-        <button
-          [attr.aria-pressed]="columnSizingMode() === 'fixed'"
-          [class.active]="columnSizingMode() === 'fixed'"
-          class="btn-sm"
-          type="button"
-          (click)="columnSizingMode.set('fixed')">
-          Fixed
-        </button>
-      </div>
-      <button class="btn btn-outline" type="button" (click)="resetWidths()">Reset Widths</button>
-    </div>
-  </div>
-</div>
+  </app-demo-section>
+</app-demo-layout>

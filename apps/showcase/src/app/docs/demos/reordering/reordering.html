@@ -1,0 +1,28 @@
+<app-demo-layout>
+  <nat-table-surface [enableReordering]="true" [enableSorting]="true" [(state)]="tableState" data-testid="reordering-demo-table">
+    <nat-table [columns]="columns" [data]="data" accessibleName="Reordering demo table" class="sc-demo-table" />
+  </nat-table-surface>
+
+  <app-demo-section demoAside heading="Rendered column order">
+    <ol class="reorder-list" data-testid="reordering-order-list">
+      @for (colId of currentOrder(); track colId) {
+        <li [attr.data-column-id]="colId" class="reorder-item" data-testid="reordering-order-item">
+          <span aria-hidden="true" class="reorder-badge">{{ $index + 1 }}</span>
+          <span class="reorder-name">{{ colId | titlecase }}</span>
+        </li>
+      }
+    </ol>
+
+    <div class="demo-note">
+      <p>
+        <strong>Keyboard:</strong> focus a header cell, then press <code>Ctrl + Shift + Left Arrow</code> or
+        <code>Ctrl + Shift + Right Arrow</code> to swap columns. On macOS, use <code>Command</code> instead of <code>Ctrl</code>.
+      </p>
+      <p><strong>Pointer:</strong> open a header actions menu and choose <em>Move left</em> or <em>Move right</em>.</p>
+      <p>
+        <strong>Reorder by default:</strong> with <code>[enableReordering]="true"</code> on the surface, every column reorders. Opt one
+        out with <code>meta: &#123; reorderable: false &#125;</code>. Every column above participates.
+      </p>
+    </div>
+  </app-demo-section>
+</app-demo-layout>

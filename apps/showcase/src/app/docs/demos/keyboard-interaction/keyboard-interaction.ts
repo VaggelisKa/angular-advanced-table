@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
 import { NatTable, flexRenderComponent } from 'ng-advanced-table';
 import type { CellContext, ColumnDef } from 'ng-advanced-table';
@@ -6,57 +6,33 @@ import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/co
 
 import { KeyboardDemoAcknowledgeButton } from './keyboard-demo-acknowledge-button';
 import { KeyboardDemoStatusCell } from './keyboard-demo-status-cell';
-
-type DemoItem = {
-  readonly id: string;
-  readonly name: string;
-  readonly category: string;
-  readonly status: string;
-  readonly value: number;
-};
-
-const DEMO_DATA: DemoItem[] = [
-  { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
-  { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200 },
-  {
-    id: 'item-3',
-    name: 'Gamma Processor',
-    category: 'Data Science',
-    status: 'Paused',
-    value: 7800
-  },
-  { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
-  { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
-];
+import { DemoAside, DemoFacts, DemoLayout, DemoSection } from '../../../ui';
+import type { DemoFact } from '../../../ui';
+import { DEMO_ITEMS, demoItemBaseColumns } from '../demo-data';
+import type { DemoItem } from '../demo-data';
 
 @Component({
   selector: 'app-keyboard-interaction',
-  imports: [NatTable, NatTableSurface],
-  templateUrl: './keyboard-interaction.html'
+  imports: [NatTable, NatTableSurface, DemoAside, DemoFacts, DemoLayout, DemoSection],
+  templateUrl: './keyboard-interaction.html',
+  styles: `
+    :host {
+      display: block;
+    }
+  `
 })
 export class KeyboardInteraction {
-  protected readonly data = signal<DemoItem[]>(DEMO_DATA);
+  protected readonly data = signal<DemoItem[]>([...DEMO_ITEMS]);
   protected readonly lastAction = signal('None yet');
 
+  protected readonly facts = computed<DemoFact[]>(() => [{ label: 'Last action', value: this.lastAction() }]);
+
+  private readonly textColumns = demoItemBaseColumns.filter((column) => column.id !== 'status');
+
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
+    ...this.textColumns,
     {
-      accessorKey: 'name',
-      header: 'Name',
-      meta: { label: 'Name', rowHeader: true }
-    },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      meta: { label: 'Category' }
-    },
-    {
-      accessorKey: 'value',
-      header: 'Value',
-      meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
-    },
-    {
+      id: 'status',
       accessorKey: 'status',
       header: 'Status',
       enableSorting: false,

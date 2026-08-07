@@ -1,35 +1,16 @@
 import { Component, computed, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
-import type { CellContext, ColumnDef, NatTableUserState } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
+import type { NatTableUserState } from 'ng-advanced-table';
+import { NatTableSurface } from 'ng-advanced-table/components';
 
-type DemoItem = {
-  readonly id: string;
-  readonly name: string;
-  readonly category: string;
-  readonly status: string;
-  readonly value: number;
-};
-
-const DEMO_DATA: DemoItem[] = [
-  { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
-  { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200 },
-  {
-    id: 'item-3',
-    name: 'Gamma Processor',
-    category: 'Data Science',
-    status: 'Paused',
-    value: 7800
-  },
-  { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
-  { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
-];
+import { DemoAside, DemoFacts, DemoLayout, DemoSection } from '../../../ui';
+import type { DemoFact } from '../../../ui';
+import { DEMO_ITEMS, demoItemColumns } from '../demo-data';
 
 @Component({
   selector: 'app-sorting',
-  imports: [NatTable, NatTableSurface],
+  imports: [NatTable, NatTableSurface, DemoAside, DemoFacts, DemoLayout, DemoSection],
   templateUrl: './sorting.html',
   styles: `
     :host {
@@ -39,44 +20,23 @@ const DEMO_DATA: DemoItem[] = [
   `
 })
 export class Sorting {
-  protected readonly data = DEMO_DATA;
-
-  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions([
-    {
-      accessorKey: 'name',
-      header: 'Name',
-      meta: { label: 'Name', rowHeader: true }
-    },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      meta: { label: 'Category' }
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      meta: { label: 'Status' }
-    },
-    {
-      accessorKey: 'value',
-      header: 'Value',
-      meta: { label: 'Value', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
-    }
-  ]);
+  protected readonly data = DEMO_ITEMS;
+  protected readonly columns = demoItemColumns;
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({
     sorting: [{ id: 'name', desc: false }]
   });
 
-  protected readonly currentSortLabel = computed(() => {
+  protected readonly sortFacts = computed<DemoFact[]>(() => {
     const sorting = this.tableState().sorting;
+    const entry = sorting?.[0];
 
-    if (!sorting?.length) return 'None';
-
-    const entry = sorting[0];
-
-    return `${entry.id} (${entry.desc ? 'desc' : 'asc'})`;
+    return [
+      {
+        label: 'Current state',
+        value: entry ? `${entry.id} (${entry.desc ? 'desc' : 'asc'})` : 'None'
+      }
+    ];
   });
 
   protected sortBy(id: string, dir: 'asc' | 'desc'): void {
@@ -97,12 +57,17 @@ export class Sorting {
     sorting: []
   });
 
-  protected readonly multiSortLabel = computed(() => {
+  protected readonly multiSortFacts = computed<DemoFact[]>(() => {
     const sorting = this.multiSortState().sorting;
 
-    if (!sorting?.length) return 'None';
-
-    return sorting.map((entry, index) => `${index + 1}. ${entry.id} (${entry.desc ? 'desc' : 'asc'})`).join(', ');
+    return [
+      {
+        label: 'Priority order',
+        value: sorting?.length
+          ? sorting.map((entry, index) => `${index + 1}. ${entry.id} (${entry.desc ? 'desc' : 'asc'})`).join(', ')
+          : 'None'
+      }
+    ];
   });
 
   protected applyMultiPreset(): void {

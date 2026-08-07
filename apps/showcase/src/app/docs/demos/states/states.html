@@ -1,6 +1,5 @@
-<div class="grid-layout state-grid table-states-page">
-  <div class="card">
-    <h2 class="card-title">Loading state</h2>
+<div class="state-grid">
+  <app-demo-section flush heading="Loading state">
     <nat-table-surface [accessibilityText]="loadingTableAccessibilityCopy">
       <nat-table [columns]="columns" [data]="loadingRows" accessibleName="Loading incidents table" dataStatus="loading">
         <ng-template natTableLoading>
@@ -12,10 +11,9 @@
         </ng-template>
       </nat-table>
     </nat-table-surface>
-  </div>
+  </app-demo-section>
 
-  <div class="card">
-    <h2 class="card-title">Empty state</h2>
+  <app-demo-section flush heading="Empty state">
     <nat-table-surface [accessibilityText]="emptyTableAccessibilityCopy">
       <nat-table [columns]="columns" [data]="emptyRows" accessibleName="Empty incidents table">
         <ng-template let-filtered="filtered" natTableEmpty>
@@ -26,10 +24,9 @@
         </ng-template>
       </nat-table>
     </nat-table-surface>
-  </div>
+  </app-demo-section>
 
-  <div class="card">
-    <h2 class="card-title">Error state</h2>
+  <app-demo-section flush heading="Error state">
     <nat-table-surface [accessibilityText]="errorTableAccessibilityCopy">
       <nat-table
         [columns]="columns"
@@ -53,24 +50,17 @@
         </ng-template>
       </nat-table>
     </nat-table-surface>
-  </div>
+  </app-demo-section>
 
-  <div class="card">
-    <h2 class="card-title">Transition preview</h2>
+  <app-demo-section flush heading="Transition preview">
     <div class="transition-controls">
-      <div aria-label="Preview table state" class="btn-group">
-        @for (option of transitionPreviewOptions; track option.state) {
-          <button
-            [attr.aria-pressed]="isTransitionPreviewState(option.state)"
-            [class.active]="isTransitionPreviewState(option.state)"
-            class="btn-sm"
-            type="button"
-            (click)="showTransitionPreviewState(option.state)">
-            {{ option.label }}
-          </button>
-        }
-      </div>
+      <app-demo-toggle-group
+        [options]="transitionPreviewOptions"
+        [value]="transitionPreviewState()"
+        accessibleName="Preview table state"
+        (valueChange)="transitionPreviewState.set($event)" />
     </div>
+
     <nat-table-surface [accessibilityText]="transitionPreviewAccessibilityCopy" class="transition-preview-surface">
       <nat-table
         [columns]="columns"
@@ -101,12 +91,11 @@
         </ng-template>
       </nat-table>
     </nat-table-surface>
-  </div>
+  </app-demo-section>
 
-  <div class="card state-reference-card">
-    <h2 class="card-title">Background refresh</h2>
+  <app-demo-section class="state-reference-card" flush heading="Background refresh">
     <nat-table-surface [accessibilityText]="refreshTableAccessibilityCopy">
       <nat-table [columns]="columns" [data]="successRows" accessibleName="Refreshing incidents table" dataStatus="loading" />
     </nat-table-surface>
-  </div>
+  </app-demo-section>
 </div>

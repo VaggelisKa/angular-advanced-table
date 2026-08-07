@@ -44,11 +44,13 @@ describe('FEATURE: Sub-header rows docs demo', () => {
 
   describe('GIVEN: the demo renders with its default table view', () => {
     describe('WHEN: nothing is toggled', () => {
-      it('THEN: it renders the controls outside the card and groups in ascending order', () => {
+      it('THEN: it renders the controls outside any card chrome and groups in ascending order', () => {
         const controls = host(fixture).querySelector('.sub-header-demo-controls');
 
-        expect(controls?.closest('.card')).toBeNull();
-        expect(host(fixture).querySelector('.card button')).toBeNull();
+        expect(controls).not.toBeNull();
+        // Both renderer branches are bare: the docs example already draws a card.
+        expect(host(fixture).querySelector('.card')).toBeNull();
+        expect(host(fixture).querySelector('.card-title')).toBeNull();
         expect(tableGroupLabels(fixture)).toStrictEqual(['Queued', 'Ready', 'Review']);
         expect(host(fixture).querySelectorAll('tbody tr.data-row app-order-status-badge')).toHaveLength(6);
       });
@@ -102,16 +104,17 @@ describe('FEATURE: Sub-header rows docs demo', () => {
 
     describe('WHEN: the renderer toggle is switched to the list', () => {
       it('THEN: the view swaps to the bare list renderer with the same groups', async () => {
-        const rendererButtons = Array.from(host(fixture).querySelectorAll('.sub-header-demo-toggle button'));
+        const rendererButtons = Array.from(host(fixture).querySelectorAll('app-demo-toggle-group button'));
 
-        expect(rendererButtons.map((button) => button.classList.contains('is-active'))).toStrictEqual([true, false]);
+        expect(rendererButtons.map((button) => button.getAttribute('aria-pressed'))).toStrictEqual(['true', 'false']);
 
         clickButton(fixture, 'List');
         await render(fixture);
 
-        expect(rendererButtons.map((button) => button.classList.contains('is-active'))).toStrictEqual([false, true]);
+        expect(rendererButtons.map((button) => button.getAttribute('aria-pressed'))).toStrictEqual(['false', 'true']);
         expect(host(fixture).querySelector('nat-table')).toBeNull();
         expect(host(fixture).querySelector('nat-list')).not.toBeNull();
+        // Symmetric with the table branch: neither renderer adds card chrome.
         expect(host(fixture).querySelector('.card')).toBeNull();
 
         const listGroups = Array.from(host(fixture).querySelectorAll('li.list-sub-header .sub-header-demo-label')).map((label) =>

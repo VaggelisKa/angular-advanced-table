@@ -6,14 +6,16 @@ import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { LIST_DEMO_COLUMNS, LIST_DEMO_ROWS } from './list-demo-data';
 import type { ListDemoOrder } from './list-demo-data';
+import { DemoToggleGroup } from '../../../ui';
+import type { DemoToggleOption } from '../../../ui';
 
 type DemoDataScenario = 'success' | 'loading' | 'empty' | 'error';
 
-const DEMO_SCENARIOS: readonly { readonly id: DemoDataScenario; readonly label: string }[] = [
-  { id: 'success', label: 'Success' },
-  { id: 'loading', label: 'Loading' },
-  { id: 'empty', label: 'Empty' },
-  { id: 'error', label: 'Error' }
+const SCENARIO_OPTIONS: readonly DemoToggleOption<DemoDataScenario>[] = [
+  { value: 'success', label: 'Success' },
+  { value: 'loading', label: 'Loading' },
+  { value: 'empty', label: 'Empty' },
+  { value: 'error', label: 'Error' }
 ];
 
 /**
@@ -23,13 +25,13 @@ const DEMO_SCENARIOS: readonly { readonly id: DemoDataScenario; readonly label: 
  */
 @Component({
   selector: 'app-list-data-states',
-  imports: [NatList, NatTableSurface],
+  imports: [NatList, NatTableSurface, DemoToggleGroup],
   templateUrl: './list-data-states.html',
   styleUrl: './list-data-states.css'
 })
 export class ListDataStates {
   protected readonly columns = LIST_DEMO_COLUMNS;
-  protected readonly scenarios = DEMO_SCENARIOS;
+  protected readonly scenarioOptions = SCENARIO_OPTIONS;
 
   protected readonly scenario = signal<DemoDataScenario>('success');
 
