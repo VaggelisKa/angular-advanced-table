@@ -38,6 +38,7 @@ import {
 
 import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
 import { NatTableService } from './table.service';
+import { isNatTableDelegatedCellControl } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableColumnMoveDirection } from '../common/column-meta.type';
 import type {
   ColumnRenderStateContext,
@@ -116,6 +117,14 @@ export class NatTableState<TData extends RowData = RowData> {
   private readonly rowRenderStrategies = inject(NatTableRowRenderStrategyRegistry, { optional: true });
   private readonly rowRenderStrategy = computed(() => this.rowRenderStrategies?.strategy() ?? null);
   private readonly hasRowRenderStrategy = computed(() => this.rowRenderStrategies?.active() ?? false);
+
+  /**
+   * `NatTableRowWindowHost` bridge: lets a row-window strategy classify grid
+   * focus targets without the cell-interaction predicate becoming public API.
+   */
+  public isDelegatedCellControl(cell: HTMLElement, target: HTMLElement): boolean {
+    return isNatTableDelegatedCellControl(cell, target);
+  }
 
   // ─── Input bridging signals (written by the NatTable component) ───
 

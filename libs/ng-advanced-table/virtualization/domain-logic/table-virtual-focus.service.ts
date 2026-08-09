@@ -2,7 +2,7 @@ import { DestroyRef, ElementRef, Injectable, afterRenderEffect, computed, inject
 
 import type { RowData } from '@tanstack/angular-table';
 
-import { NAT_TABLE_ROW_WINDOW_HOST, isNatTableDelegatedCellControl } from 'ng-advanced-table';
+import { NAT_TABLE_ROW_WINDOW_HOST } from 'ng-advanced-table';
 import type { NatTableRowWindowHost } from 'ng-advanced-table';
 
 import { NatTableVirtualLayoutService } from './table-virtual-layout.service';
@@ -88,7 +88,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     const controller = this.controller();
     const target = event.target instanceof HTMLElement ? event.target : null;
     const cell = target?.closest<HTMLElement>('[ngGridCell][data-column-id]') ?? null;
-    const isGridFocusTarget = target !== null && cell !== null && (target === cell || isNatTableDelegatedCellControl(cell, target));
+    const isGridFocusTarget = target !== null && cell !== null && (target === cell || this.state.isDelegatedCellControl(cell, target));
 
     if (!controller || !cell || !isGridFocusTarget || event.defaultPrevented) {
       return;

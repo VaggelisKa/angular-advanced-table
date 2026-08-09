@@ -22,6 +22,12 @@ export type NatTableRowWindowHost<TData extends RowData = RowData> = {
   readonly data: Signal<readonly TData[]>;
   /** Header rows, used to offset absolute ARIA row positions. */
   readonly headerGroups: Signal<readonly HeaderGroup<TData>[]>;
+  /**
+   * Whether `target` is an interactive control the cell delegates grid focus
+   * to. Lets a row-window strategy tell a real grid focus target from an
+   * unrelated descendant without core exposing its cell-interaction internals.
+   */
+  isDelegatedCellControl(cell: HTMLElement, target: HTMLElement): boolean;
   /** Full user state, used to reset the window when the row model changes. */
   readonly mergedState: Signal<NatTableUserState>;
   /** Trimmed caption text, used when measuring non-body chrome in the scroll region. */

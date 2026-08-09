@@ -44,10 +44,6 @@ export { NAT_TABLE_ROW_WINDOW_HOST } from './common/row-window-host.type';
 
 export type { NatTableRowWindowHost } from './common/row-window-host.type';
 
-// Needed by `ng-advanced-table/virtualization` to tell a real grid focus target
-// from an unrelated descendant while restoring focus across row windows.
-export { isNatTableDelegatedCellControl } from './cell-interaction/utils/cell-interaction.util';
-
 export { hasNatTableStateValueChanged } from './utils/table-state-value-equality.util';
 
 export { stripNatTableSubHeaderSorting } from './utils/sub-header.util';
