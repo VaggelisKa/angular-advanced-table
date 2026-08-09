@@ -3,25 +3,19 @@ import { DestroyRef, Directive, computed, effect, inject, input, isDevMode, untr
 import type { RowData } from '@tanstack/angular-table';
 import { defaultRangeExtractor, injectVirtualizer } from '@tanstack/angular-virtual';
 
-import type {
-  NatTableRowRenderStrategy,
-  NatTableVirtualItem,
-  NatTableVirtualizationOptions,
-  NatTableVirtualizerController
-} from './common/table-virtualization.type';
-import { NatTableVirtualFocusService } from './domain-logic/table-virtual-focus.service';
-import { NatTableVirtualLayoutService } from './domain-logic/table-virtual-layout.service';
-import { NatTableVirtualValidationService } from './domain-logic/table-virtual-validation.service';
-import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
+import { NAT_TABLE_ROW_WINDOW_HOST, NatTableRowRenderStrategyRegistry, hasNatTableStateValueChanged } from 'ng-advanced-table';
+import type { NatTableRowRenderStrategy, NatTableRowWindowHost, NatTableUserState, NatTableVirtualItem } from 'ng-advanced-table';
+
+import type { NatTableVirtualizationOptions, NatTableVirtualizerController } from '../common/table-virtualization.type';
+import { NatTableVirtualFocusService } from '../domain-logic/table-virtual-focus.service';
+import { NatTableVirtualLayoutService } from '../domain-logic/table-virtual-layout.service';
+import { NatTableVirtualValidationService } from '../domain-logic/table-virtual-validation.service';
 import {
   NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT,
   createInitialVirtualItems,
   includeVirtualIndex,
   normalizeNatTableVirtualizationOptions
-} from './utils/table-virtualization.util';
-import type { NatTableUserState } from '../common/table-state.type';
-import { NatTableState } from '../domain-logic/table.state';
-import { hasNatTableStateValueChanged } from '../utils/table-state-value-equality.util';
+} from '../utils/table-virtualization.util';
 
 type NatTableVirtualRowModelState = Pick<NatTableUserState, 'sorting' | 'globalFilter' | 'columnFilters' | 'pagination'>;
 
@@ -35,7 +29,7 @@ type NatTableVirtualRowModelState = Pick<NatTableUserState, 'sorting' | 'globalF
 })
 export class NatTableVirtualize<TData extends RowData = RowData> {
   public readonly natTableVirtualize = input.required<NatTableVirtualizationOptions>();
-  private readonly state = inject<NatTableState<TData>>(NatTableState);
+  private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
   private readonly registry = inject(NatTableRowRenderStrategyRegistry);
   private readonly focus = inject<NatTableVirtualFocusService<TData>>(NatTableVirtualFocusService);
   private readonly layout = inject<NatTableVirtualLayoutService<TData>>(NatTableVirtualLayoutService);

@@ -150,7 +150,8 @@ const virtualizationSnippets = [
     `
 import { Component } from '@angular/core';
 
-import { NatTable, NatTableVirtualize, type ColumnDef } from 'ng-advanced-table';
+import { NatTable, type ColumnDef } from 'ng-advanced-table';
+import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
 type Order = { id: string; total: number };

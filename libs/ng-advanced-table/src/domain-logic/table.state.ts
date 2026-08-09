@@ -36,6 +36,7 @@ import {
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
+import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
 import { NatTableService } from './table.service';
 import type { NatTableColumnMoveDirection } from '../common/column-meta.type';
 import type {
@@ -57,6 +58,7 @@ import {
   computeKeyboardResizeWidth,
   getColumnResizeBounds
 } from '../resize/utils/column-resize.util';
+import { buildNatTableBodyRenderPlan } from '../utils/body-render-plan.util';
 import {
   getColumnDefLeafIds,
   getUserColumnSizing,
@@ -89,8 +91,6 @@ import {
   resolveSubHeaderValueText,
   stripNatTableSubHeaderSorting
 } from '../utils/sub-header.util';
-import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-render-strategy.service';
-import { buildNatTableBodyRenderPlan } from '../virtualization/utils/table-virtualization.util';
 
 // ─── Constants ───
 

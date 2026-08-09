@@ -1,8 +1,9 @@
 import { Component, signal } from '@angular/core';
 
-import { NatTable, NatTableVirtualize } from 'ng-advanced-table';
+import { NatTable } from 'ng-advanced-table';
 import type { CellContext, ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
+import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
 
 import type { MockOrderRow } from '../../../mock-order/mock-order.type';
 import { currencyFormatter, dateFormatter, generateMockOrderRows, integerFormatter } from '../../../mock-order/mock-order.util';

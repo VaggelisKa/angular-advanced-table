@@ -2,9 +2,10 @@ import { DestroyRef, ElementRef, Injectable, afterRenderEffect, computed, inject
 
 import type { RowData } from '@tanstack/angular-table';
 
+import { NAT_TABLE_ROW_WINDOW_HOST, isNatTableDelegatedCellControl } from 'ng-advanced-table';
+import type { NatTableRowWindowHost } from 'ng-advanced-table';
+
 import { NatTableVirtualLayoutService } from './table-virtual-layout.service';
-import { isNatTableDelegatedCellControl } from '../../cell-interaction/utils/cell-interaction.util';
-import { NatTableState } from '../../domain-logic/table.state';
 import type { NatTableVirtualNavigationRequest, NatTableVirtualizerController } from '../common/table-virtualization.type';
 import { resolveNatTableVirtualNavigation } from '../utils/table-virtual-keyboard.util';
 
@@ -15,7 +16,7 @@ type PendingVirtualFocus = Pick<NatTableVirtualNavigationRequest, 'rowIndex' | '
 @Injectable()
 export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly state = inject<NatTableState<TData>>(NatTableState);
+  private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
   private readonly layout = inject<NatTableVirtualLayoutService<TData>>(NatTableVirtualLayoutService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly controller = signal<NatTableVirtualizerController | null>(null);

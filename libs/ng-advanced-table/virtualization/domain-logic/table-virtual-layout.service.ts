@@ -2,7 +2,8 @@ import { DestroyRef, Injectable, afterNextRender, afterRenderEffect, inject, sig
 
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableState } from '../../domain-logic/table.state';
+import { NAT_TABLE_ROW_WINDOW_HOST } from 'ng-advanced-table';
+import type { NatTableRowWindowHost } from 'ng-advanced-table';
 
 type VirtualLayoutMeasurements = {
   readonly bodyOffset: number;
@@ -13,7 +14,7 @@ type VirtualLayoutMeasurements = {
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- one instance is scoped to NatTableVirtualize.
 @Injectable()
 export class NatTableVirtualLayoutService<TData extends RowData = RowData> {
-  private readonly state = inject<NatTableState<TData>>(NatTableState);
+  private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
   private readonly destroyRef = inject(DestroyRef);
   private resizeObserver: ResizeObserver | null = null;
 

@@ -24,6 +24,7 @@ import { NatTableCellControlManager } from '../cell-interaction/table-cell-contr
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
+import { NAT_TABLE_ROW_WINDOW_HOST } from '../common/row-window-host.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
@@ -37,6 +38,7 @@ import type {
 import type { NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableHeaderMeasurementService } from '../domain-logic/table-header-measurement.service';
+import { NatTableRowRenderStrategyRegistry } from '../domain-logic/table-row-render-strategy.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
@@ -54,7 +56,6 @@ import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate }
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
-import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-render-strategy.service';
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
@@ -91,6 +92,10 @@ import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-r
   providers: [
     NatTableRowRenderStrategyRegistry,
     NatTableState,
+    // Narrow public view of the state hub, so an opt-in body-row renderer
+    // (`ng-advanced-table/virtualization`) can drive row windows without core
+    // exporting NatTableState itself.
+    { provide: NAT_TABLE_ROW_WINDOW_HOST, useExisting: NatTableState },
     NatTableA11yService,
     NatTableResizeService,
     NatTableReorderService,

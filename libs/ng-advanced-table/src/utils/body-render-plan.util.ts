@@ -1,45 +1,6 @@
 import type { Row, RowData } from '@tanstack/angular-table';
 
-import type {
-  NatTableBodyRenderPlan,
-  NatTableRowRenderStrategy,
-  NatTableVirtualItem,
-  NatTableVirtualizationOptions
-} from '../common/table-virtualization.type';
-
-export const NAT_TABLE_DEFAULT_VIRTUAL_OVERSCAN = 6;
-
-export const NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT = 10;
-
-export const normalizeNatTableVirtualizationOptions = (
-  options: NatTableVirtualizationOptions
-): Required<NatTableVirtualizationOptions> => ({
-  rowHeight: Number.isFinite(options.rowHeight) && options.rowHeight > 0 ? options.rowHeight : 1,
-  overscan:
-    Number.isFinite(options.overscan) && (options.overscan ?? -1) >= 0
-      ? Math.floor(options.overscan ?? NAT_TABLE_DEFAULT_VIRTUAL_OVERSCAN)
-      : NAT_TABLE_DEFAULT_VIRTUAL_OVERSCAN
-});
-
-export const includeVirtualIndex = (indexes: readonly number[], index: number | null, count: number): number[] => {
-  if (index === null || index < 0 || index >= count || indexes.includes(index)) {
-    return [...indexes];
-  }
-
-  return [...indexes, index].sort((left, right) => left - right);
-};
-
-export const createInitialVirtualItems = (
-  rowCount: number,
-  rowHeight: number,
-  overscan: number,
-  bodyOffset: number
-): NatTableVirtualItem[] =>
-  Array.from({ length: Math.min(rowCount, NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT + overscan) }, (_, index) => ({
-    index,
-    start: bodyOffset + index * rowHeight,
-    end: bodyOffset + (index + 1) * rowHeight
-  }));
+import type { NatTableBodyRenderPlan, NatTableRowRenderStrategy, NatTableVirtualItem } from '../common/row-render-strategy.type';
 
 const isUsableVirtualItem = (item: NatTableVirtualItem, rowCount: number): boolean =>
   Number.isInteger(item.index) && item.index >= 0 && item.index < rowCount && Number.isFinite(item.start) && Number.isFinite(item.end);
@@ -52,6 +13,12 @@ const renderAllRows = <TData extends RowData>(rows: readonly Row<TData>[]): NatT
   virtualized: false
 });
 
+/**
+ * Turns the logical row model plus an optional row-render strategy into the
+ * body plan the table template renders. No registered strategy — the default —
+ * renders every row with no spacers, so a non-virtualized table pays nothing
+ * for this indirection.
+ */
 export const buildNatTableBodyRenderPlan = <TData extends RowData>(
   rows: readonly Row<TData>[],
   strategy: NatTableRowRenderStrategy | null

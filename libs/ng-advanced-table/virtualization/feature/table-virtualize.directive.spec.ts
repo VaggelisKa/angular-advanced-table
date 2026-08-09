@@ -4,11 +4,10 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
+import { NatTable, NatTableService } from 'ng-advanced-table';
+import type { NatTableRowActivateEvent, NatTableRowRenderedEvent } from 'ng-advanced-table';
+
 import { NatTableVirtualize } from './table-virtualize.directive';
-import type { NatTableRowRenderedEvent } from '../common/row-render.type';
-import type { NatTableRowActivateEvent } from '../common/row.type';
-import { NatTableService } from '../domain-logic/table.service';
-import { NatTable } from '../table/table';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';

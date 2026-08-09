@@ -6,7 +6,9 @@ Virtualization changes rendering only. Sorting, filtering, selection, pagination
 
 ## Install
 
-Virtualization is exposed entirely through `ng-advanced-table`. TanStack Virtual is an internal, tree-shakeable runtime dependency; applications do not install or import it directly.
+Virtualization ships in its own entry point, `ng-advanced-table/virtualization`. Nothing extra to install — it is part of the same package — but it is the only entry point that pulls in TanStack Virtual, so applications that never import it do not pay for that engine.
+
+TanStack Virtual stays internal: applications do not install or import it directly.
 
 ```bash
 pnpm add ng-advanced-table @angular/aria @angular/cdk
@@ -14,10 +16,11 @@ pnpm add ng-advanced-table @angular/aria @angular/cdk
 
 ## Basic Wiring
 
-Import `NatTableVirtualize`, give the table region a bounded height, and place the directive on the existing table.
+Import `NatTableVirtualize` from the virtualization entry point, give the table region a bounded height, and place the directive on the existing table.
 
 ```ts
-import { NatTable, NatTableVirtualize } from 'ng-advanced-table';
+import { NatTable } from 'ng-advanced-table';
+import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
 ```
 
 ```html

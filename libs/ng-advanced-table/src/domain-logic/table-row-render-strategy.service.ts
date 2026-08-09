@@ -1,9 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core';
 
-import type { NatTableRowRenderStrategy } from './common/table-virtualization.type';
+import type { NatTableRowRenderStrategy } from '../common/row-render-strategy.type';
 
 /** Per-table registry for an optional body-row rendering strategy. */
-// eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table registry, provided by NatTable.
+// eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table registry, provided by NatTable; absent on renderers that never virtualize.
 @Injectable()
 export class NatTableRowRenderStrategyRegistry {
   private readonly registeredStrategy = signal<NatTableRowRenderStrategy | null>(null);

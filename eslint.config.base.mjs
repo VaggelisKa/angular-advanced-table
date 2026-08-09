@@ -63,6 +63,13 @@ export default [
               sourceTag: 'type:render-metrics',
               onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
             },
+            {
+              // Companion entry point (/virtualization): may compose core + the locale leaf.
+              // It owns the only `@tanstack/angular-virtual` import in the package, which
+              // is what keeps that engine out of bundles that never virtualize.
+              sourceTag: 'type:virtualization',
+              onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
+            },
             { sourceTag: 'type:locale', onlyDependOnLibsWithTags: [] }
           ]
         }

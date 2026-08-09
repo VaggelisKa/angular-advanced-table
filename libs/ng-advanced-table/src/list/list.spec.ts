@@ -6,11 +6,11 @@ import { By } from '@angular/platform-browser';
 import { NatList } from './list';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
+import { NatTableRowRenderStrategyRegistry } from '../domain-logic/table-row-render-strategy.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { ListHost } from '../test-helpers/list-hosts.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { TestTableSurface } from '../test-helpers/table-hosts.helper';
-import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-render-strategy.service';
 
 const queryAll = <T extends HTMLElement>(fixture: ComponentFixture<ListHost>, selector: string): T[] =>
   Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<T>(selector));

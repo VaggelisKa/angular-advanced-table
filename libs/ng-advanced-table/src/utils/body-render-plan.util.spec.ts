@@ -2,8 +2,8 @@ import { signal } from '@angular/core';
 
 import type { Row } from '@tanstack/angular-table';
 
-import { buildNatTableBodyRenderPlan, includeVirtualIndex, normalizeNatTableVirtualizationOptions } from './table-virtualization.util';
-import type { NatTableRowRenderStrategy } from '../common/table-virtualization.type';
+import { buildNatTableBodyRenderPlan } from './body-render-plan.util';
+import type { NatTableRowRenderStrategy } from '../common/row-render-strategy.type';
 
 type TestRow = { readonly id: string };
 
@@ -16,18 +16,7 @@ const strategy = (items: NatTableRowRenderStrategy['items'], totalSize = 400): N
   rowHeight: signal(40)
 });
 
-describe('FEATURE: NatTable virtual body planning', () => {
-  describe('GIVEN: fixed-row virtualization options', () => {
-    describe('WHEN: options contain invalid runtime values', () => {
-      it('THEN: it normalizes them to safe fixed-row defaults', () => {
-        expect(normalizeNatTableVirtualizationOptions({ rowHeight: Number.NaN, overscan: -2 })).toStrictEqual({
-          rowHeight: 1,
-          overscan: 6
-        });
-      });
-    });
-  });
-
+describe('FEATURE: NatTable body render planning', () => {
   describe('GIVEN: a logical row model without a registered strategy', () => {
     describe('WHEN: the body render plan is built', () => {
       it('THEN: it keeps every logical row in the ordinary rendering path', () => {
@@ -59,16 +48,6 @@ describe('FEATURE: NatTable virtual body planning', () => {
         expect(plan.afterSize).toBe(80);
         expect(plan.rowHeight).toBe(40);
         expect(plan.virtualized).toBe(true);
-      });
-    });
-  });
-
-  describe('GIVEN: a default range that omits the focused row', () => {
-    describe('WHEN: the focus index is included', () => {
-      it('THEN: it returns a sorted unique index list', () => {
-        expect(includeVirtualIndex([4, 5, 6], 1, 10)).toStrictEqual([1, 4, 5, 6]);
-        expect(includeVirtualIndex([4, 5, 6], 5, 10)).toStrictEqual([4, 5, 6]);
-        expect(includeVirtualIndex([4, 5, 6], 12, 10)).toStrictEqual([4, 5, 6]);
       });
     });
   });

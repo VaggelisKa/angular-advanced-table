@@ -1,9 +1,9 @@
 import { flexRenderComponent as tanstackFlexRenderComponent } from '@tanstack/angular-table';
 
-import { NatTableVirtualize as DirectNatTableVirtualize } from './virtualization/table-virtualize.directive';
+import { NatTableRowRenderStrategyRegistry as DirectRegistry } from './domain-logic/table-row-render-strategy.service';
 
-import type { NatTableVirtualizationOptions } from '.';
-import { NatTableVirtualize, flexRenderComponent } from '.';
+import type { NatTableRowRenderStrategy } from '.';
+import { NatTableRowRenderStrategyRegistry, flexRenderComponent } from '.';
 
 describe('FEATURE: ng-advanced-table public barrel', () => {
   describe('GIVEN: consumer rendering helpers are exposed from the core entry point', () => {
@@ -14,13 +14,15 @@ describe('FEATURE: ng-advanced-table public barrel', () => {
     });
   });
 
-  describe('GIVEN: opt-in row virtualization is exposed from the core entry point', () => {
-    describe('WHEN: importing the directive and its library-owned options', () => {
-      it('THEN: it exposes the directive without leaking TanStack Virtual options', () => {
-        const options = { rowHeight: 44, overscan: 6 } satisfies NatTableVirtualizationOptions;
+  describe('GIVEN: the engine-neutral row-render strategy contract', () => {
+    describe('WHEN: importing the registry and its strategy type', () => {
+      it('THEN: it exposes the contract without naming any virtualization engine', () => {
+        // Structural check only: core must describe a row window without
+        // depending on TanStack Virtual, which lives in the opt-in entry point.
+        const strategyKeys: (keyof NatTableRowRenderStrategy)[] = ['items', 'totalSize', 'rowHeight'];
 
-        expect(NatTableVirtualize).toBe(DirectNatTableVirtualize);
-        expect(options).toStrictEqual({ rowHeight: 44, overscan: 6 });
+        expect(NatTableRowRenderStrategyRegistry).toBe(DirectRegistry);
+        expect(strategyKeys).toStrictEqual(['items', 'totalSize', 'rowHeight']);
       });
     });
   });

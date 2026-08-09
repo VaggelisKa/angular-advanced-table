@@ -62,6 +62,10 @@
     "./render-metrics": {
       "types": "./render-metrics/index.ts",
       "default": "./render-metrics/index.ts"
+    },
+    "./virtualization": {
+      "types": "./virtualization/index.ts",
+      "default": "./virtualization/index.ts"
     }
   },
   "nx": {

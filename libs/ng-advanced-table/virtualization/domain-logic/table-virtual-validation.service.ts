@@ -3,8 +3,9 @@ import { ElementRef, Injectable, afterNextRender, afterRenderEffect, inject, isD
 
 import type { RowData } from '@tanstack/angular-table';
 
-import { NatTableState } from '../../domain-logic/table.state';
-import type { NatTableVirtualItem } from '../common/table-virtualization.type';
+import { NAT_TABLE_ROW_WINDOW_HOST } from 'ng-advanced-table';
+import type { NatTableRowWindowHost, NatTableVirtualItem } from 'ng-advanced-table';
+
 import { NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT } from '../utils/table-virtualization.util';
 
 /** Development diagnostics for the fixed-row virtualization contract. */
@@ -12,7 +13,7 @@ import { NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT } from '../utils/table-virtualizati
 @Injectable()
 export class NatTableVirtualValidationService<TData extends RowData = RowData> {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly state = inject<NatTableState<TData>>(NatTableState);
+  private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
   private rowHeight: Signal<number> | null = null;
   private items: Signal<readonly NatTableVirtualItem[]> | null = null;
   private hasWarnedAboutRowHeight = false;
