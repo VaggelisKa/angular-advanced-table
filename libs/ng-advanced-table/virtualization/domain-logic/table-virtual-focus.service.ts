@@ -23,16 +23,24 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   private readonly focusedRowId = signal<string | null>(null);
   private readonly pendingFocus = signal<PendingVirtualFocus | null>(null);
 
+  /**
+   * Logical index by row id, rebuilt only when the row model changes. Lazy:
+   * `focusedLogicalIndex` reads it only while a row is focused, so a table the
+   * user never focuses never builds the map — and each focus move while
+   * navigating costs one lookup instead of an O(n) scan.
+   */
+  private readonly rowIndexById = computed(() => {
+    const indexById = new Map<string, number>();
+
+    this.state.bodyRows().forEach((row, index) => indexById.set(row.id, index));
+
+    return indexById;
+  });
+
   public readonly focusedLogicalIndex = computed(() => {
     const focusedRowId = this.focusedRowId();
 
-    if (focusedRowId === null) {
-      return null;
-    }
-
-    const index = this.state.bodyRows().findIndex((row) => row.id === focusedRowId);
-
-    return index === -1 ? null : index;
+    return focusedRowId === null ? null : (this.rowIndexById().get(focusedRowId) ?? null);
   });
 
   public constructor() {

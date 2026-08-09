@@ -59,6 +59,29 @@ class OrdinaryTableHost {
   protected readonly columns = columns;
 }
 
+@Component({
+  selector: 'test-sub-header-virtual-table-host',
+  imports: [NatTable, NatTableVirtualize],
+  providers: [NatTableService],
+  styles: `
+    nat-table {
+      --nat-table-height: 200px;
+    }
+  `,
+  template: `
+    <nat-table
+      [columns]="columns"
+      [data]="rows"
+      [natTableVirtualize]="{ rowHeight: 40, overscan: 2 }"
+      accessibleName="Grouped virtual operations"
+      subHeaderColumn="status" />
+  `
+})
+class SubHeaderVirtualTableHost {
+  protected readonly rows = buildRows(100);
+  protected readonly columns = columns;
+}
+
 @Component({ selector: 'test-virtual-pager', template: '' })
 class VirtualPager {
   public constructor() {
@@ -164,7 +187,7 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [OrdinaryTableHost, PaginatedVirtualTableHost, VirtualTableHost],
+      imports: [OrdinaryTableHost, PaginatedVirtualTableHost, SubHeaderVirtualTableHost, VirtualTableHost],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
   });
@@ -369,6 +392,31 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
       });
     });
 
+    describe('WHEN: selection and column sizing change after scrolling', () => {
+      it('THEN: it preserves the mounted window and scroll position', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        region.scrollTop = 2000;
+        region.dispatchEvent(new Event('scroll'));
+        await fixture.whenStable();
+
+        const firstMountedIndex = queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex'];
+
+        table.patchState({ rowSelection: { '5': true }, columnSizing: { name: 220 } });
+        await fixture.whenStable();
+
+        expect(region.scrollTop).toBe(2000);
+        expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']).toBe(firstMountedIndex);
+
+        fixture.destroy();
+      });
+    });
+
     describe('WHEN: a row in a scrolled window is activated', () => {
       it('THEN: it emits the stable logical TanStack row identity', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
@@ -455,6 +503,21 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         expect(firstRow.dataset['rowIndex']).toBe('0');
         expect(firstRow.getAttribute('aria-rowindex')).toBe('2');
         expect(firstRow.textContent).toContain('Service 11');
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: virtualization combined with sub-header rows', () => {
+    describe('WHEN: both subHeaderColumn and natTableVirtualize are configured', () => {
+      it('THEN: it warns that the combination is unsupported', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const fixture: ComponentFixture<SubHeaderVirtualTableHost> = TestBed.createComponent(SubHeaderVirtualTableHost);
+
+        await fixture.whenStable();
+
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('does not support sub-header rows'));
 
         fixture.destroy();
       });

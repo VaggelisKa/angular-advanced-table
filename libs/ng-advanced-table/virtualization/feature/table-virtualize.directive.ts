@@ -98,27 +98,55 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
   private readonly getRowKey = (index: number): string | number => this.state.bodyRows()[index]?.id ?? index;
   private readonly getInitialOffset = (): number => this.state.tableRegionRef()?.nativeElement.scrollTop ?? 0;
 
+  /**
+   * The four state slices whose changes rebuild the row model. The custom
+   * equality collapses unrelated state traffic (per-frame columnSizing updates
+   * during a drag-resize, selection toggles, visibility changes) so the reset
+   * effect below never re-runs, and never re-measures, for them.
+   */
+  private readonly rowModelState = computed<NatTableVirtualRowModelState>(
+    () => {
+      const { sorting, globalFilter, columnFilters, pagination } = this.state.mergedState();
+
+      return { sorting, globalFilter, columnFilters, pagination };
+    },
+    { equal: (previous, current) => !hasNatTableStateValueChanged(previous, current) }
+  );
+
+  /**
+   * Identity of the visible row sequence. The O(n) join re-runs only when the
+   * row-model array itself is rebuilt: TanStack memoizes it, so state changes
+   * that cannot reorder rows keep the previous array and skip this entirely.
+   */
+  private readonly rowIdSequence = computed(() =>
+    this.state
+      .bodyRows()
+      .map((row) => row.id)
+      .join('\u0000')
+  );
+
   private registerRowModelResetEffect(): void {
-    let previousData: readonly TData[] | null = null;
-    let previousRowKey: string | null = null;
-    let previousRowModelState: NatTableVirtualRowModelState | null = null;
+    let previous: {
+      readonly data: readonly TData[];
+      readonly rowIdSequence: string;
+      readonly rowModelState: NatTableVirtualRowModelState;
+    } | null = null;
 
     effect(() => {
       const data = this.state.data();
-      const rowKey = this.state
-        .bodyRows()
-        .map((row) => row.id)
-        .join('\u0000');
-      const { sorting, globalFilter, columnFilters, pagination } = this.state.mergedState();
-      const rowModelState = { sorting, globalFilter, columnFilters, pagination };
-      const rowHeight = this.rowHeight();
-      const shouldReset =
-        previousRowModelState !== null &&
-        (previousData !== data || previousRowKey !== rowKey || hasNatTableStateValueChanged(previousRowModelState, rowModelState));
+      const rowIdSequence = this.rowIdSequence();
+      const rowModelState = this.rowModelState();
 
-      previousData = data;
-      previousRowKey = rowKey;
-      previousRowModelState = rowModelState;
+      // Tracked so a rowHeight change re-measures the mounted rows.
+      this.rowHeight();
+
+      // Reference comparison suffices for rowModelState: the computed's custom
+      // equality keeps the previous object whenever the slices are value-equal.
+      const shouldReset =
+        previous !== null &&
+        (previous.data !== data || previous.rowIdSequence !== rowIdSequence || previous.rowModelState !== rowModelState);
+
+      previous = { data, rowIdSequence, rowModelState };
 
       untracked(() => {
         this.controller.measure();
@@ -128,20 +156,23 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
           this.controller.scrollToOffset(0, { align: 'start' });
         }
       });
-
-      void rowHeight;
     });
   }
 
   private registerOptionValidationEffect(): void {
+    // Diagnostics only — production builds register no effect at all.
+    if (!isDevMode()) {
+      return;
+    }
+
     effect(() => {
       const { rowHeight, overscan } = this.natTableVirtualize();
 
-      if (isDevMode() && (!Number.isFinite(rowHeight) || rowHeight <= 0)) {
+      if (!Number.isFinite(rowHeight) || rowHeight <= 0) {
         console.warn('[ng-advanced-table] natTableVirtualize.rowHeight must be a finite number greater than zero.');
       }
 
-      if (isDevMode() && overscan !== undefined && (!Number.isFinite(overscan) || overscan < 0)) {
+      if (overscan !== undefined && (!Number.isFinite(overscan) || overscan < 0)) {
         console.warn('[ng-advanced-table] natTableVirtualize.overscan must be a finite number greater than or equal to zero.');
       }
     });

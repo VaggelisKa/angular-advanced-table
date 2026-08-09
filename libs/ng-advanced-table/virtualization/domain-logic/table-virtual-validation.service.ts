@@ -1,5 +1,5 @@
 import type { Signal } from '@angular/core';
-import { ElementRef, Injectable, afterNextRender, afterRenderEffect, inject, isDevMode } from '@angular/core';
+import { ElementRef, Injectable, afterNextRender, afterRenderEffect, effect, inject, isDevMode } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -16,11 +16,18 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
   private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
   private rowHeight: Signal<number> | null = null;
   private items: Signal<readonly NatTableVirtualItem[]> | null = null;
-  private hasWarnedAboutRowHeight = false;
 
   public constructor() {
+    // Every check here is a development diagnostic. Production builds register
+    // nothing, so the scroll hot path never pays for the render-effect wakeups
+    // or the per-window DOM measurements they perform.
+    if (!isDevMode()) {
+      return;
+    }
+
     afterNextRender(() => this.warnIfRegionIsUnbounded());
     this.registerRowHeightValidationEffect();
+    this.registerSubHeaderValidationEffect();
   }
 
   public connect(rowHeight: Signal<number>, items: Signal<readonly NatTableVirtualItem[]>): void {
@@ -32,7 +39,6 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
     const region = this.state.tableRegionRef()?.nativeElement;
 
     if (
-      !isDevMode() ||
       !region ||
       region.clientHeight <= 0 ||
       region.scrollHeight > region.clientHeight + 1 ||
@@ -46,7 +52,30 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
     );
   }
 
+  /**
+   * Sub-header rows are unsupported by the fixed-row strategy: they add body
+   * `<tr>`s the virtualizer never sized, so spacer heights under-report and the
+   * scroll offset drifts as the mounted window moves.
+   */
+  private registerSubHeaderValidationEffect(): void {
+    let hasWarned = false;
+
+    effect(() => {
+      if (hasWarned || this.state.subHeaderGroups().size === 0) {
+        return;
+      }
+
+      hasWarned = true;
+      console.warn(
+        '[ng-advanced-table] natTableVirtualize does not support sub-header rows. ' +
+          'Remove `subHeaderColumn` from the virtualized table, or render it without virtualization.'
+      );
+    });
+  }
+
   private registerRowHeightValidationEffect(): void {
+    let hasWarned = false;
+
     afterRenderEffect({
       earlyRead: () => {
         const expectedHeight = this.rowHeight?.() ?? 0;
@@ -61,11 +90,11 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
       write: (mismatchSignal) => {
         const mismatch = mismatchSignal();
 
-        if (!isDevMode() || this.hasWarnedAboutRowHeight || !mismatch) {
+        if (hasWarned || !mismatch) {
           return;
         }
 
-        this.hasWarnedAboutRowHeight = true;
+        hasWarned = true;
         console.warn(
           `[ng-advanced-table] natTableVirtualize expected ${mismatch.expectedHeight}px rows but measured ${mismatch.actualHeight}px. ` +
             'Keep cell content and padding within the configured fixed row height.'
