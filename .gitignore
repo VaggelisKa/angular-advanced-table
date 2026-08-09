@@ -64,3 +64,7 @@ Thumbs.db
 
 # Agent-Native plan blocks catalog (generated, keep out of repo)
 .agent-native/plan-blocks.md
+
+# Local review/analysis artifacts (not repository content; they would otherwise
+# fail the repo-wide Prettier check)
+/reports/

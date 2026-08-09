@@ -109,7 +109,12 @@ let nextTableId = 0;
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly directionality = inject(Directionality, { optional: true });
-  private readonly rowRenderStrategies = inject(NatTableRowRenderStrategyRegistry);
+  // Optional so a renderer shell that never virtualizes (NatList) does not have
+  // to provide it, or even know virtualization exists. Absent registry reads as
+  // "no strategy": every row renders.
+  private readonly rowRenderStrategies = inject(NatTableRowRenderStrategyRegistry, { optional: true });
+  private readonly rowRenderStrategy = computed(() => this.rowRenderStrategies?.strategy() ?? null);
+  private readonly hasRowRenderStrategy = computed(() => this.rowRenderStrategies?.active() ?? false);
 
   // ─── Input bridging signals (written by the NatTable component) ───
 
@@ -346,7 +351,7 @@ export class NatTableState<TData extends RowData = RowData> {
 
   public readonly headerGroups = computed(() => this.table.getHeaderGroups());
   public readonly bodyRows = computed(() => this.table.getRowModel().rows);
-  public readonly bodyRenderPlan = computed(() => buildNatTableBodyRenderPlan(this.bodyRows(), this.rowRenderStrategies.strategy()));
+  public readonly bodyRenderPlan = computed(() => buildNatTableBodyRenderPlan(this.bodyRows(), this.rowRenderStrategy()));
   public readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
   public readonly hasResizableColumns = computed(() =>
     this.allLeafColumns().some((column) => isColumnResizable(column, this.resizingEnabled()))
@@ -479,7 +484,7 @@ export class NatTableState<TData extends RowData = RowData> {
       'data-table',
       this.stickyHeader() && 'has-sticky-header',
       this.usesAuthoritativeLayout() && 'is-fixed-layout',
-      this.rowRenderStrategies.active() && 'is-virtualized'
+      this.hasRowRenderStrategy() && 'is-virtualized'
     ]
       .filter(Boolean)
       .join(' ')
@@ -499,7 +504,7 @@ export class NatTableState<TData extends RowData = RowData> {
    * flex to keep the table filled.
    */
   private readonly isFillFlexLayout = computed(
-    () => !this.isFixedLayout() && (this.hasResizableColumns() || this.rowRenderStrategies.active()) && this.regionViewportWidth() > 0
+    () => !this.isFixedLayout() && (this.hasResizableColumns() || this.hasRowRenderStrategy()) && this.regionViewportWidth() > 0
   );
 
   /**
@@ -507,7 +512,7 @@ export class NatTableState<TData extends RowData = RowData> {
    * fill flex. Renders the colgroup and switches the table to `table-layout: fixed`.
    */
   public readonly usesAuthoritativeLayout = computed(
-    () => this.isFixedLayout() || this.isFillFlexLayout() || this.rowRenderStrategies.active()
+    () => this.isFixedLayout() || this.isFillFlexLayout() || this.hasRowRenderStrategy()
   );
 
   /**

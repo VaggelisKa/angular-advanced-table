@@ -33,7 +33,6 @@ import { NatTableState } from '../domain-logic/table.state';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { resolveColumnLabel } from '../utils/column-label.util';
-import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-render-strategy.service';
 
 /**
  * SPIKE: list renderer sharing the table engine (`NatTableState`).
@@ -57,7 +56,7 @@ import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-r
     '[style.--sys-nat-table-list-item-areas]': 'defaultItemAreas()'
   },
   imports: [FlexRender, NatListFieldArea, NgTemplateOutlet],
-  providers: [NatTableRowRenderStrategyRegistry, NatTableState, NatTableA11yService],
+  providers: [NatTableState, NatTableA11yService],
   templateUrl: './list.html',
   styleUrl: './list.css'
 })
