@@ -20,12 +20,6 @@
   min-width: 0;
 }
 
-.demo-hint {
-  max-width: 70ch;
-  margin-block: 0 1rem;
-  color: var(--sc-text-soft);
-}
-
 /* Card layout for the list: position every column's field by naming its
    column id in the areas template. Two columns by default so field text is
    not squeezed; three once there is room for it. */

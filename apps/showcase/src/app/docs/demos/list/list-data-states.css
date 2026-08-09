@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+/* All three states share one base shape; shared tokens restyle them together. */
+.list-states-list {
+  --nat-table-list-state-justify: center;
+  --nat-table-list-state-min-height: 8rem;
+}

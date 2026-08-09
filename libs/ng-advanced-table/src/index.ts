@@ -33,3 +33,5 @@ export { NatTableVirtualize } from './virtualization/table-virtualize.directive'
 export type { NatTableVirtualizationOptions } from './virtualization/common/table-virtualization.type';
 
 export { hasNatTableStateValueChanged } from './utils/table-state-value-equality.util';
+
+export { stripNatTableSubHeaderSorting } from './utils/sub-header.util';

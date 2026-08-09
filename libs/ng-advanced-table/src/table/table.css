@@ -549,6 +549,30 @@ tbody .data-row:last-child .data-cell {
   );
 }
 
+.sub-header-cell {
+  padding: var(
+    --nat-table-space-sub-header,
+    var(--sys-nat-table-space-sub-header, 8px var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 12px)))
+  );
+  font-weight: var(--nat-table-font-weight-sub-header, var(--sys-nat-table-font-weight-sub-header, 600));
+  color: var(--nat-table-sub-header-color, var(--sys-nat-table-sub-header-color, currentColor));
+  white-space: normal;
+  background: var(--nat-table-sub-header-background, var(--sys-nat-table-sub-header-background, transparent));
+}
+
+/*
+ * Sticky-left, shrink-to-fit content (state-row pattern): the group label
+ * stays inside the visible scroll viewport while the full-width cell scrolls
+ * horizontally under pinned columns.
+ */
+.sub-header-content {
+  position: sticky;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100cqi;
+}
+
 @keyframes nat-table-state-enter {
   from {
     opacity: var(--nat-table-state-transition-opacity-from, var(--sys-nat-table-state-transition-opacity-from, 0));
@@ -572,6 +596,29 @@ tbody .data-row:last-child .data-cell {
   outline: none;
   box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, var(--sys-nat-table-focus-ring-width, 2px))
     var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, Highlight));
+}
+
+/*
+ * Forced-colors mode (Windows High Contrast) forces `box-shadow` to `none`.
+ * The focus ring above is a box-shadow paired with `outline: none`, so without
+ * this rule a focused cell carries no visible focus indicator at all in that
+ * mode — a WCAG 2.4.7 (Focus Visible) failure.
+ *
+ * `outline` survives forced colors. The system colour keyword is deliberate:
+ * custom properties are not force-adjusted, so routing this through the
+ * `--nat-table-focus-ring-color` token could paint a themed ring that is
+ * invisible against the forced background. Negative offset keeps the ring
+ * inset, matching the box-shadow it stands in for, so it cannot overlap
+ * neighbouring cells.
+ *
+ * Safari does not implement `forced-colors`; it ignores this block, which
+ * leaves the box-shadow ring in place there.
+ */
+@media (forced-colors: active) {
+  [ngGridCell]:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
 }
 
 /*

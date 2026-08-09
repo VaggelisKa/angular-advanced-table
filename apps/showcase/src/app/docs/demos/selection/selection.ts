@@ -1,35 +1,45 @@
 import { Component, computed, linkedSignal, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
-import type { CellContext, ColumnDef, NatTableRowActivateEvent, NatTableUserState, RowSelectionState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableRowActivateEvent, NatTableUserState, RowSelectionState } from 'ng-advanced-table';
 import { NatTableSurface, NatTableToolbar, NatToolbarItem, withNatTableSelectionColumn } from 'ng-advanced-table/components';
 
-import type { DemoItem, RowSelectionSource } from './selection.type';
+import type { RowSelectionSource, SelectionMode } from './selection.type';
 import { computeRowSelection } from './selection.util';
+import { DemoAside, DemoFacts, DemoLayout, DemoSection, DemoToggleGroup } from '../../../ui';
+import type { DemoFact, DemoToggleOption } from '../../../ui';
+import { DEMO_ITEMS, demoItemBaseColumns } from '../demo-data';
+import type { DemoItem } from '../demo-data';
 
-const DEMO_DATA: DemoItem[] = [
-  { id: 'item-1', name: 'Alpha Searcher', category: 'Analytics', status: 'Active', value: 4500 },
-  { id: 'item-2', name: 'Beta Runner', category: 'Infrastructure', status: 'Active', value: 1200 },
-  {
-    id: 'item-3',
-    name: 'Gamma Processor',
-    category: 'Data Science',
-    status: 'Paused',
-    value: 7800
-  },
-  { id: 'item-4', name: 'Delta Watcher', category: 'Security', status: 'Alert', value: 3100 },
-  { id: 'item-5', name: 'Epsilon Shield', category: 'Security', status: 'Active', value: 9200 },
-  { id: 'item-6', name: 'Zeta Pipeline', category: 'Data Science', status: 'Halted', value: 500 }
+const MODE_OPTIONS: readonly DemoToggleOption<SelectionMode>[] = [
+  { value: 'multiple', label: 'Multiple' },
+  { value: 'single', label: 'Single' }
 ];
 
 @Component({
   selector: 'app-selection',
-  imports: [NatTable, NatTableSurface, NatTableToolbar, NatToolbarItem],
-  templateUrl: './selection.html'
+  imports: [
+    NatTable,
+    NatTableSurface,
+    NatTableToolbar,
+    NatToolbarItem,
+    DemoAside,
+    DemoFacts,
+    DemoLayout,
+    DemoSection,
+    DemoToggleGroup
+  ],
+  templateUrl: './selection.html',
+  styles: `
+    :host {
+      display: block;
+    }
+  `
 })
 export class Selection {
-  protected readonly data = signal<DemoItem[]>(DEMO_DATA);
-  protected readonly selectionMode = signal<'single' | 'multiple'>('multiple');
+  protected readonly data = signal<DemoItem[]>([...DEMO_ITEMS]);
+  protected readonly selectionMode = signal<SelectionMode>('multiple');
+  protected readonly modeOptions = MODE_OPTIONS;
 
   /**
    * Row selection derived from the current data and cardinality. Using a
@@ -50,36 +60,11 @@ export class Selection {
     rowSelection: this.rowSelection()
   }));
 
-  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableSelectionColumn(
-    [
-      {
-        accessorKey: 'name',
-        header: 'Name',
-        meta: { label: 'Name', rowHeader: true }
-      },
-      {
-        accessorKey: 'category',
-        header: 'Category',
-        meta: { label: 'Category' }
-      },
-      {
-        accessorKey: 'status',
-        header: 'Status',
-        meta: { label: 'Status' }
-      },
-      {
-        accessorKey: 'value',
-        header: 'Value',
-        meta: { label: 'Value', align: 'end' },
-        cell: (context: CellContext<DemoItem, number>) => `$${context.getValue().toLocaleString()}`
-      }
-    ],
-    {
-      label: 'Selection',
-      selectAllAriaLabel: 'Select all services',
-      selectRowAriaLabel: (row) => `Select ${row.original.name}`
-    }
-  );
+  protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableSelectionColumn(demoItemBaseColumns, {
+    label: 'Selection',
+    selectAllAriaLabel: 'Select all services',
+    selectRowAriaLabel: (row) => `Select ${row.original.name}`
+  });
 
   protected readonly selectedNames = computed(() => {
     const selection = this.rowSelection();
@@ -87,12 +72,6 @@ export class Selection {
     return this.data()
       .filter((item) => selection[item.id])
       .map((item) => item.name);
-  });
-
-  protected readonly selectedSummary = computed(() => {
-    const names = this.selectedNames();
-
-    return names.length ? names.join(', ') : 'None';
   });
 
   /**
@@ -103,6 +82,20 @@ export class Selection {
    */
   protected readonly lastActivatedName = signal<string | null>(null);
 
+  protected readonly facts = computed<DemoFact[]>(() => {
+    const names = this.selectedNames();
+
+    return [
+      { label: 'Mode', value: this.selectionMode(), testId: 'selection-mode' },
+      {
+        label: `Selected (${names.length})`,
+        value: names.length ? names.join(', ') : 'None',
+        testId: 'selected-summary'
+      },
+      { label: 'Last activated', value: this.lastActivatedName() ?? 'None', testId: 'last-activated' }
+    ];
+  });
+
   protected onRowActivate(event: NatTableRowActivateEvent<DemoItem>): void {
     this.lastActivatedName.set(event.rowData.name);
   }
@@ -111,7 +104,7 @@ export class Selection {
     this.rowSelection.set(rowSelection);
   }
 
-  protected setMode(mode: 'single' | 'multiple'): void {
+  protected setMode(mode: SelectionMode): void {
     // The linkedSignal collapses any multi-selection to the new cardinality.
     this.selectionMode.set(mode);
   }
@@ -133,7 +126,7 @@ export class Selection {
   }
 
   protected restoreData(): void {
-    this.data.set(DEMO_DATA);
+    this.data.set([...DEMO_ITEMS]);
     this.rowSelection.set({});
   }
 }

@@ -1,0 +1,7 @@
+<ng-template #totalTemplate let-context>
+  <strong class="list-custom-cells-total">{{ context.getValue() | currency }}</strong>
+</ng-template>
+
+<nat-table-surface>
+  <nat-list [columns]="columns()" [data]="rows" accessibleName="Orders with custom cells" class="sc-demo-list list-custom-cells" />
+</nat-table-surface>

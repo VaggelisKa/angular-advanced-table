@@ -29,19 +29,19 @@ test.describe('FEATURE: Row activation', () => {
     test.describe('WHEN: a non-interactive cell in a row is clicked', () => {
       test('THEN: it fires rowActivate for that row', async ({ page }) => {
         await test.step('THEN: no row has been activated yet', async () => {
-          await expect(lastActivated(page)).toHaveText('Last activated: None');
+          await expect(lastActivated(page)).toHaveText('None');
         });
 
         await test.step('THEN: clicking the Category cell activates the row', async () => {
           await categoryCell(page, 'Gamma Processor').click();
 
-          await expect(lastActivated(page)).toHaveText('Last activated: Gamma Processor');
+          await expect(lastActivated(page)).toHaveText('Gamma Processor');
         });
 
         await test.step('THEN: clicking a different row activates that row instead', async () => {
           await categoryCell(page, 'Delta Watcher').click();
 
-          await expect(lastActivated(page)).toHaveText('Last activated: Delta Watcher');
+          await expect(lastActivated(page)).toHaveText('Delta Watcher');
         });
       });
     });
@@ -56,7 +56,7 @@ test.describe('FEATURE: Row activation', () => {
 
           await page.keyboard.press('Enter');
 
-          await expect(lastActivated(page)).toHaveText('Last activated: Epsilon Shield');
+          await expect(lastActivated(page)).toHaveText('Epsilon Shield');
         });
 
         await test.step('THEN: focusing the Zeta Pipeline cell and pressing Space activates it', async () => {
@@ -65,7 +65,7 @@ test.describe('FEATURE: Row activation', () => {
           await cell.focus();
           await page.keyboard.press('Space');
 
-          await expect(lastActivated(page)).toHaveText('Last activated: Zeta Pipeline');
+          await expect(lastActivated(page)).toHaveText('Zeta Pipeline');
         });
       });
     });
@@ -75,7 +75,7 @@ test.describe('FEATURE: Row activation', () => {
         await test.step('THEN: a prior click activation is recorded', async () => {
           await categoryCell(page, 'Alpha Searcher').click();
 
-          await expect(lastActivated(page)).toHaveText('Last activated: Alpha Searcher');
+          await expect(lastActivated(page)).toHaveText('Alpha Searcher');
         });
 
         await test.step('THEN: clicking the Beta Runner checkbox selects it without changing the activation readout', async () => {
@@ -85,7 +85,7 @@ test.describe('FEATURE: Row activation', () => {
 
           await expect(checkbox).toBeChecked();
           await expect(rowNamed(page, 'Beta Runner')).toHaveAttribute('aria-selected', 'true');
-          await expect(lastActivated(page)).toHaveText('Last activated: Alpha Searcher');
+          await expect(lastActivated(page)).toHaveText('Alpha Searcher');
         });
 
         await test.step('THEN: toggling the checkbox via keyboard Space also leaves the activation readout unchanged', async () => {
@@ -95,7 +95,7 @@ test.describe('FEATURE: Row activation', () => {
           await page.keyboard.press('Space');
 
           await expect(checkbox).not.toBeChecked();
-          await expect(lastActivated(page)).toHaveText('Last activated: Alpha Searcher');
+          await expect(lastActivated(page)).toHaveText('Alpha Searcher');
         });
       });
     });

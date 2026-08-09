@@ -27,7 +27,13 @@ import type {
   NatTableSortIndicatorContent,
   NatTableSortIndicatorContext
 } from '../../common/header-actions.type';
-import { canPinColumn, canSortColumn } from '../../utils/header-actions-gating.util';
+import {
+  canPinColumn,
+  canSortHeaderColumn,
+  getVisibleSortPriority,
+  getVisibleSortState,
+  getVisibleSorting
+} from '../../utils/header-actions-gating.util';
 import {
   buildSortIndicatorContext,
   resolveMenuButtonLabel,
@@ -74,7 +80,7 @@ export class NatTableHeaderActions {
   protected readonly hasCustomSortIndicator = computed(() => this.sortIndicator() != null);
 
   protected canSort(): boolean {
-    return canSortColumn(this.column(), this.context().table.options.meta?.natTableSortingEnabled, this.enableSortActions());
+    return canSortHeaderColumn(this.context().table, this.column(), this.enableSortActions());
   }
 
   protected canPin(): boolean {
@@ -97,16 +103,14 @@ export class NatTableHeaderActions {
     return this.column().columnDef.meta?.align === 'end';
   }
 
+  // `getVisibleSorting` strips the hidden forced sub-header entry, so sort
+  // state, priorities, and labels only ever reflect user-visible sorting.
   protected sortState(): NatTableSortDirection {
-    return this.column().getIsSorted();
-  }
-
-  protected ariaSort(): 'ascending' | 'descending' | 'none' {
-    return toAriaSort(this.sortState());
+    return getVisibleSortState(getVisibleSorting(this.context().table), this.column().id);
   }
 
   protected sortIndicatorContext(): NatTableSortIndicatorContext<RowData> {
-    return buildSortIndicatorContext(this.sortState(), this.ariaSort(), this.column(), this.label());
+    return buildSortIndicatorContext(this.sortState(), toAriaSort(this.sortState()), this.column(), this.label());
   }
 
   protected togglePin(side: NatTablePinSide): void {
@@ -118,18 +122,14 @@ export class NatTableHeaderActions {
   }
 
   protected sortPriority(): number | null {
-    if (this.context().table.getState().sorting.length <= 1) return null;
-
-    const index = this.column().getSortIndex();
-
-    return index >= 0 ? index + 1 : null;
+    return getVisibleSortPriority(getVisibleSorting(this.context().table), this.column().id);
   }
 
   protected getSortLabel(): string {
     return resolveSortLabel(this.resolveAccessibilityLabels(), this.label(), {
-      ariaSort: this.ariaSort(),
+      ariaSort: toAriaSort(this.sortState()),
       sortPriority: this.sortPriority(),
-      sortCount: this.context().table.getState().sorting.length
+      sortCount: getVisibleSorting(this.context().table).length
     });
   }
 

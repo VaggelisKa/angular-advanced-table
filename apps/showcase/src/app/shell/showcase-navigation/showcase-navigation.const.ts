@@ -74,6 +74,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     path: '/docs/list-renderer'
   },
   {
+    id: 'sub-header-rows',
+    label: 'Sub-header rows',
+    description: 'Group rows under a column-driven header',
+    path: '/docs/sub-header-rows'
+  },
+  {
     id: 'row-selection',
     label: 'Row selection',
     description: 'Selection state and bulk workflows',

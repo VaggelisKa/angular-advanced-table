@@ -11,6 +11,8 @@ import type { ColumnDef, NatTableAccessibilityText, NatTableDataStatus } from 'n
 import { NatTableSurface } from 'ng-advanced-table/components';
 
 import { formatError } from './states.util';
+import { DemoSection, DemoToggleGroup } from '../../../ui';
+import type { DemoToggleOption } from '../../../ui';
 
 type IncidentRow = {
   readonly id: string;
@@ -28,9 +30,24 @@ const DEMO_DATA: IncidentRow[] = [
 ];
 const ERROR_RETRY_DELAY_MS = 900;
 
+const TRANSITION_PREVIEW_OPTIONS: readonly DemoToggleOption<TransitionPreviewState>[] = [
+  { value: 'loading', label: 'Loading' },
+  { value: 'empty', label: 'Empty' },
+  { value: 'error', label: 'Error' },
+  { value: 'rows', label: 'Rows' }
+];
+
 @Component({
   selector: 'app-states',
-  imports: [NatTable, NatTableSurface, NatTableLoadingTemplate, NatTableEmptyTemplate, NatTableErrorTemplate],
+  imports: [
+    NatTable,
+    NatTableSurface,
+    NatTableLoadingTemplate,
+    NatTableEmptyTemplate,
+    NatTableErrorTemplate,
+    DemoSection,
+    DemoToggleGroup
+  ],
   templateUrl: './states.html',
   styleUrl: './states.css'
 })
@@ -44,9 +61,10 @@ export class States {
   protected readonly successRows = DEMO_DATA;
   protected readonly errorStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.error);
   protected readonly error = signal<unknown>(new Error('Incident service returned 503.'));
-  private readonly transitionPreviewState = signal<TransitionPreviewState>('loading');
+  protected readonly transitionPreviewState = signal<TransitionPreviewState>('loading');
   protected readonly transitionPreviewError = new Error('Transition service returned 503.');
   protected readonly transitionPreviewRows = computed(() => (this.transitionPreviewState() === 'rows' ? DEMO_DATA : []));
+  protected readonly transitionPreviewOptions = TRANSITION_PREVIEW_OPTIONS;
 
   protected readonly transitionPreviewDataStatus = computed<NatTableDataStatus>(() => {
     const state = this.transitionPreviewState();
@@ -61,16 +79,6 @@ export class States {
 
     return NAT_TABLE_DATA_STATUS.success;
   });
-
-  protected readonly transitionPreviewOptions: readonly {
-    readonly state: TransitionPreviewState;
-    readonly label: string;
-  }[] = [
-    { state: 'loading', label: 'Loading' },
-    { state: 'empty', label: 'Empty' },
-    { state: 'error', label: 'Error' },
-    { state: 'rows', label: 'Rows' }
-  ];
 
   protected readonly columns: ColumnDef<IncidentRow, unknown>[] = [
     {
@@ -137,14 +145,6 @@ export class States {
       this.errorStatus.set(NAT_TABLE_DATA_STATUS.error);
       this.retryTimeoutId = null;
     }, ERROR_RETRY_DELAY_MS);
-  }
-
-  protected showTransitionPreviewState(state: TransitionPreviewState): void {
-    this.transitionPreviewState.set(state);
-  }
-
-  protected isTransitionPreviewState(state: TransitionPreviewState): boolean {
-    return this.transitionPreviewState() === state;
   }
 
   protected readonly formatError = formatError;

@@ -22,6 +22,7 @@ import { NatListFieldArea } from './list-field-area.directive';
 import { findRowCell, hasStaticLabel, isSrOnlyLabel } from './utils/list-column.util';
 import { buildListStateTemplateContext, resolveListStateView } from './utils/list-state.util';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
+import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';
@@ -30,6 +31,7 @@ import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
+import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { resolveColumnLabel } from '../utils/column-label.util';
 import { NatTableRowRenderStrategyRegistry } from '../virtualization/table-row-render-strategy.service';
 
@@ -94,6 +96,25 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
    * Opt-in because it adds a tab stop per item.
    */
   public readonly enableRowActivation = input(false, { transform: booleanAttribute });
+  /**
+   * Leaf column id whose value groups items under rendered sub-header items.
+   * The list always sorts by this column first (hidden from sort UI and
+   * emitted state); user sorting applies within groups. Unset or unknown ids
+   * disable the feature.
+   */
+  public readonly subHeaderColumn = input<string | undefined>(undefined);
+  /**
+   * Optional explicit sub-header group order (e.g. `['active', 'archived']`).
+   * Unlisted values sort after listed ones in natural ascending order.
+   * Requires `subHeaderColumn`.
+   */
+  public readonly subHeaderOrder = input<readonly unknown[] | undefined>(undefined);
+  /**
+   * Renderer-level sub-header gate, on by default. Set to `false` to ignore
+   * `subHeaderColumn`/`subHeaderOrder` on this list only — useful when the
+   * same bound config drives another renderer that should keep its groups.
+   */
+  public readonly enableSubHeaders = input(true, { transform: booleanAttribute });
 
   // ─── Outputs ───
 
@@ -164,6 +185,25 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   private readonly loadingTemplate = contentChild(NatTableLoadingTemplate);
   private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
   private readonly errorTemplate = contentChild(NatTableErrorTemplate);
+  private readonly subHeaderTemplate = contentChild(NatTableSubHeaderTemplate);
+
+  // ─── Sub-header groups (delegated to state) ───
+
+  protected readonly subHeaderGroups = this.state.subHeaderGroups;
+
+  protected readonly subHeaderTemplateRef = computed<TemplateRef<NatTableSubHeaderTemplateContext<TData>> | null>(() => {
+    const templateRef = this.subHeaderTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatTableSubHeaderTemplateContext<TData>>) : null;
+  });
+
+  protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
+    return this.state.getSubHeaderTemplateContext(group);
+  }
+
+  protected getSubHeaderAriaText(group: NatTableSubHeaderGroup<TData>): string {
+    return this.state.getSubHeaderAnnouncement(group, 'list');
+  }
 
   /**
    * Active consumer state template plus its context, or `null` to fall back to
@@ -265,10 +305,14 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     effect(() => this.state.accessibleName.set(this.accessibleName()));
     effect(() => this.state.enableRowSelection.set(this.enableRowSelection()));
     effect(() => this.state.selectionMode.set(this.selectionMode()));
+    effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
+    effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
+    effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
 
     effect(() => this.state.tableRegionRef.set(this.listRegionRef()));
 
     this.state.registerSeedEffect();
+    this.state.registerSubHeaderValidationEffect();
 
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);

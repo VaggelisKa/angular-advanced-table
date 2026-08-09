@@ -1,14 +1,12 @@
-<div class="grid-layout grid-layout-with-panel">
-  <div class="card">
-    <h2 class="card-title">Interactive Cells Grid</h2>
-    <nat-table-surface [enablePinning]="true" [enableSorting]="true">
-      <nat-table [columns]="columns" [data]="data()" accessibleName="Keyboard interaction demo table" />
-    </nat-table-surface>
-  </div>
+<app-demo-layout>
+  <nat-table-surface [enablePinning]="true" [enableSorting]="true">
+    <nat-table [columns]="columns" [data]="data()" accessibleName="Keyboard interaction demo table" class="sc-demo-table" />
+  </nat-table-surface>
 
-  <div class="card">
-    <h2 class="card-title">How To Use The Keyboard</h2>
-    <div class="instructions">
+  <app-demo-section demoAside heading="How to use the keyboard">
+    <app-demo-facts [facts]="facts()" live />
+
+    <div class="demo-note">
       <ol>
         <li><strong>Tab</strong> to the grid, then move between cells with the <code>Arrow</code> keys.</li>
         <li>
@@ -27,7 +25,5 @@
         <li>Press <code>Escape</code> to return focus from a header control to its cell.</li>
       </ol>
     </div>
-
-    <div aria-live="polite" class="info-tag">Last action: {{ lastAction() }}</div>
-  </div>
-</div>
+  </app-demo-section>
+</app-demo-layout>

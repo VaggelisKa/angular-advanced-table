@@ -1,0 +1,54 @@
+<div class="sub-header-demo-controls">
+  <app-demo-toggle-group [options]="rendererOptions" [value]="view()" accessibleName="Renderer" (valueChange)="view.set($event)" />
+
+  <div class="sub-header-demo-state-controls">
+    <button
+      [attr.aria-pressed]="useStatusOrder()"
+      [class.is-active]="useStatusOrder()"
+      class="btn btn-outline"
+      type="button"
+      (click)="useStatusOrder.set(!useStatusOrder())">
+      Workflow order
+    </button>
+
+    <button
+      [attr.aria-label]="sortByTotalLabel()"
+      [class.is-active]="sortDirection() !== null"
+      class="btn btn-outline"
+      type="button"
+      (click)="cycleSortByTotal()">
+      Sort by total
+      <span aria-hidden="true" class="sub-header-demo-sort-arrow" data-testid="sub-header-demo-sort-arrow">{{ sortArrow() }}</span>
+    </button>
+  </div>
+</div>
+
+<nat-table-surface [(state)]="state">
+  @if (view() === 'table') {
+    <nat-table
+      [columns]="columns"
+      [data]="rows"
+      [subHeaderOrder]="useStatusOrder() ? statusOrder : undefined"
+      accessibleName="Orders grouped by status"
+      class="sc-demo-table"
+      subHeaderColumn="status">
+      <ng-template let-count="rowCountValue" let-value natTableSubHeader>
+        <span class="sub-header-demo-label">{{ value }}</span>
+        <span class="sub-header-demo-count">{{ count }} orders</span>
+      </ng-template>
+    </nat-table>
+  } @else {
+    <nat-list
+      [columns]="columns"
+      [data]="rows"
+      [subHeaderOrder]="useStatusOrder() ? statusOrder : undefined"
+      accessibleName="Orders list grouped by status"
+      class="sc-demo-list"
+      subHeaderColumn="status">
+      <ng-template let-count="rowCountValue" let-value natTableSubHeader>
+        <span class="sub-header-demo-label">{{ value }}</span>
+        <span class="sub-header-demo-count">{{ count }} orders</span>
+      </ng-template>
+    </nat-list>
+  }
+</nat-table-surface>

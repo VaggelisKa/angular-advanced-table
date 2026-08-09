@@ -1,0 +1,7 @@
+<nat-table-surface [(state)]="state">
+  <nat-table-column-visibility label="Fields" />
+
+  <nat-list [columns]="columns" [data]="rows" accessibleName="Paginated orders list" class="sc-demo-list" />
+
+  <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
+</nat-table-surface>

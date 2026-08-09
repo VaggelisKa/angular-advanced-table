@@ -121,14 +121,23 @@
       "generate-docs": {
         "executor": "nx:run-commands",
         "outputs": [
-          "{workspaceRoot}/apps/showcase/src/app/docs/docs-html-registry.ts"
+          "{workspaceRoot}/apps/showcase/src/app/docs/docs-html-registry.ts",
+          "{workspaceRoot}/apps/showcase/src/app/docs/docs-search-index.ts"
         ],
         "options": {
           "command": "node tools/generate-showcase-docs.mjs",
           "cwd": "{workspaceRoot}"
         }
       },
+      "lint": {
+        "dependsOn": [
+          "generate-docs"
+        ]
+      },
       "serve": {
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:dev-server",
         "continuous": true,
         "configurations": {
@@ -142,6 +151,9 @@
         "defaultConfiguration": "development"
       },
       "serve-e2e": {
+        "dependsOn": [
+          "generate-docs"
+        ],
         "executor": "@angular/build:dev-server",
         "configurations": {
           "production": {

@@ -80,6 +80,8 @@ declare module '@tanstack/table-core' {
     readonly natTableMoveColumn?: (columnId: string, direction: NatTableColumnMoveDirection) => NatTableColumnReorderResult | null;
     /** Whether the surface enables sorting; per-column enableSorting overrides. */
     readonly natTableSortingEnabled?: boolean;
+    /** Active sub-header column id whose forced primary sort is hidden from sort UI, or null. */
+    readonly natTableSubHeaderColumnId?: string | null;
     /** Whether the surface enables pinning; per-column enablePinning overrides. */
     readonly natTablePinningEnabled?: boolean;
   }

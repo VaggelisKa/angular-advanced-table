@@ -45,7 +45,7 @@ test.describe('FEATURE: Table states accessibility', () => {
 
     test.describe('WHEN: the state transition buttons are activated via keyboard', () => {
       test('THEN: it switches the preview grid between loading, empty, error, and rows states via keyboard', async ({ page }) => {
-        const transitionCard = page.locator('.card', { hasText: 'Transition preview' });
+        const transitionCard = page.getByTestId('states-transition');
         const previewTable = transitionCard.getByRole('grid', { name: 'State transition preview table' });
         const emptyBtn = transitionCard.getByRole('button', { name: 'Empty' });
         const errorBtn = transitionCard.getByRole('button', { name: 'Error' });

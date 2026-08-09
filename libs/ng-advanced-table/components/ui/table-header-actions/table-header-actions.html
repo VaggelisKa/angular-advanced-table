@@ -8,7 +8,7 @@
       @if (canSort()) {
         <button
           [attr.aria-label]="getSortLabel()"
-          [class.is-sorted]="!!column().getIsSorted()"
+          [class.is-sorted]="!!sortState()"
           class="sort-button"
           type="button"
           (click)="onSortClick($event)"

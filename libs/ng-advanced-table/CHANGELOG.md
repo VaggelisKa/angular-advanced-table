@@ -1,3 +1,57 @@
+## 2.12.0 (2026-08-06)
+
+### 🚀 Features
+
+- Add sub-header (group) rows to `nat-table` and `nat-list`. ([#310](https://github.com/VaggelisKa/angular-advanced-table/pull/310))
+
+  New inputs on both renderers: `subHeaderColumn` (a leaf column id whose value groups rows under rendered sub-header rows), `subHeaderOrder` (an optional explicit group value order; unlisted values sort after listed ones in natural ascending order), and `enableSubHeaders` (default `true`; `false` ignores the sub-header config on that renderer only, with no forced sort, group rows, or dev warnings). The grouping engine lives in the shared `NatTableState`, so both renderers get identical behavior.
+
+  Sorting semantics:
+
+  - The renderer always sorts by the sub-header column first via a forced ascending entry that only exists in the state handed to TanStack. `sortingChange`, `[(state)]`, `aria-sort`, sort indicators, and multi-sort priority badges never contain it — user sorting stays the visible primary sort and applies within groups.
+  - `withNatTableHeaderActions(...)` derives sort state, priorities, and labels from the stripped user-visible sorting (`getVisibleSorting`/`getVisibleSortState`/`getVisibleSortPriority` in the components entry), and suppresses the sort button on the active sub-header column, whose toggles would be hidden no-ops. The new public `stripNatTableSubHeaderSorting` helper backs this.
+  - An unset or unknown `subHeaderColumn` disables the feature entirely (dev-mode warning); `subHeaderOrder` without `subHeaderColumn` is ignored with a warning.
+
+  Rendering:
+
+  - The table renders a full-width `<tr class="sub-header-row"><td colspan>` before each group's first row; the label content is sticky-left so it stays visible under horizontal scroll with pinned columns. The list renders a plain `<li class="list-sub-header">` with no horizontal padding by default, aligning with list items. A group split by pagination repeats its sub-header at the page start.
+  - Default content is the group value; `ng-template[natTableSubHeader]` (new `NatTableSubHeaderTemplate` directive) overrides it with a context of `value`/`$implicit`, `rowCountValue` (whole group across the filtered dataset, pre-pagination), the group's first `row`, and the `table`. New public types: `NatTableSubHeaderGroup`, `NatTableSubHeaderTemplateContext`.
+  - Sub-header rows carry no selection state, row-activation handlers, or render-metrics events.
+  - New public styling tokens: `--nat-table-sub-header-background`, `--nat-table-sub-header-color`, `--nat-table-space-sub-header`, `--nat-table-font-weight-sub-header`.
+
+  Accessibility:
+
+  - Each sub-header row renders a screen-reader announcement ("Active group, 3 rows."), backed by new locale keys `subHeaderRow` and `listSubHeaderRow` (list copy says items) with the usual grid-fallback merge behavior and a `NatTableAccessibilitySubHeaderContext` formatter context.
+
+- Collapse `nat-table-surface` card padding around a projected list renderer. ([#310](https://github.com/VaggelisKa/angular-advanced-table/pull/310))
+
+  A `<nat-list>` inside `<nat-table-surface>` draws its own item chrome, so the surface's card padding now collapses to `0` around it by default. The new public token `--nat-table-space-card-list` reopens it (it wins over the collapse at every viewport width, including the compact breakpoint).
+
+  The opt-in stock theme (`ng-advanced-table/components/theme.css`) also stops baking surface padding: `--nat-table-space-card` and `--nat-table-space-card-compact` now default to `0` (previously `18px 22px` / `14px 16px`). Consumers who want the old inset set the tokens themselves.
+
+- Add `NatList` (`nat-list`), a list renderer that shares the table engine. ([#307](https://github.com/VaggelisKa/angular-advanced-table/pull/307))
+
+  `NatList` is provided by the same `NatTableState` as `nat-table`, so sorting, filtering, column order, column visibility, pagination, row selection, and the data lifecycle drive both renderers from one surface. It implements `NatTableUiController`, so surface-bound companion controls (pagination, column visibility, export, consumer search) resolve it unchanged, and swapping renderers inside one `nat-table-surface` preserves state.
+
+  Rendering and styling:
+
+  - Every item is a CSS grid of named field areas (`grid-area: <column-id>`), themed through `--nat-table-list-gap` and `--nat-table-list-item-areas` / `-columns` / `-gap` / `-padding` / `-background` / `-background-selected` / `-border-width` / `-border-color` / `-radius`, plus `--nat-table-list-field-gap` / `-align` and `--nat-table-list-label-font-weight` — every visual opinion in the item shell is a token read with a neutral fallback, matching the table's headless contract.
+  - Fields render through the same `flexRender` pipeline as table cells (text, `flexRenderComponent`, `TemplateRef`). A column's `header` def renders as the field label when no static `meta.label` or string header exists, and a `meta.hiddenHeaderLabel` label renders screen-reader-only.
+  - Loading, empty, and error items share one base shape with per-state modifier classes, a `data-state` attribute, indicators, and `--nat-table-list-state-*` tokens. They also accept the table's `natTableLoading` / `natTableEmpty` / `natTableError` templates, which is what gives the `[error]` input its payload.
+
+  Interaction and accessibility:
+
+  - `enableRowSelection` and `selectionMode` bridge the shared selection state; selected items expose `data-selected` rather than `aria-selected`, which is invalid on `role="listitem"`.
+  - `enableRowActivation` (opt-in) plus a `rowActivate` output emit on click and Enter/Space. The affordance is a real per-item activator `<button>` stretched over the item (WCAG 4.1.2: a focusable `<li>` exposes no interactive role), named from the item's first visible field via an index-keyed `aria-labelledby` (row ids are consumer input and may contain characters invalid in an id list); every control in `ROW_ACTIVATE_INTERACTIVE_SELECTOR` stacks above it, so nested controls (e.g. a selection checkbox) stay operable without triggering activation. Trade-off: field text cannot be mouse-selected while activation is on. Opt-in because it adds a tab stop per item.
+  - New locale entries `listSummary`, `listColumnVisibilityChange`, `listPageSizeChange`, and `listPageChange` announce items and fields instead of rows and columns, each falling back to its grid counterpart when only that one is overridden.
+  - `NatTableA11yService` keeps registering the renderer-shared effects (state-change announcements, dev-mode accessible-name check) in its constructor, so a renderer that merely provides the service is never silently inert. The grid-only trio (column-resize announcements, the `aria-multiselectable` writer that queries a rendered `<table>`, resize/reorder keybinding validation) moves behind `registerGridEffects()`, and a non-grid renderer selects its announcement copy with `setRenderer('list')` — the dev-mode accessible-name warning then names the real element.
+  - The optional stock theme (`ng-advanced-table/components/theme.css`) now themes the list renderer too: item background/padding/gap, selected background, and the list body-state colors derive from the palette tokens.
+
+
+### 🩹 Fixes
+
+- Document current repository guidance for future coding agents after version-plan, detached cell-control, and pinned-edge styling review feedback. ([#306](https://github.com/VaggelisKa/angular-advanced-table/pull/306))
+
 ## 2.11.0 (2026-07-20)
 
 ### 🚀 Features

@@ -1,0 +1,259 @@
+/* The CDK overlay pane (positioned globally via `panelClass` in styles.css)
+   and dialog container provide the box this panel fills; the backdrop is the
+   CDK-owned element styled by `backdropClass`. */
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.docs-search-panel {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: min(70vh, 520px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  color: var(--sc-text);
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
+  box-shadow: var(--sc-shadow);
+  animation: docs-search-panel-in 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes docs-search-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes docs-search-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+.docs-search-input-row {
+  display: flex;
+  gap: var(--sc-space-2);
+  align-items: center;
+  padding: var(--sc-space-3) var(--sc-space-4);
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.docs-search-input-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: var(--sc-text-soft);
+
+  circle,
+  path {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+}
+
+.docs-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--sc-space-1) 0;
+  font-size: var(--sc-text-md);
+  color: var(--sc-text);
+  background: transparent;
+  border: 0;
+
+  &::placeholder {
+    color: var(--sc-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.docs-search-esc-hint {
+  flex: 0 0 auto;
+  padding: 2px var(--sc-space-1);
+  font-family: inherit;
+  font-size: var(--sc-text-2xs);
+  color: var(--sc-text-muted);
+  background: var(--sc-surface-muted);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-xs);
+}
+
+/* Fullscreen mobile has no backdrop to tap, so this button is the touch
+   equivalent of Escape; hidden on larger viewports where the hint shows. */
+.docs-search-close {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: var(--sc-text-soft);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+
+  &:focus-visible {
+    outline: var(--sc-focus-ring-width) solid var(--sc-focus);
+    outline-offset: var(--sc-focus-ring-offset);
+  }
+}
+
+.docs-search-close-icon {
+  width: 16px;
+  height: 16px;
+
+  path {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+}
+
+.docs-search-results {
+  flex: 1 1 auto;
+  padding: var(--sc-space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.docs-search-group-label {
+  padding: var(--sc-space-2) var(--sc-space-2) var(--sc-space-xs);
+  font-size: var(--sc-text-xs);
+  font-weight: 700;
+  color: var(--sc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.docs-search-option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-2xs);
+  padding: var(--sc-space-2);
+  cursor: pointer;
+  border-radius: var(--sc-radius-sm);
+
+  &.is-active {
+    background: var(--sc-accent-soft);
+  }
+}
+
+.docs-search-option-title {
+  font-size: var(--sc-text-base);
+  font-weight: 600;
+  color: var(--sc-text);
+}
+
+.docs-search-option-snippet {
+  font-size: var(--sc-text-sm);
+  color: var(--sc-text-soft);
+}
+
+.docs-search-mark {
+  font-weight: 600;
+  color: var(--sc-accent-strong);
+  background: transparent;
+}
+
+.docs-search-option-context {
+  font-size: var(--sc-text-xs);
+  color: var(--sc-text-muted);
+}
+
+.docs-search-hint {
+  padding: var(--sc-space-5) var(--sc-space-4);
+  margin: 0;
+  font-size: var(--sc-text-sm);
+  color: var(--sc-text-soft);
+}
+
+.docs-search-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  > .docs-search-hint {
+    padding-bottom: var(--sc-space-2);
+  }
+}
+
+.docs-search-retry {
+  padding: var(--sc-space-1) var(--sc-space-3);
+  margin: 0 var(--sc-space-4) var(--sc-space-5);
+  font: inherit;
+  font-size: var(--sc-text-sm);
+  color: var(--sc-text);
+  cursor: pointer;
+  background: var(--sc-surface-muted);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+
+  &:hover {
+    background: var(--sc-surface-hover);
+    border-color: var(--sc-border-strong);
+  }
+
+  &:focus-visible {
+    outline: var(--sc-focus-ring-width) solid var(--sc-focus);
+    outline-offset: var(--sc-focus-ring-offset);
+  }
+}
+
+@media (width <= 820px) {
+  .docs-search-input {
+    /* iOS Safari zooms the page when a focused input is smaller than 16px. */
+    font-size: 16px;
+  }
+}
+
+@media (width <= 640px) {
+  .docs-search-panel {
+    height: 100%;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+
+    /* Fullscreen keeps a plain fade instead of the desktop rise. */
+    animation-name: docs-search-fade-in;
+  }
+
+  .docs-search-esc-hint {
+    display: none;
+  }
+
+  .docs-search-close {
+    display: inline-flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-search-panel {
+    animation: none;
+  }
+}
+
+.docs-search-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip-path: inset(50%);
+}

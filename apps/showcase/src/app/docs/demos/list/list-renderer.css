@@ -1,14 +1,22 @@
+:host {
+  display: block;
+}
+
 .list-demo-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--sc-space-2);
   align-items: center;
-  margin-block-end: 14px;
+  justify-content: space-between;
+  margin-block-end: var(--sc-space-4);
 }
 
-.list-demo-toggle {
-  display: flex;
-  gap: 6px;
+.list-demo-sort-arrow {
+  display: inline-block;
+  min-width: 1em;
+  margin-inline-start: var(--sc-space-sm);
+  font-size: 0.9em;
+  text-align: center;
 }
 
 /* Named field areas: area names are the column ids from the shared defs. */

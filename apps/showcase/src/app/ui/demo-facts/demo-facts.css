@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.demo-facts {
+  display: grid;
+  gap: var(--sc-space-sm);
+  margin: 0;
+}
+
+.demo-fact {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: var(--sc-space-1) var(--sc-space-3);
+  align-items: baseline;
+  min-width: 0;
+}
+
+.demo-fact-label {
+  font-size: var(--sc-text-sm);
+  font-weight: var(--sc-weight-semibold);
+  color: var(--sc-text-soft);
+}
+
+.demo-fact-value {
+  min-width: 0;
+  margin: 0;
+  font-size: var(--sc-text-base);
+  line-height: var(--sc-lh-normal);
+  color: var(--sc-text);
+  overflow-wrap: anywhere;
+}

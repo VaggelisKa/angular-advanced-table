@@ -133,6 +133,11 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       }
 
       return `${selectedCountText} ${pluralize('row', selectedCountValue)} selected.`;
+    },
+    subHeaderRow: ({ valueText, rowCountValue, rowCountText }) => {
+      const groupLabel = valueText.trim() ? `${valueText} group` : 'Group';
+
+      return `${groupLabel}, ${rowCountText} ${pluralize('row', rowCountValue)}.`;
     }
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER

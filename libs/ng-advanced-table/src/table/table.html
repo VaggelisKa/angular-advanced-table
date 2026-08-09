@@ -139,6 +139,7 @@
       @let bodyPlan = bodyRenderPlan();
       @switch (bodyState()) {
         @case ('rows') {
+          @let groups = subHeaderGroups();
           @for (renderedRow of bodyPlan.rows; track renderedRow.row.id) {
             @if (renderedRow.beforeSize > 0) {
               <tr aria-hidden="true" class="virtual-spacer-row" data-testid="nat-table-virtual-spacer" role="presentation">
@@ -151,6 +152,23 @@
             }
             @let row = renderedRow.row;
             @let visibleCells = row.getVisibleCells();
+            @let subHeader = groups.get(row.id);
+            @if (subHeader) {
+              <tr class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
+                <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
+                  <div class="sub-header-content">
+                    @if (getSubHeaderAriaText(subHeader); as ariaText) {
+                      <span class="sr-only">{{ ariaText }}</span>
+                    }
+                    @if (subHeaderTemplateRef(); as templateRef) {
+                      <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
+                    } @else {
+                      <span aria-hidden="true">{{ subHeader.value }}</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
             <tr
               [attr.aria-selected]="rowAriaSelected(row)"
               [attr.data-row-id]="row.id"
