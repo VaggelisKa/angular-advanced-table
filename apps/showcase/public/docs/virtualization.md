@@ -77,6 +77,7 @@ Virtualized grids still require keyboard-only and screen-reader testing. The lib
 ## Limitations
 
 - Variable-height and expanded body rows are not supported by this first strategy.
+- Sub-header rows are not supported. `subHeaderColumn` adds body rows the virtualizer never sized, so the scroll offset drifts as the mounted window moves; development builds warn when both are configured on one table.
 - Column virtualization is not supported.
 - Browser Find, DOM selection, and copy-all cannot discover unmounted rows.
 - Export and consumer-owned global search still operate on the complete logical dataset.

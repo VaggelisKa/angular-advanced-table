@@ -86,6 +86,7 @@ import { normalizeSortingState } from '../utils/sorting.util';
 import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
 import {
   buildSubHeaderRowGroups,
+  buildSubHeaderRowOffsets,
   createSubHeaderOrderSortingFn,
   prependForcedSortingEntry,
   resolveSubHeaderValueText,
@@ -408,9 +409,6 @@ export class NatTableState<TData extends RowData = RowData> {
   });
 
   public readonly headerRowCount = computed(() => this.headerGroups().length);
-  public readonly gridRowCount = computed(
-    () => this.headerRowCount() + (this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 1)
-  );
 
   public readonly renderedVisibleRowCount = computed(() =>
     this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 0
@@ -429,6 +427,27 @@ export class NatTableState<TData extends RowData = RowData> {
 
     return buildSubHeaderRowGroups(this.bodyRows(), this.table.getPrePaginationRowModel().rows, columnId);
   });
+
+  /**
+   * Sub-header rows rendered at or before each page row, by page index. Empty
+   * when no sub-header renders, so ungrouped tables index to `undefined` and
+   * the template's `?? 0` fallback keeps the plain header + row numbering.
+   */
+  public readonly subHeaderRowOffsets = computed(() => buildSubHeaderRowOffsets(this.bodyRows(), this.subHeaderGroups()));
+
+  /**
+   * Total row count the grid reports as `aria-rowcount`: header rows, rendered
+   * sub-header rows, and data rows — or the single loading/empty/error state
+   * row when the body renders no data rows (`subHeaderGroups` is guaranteed
+   * empty in that branch). Derived from the logical row model rather than the
+   * DOM because a virtualized body mounts only a window of rows.
+   */
+  public readonly gridRowCount = computed(
+    () =>
+      this.headerRowCount() +
+      this.subHeaderGroups().size +
+      (this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 1)
+  );
 
   public readonly stateTotalRowCount = computed(() => {
     const bodyState = this.bodyState();

@@ -268,6 +268,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   // ─── Sub-header groups (delegated to state) ───
 
   protected readonly subHeaderGroups = this.state.subHeaderGroups;
+  protected readonly subHeaderRowOffsets = this.state.subHeaderRowOffsets;
 
   protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
     return this.state.getSubHeaderTemplateContext(group);
