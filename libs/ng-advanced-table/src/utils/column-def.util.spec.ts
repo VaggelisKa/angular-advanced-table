@@ -6,6 +6,7 @@ import {
   getUserColumnSizing,
   normalizeCellMaxLines,
   normalizeColumnDimension,
+  patchLeafColumnDefSorting,
   readColumnEntry
 } from './column-def.util';
 import { DEFAULT_CELL_MAX_LINES } from '../common/column-meta.const';
@@ -56,6 +57,12 @@ describe('FEATURE: Column definition utilities', () => {
       expect(getColumnDefLeafIds(columns)).toStrictEqual(['name']);
     });
 
+    it('THEN: it normalizes a deep accessor key to the runtime TanStack column id', () => {
+      const columns = asColumnDefs([{ accessorKey: 'account.status' }]);
+
+      expect(getColumnDefLeafIds(columns)).toStrictEqual(['account_status']);
+    });
+
     it('THEN: it falls back to a string header when neither id nor accessorKey is set', () => {
       const columns = asColumnDefs([{ header: 'Name' }]);
 
@@ -90,6 +97,18 @@ describe('FEATURE: Column definition utilities', () => {
       const columns = asColumnDefs([{ id: 'a' }, { id: 'group', columns: [{ id: 'b' }, { id: 'c' }] }, { accessorKey: 'd' }]);
 
       expect(getColumnDefLeafIds(columns)).toStrictEqual(['a', 'b', 'c', 'd']);
+    });
+  });
+
+  describe('GIVEN: patchLeafColumnDefSorting', () => {
+    it('THEN: it patches a deep accessor column addressed by its runtime TanStack id', () => {
+      const columns = asColumnDefs([{ accessorKey: 'account.status' }]);
+      const sortingFn = vi.fn(() => 0);
+
+      const patched = patchLeafColumnDefSorting(columns, 'account_status', sortingFn);
+
+      expect(patched).not.toBe(columns);
+      expect(patched[0]?.sortingFn).toBe(sortingFn);
     });
   });
 
