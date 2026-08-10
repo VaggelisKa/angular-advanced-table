@@ -149,11 +149,16 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
       previous = { data, rowIdSequence, rowModelState };
 
       untracked(() => {
+        const focusTargetIndex = shouldReset ? this.focus.prepareRowModelReset() : null;
+
         this.controller.measure();
 
         if (shouldReset) {
-          this.focus.reset();
-          this.controller.scrollToOffset(0, { align: 'start' });
+          if (focusTargetIndex === null) {
+            this.controller.scrollToOffset(0, { align: 'start' });
+          } else {
+            this.controller.scrollToIndex(focusTargetIndex, { align: 'start' });
+          }
         }
       });
     });

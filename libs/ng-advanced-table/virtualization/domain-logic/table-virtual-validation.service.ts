@@ -1,5 +1,15 @@
 import type { Signal } from '@angular/core';
-import { ElementRef, Injectable, afterNextRender, afterRenderEffect, effect, inject, isDevMode } from '@angular/core';
+import {
+  DestroyRef,
+  ElementRef,
+  Injectable,
+  afterNextRender,
+  afterRenderEffect,
+  effect,
+  inject,
+  isDevMode,
+  signal
+} from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -14,6 +24,9 @@ import { NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT } from '../utils/table-virtualizati
 export class NatTableVirtualValidationService<TData extends RowData = RowData> {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly regionResizeRevision = signal(0);
+  private regionResizeObserver: ResizeObserver | null = null;
   private rowHeight: Signal<number> | null = null;
   private items: Signal<readonly NatTableVirtualItem[]> | null = null;
 
@@ -25,9 +38,11 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
       return;
     }
 
-    afterNextRender(() => this.warnIfRegionIsUnbounded());
+    afterNextRender(() => this.observeRegionSize());
+    this.registerBoundedRegionValidationEffect();
     this.registerRowHeightValidationEffect();
     this.registerSubHeaderValidationEffect();
+    this.destroyRef.onDestroy(() => this.regionResizeObserver?.disconnect());
   }
 
   public connect(rowHeight: Signal<number>, items: Signal<readonly NatTableVirtualItem[]>): void {
@@ -35,21 +50,48 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
     this.items = items;
   }
 
-  private warnIfRegionIsUnbounded(): void {
+  private observeRegionSize(): void {
     const region = this.state.tableRegionRef()?.nativeElement;
 
-    if (
-      !region ||
-      region.clientHeight <= 0 ||
-      region.scrollHeight > region.clientHeight + 1 ||
-      this.state.bodyRows().length <= NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT
-    ) {
+    if (!region || typeof ResizeObserver === 'undefined') {
       return;
     }
 
-    console.warn(
-      '[ng-advanced-table] natTableVirtualize requires a bounded table region. Set `--nat-table-height` or `--nat-table-max-height`.'
-    );
+    this.regionResizeObserver = new ResizeObserver(() => this.regionResizeRevision.update((revision) => revision + 1));
+    this.regionResizeObserver.observe(region);
+  }
+
+  private registerBoundedRegionValidationEffect(): void {
+    let hasWarned = false;
+
+    afterRenderEffect({
+      earlyRead: () => {
+        const rowCount = this.state.bodyRows().length;
+        const region = this.state.tableRegionRef()?.nativeElement;
+
+        this.regionResizeRevision();
+
+        return region ? { clientHeight: region.clientHeight, rowCount, scrollHeight: region.scrollHeight } : null;
+      },
+      write: (measurementsSignal) => {
+        const measurements = measurementsSignal();
+
+        if (
+          hasWarned ||
+          !measurements ||
+          measurements.clientHeight <= 0 ||
+          measurements.scrollHeight > measurements.clientHeight + 1 ||
+          measurements.rowCount <= NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT
+        ) {
+          return;
+        }
+
+        hasWarned = true;
+        console.warn(
+          '[ng-advanced-table] natTableVirtualize requires a bounded table region. Set `--nat-table-height` or `--nat-table-max-height`.'
+        );
+      }
+    });
   }
 
   /**

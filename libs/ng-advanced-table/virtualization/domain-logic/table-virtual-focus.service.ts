@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- one cohesive service owns virtual grid focus retention, navigation, and render-time recovery. */
 import { DestroyRef, ElementRef, Injectable, afterRenderEffect, computed, inject, signal } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
@@ -6,10 +7,18 @@ import { NAT_TABLE_ROW_WINDOW_HOST } from 'ng-advanced-table';
 import type { NatTableRowWindowHost } from 'ng-advanced-table';
 
 import { NatTableVirtualLayoutService } from './table-virtual-layout.service';
-import type { NatTableVirtualNavigationRequest, NatTableVirtualizerController } from '../common/table-virtualization.type';
+import type { NatTableVirtualizerController } from '../common/table-virtualization.type';
 import { resolveNatTableVirtualNavigation } from '../utils/table-virtual-keyboard.util';
 
-type PendingVirtualFocus = Pick<NatTableVirtualNavigationRequest, 'rowIndex' | 'columnId'>;
+type PendingVirtualFocus = {
+  readonly rowIndex: number | null;
+  readonly columnId: string;
+};
+
+type ActiveBodyFocus = {
+  readonly rowId: string;
+  readonly columnId: string;
+};
 
 /** Keeps roving grid focus stable while body rows enter and leave the DOM. */
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- one instance is scoped to NatTableVirtualize.
@@ -63,9 +72,40 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     this.controller.set(controller);
   }
 
-  public reset(): void {
+  /**
+   * Captures body focus before a row-model reset and schedules a visible,
+   * stable destination in the next model. Surviving rows keep their identity;
+   * removed rows fall back to the first new row or the mounted state cell.
+   */
+  public prepareRowModelReset(): number | null {
     this.pendingFocus.set(null);
-    this.focusedRowId.set(null);
+
+    const activeFocus = this.readActiveBodyFocus();
+
+    if (!activeFocus) {
+      this.focusedRowId.set(null);
+
+      return null;
+    }
+
+    const { columnId, rowId } = activeFocus;
+    const rowIndex = this.rowIndexById().get(rowId);
+    const targetIndex = rowIndex ?? (this.state.bodyRows().length > 0 ? 0 : null);
+
+    this.focusedRowId.set(targetIndex === null ? null : (this.state.bodyRows()[targetIndex]?.id ?? null));
+    this.pendingFocus.set({ rowIndex: targetIndex, columnId });
+
+    return targetIndex;
+  }
+
+  private readActiveBodyFocus(): ActiveBodyFocus | null {
+    const target = this.elementRef.nativeElement.ownerDocument.activeElement;
+    const cell = target instanceof HTMLElement ? target.closest<HTMLElement>('[ngGridCell][data-column-id]') : null;
+    const row = cell?.closest<HTMLTableRowElement>('tr.data-row[data-row-id]') ?? null;
+    const rowId = row?.dataset['rowId'];
+    const columnId = cell?.dataset['columnId'];
+
+    return rowId === undefined || columnId === undefined ? null : { rowId, columnId };
   }
 
   private readonly onFocusIn = (event: FocusEvent): void => {
@@ -97,9 +137,6 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     const row = cell.closest<HTMLTableRowElement>('tr.data-row[data-row-index]');
     const rowIndexValue = row?.dataset['rowIndex'];
     const currentRowIndex = rowIndexValue === undefined ? null : Number(rowIndexValue);
-    const rowHeight = controller.rowHeight();
-    const regionHeight = this.state.tableRegionRef()?.nativeElement.clientHeight ?? rowHeight;
-    const stickyOverlayHeight = this.state.stickyHeader() ? this.layout.stickyOverlayHeight() : 0;
     const request = resolveNatTableVirtualNavigation({
       event,
       currentRowIndex: Number.isInteger(currentRowIndex) ? currentRowIndex : null,
@@ -107,7 +144,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
       lastColumnId: this.state.visibleColumns().at(-1)?.id,
       mountedRowIndexes: new Set(controller.items().map((item) => item.index)),
       rowCount: this.state.bodyRows().length,
-      rowsPerPage: Math.max(1, Math.floor((regionHeight - stickyOverlayHeight) / rowHeight))
+      rowsPerPage: this.resolveRowsPerPage(controller)
     });
 
     if (!request) {
@@ -120,6 +157,21 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     controller.scrollToIndex(request.rowIndex, { align: request.align });
   };
 
+  private resolveRowsPerPage(controller: NatTableVirtualizerController): number {
+    const rowHeight = controller.rowHeight();
+    const region = this.state.tableRegionRef()?.nativeElement;
+
+    if (!region) {
+      return 1;
+    }
+
+    const bodyStart = Math.max(0, this.layout.bodyOffset() - region.scrollTop);
+    const stickyOverlay = this.state.stickyHeader() ? this.layout.stickyOverlayHeight() : 0;
+    const visibleBodyHeight = region.clientHeight - Math.max(bodyStart, stickyOverlay);
+
+    return Math.max(1, Math.floor(visibleBodyHeight / rowHeight));
+  }
+
   private registerPendingFocusEffect(): void {
     afterRenderEffect(() => {
       const controller = this.controller();
@@ -131,16 +183,32 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
         return;
       }
 
-      const row = [...this.elementRef.nativeElement.querySelectorAll<HTMLTableRowElement>('tr.data-row')].find(
-        (candidate) => Number(candidate.dataset['rowIndex']) === pendingFocus.rowIndex
-      );
-      const cells = row ? [...row.querySelectorAll<HTMLElement>('[ngGridCell][data-column-id]')] : [];
-      const cell = cells.find((candidate) => candidate.dataset['columnId'] === pendingFocus.columnId) ?? cells.at(0);
+      const cell = this.resolvePendingFocusTarget(pendingFocus);
 
       if (cell) {
         cell.focus({ preventScroll: true });
         this.pendingFocus.set(null);
       }
     });
+  }
+
+  private resolvePendingFocusTarget(pendingFocus: PendingVirtualFocus): HTMLElement | null {
+    const host = this.elementRef.nativeElement;
+
+    if (pendingFocus.rowIndex !== null) {
+      const row = [...host.querySelectorAll<HTMLTableRowElement>('tr.data-row')].find(
+        (candidate) => Number(candidate.dataset['rowIndex']) === pendingFocus.rowIndex
+      );
+      const cells = row ? [...row.querySelectorAll<HTMLElement>('[ngGridCell][data-column-id]')] : [];
+
+      return cells.find((candidate) => candidate.dataset['columnId'] === pendingFocus.columnId) ?? cells.at(0) ?? null;
+    }
+
+    const bodyFallback = host.querySelector<HTMLElement>('tbody [ngGridCell]');
+    const headerFallback = [...host.querySelectorAll<HTMLElement>('thead [ngGridCell][data-column-id]')].find(
+      (candidate) => candidate.dataset['columnId'] === pendingFocus.columnId
+    );
+
+    return bodyFallback ?? headerFallback ?? null;
   }
 }

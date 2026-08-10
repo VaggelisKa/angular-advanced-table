@@ -49,6 +49,53 @@ class VirtualTableHost {
 }
 
 @Component({
+  selector: 'test-virtual-geometry-host',
+  imports: [NatTable, NatTableVirtualize],
+  providers: [NatTableService],
+  styles: `
+    nat-table {
+      --nat-table-height: 200px;
+    }
+  `,
+  template: `
+    <nat-table
+      [caption]="caption()"
+      [columns]="columns"
+      [data]="rows"
+      [natTableVirtualize]="{ rowHeight: 40, overscan: 2 }"
+      accessibleName="Virtual capacity planning" />
+  `
+})
+class VirtualGeometryHost {
+  public readonly caption = signal<string | undefined>('Virtual capacity planning');
+  private readonly service = inject(NatTableService);
+  protected readonly rows = buildRows(1000);
+  protected readonly columns = columns;
+
+  public setStickyHeader(stickyHeader: boolean): void {
+    this.service.patchState({ stickyHeader });
+  }
+}
+
+@Component({
+  selector: 'test-async-unbounded-virtual-table-host',
+  imports: [NatTable, NatTableVirtualize],
+  providers: [NatTableService],
+  template: `
+    <nat-table
+      [columns]="columns"
+      [data]="rows()"
+      [natTableVirtualize]="{ rowHeight: 40, overscan: 2 }"
+      accessibleName="Asynchronous unbounded operations"
+      class="unbounded-virtual-table" />
+  `
+})
+class AsyncUnboundedVirtualTableHost {
+  public readonly rows = signal<Row[]>(buildRows(5));
+  protected readonly columns = columns;
+}
+
+@Component({
   selector: 'test-ordinary-table-host',
   imports: [NatTable],
   providers: [NatTableService],
@@ -128,20 +175,63 @@ const rect = (width: number, height: number, top = 0): DOMRect => ({
   toJSON: () => ({})
 });
 
-const testRects = [
-  { selector: '[data-testid="nat-table-region"]', value: rect(800, 200) },
-  { selector: 'thead', value: rect(800, 40) },
-  { selector: 'tbody', value: rect(800, 40_000, 40) },
-  { selector: 'tr.data-row', value: rect(800, 40) }
-] as const;
+const isTableRegion = (element: Element): element is HTMLElement =>
+  element instanceof HTMLElement && element.dataset['testid'] === 'nat-table-region';
 
-const getRegionDimension = (element: Element, value: number): number =>
-  element instanceof HTMLElement && element.dataset['testid'] === 'nat-table-region' ? value : 0;
+let unboundedTableRegionExpanded = true;
 
+// eslint-disable-next-line complexity -- test geometry distinguishes region identity, host mode, and simulated resize state.
+const isUnboundedTableRegion = (element: Element): boolean => {
+  if (!unboundedTableRegionExpanded || !isTableRegion(element)) {
+    return false;
+  }
+
+  return element.closest('nat-table')?.classList.contains('unbounded-virtual-table') === true;
+};
+
+const getRegionHeight = (element: Element): number => {
+  if (!isTableRegion(element)) {
+    return 0;
+  }
+
+  return isUnboundedTableRegion(element) ? 4040 : 200;
+};
+
+const getRegionWidth = (element: Element): number => (isTableRegion(element) ? 800 : 0);
+
+const getRegionScrollHeight = (element: Element): number => {
+  if (!isTableRegion(element)) {
+    return 0;
+  }
+
+  return isUnboundedTableRegion(element) ? 4040 : 40_040;
+};
+
+// eslint-disable-next-line complexity -- shared geometry fixture maps the five native table elements measured by virtualization.
 const getTestRect = (element: Element): DOMRect => {
-  const match = testRects.find(({ selector }) => element.matches(selector));
+  const hasCaption = element.closest('table')?.querySelector('caption') !== null;
 
-  return match ? match.value : rect(0, 0);
+  if (element.matches('[data-testid="nat-table-region"]')) {
+    return rect(800, 200);
+  }
+
+  if (element.matches('caption')) {
+    return rect(800, 32);
+  }
+
+  if (element.matches('thead')) {
+    return rect(800, 40, hasCaption ? 32 : 0);
+  }
+
+  if (element.matches('tbody')) {
+    return rect(800, 40_000, hasCaption ? 72 : 40);
+  }
+
+  if (element.matches('tr.data-row')) {
+    return rect(800, 40);
+  }
+
+  return rect(0, 0);
 };
 
 const resolveScrollTop = (current: number, options: ScrollToOptions | number, y?: number): number => {
@@ -154,24 +244,26 @@ const originalScrollTo = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 
 
 describe('FEATURE: opt-in NatTable row virtualization', () => {
   beforeEach(async () => {
+    unboundedTableRegionExpanded = true;
+
     vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
-      return getRegionDimension(this, 200);
+      return getRegionHeight(this);
     });
 
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockImplementation(function (this: Element) {
-      return getRegionDimension(this, 800);
+      return getRegionWidth(this);
     });
 
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (this: HTMLElement) {
-      return getRegionDimension(this, 200);
+      return getRegionHeight(this);
     });
 
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (this: HTMLElement) {
-      return getRegionDimension(this, 800);
+      return getRegionWidth(this);
     });
 
     vi.spyOn(Element.prototype, 'scrollHeight', 'get').mockImplementation(function (this: Element) {
-      return getRegionDimension(this, 40_040);
+      return getRegionScrollHeight(this);
     });
 
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
@@ -187,13 +279,21 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [OrdinaryTableHost, PaginatedVirtualTableHost, SubHeaderVirtualTableHost, VirtualTableHost],
+      imports: [
+        AsyncUnboundedVirtualTableHost,
+        OrdinaryTableHost,
+        PaginatedVirtualTableHost,
+        SubHeaderVirtualTableHost,
+        VirtualGeometryHost,
+        VirtualTableHost
+      ],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
 
     if (originalScrollTo) {
       Object.defineProperty(HTMLElement.prototype, 'scrollTo', originalScrollTo);
@@ -313,6 +413,49 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
       });
     });
 
+    describe('WHEN: Page Down is pressed below a caption and sticky header', () => {
+      it('THEN: it advances by the body rows visible below both pieces of table chrome', async () => {
+        const fixture = TestBed.createComponent(VirtualGeometryHost);
+
+        await fixture.whenStable();
+
+        const firstCell = queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="0"] [data-column-id="region"]');
+
+        firstCell.focus();
+        firstCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }));
+        await fixture.whenStable();
+
+        expect(document.activeElement).toBe(
+          queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="3"] [data-column-id="region"]')
+        );
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: Page Down is pressed below a non-sticky header', () => {
+      it('THEN: it excludes the visible header from the first body page', async () => {
+        const fixture = TestBed.createComponent(VirtualGeometryHost);
+        const host = fixture.componentInstance;
+
+        host.caption.set(undefined);
+        host.setStickyHeader(false);
+        await fixture.whenStable();
+
+        const firstCell = queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="0"] [data-column-id="region"]');
+
+        firstCell.focus();
+        firstCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }));
+        await fixture.whenStable();
+
+        expect(document.activeElement).toBe(
+          queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="4"] [data-column-id="region"]')
+        );
+
+        fixture.destroy();
+      });
+    });
+
     describe('WHEN: Arrow Down leaves the mounted window from a delegated cell button', () => {
       it('THEN: it preserves the grid column while mounting and focusing the next logical row', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
@@ -366,8 +509,37 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
       });
     });
 
+    describe('WHEN: data is replaced while a scrolled body cell is focused', () => {
+      it('THEN: it restores the surviving row and column by stable identity', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        region.scrollTop = 2000;
+        region.dispatchEvent(new Event('scroll'));
+        await fixture.whenStable();
+
+        const focusedCell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]');
+        const focusedRowId = focusedCell.closest<HTMLTableRowElement>('tr')?.dataset['rowId'];
+
+        focusedCell.focus();
+        host.rows.set(buildRows(120));
+        await fixture.whenStable();
+
+        const restoredCell = document.activeElement as HTMLElement;
+
+        expect(restoredCell.dataset['columnId']).toBe('region');
+        expect(restoredCell.closest<HTMLTableRowElement>('tr')?.dataset['rowId']).toBe(focusedRowId);
+
+        fixture.destroy();
+      });
+    });
+
     describe('WHEN: filter state changes without changing the resulting row IDs', () => {
-      it('THEN: it still resets the virtual range and scroll position', async () => {
+      it('THEN: it resets the virtual range while preserving focused row and column identity', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
 
         await fixture.whenStable();
@@ -380,13 +552,51 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         await fixture.whenStable();
 
         const rowIdsBeforeFilter = table.table.getRowModel().rows.map((row) => row.id);
+        const focusedCell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]');
+        const focusedRowId = focusedCell.closest<HTMLTableRowElement>('tr')?.dataset['rowId'];
 
+        focusedCell.focus();
         table.table.setColumnFilters([{ id: 'status', value: ['Healthy', 'Pending', 'Alert'] }]);
         await fixture.whenStable();
 
+        const restoredCell = document.activeElement as HTMLElement;
+
         expect(table.table.getRowModel().rows.map((row) => row.id)).toStrictEqual(rowIdsBeforeFilter);
-        expect(region.scrollTop).toBe(0);
-        expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']).toBe('0');
+        expect(restoredCell.dataset['columnId']).toBe('region');
+        expect(restoredCell.closest<HTMLTableRowElement>('tr')?.dataset['rowId']).toBe(focusedRowId);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: sorting moves the focused row to a different logical index', () => {
+      // eslint-disable-next-line complexity -- behavior spec verifies DOM focus plus stable row and column identity after sorting.
+      it('THEN: it restores focus to the same stable row and column at its new index', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        region.scrollTop = 2000;
+        region.dispatchEvent(new Event('scroll'));
+        await fixture.whenStable();
+
+        const focusedCell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]');
+        const focusedRowId = focusedCell.closest<HTMLTableRowElement>('tr')?.dataset['rowId'];
+
+        focusedCell.focus();
+        table.table.setSorting([{ id: 'name', desc: true }]);
+        await fixture.whenStable();
+
+        const restoredCell = document.activeElement as HTMLElement;
+        const restoredRow = restoredCell.closest<HTMLTableRowElement>('tr');
+        const expectedIndex = table.table.getRowModel().rows.findIndex((row) => row.id === focusedRowId);
+
+        expect(restoredCell.dataset['columnId']).toBe('region');
+        expect(restoredRow?.dataset['rowId']).toBe(focusedRowId);
+        expect(restoredRow?.dataset['rowIndex']).toBe(String(expectedIndex));
 
         fixture.destroy();
       });
@@ -463,11 +673,13 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
     });
 
     describe('WHEN: the logical row model becomes empty', () => {
-      it('THEN: it renders the ordinary empty-state row without virtual spacers', async () => {
+      it('THEN: it renders the empty-state row and moves focus to its mounted grid cell', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
         const host = fixture.componentInstance;
 
         await fixture.whenStable();
+        queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]').focus();
+
         host.rows.set([]);
         await fixture.whenStable();
 
@@ -475,6 +687,7 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         expect(queryAll(fixture, 'tbody tr.virtual-spacer-row')).toHaveLength(0);
         expect(queryRequired(fixture, 'tbody tr').getAttribute('aria-rowindex')).toBe('2');
         expect(queryRequired(fixture, 'table').getAttribute('aria-rowcount')).toBe('2');
+        expect(document.activeElement).toBe(queryRequired(fixture, 'tbody [ngGridCell]'));
 
         fixture.destroy();
       });
@@ -483,7 +696,7 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
   describe('GIVEN: virtualization composed with automatic pagination', () => {
     describe('WHEN: the table advances to the next page', () => {
-      it('THEN: it virtualizes the final page-local row model and resets its row indices', async () => {
+      it('THEN: it virtualizes the page-local row model and moves focus to the first new row', async () => {
         const fixture: ComponentFixture<PaginatedVirtualTableHost> = TestBed.createComponent(PaginatedVirtualTableHost);
 
         await fixture.whenStable();
@@ -493,16 +706,22 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         region.scrollTop = 160;
         region.dispatchEvent(new Event('scroll'));
+        await fixture.whenStable();
+
+        queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]').focus();
         table.table.nextPage();
         await fixture.whenStable();
 
         const firstRow = queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row');
+        const focusedCell = document.activeElement as HTMLElement;
 
         expect(region.scrollTop).toBe(0);
         expect(queryRequired<HTMLTableElement>(fixture, 'table').getAttribute('aria-rowcount')).toBe('11');
         expect(firstRow.dataset['rowIndex']).toBe('0');
         expect(firstRow.getAttribute('aria-rowindex')).toBe('2');
         expect(firstRow.textContent).toContain('Service 11');
+        expect(focusedCell.dataset['columnId']).toBe('region');
+        expect(focusedCell.closest<HTMLTableRowElement>('tr')?.dataset['rowIndex']).toBe('0');
 
         fixture.destroy();
       });
@@ -518,6 +737,87 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         await fixture.whenStable();
 
         expect(warn).toHaveBeenCalledWith(expect.stringContaining('does not support sub-header rows'));
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: an unbounded virtual table that initially has a small asynchronous dataset', () => {
+    describe('WHEN: the dataset grows beyond the bootstrap window', () => {
+      it('THEN: it warns once after the large row model renders', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const fixture = TestBed.createComponent(AsyncUnboundedVirtualTableHost);
+        const host = fixture.componentInstance;
+        const boundedWarnings = (): unknown[][] =>
+          warn.mock.calls.filter(([message]) => String(message).includes('requires a bounded table region'));
+
+        await fixture.whenStable();
+
+        expect(boundedWarnings()).toHaveLength(0);
+
+        host.rows.set(buildRows(100));
+        await fixture.whenStable();
+
+        expect(boundedWarnings()).toHaveLength(1);
+
+        host.rows.set(buildRows(120));
+        await fixture.whenStable();
+
+        expect(boundedWarnings()).toHaveLength(1);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: a large row model becomes unbounded after the region resizes', () => {
+      it('THEN: it revalidates the new geometry and still warns only once', async () => {
+        const resizeCallbacks: ResizeObserverCallback[] = [];
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const boundedWarnings = (): unknown[][] =>
+          warn.mock.calls.filter(([message]) => String(message).includes('requires a bounded table region'));
+
+        class TestResizeObserver {
+          private readonly observed = new Set<Element>();
+
+          public constructor(callback: ResizeObserverCallback) {
+            resizeCallbacks.push(callback);
+          }
+
+          public observe(target: Element): void {
+            this.observed.add(target);
+          }
+
+          public unobserve(target: Element): void {
+            this.observed.delete(target);
+          }
+
+          public disconnect(): void {
+            this.observed.clear();
+          }
+        }
+
+        vi.stubGlobal('ResizeObserver', TestResizeObserver);
+        unboundedTableRegionExpanded = false;
+
+        const fixture = TestBed.createComponent(AsyncUnboundedVirtualTableHost);
+        const host = fixture.componentInstance;
+
+        host.rows.set(buildRows(100));
+        await fixture.whenStable();
+
+        expect(boundedWarnings()).toHaveLength(0);
+
+        unboundedTableRegionExpanded = true;
+        resizeCallbacks.forEach((callback) => callback([], {} as ResizeObserver));
+        await fixture.whenStable();
+
+        expect(boundedWarnings()).toHaveLength(1);
+
+        resizeCallbacks.forEach((callback) => callback([], {} as ResizeObserver));
+        await fixture.whenStable();
+
+        expect(boundedWarnings()).toHaveLength(1);
 
         fixture.destroy();
       });
