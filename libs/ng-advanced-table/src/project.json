@@ -7,6 +7,7 @@
   "tags": ["type:core", "scope:public"],
   "targets": {
     "test": {
+      "inputs": ["default", "^production", "libEntryPointTsConfigs"],
       "options": {
         "buildTarget": "ng-advanced-table:build:development",
         "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json"
