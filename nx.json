@@ -47,6 +47,7 @@
     "test": {
       "cache": true,
       "inputs": ["default", "^production"],
+      "outputs": ["{workspaceRoot}/coverage/{projectName}"],
       "executor": "@angular/build:unit-test",
       "options": {
         "watch": false

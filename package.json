@@ -41,6 +41,7 @@
     "@nx/js": "catalog:shared-dev",
     "@nx/playwright": "catalog:frontend-dev",
     "@playwright/test": "catalog:frontend-dev",
+    "@vitest/coverage-v8": "catalog:shared-dev",
     "eslint": "catalog:shared-dev",
     "eslint-config-prettier": "catalog:shared-dev",
     "jsdom": "catalog:frontend-dev",

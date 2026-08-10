@@ -79,7 +79,12 @@ catalogs:
     prettier: '^3.8.4'
     typescript: '6.0.3'
     typescript-eslint: '^8.61.1'
-    vitest: '^4.1.9'
+    # `@vitest/coverage-v8` declares an EXACT peer on `vitest` (not a range), so
+    # these two must be pinned exactly and bumped together. Independent caret
+    # ranges let the provider float one patch ahead of the runner, which Vitest
+    # reports as "Running mixed versions is not supported".
+    vitest: '4.1.9'
+    '@vitest/coverage-v8': '4.1.9'
 # Reject newly published packages for 24 hours. The temporary migration
 # exception is no longer needed now that all pinned releases have aged in.
 minimumReleaseAge: 1440
