@@ -157,6 +157,12 @@ jobs:
         run: pnpm exec nx release plan:check --base="$NX_BASE" --head="$NX_HEAD"
       - name: Build package
         run: pnpm run build:packages
+      # Guards the shipped artifact: per-entry-point gzipped size ceilings, plus
+      # the entry-point import graph. A deep relative import across an entry-point
+      # boundary inlines code and breaks tree-shaking; lint catches that in source,
+      # this catches it in the bundle that actually ships.
+      - name: Check package size and entry-point layering
+        run: pnpm run size:check
       - name: Build showcase
         run: pnpm run build:showcase
       - name: Validate release preview (dry run — does not publish)
