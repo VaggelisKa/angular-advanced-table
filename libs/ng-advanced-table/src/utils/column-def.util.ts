@@ -15,7 +15,7 @@ const resolveColumnDefId = <TData extends RowData>(column: ColumnDef<TData, unkn
 
   const accessorKey = (column as { readonly accessorKey?: unknown }).accessorKey;
 
-  if (typeof accessorKey === 'string') return accessorKey;
+  if (typeof accessorKey === 'string') return accessorKey.replace(/\./g, '_');
 
   return typeof column.header === 'string' ? column.header : null;
 };
