@@ -285,6 +285,8 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 
 ### Layout And Stacking
 
+The focus layer is reserved for a focused pinned cell. Ordinary focused body and header cells keep their inset focus indicator at their normal layer, so horizontally scrolled content cannot paint over either pinned zone. Keep custom stacking-token overrides in the order shown below so resize handles, guides, and drag previews remain above table cells.
+
 | Token                                      | Stock value or resolved default  |
 | ------------------------------------------ | -------------------------------- |
 | `--nat-table-region-overflow-x`            | `auto`                           |

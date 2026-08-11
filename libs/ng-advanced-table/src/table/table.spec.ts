@@ -50,6 +50,16 @@ const requireStyleRule = (rules: readonly CSSStyleRule[], selector: string): CSS
   return rule;
 };
 
+const requireStyleRuleParts = (rules: readonly CSSStyleRule[], selectorParts: readonly string[]): CSSStyleRule => {
+  const rule = rules.find((candidate) => selectorParts.every((selectorPart) => candidate.selectorText.includes(selectorPart)));
+
+  if (!rule) {
+    throw new Error(`Expected a style rule matching ${selectorParts.join(', ')}.`);
+  }
+
+  return rule;
+};
+
 describe('FEATURE: NatTable', () => {
   let fixture: ComponentFixture<TableHost>;
   let host: TableHost;
@@ -229,6 +239,28 @@ describe('FEATURE: NatTable', () => {
         expect(rightPinnedEdgeRule.cssText).toContain('calc(-1 * var(--nat-table-pinned-edge-shadow-size');
         expect(cssText).toContain('--nat-table-pinned-divider-shadow-color');
         expect(cssText).toContain('transparent');
+      });
+
+      it('THEN: it keeps ordinary focused cells below pinned layers and composites pinned row states over their base', () => {
+        fixture.detectChanges();
+
+        const rootRules = Array.from(document.styleSheets).flatMap((styleSheet) => Array.from(styleSheet.cssRules));
+        const tableStyles = rootRules.filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule);
+        const mediaStyles = rootRules.flatMap((rule) => (rule instanceof CSSMediaRule ? Array.from(rule.cssRules) : []));
+        const focusRule = requireStyleRule(tableStyles, '[ngGridCell]');
+        const pinnedFocusRule = requireStyleRule(tableStyles, '.is-pinned-left[ngGridCell]');
+        const focusedRowPinnedRule = requireStyleRuleParts(tableStyles, ['.data-row', ':has(:focus-visible)', '.is-pinned-left']);
+        const hoveredRowPinnedRule = requireStyleRuleParts(
+          mediaStyles.filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule),
+          ['.data-row', ':hover', '.is-pinned-left']
+        );
+
+        expect(focusRule.style.zIndex).toBe('');
+        expect(pinnedFocusRule.style.zIndex).toContain('--nat-table-z-index-focus-cell');
+        expect(focusedRowPinnedRule.style.background).toContain('linear-gradient');
+        expect(focusedRowPinnedRule.style.background).toContain('--sys-nat-table-pinned-cell-base');
+        expect(hoveredRowPinnedRule.style.background).toContain('linear-gradient');
+        expect(hoveredRowPinnedRule.style.background).toContain('--sys-nat-table-pinned-cell-base');
       });
 
       it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {
