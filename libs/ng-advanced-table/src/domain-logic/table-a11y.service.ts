@@ -7,6 +7,7 @@ import { NatTableService } from './table.service';
 import { NatTableState } from './table.state';
 import { NAT_TABLE_ROW_WINDOW } from '../common/row-window.const';
 import type { NatTableRendererKind, TableAccessibilitySnapshot } from '../common/table-a11y.type';
+import { NAT_TABLE_BODY_STATE } from '../common/table-status.const';
 import { validateKeybindings } from '../hotkey-a11y/utils/keybindings.util';
 import { resolveColumnLabel } from '../utils/column-label.util';
 import { serializeRowSelection } from '../utils/row-state.util';
@@ -47,6 +48,13 @@ export class NatTableA11yService<TData extends RowData = RowData> {
 
   /** Table summary string for `aria-describedby`. */
   public readonly tableSummary = computed(() => this.buildTableSummary());
+
+  /** Full logical grid row count while a row window renders only a subset. */
+  public readonly ariaRowCount = computed(() =>
+    this.rowWindow && this.state.bodyState() === NAT_TABLE_BODY_STATE.rows
+      ? String(this.state.headerGroups().length + this.state.bodyRows().length)
+      : null
+  );
 
   /**
    * List summary string for `aria-describedby`, phrased as items and fields.
@@ -270,7 +278,15 @@ export class NatTableA11yService<TData extends RowData = RowData> {
         return;
       }
 
-      table.setAttribute('aria-rowcount', String(this.state.headerGroups().length + this.state.bodyRows().length));
+      const ariaRowCount = this.ariaRowCount();
+
+      if (ariaRowCount === null) {
+        table.removeAttribute('aria-rowcount');
+
+        return;
+      }
+
+      table.setAttribute('aria-rowcount', ariaRowCount);
     });
   }
 

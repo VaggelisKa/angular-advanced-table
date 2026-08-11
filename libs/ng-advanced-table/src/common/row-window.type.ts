@@ -16,6 +16,12 @@ import type { Row, RowData } from '@tanstack/angular-table';
  * indexes stay mounted. That keeps native `<table>` semantics — sticky
  * headers, pinned columns, `<colgroup>` widths, and the ARIA grid — fully
  * owned by the table shell.
+ *
+ * The table also keeps the focused stable row mounted and restores focus to
+ * the matching header when that row disappears. A custom window owner still
+ * owns viewport measurement, range updates, off-window keyboard pre-scrolling,
+ * and observer cleanup. Prefer the bundled `NatTableVirtualScroll` unless
+ * those responsibilities are intentional.
  */
 export type NatTableRowWindow = {
   /** Sorted, unique body-row indexes to keep in the DOM. Out-of-range indexes are ignored. */

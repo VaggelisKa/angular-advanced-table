@@ -43,6 +43,8 @@ export type NatTableVirtualScrollGridContext = {
   readonly region: HTMLElement;
   readonly headerRowCount: Signal<number>;
   readonly rowCount: Signal<number>;
+  readonly rowHeight: Signal<number>;
+  readonly rowIds: Signal<readonly string[]>;
   readonly renderedRowIndexes: Signal<readonly number[]>;
   readonly scrollToIndex: (index: number) => void;
 };

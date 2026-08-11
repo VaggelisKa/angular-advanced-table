@@ -24,18 +24,65 @@ test.describe('FEATURE: Virtual scrolling', () => {
         });
 
         await test.step('THEN: Ctrl+End pre-scrolls and focuses a cell in the last logical row', async () => {
+          await grid.evaluate((table) => {
+            (table as HTMLElement).style.minWidth = '1600px';
+
+            for (const column of table.querySelectorAll('col')) {
+              (column as HTMLElement).style.width = '400px';
+            }
+          });
           await firstBodyCell.click();
           await page.keyboard.press('ControlOrMeta+End');
 
           await expect(async () => {
-            const focusedRowIndex = await page.evaluate(() => document.activeElement?.closest('tr')?.getAttribute('aria-rowindex'));
+            const focusedTarget = await page.evaluate(() => {
+              const active = document.activeElement as HTMLElement | null;
+              const cell = active?.closest<HTMLElement>('[data-column-id]');
+              const region = active?.closest<HTMLElement>('[data-testid="nat-table-region"]');
+              const cellRect = cell?.getBoundingClientRect();
+              const regionRect = region?.getBoundingClientRect();
 
-            expect(focusedRowIndex).toBe(String(TOTAL_ROWS + 1));
+              return {
+                rowIndex: active?.closest('tr')?.getAttribute('aria-rowindex'),
+                columnId: cell?.dataset['columnId'],
+                intersectsScrollport:
+                  cellRect !== undefined &&
+                  regionRect !== undefined &&
+                  cellRect.left >= regionRect.left &&
+                  cellRect.right <= regionRect.right
+              };
+            });
+
+            expect(focusedTarget).toStrictEqual({
+              rowIndex: String(TOTAL_ROWS + 1),
+              columnId: 'value',
+              intersectsScrollport: true
+            });
           }).toPass();
         });
 
         await test.step('THEN: ArrowUp from the last row keeps sequential navigation working', async () => {
           await page.keyboard.press('ArrowUp');
+
+          await expect(async () => {
+            const focusedRowIndex = await page.evaluate(() => document.activeElement?.closest('tr')?.getAttribute('aria-rowindex'));
+
+            expect(focusedRowIndex).toBe(String(TOTAL_ROWS));
+          }).toPass();
+        });
+
+        await test.step('THEN: PageUp and PageDown move focus by the visible row-page size', async () => {
+          await page.keyboard.press('PageUp');
+
+          await expect(async () => {
+            const focusedRowIndex = Number(
+              await page.evaluate(() => document.activeElement?.closest('tr')?.getAttribute('aria-rowindex'))
+            );
+
+            expect(focusedRowIndex).toBeLessThan(TOTAL_ROWS - 1);
+          }).toPass();
+
+          await page.keyboard.press('PageDown');
 
           await expect(async () => {
             const focusedRowIndex = await page.evaluate(() => document.activeElement?.closest('tr')?.getAttribute('aria-rowindex'));

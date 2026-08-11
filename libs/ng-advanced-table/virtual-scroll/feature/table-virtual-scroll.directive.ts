@@ -56,8 +56,8 @@ const ROW_ID_SEPARATOR = '\u001f';
  * mounted so roving focus never dangles, vertical keys whose target row is
  * unmounted are pre-scrolled with focus handed over once the row mounts, and
  * rows revealed under the sticky header are nudged clear of it. A changed row
- * order (sort, filter, page, new data) resets scrolling to the top — appends
- * keep the scroll position.
+ * order follows a surviving focused row by stable identity; otherwise it
+ * resets scrolling to the top. Appends keep the scroll position.
  */
 @Directive({
   selector: 'nat-table[natTableVirtualScroll]',
@@ -103,6 +103,7 @@ export class NatTableVirtualScroll<TData extends RowData = RowData> implements N
 
   private readonly bodyRows = computed<readonly Row<TData>[]>(() => this.hostTable.table.getRowModel().rows);
   private readonly rowCount = computed(() => this.bodyRows().length);
+  private readonly rowIds = computed(() => this.bodyRows().map((row) => row.id));
   private readonly headerRowCount = computed(() => this.hostTable.table.getHeaderGroups().length);
 
   /**
@@ -191,6 +192,8 @@ export class NatTableVirtualScroll<TData extends RowData = RowData> implements N
       region,
       headerRowCount: this.headerRowCount,
       rowCount: this.rowCount,
+      rowHeight: this.rowHeight,
+      rowIds: this.rowIds,
       renderedRowIndexes: this.renderedRowIndexes,
       scrollToIndex: (index) => this.scrollToIndex(index)
     });
@@ -206,10 +209,11 @@ export class NatTableVirtualScroll<TData extends RowData = RowData> implements N
   }
 
   /**
-   * A changed row sequence means a different list: drop the focus pin and
-   * scroll back to the top. Pure appends (infinite loading) extend the
-   * sequence without reordering it and keep the scroll position; data-length
-   * changes themselves are already handled by the CDK via the repeater.
+   * A changed row sequence means a different list: follow a surviving focused
+   * row by stable identity, or reset to the top and matching header when it was
+   * removed. Pure appends (infinite loading) extend the sequence without
+   * reordering it and keep the scroll position; data-length changes themselves
+   * are already handled by the CDK via the repeater.
    */
   private registerRowModelResetEffect(): void {
     let previousSequence: string | null = null;
@@ -225,8 +229,7 @@ export class NatTableVirtualScroll<TData extends RowData = RowData> implements N
       }
 
       untracked(() => {
-        this.focus.releasePin();
-        this.scrollToOffset(0);
+        this.focus.restoreAfterRowModelChange();
       });
     });
   }

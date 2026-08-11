@@ -63,17 +63,24 @@ The directive hosts a real, invisible `CdkVirtualScrollViewport` inside the tabl
 
 ## Scrolling behavior
 
-- Sorting, filtering, page changes, and replaced data reset the scroll position to the top — the row order changed, so the old offset points at different data.
-- Appending rows (infinite loading) keeps the scroll position; only the trailing spacer grows.
+- A changed row-id sequence (for example after sorting, filtering, paging, or replacement with different records) resets to the top when focus is outside the body. If the focused stable row survives, the directive follows that row to its new logical position and preserves the focused column.
+- If a row-model change removes the focused row, focus returns to the matching column header at the reset position.
+- Replacing row objects while preserving the same ordered stable ids keeps scroll and focus. Appending rows (infinite loading) also keeps the scroll position; only the trailing spacer grows.
 - The directive exports itself as `natTableVirtualScroll`, so a template reference gives you the imperative API: `scrollToIndex(index)`, `scrollToOffset(px)`, `checkViewportSize()`, and the `renderedRowRange` signal.
 
 ## Keyboard and focus
 
-The grid's roving focus is preserved: the focused row stays mounted even when it scrolls out of the window, so <kbd>Tab</kbd> returns to where you left. Vertical navigation whose target row is not mounted yet — <kbd>ArrowUp</kbd>/<kbd>ArrowDown</kbd> from a far-away focused row, <kbd>Ctrl</kbd>+<kbd>End</kbd> to the last row — pre-scrolls, waits for the row to mount, and moves focus to the same column. Rows revealed under a sticky header are nudged below it.
+The grid's roving focus is preserved: the focused row stays mounted even when it scrolls out of the window, so <kbd>Tab</kbd> returns to where you left. Vertical navigation whose target row is not mounted yet pre-scrolls and waits for the row to mount. <kbd>ArrowUp</kbd>/<kbd>ArrowDown</kbd> preserve the column, <kbd>PageUp</kbd>/<kbd>PageDown</kbd> move by the visible row-page size, and <kbd>Ctrl</kbd>/<kbd>Command</kbd>+<kbd>End</kbd> lands on the bottom-right cell. Focus handoff reveals unpinned columns within the center scroll zone without hiding them behind pinned columns, including in RTL. Rows revealed under a sticky header are nudged below its configured top inset.
 
 ## Accessibility
 
 With only a subset of rows in the DOM, the table switches to explicit ARIA indexing: the `<table>` reports the full logical grid via `aria-rowcount`, and every mounted row carries its absolute `aria-rowindex`, so screen readers announce "row 4,832 of 10,001" instead of a position within the rendered window.
+
+## Custom row-window providers
+
+`NAT_TABLE_ROW_WINDOW` and `NatTableRowWindow` are the low-level extension seam for a different virtualization engine. The core table sanitizes the provider's indexes, renders accessible spacer rows, publishes absolute row indices and the logical row count (including server-rendered HTML), retains a focused stable row, reveals focused cells around pinned zones, and falls back to the matching header when that row disappears.
+
+A custom provider still owns viewport measurement, rendered-range updates, fixed-height enforcement, async data synchronization, observer cleanup, and keyboard handoff that requires an unmounted target to be scrolled into range. The bundled `NatTableVirtualScroll` supplies those safeguards; use the low-level token only when the custom engine implements and tests equivalent behavior.
 
 ## Limitations
 

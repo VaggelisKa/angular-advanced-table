@@ -7,6 +7,7 @@ import { NatTable } from 'ng-advanced-table';
 
 import { NatTableVirtualScroll } from './table-virtual-scroll.directive';
 import {
+  FakeResizeObserver,
   VirtualScrollHost,
   VirtualScrollUnsupportedFeaturesHost,
   alignEngineGeometry,
@@ -52,32 +53,6 @@ const settle = async (fixture: ComponentFixture<unknown>): Promise<void> => {
   fixture.detectChanges();
 };
 
-class FakeResizeObserver implements ResizeObserver {
-  public static instances: FakeResizeObserver[] = [];
-
-  public readonly observed: Element[] = [];
-
-  public constructor(private readonly callback: ResizeObserverCallback) {
-    FakeResizeObserver.instances.push(this);
-  }
-
-  public observe(element: Element): void {
-    this.observed.push(element);
-  }
-
-  public unobserve(element: Element): void {
-    this.observed.splice(this.observed.indexOf(element), 1);
-  }
-
-  public disconnect(): void {
-    this.observed.length = 0;
-  }
-
-  public trigger(): void {
-    this.callback([], this);
-  }
-}
-
 describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
   let fixture: ComponentFixture<VirtualScrollHost>;
   let host: VirtualScrollHost;
@@ -101,6 +76,7 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
@@ -168,6 +144,7 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
         const headerCell = region.querySelector('thead th') as HTMLElement;
 
         headerCell.style.position = 'sticky';
+        headerCell.style.top = '24px';
         thead.getBoundingClientRect = (): DOMRect => fakeDomRect({ height: 40 });
 
         const middleCell = dataRows(fixture)[5].cells[0];
@@ -180,7 +157,7 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
         middleCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }));
 
         await vi.waitFor(() => {
-          expect(region.scrollTop).toBe(scrollTopBefore - 40);
+          expect(region.scrollTop).toBe(scrollTopBefore - 64);
         });
       });
     });
@@ -216,15 +193,47 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
 
         expect(dataRows(fixture).some((row) => row.getAttribute('aria-rowindex') === '4')).toBe(true);
 
-        focusedCell.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
-        await settle(fixture);
+        focusedCell.blur();
 
-        expect(dataRows(fixture).some((row) => row.getAttribute('aria-rowindex') === '4')).toBe(false);
+        await vi.waitFor(() => {
+          fixture.detectChanges();
+          expect(dataRows(fixture).some((row) => row.getAttribute('aria-rowindex') === '4')).toBe(false);
+        });
       });
     });
 
     describe('WHEN: the row order changes (sort)', () => {
-      it('THEN: it scrolls back to the top', async () => {
+      it('THEN: it follows the focused stable row and preserves its focused column', async () => {
+        scrollRegionTo(region, 4000);
+
+        await vi.waitFor(() => {
+          fixture.detectChanges();
+          expect(Number(firstAriaRowIndex(fixture))).toBeGreaterThan(90);
+        });
+
+        const focusedCell = dataRows(fixture)[5].cells[0];
+        const focusedText = focusedCell.textContent.trim();
+
+        focusedCell.focus();
+
+        tableOf(fixture).patchState({ sorting: [{ id: 'throughput', desc: true }] });
+        await settle(fixture);
+
+        const expectedBodyIndex = tableOf(fixture)
+          .table.getRowModel()
+          .rows.findIndex((row) => row.original.name === focusedText);
+
+        await vi.waitFor(() => {
+          fixture.detectChanges();
+
+          expect(document.activeElement?.textContent.trim()).toBe(focusedText);
+          expect(region.scrollTop).toBe(expectedBodyIndex * 40);
+        });
+      });
+    });
+
+    describe('WHEN: the row order changes while focus is outside the body', () => {
+      it('THEN: it resets the region to the top', async () => {
         scrollRegionTo(region, 4000);
         await settle(fixture);
 
@@ -232,6 +241,27 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
         await settle(fixture);
 
         expect(region.scrollTop).toBe(0);
+      });
+    });
+
+    describe('WHEN: consumer-side filtering removes the focused body row', () => {
+      it('THEN: it moves focus to the matching column header at the reset position', async () => {
+        const focusedCell = dataRows(fixture)[2].cells[1];
+
+        focusedCell.focus();
+        await settle(fixture);
+
+        host.rows.set(host.rows().slice(-1));
+        await settle(fixture);
+
+        await vi.waitFor(() => {
+          fixture.detectChanges();
+
+          const active = document.activeElement as HTMLElement | null;
+
+          expect(active?.closest('thead [role="columnheader"]')?.getAttribute('data-column-id')).toBe('throughput');
+          expect(region.scrollTop).toBe(0);
+        });
       });
     });
 
@@ -249,7 +279,15 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
 
     describe('WHEN: a vertical key targets an unmounted row', () => {
       it('THEN: it pre-scrolls and hands focus to the target row cell (Ctrl+End)', async () => {
-        const startCell = dataRows(fixture)[1].cells[1];
+        const startCell = dataRows(fixture)[1].cells[0];
+        const elementRect = HTMLElement.prototype.getBoundingClientRect;
+
+        region.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 300, bottom: 400, width: 300, height: 400 });
+        vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement): DOMRect {
+          return this.matches('tbody [data-column-id="throughput"]')
+            ? fakeDomRect({ left: 320, right: 520, width: 200, height: 40 })
+            : elementRect.call(this);
+        });
 
         startCell.focus();
         await settle(fixture);
@@ -268,6 +306,8 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
           const active = document.activeElement as HTMLElement | null;
 
           expect(active?.closest('tr')?.getAttribute('aria-rowindex')).toBe('201');
+          expect(active?.closest('[data-column-id]')?.getAttribute('data-column-id')).toBe('throughput');
+          expect(region.scrollLeft).toBe(220);
         });
       });
 
@@ -280,6 +320,32 @@ describe('FEATURE: NatTableVirtualScroll (CDK engine)', () => {
         startCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
 
         expect(region.scrollTop).toBe(0);
+      });
+    });
+
+    describe('WHEN: PageDown is pressed from a body cell', () => {
+      it('THEN: it advances focus by one visible page of logical rows', async () => {
+        const startCell = dataRows(fixture)[1].cells[0];
+        const startAriaRowIndex = Number(startCell.closest('tr')?.getAttribute('aria-rowindex'));
+
+        startCell.focus();
+        await settle(fixture);
+
+        const keydown = new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true });
+
+        startCell.dispatchEvent(keydown);
+
+        expect(keydown.defaultPrevented).toBe(true);
+
+        scrollRegionTo(region, region.scrollTop);
+
+        await vi.waitFor(() => {
+          fixture.detectChanges();
+
+          expect((document.activeElement as HTMLElement | null)?.closest('tr')?.getAttribute('aria-rowindex')).toBe(
+            String(startAriaRowIndex + 10)
+          );
+        });
       });
     });
 

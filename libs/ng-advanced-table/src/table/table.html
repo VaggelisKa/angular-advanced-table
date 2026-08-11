@@ -15,6 +15,7 @@
     [attr.aria-describedby]="ariaDescribedBy()"
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
+    [attr.aria-rowcount]="ariaRowCount()"
     [attr.dir]="resolvedDirection()"
     [class]="tableClassMap()"
     [id]="tableElementId()"
@@ -168,6 +169,7 @@
               }
               <tr
                 [attr.aria-selected]="rowAriaSelected(row)"
+                [attr.data-nat-table-row-id]="row.id"
                 [natTablePxHeight]="dataRowHeightPx()"
                 [natTableRowRenderEmitter]="row.id"
                 [natTableRowRenderEnabled]="resolvedEmitRowRenderEvents()"

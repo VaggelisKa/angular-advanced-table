@@ -88,6 +88,17 @@ describe('FEATURE: virtual-scroll keyboard utils', () => {
       });
     });
 
+    describe('WHEN: PageUp or PageDown is pressed in the body', () => {
+      it('THEN: it moves by the supplied visible page size and clamps at the model edges', () => {
+        expect(resolveVerticalNavigationTarget(keyState('PageDown'), 3, 20, 8)).toBe(11);
+        expect(resolveVerticalNavigationTarget(keyState('PageDown'), 18, 20, 8)).toBe(19);
+        expect(resolveVerticalNavigationTarget(keyState('PageDown'), 19, 20, 8)).toBeNull();
+        expect(resolveVerticalNavigationTarget(keyState('PageUp'), 12, 20, 8)).toBe(4);
+        expect(resolveVerticalNavigationTarget(keyState('PageUp'), 3, 20, 8)).toBe(0);
+        expect(resolveVerticalNavigationTarget(keyState('PageUp'), 0, 20, 8)).toBeNull();
+      });
+    });
+
     describe('WHEN: the key is not a vertical navigation', () => {
       it('THEN: it returns null for modified arrows, plain End, and unrelated keys', () => {
         expect(resolveVerticalNavigationTarget(keyState('ArrowDown', { shiftKey: true }), 3, 10)).toBeNull();
@@ -170,8 +181,8 @@ describe('FEATURE: virtual-scroll keyboard utils', () => {
       });
     });
 
-    describe('WHEN: the header cells are sticky', () => {
-      it('THEN: it reports the thead height', () => {
+    describe('WHEN: the header cells are sticky below a configured top inset', () => {
+      it('THEN: it reports the inset plus the thead height', () => {
         const region = buildRegion([2]);
         const thead = region.querySelector('thead') as HTMLElement;
         const headerCell = region.querySelector('thead th') as HTMLElement;
@@ -180,6 +191,10 @@ describe('FEATURE: virtual-scroll keyboard utils', () => {
         thead.getBoundingClientRect = (): DOMRect => fakeDomRect({ height: 56 });
 
         expect(measureStickyHeaderOverlayHeight(region)).toBe(56);
+
+        headerCell.style.top = '24px';
+
+        expect(measureStickyHeaderOverlayHeight(region)).toBe(80);
       });
     });
   });

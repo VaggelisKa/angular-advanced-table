@@ -34,6 +34,7 @@ export class NatTableVirtualScrollGridFocus {
 
   /** Body index of the row owning the grid's roving focus, if any. */
   public readonly focusedRowIndex = signal<number | null>(null);
+  private readonly focusedRowId = signal<string | null>(null);
 
   /** Wires the service to the live grid and starts the capture-phase keydown takeover. */
   public connect(context: NatTableVirtualScrollGridContext): void {
@@ -52,19 +53,41 @@ export class NatTableVirtualScrollGridFocus {
       return;
     }
 
-    this.focusedRowIndex.set(resolveBodyRowIndex(target, untracked(context.headerRowCount)));
+    const focusedRowIndex = resolveBodyRowIndex(target, untracked(context.headerRowCount));
+
+    this.focusedRowIndex.set(focusedRowIndex);
+    this.focusedRowId.set(focusedRowIndex === null ? null : (untracked(context.rowIds)[focusedRowIndex] ?? null));
   }
 
   /** Host `focusout`: release the pin once focus leaves the table entirely. */
   public trackFocusOut(relatedTarget: EventTarget | null): void {
     if (!(relatedTarget instanceof Node) || !this.context?.hostElement.contains(relatedTarget)) {
-      this.focusedRowIndex.set(null);
+      this.releasePin();
     }
   }
 
   /** Drops the pin without waiting for a focus event (row-model resets). */
   public releasePin(): void {
     this.focusedRowIndex.set(null);
+    this.focusedRowId.set(null);
+  }
+
+  /** Restores focus by stable row identity after sorting, filtering, paging, or data replacement. */
+  public restoreAfterRowModelChange(): void {
+    const context = this.context;
+    const focusedRowId = untracked(this.focusedRowId);
+
+    const nextRowIndex = context && focusedRowId !== null ? untracked(context.rowIds).indexOf(focusedRowId) : -1;
+
+    if (context && nextRowIndex >= 0) {
+      this.focusedRowIndex.set(nextRowIndex);
+      context.scrollToIndex(nextRowIndex);
+
+      return;
+    }
+
+    this.releasePin();
+    context?.scrollToIndex(0);
   }
 
   private onKeydownCapture(event: KeyboardEvent): void {
@@ -77,21 +100,33 @@ export class NatTableVirtualScrollGridFocus {
     }
 
     const headerRowCount = untracked(context.headerRowCount);
+    const isPageMove = event.key === 'PageUp' || event.key === 'PageDown';
+    const isLogicalEnd = event.key === 'End' && (event.ctrlKey || event.metaKey);
+    const pageSize = isPageMove
+      ? Math.max(
+          1,
+          Math.floor((context.region.clientHeight - measureStickyHeaderOverlayHeight(context.region)) / untracked(context.rowHeight))
+        )
+      : 1;
     const targetIndex = resolveVerticalNavigationTarget(
       event,
       resolveBodyRowIndex(target, headerRowCount),
-      untracked(context.rowCount)
+      untracked(context.rowCount),
+      pageSize
     );
 
     if (targetIndex === null) {
       return;
     }
 
-    if (!isRowIndexMounted(untracked(context.renderedRowIndexes), targetIndex)) {
+    if (isPageMove || !isRowIndexMounted(untracked(context.renderedRowIndexes), targetIndex)) {
       event.preventDefault();
       event.stopPropagation();
       context.scrollToIndex(targetIndex);
-      this.handOverFocusWhenMounted(headerRowCount + targetIndex + 1, resolveCellPositionInRow(target));
+      this.handOverFocusWhenMounted(
+        headerRowCount + targetIndex + 1,
+        isLogicalEnd ? Number.MAX_SAFE_INTEGER : resolveCellPositionInRow(target)
+      );
 
       return;
     }

@@ -7,6 +7,7 @@ import type { ElementRef, TemplateRef } from '@angular/core';
 import {
   Component,
   DestroyRef,
+  afterRenderEffect,
   booleanAttribute,
   computed,
   contentChild,
@@ -14,6 +15,7 @@ import {
   inject,
   input,
   output,
+  signal,
   viewChild
 } from '@angular/core';
 
@@ -56,7 +58,7 @@ import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate }
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
-import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan } from '../utils/row-window.util';
+import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan, revealWindowedCellHorizontally } from '../utils/row-window.util';
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
@@ -90,6 +92,10 @@ import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan } from '../utils/r
     NatTablePxWidth,
     NatTableResizeGuide
   ],
+  host: {
+    '(focusin)': 'onWindowFocusIn($event)',
+    '(focusout)': 'onWindowFocusOut($event)'
+  },
   providers: [
     NatTableState,
     NatTableA11yService,
@@ -183,6 +189,10 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected readonly headerGroups = this.state.headerGroups;
   protected readonly bodyRows = this.state.bodyRows;
+  private readonly focusedWindowRowId = signal<string | null>(null);
+  private readonly focusedWindowColumnId = signal<string | null>(null);
+  private pendingWindowFocusReleaseFrame: number | null = null;
+  private readonly bodyRowIndexById = computed(() => new Map(this.bodyRows().map((row, index) => [row.id, index])));
 
   /**
    * The tbody render plan: every body row when no row window is attached, or
@@ -195,7 +205,13 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
       return buildFullBodyRenderPlan(this.bodyRows());
     }
 
-    return buildWindowedBodyRenderPlan(this.bodyRows(), rowWindow.renderedRowIndexes(), rowWindow.rowHeight());
+    const rows = this.bodyRows();
+    const focusedRowId = this.focusedWindowRowId();
+    const focusedRowIndex = focusedRowId === null ? undefined : this.bodyRowIndexById().get(focusedRowId);
+    const renderedRowIndexes =
+      focusedRowIndex === undefined ? rowWindow.renderedRowIndexes() : [...rowWindow.renderedRowIndexes(), focusedRowIndex];
+
+    return buildWindowedBodyRenderPlan(rows, renderedRowIndexes, rowWindow.rowHeight());
   });
 
   /**
@@ -330,6 +346,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected readonly tableSummary = this.a11yService.tableSummary;
   protected readonly liveMessage = this.a11yService.liveMessage;
+  protected readonly ariaRowCount = this.a11yService.ariaRowCount;
 
   // ─── Resize (delegated to service) ───
 
@@ -394,7 +411,28 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     this.state.registerRenderCycleEffect();
     this.state.registerSubHeaderValidationEffect();
 
+    if (this.rowWindow) {
+      afterRenderEffect(() => {
+        const focusedRowId = this.focusedWindowRowId();
+        const focusedColumnId = this.focusedWindowColumnId();
+
+        if (focusedRowId === null || focusedColumnId === null || this.bodyRowIndexById().has(focusedRowId)) {
+          return;
+        }
+
+        const header = [...(this.tableRegionRef()?.nativeElement.querySelectorAll<HTMLElement>('thead [data-column-id]') ?? [])].find(
+          (candidate) => candidate.dataset['columnId'] === focusedColumnId
+        );
+
+        header?.focus({ preventScroll: true });
+      });
+    }
+
     this.destroyRef.onDestroy(() => {
+      if (this.pendingWindowFocusReleaseFrame !== null) {
+        cancelAnimationFrame(this.pendingWindowFocusReleaseFrame);
+      }
+
       this.natTableService.clearController(this);
     });
   }
@@ -458,6 +496,57 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     }
 
     return this.headerGroups().length + bodyIndex + 1;
+  }
+
+  protected onWindowFocusIn(event: FocusEvent): void {
+    if (!this.rowWindow || !(event.target instanceof Element)) {
+      return;
+    }
+
+    if (this.pendingWindowFocusReleaseFrame !== null) {
+      cancelAnimationFrame(this.pendingWindowFocusReleaseFrame);
+      this.pendingWindowFocusReleaseFrame = null;
+    }
+
+    const row = event.target.closest('tbody tr.data-row');
+    const cell = event.target.closest<HTMLElement>('[data-column-id]');
+
+    this.focusedWindowRowId.set(row?.getAttribute('data-nat-table-row-id') ?? null);
+    this.focusedWindowColumnId.set(row ? (cell?.dataset['columnId'] ?? null) : null);
+
+    const region = this.tableRegionRef()?.nativeElement;
+
+    if (row && cell && region) {
+      revealWindowedCellHorizontally(region, cell);
+    }
+  }
+
+  protected onWindowFocusOut(event: FocusEvent): void {
+    const relatedTarget = event.relatedTarget;
+    const host = event.currentTarget;
+
+    if (!this.rowWindow || !(host instanceof Node) || (relatedTarget instanceof Node && host.contains(relatedTarget))) {
+      return;
+    }
+
+    if (relatedTarget instanceof Node) {
+      this.clearWindowFocus();
+
+      return;
+    }
+
+    this.pendingWindowFocusReleaseFrame = requestAnimationFrame(() => {
+      this.pendingWindowFocusReleaseFrame = null;
+
+      if (!host.contains(host.ownerDocument?.activeElement ?? null)) {
+        this.clearWindowFocus();
+      }
+    });
+  }
+
+  private clearWindowFocus(): void {
+    this.focusedWindowRowId.set(null);
+    this.focusedWindowColumnId.set(null);
   }
 
   protected onRowClick(event: MouseEvent, row: Row<TData>): void {

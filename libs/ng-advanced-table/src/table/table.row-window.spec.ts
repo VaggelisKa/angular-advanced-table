@@ -113,6 +113,34 @@ describe('FEATURE: NatTable row window', () => {
       });
     });
 
+    describe('WHEN: a custom window moves away from the focused body row', () => {
+      it('THEN: it keeps the active row mounted so browser focus remains valid', async () => {
+        const focusedCell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row[aria-rowindex="4"] [role="rowheader"]');
+
+        focusedCell.focus();
+        host.rows.update((rows) => rows.map((row) => ({ ...row, name: `${row.name} refreshed` })));
+        await setWindow([10, 11]);
+
+        expect(document.activeElement).toBe(focusedCell);
+        expect(focusedCell.textContent).toContain('refreshed');
+        expect(dataRows(fixture).map((row) => row.getAttribute('aria-rowindex'))).toStrictEqual(['4', '12', '13']);
+      });
+    });
+
+    describe('WHEN: consumer-side filtering removes the focused row from a custom window', () => {
+      it('THEN: it restores focus to the matching column header', async () => {
+        const focusedCell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row[aria-rowindex="4"] [data-column-id="region"]');
+
+        focusedCell.focus();
+        host.rows.set(host.rows().slice(-1));
+        await setWindow([0]);
+
+        expect(
+          (document.activeElement as HTMLElement | null)?.closest('thead [role="columnheader"]')?.getAttribute('data-column-id')
+        ).toBe('region');
+      });
+    });
+
     describe('WHEN: the contracted row height changes', () => {
       it('THEN: it resizes gap spacers and mounted rows together', async () => {
         rowWindow.height.set(50);
@@ -130,6 +158,17 @@ describe('FEATURE: NatTable row window', () => {
         await setWindow([0, 1, 2, 3]);
 
         expect(host.renderedEvents).toHaveLength(0);
+      });
+    });
+
+    describe('WHEN: the table transitions to its fully rendered empty-state row', () => {
+      it('THEN: it removes the virtual logical row count instead of undercounting the DOM rows', async () => {
+        host.rows.set([]);
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        expect(queryRequired(fixture, 'tbody .table-state')).not.toBeNull();
+        expect(queryRequired(fixture, 'table').hasAttribute('aria-rowcount')).toBe(false);
       });
     });
   });

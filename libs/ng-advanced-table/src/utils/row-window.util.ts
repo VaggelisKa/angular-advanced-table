@@ -2,11 +2,63 @@ import type { Row, RowData } from '@tanstack/angular-table';
 
 import type { NatTableBodyRenderItem } from '../common/row-window.type';
 
+type HorizontalBounds = { readonly left: number; readonly right: number };
+
+const resolveUnpinnedBounds = (table: HTMLTableElement, regionRect: DOMRect): HorizontalBounds | null => {
+  const pinnedLeft = table.querySelector<HTMLElement>('thead .has-pinned-edge-left')?.getBoundingClientRect();
+  const pinnedRight = table.querySelector<HTMLElement>('thead .has-pinned-edge-right')?.getBoundingClientRect();
+  let visibleLeft = regionRect.left;
+  let visibleRight = regionRect.right;
+
+  if (pinnedLeft && pinnedLeft.left <= regionRect.left + 1) {
+    visibleLeft = Math.min(pinnedLeft.right, regionRect.right);
+  }
+
+  if (pinnedRight && pinnedRight.right >= regionRect.right - 1) {
+    visibleRight = Math.max(pinnedRight.left, regionRect.left);
+  }
+
+  return visibleLeft < visibleRight ? { left: visibleLeft, right: visibleRight } : null;
+};
+
 /** Clamps to `[0, rowCount)`, deduplicates, and sorts ascending. */
 export function sanitizeRowIndexes(indexes: readonly number[], rowCount: number): readonly number[] {
   const inRange = indexes.filter((index) => Number.isInteger(index) && index >= 0 && index < rowCount);
 
   return [...new Set(inRange)].sort((left, right) => left - right);
+}
+
+/** Reveals an unpinned focused cell inside a windowed table's center zone. */
+export function revealWindowedCellHorizontally(region: HTMLElement, cell: HTMLElement): void {
+  const table = cell.closest<HTMLTableElement>('table');
+
+  if (!table || cell.matches('.is-pinned-left, .is-pinned-right')) {
+    return;
+  }
+
+  const bounds = resolveUnpinnedBounds(table, region.getBoundingClientRect());
+
+  if (!bounds) {
+    return;
+  }
+
+  const cellRect = cell.getBoundingClientRect();
+  const visibleWidth = bounds.right - bounds.left;
+  let delta = 0;
+
+  if (cellRect.width > visibleWidth) {
+    const isRtl = table.dir === 'rtl' || getComputedStyle(table).direction === 'rtl';
+
+    delta = isRtl ? cellRect.right - bounds.right : cellRect.left - bounds.left;
+  } else if (cellRect.left < bounds.left) {
+    delta = cellRect.left - bounds.left;
+  } else if (cellRect.right > bounds.right) {
+    delta = cellRect.right - bounds.right;
+  }
+
+  if (delta !== 0) {
+    region.scrollLeft += delta;
+  }
 }
 
 /** Render plan for a table without a row window: every body row, no gaps. */

@@ -19,7 +19,8 @@ import type { NatTableVirtualScrollKeyState } from '../common/virtual-scroll-int
 export function resolveVerticalNavigationTarget(
   key: NatTableVirtualScrollKeyState,
   currentBodyIndex: number | null,
-  rowCount: number
+  rowCount: number,
+  pageSize = 1
 ): number | null {
   if (rowCount <= 0 || key.altKey || key.shiftKey) {
     return null;
@@ -39,6 +40,18 @@ export function resolveVerticalNavigationTarget(
 
   if (key.key === 'ArrowUp') {
     return currentBodyIndex - 1 >= 0 ? currentBodyIndex - 1 : null;
+  }
+
+  if (key.key === 'PageDown') {
+    const target = Math.min(rowCount - 1, currentBodyIndex + Math.max(1, pageSize));
+
+    return target === currentBodyIndex ? null : target;
+  }
+
+  if (key.key === 'PageUp') {
+    const target = Math.max(0, currentBodyIndex - Math.max(1, pageSize));
+
+    return target === currentBodyIndex ? null : target;
   }
 
   return null;
@@ -93,14 +106,15 @@ export function focusMountedRowCell(region: HTMLElement, ariaRowIndex: number, c
     cell.tabIndex = -1;
   }
 
-  cell.focus();
+  cell.focus({ preventScroll: true });
 
   return true;
 }
 
 /**
  * Height of the sticky header overlay at the top of the scroll region: the
- * `<thead>` height when header cells are sticky, otherwise 0.
+ * sticky top inset plus the `<thead>` height when header cells are sticky,
+ * otherwise 0.
  */
 export function measureStickyHeaderOverlayHeight(region: HTMLElement): number {
   const thead = region.querySelector('thead');
@@ -110,7 +124,15 @@ export function measureStickyHeaderOverlayHeight(region: HTMLElement): number {
     return 0;
   }
 
-  return getComputedStyle(headerCell).position === 'sticky' ? thead.getBoundingClientRect().height : 0;
+  const style = getComputedStyle(headerCell);
+
+  if (style.position !== 'sticky') {
+    return 0;
+  }
+
+  const stickyTop = Number.parseFloat(style.top);
+
+  return (Number.isFinite(stickyTop) ? Math.max(0, stickyTop) : 0) + thead.getBoundingClientRect().height;
 }
 
 /**

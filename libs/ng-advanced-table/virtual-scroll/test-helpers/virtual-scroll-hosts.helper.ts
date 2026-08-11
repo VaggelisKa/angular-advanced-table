@@ -7,6 +7,32 @@ import type { ColumnDef } from 'ng-advanced-table';
 import type { NatTableVirtualScrollOptions } from '../common/virtual-scroll-options.type';
 import { NatTableVirtualScroll } from '../feature/table-virtual-scroll.directive';
 
+export class FakeResizeObserver implements ResizeObserver {
+  public static instances: FakeResizeObserver[] = [];
+
+  public readonly observed: Element[] = [];
+
+  public constructor(private readonly callback: ResizeObserverCallback) {
+    FakeResizeObserver.instances.push(this);
+  }
+
+  public observe(element: Element): void {
+    this.observed.push(element);
+  }
+
+  public unobserve(element: Element): void {
+    this.observed.splice(this.observed.indexOf(element), 1);
+  }
+
+  public disconnect(): void {
+    this.observed.length = 0;
+  }
+
+  public trigger(): void {
+    this.callback([], this);
+  }
+}
+
 export type VirtualRow = {
   readonly id: string;
   readonly name: string;

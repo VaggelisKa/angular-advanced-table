@@ -1,11 +1,40 @@
 import type { Row } from '@tanstack/angular-table';
 
-import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan, sanitizeRowIndexes } from './row-window.util';
+import {
+  buildFullBodyRenderPlan,
+  buildWindowedBodyRenderPlan,
+  revealWindowedCellHorizontally,
+  sanitizeRowIndexes
+} from './row-window.util';
 
 type TestRowData = { readonly name: string };
 
 const fakeRows = (count: number): Row<TestRowData>[] =>
   Array.from({ length: count }, (_, index) => ({ id: `r${index}` }) as unknown as Row<TestRowData>);
+
+const fakeDomRect = (overrides: Partial<Omit<DOMRect, 'toJSON'>>): DOMRect => ({
+  x: 0,
+  y: 0,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: 0,
+  height: 0,
+  toJSON: () => ({}),
+  ...overrides
+});
+
+const buildFocusRegion = (): { cell: HTMLTableCellElement; region: HTMLElement; table: HTMLTableElement } => {
+  const region = document.createElement('div');
+  const table = document.createElement('table');
+  const cell = table.createTBody().insertRow().insertCell();
+
+  table.createTHead().insertRow().append(document.createElement('th'));
+  region.append(table);
+
+  return { cell, region, table };
+};
 
 describe('FEATURE: row-window utils', () => {
   describe('GIVEN: buildFullBodyRenderPlan', () => {
@@ -70,6 +99,76 @@ describe('FEATURE: row-window utils', () => {
     describe('WHEN: indexes contain duplicates, fractions, and out-of-range values', () => {
       it('THEN: it returns the sorted unique integer indexes inside the row model', () => {
         expect(sanitizeRowIndexes([3, 1.5, 1, 3, -2, 10], 5)).toStrictEqual([1, 3]);
+      });
+    });
+  });
+
+  describe('GIVEN: horizontal focus visibility in a windowed table', () => {
+    describe('WHEN: pinned columns cover both scrollport edges', () => {
+      it('THEN: it reveals an unpinned target within the remaining center zone', () => {
+        const { cell, region, table } = buildFocusRegion();
+        const header = table.tHead?.rows[0];
+        const pinnedLeft = header?.cells[0] as HTMLElement;
+        const pinnedRight = document.createElement('th');
+
+        pinnedLeft.className = 'has-pinned-edge-left';
+        pinnedRight.className = 'has-pinned-edge-right';
+        header?.append(pinnedRight);
+        region.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 800, width: 800 });
+        pinnedLeft.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 120, width: 120 });
+        pinnedRight.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: 700, right: 800, width: 100 });
+        cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: 650, right: 850, width: 200 });
+        region.scrollLeft = 40;
+
+        revealWindowedCellHorizontally(region, cell);
+
+        expect(region.scrollLeft).toBe(190);
+      });
+    });
+
+    describe('WHEN: an RTL target is wider than the visible center zone', () => {
+      it('THEN: it aligns the physical inline-start edge', () => {
+        const { cell, region, table } = buildFocusRegion();
+
+        table.dir = 'rtl';
+        region.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 800, width: 800 });
+        cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: -200, right: 1000, width: 1200 });
+        region.scrollLeft = -300;
+
+        revealWindowedCellHorizontally(region, cell);
+
+        expect(region.scrollLeft).toBe(-100);
+      });
+    });
+
+    describe('WHEN: no horizontal correction is possible or necessary', () => {
+      it('THEN: it leaves detached, pinned, visible, and fully covered targets unchanged', () => {
+        const detachedRegion = document.createElement('div');
+        const detachedCell = document.createElement('td');
+
+        detachedRegion.scrollLeft = 25;
+        revealWindowedCellHorizontally(detachedRegion, detachedCell);
+        expect(detachedRegion.scrollLeft).toBe(25);
+
+        const { cell, region, table } = buildFocusRegion();
+        const headerCell = table.tHead?.rows[0].cells[0] as HTMLElement;
+
+        region.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 800, width: 800 });
+        cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: 200, right: 400, width: 200 });
+        region.scrollLeft = 80;
+        revealWindowedCellHorizontally(region, cell);
+        expect(region.scrollLeft).toBe(80);
+
+        cell.className = 'is-pinned-right';
+        cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: 900, right: 1100, width: 200 });
+        revealWindowedCellHorizontally(region, cell);
+        expect(region.scrollLeft).toBe(80);
+
+        cell.className = '';
+        headerCell.className = 'has-pinned-edge-left';
+        headerCell.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 800, width: 800 });
+        revealWindowedCellHorizontally(region, cell);
+        expect(region.scrollLeft).toBe(80);
       });
     });
   });
