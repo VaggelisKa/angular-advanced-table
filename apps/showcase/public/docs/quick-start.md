@@ -206,6 +206,10 @@ Nightly versions look like `2.12.2-next.7`, where the counter is the number of c
 
 Use `next` to try an unreleased fix or feature, or to check a change against your app before it ships. It is built from the same CI-verified commit as `main`, but its API is not frozen: anything in a nightly can change or be removed before the next stable release. Pin the exact version rather than tracking the tag if you depend on one in CI.
 
+### What is in a nightly
+
+Nightlies have no changelog of their own — a snapshot is a single commit, and the same prose becomes a changelog entry when a stable release is cut. To see what a nightly contains ahead of that, the Nightly workflow run summarises it: it lists the pending release notes and links a full comparison against the last stable tag. The [`CHANGELOG`](https://github.com/VaggelisKa/angular-advanced-table/blob/main/libs/ng-advanced-table/CHANGELOG.md) remains the record for released versions.
+
 ## Next Steps
 
 - Use `/docs/columns` for column metadata, sizing, custom cell components, header actions, and row activation.

@@ -80,19 +80,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # Install command, source commit, compare link against the last stable
+      # tag, and the pending version-plan entries — i.e. what is in `@next` that
+      # is not yet in `latest`.
       - name: Summarize
-        run: |
-          {
-            echo "### Nightly published"
-            echo
-            echo '```bash'
-            echo "npm i ng-advanced-table@${{ steps.version.outputs.version }}"
-            echo "# or track the tag: npm i ng-advanced-table@next"
-            echo '```'
-            echo
-            echo "Built from [\`${SHA:0:7}\`]($SERVER/$REPO/commit/$SHA)."
-          } >> "$GITHUB_STEP_SUMMARY"
-        env:
-          SHA: ${{ github.event.workflow_run.head_sha }}
-          REPO: ${{ github.repository }}
-          SERVER: ${{ github.server_url }}
+        run: >-
+          node tools/nightly-summary.mjs
+          --version=${{ steps.version.outputs.version }}
+          --sha=${{ github.event.workflow_run.head_sha }}
