@@ -28,10 +28,20 @@ jobs:
   publish:
     # Green CI, on a real push to main, that isn't the stable release's own
     # commit (that tree ships under `latest` via release.yml already).
+    #
+    # The head_sha == github.sha clause keeps npm provenance honest. On a
+    # `workflow_run` event GitHub sets GITHUB_SHA to the last commit on the
+    # DEFAULT BRANCH, not to the commit that ran CI, and npm's provenance
+    # generator records GITHUB_SHA verbatim as the built commit. Those agree
+    # unless main moved between CI finishing and this job starting — in which
+    # case the attestation would name a commit that was never built here. When
+    # they diverge we skip; the newer commit's own CI run publishes moments
+    # later, so nothing is lost.
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_sha == github.sha &&
       !startsWith(github.event.workflow_run.head_commit.message, 'chore(release): publish')
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -75,7 +85,24 @@ jobs:
         id: version
         run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table
 
+      # Re-running a CI run fires `workflow_run` again for the same commit, and
+      # the commit-count version is a pure function of that commit — so the
+      # rerun would try to republish an existing version and fail. Skip instead,
+      # which also lets a rerun recover a nightly that failed AFTER publishing.
+      - name: Check whether this version is already published
+        id: published
+        run: |
+          if npm view "ng-advanced-table@$VERSION" version >/dev/null 2>&1; then
+            echo "Already on the registry — skipping publish."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+
       - name: Publish to npm under the `next` tag
+        if: steps.published.outputs.exists == 'false'
         run: npm publish dist/libs/ng-advanced-table --tag next --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -84,6 +111,7 @@ jobs:
       # tag, and the pending version-plan entries — i.e. what is in `@next` that
       # is not yet in `latest`.
       - name: Summarize
+        if: steps.published.outputs.exists == 'false'
         run: >-
           node tools/nightly-summary.mjs
           --version=${{ steps.version.outputs.version }}
