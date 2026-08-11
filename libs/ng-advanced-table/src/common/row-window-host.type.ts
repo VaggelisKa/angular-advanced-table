@@ -34,8 +34,15 @@ export type NatTableRowWindowHost<TData extends RowData = RowData> = {
   readonly resolvedCaption: Signal<string>;
   /** Whether the header sticks inside the scroll region. */
   readonly stickyHeader: Signal<boolean>;
-  /** Sub-header segments, which the fixed-height strategy cannot size. */
+  /** Sub-header segments rendered before their group-opening rows. */
   readonly subHeaderGroups: Signal<ReadonlyMap<string, NatTableSubHeaderGroup<TData>>>;
+  /**
+   * Running count of sub-header rows rendered at or before each page row, by
+   * page index — empty when no sub-header renders. Lets a fixed-height row
+   * window place data row `i` at composite slot `i + offsets[i]` without
+   * walking the row model.
+   */
+  readonly subHeaderRowOffsets: Signal<readonly number[]>;
   /** The scrollable table region a strategy observes and scrolls. */
   readonly tableRegionRef: Signal<ElementRef<HTMLElement> | undefined>;
   /** Visible leaf columns in render order, used to restore focus by column. */

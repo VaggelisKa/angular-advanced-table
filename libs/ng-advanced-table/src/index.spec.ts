@@ -18,7 +18,7 @@ describe('FEATURE: ng-advanced-table public barrel', () => {
     describe('WHEN: importing the registry and its strategy type', () => {
       it('THEN: it exposes the contract without naming any virtualization engine', () => {
         // Structural check only: core must describe a row window without
-        // depending on the CDK engine, which lives in the opt-in entry point.
+        // depending on the windowing engine, which lives in the opt-in entry point.
         const strategyKeys: (keyof NatTableRowRenderStrategy)[] = ['items', 'totalSize', 'rowHeight'];
 
         expect(NatTableRowRenderStrategyRegistry).toBe(DirectRegistry);

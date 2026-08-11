@@ -149,6 +149,24 @@ describe('FEATURE: NatTable sub-headers', () => {
       it('THEN: aria-rowcount counts the header, sub-header, and data rows', () => {
         expect(queryRequired(fixture, 'table').getAttribute('aria-rowcount')).toBe('10');
       });
+
+      it('THEN: sub-header cells carry the shared row separator and the transparent background token', () => {
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const subHeaderCellRule = tableStyles.find(
+          (rule) => rule.selectorText.includes('.sub-header-cell') && !rule.selectorText.includes('.is-virtualized')
+        );
+        const cssText = subHeaderCellRule?.cssText ?? '';
+
+        // The separator reuses the data-cell border tokens so a themed border
+        // applies to sub-header rows without a second token pair.
+        expect(cssText).toContain('border-bottom');
+        expect(cssText).toContain('--nat-table-cell-border-width');
+        expect(cssText).toContain('--nat-table-cell-border-color');
+        expect(cssText).toContain('--nat-table-sub-header-background');
+        expect(cssText).toContain('transparent');
+      });
     });
 
     describe('WHEN: the user sorts another column', () => {

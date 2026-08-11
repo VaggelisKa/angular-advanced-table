@@ -4,6 +4,7 @@ import {
   createVirtualItems,
   includeVirtualIndex,
   normalizeNatTableVirtualizationOptions,
+  opensSubHeaderGroup,
   rangeToRowIndexes
 } from './table-virtualization.util';
 
@@ -101,12 +102,40 @@ describe('FEATURE: NatTable virtualization options and ranges', () => {
   });
 
   describe('GIVEN: mounted row indexes on the fixed row grid', () => {
-    describe('WHEN: virtual items are materialized', () => {
+    describe('WHEN: virtual items are materialized without sub-headers', () => {
       it('THEN: it derives body-local extents from the row height', () => {
-        expect(createVirtualItems([0, 3], 40)).toStrictEqual([
+        expect(createVirtualItems([0, 3], 40, [])).toStrictEqual([
           { index: 0, start: 0, end: 40 },
           { index: 3, start: 120, end: 160 }
         ]);
+      });
+    });
+
+    describe('WHEN: virtual items are materialized across sub-header groups', () => {
+      it('THEN: it shifts extents by the sub-header slots and grows group-opening blocks upward', () => {
+        // Rows 0 and 2 open groups: offsets [1, 1, 2]. Row 0's block spans its
+        // sub-header (slot 0) plus itself (slot 1); row 1 sits alone at slot 2;
+        // row 2's block spans slots 3 (sub-header) and 4.
+        expect(createVirtualItems([0, 1, 2], 40, [1, 1, 2])).toStrictEqual([
+          { index: 0, start: 0, end: 80 },
+          { index: 1, start: 80, end: 120 },
+          { index: 2, start: 120, end: 200 }
+        ]);
+      });
+    });
+
+    describe('WHEN: a group opens at an index beyond the offsets array', () => {
+      it('THEN: it treats missing offsets as zero sub-header slots', () => {
+        expect(createVirtualItems([5], 40, [])).toStrictEqual([{ index: 5, start: 200, end: 240 }]);
+      });
+    });
+
+    describe('WHEN: group membership is resolved from the running offsets', () => {
+      it('THEN: it marks exactly the rows whose offset steps up', () => {
+        expect(opensSubHeaderGroup([1, 1, 2], 0)).toBe(true);
+        expect(opensSubHeaderGroup([1, 1, 2], 1)).toBe(false);
+        expect(opensSubHeaderGroup([1, 1, 2], 2)).toBe(true);
+        expect(opensSubHeaderGroup([], 4)).toBe(false);
       });
     });
   });

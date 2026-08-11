@@ -311,11 +311,14 @@ tbody .data-row:last-child .data-cell {
 }
 
 .data-table.is-virtualized .data-row,
-.data-table.is-virtualized .data-cell {
+.data-table.is-virtualized .data-cell,
+.data-table.is-virtualized .sub-header-row,
+.data-table.is-virtualized .sub-header-cell {
   height: var(--sys-nat-table-virtual-row-height);
 }
 
-.data-table.is-virtualized .data-cell-content {
+.data-table.is-virtualized .data-cell-content,
+.data-table.is-virtualized .sub-header-content {
   max-height: var(--sys-nat-table-virtual-row-height);
 }
 
@@ -550,14 +553,15 @@ tbody .data-row:last-child .data-cell {
 }
 
 .sub-header-cell {
-  padding: var(
-    --nat-table-space-sub-header,
-    var(--sys-nat-table-space-sub-header, 8px var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 12px)))
-  );
+  /* Padding lives on the sticky content below so the label keeps its inset
+     while clamped to the region's left edge during horizontal scrolling. */
+  padding: 0;
   font-weight: var(--nat-table-font-weight-sub-header, var(--sys-nat-table-font-weight-sub-header, 600));
   color: var(--nat-table-sub-header-color, var(--sys-nat-table-sub-header-color, currentColor));
   white-space: normal;
   background: var(--nat-table-sub-header-background, var(--sys-nat-table-sub-header-background, transparent));
+  border-bottom: var(--nat-table-cell-border-width, var(--sys-nat-table-cell-border-width, 1px)) solid
+    var(--nat-table-cell-border-color, var(--sys-nat-table-cell-border-color, rgb(128 128 128 / 24%)));
 }
 
 /*
@@ -568,9 +572,14 @@ tbody .data-row:last-child .data-cell {
 .sub-header-content {
   position: sticky;
   left: 0;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   max-width: 100cqi;
+  padding: var(
+    --nat-table-space-sub-header,
+    var(--sys-nat-table-space-sub-header, 8px var(--nat-table-space-cell-x, var(--sys-nat-table-space-cell-x, 12px)))
+  );
 }
 
 @keyframes nat-table-state-enter {

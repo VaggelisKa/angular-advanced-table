@@ -1,5 +1,5 @@
 import type { Signal } from '@angular/core';
-import { ElementRef, Injectable, afterNextRender, afterRenderEffect, effect, inject, isDevMode } from '@angular/core';
+import { ElementRef, Injectable, afterNextRender, afterRenderEffect, inject, isDevMode } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -27,7 +27,6 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
 
     afterNextRender(() => this.warnIfRegionIsUnbounded());
     this.registerRowHeightValidationEffect();
-    this.registerSubHeaderValidationEffect();
   }
 
   public connect(rowHeight: Signal<number>, items: Signal<readonly NatTableVirtualItem[]>): void {
@@ -53,26 +52,10 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
   }
 
   /**
-   * Sub-header rows are unsupported by the fixed-row strategy: they add body
-   * `<tr>`s the windowing engine never sized, so spacer heights under-report
-   * and the scroll offset drifts as the mounted window moves.
+   * The fixed-height contract covers every body `<tr>` the engine sizes: data
+   * rows and sub-header rows alike, since both occupy one composite slot on
+   * the fixed row grid.
    */
-  private registerSubHeaderValidationEffect(): void {
-    let hasWarned = false;
-
-    effect(() => {
-      if (hasWarned || this.state.subHeaderGroups().size === 0) {
-        return;
-      }
-
-      hasWarned = true;
-      console.warn(
-        '[ng-advanced-table] natTableVirtualize does not support sub-header rows. ' +
-          'Remove `subHeaderColumn` from the virtualized table, or render it without virtualization.'
-      );
-    });
-  }
-
   private registerRowHeightValidationEffect(): void {
     let hasWarned = false;
 
@@ -82,10 +65,16 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
 
         this.items?.();
 
-        const row = this.elementRef.nativeElement.querySelector<HTMLTableRowElement>('tr.data-row');
-        const actualHeight = row?.getBoundingClientRect().height ?? 0;
+        for (const selector of ['tr.data-row', 'tr.sub-header-row']) {
+          const row = this.elementRef.nativeElement.querySelector<HTMLTableRowElement>(selector);
+          const actualHeight = row?.getBoundingClientRect().height ?? 0;
 
-        return actualHeight > 0 && Math.abs(actualHeight - expectedHeight) > 1 ? { actualHeight, expectedHeight } : null;
+          if (actualHeight > 0 && Math.abs(actualHeight - expectedHeight) > 1) {
+            return { actualHeight, expectedHeight };
+          }
+        }
+
+        return null;
       },
       write: (mismatchSignal) => {
         const mismatch = mismatchSignal();
@@ -97,7 +86,7 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
         hasWarned = true;
         console.warn(
           `[ng-advanced-table] natTableVirtualize expected ${mismatch.expectedHeight}px rows but measured ${mismatch.actualHeight}px. ` +
-            'Keep cell content and padding within the configured fixed row height.'
+            'Keep cell and sub-header content within the configured fixed row height.'
         );
       }
     });

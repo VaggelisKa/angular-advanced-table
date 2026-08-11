@@ -8,8 +8,13 @@ const context = (overrides: Partial<NatTableVirtualRangeContext>): NatTableVirtu
   rowCount: 1000,
   currentRange: { start: 0, end: 0 },
   overscan: 5,
+  subHeaderOffsets: [],
   ...overrides
 });
+
+/** Offsets for groups of `groupSize` rows: every `groupSize`-th row opens a sub-header. */
+const groupedOffsets = (rowCount: number, groupSize: number): readonly number[] =>
+  Array.from({ length: rowCount }, (_, index) => Math.floor(index / groupSize) + 1);
 
 describe('FEATURE: virtualization row window', () => {
   describe('GIVEN: an unmounted window at the top of the data', () => {
@@ -93,6 +98,39 @@ describe('FEATURE: virtualization row window', () => {
         expect(
           computeNatTableRowWindow(context({ scrollOffset: 10_000, rowCount: 20, currentRange: { start: 12, end: 22 } }))
         ).toStrictEqual({ start: 14, end: 20 });
+      });
+    });
+  });
+
+  describe('GIVEN: sub-header rows interleaved on the composite fixed grid', () => {
+    describe('WHEN: the window is computed at scroll offset zero', () => {
+      it('THEN: it counts the leading sub-header slot toward the visible span', () => {
+        // Groups of 10: slot(i) = i + floor(i / 10) + 1. The 200px viewport
+        // covers slots 0..4 — one sub-header plus data rows 0..3.
+        expect(computeNatTableRowWindow(context({ rowCount: 100, subHeaderOffsets: groupedOffsets(100, 10) }))).toStrictEqual({
+          start: 0,
+          end: 9
+        });
+      });
+    });
+
+    describe('WHEN: the user scrolls to a slot occupied by a sub-header row', () => {
+      it('THEN: it anchors the window on that sub-header group-opening data row', () => {
+        // Slot 11 holds the second group's sub-header; its opening data row 10
+        // sits at slot 12, so row 10 is the first visible logical row.
+        expect(
+          computeNatTableRowWindow(context({ scrollOffset: 11 * 40, rowCount: 100, subHeaderOffsets: groupedOffsets(100, 10) }))
+        ).toStrictEqual({ start: 5, end: 19 });
+      });
+    });
+
+    describe('WHEN: the user scrolls deep into grouped data', () => {
+      it('THEN: it maps composite slots back to logical row indexes', () => {
+        // Offset 4000 = slot 100. With groups of 10, data row i occupies slot
+        // i + floor(i / 10) + 1, so the first visible logical row is 90.
+        expect(
+          computeNatTableRowWindow(context({ scrollOffset: 4000, rowCount: 1000, subHeaderOffsets: groupedOffsets(1000, 10) }))
+        ).toStrictEqual({ start: 85, end: 100 });
       });
     });
   });

@@ -10,7 +10,11 @@ import { NatTableVirtualLayoutService } from './table-virtual-layout.service';
 import type { NatTableVirtualRange, NatTableVirtualizationOptions } from '../common/table-virtualization.type';
 import { computeNatTableRowWindow } from '../utils/row-window.util';
 import { resolveNatTableScrollTarget } from '../utils/scroll-target.util';
-import { NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT, createInitialVirtualRange } from '../utils/table-virtualization.util';
+import {
+  NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT,
+  createInitialVirtualRange,
+  opensSubHeaderGroup
+} from '../utils/table-virtualization.util';
 
 /**
  * Drives the mounted row window from the table region's scroll state, using
@@ -66,11 +70,16 @@ export class NatTableVirtualScrollEngine<TData extends RowData = RowData> {
     }
 
     const rowHeight = untracked(options).rowHeight;
+    const subHeaderOffsets = untracked(this.state.subHeaderRowOffsets);
+    // A group-opening row travels with the sub-header row above it: target the
+    // two-slot block so 'start' reveals the sub-header, not just the data row.
+    const opensGroup = opensSubHeaderGroup(subHeaderOffsets, index);
+    const slot = index + (subHeaderOffsets[index] ?? 0) - (opensGroup ? 1 : 0);
     const target = resolveNatTableScrollTarget({
       align,
       scrollTop: region.scrollTop,
-      rowTop: untracked(this.layout.bodyOffset) + index * rowHeight,
-      rowHeight,
+      rowTop: untracked(this.layout.bodyOffset) + slot * rowHeight,
+      rowHeight: (opensGroup ? 2 : 1) * rowHeight,
       stickyOverlayHeight: untracked(this.state.stickyHeader) ? untracked(this.layout.stickyOverlayHeight) : 0,
       viewportHeight: untracked(this.layout.viewportHeight)
     });
@@ -106,8 +115,9 @@ export class NatTableVirtualScrollEngine<TData extends RowData = RowData> {
   private registerRangeUpdateEffect(): void {
     effect(() => {
       // Everything that moves the window besides raw scrolling: the row model,
-      // the measured geometry, and the directive options.
+      // the sub-header slots, the measured geometry, and the directive options.
       this.state.bodyRows();
+      this.state.subHeaderRowOffsets();
       this.layout.viewportHeight();
       this.layout.bodyOffset();
       this.options?.();
@@ -175,7 +185,8 @@ export class NatTableVirtualScrollEngine<TData extends RowData = RowData> {
             rowHeight,
             rowCount,
             currentRange: untracked(this.mountedRange),
-            overscan
+            overscan,
+            subHeaderOffsets: untracked(this.state.subHeaderRowOffsets)
           });
     const current = untracked(this.mountedRange);
 

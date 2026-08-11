@@ -34,6 +34,12 @@ export type NatTableVirtualRangeContext = {
   readonly currentRange: NatTableVirtualRange;
   /** Extra rows mounted beyond each visible edge, a non-negative integer. */
   readonly overscan: number;
+  /**
+   * Running count of sub-header rows rendered at or before each data row, by
+   * page index — empty when the table renders no sub-headers. Places data row
+   * `i` at composite slot `i + subHeaderOffsets[i]` on the fixed row grid.
+   */
+  readonly subHeaderOffsets: readonly number[];
 };
 
 /** Inputs for resolving the scroll offset that brings one fixed-height row into view. */

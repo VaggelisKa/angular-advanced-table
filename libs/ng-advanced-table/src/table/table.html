@@ -158,7 +158,12 @@
             @let visibleCells = row.getVisibleCells();
             @let subHeader = groups.get(row.id);
             @if (subHeader) {
-              <tr [rowIndex]="dataRowIndex - 1" class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
+              <tr
+                [natTablePxHeight]="bodyPlan.rowHeight"
+                [rowIndex]="dataRowIndex - 1"
+                class="sub-header-row"
+                data-testid="nat-table-sub-header-row"
+                ngGridRow>
                 <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
                   <div class="sub-header-content">
                     @if (getSubHeaderAriaText(subHeader); as ariaText) {

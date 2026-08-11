@@ -39,13 +39,31 @@ export const rangeToRowIndexes = (range: NatTableVirtualRange, rowCount: number)
   return Array.from({ length: end - start }, (_, offset) => start + offset);
 };
 
-/** Materializes mounted row indexes as body-local items on the fixed row grid. */
-export const createVirtualItems = (indexes: readonly number[], rowHeight: number): NatTableVirtualItem[] =>
-  indexes.map((index) => ({
-    index,
-    start: index * rowHeight,
-    end: (index + 1) * rowHeight
-  }));
+/** Whether the data row at `index` opens a sub-header group (its sub-header renders just above it). */
+export const opensSubHeaderGroup = (subHeaderOffsets: readonly number[], index: number): boolean =>
+  (subHeaderOffsets[index] ?? 0) > (index > 0 ? (subHeaderOffsets[index - 1] ?? 0) : 0);
+
+/**
+ * Materializes mounted row indexes as body-local items on the composite fixed
+ * row grid. Data row `index` occupies slot `index + subHeaderOffsets[index]`;
+ * when it opens a sub-header group, the item's extent grows one slot upward so
+ * the mounted block (sub-header + data row) starts at the sub-header's top and
+ * the spacer math stays a plain `start`/`end` walk.
+ */
+export const createVirtualItems = (
+  indexes: readonly number[],
+  rowHeight: number,
+  subHeaderOffsets: readonly number[]
+): NatTableVirtualItem[] =>
+  indexes.map((index) => {
+    const slot = index + (subHeaderOffsets[index] ?? 0);
+
+    return {
+      index,
+      start: (slot - (opensSubHeaderGroup(subHeaderOffsets, index) ? 1 : 0)) * rowHeight,
+      end: (slot + 1) * rowHeight
+    };
+  });
 
 /** The window mounted before any layout measurement exists (first paint, SSR). */
 export const createInitialVirtualRange = (rowCount: number): NatTableVirtualRange => ({

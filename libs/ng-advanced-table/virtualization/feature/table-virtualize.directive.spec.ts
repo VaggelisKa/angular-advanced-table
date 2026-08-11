@@ -1119,14 +1119,90 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
   });
 
   describe('GIVEN: virtualization combined with sub-header rows', () => {
-    describe('WHEN: both subHeaderColumn and natTableVirtualize are configured', () => {
-      it('THEN: it warns that the combination is unsupported', async () => {
+    // One hundred rows grouped by status sort into Alert (33), Healthy (34),
+    // and Pending (33), so the composite grid holds 103 fixed-height slots and
+    // rows 0, 33, and 67 open the three sub-header groups.
+    describe('WHEN: the grouped table renders its initial window', () => {
+      it('THEN: it mounts the opening sub-header inside the window without warning', async () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const fixture: ComponentFixture<SubHeaderVirtualTableHost> = TestBed.createComponent(SubHeaderVirtualTableHost);
 
         await fixture.whenStable();
 
-        expect(warn).toHaveBeenCalledWith(expect.stringContaining('does not support sub-header rows'));
+        const table = queryRequired<HTMLTableElement>(fixture, 'table');
+        const renderedRows = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row');
+        const subHeaders = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.sub-header-row');
+        const firstRow = renderedRows[0];
+
+        // Header row + three sub-header grid rows + one hundred data rows.
+        expect(table.getAttribute('aria-rowcount')).toBe('104');
+        // The measured window is rows 0..8; hysteresis keeps the 10-row
+        // bootstrap mount because it already covers the visible span.
+        expect(renderedRows).toHaveLength(10);
+        expect(subHeaders).toHaveLength(1);
+        expect(subHeaders[0].nextElementSibling).toBe(firstRow);
+        expect(subHeaders[0].getAttribute('aria-rowindex')).toBe('2');
+        expect(subHeaders[0].style.height).toBe('40px');
+        expect(firstRow.getAttribute('aria-rowindex')).toBe('3');
+        expect(warn).not.toHaveBeenCalled();
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: the window settles inside a group away from its opening row', () => {
+      it('THEN: it sizes the leading spacer for the unmounted sub-header slots', async () => {
+        const fixture: ComponentFixture<SubHeaderVirtualTableHost> = TestBed.createComponent(SubHeaderVirtualTableHost);
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        // Body-local slot 45 (40px thead offset): Healthy rows 38..52 mount,
+        // and neither group-opening row 33 nor 67 is in the window.
+        await scrollRegion(fixture, region, 1840);
+
+        const renderedRows = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row');
+        const spacerCells = queryAll<HTMLTableCellElement>(fixture, 'tbody tr.virtual-spacer-row td');
+
+        expect(queryAll(fixture, 'tbody tr.sub-header-row')).toHaveLength(0);
+        expect(renderedRows[0].dataset['rowIndex']).toBe('38');
+        // 38 data rows plus 2 sub-header slots above the window: 40 x 40px.
+        expect(renderedRows[0].getAttribute('aria-rowindex')).toBe('42');
+        expect(spacerCells).toHaveLength(2);
+        expect(spacerCells[0].style.height).toBe('1600px');
+        // 103 total slots x 40px = 4120px; the window ends after slot 55.
+        expect(spacerCells[1].style.height).toBe(`${4120 - 55 * 40}px`);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: the window crosses a group boundary', () => {
+      it('THEN: it mounts the sub-header with the group-opening row as one block', async () => {
+        const fixture: ComponentFixture<SubHeaderVirtualTableHost> = TestBed.createComponent(SubHeaderVirtualTableHost);
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        // Body-local slot 40: the window re-anchors at the Healthy opener 33.
+        await scrollRegion(fixture, region, 1640);
+
+        const renderedRows = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row');
+        const subHeaders = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.sub-header-row');
+        const spacerCells = queryAll<HTMLTableCellElement>(fixture, 'tbody tr.virtual-spacer-row td');
+        const openingRow = renderedRows[0];
+
+        expect(openingRow.dataset['rowIndex']).toBe('33');
+        expect(subHeaders).toHaveLength(1);
+        expect(subHeaders[0].nextElementSibling).toBe(openingRow);
+        // Data row 33 is grid row 37 (header + 33 rows + 2 sub-headers + 1);
+        // its sub-header is the grid row above.
+        expect(subHeaders[0].getAttribute('aria-rowindex')).toBe('36');
+        expect(openingRow.getAttribute('aria-rowindex')).toBe('37');
+        // The spacer stops at the sub-header's slot: (33 + 2 - 1) x 40px.
+        expect(spacerCells[0].style.height).toBe('1360px');
 
         fixture.destroy();
       });

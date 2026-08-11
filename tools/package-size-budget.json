@@ -22,7 +22,7 @@
     {
       "name": "ng-advanced-table/virtualization",
       "fesm": "fesm2022/ng-advanced-table-virtualization.mjs",
-      "maxGzipBytes": 10000,
+      "maxGzipBytes": 12000,
       "forbiddenImports": ["ng-advanced-table/components", "ng-advanced-table/render-metrics"]
     },
     {

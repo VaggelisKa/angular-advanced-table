@@ -51,10 +51,17 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
     const rowCount = this.state.bodyRows().length;
     const mountedIndexes = rangeToRowIndexes(this.engine.range(), rowCount);
 
-    return createVirtualItems(includeVirtualIndex(mountedIndexes, this.focus.focusedLogicalIndex(), rowCount), this.rowHeight());
+    return createVirtualItems(
+      includeVirtualIndex(mountedIndexes, this.focus.focusedLogicalIndex(), rowCount),
+      this.rowHeight(),
+      this.state.subHeaderRowOffsets()
+    );
   });
 
-  private readonly totalSize = computed(() => this.state.bodyRows().length * this.rowHeight());
+  /** Every rendered fixed-height row: the data rows plus one row per sub-header group. */
+  private readonly totalSize = computed(
+    () => (this.state.bodyRows().length + (this.state.subHeaderRowOffsets().at(-1) ?? 0)) * this.rowHeight()
+  );
 
   private readonly controller: NatTableVirtualizerController = {
     items: this.virtualItems,
