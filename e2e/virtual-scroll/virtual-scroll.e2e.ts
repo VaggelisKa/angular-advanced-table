@@ -57,7 +57,11 @@ test.describe('FEATURE: Virtual scrolling', () => {
         });
 
         await test.step('THEN: sorting resets the scroll position to the top', async () => {
-          await preview.getByRole('button', { name: 'Sort by Name' }).click();
+          // Sort by Value: its pseudo-random values genuinely reorder the rows.
+          // (Sorting by Name ascending is a no-op reorder here — alphanumeric
+          // sorting keeps "Resource Node N" in numeric order — and a sort that
+          // does not change the row sequence intentionally keeps the scroll.)
+          await preview.getByRole('button', { name: 'Sort by Value' }).click();
 
           await expect(async () => {
             const scrollTop = await region.evaluate((element) => element.scrollTop);
