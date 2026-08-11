@@ -3,13 +3,13 @@ import { expect, test } from '@playwright/test';
 import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 
-const TOTAL_ROWS = 5000;
+const TOTAL_ROWS = 10_000;
 
 test.describe('FEATURE: Virtual scrolling', () => {
   test.describe('GIVEN: the virtual scrolling demo page is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/virtual-scroll');
-      await loadDocsExamplePreview(page, 'virtual-scroll', 'Five thousand rows, one small DOM');
+      await loadDocsExamplePreview(page, 'virtual-scroll', 'Ten thousand rows, eight columns, one small DOM');
     });
 
     test.describe('WHEN: navigating the windowed grid with the keyboard', () => {
@@ -55,7 +55,7 @@ test.describe('FEATURE: Virtual scrolling', () => {
 
             expect(focusedTarget).toStrictEqual({
               rowIndex: String(TOTAL_ROWS + 1),
-              columnId: 'value',
+              columnId: 'total',
               intersectsScrollport: true
             });
           }).toPass();

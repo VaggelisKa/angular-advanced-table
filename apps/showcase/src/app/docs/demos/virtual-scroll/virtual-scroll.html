@@ -1,10 +1,18 @@
 <app-demo-layout>
-  <nat-table-surface [enableSorting]="true" [stickyHeader]="true" class="virtual-scroll-demo-surface">
+  <nat-table-surface
+    [enableColumnResizing]="true"
+    [enablePinning]="true"
+    [enableReordering]="true"
+    [enableSorting]="true"
+    [stickyHeader]="true"
+    [(state)]="tableState"
+    class="virtual-scroll-demo-surface"
+    columnSizingMode="fixed">
     <nat-table
       #virtualScroll="natTableVirtualScroll"
       [columns]="columns"
       [data]="data"
-      [natTableVirtualScroll]="{ rowHeight: 44 }"
+      [natTableVirtualScroll]="{ rowHeight: 48 }"
       accessibleName="Virtual scrolling demo table"
       class="sc-demo-table" />
   </nat-table-surface>
@@ -12,16 +20,17 @@
   <app-demo-section demoAside heading="Watch the window">
     <app-demo-facts [facts]="facts()" live />
 
-    <button class="btn btn-outline" data-testid="virtual-scroll-jump-middle" type="button" (click)="scrollToRow(2500)">
-      Jump to row 2501
+    <button class="btn btn-outline" data-testid="virtual-scroll-jump-middle" type="button" (click)="scrollToRow(5000)">
+      Jump to row 5001
     </button>
     <button class="btn btn-outline" data-testid="virtual-scroll-jump-top" type="button" (click)="scrollToRow(0)">
       Back to the top
     </button>
 
     <p class="demo-note">
-      Five thousand rows scroll in a region that only ever mounts the window above — inspect the tbody to watch rows and spacers swap
-      as you scroll. Sorting stays live and resets the scroll position because the row order changed.
+      Ten thousand rows and eight columns scroll in a region that only ever mounts the window above — inspect the tbody to watch rows
+      and spacers swap as you scroll. Only rows are windowed, so the pinned Customer and Total columns, sorting, resizing, and column
+      reordering all keep working while scrolling both ways.
     </p>
   </app-demo-section>
 </app-demo-layout>

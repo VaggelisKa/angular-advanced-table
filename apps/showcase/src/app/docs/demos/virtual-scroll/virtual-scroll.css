@@ -6,7 +6,13 @@
   --nat-table-max-height: 420px;
 }
 
-/* The virtualization contract: every body row renders at exactly rowHeight. */
+/*
+ * The virtualization contract: every body row renders at exactly rowHeight.
+ * One line of cell text plus the theme's cell padding and row border measures
+ * just under 48px, so `rowHeight: 48` is the smallest value the content fits
+ * into — a smaller one would be silently ignored, since a height on a <tr> is
+ * a minimum rather than a fixed size.
+ */
 .virtual-scroll-demo-surface .sc-demo-table {
   --nat-table-cell-max-lines: 1;
 }

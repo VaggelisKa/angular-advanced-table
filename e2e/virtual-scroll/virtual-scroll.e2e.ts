@@ -2,17 +2,17 @@ import { expect, test } from '@playwright/test';
 
 import { loadDocsExamplePreview } from '../support/docs-example';
 
-const ROW_HEIGHT = 44;
-const TOTAL_ROWS = 5000;
+const ROW_HEIGHT = 48;
+const TOTAL_ROWS = 10_000;
 
 test.describe('FEATURE: Virtual scrolling', () => {
   test.describe('GIVEN: the virtual scrolling demo page is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/virtual-scroll');
-      await loadDocsExamplePreview(page, 'virtual-scroll', 'Five thousand rows, one small DOM');
+      await loadDocsExamplePreview(page, 'virtual-scroll', 'Ten thousand rows, eight columns, one small DOM');
     });
 
-    test.describe('WHEN: the region scrolls through five thousand rows', () => {
+    test.describe('WHEN: the region scrolls through ten thousand rows', () => {
       test('THEN: it keeps a small mounted window whose spacers preserve the scroll geometry', async ({ page }) => {
         const preview = page.getByTestId('docs-example-virtual-scroll-preview-panel');
         const region = preview.getByTestId('nat-table-region');
@@ -52,16 +52,16 @@ test.describe('FEATURE: Virtual scrolling', () => {
           await expect(async () => {
             const scrollTop = await region.evaluate((element) => element.scrollTop);
 
-            expect(scrollTop).toBe(2500 * ROW_HEIGHT);
+            expect(scrollTop).toBe(5000 * ROW_HEIGHT);
           }).toPass();
         });
 
         await test.step('THEN: sorting resets the scroll position to the top', async () => {
-          // Sort by Value: its pseudo-random values genuinely reorder the rows.
-          // (Sorting by Name ascending is a no-op reorder here — alphanumeric
-          // sorting keeps "Resource Node N" in numeric order — and a sort that
-          // does not change the row sequence intentionally keeps the scroll.)
-          await preview.getByRole('button', { name: 'Sort by Value' }).click();
+          // Sort by Total: its values genuinely reorder the rows. (Sorting by a
+          // column whose generated values are already in ascending order is a
+          // no-op reorder, and a sort that does not change the row sequence
+          // intentionally keeps the scroll position.)
+          await preview.getByRole('button', { name: 'Sort by Total' }).click();
 
           await expect(async () => {
             const scrollTop = await region.evaluate((element) => element.scrollTop);

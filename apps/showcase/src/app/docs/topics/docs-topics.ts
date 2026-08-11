@@ -733,16 +733,23 @@ const virtualScrollSnippets = [
     'HTML',
     'html',
     `
-<nat-table-surface [enableSorting]="true" [stickyHeader]="true">
+<nat-table-surface
+  [enableColumnResizing]="true"
+  [enablePinning]="true"
+  [enableReordering]="true"
+  [enableSorting]="true"
+  [stickyHeader]="true"
+  [(state)]="tableState"
+  columnSizingMode="fixed">
   <nat-table
     #virtualScroll="natTableVirtualScroll"
     [columns]="columns"
     [data]="data"
-    [natTableVirtualScroll]="{ rowHeight: 44 }"
+    [natTableVirtualScroll]="{ rowHeight: 48 }"
     accessibleName="Virtual scrolling demo table" />
 </nat-table-surface>
 
-<button type="button" (click)="virtualScroll.scrollToIndex(2500)">Jump to row 2501</button>
+<button type="button" (click)="virtualScroll.scrollToIndex(5000)">Jump to row 5001</button>
 `
   ),
   snippet(
@@ -751,7 +758,7 @@ const virtualScrollSnippets = [
     'typescript',
     `
 import { NatTable } from 'ng-advanced-table';
-import { NatTableSurface } from 'ng-advanced-table/components';
+import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 import { NatTableVirtualScroll } from 'ng-advanced-table/virtual-scroll';
 
 @Component({
@@ -759,13 +766,25 @@ import { NatTableVirtualScroll } from 'ng-advanced-table/virtual-scroll';
   styles: \`
     nat-table {
       --nat-table-max-height: 420px; /* the region must scroll vertically */
+      --nat-table-cell-max-lines: 1; /* keep every row at exactly rowHeight */
     }
   \`
   /* … */
 })
 export class VirtualScrollExample {
-  readonly data = buildRows(5000); // every row renders at exactly 44px
-  readonly columns = columns;
+  readonly data = buildRows(10_000); // every row renders at exactly 48px
+
+  // Sized columns overflow the region, so it scrolls both ways.
+  readonly columns = withNatTableHeaderActions([
+    { accessorKey: 'customer', header: 'Customer', size: 190, meta: { label: 'Customer', rowHeader: true, cellMaxLines: 1 } },
+    /* … */
+    { accessorKey: 'total', header: 'Total', size: 150, meta: { label: 'Total', align: 'end', cellMaxLines: 1 } }
+  ]);
+
+  // Virtualization windows rows only — pinning is unaffected.
+  readonly tableState = signal<Partial<NatTableUserState>>({
+    columnPinning: { left: ['customer'], right: ['total'] }
+  });
 }
 `
   )
@@ -1048,9 +1067,9 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       {
         kind: 'example',
         id: 'virtual-scroll',
-        title: 'Five thousand rows, one small DOM',
+        title: 'Ten thousand rows, eight columns, one small DOM',
         description:
-          'The CDK engine keeps a fixed window of 44px rows mounted while spacer rows preserve native scrolling, sticky headers, and sorting.',
+          'The CDK engine keeps a fixed window of 48px rows mounted while spacer rows preserve native scrolling. Only rows are windowed, so pinned columns, sorting, resizing, and reordering work across the full column set.',
         component: VirtualScroll,
         snippets: virtualScrollSnippets
       }

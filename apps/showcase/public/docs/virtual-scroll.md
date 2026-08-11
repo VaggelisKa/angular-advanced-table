@@ -34,7 +34,7 @@ import { NatTableVirtualScroll } from 'ng-advanced-table/virtual-scroll';
   `,
   template: `
     <nat-table-surface [stickyHeader]="true">
-      <nat-table [columns]="columns" [data]="rows()" [natTableVirtualScroll]="{ rowHeight: 44 }" accessibleName="Event log" />
+      <nat-table [columns]="columns" [data]="rows()" [natTableVirtualScroll]="{ rowHeight: 48 }" accessibleName="Event log" />
     </nat-table-surface>
   `
 })
@@ -60,6 +60,8 @@ The directive hosts a real, invisible `CdkVirtualScrollViewport` inside the tabl
 ## The row-height contract
 
 `rowHeight` is load-bearing: spacer heights and scroll positions are computed from it. The table pins mounted data rows to exactly this height, so keep cell content within one line or clip it (for example with `meta.cellMaxLines`). Rows with naturally varying heights are not supported.
+
+Pick a value your content actually fits into, and verify it in the browser. A height on a `<tr>` is a _minimum_, not a fixed size, so a `rowHeight` smaller than one line of text plus the cell padding and row border is silently ignored — rows render taller than declared and the spacer geometry drifts from the real layout. With the stock theme, one line of text plus padding and border measures just under 48px, which is why the example below uses `rowHeight: 48`.
 
 ## Scrolling behavior
 
