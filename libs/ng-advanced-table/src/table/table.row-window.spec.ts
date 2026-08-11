@@ -7,6 +7,7 @@ import { NatTable } from './table';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
 import { NAT_TABLE_ROW_WINDOW } from '../common/row-window.const';
 import type { NatTableRowWindow } from '../common/row-window.type';
+import type { NatTableUserState } from '../common/table-state.type';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
@@ -28,7 +29,7 @@ class TestRowWindowDirective implements NatTableRowWindow {
   selector: 'test-row-window-host',
   imports: [NatTable, TestTableSurface, TestRowWindowDirective],
   template: `
-    <nat-table-surface>
+    <nat-table-surface [state]="state()">
       <nat-table
         [columns]="columns"
         [data]="rows()"
@@ -43,6 +44,18 @@ class RowWindowHost {
   public readonly rows = signal<Row[]>(buildRows(30));
   public readonly columns = columns;
   public readonly emitRowRenderEvents = signal(false);
+  public readonly state = signal<NatTableUserState>({
+    sorting: [],
+    globalFilter: '',
+    columnFilters: [],
+    pagination: { pageIndex: 0, pageSize: 0 },
+    columnVisibility: {},
+    columnOrder: [],
+    columnPinning: { left: ['name'], right: ['throughput'] },
+    columnSizing: {},
+    rowSelection: {}
+  });
+
   public readonly renderedEvents: NatTableRowRenderedEvent[] = [];
 }
 
@@ -92,6 +105,24 @@ describe('FEATURE: NatTable row window', () => {
 
       it('THEN: it reports the full row set through aria-rowcount on the table', () => {
         expect(queryRequired(fixture, 'table').getAttribute('aria-rowcount')).toBe('31');
+      });
+
+      it('THEN: it renders both pin zones around a focusable center cell through the custom provider', () => {
+        const row = dataRows(fixture)[0];
+        const leftPinned = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="name"]');
+        const center = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]');
+        const rightPinned = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="throughput"]');
+
+        center.focus();
+
+        expect(document.activeElement).toBe(center);
+        expect(leftPinned.classList).toContain('is-pinned-left');
+        expect(rightPinned.classList).toContain('is-pinned-right');
+        expect(leftPinned.style.left).toBe('0px');
+        expect(rightPinned.style.right).toBe('0px');
+        expect(getComputedStyle(leftPinned).position).toBe('sticky');
+        expect(getComputedStyle(rightPinned).position).toBe('sticky');
+        expect(row.getAttribute('aria-rowindex')).toBe('2');
       });
     });
 

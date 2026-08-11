@@ -131,6 +131,8 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-row-background`              | Default body row background                                                     |
 | `--nat-table-row-background-hover`        | Hovered row background                                                          |
 | `--nat-table-row-background-focus`        | Focus-within row background                                                     |
+| `--nat-table-row-background-focus-pinned` | Focus-within overlay composited over the pinned cell base                       |
+| `--nat-table-row-background-hover-pinned` | Hover overlay composited over the pinned cell base                              |
 | `--nat-table-pinned-background`           | Pinned cell background                                                          |
 | `--nat-table-pinned-header-background`    | Pinned header cell background (falls back to `--nat-table-pinned-background`)   |
 | `--nat-table-pinned-divider-color`        | Pinned edge divider                                                             |
@@ -304,6 +306,10 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 | `--nat-table-z-index-resize-handle`        | `8`                              |
 | `--nat-table-z-index-resize-guide`         | `9`                              |
 | `--nat-table-z-index-drag-preview`         | `12`                             |
+
+Pinned cells are opaque scroll overlays. An unpinned focused body or header cell always remains below pinned body and header cells; `--nat-table-z-index-focus-cell` is reserved for a focused pinned cell so its inset focus ring stays visible. Keep custom stacking values in the listed order so resize handles, resize guides, and drag previews remain available above the table.
+
+`--nat-table-row-background-focus-pinned` and `--nat-table-row-background-hover-pinned` are composited as overlays over `--nat-table-pinned-background`, not replacements for it. This keeps a translucent state color from revealing scrollable cell content underneath a pinned cell.
 
 ## Core-Only Tables
 

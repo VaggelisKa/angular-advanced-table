@@ -328,7 +328,23 @@ tbody .data-row:last-child .data-cell {
 
 .data-row:has(:focus-visible) .is-pinned-left,
 .data-row:has(:focus-visible) .is-pinned-right {
-  background: var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%)));
+  background-color: var(
+    --nat-table-pinned-background,
+    var(
+      --sys-nat-table-pinned-background,
+      var(
+        --nat-table-header-background,
+        var(
+          --sys-nat-table-header-background,
+          var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
+        )
+      )
+    )
+  );
+  background-image: linear-gradient(
+    var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%))),
+    var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%)))
+  );
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -338,7 +354,23 @@ tbody .data-row:last-child .data-cell {
 
   .data-row:hover .is-pinned-left,
   .data-row:hover .is-pinned-right {
-    background: var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%)));
+    background-color: var(
+      --nat-table-pinned-background,
+      var(
+        --sys-nat-table-pinned-background,
+        var(
+          --nat-table-header-background,
+          var(
+            --sys-nat-table-header-background,
+            var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
+          )
+        )
+      )
+    );
+    background-image: linear-gradient(
+      var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%))),
+      var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%)))
+    );
   }
 }
 
@@ -357,9 +389,10 @@ tbody .data-row:last-child .data-cell {
 }
 
 /*
- * Table stacking order, low to high:
- * sticky header, pinned body cells, pinned headers, focused cells, resize
- * handle, resize guide, then drag preview.
+ * Table stacking invariant, low to high: sticky header, pinned body cells,
+ * pinned headers, focused pinned cells, resize handle, resize guide, then drag
+ * preview. Unpinned focused cells stay in their native body/header layer so
+ * their content and inset ring can never paint above either pinned zone.
  */
 .has-sticky-header .is-pinned-left,
 .has-sticky-header .is-pinned-right,
@@ -587,10 +620,13 @@ tbody .data-row:last-child .data-cell {
 }
 
 [ngGridCell]:focus-visible {
-  z-index: var(--nat-table-z-index-focus-cell, var(--sys-nat-table-z-index-focus-cell, 7));
   outline: none;
   box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, var(--sys-nat-table-focus-ring-width, 2px))
     var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, Highlight));
+}
+
+[ngGridCell]:focus-visible:is(.is-pinned-left, .is-pinned-right) {
+  z-index: var(--nat-table-z-index-focus-cell, var(--sys-nat-table-z-index-focus-cell, 7));
 }
 
 /*
