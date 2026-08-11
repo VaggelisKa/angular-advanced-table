@@ -3,7 +3,13 @@ import type { Row, RowData } from '@tanstack/angular-table';
 import type { NatTableBodyRenderPlan, NatTableRowRenderStrategy, NatTableVirtualItem } from '../common/row-render-strategy.type';
 
 const isUsableVirtualItem = (item: NatTableVirtualItem, rowCount: number): boolean =>
-  Number.isInteger(item.index) && item.index >= 0 && item.index < rowCount && Number.isFinite(item.start) && Number.isFinite(item.end);
+  Number.isInteger(item.index) &&
+  item.index >= 0 &&
+  item.index < rowCount &&
+  Number.isFinite(item.start) &&
+  item.start >= 0 &&
+  Number.isFinite(item.end) &&
+  item.end > item.start;
 
 const renderAllRows = <TData extends RowData>(rows: readonly Row<TData>[]): NatTableBodyRenderPlan<TData> => ({
   rows: rows.map((row, logicalIndex) => ({ row, logicalIndex, beforeSize: 0 })),
@@ -27,12 +33,20 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
     return renderAllRows(rows);
   }
 
+  const rowHeight = strategy.rowHeight();
+  const totalSize = strategy.totalSize();
+
+  if (!Number.isFinite(rowHeight) || rowHeight <= 0 || !Number.isFinite(totalSize) || totalSize < rows.length * rowHeight) {
+    return renderAllRows(rows);
+  }
+
   const items = strategy
     .items()
     .filter((item) => isUsableVirtualItem(item, rows.length))
-    .sort((left, right) => left.index - right.index);
+    .sort((left, right) => left.index - right.index)
+    .filter((item, index, sortedItems) => index === 0 || item.index !== sortedItems[index - 1]?.index);
 
-  if (rows.length > 0 && items.length === 0) {
+  if ((rows.length > 0 && items.length === 0) || items.some((item) => item.end > totalSize)) {
     return renderAllRows(rows);
   }
 
@@ -51,9 +65,9 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
 
   return {
     rows: renderedRows,
-    afterSize: Math.max(0, strategy.totalSize() - previousEnd),
+    afterSize: Math.max(0, totalSize - previousEnd),
     renderKey: items.map((item) => `${item.index}:${item.start}:${item.end}`).join('|'),
-    rowHeight: strategy.rowHeight(),
+    rowHeight,
     virtualized: true
   };
 };

@@ -57,7 +57,7 @@ Virtualization is a body-row rendering strategy, not table state. It composes wi
 - selection remains keyed by stable row id; and
 - row activation and render metrics use the real mounted TanStack rows.
 
-Virtualized layout uses the existing authoritative `<colgroup>` path so column widths do not shift when a different row window mounts. Provide stable string row ids, or use `getRowId` when identity lives somewhere other than `row.id`.
+Virtualized layout uses the existing authoritative `<colgroup>` path so column widths do not shift when a different row window mounts. Provide stable, unique string row ids, or use `getRowId` when identity lives somewhere other than `row.id`. IDs may contain any string character; identity comparison does not depend on a reserved separator.
 
 ## Sub-Header Group Rows
 
@@ -73,13 +73,15 @@ Virtualization consumes the final row model. With automatic pagination it virtua
 
 In manual mode the consuming app still owns fetching, sorting, filtering, and paging. The directive virtualizes only the rows supplied to the current table instance.
 
-Sorting, filtering, page changes, and replacement of the supplied data reset the vertical window to the first logical row. When keyboard focus is inside a row that survives the change, the window instead follows that stable row id and restores the same column; if the row disappears, focus returns to that column's header.
+Sorting, filtering, page changes, and replacement of the supplied data reset the vertical window to the first logical row when focus is outside the body. Replacing data with the same stable ID sequence—for example, a polling refresh—keeps an unfocused reader at the current window. When keyboard focus is inside a row that survives a change, the window follows that stable row ID and restores the same column; if the row disappears, focus moves to the first surviving row in that column. If loading, empty, or error replaces the data rows, focus moves to the mounted state cell and returns to the first data row when the body recovers. Core's live region continues to announce those state changes without moving focus when focus was outside the body.
 
 ## Accessibility And Keyboard
 
 The grid exposes the complete logical `aria-rowcount` and absolute `aria-rowindex` values even though most body rows are absent from the DOM. Spacer rows are hidden from Angular Aria, focus order, render metrics, and the accessibility tree.
 
-Arrow navigation crossing a mounted-window boundary scrolls and mounts the next logical row before restoring the same column. Page Up and Page Down move by the visible row count. Control/Command + End mounts and focuses the final logical cell, and Control/Command + Home mounts and focuses the first. The last focused row remains mounted during pointer scrolling — and while focus visits other cells inside the table — so browser focus and the grid's roving-tabstop memory are not discarded. Replacing the data with the same row IDs (for example on a polling refresh) keeps the scroll position and mounted window in place.
+Arrow navigation crossing a mounted-window boundary scrolls and mounts the next logical row before restoring the same column. Page Up and Page Down move by the body slots visible below the current caption/header overlay, counting sub-header rows when a group boundary crosses the page. Control/Command + End mounts and focuses the final logical cell, while Control/Command + Home focuses the first grid cell in the always-mounted header row. The last focused row remains mounted during pointer scrolling—and while focus visits other cells inside the table—so browser focus and the grid's roving-tabstop memory are not discarded.
+
+`NatTableRowRenderStrategy` and `NatTableRowRenderStrategyRegistry` are the low-level geometry SPI that keeps core independent of a windowing engine. Core sorts and normalizes the supplied items, discards invalid or duplicate logical indices, hides spacer rows, exposes logical ARIA positions, and falls back to the full-row renderer when global metrics are invalid. A custom adapter still owns range retention, cross-window keyboard movement, focus recovery across row-model and state changes, measurement, observers/listeners and cleanup, SSR-safe initialization, and misuse diagnostics. Those safeguards are included by `NatTableVirtualize`; registering geometry alone does not provide them.
 
 Virtualized grids still require keyboard-only and screen-reader testing. The library tests automated ARIA and Axe behavior, while applications should verify their custom cells with the assistive technologies they support.
 

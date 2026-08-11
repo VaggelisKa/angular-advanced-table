@@ -129,26 +129,30 @@ test.describe('FEATURE: Row virtualization accessibility', () => {
     });
 
     test.describe('WHEN: Control or Command Home is pressed from a mid-list body cell', () => {
-      test('THEN: it mounts and focuses the first logical row instead of the first mounted row', async ({ page }) => {
+      test('THEN: it focuses the first grid cell in the always-mounted header row', async ({ page }) => {
         const demo = page.getByTestId('virtualization-demo');
         const tableHost = demo.getByTestId('virtualization-table');
         const table = tableHost.getByRole('grid', { name: 'Ten thousand virtualized orders' });
         const region = tableHost.getByTestId('nat-table-region');
-        const target = table.locator('tbody tr[data-row-index="0"] [data-column-id="customer"]');
+        const target = tableHost.getByTestId('nat-table-header-customer');
+        const source = table.locator('tbody tr[data-row-index="5000"] [data-column-id="region"]');
 
         await test.step('THEN: a mid-list window leaves the first logical row unmounted', async () => {
           await scrollToRow(region, 5000);
 
-          await expect(table.locator('tbody tr.data-row').first()).toHaveAttribute('aria-rowindex', /49\d\d/);
+          await expect
+            .poll(async () => table.locator('tbody tr.data-row').evaluateAll((rows) => rows.at(0)?.getAttribute('aria-rowindex')))
+            .toMatch(/49\d\d/);
+          await expect(source).toHaveCount(1);
           await expect(table.locator('tbody tr[data-row-index="0"]')).toHaveCount(0);
         });
 
-        await test.step('THEN: grid-home focus lands on logical row one, mounted and fully visible', async () => {
-          await tableHost.getByTestId('nat-table-header-customer').focus();
+        await test.step('THEN: grid-home focus lands on the first header cell', async () => {
+          await source.focus();
           await page.keyboard.press('ControlOrMeta+Home');
 
           await expect(target).toBeFocused();
-          await expect.poll(async () => isFullyContained(region, target)).toBe(true);
+          await expect.poll(async () => region.evaluate((element) => element.scrollTop)).toBe(0);
         });
       });
     });

@@ -12,14 +12,28 @@ import type { Row, RowData } from '@tanstack/angular-table';
  * engine out of the bundle for tables that do not virtualize.
  */
 
-/** One mounted row's index and its vertical extent, in CSS pixels. */
+/**
+ * One mounted row's logical index and body-local vertical extent, in CSS pixels.
+ *
+ * The index must be a unique in-range integer and the extent must be finite,
+ * non-negative, and increasing. Core discards invalid and duplicate items so
+ * malformed custom ranges cannot render duplicate rows or corrupt spacers.
+ */
 export type NatTableVirtualItem = {
   readonly index: number;
   readonly start: number;
   readonly end: number;
 };
 
-/** Strategy registered by an opt-in body-row renderer. */
+/**
+ * Low-level geometry strategy registered by an opt-in body-row renderer.
+ *
+ * This contract does not infer engine-specific range retention, cross-window
+ * keyboard movement, focus recovery, measurement, lifecycle cleanup, or
+ * diagnostics. Custom adapters own those behaviors. `totalSize` must cover at
+ * least one `rowHeight` slot per logical row; invalid or undersized global
+ * metrics make core fall back to the full-row renderer.
+ */
 export type NatTableRowRenderStrategy = {
   readonly items: Signal<readonly NatTableVirtualItem[]>;
   readonly totalSize: Signal<number>;

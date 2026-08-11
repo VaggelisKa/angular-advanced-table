@@ -20,9 +20,10 @@ type PageNavigationContext = {
   readonly currentColumnId: string;
   readonly rowCount: number;
   readonly rowsPerPage: number;
+  readonly subHeaderOffsets: readonly number[];
 };
 
-type ArrowNavigationContext = Omit<PageNavigationContext, 'rowsPerPage'> & {
+type ArrowNavigationContext = Omit<PageNavigationContext, 'rowsPerPage' | 'subHeaderOffsets'> & {
   readonly mountedRowIndexes: ReadonlySet<number>;
 };
 
@@ -36,24 +37,47 @@ const resolveGridEnd = (
   return isGridEnd && rowCount > 0 && lastColumnId ? { rowIndex: rowCount - 1, columnId: lastColumnId, align: 'end' } : null;
 };
 
-const resolveGridHome = (
-  event: KeyboardEvent,
-  rowCount: number,
-  firstColumnId: string | undefined
-): NatTableVirtualNavigationRequest | null => {
+const resolveGridHome = (event: KeyboardEvent, firstColumnId: string | undefined): NatTableVirtualNavigationRequest | null => {
   const isGridHome = (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key === 'Home';
 
-  return isGridHome && rowCount > 0 && firstColumnId ? { rowIndex: 0, columnId: firstColumnId, align: 'start' } : null;
+  return isGridHome && firstColumnId ? { rowIndex: null, columnId: firstColumnId, align: 'start' } : null;
+};
+
+const resolvePageRowIndex = (context: {
+  readonly currentRowIndex: number;
+  readonly delta: -1 | 1;
+  readonly rowsPerPage: number;
+  readonly rowCount: number;
+  readonly subHeaderOffsets: readonly number[];
+}): number => {
+  const { currentRowIndex, delta, rowsPerPage, rowCount, subHeaderOffsets } = context;
+  const currentSlot = currentRowIndex + (subHeaderOffsets[currentRowIndex] ?? 0);
+  const targetSlot = currentSlot + delta * rowsPerPage;
+  let low = 0;
+  let high = rowCount;
+
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    const middleSlot = middle + (subHeaderOffsets[middle] ?? 0);
+
+    if (middleSlot < targetSlot) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+
+  return clampRowIndex(low, rowCount);
 };
 
 const resolvePage = (context: PageNavigationContext): NatTableVirtualNavigationRequest | null => {
-  const { key, currentRowIndex, currentColumnId, rowCount, rowsPerPage } = context;
+  const { key, currentRowIndex, currentColumnId, rowCount, rowsPerPage, subHeaderOffsets } = context;
   const delta = PAGE_DELTAS[key];
 
   return delta === undefined
     ? null
     : {
-        rowIndex: clampRowIndex(currentRowIndex + delta * rowsPerPage, rowCount),
+        rowIndex: resolvePageRowIndex({ currentRowIndex, delta, rowsPerPage, rowCount, subHeaderOffsets }),
         columnId: currentColumnId,
         align: 'start'
       };
@@ -78,9 +102,20 @@ export const resolveNatTableVirtualNavigation = (config: {
   readonly mountedRowIndexes: ReadonlySet<number>;
   readonly rowCount: number;
   readonly rowsPerPage: number;
+  readonly subHeaderOffsets?: readonly number[];
 }): NatTableVirtualNavigationRequest | null => {
-  const { event, currentRowIndex, currentColumnId, firstColumnId, lastColumnId, mountedRowIndexes, rowCount, rowsPerPage } = config;
-  const gridEdge = resolveGridEnd(event, rowCount, lastColumnId) ?? resolveGridHome(event, rowCount, firstColumnId);
+  const {
+    event,
+    currentRowIndex,
+    currentColumnId,
+    firstColumnId,
+    lastColumnId,
+    mountedRowIndexes,
+    rowCount,
+    rowsPerPage,
+    subHeaderOffsets = []
+  } = config;
+  const gridEdge = resolveGridHome(event, firstColumnId) ?? resolveGridEnd(event, rowCount, lastColumnId);
 
   if (gridEdge) {
     return gridEdge;
@@ -90,7 +125,7 @@ export const resolveNatTableVirtualNavigation = (config: {
     return null;
   }
 
-  const page = resolvePage({ key: event.key, currentRowIndex, currentColumnId, rowCount, rowsPerPage });
+  const page = resolvePage({ key: event.key, currentRowIndex, currentColumnId, rowCount, rowsPerPage, subHeaderOffsets });
 
   if (page) {
     return page;

@@ -5,6 +5,7 @@ import type { Column, HeaderGroup, Row, RowData } from '@tanstack/angular-table'
 
 import type { NatTableSubHeaderGroup } from './sub-header.type';
 import type { NatTableUserState } from './table-state.type';
+import type { NatTableBodyState } from './table-status.type';
 
 /**
  * The slice of table state a body-row rendering strategy needs to size, mount,
@@ -18,6 +19,8 @@ import type { NatTableUserState } from './table-state.type';
 export type NatTableRowWindowHost<TData extends RowData = RowData> = {
   /** Rows in the final sorted/filtered/paginated model — the complete logical set. */
   readonly bodyRows: Signal<readonly Row<TData>[]>;
+  /** Currently rendered body branch, used to recover focus across state-row transitions. */
+  readonly bodyState: Signal<NatTableBodyState>;
   /** The consumer-supplied data array, used to detect wholesale replacement. */
   readonly data: Signal<readonly TData[]>;
   /** Header rows, used to offset absolute ARIA row positions. */

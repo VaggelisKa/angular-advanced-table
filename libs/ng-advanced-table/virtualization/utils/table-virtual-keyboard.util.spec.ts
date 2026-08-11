@@ -2,6 +2,14 @@ import { resolveNatTableVirtualNavigation } from './table-virtual-keyboard.util'
 
 const event = (key: string, init: KeyboardEventInit = {}): KeyboardEvent => new KeyboardEvent('keydown', { key, ...init });
 
+const subHeaderOffset = (index: number): number => {
+  if (index < 33) {
+    return 1;
+  }
+
+  return index < 67 ? 2 : 3;
+};
+
 describe('FEATURE: virtual grid keyboard navigation', () => {
   describe('GIVEN: focus is on the edge of the mounted row window', () => {
     describe('WHEN: Arrow Down targets an unmounted logical row', () => {
@@ -57,6 +65,24 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
       });
     });
 
+    describe('WHEN: Page Up crosses a sub-header group boundary', () => {
+      it('THEN: it counts the sub-header as one visual row in the page', () => {
+        const request = resolveNatTableVirtualNavigation({
+          event: event('PageUp'),
+          currentRowIndex: 34,
+          currentColumnId: 'region',
+          firstColumnId: 'name',
+          lastColumnId: 'latency',
+          mountedRowIndexes: new Set([30, 31, 32, 33, 34, 35]),
+          rowCount: 100,
+          rowsPerPage: 4,
+          subHeaderOffsets: Array.from({ length: 100 }, (_, index) => subHeaderOffset(index))
+        });
+
+        expect(request).toStrictEqual({ rowIndex: 31, columnId: 'region', align: 'start' });
+      });
+    });
+
     describe('WHEN: Control End is pressed from a header cell', () => {
       it('THEN: it targets the last logical row and final visible column', () => {
         const request = resolveNatTableVirtualNavigation({
@@ -75,7 +101,7 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
     });
 
     describe('WHEN: Control Home is pressed from a mid-list body cell', () => {
-      it('THEN: it targets the first logical row and first visible column', () => {
+      it('THEN: it targets the first visible column in the header row', () => {
         const request = resolveNatTableVirtualNavigation({
           event: event('Home', { ctrlKey: true }),
           currentRowIndex: 48,
@@ -87,12 +113,12 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
           rowsPerPage: 5
         });
 
-        expect(request).toStrictEqual({ rowIndex: 0, columnId: 'name', align: 'start' });
+        expect(request).toStrictEqual({ rowIndex: null, columnId: 'name', align: 'start' });
       });
     });
 
     describe('WHEN: Command Home is pressed with an empty row model', () => {
-      it('THEN: it leaves the event to Angular Aria', () => {
+      it('THEN: it still targets the always-mounted first header cell', () => {
         const request = resolveNatTableVirtualNavigation({
           event: event('Home', { metaKey: true }),
           currentRowIndex: null,
@@ -104,7 +130,7 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
           rowsPerPage: 5
         });
 
-        expect(request).toBeNull();
+        expect(request).toStrictEqual({ rowIndex: null, columnId: 'name', align: 'start' });
       });
     });
   });

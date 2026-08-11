@@ -104,20 +104,19 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
   );
 
   /**
-   * Identity of the visible row sequence. The O(n) join re-runs only when the
-   * row-model array itself is rebuilt: TanStack memoizes it, so state changes
-   * that cannot reorder rows keep the previous array and skip this entirely.
+   * Identity of the visible row sequence. TanStack memoizes the row-model
+   * array, so the O(n) copy runs only when that model is rebuilt. Structural
+   * equality preserves the previous reference for identical IDs without
+   * assuming any delimiter is absent from consumer-defined string IDs.
    */
-  private readonly rowIdSequence = computed(() =>
-    this.state
-      .bodyRows()
-      .map((row) => row.id)
-      .join('\u0000')
-  );
+  private readonly rowIdSequence = computed<readonly string[]>(() => this.state.bodyRows().map((row) => row.id), {
+    equal: (previous, current) => previous.length === current.length && previous.every((rowId, index) => rowId === current[index])
+  });
 
   private registerRowModelResetEffect(): void {
     let previous: {
-      readonly rowIdSequence: string;
+      readonly bodyState: ReturnType<NatTableRowWindowHost<TData>['bodyState']>;
+      readonly rowIdSequence: readonly string[];
       readonly rowModelState: NatTableVirtualRowModelState;
     } | null = null;
 
@@ -128,6 +127,7 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
       // the top on each poll would make virtualized live data unusable.
       this.state.data();
 
+      const bodyState = this.state.bodyState();
       const rowIdSequence = this.rowIdSequence();
       const rowModelState = this.rowModelState();
 
@@ -136,18 +136,22 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
 
       // Reference comparison suffices for rowModelState: the computed's custom
       // equality keeps the previous object whenever the slices are value-equal.
-      const shouldReset = previous !== null && (previous.rowIdSequence !== rowIdSequence || previous.rowModelState !== rowModelState);
+      const shouldReset =
+        previous !== null &&
+        (previous.bodyState !== bodyState || previous.rowIdSequence !== rowIdSequence || previous.rowModelState !== rowModelState);
 
-      previous = { rowIdSequence, rowModelState };
+      previous = { bodyState, rowIdSequence, rowModelState };
 
       untracked(() => {
+        const focusTargetIndex = shouldReset ? this.focus.prepareRowModelReset() : null;
+
         this.controller.measure();
 
         if (shouldReset) {
-          const focusRestored = this.focus.resetForRowModelChange();
-
-          if (!focusRestored) {
+          if (focusTargetIndex === null) {
             this.controller.scrollToOffset(0);
+          } else {
+            this.controller.scrollToIndex(focusTargetIndex, { align: 'auto' });
           }
         }
       });
