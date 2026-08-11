@@ -26,8 +26,8 @@ const VIRTUAL_ROWS = generateMockOrderRows(10_000);
     <div class="card" data-testid="virtualization-demo">
       <h2 class="card-title">10,000 composable rows</h2>
       <p class="description virtualization-summary">
-        Only the visible row window is mounted. Sorting, pinning, resizing, reordering, sticky headers, and grid keyboard navigation
-        still use the same table controller.
+        Only the visible row window is mounted. Sorting, pinning, resizing, reordering, sticky headers, sub-header group rows, and grid
+        keyboard navigation still use the same table controller.
       </p>
 
       <nat-table-surface
@@ -43,7 +43,8 @@ const VIRTUAL_ROWS = generateMockOrderRows(10_000);
           [data]="rows"
           [natTableVirtualize]="{ rowHeight: 44 }"
           accessibleName="Ten thousand virtualized orders"
-          data-testid="virtualization-table" />
+          data-testid="virtualization-table"
+          subHeaderColumn="region" />
       </nat-table-surface>
     </div>
   `

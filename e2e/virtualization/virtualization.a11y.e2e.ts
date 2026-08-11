@@ -25,6 +25,11 @@ const scrollToRow = async (region: Locator, rowIndex: number): Promise<void> => 
 const ariaRowIndexes = async (rows: Locator): Promise<number[]> =>
   rows.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('aria-rowindex'))));
 
+// The demo groups its ten thousand rows by region: four alphabetical groups of
+// exactly 2,500 rows, so the sub-header rows above logical row `i` number
+// `floor(i / 2500) + 1` and shift the absolute ARIA position accordingly.
+const REGION_GROUP_SIZE = 2500;
+
 const expectAbsoluteRowMetadata = async (rows: Locator): Promise<void> => {
   const metadata = await rows.evaluateAll((elements) =>
     elements.map((element) => ({
@@ -35,7 +40,11 @@ const expectAbsoluteRowMetadata = async (rows: Locator): Promise<void> => {
   const indexes = metadata.map(({ ariaRowIndex }) => ariaRowIndex);
 
   expect(metadata.length).toBeGreaterThan(0);
-  expect(metadata.every(({ ariaRowIndex, logicalIndex }) => ariaRowIndex === logicalIndex + 2)).toBe(true);
+  expect(
+    metadata.every(
+      ({ ariaRowIndex, logicalIndex }) => ariaRowIndex === logicalIndex + 2 + Math.floor(logicalIndex / REGION_GROUP_SIZE) + 1
+    )
+  ).toBe(true);
   expect(indexes.every((index, position) => position === 0 || index > indexes[position - 1])).toBe(true);
 };
 
@@ -67,9 +76,11 @@ test.describe('FEATURE: Row virtualization accessibility', () => {
         const spacers = table.getByTestId('nat-table-virtual-spacer');
 
         await test.step('THEN: the top window exposes total and absolute row metadata and passes axe', async () => {
-          await expect(table).toHaveAttribute('aria-rowcount', '10001');
+          // Header row + four region sub-header rows + ten thousand data rows.
+          await expect(table).toHaveAttribute('aria-rowcount', '10005');
           await expect(table.locator('thead tr[aria-rowindex="1"]')).toHaveCount(1);
-          await expect(rows.and(table.locator('[aria-rowindex="2"]'))).toHaveCount(1);
+          await expect(table.getByTestId('nat-table-sub-header-row').and(table.locator('[aria-rowindex="2"]'))).toHaveCount(1);
+          await expect(rows.and(table.locator('[aria-rowindex="3"]'))).toHaveCount(1);
           await expect(spacers).toHaveAttribute('aria-hidden', 'true');
           await expectAbsoluteRowMetadata(rows);
           await expectNoAxeViolations(page, PREVIEW_SELECTOR);
@@ -83,10 +94,10 @@ test.describe('FEATURE: Row virtualization accessibility', () => {
           await expectNoAxeViolations(page, PREVIEW_SELECTOR);
         });
 
-        await test.step('THEN: the end window exposes row ten thousand as grid row ten thousand and one and passes axe', async () => {
+        await test.step('THEN: the end window exposes row ten thousand as the final grid row and passes axe', async () => {
           await scrollTo(region, 'end');
 
-          await expect(rows.and(table.locator('[aria-rowindex="10001"]'))).toHaveCount(1);
+          await expect(rows.and(table.locator('[aria-rowindex="10005"]'))).toHaveCount(1);
           await expectAbsoluteRowMetadata(rows);
           await expectNoAxeViolations(page, PREVIEW_SELECTOR);
         });

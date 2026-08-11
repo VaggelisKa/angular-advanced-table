@@ -38,6 +38,9 @@ const settleAnimationFrames = async (region: Locator): Promise<void> => {
 const ariaRowIndexes = async (rows: Locator): Promise<number[]> =>
   rows.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('aria-rowindex'))));
 
+const dataRowIndexes = async (rows: Locator): Promise<number[]> =>
+  rows.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-row-index'))));
+
 const renderedWidth = async (locator: Locator): Promise<number> =>
   locator.evaluate((element) => element.getBoundingClientRect().width);
 
@@ -61,8 +64,10 @@ test.describe('FEATURE: Row virtualization', () => {
         let retainedRowIndex = 0;
 
         await test.step('THEN: the initial window mounts only the rows near the start', async () => {
-          await expect(table).toHaveAttribute('aria-rowcount', '10001');
-          await expect(rows.and(table.locator('[aria-rowindex="2"]'))).toHaveCount(1);
+          // Header row + four region sub-header rows + ten thousand data rows.
+          await expect(table).toHaveAttribute('aria-rowcount', '10005');
+          await expect(table.getByTestId('nat-table-sub-header-row')).toHaveCount(1);
+          await expect(rows.and(table.locator('[aria-rowindex="3"]'))).toHaveCount(1);
           await expect.poll(async () => rows.count()).toBeGreaterThan(0);
           await expect.poll(async () => rows.count()).toBeLessThan(40);
           await expect(spacers).toHaveCount(1);
@@ -111,7 +116,7 @@ test.describe('FEATURE: Row virtualization', () => {
           await expect.poll(async () => rows.count()).toBeLessThan(40);
           await expect(spacers).toHaveCount(2);
 
-          retainedRowIndex = Math.min(...(await ariaRowIndexes(rows))) - 2;
+          retainedRowIndex = Math.min(...(await dataRowIndexes(rows)));
           const retainedCell = table.locator(`tbody tr[data-row-index="${retainedRowIndex}"] [data-column-id="region"]`);
 
           await retainedCell.focus();
@@ -121,7 +126,7 @@ test.describe('FEATURE: Row virtualization', () => {
         await test.step('THEN: the end position mounts the final row while retaining the focused middle row', async () => {
           await scrollTo(region, 'end');
 
-          await expect(rows.and(table.locator('[aria-rowindex="10001"]'))).toHaveCount(1);
+          await expect(rows.and(table.locator('[aria-rowindex="10005"]'))).toHaveCount(1);
           await expect(table.locator(`tbody tr[data-row-index="${retainedRowIndex}"] [data-column-id="region"]`)).toBeFocused();
           await expect.poll(async () => rows.count()).toBeLessThan(40);
           await expect(spacers).toHaveCount(2);
@@ -137,10 +142,33 @@ test.describe('FEATURE: Row virtualization', () => {
 
           await expect(customerHeader).toHaveAttribute('aria-sort', 'ascending');
           await expect.poll(async () => region.evaluate((element) => element.scrollTop)).toBe(0);
-          await expect(rows.and(table.locator('[aria-rowindex="2"]'))).toHaveCount(1);
+          await expect(rows.and(table.locator('[aria-rowindex="3"]'))).toHaveCount(1);
           await expect.poll(async () => rows.count()).toBeLessThan(40);
           await expect(spacers).toHaveCount(1);
         });
+      });
+    });
+
+    test.describe('WHEN: the region scrolls horizontally', () => {
+      test('THEN: it keeps the sub-header label pinned to the visible left edge', async ({ page }) => {
+        const demo = page.getByTestId('virtualization-demo');
+        const tableHost = demo.getByTestId('virtualization-table');
+        const region = tableHost.getByTestId('nat-table-region');
+        const label = tableHost.getByTestId('nat-table-sub-header-row').locator('.sub-header-content').first();
+
+        await expect(label).toBeVisible();
+
+        const initialLeft = (await label.boundingBox())?.x ?? Number.NaN;
+
+        await region.evaluate((element) => {
+          element.scrollLeft = element.scrollWidth - element.clientWidth;
+          element.dispatchEvent(new Event('scroll'));
+        });
+
+        await expect.poll(async () => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(200);
+        // The sticky state-row pattern clamps the label to the region's left
+        // edge, and the label carries its own padding, so it must not move.
+        await expect.poll(async () => Math.abs(((await label.boundingBox())?.x ?? Number.NaN) - initialLeft)).toBeLessThanOrEqual(2);
       });
     });
 

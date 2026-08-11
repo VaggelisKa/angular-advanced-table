@@ -35,7 +35,8 @@ describe('FEATURE: virtualized table server rendering', () => {
         expect(firstIndexes.length).toBeGreaterThan(0);
         expect(firstIndexes.length).toBeLessThan(40);
         expect(firstIndexes).toStrictEqual(renderedRowIndexes(secondHtml));
-        expect(firstHtml).toContain('aria-rowcount="10001"');
+        // Header row + four region sub-header rows + ten thousand data rows.
+        expect(firstHtml).toContain('aria-rowcount="10005"');
         expect(firstHtml).toContain('data-testid="nat-table-virtual-spacer"');
         expect(firstHtml).toContain('ngh=');
       });

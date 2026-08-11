@@ -139,7 +139,8 @@ const virtualizationSnippets = [
     [columns]="columns"
     [data]="rows"
     [natTableVirtualize]="{ rowHeight: 44 }"
-    accessibleName="Ten thousand virtualized orders" />
+    accessibleName="Ten thousand virtualized orders"
+    subHeaderColumn="region" />
 </nat-table-surface>
 `
   ),
@@ -992,6 +993,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Basic wiring', path: '#basic-wiring' },
       { label: 'Fixed row height', path: '#fixed-row-height-contract' },
       { label: 'Composition', path: '#composition' },
+      { label: 'Sub-header group rows', path: '#sub-header-group-rows' },
       { label: 'Accessibility', path: '#accessibility-and-keyboard' },
       { label: 'Limitations', path: '#limitations' }
     ],
@@ -1001,13 +1003,15 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         kind: 'example',
         id: 'virtualization',
         title: 'Ten thousand composable rows',
-        description: 'A fixed-height row window keeps the native table, sticky and pinned columns, and shared controller behavior.',
+        description:
+          'A fixed-height row window keeps the native table, sticky and pinned columns, sub-header group rows, and shared controller behavior.',
         component: Virtualization,
         snippets: virtualizationSnippets
       }
     ],
     related: [
       { label: 'Pagination', path: '/docs/pagination' },
+      { label: 'Sub-header rows', path: '/docs/sub-header-rows' },
       { label: 'Column layout', path: '/docs/column-layout' },
       { label: 'Accessibility', path: '/docs/accessibility' }
     ]

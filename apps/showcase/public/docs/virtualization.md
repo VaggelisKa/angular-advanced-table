@@ -35,11 +35,11 @@ import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
 }
 ```
 
-The viewport height and row-window size are separate concerns. `--nat-table-height` or `--nat-table-max-height` bounds the existing table region. The options object is typed as `NatTableVirtualizationOptions`: `rowHeight` describes the fixed body-row height, while the optional `overscan` (default `5`) is the number of extra rows mounted beyond each visible edge — the window only remounts once fewer than half of those rows remain on the side being scrolled toward, so scrolling re-renders in batches instead of on every frame.
+The viewport height and row-window size are separate concerns. `--nat-table-height` or `--nat-table-max-height` bounds the existing table region. The options object is typed as `NatTableVirtualizationOptions`: `rowHeight` describes the fixed body-row height, while the optional `overscan` (default `5`) is the number of extra rows mounted beyond each visible edge — the window only remounts once fewer than half of those rows remain on the side being scrolled toward, so scrolling re-renders in batches instead of on every frame. Invalid option values are normalized to safe defaults at runtime, and development builds warn about them.
 
 ## Fixed Row Height Contract
 
-The first virtualization strategy requires every body row to have the configured height. Keep cell renderers, padding, and wrapping within that height. Clamp long text with `meta.cellMaxLines`, and do not use this mode for detail rows or cells whose height grows with content.
+The first virtualization strategy requires every body row to have the configured height — sub-header rows included, since the engine sizes data rows and sub-header rows on one fixed-height grid. Keep cell renderers, sub-header content, padding, and wrapping within that height. Clamp long text with `meta.cellMaxLines`, and do not use this mode for detail rows or cells whose height grows with content.
 
 Development builds warn when a mounted row differs from `rowHeight` or when the table region is not bounded.
 
@@ -52,11 +52,20 @@ Virtualization is a body-row rendering strategy, not table state. It composes wi
 - sticky headers remain inside the same scroll region;
 - pinned columns retain their normal sticky offsets;
 - sorting and filtering operate on the complete logical row model;
+- sub-header group rows render inside the window (see the next section);
 - resizing and reordering continue to use the existing column state;
 - selection remains keyed by stable row id; and
 - row activation and render metrics use the real mounted TanStack rows.
 
 Virtualized layout uses the existing authoritative `<colgroup>` path so column widths do not shift when a different row window mounts. Provide stable string row ids, or use `getRowId` when identity lives somewhere other than `row.id`.
+
+## Sub-Header Group Rows
+
+`subHeaderColumn` composes with virtualization. The windowing engine sizes data rows and sub-header rows on one composite fixed-height grid: every sub-header row occupies one `rowHeight` slot, a group-opening row and its sub-header mount and scroll together as one block, and spacer heights account for the sub-header rows that sit above or below the mounted window. Keyboard navigation that lands on a group-opening row — Control/Command + Home, or arrow moves across a window boundary — reveals the sub-header above it, and absolute ARIA row positions include the sub-header rows the window skipped. The example below groups its ten thousand rows by region.
+
+The fixed-height contract extends to sub-header rows: keep their content within the configured `rowHeight`, and development builds warn when a rendered sub-header row diverges from it.
+
+During horizontal scrolling the group label stays pinned to the visible left edge of the table region and carries its own padding, so it does not shift while the full-width row scrolls beneath pinned columns. Sub-header rows draw the same row separator as data cells (the `--nat-table-cell-border-width` and `--nat-table-cell-border-color` tokens), and their background comes from `--nat-table-sub-header-background`, which defaults to transparent. See the Theming topic for the full token list and the Sub-header rows topic for general grouping behavior.
 
 ## Pagination And Manual Data
 
@@ -76,8 +85,8 @@ Virtualized grids still require keyboard-only and screen-reader testing. The lib
 
 ## Limitations
 
-- Variable-height and expanded body rows are not supported by this first strategy.
-- Sub-header rows are not supported. `subHeaderColumn` adds body rows the virtualizer never sized, so the scroll offset drifts as the mounted window moves; development builds warn when both are configured on one table.
+- Variable-height and expanded body rows are not supported yet.
+- Sub-header rows must keep the same fixed `rowHeight` as the data rows; development builds warn when a rendered sub-header row diverges from the configured height.
 - Column virtualization is not supported.
 - Browser Find, DOM selection, and copy-all cannot discover unmounted rows.
 - Export and consumer-owned global search still operate on the complete logical dataset.
