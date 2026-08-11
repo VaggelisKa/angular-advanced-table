@@ -1,0 +1,91 @@
+name: Nightly
+
+# Publishes a snapshot of main to npm under the `next` dist-tag on every commit,
+# so consumers can try unreleased work with `npm i ng-advanced-table@next`.
+#
+# This is a publish, NOT a release. It never runs `nx release`, so it never
+# consumes the pending `.nx/version-plans/` files, writes a release commit, or
+# moves a tag — the deliberate stable release (release.yml, workflow_dispatch)
+# stays the only thing that does. It also never touches the `latest` dist-tag,
+# and its version is a semver prerelease, so `^`/`~` ranges skip it by default.
+#
+# Trigger is CI completion rather than `push`, so a red main never ships.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+  id-token: write # npm provenance attestation
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Green CI, on a real push to main, that isn't the stable release's own
+    # commit (that tree ships under `latest` via release.yml already).
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      !startsWith(github.event.workflow_run.head_commit.message, 'chore(release): publish')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the commit CI validated
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # Second setup-node purely to write the authenticated .npmrc; Node 24 and
+      # the pnpm store are already in place from the composite above.
+      - name: Configure npm registry auth
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # CI's `checks` job saved this cache on the same sha, so the build below
+      # is normally a cache hit rather than a rebuild.
+      - name: Restore Nx cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ github.event.workflow_run.id }}
+          restore-keys: nx-cache-
+
+      - name: Build package
+        run: pnpm run build:packages
+
+      - name: Strip Nx config from the built manifest
+        run: node tools/strip-nx-manifest.mjs dist/libs/ng-advanced-table
+
+      - name: Stamp the nightly version
+        id: version
+        run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table --sha=${{ github.event.workflow_run.head_sha }}
+
+      - name: Publish to npm under the `next` tag
+        run: npm publish dist/libs/ng-advanced-table --tag next --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summarize
+        run: |
+          {
+            echo "### Nightly published"
+            echo
+            echo '```bash'
+            echo "npm i ng-advanced-table@${{ steps.version.outputs.version }}"
+            echo "# or track the tag: npm i ng-advanced-table@next"
+            echo '```'
+            echo
+            echo "From ${{ github.event.workflow_run.head_sha }}."
+          } >> "$GITHUB_STEP_SUMMARY"

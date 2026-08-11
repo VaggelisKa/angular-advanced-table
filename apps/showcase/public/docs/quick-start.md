@@ -10,7 +10,7 @@ pnpm add ng-advanced-table @angular/aria @angular/cdk
 # or: yarn add ng-advanced-table @angular/aria @angular/cdk
 ```
 
-Keep `@angular/core` and `@angular/common` in your Angular app dependencies.
+Keep `@angular/core` and `@angular/common` in your Angular app dependencies. This installs the stable release; see [Release Channels](#release-channels) for the nightly channel.
 
 Install the agent skill:
 
@@ -192,6 +192,19 @@ Start with these defaults unless the feature needs something else:
 | Persisting one state slice | `[state]` with only that slice plus the matching `*Change` output                  |
 | Search and domain filters  | Consumer-owned controls that patch table state                                     |
 | Loading, empty, and error  | `dataStatus` plus `natTableLoading`, `natTableEmpty`, or `natTableError` templates |
+
+## Release Channels
+
+The package publishes on two npm dist-tags.
+
+| Tag      | Install                        | What it is                                                                               |
+| -------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `latest` | `npm i ng-advanced-table`      | Stable releases, cut deliberately. The default — you get this unless you ask for `next`. |
+| `next`   | `npm i ng-advanced-table@next` | A snapshot of `main`, published on every green commit.                                   |
+
+Nightly versions look like `2.12.2-next.20260811143210.45c37bc`. They are semver prereleases, so a range such as `^2.12.0` never resolves to one — opting in is always explicit.
+
+Use `next` to try an unreleased fix or feature, or to check a change against your app before it ships. It is built from the same CI-verified commit as `main`, but its API is not frozen: anything in a nightly can change or be removed before the next stable release. Pin the exact version rather than tracking the tag if you depend on one in CI.
 
 ## Next Steps
 
