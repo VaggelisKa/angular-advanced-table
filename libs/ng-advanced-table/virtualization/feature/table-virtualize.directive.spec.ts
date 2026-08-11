@@ -86,6 +86,16 @@ class SubHeaderVirtualTableHost {
   protected readonly columns = columns;
 }
 
+@Component({
+  selector: 'test-dual-table-host',
+  imports: [OrdinaryTableHost, VirtualTableHost],
+  template: `
+    <test-virtual-table-host />
+    <test-ordinary-table-host />
+  `
+})
+class DualTableHost {}
+
 @Component({ selector: 'test-virtual-pager', template: '' })
 class VirtualPager {
   public constructor() {
@@ -321,7 +331,14 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [OrdinaryTableHost, PaginatedVirtualTableHost, StickyVirtualTableHost, SubHeaderVirtualTableHost, VirtualTableHost],
+      imports: [
+        DualTableHost,
+        OrdinaryTableHost,
+        PaginatedVirtualTableHost,
+        StickyVirtualTableHost,
+        SubHeaderVirtualTableHost,
+        VirtualTableHost
+      ],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
   });
@@ -534,6 +551,62 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
       });
     });
 
+    describe('WHEN: Control Home is pressed from a mid-list body cell', () => {
+      it('THEN: it mounts and focuses the first logical row in the first visible column', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 2000);
+
+        const midCell = queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="50"] [ngGridCell][data-column-id="region"]');
+
+        midCell.focus();
+        midCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', ctrlKey: true, bubbles: true, cancelable: true }));
+        await fixture.whenStable();
+
+        const firstCell = queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="0"] [ngGridCell][data-column-id="name"]');
+
+        expect(document.activeElement).toBe(firstCell);
+        expect(region.scrollTop).toBeLessThan(2000);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: focus moves from a retained out-of-window row to a header cell', () => {
+      it('THEN: it keeps the retained row mounted for the roving tabstop memory', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+
+        await fixture.whenStable();
+
+        const firstCell = queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="0"] [ngGridCell][data-column-id="name"]');
+
+        firstCell.focus();
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 2000);
+
+        expect(document.activeElement).toBe(firstCell);
+
+        queryRequired<HTMLElement>(fixture, 'thead [ngGridCell][data-column-id="name"]').focus();
+        await fixture.whenStable();
+
+        expect((fixture.nativeElement as HTMLElement).querySelector('tbody tr[data-row-index="0"]')).not.toBeNull();
+
+        queryRequired<HTMLButtonElement>(fixture, '[data-testid="outside-button"]').focus();
+        await fixture.whenStable();
+
+        expect((fixture.nativeElement as HTMLElement).querySelector('tbody tr[data-row-index="0"]')).toBeNull();
+
+        fixture.destroy();
+      });
+    });
+
     describe('WHEN: the focused row scrolls out of the mounted window', () => {
       it('THEN: it keeps the row mounted until focus leaves the table', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
@@ -582,6 +655,29 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         expect(region.scrollTop).toBe(0);
         expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']).toBe('0');
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: data with the same stable row IDs replaces an unfocused scrolled window', () => {
+      it('THEN: it keeps the scroll position and mounted window in place', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 2000);
+
+        const firstMountedIndex = queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex'];
+
+        host.rows.set(buildRows(1000));
+        await fixture.whenStable();
+
+        expect(region.scrollTop).toBe(2000);
+        expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']).toBe(firstMountedIndex);
 
         fixture.destroy();
       });
@@ -1031,6 +1127,58 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         await fixture.whenStable();
 
         expect(warn).toHaveBeenCalledWith(expect.stringContaining('does not support sub-header rows'));
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a virtualized table beside an independent ordinary table', () => {
+    describe('WHEN: the virtualized data is replaced while the ordinary table holds focus', () => {
+      it('THEN: it leaves the other table focus untouched', async () => {
+        const fixture = TestBed.createComponent(DualTableHost);
+
+        await fixture.whenStable();
+
+        const virtualHost = fixture.debugElement.query(By.directive(VirtualTableHost)).componentInstance as VirtualTableHost;
+        const foreignCell = queryRequired<HTMLElement>(
+          fixture,
+          'test-ordinary-table-host tbody tr[data-row-index="0"] [ngGridCell][data-column-id="region"]'
+        );
+
+        foreignCell.focus();
+        virtualHost.rows.set(buildRows(120));
+        await fixture.whenStable();
+
+        expect(document.activeElement).toBe(foreignCell);
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a mounted window far beyond a shrunken row model', () => {
+    describe('WHEN: the row count collapses below the mounted window', () => {
+      it('THEN: it clamps the window instead of mounting every remaining row', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 39_840);
+
+        expect(Number(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex'])).toBeGreaterThan(900);
+
+        host.rows.set(buildRows(50));
+        await fixture.whenStable();
+
+        const mountedRows = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row');
+
+        expect(mountedRows.length).toBeGreaterThan(0);
+        expect(mountedRows.length).toBeLessThan(30);
+        expect(mountedRows.every((row) => Number(row.dataset['rowIndex']) < 50)).toBe(true);
 
         fixture.destroy();
       });

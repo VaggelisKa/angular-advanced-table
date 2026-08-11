@@ -26,6 +26,13 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   private readonly controller = signal<NatTableVirtualizerController | null>(null);
   private readonly focusedRowId = signal<string | null>(null);
   private readonly focusedColumnId = signal<string | null>(null);
+  /**
+   * Last body row the grid's roving tabstop landed on, kept while focus stays
+   * anywhere inside the table host. Unlike `focusedRowId` it survives focus
+   * moving to in-table chrome (header cells, in-cell controls), so the Aria
+   * grid's remembered cell is still in the DOM when focus returns.
+   */
+  private readonly retainedRowId = signal<string | null>(null);
   private readonly pendingFocus = signal<PendingVirtualFocus | null>(null);
 
   /**
@@ -43,9 +50,9 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   });
 
   public readonly focusedLogicalIndex = computed(() => {
-    const focusedRowId = this.focusedRowId();
+    const retainedRowId = this.retainedRowId();
 
-    return focusedRowId === null ? null : (this.rowIndexById().get(focusedRowId) ?? null);
+    return retainedRowId === null ? null : (this.rowIndexById().get(retainedRowId) ?? null);
   });
 
   public constructor() {
@@ -94,6 +101,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     this.pendingFocus.set({ rowIndex: null, columnId });
     this.focusedRowId.set(null);
     this.focusedColumnId.set(null);
+    this.retainedRowId.set(null);
 
     return false;
   }
@@ -105,6 +113,10 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
 
     this.focusedRowId.set(row?.dataset['rowId'] ?? null);
     this.focusedColumnId.set(row && cell ? (cell.dataset['columnId'] ?? null) : null);
+
+    if (row) {
+      this.retainedRowId.set(row.dataset['rowId'] ?? null);
+    }
   };
 
   private readonly onFocusOut = (event: FocusEvent): void => {
@@ -113,6 +125,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     if (!(relatedTarget instanceof Node) || !this.elementRef.nativeElement.contains(relatedTarget)) {
       this.focusedRowId.set(null);
       this.focusedColumnId.set(null);
+      this.retainedRowId.set(null);
     }
   };
 
@@ -137,6 +150,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
       event,
       currentRowIndex: Number.isInteger(currentRowIndex) ? currentRowIndex : null,
       currentColumnId: cell.dataset['columnId'] ?? '',
+      firstColumnId: this.state.visibleColumns().at(0)?.id,
       lastColumnId: this.state.visibleColumns().at(-1)?.id,
       mountedRowIndexes: new Set(controller.items().map((item) => item.index)),
       rowCount: this.state.bodyRows().length,

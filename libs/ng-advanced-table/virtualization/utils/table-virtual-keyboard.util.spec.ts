@@ -10,6 +10,7 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
           event: event('ArrowDown'),
           currentRowIndex: 12,
           currentColumnId: 'status',
+          firstColumnId: 'name',
           lastColumnId: 'latency',
           mountedRowIndexes: new Set([8, 9, 10, 11, 12]),
           rowCount: 100,
@@ -26,6 +27,7 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
           event: event('ArrowDown'),
           currentRowIndex: 11,
           currentColumnId: 'status',
+          firstColumnId: 'name',
           lastColumnId: 'latency',
           mountedRowIndexes: new Set([8, 9, 10, 11, 12]),
           rowCount: 100,
@@ -44,6 +46,7 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
           event: event('PageDown'),
           currentRowIndex: 20,
           currentColumnId: 'region',
+          firstColumnId: 'name',
           lastColumnId: 'latency',
           mountedRowIndexes: new Set([18, 19, 20, 21, 22]),
           rowCount: 100,
@@ -60,6 +63,7 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
           event: event('End', { ctrlKey: true }),
           currentRowIndex: null,
           currentColumnId: 'name',
+          firstColumnId: 'name',
           lastColumnId: 'latency',
           mountedRowIndexes: new Set([0, 1, 2, 3, 4]),
           rowCount: 100,
@@ -67,6 +71,40 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
         });
 
         expect(request).toStrictEqual({ rowIndex: 99, columnId: 'latency', align: 'end' });
+      });
+    });
+
+    describe('WHEN: Control Home is pressed from a mid-list body cell', () => {
+      it('THEN: it targets the first logical row and first visible column', () => {
+        const request = resolveNatTableVirtualNavigation({
+          event: event('Home', { ctrlKey: true }),
+          currentRowIndex: 48,
+          currentColumnId: 'status',
+          firstColumnId: 'name',
+          lastColumnId: 'latency',
+          mountedRowIndexes: new Set([44, 45, 46, 47, 48, 49, 50]),
+          rowCount: 100,
+          rowsPerPage: 5
+        });
+
+        expect(request).toStrictEqual({ rowIndex: 0, columnId: 'name', align: 'start' });
+      });
+    });
+
+    describe('WHEN: Command Home is pressed with an empty row model', () => {
+      it('THEN: it leaves the event to Angular Aria', () => {
+        const request = resolveNatTableVirtualNavigation({
+          event: event('Home', { metaKey: true }),
+          currentRowIndex: null,
+          currentColumnId: 'name',
+          firstColumnId: 'name',
+          lastColumnId: 'latency',
+          mountedRowIndexes: new Set<number>(),
+          rowCount: 0,
+          rowsPerPage: 5
+        });
+
+        expect(request).toBeNull();
       });
     });
   });

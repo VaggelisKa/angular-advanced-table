@@ -15,6 +15,13 @@ const scrollTo = async (region: Locator, position: 'middle' | 'end'): Promise<vo
   }, position);
 };
 
+const scrollToRow = async (region: Locator, rowIndex: number): Promise<void> => {
+  await region.evaluate((element, target) => {
+    element.scrollTop = target * 44;
+    element.dispatchEvent(new Event('scroll'));
+  }, rowIndex);
+};
+
 const ariaRowIndexes = async (rows: Locator): Promise<number[]> =>
   rows.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('aria-rowindex'))));
 
@@ -103,6 +110,31 @@ test.describe('FEATURE: Row virtualization accessibility', () => {
         await test.step('THEN: grid-end focus is mounted and fully visible inside the unpinned viewport', async () => {
           await tableHost.getByTestId('nat-table-header-customer').focus();
           await page.keyboard.press('ControlOrMeta+End');
+
+          await expect(target).toBeFocused();
+          await expect.poll(async () => isFullyContained(region, target)).toBe(true);
+        });
+      });
+    });
+
+    test.describe('WHEN: Control or Command Home is pressed from a mid-list body cell', () => {
+      test('THEN: it mounts and focuses the first logical row instead of the first mounted row', async ({ page }) => {
+        const demo = page.getByTestId('virtualization-demo');
+        const tableHost = demo.getByTestId('virtualization-table');
+        const table = tableHost.getByRole('grid', { name: 'Ten thousand virtualized orders' });
+        const region = tableHost.getByTestId('nat-table-region');
+        const target = table.locator('tbody tr[data-row-index="0"] [data-column-id="customer"]');
+
+        await test.step('THEN: a mid-list window leaves the first logical row unmounted', async () => {
+          await scrollToRow(region, 5000);
+
+          await expect(table.locator('tbody tr.data-row').first()).toHaveAttribute('aria-rowindex', /49\d\d/);
+          await expect(table.locator('tbody tr[data-row-index="0"]')).toHaveCount(0);
+        });
+
+        await test.step('THEN: grid-home focus lands on logical row one, mounted and fully visible', async () => {
+          await tableHost.getByTestId('nat-table-header-customer').focus();
+          await page.keyboard.press('ControlOrMeta+Home');
 
           await expect(target).toBeFocused();
           await expect.poll(async () => isFullyContained(region, target)).toBe(true);

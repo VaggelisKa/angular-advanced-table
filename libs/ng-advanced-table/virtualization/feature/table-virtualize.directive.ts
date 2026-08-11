@@ -110,13 +110,17 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
 
   private registerRowModelResetEffect(): void {
     let previous: {
-      readonly data: readonly TData[];
       readonly rowIdSequence: string;
       readonly rowModelState: NatTableVirtualRowModelState;
     } | null = null;
 
     effect(() => {
-      const data = this.state.data();
+      // Tracked so any data replacement re-measures, but deliberately not part
+      // of the reset condition: live-polling consumers replace the array with
+      // identical row ids every cycle, and yanking an unfocused reader back to
+      // the top on each poll would make virtualized live data unusable.
+      this.state.data();
+
       const rowIdSequence = this.rowIdSequence();
       const rowModelState = this.rowModelState();
 
@@ -125,11 +129,9 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
 
       // Reference comparison suffices for rowModelState: the computed's custom
       // equality keeps the previous object whenever the slices are value-equal.
-      const shouldReset =
-        previous !== null &&
-        (previous.data !== data || previous.rowIdSequence !== rowIdSequence || previous.rowModelState !== rowModelState);
+      const shouldReset = previous !== null && (previous.rowIdSequence !== rowIdSequence || previous.rowModelState !== rowModelState);
 
-      previous = { data, rowIdSequence, rowModelState };
+      previous = { rowIdSequence, rowModelState };
 
       untracked(() => {
         this.controller.measure();

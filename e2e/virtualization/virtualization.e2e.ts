@@ -128,6 +128,11 @@ test.describe('FEATURE: Row virtualization', () => {
         });
 
         await test.step('THEN: sorting resets to the first logical window without changing the renderer', async () => {
+          // Release the roving-tabstop retention first: while focus stays
+          // inside the table, the engine deliberately keeps that row mounted.
+          await page.getByRole('link').first().focus();
+          await expect(table.locator(`tbody tr[data-row-index="${retainedRowIndex}"]`)).toHaveCount(0);
+
           await table.getByRole('button', { name: 'Sort by Customer' }).click();
 
           await expect(customerHeader).toHaveAttribute('aria-sort', 'ascending');

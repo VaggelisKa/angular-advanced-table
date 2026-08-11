@@ -70,7 +70,7 @@ Sorting, filtering, page changes, and replacement of the supplied data reset the
 
 The grid exposes the complete logical `aria-rowcount` and absolute `aria-rowindex` values even though most body rows are absent from the DOM. Spacer rows are hidden from Angular Aria, focus order, render metrics, and the accessibility tree.
 
-Arrow navigation crossing a mounted-window boundary scrolls and mounts the next logical row before restoring the same column. Page Up and Page Down move by the visible row count. Control/Command + End mounts and focuses the final logical cell. The last focused row remains mounted during pointer scrolling so browser focus is not discarded.
+Arrow navigation crossing a mounted-window boundary scrolls and mounts the next logical row before restoring the same column. Page Up and Page Down move by the visible row count. Control/Command + End mounts and focuses the final logical cell, and Control/Command + Home mounts and focuses the first. The last focused row remains mounted during pointer scrolling — and while focus visits other cells inside the table — so browser focus and the grid's roving-tabstop memory are not discarded. Replacing the data with the same row IDs (for example on a polling refresh) keeps the scroll position and mounted window in place.
 
 Virtualized grids still require keyboard-only and screen-reader testing. The library tests automated ARIA and Axe behavior, while applications should verify their custom cells with the assistive technologies they support.
 
