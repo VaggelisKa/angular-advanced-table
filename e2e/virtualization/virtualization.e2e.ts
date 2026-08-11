@@ -12,6 +12,29 @@ const scrollTo = async (region: Locator, position: 'middle' | 'end'): Promise<vo
   }, position);
 };
 
+const scrollToOffset = async (region: Locator, offset: number): Promise<void> => {
+  await region.evaluate((element, target) => {
+    element.scrollTop = target;
+    element.dispatchEvent(new Event('scroll'));
+  }, offset);
+};
+
+const scrollByOffset = async (region: Locator, delta: number): Promise<void> => {
+  await region.evaluate((element, target) => {
+    element.scrollTop += target;
+    element.dispatchEvent(new Event('scroll'));
+  }, delta);
+};
+
+const settleAnimationFrames = async (region: Locator): Promise<void> => {
+  await region.evaluate(
+    async () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      })
+  );
+};
+
 const ariaRowIndexes = async (rows: Locator): Promise<number[]> =>
   rows.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('aria-rowindex'))));
 
@@ -112,6 +135,59 @@ test.describe('FEATURE: Row virtualization', () => {
           await expect(rows.and(table.locator('[aria-rowindex="2"]'))).toHaveCount(1);
           await expect.poll(async () => rows.count()).toBeLessThan(40);
           await expect(spacers).toHaveCount(1);
+        });
+      });
+    });
+
+    test.describe('WHEN: the region scrolls in sub-overscan and multi-row steps', () => {
+      test('THEN: it keeps the mounted window through small scrolls and remounts in overscan batches', async ({ page }) => {
+        // The demo mounts rowHeight 44 with the default overscan of 5, so the
+        // engine keeps the window while at least floor(5 / 2) = 2 overscan rows
+        // remain beyond the scrolled-toward edge and remounts in batches.
+        const rowHeight = 44;
+        const demo = page.getByTestId('virtualization-demo');
+        const tableHost = demo.getByTestId('virtualization-table');
+        const table = tableHost.getByRole('grid', { name: 'Ten thousand virtualized orders' });
+        const region = tableHost.getByTestId('nat-table-region');
+        const rows = table.getByTestId('nat-table-row');
+        let settledIndexes: number[] = [];
+
+        await test.step('THEN: a mid-list offset mounts the visible rows plus overscan on both sides', async () => {
+          await scrollToOffset(region, 5000 * rowHeight);
+
+          await expect
+            .poll(async () => {
+              const indexes = await ariaRowIndexes(rows);
+
+              return indexes.length > 0 && Math.min(...indexes) > 4900 && Math.max(...indexes) < 5100;
+            })
+            .toBe(true);
+
+          settledIndexes = await ariaRowIndexes(rows);
+
+          const viewportHeight = await region.evaluate((element) => element.clientHeight);
+          const upperBound = Math.ceil(viewportHeight / rowHeight) + 2 * 5 + 2;
+
+          expect(settledIndexes.length).toBeLessThanOrEqual(upperBound);
+        });
+
+        await test.step('THEN: a one-row scroll keeps the mounted window unchanged', async () => {
+          await scrollByOffset(region, rowHeight);
+          await settleAnimationFrames(region);
+
+          expect(await ariaRowIndexes(rows)).toEqual(settledIndexes);
+        });
+
+        await test.step('THEN: crossing the retained overscan remounts the window in one batch', async () => {
+          await scrollByOffset(region, 4 * rowHeight);
+
+          await expect
+            .poll(async () => {
+              const indexes = await ariaRowIndexes(rows);
+
+              return indexes.length > 0 ? Math.min(...indexes) : 0;
+            })
+            .toBeGreaterThan(Math.min(...settledIndexes));
         });
       });
     });
