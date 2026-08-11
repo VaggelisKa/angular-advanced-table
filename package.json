@@ -24,6 +24,7 @@
     "release": "nx release",
     "pack:dry-run": "node tools/strip-nx-manifest.mjs dist/libs/ng-advanced-table && npm pack --dry-run ./dist/libs/ng-advanced-table",
     "size:check": "node tools/check-package-size.mjs",
+    "version:nightly": "node tools/set-nightly-version.mjs dist/libs/ng-advanced-table",
     "verify": "pnpm run test:mcp && pnpm run build:packages && pnpm run size:check && pnpm run build:showcase && pnpm run verify:showcase-prerender && pnpm run release:check && pnpm run pack:dry-run"
   },
   "private": true,

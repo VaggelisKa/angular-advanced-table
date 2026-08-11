@@ -10,7 +10,7 @@ pnpm add ng-advanced-table @angular/aria @angular/cdk
 # or: yarn add ng-advanced-table @angular/aria @angular/cdk
 ```
 
-Keep `@angular/core` and `@angular/common` in your Angular app dependencies.
+Keep `@angular/core` and `@angular/common` in your Angular app dependencies. This installs the stable release; see [Release Channels](#release-channels) for the nightly channel.
 
 Install the agent skill:
 
@@ -192,6 +192,23 @@ Start with these defaults unless the feature needs something else:
 | Persisting one state slice | `[state]` with only that slice plus the matching `*Change` output                  |
 | Search and domain filters  | Consumer-owned controls that patch table state                                     |
 | Loading, empty, and error  | `dataStatus` plus `natTableLoading`, `natTableEmpty`, or `natTableError` templates |
+
+## Release Channels
+
+The package publishes on two npm dist-tags.
+
+| Tag      | Install                        | What it is                                                                               |
+| -------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `latest` | `npm i ng-advanced-table`      | Stable releases, cut deliberately. The default — you get this unless you ask for `next`. |
+| `next`   | `npm i ng-advanced-table@next` | A snapshot of `main`, published on every green commit.                                   |
+
+Nightly versions look like `2.12.2-next.7`, where the counter is the number of commits since the last stable release. They are semver prereleases, so a range such as `^2.12.0` never resolves to one — opting in is always explicit. Each nightly carries an npm provenance attestation, so you can trace a published version back to the exact commit and CI run it was built from.
+
+Use `next` to try an unreleased fix or feature, or to check a change against your app before it ships. It is built from the same CI-verified commit as `main`, but its API is not frozen: anything in a nightly can change or be removed before the next stable release. Pin the exact version rather than tracking the tag if you depend on one in CI.
+
+### What is in a nightly
+
+Nightlies have no changelog of their own — a snapshot is a single commit, and the same prose becomes a changelog entry when a stable release is cut. To see what a nightly contains ahead of that, the Nightly workflow run summarises it: it lists the pending release notes and links a full comparison against the last stable tag. The [`CHANGELOG`](https://github.com/VaggelisKa/angular-advanced-table/blob/main/libs/ng-advanced-table/CHANGELOG.md) remains the record for released versions.
 
 ## Next Steps
 
