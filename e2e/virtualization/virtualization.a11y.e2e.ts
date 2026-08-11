@@ -3,6 +3,7 @@ import type { Locator } from '@playwright/test';
 
 import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
+import { constrainPinnedTable, expectPinnedCellAbove, expectPinnedSurfaceComposited } from '../support/pinned-cell-layering';
 
 const PREVIEW_SELECTOR = '[data-testid="docs-example-virtualization-preview-panel"]';
 
@@ -153,6 +154,91 @@ test.describe('FEATURE: Row virtualization accessibility', () => {
 
           await expect(target).toBeFocused();
           await expect.poll(async () => region.evaluate((element) => element.scrollTop)).toBe(0);
+        });
+      });
+    });
+
+    test.describe('WHEN: a focused custom-virtualized center cell scrolls beneath both pin zones', () => {
+      test('THEN: the mounted pinned cells stay opaque and above the focused cell', async ({ page }) => {
+        const demo = page.getByTestId('virtualization-demo');
+        const tableHost = demo.getByTestId('virtualization-table');
+        const surface = demo.locator('nat-table-surface');
+        const table = tableHost.getByRole('grid', { name: 'Ten thousand virtualized orders' });
+        const region = tableHost.getByTestId('nat-table-region');
+        const centerCell = table.locator('tbody tr[data-row-index="0"] [data-column-id="owner"]');
+        const centerHeader = table.locator('thead [data-column-id="owner"]');
+
+        await constrainPinnedTable(surface);
+        await centerCell.focus();
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowLeft');
+
+        await test.step('THEN: the mounted left-pinned cell covers the focused center cell', async () => {
+          await region.evaluate((element) => {
+            element.scrollLeft = 80;
+            element.dispatchEvent(new Event('scroll'));
+          });
+
+          await expect(centerCell).toBeFocused();
+          await expectPinnedCellAbove(
+            page,
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="customer"]',
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="owner"]'
+          );
+          await expectPinnedSurfaceComposited(
+            page,
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="customer"]',
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="owner"]',
+            '31, 111, 235'
+          );
+        });
+
+        await test.step('THEN: the mounted right-pinned cell covers the focused center cell', async () => {
+          await region.evaluate((element) => {
+            element.scrollLeft = 0;
+            element.dispatchEvent(new Event('scroll'));
+          });
+
+          await expect(centerCell).toBeFocused();
+          await expectPinnedCellAbove(
+            page,
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="total"]',
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="owner"]'
+          );
+          await expectPinnedSurfaceComposited(
+            page,
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="total"]',
+            '[data-testid="virtualization-table"] tbody tr[data-row-index="0"] [data-column-id="owner"]',
+            '31, 111, 235'
+          );
+          await expectNoAxeViolations(page, PREVIEW_SELECTOR);
+        });
+
+        await test.step('THEN: sticky pinned headers cover the focused custom-virtualized center header', async () => {
+          await centerHeader.focus();
+          await page.keyboard.press('ArrowRight');
+          await page.keyboard.press('ArrowLeft');
+          await region.evaluate((element) => {
+            element.scrollLeft = 80;
+            element.dispatchEvent(new Event('scroll'));
+          });
+
+          await expect(centerHeader).toBeFocused();
+          await expectPinnedCellAbove(
+            page,
+            '[data-testid="virtualization-table"] thead [data-column-id="customer"]',
+            '[data-testid="virtualization-table"] thead [data-column-id="owner"]'
+          );
+
+          await region.evaluate((element) => {
+            element.scrollLeft = 0;
+            element.dispatchEvent(new Event('scroll'));
+          });
+          await expectPinnedCellAbove(
+            page,
+            '[data-testid="virtualization-table"] thead [data-column-id="total"]',
+            '[data-testid="virtualization-table"] thead [data-column-id="owner"]'
+          );
         });
       });
     });

@@ -10,11 +10,17 @@ import { DEMO_ITEMS, demoItemBaseColumns } from '../demo-data';
 import type { DemoItem } from '../demo-data';
 
 type PinSide = 'left' | 'none' | 'right';
+type TableDirection = 'ltr' | 'rtl';
 
 const PIN_OPTIONS: readonly DemoToggleOption<PinSide>[] = [
   { value: 'left', label: 'Left' },
   { value: 'none', label: 'None' },
   { value: 'right', label: 'Right' }
+];
+
+const DIRECTION_OPTIONS: readonly DemoToggleOption<TableDirection>[] = [
+  { value: 'ltr', label: 'LTR' },
+  { value: 'rtl', label: 'RTL' }
 ];
 
 @Component({
@@ -25,6 +31,8 @@ const PIN_OPTIONS: readonly DemoToggleOption<PinSide>[] = [
 })
 export class Pinning {
   protected readonly data = DEMO_ITEMS;
+  protected readonly direction = signal<TableDirection>('ltr');
+  protected readonly directionOptions = DIRECTION_OPTIONS;
   protected readonly pinOptions = PIN_OPTIONS;
 
   protected readonly targetColumns = [
