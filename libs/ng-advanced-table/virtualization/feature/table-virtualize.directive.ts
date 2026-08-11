@@ -128,12 +128,14 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
   private registerRowModelResetEffect(): void {
     let previous: {
       readonly data: readonly TData[];
+      readonly bodyState: ReturnType<NatTableRowWindowHost<TData>['bodyState']>;
       readonly rowIdSequence: string;
       readonly rowModelState: NatTableVirtualRowModelState;
     } | null = null;
 
     effect(() => {
       const data = this.state.data();
+      const bodyState = this.state.bodyState();
       const rowIdSequence = this.rowIdSequence();
       const rowModelState = this.rowModelState();
 
@@ -144,9 +146,12 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
       // equality keeps the previous object whenever the slices are value-equal.
       const shouldReset =
         previous !== null &&
-        (previous.data !== data || previous.rowIdSequence !== rowIdSequence || previous.rowModelState !== rowModelState);
+        (previous.data !== data ||
+          previous.bodyState !== bodyState ||
+          previous.rowIdSequence !== rowIdSequence ||
+          previous.rowModelState !== rowModelState);
 
-      previous = { data, rowIdSequence, rowModelState };
+      previous = { data, bodyState, rowIdSequence, rowModelState };
 
       untracked(() => {
         const focusTargetIndex = shouldReset ? this.focus.prepareRowModelReset() : null;

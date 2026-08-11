@@ -36,6 +36,12 @@ const resolveGridEnd = (
   return isGridEnd && rowCount > 0 && lastColumnId ? { rowIndex: rowCount - 1, columnId: lastColumnId, align: 'end' } : null;
 };
 
+const resolveGridStart = (event: KeyboardEvent, firstColumnId: string | undefined): NatTableVirtualNavigationRequest | null => {
+  const isGridStart = (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key === 'Home';
+
+  return isGridStart && firstColumnId ? { rowIndex: null, columnId: firstColumnId, align: 'start' } : null;
+};
+
 const resolvePage = (context: PageNavigationContext): NatTableVirtualNavigationRequest | null => {
   const { key, currentRowIndex, currentColumnId, rowCount, rowsPerPage } = context;
   const delta = PAGE_DELTAS[key];
@@ -63,12 +69,19 @@ export const resolveNatTableVirtualNavigation = (config: {
   readonly event: KeyboardEvent;
   readonly currentRowIndex: number | null;
   readonly currentColumnId: string;
+  readonly firstColumnId: string | undefined;
   readonly lastColumnId: string | undefined;
   readonly mountedRowIndexes: ReadonlySet<number>;
   readonly rowCount: number;
   readonly rowsPerPage: number;
 }): NatTableVirtualNavigationRequest | null => {
-  const { event, currentRowIndex, currentColumnId, lastColumnId, mountedRowIndexes, rowCount, rowsPerPage } = config;
+  const { event, currentRowIndex, currentColumnId, firstColumnId, lastColumnId, mountedRowIndexes, rowCount, rowsPerPage } = config;
+  const gridStart = resolveGridStart(event, firstColumnId);
+
+  if (gridStart) {
+    return gridStart;
+  }
+
   const gridEnd = resolveGridEnd(event, rowCount, lastColumnId);
 
   if (gridEnd) {

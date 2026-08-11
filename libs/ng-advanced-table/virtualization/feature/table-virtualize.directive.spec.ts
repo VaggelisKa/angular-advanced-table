@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { NatTable, NatTableService } from 'ng-advanced-table';
-import type { NatTableRowActivateEvent, NatTableRowRenderedEvent } from 'ng-advanced-table';
+import type { NatTableDataStatus, NatTableRowActivateEvent, NatTableRowRenderedEvent } from 'ng-advanced-table';
 
 import { NatTableVirtualize } from './table-virtualize.directive';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
@@ -25,6 +25,7 @@ import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
     <nat-table
       [columns]="columns"
       [data]="rows()"
+      [dataStatus]="dataStatus()"
       [emitRowRenderEvents]="true"
       [natTableVirtualize]="options()"
       accessibleName="Virtual operations"
@@ -34,6 +35,7 @@ import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
 })
 class VirtualTableHost {
   public readonly rows = signal<Row[]>(buildRows(1000));
+  public readonly dataStatus = signal<NatTableDataStatus>('success');
   public readonly options = signal({ rowHeight: 40, overscan: 2 });
   public readonly rowActivateEvents: NatTableRowActivateEvent<Row>[] = [];
   public readonly rowRenderedEvents: NatTableRowRenderedEvent[] = [];
@@ -393,6 +395,30 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
       });
     });
 
+    describe('WHEN: Command Home is pressed from a scrolled body row', () => {
+      it('THEN: it focuses the first logical grid cell', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        region.scrollTop = 2000;
+        region.dispatchEvent(new Event('scroll'));
+        await fixture.whenStable();
+
+        const mountedCell = queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]');
+
+        mountedCell.focus();
+        mountedCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', metaKey: true, bubbles: true, cancelable: true }));
+        await fixture.whenStable();
+
+        expect(document.activeElement).toBe(queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="name"]'));
+
+        fixture.destroy();
+      });
+    });
+
     describe('WHEN: Page Down is pressed below a sticky header', () => {
       it('THEN: it advances by the number of body rows visible below the sticky overlay', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
@@ -602,6 +628,27 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
       });
     });
 
+    describe('WHEN: the focused column is hidden', () => {
+      it('THEN: it keeps focus on the same row at the nearest remaining visible column', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+
+        await fixture.whenStable();
+
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+        const focusedCell = queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="0"] [data-column-id="region"]');
+
+        focusedCell.focus();
+        table.patchState({ columnVisibility: { region: false } });
+        await fixture.whenStable();
+
+        expect(document.activeElement).toBe(
+          queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="0"] [data-column-id="status"]')
+        );
+
+        fixture.destroy();
+      });
+    });
+
     describe('WHEN: selection and column sizing change after scrolling', () => {
       it('THEN: it preserves the mounted window and scroll position', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
@@ -688,6 +735,30 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         expect(queryRequired(fixture, 'tbody tr').getAttribute('aria-rowindex')).toBe('2');
         expect(queryRequired(fixture, 'table').getAttribute('aria-rowcount')).toBe('2');
         expect(document.activeElement).toBe(queryRequired(fixture, 'tbody [ngGridCell]'));
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: an error state replaces focused rows and then recovers', () => {
+      it('THEN: it moves focus to the mounted state cell and back to the first data row', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+        queryRequired<HTMLElement>(fixture, 'tbody tr.data-row [data-column-id="region"]').focus();
+
+        host.dataStatus.set('error');
+        await fixture.whenStable();
+
+        expect(document.activeElement).toBe(queryRequired<HTMLElement>(fixture, 'tbody .error-state[ngGridCell]'));
+
+        host.dataStatus.set('success');
+        await fixture.whenStable();
+
+        expect(document.activeElement).toBe(
+          queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="0"] [data-column-id="name"]')
+        );
 
         fixture.destroy();
       });

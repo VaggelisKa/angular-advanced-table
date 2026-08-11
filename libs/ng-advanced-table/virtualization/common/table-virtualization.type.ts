@@ -21,7 +21,8 @@ export type NatTableVirtualizerController = {
 
 /** Focus movement resolved from a grid key before Angular Aria sees it. */
 export type NatTableVirtualNavigationRequest = {
-  readonly rowIndex: number;
+  /** Logical body-row index, or `null` for the always-mounted first header cell. */
+  readonly rowIndex: number | null;
   readonly columnId: string;
   readonly align: 'start' | 'end' | 'auto';
 };

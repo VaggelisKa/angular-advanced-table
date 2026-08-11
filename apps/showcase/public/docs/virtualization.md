@@ -64,13 +64,15 @@ Virtualization consumes the final row model. With automatic pagination it virtua
 
 In manual mode the consuming app still owns fetching, sorting, filtering, and paging. The directive virtualizes only the rows supplied to the current table instance.
 
-Sorting, filtering, page changes, and replacement of the supplied data reset the vertical window to the first logical row.
+Sorting, filtering, page changes, and replacement of the supplied data reset the vertical window to the first logical row when focus is outside the body. When a body cell owns focus, the adapter preserves the same stable row and column where possible; if that row disappears, it moves to the first mounted row, and if a loading, empty, or error row replaces the body, it moves to that state cell.
 
 ## Accessibility And Keyboard
 
 The grid exposes the complete logical `aria-rowcount` and absolute `aria-rowindex` values even though most body rows are absent from the DOM. Spacer rows are hidden from Angular Aria, focus order, render metrics, and the accessibility tree.
 
-Arrow navigation crossing a mounted-window boundary scrolls and mounts the next logical row before restoring the same column. Page Up and Page Down move by the visible row count. Control/Command + End mounts and focuses the final logical cell. The last focused row remains mounted during pointer scrolling so browser focus is not discarded.
+Arrow navigation crossing a mounted-window boundary scrolls and mounts the next logical row before restoring the same column. Page Up and Page Down move by the visible row count. Control/Command + Home focuses the first grid cell, while Control/Command + End mounts and focuses the final logical cell. The last focused row remains mounted during pointer scrolling so browser focus is not discarded.
+
+`NatTableRowRenderStrategy` and its registry are the low-level geometry SPI used to keep core independent of a virtualization engine. A custom adapter still owns engine-specific range retention, cross-window keyboard movement, focus recovery, measurement, and diagnostics; those safeguards are included by `NatTableVirtualize`, not inferred from geometry alone. Core continues to normalize the custom range, hide spacer rows, and expose logical ARIA row positions.
 
 Virtualized grids still require keyboard-only and screen-reader testing. The library tests automated ARIA and Axe behavior, while applications should verify their custom cells with the assistive technologies they support.
 

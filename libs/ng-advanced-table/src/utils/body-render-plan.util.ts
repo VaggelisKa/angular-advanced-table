@@ -30,7 +30,8 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
   const items = strategy
     .items()
     .filter((item) => isUsableVirtualItem(item, rows.length))
-    .sort((left, right) => left.index - right.index);
+    .sort((left, right) => left.index - right.index)
+    .filter((item, index, sortedItems) => index === 0 || item.index !== sortedItems[index - 1]?.index);
 
   if (rows.length > 0 && items.length === 0) {
     return renderAllRows(rows);

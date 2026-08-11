@@ -65,6 +65,16 @@ test.describe('FEATURE: Row virtualization accessibility', () => {
           await expectNoAxeViolations(page, PREVIEW_SELECTOR);
         });
 
+        await test.step('THEN: Command Home restores the first grid cell from the virtual middle window', async () => {
+          const middleRowIndex = Math.min(...(await ariaRowIndexes(rows))) - 2;
+
+          await table.locator(`tbody tr[data-row-index="${middleRowIndex}"] [data-column-id="region"]`).focus();
+          await page.keyboard.press('Meta+Home');
+
+          await expect(tableHost.getByTestId('nat-table-header-customer')).toBeFocused();
+          await expect.poll(async () => region.evaluate((element) => element.scrollTop)).toBe(0);
+        });
+
         await test.step('THEN: the end window exposes row ten thousand as grid row ten thousand and one and passes axe', async () => {
           await scrollTo(region, 'end');
 

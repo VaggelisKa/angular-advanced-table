@@ -19,7 +19,14 @@ export type NatTableVirtualItem = {
   readonly end: number;
 };
 
-/** Strategy registered by an opt-in body-row renderer. */
+/**
+ * Low-level strategy registered by an opt-in body-row renderer.
+ *
+ * This contract describes native-table geometry only. An adapter that unmounts
+ * rows must also own its engine-specific range retention, cross-window keyboard
+ * movement, focus recovery, measurement, and diagnostics. The bundled
+ * `NatTableVirtualize` adapter provides those behaviors.
+ */
 export type NatTableRowRenderStrategy = {
   readonly items: Signal<readonly NatTableVirtualItem[]>;
   readonly totalSize: Signal<number>;
