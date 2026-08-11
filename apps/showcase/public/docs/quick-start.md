@@ -202,7 +202,7 @@ The package publishes on two npm dist-tags.
 | `latest` | `npm i ng-advanced-table`      | Stable releases, cut deliberately. The default — you get this unless you ask for `next`. |
 | `next`   | `npm i ng-advanced-table@next` | A snapshot of `main`, published on every green commit.                                   |
 
-Nightly versions look like `2.12.2-next.20260811143210.45c37bc`. They are semver prereleases, so a range such as `^2.12.0` never resolves to one — opting in is always explicit.
+Nightly versions look like `2.12.2-next.7`, where the counter is the number of commits since the last stable release. They are semver prereleases, so a range such as `^2.12.0` never resolves to one — opting in is always explicit. Each nightly carries an npm provenance attestation, so you can trace a published version back to the exact commit and CI run it was built from.
 
 Use `next` to try an unreleased fix or feature, or to check a change against your app before it ships. It is built from the same CI-verified commit as `main`, but its API is not frozen: anything in a nightly can change or be removed before the next stable release. Pin the exact version rather than tracking the tag if you depend on one in CI.
 

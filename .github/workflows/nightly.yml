@@ -41,6 +41,9 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
+          # Full history + tags: the nightly counter is `git rev-list --count`
+          # from the last v* tag, and a shallow clone has neither.
+          fetch-depth: 0
           persist-credentials: false
 
       - uses: ./.github/actions/setup
@@ -70,7 +73,7 @@ jobs:
 
       - name: Stamp the nightly version
         id: version
-        run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table --sha=${{ github.event.workflow_run.head_sha }}
+        run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table
 
       - name: Publish to npm under the `next` tag
         run: npm publish dist/libs/ng-advanced-table --tag next --access public --provenance
@@ -87,5 +90,9 @@ jobs:
             echo "# or track the tag: npm i ng-advanced-table@next"
             echo '```'
             echo
-            echo "From ${{ github.event.workflow_run.head_sha }}."
+            echo "Built from [\`${SHA:0:7}\`]($SERVER/$REPO/commit/$SHA)."
           } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          SERVER: ${{ github.server_url }}
