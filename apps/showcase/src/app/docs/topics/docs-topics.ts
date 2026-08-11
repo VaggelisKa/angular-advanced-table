@@ -20,6 +20,7 @@ import { States } from '../demos/states/states';
 import { StickyHeader } from '../demos/sticky-header/sticky-header';
 import { SubHeaderRows } from '../demos/sub-header-rows/sub-header-rows';
 import { Toolbar } from '../demos/toolbar/toolbar';
+import { Virtualization } from '../demos/virtualization/virtualization';
 import { Visibility } from '../demos/visibility/visibility';
 
 const snippet = (id: string, label: string, language: string, code: string): DocsCodeSnippet => ({
@@ -123,6 +124,63 @@ const paginationSnippets = [
 readonly tableState = signal<Partial<NatTableUserState>>({
   pagination: { pageIndex: 0, pageSize: 25 }
 });
+`
+  )
+];
+
+const virtualizationSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface class="virtual-orders" [enablePinning]="true" [enableSorting]="true">
+  <nat-table
+    [columns]="columns"
+    [data]="rows"
+    [natTableVirtualize]="{ rowHeight: 44 }"
+    accessibleName="Ten thousand virtualized orders" />
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+import { Component } from '@angular/core';
+
+import { NatTable, type ColumnDef } from 'ng-advanced-table';
+import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
+import { NatTableSurface } from 'ng-advanced-table/components';
+
+type Order = { id: string; total: number };
+
+const generateOrders = (count: number): Order[] =>
+  Array.from({ length: count }, (_, index) => ({ id: \`order-\${index + 1}\`, total: index * 10 }));
+
+@Component({
+  selector: 'app-orders-table',
+  imports: [NatTable, NatTableSurface, NatTableVirtualize],
+  templateUrl: './orders-table.html'
+})
+export class OrdersTable {
+  readonly rows = generateOrders(10_000);
+  readonly columns: ColumnDef<Order, unknown>[] = [
+    { accessorKey: 'id', header: 'Order', meta: { label: 'Order', rowHeader: true } },
+    { accessorKey: 'total', header: 'Total', meta: { label: 'Total', align: 'end' } }
+  ];
+}
+`
+  ),
+  snippet(
+    'css',
+    'CSS',
+    'css',
+    `
+.virtual-orders {
+  --nat-table-height: 30rem;
+}
 `
   )
 ];
@@ -925,6 +983,33 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     related: [
       { label: 'State', path: '/docs/state' },
       { label: 'Data lifecycle', path: '/docs/data-lifecycle' }
+    ]
+  },
+  {
+    id: 'virtualization',
+    contents: [
+      { label: 'When to use it', path: '#when-to-use-virtualization' },
+      { label: 'Basic wiring', path: '#basic-wiring' },
+      { label: 'Fixed row height', path: '#fixed-row-height-contract' },
+      { label: 'Composition', path: '#composition' },
+      { label: 'Accessibility', path: '#accessibility-and-keyboard' },
+      { label: 'Limitations', path: '#limitations' }
+    ],
+    blocks: [
+      { kind: 'markdown', id: 'virtualization-prose', markdownPath: '/docs/virtualization.md' },
+      {
+        kind: 'example',
+        id: 'virtualization',
+        title: 'Ten thousand composable rows',
+        description: 'A fixed-height row window keeps the native table, sticky and pinned columns, and shared controller behavior.',
+        component: Virtualization,
+        snippets: virtualizationSnippets
+      }
+    ],
+    related: [
+      { label: 'Pagination', path: '/docs/pagination' },
+      { label: 'Column layout', path: '/docs/column-layout' },
+      { label: 'Accessibility', path: '/docs/accessibility' }
     ]
   },
   {

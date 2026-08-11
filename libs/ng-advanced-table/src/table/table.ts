@@ -24,6 +24,7 @@ import { NatTableCellControlManager } from '../cell-interaction/table-cell-contr
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
+import { NAT_TABLE_ROW_WINDOW_HOST } from '../common/row-window-host.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
@@ -37,13 +38,20 @@ import type {
 import type { NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableHeaderMeasurementService } from '../domain-logic/table-header-measurement.service';
+import { NatTableRowRenderStrategyRegistry } from '../domain-logic/table-row-render-strategy.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatTableReorderService } from '../reorder/table-reorder.service';
 import { NatTableResizeService } from '../resize/table-resize.service';
 import { NatTableRowRenderEmitter } from '../ui/row-render-emitter.directive';
-import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NatTableResizeGuide } from '../ui/table-layout.directive';
+import {
+  NatTableBodyCellLayout,
+  NatTableHeaderCellLayout,
+  NatTablePxHeight,
+  NatTablePxWidth,
+  NatTableResizeGuide
+} from '../ui/table-layout.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
@@ -77,11 +85,17 @@ import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDes
     NatTableCell,
     NatTableHeaderCellLayout,
     NatTableBodyCellLayout,
+    NatTablePxHeight,
     NatTablePxWidth,
     NatTableResizeGuide
   ],
   providers: [
+    NatTableRowRenderStrategyRegistry,
     NatTableState,
+    // Narrow public view of the state hub, so an opt-in body-row renderer
+    // (`ng-advanced-table/virtualization`) can drive row windows without core
+    // exporting NatTableState itself.
+    { provide: NAT_TABLE_ROW_WINDOW_HOST, useExisting: NatTableState },
     NatTableA11yService,
     NatTableResizeService,
     NatTableReorderService,
@@ -168,6 +182,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected readonly headerGroups = this.state.headerGroups;
   protected readonly bodyRows = this.state.bodyRows;
+  protected readonly bodyRenderPlan = this.state.bodyRenderPlan;
+  protected readonly headerRowCount = this.state.headerRowCount;
+  protected readonly gridRowCount = this.state.gridRowCount;
   protected readonly visibleColumns = this.state.visibleColumns;
   protected readonly bodyState = this.state.bodyState;
   protected readonly resolvedDataStatus = this.state.resolvedDataStatus;
@@ -251,6 +268,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   // ─── Sub-header groups (delegated to state) ───
 
   protected readonly subHeaderGroups = this.state.subHeaderGroups;
+  protected readonly subHeaderRowOffsets = this.state.subHeaderRowOffsets;
 
   protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
     return this.state.getSubHeaderTemplateContext(group);

@@ -1,0 +1,11 @@
+---
+ng-advanced-table: minor
+---
+
+Add opt-in fixed-height row virtualization for `NatTable` through the `NatTableVirtualize` directive and `NatTableVirtualizationOptions`, shipped as a new `ng-advanced-table/virtualization` secondary entry point driven by a library-owned windowing engine with no virtual-scroll dependency.
+
+The engine keeps one native table and scroll region, preserves the final sorted/filtered/paginated row model, renders accessibility-hidden native spacer rows instead of transform offsets (so sticky headers and pinned columns stay untouched), exposes absolute ARIA row positions, and bridges keyboard focus across unmounted ranges. Windowing mounts the visible rows plus a configurable `overscan` (default `5`) on each side with half-overscan remount hysteresis, scroll events are observed passively outside the Angular zone and coalesced to animation frames, and window resize and orientation changes re-measure through the engine's own coalesced viewport listener.
+
+Virtualization composes with sticky headers, pinned columns, column sizing, reordering, selection, pagination, state rows, and row activation. The engine is confined to the new entry point, so applications that never import `ng-advanced-table/virtualization` ship none of it — enforced at the artifact level by the package size budget's forbidden-import graph. Core keeps only the engine-neutral half of the contract: `NatTableRowRenderStrategy`, `NatTableBodyRenderPlan`, and `NatTableRowRenderStrategyRegistry` are now public from `ng-advanced-table`, together with `NAT_TABLE_ROW_WINDOW_HOST`/`NatTableRowWindowHost` — a narrow view of table state that lets an opt-in renderer drive row windows without core exporting `NatTableState`.
+
+The row-render strategy registry is an optional `NatTableState` dependency, provided only by `NatTable`. Renderer shells that never virtualize, such as `NatList`, provide nothing and stay free of any virtualization import. Because virtualized bodies mount only a window of rows, `aria-rowcount` and body `aria-rowindex` are derived from the logical row model instead of the DOM. Sub-header rows are not supported inside a virtualized table and development builds warn when both are configured. This first strategy virtualizes only the rows already supplied to the table; the feature is documented with a 10,000-row showcase example.

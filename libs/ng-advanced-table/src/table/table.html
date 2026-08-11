@@ -15,6 +15,7 @@
     [attr.aria-describedby]="ariaDescribedBy()"
     [attr.aria-label]="tableAriaLabel()"
     [attr.aria-labelledby]="tableAriaLabelledBy()"
+    [attr.aria-rowcount]="gridRowCount()"
     [attr.dir]="resolvedDirection()"
     [class]="tableClassMap()"
     [id]="tableElementId()"
@@ -73,11 +74,12 @@
         }
       </ng-template>
       @let tableHeaderGroups = headerGroups();
-      @for (headerGroup of tableHeaderGroups; track headerGroup.id) {
+      @for (headerGroup of tableHeaderGroups; track headerGroup.id; let headerRowIndex = $index) {
         @let isReorderableHeaderRow = hasReorderableColumns() && isLeafHeaderRow(headerGroup);
         @if (isReorderableHeaderRow) {
           <tr
             [cdkDropListData]="getHeaderRowColumnIds(headerGroup)"
+            [rowIndex]="headerRowIndex + 1"
             cdkDropList
             cdkDropListOrientation="horizontal"
             ngGridRow
@@ -109,7 +111,7 @@
             }
           </tr>
         } @else {
-          <tr ngGridRow>
+          <tr [rowIndex]="headerRowIndex + 1" ngGridRow>
             @for (header of headerGroup.headers; track header.id) {
               @let columnState = columnStates[header.column.id];
               <th
@@ -134,15 +136,29 @@
       }
     </thead>
     <tbody>
-      @let rows = bodyRows();
+      @let bodyPlan = bodyRenderPlan();
       @switch (bodyState()) {
         @case ('rows') {
           @let groups = subHeaderGroups();
-          @for (row of rows; track row.id) {
+          @let subHeaderOffsets = subHeaderRowOffsets();
+          @for (renderedRow of bodyPlan.rows; track renderedRow.row.id) {
+            <!-- Sub-header rows are real grid rows, so absolute ARIA row
+                 positions must skip past the ones rendered above this row. -->
+            @let dataRowIndex = headerRowCount() + renderedRow.logicalIndex + (subHeaderOffsets.at(renderedRow.logicalIndex) ?? 0) + 1;
+            @if (renderedRow.beforeSize > 0) {
+              <tr aria-hidden="true" class="virtual-spacer-row" data-testid="nat-table-virtual-spacer" role="presentation">
+                <td
+                  [colSpan]="emptyStateColSpan()"
+                  [natTablePxHeight]="renderedRow.beforeSize"
+                  aria-hidden="true"
+                  class="virtual-spacer-cell"></td>
+              </tr>
+            }
+            @let row = renderedRow.row;
             @let visibleCells = row.getVisibleCells();
             @let subHeader = groups.get(row.id);
             @if (subHeader) {
-              <tr class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
+              <tr [rowIndex]="dataRowIndex - 1" class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
                 <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
                   <div class="sub-header-content">
                     @if (getSubHeaderAriaText(subHeader); as ariaText) {
@@ -159,11 +175,16 @@
             }
             <tr
               [attr.aria-selected]="rowAriaSelected(row)"
+              [attr.data-row-id]="row.id"
+              [attr.data-row-index]="renderedRow.logicalIndex"
+              [natTablePxHeight]="bodyPlan.rowHeight"
               [natTableRowRenderEmitter]="row.id"
               [natTableRowRenderEnabled]="emitRowRenderEvents()"
               [natTableRowRenderStartedAt]="renderCycleStartedAt()"
               [natTableRowRenderToken]="renderCycleToken()"
+              [rowIndex]="dataRowIndex"
               class="data-row"
+              data-testid="nat-table-row"
               ngGridRow
               (click)="onRowClick($event, row)"
               (keydown)="onRowKeydown($event, row)"
@@ -205,9 +226,18 @@
               }
             </tr>
           }
+          @if (bodyPlan.afterSize > 0) {
+            <tr aria-hidden="true" class="virtual-spacer-row" data-testid="nat-table-virtual-spacer" role="presentation">
+              <td
+                [colSpan]="emptyStateColSpan()"
+                [natTablePxHeight]="bodyPlan.afterSize"
+                aria-hidden="true"
+                class="virtual-spacer-cell"></td>
+            </tr>
+          }
         }
         @case ('loading') {
-          <tr ngGridRow>
+          <tr [rowIndex]="headerRowCount() + 1" ngGridRow>
             <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableCell ngGridCell>
               <div class="table-state-content">
                 @if (loadingTemplateRef(); as templateRef) {
@@ -220,7 +250,7 @@
           </tr>
         }
         @case ('error') {
-          <tr ngGridRow>
+          <tr [rowIndex]="headerRowCount() + 1" ngGridRow>
             <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableCell ngGridCell>
               <div class="table-state-content">
                 @if (errorTemplateRef(); as templateRef) {
@@ -233,7 +263,7 @@
           </tr>
         }
         @case ('empty') {
-          <tr ngGridRow>
+          <tr [rowIndex]="headerRowCount() + 1" ngGridRow>
             <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableCell ngGridCell>
               <div class="table-state-content">
                 @if (emptyTemplateRef(); as templateRef) {

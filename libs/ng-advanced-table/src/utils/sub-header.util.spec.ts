@@ -2,6 +2,7 @@ import type { Row, SortingState } from '@tanstack/angular-table';
 
 import {
   buildSubHeaderRowGroups,
+  buildSubHeaderRowOffsets,
   createSubHeaderOrderSortingFn,
   prependForcedSortingEntry,
   resolveSubHeaderValueText,
@@ -135,6 +136,34 @@ describe('FEATURE: sub-header utils', () => {
     describe('WHEN: there are no page rows', () => {
       it('THEN: it returns an empty map', () => {
         expect(buildSubHeaderRowGroups([], [], 'status').size).toBe(0);
+      });
+    });
+  });
+
+  describe('GIVEN: buildSubHeaderRowOffsets', () => {
+    describe('WHEN: no sub-header renders', () => {
+      it('THEN: it returns an empty list so row numbering stays unshifted', () => {
+        const rows = [fakeRow('r1', 'a'), fakeRow('r2', 'b')];
+
+        expect(buildSubHeaderRowOffsets(rows, new Map())).toStrictEqual([]);
+      });
+    });
+
+    describe('WHEN: groups open at several page rows', () => {
+      it('THEN: each row reports the sub-headers rendered at or before it', () => {
+        const rows = [fakeRow('r1', 'a'), fakeRow('r2', 'a'), fakeRow('r3', 'b'), fakeRow('r4', 'b'), fakeRow('r5', 'c')];
+        const groups = buildSubHeaderRowGroups(rows, rows, 'status');
+
+        expect(buildSubHeaderRowOffsets(rows, groups)).toStrictEqual([1, 1, 2, 2, 3]);
+      });
+    });
+
+    describe('WHEN: every page row opens its own group', () => {
+      it('THEN: the offsets increment on every row', () => {
+        const rows = [fakeRow('r1', 'a'), fakeRow('r2', 'b'), fakeRow('r3', 'c')];
+        const groups = buildSubHeaderRowGroups(rows, rows, 'status');
+
+        expect(buildSubHeaderRowOffsets(rows, groups)).toStrictEqual([1, 2, 3]);
       });
     });
   });

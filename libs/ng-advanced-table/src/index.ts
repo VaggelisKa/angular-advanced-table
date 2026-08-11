@@ -28,6 +28,22 @@ export { NatTableReorderService } from './reorder/table-reorder.service';
 
 export { NatTableResizeService } from './resize/table-resize.service';
 
+// Engine-neutral body-row rendering contract. The CDK-based implementation
+// lives in `ng-advanced-table/virtualization`, so core never pulls that
+// engine into a bundle that does not virtualize.
+export { NatTableRowRenderStrategyRegistry } from './domain-logic/table-row-render-strategy.service';
+
+export type {
+  NatTableBodyRenderPlan,
+  NatTableRenderedBodyRow,
+  NatTableRowRenderStrategy,
+  NatTableVirtualItem
+} from './common/row-render-strategy.type';
+
+export { NAT_TABLE_ROW_WINDOW_HOST } from './common/row-window-host.type';
+
+export type { NatTableRowWindowHost } from './common/row-window-host.type';
+
 export { hasNatTableStateValueChanged } from './utils/table-state-value-equality.util';
 
 export { stripNatTableSubHeaderSorting } from './utils/sub-header.util';

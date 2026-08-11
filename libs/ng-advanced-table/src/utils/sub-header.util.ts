@@ -141,3 +141,33 @@ export const buildSubHeaderRowGroups = <TData extends RowData>(
 
 /** Human-readable text for a sub-header group value used in generated announcement copy. */
 export const resolveSubHeaderValueText = (value: unknown): string => (value == null ? '' : String(value));
+
+/**
+ * Running count of sub-header rows rendered at or before each page row, by page
+ * index. A sub-header renders immediately *before* its opening row, so the
+ * entry for a group-opening row already includes that row's own sub-header.
+ *
+ * Sub-header rows are real grid rows, so absolute ARIA row positions must skip
+ * past them — and a virtualized body cannot count DOM rows because most are
+ * unmounted. This prefix sum resolves any page index to its sub-header offset
+ * without walking the rows again. Empty when no sub-header renders, so callers
+ * fall back to zero and the common case allocates nothing per row model.
+ */
+export const buildSubHeaderRowOffsets = <TData extends RowData>(
+  pageRows: readonly Row<TData>[],
+  groups: ReadonlyMap<string, NatTableSubHeaderGroup<TData>>
+): readonly number[] => {
+  if (groups.size === 0) {
+    return [];
+  }
+
+  let renderedSubHeaders = 0;
+
+  return pageRows.map((row) => {
+    if (groups.has(row.id)) {
+      renderedSubHeaders += 1;
+    }
+
+    return renderedSubHeaders;
+  });
+};
