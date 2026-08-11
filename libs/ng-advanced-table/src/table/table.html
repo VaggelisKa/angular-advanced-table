@@ -134,76 +134,88 @@
       }
     </thead>
     <tbody>
-      @let rows = bodyRows();
       @switch (bodyState()) {
         @case ('rows') {
           @let groups = subHeaderGroups();
-          @for (row of rows; track row.id) {
-            @let visibleCells = row.getVisibleCells();
-            @let subHeader = groups.get(row.id);
-            @if (subHeader) {
-              <tr class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
-                <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
-                  <div class="sub-header-content">
-                    @if (getSubHeaderAriaText(subHeader); as ariaText) {
-                      <span class="sr-only">{{ ariaText }}</span>
-                    }
-                    @if (subHeaderTemplateRef(); as templateRef) {
-                      <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
-                    } @else {
-                      <span aria-hidden="true">{{ subHeader.value }}</span>
-                    }
-                  </div>
-                </td>
+          @for (item of bodyRenderItems(); track item.key) {
+            @if (item.kind === 'gap') {
+              <tr
+                [natTablePxHeight]="item.heightPx"
+                aria-hidden="true"
+                class="virtual-row-gap"
+                data-testid="nat-table-virtual-row-gap">
+                <td [colSpan]="emptyStateColSpan()" class="virtual-row-gap-cell"></td>
+              </tr>
+            } @else {
+              @let row = item.row;
+              @let visibleCells = row.getVisibleCells();
+              @let subHeader = groups.get(row.id);
+              @if (subHeader) {
+                <tr class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
+                  <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
+                    <div class="sub-header-content">
+                      @if (getSubHeaderAriaText(subHeader); as ariaText) {
+                        <span class="sr-only">{{ ariaText }}</span>
+                      }
+                      @if (subHeaderTemplateRef(); as templateRef) {
+                        <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
+                      } @else {
+                        <span aria-hidden="true">{{ subHeader.value }}</span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+              <tr
+                [attr.aria-selected]="rowAriaSelected(row)"
+                [natTablePxHeight]="dataRowHeightPx()"
+                [natTableRowRenderEmitter]="row.id"
+                [natTableRowRenderEnabled]="resolvedEmitRowRenderEvents()"
+                [natTableRowRenderStartedAt]="renderCycleStartedAt()"
+                [natTableRowRenderToken]="renderCycleToken()"
+                [rowIndex]="rowAriaIndex(item.bodyIndex)"
+                class="data-row"
+                ngGridRow
+                (click)="onRowClick($event, row)"
+                (keydown)="onRowKeydown($event, row)"
+                (natTableRowRendered)="onRowRendered($event)">
+                @for (cell of visibleCells; track cell.id) {
+                  @let columnState = columnStates[cell.column.id]; @let cellContext = cell.getContext();
+                  @let cellTone = getCellTone(cell.column, cellContext);
+                  @if (columnState?.rowHeader) {
+                    <th
+                      [attr.data-column-id]="cell.column.id"
+                      [attr.data-tone]="cellTone"
+                      [class]="columnState?.cellClassMap"
+                      [natTableBodyCellLayout]="columnState"
+                      natTableCell
+                      ngGridCell
+                      role="rowheader"
+                      scope="row">
+                      <span class="data-cell-content">
+                        <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                          {{ rendered }}
+                        </ng-container>
+                      </span>
+                    </th>
+                  } @else {
+                    <td
+                      [attr.data-column-id]="cell.column.id"
+                      [attr.data-tone]="cellTone"
+                      [class]="columnState?.cellClassMap"
+                      [natTableBodyCellLayout]="columnState"
+                      natTableCell
+                      ngGridCell>
+                      <span class="data-cell-content">
+                        <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                          {{ rendered }}
+                        </ng-container>
+                      </span>
+                    </td>
+                  }
+                }
               </tr>
             }
-            <tr
-              [attr.aria-selected]="rowAriaSelected(row)"
-              [natTableRowRenderEmitter]="row.id"
-              [natTableRowRenderEnabled]="emitRowRenderEvents()"
-              [natTableRowRenderStartedAt]="renderCycleStartedAt()"
-              [natTableRowRenderToken]="renderCycleToken()"
-              class="data-row"
-              ngGridRow
-              (click)="onRowClick($event, row)"
-              (keydown)="onRowKeydown($event, row)"
-              (natTableRowRendered)="onRowRendered($event)">
-              @for (cell of visibleCells; track cell.id) {
-                @let columnState = columnStates[cell.column.id]; @let cellContext = cell.getContext();
-                @let cellTone = getCellTone(cell.column, cellContext);
-                @if (columnState?.rowHeader) {
-                  <th
-                    [attr.data-column-id]="cell.column.id"
-                    [attr.data-tone]="cellTone"
-                    [class]="columnState?.cellClassMap"
-                    [natTableBodyCellLayout]="columnState"
-                    natTableCell
-                    ngGridCell
-                    role="rowheader"
-                    scope="row">
-                    <span class="data-cell-content">
-                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
-                        {{ rendered }}
-                      </ng-container>
-                    </span>
-                  </th>
-                } @else {
-                  <td
-                    [attr.data-column-id]="cell.column.id"
-                    [attr.data-tone]="cellTone"
-                    [class]="columnState?.cellClassMap"
-                    [natTableBodyCellLayout]="columnState"
-                    natTableCell
-                    ngGridCell>
-                    <span class="data-cell-content">
-                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
-                        {{ rendered }}
-                      </ng-container>
-                    </span>
-                  </td>
-                }
-              }
-            </tr>
           }
         }
         @case ('loading') {

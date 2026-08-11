@@ -1,0 +1,12 @@
+:host {
+  display: block;
+}
+
+.virtual-scroll-demo-surface {
+  --nat-table-max-height: 420px;
+}
+
+/* The virtualization contract: every body row renders at exactly rowHeight. */
+.virtual-scroll-demo-surface .sc-demo-table {
+  --nat-table-cell-max-lines: 1;
+}

@@ -61,6 +61,18 @@
   flex: 1 1 auto;
 }
 
+/*
+ * Spacer rows stand in for unmounted body rows while a row window
+ * (virtualization) is attached. The <tr> height is bound inline; the single
+ * spanning cell must contribute no extra box so spacer height stays exactly
+ * rowCount * rowHeight (border-spacing is 0).
+ */
+.virtual-row-gap-cell {
+  height: inherit;
+  padding: 0;
+  border: 0;
+}
+
 .data-table.is-fixed-layout {
   min-width: 0;
 

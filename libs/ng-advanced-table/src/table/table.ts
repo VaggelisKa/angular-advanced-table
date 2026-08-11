@@ -24,6 +24,8 @@ import { NatTableCellControlManager } from '../cell-interaction/table-cell-contr
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
+import { NAT_TABLE_ROW_WINDOW } from '../common/row-window.const';
+import type { NatTableBodyRenderItem, NatTableRowWindow } from '../common/row-window.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
@@ -43,11 +45,18 @@ import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatTableReorderService } from '../reorder/table-reorder.service';
 import { NatTableResizeService } from '../resize/table-resize.service';
 import { NatTableRowRenderEmitter } from '../ui/row-render-emitter.directive';
-import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NatTableResizeGuide } from '../ui/table-layout.directive';
+import {
+  NatTableBodyCellLayout,
+  NatTableHeaderCellLayout,
+  NatTablePxHeight,
+  NatTablePxWidth,
+  NatTableResizeGuide
+} from '../ui/table-layout.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
+import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan } from '../utils/row-window.util';
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
@@ -77,6 +86,7 @@ import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDes
     NatTableCell,
     NatTableHeaderCellLayout,
     NatTableBodyCellLayout,
+    NatTablePxHeight,
     NatTablePxWidth,
     NatTableResizeGuide
   ],
@@ -151,6 +161,11 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private readonly resizeService = inject<NatTableResizeService<TData>>(NatTableResizeService);
   private readonly reorderService = inject<NatTableReorderService<TData>>(NatTableReorderService);
   private readonly destroyRef = inject(DestroyRef);
+  /**
+   * Element-scoped row window provided by a virtualization directive on this
+   * `<nat-table>` element. `self: true` keeps nested tables independent.
+   */
+  private readonly rowWindow: NatTableRowWindow | null = inject(NAT_TABLE_ROW_WINDOW, { optional: true, self: true });
 
   // ─── State-derived template aliases ───
   // These expose state signals to the template with the same names the template expects.
@@ -168,6 +183,34 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected readonly headerGroups = this.state.headerGroups;
   protected readonly bodyRows = this.state.bodyRows;
+
+  /**
+   * The tbody render plan: every body row when no row window is attached, or
+   * the windowed rows with fixed-height gap spacers standing in for the rest.
+   */
+  protected readonly bodyRenderItems = computed<readonly NatTableBodyRenderItem<TData>[]>(() => {
+    const rowWindow = this.rowWindow;
+
+    if (!rowWindow) {
+      return buildFullBodyRenderPlan(this.bodyRows());
+    }
+
+    return buildWindowedBodyRenderPlan(this.bodyRows(), rowWindow.renderedRowIndexes(), rowWindow.rowHeight());
+  });
+
+  /**
+   * Per-row paint events measure full-model render cycles; a windowed body
+   * would report scroll-mount timings against the wrong cycle start, so row
+   * render events are suppressed while a row window is attached.
+   */
+  protected readonly resolvedEmitRowRenderEvents = computed(() => this.emitRowRenderEvents() && this.rowWindow === null);
+
+  /**
+   * Fixed data-row height while a row window is attached. Gap-spacer heights
+   * assume `rowCount * rowHeight`, so the table pins mounted rows to the same
+   * height the window contract promised. `null` (unbound) otherwise.
+   */
+  protected readonly dataRowHeightPx = computed(() => this.rowWindow?.rowHeight() ?? null);
   protected readonly visibleColumns = this.state.visibleColumns;
   protected readonly bodyState = this.state.bodyState;
   protected readonly resolvedDataStatus = this.state.resolvedDataStatus;
@@ -400,6 +443,21 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected rowAriaSelected(row: Row<TData>): boolean | null {
     return this.state.enableRowSelection() ? row.getIsSelected() : null;
+  }
+
+  /**
+   * Absolute 1-based ARIA row index for a body row while a row window is
+   * attached. With only a subset of rows in the DOM, the aria grid's
+   * positional fallback would misreport row positions, so the header rows are
+   * counted and the body index is offset past them. Fully rendered tables
+   * return `undefined` and keep the grid's own positional indexing.
+   */
+  protected rowAriaIndex(bodyIndex: number): number | undefined {
+    if (!this.rowWindow) {
+      return undefined;
+    }
+
+    return this.headerGroups().length + bodyIndex + 1;
   }
 
   protected onRowClick(event: MouseEvent, row: Row<TData>): void {

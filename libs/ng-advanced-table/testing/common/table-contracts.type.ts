@@ -99,6 +99,15 @@ export type NatTableRenderMetricsController<TData extends RowData = RowData> = {
 };
 
 /**
+ * Contract a row-virtualization directive provides on the table element so
+ * the table renders a windowed body with gap spacers.
+ */
+export type NatTableRowWindow = {
+  readonly renderedRowIndexes: Signal<readonly number[]>;
+  readonly rowHeight: Signal<number>;
+};
+
+/**
  * Minimal table-controller contract consumed by UI companion controls.
  */
 export type NatTableUiController<TData extends RowData = RowData> = {

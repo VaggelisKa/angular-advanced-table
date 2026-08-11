@@ -56,6 +56,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     path: '/docs/column-layout'
   },
   {
+    id: 'virtual-scroll',
+    label: 'Virtual scrolling',
+    description: 'CDK-powered fixed-height row windows',
+    path: '/docs/virtual-scroll'
+  },
+  {
     id: 'responsive-capabilities',
     label: 'Responsive capabilities',
     description: 'Opt out of capability UI per viewport',

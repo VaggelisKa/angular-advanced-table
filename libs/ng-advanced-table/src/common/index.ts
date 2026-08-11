@@ -16,6 +16,10 @@ export type { NatTableCellTone, NatTableColumnMeta, NatTableColumnMoveDirection 
 
 export type { NatTableColumnReorderResult } from './column-render.type';
 
+export { NAT_TABLE_ROW_WINDOW } from './row-window.const';
+
+export type { NatTableBodyGapItem, NatTableBodyRenderItem, NatTableBodyRowItem, NatTableRowWindow } from './row-window.type';
+
 export type { NatTableRowActivateEvent, NatTableRowIdGetter } from './row.type';
 
 export type { NatTableSortIndicatorContext } from './sort.type';

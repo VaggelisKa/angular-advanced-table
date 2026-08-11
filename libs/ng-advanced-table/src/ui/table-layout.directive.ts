@@ -69,6 +69,22 @@ export class NatTablePxWidth {
 }
 
 /**
+ * Host-styles an element's pixel height from a runtime value. Used by the
+ * row-window (virtualization) rendering path for gap-spacer heights and for
+ * pinning mounted data rows to the contracted row height; a `null` value
+ * leaves the height unset, as on fully rendered tables.
+ */
+@Directive({
+  selector: '[natTablePxHeight]',
+  host: {
+    '[style.height.px]': 'natTablePxHeight()'
+  }
+})
+export class NatTablePxHeight {
+  public readonly natTablePxHeight = input.required<number | null | undefined>();
+}
+
+/**
  * Host-styles the column-resize drag guide: its left anchor plus the live
  * `translateX` that follows the pointer during a drag.
  */

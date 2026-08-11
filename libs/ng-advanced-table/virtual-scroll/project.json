@@ -1,0 +1,25 @@
+{
+  "name": "ng-advanced-table-virtual-scroll",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "prefix": "nat",
+  "sourceRoot": "libs/ng-advanced-table/virtual-scroll",
+  "tags": ["type:virtual-scroll", "scope:public"],
+  "targets": {
+    "test": {
+      "inputs": ["default", "^production", "libEntryPointTsConfigs"],
+      "options": {
+        "buildTarget": "ng-advanced-table:build:development",
+        "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json",
+        "coverage": true,
+        "coverageInclude": ["libs/ng-advanced-table/virtual-scroll/**/*.ts"],
+        "coverageExclude": ["**/*.spec.ts", "**/test-helpers/**", "**/*.type.ts", "**/index.ts"],
+        "coverageReporters": ["text-summary", "json-summary"],
+        "coverageThresholds": { "statements": 92, "branches": 90, "functions": 92, "lines": 92 }
+      }
+    },
+    "stylelint": {
+      "executor": "nx-stylelint:lint"
+    }
+  }
+}

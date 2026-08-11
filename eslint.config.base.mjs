@@ -63,6 +63,11 @@ export default [
               sourceTag: 'type:render-metrics',
               onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
             },
+            {
+              // Companion entry point (/virtual-scroll): may compose core + the locale leaf.
+              sourceTag: 'type:virtual-scroll',
+              onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
+            },
             { sourceTag: 'type:locale', onlyDependOnLibsWithTags: [] }
           ]
         }

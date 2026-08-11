@@ -2,12 +2,14 @@ import type {
   Equal,
   Expect,
   NatTableColumnMeta as InternalNatTableColumnMeta,
+  NatTableRowWindow as InternalNatTableRowWindow,
   NatTableSortIndicatorContext as InternalNatTableSortIndicatorContext,
   NatTableUserState as InternalNatTableState,
   NatTableUiController as InternalNatTableUiController
 } from 'ng-advanced-table/testing';
 
 import type { NatTableColumnMeta, NatTableColumnMoveDirection } from './column-meta.type';
+import type { NatTableRowWindow } from './row-window.type';
 import type { NatTableSortIndicatorContext } from './sort.type';
 import type { NatTableUserState } from './table-state.type';
 import type { NatTableUiController } from './ui-controller.type';
@@ -26,6 +28,7 @@ type NatTableSortIndicatorContextMatchesInternalContract = Expect<
 type NatTableUiControllerMatchesInternalContract = Expect<
   Equal<NatTableUiController<ContractRow>, InternalNatTableUiController<ContractRow>>
 >;
+type NatTableRowWindowMatchesInternalContract = Expect<Equal<NatTableRowWindow, InternalNatTableRowWindow>>;
 
 describe('FEATURE: ng-advanced-table public table contracts', () => {
   describe('GIVEN: the core public contract mirror is available', () => {
@@ -37,10 +40,11 @@ describe('FEATURE: ng-advanced-table public table contracts', () => {
           NatTableStateMatchesInternalContract,
           NatTableColumnMetaMatchesInternalContract,
           NatTableSortIndicatorContextMatchesInternalContract,
-          NatTableUiControllerMatchesInternalContract
-        ] = [true, true, true, true];
+          NatTableUiControllerMatchesInternalContract,
+          NatTableRowWindowMatchesInternalContract
+        ] = [true, true, true, true, true];
 
-        expect(contractChecks).toStrictEqual([true, true, true, true]);
+        expect(contractChecks).toStrictEqual([true, true, true, true, true]);
 
         const stateKey: keyof NatTableUserState = 'pagination';
         const moveDirection: NatTableColumnMoveDirection = 'right';

@@ -98,6 +98,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/virtual-scroll",
+      "name": "docs-virtual-scroll",
+      "title": "Virtual scrolling | Angular Advanced Table Docs",
+      "description": "CDK-powered fixed-height row windows",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/responsive-capabilities",
       "name": "docs-responsive-capabilities",
       "title": "Responsive capabilities | Angular Advanced Table Docs",

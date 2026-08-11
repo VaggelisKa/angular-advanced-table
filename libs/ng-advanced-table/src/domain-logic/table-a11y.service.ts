@@ -5,6 +5,7 @@ import type { Column, RowData } from '@tanstack/angular-table';
 
 import { NatTableService } from './table.service';
 import { NatTableState } from './table.state';
+import { NAT_TABLE_ROW_WINDOW } from '../common/row-window.const';
 import type { NatTableRendererKind, TableAccessibilitySnapshot } from '../common/table-a11y.type';
 import { validateKeybindings } from '../hotkey-a11y/utils/keybindings.util';
 import { resolveColumnLabel } from '../utils/column-label.util';
@@ -31,6 +32,8 @@ import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext 
 export class NatTableA11yService<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
+  /** Row window provided by a virtualization directive on the same element, if any. */
+  private readonly rowWindow = inject(NAT_TABLE_ROW_WINDOW, { optional: true, self: true });
 
   private renderer: NatTableRendererKind = 'table';
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
@@ -79,6 +82,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   public registerGridEffects(): void {
     this.registerResizeAnnouncementEffect();
     this.registerAriaMultiSelectableEffect();
+    this.registerAriaRowCountEffect();
     this.registerKeybindingValidationEffect();
   }
 
@@ -243,6 +247,30 @@ export class NatTableA11yService<TData extends RowData = RowData> {
       } else {
         table.removeAttribute('aria-multiselectable');
       }
+    });
+  }
+
+  /**
+   * Sets `aria-rowcount` imperatively on the `<table>` element while a row
+   * window (virtualization) is attached, so assistive tech knows the grid
+   * renders a subset of a larger row set. Counts header rows plus all body
+   * rows, matching the absolute `aria-rowindex` values the table binds on
+   * mounted rows. Written via `afterRenderEffect` for the same reason as
+   * `aria-multiselectable`: `ngGrid` clobbers template bindings.
+   */
+  private registerAriaRowCountEffect(): void {
+    if (!this.rowWindow) {
+      return;
+    }
+
+    afterRenderEffect(() => {
+      const table = this.state.tableRegionRef()?.nativeElement.querySelector('table');
+
+      if (!table) {
+        return;
+      }
+
+      table.setAttribute('aria-rowcount', String(this.state.headerGroups().length + this.state.bodyRows().length));
     });
   }
 

@@ -20,6 +20,7 @@ import { States } from '../demos/states/states';
 import { StickyHeader } from '../demos/sticky-header/sticky-header';
 import { SubHeaderRows } from '../demos/sub-header-rows/sub-header-rows';
 import { Toolbar } from '../demos/toolbar/toolbar';
+import { VirtualScroll } from '../demos/virtual-scroll/virtual-scroll';
 import { Visibility } from '../demos/visibility/visibility';
 
 const snippet = (id: string, label: string, language: string, code: string): DocsCodeSnippet => ({
@@ -726,6 +727,50 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   )
 ];
 
+const virtualScrollSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface [enableSorting]="true" [stickyHeader]="true">
+  <nat-table
+    #virtualScroll="natTableVirtualScroll"
+    [columns]="columns"
+    [data]="data"
+    [natTableVirtualScroll]="{ rowHeight: 44 }"
+    accessibleName="Virtual scrolling demo table" />
+</nat-table-surface>
+
+<button type="button" (click)="virtualScroll.scrollToIndex(2500)">Jump to row 2501</button>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+import { NatTable } from 'ng-advanced-table';
+import { NatTableSurface } from 'ng-advanced-table/components';
+import { NatTableVirtualScroll } from 'ng-advanced-table/virtual-scroll';
+
+@Component({
+  imports: [NatTable, NatTableSurface, NatTableVirtualScroll],
+  styles: \`
+    nat-table {
+      --nat-table-max-height: 420px; /* the region must scroll vertically */
+    }
+  \`
+  /* … */
+})
+export class VirtualScrollExample {
+  readonly data = buildRows(5000); // every row renders at exactly 44px
+  readonly columns = columns;
+}
+`
+  )
+];
+
 const responsiveSnippets = [
   snippet(
     'html',
@@ -983,6 +1028,37 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Columns', path: '/docs/columns' },
       { label: 'Keyboard interaction', path: '/docs/keyboard-interaction' },
       { label: 'Responsive capabilities', path: '/docs/responsive-capabilities' }
+    ]
+  },
+  {
+    id: 'virtual-scroll',
+    contents: [
+      { label: 'When to use it', path: '#when-to-use-it' },
+      { label: 'Basic wiring', path: '#basic-wiring' },
+      { label: 'How it works', path: '#how-it-works' },
+      { label: 'Options', path: '#options' },
+      { label: 'The row-height contract', path: '#the-row-height-contract' },
+      { label: 'Scrolling behavior', path: '#scrolling-behavior' },
+      { label: 'Keyboard and focus', path: '#keyboard-and-focus' },
+      { label: 'Accessibility', path: '#accessibility' },
+      { label: 'Limitations', path: '#limitations' }
+    ],
+    blocks: [
+      { kind: 'markdown', id: 'virtual-scroll-prose', markdownPath: '/docs/virtual-scroll.md' },
+      {
+        kind: 'example',
+        id: 'virtual-scroll',
+        title: 'Five thousand rows, one small DOM',
+        description:
+          'The CDK engine keeps a fixed window of 44px rows mounted while spacer rows preserve native scrolling, sticky headers, and sorting.',
+        component: VirtualScroll,
+        snippets: virtualScrollSnippets
+      }
+    ],
+    related: [
+      { label: 'Pagination', path: '/docs/pagination' },
+      { label: 'Column layout', path: '/docs/column-layout' },
+      { label: 'Keyboard interaction', path: '/docs/keyboard-interaction' }
     ]
   },
   {
