@@ -287,8 +287,10 @@ describe('FEATURE: NatTable', () => {
         mockClientRect(tableRegion, { left: 0, right: 300, width: 300, height: 200 });
         mockClientRect(regionHeader, { left: 280, right: 420, width: 140, height: 40 });
 
-        tableRegion.scrollLeft = 10;
+        // Focusing a header now reveals it past pinned overlays, so the scroll
+        // position is set afterwards to isolate the reorder-driven scroll.
         regionHeader.focus();
+        tableRegion.scrollLeft = 10;
         regionHeader.dispatchEvent(
           new KeyboardEvent('keydown', {
             key: 'ArrowRight',

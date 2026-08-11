@@ -28,11 +28,21 @@ export function sanitizeRowIndexes(indexes: readonly number[], rowCount: number)
   return [...new Set(inRange)].sort((left, right) => left - right);
 }
 
-/** Reveals an unpinned focused cell inside a windowed table's center zone. */
-export function revealWindowedCellHorizontally(region: HTMLElement, cell: HTMLElement): void {
+/**
+ * Reveals an unpinned focused cell — body or header — inside the table's
+ * center zone, treating cells stuck at a pinned edge as opaque overlays.
+ * The browser's own focus scrolling stops as soon as the cell is inside the
+ * region box, which can leave it beneath a pinned column.
+ *
+ * Pinned cells are exempt because they are always visible, and row-spanning
+ * cells (group headers, state rows, spacer rows) because scrolling them would
+ * yank the region to their start edge.
+ */
+export function revealCellHorizontally(region: HTMLElement, cell: HTMLElement): void {
   const table = cell.closest<HTMLTableElement>('table');
+  const spansRow = 'colSpan' in cell && (cell as HTMLTableCellElement).colSpan > 1;
 
-  if (!table || cell.matches('.is-pinned-left, .is-pinned-right')) {
+  if (!table || spansRow || cell.matches('.is-pinned-left, .is-pinned-right')) {
     return;
   }
 

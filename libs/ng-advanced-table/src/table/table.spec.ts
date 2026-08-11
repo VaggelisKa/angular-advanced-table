@@ -21,6 +21,7 @@ import {
   describedBySelectors,
   getGridHarness,
   getHeaderColumnIds,
+  mockClientRect,
   query,
   queryAll,
   queryRequired,
@@ -247,6 +248,26 @@ describe('FEATURE: NatTable', () => {
         // library-owned direction (asserted at the rule level above) lands on the right zone.
         expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-right')).not.toBeNull();
         expect(query(fixture, 'thead th[data-column-id="name"].has-pinned-edge-left')).toBeNull();
+      });
+    });
+
+    describe('WHEN: a header cell is focused while a pinned column covers the region edge', () => {
+      it('THEN: it scrolls the header clear of the pinned overlay instead of leaving it underneath', () => {
+        fixture.detectChanges();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const pinnedHeader = queryRequired<HTMLElement>(fixture, 'thead th.has-pinned-edge-left');
+        const targetHeader = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"]');
+
+        mockClientRect(region, { left: 0, right: 400, width: 400 });
+        // Stuck at the left edge, so it overlays the first 120px of the region.
+        mockClientRect(pinnedHeader, { left: 0, right: 120, width: 120 });
+        mockClientRect(targetHeader, { left: 40, right: 200, width: 160 });
+        region.scrollLeft = 300;
+
+        targetHeader.focus();
+
+        expect(region.scrollLeft).toBe(220);
       });
     });
 

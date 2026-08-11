@@ -58,7 +58,7 @@ import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate }
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
-import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan, revealWindowedCellHorizontally } from '../utils/row-window.util';
+import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan, revealCellHorizontally } from '../utils/row-window.util';
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
@@ -362,7 +362,22 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   protected readonly getHeaderRowColumnIds = getHeaderRowColumnIds<TData>;
   protected readonly shouldHidePrimitiveHeaderLabel = shouldHidePrimitiveHeaderLabel<TData>;
   protected readonly getCellTone = getCellTone<TData>;
-  protected readonly onCellFocusIn = handleCellInteractionFocusIn;
+  /**
+   * Header-cell focusin. Body cells reveal through `onWindowFocusIn`, which is
+   * windowed-only; header cells overlap a pinned column in any table, so this
+   * path reveals unconditionally.
+   */
+  protected onCellFocusIn(event: FocusEvent): void {
+    handleCellInteractionFocusIn(event);
+
+    const region = this.tableRegionRef()?.nativeElement;
+    const cell = event.currentTarget;
+
+    if (region && cell instanceof HTMLElement) {
+      revealCellHorizontally(region, cell);
+    }
+  }
+
   protected readonly canResizeColumn = (header: Header<TData, unknown>): boolean =>
     canResizeColumn(header, this.state.resizingEnabled());
 
@@ -517,7 +532,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     const region = this.tableRegionRef()?.nativeElement;
 
     if (row && cell && region) {
-      revealWindowedCellHorizontally(region, cell);
+      revealCellHorizontally(region, cell);
     }
   }
 

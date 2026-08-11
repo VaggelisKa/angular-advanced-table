@@ -1,11 +1,6 @@
 import type { Row } from '@tanstack/angular-table';
 
-import {
-  buildFullBodyRenderPlan,
-  buildWindowedBodyRenderPlan,
-  revealWindowedCellHorizontally,
-  sanitizeRowIndexes
-} from './row-window.util';
+import { buildFullBodyRenderPlan, buildWindowedBodyRenderPlan, revealCellHorizontally, sanitizeRowIndexes } from './row-window.util';
 
 type TestRowData = { readonly name: string };
 
@@ -120,7 +115,7 @@ describe('FEATURE: row-window utils', () => {
         cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: 650, right: 850, width: 200 });
         region.scrollLeft = 40;
 
-        revealWindowedCellHorizontally(region, cell);
+        revealCellHorizontally(region, cell);
 
         expect(region.scrollLeft).toBe(190);
       });
@@ -135,9 +130,27 @@ describe('FEATURE: row-window utils', () => {
         cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: -200, right: 1000, width: 1200 });
         region.scrollLeft = -300;
 
-        revealWindowedCellHorizontally(region, cell);
+        revealCellHorizontally(region, cell);
 
         expect(region.scrollLeft).toBe(-100);
+      });
+    });
+
+    describe('WHEN: the focus target spans the whole row', () => {
+      it('THEN: it leaves the scroll position unchanged instead of yanking to the row start', () => {
+        const { cell, region, table } = buildFocusRegion();
+        const pinnedLeft = table.tHead?.rows[0].cells[0] as HTMLElement;
+
+        pinnedLeft.className = 'has-pinned-edge-left';
+        region.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 800, width: 800 });
+        pinnedLeft.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 120, width: 120 });
+        cell.colSpan = 4;
+        cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 1200, width: 1200 });
+        region.scrollLeft = 60;
+
+        revealCellHorizontally(region, cell);
+
+        expect(region.scrollLeft).toBe(60);
       });
     });
 
@@ -147,7 +160,7 @@ describe('FEATURE: row-window utils', () => {
         const detachedCell = document.createElement('td');
 
         detachedRegion.scrollLeft = 25;
-        revealWindowedCellHorizontally(detachedRegion, detachedCell);
+        revealCellHorizontally(detachedRegion, detachedCell);
         expect(detachedRegion.scrollLeft).toBe(25);
 
         const { cell, region, table } = buildFocusRegion();
@@ -156,18 +169,18 @@ describe('FEATURE: row-window utils', () => {
         region.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 800, width: 800 });
         cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: 200, right: 400, width: 200 });
         region.scrollLeft = 80;
-        revealWindowedCellHorizontally(region, cell);
+        revealCellHorizontally(region, cell);
         expect(region.scrollLeft).toBe(80);
 
         cell.className = 'is-pinned-right';
         cell.getBoundingClientRect = (): DOMRect => fakeDomRect({ left: 900, right: 1100, width: 200 });
-        revealWindowedCellHorizontally(region, cell);
+        revealCellHorizontally(region, cell);
         expect(region.scrollLeft).toBe(80);
 
         cell.className = '';
         headerCell.className = 'has-pinned-edge-left';
         headerCell.getBoundingClientRect = (): DOMRect => fakeDomRect({ right: 800, width: 800 });
-        revealWindowedCellHorizontally(region, cell);
+        revealCellHorizontally(region, cell);
         expect(region.scrollLeft).toBe(80);
       });
     });
