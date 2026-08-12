@@ -8,7 +8,7 @@ import type { ColumnDef } from 'ng-advanced-table';
 import { NatTableVirtualize } from './table-virtualize.directive';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
-import { queryAll } from '../test-helpers/table-dom.helper';
+import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
 
 const NESTED_ROW_COUNT = 12;
 const OUTER_ROW_COUNT = 60;
@@ -94,6 +94,27 @@ describe('FEATURE: virtualization isolation between nested renderers', () => {
         expect(outerRows.length).toBeLessThan(OUTER_ROW_COUNT);
         expect(innerRows).toHaveLength(NESTED_ROW_COUNT);
         expect(queryAll(fixture, 'test-nested-table tr.virtual-spacer-row')).toHaveLength(0);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: grid-end navigation starts inside the nested table', () => {
+      it('THEN: the nested table owns the key and the outer virtual window stays put', async () => {
+        const fixture = TestBed.createComponent(NestedTableHost);
+
+        await fixture.whenStable();
+
+        const host = fixture.nativeElement as HTMLElement;
+        const outerRegion = queryRequired<HTMLElement>(fixture, ':scope > nat-table > [data-testid="nat-table-region"]');
+        const nestedHeader = queryRequired<HTMLElement>(fixture, 'test-nested-table thead [ngGridCell][data-column-id="name"]');
+
+        nestedHeader.focus();
+        nestedHeader.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, key: 'End' }));
+        await fixture.whenStable();
+
+        expect(outerRegion.scrollTop).toBe(0);
+        expect(host.querySelector('test-nested-table')?.contains(host.ownerDocument.activeElement)).toBe(true);
 
         fixture.destroy();
       });

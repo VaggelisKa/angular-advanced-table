@@ -10,6 +10,7 @@ import type { NatTableVirtualNavigationRequest, NatTableVirtualizerController } 
 import { readNatTableActiveBodyFocus } from '../utils/active-body-focus.util';
 import { scrollNatTableCellHorizontallyIntoView } from '../utils/horizontal-scroll.util';
 import { resolveNatTablePendingFocusCells } from '../utils/pending-focus-cell.util';
+import { findOwnedNatTableCell, findOwnedNatTableDataRow } from '../utils/table-ownership.util';
 import { resolveNatTableVirtualNavigation } from '../utils/table-virtual-keyboard.util';
 
 type PendingVirtualFocus = {
@@ -109,8 +110,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   }
 
   private readonly onFocusIn = (event: FocusEvent): void => {
-    const target = event.target;
-    const row = target instanceof Element ? target.closest<HTMLTableRowElement>('tr.data-row[data-row-id]') : null;
+    const row = findOwnedNatTableDataRow(this.elementRef.nativeElement, event.target);
 
     if (row) {
       this.retainedRowId.set(row.dataset['rowId'] ?? null);
@@ -129,7 +129,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   private readonly onKeydownCapture = (event: KeyboardEvent): void => {
     const controller = this.controller();
     const target = event.target instanceof HTMLElement ? event.target : null;
-    const cell = target?.closest<HTMLElement>('[ngGridCell][data-column-id]') ?? null;
+    const cell = findOwnedNatTableCell(this.elementRef.nativeElement, target);
     const isGridFocusTarget = target !== null && cell !== null && (target === cell || this.state.isDelegatedCellControl(cell, target));
 
     if (!controller || !cell || !isGridFocusTarget || event.defaultPrevented) {

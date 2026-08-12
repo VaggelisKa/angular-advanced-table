@@ -13,6 +13,8 @@ import { buildRows, columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
 
+const stableRowId = (row: Row): string => row.id;
+
 @Component({
   selector: 'test-virtual-table-host',
   imports: [NatTable, NatTableVirtualize],
@@ -30,6 +32,7 @@ import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
       [data]="rows()"
       [dataStatus]="dataStatus()"
       [emitRowRenderEvents]="true"
+      [getRowId]="getRowId"
       [natTableVirtualize]="options()"
       accessibleName="Virtual operations"
       (rowActivate)="onRowActivate($event)"
@@ -37,6 +40,7 @@ import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
   `
 })
 class VirtualTableHost {
+  public readonly getRowId = stableRowId;
   public readonly rows = signal<Row[]>(buildRows(1000));
   public readonly caption = signal<string | undefined>(undefined);
   public readonly dataStatus = signal<NatTableDataStatus>('success');
@@ -1576,6 +1580,37 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         fixture.destroy();
       });
     });
+
+    describe('WHEN: replacement row IDs collide with a delimiter-joined sequence', () => {
+      it('THEN: it still resets the reader to the replacement row model', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        host.rows.set(buildRows(100));
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 2000);
+
+        const joinedPreviousIds = host
+          .rows()
+          .map((row) => row.id)
+          .join('\u001F');
+        const replacementRows = buildRows(2).map((row, index) => ({
+          ...row,
+          id: index === 0 ? joinedPreviousIds : 'replacement-tail'
+        }));
+
+        host.rows.set(replacementRows);
+        await fixture.whenStable();
+
+        expect(region.scrollTop).toBe(0);
+        expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowId']).toBe(joinedPreviousIds);
+
+        fixture.destroy();
+      });
+    });
   });
 
   describe('GIVEN: a virtualized table reporting its mounted range', () => {
@@ -1613,6 +1648,26 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         await fixture.whenStable();
 
         expect(host.rangeEvents.at(-1)).toStrictEqual({ startIndex: 0, endIndex: -1, count: 0 });
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: rows are appended without moving the mounted window', () => {
+      it('THEN: it does not emit a duplicate range event', async () => {
+        const fixture = TestBed.createComponent(VirtualRangeHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const eventCount = host.rangeEvents.length;
+        const mountedRange = host.rangeEvents.at(-1);
+
+        host.rows.set(buildRows(1100));
+        await fixture.whenStable();
+
+        expect(host.rangeEvents).toHaveLength(eventCount);
+        expect(host.rangeEvents.at(-1)).toBe(mountedRange);
 
         fixture.destroy();
       });

@@ -51,7 +51,7 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
   let previousIndex = -1;
 
   for (const item of items) {
-    if (item.index === previousIndex) {
+    if (item.index === previousIndex || item.start < previousEnd) {
       continue;
     }
 

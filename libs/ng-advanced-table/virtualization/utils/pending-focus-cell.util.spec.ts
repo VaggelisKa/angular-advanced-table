@@ -7,13 +7,20 @@ describe('FEATURE: pending virtual table focus targets', () => {
   describe('GIVEN: mounted header, data, and state cells', () => {
     describe('WHEN: pending focus targets are resolved after rendering', () => {
       it('THEN: it returns the requested row or the appropriate body and header fallbacks', () => {
-        const host = document.createElement('div');
+        const host = document.createElement('nat-table');
 
         host.innerHTML = `
           <table>
             <thead><tr><th ngGridCell data-column-id="name"></th><th ngGridCell data-column-id="status"></th></tr></thead>
             <tbody>
-              <tr class="data-row" data-row-index="12"><td ngGridCell data-column-id="name"></td></tr>
+              <tr class="data-row" data-row-index="12"><td ngGridCell data-column-id="name">
+                <nat-table>
+                  <table>
+                    <thead><tr><th ngGridCell data-column-id="nested-header"></th></tr></thead>
+                    <tbody><tr class="data-row" data-row-index="12"><td ngGridCell data-column-id="nested-cell"></td></tr></tbody>
+                  </table>
+                </nat-table>
+              </td></tr>
             </tbody>
           </table>
         `;

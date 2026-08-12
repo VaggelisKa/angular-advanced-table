@@ -47,6 +47,24 @@ class TestInvalidRowWindowMetrics {
   }
 }
 
+@Directive({ selector: 'nat-table[testNonMonotonicRowWindow]' })
+class TestNonMonotonicRowWindow {
+  public constructor() {
+    const registry = inject(NatTableRowRenderStrategyRegistry);
+    const destroyRef = inject(DestroyRef);
+    const strategy: NatTableRowRenderStrategy = {
+      items: signal([
+        { index: 1, start: 120, end: 160 },
+        { index: 2, start: 40, end: 80 }
+      ]),
+      totalSize: signal(200),
+      rowHeight: signal(40)
+    };
+
+    destroyRef.onDestroy(registry.register(strategy));
+  }
+}
+
 @Component({
   selector: 'test-custom-row-window-host',
   imports: [NatTable, TestDuplicateRowWindow],
@@ -69,10 +87,21 @@ class InvalidRowWindowHost {
   protected readonly columns: ColumnDef<TestRow, unknown>[] = [{ accessorKey: 'name', header: 'Name' }];
 }
 
+@Component({
+  selector: 'test-non-monotonic-row-window-host',
+  imports: [NatTable, TestNonMonotonicRowWindow],
+  providers: [NatTableService],
+  template: `<nat-table [columns]="columns" [data]="rows" accessibleName="Non-monotonic row window" testNonMonotonicRowWindow />`
+})
+class NonMonotonicRowWindowHost {
+  protected readonly rows: TestRow[] = Array.from({ length: 5 }, (_, index) => ({ id: String(index), name: `Row ${index}` }));
+  protected readonly columns: ColumnDef<TestRow, unknown>[] = [{ accessorKey: 'name', header: 'Name' }];
+}
+
 describe('FEATURE: custom NatTable row-render strategies', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CustomRowWindowHost, InvalidRowWindowHost],
+      imports: [CustomRowWindowHost, InvalidRowWindowHost, NonMonotonicRowWindowHost],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
   });
@@ -111,6 +140,28 @@ describe('FEATURE: custom NatTable row-render strategies', () => {
         expect(host.querySelectorAll('tbody tr.data-row')).toHaveLength(5);
         expect(host.querySelectorAll('tbody tr.virtual-spacer-row')).toHaveLength(0);
         expect(host.querySelector('table')?.getAttribute('aria-rowcount')).toBe('6');
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a custom range moves backward in vertical space', () => {
+    describe('WHEN: the table renders the custom row window', () => {
+      it('THEN: it discards the non-monotonic row and preserves the reported total size', async () => {
+        const fixture = TestBed.createComponent(NonMonotonicRowWindowHost);
+
+        await fixture.whenStable();
+
+        const host = fixture.nativeElement as HTMLElement;
+        const rows = [...host.querySelectorAll<HTMLTableRowElement>('tbody tr.data-row')];
+        const spacerHeights = [...host.querySelectorAll<HTMLElement>('tbody .virtual-spacer-cell')].map((spacer) =>
+          Number.parseFloat(spacer.style.height)
+        );
+
+        expect(rows.map((row) => row.dataset['rowIndex'])).toStrictEqual(['1']);
+        expect(spacerHeights).toStrictEqual([120, 40]);
+        expect(spacerHeights.reduce((total, height) => total + height, rows.length * 40)).toBe(200);
 
         fixture.destroy();
       });

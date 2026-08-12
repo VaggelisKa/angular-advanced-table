@@ -1,6 +1,5 @@
 import {
   NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT,
-  NAT_TABLE_ROW_ID_SEPARATOR,
   createInitialVirtualRange,
   createVirtualItems,
   includeVirtualIndex,
@@ -9,8 +8,6 @@ import {
   opensSubHeaderGroup,
   rangeToRowIndexes
 } from './table-virtualization.util';
-
-const join = (rowIds: readonly string[]): string => rowIds.join(NAT_TABLE_ROW_ID_SEPARATOR);
 
 describe('FEATURE: NatTable virtualization options and ranges', () => {
   describe('GIVEN: fixed-row virtualization options', () => {
@@ -159,26 +156,26 @@ describe('FEATURE: NatTable virtualization options and ranges', () => {
     });
   });
 
-  describe('GIVEN: two joined row-id sequences from consecutive row models', () => {
+  describe('GIVEN: two row-id sequences from consecutive row models', () => {
     describe('WHEN: the newer sequence extends the older one', () => {
       it('THEN: it reads as an append, so the mounted window survives', () => {
-        expect(isAppendedRowSequence(join(['a', 'b']), join(['a', 'b']))).toBe(true);
-        expect(isAppendedRowSequence(join(['a', 'b']), join(['a', 'b', 'c']))).toBe(true);
+        expect(isAppendedRowSequence(['a', 'b'], ['a', 'b'])).toBe(true);
+        expect(isAppendedRowSequence(['a', 'b'], ['a', 'b', 'c'])).toBe(true);
       });
     });
 
     describe('WHEN: the newer sequence rewrites, truncates, or reorders the older one', () => {
       it('THEN: it reads as a rebuild, so the window resets', () => {
-        expect(isAppendedRowSequence(join(['a', 'b']), join(['b', 'a']))).toBe(false);
-        expect(isAppendedRowSequence(join(['a', 'b', 'c']), join(['a', 'b']))).toBe(false);
-        expect(isAppendedRowSequence(join(['a', 'b']), join(['c', 'a', 'b']))).toBe(false);
+        expect(isAppendedRowSequence(['a', 'b'], ['b', 'a'])).toBe(false);
+        expect(isAppendedRowSequence(['a', 'b', 'c'], ['a', 'b'])).toBe(false);
+        expect(isAppendedRowSequence(['a', 'b'], ['c', 'a', 'b'])).toBe(false);
       });
     });
 
-    describe('WHEN: an id merely starts with the whole previous sequence', () => {
-      it('THEN: it still reads as a rebuild, because the separator boundary is required', () => {
-        expect(isAppendedRowSequence('ab', 'abc')).toBe(false);
-        expect(isAppendedRowSequence('', join(['a']))).toBe(false);
+    describe('WHEN: IDs contain text that could collide in a flattened representation', () => {
+      it('THEN: it preserves row boundaries and reads the replacement as a rebuild', () => {
+        expect(isAppendedRowSequence(['a', 'b'], ['a\u001Fb', 'c'])).toBe(false);
+        expect(isAppendedRowSequence([], ['a'])).toBe(false);
       });
     });
   });

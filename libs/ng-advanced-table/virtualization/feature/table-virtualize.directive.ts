@@ -15,7 +15,6 @@ import { NatTableVirtualLayoutService } from '../domain-logic/table-virtual-layo
 import { NatTableVirtualScrollEngine } from '../domain-logic/table-virtual-scroll-engine.service';
 import { NatTableVirtualValidationService } from '../domain-logic/table-virtual-validation.service';
 import {
-  NAT_TABLE_ROW_ID_SEPARATOR,
   createVirtualItems,
   includeVirtualIndex,
   isAppendedRowSequence,
@@ -101,11 +100,17 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
    * The contiguous mounted window: the engine range, not `virtualItems`, whose
    * retained focused row can sit far outside it and misreport the position.
    */
-  private readonly mountedRange = computed<NatTableVirtualRangeChange>(() => {
-    const indexes = rangeToRowIndexes(this.engine.range(), this.state.bodyRows().length);
+  private readonly mountedRange = computed<NatTableVirtualRangeChange>(
+    () => {
+      const indexes = rangeToRowIndexes(this.engine.range(), this.state.bodyRows().length);
 
-    return { startIndex: indexes.at(0) ?? 0, endIndex: indexes.at(-1) ?? -1, count: indexes.length };
-  });
+      return { startIndex: indexes.at(0) ?? 0, endIndex: indexes.at(-1) ?? -1, count: indexes.length };
+    },
+    {
+      equal: (previous, current) =>
+        previous.startIndex === current.startIndex && previous.endIndex === current.endIndex && previous.count === current.count
+    }
+  );
 
   private registerRangeChangeEffect(): void {
     effect(() => {
@@ -130,22 +135,13 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
     { equal: (previous, current) => !hasNatTableStateValueChanged(previous, current) }
   );
 
-  /**
-   * Identity of the visible row sequence, joined for the append test below.
-   * TanStack memoizes the row-model array, so the O(n) join runs only when that
-   * model is rebuilt. See `isAppendedRowSequence` for the delimiter's tradeoff.
-   */
-  private readonly rowIdSequence = computed(() =>
-    this.state
-      .bodyRows()
-      .map((row) => row.id)
-      .join(NAT_TABLE_ROW_ID_SEPARATOR)
-  );
+  /** Identity of the visible row sequence used by the collision-free append test below. */
+  private readonly rowIdSequence = computed(() => this.state.bodyRows().map((row) => row.id));
 
   private registerRowModelResetEffect(): void {
     let previous: {
       readonly bodyState: ReturnType<NatTableRowWindowHost<TData>['bodyState']>;
-      readonly rowIdSequence: string;
+      readonly rowIdSequence: readonly string[];
       readonly rowModelState: NatTableVirtualRowModelState;
     } | null = null;
 

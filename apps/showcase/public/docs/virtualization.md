@@ -59,7 +59,7 @@ Virtualization is a body-row rendering strategy, not table state. It composes wi
 
 Virtualized layout uses the existing authoritative `<colgroup>` path so column widths do not shift when a different row window mounts. Provide stable, unique string row ids, or use `getRowId` when identity lives somewhere other than `row.id`.
 
-A nested `<nat-table>` or `<nat-list>` rendered inside a virtualized table's cells is never windowed by the outer table: each renderer resolves its own row-render strategy, and a nested renderer that does not opt in renders every one of its rows.
+A nested `<nat-table>` or `<nat-list>` rendered inside a virtualized table's cells is never windowed by the outer table: each renderer resolves its own row-render strategy, and a nested renderer that does not opt in renders every one of its rows. Keyboard events, retained-row tracking, and focus recovery are scoped to the renderer that owns the focused cell, so navigation inside a nested grid cannot move the outer window or recover focus into a same-index nested row.
 
 ## Sub-Header Group Rows
 
@@ -108,7 +108,7 @@ The grid exposes the complete logical `aria-rowcount` and absolute `aria-rowinde
 
 Arrow navigation crossing a mounted-window boundary scrolls and mounts the next logical row before restoring the same column. Page Up and Page Down move by the body slots visible below the current caption/header overlay, counting sub-header rows when a group boundary crosses the page. Control/Command + End mounts and focuses the final logical cell, while Control/Command + Home focuses the first grid cell in the always-mounted header row. The last focused row remains mounted during pointer scrolling—and while focus visits other cells inside the table—so browser focus and the grid's roving-tabstop memory are not discarded.
 
-`NatTableRowRenderStrategy` and `NatTableRowRenderStrategyRegistry` are the low-level geometry SPI that keeps core independent of a windowing engine. Core sorts and normalizes the supplied items, discards invalid or duplicate logical indices, hides spacer rows, exposes logical ARIA positions, and falls back to the full-row renderer when global metrics are invalid. A custom adapter still owns range retention, cross-window keyboard movement, focus recovery across row-model and state changes, measurement, observers/listeners and cleanup, SSR-safe initialization, and misuse diagnostics. Those safeguards are included by `NatTableVirtualize`; registering geometry alone does not provide them.
+`NatTableRowRenderStrategy` and `NatTableRowRenderStrategyRegistry` are the low-level geometry SPI that keeps core independent of a windowing engine. Core sorts and normalizes the supplied items, discards invalid or duplicate logical indices and non-monotonic extents, hides spacer rows, exposes logical ARIA positions, and falls back to the full-row renderer when global metrics are invalid. A custom adapter still owns range retention, cross-window keyboard movement, focus recovery across row-model and state changes, measurement, observers/listeners and cleanup, SSR-safe initialization, and misuse diagnostics. Those safeguards are included by `NatTableVirtualize`; registering geometry alone does not provide them.
 
 Virtualized grids still require keyboard-only and screen-reader testing. The library tests automated ARIA and Axe behavior, while applications should verify their custom cells with the assistive technologies they support.
 
