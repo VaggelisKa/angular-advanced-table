@@ -18,6 +18,12 @@ export type { NatTableColumnReorderResult } from './column-render.type';
 
 export type { NatTableRowActivateEvent, NatTableRowIdGetter } from './row.type';
 
+export type { NatTableRowRenderStrategy, NatTableVirtualItem } from './row-render-strategy.type';
+
+export { NAT_TABLE_ROW_WINDOW_HOST } from './row-window-host.type';
+
+export type { NatTableRowWindowHost } from './row-window-host.type';
+
 export type { NatTableSortIndicatorContext } from './sort.type';
 
 export type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from './sub-header.type';

@@ -57,7 +57,9 @@ Virtualization is a body-row rendering strategy, not table state. It composes wi
 - selection remains keyed by stable row id; and
 - row activation and render metrics use the real mounted TanStack rows.
 
-Virtualized layout uses the existing authoritative `<colgroup>` path so column widths do not shift when a different row window mounts. Provide stable, unique string row ids, or use `getRowId` when identity lives somewhere other than `row.id`. IDs may contain any string character; identity comparison does not depend on a reserved separator.
+Virtualized layout uses the existing authoritative `<colgroup>` path so column widths do not shift when a different row window mounts. Provide stable, unique string row ids, or use `getRowId` when identity lives somewhere other than `row.id`.
+
+A nested `<nat-table>` or `<nat-list>` rendered inside a virtualized table's cells is never windowed by the outer table: each renderer resolves its own row-render strategy, and a nested renderer that does not opt in renders every one of its rows.
 
 ## Sub-Header Group Rows
 
@@ -73,7 +75,32 @@ Virtualization consumes the final row model. With automatic pagination it virtua
 
 In manual mode the consuming app still owns fetching, sorting, filtering, and paging. The directive virtualizes only the rows supplied to the current table instance.
 
-Sorting, filtering, page changes, and replacement of the supplied data reset the vertical window to the first logical row when focus is outside the body. Replacing data with the same stable ID sequence—for example, a polling refresh—keeps an unfocused reader at the current window. When keyboard focus is inside a row that survives a change, the window follows that stable row ID and restores the same column; if the row disappears, focus moves to the first surviving row in that column. If loading, empty, or error replaces the data rows, focus moves to the mounted state cell and returns to the first data row when the body recovers. Core's live region continues to announce those state changes without moving focus when focus was outside the body.
+Sorting, filtering, page changes, and replacement of the supplied data reset the vertical window to the first logical row when focus is outside the body. Two changes deliberately do not reset it: replacing data with the same stable ID sequence—for example, a polling refresh—and **appending** rows to the end of the current sequence, which is what cursor and "load more" fetching does. An append leaves every already-visible row exactly where it was, so the reader keeps their scroll position and mounted window; anything that rewrites, reorders, or truncates the earlier part of the sequence still resets. Note that appending to a table sorted so that new rows land _above_ the reader is a rewrite, not an append, and does reset. When keyboard focus is inside a row that survives a change, the window follows that stable row ID and restores the same column; if the row disappears, focus moves to the first surviving row in that column. If loading, empty, or error replaces the data rows, focus moves to the mounted state cell and returns to the first data row when the body recovers. Core's live region continues to announce those state changes without moving focus when focus was outside the body.
+
+## Reacting To The Mounted Window
+
+`(virtualRangeChange)` emits `{ startIndex, endIndex, count }` whenever the mounted window moves, batched by the engine's overscan hysteresis rather than fired per frame. Both bounds are inclusive positions in the _current row model_ — the sorted, filtered, and paginated rows — not positions in the source `data` array; an empty model reports `{ startIndex: 0, endIndex: -1, count: 0 }`.
+
+The intended use is fetch-on-approach: compare `endIndex` with the number of rows loaded so far and start the next page before the reader reaches the end. Appending the result keeps the scroll position (see above), so incremental fetching does not interrupt reading.
+
+```html
+<nat-table
+  [columns]="columns"
+  [data]="rows()"
+  [natTableVirtualize]="{ rowHeight: 44 }"
+  accessibleName="Orders"
+  (virtualRangeChange)="onRangeChange($event)" />
+```
+
+The library deliberately owns no loading affordance or `dataStatus` transition for this; fetching, retries, and any "loading more" UI stay with the consuming container.
+
+## Render Metrics Under Virtualization
+
+`emitRowRenderEvents` keeps working when a table is virtualized, with one deliberate refinement to what a _render cycle_ means.
+
+A cycle is one row-model rebuild, exactly as in a non-virtualized table: every mounted row reports its timing against that cycle's token. Scrolling is **not** a new cycle. The rows that stay mounted across a window move did not re-render, so re-timing them would report afterRender latency as render cost; they stay silent. A row that mounts during a scroll does report, timed from the window recompute, which is its real mount cost — the number that decides whether scrolling janks.
+
+The consequence to keep in mind when reading a metrics panel: under virtualization a cycle covers the **mounted** rows, not every logical row, so cycle row counts are window-sized. Events for the same row can recur within one cycle if it scrolls out of the window and back in.
 
 ## Accessibility And Keyboard
 
@@ -87,7 +114,7 @@ Virtualized grids still require keyboard-only and screen-reader testing. The lib
 
 ## Limitations
 
-- Variable-height and expanded body rows are not supported yet.
+- Variable-height and expanded body rows are not supported yet. The strategy contract is already extent-shaped (`items` carry a `start`/`end` per row plus a global `totalSize`), so a future measured-height strategy would reuse it unchanged; the fixed `rowHeight` scalar and its scroll-offset assumptions are what a second strategy would have to change.
 - Sub-header rows must keep the same fixed `rowHeight` as the data rows; development builds warn when a rendered sub-header row diverges from the configured height.
 - Column virtualization is not supported.
 - Browser Find, DOM selection, and copy-all cannot discover unmounted rows.

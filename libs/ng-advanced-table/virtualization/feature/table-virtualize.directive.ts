@@ -1,18 +1,24 @@
-import { DestroyRef, Directive, computed, effect, inject, input, isDevMode, untracked } from '@angular/core';
+import { DestroyRef, Directive, computed, effect, inject, input, isDevMode, output, untracked } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
 import { NAT_TABLE_ROW_WINDOW_HOST, NatTableRowRenderStrategyRegistry, hasNatTableStateValueChanged } from 'ng-advanced-table';
 import type { NatTableRowRenderStrategy, NatTableRowWindowHost, NatTableUserState, NatTableVirtualItem } from 'ng-advanced-table';
 
-import type { NatTableVirtualizationOptions, NatTableVirtualizerController } from '../common/table-virtualization.type';
+import type {
+  NatTableVirtualRangeChange,
+  NatTableVirtualizationOptions,
+  NatTableVirtualizerController
+} from '../common/table-virtualization.type';
 import { NatTableVirtualFocusService } from '../domain-logic/table-virtual-focus.service';
 import { NatTableVirtualLayoutService } from '../domain-logic/table-virtual-layout.service';
 import { NatTableVirtualScrollEngine } from '../domain-logic/table-virtual-scroll-engine.service';
 import { NatTableVirtualValidationService } from '../domain-logic/table-virtual-validation.service';
 import {
+  NAT_TABLE_ROW_ID_SEPARATOR,
   createVirtualItems,
   includeVirtualIndex,
+  isAppendedRowSequence,
   normalizeNatTableVirtualizationOptions,
   rangeToRowIndexes
 } from '../utils/table-virtualization.util';
@@ -34,6 +40,8 @@ type NatTableVirtualRowModelState = Pick<NatTableUserState, 'sorting' | 'globalF
 })
 export class NatTableVirtualize<TData extends RowData = RowData> {
   public readonly natTableVirtualize = input.required<NatTableVirtualizationOptions>();
+  /** Emits the mounted row window whenever it moves. See `NatTableVirtualRangeChange`. */
+  public readonly virtualRangeChange = output<NatTableVirtualRangeChange>();
   private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
   private readonly registry = inject(NatTableRowRenderStrategyRegistry);
   private readonly engine = inject<NatTableVirtualScrollEngine<TData>>(NatTableVirtualScrollEngine);
@@ -86,6 +94,25 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
     this.destroyRef.onDestroy(unregister);
     this.registerOptionValidationEffect();
     this.registerRowModelResetEffect();
+    this.registerRangeChangeEffect();
+  }
+
+  /**
+   * The contiguous mounted window: the engine range, not `virtualItems`, whose
+   * retained focused row can sit far outside it and misreport the position.
+   */
+  private readonly mountedRange = computed<NatTableVirtualRangeChange>(() => {
+    const indexes = rangeToRowIndexes(this.engine.range(), this.state.bodyRows().length);
+
+    return { startIndex: indexes.at(0) ?? 0, endIndex: indexes.at(-1) ?? -1, count: indexes.length };
+  });
+
+  private registerRangeChangeEffect(): void {
+    effect(() => {
+      const range = this.mountedRange();
+
+      untracked(() => this.virtualRangeChange.emit(range));
+    });
   }
 
   /**
@@ -104,19 +131,21 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
   );
 
   /**
-   * Identity of the visible row sequence. TanStack memoizes the row-model
-   * array, so the O(n) copy runs only when that model is rebuilt. Structural
-   * equality preserves the previous reference for identical IDs without
-   * assuming any delimiter is absent from consumer-defined string IDs.
+   * Identity of the visible row sequence, joined for the append test below.
+   * TanStack memoizes the row-model array, so the O(n) join runs only when that
+   * model is rebuilt. See `isAppendedRowSequence` for the delimiter's tradeoff.
    */
-  private readonly rowIdSequence = computed<readonly string[]>(() => this.state.bodyRows().map((row) => row.id), {
-    equal: (previous, current) => previous.length === current.length && previous.every((rowId, index) => rowId === current[index])
-  });
+  private readonly rowIdSequence = computed(() =>
+    this.state
+      .bodyRows()
+      .map((row) => row.id)
+      .join(NAT_TABLE_ROW_ID_SEPARATOR)
+  );
 
   private registerRowModelResetEffect(): void {
     let previous: {
       readonly bodyState: ReturnType<NatTableRowWindowHost<TData>['bodyState']>;
-      readonly rowIdSequence: readonly string[];
+      readonly rowIdSequence: string;
       readonly rowModelState: NatTableVirtualRowModelState;
     } | null = null;
 
@@ -136,9 +165,15 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
 
       // Reference comparison suffices for rowModelState: the computed's custom
       // equality keeps the previous object whenever the slices are value-equal.
+      //
+      // A pure append is not a reset: an unchanged prefix means every row the
+      // reader is looking at is still where it was, so "load more" fetching
+      // keeps its scroll position.
       const shouldReset =
         previous !== null &&
-        (previous.bodyState !== bodyState || previous.rowIdSequence !== rowIdSequence || previous.rowModelState !== rowModelState);
+        (previous.bodyState !== bodyState ||
+          previous.rowModelState !== rowModelState ||
+          !isAppendedRowSequence(previous.rowIdSequence, rowIdSequence));
 
       previous = { bodyState, rowIdSequence, rowModelState };
 

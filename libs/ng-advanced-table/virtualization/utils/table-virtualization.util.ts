@@ -5,6 +5,23 @@ import type { NatTableVirtualRange, NatTableVirtualizationOptions } from '../com
 /** Default `overscan`: rows mounted beyond each visible edge of the viewport. */
 export const NAT_TABLE_DEFAULT_OVERSCAN = 5;
 
+/**
+ * Delimiter joining row ids into one comparable sequence. U+001F (unit
+ * separator) is a control character, so no practical row id contains one.
+ */
+export const NAT_TABLE_ROW_ID_SEPARATOR = '\u001F';
+
+/**
+ * Whether `current` is `previous` with rows appended — the only row-model
+ * change that leaves every already-visible row exactly where it was, so the
+ * mounted window and scroll position survive it.
+ *
+ * A true append can only extend the joined sequence; sorting, filtering,
+ * paging, and replaced data all rewrite some earlier part of it.
+ */
+export const isAppendedRowSequence = (previous: string, current: string): boolean =>
+  current === previous || (previous !== '' && current.startsWith(previous + NAT_TABLE_ROW_ID_SEPARATOR));
+
 export const NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT = 10;
 
 /**

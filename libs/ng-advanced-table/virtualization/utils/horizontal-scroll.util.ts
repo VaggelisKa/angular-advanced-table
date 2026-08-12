@@ -1,3 +1,12 @@
+/*
+ * Pin-aware horizontal reveal, deliberately local rather than a generalization
+ * of core's reorder-only `scrollElementHorizontallyIntoView`: how much this
+ * feature adds to core is its weakest axis, and cross-window focus recovery is
+ * the only caller needing pin-zone geometry today. Accepted gap: non-virtualized
+ * tables keep the original, pin-unaware reveal. Promote when a second caller
+ * earns it.
+ */
+
 type HorizontalBounds = { readonly left: number; readonly right: number };
 
 const resolveUnpinnedBounds = (table: HTMLTableElement, regionRect: DOMRect): HorizontalBounds | null => {

@@ -3,7 +3,6 @@ import { InjectionToken } from '@angular/core';
 
 import type { Column, HeaderGroup, Row, RowData } from '@tanstack/angular-table';
 
-import type { NatTableSubHeaderGroup } from './sub-header.type';
 import type { NatTableUserState } from './table-state.type';
 import type { NatTableBodyState } from './table-status.type';
 
@@ -37,13 +36,13 @@ export type NatTableRowWindowHost<TData extends RowData = RowData> = {
   readonly resolvedCaption: Signal<string>;
   /** Whether the header sticks inside the scroll region. */
   readonly stickyHeader: Signal<boolean>;
-  /** Sub-header segments rendered before their group-opening rows. */
-  readonly subHeaderGroups: Signal<ReadonlyMap<string, NatTableSubHeaderGroup<TData>>>;
   /**
    * Running count of sub-header rows rendered at or before each page row, by
    * page index — empty when no sub-header renders. Lets a fixed-height row
    * window place data row `i` at composite slot `i + offsets[i]` without
-   * walking the row model.
+   * walking the row model, and lets absolute ARIA row positions skip past the
+   * sub-header rows above a row. A windowed body cannot count those from the
+   * DOM, because most of them are unmounted.
    */
   readonly subHeaderRowOffsets: Signal<readonly number[]>;
   /** The scrollable table region a strategy observes and scrolls. */

@@ -22,7 +22,7 @@ describe('FEATURE: NatTable body render planning', () => {
       it('THEN: it keeps every logical row in the ordinary rendering path', () => {
         const plan = buildNatTableBodyRenderPlan(rows(3), null);
 
-        expect(plan.virtualized).toBe(false);
+        expect(plan.renderKey).toBe('all');
         expect(plan.rows.map((item) => item.row.id)).toStrictEqual(['row-0', 'row-1', 'row-2']);
         expect(plan.rows.every((item) => item.beforeSize === 0)).toBe(true);
         expect(plan.afterSize).toBe(0);
@@ -46,8 +46,22 @@ describe('FEATURE: NatTable body render planning', () => {
           [7, 120]
         ]);
         expect(plan.afterSize).toBe(80);
-        expect(plan.rowHeight).toBe(40);
-        expect(plan.virtualized).toBe(true);
+        expect(plan.renderKey).not.toBe('all');
+      });
+    });
+  });
+
+  describe('GIVEN: a strategy item whose extent runs past the reported total size', () => {
+    describe('WHEN: the body render plan is built', () => {
+      it('THEN: it drops that item instead of corrupting the trailing spacer', () => {
+        const virtualItems = signal([
+          { index: 1, start: 40, end: 80 },
+          { index: 2, start: 380, end: 460 }
+        ]);
+        const plan = buildNatTableBodyRenderPlan(rows(10), strategy(virtualItems));
+
+        expect(plan.rows.map((item) => item.logicalIndex)).toStrictEqual([1]);
+        expect(plan.afterSize).toBe(320);
       });
     });
   });

@@ -142,8 +142,6 @@
           @let groups = subHeaderGroups();
           @let subHeaderOffsets = subHeaderRowOffsets();
           @for (renderedRow of bodyPlan.rows; track renderedRow.row.id) {
-            <!-- Sub-header rows are real grid rows, so absolute ARIA row
-                 positions must skip past the ones rendered above this row. -->
             @let dataRowIndex = headerRowCount() + renderedRow.logicalIndex + (subHeaderOffsets.at(renderedRow.logicalIndex) ?? 0) + 1;
             @if (renderedRow.beforeSize > 0) {
               <tr aria-hidden="true" class="virtual-spacer-row" data-testid="nat-table-virtual-spacer" role="presentation">
@@ -158,12 +156,7 @@
             @let visibleCells = row.getVisibleCells();
             @let subHeader = groups.get(row.id);
             @if (subHeader) {
-              <tr
-                [natTablePxHeight]="bodyPlan.rowHeight"
-                [rowIndex]="dataRowIndex - 1"
-                class="sub-header-row"
-                data-testid="nat-table-sub-header-row"
-                ngGridRow>
+              <tr [rowIndex]="dataRowIndex - 1" class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
                 <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
                   <div class="sub-header-content">
                     @if (getSubHeaderAriaText(subHeader); as ariaText) {
@@ -182,7 +175,6 @@
               [attr.aria-selected]="rowAriaSelected(row)"
               [attr.data-row-id]="row.id"
               [attr.data-row-index]="renderedRow.logicalIndex"
-              [natTablePxHeight]="bodyPlan.rowHeight"
               [natTableRowRenderEmitter]="row.id"
               [natTableRowRenderEnabled]="emitRowRenderEvents()"
               [natTableRowRenderStartedAt]="renderCycleStartedAt()"

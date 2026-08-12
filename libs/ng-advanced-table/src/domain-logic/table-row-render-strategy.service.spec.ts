@@ -12,20 +12,18 @@ const createStrategy = (): NatTableRowRenderStrategy => ({
 describe('FEATURE: NatTable row-render strategy registry', () => {
   describe('GIVEN: a per-table registry provided by NatTable', () => {
     describe('WHEN: a body-row renderer registers its strategy', () => {
-      it('THEN: it activates the registry and unregistering deactivates it again', () => {
+      it('THEN: it holds the strategy and unregistering clears it again', () => {
         const registry = new NatTableRowRenderStrategyRegistry();
         const strategy = createStrategy();
 
-        expect(registry.active()).toBe(false);
+        expect(registry.strategy()).toBeNull();
 
         const unregister = registry.register(strategy);
 
-        expect(registry.active()).toBe(true);
         expect(registry.strategy()).toBe(strategy);
 
         unregister();
 
-        expect(registry.active()).toBe(false);
         expect(registry.strategy()).toBeNull();
       });
 

@@ -14,6 +14,25 @@ export type NatTableVirtualizationOptions = {
   readonly overscan?: number;
 };
 
+/**
+ * The mounted row window, reported by `(virtualRangeChange)`.
+ *
+ * Indexes are positions in the current row model — the sorted, filtered, and
+ * paginated rows the table renders — not positions in the source `data` array.
+ * Both bounds are inclusive; an empty row model reports `startIndex: 0`,
+ * `endIndex: -1`, `count: 0`.
+ *
+ * Emitted once per window change, which the engine's overscan hysteresis
+ * batches, so a fast scroll produces a handful of events rather than one per
+ * frame. Intended for fetch-on-approach: compare `endIndex` against the loaded
+ * row count and start the next page before the reader reaches it.
+ */
+export type NatTableVirtualRangeChange = {
+  readonly startIndex: number;
+  readonly endIndex: number;
+  readonly count: number;
+};
+
 /** Contiguous half-open row-index window `[start, end)` mounted in the table body. */
 export type NatTableVirtualRange = {
   readonly start: number;

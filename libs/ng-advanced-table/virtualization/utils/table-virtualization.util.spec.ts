@@ -1,12 +1,16 @@
 import {
   NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT,
+  NAT_TABLE_ROW_ID_SEPARATOR,
   createInitialVirtualRange,
   createVirtualItems,
   includeVirtualIndex,
+  isAppendedRowSequence,
   normalizeNatTableVirtualizationOptions,
   opensSubHeaderGroup,
   rangeToRowIndexes
 } from './table-virtualization.util';
+
+const join = (rowIds: readonly string[]): string => rowIds.join(NAT_TABLE_ROW_ID_SEPARATOR);
 
 describe('FEATURE: NatTable virtualization options and ranges', () => {
   describe('GIVEN: fixed-row virtualization options', () => {
@@ -151,6 +155,30 @@ describe('FEATURE: NatTable virtualization options and ranges', () => {
       it('THEN: it mounts every logical row', () => {
         expect(createInitialVirtualRange(3)).toStrictEqual({ start: 0, end: 3 });
         expect(createInitialVirtualRange(0)).toStrictEqual({ start: 0, end: 0 });
+      });
+    });
+  });
+
+  describe('GIVEN: two joined row-id sequences from consecutive row models', () => {
+    describe('WHEN: the newer sequence extends the older one', () => {
+      it('THEN: it reads as an append, so the mounted window survives', () => {
+        expect(isAppendedRowSequence(join(['a', 'b']), join(['a', 'b']))).toBe(true);
+        expect(isAppendedRowSequence(join(['a', 'b']), join(['a', 'b', 'c']))).toBe(true);
+      });
+    });
+
+    describe('WHEN: the newer sequence rewrites, truncates, or reorders the older one', () => {
+      it('THEN: it reads as a rebuild, so the window resets', () => {
+        expect(isAppendedRowSequence(join(['a', 'b']), join(['b', 'a']))).toBe(false);
+        expect(isAppendedRowSequence(join(['a', 'b', 'c']), join(['a', 'b']))).toBe(false);
+        expect(isAppendedRowSequence(join(['a', 'b']), join(['c', 'a', 'b']))).toBe(false);
+      });
+    });
+
+    describe('WHEN: an id merely starts with the whole previous sequence', () => {
+      it('THEN: it still reads as a rebuild, because the separator boundary is required', () => {
+        expect(isAppendedRowSequence('ab', 'abc')).toBe(false);
+        expect(isAppendedRowSequence('', join(['a']))).toBe(false);
       });
     });
   });

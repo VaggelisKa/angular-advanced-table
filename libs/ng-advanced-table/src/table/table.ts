@@ -92,9 +92,6 @@ import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDes
   providers: [
     NatTableRowRenderStrategyRegistry,
     NatTableState,
-    // Narrow public view of the state hub, so an opt-in body-row renderer
-    // (`ng-advanced-table/virtualization`) can drive row windows without core
-    // exporting NatTableState itself.
     { provide: NAT_TABLE_ROW_WINDOW_HOST, useExisting: NatTableState },
     NatTableA11yService,
     NatTableResizeService,

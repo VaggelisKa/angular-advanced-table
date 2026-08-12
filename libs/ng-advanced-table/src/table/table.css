@@ -309,20 +309,15 @@ tbody .data-row:last-child .data-cell {
   background: var(--nat-table-row-background, var(--sys-nat-table-row-background, transparent));
 }
 
-.data-table.is-virtualized .data-row,
-.data-table.is-virtualized .data-cell,
-.data-table.is-virtualized .sub-header-row,
-.data-table.is-virtualized .sub-header-cell {
+.data-table.is-virtualized :is(.data-row, .data-cell, .sub-header-row, .sub-header-cell) {
   height: var(--sys-nat-table-virtual-row-height);
 }
 
-.data-table.is-virtualized .data-cell-content,
-.data-table.is-virtualized .sub-header-content {
+.data-table.is-virtualized :is(.data-cell-content, .sub-header-content) {
   max-height: var(--sys-nat-table-virtual-row-height);
 }
 
-.virtual-spacer-row,
-.virtual-spacer-cell {
+:is(.virtual-spacer-row, .virtual-spacer-cell) {
   padding: 0;
   line-height: 0;
   pointer-events: none;

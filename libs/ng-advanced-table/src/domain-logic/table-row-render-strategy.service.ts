@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 import type { NatTableRowRenderStrategy } from '../common/row-render-strategy.type';
 
@@ -9,7 +9,6 @@ export class NatTableRowRenderStrategyRegistry {
   private readonly registeredStrategy = signal<NatTableRowRenderStrategy | null>(null);
 
   public readonly strategy = this.registeredStrategy.asReadonly();
-  public readonly active = computed(() => this.registeredStrategy() !== null);
 
   public register(strategy: NatTableRowRenderStrategy): () => void {
     const current = this.registeredStrategy();

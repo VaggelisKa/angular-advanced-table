@@ -111,17 +111,13 @@ let nextTableId = 0;
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly directionality = inject(Directionality, { optional: true });
-  // Optional so a renderer shell that never virtualizes (NatList) does not have
-  // to provide it, or even know virtualization exists. Absent registry reads as
-  // "no strategy": every row renders.
-  private readonly rowRenderStrategies = inject(NatTableRowRenderStrategyRegistry, { optional: true });
+  // `self` keeps a nested renderer from inheriting the outer table's window;
+  // `optional` covers renderers that provide no registry (NatList).
+  private readonly rowRenderStrategies = inject(NatTableRowRenderStrategyRegistry, { optional: true, self: true });
   private readonly rowRenderStrategy = computed(() => this.rowRenderStrategies?.strategy() ?? null);
-  private readonly hasRowRenderStrategy = computed(() => this.rowRenderStrategies?.active() ?? false);
+  private readonly hasRowRenderStrategy = computed(() => this.rowRenderStrategy() !== null);
 
-  /**
-   * `NatTableRowWindowHost` bridge: lets a row-window strategy classify grid
-   * focus targets without the cell-interaction predicate becoming public API.
-   */
+  /** `NatTableRowWindowHost` bridge; keeps the cell-interaction predicate internal. */
   public isDelegatedCellControl(cell: HTMLElement, target: HTMLElement): boolean {
     return isNatTableDelegatedCellControl(cell, target);
   }
@@ -437,20 +433,10 @@ export class NatTableState<TData extends RowData = RowData> {
     return buildSubHeaderRowGroups(this.bodyRows(), this.table.getPrePaginationRowModel().rows, columnId);
   });
 
-  /**
-   * Sub-header rows rendered at or before each page row, by page index. Empty
-   * when no sub-header renders, so ungrouped tables index to `undefined` and
-   * the template's `?? 0` fallback keeps the plain header + row numbering.
-   */
+  /** See `NatTableRowWindowHost.subHeaderRowOffsets`; empty when no sub-header renders. */
   public readonly subHeaderRowOffsets = computed(() => buildSubHeaderRowOffsets(this.bodyRows(), this.subHeaderGroups()));
 
-  /**
-   * Total row count the grid reports as `aria-rowcount`: header rows, rendered
-   * sub-header rows, and data rows — or the single loading/empty/error state
-   * row when the body renders no data rows (`subHeaderGroups` is guaranteed
-   * empty in that branch). Derived from the logical row model rather than the
-   * DOM because a virtualized body mounts only a window of rows.
-   */
+  /** `aria-rowcount`, counted from the logical row model because a windowed body mounts a subset. */
   public readonly gridRowCount = computed(
     () =>
       this.headerRowCount() +
@@ -1152,23 +1138,32 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   /**
-   * Bumps the render-cycle token when the logical rows or mounted row window
-   * changes, enabling row-render event timing. Pure state → state transform.
+   * Drives row-render event timing. A cycle is one row-model rebuild; a moved
+   * row window restamps the clock without opening one. See
+   * `NatTableRowRenderStrategy` for why that split is the correct one.
    */
   public registerRenderCycleEffect(): void {
+    let previousRows: readonly Row<TData>[] | null = null;
+
     effect(() => {
       if (!this.emitRowRenderEvents()) {
+        previousRows = null;
         this.renderCycleToken.set(0);
         this.renderCycleStartedAt.set(0);
 
         return;
       }
 
-      this.bodyRows();
+      const rows = this.bodyRows();
+
       void this.bodyRenderPlan().renderKey;
 
       this.renderCycleStartedAt.set(performance.now());
-      this.renderCycleToken.update((token) => token + 1);
+
+      if (rows !== previousRows) {
+        previousRows = rows;
+        this.renderCycleToken.update((token) => token + 1);
+      }
     });
   }
 }

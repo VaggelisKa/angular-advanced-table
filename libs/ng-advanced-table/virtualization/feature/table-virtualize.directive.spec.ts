@@ -8,7 +8,7 @@ import { NatTable, NatTableService } from 'ng-advanced-table';
 import type { NatTableDataStatus, NatTableRowActivateEvent, NatTableRowRenderedEvent } from 'ng-advanced-table';
 
 import { NatTableVirtualize } from './table-virtualize.directive';
-import type { NatTableVirtualizationOptions } from '../common/table-virtualization.type';
+import type { NatTableVirtualRangeChange, NatTableVirtualizationOptions } from '../common/table-virtualization.type';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { queryAll, queryRequired } from '../test-helpers/table-dom.helper';
@@ -52,6 +52,30 @@ class VirtualTableHost {
   protected onRowActivate(event: NatTableRowActivateEvent<Row>): void {
     this.rowActivateEvents.push(event);
   }
+}
+
+@Component({
+  selector: 'test-virtual-range-host',
+  imports: [NatTable, NatTableVirtualize],
+  providers: [NatTableService],
+  styles: `
+    nat-table {
+      --nat-table-height: 200px;
+    }
+  `,
+  template: `
+    <nat-table
+      [columns]="columns"
+      [data]="rows()"
+      [natTableVirtualize]="{ rowHeight: 40 }"
+      accessibleName="Virtual range operations"
+      (virtualRangeChange)="rangeEvents.push($event)" />
+  `
+})
+class VirtualRangeHost {
+  public readonly rows = signal<Row[]>(buildRows(1000));
+  public readonly rangeEvents: NatTableVirtualRangeChange[] = [];
+  protected readonly columns = columns;
 }
 
 @Component({
@@ -940,7 +964,7 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
     });
 
     describe('WHEN: the mounted range changes with row metrics enabled', () => {
-      it('THEN: it starts a new render cycle for the newly mounted window', async () => {
+      it('THEN: it times the rows that actually mounted and stays silent for the rest', async () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
         const host = fixture.componentInstance;
 
@@ -952,8 +976,37 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         host.rowRenderedEvents.length = 0;
         await scrollRegion(fixture, region, 2000);
 
+        const mountedRowIds = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row').map((row) => row.dataset['rowId']);
+
+        // Scrolling is not a new render cycle: the rows that stayed mounted did
+        // not re-render, so only the freshly mounted ones report, and they
+        // report inside the cycle the row model opened.
         expect(host.rowRenderedEvents.length).toBeGreaterThan(0);
+        expect(host.rowRenderedEvents.every((event) => event.renderToken === initialToken)).toBe(true);
+        expect(host.rowRenderedEvents.every((event) => mountedRowIds.includes(event.rowId))).toBe(true);
+        expect(new Set(host.rowRenderedEvents.map((event) => event.rowId)).size).toBe(host.rowRenderedEvents.length);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: the row model is rebuilt with row metrics enabled', () => {
+      it('THEN: it opens a new render cycle and re-times every mounted row', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const initialToken = Math.max(...host.rowRenderedEvents.map((event) => event.renderToken));
+
+        host.rowRenderedEvents.length = 0;
+        host.rows.set(buildRows(900));
+        await fixture.whenStable();
+
+        const mountedRowIds = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row').map((row) => row.dataset['rowId']);
+
         expect(host.rowRenderedEvents.every((event) => event.renderToken > initialToken)).toBe(true);
+        expect(host.rowRenderedEvents.map((event) => event.rowId).sort()).toStrictEqual([...mountedRowIds].sort());
 
         fixture.destroy();
       });
@@ -1326,7 +1379,11 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         expect(subHeaders).toHaveLength(1);
         expect(subHeaders[0].nextElementSibling).toBe(firstRow);
         expect(subHeaders[0].getAttribute('aria-rowindex')).toBe('2');
-        expect(subHeaders[0].style.height).toBe('40px');
+        // Data and sub-header rows are both sized from the directive's row-height
+        // property, not from a per-row inline height.
+        expect(queryRequired(fixture, 'nat-table').style.getPropertyValue('--sys-nat-table-virtual-row-height')).toBe('40px');
+        expect(subHeaders[0].style.height).toBe('');
+        expect(firstRow.style.height).toBe('');
         expect(firstRow.getAttribute('aria-rowindex')).toBe('3');
         expect(warn).not.toHaveBeenCalled();
 
@@ -1411,6 +1468,151 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         expect(document.activeElement).toBe(
           queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="34"] [data-column-id="region"]')
         );
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a virtualized table fed by incremental row fetching', () => {
+    describe('WHEN: a page of rows is appended below a scrolled window', () => {
+      it('THEN: it keeps the scroll position and the mounted window in place', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 2000);
+
+        const mountedIndexesBeforeAppend = queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row').map(
+          (row) => row.dataset['rowIndex']
+        );
+
+        host.rows.set(buildRows(1200));
+        await fixture.whenStable();
+
+        expect(region.scrollTop).toBe(2000);
+        expect(queryAll<HTMLTableRowElement>(fixture, 'tbody tr.data-row').map((row) => row.dataset['rowIndex'])).toStrictEqual(
+          mountedIndexesBeforeAppend
+        );
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: rows are appended repeatedly while the reader stays put', () => {
+      it('THEN: it never yanks the reader back to the top of the dataset', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 2000);
+
+        for (const size of [1100, 1200, 1300]) {
+          host.rows.set(buildRows(size));
+          await fixture.whenStable();
+        }
+
+        expect(region.scrollTop).toBe(2000);
+        expect(Number(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex'])).toBeGreaterThan(0);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: sorting changes after rows have been appended', () => {
+      it('THEN: it resets the window because the row order was rewritten', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        await scrollRegion(fixture, region, 2000);
+        host.rows.set(buildRows(1200));
+        await fixture.whenStable();
+
+        expect(region.scrollTop).toBe(2000);
+
+        table.table.setSorting([{ id: 'throughput', desc: true }]);
+        await fixture.whenStable();
+
+        expect(region.scrollTop).toBe(0);
+        expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']).toBe('0');
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: a page is appended to a descending sorted row model', () => {
+      it('THEN: it resets the window because new rows land above the reader', async () => {
+        const fixture = TestBed.createComponent(VirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const table = fixture.debugElement.query(By.directive(NatTable)).componentInstance as NatTable<Row>;
+
+        table.table.setSorting([{ id: 'throughput', desc: true }]);
+        await fixture.whenStable();
+        await scrollRegion(fixture, region, 2000);
+
+        // Sorted descending, an appended page sorts to the front, so the
+        // sequence is rewritten rather than extended and the reset stands.
+        host.rows.set(buildRows(1200));
+        await fixture.whenStable();
+
+        expect(region.scrollTop).toBe(0);
+        expect(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']).toBe('0');
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a virtualized table reporting its mounted range', () => {
+    describe('WHEN: the initial window is rendered and then scrolled', () => {
+      it('THEN: it emits the mounted row bounds and count for each window', async () => {
+        const fixture = TestBed.createComponent(VirtualRangeHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const initialRange = host.rangeEvents.at(-1);
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, 2000);
+
+        const scrolledRange = host.rangeEvents.at(-1);
+
+        expect(initialRange?.startIndex).toBe(0);
+        expect(initialRange?.count).toBe((initialRange?.endIndex ?? 0) + 1);
+        expect(scrolledRange?.startIndex).toBeGreaterThan(0);
+        expect(scrolledRange?.count).toBe((scrolledRange?.endIndex ?? 0) - (scrolledRange?.startIndex ?? 0) + 1);
+        expect(queryAll(fixture, 'tbody tr.data-row')).toHaveLength(scrolledRange?.count ?? 0);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: the row model empties', () => {
+      it('THEN: it reports an empty range instead of a stale window', async () => {
+        const fixture = TestBed.createComponent(VirtualRangeHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+        host.rows.set([]);
+        await fixture.whenStable();
+
+        expect(host.rangeEvents.at(-1)).toStrictEqual({ startIndex: 0, endIndex: -1, count: 0 });
 
         fixture.destroy();
       });
