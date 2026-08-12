@@ -1,6 +1,7 @@
 ## Release Workflow
 
 - For every code change that affects behavior, public API, docs, examples, or tests, add a new Nx version plan file in `.nx/version-plans/` as part of the same task unless the user explicitly says not to.
+- Keep one version plan file per unreleased unit of work, not one per commit. When a commit continues work a pending version plan already covers — review fixes, follow-up hardening, regressions, or refinements to the same unreleased change — fold the prose into that plan instead of adding a second file, and correct any sentence the follow-up made inaccurate. Add a separate plan only for work the pending plan does not describe at all.
 - Current project release policy intentionally does not follow strict Semantic Versioning. Breaking public API or behavior changes are allowed and should be recorded as `minor` or `patch` version plans for now.
 - Do not create a `major` version plan unless the user explicitly asks for one.
 - Use `minor` for public API replacements, new features, and broad behavior changes, even when they are breaking.
