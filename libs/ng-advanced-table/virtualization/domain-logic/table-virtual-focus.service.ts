@@ -136,7 +136,10 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
       return;
     }
 
-    const row = cell.closest<HTMLTableRowElement>('tr.data-row[data-row-index]');
+    // Ownership-scoped: a bare `closest` walks straight out of this table when
+    // the focused cell sits in the header, and an enclosing table's data row
+    // would hand the header cell that row's index instead of `null`.
+    const row = findOwnedNatTableDataRow(this.elementRef.nativeElement, cell);
     const rowIndexValue = row?.dataset['rowIndex'];
     const currentRowIndex = rowIndexValue === undefined ? null : Number(rowIndexValue);
     const request = resolveNatTableVirtualNavigation({

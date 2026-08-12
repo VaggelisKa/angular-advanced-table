@@ -59,6 +59,35 @@ class NestedTableHost {
 }
 
 @Component({
+  selector: 'test-nested-virtual-table',
+  imports: [NatTable, NatTableVirtualize],
+  providers: [NatTableService],
+  styles: `
+    nat-table {
+      --nat-table-height: 200px;
+    }
+  `,
+  template: `
+    <nat-table [columns]="columns" [data]="rows" [natTableVirtualize]="{ rowHeight: 40 }" accessibleName="Nested virtual table" />
+  `
+})
+class NestedVirtualTable {
+  protected readonly rows = buildRows(NESTED_ROW_COUNT);
+  protected readonly columns = columns;
+}
+
+@Component({
+  selector: 'test-outer-plain-table-host',
+  imports: [NatTable],
+  providers: [NatTableService],
+  template: `<nat-table [columns]="columns" [data]="rows" accessibleName="Outer plain table" />`
+})
+class OuterPlainTableHost {
+  protected readonly rows = buildRows(OUTER_ROW_COUNT);
+  protected readonly columns = nestingColumns(NestedVirtualTable);
+}
+
+@Component({
   selector: 'test-nested-list-host',
   imports: [NatTable, NatTableVirtualize],
   providers: [NatTableService],
@@ -74,7 +103,7 @@ class NestedListHost {
 describe('FEATURE: virtualization isolation between nested renderers', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NestedTableHost, NestedListHost],
+      imports: [NestedTableHost, NestedListHost, OuterPlainTableHost],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
   });
@@ -115,6 +144,32 @@ describe('FEATURE: virtualization isolation between nested renderers', () => {
 
         expect(outerRegion.scrollTop).toBe(0);
         expect(host.querySelector('test-nested-table')?.contains(host.ownerDocument.activeElement)).toBe(true);
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a virtualized nat-table rendered inside a cell of an outer plain table', () => {
+    describe('WHEN: page navigation starts on the nested table header row', () => {
+      it('THEN: it leaves the key to the header row instead of adopting the outer row index', async () => {
+        const fixture = TestBed.createComponent(OuterPlainTableHost);
+
+        await fixture.whenStable();
+
+        const host = fixture.nativeElement as HTMLElement;
+        const nestedHeader = queryRequired<HTMLElement>(
+          fixture,
+          'test-nested-virtual-table thead [ngGridCell][data-column-id="name"]'
+        );
+        const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'PageDown' });
+
+        nestedHeader.focus();
+        nestedHeader.dispatchEvent(event);
+        await fixture.whenStable();
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(host.ownerDocument.activeElement).toBe(nestedHeader);
 
         fixture.destroy();
       });
