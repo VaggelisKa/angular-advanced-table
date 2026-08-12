@@ -252,6 +252,7 @@ describe('FEATURE: NatTable', () => {
         const pinnedRowHoverRule = mediaStyles.find((rule) =>
           rule.style.backgroundImage.includes('--nat-table-row-background-hover-pinned')
         );
+        const dataRowRule = tableStyles.find((rule) => rule.style.background.includes('--nat-table-row-background'));
 
         expect(focusRule?.style.zIndex).toBe('');
         expect(pinnedFocusRule?.style.zIndex).toContain('--nat-table-z-index-focus-cell');
@@ -259,6 +260,7 @@ describe('FEATURE: NatTable', () => {
         expect(pinnedRowHoverRule?.style.backgroundImage).toContain('--nat-table-row-background-hover-pinned');
         expect(pinnedRowFocusRule?.style.background).toBe('');
         expect(pinnedRowHoverRule?.style.background).toBe('');
+        expect(dataRowRule?.style.transition).toBe('');
       });
 
       it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {

@@ -158,6 +158,69 @@ test.describe('FEATURE: Row virtualization accessibility', () => {
       });
     });
 
+    test.describe('WHEN: the pointer moves between custom-virtualized rows', () => {
+      test('THEN: center and pinned hover surfaces update in the same rendered frame', async ({ page }) => {
+        const demo = page.getByTestId('virtualization-demo');
+        const surface = demo.locator('nat-table-surface');
+        const table = demo.getByRole('grid', { name: 'Ten thousand virtualized orders' });
+        const firstRow = table.locator('tbody tr[data-row-index="0"]');
+        const secondRow = table.locator('tbody tr[data-row-index="1"]');
+        const hoverColor = 'rgb(199, 32, 64)';
+
+        await surface.evaluate((element) => {
+          const host = element as HTMLElement;
+
+          host.style.setProperty('--nat-table-row-background-hover', 'rgb(199 32 64)');
+          host.style.setProperty('--nat-table-row-background-hover-pinned', 'rgb(199 32 64)');
+        });
+        await firstRow.hover();
+        await expect.poll(async () => firstRow.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(hoverColor);
+
+        const firstFrameSnapshot = page.evaluate(
+          async ({ currentRowSelector, previousRowSelector }) => {
+            await new Promise<void>((resolve) => {
+              document.addEventListener('pointermove', () => requestAnimationFrame(() => resolve()), { once: true });
+            });
+
+            const currentRow = document.querySelector<HTMLElement>(currentRowSelector);
+            const previousRow = document.querySelector<HTMLElement>(previousRowSelector);
+
+            if (!currentRow || !previousRow) {
+              throw new Error('Both virtualized hover rows must remain mounted.');
+            }
+
+            const currentPinnedStyles = Array.from(currentRow.querySelectorAll<HTMLElement>('.is-pinned-left, .is-pinned-right')).map(
+              (cell) => getComputedStyle(cell).backgroundImage
+            );
+            const previousPinnedStyles = Array.from(
+              previousRow.querySelectorAll<HTMLElement>('.is-pinned-left, .is-pinned-right')
+            ).map((cell) => getComputedStyle(cell).backgroundImage);
+
+            return {
+              currentCenter: getComputedStyle(currentRow).backgroundColor,
+              currentPinnedStyles,
+              previousCenter: getComputedStyle(previousRow).backgroundColor,
+              previousPinnedStyles
+            };
+          },
+          {
+            currentRowSelector: '[data-testid="virtualization-table"] tbody tr[data-row-index="1"]',
+            previousRowSelector: '[data-testid="virtualization-table"] tbody tr[data-row-index="0"]'
+          }
+        );
+
+        await secondRow.hover();
+
+        const snapshot = await firstFrameSnapshot;
+
+        expect(snapshot.currentCenter).toBe(hoverColor);
+        expect(snapshot.currentPinnedStyles).toHaveLength(2);
+        expect(snapshot.currentPinnedStyles.every((backgroundImage) => backgroundImage.includes(hoverColor))).toBe(true);
+        expect(snapshot.previousCenter).toBe('rgba(0, 0, 0, 0)');
+        expect(snapshot.previousPinnedStyles.every((backgroundImage) => backgroundImage === 'none')).toBe(true);
+      });
+    });
+
     test.describe('WHEN: a focused custom-virtualized center cell scrolls beneath both pin zones', () => {
       test('THEN: the mounted pinned cells stay opaque and above the focused cell', async ({ page }) => {
         const demo = page.getByTestId('virtualization-demo');

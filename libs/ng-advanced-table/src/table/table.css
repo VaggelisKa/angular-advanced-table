@@ -307,7 +307,6 @@ tbody .data-row:last-child .data-cell {
 
 .data-row {
   background: var(--nat-table-row-background, var(--sys-nat-table-row-background, transparent));
-  transition: background-color 120ms ease;
 }
 
 .data-table.is-virtualized .data-row,

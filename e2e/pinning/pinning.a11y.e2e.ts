@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import { expectNoAxeViolations } from '../support/axe';
 import { loadDocsExamplePreview } from '../support/docs-example';
 import { constrainPinnedTable, expectPinnedCellAbove, expectPinnedSurfaceComposited } from '../support/pinned-cell-layering';
+import { waitForTransitions } from '../support/transitions';
 
 test.describe('FEATURE: Column pinning accessibility', () => {
   test.beforeEach(async ({ page }) => {
@@ -231,6 +232,7 @@ test.describe('FEATURE: Column pinning accessibility', () => {
           await expect(leftPinnedCell).toBeFocused();
           await expect.poll(async () => leftPinnedCell.evaluate((element) => getComputedStyle(element).boxShadow)).not.toBe('none');
           await expect(rightPinnedCell).toBeVisible();
+          await waitForTransitions(preview);
           await expectNoAxeViolations(page, '[data-testid="docs-example-column-pinning-preview-panel"]');
         });
       });
