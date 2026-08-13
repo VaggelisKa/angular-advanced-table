@@ -17,15 +17,23 @@ verifyDepsBeforeRun: false
 # source instead of resolving the published tarball during re-resolution.
 linkWorkspacePackages: true
 # Keep vulnerable transitive versions out of the graph until their direct
-# parents publish releases that include the fixes. Parent-scoped overrides
-# avoid replacing unrelated major versions elsewhere in the workspace.
+# parents publish releases that include the fixes. Nx exact-pins its
+# transitives (nx@22.7.3 pins `axios: 1.16.0`, `brace-expansion: 5.0.5`, ...),
+# so an upstream patch never arrives on its own and an override is the only
+# lever; that nested nx comes from `lint-suite`, so it lags the root Nx.
+# Scope entries by the major being replaced rather than by parent version — a
+# `parent@version>child` key stops applying once the parent bumps, with no
+# install error — and keep them ranges, so a pin added for one advisory does
+# not block the next fix.
 overrides:
-  '@angular/build>piscina': '5.2.0'
-  '@nx/webpack@23.1.0-beta.0>less': '4.6.7'
-  'nx@22.7.3>brace-expansion': '5.0.6'
-  'nx@22.7.3>form-data': '4.0.6'
-  'nx@22.7.3>tmp': '0.2.7'
-  'nx@22.7.3>yaml': '2.9.0'
+  '@angular/build>piscina': '^5.2.0'
+  'axios@1': '^1.18.1'
+  'brace-expansion@1': '^1.1.18'
+  'brace-expansion@5': '^5.0.9'
+  'form-data@4': '^4.0.6'
+  'less@4': '^4.8.1'
+  'tmp@0.2': '^0.2.7'
+  'yaml@2': '^2.9.0'
 catalogs:
   # runtime: Angular + table/reactivity packages
   frontend:
