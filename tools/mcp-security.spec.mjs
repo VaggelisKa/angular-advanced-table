@@ -120,6 +120,27 @@ describe('FEATURE: MCP endpoint security boundaries', () => {
         assert.deepEqual(target.readBody(), { jsonrpc: '2.0', id: 1, result: {} });
       });
     });
+
+    describe('WHEN: Vercel has parsed the body and consumed the request stream', () => {
+      it('THEN: it dispatches the parsed request instead of reading the drained stream', async () => {
+        const target = createResponse();
+        const body = { jsonrpc: '2.0', id: 1, method: 'ping' };
+        const request = Readable.from([]);
+
+        request.method = 'POST';
+        request.headers = { 'content-length': String(Buffer.byteLength(JSON.stringify(body))) };
+        request.body = body;
+
+        for await (const chunk of request) {
+          void chunk;
+        }
+
+        await handler(request, target.response);
+
+        assert.equal(target.response.statusCode, 200);
+        assert.deepEqual(target.readBody(), { jsonrpc: '2.0', id: 1, result: {} });
+      });
+    });
   });
 
   describe('GIVEN: a JSON-RPC batch exceeds the endpoint request limit', () => {
@@ -167,11 +188,15 @@ describe('FEATURE: MCP endpoint security boundaries', () => {
     describe('WHEN: posting the parsed JSON-RPC request with its original content length', () => {
       it('THEN: it enforces the wire-byte limit from the transport metadata', async () => {
         const target = createResponse();
-        const request = {
-          method: 'POST',
-          headers: { 'content-length': String(65 * 1024) },
-          body: { jsonrpc: '2.0', id: 1, method: 'ping' }
-        };
+        const request = Readable.from([]);
+
+        request.method = 'POST';
+        request.headers = { 'content-length': String(65 * 1024) };
+        request.body = { jsonrpc: '2.0', id: 1, method: 'ping' };
+
+        for await (const chunk of request) {
+          void chunk;
+        }
 
         await handler(request, target.response);
 

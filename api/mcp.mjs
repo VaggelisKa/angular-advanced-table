@@ -147,8 +147,28 @@ const assertDeclaredJsonBodySize = (request) => {
   assertJsonBodySize(Number(contentLength));
 };
 
+const parseAvailableJsonBody = (body) => {
+  if (body && typeof body === 'object' && !Buffer.isBuffer(body)) {
+    assertParsedJsonBodySize(body);
+
+    return body;
+  }
+
+  if (typeof body === 'string' || Buffer.isBuffer(body)) {
+    assertJsonBodySize(Buffer.byteLength(body));
+
+    return JSON.parse(String(body));
+  }
+
+  throw new SyntaxError('Request body must contain JSON-RPC payload.');
+};
+
 const readJsonBody = async (request) => {
   assertDeclaredJsonBodySize(request);
+
+  if (request.readableEnded === true) {
+    return parseAvailableJsonBody(request.body);
+  }
 
   if (typeof request[Symbol.asyncIterator] === 'function') {
     const chunks = [];
@@ -171,19 +191,7 @@ const readJsonBody = async (request) => {
     return JSON.parse(rawBody);
   }
 
-  if (request.body && typeof request.body === 'object' && !Buffer.isBuffer(request.body)) {
-    assertParsedJsonBodySize(request.body);
-
-    return request.body;
-  }
-
-  if (typeof request.body === 'string' || Buffer.isBuffer(request.body)) {
-    assertJsonBodySize(Buffer.byteLength(request.body));
-
-    return JSON.parse(String(request.body));
-  }
-
-  throw new SyntaxError('Request body must contain JSON-RPC payload.');
+  return parseAvailableJsonBody(request.body);
 };
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
