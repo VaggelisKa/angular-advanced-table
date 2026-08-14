@@ -144,6 +144,26 @@ describe('FEATURE: row-state utilities', () => {
       });
     });
 
+    describe('WHEN: an array cycle contains no matching item', () => {
+      it('THEN: it terminates and reports no match', () => {
+        const value: unknown[] = ['Healthy'];
+
+        value.push(value);
+
+        expect(matchesFilterQuery(value, 'pending')).toBe(false);
+      });
+    });
+
+    describe('WHEN: a matching item falls beyond the traversal work budget', () => {
+      it('THEN: it conservatively reports no match', () => {
+        const value = Array.from({ length: 10_001 }, () => 'Healthy');
+
+        value[value.length - 1] = 'Pending';
+
+        expect(matchesFilterQuery(value, 'pending')).toBe(false);
+      });
+    });
+
     describe('WHEN: the value is an unsupported type like a plain object', () => {
       it('THEN: it reports no match', () => {
         expect(matchesFilterQuery({ nested: 'pending' }, 'pending')).toBe(false);

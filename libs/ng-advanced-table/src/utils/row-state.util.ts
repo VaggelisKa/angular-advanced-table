@@ -5,6 +5,23 @@ import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';
 
 const DEFAULT_ROW_ID_INDEX_PREFIX = '__nat-table-row-index__:';
+const MAX_FILTER_VALUE_NODES = 10_000;
+
+const primitiveMatchesFilterQuery = (value: unknown, normalizedQuery: string): boolean => {
+  if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean' && typeof value !== 'bigint') {
+    return false;
+  }
+
+  return String(value).toLowerCase().includes(normalizedQuery);
+};
+
+const dateMatchesFilterQuery = (value: unknown, normalizedQuery: string): boolean =>
+  value instanceof Date && Number.isFinite(value.getTime()) && value.toISOString().toLowerCase().includes(normalizedQuery);
+
+const isNullish = (value: unknown): value is null | undefined => value === null || value === undefined;
+
+const shouldSkipArrayTraversal = (value: unknown, visitedArrays: WeakSet<unknown[]>): boolean =>
+  !Array.isArray(value) || visitedArrays.has(value);
 
 export const resolveDefaultRowId = <TData extends RowData>(row: TData, index: number, parent?: { readonly id: string }): string => {
   const id = typeof row === 'object' && row !== null ? (row as { readonly id?: unknown }).id : undefined;
@@ -51,22 +68,43 @@ export const normalizeDataStatus = (status: NatTableDataStatus): NatTableDataSta
 };
 
 export const matchesFilterQuery = (value: unknown, query: string): boolean => {
-  if (value === null || value === undefined) {
-    return false;
-  }
-
   const normalizedQuery = query.toLowerCase();
+  const pendingValues: unknown[] = [value];
+  const visitedArrays = new WeakSet<unknown[]>();
+  let examinedNodes = 0;
 
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value).toLowerCase().includes(normalizedQuery);
-  }
+  while (pendingValues.length > 0 && examinedNodes < MAX_FILTER_VALUE_NODES) {
+    const currentValue = pendingValues.pop();
 
-  if (value instanceof Date) {
-    return Number.isFinite(value.getTime()) && value.toISOString().toLowerCase().includes(normalizedQuery);
-  }
+    examinedNodes += 1;
 
-  if (Array.isArray(value)) {
-    return value.some((item) => matchesFilterQuery(item, query));
+    if (isNullish(currentValue)) {
+      continue;
+    }
+
+    if (primitiveMatchesFilterQuery(currentValue, normalizedQuery) || dateMatchesFilterQuery(currentValue, normalizedQuery)) {
+      return true;
+    }
+
+    if (currentValue instanceof Date) {
+      continue;
+    }
+
+    if (shouldSkipArrayTraversal(currentValue, visitedArrays)) {
+      continue;
+    }
+
+    // The traversal guard above narrows at runtime; this branch is only reached for arrays.
+    const currentArray = currentValue as unknown[];
+
+    visitedArrays.add(currentArray);
+
+    const remainingCapacity = MAX_FILTER_VALUE_NODES - examinedNodes - pendingValues.length;
+    const scheduledItemCount = Math.min(currentArray.length, Math.max(remainingCapacity, 0));
+
+    for (let index = scheduledItemCount - 1; index >= 0; index -= 1) {
+      pendingValues.push(currentArray[index]);
+    }
   }
 
   return false;

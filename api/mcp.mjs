@@ -11,6 +11,8 @@ const SUPPORTED_PROTOCOL_VERSION = '2025-06-18';
 const DEFAULT_RESOURCE_DESCRIPTION = 'Public Angular Advanced Table showcase page.';
 const DEFAULT_SITE_ORIGIN = 'https://angular-advanced-table.vercel.app';
 const MAX_JSON_BODY_BYTES = 64 * 1024;
+const MAX_JSON_RPC_BATCH_SIZE = 32;
+const MAX_JSON_RPC_RESPONSE_BYTES = 512 * 1024;
 const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'content-type, mcp-protocol-version',
   'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
@@ -23,9 +25,7 @@ const setHeaders = (response, headers) => {
   }
 };
 
-const sendJson = (request, response, statusCode, body) => {
-  const jsonBody = JSON.stringify(body);
-
+const sendJsonText = (request, response, statusCode, jsonBody) => {
   setHeaders(response, {
     ...CORS_HEADERS,
     'Cache-Control': request.method === 'POST' ? 'no-store' : 'public, max-age=300',
@@ -34,6 +34,10 @@ const sendJson = (request, response, statusCode, body) => {
   });
   response.statusCode = statusCode;
   response.end(request.method === 'HEAD' ? undefined : jsonBody);
+};
+
+const sendJson = (request, response, statusCode, body) => {
+  sendJsonText(request, response, statusCode, JSON.stringify(body));
 };
 
 const sendEmpty = (response, statusCode) => {
@@ -111,6 +115,7 @@ const findMarkdownPage = (uri) => {
 };
 
 class PayloadTooLargeError extends Error {}
+class ResponseTooLargeError extends Error {}
 
 const assertJsonBodySize = (byteLength) => {
   if (byteLength > MAX_JSON_BODY_BYTES) {
@@ -122,37 +127,71 @@ const assertParsedJsonBodySize = (body) => {
   assertJsonBodySize(Buffer.byteLength(JSON.stringify(body)));
 };
 
+const getRequestHeader = (request, name) => {
+  if (typeof request.headers?.get === 'function') {
+    return request.headers.get(name) ?? undefined;
+  }
+
+  const headerValue = request.headers?.[name];
+
+  return Array.isArray(headerValue) ? headerValue[0] : headerValue;
+};
+
+const assertDeclaredJsonBodySize = (request) => {
+  const contentLength = getRequestHeader(request, 'content-length');
+
+  if (contentLength === undefined || !/^\d+$/u.test(contentLength)) {
+    return;
+  }
+
+  assertJsonBodySize(Number(contentLength));
+};
+
+const parseAvailableJsonBody = (body) => {
+  if (body && typeof body === 'object' && !Buffer.isBuffer(body)) {
+    assertParsedJsonBodySize(body);
+
+    return body;
+  }
+
+  if (typeof body === 'string' || Buffer.isBuffer(body)) {
+    assertJsonBodySize(Buffer.byteLength(body));
+
+    return JSON.parse(String(body));
+  }
+
+  throw new SyntaxError('Request body must contain JSON-RPC payload.');
+};
+
 const readJsonBody = async (request) => {
-  if (request.body && typeof request.body === 'object' && !Buffer.isBuffer(request.body)) {
-    assertParsedJsonBodySize(request.body);
+  assertDeclaredJsonBodySize(request);
 
-    return request.body;
+  if (request.readableEnded === true) {
+    return parseAvailableJsonBody(request.body);
   }
 
-  if (typeof request.body === 'string' || Buffer.isBuffer(request.body)) {
-    assertJsonBodySize(Buffer.byteLength(request.body));
+  if (typeof request[Symbol.asyncIterator] === 'function') {
+    const chunks = [];
+    let byteLength = 0;
 
-    return JSON.parse(String(request.body));
+    for await (const chunk of request) {
+      const buffer = Buffer.from(chunk);
+
+      byteLength += buffer.byteLength;
+      assertJsonBodySize(byteLength);
+      chunks.push(buffer);
+    }
+
+    const rawBody = Buffer.concat(chunks).toString('utf8').trim();
+
+    if (!rawBody) {
+      throw new SyntaxError('Request body must contain JSON-RPC payload.');
+    }
+
+    return JSON.parse(rawBody);
   }
 
-  const chunks = [];
-  let byteLength = 0;
-
-  for await (const chunk of request) {
-    const buffer = Buffer.from(chunk);
-
-    byteLength += buffer.byteLength;
-    assertJsonBodySize(byteLength);
-    chunks.push(buffer);
-  }
-
-  const rawBody = Buffer.concat(chunks).toString('utf8').trim();
-
-  if (!rawBody) {
-    throw new SyntaxError('Request body must contain JSON-RPC payload.');
-  }
-
-  return JSON.parse(rawBody);
+  return parseAvailableJsonBody(request.body);
 };
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -171,6 +210,25 @@ const createError = (id, code, message) => ({
     message
   }
 });
+
+const serializeJsonRpcResponse = (jsonRpcResponses, isBatch) => {
+  const serializedResponses = [];
+  let byteLength = isBatch ? 2 : 0;
+
+  for (const jsonRpcResponse of jsonRpcResponses) {
+    const serializedResponse = JSON.stringify(jsonRpcResponse);
+
+    byteLength += Buffer.byteLength(serializedResponse) + (serializedResponses.length > 0 ? 1 : 0);
+
+    if (byteLength > MAX_JSON_RPC_RESPONSE_BYTES) {
+      throw new ResponseTooLargeError('JSON-RPC response is too large.');
+    }
+
+    serializedResponses.push(serializedResponse);
+  }
+
+  return isBatch ? `[${serializedResponses.join(',')}]` : serializedResponses[0];
+};
 
 const getServiceOrigin = () => {
   const deploymentHost = process.env['VERCEL_PROJECT_PRODUCTION_URL'] ?? process.env['VERCEL_URL'];
@@ -338,6 +396,11 @@ export default async function handler(request, response) {
     return;
   }
 
+  if (messages.length > MAX_JSON_RPC_BATCH_SIZE) {
+    sendJson(request, response, 413, createError(null, -32000, 'JSON-RPC batch too large.'));
+    return;
+  }
+
   const jsonRpcResponses = messages.map(handleJsonRpcMessage).filter(Boolean);
 
   if (jsonRpcResponses.length === 0) {
@@ -345,5 +408,18 @@ export default async function handler(request, response) {
     return;
   }
 
-  sendJson(request, response, 200, Array.isArray(payload) ? jsonRpcResponses : jsonRpcResponses[0]);
+  let jsonRpcResponseBody;
+
+  try {
+    jsonRpcResponseBody = serializeJsonRpcResponse(jsonRpcResponses, Array.isArray(payload));
+  } catch (error) {
+    if (error instanceof ResponseTooLargeError) {
+      sendJson(request, response, 413, createError(null, -32000, 'JSON-RPC response too large.'));
+      return;
+    }
+
+    throw error;
+  }
+
+  sendJsonText(request, response, 200, jsonRpcResponseBody);
 }
