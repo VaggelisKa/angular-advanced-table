@@ -25,12 +25,8 @@ export const isAppendedRowSequence = (previous: readonly string[], current: read
 export const NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT = 10;
 
 /**
- * Row height substituted for an unusable one. Deliberately a plausible row
- * height rather than `1`: a one-pixel grid squashes every row to invisibility
- * *and* mounts roughly `viewportHeight` rows instead of `viewportHeight /
- * rowHeight`, so the worst input produces the worst possible behavior. A
- * readable, bounded table is the better failure — the directive warns either
- * way in development builds.
+ * Substituted for an unusable row height. A plausible height rather than `1`,
+ * which would both hide every row and mount roughly `viewportHeight` of them.
  */
 export const NAT_TABLE_FALLBACK_ROW_HEIGHT = 40;
 
@@ -51,25 +47,22 @@ export const normalizeNatTableVirtualizationOptions = (
 });
 
 /**
- * Development diagnostics for the raw consumer options, one message per issue.
- * Each names the value received: the usual cause is a signal or async config
- * that has not resolved yet, and `0`, `NaN`, and `undefined` need different
- * fixes.
+ * Development diagnostics for the raw options, one per issue. Each names the
+ * value received: the usual cause is an unresolved signal, and `0`, `NaN`, and
+ * `undefined` need different fixes.
  */
 export const describeNatTableVirtualizationOptionIssues = (options: NatTableVirtualizationOptions): string[] => {
   const issues: string[] = [];
 
   if (!Number.isFinite(options.rowHeight) || options.rowHeight <= 0) {
     issues.push(
-      `natTableVirtualize.rowHeight must be a finite number greater than zero; received ${String(options.rowHeight)}, ` +
-        `falling back to ${NAT_TABLE_FALLBACK_ROW_HEIGHT}px.`
+      `rowHeight must be a finite number above zero; got ${String(options.rowHeight)}, using ${NAT_TABLE_FALLBACK_ROW_HEIGHT}px.`
     );
   }
 
   if (options.overscan !== undefined && (!Number.isFinite(options.overscan) || options.overscan < 0)) {
     issues.push(
-      `natTableVirtualize.overscan must be a finite number greater than or equal to zero; received ${String(options.overscan)}, ` +
-        `falling back to ${NAT_TABLE_DEFAULT_OVERSCAN}.`
+      `overscan must be a finite number at or above zero; got ${String(options.overscan)}, using ${NAT_TABLE_DEFAULT_OVERSCAN}.`
     );
   }
 
@@ -100,10 +93,8 @@ export const opensSubHeaderGroup = (subHeaderOffsets: readonly number[], index: 
 export const rowGridSlot = (subHeaderOffsets: readonly number[], index: number): number => index + (subHeaderOffsets[index] ?? 0);
 
 /**
- * Slot where the row's mounted block begins. A group-opening row travels with
- * the sub-header rendered above it, so its block starts one slot higher than
- * the row itself — which is why the window's end bound is measured from here
- * and not from `rowGridSlot`. Also strictly increasing.
+ * Slot where the row's mounted block begins — one above `rowGridSlot` for a
+ * group opener, which travels with the sub-header above it. Strictly increasing.
  */
 export const rowBlockStartSlot = (subHeaderOffsets: readonly number[], index: number): number =>
   rowGridSlot(subHeaderOffsets, index) - (opensSubHeaderGroup(subHeaderOffsets, index) ? 1 : 0);

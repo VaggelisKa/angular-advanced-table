@@ -51,10 +51,9 @@ export const computeNatTableRowWindow = (context: NatTableVirtualRangeContext): 
     rowCount - 1,
     lowerBoundBySlot(rowCount, firstSlot, (index) => rowGridSlot(subHeaderOffsets, index))
   );
-  // The end bound walks block starts, not row slots: a group-opening row's
-  // sub-header sits one slot above it, so measuring from the row itself drops
-  // that row whenever its sub-header is the last visible slot — with no
-  // overscan to absorb it, the fold renders as a blank strip.
+  // Block starts, not row slots: a group opener's sub-header sits one slot
+  // above it, so measuring from the row drops that row when its sub-header is
+  // the last visible slot — a blank strip when no overscan absorbs it.
   const lastVisible = Math.max(
     firstVisible + 1,
     Math.min(
@@ -63,10 +62,9 @@ export const computeNatTableRowWindow = (context: NatTableVirtualRangeContext): 
     )
   );
   const keepRows = Math.max(1, Math.floor(overscan / 2));
-  // Unsettled once an edge is too close, and also once the window is far wider
-  // than the viewport now needs — shrinking the region (resize, orientation, a
-  // collapsing panel) would otherwise keep every mounted row until the reader
-  // happens to scroll past an edge.
+  // Unsettled once an edge is too close, or once the window is far wider than
+  // the viewport needs — a shrunken region would otherwise keep every mounted
+  // row until the reader scrolls past an edge.
   const isSettled =
     currentRange.end <= rowCount &&
     currentRange.end - currentRange.start <= lastVisible - firstVisible + 2 * overscan + keepRows &&

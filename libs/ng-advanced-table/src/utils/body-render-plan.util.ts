@@ -21,21 +21,24 @@ const renderAllRows = <TData extends RowData>(rows: readonly Row<TData>[]): NatT
 
 /**
  * `NatTableRowRenderStrategy` is a public SPI, so these rejections are
- * reachable from consumer code — and both fail invisibly. Rejected geometry
- * mounts every row (a frozen page on a large dataset), and dropped items leave
- * a table that looks structurally correct, spacers and scrollbar included,
- * with rows simply missing. Neither is diagnosable without a signal, so warn
- * once per message and stay silent on the hot path afterwards.
+ * reachable from consumer code — and both fail invisibly. Rejected metrics
+ * mount every row (a frozen page on a large dataset), and discarded items
+ * leave a table that looks structurally correct, spacers and scrollbar
+ * included, with rows simply missing.
+ *
+ * Keyed by a short tag rather than the message so a per-call count can vary
+ * without re-warning, and kept terse: the strings ship to production even
+ * though `isDevMode()` stops them printing there.
  */
-const warnedDiagnostics = new Set<string>();
+const warned = new Set<string>();
 
-const warnOnce = (message: string): void => {
-  if (!isDevMode() || warnedDiagnostics.has(message)) {
+const warnOnce = (tag: string, message: string): void => {
+  if (!isDevMode() || warned.has(tag)) {
     return;
   }
 
-  warnedDiagnostics.add(message);
-  console.warn(`[ng-advanced-table] ${message}`);
+  warned.add(tag);
+  console.warn(`[ng-advanced-table] Row-render strategy: ${message}`);
 };
 
 /**
@@ -55,8 +58,8 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
 
   if (!Number.isFinite(rowHeight) || rowHeight <= 0 || !Number.isFinite(totalSize) || totalSize < rows.length * rowHeight) {
     warnOnce(
-      `A row-render strategy reported unusable global metrics (rowHeight: ${rowHeight}, totalSize: ${totalSize}, rows: ${rows.length}); ` +
-        'totalSize must be at least rows.length * rowHeight. Falling back to rendering every row.'
+      'metrics',
+      `unusable metrics (rowHeight ${rowHeight}, totalSize ${totalSize}, rows ${rows.length}); rendering every row.`
     );
 
     return renderAllRows(rows);
@@ -67,16 +70,8 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
     .filter((item) => isUsableVirtualItem(item, rows.length, totalSize))
     .sort((left, right) => left.index - right.index);
 
-  if (items.length < supplied.length) {
-    warnOnce(
-      `A row-render strategy supplied ${supplied.length - items.length} unusable virtual item(s) out of ${supplied.length}; ` +
-        'each index must be a unique integer within the row count, and each extent finite, increasing, and within totalSize. ' +
-        'They were discarded, so those rows are not rendered.'
-    );
-  }
-
   if (rows.length > 0 && items.length === 0) {
-    warnOnce('A row-render strategy supplied no usable virtual items for a non-empty row model. Falling back to rendering every row.');
+    warnOnce('empty', 'no usable items for a non-empty row model; rendering every row.');
 
     return renderAllRows(rows);
   }
@@ -87,17 +82,21 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
 
   for (const item of items) {
     if (item.index === previousIndex || item.start < previousEnd) {
-      warnOnce(
-        `A row-render strategy supplied a duplicate or overlapping virtual item (index ${item.index}, start ${item.start}); ` +
-          'indices must be unique and extents strictly increasing. It was discarded, so that row is not rendered.'
-      );
-
       continue;
     }
 
     previousIndex = item.index;
     renderedRows.push({ row: rows[item.index], logicalIndex: item.index, beforeSize: Math.max(0, item.start - previousEnd) });
     previousEnd = Math.max(previousEnd, item.end);
+  }
+
+  if (renderedRows.length < supplied.length) {
+    // Covers both rejection paths: unusable shape, and duplicate/overlapping
+    // extents dropped by the walk above.
+    warnOnce(
+      'items',
+      `${supplied.length - renderedRows.length} of ${supplied.length} items discarded; indices must be unique in-range integers and extents finite and increasing.`
+    );
   }
 
   return { rows: renderedRows, afterSize: Math.max(0, totalSize - previousEnd) };

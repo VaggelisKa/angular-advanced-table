@@ -1285,8 +1285,11 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         host.options.set({ rowHeight: 0, overscan: -1 });
         await fixture.whenStable();
 
-        expect(warn).toHaveBeenCalledWith(expect.stringContaining('rowHeight must be a finite number greater than zero'));
-        expect(warn).toHaveBeenCalledWith(expect.stringContaining('overscan must be a finite number greater than or equal to zero'));
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('rowHeight must be a finite number above zero'));
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('overscan must be a finite number at or above zero'));
+        // The fallback height must keep the window bounded — a 1px grid would
+        // mount roughly one row per viewport pixel.
+        expect(queryAll(fixture, 'tbody tr.data-row').length).toBeLessThan(30);
 
         fixture.destroy();
       });
@@ -1342,7 +1345,7 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         await fixture.whenStable();
 
-        expect(warn).toHaveBeenCalledWith(expect.stringContaining('requires a bounded table region'));
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('needs a bounded region'));
 
         fixture.destroy();
       });
@@ -1356,7 +1359,7 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         const fixture = TestBed.createComponent(VirtualTableHost);
         const host = fixture.componentInstance;
         const boundedWarnings = (): unknown[][] =>
-          warn.mock.calls.filter(([message]) => String(message).includes('requires a bounded table region'));
+          warn.mock.calls.filter(([message]) => String(message).includes('needs a bounded region'));
 
         host.rows.set(buildRows(5));
         await fixture.whenStable();
@@ -1379,7 +1382,7 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const fixture = TestBed.createComponent(VirtualTableHost);
         const boundedWarnings = (): unknown[][] =>
-          warn.mock.calls.filter(([message]) => String(message).includes('requires a bounded table region'));
+          warn.mock.calls.filter(([message]) => String(message).includes('needs a bounded region'));
 
         await fixture.whenStable();
 

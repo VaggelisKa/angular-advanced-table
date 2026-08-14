@@ -197,7 +197,7 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
 
     effect(() => {
       for (const issue of describeNatTableVirtualizationOptionIssues(this.natTableVirtualize())) {
-        console.warn(`[ng-advanced-table] ${issue}`);
+        console.warn(`[ng-advanced-table] natTableVirtualize.${issue}`);
       }
     });
   }

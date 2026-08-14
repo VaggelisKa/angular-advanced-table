@@ -139,11 +139,10 @@ export class NatTableVirtualLayoutService<TData extends RowData = RowData> {
    * re-runs on `resolvedCaption()` changes and re-targets the observer here.
    */
   private syncCaptionObservation(): void {
-    // Ownership-scoped, unlike the measurement queries below: those read
-    // elements this table always renders, so its own come first in document
-    // order. A caption sits behind `@if`, so an absent one here would
-    // otherwise resolve to a nested table's caption — a node that mounts and
-    // unmounts as rows scroll through the window.
+    // Ownership-scoped, unlike the measurements below: those read elements
+    // this table always renders, so its own come first in document order. A
+    // caption sits behind `@if`, so an absent one would resolve to a nested
+    // table's — a node that mounts and unmounts as rows scroll.
     const caption = queryOwnedNatTableElements(this.elementRef.nativeElement, 'table caption').at(0) ?? null;
 
     if (!this.resizeObserver || caption === this.observedCaption) {

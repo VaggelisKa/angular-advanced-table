@@ -13,8 +13,7 @@ type HorizontalBounds = { readonly left: number; readonly right: number };
 
 const resolveUnpinnedBounds = (host: HTMLElement, regionRect: DOMRect): HorizontalBounds | null => {
   // Ownership-scoped: a bare descendant query finds a nested table's pinned
-  // header whenever this table has no pinned columns of its own, and the
-  // reveal would then be computed against the wrong pin zone.
+  // header when this table has none, revealing against the wrong pin zone.
   const pinnedLeft = queryOwnedNatTableElements<HTMLElement>(host, 'thead .has-pinned-edge-left').at(0)?.getBoundingClientRect();
   const pinnedRight = queryOwnedNatTableElements<HTMLElement>(host, 'thead .has-pinned-edge-right').at(0)?.getBoundingClientRect();
   let visibleLeft = regionRect.left;

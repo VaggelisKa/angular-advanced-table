@@ -27,12 +27,9 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
   private items: Signal<readonly NatTableVirtualItem[]> | null = null;
 
   public constructor() {
-    // Deliberately not development-only: an unbounded region makes the window
-    // converge on every row — the exact outcome virtualization prevents — and
-    // it is self-reinforcing, since the growing body feeds back into
-    // `clientHeight`. It is also the failure most likely to surface only in
-    // production, where a different app shell drops the height token. Costs two
-    // property reads behind a latch that fires at most once per table.
+    // Not development-only: an unbounded region makes the window converge on
+    // every row, and it is the failure most likely to surface only in
+    // production. Two property reads behind a once-per-table latch.
     this.registerBoundedRegionValidationEffect();
 
     // The rest are development diagnostics: production builds register nothing,
@@ -90,7 +87,7 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
 
         hasWarned = true;
         console.warn(
-          '[ng-advanced-table] natTableVirtualize requires a bounded table region. Set `--nat-table-height` or `--nat-table-max-height`.'
+          '[ng-advanced-table] natTableVirtualize needs a bounded region; set --nat-table-height or --nat-table-max-height.'
         );
       }
     });
@@ -102,11 +99,9 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
    * the fixed row grid.
    */
   private registerRowHeightValidationEffect(): void {
-    // Latched per row kind, not per service: data rows and sub-header rows are
-    // two separate things a consumer has to get right, so one latch would
-    // report the first, get fixed, then hide the second for the rest of the
-    // session. Only the first mounted row of each kind is measured — this runs
-    // on every window move, and a full scan is not worth it.
+    // Latched per row kind: one latch would report a data-row mismatch, get
+    // fixed, then hide a sub-header one for the session. Only the first mounted
+    // row of each kind is measured — this runs on every window move.
     const warnedKinds = new Set<string>();
 
     afterRenderEffect({
@@ -139,8 +134,7 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
         warnedKinds.add(mismatch.label);
         console.warn(
           `[ng-advanced-table] natTableVirtualize expected ${mismatch.expectedHeight}px rows but measured ` +
-            `${mismatch.actualHeight}px on a ${mismatch.label} row. ` +
-            'Keep cell and sub-header content within the configured fixed row height.'
+            `${mismatch.actualHeight}px on a ${mismatch.label} row.`
         );
       }
     });
