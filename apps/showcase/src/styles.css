@@ -88,6 +88,20 @@
   --sc-width-content: min(1120px, 100%);
   --sc-width-wide: min(1180px, 100%);
   --sc-width-narrow: min(600px, 100%);
+
+  /* Page shell — every routed page shell (docs container, gallery demo page,
+     detailed-view page) frames its content with these, so they stay identical
+     at a given width. The compact values are set in the media query below. */
+  --sc-page-gutter: 20px 24px 48px;
+  --sc-page-gap: 16px;
+
+  /* Gutter for a pagination bar whose surface padding the showcase flattens. */
+  --sc-table-bar-gutter: 10px 20px;
+
+  /* Control minimums for narrow or coarse-pointer viewports. The table token
+     block's compact sizing is tuned for a mouse and is too small for a thumb. */
+  --sc-touch-target: 40px;
+  --sc-touch-target-sm: 36px;
   --sc-focus-ring-width: 3px;
   --sc-focus-ring-offset: 2px;
   --sc-mono-font: 'JetBrains Mono', 'SFMono-Regular', menlo, monaco, consolas, ui-monospace, monospace;
@@ -96,6 +110,15 @@
 
   color-scheme: light;
   background: var(--sc-document-bg);
+}
+
+/* One breakpoint for the whole page shell. Overriding the tokens here instead of
+   re-declaring padding per page keeps every shell in step automatically. */
+@media (width <= 640px) {
+  :root {
+    --sc-page-gutter: 14px;
+    --sc-table-bar-gutter: 10px 14px;
+  }
 }
 
 :root[data-theme='dark'] {
@@ -668,21 +691,15 @@ input {
 
 .showcase-page.showcase-container {
   box-sizing: border-box;
-  gap: 16px;
+  gap: var(--sc-page-gap);
   align-content: start;
   width: min(1200px, 100%);
-  padding: 20px 24px 48px;
+  padding: var(--sc-page-gutter);
   margin: 0 auto;
 }
 
 .showcase-page.showcase-container.table-builder-page {
   width: min(1360px, 100%);
-}
-
-@media (width <= 640px) {
-  .showcase-page.showcase-container {
-    padding: 14px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1084,14 +1101,8 @@ input {
    variant (bare .sc-demo-page inside a docs topic card) keeps padding: 0,
    because the card already supplies both. */
 .showcase-page.sc-demo-page {
-  gap: 24px;
-  padding: 16px 16px 40px;
-}
-
-@media (width >= 768px) {
-  .showcase-page.sc-demo-page {
-    padding: 24px 24px 48px;
-  }
+  gap: var(--sc-page-gap);
+  padding: var(--sc-page-gutter);
 }
 
 /* The showcase flattens surface padding to 0 so the table sits flush inside its
@@ -1104,23 +1115,17 @@ input {
    the same flattened bar. The gutter is wanted in both places. Only the page
    padding above is gallery-only, because a topic card already supplies it. */
 .showcase-page nat-table-pagination {
-  --nat-table-toolbar-padding: 10px 14px;
-}
-
-@media (width >= 768px) {
-  .showcase-page nat-table-pagination {
-    --nat-table-toolbar-padding: 10px 20px;
-  }
+  --nat-table-toolbar-padding: var(--sc-table-bar-gutter);
 }
 
 /* Give the pager and page-size control back a touch-sized target on narrow or
-   touch viewports. The compact sizing in the surface token block above is tuned
-   for a mouse and leaves 28px controls under a thumb. Deliberately every
-   .showcase-page surface, docs demos included — a thumb is a thumb. */
+   touch viewports. Deliberately every .showcase-page surface, docs demos
+   included — a thumb is a thumb. Its own condition, not the page-shell
+   breakpoint alone: a touch laptop is wide but still thumb-driven. */
 @media (width <= 640px), (pointer: coarse) {
   .showcase-page nat-table-surface {
-    --nat-table-pager-min-height: 40px;
-    --nat-table-chip-min-height-compact: 36px;
+    --nat-table-pager-min-height: var(--sc-touch-target);
+    --nat-table-chip-min-height-compact: var(--sc-touch-target-sm);
   }
 }
 
