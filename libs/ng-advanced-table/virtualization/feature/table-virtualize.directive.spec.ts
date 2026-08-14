@@ -82,6 +82,61 @@ class VirtualRangeHost {
   protected readonly columns = columns;
 }
 
+const CURSOR_PAGE_SIZE = 100;
+/** Rows left below the mounted window before the container fetches the next page. */
+const CURSOR_LOOKAHEAD = 20;
+
+const isSameVirtualRange = (left: NatTableVirtualRangeChange, right: NatTableVirtualRangeChange): boolean =>
+  left.startIndex === right.startIndex && left.endIndex === right.endIndex && left.count === right.count;
+
+/**
+ * A cursor-fetching container as the docs describe one: it owns the data and
+ * appends each fetched page from its own `(virtualRangeChange)` handler. The
+ * round trip is the contract under test — the append must not re-emit the
+ * window that triggered it, or the handler re-enters itself on its own result.
+ */
+@Component({
+  selector: 'test-cursor-fetch-host',
+  imports: [NatTable, NatTableVirtualize],
+  providers: [NatTableService],
+  styles: `
+    nat-table {
+      --nat-table-height: 200px;
+    }
+  `,
+  template: `
+    <nat-table
+      [columns]="columns"
+      [data]="rows()"
+      [getRowId]="getRowId"
+      [natTableVirtualize]="{ rowHeight: 40 }"
+      accessibleName="Cursor fetched operations"
+      (virtualRangeChange)="onRangeChange($event)" />
+  `
+})
+class CursorFetchHost {
+  public readonly getRowId = stableRowId;
+  public readonly rows = signal<Row[]>(buildRows(CURSOR_PAGE_SIZE));
+  public readonly rangeEvents: NatTableVirtualRangeChange[] = [];
+  /** Row count loaded at the moment of each fetch, one entry per page fetched. */
+  public readonly fetchedAt: number[] = [];
+  protected readonly columns = columns;
+
+  protected onRangeChange(range: NatTableVirtualRangeChange): void {
+    this.rangeEvents.push(range);
+
+    const loaded = this.rows().length;
+
+    if (range.endIndex < loaded - CURSOR_LOOKAHEAD) {
+      return;
+    }
+
+    this.fetchedAt.push(loaded);
+    // buildRows is prefix-stable, so this is a true append of the next page.
+    this.rows.set(buildRows(loaded + CURSOR_PAGE_SIZE));
+  }
+}
+
 @Component({
   selector: 'test-ordinary-table-host',
   imports: [NatTable],
@@ -1668,6 +1723,83 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         expect(host.rangeEvents).toHaveLength(eventCount);
         expect(host.rangeEvents.at(-1)).toBe(mountedRange);
+
+        fixture.destroy();
+      });
+    });
+  });
+
+  describe('GIVEN: a container that fetches the next page from its own range handler', () => {
+    describe('WHEN: the mounted window reaches the fetch lookahead', () => {
+      it('THEN: it fetches one page and is not re-entered by the append it caused', async () => {
+        const fixture = TestBed.createComponent(CursorFetchHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        expect(host.fetchedAt).toStrictEqual([]);
+
+        await scrollRegion(fixture, region, CURSOR_PAGE_SIZE * 40 - 200);
+
+        const repeatedWindows = host.rangeEvents.filter(
+          (event, index) => index > 0 && isSameVirtualRange(host.rangeEvents[index - 1], event)
+        );
+
+        expect(host.fetchedAt).toStrictEqual([CURSOR_PAGE_SIZE]);
+        expect(host.rows()).toHaveLength(CURSOR_PAGE_SIZE * 2);
+        expect(repeatedWindows).toStrictEqual([]);
+        expect(region.scrollTop).toBe(CURSOR_PAGE_SIZE * 40 - 200);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: the reader keeps scrolling through the fetched pages', () => {
+      it('THEN: it fetches one page per approach and never rewinds the mounted window', async () => {
+        const fixture = TestBed.createComponent(CursorFetchHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const firstMountedIndexes: number[] = [];
+
+        for (const loadedPages of [1, 2, 3]) {
+          await scrollRegion(fixture, region, loadedPages * CURSOR_PAGE_SIZE * 40 - 200);
+          firstMountedIndexes.push(Number(queryRequired<HTMLTableRowElement>(fixture, 'tbody tr.data-row').dataset['rowIndex']));
+        }
+
+        expect(host.fetchedAt).toStrictEqual([CURSOR_PAGE_SIZE, CURSOR_PAGE_SIZE * 2, CURSOR_PAGE_SIZE * 3]);
+        expect(host.rows()).toHaveLength(CURSOR_PAGE_SIZE * 4);
+        expect(firstMountedIndexes).toStrictEqual([...firstMountedIndexes].sort((left, right) => left - right));
+        expect(firstMountedIndexes[0]).toBeGreaterThan(0);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: the container replaces the pages with a shorter result', () => {
+      it('THEN: it emits the reset window so the handler can fetch again', async () => {
+        const fixture = TestBed.createComponent(CursorFetchHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+
+        await scrollRegion(fixture, region, CURSOR_PAGE_SIZE * 40 - 200);
+
+        const eventsBeforeReplacement = host.rangeEvents.length;
+
+        // Truncation, not an append: the reader is sent back to the first row.
+        host.rows.set(buildRows(CURSOR_PAGE_SIZE / 2));
+        await fixture.whenStable();
+
+        expect(host.rangeEvents.length).toBeGreaterThan(eventsBeforeReplacement);
+        expect(host.rangeEvents.at(-1)?.startIndex).toBe(0);
+        expect(region.scrollTop).toBe(0);
 
         fixture.destroy();
       });
