@@ -23,6 +23,8 @@ import { FlexRender } from '@tanstack/angular-table';
 import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
+import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeholder.type';
+import type { NatTableRenderedBodyRow } from '../common/row-render-strategy.type';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
 import { NAT_TABLE_ROW_WINDOW_HOST } from '../common/row-window-host.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
@@ -52,10 +54,19 @@ import {
   NatTablePxWidth,
   NatTableResizeGuide
 } from '../ui/table-layout.directive';
+import { NatTableRowPlaceholderTemplate } from '../ui/table-row-placeholder-template.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
+
+/**
+ * Track expression for the body plan: loaded rows keep their stable TanStack
+ * row id, placeholder slots key on their logical index. The prefix keeps a
+ * placeholder key from colliding with a consumer row id.
+ */
+const trackNatTableBodyRow = <TData extends RowData>(renderedRow: NatTableRenderedBodyRow<TData>): string =>
+  renderedRow.kind === 'row' ? renderedRow.row.id : `nat-table-placeholder:${renderedRow.logicalIndex}`;
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
@@ -237,6 +248,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
   private readonly errorTemplate = contentChild(NatTableErrorTemplate);
   private readonly subHeaderTemplate = contentChild(NatTableSubHeaderTemplate);
+  private readonly rowPlaceholderTemplate = contentChild(NatTableRowPlaceholderTemplate);
 
   protected readonly loadingTemplateRef = computed<TemplateRef<NatTableLoadingTemplateContext<TData>> | null>(() => {
     const templateRef = this.loadingTemplate()?.templateRef;
@@ -262,6 +274,12 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     return templateRef ? (templateRef as TemplateRef<NatTableSubHeaderTemplateContext<TData>>) : null;
   });
 
+  protected readonly rowPlaceholderTemplateRef = computed<TemplateRef<NatTableRowPlaceholderTemplateContext<TData>> | null>(() => {
+    const templateRef = this.rowPlaceholderTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatTableRowPlaceholderTemplateContext<TData>>) : null;
+  });
+
   // ─── Sub-header groups (delegated to state) ───
 
   protected readonly subHeaderGroups = this.state.subHeaderGroups;
@@ -274,6 +292,20 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   protected getSubHeaderAriaText(group: NatTableSubHeaderGroup<TData>): string {
     return this.state.getSubHeaderAnnouncement(group, 'table');
   }
+
+  protected getRowPlaceholderContext(
+    logicalIndex: number,
+    column: Column<TData, unknown>
+  ): NatTableRowPlaceholderTemplateContext<TData> {
+    return this.state.getRowPlaceholderTemplateContext(logicalIndex, column);
+  }
+
+  protected getRowPlaceholderAriaText(logicalIndex: number): string {
+    return this.state.getRowPlaceholderAnnouncement(logicalIndex);
+  }
+
+  /** Bound to the body plan `@for` track; see `trackNatTableBodyRow`. */
+  protected readonly bodyRowTrackId = trackNatTableBodyRow<TData>;
 
   protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(() => ({
     ...this.state.getStateTemplateBaseContext(),

@@ -22,6 +22,7 @@ import { SubHeaderRows } from '../demos/sub-header-rows/sub-header-rows';
 import { Toolbar } from '../demos/toolbar/toolbar';
 import { Virtualization } from '../demos/virtualization/virtualization';
 import { VirtualizationIncrementalFetch } from '../demos/virtualization/virtualization-incremental-fetch';
+import { VirtualizationRemoteWindow } from '../demos/virtualization/virtualization-remote-window';
 import { Visibility } from '../demos/visibility/visibility';
 
 const snippet = (id: string, label: string, language: string, code: string): DocsCodeSnippet => ({
@@ -189,6 +190,75 @@ export class OrdersTable {
     `
 .virtual-orders {
   --nat-table-height: 30rem;
+}
+`
+  )
+];
+
+const virtualizationRemoteWindowSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface mode="manual">
+  <nat-table
+    [columns]="columns"
+    [data]="loadedWindow()"
+    [getRowId]="getRowId"
+    [natTableVirtualize]="{ rowHeight: 44 }"
+    [remoteRowCount]="remoteTotal"
+    [rowWindowOffset]="windowOffset()"
+    accessibleName="Orders"
+    (virtualRangeChange)="onRangeChange($event)">
+    <ng-template natTableRowPlaceholder>
+      <span class="skeleton" aria-hidden="true"></span>
+    </ng-template>
+  </nat-table>
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+import { Component, signal } from '@angular/core';
+
+import { NatTable, NatTableRowPlaceholderTemplate } from 'ng-advanced-table';
+import { NatTableSurface } from 'ng-advanced-table/components';
+import { NatTableVirtualize, type NatTableVirtualRangeChange } from 'ng-advanced-table/virtualization';
+
+const WINDOW_SIZE = 200;
+
+@Component({
+  selector: 'app-orders-table',
+  imports: [NatTable, NatTableRowPlaceholderTemplate, NatTableSurface, NatTableVirtualize],
+  templateUrl: './orders-table.html'
+})
+export class OrdersTable {
+  // The server's total. The table renders placeholders for every row it does
+  // not hold. Keep remoteTotal × rowHeight under ~16,000,000px of extent.
+  readonly remoteTotal = 250_000;
+  readonly loadedWindow = signal<Order[]>([]);
+  readonly windowOffset = signal(0);
+  readonly getRowId = (row: Order): string => row.id;
+
+  // Both range bounds are logical positions in the remote dataset.
+  protected onRangeChange(range: NatTableVirtualRangeChange): void {
+    if (this.isCoveredByLoadedWindow(range)) {
+      return;
+    }
+
+    const offset = Math.max(0, Math.min(range.startIndex, this.remoteTotal - WINDOW_SIZE));
+
+    // Keep the previous window mounted until the fetched one arrives, then
+    // replace it in one step — the fill never resets the scroll position.
+    void fetchOrders({ offset, limit: WINDOW_SIZE }).then((window) => {
+      this.loadedWindow.set(window);
+      this.windowOffset.set(offset);
+    });
+  }
 }
 `
   )
@@ -1066,6 +1136,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Composition', path: '#composition' },
       { label: 'Sub-header group rows', path: '#sub-header-group-rows' },
       { label: 'Reacting to the window', path: '#reacting-to-the-mounted-window' },
+      { label: 'Remote windowing', path: '#remote-windowing' },
       { label: 'Accessibility', path: '#accessibility-and-keyboard' },
       { label: 'Limitations', path: '#limitations' }
     ],
@@ -1088,6 +1159,15 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
           'A container that loads the next page from its own (virtualRangeChange) handler. Appending each page keeps the scroll position and mounted window, and the unmoved window emits nothing, so the handler is not re-entered by its own result.',
         component: VirtualizationIncrementalFetch,
         snippets: virtualizationFetchSnippets
+      },
+      {
+        kind: 'example',
+        id: 'virtualization-remote-window',
+        title: 'Remote windowing',
+        description:
+          'The scrollbar spans a 250,000-row dataset the table never holds. remoteRowCount and rowWindowOffset place one loaded window inside the remote extent, unfetched slots render the natTableRowPlaceholder template, and replacing the window never moves the scroll position.',
+        component: VirtualizationRemoteWindow,
+        snippets: virtualizationRemoteWindowSnippets
       }
     ],
     related: [

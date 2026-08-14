@@ -19,7 +19,6 @@ export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
     return `${groupLabel}, ${rowCountText} ${pluralize('item', rowCountValue)}.`;
   },
   listSummary: ({
-    filterState,
     pageCountText,
     pageText,
     paginationState,
@@ -32,9 +31,12 @@ export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
   }) => {
     let summary: string;
 
+    // The subset phrasing fires whenever the shown items are fewer than the
+    // represented total — filtered views, paginated pages, and remote windows
+    // alike — so the summary can never contradict the grid's aria-rowcount.
     if (visibleRowsValue === 0) {
       summary = `No items are currently shown. ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
-    } else if (filterState === 'filtered' && totalRowsValue !== visibleRowsValue) {
+    } else if (totalRowsValue !== visibleRowsValue) {
       summary = `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
         'item',
         totalRowsValue

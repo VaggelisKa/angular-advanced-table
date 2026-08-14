@@ -47,6 +47,7 @@ import type {
   NatTableColumnReorderResult,
   TableColumnRenderState
 } from '../common/column-render.type';
+import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeholder.type';
 import type { NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import { DEFAULT_TABLE_STATE } from '../common/table-state.const';
@@ -116,6 +117,25 @@ export class NatTableState<TData extends RowData = RowData> {
   private readonly rowRenderStrategies = inject(NatTableRowRenderStrategyRegistry, { optional: true, self: true });
   private readonly rowRenderStrategy = computed(() => this.rowRenderStrategies?.strategy() ?? null);
   private readonly hasRowRenderStrategy = computed(() => this.rowRenderStrategy() !== null);
+
+  /**
+   * Remote row count declared by the row-render strategy, or `null` when the
+   * loaded row model is the full extent. Deliberately not clamped against the
+   * row model: this computed feeds the TanStack options `meta`, and reading
+   * `bodyRows` here would read the table from inside its own options.
+   */
+  private readonly strategyLogicalRowCount = computed<number | null>(() => {
+    const logicalRowCount = this.rowRenderStrategy()?.logicalRowCount?.() ?? null;
+
+    return logicalRowCount !== null && Number.isInteger(logicalRowCount) && logicalRowCount >= 0 ? logicalRowCount : null;
+  });
+
+  /** `strategyLogicalRowCount` clamped so the loaded rows always fit inside it. */
+  private readonly remoteRowCount = computed<number | null>(() => {
+    const logicalRowCount = this.strategyLogicalRowCount();
+
+    return logicalRowCount === null ? null : Math.max(logicalRowCount, this.bodyRows().length);
+  });
 
   /** `NatTableRowWindowHost` bridge; keeps the cell-interaction predicate internal. */
   public isDelegatedCellControl(cell: HTMLElement, target: HTMLElement): boolean {
@@ -333,7 +353,8 @@ export class NatTableState<TData extends RowData = RowData> {
       natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
       natTableSortingEnabled: this.enableSorting(),
       natTablePinningEnabled: this.enablePinning(),
-      natTableSubHeaderColumnId: this.resolvedSubHeaderColumnId()
+      natTableSubHeaderColumnId: this.resolvedSubHeaderColumnId(),
+      natTableRemoteRowCount: this.strategyLogicalRowCount()
     },
     autoResetPageIndex: false,
     globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
@@ -382,6 +403,14 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly visibleColumnCount = computed(() => this.visibleColumns().length);
   public readonly visibleRowCount = computed(() => this.bodyRows().length);
   public readonly totalRowCount = computed(() => this.data().length);
+
+  /**
+   * Logical rows the grid represents: the strategy's remote total under remote
+   * windowing, otherwise the loaded row model. Drives `aria-rowcount` and the
+   * rows/empty body decision, so an empty loaded window inside a non-empty
+   * remote extent still renders placeholder rows instead of the empty state.
+   */
+  public readonly logicalRowCount = computed(() => this.remoteRowCount() ?? this.visibleRowCount());
   public readonly resolvedPageCount = computed(() => {
     if (this.manualPagination()) {
       return this.manualPageCount() ?? 1;
@@ -410,7 +439,7 @@ export class NatTableState<TData extends RowData = RowData> {
       return NAT_TABLE_BODY_STATE.loading;
     }
 
-    return this.visibleRowCount() > 0 ? NAT_TABLE_BODY_STATE.rows : NAT_TABLE_BODY_STATE.empty;
+    return this.logicalRowCount() > 0 ? NAT_TABLE_BODY_STATE.rows : NAT_TABLE_BODY_STATE.empty;
   });
 
   public readonly headerRowCount = computed(() => this.headerGroups().length);
@@ -426,7 +455,10 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly subHeaderGroups = computed<ReadonlyMap<string, NatTableSubHeaderGroup<TData>>>(() => {
     const columnId = this.resolvedSubHeaderColumnId();
 
-    if (columnId === null || this.bodyState() !== NAT_TABLE_BODY_STATE.rows) {
+    // Remote windowing disables sub-headers: groups computed over a loaded
+    // window would misstate the dataset, and their extra rows have no slot on
+    // the remote fixed-height grid. The virtualize directive warns in dev.
+    if (columnId === null || this.bodyState() !== NAT_TABLE_BODY_STATE.rows || this.remoteRowCount() !== null) {
       return new Map<string, NatTableSubHeaderGroup<TData>>();
     }
 
@@ -436,18 +468,29 @@ export class NatTableState<TData extends RowData = RowData> {
   /** See `NatTableRowWindowHost.subHeaderRowOffsets`; empty when no sub-header renders. */
   public readonly subHeaderRowOffsets = computed(() => buildSubHeaderRowOffsets(this.bodyRows(), this.subHeaderGroups()));
 
-  /** `aria-rowcount`, counted from the logical row model because a windowed body mounts a subset. */
+  /**
+   * `aria-rowcount`, counted from the logical row model because a windowed
+   * body mounts a subset — and from the remote total under remote windowing,
+   * because the loaded window is itself a subset of the represented dataset.
+   */
   public readonly gridRowCount = computed(
     () =>
       this.headerRowCount() +
       this.subHeaderGroups().size +
-      (this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 1)
+      (this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.logicalRowCount() : 1)
   );
 
   public readonly stateTotalRowCount = computed(() => {
     const bodyState = this.bodyState();
 
-    return bodyState === NAT_TABLE_BODY_STATE.loading || bodyState === NAT_TABLE_BODY_STATE.error ? 0 : this.totalRowCount();
+    if (bodyState === NAT_TABLE_BODY_STATE.loading || bodyState === NAT_TABLE_BODY_STATE.error) {
+      return 0;
+    }
+
+    // Under remote windowing the represented dataset is the remote total, not
+    // the loaded `data` array — summaries and announcements report it so a
+    // reader is never told the loaded window is everything.
+    return this.remoteRowCount() ?? this.totalRowCount();
   });
 
   public readonly renderedPageIndex = computed(() =>
@@ -1063,6 +1106,37 @@ export class NatTableState<TData extends RowData = RowData> {
       row: group.row,
       table: this.table
     };
+  }
+
+  /** Template context for one placeholder cell of an unfetched logical row slot. */
+  public getRowPlaceholderTemplateContext(
+    logicalIndex: number,
+    column: Column<TData, unknown>
+  ): NatTableRowPlaceholderTemplateContext<TData> {
+    return {
+      $implicit: logicalIndex,
+      logicalIndex,
+      column,
+      table: this.table
+    };
+  }
+
+  /** Screen-reader text rendered inside a placeholder row for an unfetched logical slot. */
+  public getRowPlaceholderAnnouncement(logicalIndex: number): string {
+    const formatter = this.resolvedAccessibilityText().placeholderRow;
+
+    if (!formatter) {
+      return '';
+    }
+
+    const totalRowsValue = this.logicalRowCount();
+
+    return formatter({
+      positionValue: logicalIndex + 1,
+      positionText: this.formatAccessibilityNumber(logicalIndex + 1),
+      totalRowsValue,
+      totalRowsText: this.formatAccessibilityNumber(totalRowsValue)
+    });
   }
 
   /** Screen-reader announcement text for a sub-header row, phrased per renderer. */

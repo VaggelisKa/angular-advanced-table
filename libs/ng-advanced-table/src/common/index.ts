@@ -18,6 +18,8 @@ export type { NatTableColumnReorderResult } from './column-render.type';
 
 export type { NatTableRowActivateEvent, NatTableRowIdGetter } from './row.type';
 
+export type { NatTableRowPlaceholderTemplateContext } from './row-placeholder.type';
+
 export type { NatTableRowRenderStrategy, NatTableVirtualItem } from './row-render-strategy.type';
 
 export { NAT_TABLE_ROW_WINDOW_HOST } from './row-window-host.type';

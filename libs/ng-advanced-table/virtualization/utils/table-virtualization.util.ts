@@ -69,6 +69,129 @@ export const describeNatTableVirtualizationOptionIssues = (options: NatTableVirt
   return issues;
 };
 
+/**
+ * Valid `remoteRowCount` input value, or `null` when absent or unusable.
+ * Deliberately independent of the loaded row model: the result feeds core's
+ * TanStack options through the strategy contract, where reading the row model
+ * would read the table from inside its own options. Core and the plan builder
+ * clamp it against the loaded rows where that is safe.
+ */
+export const normalizeNatTableRemoteRowCount = (remoteRowCount: number | undefined): number | null =>
+  remoteRowCount !== undefined && Number.isInteger(remoteRowCount) && remoteRowCount >= 0 ? remoteRowCount : null;
+
+/**
+ * Window offset clamped so the loaded window fits inside the remote extent.
+ * `0` outside remote windowing and for unusable values (the directive warns
+ * for those in development builds).
+ */
+export const normalizeNatTableRowWindowOffset = (
+  rowWindowOffset: number,
+  remoteRowCount: number | null,
+  loadedRowCount: number
+): number => {
+  if (remoteRowCount === null || !Number.isInteger(rowWindowOffset) || rowWindowOffset < 0) {
+    return 0;
+  }
+
+  return Math.min(rowWindowOffset, Math.max(0, remoteRowCount - loadedRowCount));
+};
+
+/**
+ * Conservative cross-engine ceiling for the body's scroll extent, in CSS
+ * pixels. Layout engines compute in fixed-point units backed by a 32-bit
+ * integer and clamp element heights silently past their maximum: Blink and
+ * WebKit (Safari included, so Safari 16.5) share the 1/64-px `LayoutUnit`,
+ * whose ceiling is 2^31 / 64 ≈ 33,554,432px; Gecko uses 60-per-px app units
+ * in an int32, giving ≈ 2^30 / 60 ≈ 17,895,697px. Past the ceiling the spacer
+ * rows stop growing while the logical extent keeps counting, so scroll
+ * position and logical index silently diverge and the far rows become
+ * unreachable. 16,000,000px sits under the lowest engine ceiling (Gecko) with
+ * margin for header, caption, and spacer rounding.
+ */
+export const NAT_TABLE_MAX_SCROLL_EXTENT_PX = 16_000_000;
+
+type NatTableRemoteWindowingDiagnosticsContext = {
+  readonly remoteRowCount: number | undefined;
+  readonly rowWindowOffset: number;
+  /** Normalized fixed row height, used to project the remote total into a pixel extent. */
+  readonly rowHeight: number;
+  readonly loadedRowCount: number;
+  readonly hasClientSorting: boolean;
+  readonly hasClientFiltering: boolean;
+  readonly hasClientPagination: boolean;
+  readonly hasSubHeaders: boolean;
+};
+
+/**
+ * Development diagnostics for the remote windowing inputs, one per issue.
+ * Remote windowing decouples the scroll extent from the rows the table holds,
+ * so every client-side row-model transformation over the loaded window silently
+ * misrepresents the dataset — those combinations warn rather than half-work.
+ */
+export const describeNatTableRemoteWindowingIssues = (context: NatTableRemoteWindowingDiagnosticsContext): string[] => {
+  const {
+    remoteRowCount,
+    rowWindowOffset,
+    rowHeight,
+    loadedRowCount,
+    hasClientSorting,
+    hasClientFiltering,
+    hasClientPagination,
+    hasSubHeaders
+  } = context;
+  const issues: string[] = [];
+
+  if (remoteRowCount !== undefined && !(Number.isInteger(remoteRowCount) && remoteRowCount >= 0)) {
+    issues.push(`remoteRowCount must be a non-negative integer; got ${String(remoteRowCount)}, ignoring it.`);
+  }
+
+  if (!(Number.isInteger(rowWindowOffset) && rowWindowOffset >= 0)) {
+    issues.push(`rowWindowOffset must be a non-negative integer; got ${String(rowWindowOffset)}, using 0.`);
+  }
+
+  const remote = normalizeNatTableRemoteRowCount(remoteRowCount);
+
+  if (remote === null) {
+    return issues;
+  }
+
+  if (remote < loadedRowCount) {
+    issues.push(`remoteRowCount (${remote}) is smaller than the ${loadedRowCount} loaded rows; using the loaded row count.`);
+  } else if (Number.isInteger(rowWindowOffset) && rowWindowOffset >= 0 && rowWindowOffset + loadedRowCount > remote) {
+    issues.push(
+      `rowWindowOffset (${rowWindowOffset}) plus the ${loadedRowCount} loaded rows exceeds remoteRowCount (${remote}); clamping the window.`
+    );
+  }
+
+  if (hasClientSorting) {
+    issues.push('remoteRowCount requires manualSorting: client-side sorting would sort the loaded window, not the dataset.');
+  }
+
+  if (hasClientFiltering) {
+    issues.push('remoteRowCount requires manualFiltering: client-side filtering would filter the loaded window, not the dataset.');
+  }
+
+  if (hasClientPagination) {
+    issues.push('remoteRowCount requires manualPagination: client-side pagination would paginate the loaded window, not the dataset.');
+  }
+
+  if (hasSubHeaders) {
+    issues.push('sub-header rows are not supported with remoteRowCount; they are disabled while it is set.');
+  }
+
+  if (remote * rowHeight > NAT_TABLE_MAX_SCROLL_EXTENT_PX) {
+    const effectiveMaxRows = Math.floor(NAT_TABLE_MAX_SCROLL_EXTENT_PX / rowHeight);
+
+    issues.push(
+      `remoteRowCount (${remote}) needs ${remote * rowHeight}px of scroll extent at rowHeight ${rowHeight}px, above the ` +
+        `${NAT_TABLE_MAX_SCROLL_EXTENT_PX}px browsers can lay out — the extent is silently clamped and rows past about ` +
+        `${effectiveMaxRows} become unreachable. Keep remoteRowCount at or below ${effectiveMaxRows} for this rowHeight.`
+    );
+  }
+
+  return issues;
+};
+
 export const includeVirtualIndex = (indexes: readonly number[], index: number | null, count: number): number[] => {
   if (index === null || index < 0 || index >= count || indexes.includes(index)) {
     return [...indexes];

@@ -84,5 +84,11 @@ declare module '@tanstack/table-core' {
     readonly natTableSubHeaderColumnId?: string | null;
     /** Whether the surface enables pinning; per-column enablePinning overrides. */
     readonly natTablePinningEnabled?: boolean;
+    /**
+     * Remote windowing: logical row count the grid represents when it exceeds
+     * the loaded rows, or `null`/absent otherwise. Lets companion controls
+     * detect that the core row model holds only a loaded window.
+     */
+    readonly natTableRemoteRowCount?: number | null;
   }
 }

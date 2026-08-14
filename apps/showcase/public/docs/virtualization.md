@@ -94,6 +94,36 @@ The intended use is fetch-on-approach: compare `endIndex` with the number of row
 
 The library deliberately owns no loading affordance or `dataStatus` transition for this; fetching, retries, and any "loading more" UI stay with the consuming container.
 
+## Remote Windowing
+
+Fetch-on-approach still materializes every row the reader has passed. Remote windowing goes further: the scroll extent, `aria-rowcount`, and the emitted range indexes span a dataset the table does **not** hold — hundreds of thousands of rows behind a window of a few hundred. `remoteRowCount` declares the server's total, `rowWindowOffset` (default `0`) places the one contiguous loaded window inside it, and every logical index outside that window renders as a fixed-height placeholder row. The reader can drag the scrollbar anywhere in the dataset; the app fetches the window they land on.
+
+```html
+<nat-table
+  [columns]="columns"
+  [data]="loadedWindow()"
+  [getRowId]="getRowId"
+  [natTableVirtualize]="{ rowHeight: 44 }"
+  [remoteRowCount]="250000"
+  [rowWindowOffset]="windowOffset()"
+  accessibleName="Orders"
+  (virtualRangeChange)="fetchWindow($event)">
+  <ng-template natTableRowPlaceholder let-logicalIndex let-column="column">
+    <span class="skeleton" aria-hidden="true"></span>
+  </ng-template>
+</nat-table>
+```
+
+Omitting `remoteRowCount` leaves every behavior on this page exactly as documented above — the loaded row model remains the full extent.
+
+**Window replacement does not reset the scroll.** Under remote windowing, swapping the loaded window (`data` plus `rowWindowOffset`) is the normal fill after the reader deliberately scrolled somewhere, so it re-renders in place. Genuine model changes — sorting, filters, pagination, a body-state transition, or a changed `remoteRowCount` — still reset to the first logical row. Keep the previous window mounted until the fetched one arrives; clearing `data` to an empty array mid-fetch just renders placeholders everywhere, but there is no reason to discard rows the reader may scroll back to.
+
+**Placeholder rows are real grid rows.** Each carries its absolute `aria-rowindex`, `aria-busy="true"`, and one structurally correct cell per visible column, so a screen reader is never told there is data in the gap. The built-in copy reads simply "Loading." — deliberately position-free, because the grid already announces the row's position through `aria-rowindex`/`aria-rowcount` and restating it in text would read out a second number for the same row. It localizes through the `accessibility.placeholderRow` formatter in `ng-advanced-table/locale`, whose context still carries the position and total for overrides that want them. The optional `natTableRowPlaceholder` template renders inside every placeholder cell with the logical row index and the column; without it the cells stay empty at the fixed row height. Placeholder cells are ordinary roving-tabstop grid cells: arrow, page, and Control/Command + Home/End navigation move through them exactly as through data cells, and a placeholder cell that holds focus when its window arrives hands focus to the fetched row's cell in the same column.
+
+**Remote windowing requires manual row-model modes.** Client-side sorting, filtering, or pagination would transform the loaded window rather than the dataset, so use `mode="manual"` (or per-slice manual configuration) and resolve those on the server; development builds warn otherwise. Sub-header group rows are disabled while `remoteRowCount` is set, for the same reason. Selection and export operate on the loaded window only — select-all selects the loaded rows, `natTableExport` exports the loaded rows, and development builds warn on export; fetching the rest of the dataset for export stays a consumer concern, like all data acquisition.
+
+**Browsers cap the scroll extent.** The body spans `remoteRowCount × rowHeight` CSS pixels, and layout engines silently clamp element heights near 17.9 million pixels (Firefox; Chrome and Safari clamp around 33.5 million). Past the clamp, scroll position and logical index quietly diverge and the far rows become unreachable. Stay under 16,000,000px of extent — about 363,000 rows at a 44px row height — and development builds warn with the effective maximum for the configured `rowHeight`. Datasets beyond that ceiling need server-side filtering or pagination to narrow what one grid represents.
+
 ## Render Metrics Under Virtualization
 
 `emitRowRenderEvents` keeps working when a table is virtualized, with one deliberate refinement to what a _render cycle_ means.
@@ -115,10 +145,12 @@ Virtualized grids still require keyboard-only and screen-reader testing. The lib
 ## Limitations
 
 - Variable-height and expanded body rows are not supported yet. The strategy contract is already extent-shaped (`items` carry a `start`/`end` per row plus a global `totalSize`), so a future measured-height strategy would reuse it unchanged; the fixed `rowHeight` scalar and its scroll-offset assumptions are what a second strategy would have to change.
-- Sub-header rows must keep the same fixed `rowHeight` as the data rows; development builds warn when a rendered sub-header row diverges from the configured height.
+- Sub-header rows must keep the same fixed `rowHeight` as the data rows; development builds warn when a rendered sub-header row diverges from the configured height. Sub-header rows are disabled entirely while `remoteRowCount` is set.
 - Column virtualization is not supported.
 - Browser Find, DOM selection, and copy-all cannot discover unmounted rows.
 - Server-rendered HTML contains only the bootstrap window of ten rows, so a crawler or a no-JS client sees ten rows regardless of the dataset. Do not virtualize a table whose full content must be present without JavaScript.
-- Export and consumer-owned global search still operate on the complete logical dataset.
+- Export and consumer-owned global search operate on the complete logical dataset when the table holds it. Under remote windowing they operate on the loaded window only — select-all and `natTableExport` cannot reach rows the table never received.
+- Remote windowing holds one contiguous loaded window; jumping replaces it. Disjoint windows are not accumulated or cached — caching, eviction, retries, and request cancellation stay consumer-owned.
+- The remote scroll extent must stay under roughly 16,000,000 CSS pixels (`remoteRowCount × rowHeight`) — about 363,000 rows at a 44px row height — because layout engines silently clamp taller elements; development builds warn with the effective maximum row count.
 - Printing currently reflects the mounted window; use export or temporarily render a non-virtual table for print workflows.
 - Safari 16.5 is supported, but custom interactive cells still need application-level VoiceOver testing.
