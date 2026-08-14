@@ -1078,6 +1078,46 @@ input {
   padding: 0;
 }
 
+/* On a routed gallery page .sc-demo-page IS the page, so it owns the gutter and
+   the separation between stacked surfaces — without them the tables run edge to
+   edge and a multi-surface demo reads as one continuous table. The embedded
+   variant (bare .sc-demo-page inside a docs topic card) keeps padding: 0,
+   because the card already supplies both. */
+.showcase-page.sc-demo-page {
+  gap: 24px;
+  padding: 16px 16px 40px;
+}
+
+@media (width >= 768px) {
+  .showcase-page.sc-demo-page {
+    padding: 24px 24px 48px;
+  }
+}
+
+/* The showcase flattens surface padding to 0 so the table sits flush inside its
+   card. The pagination bar is the one strip that still needs its own gutter —
+   at 0 the page-size select and the next-page button sit hard against the
+   viewport edges. */
+.showcase-page nat-table-pagination {
+  --nat-table-toolbar-padding: 10px 14px;
+}
+
+@media (width >= 768px) {
+  .showcase-page nat-table-pagination {
+    --nat-table-toolbar-padding: 10px 20px;
+  }
+}
+
+/* Give the pager and page-size control back a touch-sized target on narrow or
+   touch viewports. The compact sizing in the surface token block above is tuned
+   for a mouse and leaves 28px controls under a thumb. */
+@media (width <= 640px), (pointer: coarse) {
+  .showcase-page nat-table-surface {
+    --nat-table-pager-min-height: 40px;
+    --nat-table-chip-min-height-compact: 36px;
+  }
+}
+
 .docs-topic-body [id] {
   scroll-margin-top: 28px;
 }

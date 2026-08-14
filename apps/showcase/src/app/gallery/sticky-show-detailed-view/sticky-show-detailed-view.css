@@ -25,7 +25,11 @@ nat-table-surface {
   gap: 2rem;
   width: 100%;
   min-width: 0;
-  padding: 0;
+  padding: 16px 16px 40px;
+
+  @media (width >= 768px) {
+    padding: 24px 24px 48px;
+  }
 }
 
 .examples-grid {
