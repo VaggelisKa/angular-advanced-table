@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { vi } from 'vitest';
 
-import { CustomHandlerHost, DelegatingHandlerHost, RemoteWindowExportHost } from './test-helpers/table-export-hosts.helper';
+import { CustomHandlerHost, DelegatingHandlerHost } from './test-helpers/table-export-hosts.helper';
+import { RemoteWindowExportHost } from './test-helpers/table-export-remote-hosts.helper';
 import {
   DefaultExportHost,
   ExportApi,

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- focus retention residual: one service owns roving-focus capture, id- and position-based retention, keyboard interception, and recovery across row-model, state-row, and remote window-fill transitions; the pieces share the same DOM listeners and retained signals, so splitting only relocates the coupling. */
 import { DestroyRef, ElementRef, Injectable, afterRenderEffect, computed, inject, signal } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
@@ -10,12 +11,7 @@ import type { NatTableVirtualNavigationRequest, NatTableVirtualizerController } 
 import { readNatTableActiveBodyFocus } from '../utils/active-body-focus.util';
 import { scrollNatTableCellHorizontallyIntoView } from '../utils/horizontal-scroll.util';
 import { resolveNatTablePendingFocusCells } from '../utils/pending-focus-cell.util';
-import {
-  findOwnedNatTableBodyRow,
-  findOwnedNatTableCell,
-  findOwnedNatTableDataRow,
-  findOwnedNatTablePlaceholderRow
-} from '../utils/table-ownership.util';
+import { findOwnedNatTableBodyRow, findOwnedNatTableCell, findOwnedNatTablePlaceholderRow } from '../utils/table-ownership.util';
 import { resolveNatTableVirtualNavigation } from '../utils/table-virtual-keyboard.util';
 
 type PendingVirtualFocus = {
@@ -24,7 +20,7 @@ type PendingVirtualFocus = {
   readonly preferHeader?: boolean;
 };
 
-type RetainedPlaceholderCell = {
+type RetainedCellPosition = {
   readonly logicalIndex: number;
   readonly columnId: string;
 };
@@ -46,12 +42,14 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
    */
   private readonly retainedRowId = signal<string | null>(null);
   /**
-   * Placeholder cell the roving tabstop last landed on. Placeholder rows have
-   * no row id, so they are retained by logical index — which also lets the
-   * pending-focus effect put focus back when a window fill replaces the
-   * focused placeholder's DOM node with the fetched row.
+   * Logical position of the body cell the roving tabstop last landed on —
+   * placeholder or loaded row alike. Placeholder rows have no row id, so this
+   * is their only retention; for loaded rows it is the fallback when a remote
+   * window fill removes the retained row id from the model. Either way it lets
+   * the pending-focus effect put focus back on the same logical slot when a
+   * fill replaces the focused cell's DOM node.
    */
-  private readonly retainedPlaceholderCell = signal<RetainedPlaceholderCell | null>(null);
+  private readonly retainedCellPosition = signal<RetainedCellPosition | null>(null);
   private readonly pendingFocus = signal<PendingVirtualFocus | null>(null);
 
   /**
@@ -70,21 +68,17 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
 
   /** Logical index of the retained row — offset into remote coordinates under remote windowing. */
   public readonly focusedLogicalIndex = computed(() => {
-    const retainedPlaceholder = this.retainedPlaceholderCell();
-
-    if (retainedPlaceholder !== null) {
-      return retainedPlaceholder.logicalIndex;
-    }
-
+    // The row id follows the row through reorders and appends, so it wins
+    // whenever it still resolves; the static logical position covers the rows
+    // an id cannot: placeholders, and loaded rows a window fill removed.
     const retainedRowId = this.retainedRowId();
+    const loadedIndex = retainedRowId === null ? undefined : this.rowIndexById().get(retainedRowId);
 
-    if (retainedRowId === null) {
-      return null;
+    if (loadedIndex !== undefined) {
+      return loadedIndex + this.rowWindowOffset();
     }
 
-    const loadedIndex = this.rowIndexById().get(retainedRowId);
-
-    return loadedIndex === undefined ? null : loadedIndex + this.rowWindowOffset();
+    return this.retainedCellPosition()?.logicalIndex ?? null;
   });
 
   private rowWindowOffset(): number {
@@ -122,7 +116,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     // falls back to the first surviving row in the same column.
     const placeholderFocus = this.readActivePlaceholderFocus();
 
-    this.retainedPlaceholderCell.set(null);
+    this.retainedCellPosition.set(null);
 
     if (!controller || (!activeFocus && !placeholderFocus)) {
       this.retainedRowId.set(null);
@@ -142,7 +136,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   }
 
   /** The focused placeholder cell, when document focus currently sits inside one. */
-  private readActivePlaceholderFocus(): RetainedPlaceholderCell | null {
+  private readActivePlaceholderFocus(): RetainedCellPosition | null {
     const host = this.elementRef.nativeElement;
     const target = host.ownerDocument.activeElement;
 
@@ -172,28 +166,23 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
 
   private readonly onFocusIn = (event: FocusEvent): void => {
     const host = this.elementRef.nativeElement;
-    const row = findOwnedNatTableDataRow(host, event.target);
+    const bodyRow = findOwnedNatTableBodyRow(host, event.target);
 
-    if (row) {
-      this.retainedRowId.set(row.dataset['rowId'] ?? null);
-      this.retainedPlaceholderCell.set(null);
-
+    if (!bodyRow) {
       return;
     }
 
-    const placeholderRow = findOwnedNatTablePlaceholderRow(host, event.target);
+    // Loaded rows retain by id (which follows the row through the model) and
+    // by logical position (which survives the id vanishing in a window fill);
+    // placeholder rows have only the position.
+    this.retainedRowId.set(bodyRow.dataset['rowId'] ?? null);
 
-    if (!placeholderRow) {
-      return;
-    }
-
-    const logicalIndex = Number(placeholderRow.dataset['rowIndex']);
+    const logicalIndex = Number(bodyRow.dataset['rowIndex']);
     const cell = findOwnedNatTableCell(host, event.target);
 
-    if (Number.isInteger(logicalIndex) && cell) {
-      this.retainedRowId.set(null);
-      this.retainedPlaceholderCell.set({ logicalIndex, columnId: cell.dataset['columnId'] ?? '' });
-    }
+    this.retainedCellPosition.set(
+      Number.isInteger(logicalIndex) && cell ? { logicalIndex, columnId: cell.dataset['columnId'] ?? '' } : null
+    );
   };
 
   private readonly onFocusOut = (event: FocusEvent): void => {
@@ -201,7 +190,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
 
     if (!(relatedTarget instanceof Node) || !this.elementRef.nativeElement.contains(relatedTarget)) {
       this.retainedRowId.set(null);
-      this.retainedPlaceholderCell.set(null);
+      this.retainedCellPosition.set(null);
     }
   };
 
@@ -276,7 +265,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
       // so the row model is a focus-recovery trigger too.
       this.state.bodyRows();
 
-      const request = pendingFocus ?? this.resolveDroppedPlaceholderFocus();
+      const request = pendingFocus ?? this.resolveDroppedBodyFocus();
 
       if (!request) {
         return;
@@ -299,16 +288,17 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   }
 
   /**
-   * Focus dropped by a window fill: the reader was on a placeholder cell, its
-   * node was replaced, and browsers move focus to the body without a focusout
-   * (which would have cleared the retained cell). Anywhere else focus could
-   * legitimately be — still inside the table, or moved away through a real
-   * focusout — this stays `null` so focus is never stolen.
+   * Focus dropped by a window fill: the reader was on a body cell — a
+   * placeholder, or a loaded row the fill removed — its node was replaced, and
+   * browsers move focus to the body without a focusout (which would have
+   * cleared the retained position). Anywhere else focus could legitimately be —
+   * still inside the table, or moved away through a real focusout — this stays
+   * `null` so focus is never stolen.
    */
-  private resolveDroppedPlaceholderFocus(): PendingVirtualFocus | null {
-    const retainedPlaceholder = this.retainedPlaceholderCell();
+  private resolveDroppedBodyFocus(): PendingVirtualFocus | null {
+    const retainedPosition = this.retainedCellPosition();
 
-    if (retainedPlaceholder === null) {
+    if (retainedPosition === null) {
       return null;
     }
 
@@ -316,6 +306,6 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     const activeElement = host.ownerDocument.activeElement;
     const focusDropped = !activeElement || activeElement === host.ownerDocument.body || !activeElement.isConnected;
 
-    return focusDropped ? { rowIndex: retainedPlaceholder.logicalIndex, columnId: retainedPlaceholder.columnId } : null;
+    return focusDropped ? { rowIndex: retainedPosition.logicalIndex, columnId: retainedPosition.columnId } : null;
   }
 }

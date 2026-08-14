@@ -61,6 +61,14 @@ import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
 
 /**
+ * Track expression for the body plan: loaded rows keep their stable TanStack
+ * row id, placeholder slots key on their logical index. The prefix keeps a
+ * placeholder key from colliding with a consumer row id.
+ */
+const trackNatTableBodyRow = <TData extends RowData>(renderedRow: NatTableRenderedBodyRow<TData>): string =>
+  renderedRow.kind === 'row' ? renderedRow.row.id : `nat-table-placeholder:${renderedRow.logicalIndex}`;
+
+/**
  * Signals-first Angular table primitive built on TanStack Table.
  *
  * The core component renders the table structure only. Optional controls,
@@ -296,13 +304,8 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     return this.state.getRowPlaceholderAnnouncement(logicalIndex);
   }
 
-  /**
-   * Track expression for the body plan: loaded rows keep their stable TanStack
-   * row id, placeholder slots key on their logical index. The prefix keeps a
-   * placeholder key from colliding with a consumer row id.
-   */
-  protected readonly bodyRowTrackId = (renderedRow: NatTableRenderedBodyRow<TData>): string =>
-    renderedRow.kind === 'row' ? renderedRow.row.id : `nat-table-placeholder:${renderedRow.logicalIndex}`;
+  /** Bound to the body plan `@for` track; see `trackNatTableBodyRow`. */
+  protected readonly bodyRowTrackId = trackNatTableBodyRow<TData>;
 
   protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(() => ({
     ...this.state.getStateTemplateBaseContext(),

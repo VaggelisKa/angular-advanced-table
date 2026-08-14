@@ -108,7 +108,7 @@ class RemoteRowWindowHost {
   providers: [NatTableService],
   template: `
     <nat-table [columns]="columns" [data]="rows" accessibleName="Remote row window with template" testRemoteRowWindow>
-      <ng-template natTableRowPlaceholder let-logicalIndex let-column="column">
+      <ng-template let-column="column" let-logicalIndex natTableRowPlaceholder>
         <span class="test-placeholder-content">{{ logicalIndex }}:{{ column.id }}</span>
       </ng-template>
     </nat-table>
@@ -256,7 +256,7 @@ describe('FEATURE: custom NatTable row-render strategies', () => {
         // Structurally correct grid rows: one cell per visible column, none collapsed.
         expect(placeholderRows.every((row) => row.querySelectorAll('td[ngGridCell][data-column-id]').length === 2)).toBe(true);
         expect(placeholderRows[0].querySelector('.sr-only')?.textContent).toBe('Row 3 of 1,000 is loading.');
-        expect(placeholderRows[0].textContent?.trim()).toBe('Row 3 of 1,000 is loading.');
+        expect(placeholderRows[0].textContent.trim()).toBe('Row 3 of 1,000 is loading.');
 
         fixture.destroy();
       });

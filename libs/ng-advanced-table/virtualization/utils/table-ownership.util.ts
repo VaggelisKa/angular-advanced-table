@@ -30,18 +30,14 @@ export const findOwnedNatTableCell = (host: HTMLElement, target: EventTarget | n
     ? findOwnedNatTableAncestor(host, target, '[ngGridCell][data-column-id]')
     : null;
 
-/** Finds the data row owned by `host` around a focus event target. */
-export const findOwnedNatTableDataRow = (host: HTMLElement, target: EventTarget | null): HTMLTableRowElement | null =>
-  findOwnedNatTableAncestor(host, target, 'tr.data-row[data-row-id]');
-
 /** Finds the placeholder row (an unfetched remote-windowing slot) owned by `host` around a target. */
 export const findOwnedNatTablePlaceholderRow = (host: HTMLElement, target: EventTarget | null): HTMLTableRowElement | null =>
   findOwnedNatTableAncestor(host, target, 'tr.placeholder-row[data-row-index]');
 
 /**
  * Finds any body row — loaded or placeholder — owned by `host` around a
- * target. Both carry `data-row-index`, which header rows never do, so this is
- * the index-bearing complement of the id-bearing `findOwnedNatTableDataRow`.
+ * target. Both carry the logical `data-row-index`, which header rows never do,
+ * so a keydown or focusin in the header still resolves to `null`.
  */
 export const findOwnedNatTableBodyRow = (host: HTMLElement, target: EventTarget | null): HTMLTableRowElement | null =>
   findOwnedNatTableAncestor(host, target, 'tr.data-row[data-row-index]');

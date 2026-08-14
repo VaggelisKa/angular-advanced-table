@@ -64,7 +64,7 @@ class RemoteVirtualTableHost {
       [natTableVirtualize]="{ rowHeight: 40 }"
       [remoteRowCount]="remoteRowCount"
       accessibleName="Templated remote operations">
-      <ng-template natTableRowPlaceholder let-logicalIndex let-column="column">
+      <ng-template let-column="column" let-logicalIndex natTableRowPlaceholder>
         <span class="test-skeleton">{{ logicalIndex }}:{{ column.id }}</span>
       </ng-template>
     </nat-table>
@@ -508,6 +508,34 @@ describe('FEATURE: remote windowing for NatTable row virtualization', () => {
 
         expect(document.activeElement).toBe(fetchedCell);
         expect(region.scrollTop).toBe(5000 * ROW_HEIGHT);
+
+        fixture.destroy();
+      });
+    });
+
+    describe('WHEN: a window fill removes the loaded row a cell focus was on', () => {
+      it('THEN: it keeps focus on the same logical slot as a placeholder cell', async () => {
+        const fixture = TestBed.createComponent(RemoteVirtualTableHost);
+        const host = fixture.componentInstance;
+
+        await fixture.whenStable();
+
+        const focusedCell = queryRequired<HTMLElement>(fixture, 'tbody tr[data-row-index="5"] [ngGridCell][data-column-id="region"]');
+
+        focusedCell.focus();
+        // The reader's app jumps its window far away; logical slot 5 is no
+        // longer loaded and its row id vanished from the model.
+        host.rows.set(buildRowWindow(5000, WINDOW_SIZE));
+        host.offset.set(5000);
+        await fixture.whenStable();
+
+        const placeholderCell = queryRequired<HTMLElement>(
+          fixture,
+          'tbody tr[data-row-index="5"] [ngGridCell][data-column-id="region"]'
+        );
+
+        expect(document.activeElement).toBe(placeholderCell);
+        expect(placeholderCell.closest('tr')?.dataset['testid']).toBe('nat-table-row-placeholder');
 
         fixture.destroy();
       });

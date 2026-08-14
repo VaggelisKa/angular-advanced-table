@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- directive shell: input normalization, strategy/controller/engine wiring, reset semantics, and development diagnostics for both fixed-row and remote windowing live behind the one selector; the reactive graph they share does not split without cross-service signal plumbing. */
 import { DestroyRef, Directive, computed, effect, inject, input, isDevMode, output, untracked } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
