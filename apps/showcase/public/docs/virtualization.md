@@ -96,7 +96,7 @@ The library deliberately owns no loading affordance or `dataStatus` transition f
 
 ## Remote Windowing
 
-Fetch-on-approach still materializes every row the reader has passed. Remote windowing goes further: the scroll extent, `aria-rowcount`, and the emitted range indexes span a dataset the table does **not** hold. `remoteRowCount` declares the server's total, `rowWindowOffset` (default `0`) places the one contiguous loaded window inside it, and every logical index outside that window renders as a fixed-height placeholder row. The reader can drag the scrollbar anywhere in the dataset; the app fetches the window they land on.
+Fetch-on-approach still materializes every row the reader has passed. Remote windowing goes further: the scroll extent, `aria-rowcount`, and the emitted range indexes span a dataset the table does **not** hold — hundreds of thousands of rows behind a window of a few hundred. `remoteRowCount` declares the server's total, `rowWindowOffset` (default `0`) places the one contiguous loaded window inside it, and every logical index outside that window renders as a fixed-height placeholder row. The reader can drag the scrollbar anywhere in the dataset; the app fetches the window they land on.
 
 ```html
 <nat-table
@@ -104,7 +104,7 @@ Fetch-on-approach still materializes every row the reader has passed. Remote win
   [data]="loadedWindow()"
   [getRowId]="getRowId"
   [natTableVirtualize]="{ rowHeight: 44 }"
-  [remoteRowCount]="2000000"
+  [remoteRowCount]="250000"
   [rowWindowOffset]="windowOffset()"
   accessibleName="Orders"
   (virtualRangeChange)="fetchWindow($event)">

@@ -230,8 +230,9 @@ const WINDOW_SIZE = 200;
   templateUrl: './orders-table.html'
 })
 export class OrdersTable {
-  // The server's total. The table renders placeholders for every row it does not hold.
-  readonly remoteTotal = 2_000_000;
+  // The server's total. The table renders placeholders for every row it does
+  // not hold. Keep remoteTotal × rowHeight under ~16,000,000px of extent.
+  readonly remoteTotal = 250_000;
   readonly loadedWindow = signal<Order[]>([]);
   readonly windowOffset = signal(0);
   readonly getRowId = (row: Order): string => row.id;

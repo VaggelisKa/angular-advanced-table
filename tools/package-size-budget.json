@@ -1,10 +1,10 @@
 {
-  "$comment": "Gzipped size ceilings for each published entry point's FESM bundle, plus the entry-point import layering that must hold in the built artifact. Raising a ceiling is a deliberate, reviewable diff \u2014 do not bump one to make CI pass without saying why in the PR body. `forbiddenImports` encodes the AGENTS.md entry-point graph: core must never reach a companion, and locale must stay the leaf.",
+  "$comment": "Gzipped size ceilings for each published entry point's FESM bundle, plus the entry-point import layering that must hold in the built artifact. Raising a ceiling is a deliberate, reviewable diff — do not bump one to make CI pass without saying why in the PR body. `forbiddenImports` encodes the AGENTS.md entry-point graph: core must never reach a companion, and locale must stay the leaf.",
   "entryPoints": [
     {
       "name": "ng-advanced-table",
       "fesm": "fesm2022/ng-advanced-table.mjs",
-      "maxGzipBytes": 75000,
+      "maxGzipBytes": 74300,
       "forbiddenImports": ["ng-advanced-table/components", "ng-advanced-table/render-metrics", "ng-advanced-table/virtualization"]
     },
     {
