@@ -25,6 +25,8 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
   private regionResizeObserver: ResizeObserver | null = null;
   private rowHeight: Signal<number> | null = null;
   private items: Signal<readonly NatTableVirtualItem[]> | null = null;
+  /** Logical rows the window spans — the remote total under remote windowing, else the row model. */
+  private logicalRowCount: Signal<number> | null = null;
 
   public constructor() {
     // Not development-only: an unbounded region makes the window converge on
@@ -44,9 +46,10 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
     this.destroyRef.onDestroy(() => this.regionResizeObserver?.disconnect());
   }
 
-  public connect(rowHeight: Signal<number>, items: Signal<readonly NatTableVirtualItem[]>): void {
+  public connect(rowHeight: Signal<number>, items: Signal<readonly NatTableVirtualItem[]>, logicalRowCount: Signal<number>): void {
     this.rowHeight = rowHeight;
     this.items = items;
+    this.logicalRowCount = logicalRowCount;
   }
 
   private observeRegionSize(): void {
@@ -65,7 +68,12 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
 
     afterRenderEffect({
       earlyRead: () => {
-        const rowCount = this.state.bodyRows().length;
+        // The logical extent, not the loaded rows: under remote windowing an
+        // unbounded region converges the window on the whole remote range —
+        // exactly when this warning matters most — while the loaded window can
+        // sit at or below the bootstrap count (even empty) and would suppress
+        // it. Before `connect`, fall back to the row model.
+        const rowCount = this.logicalRowCount === null ? this.state.bodyRows().length : this.logicalRowCount();
         const region = this.state.tableRegionRef()?.nativeElement;
 
         this.regionResizeRevision();

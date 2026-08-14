@@ -142,7 +142,7 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
 
     this.engine.connect(this.normalizedOptions, this.logicalRowCount);
     this.focus.connect(this.controller);
-    this.validation.connect(this.rowHeight, this.virtualItems);
+    this.validation.connect(this.rowHeight, this.virtualItems, this.logicalRowCount);
     this.destroyRef.onDestroy(unregister);
     this.registerOptionValidationEffect();
     this.registerRowModelResetEffect();

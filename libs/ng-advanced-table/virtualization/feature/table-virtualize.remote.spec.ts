@@ -623,4 +623,28 @@ describe('FEATURE: remote windowing for NatTable row virtualization', () => {
       });
     });
   });
+
+  describe('GIVEN: an unbounded table region under a remote extent', () => {
+    describe('WHEN: the loaded window sits at or below the bootstrap row count', () => {
+      it('THEN: it still warns that the region must be bounded, judged by the logical extent', async () => {
+        // scrollHeight === clientHeight: the region absorbs its content height,
+        // so the window would converge on the whole remote range.
+        geometry.regionScrollHeight = 200;
+
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const fixture = TestBed.createComponent(RemoteVirtualTableHost);
+        const host = fixture.componentInstance;
+
+        // Five loaded rows of a hundred-thousand-row extent: the loaded count
+        // sits inside the bootstrap suppression band and must not silence the
+        // diagnostic that matters most exactly here.
+        host.rows.set(buildRowWindow(0, 5));
+        await fixture.whenStable();
+
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('needs a bounded region'));
+
+        fixture.destroy();
+      });
+    });
+  });
 });
