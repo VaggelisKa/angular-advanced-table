@@ -1096,8 +1096,13 @@ input {
 
 /* The showcase flattens surface padding to 0 so the table sits flush inside its
    card. The pagination bar is the one strip that still needs its own gutter —
-   at 0 the page-size select and the next-page button sit hard against the
-   viewport edges. */
+   at 0 the page-size select and the next-page button sit hard against the edges
+   of whatever contains them.
+
+   Scoped to .showcase-page rather than the routed .sc-demo-page on purpose: docs
+   topic pages are .showcase-page too, and their embedded pagination demos have
+   the same flattened bar. The gutter is wanted in both places. Only the page
+   padding above is gallery-only, because a topic card already supplies it. */
 .showcase-page nat-table-pagination {
   --nat-table-toolbar-padding: 10px 14px;
 }
@@ -1110,7 +1115,8 @@ input {
 
 /* Give the pager and page-size control back a touch-sized target on narrow or
    touch viewports. The compact sizing in the surface token block above is tuned
-   for a mouse and leaves 28px controls under a thumb. */
+   for a mouse and leaves 28px controls under a thumb. Deliberately every
+   .showcase-page surface, docs demos included — a thumb is a thumb. */
 @media (width <= 640px), (pointer: coarse) {
   .showcase-page nat-table-surface {
     --nat-table-pager-min-height: 40px;
