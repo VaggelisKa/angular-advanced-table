@@ -8,7 +8,7 @@ import type { NatTableRowWindowHost } from 'ng-advanced-table';
 
 import { NatTableVirtualLayoutService } from './table-virtual-layout.service';
 import type { NatTableVirtualNavigationRequest, NatTableVirtualizerController } from '../common/table-virtualization.type';
-import { readNatTableActiveBodyFocus } from '../utils/active-body-focus.util';
+import { readNatTableActiveBodyFocus, shouldClearNatTableFocusRetention } from '../utils/active-body-focus.util';
 import { scrollNatTableCellHorizontallyIntoView } from '../utils/horizontal-scroll.util';
 import { resolveNatTablePendingFocusCells } from '../utils/pending-focus-cell.util';
 import { findOwnedNatTableBodyRow, findOwnedNatTableCell, findOwnedNatTablePlaceholderRow } from '../utils/table-ownership.util';
@@ -186,12 +186,25 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   };
 
   private readonly onFocusOut = (event: FocusEvent): void => {
-    const relatedTarget = event.relatedTarget;
+    if (!shouldClearNatTableFocusRetention(event, this.elementRef.nativeElement)) {
+      return;
+    }
 
-    if (!(relatedTarget instanceof Node) || !this.elementRef.nativeElement.contains(relatedTarget)) {
+    const target = event.target;
+
+    // Chromium dispatches this focusout while a cell being removed is still
+    // connected, indistinguishable at event time from the reader leaving the
+    // table. Decide after the DOM update settles: a detached target was a
+    // removal (a window fill swapping the focused cell's row) and retention
+    // must survive for the recovery effect; anything else genuinely departed.
+    queueMicrotask(() => {
+      if (target instanceof Node && !target.isConnected) {
+        return;
+      }
+
       this.retainedRowId.set(null);
       this.retainedCellPosition.set(null);
-    }
+    });
   };
 
   // eslint-disable-next-line complexity -- capture handler validates DOM focus, mounted range, viewport, and key intent before interception.
@@ -306,6 +319,15 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     const activeElement = host.ownerDocument.activeElement;
     const focusDropped = !activeElement || activeElement === host.ownerDocument.body || !activeElement.isConnected;
 
-    return focusDropped ? { rowIndex: retainedPosition.logicalIndex, columnId: retainedPosition.columnId } : null;
+    if (!focusDropped) {
+      return null;
+    }
+
+    // One-shot: a successful recovery re-arms the position through its own
+    // focusin, and a failed one must not leave a stale position behind that a
+    // later row-model change could use to steal focus from the page.
+    this.retainedCellPosition.set(null);
+
+    return { rowIndex: retainedPosition.logicalIndex, columnId: retainedPosition.columnId };
   }
 }
