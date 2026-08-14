@@ -112,22 +112,26 @@ describe('FEATURE: accessibility intl merge', () => {
 
   describe('GIVEN: the built-in placeholder row copy for remote windowing', () => {
     describe('WHEN: formatting an unfetched row slot', () => {
-      it('THEN: it names the absolute position, the represented total, and the loading state', () => {
+      it('THEN: it conveys only the loading state, leaving the position to aria-rowindex', () => {
         const resolved = resolveNatTableIntl({ locales: NAT_TABLE_BUILT_IN_LOCALES }, 'en');
+        // The context still carries the position and total, but the default
+        // copy must not restate them: aria-rowindex/aria-rowcount announce the
+        // position in grid coordinates (header row included), so any number
+        // here would be a second, off-by-one readout for the same row.
         const context = { positionValue: 1_000_001, positionText: '1,000,001', totalRowsValue: 2_000_000, totalRowsText: '2,000,000' };
 
-        expect(resolved.accessibilityText?.placeholderRow?.(context)).toBe('Row 1,000,001 of 2,000,000 is loading.');
+        expect(resolved.accessibilityText?.placeholderRow?.(context)).toBe('Loading.');
       });
     });
 
     describe('WHEN: a consumer overrides the placeholder formatter', () => {
-      it('THEN: the override wins through the provider merge', () => {
+      it('THEN: the override wins and can still build position-bearing copy from the context', () => {
         const merged = mergeNatTableAccessibilityText(NAT_TABLE_BUILT_IN_LOCALES['en'].accessibilityText, {
-          placeholderRow: ({ positionText }) => `Fetching ${positionText}`
+          placeholderRow: ({ positionText, totalRowsText }) => `Fetching ${positionText} of ${totalRowsText}`
         });
         const context = { positionValue: 5, positionText: '5', totalRowsValue: 10, totalRowsText: '10' };
 
-        expect(merged.placeholderRow?.(context)).toBe('Fetching 5');
+        expect(merged.placeholderRow?.(context)).toBe('Fetching 5 of 10');
       });
     });
   });

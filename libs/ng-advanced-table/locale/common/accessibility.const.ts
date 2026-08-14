@@ -141,7 +141,12 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
 
       return `${groupLabel}, ${rowCountText} ${pluralize('row', rowCountValue)}.`;
     },
-    placeholderRow: ({ positionText, totalRowsText }) => `Row ${positionText} of ${totalRowsText} is loading.`
+    // Deliberately position-free: the grid already announces the row's
+    // position through aria-rowindex/aria-rowcount, and those are counted in
+    // grid coordinates (header row included) — restating the position here
+    // would read out a second, off-by-one number for the same row. The context
+    // still carries position and total for consumers who override this.
+    placeholderRow: () => 'Loading.'
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };

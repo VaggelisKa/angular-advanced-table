@@ -255,8 +255,10 @@ describe('FEATURE: custom NatTable row-render strategies', () => {
         expect(placeholderRows.every((row) => row.getAttribute('aria-busy') === 'true')).toBe(true);
         // Structurally correct grid rows: one cell per visible column, none collapsed.
         expect(placeholderRows.every((row) => row.querySelectorAll('td[ngGridCell][data-column-id]').length === 2)).toBe(true);
-        expect(placeholderRows[0].querySelector('.sr-only')?.textContent).toBe('Row 3 of 1,000 is loading.');
-        expect(placeholderRows[0].textContent.trim()).toBe('Row 3 of 1,000 is loading.');
+        // Position-free by design: aria-rowindex already announces the row's
+        // position, so the text conveys only that the slot has no data yet.
+        expect(placeholderRows[0].querySelector('.sr-only')?.textContent).toBe('Loading.');
+        expect(placeholderRows[0].textContent.trim()).toBe('Loading.');
 
         fixture.destroy();
       });

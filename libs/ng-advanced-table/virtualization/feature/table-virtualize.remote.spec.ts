@@ -314,9 +314,9 @@ describe('FEATURE: remote windowing for NatTable row virtualization', () => {
         expect(firstPlaceholder.getAttribute('aria-busy')).toBe('true');
         expect(firstPlaceholder.getAttribute('aria-rowindex')).toBe(String(firstIndex + 2));
         expect(firstPlaceholder.querySelectorAll('td[ngGridCell][data-column-id]')).toHaveLength(columns.length);
-        expect(firstPlaceholder.querySelector('.sr-only')?.textContent).toBe(
-          `Row ${(firstIndex + 1).toLocaleString('en-US')} of 100,000 is loading.`
-        );
+        // Position-free by design: aria-rowindex above already announces the
+        // position, so the text adds only the loading state.
+        expect(firstPlaceholder.querySelector('.sr-only')?.textContent).toBe('Loading.');
         // The mounted range is reported in remote coordinates.
         expect(lastRange.startIndex).toBeGreaterThan(WINDOW_SIZE);
         expect(lastRange.endIndex).toBeLessThan(REMOTE_TOTAL);

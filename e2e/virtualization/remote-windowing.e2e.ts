@@ -101,7 +101,7 @@ test.describe('FEATURE: Remote windowing', () => {
         expect(placeholder.ariaBusy).toBe('true');
         expect(placeholder.cellCount).toBe(5);
         expect(Number(placeholder.ariaRowIndex)).toBeGreaterThan(200);
-        expect(placeholder.text).toContain('is loading');
+        expect(placeholder.text).toContain('Loading');
 
         scrollTopAtJump = await region.evaluate((element) => element.scrollTop);
       });
