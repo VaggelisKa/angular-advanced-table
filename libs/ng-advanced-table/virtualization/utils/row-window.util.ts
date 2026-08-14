@@ -34,7 +34,7 @@ export const lowerBoundBySlot = (rowCount: number, slot: number, slotOf: (index:
  *
  * The mounted window is the visible row span extended by `overscan` rows on
  * each side. Hysteresis: an already-mounted window is kept as long as at least
- * half the overscan remains mounted beyond each visible edge (edges clamped by
+ * half the overscan (minimum one row) remains mounted beyond each visible edge (edges clamped by
  * the data count always as settled). Scrolling therefore re-renders in
  * half-overscan batches instead of on every frame.
  */

@@ -34,7 +34,6 @@ type NatTableVirtualRowModelState = Pick<NatTableUserState, 'sorting' | 'globalF
     NatTableVirtualValidationService
   ],
   host: {
-    '[class.nat-table-virtualized]': 'true',
     '[style.--sys-nat-table-virtual-row-height.px]': 'rowHeight()'
   }
 })
@@ -136,7 +135,7 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
     { equal: (previous, current) => !hasNatTableStateValueChanged(previous, current) }
   );
 
-  /** Identity of the visible row sequence used by the collision-free append test below. */
+  /** Row-id sequence of the current row model, compared position by position by the append test below. */
   private readonly rowIdSequence = computed(() => this.state.bodyRows().map((row) => row.id));
 
   private registerRowModelResetEffect(): void {

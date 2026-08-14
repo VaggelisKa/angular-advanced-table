@@ -512,18 +512,23 @@ export class NatTableState<TData extends RowData = RowData> {
   // ─── Column width resolution ───
 
   /**
-   * Fill layout with at least one resizable column and a measured region. The table
-   * then renders authoritative widths (a colgroup under `table-layout: fixed`) that
-   * sum to the region, so resizing a column is pixel-exact while the other columns
-   * flex to keep the table filled.
+   * Fill layout with a measured region and either a resizable column or a
+   * registered row-render strategy. The table then renders authoritative widths
+   * (a colgroup under `table-layout: fixed`) that sum to the region, so resizing
+   * a column is pixel-exact while the other columns flex to keep the table
+   * filled — and a windowed body keeps its column widths when a different row
+   * window mounts. This also gates `resolvedColumnWidths` and the resize
+   * distribution, so the strategy branch widens more than the colgroup.
    */
   private readonly isFillFlexLayout = computed(
     () => !this.isFixedLayout() && (this.hasResizableColumns() || this.hasRowRenderStrategy()) && this.regionViewportWidth() > 0
   );
 
   /**
-   * Authoritative widths drive the layout: either explicit `fixed` sizing mode or
-   * fill flex. Renders the colgroup and switches the table to `table-layout: fixed`.
+   * Authoritative widths drive the layout: explicit `fixed` sizing mode, fill
+   * flex, or a registered row-render strategy — which needs the colgroup even
+   * before the region has been measured. Renders the colgroup and switches the
+   * table to `table-layout: fixed`.
    */
   public readonly usesAuthoritativeLayout = computed(
     () => this.isFixedLayout() || this.isFillFlexLayout() || this.hasRowRenderStrategy()
@@ -1139,8 +1144,9 @@ export class NatTableState<TData extends RowData = RowData> {
 
   /**
    * Drives row-render event timing. A cycle is one row-model rebuild; a moved
-   * row window restamps the clock without opening one. See
-   * `NatTableRowRenderStrategy` for why that split is the correct one.
+   * row window restamps the clock without opening one, because the rows that
+   * stayed mounted did not re-render — re-timing them would report afterRender
+   * latency as render cost.
    */
   public registerRenderCycleEffect(): void {
     let previousRows: readonly Row<TData>[] | null = null;
@@ -1156,7 +1162,9 @@ export class NatTableState<TData extends RowData = RowData> {
 
       const rows = this.bodyRows();
 
-      void this.bodyRenderPlan().renderKey;
+      // Tracked, not read: the plan is a plain computed, so a moved window
+      // hands out a new object and restamps the clock below.
+      this.bodyRenderPlan();
 
       this.renderCycleStartedAt.set(performance.now());
 

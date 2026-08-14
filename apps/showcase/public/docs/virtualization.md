@@ -35,7 +35,7 @@ import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
 }
 ```
 
-The viewport height and row-window size are separate concerns. `--nat-table-height` or `--nat-table-max-height` bounds the existing table region. The options object is typed as `NatTableVirtualizationOptions`: `rowHeight` describes the fixed body-row height, while the optional `overscan` (default `5`) is the number of extra rows mounted beyond each visible edge — the window only remounts once fewer than half of those rows remain on the side being scrolled toward, so scrolling re-renders in batches instead of on every frame. Invalid option values are normalized to safe defaults at runtime, and development builds warn about them.
+The viewport height and row-window size are separate concerns. `--nat-table-height` or `--nat-table-max-height` bounds the existing table region. The options object is typed as `NatTableVirtualizationOptions`: `rowHeight` describes the fixed body-row height, while the optional `overscan` (default `5`) is the number of extra rows mounted beyond each visible edge — the window only remounts once fewer than half of those rows (minimum one) remain on the side being scrolled toward, so scrolling re-renders in batches instead of on every frame. Invalid option values are normalized to safe defaults at runtime, and development builds warn about them.
 
 ## Fixed Row Height Contract
 
@@ -43,7 +43,7 @@ The first virtualization strategy requires every body row to have the configured
 
 Development builds warn when a mounted row differs from `rowHeight` or when the table region is not bounded.
 
-Server rendering emits a small deterministic bootstrap window. After hydration, the scroll strategy measures the real table region and replaces that bootstrap range with the viewport-specific range.
+Server rendering emits a small deterministic bootstrap window. After hydration, the windowing engine measures the real table region and replaces that bootstrap range with the viewport-specific range.
 
 ## Composition
 
@@ -118,6 +118,7 @@ Virtualized grids still require keyboard-only and screen-reader testing. The lib
 - Sub-header rows must keep the same fixed `rowHeight` as the data rows; development builds warn when a rendered sub-header row diverges from the configured height.
 - Column virtualization is not supported.
 - Browser Find, DOM selection, and copy-all cannot discover unmounted rows.
+- Server-rendered HTML contains only the bootstrap window of ten rows, so a crawler or a no-JS client sees ten rows regardless of the dataset. Do not virtualize a table whose full content must be present without JavaScript.
 - Export and consumer-owned global search still operate on the complete logical dataset.
 - Printing currently reflects the mounted window; use export or temporarily render a non-virtual table for print workflows.
 - Safari 16.5 is supported, but custom interactive cells still need application-level VoiceOver testing.

@@ -134,4 +134,35 @@ describe('FEATURE: virtual grid keyboard navigation', () => {
       });
     });
   });
+
+  describe('GIVEN: a modified or unrelated key on a mounted body cell', () => {
+    describe('WHEN: navigation is resolved', () => {
+      it('THEN: it declines every one so the grid keeps its default handling', () => {
+        // The capture handler calls preventDefault AND stopImmediatePropagation
+        // on any request, so a false positive silently swallows range selection
+        // and browser shortcuts inside every virtualized table.
+        const declined = ['ArrowDown', 'ArrowUp', 'PageDown'].flatMap((key) => [
+          new KeyboardEvent('keydown', { key, shiftKey: true }),
+          new KeyboardEvent('keydown', { key, altKey: true })
+        ]);
+
+        declined.push(new KeyboardEvent('keydown', { key: 'ArrowRight' }), new KeyboardEvent('keydown', { key: 'a' }));
+
+        for (const declinedEvent of declined) {
+          expect(
+            resolveNatTableVirtualNavigation({
+              event: declinedEvent,
+              currentRowIndex: 10,
+              currentColumnId: 'name',
+              firstColumnId: 'name',
+              lastColumnId: 'total',
+              mountedRowIndexes: new Set([10]),
+              rowCount: 100,
+              rowsPerPage: 5
+            })
+          ).toBeNull();
+        }
+      });
+    });
+  });
 });

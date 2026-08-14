@@ -16,8 +16,7 @@ const isUsableVirtualItem = (item: NatTableVirtualItem, rowCount: number, totalS
 
 const renderAllRows = <TData extends RowData>(rows: readonly Row<TData>[]): NatTableBodyRenderPlan<TData> => ({
   rows: rows.map((row, logicalIndex) => ({ row, logicalIndex, beforeSize: 0 })),
-  afterSize: 0,
-  renderKey: 'all'
+  afterSize: 0
 });
 
 /**
@@ -101,9 +100,5 @@ export const buildNatTableBodyRenderPlan = <TData extends RowData>(
     previousEnd = Math.max(previousEnd, item.end);
   }
 
-  return {
-    rows: renderedRows,
-    afterSize: Math.max(0, totalSize - previousEnd),
-    renderKey: `${renderedRows.length}:${renderedRows[0]?.logicalIndex ?? -1}:${previousEnd}`
-  };
+  return { rows: renderedRows, afterSize: Math.max(0, totalSize - previousEnd) };
 };

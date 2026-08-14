@@ -7,7 +7,6 @@ import {
   PLATFORM_ID,
   afterNextRender,
   afterRenderEffect,
-  computed,
   inject,
   signal
 } from '@angular/core';
@@ -45,19 +44,14 @@ export class NatTableVirtualLayoutService<TData extends RowData = RowData> {
   /** Client height of the scrollable table region. */
   public readonly viewportHeight = signal(0);
 
-  /**
-   * Structural re-measure trigger. Deliberately a primitive: depending on the
-   * `headerGroups()` array would re-run the measurement on every unrelated
-   * state change (selection, column sizing), because TanStack hands out a new
-   * array identity. Size-only changes are covered by the ResizeObserver.
-   */
-  private readonly headerRowCount = computed(() => this.state.headerGroups().length);
-
   public constructor() {
     afterRenderEffect({
       earlyRead: () => {
         this.state.resolvedCaption();
-        this.headerRowCount();
+        // A primitive on purpose: the header-group array changes identity on
+        // unrelated state changes, and size-only changes are covered by the
+        // ResizeObserver.
+        this.state.headerRowCount();
         this.state.stickyHeader();
 
         return this.readMeasurements();

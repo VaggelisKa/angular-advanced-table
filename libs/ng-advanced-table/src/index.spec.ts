@@ -22,7 +22,7 @@ describe('FEATURE: ng-advanced-table public barrel', () => {
         const strategyKeys: (keyof NatTableRowRenderStrategy)[] = ['items', 'totalSize', 'rowHeight'];
 
         expect(NatTableRowRenderStrategyRegistry).toBe(DirectRegistry);
-        expect(strategyKeys).toStrictEqual(['items', 'totalSize', 'rowHeight']);
+        expect(strategyKeys).toHaveLength(3);
       });
     });
   });

@@ -55,13 +55,18 @@ export type NatTableVirtualItem = {
  *   places, both guards: it rejects a non-positive height, and it rejects a
  *   `totalSize` smaller than `rows.length * rowHeight` (an undersized global
  *   extent would otherwise produce negative spacers). The rendered body never
- *   reads it — row heights are enforced by the strategy's own CSS, not by the
- *   plan. `rowHeight` is therefore an artifact of the current fixed-height
- *   strategy, not a requirement of the contract.
- * - **Consequence for a measured-height strategy.** The `rows.length *
- *   rowHeight` floor is the one assumption it would break: with measured rows
+ *   reads the scalar in TypeScript; the height itself is applied by core's
+ *   `.data-table.is-virtualized` CSS from the `--sys-nat-table-virtual-row-height`
+ *   custom property the strategy sets on its host. `rowHeight` is therefore an
+ *   artifact of the current fixed-height strategy, not a requirement of the
+ *   contract.
+ * - **Consequence for a measured-height strategy.** Two assumptions would
+ *   break. The `rows.length * rowHeight` floor, because with measured rows
  *   there is no single height that is simultaneously a valid lower bound and a
- *   useful sanity check. Such a strategy would need core's guard relaxed —
+ *   useful sanity check; and core's fixed-height CSS rule above, which sizes
+ *   every body row from one custom property and would have to be scoped off for
+ *   a strategy that sizes rows individually. Such a strategy would need core's
+ *   guard relaxed —
  *   e.g. `rowHeight` reinterpreted as a *minimum* row extent, or replaced by a
  *   `minRowExtent` field — plus its own scroll-offset correction when a
  *   measurement changes the extent of a row above the viewport. Core's plan
@@ -93,11 +98,8 @@ export type NatTableRenderedBodyRow<TData extends RowData> = {
  * Engine-neutral body plan rendered by the single NatTable body template.
  *
  * Internal: core's body template consumes this, no entry point imports it.
- * `renderKey` identifies the mounted window so the render-metrics cycle clock
- * can restamp when the window moves.
  */
 export type NatTableBodyRenderPlan<TData extends RowData> = {
   readonly rows: readonly NatTableRenderedBodyRow<TData>[];
   readonly afterSize: number;
-  readonly renderKey: string;
 };

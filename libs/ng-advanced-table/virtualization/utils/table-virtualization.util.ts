@@ -13,6 +13,9 @@ export const NAT_TABLE_DEFAULT_OVERSCAN = 5;
  * Row IDs are compared structurally so arbitrary consumer IDs cannot erase
  * sequence boundaries. Sorting, filtering, paging, and replaced data rewrite
  * some earlier position and therefore fail the prefix comparison.
+ *
+ * A first load (empty to non-empty) is a rebuild rather than an append: there
+ * is no prefix the reader was already looking at.
  */
 export const isAppendedRowSequence = (previous: readonly string[], current: readonly string[]): boolean =>
   current.length >= previous.length &&

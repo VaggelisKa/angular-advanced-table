@@ -506,7 +506,6 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         expect(renderedRows).toHaveLength(10);
         expect(spacers).toHaveLength(1);
-        expect(natTable.classList.contains('nat-table-virtualized')).toBe(true);
         expect(natTable.style.getPropertyValue('--sys-nat-table-virtual-row-height')).toBe('40px');
         expect(table.getAttribute('aria-rowcount')).toBe('1001');
         expect(queryRequired(fixture, 'thead tr').getAttribute('aria-rowindex')).toBe('1');
@@ -552,10 +551,18 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         const region = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
 
+        // Count the schedules: asserting only the final offset passes even with
+        // the dedup guard deleted, because `updateRange` reads live `scrollTop`
+        // and both frames would compute the same window.
+        const schedule = vi.spyOn(globalThis, 'requestAnimationFrame');
+
         region.scrollTop = 4000;
         region.dispatchEvent(new Event('scroll'));
         region.scrollTop = 2000;
         region.dispatchEvent(new Event('scroll'));
+
+        expect(schedule).toHaveBeenCalledTimes(1);
+
         await nextAnimationFrame();
         await fixture.whenStable();
 
@@ -1141,9 +1148,17 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         expect(queryAll(fixture, 'tbody tr.data-row')).toHaveLength(10);
 
+        // Both events must share one frame: the row count alone is identical
+        // whether or not the guard exists, since both re-measures read the same
+        // geometry.
+        const schedule = vi.spyOn(globalThis, 'requestAnimationFrame');
+
         geometry.regionClientHeight = 400;
         window.dispatchEvent(new Event('resize'));
         window.dispatchEvent(new Event('orientationchange'));
+
+        expect(schedule).toHaveBeenCalledTimes(1);
+
         await new Promise((resolve) => setTimeout(resolve, 40));
         await fixture.whenStable();
 

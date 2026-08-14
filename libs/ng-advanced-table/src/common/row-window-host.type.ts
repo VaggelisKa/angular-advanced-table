@@ -1,7 +1,7 @@
 import type { ElementRef, Signal } from '@angular/core';
 import { InjectionToken } from '@angular/core';
 
-import type { Column, HeaderGroup, Row, RowData } from '@tanstack/angular-table';
+import type { Column, Row, RowData } from '@tanstack/angular-table';
 
 import type { NatTableUserState } from './table-state.type';
 import type { NatTableBodyState } from './table-status.type';
@@ -20,10 +20,14 @@ export type NatTableRowWindowHost<TData extends RowData = RowData> = {
   readonly bodyRows: Signal<readonly Row<TData>[]>;
   /** Currently rendered body branch, used to recover focus across state-row transitions. */
   readonly bodyState: Signal<NatTableBodyState>;
-  /** The consumer-supplied data array, used to detect wholesale replacement. */
+  /**
+   * The consumer-supplied data array. Tracked to re-measure on any
+   * replacement; row identity, not this reference, decides whether the mounted
+   * window resets.
+   */
   readonly data: Signal<readonly TData[]>;
-  /** Header rows, used to offset absolute ARIA row positions. */
-  readonly headerGroups: Signal<readonly HeaderGroup<TData>[]>;
+  /** Number of header rows, used to offset absolute ARIA row positions. */
+  readonly headerRowCount: Signal<number>;
   /**
    * Whether `target` is an interactive control the cell delegates grid focus
    * to. Lets a row-window strategy tell a real grid focus target from an

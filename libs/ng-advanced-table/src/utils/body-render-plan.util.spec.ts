@@ -22,7 +22,6 @@ describe('FEATURE: NatTable body render planning', () => {
       it('THEN: it keeps every logical row in the ordinary rendering path', () => {
         const plan = buildNatTableBodyRenderPlan(rows(3), null);
 
-        expect(plan.renderKey).toBe('all');
         expect(plan.rows.map((item) => item.row.id)).toStrictEqual(['row-0', 'row-1', 'row-2']);
         expect(plan.rows.every((item) => item.beforeSize === 0)).toBe(true);
         expect(plan.afterSize).toBe(0);
@@ -46,7 +45,6 @@ describe('FEATURE: NatTable body render planning', () => {
           [7, 120]
         ]);
         expect(plan.afterSize).toBe(80);
-        expect(plan.renderKey).not.toBe('all');
       });
     });
   });
@@ -62,6 +60,40 @@ describe('FEATURE: NatTable body render planning', () => {
 
         expect(plan.rows.map((item) => item.logicalIndex)).toStrictEqual([1]);
         expect(plan.afterSize).toBe(320);
+      });
+    });
+  });
+
+  describe('GIVEN: a strategy reporting global metrics the plan cannot use', () => {
+    describe('WHEN: the body render plan is built', () => {
+      it('THEN: it falls back to the full-row renderer for each unusable shape', () => {
+        // A third-party strategy can reach these; the directive normalizes its
+        // own options long before they arrive here.
+        const items = signal([{ index: 0, start: 0, end: 40 }]);
+        const unusable: NatTableRowRenderStrategy[] = [
+          { items, totalSize: signal(400), rowHeight: signal(0) },
+          { items, totalSize: signal(400), rowHeight: signal(Number.NaN) },
+          { items, totalSize: signal(Number.POSITIVE_INFINITY), rowHeight: signal(40) },
+          // totalSize below rows.length * rowHeight cannot describe the model.
+          { items, totalSize: signal(80), rowHeight: signal(40) }
+        ];
+
+        for (const strategyUnderTest of unusable) {
+          const plan = buildNatTableBodyRenderPlan(rows(5), strategyUnderTest);
+
+          expect(plan.rows.map((item) => item.logicalIndex)).toStrictEqual([0, 1, 2, 3, 4]);
+          expect(plan.afterSize).toBe(0);
+        }
+      });
+    });
+  });
+
+  describe('GIVEN: a strategy that supplies no usable items for a non-empty model', () => {
+    describe('WHEN: the body render plan is built', () => {
+      it('THEN: it renders every row rather than an empty body', () => {
+        const plan = buildNatTableBodyRenderPlan(rows(4), strategy(signal([{ index: 99, start: 0, end: 40 }])));
+
+        expect(plan.rows.map((item) => item.logicalIndex)).toStrictEqual([0, 1, 2, 3]);
       });
     });
   });
