@@ -8,7 +8,7 @@ import type { NatTableVirtualRangeChange } from 'ng-advanced-table/virtualizatio
 
 import type { MockOrderRow } from '../../../mock-order/mock-order.type';
 import { currencyFormatter, generateMockOrderRows, integerFormatter } from '../../../mock-order/mock-order.util';
-import { DemoFacts } from '../../../ui';
+import { DemoFacts, DemoLayout, DemoSection } from '../../../ui';
 import type { DemoFact } from '../../../ui';
 
 const PAGE_SIZE = 100;
@@ -36,38 +36,36 @@ const resolveStatus = (isFetching: boolean, hasEverything: boolean): string => {
 
 @Component({
   selector: 'app-virtualization-incremental-fetch',
-  imports: [DemoFacts, NatTable, NatTableSurface, NatTableVirtualize],
+  imports: [DemoFacts, DemoLayout, DemoSection, NatTable, NatTableSurface, NatTableVirtualize],
   styles: `
     nat-table-surface {
       --nat-table-height: 24rem;
     }
-
-    .fetch-summary {
-      margin: 0 0 0.75rem;
-    }
   `,
   template: `
-    <div class="card" data-testid="virtualization-fetch-demo">
-      <h2 class="card-title">Fetch on approach</h2>
-      <p class="description fetch-summary">
-        The container watches <code>(virtualRangeChange)</code> and loads the next page once the mounted window comes within
-        {{ lookahead }} rows of the data it already has. Each page is appended, so the scroll position and the mounted window survive
-        the load.
-      </p>
-
-      <app-demo-facts [facts]="facts()" live />
-
-      <nat-table-surface [stickyHeader]="true" columnSizingMode="fixed">
+    <app-demo-layout data-testid="virtualization-fetch-demo">
+      <nat-table-surface [stickyHeader]="true">
         <nat-table
           [columns]="columns"
           [data]="rows()"
           [getRowId]="rowId"
           [natTableVirtualize]="{ rowHeight: 44 }"
           accessibleName="Incrementally fetched orders"
+          class="sc-demo-table"
           data-testid="virtualization-fetch-table"
           (virtualRangeChange)="onRangeChange($event)" />
       </nat-table-surface>
-    </div>
+
+      <app-demo-section demoAside heading="Fetch state">
+        <app-demo-facts [facts]="facts()" live />
+
+        <p class="demo-note">
+          The container watches <code>(virtualRangeChange)</code> and loads the next page once the mounted window comes within
+          {{ lookahead }} rows of the data it already has. Each page is appended, so the scroll position and the mounted window survive
+          the load.
+        </p>
+      </app-demo-section>
+    </app-demo-layout>
   `
 })
 export class VirtualizationIncrementalFetch {
