@@ -56,6 +56,23 @@ export const columns: ColumnDef<Row, unknown>[] = [
   }
 ];
 
+/** One contiguous loaded window of a remote dataset: rows for logical indexes `[offset, offset + size)`. */
+export const buildRowWindow = (offset: number, size: number): Row[] => {
+  const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
+
+  return Array.from({ length: size }, (_, position) => {
+    const index = offset + position;
+
+    return {
+      id: `svc-${String(index + 1).padStart(7, '0')}`,
+      name: `Service ${index + 1}`,
+      region: ['us-east-1', 'eu-west-3'][index % 2],
+      status: statuses[index % statuses.length],
+      throughput: 1000 + index * 1000
+    };
+  });
+};
+
 export const buildRows = (size: number): Row[] => {
   const statuses: Row['status'][] = ['Healthy', 'Pending', 'Alert'];
 

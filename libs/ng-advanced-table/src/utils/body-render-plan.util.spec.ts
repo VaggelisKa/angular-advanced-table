@@ -97,4 +97,74 @@ describe('FEATURE: NatTable body render planning', () => {
       });
     });
   });
+
+  describe('GIVEN: a strategy declaring a remote logical extent around a loaded window', () => {
+    describe('WHEN: mounted items straddle the loaded window boundary', () => {
+      it('THEN: it maps in-window indexes to loaded rows and renders the rest as placeholder slots', () => {
+        const virtualItems = signal([
+          { index: 98, start: 3920, end: 3960 },
+          { index: 100, start: 4000, end: 4040 },
+          { index: 101, start: 4040, end: 4080 },
+          { index: 103, start: 4120, end: 4160 }
+        ]);
+        const plan = buildNatTableBodyRenderPlan(rows(3), {
+          ...strategy(virtualItems, 40_000),
+          logicalRowCount: signal<number | null>(1000),
+          rowWindowOffset: signal(100)
+        });
+
+        expect(plan.rows.map((item) => [item.kind, item.logicalIndex, item.kind === 'row' ? item.row.id : null])).toStrictEqual([
+          ['placeholder', 98, null],
+          ['row', 100, 'row-0'],
+          ['row', 101, 'row-1'],
+          ['placeholder', 103, null]
+        ]);
+        expect(plan.afterSize).toBe(40_000 - 4160);
+      });
+    });
+
+    describe('WHEN: the declared extent or offset does not fit the loaded rows', () => {
+      it('THEN: it clamps the extent up to the loaded rows and the offset into the extent', () => {
+        const virtualItems = signal([{ index: 0, start: 0, end: 40 }]);
+        const shortExtentPlan = buildNatTableBodyRenderPlan(rows(3), {
+          ...strategy(virtualItems, 400),
+          logicalRowCount: signal<number | null>(1),
+          rowWindowOffset: signal(0)
+        });
+        const overflowingOffsetPlan = buildNatTableBodyRenderPlan(rows(3), {
+          ...strategy(signal([{ index: 9, start: 360, end: 400 }]), 400),
+          logicalRowCount: signal<number | null>(10),
+          rowWindowOffset: signal(9)
+        });
+
+        // Extent below the loaded rows: the loaded rows win the count.
+        expect(shortExtentPlan.rows.map((item) => [item.kind, item.logicalIndex])).toStrictEqual([['row', 0]]);
+        // Offset 9 + 3 loaded rows exceeds 10; clamped to 7, so logical 9 is row-2.
+        expect(
+          overflowingOffsetPlan.rows.map((item) => [item.kind, item.logicalIndex, item.kind === 'row' ? item.row.id : null])
+        ).toStrictEqual([['row', 9, 'row-2']]);
+      });
+    });
+
+    describe('WHEN: the declared extent or offset is not an integer', () => {
+      it('THEN: it falls back to the loaded rows as the extent and a zero offset', () => {
+        const virtualItems = signal([{ index: 0, start: 0, end: 40 }]);
+        const fractionalExtentPlan = buildNatTableBodyRenderPlan(rows(2), {
+          ...strategy(virtualItems, 400),
+          logicalRowCount: signal<number | null>(10.5),
+          rowWindowOffset: signal(0)
+        });
+        const fractionalOffsetPlan = buildNatTableBodyRenderPlan(rows(2), {
+          ...strategy(virtualItems, 400),
+          logicalRowCount: signal<number | null>(10),
+          rowWindowOffset: signal(Number.NaN)
+        });
+
+        expect(fractionalExtentPlan.rows.map((item) => [item.kind, item.logicalIndex])).toStrictEqual([['row', 0]]);
+        expect(
+          fractionalOffsetPlan.rows.map((item) => [item.kind, item.logicalIndex, item.kind === 'row' ? item.row.id : null])
+        ).toStrictEqual([['row', 0, 'row-0']]);
+      });
+    });
+  });
 });

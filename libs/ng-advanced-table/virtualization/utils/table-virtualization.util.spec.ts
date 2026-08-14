@@ -1,14 +1,29 @@
 import {
   NAT_TABLE_FALLBACK_ROW_HEIGHT,
   NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT,
+  NAT_TABLE_MAX_SCROLL_EXTENT_PX,
   createInitialVirtualRange,
   createVirtualItems,
+  describeNatTableRemoteWindowingIssues,
   includeVirtualIndex,
   isAppendedRowSequence,
+  normalizeNatTableRemoteRowCount,
+  normalizeNatTableRowWindowOffset,
   normalizeNatTableVirtualizationOptions,
   opensSubHeaderGroup,
   rangeToRowIndexes
 } from './table-virtualization.util';
+
+const remoteDiagnosticsContext = {
+  remoteRowCount: 1000 as number | undefined,
+  rowWindowOffset: 0,
+  rowHeight: 40,
+  loadedRowCount: 100,
+  hasClientSorting: false,
+  hasClientFiltering: false,
+  hasClientPagination: false,
+  hasSubHeaders: false
+};
 
 describe('FEATURE: NatTable virtualization options and ranges', () => {
   describe('GIVEN: fixed-row virtualization options', () => {
@@ -179,6 +194,108 @@ describe('FEATURE: NatTable virtualization options and ranges', () => {
       it('THEN: it preserves row boundaries and reads the replacement as a rebuild', () => {
         expect(isAppendedRowSequence(['a', 'b'], ['a\u001Fb', 'c'])).toBe(false);
         expect(isAppendedRowSequence([], ['a'])).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN: remote windowing inputs on the virtualize directive', () => {
+    describe('WHEN: the remote row count is normalized', () => {
+      it('THEN: it keeps non-negative integers and rejects every other shape as inactive', () => {
+        expect(normalizeNatTableRemoteRowCount(2_000_000)).toBe(2_000_000);
+        expect(normalizeNatTableRemoteRowCount(0)).toBe(0);
+        expect(normalizeNatTableRemoteRowCount(undefined)).toBeNull();
+        expect(normalizeNatTableRemoteRowCount(10.5)).toBeNull();
+        expect(normalizeNatTableRemoteRowCount(-1)).toBeNull();
+        expect(normalizeNatTableRemoteRowCount(Number.POSITIVE_INFINITY)).toBeNull();
+        expect(normalizeNatTableRemoteRowCount(Number.NaN)).toBeNull();
+      });
+    });
+
+    describe('WHEN: the window offset is normalized against the remote extent', () => {
+      it('THEN: it clamps the loaded window into the extent and zeroes unusable values', () => {
+        expect(normalizeNatTableRowWindowOffset(500, 1000, 100)).toBe(500);
+        expect(normalizeNatTableRowWindowOffset(950, 1000, 100)).toBe(900);
+        expect(normalizeNatTableRowWindowOffset(5, null, 100)).toBe(0);
+        expect(normalizeNatTableRowWindowOffset(-5, 1000, 100)).toBe(0);
+        expect(normalizeNatTableRowWindowOffset(10.5, 1000, 100)).toBe(0);
+        expect(normalizeNatTableRowWindowOffset(50, 40, 100)).toBe(0);
+      });
+    });
+
+    describe('WHEN: the diagnostics inspect a valid remote configuration', () => {
+      it('THEN: it reports no issues', () => {
+        expect(describeNatTableRemoteWindowingIssues(remoteDiagnosticsContext)).toStrictEqual([]);
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, remoteRowCount: undefined })).toStrictEqual([]);
+      });
+    });
+
+    describe('WHEN: the diagnostics inspect unusable input values', () => {
+      it('THEN: it names each invalid input and the value received', () => {
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, remoteRowCount: 10.5 })).toStrictEqual([
+          'remoteRowCount must be a non-negative integer; got 10.5, ignoring it.'
+        ]);
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, remoteRowCount: -1 })[0]).toContain(
+          'remoteRowCount must be a non-negative integer'
+        );
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, remoteRowCount: Number.NaN })[0]).toContain(
+          'got NaN'
+        );
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, rowWindowOffset: -2 })).toStrictEqual([
+          'rowWindowOffset must be a non-negative integer; got -2, using 0.'
+        ]);
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, rowWindowOffset: 0.5 })[0]).toContain(
+          'rowWindowOffset must be a non-negative integer'
+        );
+      });
+    });
+
+    describe('WHEN: the diagnostics inspect a window that does not fit the extent', () => {
+      it('THEN: it reports the undersized extent or the overflowing offset, never both', () => {
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, remoteRowCount: 40 })).toStrictEqual([
+          'remoteRowCount (40) is smaller than the 100 loaded rows; using the loaded row count.'
+        ]);
+        expect(describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, rowWindowOffset: 950 })).toStrictEqual([
+          'rowWindowOffset (950) plus the 100 loaded rows exceeds remoteRowCount (1000); clamping the window.'
+        ]);
+      });
+    });
+
+    describe('WHEN: the diagnostics inspect client-side row-model transformations', () => {
+      it('THEN: it requires the manual mode for each active transformation', () => {
+        const issues = describeNatTableRemoteWindowingIssues({
+          ...remoteDiagnosticsContext,
+          hasClientSorting: true,
+          hasClientFiltering: true,
+          hasClientPagination: true,
+          hasSubHeaders: true
+        });
+
+        expect(issues).toStrictEqual([
+          'remoteRowCount requires manualSorting: client-side sorting would sort the loaded window, not the dataset.',
+          'remoteRowCount requires manualFiltering: client-side filtering would filter the loaded window, not the dataset.',
+          'remoteRowCount requires manualPagination: client-side pagination would paginate the loaded window, not the dataset.',
+          'sub-header rows are not supported with remoteRowCount; they are disabled while it is set.'
+        ]);
+      });
+    });
+
+    describe('WHEN: the diagnostics inspect an extent beyond the browser layout ceiling', () => {
+      it('THEN: it names the effective maximum row count at the configured row height', () => {
+        const issues = describeNatTableRemoteWindowingIssues({
+          ...remoteDiagnosticsContext,
+          remoteRowCount: 2_000_000,
+          rowHeight: 44
+        });
+        const effectiveMaxRows = Math.floor(NAT_TABLE_MAX_SCROLL_EXTENT_PX / 44);
+
+        expect(issues).toHaveLength(1);
+        expect(issues[0]).toContain('88000000px');
+        expect(issues[0]).toContain(`${NAT_TABLE_MAX_SCROLL_EXTENT_PX}px`);
+        expect(issues[0]).toContain(`at or below ${effectiveMaxRows}`);
+        // The largest extent that fits stays silent.
+        expect(
+          describeNatTableRemoteWindowingIssues({ ...remoteDiagnosticsContext, remoteRowCount: effectiveMaxRows, rowHeight: 44 })
+        ).toStrictEqual([]);
       });
     });
   });

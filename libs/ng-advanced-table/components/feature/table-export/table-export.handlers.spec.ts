@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { vi } from 'vitest';
 
-import { CustomHandlerHost, DelegatingHandlerHost } from './test-helpers/table-export-hosts.helper';
+import { CustomHandlerHost, DelegatingHandlerHost, RemoteWindowExportHost } from './test-helpers/table-export-hosts.helper';
 import {
   DefaultExportHost,
   ExportApi,
@@ -108,6 +108,26 @@ describe('FEATURE: NatTableExport', () => {
 
         expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
         expectClientCsvDownload('table-export.csv');
+      });
+    });
+  });
+
+  describe('GIVEN: an export directive host whose table row model is a remote loaded window', () => {
+    describe('WHEN: an export is triggered under remote windowing', () => {
+      it('THEN: it warns that only the loaded window is exported and still runs the handler', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const fixture = TestBed.createComponent(RemoteWindowExportHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('loaded row window'));
+
+        exportButton().click();
+        await fixture.whenStable();
+
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('exports only the loaded row window under remote windowing'));
+        expect(fixture.componentInstance.exportHandler).toHaveBeenCalledTimes(1);
       });
     });
   });

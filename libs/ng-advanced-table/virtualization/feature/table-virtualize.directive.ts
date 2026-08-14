@@ -268,6 +268,7 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
       const issues = describeNatTableRemoteWindowingIssues({
         remoteRowCount: this.remoteRowCount(),
         rowWindowOffset: this.rowWindowOffset(),
+        rowHeight: this.rowHeight(),
         loadedRowCount: this.state.bodyRows().length,
         hasClientSorting: !this.natTableService.manualSorting() && this.hasClientSortingInput(),
         hasClientFiltering: !this.natTableService.manualFiltering() && this.hasClientFilteringInput(),

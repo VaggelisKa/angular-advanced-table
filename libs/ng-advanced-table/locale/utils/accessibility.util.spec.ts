@@ -59,4 +59,26 @@ describe('FEATURE: accessibility intl merge', () => {
       });
     });
   });
+
+  describe('GIVEN: the built-in placeholder row copy for remote windowing', () => {
+    describe('WHEN: formatting an unfetched row slot', () => {
+      it('THEN: it names the absolute position, the represented total, and the loading state', () => {
+        const resolved = resolveNatTableIntl({ locales: NAT_TABLE_BUILT_IN_LOCALES }, 'en');
+        const context = { positionValue: 1_000_001, positionText: '1,000,001', totalRowsValue: 2_000_000, totalRowsText: '2,000,000' };
+
+        expect(resolved.accessibilityText?.placeholderRow?.(context)).toBe('Row 1,000,001 of 2,000,000 is loading.');
+      });
+    });
+
+    describe('WHEN: a consumer overrides the placeholder formatter', () => {
+      it('THEN: the override wins through the provider merge', () => {
+        const merged = mergeNatTableAccessibilityText(NAT_TABLE_BUILT_IN_LOCALES['en'].accessibilityText, {
+          placeholderRow: ({ positionText }) => `Fetching ${positionText}`
+        });
+        const context = { positionValue: 5, positionText: '5', totalRowsValue: 10, totalRowsText: '10' };
+
+        expect(merged.placeholderRow?.(context)).toBe('Fetching 5');
+      });
+    });
+  });
 });
