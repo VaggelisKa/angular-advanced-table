@@ -64,3 +64,6 @@ Thumbs.db
 
 # Agent-Native plan blocks catalog (generated, keep out of repo)
 .agent-native/plan-blocks.md
+
+# Local Claude Code state and agent-created git worktrees
+.claude/

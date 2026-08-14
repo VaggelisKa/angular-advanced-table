@@ -29,11 +29,11 @@ export default [
   ...playwright,
   {
     // Entry-point layering for the consolidated `ng-advanced-table` package.
-    // Each subpath (`.`, `/components`, `/render-metrics`, `/locale`) is its own Nx
-    // project; this guards which subpath may import which. Confirmed against the real
-    // Nx graph (#185), matching the documented policy in AGENTS.md: core must NOT
-    // import the companions (components/render-metrics); both companions may compose
-    // core; locale is the leaf (imported by all, imports none).
+    // Each subpath (`.`, `/components`, `/render-metrics`, `/virtualization`, `/locale`)
+    // is its own Nx project; this guards which subpath may import which. Confirmed
+    // against the real Nx graph (#185), matching the documented policy in AGENTS.md:
+    // core must NOT import the companions (components/render-metrics/virtualization);
+    // the companions may compose core; locale is the leaf (imported by all, imports none).
     // `type:public-api` is the build-only wrapper project; the bare
     // `ng-advanced-table` specifier resolves to it as well as to core, so every
     // entry point is allowed to "see" it.
@@ -61,6 +61,11 @@ export default [
             {
               // Companion entry point (/render-metrics): may compose core + the locale leaf.
               sourceTag: 'type:render-metrics',
+              onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
+            },
+            {
+              // Companion entry point (/virtualization): may compose core + the locale leaf.
+              sourceTag: 'type:virtualization',
               onlyDependOnLibsWithTags: ['type:core', 'type:locale', 'type:public-api']
             },
             { sourceTag: 'type:locale', onlyDependOnLibsWithTags: [] }

@@ -87,6 +87,9 @@ const dataRowNames = (fixture: ComponentFixture<unknown>): string[] =>
 const subHeaderVisibleText = (row: HTMLElement): string =>
   row.querySelector('.custom-sub-header, [aria-hidden="true"]')?.textContent.replace(/\s+/g, ' ').trim() ?? '';
 
+const bodyRowIndexes = (fixture: ComponentFixture<unknown>): (string | null)[] =>
+  queryAll(fixture, 'tbody tr').map((row) => row.getAttribute('aria-rowindex'));
+
 const bodyRowKinds = (fixture: ComponentFixture<unknown>): string[] =>
   queryAll(fixture, 'tbody tr').map((row) =>
     row.classList.contains('sub-header-row') ? `group:${subHeaderVisibleText(row)}` : 'row'
@@ -136,6 +139,33 @@ describe('FEATURE: NatTable sub-headers', () => {
 
       it('THEN: the sub-header column header exposes no aria-sort for the forced sort', () => {
         expect(queryRequired(fixture, '[data-testid="nat-table-header-status"]').hasAttribute('aria-sort')).toBe(false);
+      });
+
+      it('THEN: aria row indexes run unbroken across sub-header and data rows', () => {
+        // One header row, then 3 groups of 2 rows: group, row, row, group, …
+        expect(bodyRowIndexes(fixture)).toStrictEqual(['2', '3', '4', '5', '6', '7', '8', '9', '10']);
+      });
+
+      it('THEN: aria-rowcount counts the header, sub-header, and data rows', () => {
+        expect(queryRequired(fixture, 'table').getAttribute('aria-rowcount')).toBe('10');
+      });
+
+      it('THEN: sub-header cells carry the shared row separator and the transparent background token', () => {
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const subHeaderCellRule = tableStyles.find(
+          (rule) => rule.selectorText.includes('.sub-header-cell') && !rule.selectorText.includes('.is-virtualized')
+        );
+        const cssText = subHeaderCellRule?.cssText ?? '';
+
+        // The separator reuses the data-cell border tokens so a themed border
+        // applies to sub-header rows without a second token pair.
+        expect(cssText).toContain('border-bottom');
+        expect(cssText).toContain('--nat-table-cell-border-width');
+        expect(cssText).toContain('--nat-table-cell-border-color');
+        expect(cssText).toContain('--nat-table-sub-header-background');
+        expect(cssText).toContain('transparent');
       });
     });
 

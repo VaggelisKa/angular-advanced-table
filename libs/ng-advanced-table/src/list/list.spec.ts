@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 import { NatList } from './list';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
+import { NatTableRowRenderStrategyRegistry } from '../domain-logic/table-row-render-strategy.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { ListHost } from '../test-helpers/list-hosts.helper';
 import type { Row } from '../test-helpers/table-data.helper';
@@ -71,6 +72,17 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         const service = fixture.debugElement.query(By.directive(TestTableSurface)).injector.get(NatTableService);
 
         expect(service.controller()).toBe(getList());
+      });
+
+      it('THEN: it renders every row without providing any row-render strategy', async () => {
+        await render();
+
+        // The list is deliberately outside virtualization: it provides no
+        // strategy registry, so the shared state must render the full row set.
+        const listInjector = fixture.debugElement.query(By.directive(NatList)).injector;
+
+        expect(listInjector.get(NatTableRowRenderStrategyRegistry, null)).toBeNull();
+        expect(queryAll(fixture, '[data-testid="nat-list-item"]')).toHaveLength(6);
       });
     });
 

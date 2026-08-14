@@ -68,6 +68,17 @@ export class NatTablePxWidth {
   public readonly natTablePxWidth = input.required<number | null | undefined>();
 }
 
+/** Host-styles an element's pixel height from a runtime layout value. */
+@Directive({
+  selector: '[natTablePxHeight]',
+  host: {
+    '[style.height.px]': 'natTablePxHeight()'
+  }
+})
+export class NatTablePxHeight {
+  public readonly natTablePxHeight = input.required<number | null | undefined>();
+}
+
 /**
  * Host-styles the column-resize drag guide: its left anchor plus the live
  * `translateX` that follows the pointer during a drag.

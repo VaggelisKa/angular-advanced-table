@@ -141,3 +141,28 @@ export const buildSubHeaderRowGroups = <TData extends RowData>(
 
 /** Human-readable text for a sub-header group value used in generated announcement copy. */
 export const resolveSubHeaderValueText = (value: unknown): string => (value == null ? '' : String(value));
+
+/**
+ * Prefix sum of sub-header rows rendered at or before each page row, by page
+ * index; see `NatTableRowWindowHost.subHeaderRowOffsets` for why the offsets
+ * cannot come from the DOM. Empty when no sub-header renders, so the common
+ * case allocates nothing per row model.
+ */
+export const buildSubHeaderRowOffsets = <TData extends RowData>(
+  pageRows: readonly Row<TData>[],
+  groups: ReadonlyMap<string, NatTableSubHeaderGroup<TData>>
+): readonly number[] => {
+  if (groups.size === 0) {
+    return [];
+  }
+
+  let renderedSubHeaders = 0;
+
+  return pageRows.map((row) => {
+    if (groups.has(row.id)) {
+      renderedSubHeaders += 1;
+    }
+
+    return renderedSubHeaders;
+  });
+};

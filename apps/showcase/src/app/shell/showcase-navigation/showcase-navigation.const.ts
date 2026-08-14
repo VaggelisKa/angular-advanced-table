@@ -50,6 +50,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     path: '/docs/pagination'
   },
   {
+    id: 'virtualization',
+    label: 'Virtualization',
+    description: 'Large client-side row windows',
+    path: '/docs/virtualization'
+  },
+  {
     id: 'column-layout',
     label: 'Column layout',
     description: 'Pinning, resizing, order, visibility',

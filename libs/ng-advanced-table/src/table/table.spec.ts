@@ -231,6 +231,38 @@ describe('FEATURE: NatTable', () => {
         expect(cssText).toContain('transparent');
       });
 
+      it('THEN: it keeps unpinned focus below opaque pinned state surfaces', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const mediaStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules)
+            .filter((rule): rule is CSSMediaRule => rule instanceof CSSMediaRule)
+            .flatMap((rule) =>
+              Array.from(rule.cssRules).filter((nestedRule): nestedRule is CSSStyleRule => nestedRule instanceof CSSStyleRule)
+            )
+        );
+        const focusRule = tableStyles.find((rule) => rule.style.boxShadow.includes('--nat-table-focus-ring-width'));
+        const pinnedFocusRule = tableStyles.find((rule) => rule.style.zIndex.includes('--nat-table-z-index-focus-cell'));
+        const pinnedRowFocusRule = tableStyles.find((rule) =>
+          rule.style.backgroundImage.includes('--nat-table-row-background-focus-pinned')
+        );
+        const pinnedRowHoverRule = mediaStyles.find((rule) =>
+          rule.style.backgroundImage.includes('--nat-table-row-background-hover-pinned')
+        );
+        const dataRowRule = tableStyles.find((rule) => rule.style.background.includes('--nat-table-row-background'));
+
+        expect(focusRule?.style.zIndex).toBe('');
+        expect(pinnedFocusRule?.style.zIndex).toContain('--nat-table-z-index-focus-cell');
+        expect(pinnedRowFocusRule?.style.backgroundImage).toContain('--nat-table-row-background-focus-pinned');
+        expect(pinnedRowHoverRule?.style.backgroundImage).toContain('--nat-table-row-background-hover-pinned');
+        expect(pinnedRowFocusRule?.style.background).toBe('');
+        expect(pinnedRowHoverRule?.style.background).toBe('');
+        expect(dataRowRule?.style.transition).toBe('');
+      });
+
       it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {
         fixture.detectChanges();
 

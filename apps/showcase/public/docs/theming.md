@@ -300,12 +300,14 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 | `--nat-table-z-index-sticky-header`        | `4`                              |
 | `--nat-table-z-index-pinned-cell`          | `5`                              |
 | `--nat-table-z-index-pinned-header`        | `6`                              |
-| `--nat-table-z-index-focus-cell`           | `7`                              |
+| `--nat-table-z-index-focus-cell`           | `7` (focused pinned cells only)  |
 | `--nat-table-z-index-resize-handle`        | `8`                              |
 | `--nat-table-z-index-resize-guide`         | `9`                              |
 | `--nat-table-z-index-drag-preview`         | `12`                             |
 
 ## Core-Only Tables
+
+Pinned body and header cells always paint above unpinned cells, including when an unpinned cell has keyboard focus beneath a pin zone. The focus-cell layer is reserved for a focused pinned cell so its inset indicator remains visible without overtaking resize handles, resize guides, or drag previews. Pinned focus and hover tokens are composited as overlays over `--nat-table-pinned-background`; translucent consumer colors therefore keep an opaque pinned base instead of exposing scrolled content.
 
 The core table is unstyled by default whether or not you use `NatTableSurface` — with or without the surface, it renders with system-color fallbacks unless you import the opt-in theme or provide tokens yourself. For a polished core-only table, import `ng-advanced-table/components/theme.css` or provide the core tokens yourself.
 

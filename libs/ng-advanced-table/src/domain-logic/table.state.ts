@@ -36,7 +36,9 @@ import {
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
+import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
 import { NatTableService } from './table.service';
+import { isNatTableDelegatedCellControl } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableColumnMoveDirection } from '../common/column-meta.type';
 import type {
   ColumnRenderStateContext,
@@ -57,6 +59,7 @@ import {
   computeKeyboardResizeWidth,
   getColumnResizeBounds
 } from '../resize/utils/column-resize.util';
+import { buildNatTableBodyRenderPlan } from '../utils/body-render-plan.util';
 import {
   getColumnDefLeafIds,
   getUserColumnSizing,
@@ -84,6 +87,7 @@ import { normalizeSortingState } from '../utils/sorting.util';
 import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
 import {
   buildSubHeaderRowGroups,
+  buildSubHeaderRowOffsets,
   createSubHeaderOrderSortingFn,
   prependForcedSortingEntry,
   resolveSubHeaderValueText,
@@ -107,6 +111,16 @@ let nextTableId = 0;
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly directionality = inject(Directionality, { optional: true });
+  // `self` keeps a nested renderer from inheriting the outer table's window;
+  // `optional` covers renderers that provide no registry (NatList).
+  private readonly rowRenderStrategies = inject(NatTableRowRenderStrategyRegistry, { optional: true, self: true });
+  private readonly rowRenderStrategy = computed(() => this.rowRenderStrategies?.strategy() ?? null);
+  private readonly hasRowRenderStrategy = computed(() => this.rowRenderStrategy() !== null);
+
+  /** `NatTableRowWindowHost` bridge; keeps the cell-interaction predicate internal. */
+  public isDelegatedCellControl(cell: HTMLElement, target: HTMLElement): boolean {
+    return isNatTableDelegatedCellControl(cell, target);
+  }
 
   // ─── Input bridging signals (written by the NatTable component) ───
 
@@ -343,6 +357,7 @@ export class NatTableState<TData extends RowData = RowData> {
 
   public readonly headerGroups = computed(() => this.table.getHeaderGroups());
   public readonly bodyRows = computed(() => this.table.getRowModel().rows);
+  public readonly bodyRenderPlan = computed(() => buildNatTableBodyRenderPlan(this.bodyRows(), this.rowRenderStrategy()));
   public readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
   public readonly hasResizableColumns = computed(() =>
     this.allLeafColumns().some((column) => isColumnResizable(column, this.resizingEnabled()))
@@ -398,6 +413,8 @@ export class NatTableState<TData extends RowData = RowData> {
     return this.visibleRowCount() > 0 ? NAT_TABLE_BODY_STATE.rows : NAT_TABLE_BODY_STATE.empty;
   });
 
+  public readonly headerRowCount = computed(() => this.headerGroups().length);
+
   public readonly renderedVisibleRowCount = computed(() =>
     this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 0
   );
@@ -415,6 +432,17 @@ export class NatTableState<TData extends RowData = RowData> {
 
     return buildSubHeaderRowGroups(this.bodyRows(), this.table.getPrePaginationRowModel().rows, columnId);
   });
+
+  /** See `NatTableRowWindowHost.subHeaderRowOffsets`; empty when no sub-header renders. */
+  public readonly subHeaderRowOffsets = computed(() => buildSubHeaderRowOffsets(this.bodyRows(), this.subHeaderGroups()));
+
+  /** `aria-rowcount`, counted from the logical row model because a windowed body mounts a subset. */
+  public readonly gridRowCount = computed(
+    () =>
+      this.headerRowCount() +
+      this.subHeaderGroups().size +
+      (this.bodyState() === NAT_TABLE_BODY_STATE.rows ? this.visibleRowCount() : 1)
+  );
 
   public readonly stateTotalRowCount = computed(() => {
     const bodyState = this.bodyState();
@@ -466,7 +494,12 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly tableAriaLabelledBy = computed(() => (this.resolvedCaption() ? this.tableCaptionId() : null));
 
   public readonly tableClassMap = computed(() =>
-    ['data-table', this.stickyHeader() && 'has-sticky-header', this.usesAuthoritativeLayout() && 'is-fixed-layout']
+    [
+      'data-table',
+      this.stickyHeader() && 'has-sticky-header',
+      this.usesAuthoritativeLayout() && 'is-fixed-layout',
+      this.hasRowRenderStrategy() && 'is-virtualized'
+    ]
       .filter(Boolean)
       .join(' ')
   );
@@ -479,20 +512,27 @@ export class NatTableState<TData extends RowData = RowData> {
   // ─── Column width resolution ───
 
   /**
-   * Fill layout with at least one resizable column and a measured region. The table
-   * then renders authoritative widths (a colgroup under `table-layout: fixed`) that
-   * sum to the region, so resizing a column is pixel-exact while the other columns
-   * flex to keep the table filled.
+   * Fill layout with a measured region and either a resizable column or a
+   * registered row-render strategy. The table then renders authoritative widths
+   * (a colgroup under `table-layout: fixed`) that sum to the region, so resizing
+   * a column is pixel-exact while the other columns flex to keep the table
+   * filled — and a windowed body keeps its column widths when a different row
+   * window mounts. This also gates `resolvedColumnWidths` and the resize
+   * distribution, so the strategy branch widens more than the colgroup.
    */
   private readonly isFillFlexLayout = computed(
-    () => !this.isFixedLayout() && this.hasResizableColumns() && this.regionViewportWidth() > 0
+    () => !this.isFixedLayout() && (this.hasResizableColumns() || this.hasRowRenderStrategy()) && this.regionViewportWidth() > 0
   );
 
   /**
-   * Authoritative widths drive the layout: either explicit `fixed` sizing mode or
-   * fill flex. Renders the colgroup and switches the table to `table-layout: fixed`.
+   * Authoritative widths drive the layout: explicit `fixed` sizing mode, fill
+   * flex, or a registered row-render strategy — which needs the colgroup even
+   * before the region has been measured. Renders the colgroup and switches the
+   * table to `table-layout: fixed`.
    */
-  public readonly usesAuthoritativeLayout = computed(() => this.isFixedLayout() || this.isFillFlexLayout());
+  public readonly usesAuthoritativeLayout = computed(
+    () => this.isFixedLayout() || this.isFillFlexLayout() || this.hasRowRenderStrategy()
+  );
 
   /**
    * Per-column widths used for sticky pinned offsets, the colgroup, and the keyboard
@@ -1103,22 +1143,35 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   /**
-   * Bumps the render-cycle token when `bodyRows()` changes, enabling
-   * row-render event timing. Pure state → state transform.
+   * Drives row-render event timing. A cycle is one row-model rebuild; a moved
+   * row window restamps the clock without opening one, because the rows that
+   * stayed mounted did not re-render — re-timing them would report afterRender
+   * latency as render cost.
    */
   public registerRenderCycleEffect(): void {
+    let previousRows: readonly Row<TData>[] | null = null;
+
     effect(() => {
       if (!this.emitRowRenderEvents()) {
+        previousRows = null;
         this.renderCycleToken.set(0);
         this.renderCycleStartedAt.set(0);
 
         return;
       }
 
-      this.bodyRows();
+      const rows = this.bodyRows();
+
+      // Tracked, not read: the plan is a plain computed, so a moved window
+      // hands out a new object and restamps the clock below.
+      this.bodyRenderPlan();
 
       this.renderCycleStartedAt.set(performance.now());
-      this.renderCycleToken.update((token) => token + 1);
+
+      if (rows !== previousRows) {
+        previousRows = rows;
+        this.renderCycleToken.update((token) => token + 1);
+      }
     });
   }
 }

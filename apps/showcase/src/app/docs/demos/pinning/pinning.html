@@ -1,9 +1,23 @@
 <app-demo-layout>
-  <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState" class="pinning-shadow-example">
+  <nat-table-surface
+    [direction]="direction()"
+    [enablePinning]="true"
+    [enableSorting]="true"
+    [(state)]="tableState"
+    class="pinning-shadow-example">
     <nat-table [columns]="columns" [data]="data" accessibleName="Pinning demo table" class="sc-demo-table" />
   </nat-table-surface>
 
   <app-demo-section demoAside heading="Configure pinning state">
+    <div class="pinning-column" data-testid="pinning-direction">
+      <span class="pinning-column-name">Direction</span>
+      <app-demo-toggle-group
+        [options]="directionOptions"
+        [value]="direction()"
+        accessibleName="Table direction"
+        (valueChange)="direction.set($event)" />
+    </div>
+
     @for (column of targetColumns; track column.id) {
       <div [attr.data-testid]="`pinning-column-${column.id}`" class="pinning-column">
         <span class="pinning-column-name">{{ column.label }}</span>
