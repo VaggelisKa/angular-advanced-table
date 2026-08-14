@@ -78,6 +78,10 @@ export type NatTableScrollTargetContext = {
 export type NatTableVirtualizerController = {
   readonly items: Signal<readonly NatTableVirtualItem[]>;
   readonly rowHeight: Signal<number>;
+  /** Logical rows the window spans: the remote total under remote windowing, else the row model. */
+  readonly rowCount: Signal<number>;
+  /** Logical index of the first loaded row; `0` outside remote windowing. */
+  readonly rowWindowOffset: Signal<number>;
   measure(): void;
   scrollToIndex(index: number, options?: { readonly align?: 'start' | 'end' | 'auto' }): void;
   scrollToOffset(offset: number): void;

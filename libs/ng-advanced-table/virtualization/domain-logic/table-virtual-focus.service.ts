@@ -10,13 +10,23 @@ import type { NatTableVirtualNavigationRequest, NatTableVirtualizerController } 
 import { readNatTableActiveBodyFocus } from '../utils/active-body-focus.util';
 import { scrollNatTableCellHorizontallyIntoView } from '../utils/horizontal-scroll.util';
 import { resolveNatTablePendingFocusCells } from '../utils/pending-focus-cell.util';
-import { findOwnedNatTableCell, findOwnedNatTableDataRow } from '../utils/table-ownership.util';
+import {
+  findOwnedNatTableBodyRow,
+  findOwnedNatTableCell,
+  findOwnedNatTableDataRow,
+  findOwnedNatTablePlaceholderRow
+} from '../utils/table-ownership.util';
 import { resolveNatTableVirtualNavigation } from '../utils/table-virtual-keyboard.util';
 
 type PendingVirtualFocus = {
   readonly rowIndex: NatTableVirtualNavigationRequest['rowIndex'] | null;
   readonly columnId: NatTableVirtualNavigationRequest['columnId'];
   readonly preferHeader?: boolean;
+};
+
+type RetainedPlaceholderCell = {
+  readonly logicalIndex: number;
+  readonly columnId: string;
 };
 
 /** Keeps roving grid focus stable while body rows enter and leave the DOM. */
@@ -35,6 +45,13 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
    * cell is still in the DOM when focus returns.
    */
   private readonly retainedRowId = signal<string | null>(null);
+  /**
+   * Placeholder cell the roving tabstop last landed on. Placeholder rows have
+   * no row id, so they are retained by logical index — which also lets the
+   * pending-focus effect put focus back when a window fill replaces the
+   * focused placeholder's DOM node with the fetched row.
+   */
+  private readonly retainedPlaceholderCell = signal<RetainedPlaceholderCell | null>(null);
   private readonly pendingFocus = signal<PendingVirtualFocus | null>(null);
 
   /**
@@ -51,11 +68,28 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     return indexById;
   });
 
+  /** Logical index of the retained row — offset into remote coordinates under remote windowing. */
   public readonly focusedLogicalIndex = computed(() => {
+    const retainedPlaceholder = this.retainedPlaceholderCell();
+
+    if (retainedPlaceholder !== null) {
+      return retainedPlaceholder.logicalIndex;
+    }
+
     const retainedRowId = this.retainedRowId();
 
-    return retainedRowId === null ? null : (this.rowIndexById().get(retainedRowId) ?? null);
+    if (retainedRowId === null) {
+      return null;
+    }
+
+    const loadedIndex = this.rowIndexById().get(retainedRowId);
+
+    return loadedIndex === undefined ? null : loadedIndex + this.rowWindowOffset();
   });
+
+  private rowWindowOffset(): number {
+    return this.controller()?.rowWindowOffset() ?? 0;
+  }
 
   public constructor() {
     const host = this.elementRef.nativeElement;
@@ -77,28 +111,55 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
     this.controller.set(controller);
   }
 
-  /** Captures body focus before a row-model or state-row transition. */
+  /** Captures body focus before a row-model or state-row transition. Returns a logical row index. */
   public prepareRowModelReset(): number | null {
     const controller = this.controller();
 
     this.pendingFocus.set(null);
 
     const activeFocus = readNatTableActiveBodyFocus(this.elementRef.nativeElement, this.state.visibleColumns().at(0)?.id);
+    // A focused placeholder has no row id to follow through the reset; it
+    // falls back to the first surviving row in the same column.
+    const placeholderFocus = this.readActivePlaceholderFocus();
 
-    if (!controller || !activeFocus) {
+    this.retainedPlaceholderCell.set(null);
+
+    if (!controller || (!activeFocus && !placeholderFocus)) {
       this.retainedRowId.set(null);
 
       return null;
     }
 
-    const { columnId, rowId } = activeFocus;
-    const targetIndex = this.resolveResetTargetIndex(rowId);
+    const columnId = activeFocus?.columnId ?? placeholderFocus?.columnId ?? '';
+    const targetIndex = this.resolveResetTargetIndex(activeFocus ? activeFocus.rowId : null);
     const targetRowId = targetIndex === null ? null : (this.state.bodyRows()[targetIndex]?.id ?? null);
+    const logicalTargetIndex = targetIndex === null ? null : targetIndex + this.rowWindowOffset();
 
     this.retainedRowId.set(targetRowId);
-    this.pendingFocus.set({ rowIndex: targetIndex, columnId });
+    this.pendingFocus.set({ rowIndex: logicalTargetIndex, columnId });
 
-    return targetIndex;
+    return logicalTargetIndex;
+  }
+
+  /** The focused placeholder cell, when document focus currently sits inside one. */
+  private readActivePlaceholderFocus(): RetainedPlaceholderCell | null {
+    const host = this.elementRef.nativeElement;
+    const target = host.ownerDocument.activeElement;
+
+    if (!target || !host.contains(target)) {
+      return null;
+    }
+
+    const row = findOwnedNatTablePlaceholderRow(host, target);
+    const cell = findOwnedNatTableCell(host, target);
+
+    if (!row || !cell) {
+      return null;
+    }
+
+    const logicalIndex = Number(row.dataset['rowIndex']);
+
+    return Number.isInteger(logicalIndex) ? { logicalIndex, columnId: cell.dataset['columnId'] ?? '' } : null;
   }
 
   private resolveResetTargetIndex(rowId: string | null): number | null {
@@ -110,10 +171,28 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
   }
 
   private readonly onFocusIn = (event: FocusEvent): void => {
-    const row = findOwnedNatTableDataRow(this.elementRef.nativeElement, event.target);
+    const host = this.elementRef.nativeElement;
+    const row = findOwnedNatTableDataRow(host, event.target);
 
     if (row) {
       this.retainedRowId.set(row.dataset['rowId'] ?? null);
+      this.retainedPlaceholderCell.set(null);
+
+      return;
+    }
+
+    const placeholderRow = findOwnedNatTablePlaceholderRow(host, event.target);
+
+    if (!placeholderRow) {
+      return;
+    }
+
+    const logicalIndex = Number(placeholderRow.dataset['rowIndex']);
+    const cell = findOwnedNatTableCell(host, event.target);
+
+    if (Number.isInteger(logicalIndex) && cell) {
+      this.retainedRowId.set(null);
+      this.retainedPlaceholderCell.set({ logicalIndex, columnId: cell.dataset['columnId'] ?? '' });
     }
   };
 
@@ -122,6 +201,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
 
     if (!(relatedTarget instanceof Node) || !this.elementRef.nativeElement.contains(relatedTarget)) {
       this.retainedRowId.set(null);
+      this.retainedPlaceholderCell.set(null);
     }
   };
 
@@ -138,8 +218,10 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
 
     // Ownership-scoped: a bare `closest` walks straight out of this table when
     // the focused cell sits in the header, and an enclosing table's data row
-    // would hand the header cell that row's index instead of `null`.
-    const row = findOwnedNatTableDataRow(this.elementRef.nativeElement, cell);
+    // would hand the header cell that row's index instead of `null`. Loaded
+    // and placeholder rows both carry the logical `data-row-index`, so arrow
+    // and page navigation work identically from an unfetched slot.
+    const row = findOwnedNatTableBodyRow(this.elementRef.nativeElement, cell);
     const rowIndexValue = row?.dataset['rowIndex'];
     const currentRowIndex = rowIndexValue === undefined ? null : Number(rowIndexValue);
     const request = resolveNatTableVirtualNavigation({
@@ -149,7 +231,7 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
       firstColumnId: this.state.visibleColumns().at(0)?.id,
       lastColumnId: this.state.visibleColumns().at(-1)?.id,
       mountedRowIndexes: new Set(controller.items().map((item) => item.index)),
-      rowCount: this.state.bodyRows().length,
+      rowCount: controller.rowCount(),
       rowsPerPage: this.resolveRowsPerPage(controller),
       subHeaderOffsets: this.state.subHeaderRowOffsets()
     });
@@ -190,13 +272,18 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
       const pendingFocus = this.pendingFocus();
 
       controller?.items();
+      // A window fill swaps a placeholder row's DOM node for the fetched row,
+      // so the row model is a focus-recovery trigger too.
+      this.state.bodyRows();
 
-      if (!pendingFocus) {
+      const request = pendingFocus ?? this.resolveDroppedPlaceholderFocus();
+
+      if (!request) {
         return;
       }
 
-      const cells = resolveNatTablePendingFocusCells(this.elementRef.nativeElement, pendingFocus);
-      const cell = cells.find((candidate) => candidate.dataset['columnId'] === pendingFocus.columnId) ?? cells.at(0);
+      const cells = resolveNatTablePendingFocusCells(this.elementRef.nativeElement, request);
+      const cell = cells.find((candidate) => candidate.dataset['columnId'] === request.columnId) ?? cells.at(0);
 
       if (cell) {
         cell.focus({ preventScroll: true });
@@ -209,5 +296,26 @@ export class NatTableVirtualFocusService<TData extends RowData = RowData> {
         this.pendingFocus.set(null);
       }
     });
+  }
+
+  /**
+   * Focus dropped by a window fill: the reader was on a placeholder cell, its
+   * node was replaced, and browsers move focus to the body without a focusout
+   * (which would have cleared the retained cell). Anywhere else focus could
+   * legitimately be — still inside the table, or moved away through a real
+   * focusout — this stays `null` so focus is never stolen.
+   */
+  private resolveDroppedPlaceholderFocus(): PendingVirtualFocus | null {
+    const retainedPlaceholder = this.retainedPlaceholderCell();
+
+    if (retainedPlaceholder === null) {
+      return null;
+    }
+
+    const host = this.elementRef.nativeElement;
+    const activeElement = host.ownerDocument.activeElement;
+    const focusDropped = !activeElement || activeElement === host.ownerDocument.body || !activeElement.isConnected;
+
+    return focusDropped ? { rowIndex: retainedPlaceholder.logicalIndex, columnId: retainedPlaceholder.columnId } : null;
   }
 }

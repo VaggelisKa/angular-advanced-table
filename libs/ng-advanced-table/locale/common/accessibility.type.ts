@@ -163,6 +163,18 @@ export type NatTableAccessibilitySubHeaderContext = {
   readonly rowCountText: string;
 };
 
+/** Context passed to custom placeholder-row text formatters (remote windowing). */
+export type NatTableAccessibilityRowPlaceholderContext = {
+  /** One-based absolute position of the placeholder row in the represented dataset. */
+  readonly positionValue: number;
+  /** Provider-formatted text for `positionValue`. */
+  readonly positionText: string;
+  /** Total logical rows the grid represents. */
+  readonly totalRowsValue: number;
+  /** Provider-formatted text for `totalRowsValue`. */
+  readonly totalRowsText: string;
+};
+
 /** Context passed to custom row-selection announcement formatters. */
 export type NatTableAccessibilitySelectionAnnouncementContext = {
   /** Number of currently selected rows. */
@@ -249,6 +261,11 @@ export type NatTableAccessibilityText = {
   readonly selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
   /** Screen-reader text rendered for a table sub-header group row. */
   readonly subHeaderRow?: (context: NatTableAccessibilitySubHeaderContext) => string;
+  /**
+   * Screen-reader text rendered inside a placeholder row for a logical row the
+   * table has not loaded (remote windowing).
+   */
+  readonly placeholderRow?: (context: NatTableAccessibilityRowPlaceholderContext) => string;
   /**
    * Screen-reader text rendered for a list sub-header group item. Receives the
    * same context as `subHeaderRow`; the default phrases it as items.

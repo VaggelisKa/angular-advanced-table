@@ -69,6 +69,95 @@ export const describeNatTableVirtualizationOptionIssues = (options: NatTableVirt
   return issues;
 };
 
+/**
+ * Valid `remoteRowCount` input value, or `null` when absent or unusable.
+ * Deliberately independent of the loaded row model: the result feeds core's
+ * TanStack options through the strategy contract, where reading the row model
+ * would read the table from inside its own options. Core and the plan builder
+ * clamp it against the loaded rows where that is safe.
+ */
+export const normalizeNatTableRemoteRowCount = (remoteRowCount: number | undefined): number | null =>
+  remoteRowCount !== undefined && Number.isInteger(remoteRowCount) && remoteRowCount >= 0 ? remoteRowCount : null;
+
+/**
+ * Window offset clamped so the loaded window fits inside the remote extent.
+ * `0` outside remote windowing and for unusable values (the directive warns
+ * for those in development builds).
+ */
+export const normalizeNatTableRowWindowOffset = (
+  rowWindowOffset: number,
+  remoteRowCount: number | null,
+  loadedRowCount: number
+): number => {
+  if (remoteRowCount === null || !Number.isInteger(rowWindowOffset) || rowWindowOffset < 0) {
+    return 0;
+  }
+
+  return Math.min(rowWindowOffset, Math.max(0, remoteRowCount - loadedRowCount));
+};
+
+type NatTableRemoteWindowingDiagnosticsContext = {
+  readonly remoteRowCount: number | undefined;
+  readonly rowWindowOffset: number;
+  readonly loadedRowCount: number;
+  readonly hasClientSorting: boolean;
+  readonly hasClientFiltering: boolean;
+  readonly hasClientPagination: boolean;
+  readonly hasSubHeaders: boolean;
+};
+
+/**
+ * Development diagnostics for the remote windowing inputs, one per issue.
+ * Remote windowing decouples the scroll extent from the rows the table holds,
+ * so every client-side row-model transformation over the loaded window silently
+ * misrepresents the dataset — those combinations warn rather than half-work.
+ */
+export const describeNatTableRemoteWindowingIssues = (context: NatTableRemoteWindowingDiagnosticsContext): string[] => {
+  const { remoteRowCount, rowWindowOffset, loadedRowCount, hasClientSorting, hasClientFiltering, hasClientPagination, hasSubHeaders } =
+    context;
+  const issues: string[] = [];
+
+  if (remoteRowCount !== undefined && !(Number.isInteger(remoteRowCount) && remoteRowCount >= 0)) {
+    issues.push(`remoteRowCount must be a non-negative integer; got ${String(remoteRowCount)}, ignoring it.`);
+  }
+
+  if (!(Number.isInteger(rowWindowOffset) && rowWindowOffset >= 0)) {
+    issues.push(`rowWindowOffset must be a non-negative integer; got ${String(rowWindowOffset)}, using 0.`);
+  }
+
+  const remote = normalizeNatTableRemoteRowCount(remoteRowCount);
+
+  if (remote === null) {
+    return issues;
+  }
+
+  if (remote < loadedRowCount) {
+    issues.push(`remoteRowCount (${remote}) is smaller than the ${loadedRowCount} loaded rows; using the loaded row count.`);
+  } else if (Number.isInteger(rowWindowOffset) && rowWindowOffset >= 0 && rowWindowOffset + loadedRowCount > remote) {
+    issues.push(
+      `rowWindowOffset (${rowWindowOffset}) plus the ${loadedRowCount} loaded rows exceeds remoteRowCount (${remote}); clamping the window.`
+    );
+  }
+
+  if (hasClientSorting) {
+    issues.push('remoteRowCount requires manualSorting: client-side sorting would sort the loaded window, not the dataset.');
+  }
+
+  if (hasClientFiltering) {
+    issues.push('remoteRowCount requires manualFiltering: client-side filtering would filter the loaded window, not the dataset.');
+  }
+
+  if (hasClientPagination) {
+    issues.push('remoteRowCount requires manualPagination: client-side pagination would paginate the loaded window, not the dataset.');
+  }
+
+  if (hasSubHeaders) {
+    issues.push('sub-header rows are not supported with remoteRowCount; they are disabled while it is set.');
+  }
+
+  return issues;
+};
+
 export const includeVirtualIndex = (indexes: readonly number[], index: number | null, count: number): number[] => {
   if (index === null || index < 0 || index >= count || indexes.includes(index)) {
     return [...indexes];

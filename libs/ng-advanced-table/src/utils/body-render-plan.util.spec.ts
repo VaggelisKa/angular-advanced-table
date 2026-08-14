@@ -22,7 +22,7 @@ describe('FEATURE: NatTable body render planning', () => {
       it('THEN: it keeps every logical row in the ordinary rendering path', () => {
         const plan = buildNatTableBodyRenderPlan(rows(3), null);
 
-        expect(plan.rows.map((item) => item.row.id)).toStrictEqual(['row-0', 'row-1', 'row-2']);
+        expect(plan.rows.map((item) => (item.kind === 'row' ? item.row.id : null))).toStrictEqual(['row-0', 'row-1', 'row-2']);
         expect(plan.rows.every((item) => item.beforeSize === 0)).toBe(true);
         expect(plan.afterSize).toBe(0);
       });

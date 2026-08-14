@@ -36,6 +36,8 @@ export class NatTableVirtualScrollEngine<TData extends RowData = RowData> {
   private readonly ngZone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
   private options: Signal<Required<NatTableVirtualizationOptions>> | null = null;
+  /** Logical rows the window spans — the remote total under remote windowing, else the row model. */
+  private logicalRowCount: Signal<number> | null = null;
   private observedRegion: HTMLElement | null = null;
   private scrollFrame: number | null = null;
 
@@ -48,9 +50,10 @@ export class NatTableVirtualScrollEngine<TData extends RowData = RowData> {
     this.destroyRef.onDestroy(() => this.detachScrollListener());
   }
 
-  /** Wires the engine to the normalized directive options and starts tracking. */
-  public connect(options: Signal<Required<NatTableVirtualizationOptions>>): void {
+  /** Wires the engine to the normalized directive options and logical row count and starts tracking. */
+  public connect(options: Signal<Required<NatTableVirtualizationOptions>>, logicalRowCount: Signal<number>): void {
     this.options = options;
+    this.logicalRowCount = logicalRowCount;
     this.registerRegionAttachmentEffect();
     this.registerRangeUpdateEffect();
   }
@@ -114,9 +117,10 @@ export class NatTableVirtualScrollEngine<TData extends RowData = RowData> {
 
   private registerRangeUpdateEffect(): void {
     effect(() => {
-      // Everything that moves the window besides raw scrolling: the row model,
-      // the sub-header slots, the measured geometry, and the directive options.
-      this.state.bodyRows();
+      // Everything that moves the window besides raw scrolling: the logical
+      // extent (which tracks the row model outside remote windowing), the
+      // sub-header slots, the measured geometry, and the directive options.
+      this.logicalRowCount?.();
       this.state.subHeaderRowOffsets();
       this.layout.viewportHeight();
       this.layout.bodyOffset();
@@ -171,7 +175,7 @@ export class NatTableVirtualScrollEngine<TData extends RowData = RowData> {
     }
 
     const { rowHeight, overscan } = untracked(options);
-    const rowCount = untracked(this.state.bodyRows).length;
+    const rowCount = this.logicalRowCount === null ? untracked(this.state.bodyRows).length : untracked(this.logicalRowCount);
     const viewportSize = untracked(this.layout.viewportHeight);
 
     // Unmeasured region (first paint, SSR): keep the initial mount instead of

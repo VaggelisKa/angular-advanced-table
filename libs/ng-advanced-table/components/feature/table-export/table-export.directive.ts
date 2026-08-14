@@ -1,4 +1,4 @@
-import { Directive, ElementRef, computed, inject, input, signal } from '@angular/core';
+import { Directive, ElementRef, computed, inject, input, isDevMode, signal } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -124,6 +124,16 @@ export class NatTableExport<TData extends RowData = RowData> {
 
   private createExportContext(controller: NatTableUiController<TData>): NatTableExportContext<TData> {
     const table = controller.table;
+
+    // Remote windowing holds only a loaded window of the dataset, so the core
+    // row model this export reads is not the dataset — and export deliberately
+    // does not fetch: like all data acquisition, that stays consumer-owned.
+    if (isDevMode() && typeof table.options.meta?.natTableRemoteRowCount === 'number') {
+      console.warn(
+        '[ng-advanced-table] natTableExport exports only the loaded row window under remote windowing (remoteRowCount); unfetched rows are not exported.'
+      );
+    }
+
     let data: NatTableExportData | undefined;
     const context: NatTableExportContext<TData> = {
       table,

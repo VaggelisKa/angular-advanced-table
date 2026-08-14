@@ -138,7 +138,8 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       const groupLabel = valueText.trim() ? `${valueText} group` : 'Group';
 
       return `${groupLabel}, ${rowCountText} ${pluralize('row', rowCountValue)}.`;
-    }
+    },
+    placeholderRow: ({ positionText, totalRowsText }) => `Row ${positionText} of ${totalRowsText} is loading.`
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };

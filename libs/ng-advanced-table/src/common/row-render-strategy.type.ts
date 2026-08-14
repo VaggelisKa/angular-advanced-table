@@ -81,18 +81,58 @@ export type NatTableRowRenderStrategy = {
   readonly items: Signal<readonly NatTableVirtualItem[]>;
   readonly totalSize: Signal<number>;
   readonly rowHeight: Signal<number>;
+  /**
+   * Remote windowing: the logical row count the grid represents when it spans
+   * more rows than the table holds, or `null` while the supplied row model is
+   * the full extent. When non-null, item indexes, `totalSize`, `aria-rowcount`,
+   * and reported totals are in logical (remote) coordinates, and every logical
+   * index outside the loaded window renders as a placeholder row.
+   *
+   * Must derive from strategy configuration only — never from the table's row
+   * model — because core reads it while building the TanStack options. Core
+   * treats a value below the loaded row count as the loaded row count.
+   */
+  readonly logicalRowCount?: Signal<number | null>;
+  /**
+   * Remote windowing: logical index of the first supplied row. Ignored while
+   * `logicalRowCount` is absent or `null`. Core clamps it so the loaded window
+   * always fits inside the logical extent.
+   */
+  readonly rowWindowOffset?: Signal<number>;
 };
 
 /**
- * One logical TanStack row plus any native-flow space immediately before it.
+ * One loaded TanStack row plus any native-flow space immediately before it.
  *
  * Internal: core's body template consumes this, no entry point imports it.
  */
-export type NatTableRenderedBodyRow<TData extends RowData> = {
+export type NatTableRenderedDataRow<TData extends RowData> = {
+  readonly kind: 'row';
   readonly row: Row<TData>;
   readonly logicalIndex: number;
   readonly beforeSize: number;
 };
+
+/**
+ * One mounted logical row slot with no loaded `Row` behind it — a remote
+ * windowing gap the body renders as a fixed-height placeholder row.
+ *
+ * Internal: core's body template consumes this, no entry point imports it.
+ */
+export type NatTableRenderedPlaceholderRow = {
+  readonly kind: 'placeholder';
+  readonly logicalIndex: number;
+  readonly beforeSize: number;
+};
+
+/**
+ * One rendered body slot: a loaded row, or a placeholder for a logical index
+ * the table does not hold. Both carry the absolute logical index and the
+ * native-flow space rendered immediately before them.
+ *
+ * Internal: core's body template consumes this, no entry point imports it.
+ */
+export type NatTableRenderedBodyRow<TData extends RowData> = NatTableRenderedDataRow<TData> | NatTableRenderedPlaceholderRow;
 
 /**
  * Engine-neutral body plan rendered by the single NatTable body template.

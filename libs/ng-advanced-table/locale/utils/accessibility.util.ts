@@ -71,13 +71,14 @@ const mergeAccessibilityColumnAnnouncers = (
   selectionChange: override?.selectionChange ?? parent?.selectionChange
 });
 
-/** Merges the sub-header row text formatters (grid and list variants), override values winning. */
+/** Merges the sub-header (grid and list variants) and placeholder row text formatters, override values winning. */
 const mergeAccessibilitySubHeaderText = (
   parent?: NatTableAccessibilityText,
   override?: NatTableAccessibilityText
 ): Partial<NatTableAccessibilityText> => ({
   subHeaderRow: override?.subHeaderRow ?? parent?.subHeaderRow,
-  listSubHeaderRow: override?.listSubHeaderRow ?? parent?.listSubHeaderRow
+  listSubHeaderRow: override?.listSubHeaderRow ?? parent?.listSubHeaderRow,
+  placeholderRow: override?.placeholderRow ?? parent?.placeholderRow
 });
 
 /** Merges table accessibility copy and formatter callbacks field by field. */
