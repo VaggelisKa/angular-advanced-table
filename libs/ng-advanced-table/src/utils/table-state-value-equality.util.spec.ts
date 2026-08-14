@@ -157,6 +157,29 @@ describe('FEATURE: table state value equality', () => {
         expect(changed([1], { 0: 1, length: 1 })).toBe(true);
       });
     });
+
+    describe('WHEN: structurally equal arrays exceed the comparison depth budget', () => {
+      it('THEN: it conservatively reports a change instead of recursing without a bound', () => {
+        let left: unknown = 'value';
+        let right: unknown = 'value';
+
+        for (let depth = 0; depth < 512; depth += 1) {
+          left = [left];
+          right = [right];
+        }
+
+        expect(changed(left, right)).toBe(true);
+      });
+    });
+
+    describe('WHEN: structurally equal arrays exceed the comparison work budget', () => {
+      it('THEN: it conservatively reports a change', () => {
+        const left = Array.from({ length: 10_001 }, (_, index) => index);
+        const right = Array.from({ length: 10_001 }, (_, index) => index);
+
+        expect(changed(left, right)).toBe(true);
+      });
+    });
   });
 
   describe('GIVEN: self-referencing filter values', () => {
