@@ -21,6 +21,7 @@ import { StickyHeader } from '../demos/sticky-header/sticky-header';
 import { SubHeaderRows } from '../demos/sub-header-rows/sub-header-rows';
 import { Toolbar } from '../demos/toolbar/toolbar';
 import { Virtualization } from '../demos/virtualization/virtualization';
+import { VirtualizationIncrementalFetch } from '../demos/virtualization/virtualization-incremental-fetch';
 import { Visibility } from '../demos/visibility/visibility';
 
 const snippet = (id: string, label: string, language: string, code: string): DocsCodeSnippet => ({
@@ -181,6 +182,69 @@ export class OrdersTable {
     `
 .virtual-orders {
   --nat-table-height: 30rem;
+}
+`
+  )
+];
+
+const virtualizationFetchSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table
+  [columns]="columns"
+  [data]="rows()"
+  [getRowId]="getRowId"
+  [natTableVirtualize]="{ rowHeight: 44 }"
+  accessibleName="Incrementally fetched orders"
+  (virtualRangeChange)="onRangeChange($event)" />
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+import { Component, signal } from '@angular/core';
+
+import { NatTable } from 'ng-advanced-table';
+import { NatTableVirtualize, type NatTableVirtualRangeChange } from 'ng-advanced-table/virtualization';
+
+const PAGE_SIZE = 100;
+// Rows still below the mounted window when the next page starts loading.
+const LOOKAHEAD = 25;
+
+@Component({
+  selector: 'app-orders-table',
+  imports: [NatTable, NatTableVirtualize],
+  templateUrl: './orders-table.html'
+})
+export class OrdersTable {
+  readonly rows = signal<Order[]>([]);
+  readonly getRowId = (row: Order): string => row.id;
+
+  private readonly isFetching = signal(false);
+
+  // \`endIndex\` is an inclusive position in the CURRENT row model — the sorted,
+  // filtered, paginated rows — not an index into the source array.
+  protected onRangeChange(range: NatTableVirtualRangeChange): void {
+    const loaded = this.rows().length;
+
+    if (this.isFetching() || range.endIndex < loaded - LOOKAHEAD) {
+      return;
+    }
+
+    this.isFetching.set(true);
+
+    // Appending keeps the reader's scroll position and mounted window, and the
+    // unmoved window emits no further range event — so this does not re-enter.
+    void fetchOrders({ offset: loaded, limit: PAGE_SIZE }).then((page) => {
+      this.rows.update((current) => [...current, ...page]);
+      this.isFetching.set(false);
+    });
+  }
 }
 `
   )
@@ -994,6 +1058,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Fixed row height', path: '#fixed-row-height-contract' },
       { label: 'Composition', path: '#composition' },
       { label: 'Sub-header group rows', path: '#sub-header-group-rows' },
+      { label: 'Reacting to the window', path: '#reacting-to-the-mounted-window' },
       { label: 'Accessibility', path: '#accessibility-and-keyboard' },
       { label: 'Limitations', path: '#limitations' }
     ],
@@ -1007,6 +1072,15 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
           'A fixed-height row window keeps the native table, sticky and pinned columns, sub-header group rows, and shared controller behavior.',
         component: Virtualization,
         snippets: virtualizationSnippets
+      },
+      {
+        kind: 'example',
+        id: 'virtualization-incremental-fetch',
+        title: 'Fetch on approach',
+        description:
+          'A container that loads the next page from its own (virtualRangeChange) handler. Appending each page keeps the scroll position and mounted window, and the unmoved window emits nothing, so the handler is not re-entered by its own result.',
+        component: VirtualizationIncrementalFetch,
+        snippets: virtualizationFetchSnippets
       }
     ],
     related: [

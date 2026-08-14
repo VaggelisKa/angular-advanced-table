@@ -45,6 +45,61 @@ const renderedWidth = async (locator: Locator): Promise<number> =>
   locator.evaluate((element) => element.getBoundingClientRect().width);
 
 test.describe('FEATURE: Row virtualization', () => {
+  test.describe('GIVEN: the fetch-on-approach virtualization example is loaded', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/docs/virtualization');
+      await loadDocsExamplePreview(page, 'virtualization-incremental-fetch', 'Fetch on approach');
+    });
+
+    test('THEN: it appends each fetched page without disturbing the reader', async ({ page }) => {
+      const demo = page.getByTestId('virtualization-fetch-demo');
+      const region = demo.getByTestId('virtualization-fetch-table').getByTestId('nat-table-region');
+      const loaded = demo.getByTestId('fetch-loaded');
+      const pages = demo.getByTestId('fetch-pages');
+      let scrollTopAtFetch = 0;
+      let mountedAtFetch: number[] = [];
+
+      await test.step('THEN: it starts with one page and fetches nothing while the window is far from the end', async () => {
+        await expect(loaded).toHaveText('100');
+        await expect(pages).toHaveText('1');
+
+        await scrollToOffset(region, 400);
+        await settleAnimationFrames(region);
+
+        await expect(pages).toHaveText('1');
+      });
+
+      await test.step('WHEN: the window reaches the lookahead THEN: it fetches exactly one more page', async () => {
+        await scrollTo(region, 'end');
+        await settleAnimationFrames(region);
+
+        await expect(loaded).toHaveText('200');
+        await expect(pages).toHaveText('2');
+
+        scrollTopAtFetch = await region.evaluate((element) => element.scrollTop);
+        mountedAtFetch = await dataRowIndexes(demo.getByTestId('nat-table-row'));
+      });
+
+      await test.step('THEN: the append leaves the scroll position and the mounted window in place', async () => {
+        await settleAnimationFrames(region);
+
+        expect(await region.evaluate((element) => element.scrollTop)).toBe(scrollTopAtFetch);
+        expect(await dataRowIndexes(demo.getByTestId('nat-table-row'))).toStrictEqual(mountedAtFetch);
+        // The unmoved window emitted nothing, so the handler did not re-enter.
+        await expect(pages).toHaveText('2');
+      });
+
+      await test.step('WHEN: the reader keeps scrolling THEN: it fetches the following page and moves forward', async () => {
+        await scrollTo(region, 'end');
+        await settleAnimationFrames(region);
+
+        await expect(loaded).toHaveText('300');
+        await expect(pages).toHaveText('3');
+        expect(await region.evaluate((element) => element.scrollTop)).toBeGreaterThan(scrollTopAtFetch);
+      });
+    });
+  });
+
   test.describe('GIVEN: the ten-thousand-row virtualization example is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/virtualization');

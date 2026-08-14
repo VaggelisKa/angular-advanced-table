@@ -61,6 +61,31 @@ const isFullyContained = async (container: Locator, target: Locator): Promise<bo
 };
 
 test.describe('FEATURE: Row virtualization accessibility', () => {
+  test.describe('GIVEN: the fetch-on-approach virtualization example is loaded', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/docs/virtualization');
+      await loadDocsExamplePreview(page, 'virtualization-incremental-fetch', 'Fetch on approach');
+    });
+
+    test.describe('WHEN: a page is fetched while the reader is at the end of the loaded rows', () => {
+      test('THEN: it announces the new row count and stays free of WCAG A/AA violations', async ({ page }) => {
+        const demo = page.getByTestId('virtualization-fetch-demo');
+        const region = demo.getByTestId('virtualization-fetch-table').getByTestId('nat-table-region');
+        const status = demo.getByTestId('fetch-status');
+
+        // The readout drives an aria-live region, so a fetch must reach it
+        // rather than only updating the grid.
+        await expect(demo.getByTestId('fetch-loaded')).toHaveText('100');
+
+        await scrollTo(region, 'end');
+        await expect(demo.getByTestId('fetch-loaded')).toHaveText('200');
+        await expect(status).toHaveText('Idle');
+
+        await expectNoAxeViolations(page, '[data-testid="docs-example-virtualization-incremental-fetch-preview-panel"]');
+      });
+    });
+  });
+
   test.describe('GIVEN: the ten-thousand-row virtualization example is loaded', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/docs/virtualization');
