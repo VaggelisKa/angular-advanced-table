@@ -156,10 +156,16 @@ import { NatTable, type ColumnDef } from 'ng-advanced-table';
 import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
-type Order = { id: string; total: number };
+type Order = { id: string; region: string; total: number };
+
+const regions = ['Americas', 'EMEA', 'APAC'] as const;
 
 const generateOrders = (count: number): Order[] =>
-  Array.from({ length: count }, (_, index) => ({ id: \`order-\${index + 1}\`, total: index * 10 }));
+  Array.from({ length: count }, (_, index) => ({
+    id: \`order-\${index + 1}\`,
+    region: regions[index % regions.length],
+    total: index * 10
+  }));
 
 @Component({
   selector: 'app-orders-table',
@@ -170,6 +176,7 @@ export class OrdersTable {
   readonly rows = generateOrders(10_000);
   readonly columns: ColumnDef<Order, unknown>[] = [
     { accessorKey: 'id', header: 'Order', meta: { label: 'Order', rowHeader: true } },
+    { accessorKey: 'region', header: 'Region', meta: { label: 'Region' } },
     { accessorKey: 'total', header: 'Total', meta: { label: 'Total', align: 'end' } }
   ];
 }

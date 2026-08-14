@@ -194,6 +194,8 @@ valuesMatch = (left, right, context): boolean => {
 /**
  * Avoid JSON serialization: consumer-owned filter values can include BigInt,
  * Sets, Maps, Dates, or RegExps that either throw or stringify incorrectly.
+ * Extremely deep or broad values are treated as changed once the comparison
+ * budget is exhausted so state checks terminate predictably.
  */
 export const hasNatTableStateValueChanged = (left: unknown, right: unknown): boolean =>
   !valuesMatch(left, right, {
