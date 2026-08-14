@@ -16,6 +16,7 @@ import { NatTableVirtualScrollEngine } from '../domain-logic/table-virtual-scrol
 import { NatTableVirtualValidationService } from '../domain-logic/table-virtual-validation.service';
 import {
   createVirtualItems,
+  describeNatTableVirtualizationOptionIssues,
   includeVirtualIndex,
   isAppendedRowSequence,
   normalizeNatTableVirtualizationOptions,
@@ -196,14 +197,8 @@ export class NatTableVirtualize<TData extends RowData = RowData> {
     }
 
     effect(() => {
-      const { rowHeight, overscan } = this.natTableVirtualize();
-
-      if (!Number.isFinite(rowHeight) || rowHeight <= 0) {
-        console.warn('[ng-advanced-table] natTableVirtualize.rowHeight must be a finite number greater than zero.');
-      }
-
-      if (overscan !== undefined && (!Number.isFinite(overscan) || overscan < 0)) {
-        console.warn('[ng-advanced-table] natTableVirtualize.overscan must be a finite number greater than or equal to zero.');
+      for (const issue of describeNatTableVirtualizationOptionIssues(this.natTableVirtualize())) {
+        console.warn(`[ng-advanced-table] ${issue}`);
       }
     });
   }

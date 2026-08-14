@@ -22,20 +22,56 @@ export const isAppendedRowSequence = (previous: readonly string[], current: read
 export const NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT = 10;
 
 /**
- * Clamps the consumer options to usable values: a non-positive row height
- * falls back to `1`, a negative or non-finite overscan falls back to the
- * default, and a fractional overscan is floored (the directive warns for the
- * invalid shapes in development builds).
+ * Row height substituted for an unusable one. Deliberately a plausible row
+ * height rather than `1`: a one-pixel grid squashes every row to invisibility
+ * *and* mounts roughly `viewportHeight` rows instead of `viewportHeight /
+ * rowHeight`, so the worst input produces the worst possible behavior. A
+ * readable, bounded table is the better failure — the directive warns either
+ * way in development builds.
+ */
+export const NAT_TABLE_FALLBACK_ROW_HEIGHT = 40;
+
+/**
+ * Clamps the consumer options to usable values: a non-positive or non-finite
+ * row height falls back to `NAT_TABLE_FALLBACK_ROW_HEIGHT`, a negative or
+ * non-finite overscan falls back to the default, and a fractional overscan is
+ * floored (the directive warns for the invalid shapes in development builds).
  */
 export const normalizeNatTableVirtualizationOptions = (
   options: NatTableVirtualizationOptions
 ): Required<NatTableVirtualizationOptions> => ({
-  rowHeight: Number.isFinite(options.rowHeight) && options.rowHeight > 0 ? options.rowHeight : 1,
+  rowHeight: Number.isFinite(options.rowHeight) && options.rowHeight > 0 ? options.rowHeight : NAT_TABLE_FALLBACK_ROW_HEIGHT,
   overscan:
-    Number.isFinite(options.overscan) && (options.overscan ?? -1) >= 0
-      ? Math.floor(options.overscan as number)
+    typeof options.overscan === 'number' && Number.isFinite(options.overscan) && options.overscan >= 0
+      ? Math.floor(options.overscan)
       : NAT_TABLE_DEFAULT_OVERSCAN
 });
+
+/**
+ * Development diagnostics for the raw consumer options, one message per issue.
+ * Each names the value received: the usual cause is a signal or async config
+ * that has not resolved yet, and `0`, `NaN`, and `undefined` need different
+ * fixes.
+ */
+export const describeNatTableVirtualizationOptionIssues = (options: NatTableVirtualizationOptions): string[] => {
+  const issues: string[] = [];
+
+  if (!Number.isFinite(options.rowHeight) || options.rowHeight <= 0) {
+    issues.push(
+      `natTableVirtualize.rowHeight must be a finite number greater than zero; received ${String(options.rowHeight)}, ` +
+        `falling back to ${NAT_TABLE_FALLBACK_ROW_HEIGHT}px.`
+    );
+  }
+
+  if (options.overscan !== undefined && (!Number.isFinite(options.overscan) || options.overscan < 0)) {
+    issues.push(
+      `natTableVirtualize.overscan must be a finite number greater than or equal to zero; received ${String(options.overscan)}, ` +
+        `falling back to ${NAT_TABLE_DEFAULT_OVERSCAN}.`
+    );
+  }
+
+  return issues;
+};
 
 export const includeVirtualIndex = (indexes: readonly number[], index: number | null, count: number): number[] => {
   if (index === null || index < 0 || index >= count || indexes.includes(index)) {

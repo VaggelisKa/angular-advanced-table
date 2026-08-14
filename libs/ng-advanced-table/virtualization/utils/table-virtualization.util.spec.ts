@@ -1,4 +1,5 @@
 import {
+  NAT_TABLE_FALLBACK_ROW_HEIGHT,
   NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT,
   createInitialVirtualRange,
   createVirtualItems,
@@ -13,16 +14,18 @@ describe('FEATURE: NatTable virtualization options and ranges', () => {
   describe('GIVEN: fixed-row virtualization options', () => {
     describe('WHEN: options contain invalid runtime values', () => {
       it('THEN: it normalizes them to safe fixed-row defaults', () => {
+        // A readable fallback height, not 1px: a one-pixel grid hides every
+        // row and mounts roughly viewportHeight rows.
         expect(normalizeNatTableVirtualizationOptions({ rowHeight: Number.NaN, overscan: -2 })).toStrictEqual({
-          rowHeight: 1,
+          rowHeight: NAT_TABLE_FALLBACK_ROW_HEIGHT,
           overscan: 5
         });
         expect(normalizeNatTableVirtualizationOptions({ rowHeight: 0, overscan: Number.NaN })).toStrictEqual({
-          rowHeight: 1,
+          rowHeight: NAT_TABLE_FALLBACK_ROW_HEIGHT,
           overscan: 5
         });
         expect(normalizeNatTableVirtualizationOptions({ rowHeight: Number.POSITIVE_INFINITY })).toStrictEqual({
-          rowHeight: 1,
+          rowHeight: NAT_TABLE_FALLBACK_ROW_HEIGHT,
           overscan: 5
         });
       });

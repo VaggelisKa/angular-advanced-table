@@ -8,6 +8,12 @@ import type { NatTableRowWindowHost, NatTableVirtualItem } from 'ng-advanced-tab
 
 import { NAT_TABLE_INITIAL_VIRTUAL_ROW_COUNT } from '../utils/table-virtualization.util';
 
+/** Body row kinds the fixed-height contract covers, with the label used in the warning. */
+const ROW_KINDS = [
+  ['tr.data-row', 'data'],
+  ['tr.sub-header-row', 'sub-header']
+] as const;
+
 /** Development diagnostics for the fixed-row virtualization contract. */
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- one instance is scoped to NatTableVirtualize.
 @Injectable()
@@ -21,15 +27,22 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
   private items: Signal<readonly NatTableVirtualItem[]> | null = null;
 
   public constructor() {
-    // Every check here is a development diagnostic. Production builds register
-    // nothing, so the scroll hot path never pays for the render-effect wakeups
-    // or the per-window DOM measurements they perform.
+    // Deliberately not development-only: an unbounded region makes the window
+    // converge on every row — the exact outcome virtualization prevents — and
+    // it is self-reinforcing, since the growing body feeds back into
+    // `clientHeight`. It is also the failure most likely to surface only in
+    // production, where a different app shell drops the height token. Costs two
+    // property reads behind a latch that fires at most once per table.
+    this.registerBoundedRegionValidationEffect();
+
+    // The rest are development diagnostics: production builds register nothing,
+    // so the scroll hot path never pays for the render-effect wakeups or the
+    // per-window DOM measurements they perform.
     if (!isDevMode()) {
       return;
     }
 
     afterNextRender(() => this.observeRegionSize());
-    this.registerBoundedRegionValidationEffect();
     this.registerRowHeightValidationEffect();
     this.destroyRef.onDestroy(() => this.regionResizeObserver?.disconnect());
   }
@@ -89,7 +102,12 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
    * the fixed row grid.
    */
   private registerRowHeightValidationEffect(): void {
-    let hasWarned = false;
+    // Latched per row kind, not per service: data rows and sub-header rows are
+    // two separate things a consumer has to get right, so one latch would
+    // report the first, get fixed, then hide the second for the rest of the
+    // session. Only the first mounted row of each kind is measured — this runs
+    // on every window move, and a full scan is not worth it.
+    const warnedKinds = new Set<string>();
 
     afterRenderEffect({
       earlyRead: () => {
@@ -97,12 +115,15 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
 
         this.items?.();
 
-        for (const selector of ['tr.data-row', 'tr.sub-header-row']) {
-          const row = this.elementRef.nativeElement.querySelector<HTMLTableRowElement>(selector);
-          const actualHeight = row?.getBoundingClientRect().height ?? 0;
+        for (const [selector, label] of ROW_KINDS) {
+          if (warnedKinds.has(label)) {
+            continue;
+          }
+
+          const actualHeight = this.elementRef.nativeElement.querySelector(selector)?.getBoundingClientRect().height ?? 0;
 
           if (actualHeight > 0 && Math.abs(actualHeight - expectedHeight) > 1) {
-            return { actualHeight, expectedHeight };
+            return { label, actualHeight, expectedHeight };
           }
         }
 
@@ -111,13 +132,14 @@ export class NatTableVirtualValidationService<TData extends RowData = RowData> {
       write: (mismatchSignal) => {
         const mismatch = mismatchSignal();
 
-        if (hasWarned || !mismatch) {
+        if (!mismatch || warnedKinds.has(mismatch.label)) {
           return;
         }
 
-        hasWarned = true;
+        warnedKinds.add(mismatch.label);
         console.warn(
-          `[ng-advanced-table] natTableVirtualize expected ${mismatch.expectedHeight}px rows but measured ${mismatch.actualHeight}px. ` +
+          `[ng-advanced-table] natTableVirtualize expected ${mismatch.expectedHeight}px rows but measured ` +
+            `${mismatch.actualHeight}px on a ${mismatch.label} row. ` +
             'Keep cell and sub-header content within the configured fixed row height.'
         );
       }
