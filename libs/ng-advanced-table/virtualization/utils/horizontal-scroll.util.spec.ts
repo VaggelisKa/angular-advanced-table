@@ -16,7 +16,10 @@ const mockRect = (element: Element, left: number, right: number): void => {
   vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(rect(left, right));
 };
 
+// Mirrors the rendered shape — `nat-table > region > table` — because the
+// reveal resolves the owning `nat-table` to scope its pinned-zone lookups.
 const setupTable = (): { cell: HTMLTableCellElement; region: HTMLDivElement; table: HTMLTableElement } => {
+  const host = document.createElement('nat-table');
   const region = document.createElement('div');
   const table = document.createElement('table');
   const body = table.createTBody();
@@ -24,6 +27,7 @@ const setupTable = (): { cell: HTMLTableCellElement; region: HTMLDivElement; tab
   const cell = row.insertCell();
 
   region.append(table);
+  host.append(region);
   mockRect(region, 0, 800);
 
   return { cell, region, table };
@@ -83,6 +87,72 @@ describe('FEATURE: virtual table horizontal focus visibility', () => {
         mockRect(cell, 900, 1100);
         scrollNatTableCellHorizontallyIntoView(region, cell);
         expect(region.scrollLeft).toBe(80);
+      });
+    });
+  });
+
+  describe('GIVEN: only a nested table inside a body cell has pinned columns', () => {
+    describe('WHEN: an unpinned target of the outer table is revealed', () => {
+      it('THEN: it ignores the nested pinned zone and uses the full region width', () => {
+        const { cell, region } = setupTable();
+        const nested = document.createElement('nat-table');
+        const nestedHeader = document.createElement('table').createTHead().insertRow();
+        const nestedPinnedLeft = document.createElement('th');
+
+        nestedPinnedLeft.className = 'has-pinned-edge-left';
+        nestedHeader.append(nestedPinnedLeft);
+        nested.append(nestedHeader.closest('table') as HTMLTableElement);
+        cell.append(nested);
+        // Wide enough that an outer pinned zone would have shifted the bounds.
+        mockRect(nestedPinnedLeft, 0, 400);
+        mockRect(cell, 820, 900);
+        region.scrollLeft = 0;
+
+        scrollNatTableCellHorizontallyIntoView(region, cell);
+
+        // Bounds stay the region's own 0..800, so the reveal is 900 - 800.
+        expect(region.scrollLeft).toBe(100);
+      });
+    });
+  });
+
+  describe('GIVEN: an LTR cell is hidden past the left edge or wider than the viewport', () => {
+    describe('WHEN: each is revealed', () => {
+      it('THEN: it aligns the leading edge in both cases', () => {
+        const { cell, region } = setupTable();
+
+        mockRect(cell, -150, 50);
+        region.scrollLeft = 300;
+        scrollNatTableCellHorizontallyIntoView(region, cell);
+        expect(region.scrollLeft).toBe(150);
+
+        mockRect(cell, -60, 1200);
+        region.scrollLeft = 400;
+        scrollNatTableCellHorizontallyIntoView(region, cell);
+        expect(region.scrollLeft).toBe(340);
+      });
+    });
+  });
+
+  describe('GIVEN: pinned zones span the whole region width', () => {
+    describe('WHEN: an unpinned target is revealed', () => {
+      it('THEN: it leaves the scroll position alone rather than jumping', () => {
+        const { cell, region, table } = setupTable();
+        const header = table.createTHead().insertRow();
+        const pinnedLeft = document.createElement('th');
+        const pinnedRight = document.createElement('th');
+
+        pinnedLeft.className = 'has-pinned-edge-left';
+        pinnedRight.className = 'has-pinned-edge-right';
+        header.append(pinnedLeft, pinnedRight);
+        mockRect(pinnedLeft, 0, 800);
+        mockRect(pinnedRight, 0, 800);
+        mockRect(cell, 900, 1000);
+        region.scrollLeft = 55;
+
+        scrollNatTableCellHorizontallyIntoView(region, cell);
+
+        expect(region.scrollLeft).toBe(55);
       });
     });
   });

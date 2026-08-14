@@ -1,3 +1,5 @@
+import { lowerBoundBySlot } from './row-window.util';
+import { rowGridSlot } from './table-virtualization.util';
 import type { NatTableVirtualNavigationRequest } from '../common/table-virtualization.type';
 
 const PAGE_DELTAS: Readonly<Record<string, -1 | 1 | undefined>> = {
@@ -51,23 +53,12 @@ const resolvePageRowIndex = (context: {
   readonly subHeaderOffsets: readonly number[];
 }): number => {
   const { currentRowIndex, delta, rowsPerPage, rowCount, subHeaderOffsets } = context;
-  const currentSlot = currentRowIndex + (subHeaderOffsets[currentRowIndex] ?? 0);
-  const targetSlot = currentSlot + delta * rowsPerPage;
-  let low = 0;
-  let high = rowCount;
+  const targetSlot = rowGridSlot(subHeaderOffsets, currentRowIndex) + delta * rowsPerPage;
 
-  while (low < high) {
-    const middle = (low + high) >>> 1;
-    const middleSlot = middle + (subHeaderOffsets[middle] ?? 0);
-
-    if (middleSlot < targetSlot) {
-      low = middle + 1;
-    } else {
-      high = middle;
-    }
-  }
-
-  return clampRowIndex(low, rowCount);
+  return clampRowIndex(
+    lowerBoundBySlot(rowCount, targetSlot, (index) => rowGridSlot(subHeaderOffsets, index)),
+    rowCount
+  );
 };
 
 const resolvePage = (context: PageNavigationContext): NatTableVirtualNavigationRequest | null => {

@@ -1,4 +1,5 @@
 import { computeNatTableRowWindow } from './row-window.util';
+import { createVirtualItems } from './table-virtualization.util';
 import type { NatTableVirtualRangeContext } from '../common/table-virtualization.type';
 
 const context = (overrides: Partial<NatTableVirtualRangeContext>): NatTableVirtualRangeContext => ({
@@ -131,6 +132,61 @@ describe('FEATURE: virtualization row window', () => {
         expect(
           computeNatTableRowWindow(context({ scrollOffset: 4000, rowCount: 1000, subHeaderOffsets: groupedOffsets(1000, 10) }))
         ).toStrictEqual({ start: 85, end: 100 });
+      });
+    });
+  });
+
+  describe('GIVEN: grouped rows mounted with no overscan to absorb a fold', () => {
+    describe('WHEN: a sub-header occupies the last visible slot', () => {
+      it('THEN: it mounts the group-opening row so no visible slot renders blank', () => {
+        // Regression: the end bound used to walk data-row slots, so a group
+        // opener whose sub-header was the last visible slot fell outside the
+        // window and the fold rendered as a blank one-row strip.
+        const rowCount = 1023;
+        const rowHeight = 37;
+        const viewportSize = 384;
+        const scrollOffset = 206;
+        const subHeaderOffsets = groupedOffsets(rowCount, 4);
+        const range = computeNatTableRowWindow(
+          context({
+            scrollOffset,
+            viewportSize,
+            rowHeight,
+            rowCount,
+            overscan: 0,
+            subHeaderOffsets,
+            currentRange: { start: 0, end: 10 }
+          })
+        );
+        const mountedSlots = new Set(
+          createVirtualItems(
+            Array.from({ length: range.end - range.start }, (_, offset) => range.start + offset),
+            rowHeight,
+            subHeaderOffsets
+          ).flatMap((item) =>
+            Array.from(
+              { length: Math.round((item.end - item.start) / rowHeight) },
+              (_, slot) => Math.round(item.start / rowHeight) + slot
+            )
+          )
+        );
+        const firstVisibleSlot = Math.floor(scrollOffset / rowHeight);
+        const lastVisibleSlot = Math.ceil((scrollOffset + viewportSize) / rowHeight);
+        const blankSlots = Array.from({ length: lastVisibleSlot - firstVisibleSlot }, (_, offset) => firstVisibleSlot + offset).filter(
+          (slot) => !mountedSlots.has(slot)
+        );
+
+        expect(blankSlots).toStrictEqual([]);
+      });
+    });
+
+    describe('WHEN: the viewport shrinks far below the mounted window', () => {
+      it('THEN: it releases the rows the smaller viewport no longer needs', () => {
+        expect(
+          computeNatTableRowWindow(
+            context({ viewportSize: 200, rowCount: 1000, currentRange: { start: 195, end: 255 }, scrollOffset: 7800 })
+          )
+        ).not.toStrictEqual({ start: 195, end: 255 });
       });
     });
   });

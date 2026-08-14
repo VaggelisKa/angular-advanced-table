@@ -1,6 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import {
   DestroyRef,
+  ElementRef,
   Injectable,
   NgZone,
   PLATFORM_ID,
@@ -16,6 +17,8 @@ import type { RowData } from '@tanstack/angular-table';
 import { NAT_TABLE_ROW_WINDOW_HOST } from 'ng-advanced-table';
 import type { NatTableRowWindowHost } from 'ng-advanced-table';
 
+import { queryOwnedNatTableElements } from '../utils/table-ownership.util';
+
 type VirtualLayoutMeasurements = {
   readonly bodyOffset: number;
   readonly stickyOverlayHeight: number;
@@ -27,6 +30,7 @@ type VirtualLayoutMeasurements = {
 @Injectable()
 export class NatTableVirtualLayoutService<TData extends RowData = RowData> {
   private readonly state = inject<NatTableRowWindowHost<TData>>(NAT_TABLE_ROW_WINDOW_HOST);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly ngZone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -141,7 +145,12 @@ export class NatTableVirtualLayoutService<TData extends RowData = RowData> {
    * re-runs on `resolvedCaption()` changes and re-targets the observer here.
    */
   private syncCaptionObservation(): void {
-    const caption = this.state.tableRegionRef()?.nativeElement.querySelector('table caption') ?? null;
+    // Ownership-scoped, unlike the measurement queries below: those read
+    // elements this table always renders, so its own come first in document
+    // order. A caption sits behind `@if`, so an absent one here would
+    // otherwise resolve to a nested table's caption — a node that mounts and
+    // unmounts as rows scroll through the window.
+    const caption = queryOwnedNatTableElements(this.elementRef.nativeElement, 'table caption').at(0) ?? null;
 
     if (!this.resizeObserver || caption === this.observedCaption) {
       return;

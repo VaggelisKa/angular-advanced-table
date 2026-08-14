@@ -57,6 +57,18 @@ export const rangeToRowIndexes = (range: NatTableVirtualRange, rowCount: number)
 export const opensSubHeaderGroup = (subHeaderOffsets: readonly number[], index: number): boolean =>
   (subHeaderOffsets[index] ?? 0) > (index > 0 ? (subHeaderOffsets[index - 1] ?? 0) : 0);
 
+/** Composite fixed-grid slot occupied by data row `index`. Strictly increasing. */
+export const rowGridSlot = (subHeaderOffsets: readonly number[], index: number): number => index + (subHeaderOffsets[index] ?? 0);
+
+/**
+ * Slot where the row's mounted block begins. A group-opening row travels with
+ * the sub-header rendered above it, so its block starts one slot higher than
+ * the row itself — which is why the window's end bound is measured from here
+ * and not from `rowGridSlot`. Also strictly increasing.
+ */
+export const rowBlockStartSlot = (subHeaderOffsets: readonly number[], index: number): number =>
+  rowGridSlot(subHeaderOffsets, index) - (opensSubHeaderGroup(subHeaderOffsets, index) ? 1 : 0);
+
 /**
  * Materializes mounted row indexes as body-local items on the composite fixed
  * row grid. Data row `index` occupies slot `index + subHeaderOffsets[index]`;
@@ -69,15 +81,11 @@ export const createVirtualItems = (
   rowHeight: number,
   subHeaderOffsets: readonly number[]
 ): NatTableVirtualItem[] =>
-  indexes.map((index) => {
-    const slot = index + (subHeaderOffsets[index] ?? 0);
-
-    return {
-      index,
-      start: (slot - (opensSubHeaderGroup(subHeaderOffsets, index) ? 1 : 0)) * rowHeight,
-      end: (slot + 1) * rowHeight
-    };
-  });
+  indexes.map((index) => ({
+    index,
+    start: rowBlockStartSlot(subHeaderOffsets, index) * rowHeight,
+    end: (rowGridSlot(subHeaderOffsets, index) + 1) * rowHeight
+  }));
 
 /** The window mounted before any layout measurement exists (first paint, SSR). */
 export const createInitialVirtualRange = (rowCount: number): NatTableVirtualRange => ({

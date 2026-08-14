@@ -1,7 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 
 import { NatTable } from 'ng-advanced-table';
-import type { CellContext, ColumnDef } from 'ng-advanced-table';
+import type { ColumnDef } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 import { NatTableVirtualize } from 'ng-advanced-table/virtualization';
 import type { NatTableVirtualRangeChange } from 'ng-advanced-table/virtualization';
@@ -98,14 +98,14 @@ export class VirtualizationIncrementalFetch {
       header: 'Items',
       size: 110,
       meta: { label: 'Items', align: 'end', cellMaxLines: 1 },
-      cell: (context: CellContext<MockOrderRow, number>) => integerFormatter.format(context.getValue())
+      cell: (info) => integerFormatter.format(info.getValue<number>())
     },
     {
       accessorKey: 'total',
       header: 'Total',
       size: 150,
       meta: { label: 'Total', align: 'end', cellMaxLines: 1 },
-      cell: (context: CellContext<MockOrderRow, number>) => currencyFormatter.format(context.getValue())
+      cell: (info) => currencyFormatter.format(info.getValue<number>())
     }
   ];
 

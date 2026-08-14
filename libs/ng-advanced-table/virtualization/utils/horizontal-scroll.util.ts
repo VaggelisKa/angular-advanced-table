@@ -7,11 +7,16 @@
  * earns it.
  */
 
+import { queryOwnedNatTableElements } from './table-ownership.util';
+
 type HorizontalBounds = { readonly left: number; readonly right: number };
 
-const resolveUnpinnedBounds = (table: HTMLTableElement, regionRect: DOMRect): HorizontalBounds | null => {
-  const pinnedLeft = table.querySelector<HTMLElement>('thead .has-pinned-edge-left')?.getBoundingClientRect();
-  const pinnedRight = table.querySelector<HTMLElement>('thead .has-pinned-edge-right')?.getBoundingClientRect();
+const resolveUnpinnedBounds = (host: HTMLElement, regionRect: DOMRect): HorizontalBounds | null => {
+  // Ownership-scoped: a bare descendant query finds a nested table's pinned
+  // header whenever this table has no pinned columns of its own, and the
+  // reveal would then be computed against the wrong pin zone.
+  const pinnedLeft = queryOwnedNatTableElements<HTMLElement>(host, 'thead .has-pinned-edge-left').at(0)?.getBoundingClientRect();
+  const pinnedRight = queryOwnedNatTableElements<HTMLElement>(host, 'thead .has-pinned-edge-right').at(0)?.getBoundingClientRect();
   let visibleLeft = regionRect.left;
   let visibleRight = regionRect.right;
 
@@ -46,12 +51,13 @@ const resolveHorizontalDelta = (table: HTMLTableElement, cellRect: DOMRect, boun
 
 export const scrollNatTableCellHorizontallyIntoView = (region: HTMLElement, cell: HTMLElement): void => {
   const table = cell.closest<HTMLTableElement>('table');
+  const host = cell.closest<HTMLElement>('nat-table');
 
-  if (!table || cell.matches('.is-pinned-left, .is-pinned-right')) {
+  if (!table || !host || cell.matches('.is-pinned-left, .is-pinned-right')) {
     return;
   }
 
-  const bounds = resolveUnpinnedBounds(table, region.getBoundingClientRect());
+  const bounds = resolveUnpinnedBounds(host, region.getBoundingClientRect());
 
   if (!bounds) {
     return;
