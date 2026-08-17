@@ -371,6 +371,7 @@ tbody .data-row:last-child .data-cell {
  * Unpinned focus never establishes a layer above a pin zone; the inset focus
  * ring remains visible without exposing horizontally scrolled content.
  */
+
 /* Sticky pinned positioning is deliberately scoped to sticky-header tables —
    do not re-broaden to bare .is-pinned-*: the unscoped rule breaks list
    styles. Pinned backgrounds stay on all pinned cells below. */
