@@ -11,7 +11,12 @@ import { pluralize } from './pluralize.const';
  */
 export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
   NatTableAccessibilityText,
-  'listSummary' | 'listColumnVisibilityChange' | 'listPageSizeChange' | 'listPageChange' | 'listSubHeaderRow' | 'listKeyboardInstructions'
+  | 'listSummary'
+  | 'listColumnVisibilityChange'
+  | 'listPageSizeChange'
+  | 'listPageChange'
+  | 'listSubHeaderRow'
+  | 'listKeyboardInstructions'
 > = {
   listSubHeaderRow: ({ valueText, rowCountValue, rowCountText }) => {
     const groupLabel = valueText.trim() ? `${valueText} group` : 'Group';

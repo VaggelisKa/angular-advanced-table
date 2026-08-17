@@ -1,13 +1,13 @@
 import { Component, signal } from '@angular/core';
 
-import { NatList, NatTable, NatTableSubHeaderTemplate } from 'ng-advanced-table';
 import type { NatTableUserState } from 'ng-advanced-table';
+import { NatList, NatTable, NatTableSubHeaderTemplate } from 'ng-advanced-table';
 import { NatTableSurface } from 'ng-advanced-table/components';
 
-import { DemoToggleGroup } from '../../../ui';
 import type { DemoToggleOption } from '../../../ui';
-import { LIST_DEMO_COLUMNS, LIST_DEMO_ROWS } from '../list/list-demo-data';
+import { DemoToggleGroup } from '../../../ui';
 import type { ListDemoOrder } from '../list/list-demo-data';
+import { LIST_DEMO_COLUMNS, LIST_DEMO_ROWS } from '../list/list-demo-data';
 
 const STATUS_ORDER: readonly ListDemoOrder['status'][] = ['Ready', 'Review', 'Queued'];
 
@@ -16,6 +16,11 @@ type DemoView = 'table' | 'list';
 const RENDERER_OPTIONS: readonly DemoToggleOption<DemoView>[] = [
   { value: 'table', label: 'Table' },
   { value: 'list', label: 'List' }
+];
+
+const SUB_HEADER_LAYOUT_OPTIONS: readonly DemoToggleOption<'colspan' | 'cells'>[] = [
+  { value: 'colspan', label: 'Colspan' },
+  { value: 'cells', label: 'Cells' }
 ];
 
 /**
@@ -36,10 +41,14 @@ export class SubHeaderRows {
   protected readonly columns = LIST_DEMO_COLUMNS;
   protected readonly statusOrder = STATUS_ORDER;
   protected readonly rendererOptions = RENDERER_OPTIONS;
+  protected readonly subHeaderLayoutOptions = SUB_HEADER_LAYOUT_OPTIONS;
 
   protected readonly view = signal<DemoView>('table');
+  protected readonly subHeaderLayout = signal<'colspan' | 'cells'>('colspan');
   protected readonly useStatusOrder = signal(false);
-  protected readonly state = signal<Partial<NatTableUserState>>({});
+  protected readonly state = signal<Partial<NatTableUserState>>({
+    columnPinning: { left: ['id'], right: ['total'] }
+  });
 
   protected sortDirection(): 'asc' | 'desc' | null {
     const entry = (this.state().sorting ?? []).find((sort) => sort.id === 'total');

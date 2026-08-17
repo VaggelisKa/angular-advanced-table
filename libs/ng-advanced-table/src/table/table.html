@@ -192,19 +192,42 @@
               @let visibleCells = row.getVisibleCells();
               @let subHeader = groups.get(row.id);
               @if (subHeader) {
+                <ng-template #subHeaderInnerContent>
+                  <div class="sub-header-content">
+                    @if (getSubHeaderAriaText(subHeader); as ariaText) {
+                      <span class="sr-only">{{ ariaText }}</span>
+                    }
+                    @if (subHeaderTemplateRef(); as templateRef) {
+                      <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
+                    } @else {
+                      <span aria-hidden="true">{{ subHeader.value }}</span>
+                    }
+                  </div>
+                </ng-template>
                 <tr [rowIndex]="dataRowIndex - 1" class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
-                  <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
-                    <div class="sub-header-content">
-                      @if (getSubHeaderAriaText(subHeader); as ariaText) {
-                        <span class="sr-only">{{ ariaText }}</span>
-                      }
-                      @if (subHeaderTemplateRef(); as templateRef) {
-                        <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
-                      } @else {
-                        <span aria-hidden="true">{{ subHeader.value }}</span>
-                      }
-                    </div>
-                  </td>
+                  @if (subHeaderLayout() === 'colspan') {
+                    <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
+                      <ng-container [ngTemplateOutlet]="subHeaderInnerContent" />
+                    </td>
+                  } @else {
+                    <!-- Per-column cells keep pinned-zone boundaries (sticky offsets and
+                         backgrounds) running through the sub-header row; the group label
+                         renders once, inside the first cell. -->
+                    @for (cell of visibleCells; track cell.id; let first = $first) {
+                      @let columnState = columnStates[cell.column.id];
+                      <td
+                        [attr.data-column-id]="cell.column.id"
+                        [class]="columnState?.cellClassMap"
+                        [class.sub-header-cell]="true"
+                        [natTableBodyCellLayout]="columnState"
+                        natTableCell
+                        ngGridCell>
+                        @if (first) {
+                          <ng-container [ngTemplateOutlet]="subHeaderInnerContent" />
+                        }
+                      </td>
+                    }
+                  }
                 </tr>
               }
               <tr

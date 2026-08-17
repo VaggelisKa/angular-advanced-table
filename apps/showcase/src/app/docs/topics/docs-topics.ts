@@ -523,8 +523,8 @@ protected cycleSortByTotal(): void {
     `
 /* Named field areas: area names are the column ids from the shared defs. */
 nat-list {
-  --nat-table-list-item-columns: minmax(0, 1fr) auto;
-  --nat-table-list-item-areas: 'id total' 'customer status';
+  --nat-list-item-columns: minmax(0, 1fr) auto;
+  --nat-list-item-areas: 'id total' 'customer status';
 }
 `
   )
@@ -673,8 +673,8 @@ private async load(): Promise<void> {
     `
 /* All three states share one base shape; shared tokens restyle them together. */
 nat-list {
-  --nat-table-list-state-justify: center;
-  --nat-table-list-state-min-height: 8rem;
+  --nat-list-state-justify: center;
+  --nat-list-state-min-height: 8rem;
 }
 `
   )
@@ -715,7 +715,7 @@ protected readonly selectedCount = computed(() => Object.values(this.state().row
     `
 /* Selected items expose data-selected for styling. */
 nat-list {
-  --nat-table-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent);
+  --nat-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent);
 }
 `
   )
@@ -832,17 +832,17 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   color-scheme: light;
 }
 
-/* The list renderer follows the same ledger palette; the --nat-table-list-*
+/* The list renderer follows the same ledger palette; the --nat-list-*
    tokens lay each item out as named field areas (area names are column ids). */
 .ledger-list-surface {
-  --nat-table-list-gap: 10px;
-  --nat-table-list-item-areas: 'id total' 'customer status';
-  --nat-table-list-item-columns: 1fr auto;
-  --nat-table-list-item-gap: 6px;
-  --nat-table-list-item-padding: 14px 16px;
-  --nat-table-list-item-background: #fbfcfb;
-  --nat-table-list-item-border-color: #cbd8d4;
-  --nat-table-list-item-radius: 6px;
+  --nat-list-gap: 10px;
+  --nat-list-item-areas: 'id total' 'customer status';
+  --nat-list-item-columns: 1fr auto;
+  --nat-list-item-gap: 6px;
+  --nat-list-item-padding: 14px 16px;
+  --nat-list-item-background: #fbfcfb;
+  --nat-list-item-border-color: #cbd8d4;
+  --nat-list-item-radius: 6px;
 }
 
 [data-theme='dark'] .ledger-surface {
@@ -912,15 +912,15 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   }
 
   .ledger-list-surface {
-    --nat-table-list-item-background: Canvas;
-    --nat-table-list-item-border-color: CanvasText;
+    --nat-list-item-background: Canvas;
+    --nat-list-item-border-color: CanvasText;
   }
 }
 
 
 [data-theme='dark'] .ledger-list-surface {
-  --nat-table-list-item-background: #15211f;
-  --nat-table-list-item-border-color: #30413d;
+  --nat-list-item-background: #15211f;
+  --nat-list-item-border-color: #30413d;
 }
 `
   )

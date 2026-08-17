@@ -44,7 +44,7 @@ protected readonly columns = withNatTableSelectionColumn(orderColumns, { columnI
 // Selection lives in the shared surface state, so it reads back like any slice.
 protected readonly selectedCount = computed(() => Object.values(this.state().rowSelection ?? {}).filter(Boolean).length);`;
 const EXAMPLE_CSS = `/* Selected items expose data-selected for styling. */
-nat-list { --nat-table-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent); }`;
+nat-list { --nat-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent); }`;
 
 /**
  * SPIKE demo: row selection on the list uses the same engine slice and the

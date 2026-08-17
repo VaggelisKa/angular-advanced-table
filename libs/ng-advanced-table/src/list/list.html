@@ -1,3 +1,4 @@
+<!-- eslint-disable max-lines -- single cohesive list template (shared field/sub-header/state templates + the plain and composite ul branches); splitting into partials would fragment the renderer switch. -->
 <div #listRegion class="list-region" data-testid="nat-list-region">
   @if (listSummary().trim()) {
     <p [id]="listSummaryId()" class="sr-only">{{ listSummary() }}</p>
@@ -20,12 +21,12 @@
     let-listColumns="listColumns"
     let-row="row"
     let-withActivator="withActivator">
-    @for (column of listColumns; track column.id; let fieldIndex = $index) {
+    @for (column of listColumns; track column.id) {
       @let cell = cellForColumn(row, column.id);
       @if (cell) {
         <div
           [attr.data-column-id]="column.id"
-          [attr.id]="withActivator && fieldIndex === 0 ? activatorLabelId(itemIndex) : null"
+          [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
           [natListFieldArea]="column.id"
           class="list-field">
           <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
@@ -39,7 +40,7 @@
               {{ resolveColumnLabel(column) }}
             }
           </span>
-          <span class="list-field-value">
+          <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value">
             <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
               {{ rendered }}
             </ng-container>
@@ -58,7 +59,7 @@
     @if (subHeaderTemplateRef(); as templateRef) {
       <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
     } @else {
-      <span aria-hidden="true">{{ subHeader.value }}</span>
+      <span aria-hidden="true" class="list-sub-header-value">{{ subHeader.value }}</span>
     }
   </ng-template>
 
@@ -95,14 +96,14 @@
           @let listColumns = visibleColumns();
           @let headerContexts = leafHeaderContexts();
           @let groups = subHeaderGroups();
-          @for (row of bodyRows(); track row.id; let itemIndex = $index) {
+          @for (row of bodyRows(); track row.id) {
             @let subHeader = groups.get(row.id);
             @if (subHeader) {
               <!-- Sub-headers join the grid as rows with one gridcell, exactly
                    like the table's sub-header rows, so arrow navigation passes
                    through them instead of skipping the group boundary. -->
               <li class="list-sub-header" data-testid="nat-list-sub-header" ngGridRow>
-                <div class="list-sub-header-cell" natTableCell ngGridCell>
+                <div class="list-sub-header-content" natTableCell ngGridCell>
                   <ng-container [ngTemplateOutlet]="subHeaderContent" [ngTemplateOutletContext]="{ subHeader }" />
                 </div>
               </li>
@@ -111,6 +112,7 @@
                  cell-interaction model on the cell handles Enter/Tab/Escape
                  first and stops propagation when it does, so only unhandled
                  events reach the row — same layering as the table. -->
+            <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -- focus lives on the roving gridcell child; the row only receives bubbled events, mirroring the table's tr handlers. -->
             <li
               [attr.aria-selected]="rowAriaSelected(row)"
               [attr.data-row-id]="row.id"
@@ -123,7 +125,7 @@
               <div class="list-item" data-testid="nat-list-item-cell" natTableCell ngGridCell>
                 <ng-container
                   [ngTemplateOutlet]="itemFields"
-                  [ngTemplateOutletContext]="{ row, itemIndex, listColumns, headerContexts, withActivator: false }" />
+                  [ngTemplateOutletContext]="{ row, itemIndex: $index, listColumns, headerContexts, withActivator: false }" />
               </div>
             </li>
           }
@@ -155,11 +157,13 @@
           @let listColumns = visibleColumns();
           @let headerContexts = leafHeaderContexts();
           @let groups = subHeaderGroups();
-          @for (row of bodyRows(); track row.id; let itemIndex = $index) {
+          @for (row of bodyRows(); track row.id) {
             @let subHeader = groups.get(row.id);
             @if (subHeader) {
               <li class="list-sub-header" data-testid="nat-list-sub-header">
-                <ng-container [ngTemplateOutlet]="subHeaderContent" [ngTemplateOutletContext]="{ subHeader }" />
+                <div class="list-sub-header-content">
+                  <ng-container [ngTemplateOutlet]="subHeaderContent" [ngTemplateOutletContext]="{ subHeader }" />
+                </div>
               </li>
             }
             <li
@@ -185,7 +189,7 @@
                      selected while activation is enabled. -->
                 <!-- eslint-disable-next-line @angular-eslint/template/elements-content -- named via aria-labelledby from the item's first field; visible content would duplicate it. -->
                 <button
-                  [attr.aria-labelledby]="activatorLabelId(itemIndex)"
+                  [attr.aria-labelledby]="activatorLabelId($index)"
                   class="list-item-activator"
                   data-testid="nat-list-item-activator"
                   type="button"
@@ -194,7 +198,13 @@
               }
               <ng-container
                 [ngTemplateOutlet]="itemFields"
-                [ngTemplateOutletContext]="{ row, itemIndex, listColumns, headerContexts, withActivator: enableRowActivation() }" />
+                [ngTemplateOutletContext]="{
+                  row,
+                  itemIndex: $index,
+                  listColumns,
+                  headerContexts,
+                  withActivator: enableRowActivation()
+                }" />
             </li>
           }
         }

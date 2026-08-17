@@ -68,15 +68,15 @@
 /* All three states share one base shape: these tokens restyle them together,
    while each state keeps its own accent. */
 .sc-demo-list {
-  --nat-table-list-state-justify: center;
-  --nat-table-list-state-min-height: 8rem;
-  --nat-table-list-state-radius: 12px;
-  --nat-table-list-state-padding: 1.5rem;
-  --nat-table-list-state-background: var(--sc-surface-muted);
-  --nat-table-list-state-border-color: var(--sc-border);
-  --nat-table-list-loading-accent: var(--sc-accent);
-  --nat-table-list-empty-accent: var(--sc-text-muted);
-  --nat-table-list-error-accent: var(--sc-negative);
+  --nat-list-state-justify: center;
+  --nat-list-state-min-height: 8rem;
+  --nat-list-state-radius: 12px;
+  --nat-list-state-padding: 1.5rem;
+  --nat-list-state-background: var(--sc-surface-muted);
+  --nat-list-state-border-color: var(--sc-border);
+  --nat-list-loading-accent: var(--sc-accent);
+  --nat-list-empty-accent: var(--sc-text-muted);
+  --nat-list-error-accent: var(--sc-negative);
 
   display: block;
 }

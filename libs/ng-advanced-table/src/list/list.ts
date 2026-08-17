@@ -1,4 +1,5 @@
 /* eslint-disable max-lines -- list component shell, mirroring table.ts: inputs/outputs, the NatTableUiController surface, state-signal aliases, and input bridging. All pure logic (state views, template contexts, column label resolution) lives in ./utils and ./common. */
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 import { NgTemplateOutlet } from '@angular/common';
 import type { ElementRef, TemplateRef } from '@angular/core';
 import {
@@ -13,8 +14,6 @@ import {
   output,
   viewChild
 } from '@angular/core';
-
-import { Grid, GridCell, GridRow } from '@angular/aria/grid';
 
 import type { ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
@@ -176,7 +175,7 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   /**
    * Default stacked `grid-template-areas` for a list item: one row per visible
    * column, named by column id. Written to the internal `--sys-*` bridge so a
-   * consumer's `--nat-table-list-item-areas` (plus `-columns`) can lay out the
+   * consumer's `--nat-list-item-areas` (plus `-columns`) can lay out the
    * named field areas freely; each field carries `grid-area: <column-id>`.
    */
   protected readonly defaultItemAreas = computed(() =>

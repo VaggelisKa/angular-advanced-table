@@ -1,6 +1,14 @@
 <div class="sub-header-demo-controls">
   <app-demo-toggle-group [options]="rendererOptions" [value]="view()" accessibleName="Renderer" (valueChange)="view.set($event)" />
 
+  @if (view() === 'table') {
+    <app-demo-toggle-group
+      [options]="subHeaderLayoutOptions"
+      [value]="subHeaderLayout()"
+      accessibleName="Sub-header layout"
+      (valueChange)="subHeaderLayout.set($event)" />
+  }
+
   <div class="sub-header-demo-state-controls">
     <button
       [attr.aria-pressed]="useStatusOrder()"
@@ -23,11 +31,12 @@
   </div>
 </div>
 
-<nat-table-surface [(state)]="state">
+<nat-table-surface [enablePinning]="true" [(state)]="state">
   @if (view() === 'table') {
     <nat-table
       [columns]="columns"
       [data]="rows"
+      [subHeaderLayout]="subHeaderLayout()"
       [subHeaderOrder]="useStatusOrder() ? statusOrder : undefined"
       accessibleName="Orders grouped by status"
       class="sc-demo-table"

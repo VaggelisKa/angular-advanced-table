@@ -104,7 +104,9 @@ describe('FEATURE: Sub-header rows docs demo', () => {
 
     describe('WHEN: the renderer toggle is switched to the list', () => {
       it('THEN: the view swaps to the bare list renderer with the same groups', async () => {
-        const rendererButtons = Array.from(host(fixture).querySelectorAll('app-demo-toggle-group button'));
+        // Scope to the renderer group: the table view also shows the
+        // sub-header layout toggle, whose buttons are not under test here.
+        const rendererButtons = Array.from(host(fixture).querySelectorAll('app-demo-toggle-group [aria-label="Renderer"] button'));
 
         expect(rendererButtons.map((button) => button.getAttribute('aria-pressed'))).toStrictEqual(['true', 'false']);
 

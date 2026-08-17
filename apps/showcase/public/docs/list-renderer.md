@@ -92,12 +92,12 @@ Every item is a CSS grid of named field areas — area names are column ids — 
 
 ```css
 nat-list {
-  --nat-table-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  --nat-table-list-item-areas: 'id id status' 'customer owner total';
+  --nat-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  --nat-list-item-areas: 'id id status' 'customer owner total';
 }
 ```
 
-The full token list (`--nat-table-list-*`, including the body-state tokens) is documented in Theming, and the opt-in stock theme styles the list out of the box.
+The full token list (`--nat-list-*`, including the body-state tokens) is documented in Theming, and the opt-in stock theme styles the list out of the box.
 
 ## Accessibility
 

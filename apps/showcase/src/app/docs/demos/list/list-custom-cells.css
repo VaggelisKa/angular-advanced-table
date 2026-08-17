@@ -1,7 +1,7 @@
 /* Named field areas: area names are the column ids from the defs. */
 .list-custom-cells {
-  --nat-table-list-item-columns: minmax(0, 1fr) auto;
-  --nat-table-list-item-areas: 'customer total' 'status status';
+  --nat-list-item-columns: minmax(0, 1fr) auto;
+  --nat-list-item-areas: 'customer total' 'status status';
 }
 
 .list-custom-cells-total {

@@ -73,10 +73,10 @@
 }
 
 .sc-demo-list {
-  --nat-table-list-item-background-selected: var(--sc-accent-soft);
-  --nat-table-list-item-columns: auto minmax(0, 1fr);
-  --nat-table-list-item-areas: 'select id' 'select customer' 'select owner' 'select channel' 'select region' 'select status'
-    'select items' 'select updatedAt' 'select total';
+  --nat-list-item-background-selected: var(--sc-accent-soft);
+  --nat-list-item-columns: auto minmax(0, 1fr);
+  --nat-list-item-areas: 'select id' 'select customer' 'select owner' 'select channel' 'select region' 'select status' 'select items'
+    'select updatedAt' 'select total';
 
   display: block;
 }
