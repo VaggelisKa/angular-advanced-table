@@ -372,7 +372,9 @@ tbody .data-row:last-child .data-cell {
  * ring remains visible without exposing horizontally scrolled content.
  */
 .has-sticky-header .is-pinned-left,
-.has-sticky-header .is-pinned-right {
+.has-sticky-header .is-pinned-right,
+.is-pinned-left,
+.is-pinned-right {
   position: sticky;
   z-index: var(--nat-table-z-index-pinned-cell, var(--sys-nat-table-z-index-pinned-cell, 5));
 }

@@ -174,7 +174,11 @@ The `nat-list` spike renderer lays every item out as a CSS grid whose field area
 | `--nat-list-item-radius`              | Item corner radius                                                                                 |
 | `--nat-list-field-gap`                | Gap between one field's label and value                                                            |
 | `--nat-list-field-align`              | `align-items` for one field (defaults to `baseline`)                                               |
+| `--nat-list-field-flex-direction`     | `flex-direction` for one field (defaults to `row`)                                                 |
+| `--nat-list-field-justify`            | `justify-content` for one field (defaults to `flex-start`)                                         |
 | `--nat-list-label-font-weight`        | Field label weight                                                                                 |
+| `--nat-list-label-font-size`          | Field label font size                                                                              |
+| `--nat-list-label-color`              | Field label color (defaults to `currentColor`)                                                     |
 | `--nat-list-space-sub-header`         | Sub-header row padding for lists                                                                   |
 | `--nat-list-sub-header-background`    | Sub-header row background for lists                                                                |
 | `--nat-list-sub-header-color`         | Sub-header row text color for lists                                                                |
