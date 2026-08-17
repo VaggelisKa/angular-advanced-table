@@ -191,6 +191,14 @@
   --nat-table-row-background-hover: color-mix(in srgb, var(--nat-table-color-accent) 7%, transparent);
   --nat-table-row-background-hover-pinned: color-mix(in srgb, var(--nat-table-color-accent) 7%, var(--nat-table-color-surface));
 
+  /* Sub-headers */
+  --nat-table-sub-header-background: var(--nat-table-color-surface-sticky);
+  --nat-table-sub-header-color: var(--nat-table-color-text-muted);
+  --nat-table-space-sub-header: 8px 12px;
+  --nat-table-font-weight-sub-header: 600;
+  --nat-table-sub-header-border: none;
+  --nat-table-sub-header-border-width: 0;
+
   /* Cells & semantic tones */
   --nat-table-cell-border-color: var(--nat-table-color-divider);
   --nat-table-cell-border-width: 1px;
@@ -205,21 +213,29 @@
   --nat-table-error-state-color: var(--nat-table-cell-color-negative);
 
   /* List renderer (nat-list) */
-  --nat-table-list-gap: 10px;
-  --nat-table-list-item-padding: 14px 16px;
-  --nat-table-list-item-background: var(--nat-table-color-surface);
-  --nat-table-list-item-background-selected: color-mix(in srgb, var(--nat-table-color-accent) 10%, var(--nat-table-color-surface));
-  --nat-table-list-item-border-width: 1px;
-  --nat-table-list-item-border-color: var(--nat-table-color-border);
-  --nat-table-list-item-radius: 10px;
-  --nat-table-list-field-gap: 8px;
-  --nat-table-list-label-font-weight: 600;
+  --nat-list-gap: 10px;
+  --nat-list-item-padding: 14px 16px;
+  --nat-list-item-background: var(--nat-table-color-surface);
+  --nat-list-item-background-selected: color-mix(in srgb, var(--nat-table-color-accent) 10%, var(--nat-table-color-surface));
+  --nat-list-item-border-width: 1px;
+  --nat-list-item-border-color: var(--nat-table-color-border);
+  --nat-list-item-radius: 10px;
+  --nat-list-field-gap: 8px;
+  --nat-list-label-font-weight: 600;
+
+  /* List sub-headers */
+  --nat-list-sub-header-background: transparent;
+  --nat-list-sub-header-color: var(--nat-table-color-text-muted);
+  --nat-list-space-sub-header: 8px 0;
+  --nat-list-font-weight-sub-header: 600;
+  --nat-list-sub-header-border: none;
+  --nat-list-sub-header-border-width: 0;
 
   /* List body states */
-  --nat-table-list-state-color: var(--nat-table-color-text-muted);
-  --nat-table-list-state-background: var(--nat-table-color-surface);
-  --nat-table-list-state-border-color: var(--nat-table-color-border-strong);
-  --nat-table-list-loading-accent: var(--nat-table-color-accent);
-  --nat-table-list-empty-accent: var(--nat-table-color-text-muted);
-  --nat-table-list-error-accent: var(--nat-table-color-danger);
+  --nat-list-state-color: var(--nat-table-color-text-muted);
+  --nat-list-state-background: var(--nat-table-color-surface);
+  --nat-list-state-border-color: var(--nat-table-color-border-strong);
+  --nat-list-loading-accent: var(--nat-table-color-accent);
+  --nat-list-empty-accent: var(--nat-table-color-text-muted);
+  --nat-list-error-accent: var(--nat-table-color-danger);
 }

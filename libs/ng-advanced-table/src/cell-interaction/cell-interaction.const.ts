@@ -2,8 +2,8 @@ export const NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE = 'data-nat-table-managed-c
 
 export const NAT_TABLE_CELL_SELECTOR = '[natTableCell]';
 
-/** Table host element, used to tell cells owned by one table from nested or foreign ones. */
-export const NAT_TABLE_HOST_SELECTOR = 'nat-table';
+/** Renderer host elements, used to tell cells owned by one renderer from nested or foreign ones. */
+export const NAT_TABLE_HOST_SELECTOR = 'nat-table, nat-list';
 
 /**
  * Mutable attributes that affect interactive-selector eligibility, preparation

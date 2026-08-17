@@ -1082,8 +1082,8 @@ input {
   width: 100%;
   min-width: 0;
 
-  --nat-table-list-item-background: var(--sc-surface);
-  --nat-table-list-state-background: var(--sc-surface);
+  --nat-list-item-background: var(--sc-surface);
+  --nat-list-state-background: var(--sc-surface);
   --nat-table-focus-ring-color: var(--sc-focus);
   --nat-table-focus-ring-width: 3px;
 }

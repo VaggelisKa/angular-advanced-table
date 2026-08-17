@@ -224,6 +224,7 @@ describe('FEATURE: parent table locale overrides in nested providers', () => {
     describe('WHEN: keeps the built-in keyboard instructions', () => {
       it('THEN: it preserves inherited keyboard guidance', () => {
         expect(accessibilityText?.keyboardInstructions).toContain('Use arrow keys');
+        expect(accessibilityText?.listKeyboardInstructions).toContain('Up and Down arrow keys');
       });
     });
   });

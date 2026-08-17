@@ -21,6 +21,6 @@
 
 /* Named field areas: area names are the column ids from the shared defs. */
 .list-demo-list {
-  --nat-table-list-item-columns: minmax(0, 1fr) auto;
-  --nat-table-list-item-areas: 'id total' 'customer status';
+  --nat-list-item-columns: minmax(0, 1fr) auto;
+  --nat-list-item-areas: 'id total' 'customer status';
 }

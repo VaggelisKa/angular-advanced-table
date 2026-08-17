@@ -38,11 +38,11 @@ private async load(): Promise<void> {
 const EXAMPLE_CSS = `/* All three states share one base shape, so shared tokens restyle them
    together and each state keeps its own accent. */
 nat-list {
-  --nat-table-list-state-justify: center;
-  --nat-table-list-state-min-height: 8rem;
-  --nat-table-list-state-radius: 12px;
-  --nat-table-list-state-background: rgb(0 0 0 / 2%);
-  --nat-table-list-error-accent: #d14343;
+  --nat-list-state-justify: center;
+  --nat-list-state-min-height: 8rem;
+  --nat-list-state-radius: 12px;
+  --nat-list-state-background: rgb(0 0 0 / 2%);
+  --nat-list-error-accent: #d14343;
 }`;
 
 type DemoDataScenario = 'success' | 'loading' | 'empty' | 'error';

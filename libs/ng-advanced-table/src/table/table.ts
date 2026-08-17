@@ -158,6 +158,13 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
    */
   public readonly enableSubHeaders = input(true, { transform: booleanAttribute });
 
+  /**
+   * Layout mode for the sub-header row.
+   * - `'colspan'` (default): Renders a single cell spanning the entire row.
+   * - `'cells'`: Renders individual cells matching the column structure, preserving pinned column boundaries.
+   */
+  public readonly subHeaderLayout = input<'colspan' | 'cells'>('colspan');
+
   // ─── Outputs ───
 
   /** Emits per-row paint timings when `emitRowRenderEvents` is enabled. */

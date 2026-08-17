@@ -40,6 +40,7 @@ class SubHeaderPager {
         [data]="rows()"
         [enableSubHeaders]="enableSubHeaders()"
         [subHeaderColumn]="subHeaderColumn()"
+        [subHeaderLayout]="subHeaderLayout()"
         [subHeaderOrder]="subHeaderOrder()"
         accessibleName="Grouped operations" />
     </nat-table-surface>
@@ -49,6 +50,7 @@ class SubHeaderHost {
   public readonly rows = signal<Row[]>(buildRows(6));
   public readonly columns = columns;
   public readonly subHeaderColumn = signal<string | undefined>('status');
+  public readonly subHeaderLayout = signal<'colspan' | 'cells'>('colspan');
   public readonly subHeaderOrder = signal<readonly unknown[] | undefined>(undefined);
   public readonly enableSubHeaders = signal(true);
   public readonly sortingEvents: SortingState[] = [];
@@ -159,13 +161,31 @@ describe('FEATURE: NatTable sub-headers', () => {
         );
         const cssText = subHeaderCellRule?.cssText ?? '';
 
-        // The separator reuses the data-cell border tokens so a themed border
-        // applies to sub-header rows without a second token pair.
-        expect(cssText).toContain('border-bottom');
-        expect(cssText).toContain('--nat-table-cell-border-width');
-        expect(cssText).toContain('--nat-table-cell-border-color');
+        // The border is its own token pair (default none/0) so a theme can draw
+        // a sub-header frame without touching the data-cell separator tokens.
+        expect(cssText).toContain('--nat-table-sub-header-border');
+        expect(cssText).toContain('--nat-table-sub-header-border-width');
         expect(cssText).toContain('--nat-table-sub-header-background');
         expect(cssText).toContain('transparent');
+      });
+    });
+
+    describe('WHEN: the sub-header layout is cells', () => {
+      it('THEN: it renders one sub-header cell per visible column with the group label only in the first', async () => {
+        host.subHeaderLayout.set('cells');
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const firstSubHeaderRow = subHeaderRows(fixture)[0];
+        const cells = Array.from(firstSubHeaderRow.querySelectorAll('td.sub-header-cell'));
+
+        expect(cells).toHaveLength(columns.length);
+        expect(cells.every((cell) => cell.hasAttribute('data-column-id'))).toBe(true);
+        expect(cells[0].querySelector('.sub-header-content')).not.toBeNull();
+
+        for (const cell of cells.slice(1)) {
+          expect(cell.querySelector('.sub-header-content')).toBeNull();
+        }
       });
     });
 

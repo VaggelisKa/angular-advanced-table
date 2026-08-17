@@ -524,6 +524,18 @@ export class NatTableState<TData extends RowData = RowData> {
     return parts.filter((value) => !!value).join(' ');
   });
 
+  /**
+   * Keyboard instructions for a list rendering with composite item navigation.
+   * Item-phrased copy with no reorder/resize appendixes (a list has neither);
+   * falls back to the grid `keyboardInstructions` when only that one is
+   * overridden, mirroring the other `list*` accessibility entries.
+   */
+  public readonly resolvedListKeyboardInstructions = computed(() => {
+    const text = this.resolvedAccessibilityText();
+
+    return (text.listKeyboardInstructions ?? text.keyboardInstructions ?? '').trim();
+  });
+
   public readonly tableAriaLabel = computed(() => {
     if (this.resolvedCaption()) {
       return null;

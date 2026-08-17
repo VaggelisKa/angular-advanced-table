@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- a11y service residual: DI + the liveMessage signal + snapshot capture that must read live signals + the summary computeds + five effect/afterRenderEffect registrations (the shared pair self-registers in the constructor; the grid-only trio registers through registerGridEffects so a list renderer can skip them), plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
+/* eslint-disable max-lines -- a11y service residual: DI + the liveMessage signal + snapshot capture that must read live signals + the summary computeds + five effect/afterRenderEffect registrations (the shared pair self-registers in the constructor; renderer-specific sets register through registerGridEffects/registerListEffects so each renderer opts into what it supports), plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
 import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 
 import type { Column, RowData } from '@tanstack/angular-table';
@@ -23,8 +23,9 @@ import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext 
  * Provided alongside `NatTableState` in the component's `providers`. The
  * effects every renderer needs register themselves in the constructor, so a
  * renderer that merely provides the service still announces state changes;
- * `registerGridEffects` adds the `<table>`-only behavior, and a non-grid
- * renderer selects its announcement copy through `setRenderer`.
+ * `registerGridEffects` adds the `<table>`-only behavior, `registerListEffects`
+ * adds the list-renderer set, and a non-grid renderer selects its announcement
+ * copy through `setRenderer`.
  */
 // eslint-disable-next-line @angular-eslint/use-injectable-provided-in -- per-table-instance state, provided by NatTable (providers: [NatTableA11yService]), not root.
 @Injectable()
@@ -78,6 +79,18 @@ export class NatTableA11yService<TData extends RowData = RowData> {
    */
   public registerGridEffects(): void {
     this.registerResizeAnnouncementEffect();
+    this.registerAriaMultiSelectableEffect();
+    this.registerKeybindingValidationEffect();
+  }
+
+  /**
+   * Registers the effects a list renderer needs: the `aria-multiselectable`
+   * writer (self-gating — it only targets a rendered `[role="grid"]` element,
+   * so a plain list stays untouched) and dev-mode keybinding validation (the
+   * list shares the `rowActivate` and cell-interaction shortcuts). Column
+   * resize announcements stay grid-only.
+   */
+  public registerListEffects(): void {
     this.registerAriaMultiSelectableEffect();
     this.registerKeybindingValidationEffect();
   }
@@ -226,22 +239,25 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   // ─── ARIA multiselectable ───
 
   /**
-   * Sets `aria-multiselectable` imperatively on the `<table>` element.
+   * Sets `aria-multiselectable` imperatively on the rendered grid element —
+   * the `<table>` or, for a list with composite item navigation, the `<ul>`
+   * carrying `role="grid"` (a plain list renders no grid element, so the
+   * effect is inert there; `aria-multiselectable` is invalid on `role="list"`).
    * Written via `afterRenderEffect` because `ngGrid` clobbers template bindings.
    */
   private registerAriaMultiSelectableEffect(): void {
     afterRenderEffect(() => {
       const multiSelectable = this.state.enableRowSelection() && this.state.selectionMode() === 'multiple';
-      const table = this.state.tableRegionRef()?.nativeElement.querySelector('table');
+      const grid = this.state.tableRegionRef()?.nativeElement.querySelector(':scope > table, :scope > ul[role="grid"]');
 
-      if (!table) {
+      if (!grid) {
         return;
       }
 
       if (multiSelectable) {
-        table.setAttribute('aria-multiselectable', 'true');
+        grid.setAttribute('aria-multiselectable', 'true');
       } else {
-        table.removeAttribute('aria-multiselectable');
+        grid.removeAttribute('aria-multiselectable');
       }
     });
   }

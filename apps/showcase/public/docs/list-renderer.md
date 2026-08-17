@@ -59,6 +59,29 @@ Two deliberate consequences of the stretched-button design:
 - The activator's accessible name is the item's **first visible field** (label plus value, e.g. "Order ORD-201") — concise on purpose, since the item content is read as the list item body anyway. Order the columns so the identifying field comes first.
 - The overlay owns mousedown across the item, so field text cannot be selected with the mouse while activation is enabled. Leave activation off (or trigger navigation from a dedicated control) when copyable values matter.
 
+## Item Navigation
+
+`enableItemNavigation` (opt-in) switches the list to the same composite grid pattern the table uses: the whole list becomes **one tab stop**, Up/Down arrow keys move a roving focus between items, and the cell-interaction model handles controls inside an item — Enter steps in, Tab/Shift+Tab cycle through them, Escape returns to the item. Items render as `role="row"`/`role="gridcell"` instead of plain list items, and screen readers get item-phrased keyboard instructions (the `listKeyboardInstructions` locale entry, falling back to `keyboardInstructions`).
+
+```html
+<nat-table-surface>
+  <nat-list
+    [columns]="columns"
+    [data]="data"
+    [enableItemNavigation]="true"
+    accessibleName="Operations list"
+    (rowActivate)="open($event)" />
+</nat-table-surface>
+```
+
+Behavior changes while it is enabled:
+
+- Items emit `rowActivate` on click and on the `rowActivate` shortcut directly — like table rows, and without `enableRowActivation`. The stretched activator button is not rendered (the focusable gridcell already carries an interactive role), so field text becomes mouse-selectable again.
+- Native controls inside fields (for example a selection checkbox) are managed into the roving tab order; clicks on them never trigger activation.
+- With multi selection the grid carries `aria-multiselectable`, and each item row mirrors its selection state onto `aria-selected` alongside `data-selected`.
+
+Leave it off for short lists: plain `role="list"` semantics are friendlier to screen-reader browse mode, and a handful of tab stops is not a traversal cost. Reach for it when the list is long enough that one tab stop per item would make keyboard traversal expensive.
+
 ## Data Lifecycle
 
 `dataStatus` drives the same loading, empty, and error model as the table, rendered as list items with a shared base shape. The table's `natTableLoading` / `natTableEmpty` / `natTableError` templates are accepted unchanged, and the `error` input carries the payload into the error template context.
@@ -69,18 +92,19 @@ Every item is a CSS grid of named field areas — area names are column ids — 
 
 ```css
 nat-list {
-  --nat-table-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  --nat-table-list-item-areas: 'id id status' 'customer owner total';
+  --nat-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  --nat-list-item-areas: 'id id status' 'customer owner total';
 }
 ```
 
-The full token list (`--nat-table-list-*`, including the body-state tokens) is documented in Theming, and the opt-in stock theme styles the list out of the box.
+The full token list (`--nat-list-*`, including the body-state tokens) is documented in Theming, and the opt-in stock theme styles the list out of the box.
 
 ## Accessibility
 
 - `accessibleName` is required (the list takes no `caption`); dev mode warns when it is missing.
-- The list summary announces items and fields where the grid announces rows and columns, via the `listSummary`, `listColumnVisibilityChange`, `listPageSizeChange`, `listPageChange`, and `listSubHeaderRow` locale entries — each falls back to its grid counterpart when only that one is overridden.
+- The list summary announces items and fields where the grid announces rows and columns, via the `listSummary`, `listColumnVisibilityChange`, `listPageSizeChange`, `listPageChange`, `listSubHeaderRow`, and `listKeyboardInstructions` locale entries — each falls back to its grid counterpart when only that one is overridden.
 - State changes (sorting, filtering, selection, pagination) are announced through the same live region as the table.
+- With `enableItemNavigation` the keyboard instructions join `aria-describedby`, and the roving gridcells take the same focus ring tokens as table cells (`--nat-table-focus-ring-width`, `--nat-table-focus-ring-color`).
 
 ## Limitations
 

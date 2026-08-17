@@ -17,6 +17,18 @@ describe('FEATURE: accessibility intl merge', () => {
         expect(merged.loadingState).toBe('Parent loading');
       });
     });
+
+    describe('WHEN: merging the keyboard instruction entries', () => {
+      const merged = mergeNatTableAccessibilityText(
+        { keyboardInstructions: 'Parent grid keys', listKeyboardInstructions: 'Parent list keys' },
+        { listKeyboardInstructions: 'Child list keys' }
+      );
+
+      it('THEN: the list entry merges independently of the grid entry', () => {
+        expect(merged.listKeyboardInstructions).toBe('Child list keys');
+        expect(merged.keyboardInstructions).toBe('Parent grid keys');
+      });
+    });
   });
 
   describe('GIVEN: a config without the requested locale', () => {

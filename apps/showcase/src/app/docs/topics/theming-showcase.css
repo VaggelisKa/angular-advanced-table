@@ -53,17 +53,17 @@
   color-scheme: light;
 }
 
-/* The list renderer follows the same ledger palette; the --nat-table-list-*
+/* The list renderer follows the same ledger palette; the --nat-list-*
    tokens lay each item out as named field areas (area names are column ids). */
 .ledger-list-surface {
-  --nat-table-list-gap: 10px;
-  --nat-table-list-item-areas: 'id total' 'customer status';
-  --nat-table-list-item-columns: 1fr auto;
-  --nat-table-list-item-gap: 6px;
-  --nat-table-list-item-padding: 14px 16px;
-  --nat-table-list-item-background: #fbfcfb;
-  --nat-table-list-item-border-color: #cbd8d4;
-  --nat-table-list-item-radius: 6px;
+  --nat-list-gap: 10px;
+  --nat-list-item-areas: 'id total' 'customer status';
+  --nat-list-item-columns: 1fr auto;
+  --nat-list-item-gap: 6px;
+  --nat-list-item-padding: 14px 16px;
+  --nat-list-item-background: #fbfcfb;
+  --nat-list-item-border-color: #cbd8d4;
+  --nat-list-item-radius: 6px;
 
   margin-top: 16px;
 }
@@ -99,8 +99,8 @@
 }
 
 :host(.is-dark-theme) .ledger-list-surface {
-  --nat-table-list-item-background: #15211f;
-  --nat-table-list-item-border-color: #30413d;
+  --nat-list-item-background: #15211f;
+  --nat-list-item-border-color: #30413d;
 }
 
 /* Custom properties are not force-adjusted, so in forced-colors (Windows High
@@ -140,7 +140,7 @@
   }
 
   .ledger-list-surface {
-    --nat-table-list-item-background: Canvas;
-    --nat-table-list-item-border-color: CanvasText;
+    --nat-list-item-background: Canvas;
+    --nat-list-item-border-color: CanvasText;
   }
 }
