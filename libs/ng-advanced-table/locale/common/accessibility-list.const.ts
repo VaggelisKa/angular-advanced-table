@@ -11,13 +11,17 @@ import { pluralize } from './pluralize.const';
  */
 export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
   NatTableAccessibilityText,
-  'listSummary' | 'listColumnVisibilityChange' | 'listPageSizeChange' | 'listPageChange' | 'listSubHeaderRow'
+  'listSummary' | 'listColumnVisibilityChange' | 'listPageSizeChange' | 'listPageChange' | 'listSubHeaderRow' | 'listKeyboardInstructions'
 > = {
   listSubHeaderRow: ({ valueText, rowCountValue, rowCountText }) => {
     const groupLabel = valueText.trim() ? `${valueText} group` : 'Group';
 
     return `${groupLabel}, ${rowCountText} ${pluralize('item', rowCountValue)}.`;
   },
+  listKeyboardInstructions:
+    'Use the Up and Down arrow keys to move between items. Press Enter to interact with the controls ' +
+    'inside an item, Tab to move forward between them, Shift+Tab to move backward, and Escape to ' +
+    'return to the item.',
   listSummary: ({
     pageCountText,
     pageText,

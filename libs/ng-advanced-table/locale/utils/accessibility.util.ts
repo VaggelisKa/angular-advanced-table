@@ -15,7 +15,8 @@ const mergeAccessibilityInstructions = (
   override?: NatTableAccessibilityText
 ): Partial<NatTableAccessibilityText> => ({
   description: override?.description ?? parent?.description,
-  keyboardInstructions: override?.keyboardInstructions ?? parent?.keyboardInstructions
+  keyboardInstructions: override?.keyboardInstructions ?? parent?.keyboardInstructions,
+  listKeyboardInstructions: override?.listKeyboardInstructions ?? parent?.listKeyboardInstructions
 });
 
 /** Merges the body state messages, override values winning. */

@@ -201,6 +201,13 @@ export type NatTableAccessibilityText = {
    */
   readonly keyboardInstructions?: string;
   /**
+   * Screen-reader instructions for list item navigation, announced when a
+   * list renders with composite item navigation enabled. Phrases the grid
+   * keyboard model as items rather than cells; falls back to
+   * `keyboardInstructions` when only that one is overridden.
+   */
+  readonly listKeyboardInstructions?: string;
+  /**
    * Visible message rendered in the body when the current view contains no
    * rows. Falls back to the active locale default when omitted.
    */

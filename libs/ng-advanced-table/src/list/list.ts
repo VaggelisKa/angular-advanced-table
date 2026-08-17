@@ -14,6 +14,8 @@ import {
   viewChild
 } from '@angular/core';
 
+import { Grid, GridCell, GridRow } from '@angular/aria/grid';
+
 import type { ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
@@ -21,6 +23,8 @@ import type { NatListStateKey } from './common/list-state.type';
 import { NatListFieldArea } from './list-field-area.directive';
 import { findRowCell, hasStaticLabel, isSrOnlyLabel } from './utils/list-column.util';
 import { buildListStateTemplateContext, resolveListStateView } from './utils/list-state.util';
+import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
+import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
@@ -30,9 +34,11 @@ import type { NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
+import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { resolveColumnLabel } from '../utils/column-label.util';
+import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
 
 /**
  * SPIKE: list renderer sharing the table engine (`NatTableState`).
@@ -42,9 +48,13 @@ import { resolveColumnLabel } from '../utils/column-label.util';
  * state drive the list exactly as they drive the table. Implements
  * `NatTableUiController`, so surface-bound companion controls resolve it.
  *
- * Deliberately omitted: column resizing, pinning, header measurement, cell
- * interaction, and reorder DOM affordances — consumers drive sorting and
- * field order through surface state / `patchState`.
+ * `enableItemNavigation` opts into the table's composite grid pattern
+ * (`@angular/aria/grid` + the cell-interaction model) with one gridcell per
+ * item.
+ *
+ * Deliberately omitted: column resizing, pinning, header measurement, and
+ * reorder DOM affordances — consumers drive sorting and field order through
+ * surface state / `patchState`.
  */
 @Component({
   selector: 'nat-list',
@@ -55,8 +65,8 @@ import { resolveColumnLabel } from '../utils/column-label.util';
   host: {
     '[style.--sys-nat-table-list-item-areas]': 'defaultItemAreas()'
   },
-  imports: [FlexRender, NatListFieldArea, NgTemplateOutlet],
-  providers: [NatTableState, NatTableA11yService],
+  imports: [FlexRender, Grid, GridCell, GridRow, NatListFieldArea, NatTableCell, NgTemplateOutlet],
+  providers: [NatTableState, NatTableA11yService, NatTableCellControlManager],
   templateUrl: './list.html',
   styleUrl: './list.css'
 })
@@ -93,6 +103,10 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
    * exposes no interactive role, so assistive technology would announce it as
    * plain text with no way to discover that Enter does anything (WCAG 4.1.2).
    * Opt-in because it adds a tab stop per item.
+   *
+   * With `enableItemNavigation` the activator is not rendered: the focusable
+   * gridcell already carries an interactive role, so items activate on click
+   * and on the `rowActivate` shortcut directly, exactly like table rows.
    */
   public readonly enableRowActivation = input(false, { transform: booleanAttribute });
   /**
@@ -114,6 +128,20 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
    * same bound config drives another renderer that should keep its groups.
    */
   public readonly enableSubHeaders = input(true, { transform: booleanAttribute });
+  /**
+   * Enables composite item navigation (the APG layout-grid pattern, shared
+   * with `NatTable`): the list becomes one tab stop, Up/Down arrows move a
+   * roving focus between items, Enter steps into an item's controls, Tab
+   * cycles through them, and Escape returns to the item. Items render as
+   * `role="row"`/`role="gridcell"` instead of plain list items, items emit
+   * `rowActivate` on click and on the `rowActivate` shortcut, and native
+   * controls inside fields are managed into the roving tab order.
+   *
+   * Opt-in: the default plain list keeps browse-mode-friendly `role="list"`
+   * semantics, which suit short lists; composite navigation suits long lists
+   * where one tab stop per item would make keyboard traversal expensive.
+   */
+  public readonly enableItemNavigation = input(false, { transform: booleanAttribute });
 
   // ─── Outputs ───
 
@@ -165,6 +193,8 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   protected readonly resolvedErrorState = this.state.resolvedErrorState;
   protected readonly listSummaryId = this.state.tableSummaryId;
   protected readonly tableDescriptionId = this.state.tableDescriptionId;
+  protected readonly tableKeyboardInstructionsId = this.state.tableKeyboardInstructionsId;
+  protected readonly resolvedListKeyboardInstructions = this.state.resolvedListKeyboardInstructions;
   protected readonly listAriaLabel = this.state.tableAriaLabel;
 
   /**
@@ -244,6 +274,12 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
       ids.push(this.tableDescriptionId());
     }
 
+    // Keyboard instructions only exist in composite mode — a plain list has
+    // no grid keyboard model to describe.
+    if (this.enableItemNavigation() && this.resolvedListKeyboardInstructions().trim()) {
+      ids.push(this.tableKeyboardInstructionsId());
+    }
+
     return ids.length ? ids.join(' ') : null;
   });
 
@@ -266,10 +302,17 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
    *
    * Exposed as `data-selected` rather than `aria-selected`: `aria-selected` is
    * invalid on `role="listitem"`, and the selection control inside the item
-   * (a real checkbox) already conveys state to assistive technology.
+   * (a real checkbox) already conveys state to assistive technology. In
+   * composite mode the item row additionally carries `aria-selected` (valid on
+   * `role="row"`) via `rowAriaSelected`, mirroring the table.
    */
   protected rowSelectedAttribute(row: Row<TData>): string | null {
     return this.enableRowSelection() ? String(row.getIsSelected()) : null;
+  }
+
+  /** `aria-selected` for a composite-mode item row, mirroring `NatTable`. */
+  protected rowAriaSelected(row: Row<TData>): boolean | null {
+    return this.enableRowSelection() ? row.getIsSelected() : null;
   }
 
   /** Leaf header contexts by column id, for rendering non-string header defs as field labels. */
@@ -284,15 +327,22 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   // ─── Constructor ───
 
   public constructor() {
+    // Prepares native controls inside `[natTableCell]` gridcells (roving
+    // `tabindex="-1"` + managed-widget marker). Inert in plain list mode:
+    // only the composite branch renders `[natTableCell]` elements, so the
+    // manager finds no owned cells until item navigation is enabled.
+    inject(NatTableCellControlManager).startCellControlPreparation();
+
     this.natTableService.setController(this);
 
     // ── Accessibility copy ──
     // The shared a11y effects self-register in the service constructor; the
-    // list only selects its announcement copy (items/fields, not rows/columns)
-    // and skips `registerGridEffects` — column-resize announcements, the
-    // `aria-multiselectable` writer, and resize/reorder keybinding validation
-    // target a rendered `<table>`, which a list renderer has none of.
+    // list selects its announcement copy (items/fields, not rows/columns) and
+    // registers the list-renderer set — the `aria-multiselectable` writer
+    // (self-gating on a rendered `[role="grid"]`) and keybinding validation.
+    // Column-resize announcements stay `registerGridEffects`-only.
     this.a11yService.setRenderer('list');
+    this.a11yService.registerListEffects();
 
     // ── Signal-based input bridging (same pattern as NatTable) ──
     effect(() => this.state.data.set(this.data()));
@@ -352,6 +402,45 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     // Enter/Space would synthesize a click and emit twice, and Space would
     // scroll the page.
     event.preventDefault();
+    this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
+  }
+
+  // ─── Composite-mode item activation (mirrors NatTable's row handlers) ───
+
+  // Bound on the item row (not the gridcell) so the cell-interaction model on
+  // the cell handles Enter/Tab/Escape first and stops propagation when it
+  // does; only unhandled events bubble here. Emits unconditionally like table
+  // rows — the focusable gridcell is the activation affordance, so
+  // `enableRowActivation` (a plain-mode tab-stop trade-off) does not gate it.
+  protected onItemClick(event: MouseEvent, row: Row<TData>): void {
+    if (event.button !== 0 || event.defaultPrevented) {
+      return;
+    }
+
+    if (originatesFromInteractiveDescendant(event)) {
+      return;
+    }
+
+    this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
+  }
+
+  protected onItemKeydown(event: KeyboardEvent, row: Row<TData>): void {
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    if (!this.natTableService.keyboard().rowActivate(event)) {
+      return;
+    }
+
+    if (originatesFromInteractiveDescendant(event)) {
+      return;
+    }
+
+    if (isSpaceShortcutKey(event.key)) {
+      event.preventDefault();
+    }
+
     this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
   }
 

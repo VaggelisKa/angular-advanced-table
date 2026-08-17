@@ -1268,6 +1268,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Shared state and companion controls', path: '#shared-state-and-companion-controls' },
       { label: 'Sub-header rows', path: '#sub-header-rows' },
       { label: 'Selection and activation', path: '#selection-and-activation' },
+      { label: 'Item navigation', path: '#item-navigation' },
       { label: 'Data lifecycle', path: '#data-lifecycle' },
       { label: 'Item layout and theming', path: '#item-layout-and-theming' },
       { label: 'Accessibility', path: '#accessibility' },
