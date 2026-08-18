@@ -52,6 +52,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          # Pin the commit this run reasons about. This is already the default
+          # (checkout falls back to `github.sha`), but both jobs state it so the
+          # preflight verdict and the released tree provably refer to one sha.
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Count pending version plans
@@ -127,6 +131,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          # The exact commit preflight validated — see the preflight checkout.
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -150,6 +156,23 @@ jobs:
 
       - name: Validate release preview
         run: pnpm exec nx release --dry-run
+
+      # npm publishes are permanent and the release commit still has to fast-
+      # forward `main`. If `main` moved after this run started, the push at the
+      # end would be rejected and the version would already be on the registry
+      # with no commit, tag, or changelog behind it. Check as late as possible,
+      # and fail before publishing rather than after.
+      - name: Require main to still be at the validated commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          head="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq '.sha')"
+          if [ "$head" != "$GITHUB_SHA" ]; then
+            echo "main moved to ${head} since this run started (validated ${GITHUB_SHA})." >&2
+            echo "Refusing to publish a release that could not be pushed. Re-run once main is settled." >&2
+            exit 1
+          fi
+          echo "main is still at ${GITHUB_SHA}."
 
       - name: Release packages
         run: pnpm exec nx release --yes
