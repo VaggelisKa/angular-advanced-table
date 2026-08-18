@@ -5,8 +5,8 @@ name: Nightly
 #
 # This is a publish, NOT a release. It never runs `nx release`, so it never
 # consumes the pending `.nx/version-plans/` files, writes a release commit, or
-# moves a tag — the deliberate stable release (release.yml, workflow_dispatch)
-# stays the only thing that does. It also never touches the `latest` dist-tag,
+# moves a tag — the stable release (release.yml, weekly on Friday or by
+# workflow_dispatch) stays the only thing that does. It also never touches the `latest` dist-tag,
 # and its version is a semver prerelease, so `^`/`~` ranges skip it by default.
 #
 # Trigger is CI completion rather than `push`, so a red main never ships.

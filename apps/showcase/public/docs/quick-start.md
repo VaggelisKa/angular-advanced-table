@@ -197,10 +197,10 @@ Start with these defaults unless the feature needs something else:
 
 The package publishes on two npm dist-tags.
 
-| Tag      | Install                        | What it is                                                                               |
-| -------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
-| `latest` | `npm i ng-advanced-table`      | Stable releases, cut deliberately. The default — you get this unless you ask for `next`. |
-| `next`   | `npm i ng-advanced-table@next` | A snapshot of `main`, published on every green commit.                                   |
+| Tag      | Install                        | What it is                                                                                   |
+| -------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `latest` | `npm i ng-advanced-table`      | Stable releases, cut weekly on Friday. The default — you get this unless you ask for `next`. |
+| `next`   | `npm i ng-advanced-table@next` | A snapshot of `main`, published on every green commit.                                       |
 
 Nightly versions look like `2.13.0-next.7`, where the base is the version the next stable release is currently headed for — it reflects the largest pending change, so a nightly carrying a new feature reads as `2.13.0-next.…` and one carrying only fixes as `2.12.2-next.…` — and the counter is the number of commits since the last stable release. They are semver prereleases, so a range such as `^2.12.0` never resolves to one — opting in is always explicit. Each nightly carries an npm provenance attestation, so you can trace a published version back to the exact commit and CI run it was built from.
 
