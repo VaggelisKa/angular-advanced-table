@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+
+.sub-header-demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-2);
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--sc-space-4);
+}
+
+.sub-header-demo-state-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-sm);
+}
+
+.sub-header-demo-sort-arrow {
+  display: inline-block;
+  min-width: 1em;
+  margin-inline-start: var(--sc-space-sm);
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.sub-header-demo-label {
+  font-weight: var(--sc-weight-semibold);
+}
+
+.sub-header-demo-count {
+  margin-inline-start: var(--sc-space-1);
+  font-size: 0.85em;
+  color: var(--sc-text-soft);
+}

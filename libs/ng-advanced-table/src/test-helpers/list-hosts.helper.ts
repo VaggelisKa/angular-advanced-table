@@ -19,6 +19,7 @@ import { NatList } from '../list/list';
         [columns]="columns"
         [data]="rows()"
         [dataStatus]="dataStatus()"
+        [enableItemNavigation]="enableItemNavigation()"
         [enableRowActivation]="enableRowActivation()"
         [enableRowSelection]="enableRowSelection()"
         [getRowId]="getRowId()"
@@ -36,6 +37,7 @@ export class ListHost {
   public readonly enableRowSelection = signal(false);
   public readonly selectionMode = signal<'single' | 'multiple'>('multiple');
   public readonly enableRowActivation = signal(false);
+  public readonly enableItemNavigation = signal(false);
   public readonly getRowId = signal<NatTableRowIdGetter<Row> | undefined>(undefined);
   public readonly activated = signal<NatTableRowActivateEvent<Row>[]>([]);
 }

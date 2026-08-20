@@ -1,0 +1,7 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+/* .toggle-control, .toggle-checkbox, .slider and .toggle-label are showcase
+   stylesheet primitives; nothing is restyled here on purpose. */

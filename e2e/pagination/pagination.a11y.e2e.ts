@@ -57,7 +57,7 @@ test.describe('FEATURE: Pagination accessibility', () => {
 
     test.describe('WHEN: keyboard activates page-size select and navigation buttons', () => {
       test('THEN: it navigates client-side pagination using keyboard only', async ({ page }) => {
-        const clientCard = page.locator('.card', { hasText: 'Paginated Grid (Client-Side)' });
+        const clientCard = page.getByTestId('pagination-client');
         const clientTable = clientCard.locator('table');
         const rowsPerPageSelect = clientCard.getByRole('combobox');
         const nextBtn = clientCard.getByRole('button', { name: 'Next page' });

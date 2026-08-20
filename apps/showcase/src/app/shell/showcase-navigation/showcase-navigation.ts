@@ -45,10 +45,12 @@ const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
     ariaLabel: 'Table capability documentation',
     items: [
       getShowcaseDoc('sorting'),
+      getShowcaseDoc('sub-header-rows'),
       getShowcaseDoc('filtering-search'),
       getShowcaseDoc('pagination'),
       getShowcaseDoc('column-layout'),
       getShowcaseDoc('responsive-capabilities'),
+      getShowcaseDoc('list-renderer'),
       getShowcaseDoc('row-selection'),
       getShowcaseDoc('toolbar-actions')
     ]
@@ -68,7 +70,7 @@ const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
     id: 'docs-advanced',
     label: 'Advanced',
     ariaLabel: 'Advanced table documentation',
-    items: [getShowcaseDoc('export'), getShowcaseDoc('render-metrics')]
+    items: [getShowcaseDoc('virtualization'), getShowcaseDoc('export'), getShowcaseDoc('render-metrics')]
   }
 ];
 

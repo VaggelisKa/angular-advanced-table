@@ -45,7 +45,6 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       'On a resizable column header, press Alt with Left or Right Arrow to resize the column, ' +
       'and Alt with Home or End to jump to its minimum or maximum width.',
     tableSummary: ({
-      filterState,
       pageCountText,
       pageText,
       paginationState,
@@ -58,9 +57,12 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
     }) => {
       let summary: string;
 
+      // The subset phrasing fires whenever the shown rows are fewer than the
+      // represented total — filtered views, paginated pages, and remote
+      // windows alike — so the summary can never contradict aria-rowcount.
       if (visibleRowsValue === 0) {
         summary = `No rows are currently shown. ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
-      } else if (filterState === 'filtered' && totalRowsValue !== visibleRowsValue) {
+      } else if (totalRowsValue !== visibleRowsValue) {
         summary = `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
           'row',
           totalRowsValue
@@ -133,7 +135,18 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       }
 
       return `${selectedCountText} ${pluralize('row', selectedCountValue)} selected.`;
-    }
+    },
+    subHeaderRow: ({ valueText, rowCountValue, rowCountText }) => {
+      const groupLabel = valueText.trim() ? `${valueText} group` : 'Group';
+
+      return `${groupLabel}, ${rowCountText} ${pluralize('row', rowCountValue)}.`;
+    },
+    // Deliberately position-free: the grid already announces the row's
+    // position through aria-rowindex/aria-rowcount, and those are counted in
+    // grid coordinates (header row included) — restating the position here
+    // would read out a second, off-by-one number for the same row. The context
+    // still carries position and total for consumers who override this.
+    placeholderRow: () => 'Loading.'
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };

@@ -1,3 +1,144 @@
+## 2.12.1 (2026-08-10)
+
+### 🩹 Fixes
+
+- Fix sub-header grouping for columns that use deep accessor keys such as `account.status`. ([#324](https://github.com/VaggelisKa/angular-advanced-table/pull/324))
+
+  TanStack normalizes dots in an `accessorKey` to underscores when it creates the runtime column id. The library's column-definition helper kept the unnormalized accessor key, so `subHeaderColumn="account_status"` was rejected as unknown and a configured sub-header order could not patch the column's sorting function.
+
+  Column-definition ids now follow TanStack's normalization, keeping sub-header validation and custom group ordering aligned with the actual table column ids.
+
+- Restore a visible focus indicator in forced-colors (Windows High Contrast) mode. ([#321](https://github.com/VaggelisKa/angular-advanced-table/pull/321))
+
+  `[ngGridCell]:focus-visible` paints its focus ring with an inset `box-shadow` and explicitly sets `outline: none`. Forced-colors mode forces `box-shadow` to `none`, so a focused grid cell had **no visible focus indicator at all** in that mode — a WCAG 2.4.7 (Focus Visible) failure affecting every keyboard user of the table on Windows High Contrast.
+
+  `.column-menu-item:focus-visible` in `ng-advanced-table/components` had the same defect: its two affordances are a `box-shadow` and a `color-mix` background, and forced colors removes the first and force-adjusts the second, leaving the focused item indistinguishable from its siblings.
+
+  Both now add an `outline` under `@media (forced-colors: active)`. `outline` survives forced colors, and the system colour keyword `Highlight` is used deliberately rather than the `--nat-table-focus-ring-color` token: custom properties are not force-adjusted, so a themed ring can resolve to a colour that is invisible against the forced background. A negative `outline-offset` keeps the ring inset, matching the box-shadow it stands in for, so it does not overlap neighbouring cells.
+
+  Safari does not implement `forced-colors` and ignores these blocks, leaving the existing box-shadow ring in place there.
+
+  Covered by a new e2e assertion that reads the computed outline of a focused header under real forced-colors emulation; it fails against the previous CSS.
+
+- Fix Nx cache inputs so root and library-level TypeScript configuration changes invalidate cached `test` results. ([#317](https://github.com/VaggelisKa/angular-advanced-table/pull/317))
+
+  `sharedGlobals` was empty, so a content change to `tsconfig.base.json` or `tsconfig.paths.json` left `nx affected -t test` replaying cached results. Because `tsconfig.paths.json` is what resolves every `ng-advanced-table/*` specifier in specs, a broken path mapping could pass CI on a stale cache. `sharedGlobals` now carries `.browserslistrc`, `tsconfig.base.json`, and `tsconfig.paths.json`.
+
+  The library `tsconfig.json` and `tsconfig.spec.json` live at `libs/ng-advanced-table/`, which is outside every entry-point `projectRoot` (`src`, `components`, `locale`, `render-metrics`), so editing them also invalidated nothing. A new `libEntryPointTsConfigs` named input is now listed in each entry point's `test` inputs.
+
+  Entry-point cache isolation is unchanged: a `components` edit still does not invalidate the `locale` test cache. `pnpm-lock.yaml` is deliberately excluded — Nx already hashes resolved external dependencies through the project graph, and adding the lockfile would blanket-invalidate every task on unrelated dependency churn.
+
+- Add a published-package size budget and an artifact-level entry-point layering check. ([#319](https://github.com/VaggelisKa/angular-advanced-table/pull/319))
+
+  The showcase carried build budgets but the published package carried none, so nothing automatically checked that the four entry points stay separately tree-shakeable. That invariant was enforced only by lint on source and by review.
+
+  `tools/check-package-size.mjs` (`pnpm run size:check`, wired into the CI release gate after the package build and into `pnpm run verify`) measures each entry point's FESM bundle and fails on either a gzipped size ceiling breach or a forbidden cross-entry import in the shipped bundle. The forbidden-import graph mirrors the AGENTS.md layering rules: core must not reach `components` or `render-metrics`, and `locale` must stay the leaf.
+
+  The layering half matters because a deep relative import across an entry-point boundary inlines code rather than referencing it. Lint catches that in source; this catches it in the artifact that actually ships, where the symptom is a companion bundle that suddenly grows by the size of core.
+
+  Ceilings are set roughly 10% above the current gzipped sizes (core 62.1 kB, components 31.6 kB, locale 7.3 kB, render-metrics 5.9 kB), so ordinary feature work passes while an inlining regression fails immediately.
+
+- Refresh project-specific agent guidance after the merged NatList, sub-header row, shared demo UI, and forced-colors accessibility test work. ([#323](https://github.com/VaggelisKa/angular-advanced-table/pull/323))
+
+  The guidance now names the new `src/list/` core renderer folder and `NatList` public export, records the list renderer's shared-state but renderer-specific accessibility constraints, captures the cross-file sub-header maintenance contract, points showcase demos at the shared demo primitives, and tells future e2e work to use the repository's verified media/transition helpers.
+
+- Cover the core entry point's four weakest files and ratchet its coverage thresholds up. ([#320](https://github.com/VaggelisKa/angular-advanced-table/pull/320))
+
+  Test-only change; no library behavior is modified.
+
+  `NatTableHeaderMeasurementService` was the least-covered file in the library at 38.8% statements / 36% branches. The cause was environmental rather than neglect: jsdom ships no `ResizeObserver`, so the service's own `typeof ResizeObserver === 'undefined'` guard short-circuited every measurement path before it could run. The new spec installs a controllable fake observer, so header-width measurement, region viewport measurement, the unchanged-widths identity short-circuit, the zero-width guard, observer attachment, and teardown-on-destroy are now exercised — including the no-`ResizeObserver` path itself.
+
+  `NatTableService` gains coverage for `patchState` (both the pass-through options that treat `undefined` as a real value and the defined-only scalars that do not), the structural-equality short-circuits for accessibility text and keybindings, the three manual-mode computeds under both string and per-concern configuration, companion registration counting including the floor at zero, and surface/global keybinding merging.
+
+  `NatTableRowRenderEmitter` gains coverage for the per-token dedupe, the disabled and unstamped-cycle early exits, the 0.1 ms duration floor, and single-decimal rounding.
+
+  `hasNatTableStateValueChanged` was at 68.5% branch coverage despite being the helper responsible for comparing non-JSON-safe consumer filter values. It now covers Date, RegExp, and Map values, Set matching that only succeeds under backtracking, cyclic references in both the equal and unequal case, null-prototype objects, enumerable symbol keys, and primitive/object mismatches. Two behaviors are now locked down by test rather than left implicit: Map comparison is order-sensitive, and Set comparison backtracks rather than matching greedily.
+
+  Resulting core coverage, with thresholds ratcheted to match:
+
+  | Metric     | Before | After | Threshold |
+  | ---------- | ------ | ----- | --------- |
+  | statements | 91.5%  | 94.8% | 94        |
+  | branches   | 85.9%  | 89.9% | 89        |
+  | functions  | 92.6%  | 94.7% | 94        |
+  | lines      | 91.9%  | 95.6% | 95        |
+
+  The existing `table.service` and `table-state-value-equality` specs are restructured into the Gherkin shape required by AGENTS.md; each pre-existing test stays a single test rather than being split to fit the shape.
+
+- Add code coverage instrumentation and enforced thresholds to every `test` target. ([#318](https://github.com/VaggelisKa/angular-advanced-table/pull/318))
+
+  The workspace had no coverage provider installed at all, so `--coverage` hard-failed and coverage could regress silently. `@vitest/coverage-v8` now sits in the `shared-dev` catalog, version-aligned with `vitest`.
+
+  Coverage is always on for `test` (no CLI flag, no CI workflow change) and thresholds fail the target when breached. Each entry point scopes `coverageInclude` to its own root, which matters because all four entry points share one `tsconfig.spec.json` and companion specs load core at runtime — unscoped, the `components` report was polluted by core files and understated itself by roughly 12 points (79.2% → 91.0% statements once scoped). `coverageExclude` drops specs, `test-helpers/`, type-only `*.type.ts`, and barrels.
+
+  Thresholds are set at the measured baseline, floored to whole numbers:
+
+  | Project        | statements | branches | functions | lines |
+  | -------------- | ---------- | -------- | --------- | ----- |
+  | core           | 91         | 85       | 92        | 91    |
+  | components     | 90         | 75       | 93        | 91    |
+  | locale         | 80         | 73       | 85        | 79    |
+  | render-metrics | 85         | 65       | 86        | 84    |
+  | showcase       | 68         | 66       | 65        | 68    |
+
+  Showcase thresholds carry extra slack because it is an unpublished demo app that gains example components continuously; the floor is there to catch real rot, not to gate each new demo.
+
+  The `test` target now declares `{workspaceRoot}/coverage/{projectName}` as an output so reports survive a cache hit.
+
+## 2.12.0 (2026-08-06)
+
+### 🚀 Features
+
+- Add sub-header (group) rows to `nat-table` and `nat-list`. ([#310](https://github.com/VaggelisKa/angular-advanced-table/pull/310))
+
+  New inputs on both renderers: `subHeaderColumn` (a leaf column id whose value groups rows under rendered sub-header rows), `subHeaderOrder` (an optional explicit group value order; unlisted values sort after listed ones in natural ascending order), and `enableSubHeaders` (default `true`; `false` ignores the sub-header config on that renderer only, with no forced sort, group rows, or dev warnings). The grouping engine lives in the shared `NatTableState`, so both renderers get identical behavior.
+
+  Sorting semantics:
+
+  - The renderer always sorts by the sub-header column first via a forced ascending entry that only exists in the state handed to TanStack. `sortingChange`, `[(state)]`, `aria-sort`, sort indicators, and multi-sort priority badges never contain it — user sorting stays the visible primary sort and applies within groups.
+  - `withNatTableHeaderActions(...)` derives sort state, priorities, and labels from the stripped user-visible sorting (`getVisibleSorting`/`getVisibleSortState`/`getVisibleSortPriority` in the components entry), and suppresses the sort button on the active sub-header column, whose toggles would be hidden no-ops. The new public `stripNatTableSubHeaderSorting` helper backs this.
+  - An unset or unknown `subHeaderColumn` disables the feature entirely (dev-mode warning); `subHeaderOrder` without `subHeaderColumn` is ignored with a warning.
+
+  Rendering:
+
+  - The table renders a full-width `<tr class="sub-header-row"><td colspan>` before each group's first row; the label content is sticky-left so it stays visible under horizontal scroll with pinned columns. The list renders a plain `<li class="list-sub-header">` with no horizontal padding by default, aligning with list items. A group split by pagination repeats its sub-header at the page start.
+  - Default content is the group value; `ng-template[natTableSubHeader]` (new `NatTableSubHeaderTemplate` directive) overrides it with a context of `value`/`$implicit`, `rowCountValue` (whole group across the filtered dataset, pre-pagination), the group's first `row`, and the `table`. New public types: `NatTableSubHeaderGroup`, `NatTableSubHeaderTemplateContext`.
+  - Sub-header rows carry no selection state, row-activation handlers, or render-metrics events.
+  - New public styling tokens: `--nat-table-sub-header-background`, `--nat-table-sub-header-color`, `--nat-table-space-sub-header`, `--nat-table-font-weight-sub-header`.
+
+  Accessibility:
+
+  - Each sub-header row renders a screen-reader announcement ("Active group, 3 rows."), backed by new locale keys `subHeaderRow` and `listSubHeaderRow` (list copy says items) with the usual grid-fallback merge behavior and a `NatTableAccessibilitySubHeaderContext` formatter context.
+
+- Collapse `nat-table-surface` card padding around a projected list renderer. ([#310](https://github.com/VaggelisKa/angular-advanced-table/pull/310))
+
+  A `<nat-list>` inside `<nat-table-surface>` draws its own item chrome, so the surface's card padding now collapses to `0` around it by default. The new public token `--nat-table-space-card-list` reopens it (it wins over the collapse at every viewport width, including the compact breakpoint).
+
+  The opt-in stock theme (`ng-advanced-table/components/theme.css`) also stops baking surface padding: `--nat-table-space-card` and `--nat-table-space-card-compact` now default to `0` (previously `18px 22px` / `14px 16px`). Consumers who want the old inset set the tokens themselves.
+
+- Add `NatList` (`nat-list`), a list renderer that shares the table engine. ([#307](https://github.com/VaggelisKa/angular-advanced-table/pull/307))
+
+  `NatList` is provided by the same `NatTableState` as `nat-table`, so sorting, filtering, column order, column visibility, pagination, row selection, and the data lifecycle drive both renderers from one surface. It implements `NatTableUiController`, so surface-bound companion controls (pagination, column visibility, export, consumer search) resolve it unchanged, and swapping renderers inside one `nat-table-surface` preserves state.
+
+  Rendering and styling:
+
+  - Every item is a CSS grid of named field areas (`grid-area: <column-id>`), themed through `--nat-table-list-gap` and `--nat-table-list-item-areas` / `-columns` / `-gap` / `-padding` / `-background` / `-background-selected` / `-border-width` / `-border-color` / `-radius`, plus `--nat-table-list-field-gap` / `-align` and `--nat-table-list-label-font-weight` — every visual opinion in the item shell is a token read with a neutral fallback, matching the table's headless contract.
+  - Fields render through the same `flexRender` pipeline as table cells (text, `flexRenderComponent`, `TemplateRef`). A column's `header` def renders as the field label when no static `meta.label` or string header exists, and a `meta.hiddenHeaderLabel` label renders screen-reader-only.
+  - Loading, empty, and error items share one base shape with per-state modifier classes, a `data-state` attribute, indicators, and `--nat-table-list-state-*` tokens. They also accept the table's `natTableLoading` / `natTableEmpty` / `natTableError` templates, which is what gives the `[error]` input its payload.
+
+  Interaction and accessibility:
+
+  - `enableRowSelection` and `selectionMode` bridge the shared selection state; selected items expose `data-selected` rather than `aria-selected`, which is invalid on `role="listitem"`.
+  - `enableRowActivation` (opt-in) plus a `rowActivate` output emit on click and Enter/Space. The affordance is a real per-item activator `<button>` stretched over the item (WCAG 4.1.2: a focusable `<li>` exposes no interactive role), named from the item's first visible field via an index-keyed `aria-labelledby` (row ids are consumer input and may contain characters invalid in an id list); every control in `ROW_ACTIVATE_INTERACTIVE_SELECTOR` stacks above it, so nested controls (e.g. a selection checkbox) stay operable without triggering activation. Trade-off: field text cannot be mouse-selected while activation is on. Opt-in because it adds a tab stop per item.
+  - New locale entries `listSummary`, `listColumnVisibilityChange`, `listPageSizeChange`, and `listPageChange` announce items and fields instead of rows and columns, each falling back to its grid counterpart when only that one is overridden.
+  - `NatTableA11yService` keeps registering the renderer-shared effects (state-change announcements, dev-mode accessible-name check) in its constructor, so a renderer that merely provides the service is never silently inert. The grid-only trio (column-resize announcements, the `aria-multiselectable` writer that queries a rendered `<table>`, resize/reorder keybinding validation) moves behind `registerGridEffects()`, and a non-grid renderer selects its announcement copy with `setRenderer('list')` — the dev-mode accessible-name warning then names the real element.
+  - The optional stock theme (`ng-advanced-table/components/theme.css`) now themes the list renderer too: item background/padding/gap, selected background, and the list body-state colors derive from the palette tokens.
+
+
+### 🩹 Fixes
+
+- Document current repository guidance for future coding agents after version-plan, detached cell-control, and pinned-edge styling review feedback. ([#306](https://github.com/VaggelisKa/angular-advanced-table/pull/306))
+
 ## 2.11.0 (2026-07-20)
 
 ### 🚀 Features

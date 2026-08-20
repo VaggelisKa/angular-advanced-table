@@ -2,7 +2,7 @@ import { Directive, input } from '@angular/core';
 
 /**
  * Assigns a list field to its named grid area (the column id), letting
- * consumers position fields via `--nat-table-list-item-areas`.
+ * consumers position fields via `--nat-list-item-areas`.
  */
 @Directive({
   selector: '[natListFieldArea]',

@@ -23,8 +23,12 @@ import { FlexRender } from '@tanstack/angular-table';
 import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
 import { handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
+import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeholder.type';
+import type { NatTableRenderedBodyRow } from '../common/row-render-strategy.type';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
+import { NAT_TABLE_ROW_WINDOW_HOST } from '../common/row-window-host.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
+import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type {
@@ -36,16 +40,33 @@ import type {
 import type { NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableHeaderMeasurementService } from '../domain-logic/table-header-measurement.service';
+import { NatTableRowRenderStrategyRegistry } from '../domain-logic/table-row-render-strategy.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatTableReorderService } from '../reorder/table-reorder.service';
 import { NatTableResizeService } from '../resize/table-resize.service';
 import { NatTableRowRenderEmitter } from '../ui/row-render-emitter.directive';
-import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NatTableResizeGuide } from '../ui/table-layout.directive';
+import {
+  NatTableBodyCellLayout,
+  NatTableHeaderCellLayout,
+  NatTablePxHeight,
+  NatTablePxWidth,
+  NatTableResizeGuide
+} from '../ui/table-layout.directive';
+import { NatTableRowPlaceholderTemplate } from '../ui/table-row-placeholder-template.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
+import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
+
+/**
+ * Track expression for the body plan: loaded rows keep their stable TanStack
+ * row id, placeholder slots key on their logical index. The prefix keeps a
+ * placeholder key from colliding with a consumer row id.
+ */
+const trackNatTableBodyRow = <TData extends RowData>(renderedRow: NatTableRenderedBodyRow<TData>): string =>
+  renderedRow.kind === 'row' ? renderedRow.row.id : `nat-table-placeholder:${renderedRow.logicalIndex}`;
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
@@ -75,11 +96,14 @@ import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDes
     NatTableCell,
     NatTableHeaderCellLayout,
     NatTableBodyCellLayout,
+    NatTablePxHeight,
     NatTablePxWidth,
     NatTableResizeGuide
   ],
   providers: [
+    NatTableRowRenderStrategyRegistry,
     NatTableState,
+    { provide: NAT_TABLE_ROW_WINDOW_HOST, useExisting: NatTableState },
     NatTableA11yService,
     NatTableResizeService,
     NatTableReorderService,
@@ -114,6 +138,32 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   public readonly getRowId = input<NatTableRowIdGetter<TData>>();
   /** Emits one `rowRendered` event per body row per cycle. Off by default (adds an `afterRenderEffect` per row). */
   public readonly emitRowRenderEvents = input(false, { transform: booleanAttribute });
+  /**
+   * Leaf column id whose value groups rows under rendered sub-header rows.
+   * The table always sorts by this column first (hidden from sort UI and
+   * emitted state); user sorting applies within groups. Unset or unknown ids
+   * disable the feature.
+   */
+  public readonly subHeaderColumn = input<string | undefined>(undefined);
+  /**
+   * Optional explicit sub-header group order (e.g. `['active', 'archived']`).
+   * Unlisted values sort after listed ones in natural ascending order.
+   * Requires `subHeaderColumn`.
+   */
+  public readonly subHeaderOrder = input<readonly unknown[] | undefined>(undefined);
+  /**
+   * Renderer-level sub-header gate, on by default. Set to `false` to ignore
+   * `subHeaderColumn`/`subHeaderOrder` on this table only — useful when the
+   * same bound config drives another renderer that should keep its groups.
+   */
+  public readonly enableSubHeaders = input(true, { transform: booleanAttribute });
+
+  /**
+   * Layout mode for the sub-header row.
+   * - `'colspan'` (default): Renders a single cell spanning the entire row.
+   * - `'cells'`: Renders individual cells matching the column structure, preserving pinned column boundaries.
+   */
+  public readonly subHeaderLayout = input<'colspan' | 'cells'>('colspan');
 
   // ─── Outputs ───
 
@@ -147,6 +197,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected readonly headerGroups = this.state.headerGroups;
   protected readonly bodyRows = this.state.bodyRows;
+  protected readonly bodyRenderPlan = this.state.bodyRenderPlan;
+  protected readonly headerRowCount = this.state.headerRowCount;
+  protected readonly gridRowCount = this.state.gridRowCount;
   protected readonly visibleColumns = this.state.visibleColumns;
   protected readonly bodyState = this.state.bodyState;
   protected readonly resolvedDataStatus = this.state.resolvedDataStatus;
@@ -201,6 +254,8 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private readonly loadingTemplate = contentChild(NatTableLoadingTemplate);
   private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
   private readonly errorTemplate = contentChild(NatTableErrorTemplate);
+  private readonly subHeaderTemplate = contentChild(NatTableSubHeaderTemplate);
+  private readonly rowPlaceholderTemplate = contentChild(NatTableRowPlaceholderTemplate);
 
   protected readonly loadingTemplateRef = computed<TemplateRef<NatTableLoadingTemplateContext<TData>> | null>(() => {
     const templateRef = this.loadingTemplate()?.templateRef;
@@ -219,6 +274,45 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
     return templateRef ? (templateRef as TemplateRef<NatTableErrorTemplateContext<TData>>) : null;
   });
+
+  protected readonly subHeaderTemplateRef = computed<TemplateRef<NatTableSubHeaderTemplateContext<TData>> | null>(() => {
+    const templateRef = this.subHeaderTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatTableSubHeaderTemplateContext<TData>>) : null;
+  });
+
+  protected readonly rowPlaceholderTemplateRef = computed<TemplateRef<NatTableRowPlaceholderTemplateContext<TData>> | null>(() => {
+    const templateRef = this.rowPlaceholderTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatTableRowPlaceholderTemplateContext<TData>>) : null;
+  });
+
+  // ─── Sub-header groups (delegated to state) ───
+
+  protected readonly subHeaderGroups = this.state.subHeaderGroups;
+  protected readonly subHeaderRowOffsets = this.state.subHeaderRowOffsets;
+
+  protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
+    return this.state.getSubHeaderTemplateContext(group);
+  }
+
+  protected getSubHeaderAriaText(group: NatTableSubHeaderGroup<TData>): string {
+    return this.state.getSubHeaderAnnouncement(group, 'table');
+  }
+
+  protected getRowPlaceholderContext(
+    logicalIndex: number,
+    column: Column<TData, unknown>
+  ): NatTableRowPlaceholderTemplateContext<TData> {
+    return this.state.getRowPlaceholderTemplateContext(logicalIndex, column);
+  }
+
+  protected getRowPlaceholderAriaText(logicalIndex: number): string {
+    return this.state.getRowPlaceholderAnnouncement(logicalIndex);
+  }
+
+  /** Bound to the body plan `@for` track; see `trackNatTableBodyRow`. */
+  protected readonly bodyRowTrackId = trackNatTableBodyRow<TData>;
 
   protected readonly loadingTemplateContext = computed<NatTableLoadingTemplateContext<TData>>(() => ({
     ...this.state.getStateTemplateBaseContext(),
@@ -298,6 +392,9 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     effect(() => this.state.accessibleName.set(this.accessibleName()));
     effect(() => this.state.caption.set(this.caption()));
     effect(() => this.state.emitRowRenderEvents.set(this.emitRowRenderEvents()));
+    effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
+    effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
+    effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
 
     // ── Wire table region ref to state (read by all services) ──
     effect(() => this.state.tableRegionRef.set(this.tableRegionRef()));
@@ -305,6 +402,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     // ── Lifecycle effects (seed + render cycle delegated to state) ──
     this.state.registerSeedEffect();
     this.state.registerRenderCycleEffect();
+    this.state.registerSubHeaderValidationEffect();
 
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);

@@ -1,0 +1,25 @@
+<section data-testid="pagination-client">
+  <h3 class="demo-heading">Client-side pagination</h3>
+
+  <nat-table-surface [enablePinning]="true" [enableSorting]="true" [(state)]="tableState">
+    <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
+
+    <nat-table [columns]="columns" [data]="data" accessibleName="Pagination demo table" class="sc-demo-table" />
+  </nat-table-surface>
+</section>
+
+<section data-testid="pagination-manual">
+  <h3 class="demo-heading">Manual data handling (mixed mode)</h3>
+  <p class="demo-note pagination-note">Pagination is handled externally, while sorting remains automatic client-side.</p>
+
+  <nat-table-surface
+    [enablePinning]="true"
+    [enableSorting]="true"
+    [manualPageCount]="manualPageCount()"
+    [mode]="{ pagination: 'manual', sorting: 'auto' }"
+    [(state)]="manualTableState">
+    <nat-table-pagination [pageSizeOptions]="pageSizeOptions" />
+
+    <nat-table [columns]="columns" [data]="manualData()" accessibleName="Manual pagination demo table" class="sc-demo-table" />
+  </nat-table-surface>
+</section>

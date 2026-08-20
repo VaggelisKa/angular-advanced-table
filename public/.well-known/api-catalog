@@ -40,6 +40,10 @@
           "type": "text/html"
         },
         {
+          "href": "https://angular-advanced-table.vercel.app/docs/virtualization",
+          "type": "text/html"
+        },
+        {
           "href": "https://angular-advanced-table.vercel.app/docs/column-layout",
           "type": "text/html"
         },
@@ -49,6 +53,10 @@
         },
         {
           "href": "https://angular-advanced-table.vercel.app/docs/list-renderer",
+          "type": "text/html"
+        },
+        {
+          "href": "https://angular-advanced-table.vercel.app/docs/sub-header-rows",
           "type": "text/html"
         },
         {

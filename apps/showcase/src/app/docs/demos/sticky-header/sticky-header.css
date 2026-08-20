@@ -1,0 +1,7 @@
+:host {
+  display: block;
+}
+
+.sticky-demo-surface {
+  --nat-table-max-height: 400px;
+}

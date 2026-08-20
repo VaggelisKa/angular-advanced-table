@@ -53,17 +53,17 @@
   color-scheme: light;
 }
 
-/* The list renderer follows the same ledger palette; the --nat-table-list-*
+/* The list renderer follows the same ledger palette; the --nat-list-*
    tokens lay each item out as named field areas (area names are column ids). */
 .ledger-list-surface {
-  --nat-table-list-gap: 10px;
-  --nat-table-list-item-areas: 'id total' 'customer status';
-  --nat-table-list-item-columns: 1fr auto;
-  --nat-table-list-item-gap: 6px;
-  --nat-table-list-item-padding: 14px 16px;
-  --nat-table-list-item-background: #fbfcfb;
-  --nat-table-list-item-border-color: #cbd8d4;
-  --nat-table-list-item-radius: 6px;
+  --nat-list-gap: 10px;
+  --nat-list-item-areas: 'id total' 'customer status';
+  --nat-list-item-columns: 1fr auto;
+  --nat-list-item-gap: 6px;
+  --nat-list-item-padding: 14px 16px;
+  --nat-list-item-background: #fbfcfb;
+  --nat-list-item-border-color: #cbd8d4;
+  --nat-list-item-radius: 6px;
 
   margin-top: 16px;
 }
@@ -99,6 +99,48 @@
 }
 
 :host(.is-dark-theme) .ledger-list-surface {
-  --nat-table-list-item-background: #15211f;
-  --nat-table-list-item-border-color: #30413d;
+  --nat-list-item-background: #15211f;
+  --nat-list-item-border-color: #30413d;
+}
+
+/* Custom properties are not force-adjusted, so in forced-colors (Windows High
+   Contrast) mode this palette would keep its values while the browser forces
+   backgrounds to the system colours — the light header text would end up
+   near-white on white. Hand the colour tokens back to the system keywords so
+   the forced palette governs; the demo is about token plumbing, not the
+   specific colours. Consumers theming the table should do the same. */
+@media (forced-colors: active) {
+  .ledger-surface,
+  [data-theme='dark'] .ledger-surface {
+    --nat-table-color-text: CanvasText;
+    --nat-table-color-text-muted: CanvasText;
+    --nat-table-color-accent: LinkText;
+    --nat-table-color-success: CanvasText;
+    --nat-table-color-warning: CanvasText;
+    --nat-table-card-background: Canvas;
+    --nat-table-card-border-color: CanvasText;
+    --nat-table-card-shadow: none;
+    --nat-table-region-background: Canvas;
+    --nat-table-region-border-color: CanvasText;
+    --nat-table-header-background: Canvas;
+    --nat-table-header-color: CanvasText;
+    --nat-table-header-border-color: CanvasText;
+    --nat-table-row-background: Canvas;
+    --nat-table-row-background-hover: Canvas;
+    --nat-table-row-background-focus: Canvas;
+    --nat-table-cell-border-color: CanvasText;
+    --nat-table-cell-color-positive: CanvasText;
+    --nat-table-cell-color-warning: CanvasText;
+    --nat-table-cell-color-neutral: CanvasText;
+    --nat-table-focus-ring-color: Highlight;
+    --nat-table-sort-icon-color-active: CanvasText;
+    --nat-table-sort-icon-color-idle: CanvasText;
+    --nat-table-sort-icon-color-hover: CanvasText;
+    --nat-table-sort-button-color-sorted: CanvasText;
+  }
+
+  .ledger-list-surface {
+    --nat-list-item-background: Canvas;
+    --nat-list-item-border-color: CanvasText;
+  }
 }

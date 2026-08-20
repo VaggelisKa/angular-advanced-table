@@ -50,6 +50,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     path: '/docs/pagination'
   },
   {
+    id: 'virtualization',
+    label: 'Virtualization',
+    description: 'Large client-side row windows',
+    path: '/docs/virtualization'
+  },
+  {
     id: 'column-layout',
     label: 'Column layout',
     description: 'Pinning, resizing, order, visibility',
@@ -66,6 +72,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     label: 'List renderer',
     description: 'nat-list on the shared table engine',
     path: '/docs/list-renderer'
+  },
+  {
+    id: 'sub-header-rows',
+    label: 'Sub-header rows',
+    description: 'Group rows under a column-driven header',
+    path: '/docs/sub-header-rows'
   },
   {
     id: 'row-selection',

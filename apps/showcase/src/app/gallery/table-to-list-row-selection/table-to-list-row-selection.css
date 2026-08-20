@@ -20,17 +20,16 @@
   min-width: 0;
 }
 
-.demo-hint {
-  max-width: 70ch;
-  margin-block: 0 1rem;
-  color: var(--sc-text-soft);
-}
-
 .demo-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  padding: 14px 16px;
   margin-block-end: 0.75rem;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-md);
+  box-shadow: var(--sc-shadow-sm);
 }
 
 .control-group {
@@ -67,16 +66,17 @@
 }
 
 .selection-readout {
-  margin-block: 0 0.75rem;
+  align-self: center;
+  margin: 0;
   font-size: 0.875rem;
   color: var(--sc-text-soft);
 }
 
 .sc-demo-list {
-  --nat-table-list-item-background-selected: var(--sc-accent-soft);
-  --nat-table-list-item-columns: auto minmax(0, 1fr);
-  --nat-table-list-item-areas: 'select id' 'select customer' 'select owner' 'select channel' 'select region' 'select status'
-    'select items' 'select updatedAt' 'select total';
+  --nat-list-item-background-selected: var(--sc-accent-soft);
+  --nat-list-item-columns: auto minmax(0, 1fr);
+  --nat-list-item-areas: 'select id' 'select customer' 'select owner' 'select channel' 'select region' 'select status' 'select items'
+    'select updatedAt' 'select total';
 
   display: block;
 }

@@ -30,8 +30,10 @@ const channels: MockOrderRow['channel'][] = ['Online', 'Retail', 'Wholesale'];
 const regions = ['West', 'Midwest', 'Northeast', 'South'];
 const statuses: MockOrderRow['status'][] = ['Ready', 'Review', 'Queued'];
 
-export const generateMockOrderRows = (count: number): MockOrderRow[] => {
-  return Array.from({ length: count }, (_, i) => {
+/** One contiguous window of the deterministic mock dataset: rows for logical indexes `[offset, offset + count)`. */
+export const generateMockOrderRowWindow = (offset: number, count: number): MockOrderRow[] => {
+  return Array.from({ length: count }, (_, position) => {
+    const i = offset + position;
     const customerObj = customers[i % customers.length];
     const items = 5 + ((i * 7) % 45);
     const total = items * (300 + ((i * 150) % 1500));
@@ -50,3 +52,5 @@ export const generateMockOrderRows = (count: number): MockOrderRow[] => {
     };
   });
 };
+
+export const generateMockOrderRows = (count: number): MockOrderRow[] => generateMockOrderRowWindow(0, count);

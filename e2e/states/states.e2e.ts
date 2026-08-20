@@ -41,7 +41,7 @@ test.describe('FEATURE: Table states', () => {
 
     test.describe('WHEN: the state transition buttons are clicked', () => {
       test('THEN: it switches the preview grid between loading, empty, error, and rows states', async ({ page }) => {
-        const transitionCard = page.locator('.card', { hasText: 'Transition preview' });
+        const transitionCard = page.getByTestId('states-transition');
         const previewTable = transitionCard.getByRole('grid', { name: 'State transition preview table' });
 
         await test.step('THEN: preview starts in loading state', async () => {

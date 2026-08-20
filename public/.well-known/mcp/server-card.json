@@ -91,6 +91,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/virtualization",
+      "name": "docs-virtualization",
+      "title": "Virtualization | Angular Advanced Table Docs",
+      "description": "Large client-side row windows",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/column-layout",
       "name": "docs-column-layout",
       "title": "Column layout | Angular Advanced Table Docs",
@@ -109,6 +116,13 @@
       "name": "docs-list-renderer",
       "title": "List renderer | Angular Advanced Table Docs",
       "description": "nat-list on the shared table engine",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "https://angular-advanced-table.vercel.app/docs/sub-header-rows",
+      "name": "docs-sub-header-rows",
+      "title": "Sub-header rows | Angular Advanced Table Docs",
+      "description": "Group rows under a column-driven header",
       "mimeType": "text/markdown"
     },
     {

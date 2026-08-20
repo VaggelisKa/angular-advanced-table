@@ -11,7 +11,7 @@ test.describe('FEATURE: Pagination', () => {
   test.describe('GIVEN: the pagination example is loaded', () => {
     test.describe('WHEN: the page-size select and Next page are clicked (client-side)', () => {
       test('THEN: it supports client-side pagination and page size configuration', async ({ page }) => {
-        const clientCard = page.locator('.card', { hasText: 'Paginated Grid (Client-Side)' });
+        const clientCard = page.getByTestId('pagination-client');
         const clientTable = clientCard.locator('table');
         // Pagination is a plain control row, not a toolbar — its controls are ordinary tab stops.
         const pager = clientCard.getByRole('group', { name: 'Table pagination' });
@@ -55,7 +55,7 @@ test.describe('FEATURE: Pagination', () => {
 
     test.describe('WHEN: the Next page button is clicked (manual data handling)', () => {
       test('THEN: it supports manual pagination', async ({ page }) => {
-        const manualCard = page.locator('.card', { hasText: 'Manual Data Handling (Mixed Mode)' });
+        const manualCard = page.getByTestId('pagination-manual');
         const manualTable = manualCard.locator('table');
         const pager = manualCard.getByRole('group', { name: 'Table pagination' });
         const nextBtn = pager.getByRole('button', { name: 'Next page' });

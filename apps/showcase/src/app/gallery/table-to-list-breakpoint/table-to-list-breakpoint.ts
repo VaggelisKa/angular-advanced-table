@@ -36,15 +36,15 @@ protected readonly isTableViewport = toSignal(
 );`;
 const EXAMPLE_CSS = `/* Lay out the list items: each field is a grid area named by its column id. */
 nat-list {
-  --nat-table-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  --nat-table-list-item-areas: 'id id status' 'customer owner total';
+  --nat-list-item-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  --nat-list-item-areas: 'id id status' 'customer owner total';
 }`;
 
 /**
  * SPIKE demo: breakpoint-driven renderer swap. The consumer owns the viewport
  * condition (CDK `BreakpointObserver`) and swaps `nat-table` for `nat-list`
  * inside one `nat-table-surface`, so sorting and column state survive the
- * swap. The list items are laid out through the `--nat-table-list-item-*`
+ * swap. The list items are laid out through the `--nat-list-item-*`
  * grid tokens — each field is a named grid area (its column id).
  */
 @Component({

@@ -9,6 +9,7 @@ A monorepo containing `ng-advanced-table`, a signals-first, accessible data tabl
 - Core primitives (`NatTable`, `NatTableService`, state management, keyboard/a11y, resizing, reordering, etc.)
 - Composable companion UI via subpath imports (`ng-advanced-table/components`)
 - Optional render metrics, filtering, and synthetic columns (`ng-advanced-table/render-metrics`)
+- Opt-in fixed-height row virtualization for large datasets (`ng-advanced-table/virtualization`)
 - Full i18n and locale customization (`ng-advanced-table/locale`)
 
 Everything ships in **one package** using secondary entry points (same pattern as Angular CDK). The library emphasizes accessibility (WCAG AA + axe), theming via CSS custom properties, and clear ownership boundaries between the table and consuming applications.
@@ -30,6 +31,7 @@ See the package's own `libs/ng-advanced-table/README.md` for install and API det
 │       ├── src/              # Core: table component, state, services, utils, a11y, hotkeys
 │       ├── components/       # Composable UI (surface, toolbar, pagination, selection, etc.)
 │       ├── render-metrics/   # Metrics store + filter/panel components
+│       ├── virtualization/   # Custom fixed-height row virtualization for NatTable
 │       ├── locale/           # Locale data + provide*Locales() helpers
 │       └── testing/          # Internal test-only type mirror (never published)
 ├── e2e/                      # Playwright end-to-end + keyboard/a11y specs

@@ -151,6 +151,30 @@ export type NatTableAccessibilityColumnResizeAnnouncementContext = {
   readonly atMaximum?: boolean;
 };
 
+/** Context passed to custom sub-header row announcement formatters. */
+export type NatTableAccessibilitySubHeaderContext = {
+  /** Raw sub-header group value. */
+  readonly value: unknown;
+  /** Human-readable text for `value` (empty for null/undefined). */
+  readonly valueText: string;
+  /** Rows in the group across the filtered dataset, ignoring pagination. */
+  readonly rowCountValue: number;
+  /** Provider-formatted text for `rowCountValue`. */
+  readonly rowCountText: string;
+};
+
+/** Context passed to custom placeholder-row text formatters (remote windowing). */
+export type NatTableAccessibilityRowPlaceholderContext = {
+  /** One-based absolute position of the placeholder row in the represented dataset. */
+  readonly positionValue: number;
+  /** Provider-formatted text for `positionValue`. */
+  readonly positionText: string;
+  /** Total logical rows the grid represents. */
+  readonly totalRowsValue: number;
+  /** Provider-formatted text for `totalRowsValue`. */
+  readonly totalRowsText: string;
+};
+
 /** Context passed to custom row-selection announcement formatters. */
 export type NatTableAccessibilitySelectionAnnouncementContext = {
   /** Number of currently selected rows. */
@@ -176,6 +200,13 @@ export type NatTableAccessibilityText = {
    * instructions.
    */
   readonly keyboardInstructions?: string;
+  /**
+   * Screen-reader instructions for list item navigation, announced when a
+   * list renders with composite item navigation enabled. Phrases the grid
+   * keyboard model as items rather than cells; falls back to
+   * `keyboardInstructions` when only that one is overridden.
+   */
+  readonly listKeyboardInstructions?: string;
   /**
    * Visible message rendered in the body when the current view contains no
    * rows. Falls back to the active locale default when omitted.
@@ -235,6 +266,18 @@ export type NatTableAccessibilityText = {
   readonly columnResize?: (context: NatTableAccessibilityColumnResizeAnnouncementContext) => string;
   /** Live announcement emitted when the row selection changes. */
   readonly selectionChange?: (context: NatTableAccessibilitySelectionAnnouncementContext) => string;
+  /** Screen-reader text rendered for a table sub-header group row. */
+  readonly subHeaderRow?: (context: NatTableAccessibilitySubHeaderContext) => string;
+  /**
+   * Screen-reader text rendered inside a placeholder row for a logical row the
+   * table has not loaded (remote windowing).
+   */
+  readonly placeholderRow?: (context: NatTableAccessibilityRowPlaceholderContext) => string;
+  /**
+   * Screen-reader text rendered for a list sub-header group item. Receives the
+   * same context as `subHeaderRow`; the default phrases it as items.
+   */
+  readonly listSubHeaderRow?: (context: NatTableAccessibilitySubHeaderContext) => string;
 };
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */

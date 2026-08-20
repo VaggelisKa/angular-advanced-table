@@ -5,7 +5,7 @@
 .nat-list {
   display: flex;
   flex-direction: column;
-  gap: var(--nat-table-list-gap, var(--sys-nat-table-list-gap, 0.5rem));
+  gap: var(--nat-list-gap, var(--sys-nat-table-list-gap, 0.5rem));
   padding: 0;
   margin: 0;
   list-style: none;
@@ -13,7 +13,22 @@
 
 /* Each item is a grid of named field areas (one area per visible column id;
    the stacked default comes from the inline --sys bridge). Consumers lay the
-   fields out freely via --nat-table-list-item-areas and -columns. */
+   fields out freely via --nat-list-item-areas and -columns. */
+.list-sub-header {
+  display: flex;
+  align-items: center;
+  font-weight: var(--nat-list-font-weight-sub-header, var(--sys-nat-table-font-weight-sub-header, 600));
+  color: var(--nat-list-sub-header-color, var(--sys-nat-table-sub-header-color, currentColor));
+  background: var(--nat-list-sub-header-background, var(--sys-nat-table-sub-header-background, transparent));
+  border: var(--nat-list-sub-header-border, var(--sys-nat-table-sub-header-border, none));
+  border-width: var(--nat-list-sub-header-border-width, var(--sys-nat-table-sub-header-border-width, 0));
+}
+
+.list-sub-header-content {
+  position: relative;
+  padding: var(--nat-list-space-sub-header, var(--sys-nat-table-space-sub-header, 8px 0));
+}
+
 .list-item {
   position: relative;
   display: grid;
@@ -21,17 +36,14 @@
   /* Explicit `none` terminal fallback: with no visible columns the --sys
      bridge is an empty string, and the invalid substitution would only
      incidentally resolve to `none`. */
-  grid-template-areas: var(--nat-table-list-item-areas, var(--sys-nat-table-list-item-areas, none));
-  grid-template-columns: var(--nat-table-list-item-columns, var(--sys-nat-table-list-item-columns, 1fr));
-  gap: var(--nat-table-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem));
-  padding: var(--nat-table-list-item-padding, var(--sys-nat-table-list-item-padding, 0.75rem 1rem));
-  background: var(--nat-table-list-item-background, var(--sys-nat-table-list-item-background, transparent));
-  border: var(--nat-table-list-item-border-width, var(--sys-nat-table-list-item-border-width, 1px)) solid
-    var(
-      --nat-table-list-item-border-color,
-      var(--sys-nat-table-list-item-border-color, color-mix(in srgb, currentcolor 15%, transparent))
-    );
-  border-radius: var(--nat-table-list-item-radius, var(--sys-nat-table-list-item-radius, 8px));
+  grid-template-areas: var(--nat-list-item-areas, var(--sys-nat-table-list-item-areas, none));
+  grid-template-columns: var(--nat-list-item-columns, var(--sys-nat-table-list-item-columns, 1fr));
+  gap: var(--nat-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem));
+  padding: var(--nat-list-item-padding, var(--sys-nat-table-list-item-padding, 0.75rem 1rem));
+  background: var(--nat-list-item-background, var(--sys-nat-table-list-item-background, transparent));
+  border: var(--nat-list-item-border-width, var(--sys-nat-table-list-item-border-width, 1px)) solid
+    var(--nat-list-item-border-color, var(--sys-nat-table-list-item-border-color, color-mix(in srgb, currentcolor 15%, transparent)));
+  border-radius: var(--nat-list-item-radius, var(--sys-nat-table-list-item-radius, 8px));
 }
 
 /* The activation affordance: a real button stretched over the whole item.
@@ -89,8 +101,19 @@
   z-index: 1;
 }
 
-.list-item[data-selected='true'] {
-  background: var(--nat-table-list-item-background-selected, var(--sys-nat-table-list-item-background-selected, transparent));
+/* Plain mode carries data-selected on the .list-item li; composite mode
+   carries it on the .list-row li wrapping the .list-item gridcell div. */
+.list-item[data-selected='true'],
+.list-row[data-selected='true'] > .list-item {
+  background: var(--nat-list-item-background-selected, var(--sys-nat-table-list-item-background-selected, transparent));
+}
+
+/* Composite item navigation: the roving-focus gridcells (the .list-item and
+   body-state divs) take the same inset focus ring as table cells. */
+[ngGridCell]:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 var(--nat-table-focus-ring-width, var(--sys-nat-table-focus-ring-width, 2px))
+    var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, Highlight));
 }
 
 /* min-width: 0 lets the field shrink inside its grid area, and wrapping keeps
@@ -98,8 +121,10 @@
    (which also makes contrast undeterminable for automated a11y checks). */
 .list-field {
   display: flex;
-  gap: var(--nat-table-list-field-gap, var(--sys-nat-table-list-field-gap, 0.5rem));
-  align-items: var(--nat-table-list-field-align, var(--sys-nat-table-list-field-align, baseline));
+  flex-direction: var(--nat-list-field-flex-direction, var(--sys-nat-table-list-field-flex-direction, row));
+  gap: var(--nat-list-field-gap, var(--sys-nat-table-list-field-gap, 0.5rem));
+  align-items: var(--nat-list-field-align, var(--sys-nat-table-list-field-align, baseline));
+  justify-content: var(--nat-list-field-justify, var(--sys-nat-table-list-field-justify, flex-start));
   min-width: 0;
 }
 
@@ -108,37 +133,52 @@
   overflow-wrap: anywhere;
 }
 
+/* When the label is screen-reader-only it collapses out of the flex flow, so
+   the value is the field's only visible child. Let it fill the field and
+   become a flex container that mirrors the field's own flex context, so a
+   consumer can `align-self` (or otherwise place) the projected content across
+   the full cell without having to restyle the field, label, or value box. */
+.list-field-value--fill {
+  display: flex;
+  flex: 1;
+  flex-direction: var(--nat-list-field-flex-direction, var(--sys-nat-table-list-field-flex-direction, row));
+  gap: var(--nat-list-field-gap, var(--sys-nat-table-list-field-gap, 0.5rem));
+  align-items: var(--nat-list-field-align, var(--sys-nat-table-list-field-align, baseline));
+  justify-content: var(--nat-list-field-justify, var(--sys-nat-table-list-field-justify, flex-start));
+  width: 100%;
+  height: 100%;
+}
+
 .list-field-label {
-  font-weight: var(--nat-table-list-label-font-weight, var(--sys-nat-table-list-label-font-weight, 600));
+  font-size: var(--nat-list-label-font-size, var(--sys-nat-table-list-label-font-size, 14px));
+  font-weight: var(--nat-list-label-font-weight, var(--sys-nat-table-list-label-font-weight, 400));
+  color: var(--nat-list-label-color, var(--sys-nat-table-list-label-color, currentColor));
 }
 
 /* ─── Body states ───
    Loading, empty, and error share this base shape and add one state modifier.
-   Shared look comes from the --nat-table-list-state-* tokens; each state's
+   Shared look comes from the --nat-list-state-* tokens; each state's
    accent (indicator + emphasis) has its own token and falls back to the
    matching palette token so states follow a consumer theme with no extra
    configuration. */
 .list-state {
   display: flex;
-  gap: var(--nat-table-list-state-gap, var(--sys-nat-table-list-state-gap, 0.625rem));
+  gap: var(--nat-list-state-gap, var(--sys-nat-table-list-state-gap, 0.625rem));
   align-items: center;
-  justify-content: var(--nat-table-list-state-justify, var(--sys-nat-table-list-state-justify, flex-start));
-  min-height: var(--nat-table-list-state-min-height, var(--sys-nat-table-list-state-min-height, auto));
-  padding: var(--nat-table-list-state-padding, var(--sys-nat-table-list-state-padding, 1.25rem 1rem));
-  color: var(--nat-table-list-state-color, var(--sys-nat-table-list-state-color, inherit));
-  background: var(--nat-table-list-state-background, var(--sys-nat-table-list-state-background, transparent));
-  border: 1px var(--nat-table-list-state-border-style, var(--sys-nat-table-list-state-border-style, dashed))
-    var(
-      --nat-table-list-state-border-color,
-      var(--sys-nat-table-list-state-border-color, color-mix(in srgb, currentcolor 20%, transparent))
-    );
-  border-radius: var(--nat-table-list-state-radius, var(--sys-nat-table-list-state-radius, 8px));
+  justify-content: var(--nat-list-state-justify, var(--sys-nat-table-list-state-justify, flex-start));
+  min-height: var(--nat-list-state-min-height, var(--sys-nat-table-list-state-min-height, auto));
+  padding: var(--nat-list-state-padding, var(--sys-nat-table-list-state-padding, 1.25rem 1rem));
+  color: var(--nat-list-state-color, var(--sys-nat-table-list-state-color, inherit));
+  background: var(--nat-list-state-background, var(--sys-nat-table-list-state-background, transparent));
+  border: 1px var(--nat-list-state-border-style, var(--sys-nat-table-list-state-border-style, dashed))
+    var(--nat-list-state-border-color, var(--sys-nat-table-list-state-border-color, color-mix(in srgb, currentcolor 20%, transparent)));
+  border-radius: var(--nat-list-state-radius, var(--sys-nat-table-list-state-radius, 8px));
 }
 
 .list-state-indicator {
   flex: none;
-  width: var(--nat-table-list-state-indicator-size, var(--sys-nat-table-list-state-indicator-size, 0.5rem));
-  height: var(--nat-table-list-state-indicator-size, var(--sys-nat-table-list-state-indicator-size, 0.5rem));
+  width: var(--nat-list-state-indicator-size, var(--sys-nat-table-list-state-indicator-size, 0.5rem));
+  height: var(--nat-list-state-indicator-size, var(--sys-nat-table-list-state-indicator-size, 0.5rem));
   border-radius: 999px;
 }
 
@@ -148,25 +188,22 @@
 }
 
 .list-state-loading .list-state-indicator {
-  background: var(
-    --nat-table-list-loading-accent,
-    var(--sys-nat-table-list-loading-accent, var(--nat-table-color-accent, currentcolor))
-  );
+  background: var(--nat-list-loading-accent, var(--sys-nat-table-list-loading-accent, var(--nat-table-color-accent, currentcolor)));
   animation: nat-list-state-pulse 1.2s ease-in-out infinite;
 }
 
 /* Hollow indicator: an empty result reads as an outline rather than a signal. */
 .list-state-empty .list-state-indicator {
   border: 1px solid
-    var(--nat-table-list-empty-accent, var(--sys-nat-table-list-empty-accent, var(--nat-table-color-text-muted, currentcolor)));
+    var(--nat-list-empty-accent, var(--sys-nat-table-list-empty-accent, var(--nat-table-color-text-muted, currentcolor)));
 }
 
 .list-state-error {
-  color: var(--nat-table-list-error-accent, var(--sys-nat-table-list-error-accent, var(--nat-table-color-danger, inherit)));
+  color: var(--nat-list-error-accent, var(--sys-nat-table-list-error-accent, var(--nat-table-color-danger, inherit)));
 }
 
 .list-state-error .list-state-indicator {
-  background: var(--nat-table-list-error-accent, var(--sys-nat-table-list-error-accent, var(--nat-table-color-danger, currentcolor)));
+  background: var(--nat-list-error-accent, var(--sys-nat-table-list-error-accent, var(--nat-table-color-danger, currentcolor)));
 }
 
 @keyframes nat-list-state-pulse {

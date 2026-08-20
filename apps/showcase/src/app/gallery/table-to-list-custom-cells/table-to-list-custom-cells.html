@@ -1,23 +1,16 @@
 <main class="showcase-page sc-demo-page">
-  <p class="demo-hint">
-    List fields render through the same <code>*flexRender</code> pipeline as table cells: plain text, a component
-    (<code>flexRenderComponent</code>), or an <code>ng-template</code>. The last field also shows a component rendered as the
-    <em>field label</em> — the list falls back to the column's <code>header</code> def whenever there is no static
-    <code>meta.label</code>.
-  </p>
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs">
+    <ng-template #totalTemplate let-context>
+      <strong class="template-total" data-testid="template-cell">{{ context.getValue() }} USD</strong>
+    </ng-template>
 
-  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
-
-  <ng-template #totalTemplate let-context>
-    <strong class="template-total" data-testid="template-cell">{{ context.getValue() }} USD</strong>
-  </ng-template>
-
-  <nat-table-surface>
-    <nat-list
-      [columns]="columns()"
-      [data]="rows"
-      [getRowId]="getRowId"
-      accessibleName="Orders list with custom cell rendering"
-      class="sc-demo-list" />
-  </nat-table-surface>
+    <nat-table-surface>
+      <nat-list
+        [columns]="columns()"
+        [data]="rows"
+        [getRowId]="getRowId"
+        accessibleName="Orders list with custom cell rendering"
+        class="sc-demo-list" />
+    </nat-table-surface>
+  </app-demo-code>
 </main>

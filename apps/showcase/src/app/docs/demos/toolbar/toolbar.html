@@ -1,7 +1,7 @@
 <!-- Example 1: slots & roving focus -->
-<div class="grid-layout grid-layout-with-panel">
-  <div class="card">
-    <h2 class="card-title">Slots &amp; roving focus</h2>
+<app-demo-layout>
+  <div class="toolbar-example">
+    <h3 class="demo-heading">Slots &amp; roving focus</h3>
 
     <nat-table-surface
       [enablePinning]="true"
@@ -11,7 +11,7 @@
       (sortingChange)="onSortingChange($event)">
       <nat-table-toolbar accessibleName="Products toolbar">
         <button
-          class="toolbar-button"
+          class="btn btn-outline"
           data-testid="export-button"
           exportFileName="toolbar-demo"
           natTableExport
@@ -23,7 +23,7 @@
         </button>
 
         <button
-          class="toolbar-button"
+          class="btn btn-outline"
           data-testid="refresh-button"
           natToolbarItem
           natToolbarItemPosition="center"
@@ -32,9 +32,9 @@
           Refresh
         </button>
 
-        <div accessibleName="View density" natToolbarGroup="end">
+        <div accessibleName="View density" class="toolbar-group" natToolbarGroup="end">
           <button
-            class="toolbar-button"
+            class="btn btn-outline"
             data-testid="density-compact-button"
             natToolbarItem
             type="button"
@@ -42,7 +42,7 @@
             Compact
           </button>
           <button
-            class="toolbar-button"
+            class="btn btn-outline"
             data-testid="density-comfortable-button"
             natToolbarItem
             type="button"
@@ -53,7 +53,7 @@
 
         <button
           aria-label="Share"
-          class="toolbar-button toolbar-button--icon"
+          class="btn btn-outline toolbar-icon-button"
           data-testid="share-button"
           natToolbarItem
           natToolbarItemPosition="end"
@@ -68,32 +68,27 @@
         </button>
       </nat-table-toolbar>
 
-      <nat-table [columns]="columns" [data]="data" accessibleName="Toolbar demo table" />
+      <nat-table [columns]="columns" [data]="data" accessibleName="Toolbar demo table" class="sc-demo-table" />
     </nat-table-surface>
   </div>
 
-  <div class="card">
-    <h2 class="card-title">Item Activation</h2>
-    <div class="control-panel">
-      <dl class="demo-state">
-        <dt class="demo-state-term">Last action</dt>
-        <dd class="demo-state-value" data-testid="last-action">{{ lastAction() }}</dd>
-      </dl>
+  <app-demo-section demoAside heading="Item activation">
+    <app-demo-facts [facts]="activationFacts()" live />
 
-      <div class="tip">
-        Export sits in the start slot, Refresh is centered, the "View density" widget group and Share are at the end. Activate an item
-        to record the last action. Keyboard: Tab into the toolbar, Left/Right + Home/End move across all items, Up/Down cycle inside
-        the density group.
-      </div>
-    </div>
-  </div>
-</div>
+    <p class="demo-note">
+      Export sits in the start slot, Refresh is centered, the "View density" widget group and Share are at the end. Activate an item to
+      record the last action. Keyboard: Tab into the toolbar, Left/Right + Home/End move across all items, Up/Down cycle inside the
+      density group.
+    </p>
+  </app-demo-section>
+</app-demo-layout>
 
 <!-- Example 2: user-defined search + filter menu sharing one toolbar -->
-<div class="grid-layout grid-layout-with-panel">
-  <div class="card card--overflow-visible">
-    <h2 class="card-title">Search &amp; filter menu (user components)</h2>
-    <p class="description">
+<app-demo-layout>
+  <div class="toolbar-example toolbar-menu-host">
+    <h3 class="demo-heading">Search &amp; filter menu (user components)</h3>
+
+    <p class="demo-note toolbar-intro">
       Two consumer-built components share one toolbar — neither is shipped by the library. The
       <code>&lt;app-table-search toolbar&gt;</code> drives the real global filter; the <code>Actions</code> button is a hand-wired
       disclosure of preset filters (the ARIA menu directive can't share a <code>natToolbarItem</code>). Pick a preset to filter the
@@ -114,7 +109,7 @@
             [attr.aria-expanded]="menuOpen()"
             aria-controls="toolbar-overflow-menu"
             aria-haspopup="true"
-            class="toolbar-button toolbar-menu-trigger"
+            class="btn btn-outline toolbar-menu-trigger"
             data-testid="menu-trigger"
             natToolbarItem
             type="button"
@@ -138,28 +133,20 @@
         </div>
       </nat-table-toolbar>
 
-      <nat-table [columns]="columns" [data]="filteredData()" accessibleName="Search and filter table" />
+      <nat-table [columns]="columns" [data]="filteredData()" accessibleName="Search and filter table" class="sc-demo-table" />
     </nat-table-surface>
   </div>
 
-  <div class="card">
-    <h2 class="card-title">Active filter</h2>
-    <div class="control-panel">
-      <dl class="demo-state">
-        <dt class="demo-state-term">Preset</dt>
-        <dd class="demo-state-value" data-testid="active-filter">{{ activeFilterLabel() }}</dd>
-        <dt class="demo-state-term">Rows</dt>
-        <dd class="demo-state-value" data-testid="filter-row-count">{{ visibleCount() }} of {{ data.length }}</dd>
-      </dl>
+  <app-demo-section demoAside heading="Active filter">
+    <app-demo-facts [facts]="filterFacts()" live />
 
-      <div class="tip">
-        The trigger reflects open state with <code>aria-expanded</code>; the active preset is marked with <code>aria-current</code>.
-        Selecting a preset filters the table and closes the menu, returning focus to the trigger. The free-text search narrows whatever
-        the preset leaves.
-      </div>
-    </div>
-  </div>
-</div>
+    <p class="demo-note">
+      The trigger reflects open state with <code>aria-expanded</code>; the active preset is marked with <code>aria-current</code>.
+      Selecting a preset filters the table and closes the menu, returning focus to the trigger. The free-text search narrows whatever
+      the preset leaves.
+    </p>
+  </app-demo-section>
+</app-demo-layout>
 
 <!-- Example 3: wrapper components as toolbar items -->
 <app-wrapped-toolbar-example />

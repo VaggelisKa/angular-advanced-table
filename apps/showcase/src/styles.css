@@ -1,3 +1,5 @@
+@import '@angular/cdk/overlay-prebuilt.css';
+
 :root {
   /* Palette — light-dark(<light>, <dark>); resolved by color-scheme, which the
      theme toggle flips via :root[data-theme='dark'] below. One line per token. */
@@ -86,6 +88,20 @@
   --sc-width-content: min(1120px, 100%);
   --sc-width-wide: min(1180px, 100%);
   --sc-width-narrow: min(600px, 100%);
+
+  /* Page shell — every routed page shell (docs container, gallery demo page,
+     detailed-view page) frames its content with these, so they stay identical
+     at a given width. The compact values are set in the media query below. */
+  --sc-page-gutter: 20px 24px 48px;
+  --sc-page-gap: 16px;
+
+  /* Gutter for a pagination bar whose surface padding the showcase flattens. */
+  --sc-table-bar-gutter: 10px 20px;
+
+  /* Control minimums for narrow or coarse-pointer viewports. The table token
+     block's compact sizing is tuned for a mouse and is too small for a thumb. */
+  --sc-touch-target: 40px;
+  --sc-touch-target-sm: 36px;
   --sc-focus-ring-width: 3px;
   --sc-focus-ring-offset: 2px;
   --sc-mono-font: 'JetBrains Mono', 'SFMono-Regular', menlo, monaco, consolas, ui-monospace, monospace;
@@ -94,6 +110,15 @@
 
   color-scheme: light;
   background: var(--sc-document-bg);
+}
+
+/* One breakpoint for the whole page shell. Overriding the tokens here instead of
+   re-declaring padding per page keeps every shell in step automatically. */
+@media (width <= 640px) {
+  :root {
+    --sc-page-gutter: 14px;
+    --sc-table-bar-gutter: 10px 14px;
+  }
 }
 
 :root[data-theme='dark'] {
@@ -411,6 +436,69 @@ input {
     color: var(--sc-text-soft);
   }
 
+  /* ---------- Demo section primitives ----------
+     Used inside app-demo-section, which already owns the box padding, so these
+     carry no outer margin of their own (unlike .instructions / .tip, whose
+     margins are tuned for a bare .card). */
+  .demo-button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sc-space-1);
+    min-width: 0;
+  }
+
+  /* Companion control sitting next to a table or list but OUTSIDE the surface.
+     Controls inside a surface are spaced by the .docs-example rule below. */
+  .demo-controls {
+    display: block;
+    min-width: 0;
+    margin-bottom: var(--sc-space-4);
+  }
+
+  /* Label above a bare demo block. Deliberately not .card-title: that one is a
+     card *header* bar (48px, border-bottom) and reads as a divider when used
+     anywhere other than the top of a .card. */
+  .demo-heading {
+    margin: 0 0 var(--sc-space-3);
+    font-size: var(--sc-text-md);
+    font-weight: var(--sc-weight-semibold);
+    line-height: var(--sc-lh-snug);
+    color: var(--sc-text);
+  }
+
+  .demo-note {
+    margin: 0;
+    font-size: var(--sc-text-sm);
+    line-height: var(--sc-lh-normal);
+    color: var(--sc-text-soft);
+
+    p {
+      margin: 0 0 var(--sc-space-1);
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    ol,
+    ul {
+      display: grid;
+      gap: var(--sc-space-sm);
+      padding-inline-start: var(--sc-space-7);
+      margin: 0;
+    }
+
+    code {
+      font-family: var(--sc-mono-font);
+      font-size: 0.95em;
+      color: var(--sc-text);
+    }
+
+    strong {
+      color: var(--sc-text);
+    }
+  }
+
   .instructions {
     margin: 16px 20px 20px;
   }
@@ -458,10 +546,18 @@ input {
     cursor: pointer;
     user-select: none;
 
+    /* Transparent but full-size and above the .slider, so the whole row is the
+       checkbox's own hit target. A 1px input sitting under the slider is only
+       reachable through the wrapping label, which leaves the control with no
+       clickable surface of its own. */
     .toggle-checkbox {
       position: absolute;
-      width: 1px;
-      height: 1px;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
       opacity: 0;
     }
   }
@@ -595,21 +691,15 @@ input {
 
 .showcase-page.showcase-container {
   box-sizing: border-box;
-  gap: 16px;
+  gap: var(--sc-page-gap);
   align-content: start;
   width: min(1200px, 100%);
-  padding: 20px 24px 48px;
+  padding: var(--sc-page-gutter);
   margin: 0 auto;
 }
 
 .showcase-page.showcase-container.table-builder-page {
   width: min(1360px, 100%);
-}
-
-@media (width <= 640px) {
-  .showcase-page.showcase-container {
-    padding: 14px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -666,8 +756,8 @@ input {
     --nat-table-letter-spacing-pager: 0;
 
     /* Spacing */
-    --nat-table-space-card: 18px 22px;
-    --nat-table-space-card-compact: 14px 16px;
+    --nat-table-space-card: 0;
+    --nat-table-space-card-compact: 0;
     --nat-table-space-controls-gap: 16px;
     --nat-table-space-control-block-gap: 12px;
     --nat-table-space-toolbar-gap: 14px;
@@ -830,9 +920,21 @@ input {
       box-shadow var(--sc-transition-fast) ease;
   }
 
-  .btn[aria-disabled='true'] {
+  /* Native :disabled matters as much as the ARIA form: a plain `[disabled]`
+     button used to keep full-strength .btn colours and a pointer cursor, so it
+     read as clickable. */
+  .btn[aria-disabled='true'],
+  .btn:disabled,
+  .btn-sm:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+
+  /* Toggled state for a standalone .btn (segmented groups use .btn-sm.active). */
+  .btn.is-active {
+    color: var(--sc-accent-strong);
+    background: var(--sc-accent-soft);
+    border-color: color-mix(in srgb, var(--sc-accent) 45%, transparent);
   }
 
   .btn-primary {
@@ -896,14 +998,18 @@ input {
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .btn:hover,
+    .btn:hover:not(:disabled, [aria-disabled='true'], .is-active),
     .tab-btn:hover,
-    .btn-sm:hover {
+    .btn-sm:hover:not(:disabled, .active) {
       color: var(--sc-text);
       background: var(--sc-surface-hover);
       border-color: var(--sc-border-strong);
       box-shadow: none;
       transform: none;
+    }
+
+    .btn.is-active:hover {
+      background: color-mix(in srgb, var(--sc-accent) 18%, var(--sc-surface));
     }
 
     .btn-primary:hover {
@@ -922,6 +1028,23 @@ input {
       border-color: color-mix(in srgb, var(--sc-positive) 45%, transparent);
     }
   }
+}
+
+/* Docs demos: nat-table-surface lays its children out as a plain block with no
+   gap, so a projected pager, toolbar, search field or visibility chip row would
+   sit flush against the table/list region it belongs to. Spacing every adjacent
+   pair covers controls above and below the region alike. Scoped to
+   .docs-example so gallery routes keep their own bespoke spacing. */
+.docs-example nat-table-surface .surface > * + * {
+  margin-top: var(--sc-space-4);
+}
+
+/* The pager draws a bottom divider so it can sit flush against the grid. Once
+   it is spaced away from a region that has its own border and radius, that line
+   detaches and floats. --nat-table-color-border drives nothing else inside the
+   pager, so scoping it to transparent here removes the divider only. */
+.docs-example nat-table-surface nat-table-pagination {
+  --nat-table-color-border: transparent;
 }
 
 /* ---------- Shared demo table + page ---------- */
@@ -959,8 +1082,8 @@ input {
   width: 100%;
   min-width: 0;
 
-  --nat-table-list-item-background: var(--sc-surface);
-  --nat-table-list-state-background: var(--sc-surface);
+  --nat-list-item-background: var(--sc-surface);
+  --nat-list-state-background: var(--sc-surface);
   --nat-table-focus-ring-color: var(--sc-focus);
   --nat-table-focus-ring-width: 3px;
 }
@@ -970,6 +1093,40 @@ input {
   width: min(var(--sc-demo-width, 600px), 100%);
   min-width: 0;
   padding: 0;
+}
+
+/* On a routed gallery page .sc-demo-page IS the page, so it owns the gutter and
+   the separation between stacked surfaces — without them the tables run edge to
+   edge and a multi-surface demo reads as one continuous table. The embedded
+   variant (bare .sc-demo-page inside a docs topic card) keeps padding: 0,
+   because the card already supplies both. */
+.showcase-page.sc-demo-page {
+  gap: var(--sc-page-gap);
+  padding: var(--sc-page-gutter);
+}
+
+/* The showcase flattens surface padding to 0 so the table sits flush inside its
+   card. The pagination bar is the one strip that still needs its own gutter —
+   at 0 the page-size select and the next-page button sit hard against the edges
+   of whatever contains them.
+
+   Scoped to .showcase-page rather than the routed .sc-demo-page on purpose: docs
+   topic pages are .showcase-page too, and their embedded pagination demos have
+   the same flattened bar. The gutter is wanted in both places. Only the page
+   padding above is gallery-only, because a topic card already supplies it. */
+.showcase-page nat-table-pagination {
+  --nat-table-toolbar-padding: var(--sc-table-bar-gutter);
+}
+
+/* Give the pager and page-size control back a touch-sized target on narrow or
+   touch viewports. Deliberately every .showcase-page surface, docs demos
+   included — a thumb is a thumb. Its own condition, not the page-shell
+   breakpoint alone: a touch laptop is wide but still thumb-driven. */
+@media (width <= 640px), (pointer: coarse) {
+  .showcase-page nat-table-surface {
+    --nat-table-pager-min-height: var(--sc-touch-target);
+    --nat-table-chip-min-height-compact: var(--sc-touch-target-sm);
+  }
 }
 
 .docs-topic-body [id] {
@@ -1293,4 +1450,114 @@ input {
     color: var(--sc-text);
     background: var(--sc-surface-muted);
   }
+}
+
+/* ---------- CDK dialog shells (docs search + mobile nav drawer) ----------
+   Panel and backdrop geometry live on CDK-owned overlay elements, so these
+   rules are global; the dialog components style only their own content. */
+
+/* CDK's block scroll strategy pins <html>; body overflow additionally keeps
+   touch scrolls from chaining to the page behind an open modal. */
+.cdk-global-scrollblock body {
+  overflow: hidden;
+}
+
+/* Top-centered command-palette pane; the wrapper flexbox centers it
+   horizontally and `align-self` pins it to the top. */
+.docs-search-overlay-pane {
+  align-self: flex-start;
+  width: min(640px, calc(100vw - 32px));
+  margin-top: min(14vh, 120px);
+}
+
+.docs-search-overlay-backdrop {
+  background: rgb(15 20 25 / 42%);
+  transition: opacity 120ms ease-out;
+}
+
+:root[data-theme='dark'] .docs-search-overlay-backdrop {
+  background: rgb(0 0 0 / 58%);
+}
+
+@media (width <= 640px) {
+  /* Fullscreen mobile search has no backdrop to tap; the in-dialog close
+     button is the touch equivalent of Escape. */
+  .docs-search-overlay-backdrop {
+    display: none;
+  }
+
+  .docs-search-overlay-pane {
+    width: 100vw;
+    height: 100dvh;
+    margin-top: 0;
+  }
+}
+
+/* Left drawer pane: the auto right margin absorbs the wrapper's free space so
+   the pane sits flush left, and `align-self: stretch` gives it full height. */
+.showcase-nav-overlay-pane {
+  align-self: stretch;
+  width: min(86vw, 320px);
+  max-width: calc(100vw - 40px);
+  margin-right: auto;
+  background: var(--sc-surface);
+  border-right: 1px solid var(--sc-border);
+  box-shadow: 20px 0 50px rgb(15 20 25 / 20%);
+  animation: showcase-nav-slide-in 180ms ease;
+}
+
+:root[data-theme='dark'] .showcase-nav-overlay-pane {
+  box-shadow: 20px 0 50px rgb(0 0 0 / 46%);
+}
+
+@keyframes showcase-nav-slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+/* The hand-rolled drawer backdrop appeared instantly; keep that. */
+.showcase-nav-overlay-backdrop {
+  background: rgb(15 20 25 / 42%);
+  transition: none;
+}
+
+:root[data-theme='dark'] .showcase-nav-overlay-backdrop {
+  background: rgb(0 0 0 / 58%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-search-overlay-backdrop {
+    transition: none;
+  }
+
+  .showcase-nav-overlay-pane {
+    animation: none;
+  }
+}
+
+/* Full-screen CDK dialog shell for the gallery detailed-view example
+   (sticky-show-detailed-view). Global because the CDK overlay renders outside
+   the component; content styles stay in the component's own stylesheet. The
+   --sc-detail-* values mirror the component :host declarations — keep in sync. */
+.sc-detail-dialog-panel {
+  --sc-detail-header: 68px;
+  --sc-detail-radius: 8px;
+
+  width: 100vw;
+  width: 100dvw;
+  max-width: 100vw;
+  max-width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior-y: contain;
+  color: var(--sc-text);
+  background: var(--sc-surface);
+}
+
+.sc-detail-dialog-backdrop {
+  background: var(--sc-surface);
 }

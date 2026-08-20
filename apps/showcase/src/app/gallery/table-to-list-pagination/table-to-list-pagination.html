@@ -1,14 +1,9 @@
 <main class="showcase-page sc-demo-page">
-  <p class="demo-hint">
-    A paginated list: the library's pagination companion resolves the list as its controller, registers pagination on the shared
-    engine, and pages the rows — no list-specific wiring.
-  </p>
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs">
+    <nat-table-surface [(state)]="state">
+      <nat-list [columns]="columns" [data]="rows" [getRowId]="getRowId" accessibleName="Paginated orders list" class="sc-demo-list" />
 
-  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
-
-  <nat-table-surface [(state)]="state">
-    <nat-list [columns]="columns" [data]="rows" [getRowId]="getRowId" accessibleName="Paginated orders list" class="sc-demo-list" />
-
-    <nat-table-pagination [pageSizeOptions]="[5, 10, 20]" />
-  </nat-table-surface>
+      <nat-table-pagination [pageSizeOptions]="[5, 10, 20]" />
+    </nat-table-surface>
+  </app-demo-code>
 </main>

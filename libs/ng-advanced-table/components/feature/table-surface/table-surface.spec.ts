@@ -72,6 +72,21 @@ describe('FEATURE: NatTable UI', () => {
         expect(cssText).toMatch(/--sys-nat-table-color-text:\s*var\(\s*--nat-table-color-text/);
         expect(cssText).not.toMatch(/[{;]\s*--nat-table-[a-z-]+\s*:/);
       });
+
+      it('THEN: it collapses the card padding around a projected list behind the list padding token', () => {
+        fixture.detectChanges();
+
+        // Emulated encapsulation rewrites the selector with _ngcontent
+        // attributes, so match its parts instead of the authored string.
+        const listPaddingRule = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .map((rule) => rule.cssText)
+          .find((cssText) => cssText.includes('.surface') && cssText.includes(':has(') && cssText.includes('nat-list'));
+
+        expect(listPaddingRule).toMatch(
+          /padding:\s*var\(\s*--nat-table-space-card-list,\s*var\(\s*--sys-nat-table-space-card-list,\s*0/
+        );
+      });
     });
 
     describe('WHEN: the component initializes', () => {

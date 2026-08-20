@@ -11,10 +11,23 @@ import { pluralize } from './pluralize.const';
  */
 export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
   NatTableAccessibilityText,
-  'listSummary' | 'listColumnVisibilityChange' | 'listPageSizeChange' | 'listPageChange'
+  | 'listSummary'
+  | 'listColumnVisibilityChange'
+  | 'listPageSizeChange'
+  | 'listPageChange'
+  | 'listSubHeaderRow'
+  | 'listKeyboardInstructions'
 > = {
+  listSubHeaderRow: ({ valueText, rowCountValue, rowCountText }) => {
+    const groupLabel = valueText.trim() ? `${valueText} group` : 'Group';
+
+    return `${groupLabel}, ${rowCountText} ${pluralize('item', rowCountValue)}.`;
+  },
+  listKeyboardInstructions:
+    'Use the Up and Down arrow keys to move between items. Press Enter to interact with the controls ' +
+    'inside an item, Tab to move forward between them, Shift+Tab to move backward, and Escape to ' +
+    'return to the item.',
   listSummary: ({
-    filterState,
     pageCountText,
     pageText,
     paginationState,
@@ -27,9 +40,12 @@ export const NAT_EN_LIST_ACCESSIBILITY_TEXT: Pick<
   }) => {
     let summary: string;
 
+    // The subset phrasing fires whenever the shown items are fewer than the
+    // represented total — filtered views, paginated pages, and remote windows
+    // alike — so the summary can never contradict the grid's aria-rowcount.
     if (visibleRowsValue === 0) {
       summary = `No items are currently shown. ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
-    } else if (filterState === 'filtered' && totalRowsValue !== visibleRowsValue) {
+    } else if (totalRowsValue !== visibleRowsValue) {
       summary = `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
         'item',
         totalRowsValue

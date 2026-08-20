@@ -8,16 +8,69 @@
   margin-block: 0 1.5rem;
 }
 
-.demo-code {
+/* No frame around the example — just the tab controls above the panels. */
+.demo-example {
+  display: grid;
+  gap: 14px;
   min-width: 0;
   max-width: 100%;
-  background: var(--sc-code-bg);
 }
 
-.demo-code-title {
-  margin-block: 0 0.5rem;
-  font-size: 1rem;
-  color: var(--sc-text);
+.demo-example [hidden] {
+  display: none;
+}
+
+.demo-example-tabs,
+.demo-code-tabs {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  max-width: 100%;
+  padding: 3px;
+  overflow-x: auto;
+  background: var(--sc-surface-muted);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-sm);
+}
+
+.demo-example-header,
+.demo-code-tabs {
+  justify-self: start;
+}
+
+.demo-example-tab,
+.demo-code-tab {
+  min-height: 30px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--sc-text-soft);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--sc-radius-xs);
+
+  &[aria-selected='true'] {
+    color: var(--sc-text);
+    background: var(--sc-surface);
+    box-shadow: var(--sc-shadow-sm);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--sc-focus);
+    outline-offset: 2px;
+  }
+}
+
+.demo-example-panel {
+  min-width: 0;
+}
+
+.demo-example-code-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
 }
 
 .demo-code-block {
@@ -28,10 +81,7 @@
   font-size: 0.82rem;
   line-height: 1.6;
   color: var(--sc-code-text);
+  background: var(--sc-code-bg);
   border: 1px solid var(--sc-code-border);
   border-radius: 8px;
-}
-
-.demo-code-block + .demo-code-block {
-  margin-top: 0.5rem;
 }

@@ -4,8 +4,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { States } from './states';
 
-const clickCardButton = (card: HTMLElement, label: string): void => {
-  const button = Array.from(card.querySelectorAll('button')).find(
+const clickSectionButton = (section: HTMLElement, label: string): void => {
+  const button = Array.from(section.querySelectorAll('button')).find(
     (candidate) => candidate.textContent.trim() === label
   ) as HTMLButtonElement;
 
@@ -36,10 +36,10 @@ describe('FEATURE: States', () => {
         fixture.detectChanges();
 
         const page = fixture.nativeElement as HTMLElement;
-        const cards = Array.from(page.querySelectorAll('.card-title')).map((title) => title.textContent.trim());
+        const sections = Array.from(page.querySelectorAll('.demo-section-heading')).map((title) => title.textContent.trim());
         const busyTables = page.querySelectorAll('table[aria-busy="true"]');
 
-        expect(cards).toStrictEqual(['Loading state', 'Empty state', 'Error state', 'Transition preview', 'Background refresh']);
+        expect(sections).toStrictEqual(['Loading state', 'Empty state', 'Error state', 'Transition preview', 'Background refresh']);
         expect(page.textContent).toContain('Loading incidents');
         expect(page.textContent).toContain('No incidents found');
         expect(page.textContent).toContain('Incident queue unavailable');
@@ -55,27 +55,27 @@ describe('FEATURE: States', () => {
         fixture.detectChanges();
 
         const page = fixture.nativeElement as HTMLElement;
-        const transitionCard = Array.from(page.querySelectorAll('.card')).find(
-          (card) => card.querySelector('.card-title')?.textContent.trim() === 'Transition preview'
+        const transitionSection = Array.from(page.querySelectorAll('.demo-section')).find(
+          (section) => section.querySelector('.demo-section-heading')?.textContent.trim() === 'Transition preview'
         ) as HTMLElement;
 
-        clickCardButton(transitionCard, 'Empty');
+        clickSectionButton(transitionSection, 'Empty');
         fixture.detectChanges();
 
-        expect(transitionCard.textContent).toContain('No transition rows');
-        expect(transitionCard.textContent).not.toContain('Loading queue');
+        expect(transitionSection.textContent).toContain('No transition rows');
+        expect(transitionSection.textContent).not.toContain('Loading queue');
 
-        clickCardButton(transitionCard, 'Error');
+        clickSectionButton(transitionSection, 'Error');
         fixture.detectChanges();
 
-        expect(transitionCard.textContent).toContain('Transition request failed');
-        expect(transitionCard.textContent).toContain('Transition service returned 503.');
+        expect(transitionSection.textContent).toContain('Transition request failed');
+        expect(transitionSection.textContent).toContain('Transition service returned 503.');
 
-        clickCardButton(transitionCard, 'Rows');
+        clickSectionButton(transitionSection, 'Rows');
         fixture.detectChanges();
 
-        expect(transitionCard.textContent).toContain('INC-1042');
-        expect(transitionCard.textContent).not.toContain('Transition request failed');
+        expect(transitionSection.textContent).toContain('INC-1042');
+        expect(transitionSection.textContent).not.toContain('Transition request failed');
       });
     });
   });

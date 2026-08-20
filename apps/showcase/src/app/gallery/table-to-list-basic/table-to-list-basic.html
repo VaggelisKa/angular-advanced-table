@@ -1,12 +1,7 @@
 <main class="showcase-page sc-demo-page">
-  <p class="demo-hint">
-    The smallest list composition: a surface for the state scope and the list itself — no table involved. Fields render stacked in
-    column order with labels resolved from the column defs.
-  </p>
-
-  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs" heading="Minimal example" />
-
-  <nat-table-surface>
-    <nat-list [columns]="columns" [data]="rows" [getRowId]="getRowId" accessibleName="Orders list" class="sc-demo-list" />
-  </nat-table-surface>
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs">
+    <nat-table-surface>
+      <nat-list [columns]="columns" [data]="rows" [getRowId]="getRowId" accessibleName="Orders list" class="sc-demo-list" />
+    </nat-table-surface>
+  </app-demo-code>
 </main>

@@ -15,6 +15,7 @@
       "ng-advanced-table/locale": ["./libs/ng-advanced-table/locale/index.ts"],
       "ng-advanced-table/components": ["./libs/ng-advanced-table/components/index.ts"],
       "ng-advanced-table/render-metrics": ["./libs/ng-advanced-table/render-metrics/index.ts"],
+      "ng-advanced-table/virtualization": ["./libs/ng-advanced-table/virtualization/index.ts"],
       "ng-advanced-table/testing": ["./libs/ng-advanced-table/testing/index.ts"]
     }
   }

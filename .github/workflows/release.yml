@@ -1,18 +1,46 @@
 name: Release
 
+# Cuts a stable release: consumes the pending `.nx/version-plans/` files,
+# writes the changelog and release commit, tags it, and publishes to npm under
+# `latest`.
+#
+# Two triggers, one release path:
+#   - schedule — every Friday, so pending work ships on a predictable cadence
+#     instead of waiting for someone to remember the button.
+#   - workflow_dispatch — the same release on demand, for anything that should
+#     not wait for Friday.
+#
+# The scheduled run does exactly what the manual one does, but a preflight job
+# gates it first, because nobody is watching it: it releases only when there is
+# something pending AND CI is green on the commit it would ship. A manual
+# dispatch stays a deliberate act — it skips the CI gate, and it fails loudly
+# rather than silently no-opping when nothing is pending.
+
 on:
+  schedule:
+    # Fridays at 09:00 UTC, inside the European working day so a failed release
+    # is seen the same day. GitHub only runs scheduled workflows from the
+    # default branch, and disables them after 60 days without repo activity.
+    - cron: '0 9 * * 5'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
+  preflight:
+    name: Check whether there is a release to cut
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read # read CI's conclusion for this commit
+    outputs:
+      proceed: ${{ steps.decide.outputs.proceed }}
 
     steps:
       - name: Require main branch
@@ -24,6 +52,87 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          # Pin the commit this run reasons about. This is already the default
+          # (checkout falls back to `github.sha`), but both jobs state it so the
+          # preflight verdict and the released tree provably refer to one sha.
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Count pending version plans
+        id: plans
+        run: |
+          shopt -s nullglob
+          plans=(.nx/version-plans/*.md)
+          echo "Pending version plans: ${#plans[@]}"
+          echo "count=${#plans[@]}" >> "$GITHUB_OUTPUT"
+
+      # A scheduled release ships whatever `main` points at, so it has to check
+      # that commit is green itself. The push-event CI run for this exact sha is
+      # the one that validated the tree; anything else (missing, still running,
+      # failed) means the commit is unverified and the release waits a week —
+      # or goes out by hand once CI is sorted.
+      - name: Check CI on the commit this would release
+        id: ci
+        if: github.event_name == 'schedule' && steps.plans.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          conclusion="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&head_sha=${GITHUB_SHA}&status=completed&per_page=100" \
+            --jq '[.workflow_runs[] | select(.event == "push")] | first | .conclusion // "none"')"
+          echo "CI conclusion for ${GITHUB_SHA}: ${conclusion}"
+          echo "conclusion=${conclusion}" >> "$GITHUB_OUTPUT"
+
+      - name: Decide
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          PLAN_COUNT: ${{ steps.plans.outputs.count }}
+          CI_CONCLUSION: ${{ steps.ci.outputs.conclusion }}
+        run: |
+          skip() {
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping release: $1"
+            echo "**No release cut.** $1" >> "$GITHUB_STEP_SUMMARY"
+          }
+
+          if [ "$PLAN_COUNT" = "0" ]; then
+            if [ "$EVENT" = "schedule" ]; then
+              skip "no pending version plans in \`.nx/version-plans/\` — nothing to release."
+              exit 0
+            fi
+            echo "No pending version plans in .nx/version-plans/ — nothing to release." >&2
+            exit 1
+          fi
+
+          if [ "$EVENT" = "schedule" ] && [ "$CI_CONCLUSION" != "success" ]; then
+            skip "CI on \`${GITHUB_SHA}\` is \`${CI_CONCLUSION}\`, not \`success\` — refusing to release an unverified commit."
+            exit 0
+          fi
+
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
+          echo "Releasing ${PLAN_COUNT} pending version plan(s) from ${GITHUB_SHA}."
+
+  release:
+    needs: preflight
+    if: needs.preflight.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write # push the release commit and tags
+
+    steps:
+      - name: Require main branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "The Release workflow can only run from the main branch." >&2
+          exit 1
+
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          # The exact commit preflight validated — see the preflight checkout.
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -47,6 +156,23 @@ jobs:
 
       - name: Validate release preview
         run: pnpm exec nx release --dry-run
+
+      # npm publishes are permanent and the release commit still has to fast-
+      # forward `main`. If `main` moved after this run started, the push at the
+      # end would be rejected and the version would already be on the registry
+      # with no commit, tag, or changelog behind it. Check as late as possible,
+      # and fail before publishing rather than after.
+      - name: Require main to still be at the validated commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          head="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq '.sha')"
+          if [ "$head" != "$GITHUB_SHA" ]; then
+            echo "main moved to ${head} since this run started (validated ${GITHUB_SHA})." >&2
+            echo "Refusing to publish a release that could not be pushed. Re-run once main is settled." >&2
+            exit 1
+          fi
+          echo "main is still at ${GITHUB_SHA}."
 
       - name: Release packages
         run: pnpm exec nx release --yes

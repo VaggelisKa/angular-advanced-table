@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.list-selection-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-2);
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: var(--sc-space-4);
+}
+
+.list-selection-count {
+  margin: 0;
+  font-size: var(--sc-text-base);
+  color: var(--sc-text-soft);
+}
+
+/* Selected items expose data-selected for styling. */
+.list-selection-list {
+  --nat-list-item-background-selected: color-mix(in srgb, currentcolor 8%, transparent);
+}

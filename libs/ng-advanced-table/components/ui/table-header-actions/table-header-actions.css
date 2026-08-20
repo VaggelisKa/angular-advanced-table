@@ -315,6 +315,20 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentcolor 22%, transparent);
 }
 
+/*
+ * Forced-colors mode forces `box-shadow` to `none` and force-adjusts the
+ * `color-mix` background above to the system background, so the focused menu
+ * item loses both of its focus affordances and becomes indistinguishable from
+ * its siblings. `outline` survives forced colors; the system colour keyword is
+ * used because custom properties are not force-adjusted.
+ */
+@media (forced-colors: active) {
+  .column-menu-item:focus-visible:not([disabled]) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+
 .column-menu-item.is-active {
   color: var(--nat-table-pin-color-pinned, var(--sys-nat-table-pin-color-pinned, inherit));
   background: color-mix(

@@ -1,5 +1,9 @@
 type SeenPairs = Map<object, Set<object>>;
-type ValueMatcher = (left: unknown, right: unknown, seen: SeenPairs) => boolean;
+type ComparisonContext = { seen: SeenPairs; budget: { remainingWork: number }; depth: number };
+type ValueMatcher = (left: unknown, right: unknown, context: ComparisonContext) => boolean;
+
+const MAX_STATE_COMPARISON_DEPTH = 128;
+const MAX_STATE_COMPARISON_WORK = 1_000;
 
 let valuesMatch: ValueMatcher = () => false;
 
@@ -24,15 +28,8 @@ const hasSeenPair = (left: object, right: object, seen: SeenPairs): boolean => {
   return false;
 };
 
-const cloneSeenPairs = (seen: SeenPairs): SeenPairs => {
-  const clone: SeenPairs = new Map();
-
-  for (const [left, rightValues] of seen) {
-    clone.set(left, new Set(rightValues));
-  }
-
-  return clone;
-};
+const cloneSeenPairs = (seen: SeenPairs): SeenPairs =>
+  new Map(Array.from(seen, ([left, rightValues]) => [left, new Set(rightValues)]));
 
 const replaceSeenPairs = (target: SeenPairs, source: SeenPairs): void => {
   target.clear();
@@ -42,25 +39,17 @@ const replaceSeenPairs = (target: SeenPairs, source: SeenPairs): void => {
   }
 };
 
-const valuesMatchWithoutFailedPairSideEffects = (left: unknown, right: unknown, seen: SeenPairs): boolean => {
-  const trialSeen = cloneSeenPairs(seen);
+const valuesMatchWithoutFailedPairSideEffects = (left: unknown, right: unknown, context: ComparisonContext): boolean => {
+  const trialSeen = cloneSeenPairs(context.seen);
 
-  if (!valuesMatch(left, right, trialSeen)) {
+  if (!valuesMatch(left, right, { ...context, seen: trialSeen })) {
     return false;
   }
 
-  replaceSeenPairs(seen, trialSeen);
+  replaceSeenPairs(context.seen, trialSeen);
 
   return true;
 };
-
-const isDateComparison = (left: object, right: object): boolean => left instanceof Date || right instanceof Date;
-
-const isRegExpComparison = (left: object, right: object): boolean => left instanceof RegExp || right instanceof RegExp;
-
-const isMapComparison = (left: object, right: object): boolean => left instanceof Map || right instanceof Map;
-
-const isSetComparison = (left: object, right: object): boolean => left instanceof Set || right instanceof Set;
 
 const datesMatch = (left: object, right: object): boolean =>
   left instanceof Date && right instanceof Date && Object.is(left.getTime(), right.getTime());
@@ -68,14 +57,26 @@ const datesMatch = (left: object, right: object): boolean =>
 const regexpsMatch = (left: object, right: object): boolean =>
   left instanceof RegExp && right instanceof RegExp && left.source === right.source && left.flags === right.flags;
 
-const arraysMatch = (left: object, right: object, seen: SeenPairs): boolean =>
+const isDateComparison = (left: object, right: object): boolean => left instanceof Date || right instanceof Date;
+const isRegExpComparison = (left: object, right: object): boolean => left instanceof RegExp || right instanceof RegExp;
+const isMapComparison = (left: object, right: object): boolean => left instanceof Map || right instanceof Map;
+const isSetComparison = (left: object, right: object): boolean => left instanceof Set || right instanceof Set;
+
+const valuesMatchNested = (left: unknown, right: unknown, context: ComparisonContext): boolean =>
+  valuesMatch(left, right, { ...context, depth: context.depth + 1 });
+
+const arraysMatch = (left: object, right: object, context: ComparisonContext): boolean =>
   Array.isArray(left) &&
   Array.isArray(right) &&
   left.length === right.length &&
-  left.every((value, index) => valuesMatch(value, right[index], seen));
+  left.every((value, index) => valuesMatchNested(value, right[index], context));
 
-const mapsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
+const mapsMatch = (left: object, right: object, context: ComparisonContext): boolean => {
   if (!(left instanceof Map) || !(right instanceof Map) || left.size !== right.size) {
+    return false;
+  }
+
+  if (left.size * 2 > context.budget.remainingWork) {
     return false;
   }
 
@@ -83,12 +84,17 @@ const mapsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
   const rightEntries: Array<readonly [unknown, unknown]> = Array.from((right as ReadonlyMap<unknown, unknown>).entries());
 
   return Array.from(leftMap.entries()).every(
-    ([key, value], index) => valuesMatch(key, rightEntries[index]?.[0], seen) && valuesMatch(value, rightEntries[index]?.[1], seen)
+    ([key, value], index) =>
+      valuesMatchNested(key, rightEntries[index]?.[0], context) && valuesMatchNested(value, rightEntries[index]?.[1], context)
   );
 };
 
-const setsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
+const setsMatch = (left: object, right: object, context: ComparisonContext): boolean => {
   if (!(left instanceof Set) || !(right instanceof Set) || left.size !== right.size) {
+    return false;
+  }
+
+  if (left.size > context.budget.remainingWork) {
     return false;
   }
 
@@ -97,7 +103,7 @@ const setsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
 
   return Array.from(leftSet.values()).every((leftValue) => {
     const matchingIndex = unmatchedRightValues.findIndex((rightValue) =>
-      valuesMatchWithoutFailedPairSideEffects(leftValue, rightValue, seen)
+      valuesMatchWithoutFailedPairSideEffects(leftValue, rightValue, { ...context, depth: context.depth + 1 })
     );
 
     if (matchingIndex < 0) {
@@ -110,7 +116,7 @@ const setsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
   });
 };
 
-const plainObjectsMatch = (left: object, right: object, seen: SeenPairs): boolean => {
+const plainObjectsMatch = (left: object, right: object, context: ComparisonContext): boolean => {
   const leftPrototype = Object.getPrototypeOf(left) as unknown;
 
   if (leftPrototype !== Object.getPrototypeOf(right)) {
@@ -122,17 +128,18 @@ const plainObjectsMatch = (left: object, right: object, seen: SeenPairs): boolea
   }
 
   const leftKeys = enumerableKeys(left);
-  const rightKeys = enumerableKeys(right);
+  const rightKeys = new Set(enumerableKeys(right));
   const leftRecord = left as Record<PropertyKey, unknown>;
   const rightRecord = right as Record<PropertyKey, unknown>;
 
   return (
-    leftKeys.length === rightKeys.length &&
-    leftKeys.every((key) => rightKeys.includes(key) && valuesMatch(leftRecord[key], rightRecord[key], seen))
+    leftKeys.length === rightKeys.size &&
+    leftKeys.length <= context.budget.remainingWork &&
+    leftKeys.every((key) => rightKeys.has(key) && valuesMatchNested(leftRecord[key], rightRecord[key], context))
   );
 };
 
-const specialObjectsMatch = (left: object, right: object, seen: SeenPairs): boolean | null => {
+const specialObjectsMatch = (left: object, right: object, context: ComparisonContext): boolean | null => {
   if (isDateComparison(left, right)) {
     return datesMatch(left, right);
   }
@@ -142,21 +149,27 @@ const specialObjectsMatch = (left: object, right: object, seen: SeenPairs): bool
   }
 
   if (Array.isArray(left) || Array.isArray(right)) {
-    return arraysMatch(left, right, seen);
+    return arraysMatch(left, right, context);
   }
 
   if (isMapComparison(left, right)) {
-    return mapsMatch(left, right, seen);
+    return mapsMatch(left, right, context);
   }
 
   if (isSetComparison(left, right)) {
-    return setsMatch(left, right, seen);
+    return setsMatch(left, right, context);
   }
 
   return null;
 };
 
-valuesMatch = (left, right, seen): boolean => {
+valuesMatch = (left, right, context): boolean => {
+  if (context.depth > MAX_STATE_COMPARISON_DEPTH || context.budget.remainingWork <= 0) {
+    return false;
+  }
+
+  context.budget.remainingWork -= 1;
+
   if (Object.is(left, right)) {
     return true;
   }
@@ -169,18 +182,24 @@ valuesMatch = (left, right, seen): boolean => {
     return false;
   }
 
-  if (hasSeenPair(left, right, seen)) {
+  if (hasSeenPair(left, right, context.seen)) {
     return true;
   }
 
-  const specialMatch = specialObjectsMatch(left, right, seen);
+  const specialMatch = specialObjectsMatch(left, right, context);
 
-  return specialMatch ?? plainObjectsMatch(left, right, seen);
+  return specialMatch ?? plainObjectsMatch(left, right, context);
 };
 
 /**
  * Avoid JSON serialization: consumer-owned filter values can include BigInt,
  * Sets, Maps, Dates, or RegExps that either throw or stringify incorrectly.
+ * Extremely deep or broad values are treated as changed once the comparison
+ * budget is exhausted so state checks terminate predictably.
  */
 export const hasNatTableStateValueChanged = (left: unknown, right: unknown): boolean =>
-  !valuesMatch(left, right, new Map<object, Set<object>>());
+  !valuesMatch(left, right, {
+    seen: new Map<object, Set<object>>(),
+    budget: { remainingWork: MAX_STATE_COMPARISON_WORK },
+    depth: 0
+  });

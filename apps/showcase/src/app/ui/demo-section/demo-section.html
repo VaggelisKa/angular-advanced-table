@@ -1,0 +1,9 @@
+<section [attr.data-testid]="testId() ?? null" class="demo-section">
+  @if (heading(); as text) {
+    <h3 class="demo-section-heading">{{ text }}</h3>
+  }
+
+  <div [class.demo-section-body--flush]="flush()" class="demo-section-body">
+    <ng-content />
+  </div>
+</section>

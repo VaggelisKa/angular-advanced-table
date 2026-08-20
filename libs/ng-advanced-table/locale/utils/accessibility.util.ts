@@ -15,7 +15,8 @@ const mergeAccessibilityInstructions = (
   override?: NatTableAccessibilityText
 ): Partial<NatTableAccessibilityText> => ({
   description: override?.description ?? parent?.description,
-  keyboardInstructions: override?.keyboardInstructions ?? parent?.keyboardInstructions
+  keyboardInstructions: override?.keyboardInstructions ?? parent?.keyboardInstructions,
+  listKeyboardInstructions: override?.listKeyboardInstructions ?? parent?.listKeyboardInstructions
 });
 
 /** Merges the body state messages, override values winning. */
@@ -71,6 +72,16 @@ const mergeAccessibilityColumnAnnouncers = (
   selectionChange: override?.selectionChange ?? parent?.selectionChange
 });
 
+/** Merges the sub-header (grid and list variants) and placeholder row text formatters, override values winning. */
+const mergeAccessibilitySubHeaderText = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText
+): Partial<NatTableAccessibilityText> => ({
+  subHeaderRow: override?.subHeaderRow ?? parent?.subHeaderRow,
+  listSubHeaderRow: override?.listSubHeaderRow ?? parent?.listSubHeaderRow,
+  placeholderRow: override?.placeholderRow ?? parent?.placeholderRow
+});
+
 /** Merges table accessibility copy and formatter callbacks field by field. */
 export const mergeNatTableAccessibilityText = (
   parent?: NatTableAccessibilityText,
@@ -81,7 +92,8 @@ export const mergeNatTableAccessibilityText = (
   ...mergeAccessibilityGestureText(parent, override),
   ...mergeAccessibilitySummaryAnnouncers(parent, override),
   ...mergeAccessibilityPaginationAnnouncers(parent, override),
-  ...mergeAccessibilityColumnAnnouncers(parent, override)
+  ...mergeAccessibilityColumnAnnouncers(parent, override),
+  ...mergeAccessibilitySubHeaderText(parent, override)
 });
 
 const mergeNatTableIntl = (parent?: NatTableIntl, override?: NatTableIntl): NatTableIntl => ({

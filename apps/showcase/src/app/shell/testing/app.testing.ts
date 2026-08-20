@@ -18,7 +18,10 @@ const APP_TEST_ROUTES: Routes = [
   { path: 'docs', pathMatch: 'full', component: TestExamplePage },
   { path: 'docs/quick-start', component: TestExamplePage },
   { path: 'examples', pathMatch: 'full', component: TestExamplePage },
-  { path: 'examples/multiple-features', component: TestExamplePage }
+  { path: 'examples/multiple-features', component: TestExamplePage },
+  /* Catch-all so specs can activate any docs/example route the search dialog
+     resolves without registering every showcase route here. */
+  { path: '**', component: TestExamplePage }
 ];
 
 const createTestStorage = (): Storage => {

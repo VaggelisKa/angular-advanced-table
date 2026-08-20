@@ -1,34 +1,42 @@
-<div class="grid-layout grid-layout-with-panel">
-  <div class="card">
-    <h2 class="card-title">Selectable Services Grid</h2>
-    <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
-      <nat-table-toolbar accessibleName="Bulk actions">
-        <button
-          [disabled]="selectedNames().length === 0"
-          class="btn btn-secondary"
-          natToolbarItem
-          natToolbarItemPosition="start"
-          type="button"
-          (click)="deleteSelected()">
-          Delete selected ({{ selectedNames().length }})
-        </button>
-        <button class="btn btn-outline" natToolbarItem natToolbarItemPosition="start" type="button" (click)="restoreData()">
-          Reset data
-        </button>
-      </nat-table-toolbar>
-      <nat-table
-        [columns]="columns"
-        [data]="data()"
-        [enableRowSelection]="true"
-        [selectionMode]="selectionMode()"
-        accessibleName="Row selection demo table"
-        (rowActivate)="onRowActivate($event)" />
-    </nat-table-surface>
-  </div>
+<app-demo-layout>
+  <nat-table-surface [state]="tableState()" (rowSelectionChange)="onRowSelectionChange($event)">
+    <nat-table-toolbar accessibleName="Bulk actions">
+      <button
+        [disabled]="selectedNames().length === 0"
+        class="btn btn-secondary"
+        natToolbarItem
+        natToolbarItemPosition="start"
+        type="button"
+        (click)="deleteSelected()">
+        Delete selected ({{ selectedNames().length }})
+      </button>
+      <button class="btn btn-outline" natToolbarItem natToolbarItemPosition="start" type="button" (click)="restoreData()">
+        Reset data
+      </button>
+    </nat-table-toolbar>
 
-  <div class="card">
-    <h2 class="card-title">How To Use The Keyboard</h2>
-    <div class="instructions">
+    <nat-table
+      [columns]="columns"
+      [data]="data()"
+      [enableRowSelection]="true"
+      [selectionMode]="selectionMode()"
+      accessibleName="Row selection demo table"
+      class="sc-demo-table"
+      (rowActivate)="onRowActivate($event)" />
+  </nat-table-surface>
+
+  <app-demo-section demoAside heading="Selection controls">
+    <app-demo-toggle-group
+      [options]="modeOptions"
+      [value]="selectionMode()"
+      accessibleName="Selection mode"
+      (valueChange)="setMode($event)" />
+
+    <button class="btn btn-secondary" type="button" (click)="clearSelection()">Clear selection</button>
+
+    <app-demo-facts [facts]="facts()" live />
+
+    <div class="demo-note">
       <ol>
         <li><strong>Tab</strong> to the grid, then move between cells with the <code>Arrow</code> keys.</li>
         <li>
@@ -41,21 +49,5 @@
         <li>Selection changes are announced through the table's polite live region.</li>
       </ol>
     </div>
-    <h2 class="card-title">Selection Controls</h2>
-    <div class="actions-panel">
-      <button [attr.aria-pressed]="selectionMode() === 'multiple'" class="btn btn-outline" type="button" (click)="setMode('multiple')">
-        Multiple mode
-      </button>
-      <button [attr.aria-pressed]="selectionMode() === 'single'" class="btn btn-outline" type="button" (click)="setMode('single')">
-        Single mode
-      </button>
-      <button class="btn btn-secondary" type="button" (click)="clearSelection()">Clear selection</button>
-    </div>
-
-    <div class="info-tags">
-      <div class="info-tag">Mode: {{ selectionMode() }}</div>
-      <div class="info-tag">Selected ({{ selectedNames().length }}): {{ selectedSummary() }}</div>
-      <div class="info-tag" data-testid="last-activated">Last activated: {{ lastActivatedName() ?? 'None' }}</div>
-    </div>
-  </div>
-</div>
+  </app-demo-section>
+</app-demo-layout>

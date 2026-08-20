@@ -149,6 +149,10 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-space-cell-x`                | Cell inline padding (shared base)                                               |
 | `--nat-table-space-header-cell-x`         | Header cell inline padding (falls back to `--nat-table-space-cell-x`)           |
 | `--nat-table-space-data-cell-x`           | Data cell inline padding (falls back to `--nat-table-space-cell-x`)             |
+| `--nat-table-sub-header-background`       | Sub-header (group) row background (table and list)                              |
+| `--nat-table-sub-header-color`            | Sub-header (group) row text color (table and list)                              |
+| `--nat-table-space-sub-header`            | Sub-header (group) row padding (table and list)                                 |
+| `--nat-table-font-weight-sub-header`      | Sub-header (group) row font weight (table and list)                             |
 
 Set the border-width tokens to `0` when a design needs to remove the outer table boundary or internal dividers.
 
@@ -156,41 +160,51 @@ Set the border-width tokens to `0` when a design needs to remove the outer table
 
 The `nat-list` spike renderer lays every item out as a CSS grid whose field areas are named by column id, so consumers can position each column's field freely. These tokens are spike API and may change or be removed with the `NatList` spike.
 
-| Token                                       | Purpose                                                                                            |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--nat-table-list-gap`                      | Gap between list items                                                                             |
-| `--nat-table-list-item-areas`               | `grid-template-areas` for one item; area names are column ids (default stacks each visible column) |
-| `--nat-table-list-item-columns`             | `grid-template-columns` for one item                                                               |
-| `--nat-table-list-item-gap`                 | Gap between fields inside one item                                                                 |
-| `--nat-table-list-item-padding`             | Item padding                                                                                       |
-| `--nat-table-list-item-background`          | Item background; transparent by default, so items inherit the page background                      |
-| `--nat-table-list-item-background-selected` | Item background while the row is selected (`data-selected="true"`)                                 |
-| `--nat-table-list-item-border-width`        | Item border width                                                                                  |
-| `--nat-table-list-item-border-color`        | Item border color; a currentcolor mix by default, so it follows the page text color                |
-| `--nat-table-list-item-radius`              | Item corner radius                                                                                 |
-| `--nat-table-list-field-gap`                | Gap between one field's label and value                                                            |
-| `--nat-table-list-field-align`              | `align-items` for one field (defaults to `baseline`)                                               |
-| `--nat-table-list-label-font-weight`        | Field label weight                                                                                 |
+| Token                                 | Purpose                                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `--nat-list-gap`                      | Gap between list items                                                                             |
+| `--nat-list-item-areas`               | `grid-template-areas` for one item; area names are column ids (default stacks each visible column) |
+| `--nat-list-item-columns`             | `grid-template-columns` for one item                                                               |
+| `--nat-list-item-gap`                 | Gap between fields inside one item                                                                 |
+| `--nat-list-item-padding`             | Item padding                                                                                       |
+| `--nat-list-item-background`          | Item background; transparent by default, so items inherit the page background                      |
+| `--nat-list-item-background-selected` | Item background while the row is selected (`data-selected="true"`)                                 |
+| `--nat-list-item-border-width`        | Item border width                                                                                  |
+| `--nat-list-item-border-color`        | Item border color; a currentcolor mix by default, so it follows the page text color                |
+| `--nat-list-item-radius`              | Item corner radius                                                                                 |
+| `--nat-list-field-gap`                | Gap between one field's label and value                                                            |
+| `--nat-list-field-align`              | `align-items` for one field (defaults to `baseline`)                                               |
+| `--nat-list-field-flex-direction`     | `flex-direction` for one field (defaults to `row`)                                                 |
+| `--nat-list-field-justify`            | `justify-content` for one field (defaults to `flex-start`)                                         |
+| `--nat-list-label-font-weight`        | Field label weight                                                                                 |
+| `--nat-list-label-font-size`          | Field label font size                                                                              |
+| `--nat-list-label-color`              | Field label color (defaults to `currentColor`)                                                     |
+| `--nat-list-space-sub-header`         | Sub-header row padding for lists                                                                   |
+| `--nat-list-sub-header-background`    | Sub-header row background for lists                                                                |
+| `--nat-list-sub-header-color`         | Sub-header row text color for lists                                                                |
+| `--nat-list-font-weight-sub-header`   | Sub-header row font weight for lists                                                               |
+| `--nat-list-sub-header-border`        | Sub-header row border style for lists                                                              |
+| `--nat-list-sub-header-border-width`  | Sub-header row border width for lists                                                              |
 
-When overriding `--nat-table-list-item-areas`, name every visible column in the template (or hide the rest via column visibility) — a field whose column id is missing from the areas template falls back to implicit grid placement.
+When overriding `--nat-list-item-areas`, name every visible column in the template (or hide the rest via column visibility) — a field whose column id is missing from the areas template falls back to implicit grid placement.
 
 The loading, empty, and error items share one base shape, so the tokens below restyle all three at once; each state then has its own accent token for the indicator (and, for the error state, the message color).
 
-| Token                                   | Purpose                                                                      |
-| --------------------------------------- | ---------------------------------------------------------------------------- |
-| `--nat-table-list-state-padding`        | Padding for every state item                                                 |
-| `--nat-table-list-state-gap`            | Gap between the state indicator and its message                              |
-| `--nat-table-list-state-justify`        | `justify-content` for the state item (e.g. `center`)                         |
-| `--nat-table-list-state-min-height`     | Minimum height, useful to stop layout jumping between states                 |
-| `--nat-table-list-state-color`          | Shared state message color                                                   |
-| `--nat-table-list-state-background`     | Shared state background                                                      |
-| `--nat-table-list-state-border-color`   | Shared state border color                                                    |
-| `--nat-table-list-state-border-style`   | Shared state border style (defaults to `dashed`)                             |
-| `--nat-table-list-state-radius`         | Shared state corner radius                                                   |
-| `--nat-table-list-state-indicator-size` | Indicator diameter                                                           |
-| `--nat-table-list-loading-accent`       | Loading indicator color (falls back to `--nat-table-color-accent`)           |
-| `--nat-table-list-empty-accent`         | Empty indicator outline color (falls back to `--nat-table-color-text-muted`) |
-| `--nat-table-list-error-accent`         | Error indicator and message color (falls back to `--nat-table-color-danger`) |
+| Token                             | Purpose                                                                      |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| `--nat-list-state-padding`        | Padding for every state item                                                 |
+| `--nat-list-state-gap`            | Gap between the state indicator and its message                              |
+| `--nat-list-state-justify`        | `justify-content` for the state item (e.g. `center`)                         |
+| `--nat-list-state-min-height`     | Minimum height, useful to stop layout jumping between states                 |
+| `--nat-list-state-color`          | Shared state message color                                                   |
+| `--nat-list-state-background`     | Shared state background                                                      |
+| `--nat-list-state-border-color`   | Shared state border color                                                    |
+| `--nat-list-state-border-style`   | Shared state border style (defaults to `dashed`)                             |
+| `--nat-list-state-radius`         | Shared state corner radius                                                   |
+| `--nat-list-state-indicator-size` | Indicator diameter                                                           |
+| `--nat-list-loading-accent`       | Loading indicator color (falls back to `--nat-table-color-accent`)           |
+| `--nat-list-empty-accent`         | Empty indicator outline color (falls back to `--nat-table-color-text-muted`) |
+| `--nat-list-error-accent`         | Error indicator and message color (falls back to `--nat-table-color-danger`) |
 
 Each state item also carries a `data-state` attribute (`loading`, `empty`, or `error`) for consumer styling hooks. The loading indicator animates and honors `prefers-reduced-motion: reduce`.
 
@@ -198,15 +212,15 @@ Each state item also carries a `data-state` attribute (`loading`, `empty`, or `e
 
 `ng-advanced-table/components` controls consume the same theme. Common groups include:
 
-| Group          | Common tokens                                                                                                                                  |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Surface        | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-shadow`, `--nat-table-radius-card`, `--nat-table-space-card` |
-| Controls       | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-space-control-block-gap`                                           |
-| Chips          | `--nat-table-chip-background`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-radius-chip`                |
-| Pager          | `--nat-table-pager-background`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-min-height`                    |
-| Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-pin-color-pinned`                                       |
-| Motion         | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-disabled-opacity`                                                 |
-| Stacking       | `--nat-table-z-index-sticky-header`, `--nat-table-z-index-pinned-cell`, `--nat-table-z-index-drag-preview`                                     |
+| Group          | Common tokens                                                                                                                                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Surface        | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-shadow`, `--nat-table-radius-card`, `--nat-table-space-card`, `--nat-table-space-card-list` (padding when a list renderer is projected; defaults to `0`) |
+| Controls       | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-space-control-block-gap`                                                                                                                                       |
+| Chips          | `--nat-table-chip-background`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-radius-chip`                                                                                                            |
+| Pager          | `--nat-table-pager-background`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-min-height`                                                                                                                |
+| Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-pin-color-pinned`                                                                                                                                   |
+| Motion         | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-disabled-opacity`                                                                                                                                             |
+| Stacking       | `--nat-table-z-index-sticky-header`, `--nat-table-z-index-pinned-cell`, `--nat-table-z-index-drag-preview`                                                                                                                                 |
 
 Reach for these direct tokens when a table control needs a local exception.
 
@@ -269,8 +283,8 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 | `--nat-table-radius-region`           | `8px`                                                                                   |
 | `--nat-table-radius-input`            | `6px`                                                                                   |
 | `--nat-table-radius-chip`             | `6px`                                                                                   |
-| `--nat-table-space-card`              | `18px 22px`                                                                             |
-| `--nat-table-space-card-compact`      | `14px 16px`                                                                             |
+| `--nat-table-space-card`              | `0`                                                                                     |
+| `--nat-table-space-card-compact`      | `0`                                                                                     |
 | `--nat-table-space-control-block-gap` | `12px`                                                                                  |
 | `--nat-table-space-chip-row-gap`      | `10px`                                                                                  |
 | `--nat-table-chip-background`         | `var(--nat-table-color-surface)`                                                        |
@@ -302,6 +316,8 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 | `--nat-table-z-index-drag-preview`         | `12`                             |
 
 ## Core-Only Tables
+
+Pinned body and header cells always paint above unpinned cells, including when an unpinned cell has keyboard focus beneath a pin zone. The focus-cell layer is reserved for a focused pinned cell so its inset indicator remains visible without overtaking resize handles, resize guides, or drag previews. Pinned focus and hover tokens are composited as overlays over `--nat-table-pinned-background`; translucent consumer colors therefore keep an opaque pinned base instead of exposing scrolled content.
 
 The core table is unstyled by default whether or not you use `NatTableSurface` — with or without the surface, it renders with system-color fallbacks unless you import the opt-in theme or provide tokens yourself. For a polished core-only table, import `ng-advanced-table/components/theme.css` or provide the core tokens yourself.
 

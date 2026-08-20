@@ -1,0 +1,22 @@
+{
+  "name": "ng-advanced-table-virtualization",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "prefix": "nat",
+  "sourceRoot": "libs/ng-advanced-table/virtualization",
+  "tags": ["type:virtualization", "scope:public"],
+  "targets": {
+    "test": {
+      "inputs": ["default", "^production", "libEntryPointTsConfigs"],
+      "options": {
+        "buildTarget": "ng-advanced-table:build:development",
+        "tsConfig": "libs/ng-advanced-table/tsconfig.spec.json",
+        "coverage": true,
+        "coverageInclude": ["libs/ng-advanced-table/virtualization/**/*.ts"],
+        "coverageExclude": ["**/*.spec.ts", "**/test-helpers/**", "**/*.type.ts", "**/index.ts"],
+        "coverageReporters": ["text-summary", "json-summary"],
+        "coverageThresholds": { "statements": 97, "branches": 91, "functions": 100, "lines": 97 }
+      }
+    }
+  }
+}

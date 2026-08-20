@@ -307,36 +307,33 @@ tbody .data-row:last-child .data-cell {
 
 .data-row {
   background: var(--nat-table-row-background, var(--sys-nat-table-row-background, transparent));
-  transition: background-color 120ms ease;
+}
+
+.data-table.is-virtualized :is(.data-row, .data-cell, .sub-header-row, .sub-header-cell) {
+  height: var(--sys-nat-table-virtual-row-height);
+}
+
+.data-table.is-virtualized :is(.data-cell-content, .sub-header-content) {
+  max-height: var(--sys-nat-table-virtual-row-height);
+}
+
+:is(.virtual-spacer-row, .virtual-spacer-cell) {
+  padding: 0;
+  line-height: 0;
+  pointer-events: none;
+  border: 0;
 }
 
 .data-row:has(:focus-visible) {
   background: var(--nat-table-row-background-focus, var(--sys-nat-table-row-background-focus, rgb(128 128 128 / 12%)));
 }
 
-/* The row tints are translucent by design, so they must layer over the opaque
-   pinned background instead of replacing it — a bare tint lets center content
-   scrolling beneath the pinned zone bleed through hovered and focused rows.
-   linear-gradient turns the tint color into a background layer above the base. */
 .data-row:has(:focus-visible) .is-pinned-left,
 .data-row:has(:focus-visible) .is-pinned-right {
-  background: linear-gradient(
-      var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%))),
-      var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%)))
-    )
-    var(
-      --nat-table-pinned-background,
-      var(
-        --sys-nat-table-pinned-background,
-        var(
-          --nat-table-header-background,
-          var(
-            --sys-nat-table-header-background,
-            var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
-          )
-        )
-      )
-    );
+  background-image: linear-gradient(
+    var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%))),
+    var(--nat-table-row-background-focus-pinned, var(--sys-nat-table-row-background-focus-pinned, rgb(128 128 128 / 16%)))
+  );
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -346,23 +343,10 @@ tbody .data-row:last-child .data-cell {
 
   .data-row:hover .is-pinned-left,
   .data-row:hover .is-pinned-right {
-    background: linear-gradient(
-        var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%))),
-        var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%)))
-      )
-      var(
-        --nat-table-pinned-background,
-        var(
-          --sys-nat-table-pinned-background,
-          var(
-            --nat-table-header-background,
-            var(
-              --sys-nat-table-header-background,
-              var(--nat-table-color-surface-sticky, var(--sys-nat-table-color-surface-sticky, canvas))
-            )
-          )
-        )
-      );
+    background-image: linear-gradient(
+      var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%))),
+      var(--nat-table-row-background-hover-pinned, var(--sys-nat-table-row-background-hover-pinned, rgb(128 128 128 / 12%)))
+    );
   }
 }
 
@@ -381,19 +365,24 @@ tbody .data-row:last-child .data-cell {
 }
 
 /*
- * Table stacking order, low to high:
- * focused body cells (above static row siblings only), sticky header, pinned
- * body cells, pinned headers, focused pinned cells, resize handle, resize
- * guide, then drag preview. Scrolled content must slide beneath the sticky
- * header and pinned zones even while focused, so only pinned cells may take
- * the focus layer.
+ * Table stacking invariant, low to high:
+ * ordinary body cells, sticky headers, pinned body cells, pinned headers,
+ * focused pinned cells, resize handles, resize guides, then drag previews.
+ * Unpinned focus never establishes a layer above a pin zone; the inset focus
+ * ring remains visible without exposing horizontally scrolled content.
  */
+
+/* Sticky pinned positioning is deliberately scoped to sticky-header tables —
+   do not re-broaden to bare .is-pinned-*: the unscoped rule breaks list
+   styles. Pinned backgrounds stay on all pinned cells below. */
 .has-sticky-header .is-pinned-left,
-.has-sticky-header .is-pinned-right,
-.is-pinned-left,
-.is-pinned-right {
+.has-sticky-header .is-pinned-right {
   position: sticky;
   z-index: var(--nat-table-z-index-pinned-cell, var(--sys-nat-table-z-index-pinned-cell, 5));
+}
+
+.is-pinned-left,
+.is-pinned-right {
   background: var(
     --nat-table-pinned-background,
     var(
@@ -571,6 +560,45 @@ tbody .data-row:last-child .data-cell {
   );
 }
 
+.sub-header-cell {
+  position: relative;
+
+  /* Padding lives on the sticky content below so the label keeps its inset
+     while clamped to the region's left edge during horizontal scrolling;
+     !important beats the per-cell layout directive's inline padding in the
+     per-column `cells` layout. */
+  padding: 0 !important;
+  overflow: visible !important;
+  font-weight: var(--nat-table-font-weight-sub-header, var(--sys-nat-table-font-weight-sub-header, 600));
+  color: var(--nat-table-sub-header-color, var(--sys-nat-table-sub-header-color, currentColor));
+  white-space: normal;
+  background: var(--nat-table-sub-header-background, var(--sys-nat-table-sub-header-background, transparent));
+  border: var(--nat-table-sub-header-border, var(--sys-nat-table-sub-header-border, none));
+  border-width: var(--nat-table-sub-header-border-width, var(--sys-nat-table-sub-header-border-width, 0));
+}
+
+/* Keep sub-header background even when the cell inherits pinning classes that apply the pinned-zone background */
+.sub-header-cell.is-pinned-left,
+.sub-header-cell.is-pinned-right {
+  background: var(--nat-table-sub-header-background, var(--sys-nat-table-sub-header-background, transparent));
+}
+
+/*
+ * Sticky-left, shrink-to-fit content (state-row pattern): the group label
+ * stays inside the visible scroll viewport while the full-width cell scrolls
+ * horizontally under pinned columns.
+ */
+.sub-header-content {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100cqi;
+  padding: var(--nat-table-space-sub-header, var(--sys-nat-table-space-sub-header, 8px 12px));
+}
+
 @keyframes nat-table-state-enter {
   from {
     opacity: var(--nat-table-state-transition-opacity-from, var(--sys-nat-table-state-transition-opacity-from, 0));
@@ -595,28 +623,41 @@ tbody .data-row:last-child .data-cell {
     var(--nat-table-focus-ring-color, var(--sys-nat-table-focus-ring-color, Highlight));
 }
 
-/*
- * Only pinned cells (body and header) take the focus layer: they are the top
- * cell zone, so raising them cannot pull scrolled content over a pinned zone.
- * A focused non-pinned cell keeps its own zone's stacking — a center cell that
- * scrolls beneath a pinned column or the sticky header must stay beneath it,
- * focused or not.
- */
-.is-pinned-left:focus-visible,
-.is-pinned-right:focus-visible {
+[ngGridCell]:focus-visible:is(.is-pinned-left, .is-pinned-right) {
   z-index: var(--nat-table-z-index-focus-cell, var(--sys-nat-table-z-index-focus-cell, 7));
 }
 
 /*
- * Regular body cells are statically positioned, so z-index alone does not
- * establish stacking. Keep the relative positioning scoped to them so that
- * sticky headers and pinned cells retain their `position: sticky` context
- * when focused. z-index 1 lifts the focus ring above static row siblings
- * while staying below the sticky header (4) and pinned zones (5+).
+ * Forced-colors mode (Windows High Contrast) forces `box-shadow` to `none`.
+ * The focus ring above is a box-shadow paired with `outline: none`, so without
+ * this rule a focused cell carries no visible focus indicator at all in that
+ * mode — a WCAG 2.4.7 (Focus Visible) failure.
+ *
+ * `outline` survives forced colors. The system colour keyword is deliberate:
+ * custom properties are not force-adjusted, so routing this through the
+ * `--nat-table-focus-ring-color` token could paint a themed ring that is
+ * invisible against the forced background. Negative offset keeps the ring
+ * inset, matching the box-shadow it stands in for, so it cannot overlap
+ * neighbouring cells.
+ *
+ * Safari does not implement `forced-colors`; it ignores this block, which
+ * leaves the box-shadow ring in place there.
+ */
+@media (forced-colors: active) {
+  [ngGridCell]:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+
+/*
+ * Regular body cells are statically positioned. Keep relative positioning
+ * scoped to them so their inset ring paints predictably while their automatic
+ * z-order stays below sticky pinned cells. Sticky headers and pinned cells
+ * retain their `position: sticky` context when focused.
  */
 [ngGridCell]:focus-visible:not(.is-pinned-left, .is-pinned-right, .header-cell) {
   position: relative;
-  z-index: 1;
 }
 
 .sr-only {
