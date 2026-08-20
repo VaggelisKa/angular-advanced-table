@@ -15,7 +15,7 @@ test.describe('FEATURE: Pagination accessibility', () => {
       // the select and both pager buttons behind a single Tab stop, leaving
       // Previous/Next unreachable for anyone who does not guess at arrow keys.
       test('THEN: it reaches the page-size select and both pager buttons as separate tab stops', async ({ page }) => {
-        const clientCard = page.locator('.card', { hasText: 'Paginated Grid (Client-Side)' });
+        const clientCard = page.getByTestId('pagination-client');
         const rowsPerPageSelect = clientCard.getByRole('combobox');
         const nextBtn = clientCard.getByRole('button', { name: 'Next page' });
         const prevBtn = clientCard.getByRole('button', { name: 'Previous page' });
@@ -33,22 +33,23 @@ test.describe('FEATURE: Pagination accessibility', () => {
           await expect(nextBtn).toBeFocused();
         });
 
-        await test.step('THEN: once Previous is enabled Tab reaches it before Next', async () => {
+        await test.step('THEN: on the last page Previous is enabled and Tab reaches it after the select', async () => {
           await page.keyboard.press('Enter');
           await expect(prevBtn).toBeEnabled();
+          // Two pages of demo data: page 2 is the last, so Next is disabled
+          // and drops out of the tab order.
+          await expect(nextBtn).toBeDisabled();
 
           await rowsPerPageSelect.focus();
           await page.keyboard.press('Tab');
           await expect(prevBtn).toBeFocused();
 
           await page.keyboard.press('Tab');
-          await expect(nextBtn).toBeFocused();
+          await expect(nextBtn).not.toBeFocused();
         });
 
-        await test.step('THEN: Shift+Tab walks back out through the same three stops', async () => {
-          await page.keyboard.press('Shift+Tab');
-          await expect(prevBtn).toBeFocused();
-
+        await test.step('THEN: Shift+Tab walks back through Previous to the select', async () => {
+          await prevBtn.focus();
           await page.keyboard.press('Shift+Tab');
           await expect(rowsPerPageSelect).toBeFocused();
         });
