@@ -231,6 +231,64 @@ describe('FEATURE: NatTable', () => {
         expect(cssText).toContain('transparent');
       });
 
+      it('THEN: it keeps focused scrolled cells beneath the sticky header and pinned zones', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const focusRules = tableStyles.filter((rule) => rule.selectorText.includes(':focus-visible'));
+        const pinnedFocusRule = focusRules.find(
+          (rule) =>
+            rule.selectorText.includes('.is-pinned-left') && !rule.selectorText.includes(':has(') && rule.cssText.includes('z-index')
+        );
+        const scrolledFocusRule = focusRules.find(
+          (rule) => rule.selectorText.includes('[ngGridCell]') && rule.selectorText.includes(':not(')
+        );
+
+        if (!pinnedFocusRule || !scrolledFocusRule) {
+          throw new Error('Expected the pinned and scrolled cell focus-visible style rules.');
+        }
+
+        // Only pinned cells take the focus layer; a focused center cell rises
+        // above its static row siblings only, staying beneath the sticky
+        // header (4) and pinned zones (5+) while it scrolls under them.
+        expect(pinnedFocusRule.cssText).toContain('--nat-table-z-index-focus-cell');
+        expect(pinnedFocusRule.selectorText).not.toContain('.header-cell');
+        expect(scrolledFocusRule.style.position).toBe('relative');
+        expect(scrolledFocusRule.style.zIndex).toBe('1');
+        expect(scrolledFocusRule.cssText).not.toContain('--nat-table-z-index-focus-cell');
+      });
+
+      it('THEN: it layers the hovered and focused row tints over the opaque pinned background', () => {
+        fixture.detectChanges();
+
+        const allStyleRules = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .flatMap((rule) => (rule instanceof CSSMediaRule ? Array.from(rule.cssRules) : [rule]))
+          .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule);
+        const focusTintRule = allStyleRules.find(
+          (rule) => rule.selectorText.includes(':has(') && rule.selectorText.includes('.is-pinned-left')
+        );
+        const hoverTintRule = allStyleRules.find(
+          (rule) => rule.selectorText.includes(':hover') && rule.selectorText.includes('.is-pinned-left')
+        );
+
+        if (!focusTintRule || !hoverTintRule) {
+          throw new Error('Expected the focused-row and hovered-row pinned tint style rules.');
+        }
+
+        // The tints are translucent by design, so each must render as a layer
+        // above the opaque pinned background — replacing it lets center content
+        // scrolling beneath the pinned zone bleed through the pinned cells.
+        expect(focusTintRule.cssText).toContain('linear-gradient');
+        expect(focusTintRule.cssText).toContain('--nat-table-row-background-focus-pinned');
+        expect(focusTintRule.cssText).toContain('--nat-table-pinned-background');
+        expect(hoverTintRule.cssText).toContain('linear-gradient');
+        expect(hoverTintRule.cssText).toContain('--nat-table-row-background-hover-pinned');
+        expect(hoverTintRule.cssText).toContain('--nat-table-pinned-background');
+      });
+
       it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {
         fixture.detectChanges();
 

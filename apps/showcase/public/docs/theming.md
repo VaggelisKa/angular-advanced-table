@@ -296,7 +296,7 @@ The palette is light/dark responsive via `light-dark(<light>, <dark>)`.
 | `--nat-table-z-index-sticky-header`        | `4`                              |
 | `--nat-table-z-index-pinned-cell`          | `5`                              |
 | `--nat-table-z-index-pinned-header`        | `6`                              |
-| `--nat-table-z-index-focus-cell`           | `7`                              |
+| `--nat-table-z-index-focus-cell`           | `7` (focused pinned cells only)  |
 | `--nat-table-z-index-resize-handle`        | `8`                              |
 | `--nat-table-z-index-resize-guide`         | `9`                              |
 | `--nat-table-z-index-drag-preview`         | `12`                             |

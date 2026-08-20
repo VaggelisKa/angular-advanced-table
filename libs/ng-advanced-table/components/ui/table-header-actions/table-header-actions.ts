@@ -1,7 +1,8 @@
-import { GridCellWidget } from '@angular/aria/grid';
+/* eslint-disable max-lines -- header-actions component: presentational header controls plus the aria-menu keyboard and focus wiring (overlay attach, deferred-item focus, post-reorder refocus) that must live beside the overlay template it drives. */
 import { Menu, MenuContent, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import { OverlayModule } from '@angular/cdk/overlay';
-import { Component, computed, inject, input, viewChild } from '@angular/core';
+import type { ElementRef } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, afterNextRender, computed, inject, input, viewChild } from '@angular/core';
 
 import { FlexRender } from '@tanstack/angular-table';
 import type { HeaderContext, RowData } from '@tanstack/angular-table';
@@ -43,7 +44,7 @@ import type { NatTablePinSide } from '../../utils/header-actions-labels.util';
 
 @Component({
   selector: 'nat-table-header-actions',
-  imports: [FlexRender, GridCellWidget, Menu, MenuContent, MenuItem, MenuTrigger, OverlayModule],
+  imports: [FlexRender, Menu, MenuContent, MenuItem, MenuTrigger, OverlayModule],
   templateUrl: './table-header-actions.html',
   styleUrl: './table-header-actions.css'
 })
@@ -56,6 +57,10 @@ export class NatTableHeaderActions {
   protected readonly pinSides = NAT_HEADER_ACTIONS_PIN_SIDES;
   protected readonly moveDirections = NAT_HEADER_ACTIONS_MOVE_DIRECTIONS;
   protected readonly pinMenu = viewChild<Menu<string>>('pinMenu');
+  private readonly menuOrigin = viewChild<ElementRef<HTMLElement>>('menuOrigin');
+  private readonly menuTriggerRef = viewChild<MenuTrigger<string>>('menuTrigger');
+  private readonly injector = inject(Injector);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
   protected readonly pinMenuPositions = [...NAT_HEADER_ACTIONS_PIN_MENU_POSITIONS];
 
   public readonly context = input.required<HeaderContext<RowData, unknown>>();
@@ -107,6 +112,58 @@ export class NatTableHeaderActions {
 
   protected sortIndicatorContext(): NatTableSortIndicatorContext<RowData> {
     return buildSortIndicatorContext(this.sortState(), this.ariaSort(), this.column(), this.label());
+  }
+
+  /**
+   * Single activation path for menu items. @angular/aria menus activate items
+   * (Enter, Space, and pointer click) by emitting `itemSelected` with the item
+   * value and closing the menu with refocus; they never fire a DOM click on the
+   * item element.
+   */
+  /**
+   * The overlay attaches its embedded view outside change detection, so under
+   * zoneless CD nothing re-runs the `#pinMenu` view query or the `[menu]`
+   * binding afterwards — the trigger never learns its menu exists. Worse, the
+   * trigger's pending "focus the first item" intent is consumed as soon as the
+   * menu resolves, which is still before the menu's deferred content has
+   * rendered any items, so keyboard opens strand focus on the trigger. Mark the
+   * view to complete the wiring, then re-issue the trigger's open once the
+   * items have rendered so the first item receives focus.
+   */
+  protected onMenuOverlayAttach(): void {
+    this.changeDetectorRef.markForCheck();
+
+    afterNextRender(
+      {
+        write: () => {
+          // One macrotask later: the menu registers its items through a
+          // MutationObserver whose callback is queued behind this render task,
+          // so re-opening synchronously would still find an itemless menu.
+          setTimeout(() => {
+            const trigger = this.menuTriggerRef();
+
+            if (trigger?.expanded()) trigger.open();
+          });
+        }
+      },
+      { injector: this.injector }
+    );
+  }
+
+  protected onMenuItemSelected(value: string): void {
+    for (const side of NAT_HEADER_ACTIONS_PIN_SIDES) {
+      if (value === `pin:${side}`) this.togglePin(side);
+    }
+
+    for (const direction of NAT_HEADER_ACTIONS_MOVE_DIRECTIONS) {
+      if (value === `move:${direction}`) this.moveColumn(direction);
+    }
+
+    // Pinning or moving a column re-inserts its <th> elsewhere in the DOM, which
+    // drops focus to <body> after the menu's own close-with-refocus. This
+    // component moves with its column, so put focus back on the trigger once the
+    // re-render has landed.
+    afterNextRender({ write: () => this.menuOrigin()?.nativeElement.focus() }, { injector: this.injector });
   }
 
   protected togglePin(side: NatTablePinSide): void {

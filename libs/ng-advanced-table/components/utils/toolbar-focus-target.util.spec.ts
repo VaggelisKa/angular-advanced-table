@@ -1,0 +1,122 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import {
+  hasUnreachableShadowRoot,
+  resolveNatToolbarFocusTarget,
+  suppressNatToolbarFocusTargetTabStop
+} from './toolbar-focus-target.util';
+
+describe('FEATURE: Toolbar focus-target resolution', () => {
+  let host: HTMLElement;
+
+  beforeEach(() => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+  });
+
+  describe('GIVEN: a wrapper that renders its control in light DOM', () => {
+    beforeEach(() => {
+      host.innerHTML = '<span class="shell"><button class="inner">Go</button></span>';
+    });
+
+    describe('WHEN: the selector matches a descendant', () => {
+      it('THEN: it resolves that descendant', () => {
+        expect(resolveNatToolbarFocusTarget(host, 'button')).toBe(host.querySelector('button'));
+      });
+    });
+
+    describe('WHEN: the selector matches nothing', () => {
+      it('THEN: it resolves null rather than throwing', () => {
+        expect(resolveNatToolbarFocusTarget(host, '.missing')).toBeNull();
+      });
+    });
+
+    describe('WHEN: the selector is malformed', () => {
+      it('THEN: it resolves null instead of propagating the DOM error', () => {
+        expect(resolveNatToolbarFocusTarget(host, ':::not-a-selector')).toBeNull();
+      });
+    });
+
+    describe('WHEN: the selector is blank', () => {
+      it('THEN: it resolves null without querying', () => {
+        expect(resolveNatToolbarFocusTarget(host, '   ')).toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN: a wrapper that renders its control into an open shadow root', () => {
+    beforeEach(() => {
+      const root = host.attachShadow({ mode: 'open' });
+
+      root.innerHTML = '<button class="inner">Go</button>';
+      host.innerHTML = '<button class="light-decoy">Decoy</button>';
+    });
+
+    describe('WHEN: the same selector matches in both roots', () => {
+      it('THEN: it prefers the shadow-root match over light DOM', () => {
+        expect(resolveNatToolbarFocusTarget(host, 'button')).toBe(host.shadowRoot?.querySelector('button'));
+      });
+    });
+  });
+
+  describe('GIVEN: a resolved focus target', () => {
+    describe('WHEN: the tab stop is suppressed', () => {
+      it('THEN: it takes the element out of the sequential tab order', () => {
+        const target = document.createElement('button');
+
+        suppressNatToolbarFocusTargetTabStop(target);
+
+        expect(target.getAttribute('tabindex')).toBe('-1');
+      });
+    });
+
+    describe('WHEN: the element already carries an explicit tab index', () => {
+      it('THEN: it overwrites a tabbable value so the wrapper stays the only stop', () => {
+        const target = document.createElement('button');
+
+        target.setAttribute('tabindex', '0');
+        suppressNatToolbarFocusTargetTabStop(target);
+
+        expect(target.getAttribute('tabindex')).toBe('-1');
+      });
+    });
+  });
+
+  describe('GIVEN: a host that may hide its content behind a closed shadow root', () => {
+    describe('WHEN: the host is a plain element', () => {
+      it('THEN: it reports the root as reachable', () => {
+        expect(hasUnreachableShadowRoot(host)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the host exposes an open shadow root', () => {
+      it('THEN: it reports the root as reachable', () => {
+        host.attachShadow({ mode: 'open' });
+
+        expect(hasUnreachableShadowRoot(host)).toBe(false);
+      });
+    });
+
+    describe('WHEN: the host is a defined custom element with no reachable content', () => {
+      it('THEN: it reports the root as unreachable so the warning can say why', () => {
+        const tagName = 'nat-closed-shadow-probe';
+
+        customElements.define(
+          tagName,
+          class extends HTMLElement {
+            public constructor() {
+              super();
+              this.attachShadow({ mode: 'closed' }).innerHTML = '<button></button>';
+            }
+          }
+        );
+
+        const element = document.createElement(tagName);
+
+        document.body.appendChild(element);
+
+        expect(hasUnreachableShadowRoot(element)).toBe(true);
+      });
+    });
+  });
+});

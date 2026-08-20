@@ -96,10 +96,10 @@
                 cdkDrag
                 cdkDragLockAxis="x"
                 cdkDragPreviewContainer="parent"
+                natTableCell
                 ngGridCell
                 role="columnheader"
                 scope="col"
-                (focusin)="onCellFocusIn($event)"
                 (keydown)="onHeaderKeydown($event, header.column)">
                 <ng-container
                   [ngTemplateOutlet]="headerCellContent"
@@ -118,10 +118,10 @@
                 [attr.data-testid]="`nat-table-header-${header.column.id}`"
                 [class]="columnState?.headerClassMap"
                 [natTableHeaderCellLayout]="columnState"
+                natTableCell
                 ngGridCell
                 role="columnheader"
                 scope="col"
-                (focusin)="onCellFocusIn($event)"
                 (keydown)="onHeaderKeydown($event, header.column)">
                 <ng-container
                   [ngTemplateOutlet]="headerCellContent"

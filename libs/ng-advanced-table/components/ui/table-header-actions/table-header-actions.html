@@ -1,8 +1,12 @@
 <!--
-  One ngGridCellWidget per cell, per the @angular/aria grid pattern: a cell with several
-  controls wraps them in a single complex widget instead of marking each control.
+  Deliberately NOT an ngGridCellWidget: the header cell never registers a widget
+  (GridCell's content query cannot see into this flexRender-created view), yet the
+  widget directive still self-assigns tabindex="0" while its cell is active — a
+  focus stop between the cell and its controls that swallows Tab. The header
+  keyboard model (Enter into controls, Tab between them, Escape back) is owned by
+  the table's cell-interaction layer instead.
 -->
-<div [class.is-align-end]="isAlignedEnd()" class="header-content" ngGridCellWidget widgetType="complex">
+<div [class.is-align-end]="isAlignedEnd()" class="header-content">
   <div class="header-actions-row">
     <div class="header-leading">
       @if (canSort()) {
@@ -70,8 +74,20 @@
           [cdkConnectedOverlay]="{ origin: menuOrigin, usePopover: 'inline' }"
           [cdkConnectedOverlayOpen]="menuTrigger.expanded()"
           [cdkConnectedOverlayPositions]="pinMenuPositions"
-          cdkAttachPopoverAsChild>
-          <div #pinMenu="ngMenu" [attr.aria-label]="getMenuLabel()" class="column-menu" ngMenu>
+          cdkAttachPopoverAsChild
+          (attach)="onMenuOverlayAttach()">
+          <!--
+            Activation is wired through the menu's itemSelected output, not per-item
+            (click): @angular/aria activates menu items on Enter/Space (and pointer
+            click) by emitting itemSelected with the item's value — it never fires a
+            DOM click on the item, so a (click)-only item is keyboard-dead.
+          -->
+          <div
+            #pinMenu="ngMenu"
+            [attr.aria-label]="getMenuLabel()"
+            class="column-menu"
+            ngMenu
+            (itemSelected)="onMenuItemSelected($event)">
             <ng-template ngMenuContent>
               @if (canPin()) {
                 @for (side of pinSides; track side) {
@@ -80,11 +96,10 @@
                     [attr.data-pin-side]="side"
                     [attr.data-testid]="`nat-table-header-pin-${side}-${column().id}`"
                     [class.is-active]="isPinned(side)"
-                    [value]="getPinLabel(side)"
+                    [value]="`pin:${side}`"
                     class="column-menu-item"
                     ngMenuItem
-                    type="button"
-                    (click)="togglePin(side); menuTrigger.close()">
+                    type="button">
                     <span [class.is-visible]="isPinned(side)" aria-hidden="true" class="column-menu-item__check">
                       <svg aria-hidden="true" focusable="false" viewBox="0 0 12 12">
                         <path d="M2 6.25 4.55 8.8 10 3.35" />
@@ -114,11 +129,10 @@
                     [attr.data-move-direction]="direction"
                     [attr.data-testid]="`nat-table-header-move-${direction}-${column().id}`"
                     [disabled]="!canMoveColumn(direction)"
-                    [value]="getMoveLabel(direction)"
+                    [value]="`move:${direction}`"
                     class="column-menu-item"
                     ngMenuItem
-                    type="button"
-                    (click)="moveColumn(direction); menuTrigger.close()">
+                    type="button">
                     <span aria-hidden="true" class="column-menu-item__check"></span>
                     <span class="column-menu-item__label">{{ getMoveText(direction) }}</span>
                     <span [attr.data-move-direction]="direction" aria-hidden="true" class="column-menu-item__move">

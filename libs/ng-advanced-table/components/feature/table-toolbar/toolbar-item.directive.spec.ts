@@ -24,6 +24,27 @@ class DirectiveHost {
   public readonly dynamicPosition = signal<NatToolbarItemPosition>('center');
 }
 
+/** Stands in for a design-system control: the host is a shell, the button is inside it. */
+@Component({
+  selector: 'nat-wrapped-control',
+  template: `<button class="inner" type="button">Wrapped</button>`
+})
+class WrappedControl {}
+
+@Component({
+  selector: 'nat-focus-target-host',
+  imports: [NatTableToolbar, NatToolbarItem, WrappedControl],
+  template: `
+    <nat-table-toolbar>
+      <nat-wrapped-control [natToolbarItemFocusTarget]="selector()" id="wrapped" natToolbarItem="wrapped" />
+      <button id="plain" natToolbarItem="plain" type="button">Plain</button>
+    </nat-table-toolbar>
+  `
+})
+class FocusTargetHost {
+  public readonly selector = signal<string | undefined>('button.inner');
+}
+
 @Component({
   selector: 'nat-toolbarless-host',
   imports: [NatToolbarItem],
@@ -118,6 +139,68 @@ describe('FEATURE: NatToolbarItem', () => {
 
           orphanFixture.detectChanges();
         }).toThrow(/Toolbar/);
+      });
+    });
+  });
+
+  describe('GIVEN: a toolbar item wraps its real control', () => {
+    let wrappedFixture: ComponentFixture<FocusTargetHost>;
+
+    const host = (): HTMLElement => (wrappedFixture.nativeElement as HTMLElement).querySelector('#wrapped') as HTMLElement;
+    const inner = (): HTMLElement => (wrappedFixture.nativeElement as HTMLElement).querySelector('.inner') as HTMLElement;
+
+    beforeEach(async () => {
+      wrappedFixture = TestBed.createComponent(FocusTargetHost);
+      wrappedFixture.detectChanges();
+
+      await wrappedFixture.whenStable();
+    });
+
+    describe('WHEN: the nominated target is resolved', () => {
+      it('THEN: it pulls the inner control out of the sequential tab order', () => {
+        // Without this the wrapper (carrying the roving tabindex) and the inner
+        // button would both be tab stops, so Tab would enter the toolbar twice.
+        expect(inner().getAttribute('tabindex')).toBe('-1');
+      });
+    });
+
+    describe('WHEN: the widget element is read for Aria registration', () => {
+      it('THEN: it stays the host so hit-testing keeps resolving the item', () => {
+        // Aria resolves events with `item.element().contains(target)`; repointing
+        // this at the inner control would break click/focusin/keydown routing.
+        const ref = wrappedFixture.debugElement.query(By.css('#wrapped')).injector.get(NAT_TOOLBAR_ITEM);
+
+        expect(ref.element).toBe(host());
+      });
+    });
+
+    describe('WHEN: the host receives focus', () => {
+      it('THEN: it forwards focus to the nominated control', () => {
+        host().focus();
+
+        expect(document.activeElement).toBe(inner());
+      });
+    });
+
+    describe('WHEN: no focus target is configured', () => {
+      it('THEN: a plain item keeps focusing its own host', () => {
+        const plain = (wrappedFixture.nativeElement as HTMLElement).querySelector('#plain') as HTMLElement;
+
+        plain.focus();
+
+        expect(document.activeElement).toBe(plain);
+      });
+    });
+
+    describe('WHEN: the selector is cleared at runtime', () => {
+      it('THEN: focus falls back to the host element', async () => {
+        wrappedFixture.componentInstance.selector.set(undefined);
+        wrappedFixture.detectChanges();
+        await wrappedFixture.whenStable();
+
+        host().focus();
+
+        expect(document.activeElement).toBe(host());
       });
     });
   });

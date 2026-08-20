@@ -243,7 +243,11 @@ describe('FEATURE: TableShowcase', () => {
         expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-toolbar')).toHaveLength(1);
         expect(host().querySelector('.kitchen-metrics-controls nat-render-metrics-filter')).toBeTruthy();
         expect(host().querySelector('app-table-search')).toBeTruthy();
-        expect(host().querySelector('nat-table-toolbar nat-table-pagination[natToolbarItemPosition="end"]')).toBeTruthy();
+        // Pagination is a sibling of the toolbar, never a descendant — nesting it
+        // would produce role="toolbar" inside role="toolbar" and hide the pager
+        // buttons behind the toolbar's single roving Tab stop.
+        expect(host().querySelector('nat-table-toolbar nat-table-pagination')).toBeFalsy();
+        expect(tableSurfaceChildren.filter((tagName) => tagName === 'nat-table-pagination')).toHaveLength(1);
         expect(host().querySelector('nat-table-scroll-control')).toBeTruthy();
         expect(host().querySelector('nat-render-metrics-filter')).toBeTruthy();
         expect(host().querySelector('nat-render-metrics-panel')).toBeTruthy();

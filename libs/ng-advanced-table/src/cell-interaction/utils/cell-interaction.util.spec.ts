@@ -53,8 +53,8 @@ const pressKeydown = (
 };
 
 /** Dispatches a real focusin on `dispatchTarget`, routed through `handleCellInteractionFocusIn`. */
-const fireFocusIn = (listenElement: HTMLElement, dispatchTarget: HTMLElement): boolean => {
-  const event = new FocusEvent('focusin', { bubbles: true });
+const fireFocusIn = (listenElement: HTMLElement, dispatchTarget: HTMLElement, relatedTarget?: HTMLElement): boolean => {
+  const event = new FocusEvent('focusin', { bubbles: true, relatedTarget });
   let handled = false;
 
   const listener = (nativeEvent: Event): void => {
@@ -526,6 +526,38 @@ describe('FEATURE: NatTable cell-interaction keyboard model', () => {
         document.removeEventListener('focusin', listener);
 
         expect(handled).toBe(false);
+      });
+    });
+
+    // Shift+Tab walks backwards out of a delegated cell *through the cell element*.
+    // Delegating then throws focus back into the control, and the two ping-pong
+    // forever — the cell becomes impossible to leave backwards (#311).
+    describe('WHEN: focus arrives at the cell from a control inside it', () => {
+      it('THEN: it does not redirect, so a backward exit can leave the cell', () => {
+        const cell = buildCell('<button id="only" type="button">Sort</button>');
+        const control = cell.querySelector<HTMLElement>('#only') as HTMLElement;
+
+        expect(fireFocusIn(cell, cell, control)).toBe(false);
+      });
+    });
+
+    describe('WHEN: focus arrives at the cell from a descendant that is not the control', () => {
+      it('THEN: it still does not redirect, because the exit passes through wrappers', () => {
+        const cell = buildCell('<div id="wrapper"><button id="only" type="button">Sort</button></div>');
+        const wrapper = cell.querySelector<HTMLElement>('#wrapper') as HTMLElement;
+
+        expect(fireFocusIn(cell, cell, wrapper)).toBe(false);
+      });
+    });
+
+    describe('WHEN: focus arrives at the cell from outside it', () => {
+      it('THEN: it delegates onto the single control as before', () => {
+        const cell = buildCell('<button id="only" type="button">Sort</button>');
+        const outside = document.createElement('button');
+
+        document.body.appendChild(outside);
+
+        expect(fireFocusIn(cell, cell, outside)).toBe(true);
       });
     });
   });

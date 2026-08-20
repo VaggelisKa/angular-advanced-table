@@ -2,21 +2,23 @@
   display: block;
 }
 
-.pagination-toolbar {
+/*
+ * Pagination is a plain control row, not a WAI-ARIA toolbar: the page-size
+ * select and the pager buttons are ordinary tab stops. Keeping the row
+ * toolbar-free is deliberate — a roving tabindex would collapse all three
+ * controls into a single Tab stop, which is not what users expect from a
+ * pager, and nesting it inside a consumer toolbar produced role="toolbar"
+ * inside role="toolbar".
+ */
+.pagination-row {
   box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nat-table-toolbar-gap, var(--nat-table-space-toolbar-gap, var(--sys-nat-table-space-toolbar-gap, 14px)));
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nat-table-toolbar-padding, var(--nat-table-space-card-compact, var(--sys-nat-table-space-card-compact, 10px 20px)));
+  background: var(--nat-table-toolbar-background, var(--nat-table-color-surface, var(--sys-nat-table-color-surface, canvas)));
   border-bottom: 1px solid
     var(--nat-table-color-border, var(--sys-nat-table-color-border, color-mix(in srgb, currentColor 16%, transparent)));
-
-  --sys-nat-table-toolbar-gap: var(
-    --nat-table-toolbar-gap,
-    var(--nat-table-space-toolbar-gap, var(--sys-nat-table-space-toolbar-gap, 14px))
-  );
-  --sys-nat-table-toolbar-padding: var(
-    --nat-table-toolbar-padding,
-    var(--nat-table-space-card-compact, var(--sys-nat-table-space-card-compact, 10px 20px))
-  );
-  --sys-nat-table-toolbar-background: var(
-    --nat-table-toolbar-background,
-    var(--nat-table-color-surface, var(--sys-nat-table-color-surface, canvas))
-  );
 }

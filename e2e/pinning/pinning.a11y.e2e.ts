@@ -50,6 +50,44 @@ test.describe('FEATURE: Column pinning accessibility', () => {
       });
     });
 
+    // Regression: header column menus activate through @angular/aria's
+    // itemSelected model (Enter/Space emit the item value), not per-item DOM
+    // clicks, and a keyboard open must land focus on the first menu item even
+    // though the menu's items render deferred after the overlay attaches.
+    test.describe('WHEN: the header column menu is driven by keyboard only', () => {
+      test('THEN: it opens on the first item, pins the column, and returns focus to the trigger', async ({ page }) => {
+        const scope = page.getByTestId('docs-example-column-pinning-preview-panel');
+        const sortButton = scope.locator('thead th[data-column-id="category"] .sort-button');
+        const menuButton = scope.getByTestId('nat-table-header-actions-menu-category');
+        const pinLeftItem = page.getByTestId('nat-table-header-pin-left-category');
+        const pinnedHeader = scope.locator('thead th[data-column-id="category"].is-pinned-left');
+
+        await test.step('GIVEN: focus is on the sort button and Tab reaches the menu trigger', async () => {
+          await sortButton.click();
+          await page.keyboard.press('Tab');
+          await expect(menuButton).toBeFocused();
+        });
+
+        await test.step('THEN: Enter opens the menu with the first item focused', async () => {
+          await page.keyboard.press('Enter');
+          await expect(pinLeftItem).toBeFocused();
+        });
+
+        await test.step('THEN: Enter pins the column and focus returns to the menu trigger', async () => {
+          await page.keyboard.press('Enter');
+          await expect(pinnedHeader).toHaveCount(1);
+          await expect(menuButton).toBeFocused();
+        });
+
+        await test.step('THEN: the same path unpins the column again', async () => {
+          await page.keyboard.press('Enter');
+          await expect(pinLeftItem).toBeFocused();
+          await page.keyboard.press('Enter');
+          await expect(pinnedHeader).toHaveCount(0);
+        });
+      });
+    });
+
     test.describe('WHEN: the column pinning example is scanned with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
         await expectNoAxeViolations(page, '[data-testid="docs-example-column-pinning-preview-panel"]');

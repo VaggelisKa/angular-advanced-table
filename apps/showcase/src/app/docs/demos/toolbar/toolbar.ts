@@ -12,6 +12,7 @@ import {
   withNatTableHeaderActions
 } from 'ng-advanced-table/components';
 
+import { WrappedToolbarExample } from './wrapped-controls';
 import { TableSearch } from '../../../ui/table-search/table-search';
 
 type DemoItem = {
@@ -55,7 +56,16 @@ const FILTER_PRESETS: readonly FilterPreset[] = [
 
 @Component({
   selector: 'app-toolbar',
-  imports: [NatTable, NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarGroup, NatToolbarItem, TableSearch],
+  imports: [
+    NatTable,
+    NatTableExport,
+    NatTableSurface,
+    NatTableToolbar,
+    NatToolbarGroup,
+    NatToolbarItem,
+    TableSearch,
+    WrappedToolbarExample
+  ],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.css',
   host: {
