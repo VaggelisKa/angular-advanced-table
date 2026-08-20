@@ -138,9 +138,15 @@
             class="kitchen-table-search"
             label="Search symbol, company, exchange, desk, or id"
             placeholder="Try AURA01, NASDAQ, Momentum, or eqt-00042..." />
-
-          <nat-table-pagination [pageSizeOptions]="pageSizeOptions" class="kitchen-table-pagination" natToolbarItemPosition="end" />
         </nat-table-toolbar>
+
+        <!--
+          Pagination sits beside the toolbar, never inside it: it is a plain
+          control row whose select and pager buttons are ordinary Tab stops,
+          so nesting it would put role="toolbar" inside role="toolbar" and
+          collapse all three controls behind the toolbar's single Tab stop.
+        -->
+        <nat-table-pagination [pageSizeOptions]="pageSizeOptions" class="kitchen-table-pagination" />
 
         <nat-table
           #renderMetricsTable

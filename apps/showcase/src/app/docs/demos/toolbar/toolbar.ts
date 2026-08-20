@@ -5,6 +5,7 @@ import { NatTable } from 'ng-advanced-table';
 import type { NatTableUserState, SortingState, VisibilityState } from 'ng-advanced-table';
 import { NatTableExport, NatTableSurface, NatTableToolbar, NatToolbarGroup, NatToolbarItem } from 'ng-advanced-table/components';
 
+import { WrappedToolbarExample } from './wrapped-controls';
 import { DemoAside, DemoFacts, DemoLayout, DemoSection, TableSearch } from '../../../ui';
 import type { DemoFact } from '../../../ui';
 import { DEMO_ITEMS, demoItemColumns } from '../demo-data';
@@ -39,7 +40,8 @@ const FILTER_PRESETS: readonly FilterPreset[] = [
     DemoAside,
     DemoFacts,
     DemoLayout,
-    DemoSection
+    DemoSection,
+    WrappedToolbarExample
   ],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.css',

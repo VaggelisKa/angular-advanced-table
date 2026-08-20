@@ -102,6 +102,59 @@ test.describe('FEATURE: Sorting accessibility', () => {
       });
     });
 
+    // Regression for #311: a header cell whose only control is the sort button
+    // delegates focus from the cell onto that control. Delegating on *every*
+    // focusin made Shift+Tab ping-pong between the cell and the button forever,
+    // so the header could not be left backwards. Delegation must fire on
+    // arrival only, never on a backward exit passing through the cell.
+    test.describe('WHEN: Shift+Tab leaves a header whose only control is the sort button', () => {
+      test('THEN: it walks back out of the grid instead of bouncing on the sort button', async ({ page }) => {
+        // The pinned-columns example enables sorting without pinning or reorder
+        // actions, so its header cells render a sort button and no column menu.
+        await loadDocsExamplePreview(page, 'sorting-pinned-columns', 'Sorting with pinned columns');
+
+        const scope = page.getByTestId('docs-example-sorting-pinned-columns-preview-panel');
+        const sortButtons = scope.locator('thead .sort-button');
+        const secondSort = sortButtons.nth(1);
+
+        await test.step('GIVEN: the header cells carry a single control', async () => {
+          await expect(scope.locator('thead .menu-button')).toHaveCount(0);
+          await expect(secondSort).toBeVisible();
+        });
+
+        await test.step('THEN: repeated Shift+Tab never returns to the sort button it started on', async () => {
+          await secondSort.focus();
+          await expect(secondSort).toBeFocused();
+
+          const visited: string[] = [];
+
+          for (let step = 0; step < 4; step++) {
+            await page.keyboard.press('Shift+Tab');
+            visited.push(
+              await page.evaluate(() => {
+                const active = document.activeElement as HTMLElement | null;
+                const column = active?.closest('th')?.getAttribute('data-column-id') ?? '-';
+
+                return `${active?.tagName.toLowerCase() ?? 'none'}|${active?.className ?? ''}|${column}`;
+              })
+            );
+          }
+
+          // The loop re-focused the same column's sort button on every other step.
+          const bounced = visited.filter((entry) => entry.includes('sort-button') && entry.endsWith('|id'));
+
+          expect(bounced).toHaveLength(0);
+          await expect(secondSort).not.toBeFocused();
+        });
+
+        await test.step('THEN: focus arriving on the header cell still delegates onto its sort button', async () => {
+          await secondSort.evaluate((button) => button.closest<HTMLElement>('th')?.focus());
+
+          await expect(secondSort).toBeFocused();
+        });
+      });
+    });
+
     test.describe('WHEN: the sorting example is scanned with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
         await expectNoAxeViolations(page, '[data-testid="docs-example-sorting-preview-panel"]');

@@ -13,8 +13,9 @@ test.describe('FEATURE: Pagination', () => {
       test('THEN: it supports client-side pagination and page size configuration', async ({ page }) => {
         const clientCard = page.getByTestId('pagination-client');
         const clientTable = clientCard.locator('table');
-        const pager = clientCard.getByRole('toolbar');
-        const rowsPerPageSelect = pager.getByRole('combobox');
+        // Pagination is a plain control row, not a toolbar — its controls are ordinary tab stops.
+        const pager = clientCard.getByRole('group', { name: 'Table pagination' });
+        const rowsPerPageSelect = clientCard.getByRole('combobox');
         const nextBtn = pager.getByRole('button', { name: 'Next page' });
         const prevBtn = pager.getByRole('button', { name: 'Previous page' });
 
@@ -56,7 +57,7 @@ test.describe('FEATURE: Pagination', () => {
       test('THEN: it supports manual pagination', async ({ page }) => {
         const manualCard = page.getByTestId('pagination-manual');
         const manualTable = manualCard.locator('table');
-        const pager = manualCard.getByRole('toolbar');
+        const pager = manualCard.getByRole('group', { name: 'Table pagination' });
         const nextBtn = pager.getByRole('button', { name: 'Next page' });
 
         await test.step('THEN: page 1 shows the first three names', async () => {

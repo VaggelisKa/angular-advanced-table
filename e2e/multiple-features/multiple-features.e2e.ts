@@ -128,7 +128,9 @@ test.describe('FEATURE: Multiple features', () => {
     test.describe('WHEN: the Next page button is clicked', () => {
       test('THEN: it enables the Previous page button', async ({ page }) => {
         // test.slow();
-        const pager = page.getByRole('toolbar', { name: 'Live movers table toolbar' });
+        // Pagination is a sibling of the toolbar, not a descendant — it is a plain
+        // control row, so it is scoped by its own group role instead.
+        const pager = page.getByRole('group', { name: 'Table pagination' });
         const nextBtn = pager.getByRole('button', { name: 'Next page' });
         const prevBtn = pager.getByRole('button', { name: 'Previous page' });
 

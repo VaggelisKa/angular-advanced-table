@@ -8,6 +8,22 @@ Keep DOM order aligned with screen-reader and roving-keyboard order. Visual plac
 
 A Table Action is a user-triggered operation that acts on table rows or table presentation state. Toolbar placement is optional; the behavior is not defined by where the control is rendered.
 
+## Wrapper Controls
+
+`natToolbarItem` puts the roving tabindex on the element it sits on, and that element is what receives focus. When the item is a wrapper that renders its real control inside itself — a design-system component, a Stencil custom element — focus would land on a non-interactive shell while the inner control stayed in the tab order as a second stop.
+
+Use `natToolbarItemFocusTarget` to nominate the control:
+
+```html
+<nat-table-toolbar accessibleName="Table actions">
+  <my-button natToolbarItem="archive" natToolbarItemFocusTarget="button">Archive</my-button>
+</nat-table-toolbar>
+```
+
+The selector searches an open shadow root before light DOM, so the same selector works whether the wrapper renders into shadow or light DOM. The resolved control is taken out of the sequential tab order, keeping the toolbar to a single Tab stop, and is re-suppressed when the wrapper re-renders. A control behind a **closed** shadow root cannot be reached — the component must be authored with an open root (Stencil: `shadow: true`, or `delegatesFocus: true`).
+
+Registration and hit-testing stay on the wrapper, so click, focus and keyboard routing continue to resolve the item normally.
+
 ## Keyboard Order
 
 Toolbar items use roving focus. Put controls in the order users should encounter them, then use toolbar positions for visual grouping. Do not place standalone composite controls inside the toolbar unless their individual interactive elements register correctly.

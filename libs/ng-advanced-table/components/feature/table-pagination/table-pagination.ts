@@ -16,11 +16,8 @@ import type {
   NatTableAccessibilityPagerLabels
 } from 'ng-advanced-table/locale';
 
-import { NatToolbarGroup } from '../../ui/toolbar-group/toolbar-group';
-import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
 import { formatNatTableAccessibilityNumber } from '../../utils/accessibility-number.util';
 import { DEFAULT_PAGE_SIZE_OPTIONS, sanitizePageSizeOptions } from '../../utils/page-size.util';
-import { NatTableToolbar } from '../table-toolbar/table-toolbar';
 
 type PageSizeOption = {
   readonly pageSize: number;
@@ -28,9 +25,17 @@ type PageSizeOption = {
   readonly ariaLabel: string;
 };
 
+/**
+ * Bundled page-size + pager control row.
+ *
+ * Deliberately **not** a `<nat-table-toolbar>`: the two controls are ordinary
+ * tab stops. A roving tabindex would collapse the select and both pager
+ * buttons into one Tab stop — unexpected for a pager — and projecting this
+ * component into a consumer toolbar nested `role="toolbar"` inside
+ * `role="toolbar"`. Compose it beside `<nat-table-toolbar>`, not inside it.
+ */
 @Component({
   selector: 'nat-table-pagination',
-  imports: [NatTableToolbar, NatToolbarGroup, NatToolbarItem],
   templateUrl: './table-pagination.html',
   styleUrls: ['../table-page-size/table-page-size.css', '../table-pager/table-pager.css', './table-pagination.css']
 })

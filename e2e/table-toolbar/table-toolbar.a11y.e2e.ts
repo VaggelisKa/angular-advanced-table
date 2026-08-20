@@ -211,6 +211,83 @@ test.describe('FEATURE: Table toolbar', () => {
       });
     });
 
+    test.describe('WHEN: a toolbar item wraps its real control', () => {
+      // natToolbarItemFocusTarget contract: the roving tabindex stays on the
+      // wrapper (Aria registers and hit-tests by host element), but focus is
+      // forwarded to the nominated descendant, and that descendant is pulled
+      // out of the tab order so the toolbar keeps exactly one Tab stop.
+      test('THEN: focus lands on the inner control for both light-DOM and shadow-DOM wrappers', async ({ page }) => {
+        const toolbar = page.getByRole('toolbar', { name: 'Wrapped controls toolbar' });
+        const lightButton = page.getByTestId('wrapped-light-button');
+        const shadowButton = page.getByTestId('wrapped-shadow-button');
+        const plainButton = page.getByTestId('wrapped-plain-button');
+        const lastAction = page.getByTestId('wrapped-last-action');
+
+        await test.step('GIVEN: neither inner control is an independent tab stop', async () => {
+          await expect(lightButton).toHaveAttribute('tabindex', '-1');
+          await expect(shadowButton).toHaveAttribute('tabindex', '-1');
+        });
+
+        await test.step('THEN: arrowing onto a wrapper focuses its inner button, not the shell', async () => {
+          await lightButton.focus();
+          await expect(lightButton).toBeFocused();
+
+          await page.keyboard.press('ArrowRight');
+          await expect(shadowButton).toBeFocused();
+
+          await page.keyboard.press('ArrowRight');
+          await expect(plainButton).toBeFocused();
+
+          await page.keyboard.press('ArrowLeft');
+          await expect(shadowButton).toBeFocused();
+        });
+
+        await test.step('THEN: Enter activates the inner control', async () => {
+          await page.keyboard.press('Enter');
+          await expect(lastAction).toHaveText('wrapped-shadow');
+
+          await lightButton.focus();
+          await page.keyboard.press('Enter');
+          await expect(lastAction).toHaveText('wrapped-light');
+        });
+
+        await test.step('THEN: Tab from a wrapper exits the toolbar instead of entering its shell', async () => {
+          await shadowButton.focus();
+          await page.keyboard.press('Tab');
+
+          await expect(shadowButton).not.toBeFocused();
+          await expect(lightButton).not.toBeFocused();
+          await expect(plainButton).not.toBeFocused();
+
+          const focusInsideToolbar = await toolbar.evaluate((element) => {
+            // activeElement retargets to the shadow host, so walk into any open root
+            let active: Element | null = document.activeElement;
+
+            while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+
+            return element.contains(active);
+          });
+
+          expect(focusInsideToolbar).toBe(false);
+        });
+
+        await test.step('THEN: Shift+Tab leaves the control instead of being thrown back into it', async () => {
+          // Regression guard: the host carries the roving tabindex and precedes
+          // its control, so a naive focus redirect bounces Shift+Tab straight
+          // back in and traps the user inside the wrapper.
+          await lightButton.focus();
+          await expect(lightButton).toBeFocused();
+
+          await page.keyboard.press('Shift+Tab');
+          await expect(lightButton).not.toBeFocused();
+
+          await page.keyboard.press('Shift+Tab');
+          await expect(lightButton).not.toBeFocused();
+          await expect(shadowButton).not.toBeFocused();
+        });
+      });
+    });
+
     test.describe('WHEN: the table toolbar example is scanned with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
         await expectNoAxeViolations(page, '[data-testid="docs-example-toolbar-actions-preview-panel"]');

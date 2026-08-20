@@ -46,6 +46,12 @@ export const natTableCellControlPreparation = {
   prepare(control: HTMLElement): void {
     if (control.hasAttribute('ngGridCellWidget') || control.hasAttribute('disabled')) return;
 
+    // Menus attached inside a cell (e.g. header-action menus rendered as popover
+    // children of the <th>) own their items' roving tabindex. Managing those
+    // items fights the menu's own model on every render and can strand its
+    // active-item state, so menu-owned controls are never cell controls.
+    if (control.closest('[role="menu"], [role="menubar"]')) return;
+
     if (!control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE) && control.tabIndex < 0) return;
 
     if (!control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) {

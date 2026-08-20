@@ -61,6 +61,56 @@ test.describe('FEATURE: Multiple features accessibility', () => {
       });
     });
 
+    test.describe('WHEN: Tab traverses the toolbar and the pagination row', () => {
+      // The toolbar and the pagination row are siblings on purpose. The toolbar
+      // is a WAI-ARIA toolbar (one roving Tab stop, arrows inside); pagination
+      // is a plain control row (three ordinary Tab stops). Nesting them made
+      // Tab stop at the page-size select and skip both pager buttons entirely.
+      test('THEN: the toolbar keeps one tab stop while every pagination control gets its own', async ({ page }) => {
+        const toolbar = page.getByRole('toolbar', { name: 'Live movers table toolbar' });
+        const pager = page.getByRole('group', { name: 'Table pagination' });
+        const searchInput = page.locator('app-table-search input');
+        const sizeSelect = page.locator('.page-size-select');
+        const nextBtn = pager.getByRole('button', { name: 'Next page' });
+        const prevBtn = pager.getByRole('button', { name: 'Previous page' });
+
+        await test.step('GIVEN: pagination is not nested inside the toolbar', async () => {
+          await expect(toolbar).toHaveCount(1);
+          await expect(toolbar.locator('nat-table-pagination')).toHaveCount(0);
+          await expect(pager).toHaveCount(1);
+        });
+
+        await test.step('THEN: Tab leaves the toolbar rather than walking its items', async () => {
+          await searchInput.focus();
+          await page.keyboard.press('Tab');
+
+          const focusInsideToolbar = await toolbar.evaluate((element) => element.contains(document.activeElement));
+
+          expect(focusInsideToolbar).toBe(false);
+        });
+
+        await test.step('THEN: Tab reaches the page-size select and then Next', async () => {
+          // Previous is disabled on the first page, so it is skipped by Tab.
+          await expect(prevBtn).toBeDisabled();
+
+          await sizeSelect.press('Tab');
+
+          await expect(nextBtn).toBeFocused();
+        });
+
+        await test.step('THEN: after paging forward Tab reaches Previous too', async () => {
+          await nextBtn.press('Enter');
+          await expect(prevBtn).toBeEnabled();
+
+          await sizeSelect.press('Tab');
+          await expect(prevBtn).toBeFocused();
+
+          await prevBtn.press('Tab');
+          await expect(nextBtn).toBeFocused();
+        });
+      });
+    });
+
     test.describe('WHEN: the multiple features example is scanned with axe-core', () => {
       // TRACKED DEBT: the bespoke "live market tape" dashboard has pre-existing WCAG AA
       // color-contrast debt from computed/blended muted colors on tinted backgrounds

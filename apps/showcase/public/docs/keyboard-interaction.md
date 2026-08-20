@@ -8,6 +8,8 @@ Press Enter on a focused grid cell to move focus into the first interactive cont
 
 Cells whose entire content is one arrow-safe control can delegate directly to that control. Inputs, selects, comboboxes, and other arrow-consuming controls stay on the Enter-to-interact model.
 
+Header cells follow the same model: sort buttons and column menus rendered by `withNatTableHeaderActions(...)` are managed controls instead of extra tab stops, and a header whose only control is its sort button delegates focus to it, so a single Enter sorts.
+
 ## Column Shortcuts
 
 Column reordering exposes keyboard paths when `[enableReordering]="true"` is set on the table surface; every column then reorders by default unless it opts out with `meta: { reorderable: false }`. With the surface off, `meta: { reorderable: true }` opts one column into keyboard reordering, drag/drop, and companion move actions. Resizing exposes keyboard paths once the surface sets `[enableColumnResizing]="true"`, for every column except those with `enableResizing: false`. Keep visible instructions and configured shortcuts aligned with `aria-keyshortcuts` when you customize keybindings.

@@ -25,18 +25,23 @@ describe('FEATURE: NatTable UI - Header Actions A11y', () => {
 
   describe('GIVEN: a table with header sort and column actions', () => {
     describe('WHEN: keyboard navigation is used in a header cell', () => {
-      it('THEN: it wraps the header controls in one grid-cell widget and keeps them keyboard-reachable', () => {
+      it('THEN: it renders no grid-cell widget and manages the header controls out of the tab order', () => {
         fixture.detectChanges();
 
         const header = root(fixture).querySelector('thead th[data-column-id="name"]') as HTMLTableCellElement;
-        const widgets = header.querySelectorAll('[ngGridCellWidget]');
+        const headerContent = header.querySelector('.header-content') as HTMLElement;
         const sortButton = header.querySelector('.sort-button') as HTMLButtonElement;
         const menuButton = header.querySelector('.menu-button') as HTMLButtonElement;
 
-        expect(widgets).toHaveLength(1);
-        expect(widgets[0].classList.contains('header-content')).toBe(true);
-        expect(sortButton.tabIndex).toBe(0);
-        expect(menuButton.tabIndex).toBe(0);
+        // No ngGridCellWidget wrapper: the unregistered widget still self-assigns
+        // tabindex="0" while its cell is active, adding a focus stop between the
+        // cell and its controls that swallows Tab.
+        expect(header.querySelectorAll('[ngGridCellWidget]')).toHaveLength(0);
+        expect(headerContent.hasAttribute('tabindex')).toBe(false);
+        expect(sortButton.tabIndex).toBe(-1);
+        expect(sortButton.hasAttribute('data-nat-table-managed-cell-widget')).toBe(true);
+        expect(menuButton.tabIndex).toBe(-1);
+        expect(menuButton.hasAttribute('data-nat-table-managed-cell-widget')).toBe(true);
 
         header.focus();
         header.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));

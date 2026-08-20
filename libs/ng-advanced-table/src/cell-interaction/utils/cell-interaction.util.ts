@@ -56,9 +56,15 @@ const isReachableControl = (element: HTMLElement): boolean =>
     element.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)) &&
   !element.closest('[hidden], [inert], [aria-hidden="true"]');
 
-/** The cell's action controls in document order — what Enter steps into and Tab walks. */
+/**
+ * The cell's action controls in document order — what Enter steps into and Tab
+ * walks. Controls inside a menu attached within the cell are the menu's own
+ * (its roving model handles them while it is open), never the cell's.
+ */
 const cellInteractiveControls = (cell: HTMLElement): HTMLElement[] =>
-  Array.from(cell.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR)).filter(isReachableControl);
+  Array.from(cell.querySelectorAll<HTMLElement>(ROW_ACTIVATE_INTERACTIVE_SELECTOR)).filter(
+    (control) => isReachableControl(control) && !control.closest('[role="menu"], [role="menubar"]')
+  );
 
 /** Whether the cell renders perceivable text outside the given control. */
 const hasContentOutsideControl = (cell: HTMLElement, control: HTMLElement): boolean => {
@@ -187,6 +193,14 @@ export const handleCellInteractionFocusIn = (event: FocusEvent): boolean => {
   const target = event.target;
 
   if (!(target instanceof HTMLElement) || !target.matches(GRID_CELL_SELECTOR)) return false;
+
+  // Delegation must only fire when focus is *arriving* at the cell. Shift+Tab
+  // walks backwards out of a delegated cell through the cell element itself, so
+  // redirecting then throws focus straight back into the control and the two
+  // ping-pong forever — the header becomes impossible to leave backwards (#311).
+  // `relatedTarget` on focusin is the element being left, so an arrival from
+  // inside this cell is an exit in progress and must be allowed through.
+  if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return false;
 
   const control = delegatedCellControl(target);
 

@@ -45,6 +45,22 @@ describe('FEATURE: NatTable cell-control preparation utilities', () => {
     });
   });
 
+  describe('GIVEN: a control inside a menu attached within a cell', () => {
+    describe('WHEN: control preparation runs', () => {
+      it('THEN: it leaves the menu-owned control unmanaged', () => {
+        const menu = document.createElement('div');
+        const control = buildButton();
+
+        menu.setAttribute('role', 'menu');
+        menu.append(control);
+        prepareNatTableCellControl(control);
+
+        expect(control.hasAttribute(NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE)).toBe(false);
+        expect(control.tabIndex).toBe(0);
+      });
+    });
+  });
+
   describe('GIVEN: an author opted a control out with a negative tabindex', () => {
     describe('WHEN: control preparation runs without an existing marker', () => {
       it('THEN: it preserves the author opt-out', () => {

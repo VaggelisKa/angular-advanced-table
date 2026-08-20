@@ -202,21 +202,31 @@ describe('FEATURE: NatTable UI', () => {
     });
 
     describe('WHEN: a NatTablePagination component renders', () => {
-      it('THEN: it renders NatTablePagination as a toolbar with grouped controls', () => {
+      it('THEN: it renders NatTablePagination as labelled groups with no roving toolbar', () => {
         fixture.destroy();
         const paginationFixture = TestBed.createComponent(PaginationToolbarHost);
 
         paginationFixture.detectChanges();
 
-        const toolbar = root(paginationFixture).querySelector('nat-table-pagination nat-table-toolbar') as HTMLElement;
-        const groups = root(paginationFixture).querySelectorAll('nat-table-pagination [natToolbarGroup]');
+        const groups = root(paginationFixture).querySelectorAll('nat-table-pagination [role="group"]');
+        const pagerGroup = root(paginationFixture).querySelector('nat-table-pagination .pager') as HTMLElement;
 
-        expect(toolbar).toBeTruthy();
-        expect(toolbar.getAttribute('role')).toBe('toolbar');
-        expect(toolbar.getAttribute('aria-label')).toBe('Table pagination');
+        // Pagination must not be a WAI-ARIA toolbar: a roving tabindex would
+        // collapse the select and both pager buttons into one Tab stop, and
+        // nesting it in a consumer toolbar nested role="toolbar" in itself.
+        expect(root(paginationFixture).querySelector('nat-table-pagination nat-table-toolbar')).toBeNull();
+        expect(root(paginationFixture).querySelector('nat-table-pagination [role="toolbar"]')).toBeNull();
         expect(groups).toHaveLength(2);
+        expect(pagerGroup.getAttribute('aria-label')).toBe('Table pagination');
         expect(root(paginationFixture).querySelectorAll('nat-table-pagination select.page-size-select option')).toHaveLength(3);
         expect(root(paginationFixture).querySelectorAll('nat-table-pagination .pager-button')).toHaveLength(2);
+
+        // Every control stays an ordinary tab stop — no roving tabindex on any of them.
+        const controls = root(paginationFixture).querySelectorAll('nat-table-pagination select, nat-table-pagination button');
+
+        for (const control of controls) {
+          expect(control.getAttribute('tabindex')).toBeNull();
+        }
       });
     });
   });

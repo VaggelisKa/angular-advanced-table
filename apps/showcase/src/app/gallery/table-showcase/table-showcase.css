@@ -486,9 +486,9 @@
 }
 
 .kitchen-table-pagination {
-  --nat-table-space-card-compact: 0;
-  --nat-table-color-border: transparent;
-  --nat-table-color-surface: transparent;
+  --nat-table-space-card-compact: 14px 20px;
+  --nat-table-color-surface: var(--sc-surface);
+  --nat-table-color-border: var(--sc-border);
 }
 
 .market-table-theme {

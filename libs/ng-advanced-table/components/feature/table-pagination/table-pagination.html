@@ -1,14 +1,13 @@
 @if (controller(); as ctrl) {
   @if (ctrl.enablePagination()) {
-    <nat-table-toolbar [accessibleName]="resolvedPagerAriaLabel()" class="pagination-toolbar">
+    <div class="pagination-row">
       <!-- Page Size Selection -->
-      <div [accessibleName]="resolvedPageSizeAriaLabel()" class="page-size-group" natToolbarGroup="start">
+      <div [attr.aria-label]="resolvedPageSizeAriaLabel()" class="page-size-container" role="group">
         <select
           [attr.aria-controls]="tableElementId()"
           [attr.aria-label]="resolvedPageSizeAriaLabel()"
           [value]="selectedPageSize()"
           class="page-size-select"
-          natToolbarItem="page-size-select"
           (change)="setPageSize(+$any($event.target).value)">
           @for (option of resolvedPageSizeOptions(); track option.pageSize) {
             <option [attr.aria-label]="option.ariaLabel" [value]="option.pageSize">{{ option.text }}</option>
@@ -17,13 +16,12 @@
       </div>
 
       <!-- Pager Navigation -->
-      <div [accessibleName]="resolvedPagerAriaLabel()" class="pager" natToolbarGroup="end">
+      <div [attr.aria-label]="resolvedPagerAriaLabel()" class="pager" role="group">
         <button
           [attr.aria-controls]="tableElementId()"
           [attr.aria-label]="previousPageAriaLabel()"
           [disabled]="!canPreviousPage()"
           class="pager-button"
-          natToolbarItem="previous-page"
           type="button"
           (click)="previousPage()">
           <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
@@ -36,7 +34,6 @@
           [attr.aria-label]="nextPageAriaLabel()"
           [disabled]="!canNextPage()"
           class="pager-button"
-          natToolbarItem="next-page"
           type="button"
           (click)="nextPage()">
           <svg aria-hidden="true" class="pager-icon" focusable="false" viewBox="0 0 16 16">
@@ -44,6 +41,6 @@
           </svg>
         </button>
       </div>
-    </nat-table-toolbar>
+    </div>
   }
 }

@@ -22,7 +22,7 @@ import { FlexRender } from '@tanstack/angular-table';
 
 import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
-import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
+import { handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
 import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeholder.type';
 import type { NatTableRenderedBodyRow } from '../common/row-render-strategy.type';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
@@ -356,7 +356,6 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   protected readonly getHeaderRowColumnIds = getHeaderRowColumnIds<TData>;
   protected readonly shouldHidePrimitiveHeaderLabel = shouldHidePrimitiveHeaderLabel<TData>;
   protected readonly getCellTone = getCellTone<TData>;
-  protected readonly onCellFocusIn = handleCellInteractionFocusIn;
   protected readonly canResizeColumn = (header: Header<TData, unknown>): boolean =>
     canResizeColumn(header, this.state.resizingEnabled());
 
@@ -428,6 +427,10 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
     const keyboard = this.natTableService.keyboard();
+
+    // `defaultPrevented` also covers the NatTableCell host listener on the same
+    // header cell, so a key it consumed can never fall through to resize/reorder.
+    if (event.defaultPrevented) return;
 
     if (handleCellInteractionKeydown(event, keyboard.cellInteraction)) return;
 
