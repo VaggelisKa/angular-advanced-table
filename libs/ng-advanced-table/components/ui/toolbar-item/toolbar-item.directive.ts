@@ -6,6 +6,7 @@ import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/too
 import {
   hasUnreachableShadowRoot,
   resolveNatToolbarFocusTarget,
+  restoreNatToolbarFocusTargetTabStop,
   suppressNatToolbarFocusTargetTabStop
 } from '../../utils/toolbar-focus-target.util';
 
@@ -93,6 +94,12 @@ export class NatToolbarItem implements NatToolbarItemRef {
   /** Guards against queueing a `whenDefined` continuation on every observer tick. */
   private isAwaitingUpgrade = false;
 
+  /** The control currently pulled out of the tab order, so a selector change or clear can restore it. */
+  private suppressedTarget: HTMLElement | null = null;
+
+  /** The `tabindex` attribute the suppressed control carried beforehand (`null` = none). */
+  private suppressedTargetPriorTabIndex: string | null = null;
+
   private isDestroyed = false;
 
   public constructor() {
@@ -108,6 +115,7 @@ export class NatToolbarItem implements NatToolbarItemRef {
     this.destroyRef.onDestroy(() => {
       this.isDestroyed = true;
       this.observer?.disconnect();
+      this.restoreSuppressedTarget();
     });
   }
 
@@ -151,7 +159,7 @@ export class NatToolbarItem implements NatToolbarItemRef {
     // a backward exit and must be allowed through.
     if (event.relatedTarget instanceof Node && target.contains(event.relatedTarget)) return;
 
-    suppressNatToolbarFocusTargetTabStop(target);
+    this.suppressTargetTabStop(target);
     target.focus();
   }
 
@@ -187,7 +195,17 @@ export class NatToolbarItem implements NatToolbarItemRef {
    * failure this input exists to remove — so it cannot wait for first focus.
    */
   private syncFocusTarget(): void {
-    if (this.isDestroyed || !this.natToolbarItemFocusTarget()) return;
+    if (this.isDestroyed) return;
+
+    if (!this.natToolbarItemFocusTarget()) {
+      // Cleared selector: the former control gets its tab stop back and the
+      // re-render watch has nothing left to guard.
+      this.observer?.disconnect();
+      this.observedRoot = null;
+      this.restoreSuppressedTarget();
+
+      return;
+    }
 
     this.observeFocusTarget();
     this.awaitCustomElementUpgrade();
@@ -195,8 +213,38 @@ export class NatToolbarItem implements NatToolbarItemRef {
     const target = this.resolveFocusTarget();
 
     if (target && target !== this.element) {
-      suppressNatToolbarFocusTargetTabStop(target);
+      this.suppressTargetTabStop(target);
+    } else {
+      // Selector no longer resolves (changed, or the wrapper re-rendered the
+      // control away) — whatever was suppressed before is no longer ours.
+      this.restoreSuppressedTarget();
     }
+  }
+
+  /**
+   * Suppresses `target`, first restoring any previously suppressed control so
+   * a selector change never leaves the former target out of the tab order.
+   * Re-suppressing the same element keeps its original tabindex record.
+   */
+  private suppressTargetTabStop(target: HTMLElement): void {
+    if (this.suppressedTarget !== target) {
+      this.restoreSuppressedTarget();
+      this.suppressedTarget = target;
+      this.suppressedTargetPriorTabIndex = target.getAttribute('tabindex');
+    }
+
+    suppressNatToolbarFocusTargetTabStop(target);
+  }
+
+  /** Returns the previously suppressed control to the tab order it had before. */
+  private restoreSuppressedTarget(): void {
+    const target = this.suppressedTarget;
+
+    if (!target) return;
+
+    this.suppressedTarget = null;
+    restoreNatToolbarFocusTargetTabStop(target, this.suppressedTargetPriorTabIndex);
+    this.suppressedTargetPriorTabIndex = null;
   }
 
   /**

@@ -198,9 +198,25 @@ describe('FEATURE: NatToolbarItem', () => {
         wrappedFixture.detectChanges();
         await wrappedFixture.whenStable();
 
+        // The former control gets its tab stop back — suppression is not
+        // permanent once the item stops forwarding focus to it.
+        expect(inner().hasAttribute('tabindex')).toBe(false);
+
         host().focus();
 
         expect(document.activeElement).toBe(host());
+      });
+    });
+
+    describe('WHEN: the selector is repointed to one that resolves nothing', () => {
+      it('THEN: it returns the former control to the sequential tab order', async () => {
+        expect(inner().getAttribute('tabindex')).toBe('-1');
+
+        wrappedFixture.componentInstance.selector.set('button.missing');
+        wrappedFixture.detectChanges();
+        await wrappedFixture.whenStable();
+
+        expect(inner().hasAttribute('tabindex')).toBe(false);
       });
     });
   });

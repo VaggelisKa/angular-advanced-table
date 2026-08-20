@@ -66,3 +66,24 @@ export const suppressNatToolbarFocusTargetTabStop = (target: HTMLElement): void 
 
   target.setAttribute('tabindex', '-1');
 };
+
+/**
+ * Undoes {@link suppressNatToolbarFocusTargetTabStop} when an element stops
+ * being the nominated target (selector changed, cleared, or re-resolved to a
+ * different control), so the former control returns to the sequential tab
+ * order it had before suppression.
+ *
+ * `previousTabIndex` is the `tabindex` attribute value the element carried
+ * before suppression (`null` when it carried none). A current value other than
+ * `-1` means another owner has taken over the attribute since, and is left
+ * untouched.
+ */
+export const restoreNatToolbarFocusTargetTabStop = (target: HTMLElement, previousTabIndex: string | null): void => {
+  if (target.getAttribute('tabindex') !== '-1') return;
+
+  if (previousTabIndex === null) {
+    target.removeAttribute('tabindex');
+  } else {
+    target.setAttribute('tabindex', previousTabIndex);
+  }
+};

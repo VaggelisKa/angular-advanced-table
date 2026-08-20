@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   hasUnreachableShadowRoot,
   resolveNatToolbarFocusTarget,
+  restoreNatToolbarFocusTargetTabStop,
   suppressNatToolbarFocusTargetTabStop
 } from './toolbar-focus-target.util';
 
@@ -78,6 +79,43 @@ describe('FEATURE: Toolbar focus-target resolution', () => {
         suppressNatToolbarFocusTargetTabStop(target);
 
         expect(target.getAttribute('tabindex')).toBe('-1');
+      });
+    });
+  });
+
+  describe('GIVEN: a suppressed focus target being restored', () => {
+    describe('WHEN: the element carried no tabindex before suppression', () => {
+      it('THEN: it removes the attribute entirely', () => {
+        const target = document.createElement('button');
+
+        suppressNatToolbarFocusTargetTabStop(target);
+        restoreNatToolbarFocusTargetTabStop(target, null);
+
+        expect(target.hasAttribute('tabindex')).toBe(false);
+      });
+    });
+
+    describe('WHEN: the element carried an explicit tabindex before suppression', () => {
+      it('THEN: it restores the original value', () => {
+        const target = document.createElement('button');
+
+        target.setAttribute('tabindex', '0');
+        suppressNatToolbarFocusTargetTabStop(target);
+        restoreNatToolbarFocusTargetTabStop(target, '0');
+
+        expect(target.getAttribute('tabindex')).toBe('0');
+      });
+    });
+
+    describe('WHEN: another owner changed the tabindex after suppression', () => {
+      it('THEN: it leaves the foreign value untouched', () => {
+        const target = document.createElement('button');
+
+        suppressNatToolbarFocusTargetTabStop(target);
+        target.setAttribute('tabindex', '2');
+        restoreNatToolbarFocusTargetTabStop(target, null);
+
+        expect(target.getAttribute('tabindex')).toBe('2');
       });
     });
   });
