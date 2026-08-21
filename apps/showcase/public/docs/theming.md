@@ -169,7 +169,7 @@ The `nat-list` spike renderer lays every item out as a CSS grid whose field area
 | `--nat-list-item-padding`             | Item padding                                                                                       |
 | `--nat-list-item-background`          | Item background; transparent by default, so items inherit the page background                      |
 | `--nat-list-item-background-selected` | Item background while the row is selected (`data-selected="true"`)                                 |
-| `--nat-list-item-border-width`        | Item border width                                                                                  |
+| `--nat-list-item-border-width`        | Item border width; accepts 1-4 value shorthand (e.g. `1px 0` for divider-only items)               |
 | `--nat-list-item-border-color`        | Item border color; a currentcolor mix by default, so it follows the page text color                |
 | `--nat-list-item-radius`              | Item corner radius                                                                                 |
 | `--nat-list-field-gap`                | Gap between one field's label and value                                                            |
