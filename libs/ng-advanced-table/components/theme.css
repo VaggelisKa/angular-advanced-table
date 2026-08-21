@@ -182,8 +182,8 @@
   --nat-table-scroll-range-track-color: var(--nat-table-scroll-range-accent, var(--nat-table-color-surface-sticky));
   --nat-table-scroll-range-track-border: 1px solid var(--nat-table-color-border-strong);
   --nat-table-scroll-range-track-radius: 100vmax;
-  --nat-table-scroll-range-thumb-inline-size: 18px;
-  --nat-table-scroll-range-thumb-block-size: 18px;
+  --nat-table-scroll-range-thumb-inline-size: 16px;
+  --nat-table-scroll-range-thumb-block-size: 16px;
   --nat-table-scroll-range-thumb-color: var(--nat-table-scroll-range-accent, var(--nat-table-color-accent));
   --nat-table-scroll-range-thumb-border: 2px solid var(--nat-table-color-surface);
   --nat-table-scroll-range-thumb-radius: 100vmax;
