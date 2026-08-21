@@ -4,7 +4,7 @@
 
 .scroll-control {
   display: grid;
-  grid-template-columns: auto minmax(160px, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: var(--nat-table-scroll-control-gap, var(--sys-nat-table-scroll-control-gap, 10px));
   align-items: center;
   inline-size: 100%;
@@ -14,8 +14,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 44px));
-  min-height: var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 44px));
+  min-inline-size: var(
+    --nat-table-scroll-button-min-inline-size,
+    var(
+      --sys-nat-table-scroll-button-min-inline-size,
+      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 44px))
+    )
+  );
+  min-block-size: var(
+    --nat-table-scroll-button-min-block-size,
+    var(
+      --sys-nat-table-scroll-button-min-block-size,
+      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 44px))
+    )
+  );
   padding: 0 var(--nat-table-scroll-button-padding-x, var(--sys-nat-table-scroll-button-padding-x, 18px));
   color: var(--nat-table-scroll-button-color, var(--sys-nat-table-scroll-button-color, inherit));
   cursor: pointer;
@@ -51,13 +63,15 @@
 
 .scroll-icon {
   display: block;
-  width: 1rem;
-  height: 1rem;
+  width: var(--nat-table-scroll-icon-size, var(--sys-nat-table-scroll-icon-size, 1rem));
+  height: var(--nat-table-scroll-icon-size, var(--sys-nat-table-scroll-icon-size, 1rem));
 }
 
 .scroll-range-label {
   display: grid;
-  grid-template-columns: minmax(7ch, auto) minmax(120px, 1fr);
+  grid-template-columns:
+    minmax(var(--nat-table-scroll-position-min-inline-size, var(--sys-nat-table-scroll-position-min-inline-size, 7ch)), auto)
+    minmax(var(--nat-table-scroll-range-min-inline-size, var(--sys-nat-table-scroll-range-min-inline-size, 120px)), 1fr);
   gap: var(--nat-table-scroll-range-gap, var(--sys-nat-table-scroll-range-gap, 10px));
   align-items: center;
   min-width: 0;
@@ -72,14 +86,124 @@
 
 .scroll-range {
   inline-size: 100%;
-  min-inline-size: 120px;
+  min-inline-size: var(--nat-table-scroll-range-min-inline-size, var(--sys-nat-table-scroll-range-min-inline-size, 120px));
+  block-size: max(
+    var(--nat-table-scroll-range-thumb-block-size, var(--sys-nat-table-scroll-range-thumb-block-size, 16px)),
+    var(--nat-table-scroll-range-track-block-size, var(--sys-nat-table-scroll-range-track-block-size, 4px))
+  );
+  padding: 0;
+  appearance: none;
   accent-color: var(--nat-table-scroll-range-accent, var(--sys-nat-table-scroll-range-accent, currentColor));
   cursor: pointer;
+  background: transparent;
+  border: 0;
 }
 
 .scroll-range:disabled {
   cursor: not-allowed;
   opacity: var(--nat-table-scroll-range-disabled-opacity, var(--sys-nat-table-scroll-range-disabled-opacity, 0.5));
+}
+
+.scroll-range::-webkit-slider-runnable-track {
+  box-sizing: border-box;
+  height: var(--nat-table-scroll-range-track-block-size, var(--sys-nat-table-scroll-range-track-block-size, 4px));
+  background: var(
+    --nat-table-scroll-range-track-color,
+    var(
+      --sys-nat-table-scroll-range-track-color,
+      var(--nat-table-scroll-range-accent, var(--sys-nat-table-scroll-range-accent, currentColor))
+    )
+  );
+  border: var(--nat-table-scroll-range-track-border, var(--sys-nat-table-scroll-range-track-border, 0 solid transparent));
+  border-radius: var(--nat-table-scroll-range-track-radius, var(--sys-nat-table-scroll-range-track-radius, 100vmax));
+}
+
+.scroll-range::-webkit-slider-thumb {
+  box-sizing: border-box;
+  width: var(--nat-table-scroll-range-thumb-inline-size, var(--sys-nat-table-scroll-range-thumb-inline-size, 16px));
+  height: var(--nat-table-scroll-range-thumb-block-size, var(--sys-nat-table-scroll-range-thumb-block-size, 16px));
+  margin-top: calc(var(--nat-table-scroll-range-track-block-size, var(--sys-nat-table-scroll-range-track-block-size, 4px)) / 2);
+  appearance: none;
+  background: var(
+    --nat-table-scroll-range-thumb-color,
+    var(
+      --sys-nat-table-scroll-range-thumb-color,
+      var(--nat-table-scroll-range-accent, var(--sys-nat-table-scroll-range-accent, currentColor))
+    )
+  );
+  border: var(--nat-table-scroll-range-thumb-border, var(--sys-nat-table-scroll-range-thumb-border, 0 solid transparent));
+  border-radius: var(--nat-table-scroll-range-thumb-radius, var(--sys-nat-table-scroll-range-thumb-radius, 100vmax));
+  transform: translateY(-50%);
+}
+
+.scroll-range::-moz-range-track {
+  box-sizing: border-box;
+  height: var(--nat-table-scroll-range-track-block-size, var(--sys-nat-table-scroll-range-track-block-size, 4px));
+  background: var(
+    --nat-table-scroll-range-track-color,
+    var(
+      --sys-nat-table-scroll-range-track-color,
+      var(--nat-table-scroll-range-accent, var(--sys-nat-table-scroll-range-accent, currentColor))
+    )
+  );
+  border: var(--nat-table-scroll-range-track-border, var(--sys-nat-table-scroll-range-track-border, 0 solid transparent));
+  border-radius: var(--nat-table-scroll-range-track-radius, var(--sys-nat-table-scroll-range-track-radius, 100vmax));
+}
+
+.scroll-range::-moz-range-progress {
+  height: var(--nat-table-scroll-range-track-block-size, var(--sys-nat-table-scroll-range-track-block-size, 4px));
+  background: transparent;
+  border-radius: var(--nat-table-scroll-range-track-radius, var(--sys-nat-table-scroll-range-track-radius, 100vmax));
+}
+
+.scroll-range::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--nat-table-scroll-range-thumb-inline-size, var(--sys-nat-table-scroll-range-thumb-inline-size, 16px));
+  height: var(--nat-table-scroll-range-thumb-block-size, var(--sys-nat-table-scroll-range-thumb-block-size, 16px));
+  appearance: none;
+  background: var(
+    --nat-table-scroll-range-thumb-color,
+    var(
+      --sys-nat-table-scroll-range-thumb-color,
+      var(--nat-table-scroll-range-accent, var(--sys-nat-table-scroll-range-accent, currentColor))
+    )
+  );
+  border: var(--nat-table-scroll-range-thumb-border, var(--sys-nat-table-scroll-range-thumb-border, 0 solid transparent));
+  border-radius: var(--nat-table-scroll-range-thumb-radius, var(--sys-nat-table-scroll-range-thumb-radius, 100vmax));
+}
+
+@media (forced-colors: active) {
+  .scroll-range {
+    forced-color-adjust: none;
+  }
+
+  .scroll-range:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .scroll-range::-webkit-slider-runnable-track {
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+
+  .scroll-range::-webkit-slider-thumb {
+    background: Highlight;
+    border: 1px solid HighlightText;
+  }
+
+  .scroll-range::-moz-range-track {
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+
+  .scroll-range::-moz-range-progress {
+    background: transparent;
+  }
+
+  .scroll-range::-moz-range-thumb {
+    background: Highlight;
+    border: 1px solid HighlightText;
+  }
 }
 
 @media (width <= 520px) {
