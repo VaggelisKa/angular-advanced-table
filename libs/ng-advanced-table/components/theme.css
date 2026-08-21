@@ -160,6 +160,35 @@
   --nat-table-pager-label-color: var(--nat-table-color-text-muted);
   --nat-table-pager-disabled-opacity: var(--nat-table-disabled-opacity);
 
+  /* Scroll control */
+  --nat-table-scroll-control-gap: var(--nat-table-space-pager-gap);
+  --nat-table-scroll-button-min-height: 44px;
+  --nat-table-scroll-button-min-inline-size: var(--nat-table-scroll-button-min-height);
+  --nat-table-scroll-button-min-block-size: var(--nat-table-scroll-button-min-height);
+  --nat-table-scroll-button-padding-x: var(--nat-table-pager-padding-x);
+  --nat-table-scroll-button-color: var(--nat-table-color-text);
+  --nat-table-scroll-button-background: var(--nat-table-color-surface);
+  --nat-table-scroll-button-background-hover: color-mix(in srgb, var(--nat-table-color-accent) 10%, var(--nat-table-color-surface));
+  --nat-table-scroll-button-border-color: var(--nat-table-color-border);
+  --nat-table-scroll-button-shadow-hover: none;
+  --nat-table-scroll-button-disabled-opacity: var(--nat-table-disabled-opacity);
+  --nat-table-scroll-icon-size: 1rem;
+  --nat-table-scroll-range-gap: var(--nat-table-space-pager-gap);
+  --nat-table-font-size-scroll-position: var(--nat-table-font-size-pager-label);
+  --nat-table-scroll-position-min-inline-size: 7ch;
+  --nat-table-scroll-position-color: var(--nat-table-color-text-muted);
+  --nat-table-scroll-range-min-inline-size: 120px;
+  --nat-table-scroll-range-track-block-size: 4px;
+  --nat-table-scroll-range-track-color: var(--nat-table-scroll-range-accent, var(--nat-table-color-surface-sticky));
+  --nat-table-scroll-range-track-border: 1px solid var(--nat-table-color-border-strong);
+  --nat-table-scroll-range-track-radius: 100vmax;
+  --nat-table-scroll-range-thumb-inline-size: 16px;
+  --nat-table-scroll-range-thumb-block-size: 16px;
+  --nat-table-scroll-range-thumb-color: var(--nat-table-scroll-range-accent, var(--nat-table-color-accent));
+  --nat-table-scroll-range-thumb-border: 2px solid var(--nat-table-color-surface);
+  --nat-table-scroll-range-thumb-radius: 100vmax;
+  --nat-table-scroll-range-disabled-opacity: var(--nat-table-disabled-opacity);
+
   /* Sort icons */
   --nat-table-sort-icon-color: var(--nat-table-color-accent);
   --nat-table-sort-icon-color-active: var(--nat-table-color-accent);

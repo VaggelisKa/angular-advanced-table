@@ -2,7 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 
 import { NatList, NatTable } from 'ng-advanced-table';
 import type { CellContext, ColumnDef, NatTableUserState } from 'ng-advanced-table';
-import { NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
+import { NatTableScrollControl, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
 import type { NatTableSortIndicatorContext } from 'ng-advanced-table/components';
 
 import type { MockOrderRow } from '../../mock-order/mock-order.type';
@@ -39,7 +39,7 @@ const ledgerSortIndicator = ({ sortState }: NatTableSortIndicatorContext): strin
 
 @Component({
   selector: 'app-theming-showcase',
-  imports: [NatList, NatTable, NatTableSurface],
+  imports: [NatList, NatTable, NatTableScrollControl, NatTableSurface],
   host: {
     '[class.is-dark-theme]': 'isDarkTheme()'
   },
