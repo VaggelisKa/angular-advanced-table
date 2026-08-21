@@ -41,8 +41,16 @@
   gap: var(--nat-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem));
   padding: var(--nat-list-item-padding, var(--sys-nat-table-list-item-padding, 0.75rem 1rem));
   background: var(--nat-list-item-background, var(--sys-nat-table-list-item-background, transparent));
-  border: var(--nat-list-item-border-width, var(--sys-nat-table-list-item-border-width, 1px)) solid
-    var(--nat-list-item-border-color, var(--sys-nat-table-list-item-border-color, color-mix(in srgb, currentcolor 15%, transparent)));
+
+  /* Longhands, not the `border` shorthand: the shorthand takes a single width,
+     while the border-width longhand accepts 1-4 values, so consumers can set
+     e.g. `--nat-list-item-border-width: 1px 0` for divider-only items. */
+  border-color: var(
+    --nat-list-item-border-color,
+    var(--sys-nat-table-list-item-border-color, color-mix(in srgb, currentcolor 15%, transparent))
+  );
+  border-style: solid;
+  border-width: var(--nat-list-item-border-width, var(--sys-nat-table-list-item-border-width, 1px));
   border-radius: var(--nat-list-item-radius, var(--sys-nat-table-list-item-radius, 8px));
 }
 
