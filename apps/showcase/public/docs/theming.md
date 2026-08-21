@@ -224,6 +224,79 @@ Each state item also carries a `data-state` attribute (`loading`, `empty`, or `e
 
 Reach for these direct tokens when a table control needs a local exception.
 
+### Scroll Control Tokens
+
+`NatTableScrollControl` keeps its native range input and reads inherited tokens from the wrapper around the control and table. The component does not expose private selectors as theme API.
+
+| Token                                         | Purpose                                                                                 |
+| --------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `--nat-table-scroll-control-gap`              | Gap between the previous button, range group, and next button                           |
+| `--nat-table-scroll-button-min-height`        | Existing fallback for both button axes when the logical sizing tokens are unset         |
+| `--nat-table-scroll-button-min-inline-size`   | Minimum inline size of each button                                                      |
+| `--nat-table-scroll-button-min-block-size`    | Minimum block size of each button                                                       |
+| `--nat-table-scroll-button-padding-x`         | Button inline padding                                                                   |
+| `--nat-table-scroll-button-color`             | Button and arrow color                                                                  |
+| `--nat-table-scroll-button-background`        | Button background                                                                       |
+| `--nat-table-scroll-button-background-hover`  | Enabled button background on hover                                                      |
+| `--nat-table-scroll-button-border-color`      | Button border color                                                                     |
+| `--nat-table-scroll-button-shadow-hover`      | Enabled button shadow on hover                                                          |
+| `--nat-table-scroll-button-disabled-opacity`  | Disabled button opacity                                                                 |
+| `--nat-table-scroll-icon-size`                | Arrow icon inline and block size                                                        |
+| `--nat-table-scroll-range-gap`                | Gap between the position copy and range input                                           |
+| `--nat-table-font-size-scroll-position`       | Position-copy font size                                                                 |
+| `--nat-table-scroll-position-min-inline-size` | Minimum inline size of the position-copy column                                         |
+| `--nat-table-scroll-position-color`           | Position-copy color                                                                     |
+| `--nat-table-scroll-range-min-inline-size`    | Minimum inline size of the native range input                                           |
+| `--nat-table-scroll-range-accent`             | Existing native accent and fallback for both range color tokens                         |
+| `--nat-table-scroll-range-track-block-size`   | WebKit and Firefox track thickness                                                      |
+| `--nat-table-scroll-range-track-color`        | Uniform WebKit and Firefox track color; falls back to `--nat-table-scroll-range-accent` |
+| `--nat-table-scroll-range-track-border`       | WebKit and Firefox track border                                                         |
+| `--nat-table-scroll-range-track-radius`       | WebKit and Firefox track corner radius                                                  |
+| `--nat-table-scroll-range-thumb-inline-size`  | WebKit and Firefox thumb inline size                                                    |
+| `--nat-table-scroll-range-thumb-block-size`   | WebKit and Firefox thumb block size                                                     |
+| `--nat-table-scroll-range-thumb-color`        | WebKit and Firefox thumb color; falls back to `--nat-table-scroll-range-accent`         |
+| `--nat-table-scroll-range-thumb-border`       | WebKit and Firefox thumb border                                                         |
+| `--nat-table-scroll-range-thumb-radius`       | WebKit and Firefox thumb corner radius                                                  |
+| `--nat-table-scroll-range-disabled-opacity`   | Disabled range opacity                                                                  |
+| `--nat-table-radius-chip`                     | Button corner radius shared with other controls                                         |
+| `--nat-table-hover-lift`                      | Enabled button hover transform                                                          |
+| `--nat-table-transition-medium`               | Button color, background, border, shadow, and transform transition                      |
+| `--nat-table-focus-ring-color`                | Keyboard focus-ring color for buttons and range                                         |
+| `--nat-table-focus-ring-width`                | Keyboard focus-ring width for buttons and range                                         |
+| `--nat-table-focus-ring-offset`               | Keyboard focus-ring offset for buttons and range                                        |
+
+Scope product-specific overrides on a wrapper. Every value below crosses Angular's component boundary through normal custom-property inheritance.
+
+```css
+.orders-scroll-theme {
+  --nat-table-scroll-control-gap: 0.75rem;
+  --nat-table-scroll-button-min-inline-size: 2.75rem;
+  --nat-table-scroll-button-min-block-size: 2.75rem;
+  --nat-table-scroll-button-padding-x: 0.75rem;
+  --nat-table-scroll-button-color: #12372f;
+  --nat-table-scroll-button-background: #d8f3e8;
+  --nat-table-scroll-button-background-hover: #bce7d9;
+  --nat-table-scroll-button-border-color: #4f8f7c;
+  --nat-table-scroll-icon-size: 1.2rem;
+  --nat-table-font-size-scroll-position: 0.8rem;
+  --nat-table-scroll-position-min-inline-size: 6ch;
+  --nat-table-scroll-position-color: #345c51;
+  --nat-table-scroll-range-min-inline-size: 10rem;
+  --nat-table-scroll-range-track-block-size: 0.5rem;
+  --nat-table-scroll-range-track-color: #9bcbbb;
+  --nat-table-scroll-range-track-border: 1px solid #4f8f7c;
+  --nat-table-scroll-range-track-radius: 0;
+  --nat-table-scroll-range-thumb-inline-size: 1.35rem;
+  --nat-table-scroll-range-thumb-block-size: 1.35rem;
+  --nat-table-scroll-range-thumb-color: #0f766e;
+  --nat-table-scroll-range-thumb-border: 2px solid #ffffff;
+  --nat-table-scroll-range-thumb-radius: 0.25rem;
+  --nat-table-focus-ring-color: #0f766e;
+}
+```
+
+The track is intentionally uniform rather than a JavaScript-maintained progress fill. In forced-colors mode, track, thumb, and focus styling switch to system colors so the native keyboard control remains visible.
+
 Render-metrics widgets intentionally do not expose their own component-specific tokens. They inherit the shared semantic palette (`--nat-table-color-*`) so they remain readable in light and dark themes, while their compact KPI/chip styling stays internal.
 
 ## Opt-in Stock Theme
