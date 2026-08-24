@@ -757,6 +757,7 @@ const themingSnippets = [
     `
 <nat-table-surface [enableSorting]="true" [initialState]="initialState" class="ledger-surface">
   <nat-table [columns]="columns" [data]="rows" accessibleName="Themed orders table" />
+  <nat-table-scroll-control />
 </nat-table-surface>
 
 <nat-table-surface [initialState]="initialState" class="ledger-surface ledger-list-surface">
@@ -769,6 +770,9 @@ const themingSnippets = [
     'TS',
     'typescript',
     `
+import { NatList, NatTable } from 'ng-advanced-table';
+import { NatTableScrollControl, NatTableSurface, withNatTableHeaderActions } from 'ng-advanced-table/components';
+
 readonly rows = generateMockOrderRows(5);
 readonly initialState = {
   sorting: [{ id: 'total', desc: true }],
@@ -827,6 +831,30 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-radius-region: 4px;
   --nat-table-hover-lift: none;
   --nat-table-focus-ring-width: 3px;
+  --nat-table-scroll-control-gap: 12px;
+  --nat-table-scroll-button-min-inline-size: 44px;
+  --nat-table-scroll-button-min-block-size: 44px;
+  --nat-table-scroll-button-padding-x: 12px;
+  --nat-table-scroll-button-color: #f8fbfa;
+  --nat-table-scroll-button-background: #0f766e;
+  --nat-table-scroll-button-background-hover: #115e59;
+  --nat-table-scroll-button-border-color: #0f766e;
+  --nat-table-scroll-button-disabled-opacity: 0.62;
+  --nat-table-scroll-icon-size: 1.2rem;
+  --nat-table-scroll-range-gap: 12px;
+  --nat-table-font-size-scroll-position: 0.78rem;
+  --nat-table-scroll-position-color: #46675e;
+  --nat-table-scroll-range-min-inline-size: 9rem;
+  --nat-table-scroll-range-track-block-size: 8px;
+  --nat-table-scroll-range-track-color: #acd8cb;
+  --nat-table-scroll-range-track-border: 1px solid #669b8c;
+  --nat-table-scroll-range-track-radius: 2px;
+  --nat-table-scroll-range-thumb-inline-size: 22px;
+  --nat-table-scroll-range-thumb-block-size: 22px;
+  --nat-table-scroll-range-thumb-color: #0f766e;
+  --nat-table-scroll-range-thumb-border: 3px solid #fbfcfb;
+  --nat-table-scroll-range-thumb-radius: 4px;
+  --nat-table-scroll-range-disabled-opacity: 0.62;
 
   display: block;
   color-scheme: light;
@@ -871,6 +899,15 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-sort-icon-color-idle: rgb(23 33 31 / 62%);
   --nat-table-sort-icon-color-hover: #17211f;
   --nat-table-sort-button-color-sorted: #17211f;
+  --nat-table-scroll-button-color: #17211f;
+  --nat-table-scroll-button-background: #5eead4;
+  --nat-table-scroll-button-background-hover: #99f6e4;
+  --nat-table-scroll-button-border-color: #5eead4;
+  --nat-table-scroll-position-color: #c5d3cf;
+  --nat-table-scroll-range-track-color: #3d5f57;
+  --nat-table-scroll-range-track-border: 1px solid #6c8b83;
+  --nat-table-scroll-range-thumb-color: #5eead4;
+  --nat-table-scroll-range-thumb-border: 3px solid #15211f;
 
   color-scheme: dark;
 }
@@ -909,6 +946,11 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
     --nat-table-sort-icon-color-idle: CanvasText;
     --nat-table-sort-icon-color-hover: CanvasText;
     --nat-table-sort-button-color-sorted: CanvasText;
+    --nat-table-scroll-button-color: ButtonText;
+    --nat-table-scroll-button-background: ButtonFace;
+    --nat-table-scroll-button-background-hover: ButtonFace;
+    --nat-table-scroll-button-border-color: ButtonText;
+    --nat-table-scroll-position-color: CanvasText;
   }
 
   .ledger-list-surface {
