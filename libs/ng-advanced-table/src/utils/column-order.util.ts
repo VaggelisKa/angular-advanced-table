@@ -29,6 +29,35 @@ export const normalizeColumnOrder = (columnOrder: readonly string[], allLeafColu
   return nextOrder;
 };
 
+/**
+ * User-state variant of `normalizeColumnOrder`: unknown column ids are retained in
+ * place instead of dropped, so state referencing columns the current renderer does
+ * not have (e.g. a table/list swap with different column sets) survives the swap.
+ * Leaf ids missing from the order are still appended.
+ */
+export const retainColumnOrder = (columnOrder: readonly string[], allLeafColumnIds: readonly string[]): ColumnOrderState => {
+  const nextOrder = uniqueStringValues(columnOrder);
+
+  for (const columnId of allLeafColumnIds) {
+    if (!nextOrder.includes(columnId)) {
+      nextOrder.push(columnId);
+    }
+  }
+
+  return nextOrder;
+};
+
+/**
+ * User-state variant of `normalizeColumnPinning`: zones are deduplicated but unknown
+ * column ids are retained, so pinning that references columns the current renderer
+ * does not have survives a renderer swap. Render-facing state stays on
+ * `normalizeColumnPinning`.
+ */
+export const retainColumnPinning = (columnPinning: ColumnPinningState): ColumnPinningState => ({
+  left: uniqueStringValues(columnPinning.left ?? []),
+  right: uniqueStringValues(columnPinning.right ?? [])
+});
+
 export const normalizeColumnPinning = (columnPinning: ColumnPinningState, allLeafColumnIds: readonly string[]): ColumnPinningState => {
   const validColumnIds = new Set(allLeafColumnIds);
   const leftColumnIds = columnPinning.left ?? [];

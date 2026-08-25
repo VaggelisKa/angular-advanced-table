@@ -77,7 +77,9 @@ import {
   normalizeColumnOrder,
   normalizeColumnPinning,
   replaceIdsInSlots,
-  resolvePinnedZoneColumns
+  resolvePinnedZoneColumns,
+  retainColumnOrder,
+  retainColumnPinning
 } from '../utils/column-order.util';
 import { buildColumnRenderState } from '../utils/column-render-state.util';
 import { computeFillFlexWidths, computeIntrinsicWidths } from '../utils/column-width.util';
@@ -265,12 +267,21 @@ export class NatTableState<TData extends RowData = RowData> {
     return patchLeafColumnDefSorting(this.columnDefs(), columnId, createSubHeaderOrderSortingFn(order));
   });
 
+  // User-facing order/pinning retain ids unknown to this renderer's columns, so
+  // shared surface state survives a renderer swap (e.g. table <-> list with
+  // different column sets). Only the TanStack-facing state below filters them.
   private readonly resolvedColumnOrder = computed(() =>
-    normalizeColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds())
+    retainColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds())
   );
 
   private readonly resolvedColumnPinning = computed(() =>
-    normalizeColumnPinning(this.state().columnPinning ?? this.internalColumnPinning(), this.allLeafColumnIds())
+    retainColumnPinning(this.state().columnPinning ?? this.internalColumnPinning())
+  );
+
+  private readonly tanstackColumnOrder = computed(() => normalizeColumnOrder(this.resolvedColumnOrder(), this.allLeafColumnIds()));
+
+  private readonly tanstackColumnPinning = computed(() =>
+    normalizeColumnPinning(this.resolvedColumnPinning(), this.allLeafColumnIds())
   );
 
   private readonly resolvedColumnSizing = computed<ColumnSizingState>(() => {
@@ -332,7 +343,12 @@ export class NatTableState<TData extends RowData = RowData> {
   public readonly table: Table<TData> = createAngularTable<TData>(() => ({
     data: this.data() as TData[],
     columns: this.resolvedColumnDefs() as ColumnDef<TData, unknown>[],
-    state: { ...this.mergedState(), sorting: this.tanstackSortingState() },
+    state: {
+      ...this.mergedState(),
+      sorting: this.tanstackSortingState(),
+      columnOrder: this.tanstackColumnOrder(),
+      columnPinning: this.tanstackColumnPinning()
+    },
     pageCount: this.manualPagination() ? this.manualPageCount() : undefined,
     manualPagination: this.manualPagination(),
     manualSorting: this.manualSorting(),
@@ -1034,11 +1050,8 @@ export class NatTableState<TData extends RowData = RowData> {
       globalFilter: resolveUpdater(currentState.globalFilter, updaters.globalFilter),
       columnFilters: resolveUpdater(currentState.columnFilters, updaters.columnFilters),
       columnVisibility: resolveUpdater(currentState.columnVisibility, updaters.columnVisibility),
-      columnOrder: normalizeColumnOrder(resolveUpdater(currentState.columnOrder, updaters.columnOrder), this.allLeafColumnIds()),
-      columnPinning: normalizeColumnPinning(
-        resolveUpdater(currentState.columnPinning, updaters.columnPinning),
-        this.allLeafColumnIds()
-      ),
+      columnOrder: retainColumnOrder(resolveUpdater(currentState.columnOrder, updaters.columnOrder), this.allLeafColumnIds()),
+      columnPinning: retainColumnPinning(resolveUpdater(currentState.columnPinning, updaters.columnPinning)),
       columnSizing: this.clampColumnSizing(resolveUpdater(currentState.columnSizing, updaters.columnSizing)),
       rowSelection: normalizeRowSelection(
         resolveUpdater(currentState.rowSelection, updaters.rowSelection),

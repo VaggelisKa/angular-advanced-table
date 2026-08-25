@@ -9,7 +9,9 @@ import {
   normalizeColumnOrder,
   normalizeColumnPinning,
   replaceIdsInSlots,
-  resolvePinnedZoneColumns
+  resolvePinnedZoneColumns,
+  retainColumnOrder,
+  retainColumnPinning
 } from './column-order.util';
 
 type FixtureRow = { readonly id: string };
@@ -76,6 +78,38 @@ describe('FEATURE: Column order utilities', () => {
       const pinning: ColumnPinningState = { left: ['a'], right: ['a'] };
 
       expect(normalizeColumnPinning(pinning, ['a'])).toStrictEqual({ left: ['a'], right: ['a'] });
+    });
+  });
+
+  describe('GIVEN: retainColumnOrder', () => {
+    it('THEN: it keeps ids unknown to the current leaf columns in place', () => {
+      expect(retainColumnOrder(['ghost', 'a', 'b'], ['a', 'b'])).toStrictEqual(['ghost', 'a', 'b']);
+    });
+
+    it('THEN: it appends missing leaf ids after the retained order', () => {
+      expect(retainColumnOrder(['ghost', 'b'], ['a', 'b', 'c'])).toStrictEqual(['ghost', 'b', 'a', 'c']);
+    });
+
+    it('THEN: it deduplicates repeated ids keeping the first occurrence', () => {
+      expect(retainColumnOrder(['a', 'a', 'ghost', 'ghost'], ['a'])).toStrictEqual(['a', 'ghost']);
+    });
+  });
+
+  describe('GIVEN: retainColumnPinning', () => {
+    it('THEN: it keeps ids unknown to the current leaf columns in both zones', () => {
+      const pinning: ColumnPinningState = { left: ['ghost', 'a'], right: ['phantom'] };
+
+      expect(retainColumnPinning(pinning)).toStrictEqual({ left: ['ghost', 'a'], right: ['phantom'] });
+    });
+
+    it('THEN: it deduplicates repeated ids within each zone', () => {
+      const pinning: ColumnPinningState = { left: ['a', 'a'], right: ['b', 'b'] };
+
+      expect(retainColumnPinning(pinning)).toStrictEqual({ left: ['a'], right: ['b'] });
+    });
+
+    it('THEN: it defaults to empty arrays when left and right are omitted', () => {
+      expect(retainColumnPinning({})).toStrictEqual({ left: [], right: [] });
     });
   });
 
