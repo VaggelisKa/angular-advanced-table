@@ -39,11 +39,12 @@
             @let columnState = columnStates[header.column.id];
             <th
               [attr.aria-sort]="columnState?.ariaSort"
+              [attr.colspan]="header.colSpan > 1 ? header.colSpan : null"
               [attr.data-column-id]="header.column.id"
               [attr.data-testid]="`nat-table-header-${header.column.id}`"
+              [attr.scope]="header.colSpan > 1 ? 'colgroup' : 'col'"
               [class]="columnState?.headerClassMap"
-              [natTableHeaderCellLayout]="columnState"
-              scope="col">
+              [natTableHeaderCellLayout]="columnState">
               @if (!header.isPlaceholder) {
                 @let headerContext = header.getContext();
                 @let hidePrimitiveHeaderLabel = shouldHidePrimitiveHeaderLabel(header, columnState);

@@ -11,7 +11,7 @@ import type { NatTableDataStatus } from '../common/table-status.type';
 import { buildRows, getRowIdValue } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 import { TestTableSurface } from '../test-helpers/table-hosts.helper';
-import { NatTableEmptyTemplate, NatTableErrorTemplate } from '../ui/table-status-templates.directive';
+import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 
 const columns: ColumnDef<Row, unknown>[] = [
@@ -31,12 +31,19 @@ const columns: ColumnDef<Row, unknown>[] = [
 
 @Component({
   selector: 'test-static-table-host',
-  imports: [NatTableEmptyTemplate, NatTableErrorTemplate, NatTableStatic, NatTableSubHeaderTemplate, TestTableSurface],
+  imports: [
+    NatTableEmptyTemplate,
+    NatTableErrorTemplate,
+    NatTableLoadingTemplate,
+    NatTableStatic,
+    NatTableSubHeaderTemplate,
+    TestTableSurface
+  ],
   template: `
     <nat-table-surface [enableSorting]="true" [state]="state()" (stateChange)="state.set($event)">
       <nat-table-static
         [caption]="caption()"
-        [columns]="columns"
+        [columns]="useGroupedColumns() ? groupedColumns : columns"
         [data]="rows()"
         [dataStatus]="dataStatus()"
         [enableRowSelection]="enableRowSelection()"
@@ -45,6 +52,7 @@ const columns: ColumnDef<Row, unknown>[] = [
         [subHeaderLayout]="subHeaderLayout()"
         accessibleName="Static table"
         (rowActivate)="activations.push($event)">
+        <ng-template natTableLoading>Custom loading copy</ng-template>
         <ng-template natTableEmpty>Custom empty copy</ng-template>
         <ng-template let-error natTableError>Custom error copy</ng-template>
         <ng-template let-value="value" natTableSubHeader>Group {{ value }}</ng-template>
@@ -55,6 +63,8 @@ const columns: ColumnDef<Row, unknown>[] = [
 class StaticTableHost {
   public readonly rows = signal<Row[]>(buildRows(3));
   public readonly columns = columns;
+  public readonly groupedColumns: ColumnDef<Row, unknown>[] = [{ id: 'details', header: 'Details', columns }];
+  public readonly useGroupedColumns = signal(false);
   public readonly getRowId = getRowIdValue;
   public readonly caption = signal<string | undefined>(undefined);
   public readonly dataStatus = signal<NatTableDataStatus>('success');
@@ -111,6 +121,22 @@ describe('FEATURE: NatTableStatic', () => {
         expect(table.querySelectorAll('[data-testid="nat-table-row"]')).toHaveLength(3);
       });
 
+      it('THEN: it spans grouped headers across their leaf columns', async () => {
+        fixture.componentInstance.useGroupedColumns.set(true);
+        await fixture.whenStable();
+
+        const table = queryTable(fixture);
+        const groupHeader = table.querySelector('[data-testid="nat-table-header-details"]');
+
+        expect(groupHeader?.getAttribute('colspan')).toBe('2');
+        expect(groupHeader?.getAttribute('scope')).toBe('colgroup');
+
+        const leafHeader = table.querySelector('[data-testid="nat-table-header-name"]');
+
+        expect(leafHeader?.hasAttribute('colspan')).toBe(false);
+        expect(leafHeader?.getAttribute('scope')).toBe('col');
+      });
+
       it('THEN: it leaves no cell-interaction anchors for the control manager', () => {
         const table = queryTable(fixture);
 
@@ -149,6 +175,20 @@ describe('FEATURE: NatTableStatic', () => {
 
         expect(fixture.componentInstance.activations).toHaveLength(1);
         expect(fixture.componentInstance.activations[0].rowData).toBe(fixture.componentInstance.rows()[0]);
+      });
+
+      it('THEN: it ignores non-primary and already-handled clicks', async () => {
+        const row = queryTable(fixture).querySelector<HTMLElement>('[data-testid="nat-table-row"]');
+
+        row?.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 1 }));
+
+        const handled = new MouseEvent('click', { bubbles: true, cancelable: true });
+
+        handled.preventDefault();
+        row?.dispatchEvent(handled);
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.activations).toHaveLength(0);
       });
     });
 
@@ -199,6 +239,14 @@ describe('FEATURE: NatTableStatic', () => {
         // With rows already present the body keeps showing them; the loading
         // state row only renders for an empty dataset.
         expect(queryTable(fixture).getAttribute('aria-busy')).toBe('true');
+      });
+
+      it('THEN: it renders the consumer loading template for an empty loading dataset', async () => {
+        fixture.componentInstance.rows.set([]);
+        fixture.componentInstance.dataStatus.set('loading');
+        await fixture.whenStable();
+
+        expect(queryTable(fixture).querySelector('.loading-state')?.textContent).toContain('Custom loading copy');
       });
 
       it('THEN: it renders the consumer error template in the error state row', async () => {
