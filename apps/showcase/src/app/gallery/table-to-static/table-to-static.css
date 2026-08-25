@@ -64,6 +64,13 @@
   background: var(--sc-accent-soft);
 }
 
+.last-viewed {
+  align-self: center;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--sc-text-soft);
+}
+
 .sc-demo-page nat-table-surface {
   display: block;
   width: 100%;

@@ -46,6 +46,12 @@
           Pin Order left
         </button>
       </div>
+
+      @if (lastViewedOrder(); as orderId) {
+        <p aria-live="polite" class="last-viewed" data-testid="last-viewed-order">
+          Last viewed: <strong>{{ orderId }}</strong>
+        </p>
+      }
     </section>
 
     <nat-table-surface [enableSorting]="true" [(state)]="state">
