@@ -196,6 +196,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/examples/table-to-static",
+      "name": "examples-table-to-static",
+      "title": "Static table | Angular Advanced Table",
+      "description": "One engine driving grid and static table views",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/examples/table-to-list/basic",
       "name": "examples-table-to-list-basic",
       "title": "Basic list | Angular Advanced Table",

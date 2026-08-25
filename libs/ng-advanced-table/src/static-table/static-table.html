@@ -1,0 +1,198 @@
+<!-- eslint-disable max-lines -- single cohesive static-table template (header/body/state rows); splitting into partials would fragment the table structure. -->
+<div #tableRegion class="table-region" data-testid="nat-table-static-region">
+  @if (tableSummary().trim()) {
+    <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
+  }
+  @if (resolvedDescription().trim()) {
+    <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>
+  }
+
+  <table
+    [attr.aria-busy]="tableAriaBusy()"
+    [attr.aria-describedby]="ariaDescribedBy()"
+    [attr.aria-label]="tableAriaLabel()"
+    [attr.aria-labelledby]="tableAriaLabelledBy()"
+    [attr.dir]="resolvedDirection()"
+    [class]="tableClassMap()"
+    [id]="tableElementId()"
+    [natTablePxWidth]="usesAuthoritativeLayout() ? fixedLayoutTableWidth() : null">
+    @if (resolvedCaption(); as caption) {
+      <caption [id]="tableCaptionId()">
+        {{
+          caption
+        }}
+      </caption>
+    }
+    @let columnStates = columnRenderStates();
+    @if (usesAuthoritativeLayout()) {
+      @let layoutWidths = resolvedColumnWidths();
+      <colgroup>
+        @for (column of visibleColumns(); track column.id) {
+          <col [natTablePxWidth]="layoutWidths[column.id]" />
+        }
+      </colgroup>
+    }
+    <thead>
+      @for (headerGroup of headerGroups(); track headerGroup.id) {
+        <tr>
+          @for (header of headerGroup.headers; track header.id) {
+            @let columnState = columnStates[header.column.id];
+            <th
+              [attr.aria-sort]="columnState?.ariaSort"
+              [attr.colspan]="header.colSpan > 1 ? header.colSpan : null"
+              [attr.data-column-id]="header.column.id"
+              [attr.data-testid]="`nat-table-header-${header.column.id}`"
+              [attr.scope]="header.colSpan > 1 ? 'colgroup' : 'col'"
+              [class]="columnState?.headerClassMap"
+              [natTableHeaderCellLayout]="columnState">
+              @if (!header.isPlaceholder) {
+                @let headerContext = header.getContext();
+                @let hidePrimitiveHeaderLabel = shouldHidePrimitiveHeaderLabel(header, columnState);
+                @let hiddenHeaderLabel = columnState?.hiddenHeaderLabel;
+
+                <div class="header-cell-content">
+                  <span class="header-cell-primary">
+                    @if (hiddenHeaderLabel) {
+                      <span class="sr-only">{{ hiddenHeaderLabel }}</span>
+                    }
+
+                    @if (!hidePrimitiveHeaderLabel) {
+                      <ng-container *flexRender="header.column.columnDef.header; props: headerContext; let rendered">
+                        {{ rendered }}
+                      </ng-container>
+                    }
+                  </span>
+                </div>
+              }
+            </th>
+          }
+        </tr>
+      }
+    </thead>
+    <tbody>
+      @switch (bodyState()) {
+        @case ('rows') {
+          @let groups = subHeaderGroups();
+          @for (row of bodyRows(); track row.id) {
+            @let visibleCells = row.getVisibleCells();
+            @let subHeader = groups.get(row.id);
+            @if (subHeader) {
+              <ng-template #subHeaderInnerContent>
+                <div class="sub-header-content">
+                  @if (getSubHeaderAriaText(subHeader); as ariaText) {
+                    <span class="sr-only">{{ ariaText }}</span>
+                  }
+                  @if (subHeaderTemplateRef(); as templateRef) {
+                    <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="getSubHeaderContext(subHeader)" />
+                  } @else {
+                    <span aria-hidden="true">{{ subHeader.value }}</span>
+                  }
+                </div>
+              </ng-template>
+              <tr class="sub-header-row" data-testid="nat-table-sub-header-row">
+                @if (subHeaderLayout() === 'colspan') {
+                  <td [colSpan]="emptyStateColSpan()" class="sub-header-cell">
+                    <ng-container [ngTemplateOutlet]="subHeaderInnerContent" />
+                  </td>
+                } @else {
+                  <!-- `cells` layout mirrors NatTable: one td per visible column so
+                       pinned zones run unbroken through the sub-header row. -->
+                  @for (cell of visibleCells; track cell.id; let first = $first) {
+                    @let columnState = columnStates[cell.column.id];
+                    <td
+                      [attr.data-column-id]="cell.column.id"
+                      [class]="columnState?.cellClassMap"
+                      [class.sub-header-cell]="true"
+                      [natTableBodyCellLayout]="columnState">
+                      @if (first) {
+                        <ng-container [ngTemplateOutlet]="subHeaderInnerContent" />
+                      }
+                    </td>
+                  }
+                }
+              </tr>
+            }
+            <tr
+              [attr.data-row-id]="row.id"
+              [attr.data-selected]="rowSelectedAttribute(row)"
+              class="data-row"
+              data-testid="nat-table-row"
+              (click)="onRowClick($event, row)">
+              @for (cell of visibleCells; track cell.id) {
+                @let columnState = columnStates[cell.column.id]; @let cellContext = cell.getContext();
+                @let cellTone = getCellTone(cell.column, cellContext);
+                @if (columnState?.rowHeader) {
+                  <th
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                    [class]="columnState?.cellClassMap"
+                    [natTableBodyCellLayout]="columnState"
+                    scope="row">
+                    <span class="data-cell-content">
+                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                        {{ rendered }}
+                      </ng-container>
+                    </span>
+                  </th>
+                } @else {
+                  <td
+                    [attr.data-column-id]="cell.column.id"
+                    [attr.data-tone]="cellTone"
+                    [class]="columnState?.cellClassMap"
+                    [natTableBodyCellLayout]="columnState">
+                    <span class="data-cell-content">
+                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                        {{ rendered }}
+                      </ng-container>
+                    </span>
+                  </td>
+                }
+              }
+            </tr>
+          }
+        }
+        @case ('loading') {
+          <tr>
+            <td [colSpan]="emptyStateColSpan()" class="table-state loading-state">
+              <div class="table-state-content">
+                @if (loadingTemplateRef(); as templateRef) {
+                  <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
+                } @else {
+                  {{ resolvedLoadingState() }}
+                }
+              </div>
+            </td>
+          </tr>
+        }
+        @case ('error') {
+          <tr>
+            <td [colSpan]="emptyStateColSpan()" class="table-state error-state">
+              <div class="table-state-content">
+                @if (errorTemplateRef(); as templateRef) {
+                  <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
+                } @else {
+                  {{ resolvedErrorState() }}
+                }
+              </div>
+            </td>
+          </tr>
+        }
+        @case ('empty') {
+          <tr>
+            <td [colSpan]="emptyStateColSpan()" class="table-state empty-state">
+              <div class="table-state-content">
+                @if (emptyTemplateRef(); as templateRef) {
+                  <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
+                } @else {
+                  {{ resolvedEmptyState() }}
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+
+  <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-table-live-region">{{ liveMessage() }}</p>
+</div>

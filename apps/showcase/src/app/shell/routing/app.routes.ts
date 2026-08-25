@@ -92,6 +92,9 @@ export const routes: Routes = [
   exampleRoute('examples/builder', async () =>
     import('../../gallery/table-builder/table-builder').then((module) => module.TableBuilderPage)
   ),
+  exampleRoute('examples/table-to-static', async () =>
+    import('../../gallery/table-to-static/table-to-static').then((module) => module.TableToStatic)
+  ),
   exampleRoute('examples/table-to-list', async () =>
     import('../../gallery/table-to-list/table-to-list').then((module) => module.TableToList)
   ),

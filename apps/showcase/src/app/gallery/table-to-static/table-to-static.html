@@ -1,0 +1,75 @@
+<main class="showcase-page sc-demo-page">
+  <app-demo-code [markup]="exampleMarkup" [typescript]="exampleTs">
+    <section aria-label="Demo controls" class="demo-controls">
+      <div aria-label="Interaction model" class="control-group" role="group">
+        <button
+          [attr.aria-pressed]="view() === 'grid'"
+          [class.is-active]="view() === 'grid'"
+          data-testid="view-toggle-grid"
+          type="button"
+          (click)="view.set('grid')">
+          Grid table
+        </button>
+        <button
+          [attr.aria-pressed]="view() === 'static'"
+          [class.is-active]="view() === 'static'"
+          data-testid="view-toggle-static"
+          type="button"
+          (click)="view.set('static')">
+          Static table
+        </button>
+      </div>
+
+      <div aria-label="Shared state" class="control-group" role="group">
+        <button
+          [attr.aria-pressed]="isSorted('customer', false)"
+          [class.is-active]="isSorted('customer', false)"
+          type="button"
+          (click)="sortBy('customer', false)">
+          Customer A–Z
+          <span aria-hidden="true">↑</span>
+        </button>
+        <button
+          [attr.aria-pressed]="isSorted('total', true)"
+          [class.is-active]="isSorted('total', true)"
+          type="button"
+          (click)="sortBy('total', true)">
+          Total high–low
+          <span aria-hidden="true">↓</span>
+        </button>
+        <button
+          [attr.aria-pressed]="isOrderColumnPinned()"
+          [class.is-active]="isOrderColumnPinned()"
+          data-testid="pin-toggle-order"
+          type="button"
+          (click)="togglePinOrderColumn()">
+          Pin Order left
+        </button>
+      </div>
+
+      @if (lastViewedOrder(); as orderId) {
+        <p aria-live="polite" class="last-viewed" data-testid="last-viewed-order">
+          Last viewed: <strong>{{ orderId }}</strong>
+        </p>
+      }
+    </section>
+
+    <nat-table-surface [enableSorting]="true" [(state)]="state">
+      @if (view() === 'grid') {
+        <nat-table
+          [columns]="columns"
+          [data]="rows"
+          [getRowId]="getRowId"
+          accessibleName="Orders grid table sharing state with the static view"
+          class="sc-demo-table" />
+      } @else {
+        <nat-table-static
+          [columns]="columns"
+          [data]="rows"
+          [getRowId]="getRowId"
+          accessibleName="Orders static table sharing state with the grid view"
+          class="sc-demo-table" />
+      }
+    </nat-table-surface>
+  </app-demo-code>
+</main>

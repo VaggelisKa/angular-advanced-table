@@ -2,6 +2,10 @@
 
 The table uses an ARIA grid keyboard model. Users move between cells with arrow keys and can enter interactive cell content without losing the table navigation context.
 
+## Static Table Renderer
+
+When the grid keyboard model is unwanted — read-only embeds, print views, or test surfaces — render `<nat-table-static>` instead of `<nat-table>`. It shares the same engine and surface state (sorting, pinning, column order/visibility/sizing, sub-headers, data states), but renders a plain semantic table: no ARIA grid, no cell tab stops, and no managed in-cell controls, so controls inside cells stay in the natural tab order. Column resize and reorder affordances are omitted, and cells built on `ngGridCellWidget` require the grid context and cannot render there. Because it imports neither the grid nor the drag machinery, static-only consumers tree-shake those away.
+
 ## Interactive Cells
 
 Press Enter on a focused grid cell to move focus into the first interactive control. Tab and Shift+Tab move through controls inside the grid, and Escape returns focus to the cell.
