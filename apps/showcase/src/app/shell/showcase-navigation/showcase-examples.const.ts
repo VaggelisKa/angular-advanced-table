@@ -10,6 +10,7 @@ const navExample = (id: string, label: string, description: string, path: string
 export const showcaseExamples: readonly ShowcaseNavItem[] = [
   navExample('multiple-features', 'Multiple features', 'Kitchen sink demo', '/examples/multiple-features'),
   navExample('builder', 'Table builder', 'Interactive config', '/examples/builder'),
+  navExample('table-to-static', 'Static table', 'One engine driving grid and static table views', '/examples/table-to-static'),
   navExample('table-to-list-basic', 'Basic list', 'Standalone nat-list composition', '/examples/table-to-list/basic'),
   navExample('table-to-list', 'Toggle', 'One engine driving table and list views', '/examples/table-to-list'),
   navExample(

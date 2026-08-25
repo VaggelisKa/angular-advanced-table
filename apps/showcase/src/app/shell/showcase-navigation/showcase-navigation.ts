@@ -116,7 +116,7 @@ export const showcaseNavSections: readonly ShowcaseNavSection[] = [
     id: 'gallery',
     label: 'Gallery',
     ariaLabel: 'Standalone table gallery',
-    items: [getShowcaseExample('multiple-features'), getShowcaseExample('builder')],
+    items: [getShowcaseExample('multiple-features'), getShowcaseExample('builder'), getShowcaseExample('table-to-static')],
     groups: showcaseExampleGroups
   }
 ];
