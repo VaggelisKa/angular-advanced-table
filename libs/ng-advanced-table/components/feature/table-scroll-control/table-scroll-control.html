@@ -24,7 +24,8 @@
         class="scroll-range"
         min="0"
         type="range"
-        (input)="onRangeInput($event)" />
+        (input)="onRangeInput($event)"
+        (keydown)="onRangeKeydown($event)" />
     </label>
 
     <button
