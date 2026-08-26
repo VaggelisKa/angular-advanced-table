@@ -13,6 +13,7 @@ import {
 import type { NatTableAccessibilityScrollControlLabels } from 'ng-advanced-table/locale';
 
 import { buildScrollPositionContext, clamp } from '../../utils/scroll-metrics.util';
+import { resolveTableScrollControlKeyTarget } from '../../utils/table-scroll-control-keyboard.util';
 
 const DEFAULT_SCROLL_STEP = 240;
 
@@ -104,15 +105,25 @@ export class NatTableScrollControl<TData extends RowData = RowData> {
   protected onRangeInput(event: Event): void {
     const target = event.target;
 
-    if (!(target instanceof HTMLInputElement)) {
-      return;
-    }
+    if (!(target instanceof HTMLInputElement)) return;
 
     const nextScrollLeft = Number(target.value);
 
-    if (Number.isFinite(nextScrollLeft)) {
-      this.setScrollLeft(nextScrollLeft);
-    }
+    if (Number.isFinite(nextScrollLeft)) this.setScrollLeft(nextScrollLeft);
+  }
+
+  protected onRangeKeydown(event: KeyboardEvent): void {
+    const nextScrollLeft = resolveTableScrollControlKeyTarget(
+      event,
+      this.scrollContainer()?.clientWidth ?? null,
+      this.scrollLeft(),
+      this.maxScrollLeft()
+    );
+
+    if (nextScrollLeft === null) return;
+
+    event.preventDefault();
+    this.setScrollLeft(nextScrollLeft);
   }
 
   private setScrollContainer(container: HTMLElement | null): void {
