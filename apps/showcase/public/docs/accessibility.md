@@ -244,25 +244,6 @@ readonly columns = withNatTableSelectionColumn(baseColumns, {
 
 Rows expose `aria-selected` while selection is enabled. The grid exposes `aria-multiselectable="true"` only in multiple mode. Selection changes are announced through the table live region.
 
-## Horizontal Scroll Control
-
-`NatTableScrollControl` keeps a native `input[type="range"]` slider with its generated accessible name, numeric value, and position text. Do not add a custom role to the range input.
-
-When the range has focus, these keys move the table's horizontal scroll position:
-
-| Key                                                              | Action                                                                               |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| ArrowLeft or ArrowDown                                           | Decrease by 10% of the visible table width, rounded to at least 1px                  |
-| ArrowRight or ArrowUp                                            | Increase by 10% of the visible table width, rounded to at least 1px                  |
-| Shift + ArrowLeft or ArrowDown                                   | Decrease by 10% of the available horizontal scroll distance, rounded to at least 1px |
-| Shift + ArrowRight or ArrowUp                                    | Increase by 10% of the available horizontal scroll distance, rounded to at least 1px |
-| PageUp                                                           | Increase by one visible table width                                                  |
-| PageDown                                                         | Decrease by one visible table width                                                  |
-| Home or End                                                      | Move to the start or end                                                             |
-| Control + ArrowLeft/ArrowRight or Command + ArrowLeft/ArrowRight | Move to the start or end                                                             |
-
-The control prevents the browser's native range handling only for those exact mappings. Alt and mixed primary-plus-Shift combinations remain native and unprevented.
-
 ## Final Review
 
 Answer these questions before considering a table accessible:
