@@ -73,6 +73,17 @@ jobs:
       - name: Stamp the snapshot version
         run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table
 
+      # `pnpm pack` applies pnpm's publish-time manifest transforms — most
+      # importantly rewriting `catalog:` specifiers to the literal ranges from
+      # pnpm-workspace.yaml. Pushing the ng-packagr output directly would ship
+      # `catalog:` refs that no consumer install can resolve. The extracted
+      # tarball becomes the dist branch content.
+      - name: Pack the publishable tarball
+        run: |
+          pnpm pack --dir dist/libs/ng-advanced-table --pack-destination "${RUNNER_TEMP}"
+          mkdir -p "${RUNNER_TEMP}/dist-package"
+          tar -xzf "${RUNNER_TEMP}"/ng-advanced-table-*.tgz -C "${RUNNER_TEMP}/dist-package" --strip-components 1
+
       # Second half of the staleness guard: the gate above ran at job start,
       # so re-check IMMEDIATELY before the push that the built commit is still
       # the main tip — a fresher run may have won the race while this one
@@ -80,7 +91,7 @@ jobs:
       # residual window is milliseconds and self-heals regardless, because the
       # newer commit's own run force-pushes over whatever landed first.
       - name: Force-push the built package to the dist branch
-        working-directory: dist/libs/ng-advanced-table
+        working-directory: ${{ runner.temp }}/dist-package
         run: |
           CURRENT_TIP=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)
           if [ "$CURRENT_TIP" != "$SOURCE_SHA" ]; then

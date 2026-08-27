@@ -101,9 +101,16 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
 
+      # Pack with pnpm rather than publishing the directory: `npm publish`
+      # ships the manifest verbatim, so the `catalog:` specifiers in
+      # peerDependencies/dependencies would reach the registry unresolved and
+      # be uninstallable. `pnpm pack` rewrites them to the literal ranges from
+      # pnpm-workspace.yaml; npm then publishes the finished tarball.
       - name: Publish to npm under the `next` tag
         if: steps.published.outputs.exists == 'false'
-        run: npm publish dist/libs/ng-advanced-table --tag next --access public --provenance
+        run: |
+          pnpm pack --dir dist/libs/ng-advanced-table --pack-destination "${RUNNER_TEMP}"
+          npm publish "${RUNNER_TEMP}"/ng-advanced-table-*.tgz --tag next --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
