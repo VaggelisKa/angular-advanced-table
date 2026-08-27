@@ -11,7 +11,7 @@ import type { NatTableUiController } from 'ng-advanced-table';
 
 import { NatTableToolbar } from './table-toolbar';
 import { NAT_TOOLBAR_ITEM } from '../../common/toolbar.const';
-import type { NatToolbarItemRef } from '../../common/toolbar.type';
+import type { NatToolbarFocusManagement, NatToolbarItemRef } from '../../common/toolbar.type';
 import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
 
 @Component({
@@ -78,6 +78,32 @@ class ToolbarItemsHost {
 })
 class ToolbarSlotsHost {}
 
+@Component({
+  selector: 'nat-toolbar-native-focus-host',
+  imports: [NatTableToolbar],
+  template: `
+    <nat-table-toolbar [focusManagement]="focusManagement()">
+      <button class="native-a" type="button">A</button>
+      <button class="native-b" type="button">B</button>
+    </nat-table-toolbar>
+  `
+})
+class ToolbarNativeFocusHost {
+  public readonly focusManagement = signal<NatToolbarFocusManagement>('none');
+}
+
+@Component({
+  selector: 'nat-toolbar-none-with-items-host',
+  imports: [NatTableToolbar, NatToolbarItem],
+  template: `
+    <nat-table-toolbar focusManagement="none">
+      <button class="marked-a" natToolbarItem="a" type="button">A</button>
+      <button class="marked-b" natToolbarItem="b" type="button">B</button>
+    </nat-table-toolbar>
+  `
+})
+class ToolbarNoneWithItemsHost {}
+
 const getItemRefs = (fixture: ComponentFixture<unknown>): NatToolbarItemRef[] => {
   return fixture.debugElement
     .queryAll(By.directive(NatToolbarItem))
@@ -91,7 +117,14 @@ describe('FEATURE: NatTableToolbar', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ToolbarShellHost, ToolbarControllerHost, ToolbarItemsHost, ToolbarSlotsHost],
+      imports: [
+        ToolbarShellHost,
+        ToolbarControllerHost,
+        ToolbarItemsHost,
+        ToolbarSlotsHost,
+        ToolbarNativeFocusHost,
+        ToolbarNoneWithItemsHost
+      ],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
   });
@@ -210,6 +243,78 @@ describe('FEATURE: NatTableToolbar', () => {
         expect(getItemRefs(fixture)).toHaveLength(2);
         expect(await Promise.all(remainingWidgets.map(async (widget) => widget.getText()))).toStrictEqual(['Alpha', 'Gamma']);
         expect(getItemRefs(fixture).map((item) => item.id)).toStrictEqual([alpha.id, gamma.id]);
+      });
+    });
+  });
+
+  describe('GIVEN: a toolbar with focus management disabled', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    describe('WHEN: it renders sealed controls that register no toolbar items', () => {
+      it('THEN: it exposes no tabindex or aria-disabled while keeping the toolbar landmark', async () => {
+        const fixture = TestBed.createComponent(ToolbarNativeFocusHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const toolbar = getToolbarElement(fixture);
+
+        expect(toolbar.hasAttribute('tabindex')).toBe(false);
+        expect(toolbar.hasAttribute('aria-disabled')).toBe(false);
+        expect(toolbar.getAttribute('role')).toBe('toolbar');
+      });
+    });
+
+    describe('WHEN: the same shell switches back to the default roving mode', () => {
+      it('THEN: it restores the Aria empty-toolbar fallback tab stop on the host', async () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        const fixture = TestBed.createComponent(ToolbarNativeFocusHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const toolbar = getToolbarElement(fixture);
+
+        // then: focus management off — no host tab stop
+        expect(toolbar.hasAttribute('tabindex')).toBe(false);
+
+        // when: roving mode is restored with no registered items
+        fixture.componentInstance.focusManagement.set('roving');
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // then: Aria's empty-toolbar fallback returns (container is the tab stop)
+        expect(toolbar.getAttribute('tabindex')).toBe('0');
+        expect(toolbar.getAttribute('aria-disabled')).toBe('true');
+      });
+    });
+
+    describe('WHEN: registered toolbar items are projected anyway', () => {
+      it('THEN: it warns in dev mode and leaves arrow keys to the controls', async () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const fixture = TestBed.createComponent(ToolbarNoneWithItemsHost);
+
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // then: the conflicting-focus-model warning fires
+        const guardCalls = warnSpy.mock.calls.filter((call) => String(call[0]).includes('focusManagement="none"'));
+
+        expect(guardCalls.length).toBeGreaterThanOrEqual(1);
+
+        // when: an arrow key is pressed on a focused control
+        const first = (fixture.nativeElement as HTMLElement).querySelector('.marked-a') as HTMLButtonElement;
+
+        first.focus();
+        first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // then: roving navigation does not move focus
+        expect(document.activeElement).toBe(first);
       });
     });
   });

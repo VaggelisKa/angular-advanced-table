@@ -22,4 +22,4 @@ export type {
 
 export type { NatTableSelectionColumnOptions } from './selection.type';
 
-export type { NatToolbarItemPosition, NatToolbarItemRef } from './toolbar.type';
+export type { NatToolbarFocusManagement, NatToolbarItemPosition, NatToolbarItemRef } from './toolbar.type';
