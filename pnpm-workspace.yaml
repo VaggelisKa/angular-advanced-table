@@ -26,12 +26,20 @@ linkWorkspacePackages: true
 # install error — and keep them ranges, so a pin added for one advisory does
 # not block the next fix.
 overrides:
+  '@hono/node-server@1': '^1.19.15'
   'axios@1': '^1.18.1'
+  'body-parser@1': '^1.20.6'
   'brace-expansion@1': '^1.1.18'
   'brace-expansion@5': '^5.0.9'
   'form-data@4': '^4.0.6'
+  'hono@4': '^4.12.34'
+  'ip-address@10': '^10.3.1'
+  'js-yaml@4': '^4.3.1'
   'less@4': '^4.8.1'
+  'nx@22': '^22.7.7'
+  'svgo@4': '^4.0.2'
   'tmp@0.2': '^0.2.7'
+  'undici@7': '^7.29.0'
   'yaml@2': '^2.9.0'
 catalogs:
   # runtime: Angular + table/reactivity packages
