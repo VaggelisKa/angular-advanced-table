@@ -1,11 +1,12 @@
 import { Toolbar } from '@angular/aria/toolbar';
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, effect, inject, input, isDevMode } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
 import type { NatTableUiController } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
+import type { NatToolbarFocusManagement } from '../../common/toolbar.type';
 import { injectNatTableUiController } from '../../domain-logic/ui-controller.provider';
 
 const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
@@ -84,6 +85,12 @@ const shouldHandOffCaretToToolbar = (event: KeyboardEvent, rtl: boolean): boolea
   host: {
     '[attr.aria-label]': 'resolvedAccessibleName()',
     '[attr.aria-controls]': 'ariaControls()',
+    // These two override the same bindings from the Toolbar host directive —
+    // in `focusManagement="none"` the pattern's empty-toolbar fallback
+    // (`tabindex="0"` + `aria-disabled="true"` when no widget is registered)
+    // must not surface on a toolbar whose controls tab natively.
+    '[attr.tabindex]': 'hostTabIndex()',
+    '[attr.aria-disabled]': 'hostAriaDisabled()',
     '(focusin)': 'syncActiveItemFromFocus($event)'
   }
 })
@@ -91,6 +98,15 @@ export class NatTableToolbar<TData extends RowData = RowData> {
   public readonly for = input<NatTableUiController<TData>>();
   public readonly accessibleName = input<string>();
   public readonly locale = input<string>();
+
+  /**
+   * `'roving'` (default) keeps the WAI-ARIA single-Tab-stop toolbar pattern.
+   * `'none'` disables all focus management: no host or item tabindex, no
+   * arrow-key navigation — every projected control keeps its native Tab stop.
+   * Use `'none'` when projected controls are sealed custom elements (closed
+   * shadow root) that cannot register as `natToolbarItem`s.
+   */
+  public readonly focusManagement = input<NatToolbarFocusManagement>('roving');
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
   private readonly controller = injectNatTableUiController(this.for, 'nat-table-toolbar');
@@ -116,8 +132,35 @@ export class NatTableToolbar<TData extends RowData = RowData> {
 
   protected readonly ariaControls = computed(() => this.controller()?.tableElementId() ?? null);
 
+  protected readonly hostTabIndex = computed(() => (this.focusManagement() === 'none' ? null : this.pattern.tabIndex()));
+
+  protected readonly hostAriaDisabled = computed(() => {
+    if (this.focusManagement() === 'none') {
+      // Reflect only an explicit consumer `disabled`, never the pattern's
+      // derived "no focusable items" state — that state is meaningless here.
+      return this.pattern.inputs.disabled() ? true : null;
+    }
+
+    return this.pattern.disabled();
+  });
+
   public constructor() {
     this.patchAriaToolbarPattern();
+
+    // Registered widgets would still receive Aria's roving item tabindex
+    // (active `0`, rest `-1`) even in `focusManagement="none"`, splitting the
+    // toolbar between two contradictory focus models.
+    if (isDevMode()) {
+      effect(() => {
+        if (this.focusManagement() === 'none' && this.pattern.inputs.items().length > 0) {
+          console.warn(
+            '[ng-advanced-table/components] <nat-table-toolbar focusManagement="none"> contains registered ' +
+              'natToolbarItem/NatToolbarGroup widgets. Their roving tabindex still applies and will conflict ' +
+              'with native Tab order — remove the markers, or use the default roving mode.'
+          );
+        }
+      });
+    }
 
     // @angular/aria never clears activeItem when a widget unregisters (items
     // removed via @if would strand the roving tab stop on a dead widget, and
@@ -145,6 +188,10 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     const originalOnKeydown = pattern.onKeydown.bind(pattern);
 
     pattern.onKeydown = (event: KeyboardEvent): void => {
+      // No focus management: arrows, Home/End and friends belong to the
+      // controls themselves.
+      if (this.focusManagement() === 'none') return;
+
       // Aria preventDefaults Enter/Space for its selection model (unused
       // here) — that would kill native button activation and Space typing.
       if (event.key === 'Enter' || event.key === ' ') return;
@@ -164,6 +211,8 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     const originalOnPointerdown = pattern.onPointerdown.bind(pattern);
 
     pattern.onPointerdown = (event: PointerEvent): void => {
+      if (this.focusManagement() === 'none') return;
+
       // Aria preventDefaults every pointerdown — on text-entry widgets that
       // kills caret placement and drag selection.
       if (isNatToolbarTextEntryElement(event.target)) return;
@@ -174,6 +223,8 @@ export class NatTableToolbar<TData extends RowData = RowData> {
     const originalOnClick = pattern.onClick.bind(pattern);
 
     pattern.onClick = (event: MouseEvent): void => {
+      if (this.focusManagement() === 'none') return;
+
       // Aria's click handler re-focuses the resolved widget element — on
       // text-entry widgets that would steal the caret the user just placed.
       if (isNatToolbarTextEntryElement(event.target)) return;
@@ -195,6 +246,8 @@ export class NatTableToolbar<TData extends RowData = RowData> {
    * roving tab stop behind.
    */
   protected syncActiveItemFromFocus(event: FocusEvent): void {
+    if (this.focusManagement() === 'none') return;
+
     const target = event.target;
 
     if (!(target instanceof Element)) return;

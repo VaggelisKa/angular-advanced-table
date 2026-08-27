@@ -24,6 +24,19 @@ The selector searches an open shadow root before light DOM, so the same selector
 
 Registration and hit-testing stay on the wrapper, so click, focus and keyboard routing continue to resolve the item normally.
 
+## Sealed Controls Without Focus Management
+
+When every projected control is sealed — third-party custom elements with a closed shadow root that you cannot author — the roving pattern has nothing it can manage. In that case opt the whole toolbar out with `focusManagement="none"`:
+
+```html
+<nat-table-toolbar accessibleName="Table actions" focusManagement="none">
+  <their-button>Archive</their-button>
+  <their-button>Export</their-button>
+</nat-table-toolbar>
+```
+
+The toolbar then sets no `tabindex` anywhere: every control keeps its native Tab stop, arrow keys stay with the controls, and the empty-toolbar fallback tab stop on the container is removed. The `role="toolbar"` landmark and accessible name are kept. This trades away the single-Tab-stop arrow-key navigation of the default mode, so use it only when controls genuinely cannot register — do not combine it with `natToolbarItem`/`NatToolbarGroup` markers (a dev-mode warning fires if you do).
+
 ## Keyboard Order
 
 Toolbar items use roving focus. Put controls in the order users should encounter them, then use toolbar positions for visual grouping. Do not place standalone composite controls inside the toolbar unless their individual interactive elements register correctly.

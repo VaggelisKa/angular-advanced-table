@@ -1,0 +1,98 @@
+name: Dist branch
+
+# Publishes the BUILT package to the `dist` branch on every green main commit,
+# so consumers can install straight from git with no pnpm/Nx toolchain:
+#
+#   "ng-advanced-table": "github:VaggelisKa/angular-advanced-table#dist"
+#   "ng-advanced-table": "git+https://github.com/VaggelisKa/angular-advanced-table.git#dist"
+#
+# The branch root IS the built package root (the same tree `npm publish`
+# ships: stripped manifest, FESM bundles, typings, theme.css), written as a
+# single orphan commit and force-pushed — `dist` carries no history and is
+# never merged back. Built output stays off `main`; this branch is the only
+# place it is committed.
+#
+# Trigger is CI completion rather than `push`, so a red main never ships.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  publish-dist:
+    # Green CI on a real push to main — same gate as the nightly publish. The
+    # head_sha == github.sha clause skips runs whose commit is no longer the
+    # main tip (the newer commit's own CI run publishes moments later), so a
+    # slow older run cannot regress the dist branch.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_sha == github.sha
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the commit CI validated
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          # Full history + tags: the snapshot version counter is
+          # `git rev-list --count` from the last v* tag.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # CI's `checks` job saved this cache on the same sha, so the build below
+      # is normally a cache hit rather than a rebuild.
+      - name: Restore Nx cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: .nx/cache
+          key: nx-cache-${{ github.event.workflow_run.id }}
+          restore-keys: nx-cache-
+
+      - name: Build package
+        run: pnpm run build:packages
+
+      - name: Strip Nx config from the built manifest
+        run: node tools/strip-nx-manifest.mjs dist/libs/ng-advanced-table
+
+      # Same snapshot version scheme as the npm `@next` channel, so a git
+      # install reports which main commit it carries instead of a stale
+      # stable version.
+      - name: Stamp the snapshot version
+        run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table
+
+      # Second half of the staleness guard: the gate above ran at job start,
+      # so re-check IMMEDIATELY before the push that the built commit is still
+      # the main tip — a fresher run may have won the race while this one
+      # built. Check and push share one step so nothing sits between them; the
+      # residual window is milliseconds and self-heals regardless, because the
+      # newer commit's own run force-pushes over whatever landed first.
+      - name: Force-push the built package to the dist branch
+        working-directory: dist/libs/ng-advanced-table
+        run: |
+          CURRENT_TIP=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)
+          if [ "$CURRENT_TIP" != "$SOURCE_SHA" ]; then
+            echo "main is now at ${CURRENT_TIP} — skipping publish of stale ${SOURCE_SHA}."
+            exit 0
+          fi
+          git init -b dist
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "build: package snapshot of ${SOURCE_SHA}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" dist:dist
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
