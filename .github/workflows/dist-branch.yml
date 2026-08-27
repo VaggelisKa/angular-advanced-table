@@ -28,11 +28,15 @@ concurrency:
 
 jobs:
   publish-dist:
-    # Green CI on a real push to main — same gate as the nightly publish.
+    # Green CI on a real push to main — same gate as the nightly publish. The
+    # head_sha == github.sha clause skips runs whose commit is no longer the
+    # main tip (the newer commit's own CI run publishes moments later), so a
+    # slow older run cannot regress the dist branch.
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_branch == 'main'
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_sha == github.sha
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -69,7 +73,24 @@ jobs:
       - name: Stamp the snapshot version
         run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table
 
+      # Second half of the staleness guard: the gate above ran at job start,
+      # so re-check at publication time that the built commit is still the
+      # main tip — a fresher run may have won the race while this one built.
+      - name: Skip if main moved past this commit
+        id: freshness
+        run: |
+          CURRENT_TIP=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)
+          if [ "$CURRENT_TIP" = "$SOURCE_SHA" ]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "main is now at ${CURRENT_TIP} — skipping publish of stale ${SOURCE_SHA}."
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+
       - name: Force-push the built package to the dist branch
+        if: steps.freshness.outputs.fresh == 'true'
         working-directory: dist/libs/ng-advanced-table
         run: |
           git init -b dist
