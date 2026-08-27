@@ -74,25 +74,19 @@ jobs:
         run: node tools/set-nightly-version.mjs dist/libs/ng-advanced-table
 
       # Second half of the staleness guard: the gate above ran at job start,
-      # so re-check at publication time that the built commit is still the
-      # main tip — a fresher run may have won the race while this one built.
-      - name: Skip if main moved past this commit
-        id: freshness
-        run: |
-          CURRENT_TIP=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)
-          if [ "$CURRENT_TIP" = "$SOURCE_SHA" ]; then
-            echo "fresh=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "main is now at ${CURRENT_TIP} — skipping publish of stale ${SOURCE_SHA}."
-            echo "fresh=false" >> "$GITHUB_OUTPUT"
-          fi
-        env:
-          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
-
+      # so re-check IMMEDIATELY before the push that the built commit is still
+      # the main tip — a fresher run may have won the race while this one
+      # built. Check and push share one step so nothing sits between them; the
+      # residual window is milliseconds and self-heals regardless, because the
+      # newer commit's own run force-pushes over whatever landed first.
       - name: Force-push the built package to the dist branch
-        if: steps.freshness.outputs.fresh == 'true'
         working-directory: dist/libs/ng-advanced-table
         run: |
+          CURRENT_TIP=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | cut -f1)
+          if [ "$CURRENT_TIP" != "$SOURCE_SHA" ]; then
+            echo "main is now at ${CURRENT_TIP} — skipping publish of stale ${SOURCE_SHA}."
+            exit 0
+          fi
           git init -b dist
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
