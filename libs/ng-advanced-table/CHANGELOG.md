@@ -1,3 +1,18 @@
+## 2.14.0 (2026-08-28)
+
+### 🚀 Features
+
+- Make `NatTableScrollControl` fully themeable through inherited public CSS tokens for button and icon sizing, range track and thumb styling across WebKit and Firefox, and accessible forced-colors behavior while preserving the existing range accent fallback. ([#350](https://github.com/VaggelisKa/angular-advanced-table/pull/350))
+- Add the `NatTableStatic` renderer (`<nat-table-static>`): a semantic-table renderer on the shared table engine with no ARIA grid, grid keyboard model, cell tab stops, or managed in-cell controls. It implements `NatTableUiController`, renders surface-driven sorting, pinning, sub-headers, and data states, and imports neither `@angular/aria` nor the CDK drag machinery, so static-only consumers tree-shake them away. ([#352](https://github.com/VaggelisKa/angular-advanced-table/pull/352))
+- Add `focusManagement` to `<nat-table-toolbar>` (`'roving'` default, `'none'` opt-out) with the exported `NatToolbarFocusManagement` type. `'none'` disables all toolbar focus management for sealed projected controls (e.g. closed-shadow-root custom elements): no host or item tabindex, no arrow-key roving, native Tab order throughout, and no empty-toolbar fallback `tabindex="0"`/`aria-disabled` on the container. The toolbar landmark role and accessible name are kept, and a dev-mode warning fires when `natToolbarItem`/`NatToolbarGroup` widgets register while the mode is `'none'`. ([#355](https://github.com/VaggelisKa/angular-advanced-table/pull/355))
+
+### 🩹 Fixes
+
+- Keep `columnPinning` and `columnOrder` entries for column ids the active renderer does not have. Shared surface state now survives table/list renderer swaps with differing column sets; only the TanStack-facing state filters unknown ids. ([#351](https://github.com/VaggelisKa/angular-advanced-table/pull/351))
+- Make `NatTableScrollControl` keyboard-operable with documented native range slider semantics, synchronized horizontal scrolling, and exact modifier handling. ([#354](https://github.com/VaggelisKa/angular-advanced-table/pull/354))
+- Stop clipping the focus ring of interactive controls inside table cells. Width-constrained header/data cells and the ellipsized data-cell content lift their `overflow: hidden` while the cell contains a `:focus-visible` descendant, so a focused button's outline paints fully; the ellipsis or line clamp returns when focus leaves. ([#359](https://github.com/VaggelisKa/angular-advanced-table/pull/359))
+- Let `--nat-list-item-border-width` accept 1-4 value shorthand (e.g. `1px 0` for divider-only items). The list item previously fed the token into the `border` shorthand, which takes a single width, so a multi-value width silently invalidated the whole border; the item now uses the `border-width`/`border-style`/`border-color` longhands. ([#349](https://github.com/VaggelisKa/angular-advanced-table/pull/349))
+
 ## 2.13.0 (2026-08-21)
 
 ### 🚀 Features
