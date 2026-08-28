@@ -231,6 +231,23 @@ describe('FEATURE: NatTable', () => {
         expect(cssText).toContain('transparent');
       });
 
+      it('THEN: it lifts cell overflow clipping while a cell contains a focus-visible control', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const focusEscapeRule = tableStyles.find(
+          (rule) => rule.selectorText.includes(':has(:focus-visible)') && rule.style.overflow === 'visible'
+        );
+
+        expect(focusEscapeRule).toBeDefined();
+        expect(focusEscapeRule?.selectorText).toContain('.header-cell.is-width-constrained');
+        expect(focusEscapeRule?.selectorText).toContain('.data-cell.is-width-constrained');
+        expect(focusEscapeRule?.selectorText).toContain('.header-cell-primary');
+        expect(focusEscapeRule?.selectorText).toContain('.data-cell-content');
+      });
+
       it('THEN: it keeps unpinned focus below opaque pinned state surfaces', () => {
         fixture.detectChanges();
 
