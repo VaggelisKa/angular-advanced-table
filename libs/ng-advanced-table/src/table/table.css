@@ -151,6 +151,24 @@
   white-space: normal;
 }
 
+/*
+ * Cell clipping exists for ellipsis/clamping, but it also clips the focus
+ * outline of interactive controls projected into a cell. While a cell contains
+ * a focus-visible descendant, lift the clipping so the control's ring paints
+ * fully; the ellipsis or line clamp returns the moment focus leaves. This
+ * also applies to clamped cells: `-webkit-line-clamp` stops truncating while
+ * overflow is visible, so overflowing text spills for the focused moment —
+ * an accepted trade because a hidden focus indicator is a WCAG 2.4.7 failure
+ * while the spill is transient. `:has()` and `:focus-visible` are Safari
+ * 15.4+, inside the 16.5 support floor.
+ */
+.header-cell.is-width-constrained:has(:focus-visible),
+.data-cell.is-width-constrained:has(:focus-visible),
+.header-cell.is-width-constrained:has(:focus-visible) .header-cell-primary,
+.data-cell:has(:focus-visible) .data-cell-content {
+  overflow: visible;
+}
+
 .data-cell {
   padding-inline: var(
     --nat-table-space-data-cell-x,
