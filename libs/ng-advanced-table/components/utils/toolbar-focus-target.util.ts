@@ -51,21 +51,48 @@ const NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR =
 export const isNatToolbarIntrinsicControl = (host: HTMLElement): boolean => host.matches(NAT_TOOLBAR_INTRINSIC_CONTROL_SELECTOR);
 
 /**
+ * True when a structural match can actually receive focus right now:
+ * not `:disabled` (which also covers a disabled `<fieldset>` ancestor), not
+ * inside an `inert` subtree, and not under a `hidden` ancestor.
+ *
+ * Only attribute-level state is checked. CSS `display: none` would need
+ * layout the resolver has no business forcing, and the result must be the
+ * same in a DOM without layout (unit tests, SSR hydration).
+ */
+const canCandidateTakeFocus = (candidate: HTMLElement): boolean => {
+  if (candidate.matches(':disabled')) return false;
+
+  if (candidate.closest('[inert]') !== null) return false;
+
+  return candidate.closest('[hidden]') === null;
+};
+
+const firstFocusableCandidate = (candidates: NodeListOf<HTMLElement> | undefined): HTMLElement | null => {
+  if (!candidates) return null;
+
+  for (const candidate of candidates) {
+    if (canCandidateTakeFocus(candidate)) return candidate;
+  }
+
+  return null;
+};
+
+/**
  * Finds the control a wrapper host should forward focus to when the consumer
  * nominated none — the first focusable descendant, searching an **open**
  * shadow root before light DOM exactly like {@link resolveNatToolbarFocusTarget}.
  *
- * An intrinsic control resolves to `null`: it is the target already. A host
- * whose only focusable descendant is a nested wrapper's own shell is left
- * alone as well — a `[tabindex]` hit is only trusted when it is not the
- * host's own roving attribute.
+ * An intrinsic control resolves to `null`: it is the target already.
+ * Candidates that cannot currently take focus are skipped, so a hidden or
+ * disabled leading control never strands navigation on the wrapper shell
+ * while a later control is operable.
  */
 export const resolveNatToolbarImplicitFocusTarget = (host: HTMLElement): HTMLElement | null => {
   if (isNatToolbarIntrinsicControl(host)) return null;
 
   return (
-    host.shadowRoot?.querySelector<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR) ??
-    host.querySelector<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR)
+    firstFocusableCandidate(host.shadowRoot?.querySelectorAll<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR)) ??
+    firstFocusableCandidate(host.querySelectorAll<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR))
   );
 };
 

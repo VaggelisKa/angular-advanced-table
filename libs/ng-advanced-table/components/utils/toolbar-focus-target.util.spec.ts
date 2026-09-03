@@ -98,6 +98,30 @@ describe('FEATURE: Toolbar focus-target resolution', () => {
       });
     });
 
+    describe('WHEN: the leading control sits in a disabled fieldset', () => {
+      it('THEN: it skips to the first control that can take focus', () => {
+        host.innerHTML = '<fieldset disabled><button class="off">Off</button></fieldset><button class="on">On</button>';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBe(host.querySelector('.on'));
+      });
+    });
+
+    describe('WHEN: the leading control is inside an inert subtree', () => {
+      it('THEN: it skips the inert control', () => {
+        host.innerHTML = '<div inert><button class="off">Off</button></div><button class="on">On</button>';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBe(host.querySelector('.on'));
+      });
+    });
+
+    describe('WHEN: the leading control is under a hidden ancestor', () => {
+      it('THEN: it skips the hidden control', () => {
+        host.innerHTML = '<span hidden><button class="off">Off</button></span><button class="on">On</button>';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBe(host.querySelector('.on'));
+      });
+    });
+
     describe('WHEN: nothing inside is focusable', () => {
       it('THEN: it resolves null so the host keeps focus itself', () => {
         host.innerHTML = '<span>Static label</span>';
