@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   hasUnreachableShadowRoot,
+  isNatToolbarIntrinsicControl,
   resolveNatToolbarFocusTarget,
+  resolveNatToolbarImplicitFocusTarget,
   restoreNatToolbarFocusTargetTabStop,
   suppressNatToolbarFocusTargetTabStop
 } from './toolbar-focus-target.util';
@@ -56,6 +58,68 @@ describe('FEATURE: Toolbar focus-target resolution', () => {
     describe('WHEN: the same selector matches in both roots', () => {
       it('THEN: it prefers the shadow-root match over light DOM', () => {
         expect(resolveNatToolbarFocusTarget(host, 'button')).toBe(host.shadowRoot?.querySelector('button'));
+      });
+    });
+  });
+
+  describe('GIVEN: a wrapper host with no nominated selector', () => {
+    describe('WHEN: the first focusable descendant is a button', () => {
+      it('THEN: it resolves that button implicitly', () => {
+        host.innerHTML = '<span class="shell"><button class="inner">Go</button></span>';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBe(host.querySelector('button'));
+      });
+    });
+
+    describe('WHEN: a disabled control precedes the real one', () => {
+      it('THEN: it skips the disabled control', () => {
+        host.innerHTML = '<button disabled>Off</button><input type="text" />';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBe(host.querySelector('input'));
+      });
+    });
+
+    describe('WHEN: the resolved control was already pulled to tabindex -1', () => {
+      it('THEN: it still resolves the same control on the next pass', () => {
+        host.innerHTML = '<button class="inner" tabindex="-1">Go</button>';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBe(host.querySelector('button'));
+      });
+    });
+
+    describe('WHEN: the control lives in an open shadow root behind light-DOM decoys', () => {
+      it('THEN: it prefers the shadow-root control', () => {
+        const root = host.attachShadow({ mode: 'open' });
+
+        root.innerHTML = '<button class="inner">Go</button>';
+        host.innerHTML = '<button class="light-decoy">Decoy</button>';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBe(root.querySelector('button'));
+      });
+    });
+
+    describe('WHEN: nothing inside is focusable', () => {
+      it('THEN: it resolves null so the host keeps focus itself', () => {
+        host.innerHTML = '<span>Static label</span>';
+
+        expect(resolveNatToolbarImplicitFocusTarget(host)).toBeNull();
+      });
+    });
+
+    describe('WHEN: the host is itself an intrinsic control', () => {
+      it('THEN: it resolves null and never looks inside', () => {
+        const button = document.createElement('button');
+
+        button.innerHTML = '<input type="text" />';
+
+        expect(isNatToolbarIntrinsicControl(button)).toBe(true);
+        expect(resolveNatToolbarImplicitFocusTarget(button)).toBeNull();
+      });
+    });
+
+    describe('WHEN: the host is a plain element', () => {
+      it('THEN: it is not treated as an intrinsic control', () => {
+        expect(isNatToolbarIntrinsicControl(host)).toBe(false);
       });
     });
   });

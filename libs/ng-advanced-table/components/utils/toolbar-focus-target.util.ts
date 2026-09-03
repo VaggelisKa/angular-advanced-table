@@ -1,6 +1,7 @@
 /**
- * Resolution helpers for `natToolbarItemFocusTarget` — nominating a descendant
- * of a toolbar item as the element that should actually receive focus.
+ * Resolution helpers for a toolbar item's focus target — the descendant that
+ * should actually receive focus, either nominated through
+ * `natToolbarItemFocusTarget` or resolved implicitly for a wrapper host.
  *
  * `@angular/aria` focuses a toolbar widget by calling `element.focus()` on the
  * element carrying the directive, so a wrapper component (an Angular component
@@ -28,6 +29,44 @@ export const resolveNatToolbarFocusTarget = (host: HTMLElement, selector: string
   } catch {
     return null;
   }
+};
+
+/**
+ * Elements that take focus on their own. A `natToolbarItem` sitting on one of
+ * these *is* the control, so nothing inside it is ever nominated implicitly.
+ */
+const NAT_TOOLBAR_INTRINSIC_CONTROL_SELECTOR =
+  'button, input, select, textarea, a[href], area[href], summary, audio[controls], video[controls], [contenteditable]:not([contenteditable="false"])';
+
+/**
+ * Candidates for the implicit focus target, in DOM order. `[tabindex]` is kept
+ * regardless of value because the resolved control is itself pulled to
+ * `tabindex="-1"` and must still be found again on the next pass.
+ */
+const NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR =
+  'button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), ' +
+  'a[href], area[href], summary, audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
+
+/** True when `host` is itself an interactive element rather than a wrapper around one. */
+export const isNatToolbarIntrinsicControl = (host: HTMLElement): boolean => host.matches(NAT_TOOLBAR_INTRINSIC_CONTROL_SELECTOR);
+
+/**
+ * Finds the control a wrapper host should forward focus to when the consumer
+ * nominated none — the first focusable descendant, searching an **open**
+ * shadow root before light DOM exactly like {@link resolveNatToolbarFocusTarget}.
+ *
+ * An intrinsic control resolves to `null`: it is the target already. A host
+ * whose only focusable descendant is a nested wrapper's own shell is left
+ * alone as well — a `[tabindex]` hit is only trusted when it is not the
+ * host's own roving attribute.
+ */
+export const resolveNatToolbarImplicitFocusTarget = (host: HTMLElement): HTMLElement | null => {
+  if (isNatToolbarIntrinsicControl(host)) return null;
+
+  return (
+    host.shadowRoot?.querySelector<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR) ??
+    host.querySelector<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR)
+  );
 };
 
 /**
