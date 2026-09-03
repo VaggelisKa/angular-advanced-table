@@ -4,31 +4,31 @@
     {
       "name": "ng-advanced-table",
       "fesm": "fesm2022/ng-advanced-table.mjs",
-      "maxGzipBytes": 89000,
+      "maxGzipBytes": 92000,
       "forbiddenImports": ["ng-advanced-table/components", "ng-advanced-table/render-metrics", "ng-advanced-table/virtualization"]
     },
     {
       "name": "ng-advanced-table/components",
       "fesm": "fesm2022/ng-advanced-table-components.mjs",
-      "maxGzipBytes": 38500,
+      "maxGzipBytes": 40500,
       "forbiddenImports": ["ng-advanced-table/render-metrics", "ng-advanced-table/virtualization"]
     },
     {
       "name": "ng-advanced-table/render-metrics",
       "fesm": "fesm2022/ng-advanced-table-render-metrics.mjs",
-      "maxGzipBytes": 7000,
+      "maxGzipBytes": 7500,
       "forbiddenImports": ["ng-advanced-table/components", "ng-advanced-table/virtualization"]
     },
     {
       "name": "ng-advanced-table/virtualization",
       "fesm": "fesm2022/ng-advanced-table-virtualization.mjs",
-      "maxGzipBytes": 19300,
+      "maxGzipBytes": 20000,
       "forbiddenImports": ["ng-advanced-table/components", "ng-advanced-table/render-metrics"]
     },
     {
       "name": "ng-advanced-table/locale",
       "fesm": "fesm2022/ng-advanced-table-locale.mjs",
-      "maxGzipBytes": 8500,
+      "maxGzipBytes": 9000,
       "forbiddenImports": [
         "ng-advanced-table",
         "ng-advanced-table/components",

@@ -1,4 +1,4 @@
-import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, ViewEncapsulation, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -44,6 +44,28 @@ class WrappedControl {}
 class FocusTargetHost {
   public readonly selector = signal<string | undefined>('button.inner');
 }
+
+/** Stands in for a Stencil/web-component control: open shadow root, real button inside, no annotation possible. */
+@Component({
+  selector: 'nat-shadow-control',
+  template: `<button class="shadow-inner" type="button">Shadow</button>`,
+  encapsulation: ViewEncapsulation.ShadowDom
+})
+class ShadowControl {}
+
+@Component({
+  selector: 'nat-implicit-target-host',
+  imports: [NatTableToolbar, NatToolbarItem, ShadowControl, WrappedControl],
+  template: `
+    <nat-table-toolbar>
+      <nat-wrapped-control id="light-wrapper" natToolbarItem="light" />
+      <nat-shadow-control id="shadow-wrapper" natToolbarItem="shadow" />
+      <div id="static-widget" natToolbarItem="static">Static widget</div>
+      <button id="native" natToolbarItem="native" type="button"><span class="decoy" tabindex="0">Native</span></button>
+    </nat-table-toolbar>
+  `
+})
+class ImplicitTargetHost {}
 
 @Component({
   selector: 'nat-toolbarless-host',
@@ -193,18 +215,18 @@ describe('FEATURE: NatToolbarItem', () => {
     });
 
     describe('WHEN: the selector is cleared at runtime', () => {
-      it('THEN: focus falls back to the host element', async () => {
+      it('THEN: the wrapper falls back to resolving its inner control implicitly', async () => {
         wrappedFixture.componentInstance.selector.set(undefined);
         wrappedFixture.detectChanges();
         await wrappedFixture.whenStable();
 
-        // The former control gets its tab stop back — suppression is not
-        // permanent once the item stops forwarding focus to it.
-        expect(inner().hasAttribute('tabindex')).toBe(false);
+        // A wrapper host is never the control itself — without a selector the
+        // first focusable descendant takes over, so the suppression stays put.
+        expect(inner().getAttribute('tabindex')).toBe('-1');
 
         host().focus();
 
-        expect(document.activeElement).toBe(host());
+        expect(document.activeElement).toBe(inner());
       });
     });
 
@@ -217,6 +239,67 @@ describe('FEATURE: NatToolbarItem', () => {
         await wrappedFixture.whenStable();
 
         expect(inner().hasAttribute('tabindex')).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN: toolbar items sit on wrappers that nominate no focus target', () => {
+    let implicitFixture: ComponentFixture<ImplicitTargetHost>;
+
+    const query = (selector: string): HTMLElement =>
+      (implicitFixture.nativeElement as HTMLElement).querySelector(selector) as HTMLElement;
+
+    const shadowInner = (): HTMLElement => query('#shadow-wrapper').shadowRoot?.querySelector('.shadow-inner') as HTMLElement;
+
+    beforeEach(async () => {
+      implicitFixture = TestBed.createComponent(ImplicitTargetHost);
+      implicitFixture.detectChanges();
+
+      await implicitFixture.whenStable();
+    });
+
+    describe('WHEN: a light-DOM wrapper host receives focus', () => {
+      it('THEN: it forwards focus to its first focusable descendant and suppresses its tab stop', () => {
+        const inner = query('#light-wrapper .inner');
+
+        expect(inner.getAttribute('tabindex')).toBe('-1');
+
+        query('#light-wrapper').focus();
+
+        expect(document.activeElement).toBe(inner);
+      });
+    });
+
+    describe('WHEN: an open-shadow-root wrapper host receives focus', () => {
+      it('THEN: it forwards focus into the shadow root without a selector', () => {
+        expect(shadowInner().getAttribute('tabindex')).toBe('-1');
+
+        query('#shadow-wrapper').focus();
+
+        expect(query('#shadow-wrapper').shadowRoot?.activeElement).toBe(shadowInner());
+      });
+    });
+
+    describe('WHEN: a wrapper host has nothing focusable inside', () => {
+      it('THEN: the host itself keeps focus', () => {
+        const widget = query('#static-widget');
+
+        widget.focus();
+
+        expect(document.activeElement).toBe(widget);
+      });
+    });
+
+    describe('WHEN: the host is an intrinsic control', () => {
+      it('THEN: it never forwards focus into its own content', () => {
+        const native = query('#native');
+        const decoy = query('#native .decoy');
+
+        native.focus();
+
+        expect(document.activeElement).toBe(native);
+        // No bookkeeping ran on a control that is its own target.
+        expect(decoy.getAttribute('tabindex')).toBe('0');
       });
     });
   });

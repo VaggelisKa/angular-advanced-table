@@ -5,7 +5,9 @@ import { NAT_TOOLBAR_ITEM } from '../../common/toolbar.const';
 import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/toolbar.type';
 import {
   hasUnreachableShadowRoot,
+  isNatToolbarIntrinsicControl,
   resolveNatToolbarFocusTarget,
+  resolveNatToolbarImplicitFocusTarget,
   restoreNatToolbarFocusTargetTabStop,
   suppressNatToolbarFocusTargetTabStop
 } from '../../utils/toolbar-focus-target.util';
@@ -32,10 +34,18 @@ import {
  * (`[natToolbarItemPosition]="expr"`) always lands in the start slot.
  *
  * When the item is a wrapper rather than the control itself — an Angular
- * component host, a Stencil custom element, any design-system button —
- * `natToolbarItemFocusTarget` nominates the descendant that should take focus:
+ * component host, a Stencil custom element, any design-system button — focus
+ * is forwarded to the first focusable descendant (an open shadow root is
+ * searched before light DOM), so a bare marker is enough:
  * ```html
- * <my-button natToolbarItem="filters" natToolbarItemFocusTarget="button">Filters</my-button>
+ * <my-button natToolbarItem="filters">Filters</my-button>
+ * ```
+ *
+ * `natToolbarItemFocusTarget` overrides that choice with a CSS selector when a
+ * wrapper renders more than one control, or the first one is not the one that
+ * should own focus:
+ * ```html
+ * <my-split-button natToolbarItem="filters" natToolbarItemFocusTarget=".primary">Filters</my-split-button>
  * ```
  *
  * Items only work inside a `<nat-table-toolbar>`.
@@ -67,6 +77,9 @@ export class NatToolbarItem implements NatToolbarItemRef {
    * CSS selector for the descendant that should receive focus instead of this
    * host — for items that wrap their real control rather than being it.
    *
+   * Optional: a wrapper host with no selector forwards focus to its first
+   * focusable descendant. Set it when that default picks the wrong control.
+   *
    * An open shadow root is searched before light DOM, so a custom element
    * resolves without the consumer knowing where its boundary is. The resolved
    * element is pulled out of the sequential tab order (`tabindex="-1"`) so the
@@ -90,6 +103,9 @@ export class NatToolbarItem implements NatToolbarItemRef {
 
   /** One warning per item — a mis-typed selector should not spam every focus. */
   private hasWarnedUnresolved = false;
+
+  /** One warning per item for a sealed wrapper nothing can be resolved inside of. */
+  private hasWarnedSealed = false;
 
   /** Guards against queueing a `whenDefined` continuation on every observer tick. */
   private isAwaitingUpgrade = false;
@@ -163,13 +179,41 @@ export class NatToolbarItem implements NatToolbarItemRef {
     target.focus();
   }
 
-  /** Resolves the nominated target, warning once in dev mode when it cannot be found. */
+  /**
+   * True when this item forwards focus somewhere below its host: either a
+   * selector is set, or the host is a wrapper (not itself an interactive
+   * element) whose control is resolved implicitly. A plain `<button>` or
+   * `<input>` item is the control and skips all target bookkeeping.
+   */
+  private get forwardsFocus(): boolean {
+    return this.natToolbarItemFocusTarget() !== undefined || !isNatToolbarIntrinsicControl(this.element);
+  }
+
+  /**
+   * Resolves the target — nominated by selector, or the first focusable
+   * descendant of a wrapper host — warning once in dev mode when a selector
+   * cannot be satisfied, or a sealed wrapper hides its control entirely.
+   */
   private resolveFocusTarget(): HTMLElement | null {
     const selector = this.natToolbarItemFocusTarget();
-
-    if (!selector) return null;
-
     const host = this.element;
+
+    if (selector === undefined) {
+      const implicitTarget = resolveNatToolbarImplicitFocusTarget(host);
+
+      if (!implicitTarget && isDevMode() && !this.hasWarnedSealed && hasUnreachableShadowRoot(host)) {
+        this.hasWarnedSealed = true;
+
+        console.warn(
+          `[ng-advanced-table/components] natToolbarItem on <${host.tagName.toLowerCase()}>: the element renders into a closed ` +
+            'shadow root, so no inner control can receive roving focus. Author it with an open shadow root (Stencil: ' +
+            '`shadow: true`, or `delegatesFocus: true`), or opt the toolbar out with focusManagement="none".'
+        );
+      }
+
+      return implicitTarget;
+    }
+
     const target = resolveNatToolbarFocusTarget(host, selector);
 
     if (!target && isDevMode() && !this.hasWarnedUnresolved) {
@@ -197,9 +241,9 @@ export class NatToolbarItem implements NatToolbarItemRef {
   private syncFocusTarget(): void {
     if (this.isDestroyed) return;
 
-    if (!this.natToolbarItemFocusTarget()) {
-      // Cleared selector: the former control gets its tab stop back and the
-      // re-render watch has nothing left to guard.
+    if (!this.forwardsFocus) {
+      // Intrinsic control with no selector: the host is the target, so the
+      // re-render watch has nothing to guard and nothing stays suppressed.
       this.observer?.disconnect();
       this.observedRoot = null;
       this.restoreSuppressedTarget();
