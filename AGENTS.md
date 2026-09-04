@@ -1,6 +1,6 @@
 ## Release Workflow
 
-- Every change touching library behavior, public API, docs, examples, or tests adds a Nx version plan in `.nx/version-plans/` in the same task. One plan per unreleased unit of work: fold follow-ups into the pending plan that already covers them (and fix sentences they made inaccurate) instead of adding a second file. Showcase-only changes get no plan. Do not edit unrelated plans.
+- Every change touching library behavior, public API, docs, examples, or tests adds a Nx version plan in `.nx/version-plans/` in the same task, unless the user explicitly says not to. One plan per unreleased unit of work: fold follow-ups into the pending plan that already covers them (and fix sentences they made inaccurate) instead of adding a second file. Showcase-only changes get no plan. Do not edit unrelated plans.
 - Frontmatter uses explicit names (`ng-advanced-table: patch` / `minor`), never `__default__`.
 - Versioning is deliberately not SemVer: breaking changes are `minor` (API replacements, features, broad behavior changes) or `patch` (fixes, refactors, docs, tests). Never create a `major` plan unless the user explicitly asks.
 - Nightly `@next` is snapshot-only via `tools/set-nightly-version.mjs`; never run `nx release` or consume pending plans, changelogs, or tags for it.
@@ -17,7 +17,7 @@ Entry points: `ng-advanced-table` (core), `/components`, `/render-metrics`, `/vi
 
 ## Element Layering
 
-Files are typed by their deepest folder named `common`, `utils`, `domain-logic`, `ui`, `data-access`, or `feature`; other folder names do not count. Allowed imports flow downward only: `feature` → `ui`/`domain-logic` → `data-access` → `utils` → `common`. `utils` is pure and never exports a type; `common` is the only layer that exports types. `data-access` is intentionally unused: stateful services injected by features are `domain-logic`. When lint fails, split or relocate the file; never disable the rule.
+Files are typed by their deepest folder named `common`, `utils`, `domain-logic`, `ui`, `data-access`, or `feature`; other folder names do not count. Allowed imports, per layer: `feature` may import `ui`, `domain-logic`, `utils`, `common` (never `data-access`); `domain-logic` may import `data-access`, `utils`, `common`; `ui` and `data-access` may import only `utils` and `common`; `utils` may import only `common`. `utils` is pure and never exports a type; `common` is the only layer that exports types. `data-access` is intentionally unused: stateful services injected by features are `domain-logic`. When lint fails, split or relocate the file; never disable the rule.
 
 ## Package Boundaries
 
