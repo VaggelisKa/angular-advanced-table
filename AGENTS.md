@@ -50,6 +50,7 @@ Files are typed by their deepest folder named `common`, `utils`, `domain-logic`,
 
 ## Testing
 
+- Locate elements by `data-testid` (add one if missing), not by CSS classes or DOM shape, even where older specs still do.
 - Gherkin shape: `describe('FEATURE: …')` → `describe('GIVEN: …')` → `describe('WHEN: …')` → `it('THEN: it …')`. Nesting is capped at 3, so keep `GIVEN`s flat and shared setup in a FEATURE-level `beforeEach`. When restructuring, one source test stays one test.
 - Playwright: `e2e/<feature>/`, each workflow spec paired with `<feature>.a11y.e2e.ts`; sequential flows are one test with `test.step('THEN: …')` checkpoints; media emulation goes through `e2e/support/media.ts` (`page.emulateMedia()`, since `test.use` fixtures are unreliable here).
 - Coverage thresholds are enforced per entry point. Never widen an entry point's `coverageInclude` to another's files; ratchet thresholds up when coverage rises, and lower one only with a reason in the PR body.
