@@ -1,0 +1,72 @@
+{
+  "name": "ng-advanced-table",
+  "version": "2.15.0-next.2",
+  "description": "Signals-first Angular data table built on TanStack Table — core primitives plus composable UI, utilities, virtualization, and i18n via subpath entry points (ng-advanced-table/components, /render-metrics, /virtualization, /locale).",
+  "typings": "types/ng-advanced-table.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VaggelisKa/angular-advanced-table.git",
+    "directory": "libs/ng-advanced-table"
+  },
+  "homepage": "https://github.com/VaggelisKa/angular-advanced-table/tree/main/libs/ng-advanced-table#readme",
+  "bugs": {
+    "url": "https://github.com/VaggelisKa/angular-advanced-table/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "angular",
+    "signals",
+    "table",
+    "data-table",
+    "tanstack-table",
+    "ui",
+    "i18n",
+    "accessibility"
+  ],
+  "peerDependencies": {
+    "@angular/cdk": "^22.0.2",
+    "@angular/aria": "^22.0.2",
+    "@angular/common": "^22.0.2",
+    "@angular/core": "^22.0.2"
+  },
+  "dependencies": {
+    "@tanstack/angular-table": "^8.21.4",
+    "tslib": "^2.8.1"
+  },
+  "sideEffects": [
+    "./components/theme.css"
+  ],
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./types/ng-advanced-table.d.ts",
+      "default": "./fesm2022/ng-advanced-table.mjs"
+    },
+    "./locale": {
+      "types": "./types/ng-advanced-table-locale.d.ts",
+      "default": "./fesm2022/ng-advanced-table-locale.mjs"
+    },
+    "./components": {
+      "types": "./types/ng-advanced-table-components.d.ts",
+      "default": "./fesm2022/ng-advanced-table-components.mjs"
+    },
+    "./components/theme.css": {
+      "default": "./components/theme.css"
+    },
+    "./render-metrics": {
+      "types": "./types/ng-advanced-table-render-metrics.d.ts",
+      "default": "./fesm2022/ng-advanced-table-render-metrics.mjs"
+    },
+    "./virtualization": {
+      "types": "./types/ng-advanced-table-virtualization.d.ts",
+      "default": "./fesm2022/ng-advanced-table-virtualization.mjs"
+    }
+  },
+  "module": "fesm2022/ng-advanced-table.mjs",
+  "type": "module"
+}
