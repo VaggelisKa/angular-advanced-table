@@ -43,7 +43,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     <nat-table-surface [enableSorting]="true" [state]="state()" (stateChange)="state.set($event)">
       <nat-table-static
         [caption]="caption()"
-        [columns]="useGroupedColumns() ? groupedColumns : columns"
+        [columns]="useGroupedColumns() ? groupedColumns : columns()"
         [data]="rows()"
         [dataStatus]="dataStatus()"
         [enableRowSelection]="enableRowSelection()"
@@ -62,7 +62,7 @@ const columns: ColumnDef<Row, unknown>[] = [
 })
 class StaticTableHost {
   public readonly rows = signal<Row[]>(buildRows(3));
-  public readonly columns = columns;
+  public readonly columns = signal<ColumnDef<Row, unknown>[]>(columns);
   public readonly groupedColumns: ColumnDef<Row, unknown>[] = [{ id: 'details', header: 'Details', columns }];
   public readonly useGroupedColumns = signal(false);
   public readonly getRowId = getRowIdValue;
@@ -175,6 +175,27 @@ describe('FEATURE: NatTableStatic', () => {
 
         expect(fixture.componentInstance.activations).toHaveLength(1);
         expect(fixture.componentInstance.activations[0].rowData).toBe(fixture.componentInstance.rows()[0]);
+      });
+
+      it('THEN: it does not emit rowActivate when the click starts inside a cell whose column sets meta.rowActivation false', async () => {
+        fixture.componentInstance.columns.update((current) =>
+          current.map((column) =>
+            'accessorKey' in column && column.accessorKey === 'status'
+              ? { ...column, meta: { ...column.meta, rowActivation: false } }
+              : column
+          )
+        );
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const cell = queryTable(fixture).querySelector<HTMLElement>('[data-testid="nat-table-row"] td[data-column-id="status"]');
+
+        expect(cell?.getAttribute('data-nat-row-activation')).toBe('false');
+
+        cell?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.activations).toHaveLength(0);
       });
 
       it('THEN: it ignores non-primary and already-handled clicks', async () => {
