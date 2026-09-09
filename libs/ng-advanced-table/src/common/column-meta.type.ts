@@ -43,6 +43,13 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly rowHeader?: boolean;
   /** Per-column override for the reorder surface enabler (drag, keyboard, Move buttons). When unset, falls back to the surface `enableReordering`: surface on → reorderable unless set to `false`; surface off → not reorderable unless set to `true`. Setting `false` only blocks grabbing this column; a neighbor reordered past it can still displace it. */
   readonly reorderable?: boolean;
+  /**
+   * Set to `false` to exclude this column's body cells from row activation: a click or Enter/Space
+   * that starts anywhere inside the cell (not only on an interactive control) no longer emits
+   * `rowActivate`. Use it on action columns so the padding around a cell button is not a second,
+   * larger row target (WCAG 2.5.8 target spacing). Defaults to `true`.
+   */
+  readonly rowActivation?: boolean;
   /** Optional callback that maps a cell to a semantic tone class. */
   readonly cellTone?: (context: CellContext<TData, TValue>) => NatTableCellTone | null;
   /** Optional body-cell height in pixels or any CSS length. Does not affect header cells. */

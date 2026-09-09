@@ -1462,6 +1462,72 @@ describe('FEATURE: NatTable', () => {
       });
     });
 
+    describe('WHEN: activation starts inside a cell whose column sets meta.rowActivation false', () => {
+      it('THEN: it does not emit rowActivate for clicks or Enter beside the cell control, while other cells still activate', async () => {
+        @Component({
+          selector: 'test-row-activation-opt-out-host',
+          imports: [NatTable, TestTableSurface],
+          template: `
+            <nat-table-surface>
+              <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" (rowActivate)="onRowActivate($event)" />
+            </nat-table-surface>
+          `
+        })
+        class RowActivationOptOutHost {
+          protected readonly rows = signal<Row[]>(buildRows(2));
+          protected readonly columns: ColumnDef<Row, unknown>[] = [
+            {
+              accessorKey: 'name',
+              header: 'Service',
+              meta: { label: 'Service', rowHeader: true },
+              cell: (info) => info.getValue<string>()
+            },
+            {
+              id: 'actions',
+              header: 'Actions',
+              enableSorting: false,
+              enableGlobalFilter: false,
+              meta: { label: 'Actions', rowActivation: false },
+              cell: () => 'Open'
+            }
+          ];
+
+          public readonly events: NatTableRowActivateEvent<Row>[] = [];
+
+          protected onRowActivate(event: NatTableRowActivateEvent<Row>): void {
+            this.events.push(event);
+          }
+        }
+
+        const optOutFixture = TestBed.createComponent(RowActivationOptOutHost);
+
+        await optOutFixture.whenStable();
+        optOutFixture.detectChanges();
+
+        const actionsCell = queryRequired<HTMLElement>(optOutFixture, 'tbody tr.data-row td[data-column-id="actions"]');
+        const nameCell = queryRequired<HTMLElement>(optOutFixture, 'tbody tr.data-row th[data-column-id="name"]');
+
+        // then: the renderer stamps the opt-out on the cell, not on activation-enabled cells.
+        expect(actionsCell.getAttribute('data-nat-row-activation')).toBe('false');
+        expect(nameCell.hasAttribute('data-nat-row-activation')).toBe(false);
+
+        // when: the padding beside the cell content is clicked.
+        actionsCell.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
+        actionsCell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+        optOutFixture.detectChanges();
+
+        // then:
+        expect(optOutFixture.componentInstance.events).toHaveLength(0);
+
+        // when: a cell that keeps row activation is clicked.
+        nameCell.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 }));
+        optOutFixture.detectChanges();
+
+        // then:
+        expect(optOutFixture.componentInstance.events).toHaveLength(1);
+      });
+    });
+
     describe('WHEN: Enter then Escape are pressed on a cell with a control', () => {
       it('THEN: it moves focus into a cell control with Enter and back to the cell with Escape', () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering

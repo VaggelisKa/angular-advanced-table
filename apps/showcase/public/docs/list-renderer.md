@@ -77,7 +77,7 @@ Two deliberate consequences of the stretched-button design:
 Behavior changes while it is enabled:
 
 - Items emit `rowActivate` on click and on the `rowActivate` shortcut directly — like table rows, and without `enableRowActivation`. The stretched activator button is not rendered (the focusable gridcell already carries an interactive role), so field text becomes mouse-selectable again.
-- Native controls inside fields (for example a selection checkbox) are managed into the roving tab order; clicks on them never trigger activation.
+- Native controls inside fields (for example a selection checkbox) are managed into the roving tab order; clicks on them never trigger activation. A column with `meta.rowActivation: false` excludes its whole field, padding included.
 - With multi selection the grid carries `aria-multiselectable`, and each item row mirrors its selection state onto `aria-selected` alongside `data-selected`.
 
 Leave it off for short lists: plain `role="list"` semantics are friendlier to screen-reader browse mode, and a handful of tab stops is not a traversal cost. Reach for it when the list is long enough that one tab stop per item would make keyboard traversal expensive.

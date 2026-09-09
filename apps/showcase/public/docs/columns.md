@@ -229,6 +229,21 @@ protected openPosition(positionId: string): void {
 
 Keep cell-level buttons, links, menus, and inputs independent. They should emit their own outputs and should not depend on row activation.
 
+### Opting A Column Out Of Row Activation
+
+The interactive-descendant guard only covers the control itself. The cell padding around a small action button is still part of the row target, so a click that misses the button by a few pixels navigates away. WCAG 2.5.8 (Target Size, AA) also requires a 24 × 24 CSS px target or that much clearance from other targets, and the surrounding row counts as another target. Set `meta.rowActivation: false` on such columns so the whole cell is excluded:
+
+```ts
+{
+  id: 'actions',
+  header: 'Actions',
+  meta: { label: 'Actions', hiddenHeaderLabel: 'Row actions', rowActivation: false },
+  cell: (context) => flexRenderComponent(PositionActionsCell, { inputs: { symbol: context.row.original.symbol } }),
+}
+```
+
+Clicks and Enter / Space that start anywhere inside that cell no longer emit `rowActivate`; every other cell in the row still does. The renderer stamps `data-nat-row-activation="false"` on the cell, and you can place that attribute on any element inside a cell template for a finer opt-out. `NatList` honors the same flag on its fields.
+
 ## Export Metadata
 
 Accessor columns export by default. Display columns opt out unless explicitly enabled. Use `meta.export` when exported data should differ from rendered text.

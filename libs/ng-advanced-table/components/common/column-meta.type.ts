@@ -39,6 +39,8 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly rowHeader?: boolean;
   /** Per-column override for the reorder surface enabler (drag, keyboard, Move buttons). When unset, falls back to the surface `enableReordering`: surface on → reorderable unless set to `false`; surface off → not reorderable unless set to `true`. Setting `false` only blocks grabbing this column; a neighbor reordered past it can still displace it. */
   readonly reorderable?: boolean;
+  /** Set to `false` to exclude the column's body cells from row activation (see core `NatTableColumnMeta`). */
+  readonly rowActivation?: boolean;
   /** Optional callback that maps a cell to a semantic tone. */
   readonly cellTone?: (context: CellContext<TData, TValue>) => 'positive' | 'negative' | 'neutral' | 'warning' | null;
   /** Optional body-cell height in pixels or any CSS length. Does not affect header cells. */

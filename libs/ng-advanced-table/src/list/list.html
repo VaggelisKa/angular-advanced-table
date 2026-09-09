@@ -26,6 +26,7 @@
       @if (cell) {
         <div
           [attr.data-column-id]="column.id"
+          [attr.data-nat-row-activation]="column.columnDef.meta?.rowActivation === false ? 'false' : null"
           [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
           [natListFieldArea]="column.id"
           class="list-field">

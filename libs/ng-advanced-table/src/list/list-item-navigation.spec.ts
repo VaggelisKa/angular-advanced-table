@@ -156,6 +156,26 @@ describe('FEATURE: NatList composite item navigation', () => {
         expect(spaceEvent.defaultPrevented).toBe(true);
       });
 
+      it('THEN: it does not emit when the click starts inside a field opted out with meta.rowActivation false', async () => {
+        host.columns.update((current) =>
+          current.map((column) =>
+            'accessorKey' in column && column.accessorKey === 'region'
+              ? { ...column, meta: { ...column.meta, rowActivation: false } }
+              : column
+          )
+        );
+        await render();
+
+        const field = queryRequired(fixture, '[data-testid="nat-list-item"] .list-field[data-column-id="region"]');
+
+        expect(field.getAttribute('data-nat-row-activation')).toBe('false');
+
+        field.querySelector<HTMLElement>('.list-field-value')?.click();
+        fixture.detectChanges();
+
+        expect(host.activated()).toHaveLength(0);
+      });
+
       it('THEN: it does not emit when the event originates from an interactive control inside a field', async () => {
         await render();
 
