@@ -3,6 +3,8 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
+import type { ColumnDef } from '@tanstack/angular-table';
+
 import { NatList } from './list';
 import { ListHost } from '../test-helpers/list-hosts.helper';
 import type { Row } from '../test-helpers/table-data.helper';
@@ -156,23 +158,33 @@ describe('FEATURE: NatList composite item navigation', () => {
         expect(spaceEvent.defaultPrevented).toBe(true);
       });
 
-      it('THEN: it does not emit when the click starts inside a field opted out with meta.rowActivation false', async () => {
-        host.columns.update((current) =>
-          current.map((column) =>
-            'accessorKey' in column && column.accessorKey === 'region'
-              ? { ...column, meta: { ...column.meta, rowActivation: false } }
-              : column
-          )
-        );
+      it('THEN: it does not emit for an opted-out field click, nor for Enter / Space / item click once every column opts out', async () => {
+        // sequential flow kept whole — the second half widens the first opt-out to every column
+        const optOut = (match: (column: ColumnDef<Row, unknown>) => boolean): void =>
+          host.columns.update((current) =>
+            current.map((column) => (match(column) ? { ...column, meta: { ...column.meta, rowActivation: false } } : column))
+          );
+
+        optOut((column) => 'accessorKey' in column && column.accessorKey === 'region');
         await render();
 
         const field = queryRequired(fixture, '[data-testid="nat-list-item"] .list-field[data-column-id="region"]');
 
         expect(field.getAttribute('data-nat-row-activation')).toBe('false');
-
         field.querySelector<HTMLElement>('.list-field-value')?.click();
         fixture.detectChanges();
+        expect(host.activated()).toHaveLength(0);
 
+        optOut(() => true);
+        await render();
+
+        const cell = queryAll(fixture, '[data-testid="nat-list-item-cell"]')[0];
+
+        cell.focus();
+        keydown(cell, 'Enter');
+        keydown(cell, ' ');
+        cell.click();
+        fixture.detectChanges();
         expect(host.activated()).toHaveLength(0);
       });
 

@@ -216,7 +216,8 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(host.activated()[0].rowData.name).toBe('Alpha');
       });
 
-      it('THEN: it stacks a field opted out with meta.rowActivation false above the activator so its clicks never activate', async () => {
+      it('THEN: it stacks an opted-out field above the activator, and drops the activator once every column opts out', async () => {
+        // sequential flow kept whole — the second half widens the first opt-out to every column
         host.enableRowActivation.set(true);
         host.columns.update((current) =>
           current.map((column) =>
@@ -231,11 +232,14 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
 
         expect(field.getAttribute('data-nat-row-activation')).toBe('false');
         expect(getComputedStyle(field).zIndex).toBe('1');
-
         field.querySelector<HTMLElement>('.list-field-value')?.click();
         await render();
-
         expect(host.activated()).toHaveLength(0);
+
+        host.columns.update((current) => current.map((column) => ({ ...column, meta: { ...column.meta, rowActivation: false } })));
+        await render();
+        expect(queryAll(fixture, '[data-testid="nat-list-item-activator"]')).toHaveLength(0);
+        expect(queryAll(fixture, '[data-testid="nat-list-item"]')[0].classList.contains('is-activatable')).toBe(false);
       });
 
       it('THEN: it names each activator from its item first field via aria-labelledby', async () => {

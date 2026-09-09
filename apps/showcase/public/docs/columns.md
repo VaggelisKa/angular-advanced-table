@@ -242,7 +242,7 @@ The interactive-descendant guard only covers the control itself. The cell paddin
 }
 ```
 
-Clicks and Enter / Space that start anywhere inside that cell no longer emit `rowActivate`; every other cell in the row still does. The renderer stamps `data-nat-row-activation="false"` on the cell, and you can place that attribute on any element inside a cell template for a finer opt-out. `NatStaticTable` stamps it too, and `NatList` honors the flag on its fields for pointer clicks (keyboard focus in a list sits on the whole item, so Enter/Space still activate).
+Clicks and Enter / Space that start anywhere inside that cell no longer emit `rowActivate`; every other cell in the row still does. The renderer stamps `data-nat-row-activation="false"` on the cell, and you can place that attribute on any element inside a cell template for a finer opt-out. `NatStaticTable` stamps it too. `NatList` honors the flag on its fields for pointer clicks; keyboard focus in a list sits on the whole item, so Enter/Space keep activating until every visible column opts out, at which point the item stops activating entirely (see the list renderer topic).
 
 ## Export Metadata
 

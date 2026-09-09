@@ -170,10 +170,10 @@
             <li
               [attr.data-row-id]="row.id"
               [attr.data-selected]="rowSelectedAttribute(row)"
-              [class.is-activatable]="enableRowActivation()"
+              [class.is-activatable]="rendersActivator()"
               class="list-item"
               data-testid="nat-list-item">
-              @if (enableRowActivation()) {
+              @if (rendersActivator()) {
                 <!-- A real button, so the activation affordance has an interactive
                      role (WCAG 4.1.2) — a focusable listitem announces as plain
                      text. A stretched sibling rather than a wrapper: nesting the
@@ -204,7 +204,7 @@
                   itemIndex: $index,
                   listColumns,
                   headerContexts,
-                  withActivator: enableRowActivation()
+                  withActivator: rendersActivator()
                 }" />
             </li>
           }
