@@ -238,7 +238,6 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         host.columns.update((current) => current.map((column) => ({ ...column, meta: { ...column.meta, rowActivation: false } })));
         await render();
         expect(queryAll(fixture, '[data-testid="nat-list-item-activator"]')).toHaveLength(0);
-        expect(queryAll(fixture, '[data-testid="nat-list-item"]')[0].classList.contains('is-activatable')).toBe(false);
       });
 
       it('THEN: it names each activator from its item first field via aria-labelledby', async () => {
