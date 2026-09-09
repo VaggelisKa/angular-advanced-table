@@ -217,7 +217,6 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
       });
 
       it('THEN: it stacks an opted-out field above the activator, and drops the activator once every column opts out', async () => {
-        // sequential flow kept whole — the second half widens the first opt-out to every column
         host.enableRowActivation.set(true);
         host.columns.update((current) =>
           current.map((column) =>
