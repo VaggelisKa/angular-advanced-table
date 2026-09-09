@@ -29,7 +29,10 @@ export const withNatTableSelectionColumn = <TData extends RowData>(
     enableResizing: false,
     enableGlobalFilter: false,
     enablePinning: options.enablePinning ?? true,
-    meta: options.label !== undefined ? { label: options.label } : {},
+    meta: {
+      ...(options.label !== undefined ? { label: options.label } : {}),
+      rowActivation: options.rowActivation ?? false
+    },
     header: (context) =>
       flexRenderComponent(NatTableSelectionCheckbox, {
         inputs: {
