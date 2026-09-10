@@ -3,7 +3,7 @@ import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 import type { CellContext, Column, Header, RowData } from '@tanstack/angular-table';
 
 import type { NatTableCellTone } from '../common/column-meta.type';
-import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
+import { ROW_ACTIVATE_INTERACTIVE_SELECTOR, ROW_ACTIVATE_OPT_OUT_SELECTOR } from '../common/interaction.const';
 
 /** Keyboard keys that drive a column resize (Alt+Arrow steps; Alt+Home/End jump to bounds). */
 const RESIZE_KEYS: ReadonlySet<string> = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End']);
@@ -50,7 +50,11 @@ export const resolveDraggedColumnId = (event: CdkDragDrop<string[]>, rowColumnId
   return rowColumnIds[event.previousIndex] ?? null;
 };
 
-/** Whether the event originated from an interactive descendant of the current target. */
+/**
+ * Whether the event originated from a descendant of the current target that must not trigger
+ * row activation: an interactive control, or any element opted out through
+ * `data-nat-row-activation="false"` (stamped by `meta.rowActivation: false`).
+ */
 export const originatesFromInteractiveDescendant = (event: Event): boolean => {
   const target = event.target;
   const currentTarget = event.currentTarget;
@@ -59,13 +63,13 @@ export const originatesFromInteractiveDescendant = (event: Event): boolean => {
     return false;
   }
 
-  const interactive = target.closest(ROW_ACTIVATE_INTERACTIVE_SELECTOR);
+  const guarded = target.closest(`${ROW_ACTIVATE_INTERACTIVE_SELECTOR}, ${ROW_ACTIVATE_OPT_OUT_SELECTOR}`);
 
-  if (!interactive) {
+  if (!guarded) {
     return false;
   }
 
-  return interactive !== currentTarget && currentTarget.contains(interactive);
+  return guarded !== currentTarget && currentTarget.contains(guarded);
 };
 
 /** Scrolls `element` just into view horizontally within `scrollContainer`. */

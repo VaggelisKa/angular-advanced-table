@@ -144,6 +144,23 @@ describe('FEATURE: column render state', () => {
       });
     });
 
+    describe('WHEN: meta opts the column out of row activation', () => {
+      it('THEN: it stamps the row-activation opt-out attribute value', () => {
+        const column = createColumn({ id: 'actions', meta: { rowActivation: false } });
+
+        expect(buildColumnRenderState(column, createContext()).rowActivationAttribute).toBe('false');
+      });
+    });
+
+    describe('WHEN: meta leaves row activation unset or enabled', () => {
+      it('THEN: it leaves the row-activation attribute null', () => {
+        expect(buildColumnRenderState(createColumn({ id: 'name' }), createContext()).rowActivationAttribute).toBeNull();
+        expect(
+          buildColumnRenderState(createColumn({ id: 'name', meta: { rowActivation: true } }), createContext()).rowActivationAttribute
+        ).toBeNull();
+      });
+    });
+
     describe('WHEN: meta declares neither alignment nor a row header', () => {
       it('THEN: it leaves both flags false and omits their classes', () => {
         const column = createColumn({ id: 'name' });

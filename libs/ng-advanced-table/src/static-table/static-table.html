@@ -124,6 +124,7 @@
                 @if (columnState?.rowHeader) {
                   <th
                     [attr.data-column-id]="cell.column.id"
+                    [attr.data-nat-row-activation]="columnState?.rowActivationAttribute ?? null"
                     [attr.data-tone]="cellTone"
                     [class]="columnState?.cellClassMap"
                     [natTableBodyCellLayout]="columnState"
@@ -137,6 +138,7 @@
                 } @else {
                   <td
                     [attr.data-column-id]="cell.column.id"
+                    [attr.data-nat-row-activation]="columnState?.rowActivationAttribute ?? null"
                     [attr.data-tone]="cellTone"
                     [class]="columnState?.cellClassMap"
                     [natTableBodyCellLayout]="columnState">

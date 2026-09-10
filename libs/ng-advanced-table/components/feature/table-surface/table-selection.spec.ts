@@ -119,6 +119,15 @@ describe('FEATURE: withNatTableSelectionColumn', () => {
     });
   });
 
+  describe('GIVEN: selection column helpers are configured for row activation', () => {
+    describe('WHEN: the generated column meta is inspected', () => {
+      it('THEN: it opts the selection cell out of row activation by default and honors an explicit override', () => {
+        expect(withNatTableSelectionColumn(baseColumns)[0].meta?.rowActivation).toBe(false);
+        expect(withNatTableSelectionColumn(baseColumns, { rowActivation: true })[0].meta?.rowActivation).toBe(true);
+      });
+    });
+  });
+
   describe('GIVEN: selection column helpers are configured with single selection mode', () => {
     describe('WHEN: renders the plain column label instead of a select-all checkbox in single mode', () => {
       it('THEN: it uses the single-select header label', async () => {

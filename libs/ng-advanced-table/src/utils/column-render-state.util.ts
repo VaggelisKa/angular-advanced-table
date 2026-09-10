@@ -96,6 +96,10 @@ const buildCellClassMap = (edges: ColumnPinnedEdges, flags: ColumnRenderFlags): 
     flags.constrainedWidth && 'is-width-constrained'
   ]);
 
+/** `'false'` when the column opts its body cells out of row activation, otherwise `null`. */
+const resolveRowActivationAttribute = <TData extends RowData>(meta: Column<TData, unknown>['columnDef']['meta']): 'false' | null =>
+  meta?.rowActivation === false ? 'false' : null;
+
 /** Builds one column's full render state from the shared context. */
 export const buildColumnRenderState = <TData extends RowData>(
   column: Column<TData, unknown>,
@@ -137,6 +141,7 @@ export const buildColumnRenderState = <TData extends RowData>(
     cellMaxLines,
     ariaSort: resolveAriaSort(primarySortEntry),
     rowHeader: flags.isRowHeader,
+    rowActivationAttribute: resolveRowActivationAttribute(meta),
     headerClassMap: buildHeaderClassMap(edges, flags),
     cellClassMap: buildCellClassMap(edges, flags)
   };

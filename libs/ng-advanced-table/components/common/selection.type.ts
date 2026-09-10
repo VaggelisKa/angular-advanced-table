@@ -10,6 +10,12 @@ export type NatTableSelectionColumnOptions<TData extends RowData = RowData> = {
   readonly size?: number;
   /** Whether the column may be pinned. Defaults to true (pin it left via state). */
   readonly enablePinning?: boolean;
+  /**
+   * Whether clicks and Enter/Space that start in the selection cell (beside the checkbox) may
+   * emit `rowActivate`. Defaults to `false`: the checkbox is well under the 24 px WCAG 2.5.8
+   * target, so the padding around it must not be a second, larger row target.
+   */
+  readonly rowActivation?: boolean;
   /** `aria-label` override for the select-all checkbox. Defaults to the locale label. */
   readonly selectAllAriaLabel?: string;
   /** `aria-label` override for a per-row checkbox. Defaults to the locale formatter. */

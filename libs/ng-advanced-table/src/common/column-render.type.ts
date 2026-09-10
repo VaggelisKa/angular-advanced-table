@@ -52,6 +52,8 @@ export type TableColumnRenderState = {
   readonly cellMaxLines: number | null;
   readonly ariaSort: 'ascending' | 'descending' | null;
   readonly rowHeader: boolean;
+  /** `'false'` when the column opts its body cells out of row activation, otherwise `null`. */
+  readonly rowActivationAttribute: 'false' | null;
   /** Precomputed space-separated CSS classes for header cells. */
   readonly headerClassMap: string;
   /** Precomputed space-separated CSS classes for body cells. */

@@ -109,6 +109,14 @@
   z-index: 1;
 }
 
+/* A field whose column sets `meta.rowActivation: false` stacks above the
+   activator as a whole, so clicks on its text or padding never reach the
+   activator (the li has no click handler in plain mode). */
+.list-item.is-activatable .list-field[data-nat-row-activation='false'] {
+  position: relative;
+  z-index: 1;
+}
+
 /* Plain mode carries data-selected on the .list-item li; composite mode
    carries it on the .list-row li wrapping the .list-item gridcell div. */
 .list-item[data-selected='true'],

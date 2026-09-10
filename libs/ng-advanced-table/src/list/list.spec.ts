@@ -216,6 +216,30 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(host.activated()[0].rowData.name).toBe('Alpha');
       });
 
+      it('THEN: it stacks an opted-out field above the activator, and drops the activator once every column opts out', async () => {
+        host.enableRowActivation.set(true);
+        host.columns.update((current) =>
+          current.map((column) =>
+            'accessorKey' in column && column.accessorKey === 'region'
+              ? { ...column, meta: { ...column.meta, rowActivation: false } }
+              : column
+          )
+        );
+        await render();
+
+        const field = queryAll(fixture, '[data-testid="nat-list-item"] .list-field[data-column-id="region"]')[0];
+
+        expect(field.getAttribute('data-nat-row-activation')).toBe('false');
+        expect(getComputedStyle(field).zIndex).toBe('1');
+        field.querySelector<HTMLElement>('.list-field-value')?.click();
+        await render();
+        expect(host.activated()).toHaveLength(0);
+
+        host.columns.update((current) => current.map((column) => ({ ...column, meta: { ...column.meta, rowActivation: false } })));
+        await render();
+        expect(queryAll(fixture, '[data-testid="nat-list-item-activator"]')).toHaveLength(0);
+      });
+
       it('THEN: it names each activator from its item first field via aria-labelledby', async () => {
         host.enableRowActivation.set(true);
         await render();
