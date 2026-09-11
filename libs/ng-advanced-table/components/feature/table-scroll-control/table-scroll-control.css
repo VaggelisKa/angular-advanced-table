@@ -11,6 +11,7 @@
 }
 
 .scroll-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -18,17 +19,17 @@
     --nat-table-scroll-button-min-inline-size,
     var(
       --sys-nat-table-scroll-button-min-inline-size,
-      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 44px))
+      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 36px))
     )
   );
   min-block-size: var(
     --nat-table-scroll-button-min-block-size,
     var(
       --sys-nat-table-scroll-button-min-block-size,
-      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 44px))
+      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 36px))
     )
   );
-  padding: 0 var(--nat-table-scroll-button-padding-x, var(--sys-nat-table-scroll-button-padding-x, 18px));
+  padding: 0 var(--nat-table-scroll-button-padding-x, var(--sys-nat-table-scroll-button-padding-x, 0));
   color: var(--nat-table-scroll-button-color, var(--sys-nat-table-scroll-button-color, inherit));
   cursor: pointer;
   background: var(--nat-table-scroll-button-background, var(--sys-nat-table-scroll-button-background, transparent));
@@ -40,6 +41,42 @@
     box-shadow var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
     transform var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease)),
     color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease));
+}
+
+/* Pointer target extension: the visual box stays at its min size (36px stock) so
+   the focus ring hugs it, while an invisible pseudo-element grows the hit area to
+   the target size (44px stock, WCAG 2.5.5 AAA) on each axis independently, so
+   per-axis `min-inline-size` / `min-block-size` overrides are honored. The inset
+   goes negative only while the box is smaller than the target on that axis, and
+   subtracts the 1px border because inset is measured from the padding box. */
+.scroll-button::before {
+  --sys-nat-table-scroll-button-box-inline: var(
+    --nat-table-scroll-button-min-inline-size,
+    var(
+      --sys-nat-table-scroll-button-min-inline-size,
+      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 36px))
+    )
+  );
+  --sys-nat-table-scroll-button-box-block: var(
+    --nat-table-scroll-button-min-block-size,
+    var(
+      --sys-nat-table-scroll-button-min-block-size,
+      var(--nat-table-scroll-button-min-height, var(--sys-nat-table-scroll-button-min-height, 36px))
+    )
+  );
+  --sys-nat-table-scroll-button-target: var(
+    --nat-table-scroll-button-target-size,
+    var(--sys-nat-table-scroll-button-target-size, 44px)
+  );
+
+  position: absolute;
+  inset-block: calc(min(0px, (var(--sys-nat-table-scroll-button-box-block) - var(--sys-nat-table-scroll-button-target)) / 2) - 1px);
+  inset-inline: calc(min(0px, (var(--sys-nat-table-scroll-button-box-inline) - var(--sys-nat-table-scroll-button-target)) / 2) - 1px);
+  content: '';
+}
+
+.scroll-button:disabled::before {
+  content: none;
 }
 
 .scroll-button:hover:not(:disabled) {
@@ -63,8 +100,8 @@
 
 .scroll-icon {
   display: block;
-  width: var(--nat-table-scroll-icon-size, var(--sys-nat-table-scroll-icon-size, 1rem));
-  height: var(--nat-table-scroll-icon-size, var(--sys-nat-table-scroll-icon-size, 1rem));
+  width: var(--nat-table-scroll-icon-size, var(--sys-nat-table-scroll-icon-size, 24px));
+  height: var(--nat-table-scroll-icon-size, var(--sys-nat-table-scroll-icon-size, 24px));
 }
 
 .scroll-range-label {

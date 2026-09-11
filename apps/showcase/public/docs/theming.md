@@ -226,7 +226,7 @@ Reach for these direct tokens when a table control needs a local exception.
 
 ### Scroll Control Tokens
 
-`NatTableScrollControl` keeps its native range input and reads inherited tokens from the wrapper around the control and table. The component does not expose private selectors as theme API.
+`NatTableScrollControl` keeps its native range input and reads inherited tokens from the wrapper around the control and table. The component does not expose private selectors as theme API. The stock buttons draw as 36 × 36 px squares with a 24 px arrow and no inline padding, while an invisible pseudo-element extends each button's pointer target to `--nat-table-scroll-button-target-size` (44 px, the WCAG 2.5.5 AAA size), so the focus ring hugs the compact box without shrinking the tap area.
 
 | Token                                         | Purpose                                                                                 |
 | --------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -234,6 +234,7 @@ Reach for these direct tokens when a table control needs a local exception.
 | `--nat-table-scroll-button-min-height`        | Existing fallback for both button axes when the logical sizing tokens are unset         |
 | `--nat-table-scroll-button-min-inline-size`   | Minimum inline size of each button                                                      |
 | `--nat-table-scroll-button-min-block-size`    | Minimum block size of each button                                                       |
+| `--nat-table-scroll-button-target-size`       | Pointer target each button axis is extended to (never smaller than the visual box)      |
 | `--nat-table-scroll-button-padding-x`         | Button inline padding                                                                   |
 | `--nat-table-scroll-button-color`             | Button and arrow color                                                                  |
 | `--nat-table-scroll-button-background`        | Button background                                                                       |
