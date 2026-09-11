@@ -234,7 +234,7 @@ Reach for these direct tokens when a table control needs a local exception.
 | `--nat-table-scroll-button-min-height`        | Existing fallback for both button axes when the logical sizing tokens are unset         |
 | `--nat-table-scroll-button-min-inline-size`   | Minimum inline size of each button                                                      |
 | `--nat-table-scroll-button-min-block-size`    | Minimum block size of each button                                                       |
-| `--nat-table-scroll-button-target-size`       | Pointer target each button is extended to (never smaller than the visual box)           |
+| `--nat-table-scroll-button-target-size`       | Pointer target each button axis is extended to (never smaller than the visual box)      |
 | `--nat-table-scroll-button-padding-x`         | Button inline padding                                                                   |
 | `--nat-table-scroll-button-color`             | Button and arrow color                                                                  |
 | `--nat-table-scroll-button-background`        | Button background                                                                       |

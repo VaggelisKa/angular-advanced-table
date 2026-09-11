@@ -49,7 +49,10 @@ describe('FEATURE: table scroll control styling contract', () => {
 
         expect(hitAreaRule).toMatch(/position: absolute/);
         expect(hitAreaRule).toMatch(/--sys-nat-table-scroll-button-target-size,\s*44px/);
-        expect(hitAreaRule).toMatch(/inset: calc\(min\(0px, /);
+        expect(hitAreaRule).toMatch(/inset-inline: calc\(min\(0px, \(var\(--sys-nat-table-scroll-button-box-inline\)/);
+        expect(hitAreaRule).toMatch(/inset-block: calc\(min\(0px, \(var\(--sys-nat-table-scroll-button-box-block\)/);
+        expect(hitAreaRule).toMatch(/--sys-nat-table-scroll-button-box-inline: var\(--nat-table-scroll-button-min-inline-size,/);
+        expect(hitAreaRule).toMatch(/--sys-nat-table-scroll-button-box-block: var\(--nat-table-scroll-button-min-block-size,/);
         expect(iconRule).toMatch(/height:[^;]*--sys-nat-table-scroll-icon-size, 24px/);
         expect(ruleUsesToken('.scroll-range-label', '--nat-table-scroll-position-min-inline-size')).toBe(true);
         expect(ruleUsesToken('.scroll-range-label', '--nat-table-scroll-range-min-inline-size')).toBe(true);
