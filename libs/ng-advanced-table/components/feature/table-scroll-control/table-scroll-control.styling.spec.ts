@@ -35,6 +35,22 @@ describe('FEATURE: table scroll control styling contract', () => {
         expect(forcedColorsCss).toContain('::-moz-range-progress');
         expect(forcedColorsCss).toContain('::-moz-range-thumb');
         expect(ruleUsesToken('.scroll-icon', '--nat-table-scroll-icon-size')).toBe(true);
+
+        // Stock size: a 24px arrow inside a 36px square button with no inline padding, and a 44px hit area (WCAG 2.5.5 AAA).
+        const buttonRule = cssRules.find((cssText) => /^\.scroll-button[[\s{]/.test(cssText)) ?? '';
+        const iconRule = cssRules.find((cssText) => /^\.scroll-icon[[\s{]/.test(cssText)) ?? '';
+
+        expect(buttonRule).toMatch(/min-inline-size:[^;]*--sys-nat-table-scroll-button-min-height, 36px/);
+        expect(buttonRule).toMatch(/min-block-size:[^;]*--sys-nat-table-scroll-button-min-height, 36px/);
+        expect(buttonRule).toMatch(/padding:[^;]*--sys-nat-table-scroll-button-padding-x, 0\)/);
+        expect(iconRule).toMatch(/width:[^;]*--sys-nat-table-scroll-icon-size, 24px/);
+
+        const hitAreaRule = cssRules.find((cssText) => /^\.scroll-button[[\s]*[^{]*::before/.test(cssText)) ?? '';
+
+        expect(hitAreaRule).toMatch(/position: absolute/);
+        expect(hitAreaRule).toMatch(/--sys-nat-table-scroll-button-target-size,\s*44px/);
+        expect(hitAreaRule).toMatch(/inset: calc\(min\(0px, /);
+        expect(iconRule).toMatch(/height:[^;]*--sys-nat-table-scroll-icon-size, 24px/);
         expect(ruleUsesToken('.scroll-range-label', '--nat-table-scroll-position-min-inline-size')).toBe(true);
         expect(ruleUsesToken('.scroll-range-label', '--nat-table-scroll-range-min-inline-size')).toBe(true);
         expect(ruleUsesToken('::-webkit-slider-thumb', '--nat-table-scroll-range-thumb-color')).toBe(true);

@@ -162,17 +162,18 @@
 
   /* Scroll control */
   --nat-table-scroll-control-gap: var(--nat-table-space-pager-gap);
-  --nat-table-scroll-button-min-height: 44px;
+  --nat-table-scroll-button-min-height: 36px;
+  --nat-table-scroll-button-target-size: 44px;
   --nat-table-scroll-button-min-inline-size: var(--nat-table-scroll-button-min-height);
   --nat-table-scroll-button-min-block-size: var(--nat-table-scroll-button-min-height);
-  --nat-table-scroll-button-padding-x: var(--nat-table-pager-padding-x);
+  --nat-table-scroll-button-padding-x: 0;
   --nat-table-scroll-button-color: var(--nat-table-color-text);
   --nat-table-scroll-button-background: var(--nat-table-color-surface);
   --nat-table-scroll-button-background-hover: color-mix(in srgb, var(--nat-table-color-accent) 10%, var(--nat-table-color-surface));
   --nat-table-scroll-button-border-color: var(--nat-table-color-border);
   --nat-table-scroll-button-shadow-hover: none;
   --nat-table-scroll-button-disabled-opacity: var(--nat-table-disabled-opacity);
-  --nat-table-scroll-icon-size: 1rem;
+  --nat-table-scroll-icon-size: 24px;
   --nat-table-scroll-range-gap: var(--nat-table-space-pager-gap);
   --nat-table-font-size-scroll-position: var(--nat-table-font-size-pager-label);
   --nat-table-scroll-position-min-inline-size: 7ch;
