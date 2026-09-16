@@ -46,6 +46,7 @@ readonly columns: ColumnDef<PositionRow>[] = [
 | `align`             | `'start'` or `'end'` header and body alignment                                                                                                                  |
 | `rowHeader`         | Marks body cells in the column as row headers                                                                                                                   |
 | `reorderable`       | Per-column reordering override; `false` blocks grabbing/moving this column, while `true` opts it into reordering (drag, keyboard, menu) when the surface is off |
+| `rowActivation`     | Set `false` to exclude this column's body cells from row activation; see [Row Activation](#row-activation)                                                      |
 | `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells                                                                                           |
 | `cellHeight`        | Fixed body-cell height for this column                                                                                                                          |
 | `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable                                                                                                |
