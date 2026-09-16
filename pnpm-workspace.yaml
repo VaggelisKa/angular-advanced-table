@@ -99,7 +99,7 @@ catalogs:
     # ranges let the provider float one patch ahead of the runner, which Vitest
     # reports as "Running mixed versions is not supported".
     vitest: '4.1.11'
-    '@vitest/coverage-v8': '4.1.9'
+    '@vitest/coverage-v8': '4.1.11'
 # Reject newly published packages for 24 hours. The temporary migration
 # exception is no longer needed now that all pinned releases have aged in.
 minimumReleaseAge: 1440
