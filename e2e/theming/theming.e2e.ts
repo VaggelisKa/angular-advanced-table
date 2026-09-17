@@ -8,6 +8,7 @@ test.describe('FEATURE: Theming inheritance', () => {
   const table = (page: Page): Locator => page.getByRole('grid', { name: 'Themed orders table' });
   const headerCell = (page: Page): Locator => table(page).getByTestId('nat-table-header-id');
   const dataCell = (page: Page): Locator => table(page).getByRole('rowheader', { name: 'ORD-10000' });
+  const listItem = (page: Page): Locator => wrapper(page).getByTestId('nat-list-item').first();
 
   const setWrapperTokens = async (page: Page, tokens: Record<string, string>): Promise<void> =>
     wrapper(page).evaluate((element, entries) => {
@@ -68,13 +69,14 @@ test.describe('FEATURE: Theming inheritance', () => {
 
     test.describe('WHEN: only a palette token is overridden on the wrapper', () => {
       test('THEN: it recomputes derived stock defaults from the overridden palette', async ({ page }) => {
-        // cell borders derive from a color-mix over the text color; overriding
-        // only the palette token must flow into the derived default
-        const stockBorderColor = await computedStyle(dataCell(page), 'border-bottom-color');
+        // list item borders derive from a color-mix over currentcolor (the
+        // table's stock cell divider is a fixed neutral); overriding only the
+        // palette token must flow into that derived default
+        const stockBorderColor = await computedStyle(listItem(page), 'border-top-color');
 
         await setWrapperTokens(page, { '--nat-table-color-text': 'rgb(200, 10, 10)' });
 
-        await expect.poll(async () => computedStyle(dataCell(page), 'border-bottom-color')).not.toBe(stockBorderColor);
+        await expect.poll(async () => computedStyle(listItem(page), 'border-top-color')).not.toBe(stockBorderColor);
       });
     });
   });

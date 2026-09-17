@@ -303,7 +303,15 @@ const getFinalCellTestRect = (element: Element): DOMRect | null => {
     return null;
   }
 
-  return element.matches('tr[data-row-index="999"] [data-column-id="throughput"]') ? rect(160, 40, 0, geometry.finalCellLeft) : null;
+  if (!element.matches('tr[data-row-index="999"] [data-column-id="throughput"]')) {
+    return null;
+  }
+
+  // Scroll-aware like a real layout: the reveal and the region's focus
+  // centering both read this rect after adjusting `scrollLeft`.
+  const scrollLeft = element.closest<HTMLElement>('[data-testid="nat-table-region"]')?.scrollLeft ?? 0;
+
+  return rect(160, 40, 0, geometry.finalCellLeft - scrollLeft);
 };
 
 const getCaptionHeight = (element: Element): number => (element.closest('table')?.querySelector('caption') ? 32 : 0);
@@ -594,7 +602,9 @@ describe('FEATURE: opt-in NatTable row virtualization', () => {
 
         expect(document.activeElement).toBe(finalCell);
         expect(finalCell.closest('tr')?.getAttribute('aria-rowindex')).toBe('1001');
-        expect(region.scrollLeft).toBe(260);
+        // The region's focusin centering runs first (cell 900..1060 centered in
+        // 0..800 → +580); the pin-aware reveal then finds it visible and no-ops.
+        expect(region.scrollLeft).toBe(580);
 
         fixture.destroy();
       });
