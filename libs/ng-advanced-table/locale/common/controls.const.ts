@@ -1,6 +1,17 @@
 import type { NatTableControlsIntl, NatTableControlsLocalesMap } from './controls.type';
+import { NAT_DA_CONTROLS_LOCALE_LABELS } from './locale-da.const';
+import { NAT_FI_CONTROLS_LOCALE_LABELS } from './locale-fi.const';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
-import { NAT_EN_LOCALE_ID } from './locale-id.const';
+import {
+  NAT_DA_LOCALE_ID,
+  NAT_EN_LOCALE_ID,
+  NAT_FI_LOCALE_ID,
+  NAT_NB_LOCALE_ID,
+  NAT_NO_LOCALE_ID,
+  NAT_SV_LOCALE_ID
+} from './locale-id.const';
+import { NAT_NB_CONTROLS_LOCALE_LABELS } from './locale-nb.const';
+import { NAT_SV_CONTROLS_LOCALE_LABELS } from './locale-sv.const';
 
 const describeSortState = (sortState: 'ascending' | 'descending'): string =>
   sortState === 'ascending' ? 'in ascending order' : 'in descending order';
@@ -88,5 +99,10 @@ export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
  * Importing `provideNatTableControlsLocales()` registers every locale in this object.
  */
 export const NAT_TABLE_BUILT_IN_CONTROLS_LOCALES: NatTableControlsLocalesMap = {
-  [NAT_EN_LOCALE_ID]: NAT_EN_CONTROLS_LOCALE_LABELS
+  [NAT_EN_LOCALE_ID]: NAT_EN_CONTROLS_LOCALE_LABELS,
+  [NAT_DA_LOCALE_ID]: NAT_DA_CONTROLS_LOCALE_LABELS,
+  [NAT_FI_LOCALE_ID]: NAT_FI_CONTROLS_LOCALE_LABELS,
+  [NAT_NB_LOCALE_ID]: NAT_NB_CONTROLS_LOCALE_LABELS,
+  [NAT_NO_LOCALE_ID]: NAT_NB_CONTROLS_LOCALE_LABELS,
+  [NAT_SV_LOCALE_ID]: NAT_SV_CONTROLS_LOCALE_LABELS
 };

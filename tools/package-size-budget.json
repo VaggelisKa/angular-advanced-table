@@ -28,7 +28,7 @@
     {
       "name": "ng-advanced-table/locale",
       "fesm": "fesm2022/ng-advanced-table-locale.mjs",
-      "maxGzipBytes": 9000,
+      "maxGzipBytes": 17000,
       "forbiddenImports": [
         "ng-advanced-table",
         "ng-advanced-table/components",

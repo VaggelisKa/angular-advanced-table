@@ -1,4 +1,20 @@
-export { NAT_EN_LOCALE_ID } from './locale-id.const';
+export {
+  NAT_DA_LOCALE_ID,
+  NAT_EN_LOCALE_ID,
+  NAT_FI_LOCALE_ID,
+  NAT_NB_LOCALE_ID,
+  NAT_NO_LOCALE_ID,
+  NAT_SV_LOCALE_ID
+} from './locale-id.const';
+
+// per-locale dictionaries, one file per language
+export { NAT_DA_CONTROLS_LOCALE_LABELS, NAT_DA_LOCALE_LABELS, NAT_DA_RENDER_METRICS_LOCALE_LABELS } from './locale-da.const';
+
+export { NAT_FI_CONTROLS_LOCALE_LABELS, NAT_FI_LOCALE_LABELS, NAT_FI_RENDER_METRICS_LOCALE_LABELS } from './locale-fi.const';
+
+export { NAT_NB_CONTROLS_LOCALE_LABELS, NAT_NB_LOCALE_LABELS, NAT_NB_RENDER_METRICS_LOCALE_LABELS } from './locale-nb.const';
+
+export { NAT_SV_CONTROLS_LOCALE_LABELS, NAT_SV_LOCALE_LABELS, NAT_SV_RENDER_METRICS_LOCALE_LABELS } from './locale-sv.const';
 
 // accessibility boundary (core grid)
 export { NAT_EN_LOCALE_LABELS, NAT_TABLE_BUILT_IN_LOCALES } from './accessibility.const';

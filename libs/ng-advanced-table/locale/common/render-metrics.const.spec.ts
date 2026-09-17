@@ -32,6 +32,13 @@ const sampledRowsContext: NatTableRenderMetricsRowCountContext = {
   rowCountText: '3'
 };
 
+// Nordic plurals inflect the modifier along with the noun, so a single sampled
+// row is a distinct phrase rather than the plural minus a suffix.
+const singleSampledRowContext: NatTableRenderMetricsRowCountContext = {
+  rowCountValue: 1,
+  rowCountText: '1'
+};
+
 const durationContext: NatTableRenderMetricsDurationContext = {
   durationMsValue: 12.3,
   durationMsText: '12.3'
@@ -70,6 +77,9 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
         expect(isNonEmptyText(filter.groupAriaLabel), `${localeId}: filter.groupAriaLabel`).toBe(true);
         expect(isNonEmptyText(filter.idleCaption), `${localeId}: filter.idleCaption`).toBe(true);
         expect(producesText(filter.rowSampleCaption, sampledRowsContext), `${localeId}: filter.rowSampleCaption`).toBe(true);
+        expect(producesText(filter.rowSampleCaption, singleSampledRowContext), `${localeId}: filter.rowSampleCaption (single)`).toBe(
+          true
+        );
         expect(options.map((option) => option.value)).toStrictEqual(EXPECTED_FILTER_VALUES);
         expect(
           options.every((option) => isNonEmptyText(option.label) && isNonEmptyText(option.description)),
@@ -94,6 +104,9 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
         ).toBe(true);
         expect(isNonEmptyText(panel.idleSummary), `${localeId}: panel.idleSummary`).toBe(true);
         expect(producesText(panel.rowSampleSummary, sampledRowsContext), `${localeId}: panel.rowSampleSummary`).toBe(true);
+        expect(producesText(panel.rowSampleSummary, singleSampledRowContext), `${localeId}: panel.rowSampleSummary (single)`).toBe(
+          true
+        );
         expect(producesText(panel.duration, durationContext), `${localeId}: panel.duration`).toBe(true);
       });
     });

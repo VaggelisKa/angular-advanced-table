@@ -1,7 +1,18 @@
 import { NAT_EN_LIST_ACCESSIBILITY_TEXT } from './accessibility-list.const';
 import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
+import { NAT_DA_LOCALE_LABELS } from './locale-da.const';
+import { NAT_FI_LOCALE_LABELS } from './locale-fi.const';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
-import { NAT_EN_LOCALE_ID } from './locale-id.const';
+import {
+  NAT_DA_LOCALE_ID,
+  NAT_EN_LOCALE_ID,
+  NAT_FI_LOCALE_ID,
+  NAT_NB_LOCALE_ID,
+  NAT_NO_LOCALE_ID,
+  NAT_SV_LOCALE_ID
+} from './locale-id.const';
+import { NAT_NB_LOCALE_LABELS } from './locale-nb.const';
+import { NAT_SV_LOCALE_LABELS } from './locale-sv.const';
 import { pluralize } from './pluralize.const';
 
 const describeColumnZone = (zone: 'left' | 'center' | 'right'): string => {
@@ -157,5 +168,10 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
  * Importing `provideNatTableLocales()` registers every locale in this object.
  */
 export const NAT_TABLE_BUILT_IN_LOCALES: NatTableLocalesMap = {
-  [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS
+  [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS,
+  [NAT_DA_LOCALE_ID]: NAT_DA_LOCALE_LABELS,
+  [NAT_FI_LOCALE_ID]: NAT_FI_LOCALE_LABELS,
+  [NAT_NB_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
+  [NAT_NO_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
+  [NAT_SV_LOCALE_ID]: NAT_SV_LOCALE_LABELS
 };

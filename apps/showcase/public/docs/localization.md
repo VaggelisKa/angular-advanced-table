@@ -10,6 +10,37 @@ provideNatTableRenderMetricsLocales(...);
 
 Core table copy, companion UI controls, and render-metrics utilities have separate locale sections so applications can adopt them independently. The `provideNatTable*Locales(...)` helpers register locale dictionaries. Use the corresponding `provideNatTable*Intl(...)` helper when an application supplies a partial override rather than a map keyed by locale id.
 
+## Built-in Locales
+
+Calling a `provideNatTable*Locales(...)` helper with no arguments registers every built-in dictionary for that domain. Select one per table with `[locale]` on `NatTableSurface`; tables without it use English.
+
+| Locale id  | Language         | Exported dictionaries                                                                          |
+| ---------- | ---------------- | ---------------------------------------------------------------------------------------------- |
+| `en`       | English          | `NAT_EN_LOCALE_LABELS`, `NAT_EN_CONTROLS_LOCALE_LABELS`, `NAT_EN_RENDER_METRICS_LOCALE_LABELS` |
+| `da`       | Danish           | `NAT_DA_LOCALE_LABELS`, `NAT_DA_CONTROLS_LOCALE_LABELS`, `NAT_DA_RENDER_METRICS_LOCALE_LABELS` |
+| `fi`       | Finnish          | `NAT_FI_LOCALE_LABELS`, `NAT_FI_CONTROLS_LOCALE_LABELS`, `NAT_FI_RENDER_METRICS_LOCALE_LABELS` |
+| `nb`, `no` | Norwegian Bokmål | `NAT_NB_LOCALE_LABELS`, `NAT_NB_CONTROLS_LOCALE_LABELS`, `NAT_NB_RENDER_METRICS_LOCALE_LABELS` |
+| `sv`       | Swedish          | `NAT_SV_LOCALE_LABELS`, `NAT_SV_CONTROLS_LOCALE_LABELS`, `NAT_SV_RENDER_METRICS_LOCALE_LABELS` |
+
+`nb` and `no` resolve to the same Bokmål dictionary. Nynorsk (`nn`) is a separate written standard and is not covered by it.
+
+A locale id is matched exactly, so a region-tagged id such as `da-DK` does not resolve on its own. Register the dictionary under the ids the application actually sets:
+
+```ts
+import { NAT_DA_LOCALE_LABELS, NAT_SV_LOCALE_LABELS, provideNatTableLocales } from 'ng-advanced-table/locale';
+
+providers: [
+  provideNatTableLocales({
+    'da-DK': NAT_DA_LOCALE_LABELS,
+    'sv-SE': NAT_SV_LOCALE_LABELS
+  })
+];
+```
+
+An unknown locale id falls back to English, and so does any key a registered dictionary leaves out, so a partial override never produces an empty label. Numbers in generated copy are formatted with `Intl.NumberFormat` for the active locale id.
+
+The built-in dictionaries cover generated copy only. Instance copy — `accessibleName`, captions, column headers, and `meta.label` — stays consumer-owned; see [Static Column Definitions](#static-column-definitions).
+
 ## Provider Forms
 
 All three intl providers accept the same three source forms: a static configuration, an Angular signal containing the current configuration, or a dependency-injection factory returning either form. Their `provideNatTable*Locales(...)` convenience providers likewise accept a static locale map, a signal containing one, or a factory returning either form.

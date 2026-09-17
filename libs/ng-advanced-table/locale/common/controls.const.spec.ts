@@ -34,6 +34,14 @@ const pageSizeContext: NatTableAccessibilityPageSizeOptionContext = {
   selectionState: 'not-selected'
 };
 
+// Nordic plurals inflect the modifier along with the noun, so a page size of
+// one is a distinct phrase rather than the plural minus a suffix.
+const singlePageSizeContext: NatTableAccessibilityPageSizeOptionContext = {
+  pageSizeValue: 1,
+  pageSizeText: '1',
+  selectionState: 'selected'
+};
+
 const pagerContext: NatTableAccessibilityPagerContext = {
   pageValue: 2,
   pageText: '2',
@@ -63,11 +71,31 @@ const visibleColumnContext: NatTableAccessibilityColumnVisibilityActionContext =
   toggleAction: 'hide'
 };
 
+const hiddenColumnContext: NatTableAccessibilityColumnVisibilityActionContext = {
+  columnLabel: 'Service',
+  visibilityState: 'hidden',
+  toggleAction: 'show'
+};
+
 const sortedHeaderContext: NatTableAccessibilityHeaderActionSortContext = {
   label: 'Service',
   sortState: 'ascending',
   sortPriority: 1,
   sortCount: 2
+};
+
+const unsortedHeaderContext: NatTableAccessibilityHeaderActionSortContext = {
+  label: 'Service',
+  sortState: 'none',
+  sortPriority: null,
+  sortCount: 0
+};
+
+const soleSortedHeaderContext: NatTableAccessibilityHeaderActionSortContext = {
+  label: 'Service',
+  sortState: 'descending',
+  sortPriority: 1,
+  sortCount: 1
 };
 
 const unpinnedHeaderContext: NatTableAccessibilityHeaderActionPinContext = {
@@ -76,6 +104,14 @@ const unpinnedHeaderContext: NatTableAccessibilityHeaderActionPinContext = {
   toggleAction: 'pin',
   pinSide: 'left',
   pinnedSide: null
+};
+
+const pinnedHeaderContext: NatTableAccessibilityHeaderActionPinContext = {
+  label: 'Service',
+  pinState: 'pinned',
+  toggleAction: 'unpin',
+  pinSide: 'right',
+  pinnedSide: 'right'
 };
 
 describe('FEATURE: built-in companion components locale completeness', () => {
@@ -115,9 +151,17 @@ describe('FEATURE: built-in companion components locale completeness', () => {
           producesText(labels.toggleColumnAriaLabel, visibleColumnContext),
           `${localeId}: columnVisibility.toggleColumnAriaLabel`
         ).toBe(true);
+        expect(
+          producesText(labels.toggleColumnAriaLabel, hiddenColumnContext),
+          `${localeId}: columnVisibility.toggleColumnAriaLabel (hidden)`
+        ).toBe(true);
         expect(producesText(labels.columnState, { visibilityState: 'visible' }), `${localeId}: columnVisibility.columnState`).toBe(
           true
         );
+        expect(
+          producesText(labels.columnState, { visibilityState: 'hidden' }),
+          `${localeId}: columnVisibility.columnState (hidden)`
+        ).toBe(true);
       });
     });
 
@@ -131,6 +175,14 @@ describe('FEATURE: built-in companion components locale completeness', () => {
         expect(producesText(labels.pageSizeOptionAriaLabel, pageSizeContext), `${localeId}: pageSize.pageSizeOptionAriaLabel`).toBe(
           true
         );
+        expect(
+          producesText(labels.pageSizeOptionText, singlePageSizeContext),
+          `${localeId}: pageSize.pageSizeOptionText (single)`
+        ).toBe(true);
+        expect(
+          producesText(labels.pageSizeOptionAriaLabel, singlePageSizeContext),
+          `${localeId}: pageSize.pageSizeOptionAriaLabel (single)`
+        ).toBe(true);
       });
     });
 
@@ -167,10 +219,19 @@ describe('FEATURE: built-in companion components locale completeness', () => {
         const labels = expectDefined(headerActions.accessibilityLabels, `${localeId}: headerActions.accessibilityLabels`);
 
         expect(producesText(labels.sortButton, sortedHeaderContext), `${localeId}: headerActions.sortButton`).toBe(true);
+        expect(producesText(labels.sortButton, unsortedHeaderContext), `${localeId}: headerActions.sortButton (unsorted)`).toBe(true);
+        expect(producesText(labels.sortButton, soleSortedHeaderContext), `${localeId}: headerActions.sortButton (sole sort)`).toBe(
+          true
+        );
         expect(producesText(labels.menuButton, { label: 'Service' }), `${localeId}: headerActions.menuButton`).toBe(true);
         expect(producesText(labels.menuLabel, { label: 'Service' }), `${localeId}: headerActions.menuLabel`).toBe(true);
         expect(producesText(labels.pinButton, unpinnedHeaderContext), `${localeId}: headerActions.pinButton`).toBe(true);
         expect(producesText(labels.pinButtonText, unpinnedHeaderContext), `${localeId}: headerActions.pinButtonText`).toBe(true);
+        expect(producesText(labels.pinButton, pinnedHeaderContext), `${localeId}: headerActions.pinButton (pinned right)`).toBe(true);
+        expect(
+          producesText(labels.pinButtonText, pinnedHeaderContext),
+          `${localeId}: headerActions.pinButtonText (pinned right)`
+        ).toBe(true);
         expect(
           producesText(labels.moveButton, { label: 'Service', direction: 'right' }),
           `${localeId}: headerActions.moveButton`
@@ -178,6 +239,14 @@ describe('FEATURE: built-in companion components locale completeness', () => {
         expect(
           producesText(labels.moveButtonText, { label: 'Service', direction: 'right' }),
           `${localeId}: headerActions.moveButtonText`
+        ).toBe(true);
+        expect(
+          producesText(labels.moveButton, { label: 'Service', direction: 'left' }),
+          `${localeId}: headerActions.moveButton (left)`
+        ).toBe(true);
+        expect(
+          producesText(labels.moveButtonText, { label: 'Service', direction: 'left' }),
+          `${localeId}: headerActions.moveButtonText (left)`
         ).toBe(true);
       });
     });
