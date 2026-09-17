@@ -45,7 +45,7 @@ providers: [
 ];
 ```
 
-Ids resolve by [RFC 4647 lookup](https://www.rfc-editor.org/rfc/rfc4647#section-3.4): an exact match wins, otherwise the id is truncated one subtag at a time. Registering `da` therefore covers `da-DK`, and a region-specific dictionary can be registered alongside it when the wording differs:
+Ids resolve by [RFC 4647 lookup](https://www.rfc-editor.org/rfc/rfc4647#section-3.4): an exact match wins, otherwise the id is truncated one subtag at a time. Matching ignores case, so `DA-DK` reaches the same dictionary as `da-DK`. Registering `da` therefore covers `da-DK`, and a region-specific dictionary can be registered alongside it when the wording differs:
 
 ```ts
 provideNatTableLocales({

@@ -24,6 +24,20 @@ describe('FEATURE: locale id lookup', () => {
       });
     });
 
+    describe('WHEN: matching an id spelled in a different case', () => {
+      it('THEN: it matches, since RFC 4647 tags are case insensitive', () => {
+        expect(matchNatTableLocaleId(locales, 'DA-DK')).toBe('da-DK');
+      });
+
+      it('THEN: it still truncates to the base language', () => {
+        expect(matchNatTableLocaleId(locales, 'DA-GL')).toBe('da');
+      });
+
+      it('THEN: an exactly spelled id wins over a differently cased one', () => {
+        expect(matchNatTableLocaleId({ da: {}, DA: {} }, 'DA')).toBe('DA');
+      });
+    });
+
     describe('WHEN: matching an unregistered language', () => {
       it('THEN: it reports no match rather than a near one', () => {
         expect(matchNatTableLocaleId(locales, 'sv-SE')).toBeNull();
