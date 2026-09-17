@@ -284,11 +284,14 @@ describe('FEATURE: NatTable', () => {
         const tableRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
         const regionHeader = queryRequired<HTMLTableCellElement>(fixture, '[data-testid="nat-table-header-region"]');
 
+        // Focus before mocking geometry: the region's focusin centering would
+        // otherwise also react to the partially visible header and compound
+        // with the reorder scroll this test isolates.
+        regionHeader.focus();
         mockClientRect(tableRegion, { left: 0, right: 300, width: 300, height: 200 });
         mockClientRect(regionHeader, { left: 280, right: 420, width: 140, height: 40 });
 
         tableRegion.scrollLeft = 10;
-        regionHeader.focus();
         regionHeader.dispatchEvent(
           new KeyboardEvent('keydown', {
             key: 'ArrowRight',

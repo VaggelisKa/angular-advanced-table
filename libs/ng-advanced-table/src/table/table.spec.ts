@@ -21,6 +21,7 @@ import {
   describedBySelectors,
   getGridHarness,
   getHeaderColumnIds,
+  mockClientRect,
   query,
   queryAll,
   queryRequired,
@@ -192,7 +193,7 @@ describe('FEATURE: NatTable', () => {
         expect(rowHeaderCell.getAttribute('data-column-id')).toBe('name');
       });
 
-      it('THEN: it removes the final rendered data-row separator from body cells', () => {
+      it('THEN: it drives the final rendered data-row separator from the last-row tokens, off by default', () => {
         fixture.detectChanges();
 
         const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
@@ -202,7 +203,14 @@ describe('FEATURE: NatTable', () => {
           ['tbody', '.data-row', ':last-child', '.data-cell'].every((selectorPart) => rule.selectorText.includes(selectorPart))
         );
 
-        expect(finalRowRule?.style.borderBottom).toBe('0px');
+        const cssText = finalRowRule?.cssText.replaceAll(/\s+/gu, ' ') ?? '';
+
+        expect(cssText).toContain(
+          'border-bottom-width: var(--nat-table-last-row-border-width, var(--sys-nat-table-last-row-border-width, 0))'
+        );
+        expect(cssText).toContain('border-bottom-color: var( --nat-table-last-row-border-color');
+        expect(cssText).toContain('var(--nat-table-cell-border-color');
+        expect(cssText).not.toContain('border-bottom-style');
       });
 
       it('THEN: it keeps constrained pinned content clipped without enabling pinned-edge shadows by default', () => {
@@ -1727,6 +1735,58 @@ describe('FEATURE: NatTable', () => {
   });
 
   describe('GIVEN: a table with a sticky header', () => {
+    describe('WHEN: focus lands on a body cell that the pinned zone covers', () => {
+      it('THEN: it centers the cell in the span between the pinned zone and the region edge', () => {
+        fixture.detectChanges();
+
+        const tableRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const pinnedCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child [data-column-id="name"]');
+        const coveredCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child [data-column-id="status"]');
+
+        mockClientRect(tableRegion, { left: 0, right: 400, width: 400, height: 200 });
+        mockClientRect(pinnedCell, { left: 0, right: 100, width: 100, height: 40 });
+        mockClientRect(coveredCell, { left: 20, right: 120, width: 100, height: 40 });
+        tableRegion.scrollLeft = 50;
+
+        coveredCell.focus();
+
+        // Visible span is 100..400 (center 250); the cell center is 70, so it scrolls left by 180.
+        expect(tableRegion.scrollLeft).toBe(-130);
+      });
+
+      it('THEN: it leaves the scroll position alone for a cell already inside the visible span', () => {
+        fixture.detectChanges();
+
+        const tableRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const pinnedCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child [data-column-id="name"]');
+        const visibleCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child [data-column-id="status"]');
+
+        mockClientRect(tableRegion, { left: 0, right: 400, width: 400, height: 200 });
+        mockClientRect(pinnedCell, { left: 0, right: 100, width: 100, height: 40 });
+        mockClientRect(visibleCell, { left: 150, right: 250, width: 100, height: 40 });
+        tableRegion.scrollLeft = 50;
+
+        visibleCell.focus();
+
+        expect(tableRegion.scrollLeft).toBe(50);
+      });
+
+      it('THEN: it leaves the scroll position alone when a pinned cell itself takes focus', () => {
+        fixture.detectChanges();
+
+        const tableRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-region"]');
+        const pinnedCell = queryRequired<HTMLElement>(fixture, 'tbody tr:first-child [data-column-id="name"]');
+
+        mockClientRect(tableRegion, { left: 0, right: 400, width: 400, height: 200 });
+        mockClientRect(pinnedCell, { left: 0, right: 100, width: 100, height: 40 });
+        tableRegion.scrollLeft = 50;
+
+        pinnedCell.focus();
+
+        expect(tableRegion.scrollLeft).toBe(50);
+      });
+    });
+
     describe('WHEN: stickyHeader is toggled', () => {
       it('THEN: it applies sticky class and toggles vertical sticky header positioning', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering

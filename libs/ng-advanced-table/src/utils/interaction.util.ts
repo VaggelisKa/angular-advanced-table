@@ -83,3 +83,54 @@ export const scrollElementHorizontallyIntoView = (scrollContainer: HTMLElement, 
     scrollContainer.scrollLeft += elementRect.right - containerRect.right;
   }
 };
+
+const PINNED_LEFT_CLASS = 'is-pinned-left';
+const PINNED_RIGHT_CLASS = 'is-pinned-right';
+
+const isPinnedCell = (cell: Element): boolean =>
+  cell.classList.contains(PINNED_LEFT_CLASS) || cell.classList.contains(PINNED_RIGHT_CLASS);
+
+/** The horizontal span of `scrollContainer` not covered by the row's sticky pinned siblings. */
+const resolveUnobscuredSpan = (scrollContainer: HTMLElement, cell: HTMLElement): { left: number; right: number } => {
+  const containerRect = scrollContainer.getBoundingClientRect();
+  let left = containerRect.left;
+  let right = containerRect.right;
+
+  for (const sibling of Array.from(cell.parentElement?.children ?? [])) {
+    if (sibling === cell || !(sibling instanceof HTMLElement)) {
+      continue;
+    }
+
+    if (sibling.classList.contains(PINNED_LEFT_CLASS)) {
+      left = Math.max(left, sibling.getBoundingClientRect().right);
+    } else if (sibling.classList.contains(PINNED_RIGHT_CLASS)) {
+      right = Math.min(right, sibling.getBoundingClientRect().left);
+    }
+  }
+
+  return { left, right };
+};
+
+/**
+ * Centers a focused cell horizontally inside `scrollContainer` when a sticky
+ * pinned zone (or the region edge) hides any part of it. The browser's own
+ * focus scroll only brings a cell just inside the region box, which leaves it
+ * under a pinned column; this re-centers it in the unobscured span between the
+ * pinned zones. Pinned cells and cells already fully visible are left alone so
+ * arrow navigation across the visible span never jumps.
+ */
+export const scrollCellIntoUnobscuredView = (scrollContainer: HTMLElement, cell: HTMLElement): void => {
+  if (isPinnedCell(cell)) {
+    return;
+  }
+
+  const span = resolveUnobscuredSpan(scrollContainer, cell);
+  const cellRect = cell.getBoundingClientRect();
+  const isFullyVisible = cellRect.left >= span.left && cellRect.right <= span.right;
+
+  if (span.right <= span.left || isFullyVisible) {
+    return;
+  }
+
+  scrollContainer.scrollLeft += (cellRect.left + cellRect.right) / 2 - (span.left + span.right) / 2;
+};

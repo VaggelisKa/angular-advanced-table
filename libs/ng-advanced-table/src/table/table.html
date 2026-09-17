@@ -1,5 +1,10 @@
 <!-- eslint-disable max-lines -- single cohesive table template (header/body/state rows + resize guide); splitting into partials would fragment the grid structure. -->
-<div #tableRegion [class.is-resizing]="isColumnResizing()" class="table-region" data-testid="nat-table-region">
+<div
+  #tableRegion
+  [class.is-resizing]="isColumnResizing()"
+  class="table-region"
+  data-testid="nat-table-region"
+  (focusin)="onRegionFocusIn($event)">
   @if (tableSummary().trim()) {
     <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
   }

@@ -55,6 +55,25 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(itemFieldValue(items[0], 'name')).toBe('Alpha');
       });
 
+      it('THEN: it drives the final item bottom border from the last-item tokens, off by default', async () => {
+        await render();
+
+        const listStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const lastItemRule = listStyles.find((rule) =>
+          ['.nat-list', '.list-item', '.list-row', ':last-child', '--nat-list-last-item-border-width'].every((part) =>
+            rule.cssText.includes(part)
+          )
+        );
+
+        const cssText = lastItemRule?.cssText.replaceAll(/\s+/gu, ' ') ?? '';
+
+        expect(cssText).toContain('var(--nat-list-last-item-border-width, var(--sys-nat-table-list-last-item-border-width, 0))');
+        expect(cssText).toContain('var( --nat-list-last-item-border-color');
+        expect(cssText).toContain('var(--nat-list-item-border-color');
+      });
+
       it('THEN: it exposes named grid areas so consumers can lay out item fields', async () => {
         await render();
 

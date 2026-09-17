@@ -179,8 +179,20 @@
   white-space: normal;
 }
 
+/* The final rendered row's bottom edge. Off by default so the region border
+   (or the consumer's own container edge) closes the table; opt in with the
+   last-row tokens when a divider is wanted below the final row. */
 tbody .data-row:last-child .data-cell {
-  border-bottom: 0;
+  /* Longhands, not the `border-bottom` shorthand: only the width and color
+     change here, so the divider's style stays with the base cell rule. */
+  border-bottom-color: var(
+    --nat-table-last-row-border-color,
+    var(
+      --sys-nat-table-last-row-border-color,
+      var(--nat-table-cell-border-color, var(--sys-nat-table-cell-border-color, rgb(128 128 128 / 24%)))
+    )
+  );
+  border-bottom-width: var(--nat-table-last-row-border-width, var(--sys-nat-table-last-row-border-width, 0));
 }
 
 .data-cell.is-cell-clamped .data-cell-content {
