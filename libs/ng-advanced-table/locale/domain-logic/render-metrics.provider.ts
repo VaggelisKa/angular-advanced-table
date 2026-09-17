@@ -39,8 +39,9 @@ export const provideNatTableRenderMetricsIntl = (intl: NatTableRenderMetricsIntl
   );
 
 /**
- * Registers every render-metrics locale shipped by `ng-advanced-table/locale`.
+ * Registers render-metrics locale dictionaries on top of built-in English.
  *
+ * Pass the dictionaries the application uses — `{ da: NAT_DA_RENDER_METRICS_LOCALE_LABELS }`.
  * Call this only when using `ng-advanced-table/render-metrics`.
  */
 export const provideNatTableRenderMetricsLocales = (overrides: NatTableRenderMetricsLocalesProviderConfig = {}): Provider[] =>

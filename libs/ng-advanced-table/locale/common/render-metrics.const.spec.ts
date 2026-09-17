@@ -1,7 +1,20 @@
+import { NAT_DA_RENDER_METRICS_LOCALE_LABELS } from './locale-da-render-metrics.const';
+import { NAT_FI_RENDER_METRICS_LOCALE_LABELS } from './locale-fi-render-metrics.const';
+import {
+  NAT_DA_LOCALE_ID,
+  NAT_EN_LOCALE_ID,
+  NAT_FI_LOCALE_ID,
+  NAT_NB_LOCALE_ID,
+  NAT_NO_LOCALE_ID,
+  NAT_SV_LOCALE_ID
+} from './locale-id.const';
+import { NAT_NB_RENDER_METRICS_LOCALE_LABELS } from './locale-nb-render-metrics.const';
+import { NAT_SV_RENDER_METRICS_LOCALE_LABELS } from './locale-sv-render-metrics.const';
 import { NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES } from './render-metrics.const';
 import type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,
+  NatTableRenderMetricsLocalesMap,
   NatTableRenderMetricsNumberFormatter,
   NatTableRenderMetricsRowCountContext,
   RowRenderTone
@@ -23,7 +36,18 @@ const producesText = <TContext>(formatter: ((context: TContext) => string) | und
 const formatsNumber = (formatter: NatTableRenderMetricsNumberFormatter | undefined, localeId: string): boolean =>
   typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
 
-const localeIds = Object.keys(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES);
+/* Every dictionary the entry point ships: the English default plus the opt-in
+   translations a consumer registers through the locale providers. */
+const SHIPPED_RENDER_METRICS_LOCALES: NatTableRenderMetricsLocalesMap = {
+  ...NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES,
+  [NAT_DA_LOCALE_ID]: NAT_DA_RENDER_METRICS_LOCALE_LABELS,
+  [NAT_FI_LOCALE_ID]: NAT_FI_RENDER_METRICS_LOCALE_LABELS,
+  [NAT_NB_LOCALE_ID]: NAT_NB_RENDER_METRICS_LOCALE_LABELS,
+  [NAT_NO_LOCALE_ID]: NAT_NB_RENDER_METRICS_LOCALE_LABELS,
+  [NAT_SV_LOCALE_ID]: NAT_SV_RENDER_METRICS_LOCALE_LABELS
+};
+
+const localeIds = Object.keys(SHIPPED_RENDER_METRICS_LOCALES);
 const EXPECTED_FILTER_VALUES = ['all', 'fast', 'watch', 'slow'];
 const RENDER_TONES: readonly (RowRenderTone | 'idle')[] = ['idle', 'fast', 'watch', 'slow'];
 
@@ -56,9 +80,9 @@ const durationFormatterValid = (column: NatTableRenderMetricsColumnIntl): boolea
 
 describe('FEATURE: built-in render-metrics locale completeness', () => {
   describe('GIVEN: the built-in render-metrics locale registry', () => {
-    describe('WHEN: counting the registered locales', () => {
-      it('THEN: it registers at least one built-in render-metrics locale', () => {
-        expect(localeIds.length).toBeGreaterThan(0);
+    describe('WHEN: counting the locales it registers without configuration', () => {
+      it('THEN: it registers English only, leaving translations opt-in', () => {
+        expect(Object.keys(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES)).toStrictEqual([NAT_EN_LOCALE_ID]);
       });
     });
   });
@@ -66,10 +90,7 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
   describe('GIVEN: every built-in render-metrics locale dictionary', () => {
     describe('WHEN: inspecting the render-metrics filter', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics filter copy', (localeId) => {
-        const renderMetrics = expectDefined(
-          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
-          `${localeId}: renderMetrics`
-        );
+        const renderMetrics = expectDefined(SHIPPED_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
         const filter = expectDefined(renderMetrics.filter, `${localeId}: renderMetrics.filter`);
         const options = expectDefined(filter.options, `${localeId}: renderMetrics.filter.options`);
 
@@ -90,10 +111,7 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the render-metrics panel', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics panel copy', (localeId) => {
-        const renderMetrics = expectDefined(
-          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
-          `${localeId}: renderMetrics`
-        );
+        const renderMetrics = expectDefined(SHIPPED_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
         const panel = expectDefined(renderMetrics.panel, `${localeId}: renderMetrics.panel`);
         const toneLabel = expectDefined(panel.toneLabel, `${localeId}: renderMetrics.panel.toneLabel`);
 
@@ -113,10 +131,7 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the render-metrics column', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics column copy', (localeId) => {
-        const renderMetrics = expectDefined(
-          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
-          `${localeId}: renderMetrics`
-        );
+        const renderMetrics = expectDefined(SHIPPED_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
         const column = expectDefined(renderMetrics.column, `${localeId}: renderMetrics.column`);
 
         expect(isNonEmptyText(column.header), `${localeId}: column.header`).toBe(true);
@@ -128,10 +143,7 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
-        expect(
-          formatsNumber(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].formatNumber, localeId),
-          `${localeId}: formatNumber`
-        ).toBe(true);
+        expect(formatsNumber(SHIPPED_RENDER_METRICS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
       });
     });
   });

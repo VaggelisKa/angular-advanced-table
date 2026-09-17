@@ -6,7 +6,7 @@
   data-testid="nat-table-region"
   (focusin)="onRegionFocusIn($event)">
   @if (tableSummary().trim()) {
-    <p [id]="tableSummaryId()" class="sr-only">{{ tableSummary() }}</p>
+    <p [id]="tableSummaryId()" class="sr-only" data-testid="nat-table-summary">{{ tableSummary() }}</p>
   }
   @if (resolvedDescription().trim()) {
     <p [id]="tableDescriptionId()" class="sr-only">{{ resolvedDescription() }}</p>

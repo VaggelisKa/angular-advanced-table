@@ -7,8 +7,21 @@ import type {
   NatTableAccessibilityPageSizeOptionContext,
   NatTableAccessibilityPagerContext,
   NatTableAccessibilityScrollControlPositionContext,
+  NatTableControlsLocalesMap,
   NatTableControlsNumberFormatter
 } from './controls.type';
+import { NAT_DA_CONTROLS_LOCALE_LABELS } from './locale-da-controls.const';
+import { NAT_FI_CONTROLS_LOCALE_LABELS } from './locale-fi-controls.const';
+import {
+  NAT_DA_LOCALE_ID,
+  NAT_EN_LOCALE_ID,
+  NAT_FI_LOCALE_ID,
+  NAT_NB_LOCALE_ID,
+  NAT_NO_LOCALE_ID,
+  NAT_SV_LOCALE_ID
+} from './locale-id.const';
+import { NAT_NB_CONTROLS_LOCALE_LABELS } from './locale-nb-controls.const';
+import { NAT_SV_CONTROLS_LOCALE_LABELS } from './locale-sv-controls.const';
 
 const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
   if (value === undefined) {
@@ -26,7 +39,18 @@ const producesText = <TContext>(formatter: ((context: TContext) => string) | und
 const formatsNumber = (formatter: NatTableControlsNumberFormatter | undefined, localeId: string): boolean =>
   typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
 
-const localeIds = Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES);
+/* Every dictionary the entry point ships: the English default plus the opt-in
+   translations a consumer registers through the locale providers. */
+const SHIPPED_CONTROLS_LOCALES: NatTableControlsLocalesMap = {
+  ...NAT_TABLE_BUILT_IN_CONTROLS_LOCALES,
+  [NAT_DA_LOCALE_ID]: NAT_DA_CONTROLS_LOCALE_LABELS,
+  [NAT_FI_LOCALE_ID]: NAT_FI_CONTROLS_LOCALE_LABELS,
+  [NAT_NB_LOCALE_ID]: NAT_NB_CONTROLS_LOCALE_LABELS,
+  [NAT_NO_LOCALE_ID]: NAT_NB_CONTROLS_LOCALE_LABELS,
+  [NAT_SV_LOCALE_ID]: NAT_SV_CONTROLS_LOCALE_LABELS
+};
+
+const localeIds = Object.keys(SHIPPED_CONTROLS_LOCALES);
 
 const pageSizeContext: NatTableAccessibilityPageSizeOptionContext = {
   pageSizeValue: 25,
@@ -116,9 +140,9 @@ const pinnedHeaderContext: NatTableAccessibilityHeaderActionPinContext = {
 
 describe('FEATURE: built-in companion components locale completeness', () => {
   describe('GIVEN: the built-in components locale registry', () => {
-    describe('WHEN: counting the registered locales', () => {
-      it('THEN: it registers at least one built-in components locale', () => {
-        expect(localeIds.length).toBeGreaterThan(0);
+    describe('WHEN: counting the locales it registers without configuration', () => {
+      it('THEN: it registers English only, leaving translations opt-in', () => {
+        expect(Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES)).toStrictEqual([NAT_EN_LOCALE_ID]);
       });
     });
   });
@@ -126,7 +150,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
   describe('GIVEN: every built-in components locale dictionary', () => {
     describe('WHEN: inspecting the global search labels', () => {
       it.each(localeIds)('THEN: %s ships complete search copy', (localeId) => {
-        const search = expectDefined(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].search, `${localeId}: search`);
+        const search = expectDefined(SHIPPED_CONTROLS_LOCALES[localeId].search, `${localeId}: search`);
 
         expect(isNonEmptyText(search.label), `${localeId}: search.label`).toBe(true);
         expect(isNonEmptyText(search.placeholder), `${localeId}: search.placeholder`).toBe(true);
@@ -135,10 +159,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the column-visibility labels', () => {
       it.each(localeIds)('THEN: %s ships complete column-visibility copy', (localeId) => {
-        const columnVisibility = expectDefined(
-          NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].columnVisibility,
-          `${localeId}: columnVisibility`
-        );
+        const columnVisibility = expectDefined(SHIPPED_CONTROLS_LOCALES[localeId].columnVisibility, `${localeId}: columnVisibility`);
         const labels = expectDefined(columnVisibility.accessibilityLabels, `${localeId}: columnVisibility.accessibilityLabels`);
 
         expect(isNonEmptyText(columnVisibility.label), `${localeId}: columnVisibility.label`).toBe(true);
@@ -167,7 +188,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the page-size labels', () => {
       it.each(localeIds)('THEN: %s ships complete page-size copy', (localeId) => {
-        const pageSize = expectDefined(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].pageSize, `${localeId}: pageSize`);
+        const pageSize = expectDefined(SHIPPED_CONTROLS_LOCALES[localeId].pageSize, `${localeId}: pageSize`);
         const labels = expectDefined(pageSize.accessibilityLabels, `${localeId}: pageSize.accessibilityLabels`);
 
         expect(isNonEmptyText(pageSize.groupAriaLabel), `${localeId}: pageSize.groupAriaLabel`).toBe(true);
@@ -188,7 +209,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the pager labels', () => {
       it.each(localeIds)('THEN: %s ships complete pager copy', (localeId) => {
-        const pager = expectDefined(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].pager, `${localeId}: pager`);
+        const pager = expectDefined(SHIPPED_CONTROLS_LOCALES[localeId].pager, `${localeId}: pager`);
         const labels = expectDefined(pager.accessibilityLabels, `${localeId}: pager.accessibilityLabels`);
 
         expect(isNonEmptyText(pager.groupAriaLabel), `${localeId}: pager.groupAriaLabel`).toBe(true);
@@ -200,7 +221,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the scroll-control labels', () => {
       it.each(localeIds)('THEN: %s ships complete scroll-control copy', (localeId) => {
-        const scrollControl = expectDefined(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].scrollControl, `${localeId}: scrollControl`);
+        const scrollControl = expectDefined(SHIPPED_CONTROLS_LOCALES[localeId].scrollControl, `${localeId}: scrollControl`);
         const labels = expectDefined(scrollControl.accessibilityLabels, `${localeId}: scrollControl.accessibilityLabels`);
 
         expect(isNonEmptyText(scrollControl.groupAriaLabel), `${localeId}: scrollControl.groupAriaLabel`).toBe(true);
@@ -215,7 +236,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the header-action labels', () => {
       it.each(localeIds)('THEN: %s ships complete header-action copy', (localeId) => {
-        const headerActions = expectDefined(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].headerActions, `${localeId}: headerActions`);
+        const headerActions = expectDefined(SHIPPED_CONTROLS_LOCALES[localeId].headerActions, `${localeId}: headerActions`);
         const labels = expectDefined(headerActions.accessibilityLabels, `${localeId}: headerActions.accessibilityLabels`);
 
         expect(producesText(labels.sortButton, sortedHeaderContext), `${localeId}: headerActions.sortButton`).toBe(true);
@@ -253,7 +274,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the toolbar and selection labels', () => {
       it.each(localeIds)('THEN: %s ships complete toolbar and selection copy', (localeId) => {
-        const locale = NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId];
+        const locale = SHIPPED_CONTROLS_LOCALES[localeId];
         const toolbar = expectDefined(locale.toolbar, `${localeId}: toolbar`);
         const selection = expectDefined(locale.selection, `${localeId}: selection`);
         const selectionLabels = expectDefined(selection.accessibilityLabels, `${localeId}: selection.accessibilityLabels`);
@@ -269,9 +290,7 @@ describe('FEATURE: built-in companion components locale completeness', () => {
 
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
-        expect(formatsNumber(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(
-          true
-        );
+        expect(formatsNumber(SHIPPED_CONTROLS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
       });
     });
   });

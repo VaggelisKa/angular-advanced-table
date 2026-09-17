@@ -11,9 +11,21 @@ import type {
   NatTableAccessibilitySubHeaderContext,
   NatTableAccessibilitySummaryContext,
   NatTableAccessibilityText,
+  NatTableLocalesMap,
   NatTableNumberFormatter
 } from './accessibility.type';
-import { NAT_EN_LOCALE_ID, NAT_NB_LOCALE_ID, NAT_NO_LOCALE_ID } from './locale-id.const';
+import { NAT_DA_LOCALE_LABELS } from './locale-da.const';
+import { NAT_FI_LOCALE_LABELS } from './locale-fi.const';
+import {
+  NAT_DA_LOCALE_ID,
+  NAT_EN_LOCALE_ID,
+  NAT_FI_LOCALE_ID,
+  NAT_NB_LOCALE_ID,
+  NAT_NO_LOCALE_ID,
+  NAT_SV_LOCALE_ID
+} from './locale-id.const';
+import { NAT_NB_LOCALE_LABELS } from './locale-nb.const';
+import { NAT_SV_LOCALE_LABELS } from './locale-sv.const';
 
 const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
   if (value === undefined) {
@@ -28,7 +40,18 @@ const isNonEmptyText = (value: unknown): boolean => typeof value === 'string' &&
 const formatsNumber = (formatter: NatTableNumberFormatter | undefined, localeId: string): boolean =>
   typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
 
-const localeIds = Object.keys(NAT_TABLE_BUILT_IN_LOCALES);
+/* Every dictionary the entry point ships: the English default plus the opt-in
+   translations a consumer registers through the locale providers. */
+const SHIPPED_TABLE_LOCALES: NatTableLocalesMap = {
+  ...NAT_TABLE_BUILT_IN_LOCALES,
+  [NAT_DA_LOCALE_ID]: NAT_DA_LOCALE_LABELS,
+  [NAT_FI_LOCALE_ID]: NAT_FI_LOCALE_LABELS,
+  [NAT_NB_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
+  [NAT_NO_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
+  [NAT_SV_LOCALE_ID]: NAT_SV_LOCALE_LABELS
+};
+
+const localeIds = Object.keys(SHIPPED_TABLE_LOCALES);
 const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);
 
 /* Empty, subset, and complete views at both singular and plural counts. */
@@ -247,19 +270,19 @@ const staticCopyOf = (text: NatTableAccessibilityText): RenderedCopy[] => [
 ];
 
 const accessibilityTextOf = (localeId: string): NatTableAccessibilityText =>
-  expectDefined(NAT_TABLE_BUILT_IN_LOCALES[localeId].accessibilityText, `${localeId}: accessibilityText`);
+  expectDefined(SHIPPED_TABLE_LOCALES[localeId].accessibilityText, `${localeId}: accessibilityText`);
 
 describe('FEATURE: built-in table locale completeness', () => {
   describe('GIVEN: the built-in table locale registry', () => {
-    describe('WHEN: counting the registered locales', () => {
-      it('THEN: it registers at least one built-in table locale', () => {
-        expect(localeIds.length).toBeGreaterThan(0);
+    describe('WHEN: counting the locales it registers without configuration', () => {
+      it('THEN: it registers English only, leaving translations opt-in', () => {
+        expect(Object.keys(NAT_TABLE_BUILT_IN_LOCALES)).toStrictEqual([NAT_EN_LOCALE_ID]);
       });
     });
 
     describe('WHEN: resolving the Norwegian macrolanguage alias', () => {
       it('THEN: it serves the Bokmål dictionary for both nb and no', () => {
-        expect(NAT_TABLE_BUILT_IN_LOCALES[NAT_NO_LOCALE_ID]).toBe(NAT_TABLE_BUILT_IN_LOCALES[NAT_NB_LOCALE_ID]);
+        expect(SHIPPED_TABLE_LOCALES[NAT_NO_LOCALE_ID]).toBe(SHIPPED_TABLE_LOCALES[NAT_NB_LOCALE_ID]);
       });
     });
   });
@@ -283,7 +306,7 @@ describe('FEATURE: built-in table locale completeness', () => {
 
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
-        expect(formatsNumber(NAT_TABLE_BUILT_IN_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
+        expect(formatsNumber(SHIPPED_TABLE_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
       });
     });
   });

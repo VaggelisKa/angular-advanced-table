@@ -1,16 +1,5 @@
-import { NAT_DA_RENDER_METRICS_LOCALE_LABELS } from './locale-da-render-metrics.const';
-import { NAT_FI_RENDER_METRICS_LOCALE_LABELS } from './locale-fi-render-metrics.const';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
-import {
-  NAT_DA_LOCALE_ID,
-  NAT_EN_LOCALE_ID,
-  NAT_FI_LOCALE_ID,
-  NAT_NB_LOCALE_ID,
-  NAT_NO_LOCALE_ID,
-  NAT_SV_LOCALE_ID
-} from './locale-id.const';
-import { NAT_NB_RENDER_METRICS_LOCALE_LABELS } from './locale-nb-render-metrics.const';
-import { NAT_SV_RENDER_METRICS_LOCALE_LABELS } from './locale-sv-render-metrics.const';
+import { NAT_EN_LOCALE_ID } from './locale-id.const';
 import type {
   NatTableRenderMetricsIntl,
   NatTableRenderMetricsLocalesMap,
@@ -67,13 +56,10 @@ export const NAT_EN_RENDER_METRICS_LOCALE_LABELS: NatTableRenderMetricsIntl = {
 /**
  * Render-metrics locale registry shipped by `ng-advanced-table/locale`.
  *
- * Importing `provideNatTableRenderMetricsLocales()` registers every locale in this object.
+ * English only. The translated dictionaries ship as individual exports that
+ * `provideNatTableRenderMetricsLocales()` registers on request, so an app bundles just the
+ * languages it uses.
  */
 export const NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES: NatTableRenderMetricsLocalesMap = {
-  [NAT_EN_LOCALE_ID]: NAT_EN_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_DA_LOCALE_ID]: NAT_DA_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_FI_LOCALE_ID]: NAT_FI_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_NB_LOCALE_ID]: NAT_NB_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_NO_LOCALE_ID]: NAT_NB_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_SV_LOCALE_ID]: NAT_SV_RENDER_METRICS_LOCALE_LABELS
+  [NAT_EN_LOCALE_ID]: NAT_EN_RENDER_METRICS_LOCALE_LABELS
 };

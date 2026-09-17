@@ -1,18 +1,14 @@
-import { NAT_EN_LIST_ACCESSIBILITY_TEXT } from './accessibility-list.const';
-import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
-import { NAT_DA_LOCALE_LABELS } from './locale-da.const';
-import { NAT_FI_LOCALE_LABELS } from './locale-fi.const';
-import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import {
-  NAT_DA_LOCALE_ID,
-  NAT_EN_LOCALE_ID,
-  NAT_FI_LOCALE_ID,
-  NAT_NB_LOCALE_ID,
-  NAT_NO_LOCALE_ID,
-  NAT_SV_LOCALE_ID
-} from './locale-id.const';
-import { NAT_NB_LOCALE_LABELS } from './locale-nb.const';
-import { NAT_SV_LOCALE_LABELS } from './locale-sv.const';
+  listColumnVisibilityChange,
+  listKeyboardInstructions,
+  listPageChange,
+  listPageSizeChange,
+  listSubHeaderRow,
+  listSummary
+} from './accessibility-list.const';
+import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
+import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
+import { NAT_EN_LOCALE_ID } from './locale-id.const';
 import { pluralize } from './pluralize.const';
 
 const describeColumnZone = (zone: 'left' | 'center' | 'right'): string => {
@@ -42,7 +38,12 @@ const resizeBoundSuffix = (atMinimum?: boolean, atMaximum?: boolean): string => 
 /** Built-in English labels shipped with the table locale package. */
 export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
   accessibilityText: {
-    ...NAT_EN_LIST_ACCESSIBILITY_TEXT,
+    listSubHeaderRow,
+    listKeyboardInstructions,
+    listSummary,
+    listColumnVisibilityChange,
+    listPageSizeChange,
+    listPageChange,
     keyboardInstructions:
       'Use arrow keys to move between cells. A cell whose only content is a single button or link ' +
       'focuses it directly. In cells with several controls, press Enter to interact with them, ' +
@@ -165,13 +166,10 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
 /**
  * Table locale registry shipped by `ng-advanced-table/locale`.
  *
- * Importing `provideNatTableLocales()` registers every locale in this object.
+ * English only. The translated dictionaries ship as individual exports that
+ * `provideNatTableLocales()` registers on request, so an app bundles just the
+ * languages it uses.
  */
 export const NAT_TABLE_BUILT_IN_LOCALES: NatTableLocalesMap = {
-  [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS,
-  [NAT_DA_LOCALE_ID]: NAT_DA_LOCALE_LABELS,
-  [NAT_FI_LOCALE_ID]: NAT_FI_LOCALE_LABELS,
-  [NAT_NB_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
-  [NAT_NO_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
-  [NAT_SV_LOCALE_ID]: NAT_SV_LOCALE_LABELS
+  [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS
 };

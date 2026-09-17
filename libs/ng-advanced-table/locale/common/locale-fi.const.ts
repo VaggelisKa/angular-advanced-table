@@ -1,5 +1,12 @@
 import type { NatTableIntl } from './accessibility.type';
-import { NAT_FI_LIST_ACCESSIBILITY_TEXT } from './locale-fi-list.const';
+import {
+  listColumnVisibilityChange,
+  listKeyboardInstructions,
+  listPageChange,
+  listPageSizeChange,
+  listSubHeaderRow,
+  listSummary
+} from './locale-fi-list.const';
 import {
   columnZone,
   columns,
@@ -16,7 +23,12 @@ import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 /** Built-in Finnish table labels shipped with `ng-advanced-table/locale`. */
 export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
   accessibilityText: {
-    ...NAT_FI_LIST_ACCESSIBILITY_TEXT,
+    listKeyboardInstructions,
+    listSummary,
+    listColumnVisibilityChange,
+    listPageSizeChange,
+    listPageChange,
+    listSubHeaderRow,
     keyboardInstructions:
       'Siirry solujen välillä nuolinäppäimillä. Jos solun ainoa sisältö on yksi painike tai linkki, kohdistus ' +
       'siirtyy suoraan siihen. Jos solussa on useita ohjaimia, käytä niitä painamalla Enter, siirry eteenpäin ' +

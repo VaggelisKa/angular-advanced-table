@@ -1242,6 +1242,31 @@ export class NatTableState<TData extends RowData = RowData> {
   }
 
   /**
+   * Dev-mode warning for a `[locale]` id that no provider registered. Every
+   * dictionary except English is opt-in, so an unregistered id is otherwise a
+   * silent fall back to English copy. Must be called in the injection context.
+   */
+  public registerLocaleValidationEffect(): void {
+    effect(() => {
+      if (!isDevMode()) {
+        return;
+      }
+
+      const localeId = this.localeId();
+
+      if (localeId === NAT_EN_LOCALE_ID || this.tableIntlConfig.locales?.[localeId] !== undefined) {
+        return;
+      }
+
+      console.warn(
+        `[ng-advanced-table] locale "${localeId}" has no registered dictionary, so copy falls back to English. ` +
+          `Register one with provideNatTableLocales({ '${localeId}': ... }) — the built-in dictionaries are exported ` +
+          `from ng-advanced-table/locale — or register {} to keep English copy with this locale's number formatting.`
+      );
+    });
+  }
+
+  /**
    * Drives row-render event timing. A cycle is one row-model rebuild; a moved
    * row window restamps the clock without opening one, because the rows that
    * stayed mounted did not re-render — re-timing them would report afterRender

@@ -39,12 +39,13 @@ export const provideNatTableIntl = (intl: NatTableIntlProviderConfig): Provider[
   );
 
 /**
- * Registers every table locale shipped by `ng-advanced-table/locale`.
+ * Registers table locale dictionaries on top of the built-in English default.
  *
- * Pass `overrides` only when adding custom locale ids or overriding built-in
- * generated table labels. Instance-specific copy such as table names,
- * captions, descriptions, and column labels should stay on component inputs or
- * column definitions.
+ * Pass the dictionaries the application uses — `{ da: NAT_DA_LOCALE_LABELS }` —
+ * along with any custom ids and any partial entries that override built-in
+ * copy; each entry merges onto the locale id it names. Instance-specific copy
+ * such as table names, captions, descriptions, and column labels should stay on
+ * component inputs or column definitions.
  */
 export const provideNatTableLocales = (overrides: NatTableLocalesProviderConfig = {}): Provider[] =>
   provideNatTableIntl(mapNatTableProviderConfig(overrides, (locales) => ({ locales })));

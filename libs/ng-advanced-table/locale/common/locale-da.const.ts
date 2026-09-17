@@ -1,5 +1,12 @@
 import type { NatTableIntl } from './accessibility.type';
-import { NAT_DA_LIST_ACCESSIBILITY_TEXT } from './locale-da-list.const';
+import {
+  listColumnVisibilityChange,
+  listKeyboardInstructions,
+  listPageChange,
+  listPageSizeChange,
+  listSubHeaderRow,
+  listSummary
+} from './locale-da-list.const';
 import {
   columnZone,
   filteredRows,
@@ -15,7 +22,12 @@ import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 /** Built-in Danish table labels shipped with `ng-advanced-table/locale`. */
 export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
   accessibilityText: {
-    ...NAT_DA_LIST_ACCESSIBILITY_TEXT,
+    listKeyboardInstructions,
+    listSummary,
+    listColumnVisibilityChange,
+    listPageSizeChange,
+    listPageChange,
+    listSubHeaderRow,
     keyboardInstructions:
       'Brug piletasterne til at flytte mellem celler. En celle, hvis eneste indhold er en enkelt knap eller et link, ' +
       'får fokus direkte. I celler med flere kontroller skal du trykke på Enter for at bruge dem, Tab for at flytte ' +

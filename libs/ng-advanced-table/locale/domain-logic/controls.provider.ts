@@ -35,8 +35,9 @@ export const provideNatTableControlsIntl = (intl: NatTableControlsIntlProviderCo
   );
 
 /**
- * Registers every companion components locale shipped by `ng-advanced-table/locale`.
+ * Registers companion-control locale dictionaries on top of built-in English.
  *
+ * Pass the dictionaries the application uses — `{ da: NAT_DA_CONTROLS_LOCALE_LABELS }`.
  * Call this only when using `ng-advanced-table/components`.
  */
 export const provideNatTableControlsLocales = (overrides: NatTableControlsLocalesProviderConfig = {}): Provider[] =>

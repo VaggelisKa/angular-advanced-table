@@ -1,6 +1,13 @@
 import type { NatTableIntl } from './accessibility.type';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
-import { NAT_NB_LIST_ACCESSIBILITY_TEXT } from './locale-nb-list.const';
+import {
+  listColumnVisibilityChange,
+  listKeyboardInstructions,
+  listPageChange,
+  listPageSizeChange,
+  listSubHeaderRow,
+  listSummary
+} from './locale-nb-list.const';
 import {
   columnZone,
   filteredRows,
@@ -15,7 +22,12 @@ import {
 /** Built-in Norwegian Bokmål table labels shipped with `ng-advanced-table/locale`. */
 export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
   accessibilityText: {
-    ...NAT_NB_LIST_ACCESSIBILITY_TEXT,
+    listKeyboardInstructions,
+    listSummary,
+    listColumnVisibilityChange,
+    listPageSizeChange,
+    listPageChange,
+    listSubHeaderRow,
     keyboardInstructions:
       'Bruk piltastene for å flytte mellom celler. En celle som bare inneholder én knapp eller én lenke, får fokus ' +
       'direkte. I celler med flere kontroller trykker du Enter for å bruke dem, Tab for å flytte fremover mellom ' +
