@@ -54,6 +54,23 @@
   border-radius: var(--nat-list-item-radius, var(--sys-nat-table-list-item-radius, 8px));
 }
 
+/* The final item's bottom edge. Off by default so a divider-style list
+   (`--nat-list-item-border-width: 0 0 1px`) ends flush with its container;
+   the last-item tokens opt it back in (the stock theme restores it for cards).
+   Both branches: the plain `<li class="list-item">` and the composite
+   `<li class="list-row">` wrapping a `.list-item` gridcell. */
+.nat-list > .list-item:last-child,
+.nat-list > .list-row:last-child > .list-item {
+  border-bottom-color: var(
+    --nat-list-last-item-border-color,
+    var(
+      --sys-nat-table-list-last-item-border-color,
+      var(--nat-list-item-border-color, var(--sys-nat-table-list-item-border-color, color-mix(in srgb, currentcolor 15%, transparent)))
+    )
+  );
+  border-bottom-width: var(--nat-list-last-item-border-width, var(--sys-nat-table-list-last-item-border-width, 0));
+}
+
 /* The activation affordance: a real button stretched over the whole item.
    A sibling of the fields, not a wrapper — nested interactive content inside
    a button is invalid HTML and can hide e.g. a selection checkbox from

@@ -58,7 +58,13 @@ import { NatTableRowPlaceholderTemplate } from '../ui/table-row-placeholder-temp
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
-import { canResizeColumn, getCellTone, isResizeKey, originatesFromInteractiveDescendant } from '../utils/interaction.util';
+import {
+  canResizeColumn,
+  getCellTone,
+  isResizeKey,
+  originatesFromInteractiveDescendant,
+  scrollCellIntoUnobscuredView
+} from '../utils/interaction.util';
 
 /**
  * Track expression for the body plan: loaded rows keep their stable TanStack
@@ -363,6 +369,23 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   protected readonly hasReorderableColumns = (): boolean => this.reorderService.hasReorderableColumns();
   protected readonly canReorderHeader = (header: Header<TData, unknown>): boolean =>
     !header.isPlaceholder && this.reorderService.canReorderHeader(header.column);
+
+  /**
+   * Region focusin: when keyboard focus lands on a body/header cell (or a
+   * control inside one) that a sticky pinned zone covers, center it in the
+   * unobscured span. Runs after the browser's own focus scroll, which only
+   * brings the cell inside the region box, not out from under pinned columns.
+   */
+  protected onRegionFocusIn(event: FocusEvent): void {
+    const region = this.tableRegionRef()?.nativeElement;
+    const cell = event.target instanceof Element ? event.target.closest<HTMLElement>('td, th') : null;
+
+    if (!region || !cell || !region.contains(cell)) {
+      return;
+    }
+
+    scrollCellIntoUnobscuredView(region, cell);
+  }
 
   // ─── Constructor ───
 

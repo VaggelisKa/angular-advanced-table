@@ -232,6 +232,8 @@
   /* Cells & semantic tones */
   --nat-table-cell-border-color: var(--nat-table-color-divider);
   --nat-table-cell-border-width: 1px;
+  --nat-table-last-row-border-width: 0;
+  --nat-table-last-row-border-color: var(--nat-table-cell-border-color);
   --nat-table-cell-color-positive: var(--nat-table-color-success);
   --nat-table-cell-color-negative: var(--nat-table-color-danger);
   --nat-table-cell-color-warning: var(--nat-table-color-warning);
@@ -250,6 +252,12 @@
   --nat-list-item-border-width: 1px;
   --nat-list-item-border-color: var(--nat-table-color-border);
   --nat-list-item-radius: 10px;
+
+  /* Stock items are cards, so the final card keeps its bottom edge. A literal,
+     not var(--nat-list-item-border-width): that token accepts 1-4 values, which
+     would be invalid for the border-bottom-width longhand this feeds. */
+  --nat-list-last-item-border-width: 1px;
+  --nat-list-last-item-border-color: var(--nat-list-item-border-color);
   --nat-list-field-gap: 8px;
   --nat-list-label-font-weight: 600;
 

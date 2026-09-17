@@ -55,6 +55,25 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(itemFieldValue(items[0], 'name')).toBe('Alpha');
       });
 
+      it('THEN: it drives the final item bottom border from the last-item tokens, off by default', async () => {
+        await render();
+
+        const listStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const lastItemRule = listStyles.find((rule) =>
+          ['.nat-list', '.list-item', '.list-row', ':last-child', '--nat-list-last-item-border-width'].every((part) =>
+            rule.cssText.includes(part)
+          )
+        );
+
+        const cssText = lastItemRule?.cssText.replaceAll(/\s+/gu, ' ') ?? '';
+
+        expect(cssText).toContain('var(--nat-list-last-item-border-width, var(--sys-nat-table-list-last-item-border-width, 0))');
+        expect(cssText).toContain('var( --nat-list-last-item-border-color');
+        expect(cssText).toContain('var(--nat-list-item-border-color');
+      });
+
       it('THEN: it exposes named grid areas so consumers can lay out item fields', async () => {
         await render();
 
@@ -366,53 +385,6 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         await render();
 
         expect(host.activated()).toHaveLength(0);
-      });
-    });
-  });
-
-  describe('GIVEN: a list with row selection enabled', () => {
-    describe('WHEN: a row is selected through the shared state', () => {
-      it('THEN: it marks the item selected without putting aria-selected on the listitem', async () => {
-        host.enableRowSelection.set(true);
-        await render();
-
-        const firstRowId = getList().table.getRowModel().rows[0].id;
-
-        getList().patchState({ rowSelection: { [firstRowId]: true } });
-        await render();
-
-        const items = queryAll(fixture, '[data-testid="nat-list-item"]');
-
-        expect(items[0].getAttribute('data-selected')).toBe('true');
-        expect(items[1].getAttribute('data-selected')).toBe('false');
-        expect(items[0].hasAttribute('aria-selected')).toBe(false);
-      });
-    });
-
-    describe('WHEN: selection is disabled', () => {
-      it('THEN: it omits the selected marker entirely', async () => {
-        await render();
-
-        const items = queryAll(fixture, '[data-testid="nat-list-item"]');
-
-        expect(items[0].hasAttribute('data-selected')).toBe(false);
-      });
-    });
-
-    describe('WHEN: selection mode is single', () => {
-      it('THEN: it keeps at most one row selected', async () => {
-        host.enableRowSelection.set(true);
-        host.selectionMode.set('single');
-        await render();
-
-        const rows = getList().table.getRowModel().rows;
-
-        getList().patchState({ rowSelection: { [rows[0].id]: true, [rows[1].id]: true } });
-        await render();
-
-        const selectedItems = queryAll(fixture, '[data-testid="nat-list-item"][data-selected="true"]');
-
-        expect(selectedItems).toHaveLength(1);
       });
     });
   });

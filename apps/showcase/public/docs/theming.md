@@ -138,6 +138,8 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-pinned-edge-shadow-size`     | Shared size of the pinned-zone fade; the library mirrors its direction per zone |
 | `--nat-table-cell-border-color`           | Body cell divider                                                               |
 | `--nat-table-cell-border-width`           | Body cell divider width                                                         |
+| `--nat-table-last-row-border-width`       | Bottom border of the final rendered body row; `0` by default                    |
+| `--nat-table-last-row-border-color`       | Bottom border color of the final body row (falls back to the cell divider)      |
 | `--nat-table-cell-color-positive`         | Positive semantic cell tone                                                     |
 | `--nat-table-cell-color-negative`         | Negative semantic cell tone                                                     |
 | `--nat-table-cell-color-warning`          | Warning semantic cell tone                                                      |
@@ -172,6 +174,8 @@ The `nat-list` spike renderer lays every item out as a CSS grid whose field area
 | `--nat-list-item-border-width`        | Item border width; accepts 1-4 value shorthand (e.g. `1px 0` for divider-only items)               |
 | `--nat-list-item-border-color`        | Item border color; a currentcolor mix by default, so it follows the page text color                |
 | `--nat-list-item-radius`              | Item corner radius                                                                                 |
+| `--nat-list-last-item-border-width`   | Bottom border width of the final item; `0` by default (the stock theme restores it for cards)      |
+| `--nat-list-last-item-border-color`   | Bottom border color of the final item (falls back to the item border color)                        |
 | `--nat-list-field-gap`                | Gap between one field's label and value                                                            |
 | `--nat-list-field-align`              | `align-items` for one field (defaults to `baseline`)                                               |
 | `--nat-list-field-flex-direction`     | `flex-direction` for one field (defaults to `row`)                                                 |
