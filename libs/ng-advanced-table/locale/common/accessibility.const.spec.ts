@@ -1,4 +1,4 @@
-import { NAT_TABLE_BUILT_IN_LOCALES } from './accessibility.const';
+import { NAT_EN_LOCALE_LABELS, NAT_TABLE_BUILT_IN_LOCALES } from './accessibility.const';
 import type {
   NatTableAccessibilityColumnReorderAnnouncementContext,
   NatTableAccessibilityColumnResizeAnnouncementContext,
@@ -11,21 +11,10 @@ import type {
   NatTableAccessibilitySubHeaderContext,
   NatTableAccessibilitySummaryContext,
   NatTableAccessibilityText,
-  NatTableLocalesMap,
   NatTableNumberFormatter
 } from './accessibility.type';
-import { NAT_DA_LOCALE_LABELS } from './locale-da.const';
-import { NAT_FI_LOCALE_LABELS } from './locale-fi.const';
-import {
-  NAT_DA_LOCALE_ID,
-  NAT_EN_LOCALE_ID,
-  NAT_FI_LOCALE_ID,
-  NAT_NB_LOCALE_ID,
-  NAT_NO_LOCALE_ID,
-  NAT_SV_LOCALE_ID
-} from './locale-id.const';
-import { NAT_NB_LOCALE_LABELS } from './locale-nb.const';
-import { NAT_SV_LOCALE_LABELS } from './locale-sv.const';
+import { NAT_EN_LOCALE_ID } from './locale-id.const';
+import { SHIPPED_TABLE_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.const';
 
 const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
   if (value === undefined) {
@@ -39,17 +28,6 @@ const isNonEmptyText = (value: unknown): boolean => typeof value === 'string' &&
 
 const formatsNumber = (formatter: NatTableNumberFormatter | undefined, localeId: string): boolean =>
   typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
-
-/* Every dictionary the entry point ships: the English default plus the opt-in
-   translations a consumer registers through the locale providers. */
-const SHIPPED_TABLE_LOCALES: NatTableLocalesMap = {
-  ...NAT_TABLE_BUILT_IN_LOCALES,
-  [NAT_DA_LOCALE_ID]: NAT_DA_LOCALE_LABELS,
-  [NAT_FI_LOCALE_ID]: NAT_FI_LOCALE_LABELS,
-  [NAT_NB_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
-  [NAT_NO_LOCALE_ID]: NAT_NB_LOCALE_LABELS,
-  [NAT_SV_LOCALE_ID]: NAT_SV_LOCALE_LABELS
-};
 
 const localeIds = Object.keys(SHIPPED_TABLE_LOCALES);
 const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);
@@ -279,12 +257,6 @@ describe('FEATURE: built-in table locale completeness', () => {
         expect(Object.keys(NAT_TABLE_BUILT_IN_LOCALES)).toStrictEqual([NAT_EN_LOCALE_ID]);
       });
     });
-
-    describe('WHEN: resolving the Norwegian macrolanguage alias', () => {
-      it('THEN: it serves the Bokmål dictionary for both nb and no', () => {
-        expect(SHIPPED_TABLE_LOCALES[NAT_NO_LOCALE_ID]).toBe(SHIPPED_TABLE_LOCALES[NAT_NB_LOCALE_ID]);
-      });
-    });
   });
 
   describe('GIVEN: every built-in table locale dictionary', () => {
@@ -319,6 +291,14 @@ describe('FEATURE: built-in table locale completeness', () => {
 
           expect(leaked, `${localeId}: ${key} -> ${value}`).toStrictEqual([]);
         }
+      });
+    });
+  });
+
+  describe('GIVEN: every shipped table dictionary other than English', () => {
+    describe('WHEN: comparing its key paths with the English baseline', () => {
+      it.each(translatedLocaleIds)('THEN: %s defines exactly the keys English defines', (localeId) => {
+        expect(collectKeyPaths(SHIPPED_TABLE_LOCALES[localeId]).sort()).toStrictEqual(collectKeyPaths(NAT_EN_LOCALE_LABELS).sort());
       });
     });
   });

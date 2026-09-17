@@ -64,14 +64,30 @@ describe('FEATURE: NatTable locale registration', () => {
       it('THEN: it warns naming the id and the provider that registers it', async () => {
         await renderWithLocale('da');
 
-        expect(localeWarnings().some((warning) => warning.includes('locale "da" has no registered dictionary'))).toBe(true);
+        expect(localeWarnings().some((warning) => warning.includes('locale "da" has no dictionary registered'))).toBe(true);
         expect(localeWarnings().some((warning) => warning.includes('provideNatTableLocales'))).toBe(true);
       });
 
       it('THEN: it falls back to the built-in English copy', async () => {
-        const fixture = await renderWithLocale('da');
+        const fixture = await renderWithLocale('fi');
 
         expect(summaryText(fixture).startsWith('Showing ')).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN: two tables bound to the same unregistered locale id', () => {
+    describe('WHEN: both render', () => {
+      it('THEN: it warns once for the id, not once per table', async () => {
+        await renderWithLocale('nb');
+
+        const second = TestBed.createComponent(LocaleHost);
+
+        second.componentInstance.locale.set('nb');
+        await second.whenStable();
+        second.detectChanges();
+
+        expect(localeWarnings().filter((warning) => warning.includes('"nb"'))).toHaveLength(1);
       });
     });
   });

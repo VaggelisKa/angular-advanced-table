@@ -101,6 +101,9 @@ import {
 
 let nextTableId = 0;
 
+/* Dev-mode locale warnings are deduped per application, not per table instance. */
+const warnedLocaleIds = new Set<string>();
+
 /**
  * Per-table state store that owns TanStack table creation, all internal state
  * signals, column width resolution, resize/reorder state logic, and derived
@@ -1244,7 +1247,9 @@ export class NatTableState<TData extends RowData = RowData> {
   /**
    * Dev-mode warning for a `[locale]` id that no provider registered. Every
    * dictionary except English is opt-in, so an unregistered id is otherwise a
-   * silent fall back to English copy. Must be called in the injection context.
+   * silent fall back to English copy. Warns once per id per application, since
+   * every table on the page resolves the same registry. Must be called in the
+   * injection context.
    */
   public registerLocaleValidationEffect(): void {
     effect(() => {
@@ -1254,14 +1259,17 @@ export class NatTableState<TData extends RowData = RowData> {
 
       const localeId = this.localeId();
 
-      if (localeId === NAT_EN_LOCALE_ID || this.tableIntlConfig.locales?.[localeId] !== undefined) {
+      if (localeId === NAT_EN_LOCALE_ID || this.tableIntlConfig.locales?.[localeId] !== undefined || warnedLocaleIds.has(localeId)) {
         return;
       }
 
+      warnedLocaleIds.add(localeId);
+
       console.warn(
-        `[ng-advanced-table] locale "${localeId}" has no registered dictionary, so copy falls back to English. ` +
-          `Register one with provideNatTableLocales({ '${localeId}': ... }) — the built-in dictionaries are exported ` +
-          `from ng-advanced-table/locale — or register {} to keep English copy with this locale's number formatting.`
+        `[ng-advanced-table] locale "${localeId}" has no dictionary registered with provideNatTableLocales(), so table ` +
+          `copy falls back to English. Register one — the built-in dictionaries are exported from ng-advanced-table/locale ` +
+          `— or register {} to keep English copy with this locale's number formatting. Companion controls and ` +
+          `render-metrics copy is registered separately and falls back to English without warning.`
       );
     });
   }

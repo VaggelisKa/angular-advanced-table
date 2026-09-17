@@ -93,7 +93,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       return summary;
     },
     sortingChange: ({ columnLabel, sortState, sortedColumns }) => {
-      if (!columnLabel) return 'Sorting cleared.';
+      if (!columnLabel || sortState === 'none') return 'Sorting cleared.';
 
       if (sortedColumns.length > 1) {
         const parts = sortedColumns.map((column) => `${column.label} ${column.sortState}`);

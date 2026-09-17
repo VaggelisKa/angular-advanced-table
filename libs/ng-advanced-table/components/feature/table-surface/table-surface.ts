@@ -49,7 +49,12 @@ export class NatTableSurface {
   public readonly stickyHeader = input(true, { transform: booleanAttribute });
   /** Allows multiple simultaneous sort columns. Default false (single-column sort). */
   public readonly enableMultiSort = input(false, { transform: booleanAttribute });
-  /** Locale id used to resolve generated table accessibility copy. */
+  /**
+   * Locale id used to resolve generated table accessibility copy. Matched
+   * exactly against the ids registered with `provideNatTableLocales()` (and
+   * the companion `provideNatTable*Locales()` helpers); an unregistered id
+   * falls back to English copy while still formatting numbers for this id.
+   */
   public readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */
   public readonly accessibilityText = input<NatTableAccessibilityText>({});

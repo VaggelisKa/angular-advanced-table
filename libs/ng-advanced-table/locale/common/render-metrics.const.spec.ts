@@ -1,24 +1,13 @@
-import { NAT_DA_RENDER_METRICS_LOCALE_LABELS } from './locale-da-render-metrics.const';
-import { NAT_FI_RENDER_METRICS_LOCALE_LABELS } from './locale-fi-render-metrics.const';
-import {
-  NAT_DA_LOCALE_ID,
-  NAT_EN_LOCALE_ID,
-  NAT_FI_LOCALE_ID,
-  NAT_NB_LOCALE_ID,
-  NAT_NO_LOCALE_ID,
-  NAT_SV_LOCALE_ID
-} from './locale-id.const';
-import { NAT_NB_RENDER_METRICS_LOCALE_LABELS } from './locale-nb-render-metrics.const';
-import { NAT_SV_RENDER_METRICS_LOCALE_LABELS } from './locale-sv-render-metrics.const';
-import { NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES } from './render-metrics.const';
+import { NAT_EN_LOCALE_ID } from './locale-id.const';
+import { NAT_EN_RENDER_METRICS_LOCALE_LABELS, NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES } from './render-metrics.const';
 import type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,
-  NatTableRenderMetricsLocalesMap,
   NatTableRenderMetricsNumberFormatter,
   NatTableRenderMetricsRowCountContext,
   RowRenderTone
 } from './render-metrics.type';
+import { SHIPPED_RENDER_METRICS_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.const';
 
 const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
   if (value === undefined) {
@@ -36,18 +25,8 @@ const producesText = <TContext>(formatter: ((context: TContext) => string) | und
 const formatsNumber = (formatter: NatTableRenderMetricsNumberFormatter | undefined, localeId: string): boolean =>
   typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
 
-/* Every dictionary the entry point ships: the English default plus the opt-in
-   translations a consumer registers through the locale providers. */
-const SHIPPED_RENDER_METRICS_LOCALES: NatTableRenderMetricsLocalesMap = {
-  ...NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES,
-  [NAT_DA_LOCALE_ID]: NAT_DA_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_FI_LOCALE_ID]: NAT_FI_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_NB_LOCALE_ID]: NAT_NB_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_NO_LOCALE_ID]: NAT_NB_RENDER_METRICS_LOCALE_LABELS,
-  [NAT_SV_LOCALE_ID]: NAT_SV_RENDER_METRICS_LOCALE_LABELS
-};
-
 const localeIds = Object.keys(SHIPPED_RENDER_METRICS_LOCALES);
+const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);
 const EXPECTED_FILTER_VALUES = ['all', 'fast', 'watch', 'slow'];
 const RENDER_TONES: readonly (RowRenderTone | 'idle')[] = ['idle', 'fast', 'watch', 'slow'];
 
@@ -144,6 +123,16 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
         expect(formatsNumber(SHIPPED_RENDER_METRICS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN: every shipped render-metrics dictionary other than English', () => {
+    describe('WHEN: comparing its key paths with the English baseline', () => {
+      it.each(translatedLocaleIds)('THEN: %s defines exactly the keys English defines', (localeId) => {
+        expect(collectKeyPaths(SHIPPED_RENDER_METRICS_LOCALES[localeId]).sort()).toStrictEqual(
+          collectKeyPaths(NAT_EN_RENDER_METRICS_LOCALE_LABELS).sort()
+        );
       });
     });
   });

@@ -11,9 +11,10 @@ export const NAT_FI_LOCALE_ID = 'fi';
 export const NAT_NB_LOCALE_ID = 'nb';
 
 /**
- * Locale id registered as an alias of {@link NAT_NB_LOCALE_ID}, since locale ids
- * resolve by exact match and applications set either `nb` or `no`. Nynorsk
- * (`nn`) is a separate written standard and is not covered by it.
+ * Conventional id for the Norwegian macrolanguage. Nothing registers it on its
+ * own: register {@link NAT_NB_LOCALE_LABELS} under both this id and
+ * {@link NAT_NB_LOCALE_ID} when an application sets either, since ids resolve
+ * by exact match. Nynorsk is a separate written standard and is not covered.
  */
 export const NAT_NO_LOCALE_ID = 'no';
 
