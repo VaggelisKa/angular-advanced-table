@@ -1,6 +1,6 @@
 import type { NatTableControlsIntl, NatTableControlsLocalesMap } from './controls.type';
-import { NAT_DA_CONTROLS_LOCALE_LABELS } from './locale-da.const';
-import { NAT_FI_CONTROLS_LOCALE_LABELS } from './locale-fi.const';
+import { NAT_DA_CONTROLS_LOCALE_LABELS } from './locale-da-controls.const';
+import { NAT_FI_CONTROLS_LOCALE_LABELS } from './locale-fi-controls.const';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import {
   NAT_DA_LOCALE_ID,
@@ -10,8 +10,8 @@ import {
   NAT_NO_LOCALE_ID,
   NAT_SV_LOCALE_ID
 } from './locale-id.const';
-import { NAT_NB_CONTROLS_LOCALE_LABELS } from './locale-nb.const';
-import { NAT_SV_CONTROLS_LOCALE_LABELS } from './locale-sv.const';
+import { NAT_NB_CONTROLS_LOCALE_LABELS } from './locale-nb-controls.const';
+import { NAT_SV_CONTROLS_LOCALE_LABELS } from './locale-sv-controls.const';
 
 const describeSortState = (sortState: 'ascending' | 'descending'): string =>
   sortState === 'ascending' ? 'in ascending order' : 'in descending order';

@@ -1,5 +1,5 @@
-import { NAT_DA_RENDER_METRICS_LOCALE_LABELS } from './locale-da.const';
-import { NAT_FI_RENDER_METRICS_LOCALE_LABELS } from './locale-fi.const';
+import { NAT_DA_RENDER_METRICS_LOCALE_LABELS } from './locale-da-render-metrics.const';
+import { NAT_FI_RENDER_METRICS_LOCALE_LABELS } from './locale-fi-render-metrics.const';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import {
   NAT_DA_LOCALE_ID,
@@ -9,8 +9,8 @@ import {
   NAT_NO_LOCALE_ID,
   NAT_SV_LOCALE_ID
 } from './locale-id.const';
-import { NAT_NB_RENDER_METRICS_LOCALE_LABELS } from './locale-nb.const';
-import { NAT_SV_RENDER_METRICS_LOCALE_LABELS } from './locale-sv.const';
+import { NAT_NB_RENDER_METRICS_LOCALE_LABELS } from './locale-nb-render-metrics.const';
+import { NAT_SV_RENDER_METRICS_LOCALE_LABELS } from './locale-sv-render-metrics.const';
 import type {
   NatTableRenderMetricsIntl,
   NatTableRenderMetricsLocalesMap,
