@@ -1,8 +1,9 @@
+import type { Provider } from '@angular/core';
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { NAT_DA_LOCALE_LABELS, provideNatTableLocales } from 'ng-advanced-table/locale';
+import { NAT_SV_LOCALE_LABELS, provideNatTableLocales } from 'ng-advanced-table/locale';
 
 import { NatTable } from './table';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
@@ -25,6 +26,8 @@ class LocaleHost {
   public readonly locale = signal<string | undefined>(undefined);
 }
 
+// The warning dedups per id for the lifetime of the module, which outlives a
+// single test, so every case below claims a locale id of its own.
 describe('FEATURE: NatTable locale registration', () => {
   let warnings: string[];
 
@@ -39,7 +42,7 @@ describe('FEATURE: NatTable locale registration', () => {
     vi.restoreAllMocks();
   });
 
-  const renderWithLocale = async (locale: string | undefined, providers: unknown[] = []): Promise<ComponentFixture<LocaleHost>> => {
+  const renderWithLocale = async (locale: string | undefined, providers: Provider[] = []): Promise<ComponentFixture<LocaleHost>> => {
     await TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), ...providers]
     }).compileComponents();
@@ -95,9 +98,9 @@ describe('FEATURE: NatTable locale registration', () => {
   describe('GIVEN: a locale registered through provideNatTableLocales', () => {
     describe('WHEN: the surface requests it', () => {
       it('THEN: it renders that dictionary without warning', async () => {
-        const fixture = await renderWithLocale('da', provideNatTableLocales({ da: NAT_DA_LOCALE_LABELS }));
+        const fixture = await renderWithLocale('sv', provideNatTableLocales({ sv: NAT_SV_LOCALE_LABELS }));
 
-        expect(summaryText(fixture).startsWith('Viser ')).toBe(true);
+        expect(summaryText(fixture).startsWith('Visar ')).toBe(true);
         expect(localeWarnings()).toStrictEqual([]);
       });
     });

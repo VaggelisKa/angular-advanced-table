@@ -3,27 +3,11 @@ import { NAT_EN_RENDER_METRICS_LOCALE_LABELS, NAT_TABLE_BUILT_IN_RENDER_METRICS_
 import type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,
-  NatTableRenderMetricsNumberFormatter,
   NatTableRenderMetricsRowCountContext,
   RowRenderTone
 } from './render-metrics.type';
-import { SHIPPED_RENDER_METRICS_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.const';
-
-const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
-  if (value === undefined) {
-    throw new Error(`${label} must be defined.`);
-  }
-
-  return value;
-};
-
-const isNonEmptyText = (value: unknown): boolean => typeof value === 'string' && value.trim().length > 0;
-
-const producesText = <TContext>(formatter: ((context: TContext) => string) | undefined, context: TContext): boolean =>
-  typeof formatter === 'function' && isNonEmptyText(formatter(context));
-
-const formatsNumber = (formatter: NatTableRenderMetricsNumberFormatter | undefined, localeId: string): boolean =>
-  typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
+import { expectDefined, formatsNumber, isNonEmptyText, producesText } from '../test-helpers/locale-copy.helper';
+import { SHIPPED_RENDER_METRICS_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.helper';
 
 const localeIds = Object.keys(SHIPPED_RENDER_METRICS_LOCALES);
 const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);

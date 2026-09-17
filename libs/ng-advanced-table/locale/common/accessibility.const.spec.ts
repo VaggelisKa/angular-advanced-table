@@ -10,24 +10,11 @@ import type {
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySubHeaderContext,
   NatTableAccessibilitySummaryContext,
-  NatTableAccessibilityText,
-  NatTableNumberFormatter
+  NatTableAccessibilityText
 } from './accessibility.type';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
-import { SHIPPED_TABLE_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.const';
-
-const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
-  if (value === undefined) {
-    throw new Error(`${label} must be defined.`);
-  }
-
-  return value;
-};
-
-const isNonEmptyText = (value: unknown): boolean => typeof value === 'string' && value.trim().length > 0;
-
-const formatsNumber = (formatter: NatTableNumberFormatter | undefined, localeId: string): boolean =>
-  typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
+import { expectDefined, formatsNumber, isNonEmptyText } from '../test-helpers/locale-copy.helper';
+import { SHIPPED_TABLE_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.helper';
 
 const localeIds = Object.keys(SHIPPED_TABLE_LOCALES);
 const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);

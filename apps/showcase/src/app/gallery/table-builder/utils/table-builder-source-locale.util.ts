@@ -2,7 +2,6 @@ import type { TableBuilderFlags } from '../common/table-builder.type';
 
 type LocaleSourceFragments = {
   readonly localeImport: string;
-  readonly localeConst: string;
   readonly providersLine: string;
 };
 
@@ -26,9 +25,5 @@ const LOCALE_PROVIDERS_SOURCE = `
 // the localization feature is on (kept out of the main source builder to stay lean).
 export const buildLocaleSourceFragments = (flags: TableBuilderFlags): LocaleSourceFragments =>
   flags.withLocalization
-    ? {
-        localeImport: LOCALE_IMPORT_SOURCE,
-        localeConst: '',
-        providersLine: LOCALE_PROVIDERS_SOURCE
-      }
-    : { localeImport: '', localeConst: '', providersLine: '' };
+    ? { localeImport: LOCALE_IMPORT_SOURCE, providersLine: LOCALE_PROVIDERS_SOURCE }
+    : { localeImport: '', providersLine: '' };

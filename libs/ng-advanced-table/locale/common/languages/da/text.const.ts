@@ -1,4 +1,4 @@
-import type { RowRenderFilterOption, RowRenderTone } from '../../render-metrics.type';
+import type { RowRenderTone } from '../../render-metrics.type';
 
 /* Shared Danish (`da`) wording helpers for the built-in Danish locale dictionaries. */
 
@@ -63,10 +63,3 @@ export const renderToneLabel = (tone: RowRenderTone | 'idle'): string => {
       return 'Inaktiv';
   }
 };
-
-export const RENDER_METRICS_FILTER_OPTIONS: readonly RowRenderFilterOption[] = [
-  { value: 'all', label: 'Alle rækker', description: 'Vis alle målte rækker' },
-  { value: 'fast', label: 'Hurtig', description: 'Rækker, der blev gengivet hurtigt' },
-  { value: 'watch', label: 'Hold øje', description: 'Rækker, der er værd at holde øje med' },
-  { value: 'slow', label: 'Langsom', description: 'Rækker, der blev gengivet langsomt' }
-];

@@ -15,7 +15,9 @@ export default [
     // so a bundler keeps any dictionary built with one — measured at 45.4 kB of
     // locale code retained by an English-only app, against 13.8 kB without.
     // Compose from named exports instead; see locale/common/*-list.const.ts.
-    files: ['**/locale/common/*.const.ts'],
+    // The glob spans subdirectories: the translated dictionaries this guards
+    // live in common/languages/<xx>/.
+    files: ['**/locale/common/**/*.const.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',

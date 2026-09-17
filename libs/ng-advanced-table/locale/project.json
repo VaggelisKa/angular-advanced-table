@@ -15,7 +15,12 @@
         "coverageInclude": ["libs/ng-advanced-table/locale/**/*.ts"],
         "coverageExclude": ["**/*.spec.ts", "**/test-helpers/**", "**/*.type.ts", "**/index.ts"],
         "coverageReporters": ["text-summary", "json-summary"],
-        "coverageThresholds": { "statements": 99, "branches": 96, "functions": 99, "lines": 99 }
+        "coverageThresholds": {
+          "statements": 99,
+          "branches": 97,
+          "functions": 99,
+          "lines": 99
+        }
       }
     }
   }

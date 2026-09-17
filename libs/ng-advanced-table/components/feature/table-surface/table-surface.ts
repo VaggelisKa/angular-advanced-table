@@ -50,10 +50,11 @@ export class NatTableSurface {
   /** Allows multiple simultaneous sort columns. Default false (single-column sort). */
   public readonly enableMultiSort = input(false, { transform: booleanAttribute });
   /**
-   * Locale id used to resolve generated table accessibility copy. Matched
-   * exactly against the ids registered with `provideNatTableLocales()` (and
-   * the companion `provideNatTable*Locales()` helpers); an unregistered id
-   * falls back to English copy while still formatting numbers for this id.
+   * Locale id used to resolve generated table accessibility copy. Resolved by
+   * RFC 4647 lookup against the ids registered with `provideNatTableLocales()`
+   * (and the companion `provideNatTable*Locales()` helpers), so a registered
+   * `da` also serves `da-DK`; an id that matches nothing falls back to English
+   * copy while still formatting numbers for this id.
    */
   public readonly locale = input<string | undefined>(undefined);
   /** Optional accessibility copy and live-announcement formatters. */

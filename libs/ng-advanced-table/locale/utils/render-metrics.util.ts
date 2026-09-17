@@ -175,7 +175,6 @@ export const formatNatTableRenderMetricsNumber = (
 export const resolveNatTableRenderMetricsIntl = (intl: NatTableRenderMetricsIntlConfig, locale: string): NatTableRenderMetricsIntl => {
   const englishIntl = intl.locales?.[NAT_EN_LOCALE_ID] ?? NAT_EN_RENDER_METRICS_LOCALE_LABELS;
   const matchedId = matchNatTableLocaleId(intl.locales, locale);
-  const selectedIntl = (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
 
-  return selectedIntl ? mergeNatTableRenderMetricsIntl(englishIntl, selectedIntl) : mergeNatTableRenderMetricsIntl(englishIntl, {});
+  return mergeNatTableRenderMetricsIntl(englishIntl, (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? {});
 };

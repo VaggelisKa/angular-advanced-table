@@ -1,4 +1,4 @@
-import type { RowRenderFilterOption, RowRenderTone } from '../../render-metrics.type';
+import type { RowRenderTone } from '../../render-metrics.type';
 
 /* Shared Swedish (`sv`) wording helpers for the built-in Swedish locale dictionaries. */
 
@@ -61,10 +61,3 @@ export const renderToneLabel = (tone: RowRenderTone | 'idle'): string => {
       return 'Inaktiv';
   }
 };
-
-export const RENDER_METRICS_FILTER_OPTIONS: readonly RowRenderFilterOption[] = [
-  { value: 'all', label: 'Alla rader', description: 'Visa alla mätta rader' },
-  { value: 'fast', label: 'Snabb', description: 'Rader som renderades snabbt' },
-  { value: 'watch', label: 'Bevaka', description: 'Rader som är värda att bevaka' },
-  { value: 'slow', label: 'Långsam', description: 'Rader som renderades långsamt' }
-];

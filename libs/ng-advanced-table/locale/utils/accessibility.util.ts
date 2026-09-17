@@ -148,7 +148,6 @@ export const formatNatTableNumber = (intl: NatTableIntl, value: number, options?
 export const resolveNatTableIntl = (intl: NatTableIntlConfig, locale: string): NatTableIntl => {
   const englishIntl = intl.locales?.[NAT_EN_LOCALE_ID] ?? NAT_EN_LOCALE_LABELS;
   const matchedId = matchNatTableLocaleId(intl.locales, locale);
-  const selectedIntl = (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
 
-  return selectedIntl ? mergeNatTableIntl(englishIntl, selectedIntl) : mergeNatTableIntl(englishIntl, {});
+  return mergeNatTableIntl(englishIntl, (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? {});
 };

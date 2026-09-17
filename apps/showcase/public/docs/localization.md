@@ -50,8 +50,13 @@ Ids resolve by [RFC 4647 lookup](https://www.rfc-editor.org/rfc/rfc4647#section-
 ```ts
 provideNatTableLocales({
   da: NAT_DA_LOCALE_LABELS,
-  // Exact ids win over the base language.
-  'da-DK': { ...NAT_DA_LOCALE_LABELS, accessibilityText: { emptyState: 'Ingen rækker' } }
+  // Exact ids win over the base language. Every entry is filled in from
+  // English, never from `da`, so a region entry restates the dictionary it
+  // specializes rather than only the keys that differ from it.
+  'da-DK': {
+    ...NAT_DA_LOCALE_LABELS,
+    accessibilityText: { ...NAT_DA_LOCALE_LABELS.accessibilityText, emptyState: 'Ingen rækker' }
+  }
 });
 ```
 

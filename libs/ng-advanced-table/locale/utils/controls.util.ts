@@ -141,7 +141,6 @@ export const mergeNatTableControlsIntlConfig = (
 export const resolveNatTableControlsIntl = (intl: NatTableControlsIntlConfig, locale: string): NatTableControlsIntl => {
   const englishIntl = intl.locales?.[NAT_EN_LOCALE_ID] ?? NAT_EN_CONTROLS_LOCALE_LABELS;
   const matchedId = matchNatTableLocaleId(intl.locales, locale);
-  const selectedIntl = (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
 
-  return selectedIntl ? mergeNatTableControlsIntl(englishIntl, selectedIntl) : mergeNatTableControlsIntl(englishIntl, {});
+  return mergeNatTableControlsIntl(englishIntl, (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? {});
 };

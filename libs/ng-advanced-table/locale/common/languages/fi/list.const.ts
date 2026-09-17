@@ -5,10 +5,9 @@ import type { NatTableAccessibilityText } from '../../accessibility.type';
  * Built-in Finnish accessibility copy specific to the list renderer.
  *
  * A list has no columns or rows, so these mirror the grid formatters while
- * phrasing the same counts as items and fields. Each entry is exported on its
- * own and referenced by name from the dictionary rather than spread into it:
- * an object spread is not provably side-effect free, so a bundler keeps the
- * whole dictionary even for an application that never registers this locale.
+ * phrasing the same counts as items and fields. Exported entry by entry and
+ * referenced by name; the English `accessibility-list.const.ts` records why
+ * they are never spread into the dictionary.
  */
 export const listKeyboardInstructions: NatTableAccessibilityText['listKeyboardInstructions'] =
   'Siirry kohteiden välillä Nuoli ylös- ja Nuoli alas -näppäimillä. Käytä kohteen ohjaimia painamalla Enter, ' +

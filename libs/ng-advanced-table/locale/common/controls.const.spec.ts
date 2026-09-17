@@ -6,27 +6,11 @@ import type {
   NatTableAccessibilityHeaderActionSortContext,
   NatTableAccessibilityPageSizeOptionContext,
   NatTableAccessibilityPagerContext,
-  NatTableAccessibilityScrollControlPositionContext,
-  NatTableControlsNumberFormatter
+  NatTableAccessibilityScrollControlPositionContext
 } from './controls.type';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
-import { SHIPPED_CONTROLS_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.const';
-
-const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
-  if (value === undefined) {
-    throw new Error(`${label} must be defined.`);
-  }
-
-  return value;
-};
-
-const isNonEmptyText = (value: unknown): boolean => typeof value === 'string' && value.trim().length > 0;
-
-const producesText = <TContext>(formatter: ((context: TContext) => string) | undefined, context: TContext): boolean =>
-  typeof formatter === 'function' && isNonEmptyText(formatter(context));
-
-const formatsNumber = (formatter: NatTableControlsNumberFormatter | undefined, localeId: string): boolean =>
-  typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
+import { expectDefined, formatsNumber, isNonEmptyText, producesText } from '../test-helpers/locale-copy.helper';
+import { SHIPPED_CONTROLS_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.helper';
 
 const localeIds = Object.keys(SHIPPED_CONTROLS_LOCALES);
 const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);

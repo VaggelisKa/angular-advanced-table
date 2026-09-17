@@ -1,4 +1,4 @@
-import type { RowRenderFilterOption, RowRenderTone } from '../../render-metrics.type';
+import type { RowRenderTone } from '../../render-metrics.type';
 
 /* Shared Finnish (`fi`) wording helpers for the built-in Finnish locale dictionaries. */
 
@@ -73,10 +73,3 @@ export const renderToneLabel = (tone: RowRenderTone | 'idle'): string => {
       return 'Ei mittausta';
   }
 };
-
-export const RENDER_METRICS_FILTER_OPTIONS: readonly RowRenderFilterOption[] = [
-  { value: 'all', label: 'Kaikki rivit', description: 'Näytä kaikki mitatut rivit' },
-  { value: 'fast', label: 'Nopea', description: 'Nopeasti renderöityneet rivit' },
-  { value: 'watch', label: 'Tarkkaile', description: 'Rivit, joita kannattaa tarkkailla' },
-  { value: 'slow', label: 'Hidas', description: 'Hitaasti renderöityneet rivit' }
-];
