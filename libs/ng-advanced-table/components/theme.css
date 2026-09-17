@@ -252,6 +252,7 @@
   --nat-list-item-border-width: 1px;
   --nat-list-item-border-color: var(--nat-table-color-border);
   --nat-list-item-radius: 10px;
+
   /* Stock items are cards, so the final card keeps its bottom edge. A literal,
      not var(--nat-list-item-border-width): that token accepts 1-4 values, which
      would be invalid for the border-bottom-width longhand this feeds. */
