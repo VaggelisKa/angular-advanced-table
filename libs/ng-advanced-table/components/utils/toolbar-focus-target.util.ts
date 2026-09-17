@@ -1,6 +1,7 @@
 /**
- * Resolution helpers for `natToolbarItemFocusTarget` — nominating a descendant
- * of a toolbar item as the element that should actually receive focus.
+ * Resolution helpers for a toolbar item's focus target — the descendant that
+ * should actually receive focus, either nominated through
+ * `natToolbarItemFocusTarget` or resolved implicitly for a wrapper host.
  *
  * `@angular/aria` focuses a toolbar widget by calling `element.focus()` on the
  * element carrying the directive, so a wrapper component (an Angular component
@@ -28,6 +29,71 @@ export const resolveNatToolbarFocusTarget = (host: HTMLElement, selector: string
   } catch {
     return null;
   }
+};
+
+/**
+ * Elements that take focus on their own. A `natToolbarItem` sitting on one of
+ * these *is* the control, so nothing inside it is ever nominated implicitly.
+ */
+const NAT_TOOLBAR_INTRINSIC_CONTROL_SELECTOR =
+  'button, input, select, textarea, a[href], area[href], summary, audio[controls], video[controls], [contenteditable]:not([contenteditable="false"])';
+
+/**
+ * Candidates for the implicit focus target, in DOM order. `[tabindex]` is kept
+ * regardless of value because the resolved control is itself pulled to
+ * `tabindex="-1"` and must still be found again on the next pass.
+ */
+const NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR =
+  'button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), ' +
+  'a[href], area[href], summary, audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
+
+/** True when `host` is itself an interactive element rather than a wrapper around one. */
+export const isNatToolbarIntrinsicControl = (host: HTMLElement): boolean => host.matches(NAT_TOOLBAR_INTRINSIC_CONTROL_SELECTOR);
+
+/**
+ * True when a structural match can actually receive focus right now:
+ * not `:disabled` (which also covers a disabled `<fieldset>` ancestor), not
+ * inside an `inert` subtree, and not under a `hidden` ancestor.
+ *
+ * Only attribute-level state is checked. CSS `display: none` would need
+ * layout the resolver has no business forcing, and the result must be the
+ * same in a DOM without layout (unit tests, SSR hydration).
+ */
+const canCandidateTakeFocus = (candidate: HTMLElement): boolean => {
+  if (candidate.matches(':disabled')) return false;
+
+  if (candidate.closest('[inert]') !== null) return false;
+
+  return candidate.closest('[hidden]') === null;
+};
+
+const firstFocusableCandidate = (candidates: NodeListOf<HTMLElement> | undefined): HTMLElement | null => {
+  if (!candidates) return null;
+
+  for (const candidate of candidates) {
+    if (canCandidateTakeFocus(candidate)) return candidate;
+  }
+
+  return null;
+};
+
+/**
+ * Finds the control a wrapper host should forward focus to when the consumer
+ * nominated none — the first focusable descendant, searching an **open**
+ * shadow root before light DOM exactly like {@link resolveNatToolbarFocusTarget}.
+ *
+ * An intrinsic control resolves to `null`: it is the target already.
+ * Candidates that cannot currently take focus are skipped, so a hidden or
+ * disabled leading control never strands navigation on the wrapper shell
+ * while a later control is operable.
+ */
+export const resolveNatToolbarImplicitFocusTarget = (host: HTMLElement): HTMLElement | null => {
+  if (isNatToolbarIntrinsicControl(host)) return null;
+
+  return (
+    firstFocusableCandidate(host.shadowRoot?.querySelectorAll<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR)) ??
+    firstFocusableCandidate(host.querySelectorAll<HTMLElement>(NAT_TOOLBAR_FOCUSABLE_DESCENDANT_SELECTOR))
+  );
 };
 
 /**

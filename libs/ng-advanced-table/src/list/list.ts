@@ -173,6 +173,20 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   protected readonly bodyState = this.state.bodyState;
 
   /**
+   * Whether at least one visible column still participates in row activation.
+   * Keyboard activation targets the whole item (focus never sits on a field),
+   * so when every visible column sets `meta.rowActivation: false` the item has
+   * no activatable surface at all: composite Enter/Space and item-padding
+   * clicks stop emitting, and plain mode renders no activator button.
+   */
+  protected readonly hasActivatableField = computed(() =>
+    this.visibleColumns().some((column) => column.columnDef.meta?.rowActivation !== false)
+  );
+
+  /** Plain-mode activator gate: the consumer opt-in plus at least one activatable field. */
+  protected readonly rendersActivator = computed(() => this.enableRowActivation() && this.hasActivatableField());
+
+  /**
    * Default stacked `grid-template-areas` for a list item: one row per visible
    * column, named by column id. Written to the internal `--sys-*` bridge so a
    * consumer's `--nat-list-item-areas` (plus `-columns`) can lay out the
@@ -412,7 +426,7 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   // rows — the focusable gridcell is the activation affordance, so
   // `enableRowActivation` (a plain-mode tab-stop trade-off) does not gate it.
   protected onItemClick(event: MouseEvent, row: Row<TData>): void {
-    if (event.button !== 0 || event.defaultPrevented) {
+    if (event.button !== 0 || event.defaultPrevented || !this.hasActivatableField()) {
       return;
     }
 
@@ -424,7 +438,7 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   }
 
   protected onItemKeydown(event: KeyboardEvent, row: Row<TData>): void {
-    if (event.defaultPrevented) {
+    if (event.defaultPrevented || !this.hasActivatableField()) {
       return;
     }
 

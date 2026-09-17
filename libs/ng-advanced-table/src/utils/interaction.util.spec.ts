@@ -215,6 +215,21 @@ describe('FEATURE: interaction utilities', () => {
   });
 
   describe('GIVEN: originatesFromInteractiveDescendant', () => {
+    describe('WHEN: the click target sits inside a descendant opted out with data-nat-row-activation="false"', () => {
+      it('THEN: it reports the event as guarded, but not when the opt-out sits on the current target itself', () => {
+        const row = document.createElement('div');
+        const cell = document.createElement('div');
+        const text = document.createElement('span');
+
+        cell.setAttribute('data-nat-row-activation', 'false');
+        cell.appendChild(text);
+        row.appendChild(cell);
+
+        expect(dispatchFromWithin(row, text)).toBe(true);
+        expect(dispatchFromWithin(cell, text)).toBe(false);
+      });
+    });
+
     describe('WHEN: the click target is a button descendant', () => {
       it('THEN: it reports the event as originating from an interactive descendant', () => {
         const cell = document.createElement('div');

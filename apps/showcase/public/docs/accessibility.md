@@ -222,7 +222,7 @@ export class TradeButton {
 }
 ```
 
-`(rowActivate)` is for row-level primary actions. It ignores events from interactive descendants such as buttons, links, inputs, menu items, and contenteditable regions.
+`(rowActivate)` is for row-level primary actions. It ignores events from interactive descendants such as buttons, links, inputs, menu items, and contenteditable regions. When a cell holds a small control, also set `meta.rowActivation: false` on that column so the cell padding is not a second, larger row target next to it; see [Row Activation](/docs/columns#row-activation) for the WCAG 2.5.8 target-spacing reasoning.
 
 ## Selection Accessibility
 

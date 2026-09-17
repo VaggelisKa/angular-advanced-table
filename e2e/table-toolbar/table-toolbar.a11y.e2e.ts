@@ -288,6 +288,87 @@ test.describe('FEATURE: Table toolbar', () => {
       });
     });
 
+    test.describe('WHEN: a toolbar item is a custom element carrying no focus-target selector', () => {
+      // Bare `natToolbarItem` on a wrapper must behave like the nominated-target
+      // case with nothing extra written: the roving tabindex stays on the host,
+      // focus is forwarded to the first focusable control inside its open
+      // shadow root, and that control leaves the sequential tab order so the
+      // toolbar still has exactly one Tab stop — with or without delegatesFocus.
+      test('THEN: focus lands on the inner control with or without delegatesFocus', async ({ page }) => {
+        const toolbar = page.getByRole('toolbar', { name: 'Custom element toolbar' });
+        const plainInner = page.getByTestId('stencil-plain-inner-button');
+        const delegatingInner = page.getByTestId('stencil-delegating-inner-button');
+        const nativeButton = page.getByTestId('stencil-native-button');
+        const plainHost = page.getByTestId('stencil-plain-host');
+        const delegatingHost = page.getByTestId('stencil-delegating-host');
+        const lastAction = page.getByTestId('stencil-last-action');
+
+        const activeElementIsInsideToolbar = async (): Promise<boolean> =>
+          toolbar.evaluate((element) => {
+            // activeElement retargets to the shadow host, so walk into any open root
+            let active: Element | null = document.activeElement;
+
+            while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+
+            return element.contains(active);
+          });
+
+        await test.step('GIVEN: neither inner control is an independent tab stop', async () => {
+          await expect(plainInner).toHaveAttribute('tabindex', '-1');
+          await expect(delegatingInner).toHaveAttribute('tabindex', '-1');
+        });
+
+        await test.step('THEN: arrowing onto a custom element focuses its inner button, not the host', async () => {
+          await nativeButton.focus();
+          await expect(nativeButton).toBeFocused();
+
+          await page.keyboard.press('ArrowLeft');
+          await expect(delegatingInner).toBeFocused();
+
+          await page.keyboard.press('ArrowLeft');
+          await expect(plainInner).toBeFocused();
+
+          await page.keyboard.press('ArrowRight');
+          await expect(delegatingInner).toBeFocused();
+        });
+
+        await test.step('THEN: Enter activates the inner control', async () => {
+          await page.keyboard.press('Enter');
+          await expect(lastAction).toHaveText('stencil-delegating');
+
+          await page.keyboard.press('ArrowLeft');
+          await page.keyboard.press('Enter');
+          await expect(lastAction).toHaveText('stencil-plain');
+        });
+
+        await test.step('THEN: Tab from a custom element exits the toolbar in one step', async () => {
+          // The roving tab stop follows focus onto the host, so the wrapper
+          // itself is the single stop Tab leaves from.
+          await expect(plainHost).toHaveAttribute('tabindex', '0');
+          await page.keyboard.press('Tab');
+
+          await expect(plainInner).not.toBeFocused();
+          await expect(delegatingInner).not.toBeFocused();
+          await expect(nativeButton).not.toBeFocused();
+          expect(await activeElementIsInsideToolbar()).toBe(false);
+        });
+
+        await test.step('THEN: Shift+Tab leaves the control instead of being thrown back into it', async () => {
+          await nativeButton.focus();
+          await page.keyboard.press('ArrowLeft');
+          await expect(delegatingInner).toBeFocused();
+          // Wait for the roving tab stop to move with focus; pressing before it
+          // does would back-tab onto the previous host while it still held 0.
+          await expect(delegatingHost).toHaveAttribute('tabindex', '0');
+
+          await page.keyboard.press('Shift+Tab');
+          await expect(delegatingInner).not.toBeFocused();
+          await expect(plainInner).not.toBeFocused();
+          expect(await activeElementIsInsideToolbar()).toBe(false);
+        });
+      });
+    });
+
     test.describe('WHEN: the table toolbar example is scanned with axe-core', () => {
       test('THEN: it has no WCAG A/AA violations', async ({ page }) => {
         await expectNoAxeViolations(page, '[data-testid="docs-example-toolbar-actions-preview-panel"]');

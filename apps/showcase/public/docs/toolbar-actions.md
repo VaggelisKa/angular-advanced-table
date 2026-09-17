@@ -10,17 +10,23 @@ A Table Action is a user-triggered operation that acts on table rows or table pr
 
 ## Wrapper Controls
 
-`natToolbarItem` puts the roving tabindex on the element it sits on, and that element is what receives focus. When the item is a wrapper that renders its real control inside itself — a design-system component, a Stencil custom element — focus would land on a non-interactive shell while the inner control stayed in the tab order as a second stop.
-
-Use `natToolbarItemFocusTarget` to nominate the control:
+`natToolbarItem` puts the roving tabindex on the element it sits on. When that element is a wrapper that renders its real control inside itself — a design-system component, a Stencil custom element — the toolbar forwards focus to the first focusable descendant instead, searching an open shadow root before light DOM. Nothing extra is needed for the common case:
 
 ```html
 <nat-table-toolbar accessibleName="Table actions">
-  <my-button natToolbarItem="archive" natToolbarItemFocusTarget="button">Archive</my-button>
+  <my-button natToolbarItem="archive">Archive</my-button>
 </nat-table-toolbar>
 ```
 
-The selector searches an open shadow root before light DOM, so the same selector works whether the wrapper renders into shadow or light DOM. The resolved control is taken out of the sequential tab order, keeping the toolbar to a single Tab stop, and is re-suppressed when the wrapper re-renders. A control behind a **closed** shadow root cannot be reached — the component must be authored with an open root (Stencil: `shadow: true`, or `delegatesFocus: true`).
+The resolved control is taken out of the sequential tab order, keeping the toolbar to a single Tab stop, and is re-suppressed when the wrapper re-renders. This works whether or not the element delegates focus, but `delegatesFocus` (Stencil `shadow: { delegatesFocus: true }`) gives the cleanest result: without it, Shift+Tab from the inner control pauses on the wrapper shell for one step before leaving the toolbar, because the shell precedes its own shadow content in sequential order. A native interactive element (`<button>`, `<input>`, …) carrying `natToolbarItem` is always its own target — nothing inside it is ever nominated.
+
+When the default picks the wrong control — a wrapper that renders several, or whose first focusable element is not the primary one — nominate it with `natToolbarItemFocusTarget`, a CSS selector resolved the same way:
+
+```html
+<my-split-button natToolbarItem="archive" natToolbarItemFocusTarget=".primary">Archive</my-split-button>
+```
+
+A control behind a **closed** shadow root cannot be reached either way — the component must be authored with an open root (Stencil: `shadow: true`, or `delegatesFocus: true`), or the toolbar opted out as described below. In development the toolbar warns once per item when it detects a sealed wrapper.
 
 Registration and hit-testing stay on the wrapper, so click, focus and keyboard routing continue to resolve the item normally.
 

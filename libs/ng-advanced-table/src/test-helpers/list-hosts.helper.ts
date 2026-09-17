@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core';
 
+import type { ColumnDef } from '@tanstack/angular-table';
+
 import { buildRows, columns } from './table-data.helper';
 import type { Row } from './table-data.helper';
 import { TestTableSurface } from './table-hosts.helper';
@@ -16,7 +18,7 @@ import { NatList } from '../list/list';
   template: `
     <nat-table-surface [initialState]="initialState()" enableReordering>
       <nat-list
-        [columns]="columns"
+        [columns]="columns()"
         [data]="rows()"
         [dataStatus]="dataStatus()"
         [enableItemNavigation]="enableItemNavigation()"
@@ -31,7 +33,7 @@ import { NatList } from '../list/list';
 })
 export class ListHost {
   public readonly rows = signal<Row[]>(buildRows(6));
-  public readonly columns = columns;
+  public readonly columns = signal<ColumnDef<Row, unknown>[]>(columns);
   public readonly initialState = signal<Partial<NatTableUserState>>({});
   public readonly dataStatus = signal<NatTableDataStatus>(NAT_TABLE_DATA_STATUS.success);
   public readonly enableRowSelection = signal(false);

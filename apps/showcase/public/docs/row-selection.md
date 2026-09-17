@@ -38,6 +38,8 @@ readonly columns = withNatTableSelectionColumn(baseColumns, {
 
 The helper prepends a non-sortable, non-hideable, non-resizable column. It defaults to a 48px width, can be pinned, and uses generated locale labels unless you pass explicit overrides. Pin it with the normal `columnPinning` state when selection should stay visible during horizontal scrolling.
 
+The generated column also sets `meta.rowActivation: false`, so a click that lands beside the checkbox never fires `rowActivate`; the checkbox is far smaller than the 24 px WCAG 2.5.8 target, and the cell padding around it must not act as a second, larger row target. Pass `rowActivation: true` to restore the old behavior. See [Row Activation](/docs/columns#row-activation) for the per-column flag.
+
 ## Single And Multiple Selection
 
 Multiple selection is the default. Use `selectionMode="single"` only when the workflow allows one selected row at a time. Clear or normalize app-owned selection when switching modes.

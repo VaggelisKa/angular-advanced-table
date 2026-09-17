@@ -57,7 +57,7 @@ protected sortByTotal(): void {
 Two deliberate consequences of the stretched-button design:
 
 - The activator's accessible name is the item's **first visible field** (label plus value, e.g. "Order ORD-201") — concise on purpose, since the item content is read as the list item body anyway. Order the columns so the identifying field comes first.
-- The overlay owns mousedown across the item, so field text cannot be selected with the mouse while activation is enabled. Leave activation off (or trigger navigation from a dedicated control) when copyable values matter.
+- The overlay owns mousedown across the item, so field text cannot be selected with the mouse while activation is enabled. Leave activation off (or trigger navigation from a dedicated control) when copyable values matter. A field whose column sets `meta.rowActivation: false` is the exception: it stacks above the activator, so clicks on it never activate and its text stays selectable. When every visible column opts out, no activator is rendered at all.
 
 ## Item Navigation
 
@@ -77,7 +77,7 @@ Two deliberate consequences of the stretched-button design:
 Behavior changes while it is enabled:
 
 - Items emit `rowActivate` on click and on the `rowActivate` shortcut directly — like table rows, and without `enableRowActivation`. The stretched activator button is not rendered (the focusable gridcell already carries an interactive role), so field text becomes mouse-selectable again.
-- Native controls inside fields (for example a selection checkbox) are managed into the roving tab order; clicks on them never trigger activation.
+- Native controls inside fields (for example a selection checkbox) are managed into the roving tab order; clicks on them never trigger activation. A column with `meta.rowActivation: false` excludes its whole field from pointer activation, padding included. Keyboard Enter/Space targets the item (focus never sits on a field), so it keeps activating while at least one visible column participates; once every visible column opts out, the item stops emitting `rowActivate` for keyboard and click alike.
 - With multi selection the grid carries `aria-multiselectable`, and each item row mirrors its selection state onto `aria-selected` alongside `data-selected`.
 
 Leave it off for short lists: plain `role="list"` semantics are friendlier to screen-reader browse mode, and a handful of tab stops is not a traversal cost. Reach for it when the list is long enough that one tab stop per item would make keyboard traversal expensive.

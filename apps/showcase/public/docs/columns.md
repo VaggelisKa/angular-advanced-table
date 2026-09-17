@@ -46,6 +46,7 @@ readonly columns: ColumnDef<PositionRow>[] = [
 | `align`             | `'start'` or `'end'` header and body alignment                                                                                                                  |
 | `rowHeader`         | Marks body cells in the column as row headers                                                                                                                   |
 | `reorderable`       | Per-column reordering override; `false` blocks grabbing/moving this column, while `true` opts it into reordering (drag, keyboard, menu) when the surface is off |
+| `rowActivation`     | Set `false` to exclude this column's body cells from row activation; see [Row Activation](#row-activation)                                                      |
 | `cellTone`          | Semantic tone class for positive, negative, neutral, or warning cells                                                                                           |
 | `cellHeight`        | Fixed body-cell height for this column                                                                                                                          |
 | `cellMaxLines`      | Body-cell line clamp; defaults to `2`, use `Infinity` to disable                                                                                                |
@@ -228,6 +229,21 @@ protected openPosition(positionId: string): void {
 ```
 
 Keep cell-level buttons, links, menus, and inputs independent. They should emit their own outputs and should not depend on row activation.
+
+### Opting A Column Out Of Row Activation
+
+The interactive-descendant guard only covers the control itself. The cell padding around a small action button is still part of the row target, so a click that misses the button by a few pixels navigates away. WCAG 2.5.8 (Target Size, AA) also requires a 24 × 24 CSS px target or that much clearance from other targets, and the surrounding row counts as another target. Set `meta.rowActivation: false` on such columns so the whole cell is excluded:
+
+```ts
+{
+  id: 'actions',
+  header: 'Actions',
+  meta: { label: 'Actions', hiddenHeaderLabel: 'Row actions', rowActivation: false },
+  cell: (context) => flexRenderComponent(PositionActionsCell, { inputs: { symbol: context.row.original.symbol } }),
+}
+```
+
+Clicks and Enter / Space that start anywhere inside that cell no longer emit `rowActivate`; every other cell in the row still does. The renderer stamps `data-nat-row-activation="false"` on the cell, and you can place that attribute on any element inside a cell template for a finer opt-out. `NatStaticTable` stamps it too. `NatList` honors the flag on its fields for pointer clicks; keyboard focus in a list sits on the whole item, so Enter/Space keep activating until every visible column opts out, at which point the item stops activating entirely (see the list renderer topic).
 
 ## Export Metadata
 
