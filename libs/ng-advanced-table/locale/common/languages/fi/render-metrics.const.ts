@@ -1,6 +1,6 @@
-import { RENDER_METRICS_FILTER_OPTIONS, measuredRows, measuredVisibleRows, renderToneLabel } from './locale-fi-text.const';
-import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
-import type { NatTableRenderMetricsIntl } from './render-metrics.type';
+import { RENDER_METRICS_FILTER_OPTIONS, measuredRows, measuredVisibleRows, renderToneLabel } from './text.const';
+import { DEFAULT_NUMBER_FORMATTER } from '../../locale-formatter.const';
+import type { NatTableRenderMetricsIntl } from '../../render-metrics.type';
 
 /** Built-in Finnish render-metrics labels shipped with `ng-advanced-table/locale`. */
 export const NAT_FI_RENDER_METRICS_LOCALE_LABELS: NatTableRenderMetricsIntl = {

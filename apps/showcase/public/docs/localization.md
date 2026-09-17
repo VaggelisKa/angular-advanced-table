@@ -45,14 +45,20 @@ providers: [
 ];
 ```
 
-A locale id is matched exactly, so register a dictionary under every id the application sets — including region-tagged ids such as `da-DK`, and `no` alongside `nb` when both are in use:
+Ids resolve by [RFC 4647 lookup](https://www.rfc-editor.org/rfc/rfc4647#section-3.4): an exact match wins, otherwise the id is truncated one subtag at a time. Registering `da` therefore covers `da-DK`, and a region-specific dictionary can be registered alongside it when the wording differs:
 
 ```ts
 provideNatTableLocales({
-  nb: NAT_NB_LOCALE_LABELS,
-  no: NAT_NB_LOCALE_LABELS,
-  'da-DK': NAT_DA_LOCALE_LABELS
+  da: NAT_DA_LOCALE_LABELS,
+  // Exact ids win over the base language.
+  'da-DK': { ...NAT_DA_LOCALE_LABELS, accessibilityText: { emptyState: 'Ingen rækker' } }
 });
+```
+
+Truncation only follows subtags, so ids that share no prefix need registering separately. `no` and `nb` are the common case — the Norwegian macrolanguage id is not a subtag of Bokmål:
+
+```ts
+provideNatTableLocales({ nb: NAT_NB_LOCALE_LABELS, no: NAT_NB_LOCALE_LABELS });
 ```
 
 Nynorsk (`nn`) is a separate written standard and is not covered by the Bokmål dictionary.

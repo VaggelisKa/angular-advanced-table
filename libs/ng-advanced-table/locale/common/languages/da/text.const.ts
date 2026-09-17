@@ -1,4 +1,4 @@
-import type { RowRenderFilterOption, RowRenderTone } from './render-metrics.type';
+import type { RowRenderFilterOption, RowRenderTone } from '../../render-metrics.type';
 
 /* Shared Danish (`da`) wording helpers for the built-in Danish locale dictionaries. */
 

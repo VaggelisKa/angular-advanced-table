@@ -1,3 +1,4 @@
+import { matchNatTableLocaleId } from './locale-lookup.util';
 import { NAT_EN_LOCALE_LABELS } from '../common/accessibility.const';
 import type {
   NatTableAccessibilityText,
@@ -146,7 +147,8 @@ export const formatNatTableNumber = (intl: NatTableIntl, value: number, options?
 /** Resolves a locale dictionary, falling back to built-in English defaults. */
 export const resolveNatTableIntl = (intl: NatTableIntlConfig, locale: string): NatTableIntl => {
   const englishIntl = intl.locales?.[NAT_EN_LOCALE_ID] ?? NAT_EN_LOCALE_LABELS;
-  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
+  const matchedId = matchNatTableLocaleId(intl.locales, locale);
+  const selectedIntl = (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
 
   return selectedIntl ? mergeNatTableIntl(englishIntl, selectedIntl) : mergeNatTableIntl(englishIntl, {});
 };

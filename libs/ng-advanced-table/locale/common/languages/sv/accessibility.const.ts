@@ -1,5 +1,3 @@
-import type { NatTableIntl } from './accessibility.type';
-import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import {
   listColumnVisibilityChange,
   listKeyboardInstructions,
@@ -7,7 +5,7 @@ import {
   listPageSizeChange,
   listSubHeaderRow,
   listSummary
-} from './locale-sv-list.const';
+} from './list.const';
 import {
   columnZone,
   filteredRows,
@@ -17,7 +15,9 @@ import {
   sortDirection,
   visibilityVerb,
   visibleColumns
-} from './locale-sv-text.const';
+} from './text.const';
+import type { NatTableIntl } from '../../accessibility.type';
+import { DEFAULT_NUMBER_FORMATTER } from '../../locale-formatter.const';
 
 /** Built-in Swedish table labels shipped with `ng-advanced-table/locale`. */
 export const NAT_SV_LOCALE_LABELS: NatTableIntl = {

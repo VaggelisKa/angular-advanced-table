@@ -1,5 +1,5 @@
-import type { NatTableAccessibilityText } from './accessibility.type';
-import { fields, items, visibilityVerb } from './locale-fi-text.const';
+import { fields, items, visibilityVerb } from './text.const';
+import type { NatTableAccessibilityText } from '../../accessibility.type';
 
 /**
  * Built-in Finnish accessibility copy specific to the list renderer.

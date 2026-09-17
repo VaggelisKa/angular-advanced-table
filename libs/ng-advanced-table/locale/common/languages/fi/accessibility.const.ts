@@ -1,4 +1,3 @@
-import type { NatTableIntl } from './accessibility.type';
 import {
   listColumnVisibilityChange,
   listKeyboardInstructions,
@@ -6,7 +5,7 @@ import {
   listPageSizeChange,
   listSubHeaderRow,
   listSummary
-} from './locale-fi-list.const';
+} from './list.const';
 import {
   columnZone,
   columns,
@@ -17,8 +16,9 @@ import {
   selectedRows,
   sortAdverb,
   visibilityVerb
-} from './locale-fi-text.const';
-import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
+} from './text.const';
+import type { NatTableIntl } from '../../accessibility.type';
+import { DEFAULT_NUMBER_FORMATTER } from '../../locale-formatter.const';
 
 /** Built-in Finnish table labels shipped with `ng-advanced-table/locale`. */
 export const NAT_FI_LOCALE_LABELS: NatTableIntl = {

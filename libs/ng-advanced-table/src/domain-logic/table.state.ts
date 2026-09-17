@@ -32,6 +32,7 @@ import {
   NAT_EN_LOCALE_ID,
   NAT_TABLE_INTL,
   formatNatTableNumber,
+  matchNatTableLocaleId,
   mergeNatTableAccessibilityText,
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
@@ -1259,7 +1260,11 @@ export class NatTableState<TData extends RowData = RowData> {
 
       const localeId = this.localeId();
 
-      if (localeId === NAT_EN_LOCALE_ID || this.tableIntlConfig.locales?.[localeId] !== undefined || warnedLocaleIds.has(localeId)) {
+      if (
+        localeId === NAT_EN_LOCALE_ID ||
+        matchNatTableLocaleId(this.tableIntlConfig.locales, localeId) !== null ||
+        warnedLocaleIds.has(localeId)
+      ) {
         return;
       }
 

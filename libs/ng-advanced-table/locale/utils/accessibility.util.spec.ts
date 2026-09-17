@@ -1,7 +1,8 @@
 import { mergeNatTableAccessibilityText, resolveNatTableIntl } from './accessibility.util';
+import { matchNatTableLocaleId } from './locale-lookup.util';
 import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/accessibility.const';
+import { NAT_NB_LOCALE_LABELS } from '../common/languages/nb/accessibility.const';
 import { NAT_NB_LOCALE_ID, NAT_NO_LOCALE_ID } from '../common/locale-id.const';
-import { NAT_NB_LOCALE_LABELS } from '../common/locale-nb.const';
 
 describe('FEATURE: accessibility intl merge', () => {
   describe('GIVEN: a parent and an override accessibility text', () => {
@@ -53,8 +54,10 @@ describe('FEATURE: accessibility intl merge', () => {
         );
       });
 
-      it('THEN: an unregistered region-tagged id still falls back to English, since ids match exactly', () => {
-        expect(resolveNatTableIntl({ locales }, 'nb-NO').accessibilityText?.emptyState).toBe('No rows match the current view.');
+      it('THEN: a region-tagged id resolves the base language', () => {
+        expect(resolveNatTableIntl({ locales }, 'nb-NO').accessibilityText?.emptyState).toBe(
+          resolveNatTableIntl({ locales }, NAT_NB_LOCALE_ID).accessibilityText?.emptyState
+        );
       });
     });
   });
@@ -162,6 +165,42 @@ describe('FEATURE: accessibility intl merge', () => {
         const context = { positionValue: 5, positionText: '5', totalRowsValue: 10, totalRowsText: '10' };
 
         expect(merged.placeholderRow?.(context)).toBe('Fetching 5 of 10');
+      });
+    });
+  });
+});
+
+describe('FEATURE: locale id lookup', () => {
+  const locales = { en: {}, da: {}, 'da-DK': {}, 'zh-Hant': {} };
+
+  describe('GIVEN: a registry holding both a base language and a region-tagged id', () => {
+    describe('WHEN: matching an id that is registered exactly', () => {
+      it('THEN: the exact entry wins over the base language', () => {
+        expect(matchNatTableLocaleId(locales, 'da-DK')).toBe('da-DK');
+      });
+    });
+
+    describe('WHEN: matching an unregistered region of a registered language', () => {
+      it('THEN: it truncates to the base language', () => {
+        expect(matchNatTableLocaleId(locales, 'da-GL')).toBe('da');
+      });
+
+      it('THEN: it keeps a registered script subtag before truncating further', () => {
+        expect(matchNatTableLocaleId(locales, 'zh-Hant-TW')).toBe('zh-Hant');
+      });
+
+      it('THEN: it skips a singleton subtag that can never match a language', () => {
+        expect(matchNatTableLocaleId(locales, 'da-DK-u-co-phonebk')).toBe('da-DK');
+      });
+    });
+
+    describe('WHEN: matching an unregistered language', () => {
+      it('THEN: it reports no match rather than a near one', () => {
+        expect(matchNatTableLocaleId(locales, 'sv-SE')).toBeNull();
+      });
+
+      it('THEN: an empty registry matches nothing', () => {
+        expect(matchNatTableLocaleId(undefined, 'da')).toBeNull();
       });
     });
   });

@@ -1,3 +1,4 @@
+import { matchNatTableLocaleId } from './locale-lookup.util';
 import { DEFAULT_NUMBER_FORMATTER } from '../common/locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from '../common/locale-id.const';
 import { NAT_EN_RENDER_METRICS_LOCALE_LABELS } from '../common/render-metrics.const';
@@ -173,7 +174,8 @@ export const formatNatTableRenderMetricsNumber = (
 /** Resolves a render-metrics locale dictionary, falling back to built-in English defaults. */
 export const resolveNatTableRenderMetricsIntl = (intl: NatTableRenderMetricsIntlConfig, locale: string): NatTableRenderMetricsIntl => {
   const englishIntl = intl.locales?.[NAT_EN_LOCALE_ID] ?? NAT_EN_RENDER_METRICS_LOCALE_LABELS;
-  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
+  const matchedId = matchNatTableLocaleId(intl.locales, locale);
+  const selectedIntl = (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
 
   return selectedIntl ? mergeNatTableRenderMetricsIntl(englishIntl, selectedIntl) : mergeNatTableRenderMetricsIntl(englishIntl, {});
 };

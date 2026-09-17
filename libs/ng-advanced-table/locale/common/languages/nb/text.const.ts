@@ -1,4 +1,4 @@
-import type { RowRenderFilterOption, RowRenderTone } from './render-metrics.type';
+import type { RowRenderFilterOption, RowRenderTone } from '../../render-metrics.type';
 
 /* Shared Norwegian Bokmål (`nb`) wording helpers for the built-in Norwegian Bokmål locale dictionaries. */
 

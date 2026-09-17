@@ -1,6 +1,6 @@
-import type { NatTableControlsIntl } from './controls.type';
-import { pinSideText, rows, side, sortOrder } from './locale-fi-text.const';
-import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
+import { pinSideText, rows, side, sortOrder } from './text.const';
+import type { NatTableControlsIntl } from '../../controls.type';
+import { DEFAULT_NUMBER_FORMATTER } from '../../locale-formatter.const';
 
 /** Built-in Finnish companion-control labels shipped with `ng-advanced-table/locale`. */
 export const NAT_FI_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {

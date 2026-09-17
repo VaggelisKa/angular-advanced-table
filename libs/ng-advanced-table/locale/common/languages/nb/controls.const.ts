@@ -1,6 +1,6 @@
-import type { NatTableControlsIntl } from './controls.type';
-import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
-import { pinSideText, rows, side, sortDirection } from './locale-nb-text.const';
+import { pinSideText, rows, side, sortDirection } from './text.const';
+import type { NatTableControlsIntl } from '../../controls.type';
+import { DEFAULT_NUMBER_FORMATTER } from '../../locale-formatter.const';
 
 /** Built-in Norwegian Bokmål companion-control labels shipped with `ng-advanced-table/locale`. */
 export const NAT_NB_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {

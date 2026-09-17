@@ -1,5 +1,5 @@
-import type { NatTableAccessibilityText } from './accessibility.type';
-import { visibilityVerb, visibleFields } from './locale-sv-text.const';
+import { visibilityVerb, visibleFields } from './text.const';
+import type { NatTableAccessibilityText } from '../../accessibility.type';
 
 /**
  * Built-in Swedish accessibility copy specific to the list renderer.
