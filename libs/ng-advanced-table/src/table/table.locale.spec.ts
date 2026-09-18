@@ -26,8 +26,6 @@ class LocaleHost {
   public readonly locale = signal<string | undefined>(undefined);
 }
 
-// The warning dedups per id for the lifetime of the module, which outlives a
-// single test, so every case below claims a locale id of its own.
 describe('FEATURE: NatTable locale registration', () => {
   let warnings: string[];
 
@@ -91,6 +89,21 @@ describe('FEATURE: NatTable locale registration', () => {
         second.detectChanges();
 
         expect(localeWarnings().filter((warning) => warning.includes('"nb"'))).toHaveLength(1);
+      });
+    });
+  });
+
+  describe('GIVEN: an id a previous application already warned for', () => {
+    describe('WHEN: a second application requests it', () => {
+      it('THEN: it warns again, because the dedup is application-scoped', async () => {
+        await renderWithLocale('da');
+
+        // A fresh root injector stands in for a second application sharing this bundle.
+        TestBed.resetTestingModule();
+
+        await renderWithLocale('da');
+
+        expect(localeWarnings().filter((warning) => warning.includes('"da"'))).toHaveLength(2);
       });
     });
   });

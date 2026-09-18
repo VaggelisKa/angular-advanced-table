@@ -37,6 +37,7 @@ import {
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
+import { NatTableLocaleWarningState } from './table-locale-warning.service';
 import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
 import { NatTableService } from './table.service';
 import { isNatTableDelegatedCellControl } from '../cell-interaction/utils/cell-interaction.util';
@@ -102,9 +103,6 @@ import {
 
 let nextTableId = 0;
 
-/* Dev-mode locale warnings are deduped per application, not per table instance. */
-const warnedLocaleIds = new Set<string>();
-
 /**
  * Per-table state store that owns TanStack table creation, all internal state
  * signals, column width resolution, resize/reorder state logic, and derived
@@ -117,6 +115,7 @@ const warnedLocaleIds = new Set<string>();
 @Injectable()
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  private readonly localeWarnings = inject(NatTableLocaleWarningState);
   private readonly directionality = inject(Directionality, { optional: true });
   // `self` keeps a nested renderer from inheriting the outer table's window;
   // `optional` covers renderers that provide no registry (NatList).
@@ -1260,15 +1259,13 @@ export class NatTableState<TData extends RowData = RowData> {
 
       const localeId = this.localeId();
 
-      if (
-        localeId === NAT_EN_LOCALE_ID ||
-        matchNatTableLocaleId(this.tableIntlConfig.locales, localeId) !== null ||
-        warnedLocaleIds.has(localeId)
-      ) {
+      if (localeId === NAT_EN_LOCALE_ID || matchNatTableLocaleId(this.tableIntlConfig.locales, localeId) !== null) {
         return;
       }
 
-      warnedLocaleIds.add(localeId);
+      if (!this.localeWarnings.claim(localeId)) {
+        return;
+      }
 
       console.warn(
         `[ng-advanced-table] locale "${localeId}" has no dictionary registered with provideNatTableLocales(), so table ` +
