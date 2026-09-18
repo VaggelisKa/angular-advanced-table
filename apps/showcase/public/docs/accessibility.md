@@ -133,7 +133,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-See [Localization](#localization) for the full list of shipped dictionaries.
+See [Built-in Locales](/docs/localization#built-in-locales) for the full list of shipped dictionaries.
 
 When locale changes at runtime, pass the active locale to the surface and rebuild translated column definitions from the same translation source.
 
