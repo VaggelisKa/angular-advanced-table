@@ -142,6 +142,40 @@ describe('FEATURE: accessibility intl merge', () => {
     });
   });
 
+  describe('GIVEN: the built-in search filtering copy', () => {
+    describe('WHEN: exactly one row matches the query', () => {
+      it('THEN: it agrees the verb with the singular row count', () => {
+        const resolved = resolveNatTableIntl({ locales: NAT_TABLE_BUILT_IN_LOCALES }, 'en');
+        const context = {
+          query: 'alpha',
+          filterState: 'global',
+          visibleRowsValue: 1,
+          visibleRowsText: '1',
+          totalRowsValue: 20,
+          totalRowsText: '20'
+        } as const;
+
+        expect(resolved.accessibilityText?.filteringChange?.(context)).toBe('1 row matches "alpha".');
+      });
+    });
+
+    describe('WHEN: several rows match the query', () => {
+      it('THEN: it keeps the plural verb', () => {
+        const resolved = resolveNatTableIntl({ locales: NAT_TABLE_BUILT_IN_LOCALES }, 'en');
+        const context = {
+          query: 'alpha',
+          filterState: 'global',
+          visibleRowsValue: 3,
+          visibleRowsText: '3',
+          totalRowsValue: 20,
+          totalRowsText: '20'
+        } as const;
+
+        expect(resolved.accessibilityText?.filteringChange?.(context)).toBe('3 rows match "alpha".');
+      });
+    });
+  });
+
   describe('GIVEN: the built-in placeholder row copy for remote windowing', () => {
     describe('WHEN: formatting an unfetched row slot', () => {
       it('THEN: it conveys only the loading state, leaving the position to aria-rowindex', () => {

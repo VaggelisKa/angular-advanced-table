@@ -45,8 +45,9 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
     listPageSizeChange,
     listPageChange,
     keyboardInstructions:
-      'Use arrow keys to move between cells. Press Enter to use the controls in a cell, ' +
-      'Tab and Shift+Tab to move between them, and Escape to return to the cell.',
+      'Use arrow keys to move between cells. A cell whose only content is a button or link focuses it directly. ' +
+      'Elsewhere, press Enter to use the controls in a cell, Tab and Shift+Tab to move between them, ' +
+      'and Escape to return to the cell.',
     emptyState: 'No rows match the current view.',
     loadingState: 'Loading rows.',
     errorState: 'Rows could not be loaded.',
@@ -107,7 +108,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       }
 
       if (query) {
-        return `${visibleRowsText} ${pluralize('row', visibleRowsValue)} match "${query}".`;
+        return `${visibleRowsText} ${pluralize('row', visibleRowsValue)} ${visibleRowsValue === 1 ? 'matches' : 'match'} "${query}".`;
       }
 
       if (filterState === 'column') {
