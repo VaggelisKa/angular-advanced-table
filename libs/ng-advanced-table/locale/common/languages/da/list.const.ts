@@ -10,8 +10,7 @@ import type { NatTableAccessibilityText } from '../../accessibility.type';
  * they are never spread into the dictionary.
  */
 export const listKeyboardInstructions: NatTableAccessibilityText['listKeyboardInstructions'] =
-  'Brug Pil op og Pil ned til at flytte mellem elementer. Tryk på Enter for at bruge kontrollerne i et element, ' +
-  'Tab for at flytte fremad mellem dem, Skift+Tab for at flytte tilbage og Esc for at vende tilbage til elementet.';
+  'Brug Pil op og Pil ned til at flytte mellem elementer. Tryk på Enter for at bruge kontrollerne i et element, Tab og Skift+Tab for at flytte mellem dem og Esc for at vende tilbage til elementet.';
 
 export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   pageCountText,
@@ -28,11 +27,11 @@ export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   let summary: string;
 
   if (visibleRowsValue === 0) {
-    summary = `Der vises ingen elementer lige nu. ${fields}.`;
+    summary = `Ingen elementer vises. ${fields}.`;
   } else if (totalRowsValue !== visibleRowsValue) {
-    summary = `Viser ${visibleRowsText} af ${totalRowsText} ${items(totalRowsValue)} fordelt på ${fields}.`;
+    summary = `Viser ${visibleRowsText} af ${totalRowsText} ${items(totalRowsValue)}, ${fields}.`;
   } else {
-    summary = `Viser ${visibleRowsText} ${items(visibleRowsValue)} fordelt på ${fields}.`;
+    summary = `Viser ${visibleRowsText} ${items(visibleRowsValue)}, ${fields}.`;
   }
 
   if (paginationState === 'enabled') {
@@ -63,7 +62,7 @@ export const listPageSizeChange: NatTableAccessibilityText['listPageSizeChange']
   pageSizeValue,
   pageSizeText,
   pageText
-}) => `Viser ${pageSizeText} ${items(pageSizeValue)} pr. side. Side ${pageText} af ${pageCountText}.`;
+}) => `${pageSizeText} ${items(pageSizeValue)} pr. side. Side ${pageText} af ${pageCountText}.`;
 
 export const listPageChange: NatTableAccessibilityText['listPageChange'] = ({
   pageCountText,

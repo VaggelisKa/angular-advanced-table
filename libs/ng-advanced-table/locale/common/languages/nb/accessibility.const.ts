@@ -29,18 +29,14 @@ export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Bruk piltastene for å flytte mellom celler. Hvis en celle bare inneholder én knapp eller én lenke, får knappen eller lenken fokus ' +
-      'direkte. I celler med flere kontroller trykker du Enter for å bruke dem, Tab for å flytte fremover mellom ' +
-      'dem, Skift+Tab for å flytte bakover og Esc for å gå tilbake til cellen.',
+      'Bruk piltastene for å flytte mellom celler. Hvis en celle bare inneholder en knapp eller en lenke, får knappen eller lenken fokus direkte. Ellers bruker du Enter for å betjene kontrollene, Tab og Skift+Tab for å flytte mellom dem og Esc for å gå tilbake til cellen.',
     emptyState: 'Ingen rader samsvarer med gjeldende visning.',
     loadingState: 'Laster rader.',
     errorState: 'Radene kunne ikke lastes.',
     reorderKeyboardInstructions:
-      'Trykk Ctrl+Skift+Venstrepil eller Ctrl+Skift+Høyrepil for å endre rekkefølgen på kolonner innenfor området ' +
-      'de er festet i. På macOS trykker du Kommando+Skift+Venstrepil eller Kommando+Skift+Høyrepil.',
+      'Trykk Ctrl+Skift sammen med Venstrepil eller Høyrepil for å flytte en kolonne innenfor området den er festet i. Bruk Kommando på macOS.',
     resizeKeyboardInstructions:
-      'Når fokus er på en kolonneoverskrift der bredden kan endres, trykker du Alt sammen med Venstrepil eller Høyrepil for å ' +
-      'endre kolonnens bredde, og Alt sammen med Home eller End for å hoppe til minste eller største bredde.',
+      'Trykk Alt sammen med Venstrepil eller Høyrepil for å endre kolonnens bredde, eller Alt sammen med Home eller End for minste eller største bredde.',
     tableSummary: ({
       pageCountText,
       pageText,
@@ -56,11 +52,11 @@ export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
       let summary: string;
 
       if (visibleRowsValue === 0) {
-        summary = `Ingen rader vises nå. ${columns}.`;
+        summary = `Ingen rader vises. ${columns}.`;
       } else if (totalRowsValue !== visibleRowsValue) {
-        summary = `Viser ${visibleRowsText} av ${totalRowsText} ${rows(totalRowsValue)} fordelt på ${columns}.`;
+        summary = `Viser ${visibleRowsText} av ${totalRowsText} ${rows(totalRowsValue)}, ${columns}.`;
       } else {
-        summary = `Viser ${visibleRowsText} ${rows(visibleRowsValue)} fordelt på ${columns}.`;
+        summary = `Viser ${visibleRowsText} ${rows(visibleRowsValue)}, ${columns}.`;
       }
 
       if (paginationState === 'enabled') {
@@ -86,14 +82,14 @@ export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
       }
 
       if (query) {
-        return `Viser ${visibleRowsText} samsvarende ${rows(visibleRowsValue)} for "${query}".`;
+        return `${visibleRowsText} ${rows(visibleRowsValue)} samsvarer med "${query}".`;
       }
 
       if (filterState === 'column') {
-        return `Viser ${visibleRowsText} ${filteredRows(visibleRowsValue)}.`;
+        return `${visibleRowsText} ${filteredRows(visibleRowsValue)}.`;
       }
 
-      return `Viser alle ${visibleRowsText} ${rows(visibleRowsValue)}.`;
+      return `Alle rader: ${visibleRowsText}.`;
     },
     columnVisibilityChange: ({ changedColumns, visibleColumnsValue, visibleColumnsText }) => {
       const summary = `${visibleColumnsText} ${visibleColumns(visibleColumnsValue)}.`;
@@ -107,11 +103,11 @@ export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
       return summary;
     },
     pageSizeChange: ({ pageCountText, pageSizeValue, pageSizeText, pageText }) =>
-      `Viser ${pageSizeText} ${rows(pageSizeValue)} per side. Side ${pageText} av ${pageCountText}.`,
+      `${pageSizeText} ${rows(pageSizeValue)} per side. Side ${pageText} av ${pageCountText}.`,
     pageChange: ({ pageCountText, pageText, visibleRowsValue, visibleRowsText }) =>
       `Side ${pageText} av ${pageCountText}. ${visibleRowsText} ${rows(visibleRowsValue)} vises.`,
     columnReorder: ({ label, positionText, totalText, zone }) =>
-      `Kolonnen ${label} er flyttet til posisjon ${positionText} av ${totalText} ${columnZone(zone)}.`,
+      `Kolonnen ${label} flyttet til posisjon ${positionText} av ${totalText}, ${columnZone(zone)}.`,
     columnResize: ({ label, widthText, atMinimum, atMaximum }) =>
       `Kolonnen ${label} har bredden ${widthText} piksler${resizeBoundSuffix(atMinimum, atMaximum)}.`,
     selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {

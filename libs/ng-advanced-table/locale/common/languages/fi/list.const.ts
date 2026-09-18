@@ -10,9 +10,7 @@ import type { NatTableAccessibilityText } from '../../accessibility.type';
  * they are never spread into the dictionary.
  */
 export const listKeyboardInstructions: NatTableAccessibilityText['listKeyboardInstructions'] =
-  'Siirry kohteiden välillä Nuoli ylös - ja Nuoli alas -näppäimillä. Käytä kohteen ohjaimia painamalla Enter, ' +
-  'siirry eteenpäin sarkaimella, taaksepäin näppäinyhdistelmällä Vaihto+Sarkain ja palaa kohteeseen ' +
-  'painamalla Esc.';
+  'Siirry kohteiden välillä Nuoli ylös - ja Nuoli alas -näppäimillä. Käytä kohteen ohjaimia painamalla Enter, siirry niiden välillä sarkaimella ja näppäinyhdistelmällä Vaihto+Sarkain ja palaa kohteeseen painamalla Esc.';
 
 export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   pageCountText,
@@ -29,9 +27,9 @@ export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   let summary: string;
 
   if (visibleRowsValue === 0) {
-    summary = `Yhtään kohdetta ei näytetä juuri nyt. ${visible}.`;
+    summary = `Ei kohteita näkyvissä. ${visible}.`;
   } else if (totalRowsValue !== visibleRowsValue) {
-    summary = `Näytetään ${visibleRowsText} ${items(visibleRowsValue)} ${totalRowsText} kohteesta. ${visible}.`;
+    summary = `Näytetään ${visibleRowsText} / ${totalRowsText} ${items(totalRowsValue)}. ${visible}.`;
   } else {
     summary = `Näytetään ${visibleRowsText} ${items(visibleRowsValue)}. ${visible}.`;
   }
@@ -64,7 +62,7 @@ export const listPageSizeChange: NatTableAccessibilityText['listPageSizeChange']
   pageSizeValue,
   pageSizeText,
   pageText
-}) => `Näytetään ${pageSizeText} ${items(pageSizeValue)} sivua kohden. Sivu ${pageText} / ${pageCountText}.`;
+}) => `${pageSizeText} ${items(pageSizeValue)} sivua kohden. Sivu ${pageText} / ${pageCountText}.`;
 
 export const listPageChange: NatTableAccessibilityText['listPageChange'] = ({
   pageCountText,

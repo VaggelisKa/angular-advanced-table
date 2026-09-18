@@ -1,4 +1,4 @@
-import { pinSideText, rows, side, sortOrder } from './text.const';
+import { pinSideText, rows, side, sortAdverb } from './text.const';
 import type { NatTableControlsIntl } from '../../controls.type';
 import { DEFAULT_NUMBER_FORMATTER } from '../../locale-formatter.const';
 
@@ -14,12 +14,8 @@ export const NAT_FI_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     accessibilityLabels: {
       visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
         `${visibleColumnCountText} / ${totalColumnCountText} näkyvissä`,
-      toggleColumnAriaLabel: ({ columnLabel, toggleAction, visibilityState }) => {
-        const state = visibilityState === 'visible' ? 'näkyvissä' : 'piilotettu';
-        const action = toggleAction === 'hide' ? 'Piilota' : 'Näytä';
-
-        return `${columnLabel} ${state}. ${action} sarake`;
-      },
+      toggleColumnAriaLabel: ({ columnLabel, visibilityState }) =>
+        `${columnLabel}, ${visibilityState === 'visible' ? 'näkyvissä' : 'piilotettu'}`,
       columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Näkyvissä' : 'Piilotettu')
     }
   },
@@ -27,7 +23,7 @@ export const NAT_FI_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     groupAriaLabel: 'Rivejä sivulla',
     accessibilityLabels: {
       pageSizeOptionText: ({ pageSizeValue, pageSizeText }) => `${pageSizeText} ${rows(pageSizeValue)}`,
-      pageSizeOptionAriaLabel: ({ pageSizeValue, pageSizeText }) => `${pageSizeText} ${rows(pageSizeValue)} sivua kohden`
+      pageSizeOptionAriaLabel: ({ pageSizeValue, pageSizeText }) => `${pageSizeText} ${rows(pageSizeValue)}`
     }
   },
   pager: {
@@ -39,11 +35,11 @@ export const NAT_FI_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     }
   },
   scrollControl: {
-    groupAriaLabel: 'Taulukon vaakavieritys',
+    groupAriaLabel: 'Vaakavieritys',
     accessibilityLabels: {
-      scrollLeftAriaLabel: 'Vieritä taulukkoa vasemmalle',
-      scrollRightAriaLabel: 'Vieritä taulukkoa oikealle',
-      scrollPositionAriaLabel: 'Vaakavierityksen sijainti',
+      scrollLeftAriaLabel: 'Vieritä vasemmalle',
+      scrollRightAriaLabel: 'Vieritä oikealle',
+      scrollPositionAriaLabel: 'Vierityksen sijainti',
       scrollPositionText: ({ percentageText }) => `Vieritetty ${percentageText} %`
     }
   },
@@ -54,25 +50,25 @@ export const NAT_FI_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
           return `Lajittele sarakkeen ${label} mukaan`;
         }
 
-        const sortDescription = `${label} on lajiteltu ${sortOrder(sortState)} järjestykseen`;
+        const sortDescription = `Lajittele sarakkeen ${label} mukaan, lajiteltu ${sortAdverb(sortState)}`;
 
         return sortPriority !== null && sortCount > 1
-          ? `${sortDescription}, lajittelujärjestys ${sortPriority} / ${sortCount}. Muuta lajittelua`
-          : `${sortDescription}. Muuta lajittelua`;
+          ? `${sortDescription}, lajittelu ${sortPriority} / ${sortCount}`
+          : sortDescription;
       },
-      menuButton: ({ label }) => `Avaa sarakkeen ${label} toiminnot`,
+      menuButton: ({ label }) => `Sarakkeen ${label} toiminnot`,
       menuLabel: ({ label }) => `Sarakkeen ${label} toiminnot`,
-      pinButton: ({ label, toggleAction, pinSide }) => {
+      pinButton: ({ toggleAction, pinSide }) => {
         const action = toggleAction === 'unpin' ? 'Irrota' : 'Kiinnitä';
 
-        return `${action} sarake ${label} ${pinSideText(pinSide, toggleAction)}`;
+        return `${action} ${pinSideText(pinSide, toggleAction)}`;
       },
       pinButtonText: ({ pinSide, toggleAction }) => {
         const action = toggleAction === 'unpin' ? 'Irrota' : 'Kiinnitä';
 
         return `${action} ${pinSideText(pinSide, toggleAction)}`;
       },
-      moveButton: ({ label, direction }) => `Siirrä saraketta ${label} ${side(direction)}`,
+      moveButton: ({ direction }) => `Siirrä ${side(direction)}`,
       moveButtonText: ({ direction }) => `Siirrä ${side(direction)}`
     }
   },
