@@ -56,7 +56,7 @@ describe('FEATURE: NatTable UI - Header Actions Reorder', () => {
 
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
         expect(host.tableState().columnOrder).toStrictEqual(['name', 'status', 'region', 'throughput']);
-        expect(liveRegion.textContent.trim()).toBe('Moved Region column to position 3 of 4 in the unpinned region.');
+        expect(liveRegion.textContent.trim()).toBe('Region column moved to position 3 of 4, unpinned.');
       });
     });
 

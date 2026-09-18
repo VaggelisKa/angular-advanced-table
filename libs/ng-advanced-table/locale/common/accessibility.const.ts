@@ -45,17 +45,15 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
     listPageSizeChange,
     listPageChange,
     keyboardInstructions:
-      'Use arrow keys to move between cells. A cell whose only content is a single button or link ' +
-      'focuses it directly. In cells with several controls, press Enter to interact with them, ' +
-      'Tab to move forward between them, Shift+Tab to move backward, and Escape to return to the cell.',
+      'Use arrow keys to move between cells. Press Enter to use the controls in a cell, ' +
+      'Tab and Shift+Tab to move between them, and Escape to return to the cell.',
     emptyState: 'No rows match the current view.',
     loadingState: 'Loading rows.',
     errorState: 'Rows could not be loaded.',
     reorderKeyboardInstructions:
-      'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.',
+      'Press Control+Shift with Left or Right Arrow to reorder a column within its pinned region. Use Command on macOS.',
     resizeKeyboardInstructions:
-      'On a resizable column header, press Alt with Left or Right Arrow to resize the column, ' +
-      'and Alt with Home or End to jump to its minimum or maximum width.',
+      'Press Alt with Left or Right Arrow to resize a column, or Alt with Home or End for its minimum or maximum width.',
     tableSummary: ({
       pageCountText,
       pageText,
@@ -73,17 +71,17 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       // represented total — filtered views, paginated pages, and remote
       // windows alike — so the summary can never contradict aria-rowcount.
       if (visibleRowsValue === 0) {
-        summary = `No rows are currently shown. ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+        summary = `No rows shown. ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
       } else if (totalRowsValue !== visibleRowsValue) {
         summary = `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
           'row',
           totalRowsValue
-        )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+        )}, ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
       } else {
         summary = `Showing ${visibleRowsText} ${pluralize(
           'row',
           visibleRowsValue
-        )} across ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
+        )}, ${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
       }
 
       if (paginationState === 'enabled') {
@@ -109,14 +107,14 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       }
 
       if (query) {
-        return `Showing ${visibleRowsText} matching ${pluralize('row', visibleRowsValue)} for "${query}".`;
+        return `${visibleRowsText} ${pluralize('row', visibleRowsValue)} match "${query}".`;
       }
 
       if (filterState === 'column') {
-        return `Showing ${visibleRowsText} filtered ${pluralize('row', visibleRowsValue)}.`;
+        return `${visibleRowsText} filtered ${pluralize('row', visibleRowsValue)}.`;
       }
 
-      return `Showing all ${visibleRowsText} ${pluralize('row', visibleRowsValue)}.`;
+      return `All ${visibleRowsText} ${pluralize('row', visibleRowsValue)}.`;
     },
     columnVisibilityChange: ({ changedColumns, visibleColumnsValue, visibleColumnsText }) => {
       if (changedColumns.length === 1) {
@@ -130,11 +128,11 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       return `${visibleColumnsText} visible ${pluralize('column', visibleColumnsValue)}.`;
     },
     pageSizeChange: ({ pageCountText, pageSizeValue, pageSizeText, pageText }) =>
-      `Showing ${pageSizeText} ${pluralize('row', pageSizeValue)} per page. Page ${pageText} of ${pageCountText}.`,
+      `${pageSizeText} ${pluralize('row', pageSizeValue)} per page. Page ${pageText} of ${pageCountText}.`,
     pageChange: ({ pageCountText, pageText, visibleRowsValue, visibleRowsText }) =>
       `Page ${pageText} of ${pageCountText}. ${visibleRowsText} ${pluralize('row', visibleRowsValue)} shown.`,
     columnReorder: ({ label, positionText, totalText, zone }) =>
-      `Moved ${label} column to position ${positionText} of ${totalText} in the ${describeColumnZone(zone)} region.`,
+      `${label} column moved to position ${positionText} of ${totalText}, ${describeColumnZone(zone)}.`,
     columnResize: ({ label, widthText, atMinimum, atMaximum }) =>
       `${label} column width ${widthText} pixels${resizeBoundSuffix(atMinimum, atMaximum)}.`,
     selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {

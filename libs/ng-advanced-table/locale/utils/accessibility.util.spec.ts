@@ -113,8 +113,8 @@ describe('FEATURE: accessibility intl merge', () => {
           paginationState: 'disabled'
         } as const;
 
-        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 200 of 2,000,000 rows across 5 visible columns.');
-        expect(resolved.accessibilityText?.listSummary?.(context)).toBe('Showing 200 of 2,000,000 items across 5 visible fields.');
+        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 200 of 2,000,000 rows, 5 visible columns.');
+        expect(resolved.accessibilityText?.listSummary?.(context)).toBe('Showing 200 of 2,000,000 items, 5 visible fields.');
       });
     });
 
@@ -137,7 +137,7 @@ describe('FEATURE: accessibility intl merge', () => {
           paginationState: 'disabled'
         } as const;
 
-        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 6 rows across 4 visible columns.');
+        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 6 rows, 4 visible columns.');
       });
     });
   });

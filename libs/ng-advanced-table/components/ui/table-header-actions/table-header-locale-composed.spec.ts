@@ -33,12 +33,12 @@ describe('FEATURE: NatTable UI', () => {
 
         // then: default English labels are rendered
         expect(emptyState.textContent.trim()).toBe('No rows match the current view.');
-        expect(tableSummary.textContent.trim()).toBe('No rows are currently shown. 4 visible columns. Page 1 of 1.');
+        expect(tableSummary.textContent.trim()).toBe('No rows shown. 4 visible columns. Page 1 of 1.');
         expect(pageSizeGroup.getAttribute('aria-label')).toBe('Rows per page');
         let firstLocaleOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
 
         expect(firstLocaleOption.textContent.trim()).toBe('2 rows');
-        expect(firstLocaleOption.getAttribute('aria-label')).toBe('2 rows per page');
+        expect(firstLocaleOption.getAttribute('aria-label')).toBe('2 rows');
         expect(pager.getAttribute('aria-label')).toBe('Table pagination');
         expect(pagerLabel.textContent.trim()).toBe('Page 1 of 1');
         expect(nextButton.getAttribute('aria-label')).toBe('Next page');

@@ -188,7 +188,7 @@ describe('FEATURE: NatTable', () => {
         const rowHeaderCell = queryRequired<HTMLTableCellElement>(fixture, 'tbody tr:first-child th[scope="row"]');
 
         expect(describedBy).toContain('nat-table-');
-        expect(summary.textContent).toContain('Showing 6 rows across 4 visible columns.');
+        expect(summary.textContent).toContain('Showing 6 rows, 4 visible columns.');
         expect(rowHeaderCell.getAttribute('role')).toBe('rowheader');
         expect(rowHeaderCell.getAttribute('data-column-id')).toBe('name');
       });
@@ -783,7 +783,7 @@ describe('FEATURE: NatTable', () => {
         expect(summary.textContent.trim()).toBe('Provider summary n0/n0');
         expect(emptyState.textContent.trim()).toBe('Provider empty state');
         expect(instructions.textContent.trim()).toBe(
-          'Provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
+          'Provider keyboard instructions. Press Control+Shift with Left or Right Arrow to reorder a column within its pinned region. Use Command on macOS.'
         );
 
         // when: existing controller state and a live-region message are established before the translation changes
@@ -830,7 +830,7 @@ describe('FEATURE: NatTable', () => {
         expect(summary.textContent.trim()).toBe('Reactive provider summary r0/r0');
         expect(emptyState.textContent.trim()).toBe('Reactive provider empty state');
         expect(instructions.textContent.trim()).toBe(
-          'Reactive provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
+          'Reactive provider keyboard instructions. Press Control+Shift with Left or Right Arrow to reorder a column within its pinned region. Use Command on macOS.'
         );
 
         // when: the next user interaction requests a column move
@@ -866,7 +866,7 @@ describe('FEATURE: NatTable', () => {
         expect(summary.textContent.trim()).toBe('Input summary r0');
         expect(emptyState.textContent.trim()).toBe('Input empty state');
         expect(instructions.textContent.trim()).toBe(
-          'Reactive provider keyboard instructions. Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
+          'Reactive provider keyboard instructions. Press Control+Shift with Left or Right Arrow to reorder a column within its pinned region. Use Command on macOS.'
         );
 
         // when: table-owned loading and error rows render after the provider update
@@ -979,7 +979,7 @@ describe('FEATURE: NatTable', () => {
         // then:
         expect(queryAll(stateFixture, 'tbody tr')).toHaveLength(1);
         expect(queryAll(stateFixture, 'tbody tr.data-row')).toHaveLength(0);
-        expect(summary.textContent.trim()).toBe('No rows are currently shown. 4 visible columns.');
+        expect(summary.textContent.trim()).toBe('No rows shown. 4 visible columns.');
         expect(errorButton.dataset['rowCounts']).toBe('0/0');
 
         // when:

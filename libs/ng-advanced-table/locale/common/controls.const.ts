@@ -2,9 +2,6 @@ import type { NatTableControlsIntl, NatTableControlsLocalesMap } from './control
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
 
-const describeSortState = (sortState: 'ascending' | 'descending'): string =>
-  sortState === 'ascending' ? 'in ascending order' : 'in descending order';
-
 /** Built-in English labels shipped with `ng-advanced-table/locale`. */
 export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
   search: {
@@ -17,8 +14,8 @@ export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     accessibilityLabels: {
       visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
         `${visibleColumnCountText} / ${totalColumnCountText} visible`,
-      toggleColumnAriaLabel: ({ columnLabel, toggleAction, visibilityState }) =>
-        `${columnLabel} ${visibilityState === 'visible' ? 'shown' : 'hidden'}. ${toggleAction === 'hide' ? 'Hide' : 'Show'} column`,
+      toggleColumnAriaLabel: ({ columnLabel, visibilityState }) =>
+        `${columnLabel}, ${visibilityState === 'visible' ? 'shown' : 'hidden'}`,
       columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Shown' : 'Hidden')
     }
   },
@@ -26,7 +23,7 @@ export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     groupAriaLabel: 'Rows per page',
     accessibilityLabels: {
       pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rows`,
-      pageSizeOptionAriaLabel: ({ pageSizeText }) => `${pageSizeText} rows per page`
+      pageSizeOptionAriaLabel: ({ pageSizeText }) => `${pageSizeText} rows`
     }
   },
   pager: {
@@ -38,11 +35,11 @@ export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     }
   },
   scrollControl: {
-    groupAriaLabel: 'Table horizontal scroll',
+    groupAriaLabel: 'Horizontal scroll',
     accessibilityLabels: {
-      scrollLeftAriaLabel: 'Scroll table left',
-      scrollRightAriaLabel: 'Scroll table right',
-      scrollPositionAriaLabel: 'Horizontal scroll position',
+      scrollLeftAriaLabel: 'Scroll left',
+      scrollRightAriaLabel: 'Scroll right',
+      scrollPositionAriaLabel: 'Scroll position',
       scrollPositionText: ({ percentageText }) => `${percentageText}% scrolled`
     }
   },
@@ -55,17 +52,20 @@ export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
           return `Sort by ${label}`;
         }
 
-        const sortDescription = `${label} sorted ${describeSortState(sortState)}`;
+        // The sort state stays in the name even though the header carries
+        // aria-sort: VoiceOver on macOS and TalkBack ignore aria-sort, so
+        // dropping it here would leave those users without the current sort.
+        const sortDescription = `Sort by ${label}, sorted ${sortState}`;
 
-        return sortPriority !== null && sortCount > 1
-          ? `${sortDescription}, sort priority ${sortPriority} of ${sortCount}. Change sorting`
-          : `${sortDescription}. Change sorting`;
+        return sortPriority !== null && sortCount > 1 ? `${sortDescription}, sort ${sortPriority} of ${sortCount}` : sortDescription;
       },
-      menuButton: ({ label }) => `Open column actions for ${label} column`,
-      menuLabel: ({ label }) => `Column actions for ${label} column`,
-      pinButton: ({ label, toggleAction, pinSide }) => `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${pinSide}: ${label} column`,
+      menuButton: ({ label }) => `${label} column actions`,
+      menuLabel: ({ label }) => `${label} column actions`,
+      // The menu is already named for its column, so the item labels drop it.
+      // They match their visible text exactly, which keeps SC 2.5.3 satisfied.
+      pinButton: ({ toggleAction, pinSide }) => `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${pinSide}`,
       pinButtonText: ({ pinSide, toggleAction }) => `${toggleAction === 'unpin' ? 'Unpin' : 'Pin'} ${pinSide}`,
-      moveButton: ({ label, direction }) => `Move ${label} column ${direction}`,
+      moveButton: ({ direction }) => `Move ${direction}`,
       moveButtonText: ({ direction }) => `Move ${direction}`
     }
   },

@@ -17,9 +17,8 @@ export const listSubHeaderRow: NatTableAccessibilityText['listSubHeaderRow'] = (
 };
 
 export const listKeyboardInstructions: NatTableAccessibilityText['listKeyboardInstructions'] =
-  'Use the Up and Down arrow keys to move between items. Press Enter to interact with the controls ' +
-  'inside an item, Tab to move forward between them, Shift+Tab to move backward, and Escape to ' +
-  'return to the item.';
+  'Use Up and Down arrows to move between items. Press Enter to use the controls in an item, ' +
+  'Tab and Shift+Tab to move between them, and Escape to return to the item.';
 
 export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   pageCountText,
@@ -38,17 +37,17 @@ export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   // represented total — filtered views, paginated pages, and remote windows
   // alike — so the summary can never contradict the grid's aria-rowcount.
   if (visibleRowsValue === 0) {
-    summary = `No items are currently shown. ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
+    summary = `No items shown. ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
   } else if (totalRowsValue !== visibleRowsValue) {
     summary = `Showing ${visibleRowsText} of ${totalRowsText} ${pluralize(
       'item',
       totalRowsValue
-    )} across ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
+    )}, ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
   } else {
     summary = `Showing ${visibleRowsText} ${pluralize(
       'item',
       visibleRowsValue
-    )} across ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
+    )}, ${visibleColumnsText} visible ${pluralize('field', visibleColumnsValue)}.`;
   }
 
   if (paginationState === 'enabled') {
@@ -79,7 +78,7 @@ export const listPageSizeChange: NatTableAccessibilityText['listPageSizeChange']
   pageSizeValue,
   pageSizeText,
   pageText
-}) => `Showing ${pageSizeText} ${pluralize('item', pageSizeValue)} per page. Page ${pageText} of ${pageCountText}.`;
+}) => `${pageSizeText} ${pluralize('item', pageSizeValue)} per page. Page ${pageText} of ${pageCountText}.`;
 
 export const listPageChange: NatTableAccessibilityText['listPageChange'] = ({
   pageCountText,
