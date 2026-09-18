@@ -1,4 +1,36 @@
-export { NAT_EN_LOCALE_ID } from './locale-id.const';
+export {
+  NAT_DA_LOCALE_ID,
+  NAT_EN_LOCALE_ID,
+  NAT_FI_LOCALE_ID,
+  NAT_NB_LOCALE_ID,
+  NAT_NO_LOCALE_ID,
+  NAT_SV_LOCALE_ID
+} from './locale-id.const';
+
+// per-locale dictionaries, split by domain like the English ones
+export { NAT_DA_CONTROLS_LOCALE_LABELS } from './languages/da/controls.const';
+
+export { NAT_DA_RENDER_METRICS_LOCALE_LABELS } from './languages/da/render-metrics.const';
+
+export { NAT_DA_LOCALE_LABELS } from './languages/da/accessibility.const';
+
+export { NAT_FI_CONTROLS_LOCALE_LABELS } from './languages/fi/controls.const';
+
+export { NAT_FI_RENDER_METRICS_LOCALE_LABELS } from './languages/fi/render-metrics.const';
+
+export { NAT_FI_LOCALE_LABELS } from './languages/fi/accessibility.const';
+
+export { NAT_NB_CONTROLS_LOCALE_LABELS } from './languages/nb/controls.const';
+
+export { NAT_NB_RENDER_METRICS_LOCALE_LABELS } from './languages/nb/render-metrics.const';
+
+export { NAT_NB_LOCALE_LABELS } from './languages/nb/accessibility.const';
+
+export { NAT_SV_CONTROLS_LOCALE_LABELS } from './languages/sv/controls.const';
+
+export { NAT_SV_RENDER_METRICS_LOCALE_LABELS } from './languages/sv/render-metrics.const';
+
+export { NAT_SV_LOCALE_LABELS } from './languages/sv/accessibility.const';
 
 // accessibility boundary (core grid)
 export { NAT_EN_LOCALE_LABELS, NAT_TABLE_BUILT_IN_LOCALES } from './accessibility.const';

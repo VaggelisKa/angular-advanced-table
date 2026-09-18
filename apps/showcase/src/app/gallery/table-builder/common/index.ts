@@ -2,7 +2,7 @@ export { DATA_STATE_PREVIEWS, DEFAULT_FLAGS, DEMO_DATA, FEATURE_CATEGORIES, FEAT
 
 export { PRESET_DESCRIPTORS, PRESETS } from './table-builder-preset.const';
 
-export { DEMO_COLUMN_INTL, DEMO_LOCALE_ID, LOCALE_PREVIEWS, NAT_DA_CONTROLS_LABELS } from './table-builder-locale.const';
+export { DEMO_COLUMN_INTL, DEMO_LOCALE_ID, DEMO_LOCALE_PROVIDERS, LOCALE_PREVIEWS } from './table-builder-locale.const';
 
 export type {
   DataStatePreview,

@@ -1,5 +1,7 @@
 import { mergeNatTableAccessibilityText, resolveNatTableIntl } from './accessibility.util';
 import { NAT_TABLE_BUILT_IN_LOCALES } from '../common/accessibility.const';
+import { NAT_NB_LOCALE_LABELS } from '../common/languages/nb/accessibility.const';
+import { NAT_NB_LOCALE_ID, NAT_NO_LOCALE_ID } from '../common/locale-id.const';
 
 describe('FEATURE: accessibility intl merge', () => {
   describe('GIVEN: a parent and an override accessibility text', () => {
@@ -37,6 +39,24 @@ describe('FEATURE: accessibility intl merge', () => {
 
       it('THEN: it falls back to built-in English copy', () => {
         expect(resolved.accessibilityText?.emptyState).toBe('No rows match the current view.');
+      });
+    });
+  });
+
+  describe('GIVEN: the Bokmål dictionary registered under both Norwegian ids', () => {
+    describe('WHEN: resolving each id', () => {
+      const locales = { [NAT_NB_LOCALE_ID]: NAT_NB_LOCALE_LABELS, [NAT_NO_LOCALE_ID]: NAT_NB_LOCALE_LABELS };
+
+      it('THEN: both resolve to the same copy', () => {
+        expect(resolveNatTableIntl({ locales }, NAT_NO_LOCALE_ID).accessibilityText?.emptyState).toBe(
+          resolveNatTableIntl({ locales }, NAT_NB_LOCALE_ID).accessibilityText?.emptyState
+        );
+      });
+
+      it('THEN: a region-tagged id resolves the base language', () => {
+        expect(resolveNatTableIntl({ locales }, 'nb-NO').accessibilityText?.emptyState).toBe(
+          resolveNatTableIntl({ locales }, NAT_NB_LOCALE_ID).accessibilityText?.emptyState
+        );
       });
     });
   });

@@ -1,4 +1,11 @@
-import { NAT_EN_LIST_ACCESSIBILITY_TEXT } from './accessibility-list.const';
+import {
+  listColumnVisibilityChange,
+  listKeyboardInstructions,
+  listPageChange,
+  listPageSizeChange,
+  listSubHeaderRow,
+  listSummary
+} from './accessibility-list.const';
 import type { NatTableIntl, NatTableLocalesMap } from './accessibility.type';
 import { DEFAULT_NUMBER_FORMATTER } from './locale-formatter.const';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
@@ -31,7 +38,12 @@ const resizeBoundSuffix = (atMinimum?: boolean, atMaximum?: boolean): string => 
 /** Built-in English labels shipped with the table locale package. */
 export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
   accessibilityText: {
-    ...NAT_EN_LIST_ACCESSIBILITY_TEXT,
+    listSubHeaderRow,
+    listKeyboardInstructions,
+    listSummary,
+    listColumnVisibilityChange,
+    listPageSizeChange,
+    listPageChange,
     keyboardInstructions:
       'Use arrow keys to move between cells. A cell whose only content is a single button or link ' +
       'focuses it directly. In cells with several controls, press Enter to interact with them, ' +
@@ -81,7 +93,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
       return summary;
     },
     sortingChange: ({ columnLabel, sortState, sortedColumns }) => {
-      if (!columnLabel) return 'Sorting cleared.';
+      if (!columnLabel || sortState === 'none') return 'Sorting cleared.';
 
       if (sortedColumns.length > 1) {
         const parts = sortedColumns.map((column) => `${column.label} ${column.sortState}`);
@@ -154,7 +166,9 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
 /**
  * Table locale registry shipped by `ng-advanced-table/locale`.
  *
- * Importing `provideNatTableLocales()` registers every locale in this object.
+ * English only. The translated dictionaries ship as individual exports that
+ * `provideNatTableLocales()` registers on request, so an app bundles just the
+ * languages it uses.
  */
 export const NAT_TABLE_BUILT_IN_LOCALES: NatTableLocalesMap = {
   [NAT_EN_LOCALE_ID]: NAT_EN_LOCALE_LABELS

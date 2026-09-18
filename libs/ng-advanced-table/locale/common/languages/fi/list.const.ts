@@ -1,0 +1,80 @@
+import { fields, items, visibilityVerb } from './text.const';
+import type { NatTableAccessibilityText } from '../../accessibility.type';
+
+/**
+ * Built-in Finnish accessibility copy specific to the list renderer.
+ *
+ * A list has no columns or rows, so these mirror the grid formatters while
+ * phrasing the same counts as items and fields. Exported entry by entry and
+ * referenced by name; the English `accessibility-list.const.ts` records why
+ * they are never spread into the dictionary.
+ */
+export const listKeyboardInstructions: NatTableAccessibilityText['listKeyboardInstructions'] =
+  'Siirry kohteiden välillä Nuoli ylös - ja Nuoli alas -näppäimillä. Käytä kohteen ohjaimia painamalla Enter, ' +
+  'siirry eteenpäin sarkaimella, taaksepäin näppäinyhdistelmällä Vaihto+Sarkain ja palaa kohteeseen ' +
+  'painamalla Esc.';
+
+export const listSummary: NatTableAccessibilityText['listSummary'] = ({
+  pageCountText,
+  pageText,
+  paginationState,
+  totalRowsValue,
+  totalRowsText,
+  visibleColumnsValue,
+  visibleColumnsText,
+  visibleRowsValue,
+  visibleRowsText
+}) => {
+  const visible = `Näkyvissä ${visibleColumnsText} ${fields(visibleColumnsValue)}`;
+  let summary: string;
+
+  if (visibleRowsValue === 0) {
+    summary = `Yhtään kohdetta ei näytetä juuri nyt. ${visible}.`;
+  } else if (totalRowsValue !== visibleRowsValue) {
+    summary = `Näytetään ${visibleRowsText} ${items(visibleRowsValue)} ${totalRowsText} kohteesta. ${visible}.`;
+  } else {
+    summary = `Näytetään ${visibleRowsText} ${items(visibleRowsValue)}. ${visible}.`;
+  }
+
+  if (paginationState === 'enabled') {
+    summary += ` Sivu ${pageText} / ${pageCountText}.`;
+  }
+
+  return summary;
+};
+
+export const listColumnVisibilityChange: NatTableAccessibilityText['listColumnVisibilityChange'] = ({
+  changedColumns,
+  visibleColumnsValue,
+  visibleColumnsText
+}) => {
+  const summary = `Näkyvissä ${visibleColumnsText} ${fields(visibleColumnsValue)}.`;
+
+  if (changedColumns.length === 1) {
+    const [column] = changedColumns;
+
+    return `Kenttä ${column.label} ${visibilityVerb(column.visibilityState)}. ${summary}`;
+  }
+
+  return summary;
+};
+
+export const listPageSizeChange: NatTableAccessibilityText['listPageSizeChange'] = ({
+  pageCountText,
+  pageSizeValue,
+  pageSizeText,
+  pageText
+}) => `Näytetään ${pageSizeText} ${items(pageSizeValue)} sivua kohden. Sivu ${pageText} / ${pageCountText}.`;
+
+export const listPageChange: NatTableAccessibilityText['listPageChange'] = ({
+  pageCountText,
+  pageText,
+  visibleRowsValue,
+  visibleRowsText
+}) => `Sivu ${pageText} / ${pageCountText}. Näytetään ${visibleRowsText} ${items(visibleRowsValue)}.`;
+
+export const listSubHeaderRow: NatTableAccessibilityText['listSubHeaderRow'] = ({ valueText, rowCountValue, rowCountText }) => {
+  const groupLabel = valueText.trim() ? `Ryhmä ${valueText}` : 'Ryhmä';
+
+  return `${groupLabel}, ${rowCountText} ${items(rowCountValue)}.`;
+};

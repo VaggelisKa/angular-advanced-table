@@ -11,6 +11,8 @@ export {
 
 export { resolveNatTableControlsIntl } from './controls.util';
 
+export { matchNatTableLocaleId } from './locale-lookup.util';
+
 export {
   formatNatTableRenderMetricsNumber,
   mergeRenderMetricsColumnIntl,

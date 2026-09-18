@@ -32,10 +32,12 @@ import {
   NAT_EN_LOCALE_ID,
   NAT_TABLE_INTL,
   formatNatTableNumber,
+  matchNatTableLocaleId,
   mergeNatTableAccessibilityText,
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
+import { NatTableLocaleWarningState } from './table-locale-warning.service';
 import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
 import { NatTableService } from './table.service';
 import { isNatTableDelegatedCellControl } from '../cell-interaction/utils/cell-interaction.util';
@@ -113,6 +115,7 @@ let nextTableId = 0;
 @Injectable()
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  private readonly localeWarnings = inject(NatTableLocaleWarningState);
   private readonly directionality = inject(Directionality, { optional: true });
   // `self` keeps a nested renderer from inheriting the outer table's window;
   // `optional` covers renderers that provide no registry (NatList).
@@ -1238,6 +1241,38 @@ export class NatTableState<TData extends RowData = RowData> {
       if (!hasColumnKey && this.subHeaderOrder() !== undefined) {
         console.warn('[ng-advanced-table] subHeaderOrder is set but subHeaderColumn is not; the order has no effect.');
       }
+    });
+  }
+
+  /**
+   * Dev-mode warning for a `[locale]` id that no provider registered. Every
+   * dictionary except English is opt-in, so an unregistered id is otherwise a
+   * silent fall back to English copy. Warns once per id per application, since
+   * every table on the page resolves the same registry. Must be called in the
+   * injection context.
+   */
+  public registerLocaleValidationEffect(): void {
+    effect(() => {
+      if (!isDevMode()) {
+        return;
+      }
+
+      const localeId = this.localeId();
+
+      if (localeId === NAT_EN_LOCALE_ID || matchNatTableLocaleId(this.tableIntlConfig.locales, localeId) !== null) {
+        return;
+      }
+
+      if (!this.localeWarnings.claim(localeId)) {
+        return;
+      }
+
+      console.warn(
+        `[ng-advanced-table] locale "${localeId}" has no dictionary registered with provideNatTableLocales(), so table ` +
+          `copy falls back to English. Register one — the built-in dictionaries are exported from ng-advanced-table/locale ` +
+          `— or register {} to keep English copy with this locale's number formatting. Companion controls and ` +
+          `render-metrics copy is registered separately and falls back to English without warning.`
+      );
     });
   }
 

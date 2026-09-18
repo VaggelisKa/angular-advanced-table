@@ -113,16 +113,27 @@ Use table-specific copy for the instance. Use locale providers for common genera
 
 ## Localization Providers
 
-Generated copy resolves from locale providers. Add only the providers for packages you use.
+Generated copy resolves from locale providers. English needs no registration; register the dictionaries for each language you use, and add only the providers for packages you use.
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
-import { provideNatTableLocales, provideNatTableControlsLocales, provideNatTableRenderMetricsLocales } from 'ng-advanced-table/locale';
+import {
+  NAT_DA_CONTROLS_LOCALE_LABELS,
+  NAT_DA_LOCALE_LABELS,
+  provideNatTableControlsLocales,
+  provideNatTableLocales
+} from 'ng-advanced-table/locale';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideNatTableLocales(), provideNatTableControlsLocales(), provideNatTableRenderMetricsLocales()]
+  providers: [
+    provideNatTableLocales({ da: NAT_DA_LOCALE_LABELS }),
+    // Only when using ng-advanced-table/components.
+    provideNatTableControlsLocales({ da: NAT_DA_CONTROLS_LOCALE_LABELS })
+  ]
 };
 ```
+
+See [Built-in Locales](/docs/localization#built-in-locales) for the full list of shipped dictionaries.
 
 When locale changes at runtime, pass the active locale to the surface and rebuild translated column definitions from the same translation source.
 

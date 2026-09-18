@@ -44,7 +44,7 @@ const buildSourceHeader = (uiImports: string[], extraImports: string, flags: Tab
   const stateImports = flags.withDataStates
     ? '\n    NatTableEmptyTemplate,\n    NatTableErrorTemplate,\n    NatTableLoadingTemplate,'
     : '';
-  const { localeImport, localeConst, providersLine } = buildLocaleSourceFragments(flags);
+  const { localeImport, providersLine } = buildLocaleSourceFragments(flags);
 
   return `${coreImport}
 import { ${coreValues} } from 'ng-advanced-table';
@@ -61,7 +61,7 @@ type DemoItem = {
   readonly value: number;
 };
 
-${localeConst}@Component({
+@Component({
   selector: 'app-custom-table',
   imports: [
     NatTable,

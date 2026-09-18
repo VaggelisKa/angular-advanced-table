@@ -6,6 +6,7 @@ import {
   mergeScrollControlLabels,
   mergeSelectionLabels
 } from './controls-labels.util';
+import { matchNatTableLocaleId } from './locale-lookup.util';
 import { NAT_EN_CONTROLS_LOCALE_LABELS } from '../common/controls.const';
 import type {
   NatTableColumnVisibilityIntl,
@@ -139,7 +140,7 @@ export const mergeNatTableControlsIntlConfig = (
 /** Resolves a companion components locale dictionary, falling back to built-in English defaults. */
 export const resolveNatTableControlsIntl = (intl: NatTableControlsIntlConfig, locale: string): NatTableControlsIntl => {
   const englishIntl = intl.locales?.[NAT_EN_LOCALE_ID] ?? NAT_EN_CONTROLS_LOCALE_LABELS;
-  const selectedIntl = intl.locales?.[locale] ?? (locale === NAT_EN_LOCALE_ID ? {} : null);
+  const matchedId = matchNatTableLocaleId(intl.locales, locale);
 
-  return selectedIntl ? mergeNatTableControlsIntl(englishIntl, selectedIntl) : mergeNatTableControlsIntl(englishIntl, {});
+  return mergeNatTableControlsIntl(englishIntl, (matchedId !== null ? intl.locales?.[matchedId] : undefined) ?? {});
 };

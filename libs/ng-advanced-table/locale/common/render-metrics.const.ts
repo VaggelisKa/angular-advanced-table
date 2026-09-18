@@ -56,7 +56,9 @@ export const NAT_EN_RENDER_METRICS_LOCALE_LABELS: NatTableRenderMetricsIntl = {
 /**
  * Render-metrics locale registry shipped by `ng-advanced-table/locale`.
  *
- * Importing `provideNatTableRenderMetricsLocales()` registers every locale in this object.
+ * English only. The translated dictionaries ship as individual exports that
+ * `provideNatTableRenderMetricsLocales()` registers on request, so an app bundles just the
+ * languages it uses.
  */
 export const NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES: NatTableRenderMetricsLocalesMap = {
   [NAT_EN_LOCALE_ID]: NAT_EN_RENDER_METRICS_LOCALE_LABELS

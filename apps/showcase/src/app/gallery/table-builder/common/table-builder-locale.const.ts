@@ -1,33 +1,25 @@
-import type { NatTableControlsIntl } from 'ng-advanced-table/locale';
+import type { Provider } from '@angular/core';
+
+import {
+  NAT_DA_CONTROLS_LOCALE_LABELS,
+  NAT_DA_LOCALE_LABELS,
+  provideNatTableControlsLocales,
+  provideNatTableLocales
+} from 'ng-advanced-table/locale';
 
 import type { LocalePreview } from './table-builder.type';
 
+/**
+ * Built-in dictionaries are opt-in, so the demo registers the two domains it
+ * uses: table announcements and companion-control labels.
+ */
+export const DEMO_LOCALE_PROVIDERS: Provider[] = [
+  provideNatTableLocales({ da: NAT_DA_LOCALE_LABELS }),
+  provideNatTableControlsLocales({ da: NAT_DA_CONTROLS_LOCALE_LABELS })
+];
+
 /** Locale id used by the builder's localization demo. */
 export const DEMO_LOCALE_ID = 'da';
-
-// Danish control-label overrides. Partial dictionary — unset keys fall back to the
-// built-in English defaults via provideNatTableControlsLocales' merge.
-export const NAT_DA_CONTROLS_LABELS: NatTableControlsIntl = {
-  search: { label: 'Søg i rækker', placeholder: 'Søg i rækker' },
-  columnVisibility: { label: 'Kolonner', groupAriaLabel: 'Kolonnesynlighed' },
-  pageSize: {
-    groupAriaLabel: 'Rækker pr. side',
-    accessibilityLabels: {
-      pageSizeOptionText: ({ pageSizeText }) => `${pageSizeText} rækker`,
-      pageSizeOptionAriaLabel: ({ pageSizeText }) => `${pageSizeText} rækker pr. side`
-    }
-  },
-  pager: {
-    groupAriaLabel: 'Tabelpaginering',
-    accessibilityLabels: {
-      previousPageAriaLabel: 'Forrige side',
-      nextPageAriaLabel: 'Næste side',
-      pageIndicator: ({ pageText, pageCountText }) => `Side ${pageText} af ${pageCountText}`
-    }
-  },
-  toolbar: { toolbarLabel: 'Tabelværktøjslinje' },
-  selection: { columnLabel: 'Markering' }
-};
 
 export const LOCALE_PREVIEWS: { value: LocalePreview; label: string }[] = [
   { value: 'en', label: 'English' },

@@ -12,17 +12,16 @@ import {
   NatTableToolbar,
   NatToolbarItem
 } from 'ng-advanced-table/components';
-import { provideNatTableControlsLocales } from 'ng-advanced-table/locale';
 
 import {
   DATA_STATE_PREVIEWS,
   DEFAULT_FLAGS,
   DEMO_DATA,
   DEMO_LOCALE_ID,
+  DEMO_LOCALE_PROVIDERS,
   FEATURE_CATEGORIES,
   FEATURE_DESCRIPTORS,
   LOCALE_PREVIEWS,
-  NAT_DA_CONTROLS_LABELS,
   PRESETS,
   PRESET_DESCRIPTORS
 } from './common';
@@ -71,7 +70,7 @@ import { TableSearch } from '../../ui/table-search/table-search';
     NatTableEmptyTemplate,
     NatTableErrorTemplate
   ],
-  providers: [provideNatTableControlsLocales({ da: NAT_DA_CONTROLS_LABELS })],
+  providers: DEMO_LOCALE_PROVIDERS,
   templateUrl: './table-builder.html',
   styleUrl: './table-builder.css'
 })

@@ -85,7 +85,9 @@ export const NAT_EN_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
 /**
  * Companion components locale registry shipped by `ng-advanced-table/locale`.
  *
- * Importing `provideNatTableControlsLocales()` registers every locale in this object.
+ * English only. The translated dictionaries ship as individual exports that
+ * `provideNatTableControlsLocales()` registers on request, so an app bundles just the
+ * languages it uses.
  */
 export const NAT_TABLE_BUILT_IN_CONTROLS_LOCALES: NatTableControlsLocalesMap = {
   [NAT_EN_LOCALE_ID]: NAT_EN_CONTROLS_LOCALE_LABELS

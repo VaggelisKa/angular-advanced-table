@@ -1,35 +1,29 @@
-import { NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES } from './render-metrics.const';
+import { NAT_EN_LOCALE_ID } from './locale-id.const';
+import { NAT_EN_RENDER_METRICS_LOCALE_LABELS, NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES } from './render-metrics.const';
 import type {
   NatTableRenderMetricsColumnIntl,
   NatTableRenderMetricsDurationContext,
-  NatTableRenderMetricsNumberFormatter,
   NatTableRenderMetricsRowCountContext,
   RowRenderTone
 } from './render-metrics.type';
+import { expectDefined, formatsNumber, isNonEmptyText, producesText } from '../test-helpers/locale-copy.helper';
+import { SHIPPED_RENDER_METRICS_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.helper';
 
-const expectDefined = <TValue>(value: TValue | undefined, label: string): TValue => {
-  if (value === undefined) {
-    throw new Error(`${label} must be defined.`);
-  }
-
-  return value;
-};
-
-const isNonEmptyText = (value: unknown): boolean => typeof value === 'string' && value.trim().length > 0;
-
-const producesText = <TContext>(formatter: ((context: TContext) => string) | undefined, context: TContext): boolean =>
-  typeof formatter === 'function' && isNonEmptyText(formatter(context));
-
-const formatsNumber = (formatter: NatTableRenderMetricsNumberFormatter | undefined, localeId: string): boolean =>
-  typeof formatter === 'function' && isNonEmptyText(formatter(1234.5, { maximumFractionDigits: 1 }, localeId));
-
-const localeIds = Object.keys(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES);
+const localeIds = Object.keys(SHIPPED_RENDER_METRICS_LOCALES);
+const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);
 const EXPECTED_FILTER_VALUES = ['all', 'fast', 'watch', 'slow'];
 const RENDER_TONES: readonly (RowRenderTone | 'idle')[] = ['idle', 'fast', 'watch', 'slow'];
 
 const sampledRowsContext: NatTableRenderMetricsRowCountContext = {
   rowCountValue: 3,
   rowCountText: '3'
+};
+
+// Nordic plurals inflect the modifier along with the noun, so a single sampled
+// row is a distinct phrase rather than the plural minus a suffix.
+const singleSampledRowContext: NatTableRenderMetricsRowCountContext = {
+  rowCountValue: 1,
+  rowCountText: '1'
 };
 
 const durationContext: NatTableRenderMetricsDurationContext = {
@@ -49,9 +43,9 @@ const durationFormatterValid = (column: NatTableRenderMetricsColumnIntl): boolea
 
 describe('FEATURE: built-in render-metrics locale completeness', () => {
   describe('GIVEN: the built-in render-metrics locale registry', () => {
-    describe('WHEN: counting the registered locales', () => {
-      it('THEN: it registers at least one built-in render-metrics locale', () => {
-        expect(localeIds.length).toBeGreaterThan(0);
+    describe('WHEN: counting the locales it registers without configuration', () => {
+      it('THEN: it registers English only, leaving translations opt-in', () => {
+        expect(Object.keys(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES)).toStrictEqual([NAT_EN_LOCALE_ID]);
       });
     });
   });
@@ -59,10 +53,7 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
   describe('GIVEN: every built-in render-metrics locale dictionary', () => {
     describe('WHEN: inspecting the render-metrics filter', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics filter copy', (localeId) => {
-        const renderMetrics = expectDefined(
-          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
-          `${localeId}: renderMetrics`
-        );
+        const renderMetrics = expectDefined(SHIPPED_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
         const filter = expectDefined(renderMetrics.filter, `${localeId}: renderMetrics.filter`);
         const options = expectDefined(filter.options, `${localeId}: renderMetrics.filter.options`);
 
@@ -70,6 +61,9 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
         expect(isNonEmptyText(filter.groupAriaLabel), `${localeId}: filter.groupAriaLabel`).toBe(true);
         expect(isNonEmptyText(filter.idleCaption), `${localeId}: filter.idleCaption`).toBe(true);
         expect(producesText(filter.rowSampleCaption, sampledRowsContext), `${localeId}: filter.rowSampleCaption`).toBe(true);
+        expect(producesText(filter.rowSampleCaption, singleSampledRowContext), `${localeId}: filter.rowSampleCaption (single)`).toBe(
+          true
+        );
         expect(options.map((option) => option.value)).toStrictEqual(EXPECTED_FILTER_VALUES);
         expect(
           options.every((option) => isNonEmptyText(option.label) && isNonEmptyText(option.description)),
@@ -80,10 +74,7 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the render-metrics panel', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics panel copy', (localeId) => {
-        const renderMetrics = expectDefined(
-          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
-          `${localeId}: renderMetrics`
-        );
+        const renderMetrics = expectDefined(SHIPPED_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
         const panel = expectDefined(renderMetrics.panel, `${localeId}: renderMetrics.panel`);
         const toneLabel = expectDefined(panel.toneLabel, `${localeId}: renderMetrics.panel.toneLabel`);
 
@@ -94,16 +85,16 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
         ).toBe(true);
         expect(isNonEmptyText(panel.idleSummary), `${localeId}: panel.idleSummary`).toBe(true);
         expect(producesText(panel.rowSampleSummary, sampledRowsContext), `${localeId}: panel.rowSampleSummary`).toBe(true);
+        expect(producesText(panel.rowSampleSummary, singleSampledRowContext), `${localeId}: panel.rowSampleSummary (single)`).toBe(
+          true
+        );
         expect(producesText(panel.duration, durationContext), `${localeId}: panel.duration`).toBe(true);
       });
     });
 
     describe('WHEN: inspecting the render-metrics column', () => {
       it.each(localeIds)('THEN: %s ships complete render-metrics column copy', (localeId) => {
-        const renderMetrics = expectDefined(
-          NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].renderMetrics,
-          `${localeId}: renderMetrics`
-        );
+        const renderMetrics = expectDefined(SHIPPED_RENDER_METRICS_LOCALES[localeId].renderMetrics, `${localeId}: renderMetrics`);
         const column = expectDefined(renderMetrics.column, `${localeId}: renderMetrics.column`);
 
         expect(isNonEmptyText(column.header), `${localeId}: column.header`).toBe(true);
@@ -115,10 +106,17 @@ describe('FEATURE: built-in render-metrics locale completeness', () => {
 
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
-        expect(
-          formatsNumber(NAT_TABLE_BUILT_IN_RENDER_METRICS_LOCALES[localeId].formatNumber, localeId),
-          `${localeId}: formatNumber`
-        ).toBe(true);
+        expect(formatsNumber(SHIPPED_RENDER_METRICS_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN: every shipped render-metrics dictionary other than English', () => {
+    describe('WHEN: comparing its key paths with the English baseline', () => {
+      it.each(translatedLocaleIds)('THEN: %s defines exactly the keys English defines', (localeId) => {
+        expect(collectKeyPaths(SHIPPED_RENDER_METRICS_LOCALES[localeId]).sort()).toStrictEqual(
+          collectKeyPaths(NAT_EN_RENDER_METRICS_LOCALE_LABELS).sort()
+        );
       });
     });
   });

@@ -9,8 +9,6 @@ import {
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { TitleStrategy, provideRouter, withInMemoryScrolling } from '@angular/router';
 
-import { provideNatTableControlsLocales, provideNatTableLocales, provideNatTableRenderMetricsLocales } from 'ng-advanced-table/locale';
-
 import { AppTitleStrategy } from '../app.title-strategy';
 import { routes } from '../routing/app.routes';
 
@@ -32,9 +30,6 @@ export const appConfig: ApplicationConfig = {
       provide: TitleStrategy,
       useClass: AppTitleStrategy
     },
-    provideNatTableLocales(),
-    provideNatTableControlsLocales(),
-    provideNatTableRenderMetricsLocales(),
     provideRouter(
       routes,
       withInMemoryScrolling({

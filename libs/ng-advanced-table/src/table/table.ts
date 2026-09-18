@@ -426,6 +426,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     this.state.registerSeedEffect();
     this.state.registerRenderCycleEffect();
     this.state.registerSubHeaderValidationEffect();
+    this.state.registerLocaleValidationEffect();
 
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);
