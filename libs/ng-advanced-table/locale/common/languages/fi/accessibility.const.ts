@@ -40,7 +40,7 @@ export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
       'Järjestä sarakkeita niiden nykyisen kiinnitysalueen sisällä painamalla Ctrl+Vaihto+Nuoli vasemmalle tai ' +
       'Ctrl+Vaihto+Nuoli oikealle. macOS:ssä paina Komento+Vaihto+Nuoli vasemmalle tai Komento+Vaihto+Nuoli oikealle.',
     resizeKeyboardInstructions:
-      'Kun sarakeotsikon kokoa voi muuttaa, muuta sarakkeen leveyttä painamalla Alt-näppäintä ja Nuoli vasemmalle- ' +
+      'Kun sarakeotsikon kokoa voi muuttaa, muuta sarakkeen leveyttä painamalla Alt-näppäintä ja Nuoli vasemmalle - ' +
       'tai Nuoli oikealle -näppäintä. Siirry pienimpään tai suurimpaan leveyteen painamalla Alt-näppäintä ja Home- ' +
       'tai End-näppäintä.',
     tableSummary: ({

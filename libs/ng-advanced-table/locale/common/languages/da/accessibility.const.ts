@@ -29,8 +29,8 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Brug piletasterne til at flytte mellem celler. En celle, hvis eneste indhold er en enkelt knap eller et link, ' +
-      'får fokus direkte. I celler med flere kontroller skal du trykke på Enter for at bruge dem, Tab for at flytte ' +
+      'Brug piletasterne til at flytte mellem celler. Hvis en celle kun indeholder en knap eller et link, ' +
+      'får knappen eller linket fokus direkte. I celler med flere kontroller skal du trykke på Enter for at bruge dem, Tab for at flytte ' +
       'fremad mellem dem, Skift+Tab for at flytte tilbage og Esc for at vende tilbage til cellen.',
     emptyState: 'Ingen rækker matcher den aktuelle visning.',
     loadingState: 'Indlæser rækker.',
@@ -40,7 +40,7 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
       'nuværende fastgjorte område. På macOS skal du trykke på Kommando+Skift+Venstre pil eller ' +
       'Kommando+Skift+Højre pil.',
     resizeKeyboardInstructions:
-      'På en kolonneoverskrift, der kan ændre størrelse, skal du trykke på Alt sammen med Venstre eller Højre pil ' +
+      'Når fokus er på en kolonneoverskrift, hvis bredde kan ændres, skal du trykke på Alt sammen med Venstre eller Højre pil ' +
       'for at ændre kolonnens bredde og Alt sammen med Home eller End for at springe til dens mindste eller ' +
       'største bredde.',
     tableSummary: ({

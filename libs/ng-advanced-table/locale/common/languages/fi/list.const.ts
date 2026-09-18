@@ -10,7 +10,7 @@ import type { NatTableAccessibilityText } from '../../accessibility.type';
  * they are never spread into the dictionary.
  */
 export const listKeyboardInstructions: NatTableAccessibilityText['listKeyboardInstructions'] =
-  'Siirry kohteiden välillä Nuoli ylös- ja Nuoli alas -näppäimillä. Käytä kohteen ohjaimia painamalla Enter, ' +
+  'Siirry kohteiden välillä Nuoli ylös - ja Nuoli alas -näppäimillä. Käytä kohteen ohjaimia painamalla Enter, ' +
   'siirry eteenpäin sarkaimella, taaksepäin näppäinyhdistelmällä Vaihto+Sarkain ja palaa kohteeseen ' +
   'painamalla Esc.';
 

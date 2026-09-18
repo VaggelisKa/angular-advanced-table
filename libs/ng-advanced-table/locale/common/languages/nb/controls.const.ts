@@ -15,10 +15,10 @@ export const NAT_NB_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
       visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
         `${visibleColumnCountText} / ${totalColumnCountText} synlige`,
       toggleColumnAriaLabel: ({ columnLabel, toggleAction, visibilityState }) => {
-        const state = visibilityState === 'visible' ? 'vist' : 'skjult';
+        const state = visibilityState === 'visible' ? 'er synlig' : 'er skjult';
         const action = toggleAction === 'hide' ? 'Skjul' : 'Vis';
 
-        return `${columnLabel} ${state}. ${action} kolonne`;
+        return `${columnLabel} ${state}. ${action} kolonnen`;
       },
       columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Vist' : 'Skjult')
     }
@@ -65,7 +65,7 @@ export const NAT_NB_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
       pinButton: ({ label, toggleAction, pinSide }) => {
         const action = toggleAction === 'unpin' ? 'Løsne' : 'Fest';
 
-        return `${action} ${pinSideText(pinSide, toggleAction)}: kolonnen ${label}`;
+        return `${action} kolonnen ${label} ${pinSideText(pinSide, toggleAction)}`;
       },
       pinButtonText: ({ pinSide, toggleAction }) => {
         const action = toggleAction === 'unpin' ? 'Løsne' : 'Fest';

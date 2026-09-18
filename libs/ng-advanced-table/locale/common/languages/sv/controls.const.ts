@@ -18,7 +18,7 @@ export const NAT_SV_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
         const state = visibilityState === 'visible' ? 'är synlig' : 'är dold';
         const action = toggleAction === 'hide' ? 'Dölj' : 'Visa';
 
-        return `${columnLabel} ${state}. ${action} kolumn`;
+        return `${columnLabel} ${state}. ${action} kolumnen`;
       },
       columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Synlig' : 'Dold')
     }
@@ -65,7 +65,7 @@ export const NAT_SV_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
       pinButton: ({ label, toggleAction, pinSide }) => {
         const action = toggleAction === 'unpin' ? 'Lossa' : 'Fäst';
 
-        return `${action} ${pinSideText(pinSide, toggleAction)}: kolumnen ${label}`;
+        return `${action} kolumnen ${label} ${pinSideText(pinSide, toggleAction)}`;
       },
       pinButtonText: ({ pinSide, toggleAction }) => {
         const action = toggleAction === 'unpin' ? 'Lossa' : 'Fäst';

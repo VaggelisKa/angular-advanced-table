@@ -268,3 +268,34 @@ describe('FEATURE: built-in companion components locale completeness', () => {
     });
   });
 });
+
+describe('FEATURE: natural Nordic control announcements', () => {
+  describe('GIVEN: the Nordic control dictionaries', () => {
+    describe('WHEN: announcing pinning and unpinning a named column', () => {
+      it.each([
+        ['da', 'Fastgør kolonnen Service til venstre', 'Frigør kolonnen Service fra højre'],
+        ['sv', 'Fäst kolumnen Service till vänster', 'Lossa kolumnen Service från höger'],
+        ['nb', 'Fest kolonnen Service til venstre', 'Løsne kolonnen Service fra høyre'],
+        ['fi', 'Kiinnitä sarake Service vasemmalle', 'Irrota sarake Service oikealta']
+      ])('THEN: it places the named column before the direction in %s', (localeId, pinned, unpinned) => {
+        const labels = SHIPPED_CONTROLS_LOCALES[localeId].headerActions?.accessibilityLabels;
+
+        expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe(pinned);
+        expect(labels?.pinButton?.(pinnedHeaderContext)).toBe(unpinned);
+      });
+    });
+
+    describe('WHEN: announcing column visibility and its available action', () => {
+      it.each([
+        ['da', 'Service er synlig. Skjul kolonnen', 'Service er skjult. Vis kolonnen'],
+        ['sv', 'Service är synlig. Dölj kolumnen', 'Service är dold. Visa kolumnen'],
+        ['nb', 'Service er synlig. Skjul kolonnen', 'Service er skjult. Vis kolonnen']
+      ])('THEN: it uses complete phrases in %s', (localeId, visible, hidden) => {
+        const labels = SHIPPED_CONTROLS_LOCALES[localeId].columnVisibility?.accessibilityLabels;
+
+        expect(labels?.toggleColumnAriaLabel?.(visibleColumnContext)).toBe(visible);
+        expect(labels?.toggleColumnAriaLabel?.(hiddenColumnContext)).toBe(hidden);
+      });
+    });
+  });
+});

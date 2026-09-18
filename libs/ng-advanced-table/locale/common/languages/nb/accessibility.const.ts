@@ -29,7 +29,7 @@ export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Bruk piltastene for å flytte mellom celler. En celle som bare inneholder én knapp eller én lenke, får fokus ' +
+      'Bruk piltastene for å flytte mellom celler. Hvis en celle bare inneholder én knapp eller én lenke, får knappen eller lenken fokus ' +
       'direkte. I celler med flere kontroller trykker du Enter for å bruke dem, Tab for å flytte fremover mellom ' +
       'dem, Skift+Tab for å flytte bakover og Esc for å gå tilbake til cellen.',
     emptyState: 'Ingen rader samsvarer med gjeldende visning.',
@@ -39,7 +39,7 @@ export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
       'Trykk Ctrl+Skift+Venstrepil eller Ctrl+Skift+Høyrepil for å endre rekkefølgen på kolonner innenfor området ' +
       'de er festet i. På macOS trykker du Kommando+Skift+Venstrepil eller Kommando+Skift+Høyrepil.',
     resizeKeyboardInstructions:
-      'På en kolonneoverskrift som kan endre størrelse, trykker du Alt sammen med Venstrepil eller Høyrepil for å ' +
+      'Når fokus er på en kolonneoverskrift der bredden kan endres, trykker du Alt sammen med Venstrepil eller Høyrepil for å ' +
       'endre kolonnens bredde, og Alt sammen med Home eller End for å hoppe til minste eller største bredde.',
     tableSummary: ({
       pageCountText,

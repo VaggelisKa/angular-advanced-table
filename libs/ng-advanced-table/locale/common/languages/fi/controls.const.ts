@@ -65,7 +65,7 @@ export const NAT_FI_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
       pinButton: ({ label, toggleAction, pinSide }) => {
         const action = toggleAction === 'unpin' ? 'Irrota' : 'Kiinnitä';
 
-        return `${action} ${pinSideText(pinSide, toggleAction)}: sarake ${label}`;
+        return `${action} sarake ${label} ${pinSideText(pinSide, toggleAction)}`;
       },
       pinButtonText: ({ pinSide, toggleAction }) => {
         const action = toggleAction === 'unpin' ? 'Irrota' : 'Kiinnitä';
