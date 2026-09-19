@@ -13,8 +13,8 @@ name: Release
 #
 # The scheduled run does exactly what the manual one does, but a preflight job
 # gates it first, because nobody is watching it: it releases only when there is
-# something pending, CI is green on the commit it would ship, AND the pending
-# work has soaked in `@next` (see the soak gate below). A manual dispatch stays
+# something pending, CI is green on the commit it would ship, AND that commit
+# has soaked in `@next` (see the soak gate below). A manual dispatch stays
 # a deliberate act — it skips both gates, and it fails loudly rather than
 # silently no-opping when nothing is pending.
 
@@ -36,15 +36,17 @@ permissions:
   contents: read
 
 env:
-  # Soak gate thresholds, in days. A scheduled release waits until the work it
-  # would ship has spent RELEASE_SOAK_DAYS in `@next` — measured from the most
-  # recent pending change, so a fresh merge restarts the wait.
+  # Soak gate thresholds, in days. A scheduled release waits until the nightly
+  # built from this exact commit has been installable from `@next` for
+  # RELEASE_SOAK_DAYS — verified against the registry, not inferred from commit
+  # timestamps. Any merge publishes a newer nightly and restarts the wait.
   #
   # On a repo with steady merges that alone would starve: something new lands
   # before the window closes, every week, forever. RELEASE_MAX_WAIT_DAYS is the
   # backstop — once the OLDEST pending plan is that old, the release goes out
-  # regardless. In practice the backstop, not the soak window, is what sets the
-  # usual cadence; lower it to release more often.
+  # regardless, and it is deliberately NOT a soak guarantee (it logs a warning
+  # when it fires unsoaked). In practice the backstop, not the soak window, is
+  # what sets the usual cadence; lower it to release more often.
   RELEASE_SOAK_DAYS: 7
   RELEASE_MAX_WAIT_DAYS: 21
 
@@ -107,51 +109,81 @@ jobs:
           echo "CI conclusion for ${GITHUB_SHA}: ${conclusion}"
           echo "conclusion=${conclusion}" >> "$GITHUB_OUTPUT"
 
-      # How long the pending work has been available to consumers. Every green
-      # commit on main is published to `@next` by nightly.yml, so "landed on
-      # main" and "installable as a prerelease" are the same moment — and the
-      # version plans stand in faithfully for the changes themselves, since
-      # anything touching library behavior, public API, docs, examples, or tests
-      # ships with one.
-      - name: Measure how long the pending work has soaked
+      # Has the tree we are about to ship actually been installable as a
+      # prerelease, and for how long?
+      #
+      # The registry answers this, not git. A green commit is NOT the same as a
+      # published one: nightly.yml skips a sha when main advances before its run
+      # starts, and its build or publish can fail on their own after CI passed.
+      # Dating the soak from commit timestamps would call that "soaked" when
+      # consumers never had a version to install.
+      #
+      # Two facts have to line up before this counts as soaked:
+      #   - the `next` dist-tag is the nightly built from THIS commit, and
+      #   - that nightly went out at least RELEASE_SOAK_DAYS ago.
+      # Satisfying the second implies nothing has landed since — any newer
+      # commit publishes a newer nightly and moves the tag.
+      - name: Check the pending work is live on `@next`, and for how long
         id: soak
         if: github.event_name == 'schedule' && steps.plans.outputs.count != '0'
         run: |
           shopt -s nullglob
           now="$(date +%s)"
-          newest=0
+
+          # The starvation backstop asks how long the work has been WAITING to
+          # ship, which is a question about this repo rather than the registry —
+          # so it stays on git, dated from when each plan first appeared.
           oldest="$now"
-
           for plan in .nx/version-plans/*.md; do
-            # Newest: the last commit to TOUCH the file, not the one that added
-            # it. Follow-up work is folded into the plan that already covers it
-            # rather than landing as a second file, so an edit means new code
-            # arrived under an old filename — dating it from the add would
-            # credit that code with soak time it never had.
-            touched="$(git log -1 --format=%ct -- "$plan")"
-            # Oldest: when the plan first appeared, which is how long the work
-            # it describes has actually been waiting to ship.
             added="$(git log --diff-filter=A -1 --format=%ct -- "$plan")"
-
             # A plan with no history cannot be dated; treat it as brand new, so
             # an unreadable file delays a release rather than rushing one out.
-            : "${touched:=$now}"
             : "${added:=$now}"
-
-            if [ "$touched" -gt "$newest" ]; then newest="$touched"; fi
             if [ "$added" -lt "$oldest" ]; then oldest="$added"; fi
           done
-
-          # No plans matched, so there is nothing to date. The step only runs
-          # when there are plans, but fail closed rather than reporting an age
-          # of "since the epoch" and waving the release through.
-          if [ "$newest" = "0" ]; then newest="$now"; fi
-
-          newest_age=$(( (now - newest) / 86400 ))
           oldest_age=$(( (now - oldest) / 86400 ))
-          echo "Newest pending change: ${newest_age}d ago. Oldest pending plan: ${oldest_age}d old."
-          echo "newest_age_days=${newest_age}" >> "$GITHUB_OUTPUT"
           echo "oldest_age_days=${oldest_age}" >> "$GITHUB_OUTPUT"
+
+          soaked=false
+          detail=""
+
+          tag="$(git describe --tags --abbrev=0 --match 'v*')"
+          tag_time="$(git log -1 --format=%ct "$tag")"
+          head_count="$(git rev-list --count "${tag}..HEAD")"
+
+          # A registry hiccup must not be able to force a release out, so every
+          # lookup failure below lands on soaked=false and leaves the backstop
+          # as the only way through.
+          published="$(npm view ng-advanced-table@next version 2>/dev/null || true)"
+          published_at="$(npm view ng-advanced-table time --json 2>/dev/null |
+            node -e 'let d = ""; process.stdin.on("data", (c) => (d += c)).on("end", () => { let t = {}; try { t = JSON.parse(d) || {}; } catch {} process.stdout.write(t[process.argv[1]] || ""); })' \
+            "$published" || true)"
+
+          if [ -z "$published" ] || [ -z "$published_at" ]; then
+            detail="the \`next\` dist-tag could not be read from the registry"
+          else
+            published_epoch="$(date -d "$published_at" +%s)"
+            next_count="${published##*-next.}"
+
+            # The counter resets at every stable tag, so a count on its own can
+            # collide with a nightly from the PREVIOUS cycle — today `next` is
+            # `2.16.0-next.6`, published before the v2.16.0 tag it predates.
+            # Requiring the publish to postdate the tag pins it to this cycle,
+            # and within one cycle the count identifies the commit.
+            if [ "$published_epoch" -le "$tag_time" ]; then
+              detail="\`@next\` is still \`${published}\` from before \`${tag}\` — no nightly has shipped this cycle"
+            elif [ "$next_count" != "$head_count" ]; then
+              detail="\`@next\` is \`${published}\` (commit ${next_count} of this cycle) but this release is commit ${head_count} — the nightly for it never published"
+            else
+              soak_age=$(( (now - published_epoch) / 86400 ))
+              detail="\`@next\` has been \`${published}\` for ${soak_age}d"
+              if [ "$soak_age" -ge "$RELEASE_SOAK_DAYS" ]; then soaked=true; fi
+            fi
+          fi
+
+          echo "Soaked: ${soaked} — ${detail}. Oldest pending plan: ${oldest_age}d old."
+          echo "soaked=${soaked}" >> "$GITHUB_OUTPUT"
+          echo "detail=${detail}" >> "$GITHUB_OUTPUT"
 
       - name: Decide
         id: decide
@@ -159,7 +191,8 @@ jobs:
           EVENT: ${{ github.event_name }}
           PLAN_COUNT: ${{ steps.plans.outputs.count }}
           CI_CONCLUSION: ${{ steps.ci.outputs.conclusion }}
-          NEWEST_AGE: ${{ steps.soak.outputs.newest_age_days }}
+          SOAKED: ${{ steps.soak.outputs.soaked }}
+          SOAK_DETAIL: ${{ steps.soak.outputs.detail }}
           OLDEST_AGE: ${{ steps.soak.outputs.oldest_age_days }}
         run: |
           skip() {
@@ -182,13 +215,19 @@ jobs:
             exit 0
           fi
 
-          # Ship once either clock says so: the newest change has soaked, or the
-          # oldest has waited long enough that more soaking is just delay.
+          # Two independent ways through, and they promise different things:
+          # the soak path proves this tree has been installable from \`@next\` for
+          # \`RELEASE_SOAK_DAYS\`; the backstop makes no such claim and exists only
+          # so a steady merge stream cannot hold the release forever.
           if [ "$EVENT" = "schedule" ] \
-            && [ "$NEWEST_AGE" -lt "$RELEASE_SOAK_DAYS" ] \
+            && [ "$SOAKED" != "true" ] \
             && [ "$OLDEST_AGE" -lt "$RELEASE_MAX_WAIT_DAYS" ]; then
-            skip "newest pending change is ${NEWEST_AGE}d old (soak window ${RELEASE_SOAK_DAYS}d) and the oldest pending plan is ${OLDEST_AGE}d old (backstop ${RELEASE_MAX_WAIT_DAYS}d) — letting it bake in \`@next\`. Dispatch this workflow manually to release now."
+            skip "not soaked (${SOAK_DETAIL}; window ${RELEASE_SOAK_DAYS}d) and the oldest pending plan is ${OLDEST_AGE}d old (backstop ${RELEASE_MAX_WAIT_DAYS}d). Dispatch this workflow manually to release now."
             exit 0
+          fi
+
+          if [ "$EVENT" = "schedule" ] && [ "$SOAKED" != "true" ]; then
+            echo "::warning::Releasing on the ${RELEASE_MAX_WAIT_DAYS}d backstop without a verified soak: ${SOAK_DETAIL}."
           fi
 
           echo "proceed=true" >> "$GITHUB_OUTPUT"
