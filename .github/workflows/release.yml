@@ -5,27 +5,48 @@ name: Release
 # `latest`.
 #
 # Two triggers, one release path:
-#   - schedule — every Friday, so pending work ships on a predictable cadence
-#     instead of waiting for someone to remember the button.
+#   - schedule — a Friday window, so pending work ships on its own instead of
+#     waiting for someone to remember the button. The window opens weekly; the
+#     soak gate below decides which of those Fridays actually cuts a release.
 #   - workflow_dispatch — the same release on demand, for anything that should
-#     not wait for Friday.
+#     not wait for the next scheduled window.
 #
 # The scheduled run does exactly what the manual one does, but a preflight job
 # gates it first, because nobody is watching it: it releases only when there is
-# something pending AND CI is green on the commit it would ship. A manual
-# dispatch stays a deliberate act — it skips the CI gate, and it fails loudly
-# rather than silently no-opping when nothing is pending.
+# something pending, CI is green on the commit it would ship, AND the pending
+# work has soaked in `@next` (see the soak gate below). A manual dispatch stays
+# a deliberate act — it skips both gates, and it fails loudly rather than
+# silently no-opping when nothing is pending.
 
 on:
   schedule:
     # Fridays at 09:00 UTC, inside the European working day so a failed release
     # is seen the same day. GitHub only runs scheduled workflows from the
     # default branch, and disables them after 60 days without repo activity.
+    #
+    # This is when a release MAY be cut, not how often one is: most Fridays the
+    # soak gate declines, which is what turns a weekly trigger into a slower
+    # real cadence. Keeping the trigger weekly also avoids encoding "every
+    # other Friday" in cron, which cannot express it — and week-number parity
+    # skips or doubles a release on 53-week years such as 2026.
     - cron: '0 9 * * 5'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  # Soak gate thresholds, in days. A scheduled release waits until the work it
+  # would ship has spent RELEASE_SOAK_DAYS in `@next` — measured from the most
+  # recent pending change, so a fresh merge restarts the wait.
+  #
+  # On a repo with steady merges that alone would starve: something new lands
+  # before the window closes, every week, forever. RELEASE_MAX_WAIT_DAYS is the
+  # backstop — once the OLDEST pending plan is that old, the release goes out
+  # regardless. In practice the backstop, not the soak window, is what sets the
+  # usual cadence; lower it to release more often.
+  RELEASE_SOAK_DAYS: 7
+  RELEASE_MAX_WAIT_DAYS: 21
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -56,6 +77,9 @@ jobs:
           # (checkout falls back to `github.sha`), but both jobs state it so the
           # preflight verdict and the released tree provably refer to one sha.
           ref: ${{ github.sha }}
+          # The soak gate dates each version plan from its commits, which a
+          # shallow clone does not carry.
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Count pending version plans
@@ -69,8 +93,8 @@ jobs:
       # A scheduled release ships whatever `main` points at, so it has to check
       # that commit is green itself. The push-event CI run for this exact sha is
       # the one that validated the tree; anything else (missing, still running,
-      # failed) means the commit is unverified and the release waits a week —
-      # or goes out by hand once CI is sorted.
+      # failed) means the commit is unverified and the release waits for the
+      # next window — or goes out by hand once CI is sorted.
       - name: Check CI on the commit this would release
         id: ci
         if: github.event_name == 'schedule' && steps.plans.outputs.count != '0'
@@ -83,12 +107,60 @@ jobs:
           echo "CI conclusion for ${GITHUB_SHA}: ${conclusion}"
           echo "conclusion=${conclusion}" >> "$GITHUB_OUTPUT"
 
+      # How long the pending work has been available to consumers. Every green
+      # commit on main is published to `@next` by nightly.yml, so "landed on
+      # main" and "installable as a prerelease" are the same moment — and the
+      # version plans stand in faithfully for the changes themselves, since
+      # anything touching library behavior, public API, docs, examples, or tests
+      # ships with one.
+      - name: Measure how long the pending work has soaked
+        id: soak
+        if: github.event_name == 'schedule' && steps.plans.outputs.count != '0'
+        run: |
+          shopt -s nullglob
+          now="$(date +%s)"
+          newest=0
+          oldest="$now"
+
+          for plan in .nx/version-plans/*.md; do
+            # Newest: the last commit to TOUCH the file, not the one that added
+            # it. Follow-up work is folded into the plan that already covers it
+            # rather than landing as a second file, so an edit means new code
+            # arrived under an old filename — dating it from the add would
+            # credit that code with soak time it never had.
+            touched="$(git log -1 --format=%ct -- "$plan")"
+            # Oldest: when the plan first appeared, which is how long the work
+            # it describes has actually been waiting to ship.
+            added="$(git log --diff-filter=A -1 --format=%ct -- "$plan")"
+
+            # A plan with no history cannot be dated; treat it as brand new, so
+            # an unreadable file delays a release rather than rushing one out.
+            : "${touched:=$now}"
+            : "${added:=$now}"
+
+            if [ "$touched" -gt "$newest" ]; then newest="$touched"; fi
+            if [ "$added" -lt "$oldest" ]; then oldest="$added"; fi
+          done
+
+          # No plans matched, so there is nothing to date. The step only runs
+          # when there are plans, but fail closed rather than reporting an age
+          # of "since the epoch" and waving the release through.
+          if [ "$newest" = "0" ]; then newest="$now"; fi
+
+          newest_age=$(( (now - newest) / 86400 ))
+          oldest_age=$(( (now - oldest) / 86400 ))
+          echo "Newest pending change: ${newest_age}d ago. Oldest pending plan: ${oldest_age}d old."
+          echo "newest_age_days=${newest_age}" >> "$GITHUB_OUTPUT"
+          echo "oldest_age_days=${oldest_age}" >> "$GITHUB_OUTPUT"
+
       - name: Decide
         id: decide
         env:
           EVENT: ${{ github.event_name }}
           PLAN_COUNT: ${{ steps.plans.outputs.count }}
           CI_CONCLUSION: ${{ steps.ci.outputs.conclusion }}
+          NEWEST_AGE: ${{ steps.soak.outputs.newest_age_days }}
+          OLDEST_AGE: ${{ steps.soak.outputs.oldest_age_days }}
         run: |
           skip() {
             echo "proceed=false" >> "$GITHUB_OUTPUT"
@@ -107,6 +179,15 @@ jobs:
 
           if [ "$EVENT" = "schedule" ] && [ "$CI_CONCLUSION" != "success" ]; then
             skip "CI on \`${GITHUB_SHA}\` is \`${CI_CONCLUSION}\`, not \`success\` — refusing to release an unverified commit."
+            exit 0
+          fi
+
+          # Ship once either clock says so: the newest change has soaked, or the
+          # oldest has waited long enough that more soaking is just delay.
+          if [ "$EVENT" = "schedule" ] \
+            && [ "$NEWEST_AGE" -lt "$RELEASE_SOAK_DAYS" ] \
+            && [ "$OLDEST_AGE" -lt "$RELEASE_MAX_WAIT_DAYS" ]; then
+            skip "newest pending change is ${NEWEST_AGE}d old (soak window ${RELEASE_SOAK_DAYS}d) and the oldest pending plan is ${OLDEST_AGE}d old (backstop ${RELEASE_MAX_WAIT_DAYS}d) — letting it bake in \`@next\`. Dispatch this workflow manually to release now."
             exit 0
           fi
 
