@@ -113,8 +113,8 @@ describe('FEATURE: accessibility intl merge', () => {
           paginationState: 'disabled'
         } as const;
 
-        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 200 of 2,000,000 rows across 5 visible columns.');
-        expect(resolved.accessibilityText?.listSummary?.(context)).toBe('Showing 200 of 2,000,000 items across 5 visible fields.');
+        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 200 of 2,000,000 rows, 5 visible columns.');
+        expect(resolved.accessibilityText?.listSummary?.(context)).toBe('Showing 200 of 2,000,000 items, 5 visible fields.');
       });
     });
 
@@ -137,7 +137,41 @@ describe('FEATURE: accessibility intl merge', () => {
           paginationState: 'disabled'
         } as const;
 
-        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 6 rows across 4 visible columns.');
+        expect(resolved.accessibilityText?.tableSummary?.(context)).toBe('Showing 6 rows, 4 visible columns.');
+      });
+    });
+  });
+
+  describe('GIVEN: the built-in search filtering copy', () => {
+    describe('WHEN: exactly one row matches the query', () => {
+      it('THEN: it agrees the verb with the singular row count', () => {
+        const resolved = resolveNatTableIntl({ locales: NAT_TABLE_BUILT_IN_LOCALES }, 'en');
+        const context = {
+          query: 'alpha',
+          filterState: 'global',
+          visibleRowsValue: 1,
+          visibleRowsText: '1',
+          totalRowsValue: 20,
+          totalRowsText: '20'
+        } as const;
+
+        expect(resolved.accessibilityText?.filteringChange?.(context)).toBe('1 row matches "alpha".');
+      });
+    });
+
+    describe('WHEN: several rows match the query', () => {
+      it('THEN: it keeps the plural verb', () => {
+        const resolved = resolveNatTableIntl({ locales: NAT_TABLE_BUILT_IN_LOCALES }, 'en');
+        const context = {
+          query: 'alpha',
+          filterState: 'global',
+          visibleRowsValue: 3,
+          visibleRowsText: '3',
+          totalRowsValue: 20,
+          totalRowsText: '20'
+        } as const;
+
+        expect(resolved.accessibilityText?.filteringChange?.(context)).toBe('3 rows match "alpha".');
       });
     });
   });

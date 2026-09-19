@@ -30,7 +30,7 @@ test.describe('FEATURE: Scroll control pointer target', () => {
       test('THEN: it draws a 36px box with a 24px arrow, extends the pointer target to 44px, and honors per-axis size overrides', async ({
         page
       }) => {
-        const nextButton = page.getByRole('button', { name: 'Scroll table right' });
+        const nextButton = page.getByRole('button', { name: 'Scroll right' });
         const icon = nextButton.locator('.scroll-icon');
 
         await test.step('THEN: the stock box is 36px square with a 24px arrow and a 44px hit area', async () => {

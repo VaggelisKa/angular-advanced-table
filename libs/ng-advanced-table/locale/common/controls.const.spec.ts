@@ -1,105 +1,24 @@
 import { NAT_EN_CONTROLS_LOCALE_LABELS, NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from './controls.const';
-import type {
-  NatTableAccessibilityColumnVisibilityActionContext,
-  NatTableAccessibilityColumnVisibilitySummaryContext,
-  NatTableAccessibilityHeaderActionPinContext,
-  NatTableAccessibilityHeaderActionSortContext,
-  NatTableAccessibilityPageSizeOptionContext,
-  NatTableAccessibilityPagerContext,
-  NatTableAccessibilityScrollControlPositionContext
-} from './controls.type';
 import { NAT_EN_LOCALE_ID } from './locale-id.const';
+import {
+  columnVisibilitySummaryContext,
+  hiddenColumnContext,
+  pageSizeContext,
+  pagerContext,
+  pinnedHeaderContext,
+  scrollPositionContext,
+  singlePageSizeContext,
+  soleSortedHeaderContext,
+  sortedHeaderContext,
+  unpinnedHeaderContext,
+  unsortedHeaderContext,
+  visibleColumnContext
+} from '../test-helpers/controls-contexts.helper';
 import { expectDefined, formatsNumber, isNonEmptyText, producesText } from '../test-helpers/locale-copy.helper';
 import { SHIPPED_CONTROLS_LOCALES, collectKeyPaths } from '../test-helpers/shipped-locales.helper';
 
 const localeIds = Object.keys(SHIPPED_CONTROLS_LOCALES);
 const translatedLocaleIds = localeIds.filter((localeId) => localeId !== NAT_EN_LOCALE_ID);
-
-const pageSizeContext: NatTableAccessibilityPageSizeOptionContext = {
-  pageSizeValue: 25,
-  pageSizeText: '25',
-  selectionState: 'not-selected'
-};
-
-// Nordic plurals inflect the modifier along with the noun, so a page size of
-// one is a distinct phrase rather than the plural minus a suffix.
-const singlePageSizeContext: NatTableAccessibilityPageSizeOptionContext = {
-  pageSizeValue: 1,
-  pageSizeText: '1',
-  selectionState: 'selected'
-};
-
-const pagerContext: NatTableAccessibilityPagerContext = {
-  pageValue: 2,
-  pageText: '2',
-  pageCountValue: 5,
-  pageCountText: '5'
-};
-
-const scrollPositionContext: NatTableAccessibilityScrollControlPositionContext = {
-  scrollLeftValue: 50,
-  scrollLeftText: '50',
-  maxScrollLeftValue: 200,
-  maxScrollLeftText: '200',
-  percentageValue: 25,
-  percentageText: '25'
-};
-
-const columnVisibilitySummaryContext: NatTableAccessibilityColumnVisibilitySummaryContext = {
-  visibleColumnCountValue: 3,
-  visibleColumnCountText: '3',
-  totalColumnCountValue: 5,
-  totalColumnCountText: '5'
-};
-
-const visibleColumnContext: NatTableAccessibilityColumnVisibilityActionContext = {
-  columnLabel: 'Service',
-  visibilityState: 'visible',
-  toggleAction: 'hide'
-};
-
-const hiddenColumnContext: NatTableAccessibilityColumnVisibilityActionContext = {
-  columnLabel: 'Service',
-  visibilityState: 'hidden',
-  toggleAction: 'show'
-};
-
-const sortedHeaderContext: NatTableAccessibilityHeaderActionSortContext = {
-  label: 'Service',
-  sortState: 'ascending',
-  sortPriority: 1,
-  sortCount: 2
-};
-
-const unsortedHeaderContext: NatTableAccessibilityHeaderActionSortContext = {
-  label: 'Service',
-  sortState: 'none',
-  sortPriority: null,
-  sortCount: 0
-};
-
-const soleSortedHeaderContext: NatTableAccessibilityHeaderActionSortContext = {
-  label: 'Service',
-  sortState: 'descending',
-  sortPriority: 1,
-  sortCount: 1
-};
-
-const unpinnedHeaderContext: NatTableAccessibilityHeaderActionPinContext = {
-  label: 'Service',
-  pinState: 'unpinned',
-  toggleAction: 'pin',
-  pinSide: 'left',
-  pinnedSide: null
-};
-
-const pinnedHeaderContext: NatTableAccessibilityHeaderActionPinContext = {
-  label: 'Service',
-  pinState: 'pinned',
-  toggleAction: 'unpin',
-  pinSide: 'right',
-  pinnedSide: 'right'
-};
 
 describe('FEATURE: built-in companion components locale completeness', () => {
   describe('GIVEN: the built-in components locale registry', () => {
@@ -264,37 +183,6 @@ describe('FEATURE: built-in companion components locale completeness', () => {
         expect(collectKeyPaths(SHIPPED_CONTROLS_LOCALES[localeId]).sort()).toStrictEqual(
           collectKeyPaths(NAT_EN_CONTROLS_LOCALE_LABELS).sort()
         );
-      });
-    });
-  });
-});
-
-describe('FEATURE: natural Nordic control announcements', () => {
-  describe('GIVEN: the Nordic control dictionaries', () => {
-    describe('WHEN: announcing pinning and unpinning a named column', () => {
-      it.each([
-        ['da', 'Fastgør kolonnen Service til venstre', 'Frigør kolonnen Service fra højre'],
-        ['sv', 'Fäst kolumnen Service till vänster', 'Lossa kolumnen Service från höger'],
-        ['nb', 'Fest kolonnen Service til venstre', 'Løsne kolonnen Service fra høyre'],
-        ['fi', 'Kiinnitä sarake Service vasemmalle', 'Irrota sarake Service oikealta']
-      ])('THEN: it places the named column before the direction in %s', (localeId, pinned, unpinned) => {
-        const labels = SHIPPED_CONTROLS_LOCALES[localeId].headerActions?.accessibilityLabels;
-
-        expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe(pinned);
-        expect(labels?.pinButton?.(pinnedHeaderContext)).toBe(unpinned);
-      });
-    });
-
-    describe('WHEN: announcing column visibility and its available action', () => {
-      it.each([
-        ['da', 'Service er synlig. Skjul kolonnen', 'Service er skjult. Vis kolonnen'],
-        ['sv', 'Service är synlig. Dölj kolumnen', 'Service är dold. Visa kolumnen'],
-        ['nb', 'Service er synlig. Skjul kolonnen', 'Service er skjult. Vis kolonnen']
-      ])('THEN: it uses complete phrases in %s', (localeId, visible, hidden) => {
-        const labels = SHIPPED_CONTROLS_LOCALES[localeId].columnVisibility?.accessibilityLabels;
-
-        expect(labels?.toggleColumnAriaLabel?.(visibleColumnContext)).toBe(visible);
-        expect(labels?.toggleColumnAriaLabel?.(hiddenColumnContext)).toBe(hidden);
       });
     });
   });

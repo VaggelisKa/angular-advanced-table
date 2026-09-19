@@ -29,20 +29,14 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Brug piletasterne til at flytte mellem celler. Hvis en celle kun indeholder en knap eller et link, ' +
-      'får knappen eller linket fokus direkte. I celler med flere kontroller skal du trykke på Enter for at bruge dem, Tab for at flytte ' +
-      'fremad mellem dem, Skift+Tab for at flytte tilbage og Esc for at vende tilbage til cellen.',
+      'Brug piletasterne til at flytte mellem celler. Hvis en celle kun indeholder en knap eller et link, får knappen eller linket fokus direkte. Ellers bruges Enter til at betjene kontrollerne, Tab og Skift+Tab til at flytte mellem dem og Esc til at vende tilbage til cellen.',
     emptyState: 'Ingen rækker matcher den aktuelle visning.',
     loadingState: 'Indlæser rækker.',
     errorState: 'Rækkerne kunne ikke indlæses.',
     reorderKeyboardInstructions:
-      'Tryk på Ctrl+Skift+Venstre pil eller Ctrl+Skift+Højre pil for at omarrangere kolonner inden for deres ' +
-      'nuværende fastgjorte område. På macOS skal du trykke på Kommando+Skift+Venstre pil eller ' +
-      'Kommando+Skift+Højre pil.',
+      'Tryk på Ctrl+Skift sammen med Venstre eller Højre pil for at flytte en kolonne inden for dens fastgjorte område. Brug Kommando på macOS.',
     resizeKeyboardInstructions:
-      'Når fokus er på en kolonneoverskrift, hvis bredde kan ændres, skal du trykke på Alt sammen med Venstre eller Højre pil ' +
-      'for at ændre kolonnens bredde og Alt sammen med Home eller End for at springe til dens mindste eller ' +
-      'største bredde.',
+      'Tryk på Alt sammen med Venstre eller Højre pil for at ændre kolonnens bredde, eller Alt sammen med Home eller End for mindste eller største bredde.',
     tableSummary: ({
       pageCountText,
       pageText,
@@ -58,11 +52,11 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
       let summary: string;
 
       if (visibleRowsValue === 0) {
-        summary = `Der vises ingen rækker lige nu. ${columns}.`;
+        summary = `Ingen rækker vises. ${columns}.`;
       } else if (totalRowsValue !== visibleRowsValue) {
-        summary = `Viser ${visibleRowsText} af ${totalRowsText} ${rows(totalRowsValue)} fordelt på ${columns}.`;
+        summary = `Viser ${visibleRowsText} af ${totalRowsText} ${rows(totalRowsValue)}, ${columns}.`;
       } else {
-        summary = `Viser ${visibleRowsText} ${rows(visibleRowsValue)} fordelt på ${columns}.`;
+        summary = `Viser ${visibleRowsText} ${rows(visibleRowsValue)}, ${columns}.`;
       }
 
       if (paginationState === 'enabled') {
@@ -88,14 +82,14 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
       }
 
       if (query) {
-        return `Viser ${visibleRowsText} matchende ${rows(visibleRowsValue)} for "${query}".`;
+        return `${visibleRowsText} ${rows(visibleRowsValue)} matcher "${query}".`;
       }
 
       if (filterState === 'column') {
-        return `Viser ${visibleRowsText} ${filteredRows(visibleRowsValue)}.`;
+        return `${visibleRowsText} ${filteredRows(visibleRowsValue)}.`;
       }
 
-      return `Viser alle ${visibleRowsText} ${rows(visibleRowsValue)}.`;
+      return `Alle rækker: ${visibleRowsText}.`;
     },
     columnVisibilityChange: ({ changedColumns, visibleColumnsValue, visibleColumnsText }) => {
       const summary = `${visibleColumnsText} ${visibleColumns(visibleColumnsValue)}.`;
@@ -109,11 +103,11 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
       return summary;
     },
     pageSizeChange: ({ pageCountText, pageSizeValue, pageSizeText, pageText }) =>
-      `Viser ${pageSizeText} ${rows(pageSizeValue)} pr. side. Side ${pageText} af ${pageCountText}.`,
+      `${pageSizeText} ${rows(pageSizeValue)} pr. side. Side ${pageText} af ${pageCountText}.`,
     pageChange: ({ pageCountText, pageText, visibleRowsValue, visibleRowsText }) =>
       `Side ${pageText} af ${pageCountText}. ${visibleRowsText} ${rows(visibleRowsValue)} vises.`,
     columnReorder: ({ label, positionText, totalText, zone }) =>
-      `Kolonnen ${label} er flyttet til position ${positionText} af ${totalText} ${columnZone(zone)}.`,
+      `Kolonnen ${label} flyttet til position ${positionText} af ${totalText}, ${columnZone(zone)}.`,
     columnResize: ({ label, widthText, atMinimum, atMaximum }) =>
       `Kolonnen ${label} har bredden ${widthText} pixel${resizeBoundSuffix(atMinimum, atMaximum)}.`,
     selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {

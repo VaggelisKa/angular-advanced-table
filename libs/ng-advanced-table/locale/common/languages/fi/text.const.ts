@@ -22,8 +22,6 @@ export const measuredVisibleRows = (count: number): string => (count === 1 ? 'n�
 
 export const sortAdverb = (sortState: 'ascending' | 'descending'): string => (sortState === 'ascending' ? 'nousevasti' : 'laskevasti');
 
-export const sortOrder = (sortState: 'ascending' | 'descending'): string => (sortState === 'ascending' ? 'nousevaan' : 'laskevaan');
-
 export const side = (target: 'left' | 'right'): string => (target === 'left' ? 'vasemmalle' : 'oikealle');
 
 export const pinSideText = (pinSide: 'left' | 'right', toggleAction: 'pin' | 'unpin'): string => {
@@ -39,14 +37,14 @@ export const visibilityVerb = (visibilityState: 'visible' | 'hidden'): string =>
 
 export const columnZone = (zone: 'left' | 'center' | 'right'): string => {
   if (zone === 'left') {
-    return 'vasemmalle kiinnitettyjen sarakkeiden joukossa';
+    return 'kiinnitetty vasemmalle';
   }
 
   if (zone === 'right') {
-    return 'oikealle kiinnitettyjen sarakkeiden joukossa';
+    return 'kiinnitetty oikealle';
   }
 
-  return 'kiinnittämättömien sarakkeiden joukossa';
+  return 'ei kiinnitetty';
 };
 
 export const resizeBoundSuffix = (atMinimum?: boolean, atMaximum?: boolean): string => {

@@ -87,7 +87,7 @@ describe('FEATURE: NatList composite item navigation', () => {
         const instructionIds = describedBy.split(' ').filter((id) => {
           const element = document.getElementById(id);
 
-          return element?.textContent.includes('Up and Down arrow keys') ?? false;
+          return element?.textContent.includes('Up and Down arrows') ?? false;
         });
 
         expect(instructionIds).toHaveLength(1);

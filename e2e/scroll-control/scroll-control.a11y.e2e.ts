@@ -8,7 +8,7 @@ test.describe('FEATURE: Scroll control accessibility', () => {
   test.describe('GIVEN: the fixed-width live market table is loaded', () => {
     test.describe('WHEN: the native scroll range is operated with a keyboard', () => {
       test('THEN: it keeps slider semantics and synchronizes horizontal table scrolling', async ({ page }) => {
-        const range = page.getByRole('slider', { name: 'Horizontal scroll position' });
+        const range = page.getByRole('slider', { name: 'Scroll position' });
         const tableRegion = page.locator('nat-table .table-region');
 
         await test.step('GIVEN: the range is enabled for the overflowing table', async () => {

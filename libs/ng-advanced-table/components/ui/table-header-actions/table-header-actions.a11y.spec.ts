@@ -78,7 +78,7 @@ describe('FEATURE: NatTable UI - Header Actions A11y', () => {
         expect(sortButton).toBeTruthy();
         expect(menuButton).toBeTruthy();
         expect(sortButton.getAttribute('aria-label')).toBe('Sort by Row actions');
-        expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Row actions column');
+        expect(menuButton.getAttribute('aria-label')).toBe('Row actions column actions');
 
         hiddenFixture.destroy();
       });

@@ -220,7 +220,7 @@ describe('FEATURE: NatTable', () => {
         fixture.detectChanges();
 
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['name', 'status', 'region', 'throughput']);
-        expect(liveRegion.textContent.trim()).toBe('Moved Region column to position 2 of 3 in the unpinned region.');
+        expect(liveRegion.textContent.trim()).toBe('Region column moved to position 2 of 3, unpinned.');
       });
     });
 

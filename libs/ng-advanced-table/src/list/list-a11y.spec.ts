@@ -68,8 +68,8 @@ describe('FEATURE: NatList accessibility copy', () => {
         const text = NAT_TABLE_BUILT_IN_LOCALES[NAT_EN_LOCALE_ID].accessibilityText ?? {};
         const snapshot = buildPaginationSnapshot();
 
-        expect(describePageSizeChange(snapshot, text, formatNumber, 'list')).toBe('Showing 5 items per page. Page 2 of 4.');
-        expect(describePageSizeChange(snapshot, text, formatNumber)).toBe('Showing 5 rows per page. Page 2 of 4.');
+        expect(describePageSizeChange(snapshot, text, formatNumber, 'list')).toBe('5 items per page. Page 2 of 4.');
+        expect(describePageSizeChange(snapshot, text, formatNumber)).toBe('5 rows per page. Page 2 of 4.');
         expect(describePageChange(snapshot, text, formatNumber, 'list')).toBe('Page 2 of 4. 5 items shown.');
         expect(describePageChange(snapshot, text, formatNumber)).toBe('Page 2 of 4. 5 rows shown.');
       });

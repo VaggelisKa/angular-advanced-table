@@ -59,7 +59,7 @@ describe('FEATURE: provideNatTableLocales', () => {
       configure(provideNatTableLocales());
       it('THEN: it keeps English reorder instructions platform-aware', () => {
         expect(tableAccess(TestBed.inject(NAT_TABLE_INTL), 'en')?.reorderKeyboardInstructions).toBe(
-          'Press Control+Shift+Left Arrow or Control+Shift+Right Arrow to reorder columns within their current pinned region. On macOS, press Command+Shift+Left Arrow or Command+Shift+Right Arrow.'
+          'Press Control+Shift with Left or Right Arrow to reorder a column within its pinned region. Use Command on macOS.'
         );
       });
     });
@@ -137,7 +137,7 @@ describe('FEATURE: partial built-in components locale overrides', () => {
   describe('GIVEN: a partial built-in components locale override is configured with nested default components copy', () => {
     describe('WHEN: preserves the nested default option aria label', () => {
       it('THEN: it keeps the default page-size aria label formatter', () => {
-        expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+        expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows');
       });
     });
   });
@@ -224,7 +224,7 @@ describe('FEATURE: parent table locale overrides in nested providers', () => {
     describe('WHEN: keeps the built-in keyboard instructions', () => {
       it('THEN: it preserves inherited keyboard guidance', () => {
         expect(accessibilityText?.keyboardInstructions).toContain('Use arrow keys');
-        expect(accessibilityText?.listKeyboardInstructions).toContain('Up and Down arrow keys');
+        expect(accessibilityText?.listKeyboardInstructions).toContain('Up and Down arrows');
       });
     });
   });
@@ -268,7 +268,7 @@ describe('FEATURE: parent components locale overrides in nested providers', () =
   describe('GIVEN: a nested components locale provider overrides its parent with nested default page-size copy', () => {
     describe('WHEN: preserves the nested default page-size option aria label', () => {
       it('THEN: it keeps the default page-size option aria label', () => {
-        expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+        expect(pageSizeLabels(en)?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows');
       });
     });
   });
