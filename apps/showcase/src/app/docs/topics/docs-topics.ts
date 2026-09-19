@@ -816,6 +816,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-table-row-background-hover: #eef6f3;
   --nat-table-row-background-focus: #e4efec;
   --nat-table-cell-border-color: #dde7e3;
+  --nat-table-last-row-border-width: 1px;
   --nat-table-cell-color-positive: #0f766e;
   --nat-table-cell-color-warning: #9a5b13;
   --nat-table-cell-color-neutral: #667570;
@@ -870,6 +871,7 @@ readonly columns = withNatTableHeaderActions(baseColumns, {
   --nat-list-item-padding: 14px 16px;
   --nat-list-item-background: #fbfcfb;
   --nat-list-item-border-color: #cbd8d4;
+  --nat-list-last-item-border-width: 1px;
   --nat-list-item-radius: 6px;
 }
 
