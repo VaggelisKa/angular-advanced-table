@@ -380,7 +380,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     const region = this.tableRegionRef()?.nativeElement;
     const cell = event.target instanceof Element ? event.target.closest<HTMLElement>('td, th') : null;
 
-    if (!region || !cell || !region.contains(cell)) {
+    if (!region || !cell || cell.closest('table')?.parentElement !== region) {
       return;
     }
 
