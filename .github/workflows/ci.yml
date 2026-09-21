@@ -65,6 +65,8 @@ jobs:
         run: pnpm exec nx affected -t stylelint,lint,test,build --base="$NX_BASE" --head="$NX_HEAD"
       - name: Test MCP endpoint security boundaries
         run: pnpm run test:mcp
+      - name: Test the nightly version stamper
+        run: pnpm run test:nightly-version
 
   # Atomized Playwright e2e, in parallel with checks.
   e2e:
