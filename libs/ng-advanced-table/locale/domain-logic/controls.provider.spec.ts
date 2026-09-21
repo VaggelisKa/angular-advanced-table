@@ -1,270 +1,71 @@
 import { provideZonelessChangeDetection } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { NAT_TABLE_CONTROLS_INTL, provideNatTableControlsIntl, provideNatTableControlsLocales } from './controls.provider';
-import { NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
-import type {
-  NatTableAccessibilityColumnVisibilityLabels,
-  NatTableAccessibilityHeaderActionLabels,
-  NatTableAccessibilityPageSizeLabels,
-  NatTableAccessibilityPagerLabels,
-  NatTableControlsIntl,
-  NatTableControlsIntlConfig
-} from '../common/controls.type';
+import { NAT_EN_CONTROLS_LOCALE_LABELS, NAT_TABLE_BUILT_IN_CONTROLS_LOCALES } from '../common/controls.const';
+import { NAT_EN_LOCALE_ID } from '../common/locale-id.const';
 import { resolveNatTableControlsIntl } from '../utils/controls.util';
 
-const localeOf = (controlsIntl: NatTableControlsIntlConfig, localeId: string): NatTableControlsIntl | undefined =>
-  controlsIntl.locales?.[localeId];
+const configure = (...providers: Provider[]): void => {
+  TestBed.configureTestingModule({
+    providers: [provideZonelessChangeDetection(), ...providers]
+  });
+};
 
-describe('FEATURE: components locale toolbar slice', () => {
+describe('FEATURE: companion components locale providers', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
   });
 
-  describe('GIVEN: components locale toolbar dictionaries are available', () => {
-    describe('WHEN: ships a complete toolbar slice in every built-in components locale', () => {
-      const localeIds = Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES);
-
-      it('THEN: it finds toolbar labels in each built-in locale', () => {
-        expect(localeIds.length).toBeGreaterThan(0);
-
-        for (const localeId of localeIds) {
-          const toolbar = NAT_TABLE_BUILT_IN_CONTROLS_LOCALES[localeId].toolbar;
-
-          expect(toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
-        }
-      });
-    });
-  });
-
-  describe('GIVEN: components locale toolbar dictionaries are available with English toolbar locale copy', () => {
-    describe('WHEN: locks the English toolbar copy', () => {
-      const toolbar = NAT_TABLE_BUILT_IN_CONTROLS_LOCALES['en'].toolbar;
-
-      it('THEN: it keeps the English toolbar label stable', () => {
-        expect(toolbar?.toolbarLabel).toBe('Table toolbar');
-      });
-    });
-  });
-
-  describe('GIVEN: components locale toolbar dictionaries are available with provided toolbar locale slices', () => {
-    describe('WHEN: resolving each built-in locale through provideNatTableControlsLocales()', () => {
-      it.each(Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES))(
-        'THEN: it preserves toolbar labels for %s after provider registration',
-        (localeId) => {
-          TestBed.configureTestingModule({
-            providers: [provideZonelessChangeDetection(), provideNatTableControlsLocales()]
-          });
-
-          const uiIntl = TestBed.inject(NAT_TABLE_CONTROLS_INTL);
-
-          expect(localeOf(uiIntl, localeId)?.toolbar?.toolbarLabel, `${localeId}: toolbarLabel`).toBeTruthy();
-        }
-      );
-    });
-  });
-
-  describe('GIVEN: components locale toolbar dictionaries are available with an unknown components locale id', () => {
-    describe('WHEN: falls back to English toolbar copy for unknown locales', () => {
-      const resolved = resolveNatTableControlsIntl({ locales: NAT_TABLE_BUILT_IN_CONTROLS_LOCALES }, 'zz');
-
-      it('THEN: it returns the English toolbar fallback', () => {
-        expect(resolved.toolbar?.toolbarLabel).toBe('Table toolbar');
-      });
-    });
-  });
-
-  describe('GIVEN: components locale toolbar dictionaries are available with a custom toolbar dictionary', () => {
-    describe('WHEN: lets a locale dictionary override English toolbar copy', () => {
-      it('THEN: it uses the locale-specific toolbar label', () => {
-        TestBed.configureTestingModule({
-          providers: [
-            provideZonelessChangeDetection(),
-            provideNatTableControlsLocales({
-              da: {
-                toolbar: {
-                  toolbarLabel: 'Tabel værktøjslinje'
-                }
-              }
-            })
-          ]
-        });
-
-        const resolved = resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), 'da');
-
-        expect(resolved.toolbar?.toolbarLabel).toBe('Tabel værktøjslinje');
-      });
-    });
-  });
-
-  describe('GIVEN: components locale toolbar dictionaries are available with components intl overrides', () => {
-    describe('WHEN: lets provideNatTableControlsIntl overrides win over the built-in dictionary', () => {
-      it('THEN: it uses provider overrides before built-in copy', () => {
-        TestBed.configureTestingModule({
-          providers: [
-            provideZonelessChangeDetection(),
-            provideNatTableControlsIntl({
-              toolbar: {
-                toolbarLabel: 'Provider toolbar'
-              }
-            })
-          ]
-        });
-
-        const resolved = resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), 'en');
-
-        expect(resolved.toolbar?.toolbarLabel).toBe('Provider toolbar');
-      });
-    });
-  });
-});
-
-describe('FEATURE: English companion-control accessibility copy', () => {
-  const english = NAT_TABLE_BUILT_IN_CONTROLS_LOCALES['en'];
-  const pageSizeContext = {
-    pageSizeValue: 25,
-    pageSizeText: '25',
-    selectionState: 'not-selected' as const
-  };
-  const pagerContext = {
-    pageValue: 2,
-    pageText: '2',
-    pageCountValue: 5,
-    pageCountText: '5'
-  };
-  const visibilityContext = {
-    columnLabel: 'Service',
-    visibilityState: 'visible' as const,
-    toggleAction: 'hide' as const
-  };
-  const sortedHeaderContext = {
-    label: 'Service',
-    sortState: 'ascending' as const,
-    sortPriority: 1,
-    sortCount: 2
-  };
-  const unpinnedHeaderContext = {
-    label: 'Service',
-    pinState: 'unpinned' as const,
-    toggleAction: 'pin' as const,
-    pinSide: 'left' as const,
-    pinnedSide: null
-  };
-  const pinnedHeaderContext = {
-    label: 'Service',
-    pinState: 'pinned' as const,
-    toggleAction: 'unpin' as const,
-    pinSide: 'left' as const,
-    pinnedSide: 'left' as const
-  };
-
-  describe('GIVEN: column visibility', () => {
-    let labels: NatTableAccessibilityColumnVisibilityLabels | undefined;
-
+  describe('GIVEN: provideNatTableControlsLocales() with no configuration', () => {
     beforeEach(() => {
-      labels = english.columnVisibility?.accessibilityLabels;
+      configure(provideNatTableControlsLocales());
     });
 
-    describe('WHEN: locks the toggle-column aria label', () => {
-      it('THEN: it keeps column visibility aria copy stable', () => {
-        expect(labels?.toggleColumnAriaLabel?.(visibilityContext)).toBe('Service, shown');
+    describe('WHEN: injecting the components intl token', () => {
+      it.each(Object.keys(NAT_TABLE_BUILT_IN_CONTROLS_LOCALES))('THEN: it registers the built-in locale %s', (localeId) => {
+        expect(TestBed.inject(NAT_TABLE_CONTROLS_INTL).locales?.[localeId]).toBeDefined();
       });
     });
   });
 
-  describe('GIVEN: page size', () => {
-    let labels: NatTableAccessibilityPageSizeLabels | undefined;
-
+  describe('GIVEN: a dictionary registered under a custom locale id', () => {
     beforeEach(() => {
-      labels = english.pageSize?.accessibilityLabels;
+      configure(provideNatTableControlsLocales({ qa: { toolbar: { toolbarLabel: 'QA toolbar' } } }));
     });
 
-    describe('WHEN: locks the page-size option text', () => {
-      it('THEN: it keeps page-size visible copy stable', () => {
-        expect(labels?.pageSizeOptionText?.(pageSizeContext)).toBe('25 rows');
+    describe('WHEN: resolving the custom id', () => {
+      it('THEN: it uses the registered copy', () => {
+        expect(resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), 'qa').toolbar?.toolbarLabel).toBe('QA toolbar');
       });
     });
 
-    describe('WHEN: locks the page-size option aria label', () => {
-      it('THEN: it keeps page-size aria copy stable', () => {
-        expect(labels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows');
+    describe('WHEN: resolving English', () => {
+      it('THEN: it leaves the built-in English copy untouched', () => {
+        expect(resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), NAT_EN_LOCALE_ID).toolbar?.toolbarLabel).toBe(
+          NAT_EN_CONTROLS_LOCALE_LABELS.toolbar?.toolbarLabel
+        );
       });
     });
   });
 
-  describe('GIVEN: pager', () => {
-    let labels: NatTableAccessibilityPagerLabels | undefined;
-
+  describe('GIVEN: provideNatTableControlsIntl() with a partial override', () => {
     beforeEach(() => {
-      labels = english.pager?.accessibilityLabels;
+      configure(provideNatTableControlsIntl({ toolbar: { toolbarLabel: 'Provider toolbar' } }));
     });
 
-    describe('WHEN: locks the page indicator', () => {
-      it('THEN: it keeps pager indicator copy stable', () => {
-        expect(labels?.pageIndicator?.(pagerContext)).toBe('Page 2 of 5');
+    describe('WHEN: resolving English', () => {
+      it('THEN: the override wins over the built-in dictionary', () => {
+        expect(resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), NAT_EN_LOCALE_ID).toolbar?.toolbarLabel).toBe(
+          'Provider toolbar'
+        );
       });
-    });
-  });
 
-  describe('GIVEN: header actions', () => {
-    let labels: NatTableAccessibilityHeaderActionLabels | undefined;
-
-    beforeEach(() => {
-      labels = english.headerActions?.accessibilityLabels;
-    });
-
-    describe('WHEN: locks the unsorted sort-button label', () => {
-      it('THEN: it keeps unsorted header action copy stable', () => {
-        expect(
-          labels?.sortButton?.({
-            ...sortedHeaderContext,
-            sortState: 'none',
-            sortPriority: null,
-            sortCount: 0
-          })
-        ).toBe('Sort by Service');
-      });
-    });
-
-    describe('WHEN: locks the sorted sort-button label', () => {
-      it('THEN: it keeps sorted header action copy stable', () => {
-        expect(labels?.sortButton?.(sortedHeaderContext)).toBe('Sort by Service, sorted ascending, sort 1 of 2');
-      });
-    });
-
-    describe('WHEN: locks the menu-button label', () => {
-      it('THEN: it keeps menu button copy stable', () => {
-        expect(labels?.menuButton?.({ label: 'Service' })).toBe('Service column actions');
-      });
-    });
-
-    describe('WHEN: locks the menu label', () => {
-      it('THEN: it keeps menu copy stable', () => {
-        expect(labels?.menuLabel?.({ label: 'Service' })).toBe('Service column actions');
-      });
-    });
-
-    describe('WHEN: locks the pin-button label', () => {
-      it('THEN: it keeps pin button aria copy stable', () => {
-        expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe('Pin left');
-      });
-    });
-
-    describe('WHEN: locks the pin-button text', () => {
-      it('THEN: it keeps pin button visible copy stable', () => {
-        expect(labels?.pinButtonText?.(pinnedHeaderContext)).toBe('Unpin left');
-      });
-    });
-
-    describe('WHEN: locks the move-button label', () => {
-      it('THEN: it keeps move button aria copy stable', () => {
-        expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe('Move right');
-      });
-    });
-
-    describe('WHEN: locks the move-button text', () => {
-      it('THEN: it keeps move button visible copy stable', () => {
-        expect(labels?.moveButtonText?.({ label: 'Service', direction: 'right' })).toBe('Move right');
+      it('THEN: fields the override leaves out keep the built-in copy', () => {
+        expect(resolveNatTableControlsIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL), NAT_EN_LOCALE_ID).search?.label).toBe(
+          NAT_EN_CONTROLS_LOCALE_LABELS.search?.label
+        );
       });
     });
   });

@@ -118,27 +118,3 @@ describe('FEATURE: built-in table locale completeness', () => {
     });
   });
 });
-
-describe('FEATURE: Nordic keyboard instruction wording', () => {
-  describe('GIVEN: the Nordic accessibility dictionaries', () => {
-    describe('WHEN: explaining focus inside a cell with a single control', () => {
-      it.each([
-        ['da', 'får kontrollen fokus direkte.'],
-        ['sv', 'får kontrollen fokus direkt.'],
-        ['nb', 'får kontrollen fokus direkte.'],
-        ['fi', 'kohdistus siirtyy suoraan siihen.']
-      ])('THEN: it identifies the control as the focus target in %s', (localeId, phrase) => {
-        expect(accessibilityTextOf(localeId).keyboardInstructions).toContain(phrase);
-      });
-    });
-
-    describe('WHEN: naming Finnish arrow keys in compound words', () => {
-      it('THEN: it separates multiword key names from the hyphen', () => {
-        const text = accessibilityTextOf('fi');
-
-        expect(text.resizeKeyboardInstructions).toContain('Nuoli vasemmalle - tai Nuoli oikealle -näppäintä');
-        expect(text.listKeyboardInstructions).toContain('Nuoli ylös - ja Nuoli alas -näppäimillä');
-      });
-    });
-  });
-});

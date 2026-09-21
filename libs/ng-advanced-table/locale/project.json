@@ -17,7 +17,7 @@
         "coverageReporters": ["text-summary", "json-summary"],
         "coverageThresholds": {
           "statements": 99.6,
-          "branches": 98,
+          "branches": 98.3,
           "functions": 99.3,
           "lines": 99.6
         }
