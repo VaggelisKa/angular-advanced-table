@@ -67,7 +67,7 @@ describe('FEATURE: TableShowcase', () => {
         }
 
         expect(rows).toHaveLength(12);
-        expect(firstMenuButton.getAttribute('aria-label')).toBe('Open column actions for Symbol column');
+        expect(firstMenuButton.getAttribute('aria-label')).toBe('Symbol column actions');
         expect(firstMenuButton.querySelector('.menu-button__icon')).toBeTruthy();
         expect(firstReorderableHeader).toBeTruthy();
         expect(changeHeader.querySelector('.sort-button.is-sorted')).toBeFalsy();

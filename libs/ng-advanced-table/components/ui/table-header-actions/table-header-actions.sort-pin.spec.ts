@@ -72,7 +72,7 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
         expect(reorderableHeader.classList.contains('is-reorderable')).toBe(true);
         expect(reorderableHeader.classList.contains('cdk-drag')).toBe(true);
         expect(sortButton.getAttribute('aria-label')).toBe('Sort by Service');
-        expect(menuButton.getAttribute('aria-label')).toBe('Open column actions for Service column');
+        expect(menuButton.getAttribute('aria-label')).toBe('Service column actions');
 
         sortButton.click();
         fixture.detectChanges();
@@ -92,7 +92,7 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
         const rightPinMenuItem = getOpenMenuItem('right');
 
         expect(await menu.isOpen()).toBe(true);
-        expect(openMenu.getAttribute('aria-label')).toBe('Column actions for Service column');
+        expect(openMenu.getAttribute('aria-label')).toBe('Service column actions');
         expect(textOf(leftPinMenuItem, '.column-menu-item__label')).toBe('Pin left');
         expect(textOf(rightPinMenuItem, '.column-menu-item__label')).toBe('Pin right');
 

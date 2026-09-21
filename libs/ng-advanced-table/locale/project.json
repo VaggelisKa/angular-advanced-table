@@ -16,10 +16,10 @@
         "coverageExclude": ["**/*.spec.ts", "**/test-helpers/**", "**/*.type.ts", "**/index.ts"],
         "coverageReporters": ["text-summary", "json-summary"],
         "coverageThresholds": {
-          "statements": 99,
-          "branches": 97,
-          "functions": 99,
-          "lines": 99
+          "statements": 99.6,
+          "branches": 98,
+          "functions": 99.3,
+          "lines": 99.6
         }
       }
     }

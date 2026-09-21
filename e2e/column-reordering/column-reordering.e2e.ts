@@ -35,7 +35,7 @@ test.describe('FEATURE: Column reordering', () => {
           await expect.poll(async () => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
           await expect(categoryHeader).toBeFocused();
           await expect(reorderingTable.getByTestId('nat-table-live-region')).toContainText(
-            'Moved Category column to position 3 of 4 in the unpinned region.'
+            'Category column moved to position 3 of 4, unpinned.'
           );
         });
       });
@@ -106,7 +106,7 @@ test.describe('FEATURE: Column reordering', () => {
         await test.step('THEN: category moves one position right and the move is announced', async () => {
           await expect.poll(async () => headerColumnIds(page)).toEqual(['name', 'status', 'category', 'value']);
           await expect(page.getByTestId('reordering-demo-table').getByTestId('nat-table-live-region')).toContainText(
-            'Moved Category column to position 3 of 4 in the unpinned region.'
+            'Category column moved to position 3 of 4, unpinned.'
           );
         });
       });

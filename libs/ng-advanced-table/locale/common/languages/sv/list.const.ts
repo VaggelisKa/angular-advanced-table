@@ -10,9 +10,7 @@ import type { NatTableAccessibilityText } from '../../accessibility.type';
  * they are never spread into the dictionary.
  */
 export const listKeyboardInstructions: NatTableAccessibilityText['listKeyboardInstructions'] =
-  'Använd Uppil och Nedpil för att flytta mellan objekt. Tryck på Retur för att använda kontrollerna i ett ' +
-  'objekt, Tabb för att flytta framåt mellan dem, Skift+Tabb för att flytta bakåt och Esc för att återgå till ' +
-  'objektet.';
+  'Använd Uppil och Nedpil för att flytta mellan objekt. Tryck på Retur för att använda kontrollerna i ett objekt, Tabb och Skift+Tabb för att flytta mellan dem och Esc för att återgå till objektet.';
 
 export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   pageCountText,
@@ -29,11 +27,11 @@ export const listSummary: NatTableAccessibilityText['listSummary'] = ({
   let summary: string;
 
   if (visibleRowsValue === 0) {
-    summary = `Inga objekt visas just nu. ${fields}.`;
+    summary = `Inga objekt visas. ${fields}.`;
   } else if (totalRowsValue !== visibleRowsValue) {
-    summary = `Visar ${visibleRowsText} av ${totalRowsText} objekt i ${fields}.`;
+    summary = `Visar ${visibleRowsText} av ${totalRowsText} objekt, ${fields}.`;
   } else {
-    summary = `Visar ${visibleRowsText} objekt i ${fields}.`;
+    summary = `Visar ${visibleRowsText} objekt, ${fields}.`;
   }
 
   if (paginationState === 'enabled') {
@@ -60,7 +58,7 @@ export const listColumnVisibilityChange: NatTableAccessibilityText['listColumnVi
 };
 
 export const listPageSizeChange: NatTableAccessibilityText['listPageSizeChange'] = ({ pageCountText, pageSizeText, pageText }) =>
-  `Visar ${pageSizeText} objekt per sida. Sida ${pageText} av ${pageCountText}.`;
+  `${pageSizeText} objekt per sida. Sida ${pageText} av ${pageCountText}.`;
 
 export const listPageChange: NatTableAccessibilityText['listPageChange'] = ({ pageCountText, pageText, visibleRowsText }) =>
   `Sida ${pageText} av ${pageCountText}. ${visibleRowsText} objekt visas.`;

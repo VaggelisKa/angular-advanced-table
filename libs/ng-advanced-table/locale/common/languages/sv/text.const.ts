@@ -27,14 +27,14 @@ export const visibilityVerb = (visibilityState: 'visible' | 'hidden'): string =>
 
 export const columnZone = (zone: 'left' | 'center' | 'right'): string => {
   if (zone === 'left') {
-    return 'bland kolumner som är fästa till vänster';
+    return 'fäst till vänster';
   }
 
   if (zone === 'right') {
-    return 'bland kolumner som är fästa till höger';
+    return 'fäst till höger';
   }
 
-  return 'bland kolumner som inte är fästa';
+  return 'inte fäst';
 };
 
 export const resizeBoundSuffix = (atMinimum?: boolean, atMaximum?: boolean): string => {

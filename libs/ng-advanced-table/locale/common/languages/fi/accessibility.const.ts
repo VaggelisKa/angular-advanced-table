@@ -30,19 +30,14 @@ export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Siirry solujen välillä nuolinäppäimillä. Jos solun ainoa sisältö on yksi painike tai linkki, kohdistus ' +
-      'siirtyy suoraan siihen. Jos solussa on useita ohjaimia, käytä niitä painamalla Enter, siirry eteenpäin ' +
-      'sarkaimella, taaksepäin näppäinyhdistelmällä Vaihto+Sarkain ja palaa soluun painamalla Esc.',
+      'Siirry solujen välillä nuolinäppäimillä. Jos solun ainoa sisältö on ohjain, joka ei käytä nuolinäppäimiä, kohdistus siirtyy suoraan siihen. Muissa soluissa käytä ohjaimia painamalla Enter, siirry niiden välillä sarkaimella ja näppäinyhdistelmällä Vaihto+Sarkain ja palaa soluun painamalla Esc.',
     emptyState: 'Mikään rivi ei vastaa nykyistä näkymää.',
     loadingState: 'Ladataan rivejä.',
     errorState: 'Rivien lataaminen epäonnistui.',
     reorderKeyboardInstructions:
-      'Järjestä sarakkeita niiden nykyisen kiinnitysalueen sisällä painamalla Ctrl+Vaihto+Nuoli vasemmalle tai ' +
-      'Ctrl+Vaihto+Nuoli oikealle. macOS:ssä paina Komento+Vaihto+Nuoli vasemmalle tai Komento+Vaihto+Nuoli oikealle.',
+      'Siirrä saraketta kiinnitysalueensa sisällä painamalla Ctrl+Vaihto ja Nuoli vasemmalle - tai Nuoli oikealle -näppäintä. Käytä macOS:ssä Komento-näppäintä Ctrl-näppäimen sijaan.',
     resizeKeyboardInstructions:
-      'Kun sarakeotsikon kokoa voi muuttaa, muuta sarakkeen leveyttä painamalla Alt-näppäintä ja Nuoli vasemmalle - ' +
-      'tai Nuoli oikealle -näppäintä. Siirry pienimpään tai suurimpaan leveyteen painamalla Alt-näppäintä ja Home- ' +
-      'tai End-näppäintä.',
+      'Muuta sarakkeen leveyttä painamalla Alt-näppäintä ja Nuoli vasemmalle - tai Nuoli oikealle -näppäintä. Valitse pienin tai suurin leveys painamalla Alt+Home tai Alt+End.',
     tableSummary: ({
       pageCountText,
       pageText,
@@ -58,9 +53,9 @@ export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
       let summary: string;
 
       if (visibleRowsValue === 0) {
-        summary = `Yhtään riviä ei näytetä juuri nyt. ${visible}.`;
+        summary = `Ei rivejä näkyvissä. ${visible}.`;
       } else if (totalRowsValue !== visibleRowsValue) {
-        summary = `Näytetään ${visibleRowsText} ${rows(visibleRowsValue)} ${totalRowsText} rivistä. ${visible}.`;
+        summary = `Näytetään ${visibleRowsText} / ${totalRowsText} ${rows(totalRowsValue)}. ${visible}.`;
       } else {
         summary = `Näytetään ${visibleRowsText} ${rows(visibleRowsValue)}. ${visible}.`;
       }
@@ -88,14 +83,14 @@ export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
       }
 
       if (query) {
-        return `Näytetään ${visibleRowsText} hakua "${query}" ${matchingRows(visibleRowsValue)}.`;
+        return `${visibleRowsText} hakua "${query}" ${matchingRows(visibleRowsValue)}.`;
       }
 
       if (filterState === 'column') {
-        return `Näytetään ${visibleRowsText} ${filteredRows(visibleRowsValue)}.`;
+        return `${visibleRowsText} ${filteredRows(visibleRowsValue)}.`;
       }
 
-      return `Näytetään kaikki ${visibleRowsText} ${rows(visibleRowsValue)}.`;
+      return `Kaikki rivit: ${visibleRowsText}.`;
     },
     columnVisibilityChange: ({ changedColumns, visibleColumnsValue, visibleColumnsText }) => {
       const summary = `Näkyvissä ${visibleColumnsText} ${columns(visibleColumnsValue)}.`;
@@ -109,11 +104,11 @@ export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
       return summary;
     },
     pageSizeChange: ({ pageCountText, pageSizeValue, pageSizeText, pageText }) =>
-      `Näytetään ${pageSizeText} ${rows(pageSizeValue)} sivua kohden. Sivu ${pageText} / ${pageCountText}.`,
+      `${pageSizeText} ${rows(pageSizeValue)} sivua kohden. Sivu ${pageText} / ${pageCountText}.`,
     pageChange: ({ pageCountText, pageText, visibleRowsValue, visibleRowsText }) =>
       `Sivu ${pageText} / ${pageCountText}. Näytetään ${visibleRowsText} ${rows(visibleRowsValue)}.`,
     columnReorder: ({ label, positionText, totalText, zone }) =>
-      `Sarake ${label} siirrettiin sijaintiin ${positionText} / ${totalText} ${columnZone(zone)}.`,
+      `Sarake ${label} siirretty paikkaan ${positionText} / ${totalText}, ${columnZone(zone)}.`,
     columnResize: ({ label, widthText, atMinimum, atMaximum }) =>
       `Sarakkeen ${label} leveys on ${widthText} pikseliä${resizeBoundSuffix(atMinimum, atMaximum)}.`,
     selectionChange: ({ selectedCountValue, selectedCountText, totalRowsValue, totalRowsText }) => {

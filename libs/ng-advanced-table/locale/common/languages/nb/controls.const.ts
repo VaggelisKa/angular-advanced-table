@@ -14,12 +14,8 @@ export const NAT_NB_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     accessibilityLabels: {
       visibilitySummary: ({ visibleColumnCountText, totalColumnCountText }) =>
         `${visibleColumnCountText} / ${totalColumnCountText} synlige`,
-      toggleColumnAriaLabel: ({ columnLabel, toggleAction, visibilityState }) => {
-        const state = visibilityState === 'visible' ? 'er synlig' : 'er skjult';
-        const action = toggleAction === 'hide' ? 'Skjul' : 'Vis';
-
-        return `${columnLabel} ${state}. ${action} kolonnen`;
-      },
+      toggleColumnAriaLabel: ({ columnLabel, visibilityState }) =>
+        `${columnLabel}, ${visibilityState === 'visible' ? 'vist' : 'skjult'}`,
       columnState: ({ visibilityState }) => (visibilityState === 'visible' ? 'Vist' : 'Skjult')
     }
   },
@@ -27,7 +23,7 @@ export const NAT_NB_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     groupAriaLabel: 'Rader per side',
     accessibilityLabels: {
       pageSizeOptionText: ({ pageSizeValue, pageSizeText }) => `${pageSizeText} ${rows(pageSizeValue)}`,
-      pageSizeOptionAriaLabel: ({ pageSizeValue, pageSizeText }) => `${pageSizeText} ${rows(pageSizeValue)} per side`
+      pageSizeOptionAriaLabel: ({ pageSizeValue, pageSizeText }) => `${pageSizeText} ${rows(pageSizeValue)}`
     }
   },
   pager: {
@@ -39,11 +35,11 @@ export const NAT_NB_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
     }
   },
   scrollControl: {
-    groupAriaLabel: 'Vannrett rulling i tabell',
+    groupAriaLabel: 'Vannrett rulling',
     accessibilityLabels: {
-      scrollLeftAriaLabel: 'Rull tabellen til venstre',
-      scrollRightAriaLabel: 'Rull tabellen til høyre',
-      scrollPositionAriaLabel: 'Vannrett rulleposisjon',
+      scrollLeftAriaLabel: 'Rull til venstre',
+      scrollRightAriaLabel: 'Rull til høyre',
+      scrollPositionAriaLabel: 'Rulleposisjon',
       scrollPositionText: ({ percentageText }) => `${percentageText} % rullet`
     }
   },
@@ -54,25 +50,25 @@ export const NAT_NB_CONTROLS_LOCALE_LABELS: NatTableControlsIntl = {
           return `Sorter etter ${label}`;
         }
 
-        const sortDescription = `${label} er sortert i ${sortDirection(sortState)} rekkefølge`;
+        const sortDescription = `Sorter etter ${label}, sortert ${sortDirection(sortState)}`;
 
         return sortPriority !== null && sortCount > 1
-          ? `${sortDescription}, sorteringsprioritet ${sortPriority} av ${sortCount}. Endre sortering`
-          : `${sortDescription}. Endre sortering`;
+          ? `${sortDescription}, sortering ${sortPriority} av ${sortCount}`
+          : sortDescription;
       },
-      menuButton: ({ label }) => `Åpne kolonnehandlinger for kolonnen ${label}`,
-      menuLabel: ({ label }) => `Kolonnehandlinger for kolonnen ${label}`,
-      pinButton: ({ label, toggleAction, pinSide }) => {
+      menuButton: ({ label }) => `Kolonnehandlinger for ${label}`,
+      menuLabel: ({ label }) => `Kolonnehandlinger for ${label}`,
+      pinButton: ({ toggleAction, pinSide }) => {
         const action = toggleAction === 'unpin' ? 'Løsne' : 'Fest';
 
-        return `${action} kolonnen ${label} ${pinSideText(pinSide, toggleAction)}`;
+        return `${action} ${pinSideText(pinSide, toggleAction)}`;
       },
       pinButtonText: ({ pinSide, toggleAction }) => {
         const action = toggleAction === 'unpin' ? 'Løsne' : 'Fest';
 
         return `${action} ${pinSideText(pinSide, toggleAction)}`;
       },
-      moveButton: ({ label, direction }) => `Flytt kolonnen ${label} ${side(direction)}`,
+      moveButton: ({ direction }) => `Flytt ${side(direction)}`,
       moveButtonText: ({ direction }) => `Flytt ${side(direction)}`
     }
   },

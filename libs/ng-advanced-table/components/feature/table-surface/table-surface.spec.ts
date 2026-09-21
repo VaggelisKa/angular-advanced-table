@@ -41,14 +41,14 @@ describe('FEATURE: NatTable UI', () => {
 
         expect(columnChip.getAttribute('aria-controls')).toBe(table.id);
         expect(columnChip.textContent.replaceAll(/\s+/g, ' ').trim()).toBe('Service Shown');
-        expect(columnChip.getAttribute('aria-label')).toBe('Service shown. Hide column');
+        expect(columnChip.getAttribute('aria-label')).toBe('Service, shown');
         expect(pageSizeSelect.getAttribute('aria-controls')).toBe(table.id);
         expect(pageSizeSelect.getAttribute('aria-label')).toBe('Rows per page');
         const firstOption = pageSizeSelect.querySelector('option') as HTMLOptionElement;
 
         expect(firstOption.value).toBe('2');
         expect(firstOption.textContent.trim()).toBe('2 rows');
-        expect(firstOption.getAttribute('aria-label')).toBe('2 rows per page');
+        expect(firstOption.getAttribute('aria-label')).toBe('2 rows');
         expect(pagerButton.getAttribute('aria-controls')).toBe(table.id);
         expect(scrollButton.getAttribute('aria-controls')).toBe(table.id);
         expect(scrollRange.getAttribute('aria-controls')).toBe(table.id);

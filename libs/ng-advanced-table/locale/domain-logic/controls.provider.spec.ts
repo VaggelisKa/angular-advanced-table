@@ -167,7 +167,7 @@ describe('FEATURE: English companion-control accessibility copy', () => {
 
     describe('WHEN: locks the toggle-column aria label', () => {
       it('THEN: it keeps column visibility aria copy stable', () => {
-        expect(labels?.toggleColumnAriaLabel?.(visibilityContext)).toBe('Service shown. Hide column');
+        expect(labels?.toggleColumnAriaLabel?.(visibilityContext)).toBe('Service, shown');
       });
     });
   });
@@ -187,7 +187,7 @@ describe('FEATURE: English companion-control accessibility copy', () => {
 
     describe('WHEN: locks the page-size option aria label', () => {
       it('THEN: it keeps page-size aria copy stable', () => {
-        expect(labels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows per page');
+        expect(labels?.pageSizeOptionAriaLabel?.(pageSizeContext)).toBe('25 rows');
       });
     });
   });
@@ -228,27 +228,25 @@ describe('FEATURE: English companion-control accessibility copy', () => {
 
     describe('WHEN: locks the sorted sort-button label', () => {
       it('THEN: it keeps sorted header action copy stable', () => {
-        expect(labels?.sortButton?.(sortedHeaderContext)).toBe(
-          'Service sorted in ascending order, sort priority 1 of 2. Change sorting'
-        );
+        expect(labels?.sortButton?.(sortedHeaderContext)).toBe('Sort by Service, sorted ascending, sort 1 of 2');
       });
     });
 
     describe('WHEN: locks the menu-button label', () => {
       it('THEN: it keeps menu button copy stable', () => {
-        expect(labels?.menuButton?.({ label: 'Service' })).toBe('Open column actions for Service column');
+        expect(labels?.menuButton?.({ label: 'Service' })).toBe('Service column actions');
       });
     });
 
     describe('WHEN: locks the menu label', () => {
       it('THEN: it keeps menu copy stable', () => {
-        expect(labels?.menuLabel?.({ label: 'Service' })).toBe('Column actions for Service column');
+        expect(labels?.menuLabel?.({ label: 'Service' })).toBe('Service column actions');
       });
     });
 
     describe('WHEN: locks the pin-button label', () => {
       it('THEN: it keeps pin button aria copy stable', () => {
-        expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe('Pin left: Service column');
+        expect(labels?.pinButton?.(unpinnedHeaderContext)).toBe('Pin left');
       });
     });
 
@@ -260,7 +258,7 @@ describe('FEATURE: English companion-control accessibility copy', () => {
 
     describe('WHEN: locks the move-button label', () => {
       it('THEN: it keeps move button aria copy stable', () => {
-        expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe('Move Service column right');
+        expect(labels?.moveButton?.({ label: 'Service', direction: 'right' })).toBe('Move right');
       });
     });
 
