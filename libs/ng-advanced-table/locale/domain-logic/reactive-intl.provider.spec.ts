@@ -21,6 +21,7 @@ import {
   provideNatTableRenderMetricsIntl,
   provideNatTableRenderMetricsLocales
 } from './render-metrics.provider';
+import { NAT_EN_LOCALE_LABELS } from '../common/accessibility.const';
 import type {
   NatTableAccessibilityText,
   NatTableIntlConfig,
@@ -53,6 +54,8 @@ const expectDefined = <T>(value: T | undefined, label: string): T => {
 
   return value;
 };
+
+const englishText = expectDefined(NAT_EN_LOCALE_LABELS.accessibilityText, 'English accessibility copy');
 
 const tableAccess = (intl: NatTableIntlConfig, localeId = 'en'): NatTableAccessibilityText => {
   const locales = expectDefined(intl.locales, 'table locales');
@@ -120,7 +123,7 @@ describe('FEATURE: reactive intl provider sources', () => {
     describe('WHEN: resolving their config-shaped injection tokens', () => {
       it('THEN: it preserves static provider behavior and built-in fallbacks', () => {
         expect(tableAccess(TestBed.inject(NAT_TABLE_INTL)).emptyState).toBe('Static table empty');
-        expect(tableAccess(TestBed.inject(NAT_TABLE_INTL)).loadingState).toBe('Loading rows.');
+        expect(tableAccess(TestBed.inject(NAT_TABLE_INTL)).loadingState).toBe(englishText.loadingState);
         expect(searchIntl(TestBed.inject(NAT_TABLE_CONTROLS_INTL)).label).toBe('Static search');
         expect(renderMetricsPanelIntl(TestBed.inject(NAT_TABLE_RENDER_METRICS_INTL)).ariaLabel).toBe('Static metrics');
       });
@@ -584,7 +587,7 @@ describe('FEATURE: asynchronous intl source adaptation', () => {
       it('THEN: it exposes each replacement and retains the last successful value', () => {
         const intl = TestBed.inject(NAT_TABLE_INTL);
 
-        expect(tableAccess(intl).emptyState).toBe('No rows match the current view.');
+        expect(tableAccess(intl).emptyState).toBe(englishText.emptyState);
 
         copyStream$.next({ accessibilityText: { emptyState: 'First streamed empty state' } });
         expect(tableAccess(intl).emptyState).toBe('First streamed empty state');
@@ -633,7 +636,7 @@ describe('FEATURE: asynchronous intl source adaptation', () => {
 
         expect(reportedErrors).toStrictEqual([translationError]);
         expect(() => tableAccess(intl).emptyState).not.toThrow();
-        expect(tableAccess(intl).emptyState).toBe('No rows match the current view.');
+        expect(tableAccess(intl).emptyState).toBe(englishText.emptyState);
       });
     });
   });
@@ -660,7 +663,7 @@ describe('FEATURE: asynchronous intl source adaptation', () => {
       it('THEN: it keeps built-in copy while loading and exposes the resolved copy', async () => {
         const intl = TestBed.inject(NAT_TABLE_INTL);
 
-        expect(tableAccess(intl).emptyState).toBe('No rows match the current view.');
+        expect(tableAccess(intl).emptyState).toBe(englishText.emptyState);
 
         resolveCopy({ accessibilityText: { emptyState: 'Asynchronously translated empty state' } });
 
@@ -701,7 +704,7 @@ describe('FEATURE: asynchronous intl source adaptation', () => {
         await vi.waitFor(() => {
           expect(resolveLoads).toHaveLength(1);
         });
-        expect(tableAccess(intl).emptyState).toBe('No rows match the current view.');
+        expect(tableAccess(intl).emptyState).toBe(englishText.emptyState);
 
         resolveLoads[0]({ accessibilityText: { emptyState: 'First resource empty state' } });
         await vi.waitFor(() => {

@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { NAT_TABLE_INTL, provideNatTableIntl } from './accessibility.provider';
 import { NAT_TABLE_CONTROLS_INTL, provideNatTableControlsIntl } from './controls.provider';
 import { NAT_TABLE_RENDER_METRICS_INTL, provideNatTableRenderMetricsIntl } from './render-metrics.provider';
+import { NAT_EN_LOCALE_LABELS } from '../common/accessibility.const';
 import type { NatTableAccessibilityText, NatTableIntlConfig } from '../common/accessibility.type';
 import type { NatTableControlsIntl, NatTableControlsIntlConfig } from '../common/controls.type';
 import type { NatTableRenderMetricsIntlConfig, NatTableRenderMetricsWidgetsIntl } from '../common/render-metrics.type';
@@ -71,7 +72,7 @@ describe('FEATURE: injectable locale provider factories', () => {
         const accessibilityText = tableAccess(TestBed.inject(NAT_TABLE_INTL), 'en');
 
         expect(accessibilityText?.emptyState).toBe('Translated empty state');
-        expect(accessibilityText?.keyboardInstructions).toContain('Use arrow keys');
+        expect(accessibilityText?.keyboardInstructions).toBe(NAT_EN_LOCALE_LABELS.accessibilityText?.keyboardInstructions);
       });
     });
   });
