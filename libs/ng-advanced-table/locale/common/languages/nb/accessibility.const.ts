@@ -29,7 +29,7 @@ export const NAT_NB_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Bruk piltastene for å flytte mellom celler. Hvis en celle bare inneholder en knapp eller en lenke, får knappen eller lenken fokus direkte. Ellers bruker du Enter for å betjene kontrollene, Tab og Skift+Tab for å flytte mellom dem og Esc for å gå tilbake til cellen.',
+      'Bruk piltastene for å flytte mellom celler. Hvis en celle bare inneholder én kontroll som ikke bruker piltaster, får kontrollen fokus direkte. Ellers bruker du Enter for å betjene kontrollene, Tab og Skift+Tab for å flytte mellom dem og Esc for å gå tilbake til cellen.',
     emptyState: 'Ingen rader samsvarer med gjeldende visning.',
     loadingState: 'Laster rader.',
     errorState: 'Radene kunne ikke lastes.',

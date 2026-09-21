@@ -45,7 +45,7 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
     listPageSizeChange,
     listPageChange,
     keyboardInstructions:
-      'Use arrow keys to move between cells. A cell whose only content is a button or link focuses it directly. ' +
+      'Use arrow keys to move between cells. A cell whose only content is one control that does not need arrow keys focuses it directly. ' +
       'Elsewhere, press Enter to use the controls in a cell, Tab and Shift+Tab to move between them, ' +
       'and Escape to return to the cell.',
     emptyState: 'No rows match the current view.',

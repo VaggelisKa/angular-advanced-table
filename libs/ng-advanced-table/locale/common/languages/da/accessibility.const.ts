@@ -29,7 +29,7 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Brug piletasterne til at flytte mellem celler. Hvis en celle kun indeholder en knap eller et link, får knappen eller linket fokus direkte. Ellers bruges Enter til at betjene kontrollerne, Tab og Skift+Tab til at flytte mellem dem og Esc til at vende tilbage til cellen.',
+      'Brug piletasterne til at flytte mellem celler. Hvis en celle kun indeholder én kontrol, der ikke bruger piletaster, får kontrollen fokus direkte. Ellers bruges Enter til at betjene kontrollerne, Tab og Skift+Tab til at flytte mellem dem og Esc til at vende tilbage til cellen.',
     emptyState: 'Ingen rækker matcher den aktuelle visning.',
     loadingState: 'Indlæser rækker.',
     errorState: 'Rækkerne kunne ikke indlæses.',

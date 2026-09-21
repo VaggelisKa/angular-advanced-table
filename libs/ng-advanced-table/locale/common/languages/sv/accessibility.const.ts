@@ -29,7 +29,7 @@ export const NAT_SV_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Använd piltangenterna för att flytta mellan celler. Om en cell bara innehåller en knapp eller en länk får knappen eller länken fokus direkt. Annars trycker du på Retur för att använda kontrollerna, Tabb och Skift+Tabb för att flytta mellan dem och Esc för att återgå till cellen.',
+      'Använd piltangenterna för att flytta mellan celler. Om en cell bara innehåller en kontroll som inte använder piltangenter får kontrollen fokus direkt. Annars trycker du på Retur för att använda kontrollerna, Tabb och Skift+Tabb för att flytta mellan dem och Esc för att återgå till cellen.',
     emptyState: 'Inga rader matchar den aktuella vyn.',
     loadingState: 'Läser in rader.',
     errorState: 'Raderna kunde inte läsas in.',

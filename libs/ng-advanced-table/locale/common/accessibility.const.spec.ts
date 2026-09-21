@@ -123,9 +123,9 @@ describe('FEATURE: Nordic keyboard instruction wording', () => {
   describe('GIVEN: the Nordic accessibility dictionaries', () => {
     describe('WHEN: explaining focus inside a cell with a single control', () => {
       it.each([
-        ['da', 'får knappen eller linket fokus direkte.'],
-        ['sv', 'får knappen eller länken fokus direkt.'],
-        ['nb', 'får knappen eller lenken fokus direkte.'],
+        ['da', 'får kontrollen fokus direkte.'],
+        ['sv', 'får kontrollen fokus direkt.'],
+        ['nb', 'får kontrollen fokus direkte.'],
         ['fi', 'kohdistus siirtyy suoraan siihen.']
       ])('THEN: it identifies the control as the focus target in %s', (localeId, phrase) => {
         expect(accessibilityTextOf(localeId).keyboardInstructions).toContain(phrase);

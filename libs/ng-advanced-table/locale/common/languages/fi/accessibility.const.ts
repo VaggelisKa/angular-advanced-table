@@ -30,7 +30,7 @@ export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
     listPageChange,
     listSubHeaderRow,
     keyboardInstructions:
-      'Siirry solujen välillä nuolinäppäimillä. Jos solun ainoa sisältö on painike tai linkki, kohdistus siirtyy suoraan siihen. Muissa soluissa käytä ohjaimia painamalla Enter, siirry niiden välillä sarkaimella ja näppäinyhdistelmällä Vaihto+Sarkain ja palaa soluun painamalla Esc.',
+      'Siirry solujen välillä nuolinäppäimillä. Jos solun ainoa sisältö on ohjain, joka ei käytä nuolinäppäimiä, kohdistus siirtyy suoraan siihen. Muissa soluissa käytä ohjaimia painamalla Enter, siirry niiden välillä sarkaimella ja näppäinyhdistelmällä Vaihto+Sarkain ja palaa soluun painamalla Esc.',
     emptyState: 'Mikään rivi ei vastaa nykyistä näkymää.',
     loadingState: 'Ladataan rivejä.',
     errorState: 'Rivien lataaminen epäonnistui.',
