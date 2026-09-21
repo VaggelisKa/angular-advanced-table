@@ -45,8 +45,8 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-          # Full history + tags: the snapshot version counter is
-          # `git rev-list --count` from the last v* tag.
+          # Full history + tags: the snapshot version counter walks back
+          # through the version plans to the last v* tag.
           fetch-depth: 0
           persist-credentials: false
 

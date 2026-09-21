@@ -3,7 +3,7 @@
 - Every change touching library behavior, public API, docs, examples, or tests adds a Nx version plan in `.nx/version-plans/` in the same task, unless the user explicitly says not to. One plan per unreleased unit of work: fold follow-ups into the pending plan that already covers them (and fix sentences they made inaccurate) instead of adding a second file. Showcase-only changes get no plan. Do not edit unrelated plans.
 - Frontmatter uses explicit names (`ng-advanced-table: patch` / `minor`), never `__default__`.
 - Versioning is deliberately not SemVer: breaking changes are `minor` (API replacements, features, broad behavior changes) or `patch` (fixes, refactors, docs, tests). Never create a `major` plan unless the user explicitly asks.
-- Nightly `@next` is snapshot-only via `tools/set-nightly-version.mjs`; never run `nx release` or consume pending plans, changelogs, or tags for it.
+- Nightly `@next` is snapshot-only via `tools/set-nightly-version.mjs`; never run `nx release` or consume pending plans, changelogs, or tags for it. Changing the stamper runs `pnpm run test:nightly-version`.
 
 ## Workspace Tooling
 
