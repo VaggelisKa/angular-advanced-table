@@ -129,6 +129,7 @@ These are the most common stable `ng-advanced-table` tokens to override directly
 | `--nat-table-header-border-color`         | Header divider                                                                  |
 | `--nat-table-header-border-width`         | Header divider width                                                            |
 | `--nat-table-row-background`              | Default body row background                                                     |
+| `--nat-table-row-min-height`              | Minimum body row height; `auto` (content-driven) by default                     |
 | `--nat-table-row-background-hover`        | Hovered row background                                                          |
 | `--nat-table-row-background-focus`        | Focus-within row background                                                     |
 | `--nat-table-pinned-background`           | Pinned cell background                                                          |

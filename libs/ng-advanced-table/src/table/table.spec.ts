@@ -213,6 +213,22 @@ describe('FEATURE: NatTable', () => {
         expect(cssText).not.toContain('border-bottom-style');
       });
 
+      it('THEN: it drives the body row floor from the row min-height token, content-sized by default', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const rowRule = tableStyles.find(
+          (rule) => rule.selectorText.startsWith('.data-row') && rule.style.getPropertyValue('height') !== ''
+        );
+
+        const cssText = rowRule?.cssText.replaceAll(/\s+/gu, ' ') ?? '';
+
+        expect(cssText).toContain('height: var(--nat-table-row-min-height, var(--sys-nat-table-row-min-height, auto))');
+        expect(rowRule?.style.getPropertyValue('min-height')).toBe('');
+      });
+
       it('THEN: it keeps constrained pinned content clipped without enabling pinned-edge shadows by default', () => {
         fixture.detectChanges();
 

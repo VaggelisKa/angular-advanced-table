@@ -216,6 +216,7 @@
 
   /* Rows */
   --nat-table-row-background: transparent;
+  --nat-table-row-min-height: auto;
   --nat-table-row-background-focus: color-mix(in srgb, var(--nat-table-color-accent) 6%, var(--nat-table-color-surface));
   --nat-table-row-background-focus-pinned: color-mix(in srgb, var(--nat-table-color-accent) 6%, var(--nat-table-color-surface));
   --nat-table-row-background-hover: color-mix(in srgb, var(--nat-table-color-accent) 7%, transparent);

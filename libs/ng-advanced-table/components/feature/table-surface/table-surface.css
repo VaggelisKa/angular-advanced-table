@@ -111,6 +111,7 @@
   --sys-nat-table-region-overscroll-behavior-x: var(--nat-table-region-overscroll-behavior-x);
   --sys-nat-table-region-overscroll-behavior-y: var(--nat-table-region-overscroll-behavior-y);
   --sys-nat-table-min-height: var(--nat-table-min-height);
+  --sys-nat-table-row-min-height: var(--nat-table-row-min-height);
   --sys-nat-table-sticky-top: var(--nat-table-sticky-top);
   --sys-nat-table-z-index-sticky-header: var(--nat-table-z-index-sticky-header);
   --sys-nat-table-z-index-pinned-cell: var(--nat-table-z-index-pinned-cell);
