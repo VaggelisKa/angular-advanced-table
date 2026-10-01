@@ -79,5 +79,33 @@ test.describe('FEATURE: Theming inheritance', () => {
         await expect.poll(async () => computedStyle(listItem(page), 'border-top-color')).not.toBe(stockBorderColor);
       });
     });
+
+    test.describe('WHEN: the row min-height token is set on a wrapper ancestor', () => {
+      test('THEN: it raises short rows to the floor and still lets taller content grow a row', async ({ page }) => {
+        const row = dataCell(page).locator('xpath=ancestor::tr[1]');
+        const rowHeight = async (): Promise<number> => row.evaluate((element) => element.getBoundingClientRect().height);
+
+        const contentHeight = await rowHeight();
+
+        expect(contentHeight).toBeLessThan(96);
+
+        await test.step('THEN: it raises the row to the configured floor', async () => {
+          await setWrapperTokens(page, { '--nat-table-row-min-height': '96px' });
+
+          await expect.poll(rowHeight).toBe(96);
+        });
+
+        await test.step('THEN: it lets content taller than the floor grow the row', async () => {
+          await dataCell(page).evaluate((element) => {
+            const filler = document.createElement('div');
+
+            filler.style.height = '160px';
+            element.append(filler);
+          });
+
+          await expect.poll(rowHeight).toBeGreaterThan(160);
+        });
+      });
+    });
   });
 });

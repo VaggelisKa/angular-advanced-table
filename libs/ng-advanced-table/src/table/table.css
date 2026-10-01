@@ -335,7 +335,11 @@ tbody .data-row:last-child .data-cell {
   transition: transform 180ms ease;
 }
 
+/* `height` on a table row is a floor, not a cap: content taller than the value
+   still grows the row, so the token is a minimum row height. Table rows ignore
+   `min-height`, which is why the longhand is `height`. */
 .data-row {
+  height: var(--nat-table-row-min-height, var(--sys-nat-table-row-min-height, auto));
   background: var(--nat-table-row-background, var(--sys-nat-table-row-background, transparent));
 }
 
