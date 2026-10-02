@@ -165,6 +165,23 @@ describe('FEATURE: NatTable pagination and search control registration', () => {
     });
   });
 
+  describe('GIVEN: no search control and no globalFilter at first render', () => {
+    describe('WHEN: the consumer supplies a globalFilter later, then changes it again', () => {
+      it('THEN: it warns once after the later value arrives', async () => {
+        await render(() => undefined);
+
+        expect(warningsMatching(SEARCH_WARNING)).toStrictEqual([]);
+
+        host.state.set({ globalFilter: 'alpha' });
+        await fixture.whenStable();
+        host.state.set({ globalFilter: 'beta' });
+        await fixture.whenStable();
+
+        expect(warningsMatching(SEARCH_WARNING)).toHaveLength(1);
+      });
+    });
+  });
+
   describe('GIVEN: an initial globalFilter and no search control', () => {
     describe('WHEN: a search control registers later', () => {
       it('THEN: it reports the seeded filter and applies it once search registers', async () => {
