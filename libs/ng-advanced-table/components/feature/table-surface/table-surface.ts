@@ -26,8 +26,6 @@ import { computeNatTableStateDiff } from '../../utils/table-state-diff.util';
 @Component({
   selector: 'nat-table-surface',
   template: `<div class="surface">
-    <ng-content name="table-pager" />
-
     <ng-content />
   </div>`,
   styleUrl: './table-surface.css',
