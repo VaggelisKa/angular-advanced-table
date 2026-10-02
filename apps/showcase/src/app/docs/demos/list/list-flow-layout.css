@@ -30,8 +30,7 @@
   --nat-list-item-gap: 0.5rem 1rem;
   --nat-list-item-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
   --nat-list-item-areas: 'customer total change' 'note note note';
-}
 
-.list-flow-demo-list .list-field-value {
+  /* Inherited by the field values; the list's internals are not styled directly. */
   font-variant-numeric: tabular-nums;
 }

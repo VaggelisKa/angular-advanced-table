@@ -10,11 +10,17 @@ import type { Row } from '../test-helpers/table-data.helper';
 const queryAll = <T extends HTMLElement>(fixture: ComponentFixture<ListHost>, selector: string): T[] =>
   Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<T>(selector));
 
+const FIELD = '[data-testid="nat-list-field"]';
+
+const fieldWidth = (field: HTMLElement | null | undefined): string =>
+  field?.style.getPropertyValue('--sys-nat-table-list-field-width') ?? '';
+
 describe('FEATURE: NatList item layouts (grid areas vs. wrapping flow slots)', () => {
   let fixture: ComponentFixture<ListHost>;
   let host: ListHost;
 
   const getList = (): NatList<Row> => fixture.debugElement.query(By.directive(NatList)).componentInstance as NatList<Row>;
+  const getListHost = (): HTMLElement => fixture.debugElement.query(By.directive(NatList)).nativeElement as HTMLElement;
 
   const render = async (): Promise<void> => {
     fixture.detectChanges();
@@ -38,16 +44,14 @@ describe('FEATURE: NatList item layouts (grid areas vs. wrapping flow slots)', (
     });
 
     describe('WHEN: the list renders', () => {
-      it('THEN: it marks the items as flow and points every field at its width token with an equal-split default', async () => {
+      it('THEN: it exposes the flow layout on the host and points every field at its width token with an equal-split default', async () => {
         await render();
 
-        const listHost = queryAll(fixture, 'nat-list')[0];
         const items = queryAll(fixture, '[data-testid="nat-list-item"]');
-        const fields = Array.from(items[0].querySelectorAll<HTMLElement>('.list-field'));
+        const fields = Array.from(items[0].querySelectorAll<HTMLElement>(FIELD));
 
-        expect(listHost.dataset['itemLayout']).toBe('flow');
-        expect(items.every((item) => item.classList.contains('list-item--flow'))).toBe(true);
-        expect(fields.map((field) => field.style.getPropertyValue('--sys-nat-table-list-field-width'))).toStrictEqual([
+        expect(getListHost().dataset['itemLayout']).toBe('flow');
+        expect(fields.map(fieldWidth)).toStrictEqual([
           'var(--nat-list-field-width-name, calc(100% / 4))',
           'var(--nat-list-field-width-region, calc(100% / 4))',
           'var(--nat-list-field-width-status, calc(100% / 4))',
@@ -62,40 +66,37 @@ describe('FEATURE: NatList item layouts (grid areas vs. wrapping flow slots)', (
         getList().patchState({ columnVisibility: { region: false } });
         await render();
 
-        const firstField = queryAll(fixture, '[data-testid="nat-list-item"]')[0].querySelector<HTMLElement>('.list-field');
+        const firstField = queryAll(fixture, '[data-testid="nat-list-item"]')[0].querySelector<HTMLElement>(FIELD);
 
-        expect(firstField?.style.getPropertyValue('--sys-nat-table-list-field-width')).toBe(
-          'var(--nat-list-field-width-name, calc(100% / 3))'
-        );
+        expect(fieldWidth(firstField)).toBe('var(--nat-list-field-width-name, calc(100% / 3))');
       });
     });
 
     describe('WHEN: the layout is switched back to grid', () => {
-      it('THEN: it drops the flow class and width bridges so the grid areas take over again', async () => {
+      it('THEN: it drops the width bridges so the grid areas take over again', async () => {
         await render();
         host.itemLayout.set('grid');
         await render();
 
-        const listHost = queryAll(fixture, 'nat-list')[0];
-        const firstItem = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
-        const firstField = firstItem.querySelector<HTMLElement>('.list-field');
+        const firstField = queryAll(fixture, '[data-testid="nat-list-item"]')[0].querySelector<HTMLElement>(FIELD);
 
-        expect(listHost.dataset['itemLayout']).toBe('grid');
-        expect(firstItem.classList.contains('list-item--flow')).toBe(false);
-        expect(firstField?.style.getPropertyValue('--sys-nat-table-list-field-width')).toBe('');
+        expect(getListHost().dataset['itemLayout']).toBe('grid');
+        expect(fieldWidth(firstField)).toBe('');
         expect(firstField?.style.getPropertyValue('grid-area')).toBe('name');
       });
     });
 
     describe('WHEN: item navigation is enabled alongside the flow layout', () => {
-      it('THEN: it applies the flow class to the gridcell items too', async () => {
+      it('THEN: it sizes the fields inside the gridcell items the same way', async () => {
         host.enableItemNavigation.set(true);
         await render();
 
         const cells = queryAll(fixture, '[data-testid="nat-list-item-cell"]');
 
         expect(cells.length).toBeGreaterThan(0);
-        expect(cells.every((cell) => cell.classList.contains('list-item--flow'))).toBe(true);
+        expect(cells.map((cell) => fieldWidth(cell.querySelector<HTMLElement>(FIELD)))).toStrictEqual(
+          cells.map(() => 'var(--nat-list-field-width-name, calc(100% / 4))')
+        );
       });
     });
   });

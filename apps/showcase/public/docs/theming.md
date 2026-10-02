@@ -161,7 +161,7 @@ Set the border-width tokens to `0` when a design needs to remove the outer table
 
 ### List Renderer Tokens (spike)
 
-The `nat-list` spike renderer lays every item out as a CSS grid whose field areas are named by column id, so consumers can position each column's field freely. These tokens are spike API and may change or be removed with the `NatList` spike.
+By default the `nat-list` spike renderer lays every item out as a CSS grid whose field areas are named by column id, so consumers can position each column's field freely. These tokens are spike API and may change or be removed with the `NatList` spike.
 
 | Token                                 | Purpose                                                                                                                                               |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |

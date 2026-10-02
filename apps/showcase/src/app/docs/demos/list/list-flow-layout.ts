@@ -19,8 +19,8 @@ type FlowDemoOrder = {
 type DemoWidth = 'wide' | 'narrow';
 
 const LAYOUT_OPTIONS: readonly DemoToggleOption<NatListItemLayout>[] = [
-  { value: 'flow', label: 'Flow' },
-  { value: 'grid', label: 'Grid' }
+  { value: 'flow', label: 'Flow', testId: 'list-flow-demo-layout-flow' },
+  { value: 'grid', label: 'Grid', testId: 'list-flow-demo-layout-grid' }
 ];
 
 const WIDTH_OPTIONS: readonly DemoToggleOption<DemoWidth>[] = [
@@ -54,8 +54,8 @@ const FLOW_DEMO_COLUMNS: ColumnDef<FlowDemoOrder, unknown>[] = [
 /**
  * Docs demo: the `flow` item layout. Fields that fit their slot stay on one
  * line and align across items; the one order whose total is wider than its
- * slot widens that field, and the change field that no longer fits wraps to
- * the next line in that item only. Narrowing the container shows the
+ * slot widens that field, and the change field after it no longer fits and
+ * wraps to the next line in that item only. Narrowing the container shows the
  * difference against the fixed `grid` tracks.
  */
 @Component({

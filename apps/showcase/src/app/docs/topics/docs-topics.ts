@@ -651,15 +651,15 @@ const listFlowLayoutSnippets = [
     'css',
     `
 /* One width token per visible column id: a percentage of the line, 100% for a
-   whole line. With no tokens set, the fields share the line equally. Stacking label over value keeps
-   a field's minimum width at its longest word, so a value that fits its slot
-   wraps internally before the field moves down. */
+   whole line. With no tokens set, the fields share the line equally.
+   Stacking label over value keeps a field's minimum width at its longest
+   word, so a value that fits its slot wraps internally before the field
+   moves down. */
 nat-list {
   --nat-list-field-width-customer: 50%;
   --nat-list-field-width-total: 25%;
   --nat-list-field-width-change: 25%;
   --nat-list-field-width-note: 100%;
-  --nat-list-flow-column-gap: 1rem;
   --nat-list-field-flex-direction: column;
 }
 `
@@ -1380,7 +1380,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         id: 'list-flow-layout',
         title: 'Flow item layout',
         description:
-          'itemLayout="flow" keeps fields aligned across items and reflows the line only in the item whose value does not fit its slot.',
+          'itemLayout="flow" keeps fitting fields aligned across items and reflows the line only in the item whose value does not fit its slot.',
         component: ListFlowLayout,
         snippets: listFlowLayoutSnippets
       },

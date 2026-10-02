@@ -74,8 +74,13 @@
    than the item itself.
    Fields neither grow nor shrink: growing would misalign the first line of a
    wrapped item against its neighbors, and shrinking below the slot is what
-   the min-content floor already prevents. */
-.list-item--flow .list-item-fields {
+   the min-content floor already prevents.
+   Child combinators throughout: a nested list rendered inside a field keeps
+   its own layout instead of inheriting these rules as a descendant.
+   The gutters sit half a column gap inside the item's inline padding, so that
+   padding must stay at least half `--nat-list-flow-column-gap` (documented)
+   or the fields box overhangs the item on the inline-end side. */
+.list-item--flow > .list-item-fields {
   --sys-nat-table-list-flow-gutter: calc(var(--nat-list-flow-column-gap, var(--sys-nat-table-list-flow-column-gap, 1rem)) / 2);
 
   display: flex;
@@ -84,9 +89,14 @@
   margin-inline: calc(-1 * var(--sys-nat-table-list-flow-gutter));
 }
 
-.list-item--flow .list-field {
+/* Longhands, not the `flex` shorthand: an invalid width token would reset the
+   whole shorthand to `0 1 auto` and let the field shrink; with longhands only
+   the basis falls back to `auto`. */
+.list-item--flow > .list-item-fields > .list-field {
   box-sizing: border-box;
-  flex: 0 0 var(--sys-nat-table-list-field-width, auto);
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: var(--sys-nat-table-list-field-width, auto);
   min-width: auto;
   max-width: 100%;
   padding-inline: var(--sys-nat-table-list-flow-gutter);
@@ -96,7 +106,7 @@
    field still widens to its longest word and wraps the line, and only a word
    wider than the whole item (which no slot can hold) breaks, as a last
    resort, instead of running past the item edge. */
-.list-item--flow .list-field-value {
+.list-item--flow > .list-item-fields > .list-field > .list-field-value {
   overflow-wrap: break-word;
 }
 

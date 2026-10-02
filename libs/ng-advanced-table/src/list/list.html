@@ -34,7 +34,8 @@
             [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
             [natListFieldArea]="column.id"
             [natListFieldWidth]="fieldWidth(column.id)"
-            class="list-field">
+            class="list-field"
+            data-testid="nat-list-field">
             <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
               @let headerDef = column.columnDef.header;
               @let headerContext = headerContexts.get(column.id);
@@ -46,7 +47,7 @@
                 {{ resolveColumnLabel(column) }}
               }
             </span>
-            <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value">
+            <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value" data-testid="nat-list-field-value">
               <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
                 {{ rendered }}
               </ng-container>

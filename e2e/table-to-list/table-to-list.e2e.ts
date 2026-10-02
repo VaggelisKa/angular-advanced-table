@@ -195,7 +195,7 @@ test.describe('FEATURE: Table to list', () => {
           const wideCustomer = await fieldBox(wide, 'customer');
           const wideTotal = await fieldBox(wide, 'total');
           const wideChange = await fieldBox(wide, 'change');
-          const totalValue = wide.locator('[data-column-id="total"] .list-field-value');
+          const totalValue = wide.locator('[data-column-id="total"] [data-testid="nat-list-field-value"]');
 
           // The fitting fields before it keep their slot, so the total still starts where it does in every other item.
           expect(wideTotal.x).toBeCloseTo(firstTotal.x, 0);
@@ -208,7 +208,7 @@ test.describe('FEATURE: Table to list', () => {
           await expect(totalValue).toHaveText('$1,234,567,890.50');
 
           const valueBox = await totalValue.boundingBox();
-          const customerBox = await wide.locator('[data-column-id="customer"] .list-field-value').boundingBox();
+          const customerBox = await wide.locator('[data-column-id="customer"] [data-testid="nat-list-field-value"]').boundingBox();
 
           // One line of text: an unbroken number is no taller than the customer value.
           expect(valueBox?.height ?? 0).toBeLessThanOrEqual((customerBox?.height ?? 0) + 1);
@@ -218,8 +218,8 @@ test.describe('FEATURE: Table to list', () => {
           const first = items.nth(0);
           const firstTotal = await fieldBox(first, 'total');
           const firstChange = await fieldBox(first, 'change');
-          const changeValue = first.locator('[data-column-id="change"] .list-field-value');
-          const totalValue = first.locator('[data-column-id="total"] .list-field-value');
+          const changeValue = first.locator('[data-column-id="change"] [data-testid="nat-list-field-value"]');
+          const totalValue = first.locator('[data-column-id="total"] [data-testid="nat-list-field-value"]');
 
           // "+12.5% (vs. last month)" is wider than its slot but its longest word is not:
           // the field keeps its slot on the first line and the secondary part drops inside it.
@@ -243,7 +243,11 @@ test.describe('FEATURE: Table to list', () => {
         });
 
         await test.step('THEN: switching to the grid layout keeps every field in its fixed track instead', async () => {
-          await panel.getByRole('button', { name: 'Grid' }).click();
+          const gridToggle = panel.getByTestId('list-flow-demo-layout-grid');
+
+          await gridToggle.click();
+          // Retrying assertion: on the prerendered page the click may replay after hydration.
+          await expect(gridToggle).toHaveAttribute('aria-pressed', 'true');
 
           const first = items.nth(0);
           const wide = items.nth(2);

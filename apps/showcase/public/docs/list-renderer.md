@@ -88,7 +88,7 @@ Leave it off for short lists: plain `role="list"` semantics are friendlier to sc
 
 ## Item Layout And Theming
 
-Every item is a CSS grid of named field areas — area names are column ids — so consumers lay fields out freely without touching the renderer:
+By default, every item is a CSS grid of named field areas — area names are column ids — so consumers lay fields out freely without touching the renderer:
 
 ```css
 nat-list {
@@ -103,8 +103,8 @@ The full token list (`--nat-list-*`, including the body-state tokens) is documen
 
 Grid tracks cannot wrap per item: when one value is wider than its track (a large number on a narrow screen, say) the grid either breaks it mid-value or lets it overflow, and the only alternative is a layout where every item wraps. `itemLayout="flow"` is the opt-in answer. It lays each item out as a wrapping row of proportional slots instead:
 
-- Fields whose values fit their slot stay on one line and keep the same width in every item, so columns still align across the list.
-- A field whose value is wider than its slot widens to fit it, and the fields that no longer fit the line wrap to the next line **in that item only**. Every other item keeps its single line.
+- Fields whose values fit their slot stay on one line and keep the same width in every item, so a column aligns across the list up to the first field that had to widen.
+- A field whose value is wider than its slot widens to fit it. The fields after it on that line shift along, and the ones that no longer fit the line wrap to the next line **in that item only**. Every other item keeps its single line.
 - A value that fits its slot wraps internally first, so a secondary part such as `(+4%)` drops to a second line before the field widens or anything moves down.
 - Values never break mid-word, so a long number stays whole; only a word wider than the whole item breaks, as a last resort, so it stays readable instead of overflowing. Keep values that must stay on one line free of breakable spaces.
 
@@ -114,7 +114,7 @@ Grid tracks cannot wrap per item: when one value is wider than its track (a larg
 </nat-table-surface>
 ```
 
-Slot widths are CSS, one token per column id, exactly like the grid area names: `--nat-list-field-width-<column-id>` is a percentage of the line (`100%` gives the field a whole line of its own). With no tokens set, the visible fields share the line equally. Once you set tokens, set one for every visible column (or hide the rest via column visibility), exactly as with `--nat-list-item-areas`: a column left without a token still takes its equal share of the full line, so a partial set no longer adds up to the line and can push a field onto a second line in every item. The gap between slots is `--nat-list-flow-column-gap` (`1rem`), carried as a gutter inside each slot so the percentages add up exactly. Column ids must be valid CSS identifiers, or escaped the way the token is written below.
+Slot widths are CSS, one token per column id, exactly like the grid area names: `--nat-list-field-width-<column-id>` is a percentage of the line (`100%` gives the field a whole line of its own). With no tokens set, the visible fields share the line equally. Once you set tokens, set one for every visible column (or hide the rest via column visibility), exactly as with `--nat-list-item-areas`: a column left without a token still takes its equal share of the full line, so a partial set no longer adds up to the line and can push a field onto a second line in every item. The gap between slots is `--nat-list-flow-column-gap` (`1rem`), carried as a gutter inside each slot so the percentages add up exactly; keep the item's inline padding (`--nat-list-item-padding`) at least half that gap, or the gutters overhang the item edge. A column id that is not a plain CSS identifier is escaped in the token name the way CSS escapes it, so the column `customer.name` reads `--nat-list-field-width-customer\.name`. The host also exposes the active layout as `data-item-layout="grid"` or `"flow"` for consumer styling.
 
 ```css
 nat-list {
@@ -122,6 +122,7 @@ nat-list {
   --nat-list-field-width-total: 25%;
   --nat-list-field-width-change: 25%;
   --nat-list-field-width-note: 100%;
+  --nat-list-field-width-customer\.name: 50%; /* for a column with id "customer.name" */
 }
 ```
 
