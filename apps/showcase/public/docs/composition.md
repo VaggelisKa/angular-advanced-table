@@ -7,6 +7,7 @@ Composition is the main design point of the table entry points. `ng-advanced-tab
 | `ng-advanced-table`                | Core table, keyboard grid behavior, TanStack integration, state rows, row activation, accessibility announcements    |
 | `ng-advanced-table/components`     | Surface, pagination, column visibility, scroll controls, toolbar, header actions, selection column, export directive |
 | `ng-advanced-table/render-metrics` | Optional render-metrics store, filter, panel, and synthetic metrics column                                           |
+| `ng-advanced-table/virtualization` | Opt-in fixed-height row virtualization and remote windowing for `NatTable`                                           |
 | `ng-advanced-table/locale`         | Built-in locale dictionaries and provider helpers for core accessibility, controls, and render-metrics copy          |
 | Your app                           | Search inputs, domain filters, row menus, bulk actions, fetch/retry flows, dialogs, routing, permissions             |
 
@@ -27,17 +28,51 @@ Most companion controls should live inside `NatTableSurface`. The surface create
 </nat-table-surface>
 ```
 
-The table registers itself as the controller for controls in that surface. In unusual layouts, controls that accept `for` can target an exported table instance directly.
+The table registers itself as the controller for controls in that surface.
 
-```html
-<nat-table #grid="natTable" [data]="rows()" [columns]="columns" accessibleName="Open positions" />
+### Which Element Owns Which Input
 
-<nat-table-toolbar [for]="grid" accessibleName="Detached table actions">
-  <button type="button" natToolbarItem natTableExport [for]="grid">Export</button>
-</nat-table-toolbar>
+`NatTable` owns the data-shaped inputs: `data`, `columns`, `getRowId`, `accessibleName` or `caption`, `dataStatus` and `error`, row selection (`enableRowSelection`, `selectionMode`), `globalFilterFn`, and sub-header grouping (`subHeaderColumn`, `subHeaderOrder`, `subHeaderLayout`, `enableSubHeaders`).
+
+`NatTableSurface` owns state and the interaction enablers: `[(state)]`, `initialState`, the per-slice `*Change` outputs, `mode` and `manualPageCount`, `enableSorting`, `enableMultiSort`, `enablePinning`, `enableColumnResizing` with `columnResizeMode` and `columnSizingMode`, `enableReordering`, `stickyHeader`, `direction`, `enableAnnouncements`, `locale`, `accessibilityText`, and `keybindings`. These are not inputs on `<nat-table>`; set them on the surface even when the surface wraps a single table.
+
+### Detached Controls
+
+Two companions accept an explicit `[for]` controller: `NatTableToolbar` and `NatTableExport`. An explicit `[for]` takes precedence over the scoped controller, so the control always targets that table. Every other companion resolves its table only through the surrounding `NatTableService` scope.
+
+`NatTable` always needs a `NatTableService` from an ancestor injector — a bare `<nat-table>` with no surface or provider throws. When you do not use `NatTableSurface`, provide the service on the host component that owns the table, then bind detached controls to the exported table instance:
+
+```ts
+import { Component, signal } from '@angular/core';
+import { NatTable, NatTableService, type ColumnDef } from 'ng-advanced-table';
+import { NatTableExport, NatTableToolbar, NatToolbarItem } from 'ng-advanced-table/components';
+
+interface PositionRow {
+  id: string;
+  symbol: string;
+}
+
+@Component({
+  selector: 'app-detached-positions',
+  imports: [NatTable, NatTableExport, NatTableToolbar, NatToolbarItem],
+  providers: [NatTableService],
+  template: `
+    <nat-table #grid="natTable" [data]="rows()" [columns]="columns" accessibleName="Open positions" />
+
+    <nat-table-toolbar [for]="grid" accessibleName="Detached table actions">
+      <button type="button" natToolbarItem natTableExport [for]="grid">Export</button>
+    </nat-table-toolbar>
+  `
+})
+export class DetachedPositions {
+  readonly rows = signal<readonly PositionRow[]>([]);
+  readonly columns: ColumnDef<PositionRow>[] = [
+    { accessorKey: 'symbol', header: 'Symbol', meta: { label: 'Symbol', rowHeader: true } }
+  ];
+}
 ```
 
-Prefer the scoped surface for normal pages. Use direct controller binding only when the layout requires controls outside the surface.
+Without a surface, configure surface-owned settings such as `enableSorting` by calling `patchState({ enableSorting: true })` on the `NatTableService` you provided. Prefer the scoped surface for normal pages. Use direct controller binding only when the layout requires controls outside the surface.
 
 ## Stock Controls
 
@@ -270,3 +305,14 @@ readonly columns = withNatTableHeaderActions(
 ```
 
 This prevents utility columns from being wrapped more than intended and lets header actions see the final column list. As above, columns reorder by default once `[enableReordering]="true"` is set; opt a column out of the generated move controls with `meta: { reorderable: false }`, or leave the surface off and opt individual columns in with `meta: { reorderable: true }`.
+
+## Scope
+
+Some TanStack Table features are intentionally not rendered. These column and row-model options type-check because `ColumnDef` is forwarded from TanStack, but the table renders nothing for them:
+
+- Footer rows (`footer`).
+- TanStack row grouping and aggregation (`aggregationFn`, `aggregatedCell`, `getGroupingValue`). For visual grouping of flat rows, see `/docs/sub-header-rows`.
+- Tree data and nested `subRows`.
+- Expandable detail rows.
+
+Infinite scroll is supported through `ng-advanced-table/virtualization`: use `(virtualRangeChange)` for fetch-on-approach, or remote windowing (`remoteRowCount` with `rowWindowOffset`) for datasets the table never holds in full. See `/docs/virtualization`.
