@@ -1407,6 +1407,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Selection column', path: '#selection-column' },
       { label: 'Single and multiple selection', path: '#single-and-multiple-selection' },
       { label: 'Direct selection checkboxes', path: '#direct-selection-checkboxes' },
+      { label: 'Reading selected rows', path: '#reading-selected-rows' },
       { label: 'Bulk actions', path: '#bulk-actions' }
     ],
     blocks: [
