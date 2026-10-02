@@ -55,7 +55,7 @@ class ProvidedTableHost {
 
 const missingServiceMessage = (selector: string): string =>
   `[ng-advanced-table] <${selector}> could not find a NatTableService. Wrap it in <nat-table-surface> ` +
-  `from 'ng-advanced-table/components', or add providers: [NatTableService] to a host component or directive.`;
+  `(ng-advanced-table/components), or add providers: [NatTableService] to a host component or directive.`;
 
 describe('FEATURE: Renderers require a NatTableService', () => {
   beforeEach(() => {

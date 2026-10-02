@@ -1298,7 +1298,7 @@ export class NatTableState<TData extends RowData = RowData> {
     console.warn(
       `[ng-advanced-table] <${renderer}> received a pagination state, but no pagination control is registered, so ` +
         `all rows render unpaginated. Add <nat-table-pagination>, <nat-table-pager>, or <nat-table-page-size> ` +
-        `from 'ng-advanced-table/components' inside the surface, or set pagination to manual mode.`
+        `(ng-advanced-table/components) inside the surface, or set pagination to manual mode.`
     );
 
     return true;

@@ -10,7 +10,7 @@ export const requireNatTableService = <TService>(service: TService | null, selec
   if (service === null) {
     throw new Error(
       `[ng-advanced-table] <${selector}> could not find a NatTableService. Wrap it in <nat-table-surface> ` +
-        `from 'ng-advanced-table/components', or add providers: [NatTableService] to a host component or directive.`
+        `(ng-advanced-table/components), or add providers: [NatTableService] to a host component or directive.`
     );
   }
 
