@@ -8,6 +8,7 @@ import {
   REORDER_CONTEXTS,
   RESIZE_CONTEXTS,
   SELECTION_CONTEXTS,
+  SHORTCUT_LABEL_CONTEXT,
   SORTING_CONTEXTS,
   SUB_HEADER_CONTEXTS,
   VISIBILITY_CONTEXTS
@@ -49,7 +50,8 @@ const renderAccessibilityCopy = (text: NatTableAccessibilityText): RenderedCopy[
   ...renderFormatter('selectionChange', text.selectionChange, SELECTION_CONTEXTS),
   ...renderFormatter('subHeaderRow', text.subHeaderRow, SUB_HEADER_CONTEXTS),
   ...renderFormatter('listSubHeaderRow', text.listSubHeaderRow, SUB_HEADER_CONTEXTS),
-  ...renderFormatter('placeholderRow', text.placeholderRow, [PLACEHOLDER_CONTEXT])
+  ...renderFormatter('placeholderRow', text.placeholderRow, [PLACEHOLDER_CONTEXT]),
+  ...renderFormatter('shortcutLabel', text.shortcutLabel, [SHORTCUT_LABEL_CONTEXT])
 ];
 
 const staticCopyOf = (text: NatTableAccessibilityText): RenderedCopy[] => [
@@ -94,6 +96,16 @@ describe('FEATURE: built-in table locale completeness', () => {
     describe('WHEN: inspecting the number formatter', () => {
       it.each(localeIds)('THEN: %s ships a working number formatter', (localeId) => {
         expect(formatsNumber(SHIPPED_TABLE_LOCALES[localeId].formatNumber, localeId), `${localeId}: formatNumber`).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN: the English table locale dictionary', () => {
+    describe('WHEN: formatting a keyboard-shortcut label', () => {
+      it('THEN: it appends the shortcut in parentheses after the label', () => {
+        const format = expectDefined(NAT_EN_LOCALE_LABELS.accessibilityText?.shortcutLabel, 'en: shortcutLabel');
+
+        expect(format(SHORTCUT_LABEL_CONTEXT)).toBe('Service (Shortcut: Control+Shift+ArrowLeft)');
       });
     });
   });
