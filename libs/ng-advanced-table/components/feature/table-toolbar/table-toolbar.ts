@@ -110,13 +110,10 @@ export class NatTableToolbar<TData extends RowData = RowData> {
 
   private readonly tableUiIntlConfig = inject(NAT_TABLE_CONTROLS_INTL);
   private readonly controller = injectNatTableUiController(this.for, 'nat-table-toolbar');
-  // The generic is the selection value type — this toolbar disables Aria's
-  // selection model entirely (see the pattern patches below), so widget
-  // `value`s only serve Aria's registry and must merely be unique.
-  private readonly ariaToolbar = inject(Toolbar, { self: true }) as Toolbar<unknown>;
+  private readonly ariaToolbar = inject(Toolbar, { self: true });
 
   /** Single touch point for Aria's private `_pattern` API — fix here if it ever renames. */
-  private get pattern(): Toolbar<unknown>['_pattern'] {
+  private get pattern(): Toolbar['_pattern'] {
     const { _pattern: pattern } = this.ariaToolbar;
 
     return pattern;
@@ -180,7 +177,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
    * Instance-level patches on the @angular/aria toolbar pattern. Each one
    * works around a behavior of the stock pattern that
    * breaks this toolbar; the aria-integration spec is the tripwire.
-   * Re-verify all four on every `@angular/aria` bump.
+   * Re-verify both on every `@angular/aria` bump.
    */
   private patchAriaToolbarPattern(): void {
     const pattern = this.pattern;
@@ -191,10 +188,6 @@ export class NatTableToolbar<TData extends RowData = RowData> {
       // No focus management: arrows, Home/End and friends belong to the
       // controls themselves.
       if (this.focusManagement() === 'none') return;
-
-      // Aria preventDefaults Enter/Space for its selection model (unused
-      // here) — that would kill native button activation and Space typing.
-      if (event.key === 'Enter' || event.key === ' ') return;
 
       // Text-entry widgets keep their caret keys — but a single-line <input>
       // hands Left/Right off to roving nav once the caret sits at the matching
@@ -208,18 +201,6 @@ export class NatTableToolbar<TData extends RowData = RowData> {
       originalOnKeydown(event);
     };
 
-    const originalOnPointerdown = pattern.onPointerdown.bind(pattern);
-
-    pattern.onPointerdown = (event: PointerEvent): void => {
-      if (this.focusManagement() === 'none') return;
-
-      // Aria preventDefaults every pointerdown — on text-entry widgets that
-      // kills caret placement and drag selection.
-      if (isNatToolbarTextEntryElement(event.target)) return;
-
-      originalOnPointerdown(event);
-    };
-
     const originalOnClick = pattern.onClick.bind(pattern);
 
     pattern.onClick = (event: MouseEvent): void => {
@@ -230,13 +211,6 @@ export class NatTableToolbar<TData extends RowData = RowData> {
       if (isNatToolbarTextEntryElement(event.target)) return;
 
       originalOnClick(event);
-    };
-
-    // Disable the selection model: select() would mutate the toolbar `values`
-    // model on Enter/Space/click — widget values exist only for Aria's
-    // registry, never as selection state.
-    pattern.select = (): void => {
-      // intentional no-op: selection model is disabled for this toolbar
     };
   }
 

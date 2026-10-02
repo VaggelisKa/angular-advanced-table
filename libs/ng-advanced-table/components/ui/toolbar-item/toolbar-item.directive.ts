@@ -17,17 +17,13 @@ import {
  * so it joins the toolbar's roving keyboard focus (Left/Right, Home/End) and
  * matches screen-reader order.
  *
- * Plain action buttons need nothing more than the bare attribute:
+ * Any interactive element needs nothing more than the bare attribute:
  * ```html
  * <button natToolbarItem natToolbarItemPosition="start">Export</button>
  * ```
  *
- * For toggle or otherwise selectable items, give each one a unique `value` as a
- * stable identity — one string per item, unique within the toolbar:
- * ```html
- * <button natToolbarItem="bold">Bold</button>
- * <button natToolbarItem="italic">Italic</button>
- * ```
+ * An attribute value (`natToolbarItem="export"`) is allowed as a readable
+ * label but carries no meaning — items need no unique value.
  *
  * `natToolbarItemPosition="start" | "center" | "end"` (default `start`) picks
  * the toolbar slot. It MUST be a static attribute — a binding
@@ -61,11 +57,7 @@ import {
 @Directive({
   selector: '[natToolbarItem]',
   providers: [{ provide: NAT_TOOLBAR_ITEM, useExisting: NatToolbarItem }],
-  // Aria's `value` is required; aliasing it to the always-present
-  // selector attribute lets a bare `natToolbarItem` satisfy it with `''`. Bare
-  // items then share value `''` (non-unique) — harmless while selection is
-  // disabled; pass a string per item if Aria selection is ever re-enabled.
-  hostDirectives: [{ directive: ToolbarWidget, inputs: ['value: natToolbarItem', 'disabled', 'id'] }],
+  hostDirectives: [{ directive: ToolbarWidget, inputs: ['disabled', 'id'] }],
   host: {
     '(focus)': 'redirectFocusToTarget($event)'
   }
