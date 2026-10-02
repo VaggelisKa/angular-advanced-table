@@ -24,14 +24,14 @@ Resolved published ranges and dependency classifications:
 
 | Package                   | Published range | Classification                                                             |
 | ------------------------- | --------------- | -------------------------------------------------------------------------- |
-| `@angular/core`           | `^22.0.2`       | Required peer; Angular framework singleton                                 |
-| `@angular/common`         | `^22.0.2`       | Required peer; Angular framework APIs                                      |
-| `@angular/aria`           | `^22.0.2`       | Required peer; grid, toolbar, and menu behaviors; pins `@angular/cdk`      |
-| `@angular/cdk`            | `^22.0.2`       | Required peer; drag-drop, bidi, and overlay integrations                   |
+| `@angular/core`           | `^22.2.0`       | Required peer; Angular framework singleton                                 |
+| `@angular/common`         | `^22.2.0`       | Required peer; Angular framework APIs                                      |
+| `@angular/aria`           | `^22.2.0`       | Required peer; grid, toolbar, and menu behaviors; pins `@angular/cdk`      |
+| `@angular/cdk`            | `^22.2.0`       | Required peer; drag-drop, bidi, and overlay integrations                   |
 | `@tanstack/angular-table` | `^8.21.4`       | Installed runtime dependency; table runtime and forwarded column contracts |
 | `tslib`                   | `^2.8.1`        | Runtime dependency installed with `ng-advanced-table`                      |
 
-Keep all Angular peers in app dependencies. Production entry points use `@angular/aria` and `@angular/cdk`. Install both at the same exact version: `@angular/aria` declares `@angular/cdk` as an exact-version peer.
+Keep all Angular peers in app dependencies. Production entry points use `@angular/aria` and `@angular/cdk`. Install both at the same exact version: `@angular/aria` declares `@angular/cdk` as an exact-version peer. `@angular/cdk` 22.2 itself also peers on `@angular/forms` and `@angular/platform-browser`, which a standard Angular app already has; keep them on the same Angular version.
 
 ## Entry points
 

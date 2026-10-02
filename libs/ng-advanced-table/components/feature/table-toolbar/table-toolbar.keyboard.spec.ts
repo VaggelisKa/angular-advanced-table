@@ -12,10 +12,10 @@ import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button id="end-a" natToolbarItem="end-a" natToolbarItemPosition="end" type="button">End A</button>
-      <button id="start-a" natToolbarItem="start-a" natToolbarItemPosition="start" type="button">Start A</button>
-      <input aria-label="Filter" id="text-entry" natToolbarItem="text-entry" natToolbarItemPosition="start" type="text" />
-      <button id="end-b" natToolbarItem="end-b" natToolbarItemPosition="end" type="button">End B</button>
+      <button id="end-a" natToolbarItem natToolbarItemPosition="end" type="button">End A</button>
+      <button id="start-a" natToolbarItem natToolbarItemPosition="start" type="button">Start A</button>
+      <input aria-label="Filter" id="text-entry" natToolbarItem natToolbarItemPosition="start" type="text" />
+      <button id="end-b" natToolbarItem natToolbarItemPosition="end" type="button">End B</button>
     </nat-table-toolbar>
   `
 })

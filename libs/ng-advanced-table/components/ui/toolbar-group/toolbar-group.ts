@@ -10,7 +10,7 @@ import type { NatToolbarItemPosition } from '../../common/toolbar.type';
  *
  * `natToolbarGroup="start" | "center" | "end"` (default start) picks the
  * toolbar slot, same contract as `natToolbarItem` — static attribute only.
- * Items inside keep their own `natToolbarItem` (their Aria value); they are
+ * Items inside keep their own `natToolbarItem` marker; they are
  * projected with the group, so their own `natToolbarItemPosition` is ignored.
  *
  * Keyboard: Left/Right (and Home/End) traverse all toolbar items linearly;
@@ -20,8 +20,8 @@ import type { NatToolbarItemPosition } from '../../common/toolbar.type';
  * @example
  * ```html
  * <div natToolbarGroup="end" accessibleName="View density">
- *   <button natToolbarItem="compact">Compact</button>
- *   <button natToolbarItem="comfortable">Comfortable</button>
+ *   <button natToolbarItem>Compact</button>
+ *   <button natToolbarItem>Comfortable</button>
  * </div>
  * ```
  */

@@ -14,7 +14,7 @@ A Table Action is a user-triggered operation that acts on table rows or table pr
 
 ```html
 <nat-table-toolbar accessibleName="Table actions">
-  <my-button natToolbarItem="archive">Archive</my-button>
+  <my-button natToolbarItem>Archive</my-button>
 </nat-table-toolbar>
 ```
 
@@ -23,7 +23,7 @@ The resolved control is taken out of the sequential tab order, keeping the toolb
 When the default picks the wrong control — a wrapper that renders several, or whose first focusable element is not the primary one — nominate it with `natToolbarItemFocusTarget`, a CSS selector resolved the same way:
 
 ```html
-<my-split-button natToolbarItem="archive" natToolbarItemFocusTarget=".primary">Archive</my-split-button>
+<my-split-button natToolbarItem natToolbarItemFocusTarget=".primary">Archive</my-split-button>
 ```
 
 A control behind a **closed** shadow root cannot be reached either way — the component must be authored with an open root (Stencil: `shadow: true`, or `delegatesFocus: true`), or the toolbar opted out as described below. In development the toolbar warns once per item when it detects a sealed wrapper.
