@@ -1,5 +1,5 @@
-import type { ElementRef, Signal } from '@angular/core';
-import { Component, DestroyRef, Injector, afterNextRender, computed, inject, input, viewChild } from '@angular/core';
+import type { ElementRef } from '@angular/core';
+import { Component, DestroyRef, Injector, computed, inject, input, viewChild } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -7,6 +7,7 @@ import { NatTableService } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, mergePagerLabels, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 import type { NatTableAccessibilityPagerLabels } from 'ng-advanced-table/locale';
 
+import { keepNatPagerFocusOnBoundary } from '../../domain-logic/pager-boundary-focus';
 import { formatNatTableAccessibilityNumber } from '../../utils/accessibility-number.util';
 
 @Component({
@@ -87,7 +88,7 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
-    this.keepFocusOnBoundary(this.previousButton, this.nextButton);
+    keepNatPagerFocusOnBoundary(this.previousButton()?.nativeElement, () => this.nextButton()?.nativeElement, this.injector);
     this.table()?.previousPage();
   }
 
@@ -96,40 +97,7 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
-    this.keepFocusOnBoundary(this.nextButton, this.previousButton);
+    keepNatPagerFocusOnBoundary(this.nextButton()?.nativeElement, () => this.previousButton()?.nativeElement, this.injector);
     this.table()?.nextPage();
-  }
-
-  /**
-   * Reaching the first or last page disables the button that was just
-   * activated, and a disabled button drops focus to `<body>`. When the
-   * activated button held focus, hand it to the surviving sibling once the
-   * new page has rendered, so keyboard users stay in the pager.
-   */
-  private keepFocusOnBoundary(
-    source: Signal<ElementRef<HTMLButtonElement> | undefined>,
-    sibling: Signal<ElementRef<HTMLButtonElement> | undefined>
-  ): void {
-    const sourceButton = source()?.nativeElement;
-
-    if (!sourceButton?.isSameNode(sourceButton.ownerDocument.activeElement)) {
-      return;
-    }
-
-    afterNextRender(
-      {
-        write: () => {
-          const siblingButton = sibling()?.nativeElement;
-          const activeElement = sourceButton.ownerDocument.activeElement;
-          const focusLost =
-            activeElement === sourceButton || activeElement === null || activeElement === sourceButton.ownerDocument.body;
-
-          if (sourceButton.disabled && focusLost && siblingButton && !siblingButton.disabled) {
-            siblingButton.focus();
-          }
-        }
-      },
-      { injector: this.injector }
-    );
   }
 }

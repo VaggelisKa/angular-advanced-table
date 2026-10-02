@@ -255,6 +255,41 @@ describe('FEATURE: NatTable UI', () => {
       });
     });
 
+    describe('WHEN: a focused NatTablePagination button pages to the last or first page', () => {
+      it('THEN: it moves focus to the surviving pagination button', async () => {
+        fixture.destroy();
+        const paginationFixture = TestBed.createComponent(PaginationToolbarHost);
+
+        await paginationFixture.whenStable();
+
+        const previousButton = root(paginationFixture).querySelector(
+          '[data-testid="nat-table-pagination-previous"]'
+        ) as HTMLButtonElement;
+        const nextButton = root(paginationFixture).querySelector('[data-testid="nat-table-pagination-next"]') as HTMLButtonElement;
+
+        // when: next reaches the last page (6 rows at 2 per page start on page 1 of 3)
+        nextButton.click();
+        await paginationFixture.whenStable();
+        nextButton.focus();
+        nextButton.click();
+        await paginationFixture.whenStable();
+
+        // then: the disabled next button hands focus to previous
+        expect(nextButton.disabled).toBe(true);
+        expect(document.activeElement).toBe(previousButton);
+
+        // when: previous walks back to the first page
+        previousButton.click();
+        await paginationFixture.whenStable();
+        previousButton.click();
+        await paginationFixture.whenStable();
+
+        // then: the disabled previous button hands focus to next
+        expect(previousButton.disabled).toBe(true);
+        expect(document.activeElement).toBe(nextButton);
+      });
+    });
+
     describe('WHEN: a NatTablePagination component renders', () => {
       it('THEN: it renders NatTablePagination as labelled groups with no roving toolbar', () => {
         fixture.destroy();
