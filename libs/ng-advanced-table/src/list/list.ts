@@ -38,6 +38,7 @@ import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate }
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { resolveColumnLabel } from '../utils/column-label.util';
 import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
+import { requireNatTableService } from '../utils/table-service.util';
 
 /**
  * SPIKE: list renderer sharing the table engine (`NatTableState`).
@@ -149,7 +150,12 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
 
   // ─── Injected services ───
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  // Optional so a missing provider fails with an actionable message, not a raw NG0201.
+  private readonly natTableService = requireNatTableService(
+    inject<NatTableService<TData>>(NatTableService, { optional: true }),
+    'nat-list'
+  );
+
   private readonly state = inject<NatTableState<TData>>(NatTableState);
   private readonly a11yService = inject<NatTableA11yService<TData>>(NatTableA11yService);
   private readonly destroyRef = inject(DestroyRef);
