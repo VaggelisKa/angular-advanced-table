@@ -87,12 +87,17 @@
     color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease));
 }
 
+/* The 24px minimums keep the sort control at or above the WCAG 2.5.8 (AA)
+   target size even when the header label is set in a small font. The block
+   minimum stays below the menu button's 1.9rem, so headers that also show the
+   column menu keep their height. */
 .sort-button {
   display: inline-flex;
   gap: var(--nat-table-space-chip-row-gap, var(--sys-nat-table-space-chip-row-gap, 10px));
   align-items: center;
-  min-width: 0;
+  min-inline-size: 24px;
   max-width: 100%;
+  min-block-size: 24px;
   padding: 0;
   font: inherit;
   color: inherit;
