@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { expectNoAxeViolations } from '../support/axe';
+import { loadDocsExamplePreview } from '../support/docs-example';
 import { waitForHydration } from '../support/hydration';
 
 const listItems = '[data-testid="nat-list-item"]';
@@ -96,6 +97,19 @@ test.describe('FEATURE: Table to list accessibility', () => {
         await expect(page.getByTestId('nat-list-error-state')).toBeVisible();
 
         await expectNoAxeViolations(page, listRegion);
+      });
+    });
+  });
+  test.describe('GIVEN: the flow item layout docs example', () => {
+    test.describe('WHEN: the narrow flow list wraps one item and is scanned', () => {
+      test('THEN: the wrapped items stay accessible', async ({ page }) => {
+        await page.goto('/docs/list-renderer');
+        await loadDocsExamplePreview(page, 'list-flow-layout', 'Flow item layout');
+
+        const panel = page.getByTestId('docs-example-list-flow-layout-preview-panel');
+
+        await expect(panel.locator(listItems)).toHaveCount(6);
+        await expectNoAxeViolations(page, '[data-testid="docs-example-list-flow-layout-preview-panel"]');
       });
     });
   });

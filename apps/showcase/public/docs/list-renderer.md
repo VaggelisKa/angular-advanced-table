@@ -99,6 +99,34 @@ nat-list {
 
 The full token list (`--nat-list-*`, including the body-state tokens) is documented in Theming, and the opt-in stock theme styles the list out of the box.
 
+## Flow Item Layout
+
+Grid tracks cannot wrap per item: when one value is wider than its track (a large number on a narrow screen, say) the grid either breaks it mid-value or lets it overflow, and the only alternative is a layout where every item wraps. `itemLayout="flow"` is the opt-in answer. It lays each item out as a wrapping row of proportional slots instead:
+
+- Fields whose values fit their slot stay on one line and keep the same width in every item, so columns still align across the list.
+- A field whose value is wider than its slot widens to fit it, and the fields that no longer fit the line wrap to the next line **in that item only**. Every other item keeps its single line.
+- A value that fits its slot wraps internally first, so a secondary part such as `(+4%)` drops to a second line before the field widens or anything moves down.
+- Values never break mid-word, so a long number stays whole. Keep values that must stay on one line free of breakable spaces.
+
+```html
+<nat-table-surface>
+  <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" itemLayout="flow" />
+</nat-table-surface>
+```
+
+Slots come from `meta.listFieldSpan` on each column: a number is a relative weight (`2` takes twice the width of a `1`, which is the default), and `'full'` gives the field a whole line of its own. The weighted fields share one line, so a `2 / 1 / 1` list splits the line into 50% / 25% / 25%, minus the column gaps between them (`--nat-list-flow-column-gap`, `1rem` by default). Shares are recalculated when column visibility or order changes.
+
+```ts
+const columns: ColumnDef<Order, unknown>[] = [
+  { accessorKey: 'customer', header: 'Customer', meta: { label: 'Customer', listFieldSpan: 2 } },
+  { accessorKey: 'total', header: 'Total', meta: { label: 'Total' } },
+  { accessorKey: 'change', header: 'Change', meta: { label: 'Change' } },
+  { accessorKey: 'note', header: 'Note', meta: { label: 'Note', listFieldSpan: 'full' } }
+];
+```
+
+A field's minimum width is its own minimum content width, label included. With the default row direction that is the label plus the value's longest word, so stack the two (`--nat-list-field-flex-direction: column`) when values should wrap internally as early as possible. `--nat-list-item-areas` and `--nat-list-item-columns` are ignored while the flow layout is active; the `grid` layout stays the default and is unchanged. Both layouts are the same markup, so `enableRowActivation`, `enableItemNavigation`, selection, and sub-headers behave identically. Bind `itemLayout` to a signal to switch layouts with a consumer-owned breakpoint.
+
 ## Accessibility
 
 - `accessibleName` is required (the list takes no `caption`); dev mode warns when it is missing.

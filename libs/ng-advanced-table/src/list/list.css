@@ -54,6 +54,45 @@
   border-radius: var(--nat-list-item-radius, var(--sys-nat-table-list-item-radius, 8px));
 }
 
+/* ─── Flow item layout (`itemLayout="flow"`) ───
+   A wrapping row of proportional slots instead of fixed grid tracks. Every
+   field's flex-basis is its share of the line (`--sys-nat-table-list-field-share`,
+   from `meta.listFieldSpan`) minus its share of the `slots - 1` column gaps, so
+   the slots of one line sum to exactly 100% and the same column lands at the
+   same x in every item. A field is never narrower than its min-content, so one
+   whose longest word is wider than its slot widens to that word, and the
+   fields that no longer fit the line wrap to the next line of that item only.
+   A value that fits its slot wraps internally (its secondary parts drop
+   first), and `overflow-wrap: normal` keeps a long number whole instead of
+   breaking it mid-value.
+   Fields neither grow nor shrink: growing would misalign the first line of a
+   wrapped item against its neighbors, and shrinking below the slot is what
+   the min-content floor already prevents. */
+.list-item--flow {
+  --sys-nat-table-list-flow-gap: var(--nat-list-flow-column-gap, var(--sys-nat-table-list-flow-column-gap, 1rem));
+  --sys-nat-table-list-flow-gaps: calc((var(--sys-nat-table-list-field-slots, 1) - 1) * var(--sys-nat-table-list-flow-gap));
+
+  display: flex;
+  flex-wrap: wrap;
+  grid-template-areas: none;
+  grid-template-columns: none;
+  column-gap: var(--sys-nat-table-list-flow-gap);
+}
+
+.list-item--flow .list-field {
+  flex: 0 0 calc(var(--sys-nat-table-list-field-share, 1) * (100% - var(--sys-nat-table-list-flow-gaps)));
+  min-width: auto;
+  max-width: 100%;
+}
+
+.list-item--flow .list-field[data-nat-list-field-span='full'] {
+  flex-basis: 100%;
+}
+
+.list-item--flow .list-field-value {
+  overflow-wrap: normal;
+}
+
 /* The final item's bottom edge. Off by default so a divider-style list
    (`--nat-list-item-border-width: 0 0 1px`) ends flush with its container;
    the last-item tokens opt it back in (the stock theme restores it for cards).

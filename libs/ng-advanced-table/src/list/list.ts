@@ -18,9 +18,12 @@ import {
 import type { ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
+import { NAT_LIST_ITEM_LAYOUT } from './common/list-layout.const';
+import type { NatListItemLayout } from './common/list-layout.type';
 import type { NatListStateKey } from './common/list-state.type';
 import { NatListFieldArea } from './list-field-area.directive';
 import { findRowCell, hasStaticLabel, isSrOnlyLabel } from './utils/list-column.util';
+import { resolveListFieldShares } from './utils/list-flow-layout.util';
 import { buildListStateTemplateContext, resolveListStateView } from './utils/list-state.util';
 import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
 import { NatTableCell } from '../cell-interaction/table-cell.directive';
@@ -62,7 +65,9 @@ import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
   // declare --nat-table-* tokens on hosts" rule, and it targets the internal
   // `--sys-*` bridge anyway.
   host: {
-    '[style.--sys-nat-table-list-item-areas]': 'defaultItemAreas()'
+    '[attr.data-item-layout]': 'itemLayout()',
+    '[style.--sys-nat-table-list-item-areas]': 'defaultItemAreas()',
+    '[style.--sys-nat-table-list-field-slots]': 'flowFieldSlots()'
   },
   imports: [FlexRender, Grid, GridCell, GridRow, NatListFieldArea, NatTableCell, NgTemplateOutlet],
   providers: [NatTableState, NatTableA11yService, NatTableCellControlManager],
@@ -142,6 +147,16 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
    */
   public readonly enableItemNavigation = input(false, { transform: booleanAttribute });
 
+  /**
+   * How fields are laid out inside one item. `grid` (default) places each
+   * field in a named grid area; `flow` renders the fields as a wrapping row of
+   * proportional slots (`meta.listFieldSpan`): fields that fit stay aligned
+   * across items, a field whose value is wider than its slot widens to it,
+   * and the fields that no longer fit the line wrap to the next line in that
+   * item only. See `NatListItemLayout`.
+   */
+  public readonly itemLayout = input<NatListItemLayout>(NAT_LIST_ITEM_LAYOUT.grid);
+
   // ─── Outputs ───
 
   /** Emits when an item's activator button is clicked or keyboard-activated. */
@@ -197,6 +212,18 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
       .map((column) => `'${column.id}'`)
       .join(' ')
   );
+
+  protected readonly isFlowLayout = computed(() => this.itemLayout() === NAT_LIST_ITEM_LAYOUT.flow);
+
+  /**
+   * Per-column width shares for the `flow` layout, written to each field's
+   * `--sys-nat-table-list-field-share` bridge (`'full'` for a whole-line
+   * field). `null` in the `grid` layout, so no inline style is rendered.
+   */
+  private readonly flowFieldShares = computed(() => (this.isFlowLayout() ? resolveListFieldShares(this.visibleColumns()) : null));
+
+  /** Fields sharing one `flow` line; the CSS subtracts `slots - 1` column gaps. `null` in the `grid` layout. */
+  protected readonly flowFieldSlots = computed(() => this.flowFieldShares()?.slots ?? null);
 
   protected readonly tableAriaBusy = this.state.tableAriaBusy;
   protected readonly resolvedDirection = this.state.resolvedDirection;
@@ -305,6 +332,11 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   protected readonly resolveColumnLabel = resolveColumnLabel<TData>;
 
   protected readonly cellForColumn = findRowCell<TData>;
+
+  /** The field's `flow` share (`'full'` or a fraction string), or `null` in the `grid` layout. */
+  protected fieldShare(columnId: string): string | null {
+    return this.flowFieldShares()?.shares.get(columnId) ?? null;
+  }
 
   protected readonly hasStaticLabel = hasStaticLabel<TData>;
 

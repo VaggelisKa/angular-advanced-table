@@ -24,11 +24,14 @@
     @for (column of listColumns; track column.id) {
       @let cell = cellForColumn(row, column.id);
       @if (cell) {
+        @let share = fieldShare(column.id);
         <div
           [attr.data-column-id]="column.id"
+          [attr.data-nat-list-field-span]="share === 'full' ? 'full' : null"
           [attr.data-nat-row-activation]="column.columnDef.meta?.rowActivation === false ? 'false' : null"
           [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
           [natListFieldArea]="column.id"
+          [natListFieldShare]="share === 'full' ? null : share"
           class="list-field">
           <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
             @let headerDef = column.columnDef.header;
@@ -123,7 +126,7 @@
               ngGridRow
               (click)="onItemClick($event, row)"
               (keydown)="onItemKeydown($event, row)">
-              <div class="list-item" data-testid="nat-list-item-cell" natTableCell ngGridCell>
+              <div [class.list-item--flow]="isFlowLayout()" class="list-item" data-testid="nat-list-item-cell" natTableCell ngGridCell>
                 <ng-container
                   [ngTemplateOutlet]="itemFields"
                   [ngTemplateOutletContext]="{ row, itemIndex: $index, listColumns, headerContexts, withActivator: false }" />
@@ -171,6 +174,7 @@
               [attr.data-row-id]="row.id"
               [attr.data-selected]="rowSelectedAttribute(row)"
               [class.is-activatable]="rendersActivator()"
+              [class.list-item--flow]="isFlowLayout()"
               class="list-item"
               data-testid="nat-list-item">
               @if (rendersActivator()) {

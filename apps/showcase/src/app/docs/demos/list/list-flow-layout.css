@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+
+.list-demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-2);
+  align-items: center;
+  margin-block-end: var(--sc-space-4);
+}
+
+/* The narrow container is what makes the widest total overflow its slot. */
+.list-flow-demo-container--narrow {
+  max-width: 420px;
+}
+
+/* Stacked label/value fields: the field's minimum width is then its longest
+   word, so a value wraps internally before the whole field moves down. The
+   grid fallback mirrors the flow slots (2 : 1 : 1 plus a full-width note). */
+.list-flow-demo-list {
+  --nat-list-field-flex-direction: column;
+  --nat-list-field-gap: 0.125rem;
+  --nat-list-item-gap: 0.5rem 1rem;
+  --nat-list-item-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  --nat-list-item-areas: 'customer total change' 'note note note';
+}
+
+.list-flow-demo-list .list-field-value {
+  font-variant-numeric: tabular-nums;
+}

@@ -9,6 +9,7 @@ import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/ro
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';
+import type { NatListItemLayout } from '../list/common/list-layout.type';
 import { NatList } from '../list/list';
 
 /** NatList integration-test host extracted from list.spec.ts (mirrors table-hosts.helper.ts). */
@@ -25,6 +26,7 @@ import { NatList } from '../list/list';
         [enableRowActivation]="enableRowActivation()"
         [enableRowSelection]="enableRowSelection()"
         [getRowId]="getRowId()"
+        [itemLayout]="itemLayout()"
         [selectionMode]="selectionMode()"
         accessibleName="Operations list"
         (rowActivate)="activated.set([...activated(), $event])" />
@@ -40,6 +42,7 @@ export class ListHost {
   public readonly selectionMode = signal<'single' | 'multiple'>('multiple');
   public readonly enableRowActivation = signal(false);
   public readonly enableItemNavigation = signal(false);
+  public readonly itemLayout = signal<NatListItemLayout>('grid');
   public readonly getRowId = signal<NatTableRowIdGetter<Row> | undefined>(undefined);
   public readonly activated = signal<NatTableRowActivateEvent<Row>[]>([]);
 }

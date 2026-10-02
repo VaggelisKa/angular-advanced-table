@@ -58,6 +58,7 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly headerMaxSize?: number | string;
   /** Optional table export behavior for this column. */
   readonly export?: NatTableColumnExportOptions<TData, TValue>;
+  readonly listFieldSpan?: number | 'full';
 };
 
 declare module '@tanstack/table-core' {
