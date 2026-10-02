@@ -84,7 +84,7 @@ export class PositionsTable {
 
 Rows with a string or number `id` property get stable table identity automatically. Use `getRowId` when identity lives somewhere else.
 
-The table above is visually headless: it inherits page colors and system defaults. For the polished stock look, `import 'ng-advanced-table/components/theme.css'` once (see `/docs/theming`), or theme it yourself with `--nat-table-*` tokens.
+The table above is visually headless: it inherits page colors and system defaults. For the polished stock look, `import 'ng-advanced-table/components/theme.css'` once (see `/docs/theming`), or theme it yourself with `--nat-table-*` tokens. The stock theme palette uses CSS `light-dark()` to follow the system color scheme, with a light/dark fallback for browsers without `light-dark()` support.
 
 ## Core-Only Scope
 

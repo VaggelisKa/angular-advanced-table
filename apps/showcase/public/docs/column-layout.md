@@ -63,6 +63,10 @@ readonly scrollLabels = {
 
 Place the control inside the same `NatTableSurface` as the table. The control resolves the table scroll container through the surface controller and disables itself when there is no horizontal overflow. Keep `scrollStep` large enough to feel useful but smaller than the visible table width, so each button press preserves context.
 
+## Right-To-Left Layout
+
+Set the `direction` input on `NatTableSurface` to lay the table out right to left; without it the table uses the inherited CDK `Directionality`, then `ltr`. Column alignment follows the direction, so `end`-aligned columns sit on the left in RTL, and state rows and sub-header labels stay clamped to the start edge while the table scrolls horizontally. Drag reordering and column resizing (pointer and keyboard) mirror with it as well.
+
 ## Sticky Header
 
 Use a sticky header when the table has enough rows that users lose column context while scrolling. Keep the vertical region height intentional so the sticky behavior is visible and predictable.

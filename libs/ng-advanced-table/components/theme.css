@@ -9,7 +9,10 @@
  * It sets the public --nat-table-* tokens on :root, so it acts as an app-wide
  * default. The palette uses light-dark(), so it follows the system color scheme
  * out of the box (via color-scheme: light dark below); a consumer that flips
- * color-scheme on a closer scope switches the table with it. A consumer's own
+ * color-scheme on a closer scope switches the table with it. Browsers without
+ * light-dark() (Safari < 17.5) get the same palette as plain light values plus
+ * a prefers-color-scheme: dark override, so they follow the OS preference but
+ * not a color-scheme flipped on a wrapper. A consumer's own
  * --nat-table-* tokens on a nearer wrapper still win, and every derived value
  * recomputes from whichever palette tokens are in scope. Never set the internal
  * --sys-nat-table-* bridge tokens; override the matching --nat-table-* token.
@@ -19,20 +22,21 @@
      Override color-scheme on a wrapper to pin or toggle the table's mode. */
   color-scheme: light dark;
 
-  /* Palette — light-dark(<light>, <dark>); one line per token. WCAG AA on the
-     matching surface in both modes. */
-  --nat-table-color-text: light-dark(#0f1419, #e6eaef);
-  --nat-table-color-text-muted: light-dark(#5b6672, #9aa4b1);
-  --nat-table-color-accent: light-dark(#1f6feb, #4f8bff);
-  --nat-table-color-success: light-dark(#127a3b, #3dd68c);
-  --nat-table-color-warning: light-dark(#8f5f00, #e5b452);
-  --nat-table-color-danger: light-dark(#b42318, #f15b5b);
-  --nat-table-color-surface: light-dark(#fff, #14171c);
-  --nat-table-color-surface-elevated: light-dark(#fff, #14171c);
-  --nat-table-color-surface-sticky: light-dark(#f4f5f7, #1a1e24);
-  --nat-table-color-border: light-dark(#e4e7eb, #262b33);
-  --nat-table-color-border-strong: light-dark(#d4d8dd, #343b45);
-  --nat-table-color-divider: light-dark(#e4e7eb, #262b33);
+  /* Palette — plain light values here; the dark values and the light-dark()
+     versions follow in the blocks after this rule. WCAG AA on the matching
+     surface in both modes. */
+  --nat-table-color-text: #0f1419;
+  --nat-table-color-text-muted: #5b6672;
+  --nat-table-color-accent: #1f6feb;
+  --nat-table-color-success: #127a3b;
+  --nat-table-color-warning: #8f5f00;
+  --nat-table-color-danger: #b42318;
+  --nat-table-color-surface: #fff;
+  --nat-table-color-surface-elevated: #fff;
+  --nat-table-color-surface-sticky: #f4f5f7;
+  --nat-table-color-border: #e4e7eb;
+  --nat-table-color-border-strong: #d4d8dd;
+  --nat-table-color-divider: #e4e7eb;
   --nat-table-color-divider-subtle: color-mix(in srgb, var(--nat-table-color-border) 60%, transparent);
 
   /* Typography */
@@ -111,11 +115,9 @@
   --nat-table-card-border-color-hover: var(--nat-table-color-border-strong);
   --nat-table-card-border-width: 1px;
 
-  /* Only the shadow color varies by mode; light-dark() in the color slot keeps
-     the shadow in sync with color-scheme (system default or a forced wrapper),
-     matching how the palette resolves. */
-  --nat-table-card-shadow:
-    0 1px 2px light-dark(rgb(15 20 25 / 4%), rgb(0 0 0 / 40%)), 0 8px 24px light-dark(rgb(15 20 25 / 6%), rgb(0 0 0 / 32%));
+  /* Only the shadow color varies by mode; see the dark and light-dark() blocks
+     after this rule. */
+  --nat-table-card-shadow: 0 1px 2px rgb(15 20 25 / 4%), 0 8px 24px rgb(15 20 25 / 6%);
   --nat-table-card-backdrop-filter: none;
   --nat-table-card-divider-color: var(--nat-table-color-divider);
 
@@ -277,4 +279,48 @@
   --nat-list-loading-accent: var(--nat-table-color-accent);
   --nat-list-empty-accent: var(--nat-table-color-text-muted);
   --nat-list-error-accent: var(--nat-table-color-danger);
+}
+
+/* Dark palette for browsers without light-dark() (Safari < 17.5). There a
+   custom property would hold the unresolvable light-dark() token stream, so
+   every surface would render transparent instead of reaching the component
+   fallbacks. These follow the OS preference only. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --nat-table-color-text: #e6eaef;
+    --nat-table-color-text-muted: #9aa4b1;
+    --nat-table-color-accent: #4f8bff;
+    --nat-table-color-success: #3dd68c;
+    --nat-table-color-warning: #e5b452;
+    --nat-table-color-danger: #f15b5b;
+    --nat-table-color-surface: #14171c;
+    --nat-table-color-surface-elevated: #14171c;
+    --nat-table-color-surface-sticky: #1a1e24;
+    --nat-table-color-border: #262b33;
+    --nat-table-color-border-strong: #343b45;
+    --nat-table-color-divider: #262b33;
+    --nat-table-card-shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px rgb(0 0 0 / 32%);
+  }
+}
+
+/* Browsers with light-dark() resolve the palette per element from the used
+   color-scheme, so the system default and a color-scheme forced on a wrapper
+   both switch the table. Declared last so it overrides both blocks above. */
+@supports (color: light-dark(#000, #fff)) {
+  :root {
+    --nat-table-color-text: light-dark(#0f1419, #e6eaef);
+    --nat-table-color-text-muted: light-dark(#5b6672, #9aa4b1);
+    --nat-table-color-accent: light-dark(#1f6feb, #4f8bff);
+    --nat-table-color-success: light-dark(#127a3b, #3dd68c);
+    --nat-table-color-warning: light-dark(#8f5f00, #e5b452);
+    --nat-table-color-danger: light-dark(#b42318, #f15b5b);
+    --nat-table-color-surface: light-dark(#fff, #14171c);
+    --nat-table-color-surface-elevated: light-dark(#fff, #14171c);
+    --nat-table-color-surface-sticky: light-dark(#f4f5f7, #1a1e24);
+    --nat-table-color-border: light-dark(#e4e7eb, #262b33);
+    --nat-table-color-border-strong: light-dark(#d4d8dd, #343b45);
+    --nat-table-color-divider: light-dark(#e4e7eb, #262b33);
+    --nat-table-card-shadow:
+      0 1px 2px light-dark(rgb(15 20 25 / 4%), rgb(0 0 0 / 40%)), 0 8px 24px light-dark(rgb(15 20 25 / 6%), rgb(0 0 0 / 32%));
+  }
 }

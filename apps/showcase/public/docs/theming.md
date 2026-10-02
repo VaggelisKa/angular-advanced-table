@@ -229,6 +229,8 @@ Each state item also carries a `data-state` attribute (`loading`, `empty`, or `e
 
 Reach for these direct tokens when a table control needs a local exception.
 
+The motion tokens apply only when motion is allowed: under `prefers-reduced-motion: reduce`, the table, header actions, and companion controls drop their transitions and enter animations, so drag reorder, hover, and menu changes apply instantly.
+
 ### Scroll Control Tokens
 
 `NatTableScrollControl` keeps its native range input and reads inherited tokens from the wrapper around the control and table. The component does not expose private selectors as theme API. The stock buttons draw as 36 × 36 px squares with a 24 px arrow and no inline padding, while an invisible pseudo-element extends each button's pointer target to `--nat-table-scroll-button-target-size` (44 px, the WCAG 2.5.5 AAA size), so the focus ring hugs the compact box without shrinking the tap area.
@@ -315,7 +317,7 @@ To get the polished stock look, import the opt-in stylesheet once, for example i
 import 'ng-advanced-table/components/theme.css';
 ```
 
-The stock theme is light/dark responsive: its palette uses `light-dark()` and the theme sets `color-scheme: light dark` on `:root`, so it follows the operating-system preference out of the box. To pin or toggle the mode, set `color-scheme` (and optionally a `[data-theme]` attribute) on a wrapper. The opt-in theme is intentionally outside the Safari 16.5 baseline for core table behavior; Safari 16.5 consumers can theme through their own `--nat-table-*` tokens instead of importing `theme.css`.
+The stock theme is light/dark responsive: its palette uses `light-dark()` and the theme sets `color-scheme: light dark` on `:root`, so it follows the operating-system preference out of the box. To pin or toggle the mode, set `color-scheme` (and optionally a `[data-theme]` attribute) on a wrapper. Browsers without `light-dark()` (Safari before 17.5, including the Safari 16.5 baseline) get the same palette as plain light values with a `prefers-color-scheme: dark` override, so they follow the operating-system preference but not a `color-scheme` set on a wrapper; to pin or toggle the mode there, set the palette `--nat-table-color-*` tokens on the wrapper as shown in [Theme Scope](#theme-scope).
 
 Token precedence is unchanged: a `--nat-table-*` token set on any ancestor wrapper (or on the surface element itself) still wins over the opt-in theme, and derived stock values (borders, dividers, mixed colors) recompute from your overridden palette tokens. If you inspect computed styles you may see internal `--sys-nat-table-*` bridge variables — they are implementation detail; never set them, set the matching `--nat-table-*` token instead.
 
