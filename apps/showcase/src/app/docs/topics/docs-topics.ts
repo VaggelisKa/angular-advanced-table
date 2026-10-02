@@ -1030,8 +1030,11 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     contents: [
       { label: 'Entry-point responsibilities', path: '#entry-point-responsibilities' },
       { label: 'Surface and controller', path: '#surface-and-controller' },
+      { label: 'Input ownership', path: '#which-element-owns-which-input' },
+      { label: 'Detached controls', path: '#detached-controls' },
       { label: 'Toolbar composition', path: '#toolbar-composition' },
-      { label: 'Consumer-owned search', path: '#consumer-owned-search' }
+      { label: 'Consumer-owned search', path: '#consumer-owned-search' },
+      { label: 'Scope', path: '#scope' }
     ],
     blocks: [{ kind: 'markdown', id: 'composition-prose', markdownPath: '/docs/composition.md' }],
     related: [
@@ -1407,6 +1410,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Selection column', path: '#selection-column' },
       { label: 'Single and multiple selection', path: '#single-and-multiple-selection' },
       { label: 'Direct selection checkboxes', path: '#direct-selection-checkboxes' },
+      { label: 'Reading selected rows', path: '#reading-selected-rows' },
       { label: 'Bulk actions', path: '#bulk-actions' }
     ],
     blocks: [

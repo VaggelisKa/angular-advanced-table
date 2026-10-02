@@ -10,11 +10,12 @@ import type {
 } from '@tanstack/angular-table';
 
 /**
- * Serializable view state exposed by {@link NatTable} and emitted through
- * `stateChange`.
+ * Serializable view state of a table. `NatTableSurface` binds it through
+ * `[(state)]` and emits each changed slice through its `*Change` outputs
+ * (`sortingChange`, `paginationChange`, ...).
  */
 export type NatTableUserState = {
-  /** Active single-column sort order. */
+  /** Active sort order; holds more than one entry when multi-sort is enabled. */
   readonly sorting: SortingState;
   /** Current global search query. */
   readonly globalFilter: string;

@@ -126,7 +126,8 @@ export const NAT_DA_LOCALE_LABELS: NatTableIntl = {
 
       return `${groupLabel}, ${rowCountText} ${rows(rowCountValue)}.`;
     },
-    placeholderRow: () => 'Indlæser.'
+    placeholderRow: () => 'Indlæser.',
+    shortcutLabel: ({ label, shortcutText }) => `${label} (Genvej: ${shortcutText})`
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };

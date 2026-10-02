@@ -44,6 +44,7 @@ export type {
   NatTableAccessibilityPaginationAnnouncementContext,
   NatTableAccessibilityRowPlaceholderContext,
   NatTableAccessibilitySelectionAnnouncementContext,
+  NatTableAccessibilityShortcutLabelContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySubHeaderContext,
   NatTableAccessibilitySummaryContext,
