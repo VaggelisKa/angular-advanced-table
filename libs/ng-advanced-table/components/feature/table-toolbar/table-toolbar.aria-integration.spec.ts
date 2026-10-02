@@ -19,13 +19,13 @@ import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button id="item-a" natToolbarItem="a" natToolbarItemPosition="start" type="button">A</button>
-      <button id="item-b" natToolbarItem="b" natToolbarItemPosition="center" type="button">B</button>
-      <button id="item-c" natToolbarItem="c" type="button">C</button>
+      <button id="item-a" natToolbarItem natToolbarItemPosition="start" type="button">A</button>
+      <button id="item-b" natToolbarItem natToolbarItemPosition="center" type="button">B</button>
+      <button id="item-c" natToolbarItem type="button">C</button>
       @if (showD()) {
-        <button id="item-d" natToolbarItem="d" type="button">D</button>
+        <button id="item-d" natToolbarItem type="button">D</button>
       }
-      <input aria-label="Filter" id="search" natToolbarItem="search" natToolbarItemPosition="start" type="search" />
+      <input aria-label="Filter" id="search" natToolbarItem natToolbarItemPosition="start" type="search" />
     </nat-table-toolbar>
   `
 })
@@ -64,8 +64,8 @@ describe('FEATURE: NatTableToolbar @angular/aria integration', () => {
   };
 
   const dispatchPointerdown = (target: HTMLElement): MouseEvent => {
-    // jsdom has no PointerEvent constructor; Aria's handler only needs the
-    // event target and preventDefault, so a MouseEvent stands in.
+    // jsdom has no PointerEvent constructor; a MouseEvent stands in for the
+    // defaultPrevented check.
     const event = new MouseEvent('pointerdown', { bubbles: true, cancelable: true });
 
     target.dispatchEvent(event);
@@ -91,12 +91,12 @@ describe('FEATURE: NatTableToolbar @angular/aria integration', () => {
     });
 
     describe('WHEN: pointerdown lands on a button item', () => {
-      it('THEN: it preventDefaults pointerdown on buttons — the Aria focus model the patches rely on', () => {
-        // Aria suppresses native mousedown focus and re-focuses the widget from
-        // its click handler instead. If this stops being true after a bump, the
-        // text-entry onClick patch must be revisited.
+      it('THEN: it leaves pointerdown on buttons to the browser — Aria only records the interaction', () => {
+        // Aria 22.2+ no longer suppresses native mousedown focus. If it starts
+        // preventDefaulting pointerdown again, the text-entry onClick patch
+        // must be revisited.
 
-        expect(dispatchPointerdown(element('item-a')).defaultPrevented).toBe(true);
+        expect(dispatchPointerdown(element('item-a')).defaultPrevented).toBe(false);
       });
     });
 

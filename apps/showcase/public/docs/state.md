@@ -1,4 +1,4 @@
-`NatTable` can own all table state, or your app can control only the slices it cares about. The most important rule is simple: a state slice is controlled only when its property is present in `[state]`. Omitted slices stay internal.
+The table can own all of its state, or your app can control only the slices it cares about through the `[state]` input on `NatTableSurface`. The most important rule is simple: a state slice is controlled only when its property is present in `[state]`. Omitted slices stay internal.
 
 ## State Slices
 

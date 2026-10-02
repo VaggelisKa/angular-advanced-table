@@ -53,6 +53,42 @@ test.describe('FEATURE: Pagination', () => {
       });
     });
 
+    test.describe('WHEN: the pager is driven with the keyboard to each boundary', () => {
+      test('THEN: it moves focus to the other page button when the focused one disables', async ({ page }) => {
+        const clientCard = page.getByTestId('pagination-client');
+        const nextBtn = clientCard.getByTestId('nat-table-pagination-next');
+        const prevBtn = clientCard.getByTestId('nat-table-pagination-previous');
+        const firstCell = clientCard.locator('tbody tr').first().locator('td').first();
+        // Presses Enter on the focused page button and waits for the next page to render.
+        const turnPage = async (): Promise<void> => {
+          const before = await firstCell.textContent();
+
+          await page.keyboard.press('Enter');
+          await expect(firstCell).not.toHaveText(before ?? '');
+        };
+
+        await test.step('THEN: focus moves to Previous when Next disables on the last page', async () => {
+          await nextBtn.focus();
+
+          while (await nextBtn.isEnabled()) {
+            await expect(nextBtn).toBeFocused();
+            await turnPage();
+          }
+
+          await expect(prevBtn).toBeFocused();
+        });
+
+        await test.step('THEN: focus moves to Next when Previous disables on the first page', async () => {
+          while (await prevBtn.isEnabled()) {
+            await expect(prevBtn).toBeFocused();
+            await turnPage();
+          }
+
+          await expect(nextBtn).toBeFocused();
+        });
+      });
+    });
+
     test.describe('WHEN: the Next page button is clicked (manual data handling)', () => {
       test('THEN: it supports manual pagination', async ({ page }) => {
         const manualCard = page.getByTestId('pagination-manual');

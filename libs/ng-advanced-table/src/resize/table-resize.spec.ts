@@ -767,6 +767,9 @@ describe('FEATURE: NatTable', () => {
         regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }));
         fixture.detectChanges();
         await fixture.whenStable();
+        // The repeated bound message is written back after the cleared region renders and a short pause.
+        await new Promise<void>((resolve) => setTimeout(resolve, 150));
+        await fixture.whenStable();
         fixture.detectChanges();
 
         // then:
@@ -812,6 +815,9 @@ describe('FEATURE: NatTable', () => {
         // when:
         regionHeader.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true }));
         fixture.detectChanges();
+        await fixture.whenStable();
+        // The repeated bound message is written back after the cleared region renders and a short pause.
+        await new Promise<void>((resolve) => setTimeout(resolve, 150));
         await fixture.whenStable();
         fixture.detectChanges();
 

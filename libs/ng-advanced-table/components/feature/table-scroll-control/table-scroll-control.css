@@ -253,3 +253,10 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Reduced motion: hover and state changes apply instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-button {
+    transition: none;
+  }
+}

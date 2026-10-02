@@ -2,6 +2,8 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
+import { NAT_DA_LOCALE_LABELS, provideNatTableLocales } from 'ng-advanced-table/locale';
+
 import { DEFAULT_NAT_TABLE_KEYBINDINGS } from './common/keybindings.const';
 import type { NatTableKeybindings } from './common/keybindings.type';
 import { NatTableHotkeyA11y } from './hotkey-a11y.directive';
@@ -146,7 +148,7 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
     beforeEach(async () => {
       await TestBed.configureTestingModule({
         imports: [ServiceHost],
-        providers: [provideZonelessChangeDetection()]
+        providers: [provideZonelessChangeDetection(), provideNatTableLocales({ da: NAT_DA_LOCALE_LABELS })]
       }).compileComponents();
 
       fixture = TestBed.createComponent(ServiceHost);
@@ -203,6 +205,39 @@ describe('FEATURE: NatTableHotkeyA11y', () => {
         fixture.detectChanges();
 
         expect(button.getAttribute('aria-label')).toBe('Execute Row (Shortcut: Enter Space)');
+      });
+    });
+
+    describe('WHEN: the table locale has a registered dictionary', () => {
+      it('THEN: it phrases the shortcut suffix in that locale', async () => {
+        service.locale.set('da');
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const button = queryRequired<HTMLButtonElement>(fixture, '[data-testid="service-btn"]');
+
+        expect(button.getAttribute('aria-keyshortcuts')).toBe('Enter Space');
+        expect(button.getAttribute('aria-label')).toBe('Perform Action (Genvej: Enter Space)');
+      });
+    });
+
+    describe('WHEN: the table overrides the shortcut label formatter through accessibilityText', () => {
+      it('THEN: it writes the overridden label and keeps tracking text changes', async () => {
+        service.accessibilityText.set({ shortcutLabel: ({ label, shortcutText }) => `${label}, ${shortcutText}` });
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const button = queryRequired<HTMLButtonElement>(fixture, '[data-testid="service-btn"]');
+
+        expect(button.getAttribute('aria-label')).toBe('Perform Action, Enter Space');
+
+        host.text.set('Execute Row');
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await new Promise<void>((resolve) => setTimeout(resolve));
+        fixture.detectChanges();
+
+        expect(button.getAttribute('aria-label')).toBe('Execute Row, Enter Space');
       });
     });
   });

@@ -6,6 +6,7 @@ import type {
   NatTableAccessibilityPaginationAnnouncementContext,
   NatTableAccessibilityRowPlaceholderContext,
   NatTableAccessibilitySelectionAnnouncementContext,
+  NatTableAccessibilityShortcutLabelContext,
   NatTableAccessibilitySortingAnnouncementContext,
   NatTableAccessibilitySubHeaderContext
 } from '../common/accessibility.type';
@@ -130,6 +131,11 @@ export const PLACEHOLDER_CONTEXT: NatTableAccessibilityRowPlaceholderContext = {
   positionText: '42',
   totalRowsValue: 500,
   totalRowsText: '500'
+};
+
+export const SHORTCUT_LABEL_CONTEXT: NatTableAccessibilityShortcutLabelContext = {
+  label: 'Service',
+  shortcutText: 'Control+Shift+ArrowLeft'
 };
 
 /** Raw contract tokens that must never reach a translated announcement. */

@@ -203,3 +203,10 @@
     border-color: var(--nat-table-card-border-color-hover, var(--sys-nat-table-card-border-color-hover));
   }
 }
+
+/* Reduced motion: hover and state changes apply instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .surface {
+    transition: none;
+  }
+}

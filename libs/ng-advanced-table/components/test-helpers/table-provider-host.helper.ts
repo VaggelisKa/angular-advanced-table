@@ -42,7 +42,7 @@ import { NatToolbarItem } from '../ui/toolbar-item/toolbar-item.directive';
       [state]="tableState()"
       (stateChange)="onTableStateChange($event)">
       <nat-table-toolbar>
-        <button natToolbarItem="provider-action" type="button">Provider action</button>
+        <button natToolbarItem type="button">Provider action</button>
       </nat-table-toolbar>
       <nat-table
         #grid="natTable"

@@ -83,6 +83,14 @@ const mergeAccessibilitySubHeaderText = (
   placeholderRow: override?.placeholderRow ?? parent?.placeholderRow
 });
 
+/** Merges the keyboard-shortcut label formatter, override values winning. */
+const mergeAccessibilityShortcutText = (
+  parent?: NatTableAccessibilityText,
+  override?: NatTableAccessibilityText
+): Partial<NatTableAccessibilityText> => ({
+  shortcutLabel: override?.shortcutLabel ?? parent?.shortcutLabel
+});
+
 /** Merges table accessibility copy and formatter callbacks field by field. */
 export const mergeNatTableAccessibilityText = (
   parent?: NatTableAccessibilityText,
@@ -94,7 +102,8 @@ export const mergeNatTableAccessibilityText = (
   ...mergeAccessibilitySummaryAnnouncers(parent, override),
   ...mergeAccessibilityPaginationAnnouncers(parent, override),
   ...mergeAccessibilityColumnAnnouncers(parent, override),
-  ...mergeAccessibilitySubHeaderText(parent, override)
+  ...mergeAccessibilitySubHeaderText(parent, override),
+  ...mergeAccessibilityShortcutText(parent, override)
 });
 
 const mergeNatTableIntl = (parent?: NatTableIntl, override?: NatTableIntl): NatTableIntl => ({

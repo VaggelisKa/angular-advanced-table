@@ -68,3 +68,10 @@
     transform: var(--nat-table-hover-lift, var(--sys-nat-table-hover-lift, translateY(-1px)));
   }
 }
+
+/* Reduced motion: hover and state changes apply instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .page-size-select {
+    transition: none;
+  }
+}

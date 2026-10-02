@@ -47,7 +47,7 @@
 }
 
 .header-content.is-align-end .header-label {
-  text-align: right;
+  text-align: end;
 }
 
 .header-label.sr-only {
@@ -87,12 +87,20 @@
     color var(--nat-table-transition-medium, var(--sys-nat-table-transition-medium, 180ms ease));
 }
 
+/* The 24px minimums keep the sort control at or above the WCAG 2.5.8 (AA)
+   target size even when the header label is set in a small font. The block
+   minimum stays below the menu button's 1.9rem, so headers that also show the
+   column menu keep their height. The inline minimum is capped at the space the
+   header leaves, so a column resized narrower than the controls shrinks the
+   button instead of clipping it; the header actions gap then keeps it clear of
+   the menu button, which satisfies the 2.5.8 spacing exception. */
 .sort-button {
   display: inline-flex;
   gap: var(--nat-table-space-chip-row-gap, var(--sys-nat-table-space-chip-row-gap, 10px));
   align-items: center;
-  min-width: 0;
+  min-inline-size: min(24px, 100%);
   max-width: 100%;
+  min-block-size: 24px;
   padding: 0;
   font: inherit;
   color: inherit;
@@ -272,7 +280,7 @@
   padding: 0 10px;
   font: inherit;
   color: inherit;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   background: transparent;
   border: 0;
@@ -434,5 +442,23 @@
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* Reduced motion: no menu enter animation, and every state change (press lift,
+   sort icon scale, menu item check) applies instantly instead of transitioning. */
+@media (prefers-reduced-motion: reduce) {
+  .column-menu {
+    animation: none;
+  }
+
+  .sort-button,
+  .menu-button,
+  .nat-default-sort,
+  .nat-default-sort__up,
+  .nat-default-sort__down,
+  .column-menu-item,
+  .column-menu-item__check {
+    transition: none;
   }
 }

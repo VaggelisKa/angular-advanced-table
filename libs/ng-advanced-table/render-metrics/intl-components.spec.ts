@@ -268,4 +268,22 @@ describe('FEATURE: render metrics intl components', () => {
       });
     });
   });
+
+  describe('GIVEN: the render metrics filter stylesheet is registered', () => {
+    describe('WHEN: the user prefers reduced motion', () => {
+      it('THEN: it turns off the filter chip transitions', async () => {
+        await fixture.whenStable();
+
+        const reducedMotionCss = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .filter(
+            (rule): rule is CSSMediaRule => rule instanceof CSSMediaRule && rule.media.mediaText.includes('prefers-reduced-motion')
+          )
+          .map((rule) => rule.cssText.replaceAll(/\s+/gu, ' '))
+          .join('\n');
+
+        expect(reducedMotionCss).toMatch(/\.chip\[[^\]]+\] \{ transition: none;/u);
+      });
+    });
+  });
 });

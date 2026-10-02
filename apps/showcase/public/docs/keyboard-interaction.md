@@ -24,4 +24,4 @@ Column reordering exposes keyboard paths when `[enableReordering]="true"` is set
 
 Use `[keybindings]` on the table surface for per-table overrides, or `NAT_TABLE_KEYBINDINGS` for app-wide defaults. The table warns in development when configured shortcuts conflict.
 
-Use `NatTableHotkeyA11y` when custom controls need shortcut names in their accessible names and `aria-keyshortcuts`.
+Use `NatTableHotkeyA11y` when custom controls need shortcut names in their accessible names and `aria-keyshortcuts`. The directive writes the accessible name through the `accessibilityText.shortcutLabel` formatter — English reads `Sort (Shortcut: Control+Shift+ArrowLeft)` — so it follows the table's locale dictionary and any `accessibilityText` override on the table surface; outside a table the English dictionary applies.

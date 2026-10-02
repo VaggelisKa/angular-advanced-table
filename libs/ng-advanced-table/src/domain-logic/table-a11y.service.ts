@@ -1,5 +1,17 @@
 /* eslint-disable max-lines -- a11y service residual: DI + the liveMessage signal + snapshot capture that must read live signals + the summary computeds + five effect/afterRenderEffect registrations (the shared pair self-registers in the constructor; renderer-specific sets register through registerGridEffects/registerListEffects so each renderer opts into what it supports), plus the thin announce* capture-then-delegate call sites. All pure announcement/summary/context formatting was extracted to the table-announcement, table-pagination-announcement, and table-summary utils. */
-import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
+import {
+  DestroyRef,
+  Injectable,
+  Injector,
+  afterNextRender,
+  afterRenderEffect,
+  computed,
+  effect,
+  inject,
+  isDevMode,
+  signal,
+  untracked
+} from '@angular/core';
 
 import type { Column, RowData } from '@tanstack/angular-table';
 
@@ -12,6 +24,12 @@ import { serializeRowSelection } from '../utils/row-state.util';
 import { serializeColumnFilters, serializeSorting } from '../utils/sorting.util';
 import { describeAccessibilityChange } from '../utils/table-announcement.util';
 import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext } from '../utils/table-summary.util';
+
+/**
+ * Pause between rendering the cleared live region and writing a repeated
+ * message back, long enough for screen readers to register the empty state.
+ */
+const NAT_TABLE_REPEAT_ANNOUNCEMENT_DELAY_MS = 100;
 
 /**
  * Cross-cutting accessibility service for the table.
@@ -32,10 +50,17 @@ import { buildColumnReorderContext, buildColumnResizeContext, getSummaryContext 
 export class NatTableA11yService<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
+  private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
 
   private renderer: NatTableRendererKind = 'table';
   private lastAccessibilitySnapshot: TableAccessibilitySnapshot | null = null;
   private previousResizingColumnId: string | null = null;
+  /** Bumped by every `announce()`, so a deferred repeat write yields to any newer message. */
+  private announcementSequence = 0;
+  private repeatAnnouncementTimer: ReturnType<typeof setTimeout> | null = null;
+  /** The message last requested, so a repeat made while the region is still cleared counts as a repeat. */
+  private lastAnnouncedMessage = '';
 
   /** Text written to the live region for screen-reader announcements. */
   public readonly liveMessage = signal('');
@@ -61,6 +86,7 @@ export class NatTableA11yService<TData extends RowData = RowData> {
     // of a11y regression to notice.
     this.registerAnnouncementEffect();
     this.registerAccessibleNameValidationEffect();
+    this.destroyRef.onDestroy(() => this.cancelRepeatAnnouncement());
   }
 
   /**
@@ -98,13 +124,66 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   // ─── Announce helpers ───
 
   /**
-   * Low-level announce: clears the live region, then sets the message on the
-   * next microtask so the browser re-reads the region even when the text is
-   * identical to the previous announcement.
+   * Low-level announce: clears the live region, then writes the message so
+   * the browser re-reads the region. A new message is written on the next
+   * microtask. Repeating the text the region already shows needs more: from
+   * an event handler, both writes would land before zoneless change detection
+   * runs (and an `afterNextRender` write alone re-renders inside the same
+   * task), so the DOM would never change and screen readers would stay
+   * silent. A repeat is therefore written back only after the cleared region
+   * has rendered and a short pause has let assistive technology observe it.
+   * A repeat that lands during that pause restarts it, since the cleared
+   * region is already on screen.
    */
   public announce(message: string): void {
+    const sequence = ++this.announcementSequence;
+    const isRepeat = message !== '' && message === this.lastAnnouncedMessage;
+    const clearedRegionRendered = this.repeatAnnouncementTimer !== null;
+
+    this.lastAnnouncedMessage = message;
+    this.cancelRepeatAnnouncement();
     this.liveMessage.set('');
-    queueMicrotask(() => this.liveMessage.set(message));
+
+    if (!isRepeat) {
+      queueMicrotask(() => {
+        if (sequence === this.announcementSequence) {
+          this.liveMessage.set(message);
+        }
+      });
+
+      return;
+    }
+
+    if (clearedRegionRendered) {
+      this.scheduleRepeatAnnouncement(message);
+
+      return;
+    }
+
+    afterNextRender(
+      {
+        write: () => {
+          if (sequence === this.announcementSequence) {
+            this.scheduleRepeatAnnouncement(message);
+          }
+        }
+      },
+      { injector: this.injector }
+    );
+  }
+
+  private scheduleRepeatAnnouncement(message: string): void {
+    this.repeatAnnouncementTimer = setTimeout(() => {
+      this.repeatAnnouncementTimer = null;
+      this.liveMessage.set(message);
+    }, NAT_TABLE_REPEAT_ANNOUNCEMENT_DELAY_MS);
+  }
+
+  private cancelRepeatAnnouncement(): void {
+    if (this.repeatAnnouncementTimer !== null) {
+      clearTimeout(this.repeatAnnouncementTimer);
+      this.repeatAnnouncementTimer = null;
+    }
   }
 
   /**
