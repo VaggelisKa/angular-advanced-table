@@ -89,13 +89,12 @@
   margin-inline: calc(-1 * var(--sys-nat-table-list-flow-gutter));
 }
 
-/* Longhands, not the `flex` shorthand: an invalid width token would reset the
-   whole shorthand to `0 1 auto` and let the field shrink; with longhands only
-   the basis falls back to `auto`. */
+/* The basis is set apart from the `flex` shorthand on purpose: an invalid
+   width token would reset the whole shorthand to `0 1 auto` and let the field
+   shrink, while on its own only the basis falls back to `auto`. */
 .list-item--flow > .list-item-fields > .list-field {
   box-sizing: border-box;
-  flex-grow: 0;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   flex-basis: var(--sys-nat-table-list-field-width, auto);
   min-width: auto;
   max-width: 100%;
