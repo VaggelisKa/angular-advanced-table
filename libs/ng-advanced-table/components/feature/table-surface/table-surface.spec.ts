@@ -87,6 +87,23 @@ describe('FEATURE: NatTable UI', () => {
           /padding:\s*var\(\s*--nat-table-space-card-list,\s*var\(\s*--sys-nat-table-space-card-list,\s*0/
         );
       });
+
+      it('THEN: it turns off the surface and companion control transitions under reduced motion', () => {
+        fixture.detectChanges();
+
+        const reducedMotionCss = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .filter(
+            (rule): rule is CSSMediaRule => rule instanceof CSSMediaRule && rule.media.mediaText.includes('prefers-reduced-motion')
+          )
+          .map((rule) => rule.cssText.replaceAll(/\s+/gu, ' '))
+          .join('\n');
+
+        // Card, column chips, page-size select, pager, and scroll buttons.
+        for (const selector of ['.surface', '.chip', '.page-size-select', '.pager-button', '.scroll-button']) {
+          expect(reducedMotionCss).toMatch(new RegExp(`\\${selector}\\[[^\\]]+\\] \\{ transition: none;`, 'u'));
+        }
+      });
     });
 
     describe('WHEN: the component initializes', () => {

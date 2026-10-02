@@ -304,6 +304,27 @@ describe('FEATURE: NatTable', () => {
         expect(dataRowRule?.style.transition).toBe('');
       });
 
+      it('THEN: it drops the state animation and drag, resize, and hover transitions under reduced motion', () => {
+        fixture.detectChanges();
+
+        const reducedMotionRules = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules)
+            .filter(
+              (rule): rule is CSSMediaRule => rule instanceof CSSMediaRule && rule.media.mediaText.includes('prefers-reduced-motion')
+            )
+            .flatMap((rule) =>
+              Array.from(rule.cssRules).filter((nestedRule): nestedRule is CSSStyleRule => nestedRule instanceof CSSStyleRule)
+            )
+        );
+        const transitionRule = reducedMotionRules.find((rule) => rule.style.getPropertyValue('transition') === 'none');
+
+        expect(requireStyleRule(reducedMotionRules, '.table-state').style.getPropertyValue('animation')).toBe('none');
+        expect(transitionRule?.selectorText).toContain('.column-resize-handle');
+        expect(transitionRule?.selectorText).toContain('.is-reorderable');
+        expect(transitionRule?.selectorText).toContain('.cdk-drag-animating');
+        expect(transitionRule?.selectorText).toContain('.data-cell');
+      });
+
       it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {
         fixture.detectChanges();
 

@@ -83,5 +83,33 @@ describe('FEATURE: NatTable UI - Header Actions A11y', () => {
         hiddenFixture.destroy();
       });
     });
+
+    describe('WHEN: the header actions stylesheet is registered', () => {
+      it('THEN: it drops the menu enter animation and control transitions under reduced motion', () => {
+        fixture.detectChanges();
+
+        const reducedMotionCss = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .filter(
+            (rule): rule is CSSMediaRule => rule instanceof CSSMediaRule && rule.media.mediaText.includes('prefers-reduced-motion')
+          )
+          .map((rule) => rule.cssText.replaceAll(/\s+/gu, ' '))
+          .join('\n');
+
+        expect(reducedMotionCss).toMatch(/\.column-menu\[[^\]]+\] \{ animation: none;/u);
+
+        for (const selector of [
+          '.sort-button',
+          '.menu-button',
+          '.nat-default-sort__up',
+          '.column-menu-item',
+          '.column-menu-item__check'
+        ]) {
+          expect(reducedMotionCss).toContain(selector);
+        }
+
+        expect(reducedMotionCss).toMatch(/\.column-menu-item__check\[[^\]]+\] \{ transition: none;/u);
+      });
+    });
   });
 });

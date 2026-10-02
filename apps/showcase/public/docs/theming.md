@@ -229,6 +229,8 @@ Each state item also carries a `data-state` attribute (`loading`, `empty`, or `e
 
 Reach for these direct tokens when a table control needs a local exception.
 
+The motion tokens apply only when motion is allowed: under `prefers-reduced-motion: reduce`, the table, header actions, and companion controls drop their transitions and enter animations, so drag reorder, hover, and menu changes apply instantly.
+
 ### Scroll Control Tokens
 
 `NatTableScrollControl` keeps its native range input and reads inherited tokens from the wrapper around the control and table. The component does not expose private selectors as theme API. The stock buttons draw as 36 × 36 px squares with a 24 px arrow and no inline padding, while an invisible pseudo-element extends each button's pointer target to `--nat-table-scroll-button-target-size` (44 px, the WCAG 2.5.5 AAA size), so the focus ring hugs the compact box without shrinking the tap area.

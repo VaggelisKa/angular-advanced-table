@@ -645,9 +645,20 @@ tbody .data-row:last-child .data-cell {
   }
 }
 
+/* Reduced motion: drop the state enter animation and every transition (drag
+   reorder shifts, the drop settle, resize-handle fade, row hover fade) so
+   changes apply instantly. CDK drag-drop reads the computed transition
+   duration, so a zero duration settles drops immediately. */
 @media (prefers-reduced-motion: reduce) {
   .table-state {
     animation: none;
+  }
+
+  .column-resize-handle::after,
+  .cdk-drop-list-dragging .header-cell.is-reorderable:not(.cdk-drag-placeholder),
+  .header-cell.cdk-drag-animating,
+  .data-cell {
+    transition: none;
   }
 }
 

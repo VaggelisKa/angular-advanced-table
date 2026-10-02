@@ -436,3 +436,21 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* Reduced motion: no menu enter animation, and every state change (press lift,
+   sort icon scale, menu item check) applies instantly instead of transitioning. */
+@media (prefers-reduced-motion: reduce) {
+  .column-menu {
+    animation: none;
+  }
+
+  .sort-button,
+  .menu-button,
+  .nat-default-sort,
+  .nat-default-sort__up,
+  .nat-default-sort__down,
+  .column-menu-item,
+  .column-menu-item__check {
+    transition: none;
+  }
+}
