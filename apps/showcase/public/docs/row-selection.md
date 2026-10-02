@@ -94,7 +94,7 @@ The checkbox component expects the table instance in both modes and the current 
 
 ## Reading Selected Rows
 
-`rowSelection` holds row ids, not rows. To get the selected row objects for a bulk action, map the ids back to your data with the same id rule the table uses: your `getRowId`, or the row's `id` property. Because this works from your own data and state, it covers selected rows on other pages and rows the current filters hide.
+`rowSelection` holds row ids, not rows. To get the selected row objects for a bulk action, map the ids back to your data with the same id rule the table uses: your `getRowId`, or the row's `id` property. With client-side pagination this works from your own data and state, so it covers selected rows on other pages and rows the current filters hide. With manual pagination, `rows()` holds only the loaded page, so selections made on other pages have no row object there: keep the ids and resolve them through your API (or a cache of rows you have loaded) before running the bulk action.
 
 ```ts
 readonly rows = signal<Position[]>([]);

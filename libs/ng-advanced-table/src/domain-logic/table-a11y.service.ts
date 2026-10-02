@@ -59,6 +59,8 @@ export class NatTableA11yService<TData extends RowData = RowData> {
   /** Bumped by every `announce()`, so a deferred repeat write yields to any newer message. */
   private announcementSequence = 0;
   private repeatAnnouncementTimer: ReturnType<typeof setTimeout> | null = null;
+  /** The message last requested, so a repeat made while the region is still cleared counts as a repeat. */
+  private lastAnnouncedMessage = '';
 
   /** Text written to the live region for screen-reader announcements. */
   public readonly liveMessage = signal('');
@@ -130,11 +132,15 @@ export class NatTableA11yService<TData extends RowData = RowData> {
    * task), so the DOM would never change and screen readers would stay
    * silent. A repeat is therefore written back only after the cleared region
    * has rendered and a short pause has let assistive technology observe it.
+   * A repeat that lands during that pause restarts it, since the cleared
+   * region is already on screen.
    */
   public announce(message: string): void {
     const sequence = ++this.announcementSequence;
-    const isRepeat = message !== '' && message === untracked(this.liveMessage);
+    const isRepeat = message !== '' && message === this.lastAnnouncedMessage;
+    const clearedRegionRendered = this.repeatAnnouncementTimer !== null;
 
+    this.lastAnnouncedMessage = message;
     this.cancelRepeatAnnouncement();
     this.liveMessage.set('');
 
@@ -148,21 +154,29 @@ export class NatTableA11yService<TData extends RowData = RowData> {
       return;
     }
 
+    if (clearedRegionRendered) {
+      this.scheduleRepeatAnnouncement(message);
+
+      return;
+    }
+
     afterNextRender(
       {
         write: () => {
-          if (sequence !== this.announcementSequence) {
-            return;
+          if (sequence === this.announcementSequence) {
+            this.scheduleRepeatAnnouncement(message);
           }
-
-          this.repeatAnnouncementTimer = setTimeout(() => {
-            this.repeatAnnouncementTimer = null;
-            this.liveMessage.set(message);
-          }, NAT_TABLE_REPEAT_ANNOUNCEMENT_DELAY_MS);
         }
       },
       { injector: this.injector }
     );
+  }
+
+  private scheduleRepeatAnnouncement(message: string): void {
+    this.repeatAnnouncementTimer = setTimeout(() => {
+      this.repeatAnnouncementTimer = null;
+      this.liveMessage.set(message);
+    }, NAT_TABLE_REPEAT_ANNOUNCEMENT_DELAY_MS);
   }
 
   private cancelRepeatAnnouncement(): void {

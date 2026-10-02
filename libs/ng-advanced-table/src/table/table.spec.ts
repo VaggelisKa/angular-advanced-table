@@ -946,6 +946,42 @@ describe('FEATURE: NatTable', () => {
         expect(liveRegion.textContent).toBe('Name column width 120 pixels (minimum).');
       });
     });
+
+    describe('WHEN: the same message is announced again while a repeat is still pausing', () => {
+      it('THEN: it keeps the region cleared through a fresh pause before writing the message back', async () => {
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const a11yService = fixture.debugElement.query(By.directive(NatTable)).injector.get(NatTableA11yService);
+        const liveRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-live-region"]');
+        const message = 'Name column width 120 pixels (minimum).';
+
+        a11yService.announce(message);
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        // when: a held shortcut repeats the message, then repeats it again inside the pause
+        const renderedTexts: string[] = [];
+        const observer = new MutationObserver(() => renderedTexts.push(liveRegion.textContent));
+
+        observer.observe(liveRegion, { childList: true, characterData: true, subtree: true });
+        a11yService.announce(message);
+        await fixture.whenStable();
+        a11yService.announce(message);
+        await Promise.resolve();
+        await fixture.whenStable();
+
+        // then: the cleared region is not overwritten before the pause ends
+        expect(liveRegion.textContent).toBe('');
+
+        await new Promise<void>((resolve) => setTimeout(resolve, 150));
+        await fixture.whenStable();
+        observer.disconnect();
+
+        expect(renderedTexts).toStrictEqual(['', message]);
+        expect(liveRegion.textContent).toBe(message);
+      });
+    });
   });
 
   describe('GIVEN: a table in a loading, error, or empty state', () => {
