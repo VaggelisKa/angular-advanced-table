@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- irreducible per-instance reactive store: a single @Injectable owns the signal graph + TanStack table instance; further splitting only relocates coupling into cross-service signal reads and Injector.get() cycles. Pure arithmetic (widths, resize math, const defaults) already extracted to utils/common. */
 import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
-import { Injectable, computed, effect, inject, isDevMode, signal } from '@angular/core';
+import { Injectable, afterNextRender, computed, effect, inject, isDevMode, signal } from '@angular/core';
 
 import type {
   Column,
@@ -98,6 +98,7 @@ import {
   resolveSubHeaderValueText,
   stripNatTableSubHeaderSorting
 } from '../utils/sub-header.util';
+import { hasNatTableStateValueChanged } from '../utils/table-state-value-equality.util';
 
 // ─── Constants ───
 
@@ -304,9 +305,17 @@ export class NatTableState<TData extends RowData = RowData> {
 
   // ─── Merged state ───
 
+  /**
+   * The consumer's global filter, kept even while no search control is
+   * registered. Only the effective `mergedState` gates it to `''`; reported
+   * state carries this value so a two-way `[(state)]` binding never has its
+   * controlled `globalFilter` overwritten.
+   */
+  private readonly userGlobalFilter = computed(() => this.state().globalFilter ?? this.internalGlobalFilter());
+
   public readonly mergedState = computed<NatTableUserState>(() => ({
     sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting(), this.enableMultiSort()),
-    globalFilter: this.enableGlobalFilter() ? (this.state().globalFilter ?? this.internalGlobalFilter()) : '',
+    globalFilter: this.enableGlobalFilter() ? this.userGlobalFilter() : '',
     columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnOrder: this.resolvedColumnOrder(),
@@ -1010,7 +1019,8 @@ export class NatTableState<TData extends RowData = RowData> {
     const seed = resolveSeedState(initialState, DEFAULT_TABLE_STATE);
 
     this.internalSorting.set(normalizeSortingState(seed.sorting, this.enableMultiSort()));
-    this.internalGlobalFilter.set(this.enableGlobalFilter() ? seed.globalFilter : '');
+    // Kept ungated: `mergedState` applies the search gate, reported state keeps the value.
+    this.internalGlobalFilter.set(seed.globalFilter);
     this.internalColumnFilters.set(seed.columnFilters);
     this.internalColumnVisibility.set(seed.columnVisibility);
     this.internalColumnOrder.set(seed.columnOrder);
@@ -1020,7 +1030,7 @@ export class NatTableState<TData extends RowData = RowData> {
     this.internalPagination.set(seed.pagination);
     this.hasSeededInitialState.set(true);
 
-    this.natTableService.notifyStateChange(this.mergedState());
+    this.natTableService.notifyStateChange({ ...this.mergedState(), globalFilter: this.userGlobalFilter() });
   }
 
   public patchState(
@@ -1050,7 +1060,8 @@ export class NatTableState<TData extends RowData = RowData> {
     const currentState = this.mergedState();
     const nextState: NatTableUserState = {
       sorting: normalizeSortingState(resolveUpdater(currentState.sorting, updaters.sorting), this.enableMultiSort()),
-      globalFilter: resolveUpdater(currentState.globalFilter, updaters.globalFilter),
+      // Resolved against the ungated value so reported state keeps the consumer's filter.
+      globalFilter: resolveUpdater(this.userGlobalFilter(), updaters.globalFilter),
       columnFilters: resolveUpdater(currentState.columnFilters, updaters.columnFilters),
       columnVisibility: resolveUpdater(currentState.columnVisibility, updaters.columnVisibility),
       columnOrder: retainColumnOrder(resolveUpdater(currentState.columnOrder, updaters.columnOrder), this.allLeafColumnIds()),
@@ -1242,6 +1253,61 @@ export class NatTableState<TData extends RowData = RowData> {
         console.warn('[ng-advanced-table] subHeaderOrder is set but subHeaderColumn is not; the order has no effect.');
       }
     });
+  }
+
+  /**
+   * Dev-mode warning, once per table, for a `pagination` or `globalFilter`
+   * value the consumer supplied through `initialState` or controlled `state`
+   * while no pagination or search control is registered, so the table ignores
+   * it. Checked after the first render, once companion controls had their
+   * chance to register. Default-equal pagination, an empty filter, and manual
+   * pagination/filtering (the consumer owns those) never warn. Must be called
+   * in the injection context.
+   */
+  public registerControlRegistrationWarning(renderer: string): void {
+    if (!isDevMode()) {
+      return;
+    }
+
+    afterNextRender({
+      read: () => {
+        this.warnIfPaginationIgnored(renderer);
+        this.warnIfGlobalFilterIgnored(renderer);
+      }
+    });
+  }
+
+  private warnIfPaginationIgnored(renderer: string): void {
+    const pagination = this.state().pagination ?? this.initialState().pagination;
+
+    if (
+      pagination === undefined ||
+      this.enablePagination() ||
+      this.manualPagination() ||
+      !hasNatTableStateValueChanged(pagination, DEFAULT_TABLE_STATE.pagination)
+    ) {
+      return;
+    }
+
+    console.warn(
+      `[ng-advanced-table] <${renderer}> received a pagination state, but no pagination control is registered, so ` +
+        `all rows render unpaginated. Add <nat-table-pagination>, <nat-table-pager>, or <nat-table-page-size> ` +
+        `from 'ng-advanced-table/components' inside the surface, or set pagination to manual mode.`
+    );
+  }
+
+  private warnIfGlobalFilterIgnored(renderer: string): void {
+    const globalFilter = this.state().globalFilter ?? this.initialState().globalFilter ?? '';
+
+    if (globalFilter.trim() === '' || this.enableGlobalFilter() || this.manualFiltering()) {
+      return;
+    }
+
+    console.warn(
+      `[ng-advanced-table] <${renderer}> received a globalFilter, but no search control is registered, so rows ` +
+        `are not filtered by it. Register one with NatTableService.registerSearch() from your search control, ` +
+        `or set filtering to manual mode.`
+    );
   }
 
   /**
