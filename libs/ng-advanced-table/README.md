@@ -10,6 +10,8 @@ For an Angular app that already declares `@angular/core` and `@angular/common`, 
 pnpm add ng-advanced-table @angular/aria @angular/cdk
 ```
 
+Versioning is deliberately not SemVer: the library is still experimental, so there are no major releases yet. Breaking changes ship in minor releases and patch releases carry fixes, refactors, and docs. Use a tilde range such as `~2.16.0` or an exact pin, and read the changelog before moving to a new minor.
+
 If your workspace does not already declare Angular framework packages, install the full required peer set:
 
 ```bash
@@ -24,12 +26,12 @@ Resolved published ranges and dependency classifications:
 | ------------------------- | --------------- | -------------------------------------------------------------------------- |
 | `@angular/core`           | `^22.2.0`       | Required peer; Angular framework singleton                                 |
 | `@angular/common`         | `^22.2.0`       | Required peer; Angular framework APIs                                      |
-| `@angular/aria`           | `^22.2.0`       | Required peer; grid, toolbar, and menu behaviors                           |
+| `@angular/aria`           | `^22.2.0`       | Required peer; grid, toolbar, and menu behaviors; pins `@angular/cdk`      |
 | `@angular/cdk`            | `^22.2.0`       | Required peer; drag-drop, bidi, and overlay integrations                   |
 | `@tanstack/angular-table` | `^8.21.4`       | Installed runtime dependency; table runtime and forwarded column contracts |
 | `tslib`                   | `^2.8.1`        | Runtime dependency installed with `ng-advanced-table`                      |
 
-Keep all Angular peers in app dependencies. Production entry points use `@angular/aria` and `@angular/cdk`. `@angular/cdk` 22.2 itself also peers on `@angular/forms` and `@angular/platform-browser`, which a standard Angular app already has; keep them on the same Angular version.
+Keep all Angular peers in app dependencies. Production entry points use `@angular/aria` and `@angular/cdk`. Install both at the same exact version: `@angular/aria` declares `@angular/cdk` as an exact-version peer. `@angular/cdk` 22.2 itself also peers on `@angular/forms` and `@angular/platform-browser`, which a standard Angular app already has; keep them on the same Angular version.
 
 ## Entry points
 

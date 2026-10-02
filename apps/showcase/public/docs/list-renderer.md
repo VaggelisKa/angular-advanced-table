@@ -1,4 +1,4 @@
-`NatList` (`<nat-list>`) renders rows as stacked label/value items instead of a grid, driven by the same engine (`NatTableState`) as `NatTable`. Column definitions, surface state, companion controls, and the data lifecycle are shared, so a list is a renderer choice — not a second table implementation.
+`NatList` (`<nat-list>`) renders rows as stacked label/value items instead of a grid, driven by the same shared table state as `NatTable`. Column definitions, surface state, companion controls, and the data lifecycle are shared, so a list is a renderer choice — not a second table implementation.
 
 ## When To Use The List
 

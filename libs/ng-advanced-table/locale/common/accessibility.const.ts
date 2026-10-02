@@ -157,7 +157,8 @@ export const NAT_EN_LOCALE_LABELS: NatTableIntl = {
     // grid coordinates (header row included) — restating the position here
     // would read out a second, off-by-one number for the same row. The context
     // still carries position and total for consumers who override this.
-    placeholderRow: () => 'Loading.'
+    placeholderRow: () => 'Loading.',
+    shortcutLabel: ({ label, shortcutText }) => `${label} (Shortcut: ${shortcutText})`
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };

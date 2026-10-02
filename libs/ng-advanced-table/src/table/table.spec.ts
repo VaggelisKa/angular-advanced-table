@@ -13,6 +13,7 @@ import { NatTable } from './table';
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from '../cell-interaction/cell-interaction.const';
 import type { NatTableRowActivateEvent } from '../common/row.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
+import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { buildRows, getRowIdValue } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';
@@ -910,6 +911,75 @@ describe('FEATURE: NatTable', () => {
         expect(liveRegion.textContent.trim()).toBe('Reactive provider error state');
 
         providerFixture.destroy();
+      });
+    });
+
+    describe('WHEN: the same message is announced twice in a row from outside change detection', () => {
+      it('THEN: it renders the cleared live region before writing the repeated message back', async () => {
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const a11yService = fixture.debugElement.query(By.directive(NatTable)).injector.get(NatTableA11yService);
+        const liveRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-live-region"]');
+
+        // when: the first announcement lands, as an event handler would make it
+        a11yService.announce('Name column width 120 pixels (minimum).');
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        // then:
+        expect(liveRegion.textContent).toBe('Name column width 120 pixels (minimum).');
+
+        // when: the identical announcement is made again synchronously
+        const renderedTexts: string[] = [];
+        const observer = new MutationObserver(() => renderedTexts.push(liveRegion.textContent));
+
+        observer.observe(liveRegion, { childList: true, characterData: true, subtree: true });
+        a11yService.announce('Name column width 120 pixels (minimum).');
+        await fixture.whenStable();
+        await new Promise<void>((resolve) => setTimeout(resolve, 150));
+        await fixture.whenStable();
+        observer.disconnect();
+
+        // then: the DOM saw the empty state and then the message, so screen readers re-read it
+        expect(renderedTexts).toStrictEqual(['', 'Name column width 120 pixels (minimum).']);
+        expect(liveRegion.textContent).toBe('Name column width 120 pixels (minimum).');
+      });
+    });
+
+    describe('WHEN: the same message is announced again while a repeat is still pausing', () => {
+      it('THEN: it keeps the region cleared through a fresh pause before writing the message back', async () => {
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const a11yService = fixture.debugElement.query(By.directive(NatTable)).injector.get(NatTableA11yService);
+        const liveRegion = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-live-region"]');
+        const message = 'Name column width 120 pixels (minimum).';
+
+        a11yService.announce(message);
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        // when: a held shortcut repeats the message, then repeats it again inside the pause
+        const renderedTexts: string[] = [];
+        const observer = new MutationObserver(() => renderedTexts.push(liveRegion.textContent));
+
+        observer.observe(liveRegion, { childList: true, characterData: true, subtree: true });
+        a11yService.announce(message);
+        await fixture.whenStable();
+        a11yService.announce(message);
+        await Promise.resolve();
+        await fixture.whenStable();
+
+        // then: the cleared region is not overwritten before the pause ends
+        expect(liveRegion.textContent).toBe('');
+
+        await new Promise<void>((resolve) => setTimeout(resolve, 150));
+        await fixture.whenStable();
+        observer.disconnect();
+
+        expect(renderedTexts).toStrictEqual(['', message]);
+        expect(liveRegion.textContent).toBe(message);
       });
     });
   });

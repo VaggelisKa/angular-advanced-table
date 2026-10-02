@@ -127,7 +127,8 @@ export const NAT_FI_LOCALE_LABELS: NatTableIntl = {
 
       return `${groupLabel}, ${rowCountText} ${rows(rowCountValue)}.`;
     },
-    placeholderRow: () => 'Ladataan.'
+    placeholderRow: () => 'Ladataan.',
+    shortcutLabel: ({ label, shortcutText }) => `${label} (Pikanäppäin: ${shortcutText})`
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };

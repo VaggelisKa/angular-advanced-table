@@ -38,6 +38,8 @@ readonly columns = withNatTableSelectionColumn(baseColumns, {
 
 The helper prepends a non-sortable, non-hideable, non-resizable column. It defaults to a 48px width, can be pinned, and uses generated locale labels unless you pass explicit overrides. Pin it with the normal `columnPinning` state when selection should stay visible during horizontal scrolling.
 
+The select-all checkbox covers every row that matches the current filters, on every page — not just the page on screen. With 10 rows per page and 240 matching rows, checking it selects all 240, and it only shows as checked once all 240 are selected. Unchecking it clears those matching rows only: selected rows hidden by the current filters stay selected. With manual pagination the table only holds the rows you passed in, so select-all covers that loaded page. If users need a "select this page" control, build it in the app against the `rowSelection` state.
+
 The generated column also sets `meta.rowActivation: false`, so a click that lands beside the checkbox never fires `rowActivate`; the checkbox is far smaller than the 24 px WCAG 2.5.8 target, and the cell padding around it must not act as a second, larger row target. Pass `rowActivation: true` to restore the old behavior. See [Row Activation](/docs/columns#row-activation) for the per-column flag.
 
 ## Single And Multiple Selection
@@ -89,6 +91,35 @@ readonly columns = [
 ```
 
 The checkbox component expects the table instance in both modes and the current `row` in row mode. Prefer locale providers for shared generated labels; pass `ariaLabel` only for table-specific copy.
+
+## Reading Selected Rows
+
+`rowSelection` holds row ids, not rows. To get the selected row objects for a bulk action, map the ids back to your data with the same id rule the table uses: your `getRowId`, or the row's `id` property. With client-side pagination this works from your own data and state, so it covers selected rows on other pages and rows the current filters hide. With manual pagination, `rows()` holds only the loaded page, so selections made on other pages have no row object there: keep the ids and resolve them through your API (or a cache of rows you have loaded) before running the bulk action.
+
+```ts
+readonly rows = signal<Position[]>([]);
+readonly tableState = signal<Partial<NatTableUserState>>({});
+readonly getRowId = (row: Position): string => `position-${row.positionId}`;
+
+readonly selectedRows = computed(() => {
+  const selection = this.tableState().rowSelection ?? {};
+
+  return this.rows().filter((row) => selection[this.getRowId(row)]);
+});
+```
+
+```html
+<nat-table-surface [(state)]="tableState">
+  <nat-table
+    [data]="rows()"
+    [columns]="columns"
+    [getRowId]="getRowId"
+    [enableRowSelection]="true"
+    accessibleName="Selectable positions" />
+</nat-table-surface>
+```
+
+Ids with no matching row, such as rows removed from the data set, drop out of `selectedRows` on their own. Clear them from `rowSelection` too, as described under [Selection State](#selection-state).
 
 ## Bulk Actions
 

@@ -11,6 +11,9 @@ import {
   signal
 } from '@angular/core';
 
+import { NAT_EN_LOCALE_ID, NAT_TABLE_INTL, mergeNatTableAccessibilityText, resolveNatTableIntl } from 'ng-advanced-table/locale';
+import type { NatTableAccessibilityText } from 'ng-advanced-table/locale';
+
 import { NAT_TABLE_KEYBINDINGS } from './common/keybindings.const';
 import type { NatTableKeybindings } from './common/keybindings.type';
 import { mergeNatTableKeybindings, serializeShortcutValue } from './utils/keybindings.util';
@@ -32,6 +35,7 @@ export class NatTableHotkeyA11y {
   private readonly destroyRef = inject(DestroyRef);
   private readonly natTableService = inject(NatTableService, { optional: true });
   private readonly globalKeybindings = inject(NAT_TABLE_KEYBINDINGS, { optional: true }) ?? {};
+  private readonly tableIntlConfig = inject(NAT_TABLE_INTL);
 
   // Support multiple selector aliases as inputs
   public readonly natHotkeyA11y = input<keyof NatTableKeybindings | ''>('');
@@ -65,6 +69,23 @@ export class NatTableHotkeyA11y {
 
     return serializeShortcutValue(value);
   });
+
+  // Resolve the shortcut label formatter the same way the table resolves its
+  // accessibility copy: the active locale dictionary, then the table's own
+  // `accessibilityText` overrides. Outside a table there is no locale, so the
+  // English dictionary applies.
+  private readonly formatShortcutLabel = computed(() => {
+    const localeId = this.natTableService?.locale() ?? NAT_EN_LOCALE_ID;
+
+    return mergeNatTableAccessibilityText(
+      resolveNatTableIntl(this.tableIntlConfig, localeId).accessibilityText,
+      this.natTableService?.accessibilityText()
+    ).shortcutLabel;
+  });
+
+  // The last aria-label this directive wrote, so the observer can tell its own
+  // writes from a consumer's edit whatever the locale's label shape.
+  private lastWrittenAriaLabel: string | null = null;
 
   // Track the original aria-label and inner text of the host element
   private readonly originalAriaLabel = signal<string | null>(null);
@@ -101,11 +122,12 @@ export class NatTableHotkeyA11y {
     effect(() => {
       const currentShortcut = this.shortcut();
       const base = this.baseLabel();
+      const formatShortcutLabel = this.formatShortcutLabel();
 
       this.updatingAttributes = true;
 
       try {
-        this.writeAriaAttributes(nativeEl, currentShortcut, base);
+        this.writeAriaAttributes(nativeEl, currentShortcut, base, formatShortcutLabel);
       } finally {
         this.updatingAttributes = false;
       }
@@ -147,7 +169,7 @@ export class NatTableHotkeyA11y {
     }
   }
 
-  /** Captures an aria-label edit made outside this directive (one not carrying our shortcut suffix). */
+  /** Captures an aria-label edit made outside this directive (one it did not write itself). */
   private syncExternalAriaLabel(nativeEl: HTMLElement): void {
     const newAriaLabel = nativeEl.getAttribute('aria-label');
 
@@ -157,34 +179,35 @@ export class NatTableHotkeyA11y {
       return;
     }
 
-    const currentShortcut = this.shortcut();
-    const suffix = currentShortcut ? ` (Shortcut: ${currentShortcut})` : '';
-
-    if (!suffix || !newAriaLabel.endsWith(suffix)) {
+    if (!this.shortcut() || newAriaLabel !== this.lastWrittenAriaLabel) {
       this.originalAriaLabel.set(newAriaLabel);
     }
   }
 
   /** Writes aria-keyshortcuts and the shortcut-suffixed aria-label, or restores the originals when no shortcut applies. */
-  private writeAriaAttributes(nativeEl: HTMLElement, currentShortcut: string, base: string): void {
+  private writeAriaAttributes(
+    nativeEl: HTMLElement,
+    currentShortcut: string,
+    base: string,
+    formatShortcutLabel: NatTableAccessibilityText['shortcutLabel']
+  ): void {
     if (!currentShortcut) {
       this.renderer.removeAttribute(nativeEl, 'aria-keyshortcuts');
-      const original = this.originalAriaLabel();
-
-      if (original) {
-        this.renderer.setAttribute(nativeEl, 'aria-label', original);
-      } else {
-        this.renderer.removeAttribute(nativeEl, 'aria-label');
-      }
+      this.writeAriaLabel(nativeEl, this.originalAriaLabel());
 
       return;
     }
 
     this.renderer.setAttribute(nativeEl, 'aria-keyshortcuts', currentShortcut);
+    this.writeAriaLabel(nativeEl, base ? (formatShortcutLabel?.({ label: base, shortcutText: currentShortcut }) ?? base) : null);
+  }
 
-    if (base) {
-      this.renderer.setAttribute(nativeEl, 'aria-label', `${base} (Shortcut: ${currentShortcut})`);
+  private writeAriaLabel(nativeEl: HTMLElement, label: string | null): void {
+    if (label) {
+      this.lastWrittenAriaLabel = label;
+      this.renderer.setAttribute(nativeEl, 'aria-label', label);
     } else {
+      this.lastWrittenAriaLabel = null;
       this.renderer.removeAttribute(nativeEl, 'aria-label');
     }
   }
