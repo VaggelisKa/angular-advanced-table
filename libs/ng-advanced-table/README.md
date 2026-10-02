@@ -10,7 +10,7 @@ For an Angular app that already declares `@angular/core` and `@angular/common`, 
 pnpm add ng-advanced-table @angular/aria @angular/cdk
 ```
 
-Versioning is deliberately not SemVer: breaking changes ship in minor releases and patch releases carry fixes, refactors, and docs. Use a tilde range such as `~2.12.0` or an exact pin, and read the changelog before moving to a new minor.
+Versioning is deliberately not SemVer: the library is still experimental, so there are no major releases yet. Breaking changes ship in minor releases and patch releases carry fixes, refactors, and docs. Use a tilde range such as `~2.16.0` or an exact pin, and read the changelog before moving to a new minor.
 
 If your workspace does not already declare Angular framework packages, install the full required peer set:
 

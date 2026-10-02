@@ -14,7 +14,7 @@ Keep `@angular/core` and `@angular/common` in your Angular app dependencies. Thi
 
 Install `@angular/aria` and `@angular/cdk` at the same exact version (for example both `22.1.2`): `@angular/aria` pins `@angular/cdk` to its own exact version, so mismatched versions produce peer-dependency conflicts.
 
-**Versioning is not SemVer.** Breaking changes ship in minor releases (for example `2.12.x` to `2.13.0`), and patch releases carry fixes, refactors, and docs. Depend on a tilde range such as `~2.12.0`, or pin an exact version, rather than a caret range, and read the [`CHANGELOG`](https://github.com/VaggelisKa/angular-advanced-table/blob/main/libs/ng-advanced-table/CHANGELOG.md) before moving to a new minor.
+**Versioning is not SemVer.** The library is still experimental, so there are no major releases yet: breaking changes ship in minor releases (for example `2.16.x` to `2.17.0`), and patch releases carry fixes, refactors, and docs. Depend on a tilde range such as `~2.16.0`, or pin an exact version, rather than a caret range, and read the [`CHANGELOG`](https://github.com/VaggelisKa/angular-advanced-table/blob/main/libs/ng-advanced-table/CHANGELOG.md) before moving to a new minor.
 
 The library works in zoneless applications and renders on the server: browser-only APIs are deferred until the table runs in the browser, so SSR with client hydration needs no extra configuration.
 
