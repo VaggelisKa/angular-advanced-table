@@ -20,8 +20,8 @@ import type { NatToolbarItemPosition } from '../../common/toolbar.type';
  * @example
  * ```html
  * <div natToolbarGroup="end" accessibleName="View density">
- *   <button natToolbarItem="compact">Compact</button>
- *   <button natToolbarItem="comfortable">Comfortable</button>
+ *   <button natToolbarItem>Compact</button>
+ *   <button natToolbarItem>Comfortable</button>
  * </div>
  * ```
  */

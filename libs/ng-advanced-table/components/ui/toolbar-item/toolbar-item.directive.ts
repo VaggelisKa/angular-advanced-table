@@ -22,9 +22,6 @@ import {
  * <button natToolbarItem natToolbarItemPosition="start">Export</button>
  * ```
  *
- * A value (`natToolbarItem="export"` or `[natToolbarItem]="id"`) is allowed
- * as a readable label but carries no meaning — items need no unique value.
- *
  * `natToolbarItemPosition="start" | "center" | "end"` (default `start`) picks
  * the toolbar slot. It MUST be a static attribute — a binding
  * (`[natToolbarItemPosition]="expr"`) always lands in the start slot.
@@ -34,14 +31,14 @@ import {
  * is forwarded to the first focusable descendant (an open shadow root is
  * searched before light DOM), so a bare marker is enough:
  * ```html
- * <my-button natToolbarItem="filters">Filters</my-button>
+ * <my-button natToolbarItem>Filters</my-button>
  * ```
  *
  * `natToolbarItemFocusTarget` overrides that choice with a CSS selector when a
  * wrapper renders more than one control, or the first one is not the one that
  * should own focus:
  * ```html
- * <my-split-button natToolbarItem="filters" natToolbarItemFocusTarget=".primary">Filters</my-split-button>
+ * <my-split-button natToolbarItem natToolbarItemFocusTarget=".primary">Filters</my-split-button>
  * ```
  *
  * Items only work inside a `<nat-table-toolbar>`.
@@ -63,12 +60,6 @@ import {
   }
 })
 export class NatToolbarItem implements NatToolbarItemRef {
-  /**
-   * Optional readable label, ignored since `@angular/aria` 22.2 dropped widget
-   * values. Kept as an input so `[natToolbarItem]="expr"` bindings still compile.
-   */
-  public readonly natToolbarItem = input<string>('');
-
   public readonly natToolbarItemPosition = input<NatToolbarItemPosition>('start');
 
   /**

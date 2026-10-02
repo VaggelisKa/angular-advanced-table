@@ -19,13 +19,13 @@ import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button id="item-a" natToolbarItem="a" natToolbarItemPosition="start" type="button">A</button>
-      <button id="item-b" natToolbarItem="b" natToolbarItemPosition="center" type="button">B</button>
-      <button id="item-c" natToolbarItem="c" type="button">C</button>
+      <button id="item-a" natToolbarItem natToolbarItemPosition="start" type="button">A</button>
+      <button id="item-b" natToolbarItem natToolbarItemPosition="center" type="button">B</button>
+      <button id="item-c" natToolbarItem type="button">C</button>
       @if (showD()) {
-        <button id="item-d" natToolbarItem="d" type="button">D</button>
+        <button id="item-d" natToolbarItem type="button">D</button>
       }
-      <input aria-label="Filter" id="search" natToolbarItem="search" natToolbarItemPosition="start" type="search" />
+      <input aria-label="Filter" id="search" natToolbarItem natToolbarItemPosition="start" type="search" />
     </nat-table-toolbar>
   `
 })

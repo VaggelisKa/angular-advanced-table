@@ -111,7 +111,7 @@ const WRAPPED_DEMO_DATA: WrappedDemoItem[] = [
       <nat-table-surface [enableSorting]="true">
         <nat-table-toolbar accessibleName="Wrapped controls toolbar">
           <app-wrapped-button
-            natToolbarItem="wrapped-light"
+            natToolbarItem
             natToolbarItemFocusTarget="button"
             testId="wrapped-light-button"
             (activate)="recordWrappedAction('wrapped-light')">
@@ -119,7 +119,7 @@ const WRAPPED_DEMO_DATA: WrappedDemoItem[] = [
           </app-wrapped-button>
 
           <app-shadow-wrapped-button
-            natToolbarItem="wrapped-shadow"
+            natToolbarItem
             natToolbarItemFocusTarget="button"
             testId="wrapped-shadow-button"
             (activate)="recordWrappedAction('wrapped-shadow')">
@@ -129,7 +129,7 @@ const WRAPPED_DEMO_DATA: WrappedDemoItem[] = [
           <button
             class="toolbar-button"
             data-testid="wrapped-plain-button"
-            natToolbarItem="wrapped-plain"
+            natToolbarItem
             natToolbarItemPosition="end"
             type="button"
             (click)="recordWrappedAction('wrapped-plain')">

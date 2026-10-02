@@ -13,18 +13,14 @@ import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button id="default-start" natToolbarItem="export" type="button">Export</button>
-      <button id="explicit-end" natToolbarItem="filter" natToolbarItemPosition="end" type="button">Filter</button>
-      <!-- Bound value: natToolbarItem stays an input so bindings keep compiling. -->
-      <button [natToolbarItem]="dynamicLabel()" [natToolbarItemPosition]="dynamicPosition()" id="dynamic" type="button">
-        Dynamic
-      </button>
-      <div natToolbarItem="custom">Custom widget</div>
+      <button id="default-start" natToolbarItem type="button">Export</button>
+      <button id="explicit-end" natToolbarItem natToolbarItemPosition="end" type="button">Filter</button>
+      <button [natToolbarItemPosition]="dynamicPosition()" id="dynamic" natToolbarItem type="button">Dynamic</button>
+      <div natToolbarItem>Custom widget</div>
     </nat-table-toolbar>
   `
 })
 class DirectiveHost {
-  public readonly dynamicLabel = signal('dynamic');
   public readonly dynamicPosition = signal<NatToolbarItemPosition>('center');
 }
 
@@ -40,8 +36,8 @@ class WrappedControl {}
   imports: [NatTableToolbar, NatToolbarItem, WrappedControl],
   template: `
     <nat-table-toolbar>
-      <nat-wrapped-control [natToolbarItemFocusTarget]="selector()" id="wrapped" natToolbarItem="wrapped" />
-      <button id="plain" natToolbarItem="plain" type="button">Plain</button>
+      <nat-wrapped-control [natToolbarItemFocusTarget]="selector()" id="wrapped" natToolbarItem />
+      <button id="plain" natToolbarItem type="button">Plain</button>
     </nat-table-toolbar>
   `
 })
@@ -62,10 +58,10 @@ class ShadowControl {}
   imports: [NatTableToolbar, NatToolbarItem, ShadowControl, WrappedControl],
   template: `
     <nat-table-toolbar>
-      <nat-wrapped-control id="light-wrapper" natToolbarItem="light" />
-      <nat-shadow-control id="shadow-wrapper" natToolbarItem="shadow" />
-      <div id="static-widget" natToolbarItem="static">Static widget</div>
-      <button id="native" natToolbarItem="native" type="button"><span class="decoy" tabindex="0">Native</span></button>
+      <nat-wrapped-control id="light-wrapper" natToolbarItem />
+      <nat-shadow-control id="shadow-wrapper" natToolbarItem />
+      <div id="static-widget" natToolbarItem>Static widget</div>
+      <button id="native" natToolbarItem type="button"><span class="decoy" tabindex="0">Native</span></button>
     </nat-table-toolbar>
   `
 })
@@ -74,7 +70,7 @@ class ImplicitTargetHost {}
 @Component({
   selector: 'nat-toolbarless-host',
   imports: [NatToolbarItem],
-  template: `<button natToolbarItem="orphan" type="button">Orphan</button>`
+  template: `<button natToolbarItem type="button">Orphan</button>`
 })
 class ToolbarlessHost {}
 
