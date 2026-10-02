@@ -29,7 +29,7 @@ Resolved published ranges and dependency classifications:
 | `@tanstack/angular-table` | `^8.21.4`       | Installed runtime dependency; table runtime and forwarded column contracts |
 | `tslib`                   | `^2.8.1`        | Runtime dependency installed with `ng-advanced-table`                      |
 
-Keep all Angular peers in app dependencies. Production entry points use `@angular/aria` and `@angular/cdk`.
+Keep all Angular peers in app dependencies. Production entry points use `@angular/aria` and `@angular/cdk`. `@angular/cdk` 22.2 itself also peers on `@angular/forms` and `@angular/platform-browser`, which a standard Angular app already has; keep them on the same Angular version.
 
 ## Entry points
 

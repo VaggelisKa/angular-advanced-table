@@ -22,8 +22,8 @@ import {
  * <button natToolbarItem natToolbarItemPosition="start">Export</button>
  * ```
  *
- * An attribute value (`natToolbarItem="export"`) is allowed as a readable
- * label but carries no meaning — items need no unique value.
+ * A value (`natToolbarItem="export"` or `[natToolbarItem]="id"`) is allowed
+ * as a readable label but carries no meaning — items need no unique value.
  *
  * `natToolbarItemPosition="start" | "center" | "end"` (default `start`) picks
  * the toolbar slot. It MUST be a static attribute — a binding
@@ -63,6 +63,12 @@ import {
   }
 })
 export class NatToolbarItem implements NatToolbarItemRef {
+  /**
+   * Optional readable label, ignored since `@angular/aria` 22.2 dropped widget
+   * values. Kept as an input so `[natToolbarItem]="expr"` bindings still compile.
+   */
+  public readonly natToolbarItem = input<string>('');
+
   public readonly natToolbarItemPosition = input<NatToolbarItemPosition>('start');
 
   /**

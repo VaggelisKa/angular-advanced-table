@@ -10,7 +10,7 @@ pnpm add ng-advanced-table @angular/aria @angular/cdk
 # or: yarn add ng-advanced-table @angular/aria @angular/cdk
 ```
 
-Keep `@angular/core` and `@angular/common` in your Angular app dependencies. This installs the stable release; see [Release Channels](#release-channels) for the nightly channel.
+Keep `@angular/core` and `@angular/common` (plus `@angular/forms` and `@angular/platform-browser`, which `@angular/cdk` peers on) in your Angular app dependencies, all on Angular 22.2 or later. This installs the stable release; see [Release Channels](#release-channels) for the nightly channel.
 
 Install the agent skill:
 

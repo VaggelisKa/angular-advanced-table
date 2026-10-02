@@ -15,12 +15,16 @@ import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
     <nat-table-toolbar>
       <button id="default-start" natToolbarItem="export" type="button">Export</button>
       <button id="explicit-end" natToolbarItem="filter" natToolbarItemPosition="end" type="button">Filter</button>
-      <button [natToolbarItemPosition]="dynamicPosition()" id="dynamic" natToolbarItem="dynamic" type="button">Dynamic</button>
+      <!-- Bound value: natToolbarItem stays an input so bindings keep compiling. -->
+      <button [natToolbarItem]="dynamicLabel()" [natToolbarItemPosition]="dynamicPosition()" id="dynamic" type="button">
+        Dynamic
+      </button>
       <div natToolbarItem="custom">Custom widget</div>
     </nat-table-toolbar>
   `
 })
 class DirectiveHost {
+  public readonly dynamicLabel = signal('dynamic');
   public readonly dynamicPosition = signal<NatToolbarItemPosition>('center');
 }
 
