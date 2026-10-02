@@ -114,7 +114,7 @@ Grid tracks cannot wrap per item: when one value is wider than its track (a larg
 </nat-table-surface>
 ```
 
-Slot widths are CSS, one token per column id, exactly like the grid area names: `--nat-list-field-width-<column-id>` is a percentage of the line (`100%` gives the field a whole line of its own). With no tokens set, the visible fields share the line equally. Once you set tokens, set one for every visible column (or hide the rest via column visibility), exactly as with `--nat-list-item-areas`: a column left without a token still takes its equal share of the full line, so a partial set adds up to more than a line and wraps a field in every item. The gap between slots is `--nat-list-flow-column-gap` (`1rem`), carried as a gutter inside each slot so the percentages add up exactly. Column ids must be valid CSS identifiers, or escaped the way the token is written below.
+Slot widths are CSS, one token per column id, exactly like the grid area names: `--nat-list-field-width-<column-id>` is a percentage of the line (`100%` gives the field a whole line of its own). With no tokens set, the visible fields share the line equally. Once you set tokens, set one for every visible column (or hide the rest via column visibility), exactly as with `--nat-list-item-areas`: a column left without a token still takes its equal share of the full line, so a partial set no longer adds up to the line and can push a field onto a second line in every item. The gap between slots is `--nat-list-flow-column-gap` (`1rem`), carried as a gutter inside each slot so the percentages add up exactly. Column ids must be valid CSS identifiers, or escaped the way the token is written below.
 
 ```css
 nat-list {
