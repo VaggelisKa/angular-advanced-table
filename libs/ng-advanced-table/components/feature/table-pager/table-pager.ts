@@ -1,4 +1,5 @@
-import { Component, DestroyRef, computed, inject, input } from '@angular/core';
+import type { ElementRef, Signal } from '@angular/core';
+import { Component, DestroyRef, Injector, afterNextRender, computed, inject, input, viewChild } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -20,6 +21,9 @@ export class NatTablePager<TData extends RowData = RowData> {
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly previousButton = viewChild<ElementRef<HTMLButtonElement>>('previousButton');
+  private readonly nextButton = viewChild<ElementRef<HTMLButtonElement>>('nextButton');
 
   protected readonly controller = computed(() => this.natTableService.controller());
 
@@ -83,6 +87,7 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
+    this.keepFocusOnBoundary(this.previousButton, this.nextButton);
     this.table()?.previousPage();
   }
 
@@ -91,6 +96,40 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
+    this.keepFocusOnBoundary(this.nextButton, this.previousButton);
     this.table()?.nextPage();
+  }
+
+  /**
+   * Reaching the first or last page disables the button that was just
+   * activated, and a disabled button drops focus to `<body>`. When the
+   * activated button held focus, hand it to the surviving sibling once the
+   * new page has rendered, so keyboard users stay in the pager.
+   */
+  private keepFocusOnBoundary(
+    source: Signal<ElementRef<HTMLButtonElement> | undefined>,
+    sibling: Signal<ElementRef<HTMLButtonElement> | undefined>
+  ): void {
+    const sourceButton = source()?.nativeElement;
+
+    if (!sourceButton?.isSameNode(sourceButton.ownerDocument.activeElement)) {
+      return;
+    }
+
+    afterNextRender(
+      {
+        write: () => {
+          const siblingButton = sibling()?.nativeElement;
+          const activeElement = sourceButton.ownerDocument.activeElement;
+          const focusLost =
+            activeElement === sourceButton || activeElement === null || activeElement === sourceButton.ownerDocument.body;
+
+          if (sourceButton.disabled && focusLost && siblingButton && !siblingButton.disabled) {
+            siblingButton.focus();
+          }
+        }
+      },
+      { injector: this.injector }
+    );
   }
 }

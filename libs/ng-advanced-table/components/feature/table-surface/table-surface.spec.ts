@@ -201,6 +201,60 @@ describe('FEATURE: NatTable UI', () => {
       });
     });
 
+    describe('WHEN: a focused pager button pages to the first or last page', () => {
+      it('THEN: it moves focus to the surviving pager button instead of dropping it', async () => {
+        // sequential flow kept whole — each step starts on the page the previous one reached
+        fixture.detectChanges();
+
+        const previousButton = root(fixture).querySelector('[data-testid="nat-table-pager-previous"]') as HTMLButtonElement;
+        const nextButton = root(fixture).querySelector('[data-testid="nat-table-pager-next"]') as HTMLButtonElement;
+        const pageIndex = (): number | undefined => host.tableState().pagination?.pageIndex;
+
+        // when: next is activated from the keyboard on the second-to-last page (the host starts on page 2 of 3)
+        nextButton.focus();
+        nextButton.click();
+        await fixture.whenStable();
+
+        // then: the disabled next button hands focus to previous
+        expect(pageIndex()).toBe(2);
+        expect(nextButton.disabled).toBe(true);
+        expect(document.activeElement).toBe(previousButton);
+
+        // when: previous is activated on a middle page
+        previousButton.click();
+        await fixture.whenStable();
+
+        // then: focus stays where it was
+        expect(pageIndex()).toBe(1);
+        expect(document.activeElement).toBe(previousButton);
+
+        // when: previous reaches the first page
+        previousButton.click();
+        await fixture.whenStable();
+
+        // then: the disabled previous button hands focus to next
+        expect(pageIndex()).toBe(0);
+        expect(previousButton.disabled).toBe(true);
+        expect(document.activeElement).toBe(nextButton);
+      });
+    });
+
+    describe('WHEN: a pager button is activated without holding focus', () => {
+      it('THEN: it leaves focus where it was when the button becomes disabled', async () => {
+        fixture.detectChanges();
+
+        const nextButton = root(fixture).querySelector('[data-testid="nat-table-pager-next"]') as HTMLButtonElement;
+        const pageSizeSelect = root(fixture).querySelector('nat-table-page-size select') as HTMLSelectElement;
+
+        pageSizeSelect.focus();
+        nextButton.click();
+        await fixture.whenStable();
+
+        expect(nextButton.disabled).toBe(true);
+        expect(document.activeElement).toBe(pageSizeSelect);
+      });
+    });
+
     describe('WHEN: a NatTablePagination component renders', () => {
       it('THEN: it renders NatTablePagination as labelled groups with no roving toolbar', () => {
         fixture.destroy();
