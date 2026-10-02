@@ -98,7 +98,7 @@ describe('FEATURE: NatTable UI - Header Actions A11y', () => {
         const sortButtonRule = cssRuleTexts().find((cssText) => /^\.sort-button\[[^\]]+\] \{/u.test(cssText)) ?? '';
 
         // WCAG 2.5.8 (AA) target size: 24 x 24 CSS px.
-        expect(sortButtonRule).toContain('min-inline-size: 24px');
+        expect(sortButtonRule).toContain('min-inline-size: min(24px, 100%)');
         expect(sortButtonRule).toContain('min-block-size: 24px');
       });
 
