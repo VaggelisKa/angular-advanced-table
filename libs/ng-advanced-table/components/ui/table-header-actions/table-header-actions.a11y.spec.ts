@@ -85,6 +85,25 @@ describe('FEATURE: NatTable UI - Header Actions A11y', () => {
     });
 
     describe('WHEN: the header actions stylesheet is registered', () => {
+      // Emulated encapsulation appends `[_ngcontent-…]` to each selector, so
+      // match the authored class at the start of the rule text instead.
+      const cssRuleTexts = (): string[] =>
+        Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .map((rule) => rule.cssText.replaceAll(/\s+/gu, ' '));
+
+      it('THEN: it aligns end labels and menu items with logical values that follow the table direction', () => {
+        fixture.detectChanges();
+
+        const rules = cssRuleTexts();
+        const endLabelRule =
+          rules.find((cssText) => cssText.startsWith('.header-content.is-align-end') && cssText.includes('.header-label')) ?? '';
+        const menuItemRule = rules.find((cssText) => /^\.column-menu-item\[[^\]]+\] \{/u.test(cssText)) ?? '';
+
+        expect(endLabelRule).toContain('text-align: end');
+        expect(menuItemRule).toContain('text-align: start');
+      });
+
       it('THEN: it drops the menu enter animation and control transitions under reduced motion', () => {
         fixture.detectChanges();
 

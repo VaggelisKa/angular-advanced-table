@@ -489,7 +489,7 @@ tbody .data-row:last-child .data-cell {
 
 .header-cell.is-align-end,
 .data-cell.is-align-end {
-  text-align: right;
+  text-align: end;
 }
 
 .data-cell.is-align-end {
@@ -548,7 +548,7 @@ tbody .data-row:last-child .data-cell {
  */
 .table-state-content {
   position: sticky;
-  left: 0;
+  inset-inline-start: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -598,7 +598,7 @@ tbody .data-row:last-child .data-cell {
   position: relative;
 
   /* Padding lives on the sticky content below so the label keeps its inset
-     while clamped to the region's left edge during horizontal scrolling;
+     while clamped to the region's start edge during horizontal scrolling;
      !important beats the per-cell layout directive's inline padding in the
      per-column `cells` layout. */
   padding: 0 !important;
@@ -618,13 +618,13 @@ tbody .data-row:last-child .data-cell {
 }
 
 /*
- * Sticky-left, shrink-to-fit content (state-row pattern): the group label
+ * Sticky-start, shrink-to-fit content (state-row pattern): the group label
  * stays inside the visible scroll viewport while the full-width cell scrolls
  * horizontally under pinned columns.
  */
 .sub-header-content {
   position: sticky;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 1;
   box-sizing: border-box;
   display: inline-flex;

@@ -47,7 +47,7 @@
 }
 
 .header-content.is-align-end .header-label {
-  text-align: right;
+  text-align: end;
 }
 
 .header-label.sr-only {
@@ -272,7 +272,7 @@
   padding: 0 10px;
   font: inherit;
   color: inherit;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   background: transparent;
   border: 0;
