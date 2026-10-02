@@ -650,8 +650,8 @@ const listFlowLayoutSnippets = [
     'CSS',
     'css',
     `
-/* One width token per column id: a percentage of the line, 100% for a whole
-   line. Unset columns share the line equally. Stacking label over value keeps
+/* One width token per visible column id: a percentage of the line, 100% for a
+   whole line. With no tokens set, the fields share the line equally. Stacking label over value keeps
    a field's minimum width at its longest word, so a value that fits its slot
    wraps internally before the field moves down. */
 nat-list {
