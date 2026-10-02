@@ -31,7 +31,9 @@ import {
  *
  * `natToolbarItemPosition="start" | "center" | "end"` (default `start`) picks
  * the toolbar slot. It MUST be a static attribute — a binding
- * (`[natToolbarItemPosition]="expr"`) always lands in the start slot.
+ * (`[natToolbarItemPosition]="expr"`) always lands in the start slot, and
+ * `<nat-table-toolbar>` warns once in dev mode when the bound value names a
+ * different slot.
  *
  * When the item is a wrapper rather than the control itself — an Angular
  * component host, a Stencil custom element, any design-system button — focus

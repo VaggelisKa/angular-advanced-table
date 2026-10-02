@@ -1,12 +1,14 @@
 import { Toolbar } from '@angular/aria/toolbar';
-import { Component, computed, effect, inject, input, isDevMode } from '@angular/core';
+import { Component, computed, contentChildren, effect, inject, input, isDevMode } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
 import type { NatTableUiController } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 
+import { NAT_TOOLBAR_ITEM } from '../../common/toolbar.const';
 import type { NatToolbarFocusManagement } from '../../common/toolbar.type';
+import { warnOnUnprojectedToolbarItemPositions } from '../../domain-logic/toolbar-position-warning';
 import { injectNatTableUiController } from '../../domain-logic/ui-controller.provider';
 
 const NAT_TOOLBAR_TEXT_INPUT_TYPES = new Set([
@@ -115,6 +117,9 @@ export class NatTableToolbar<TData extends RowData = RowData> {
   // `value`s only serve Aria's registry and must merely be unique.
   private readonly ariaToolbar = inject(Toolbar, { self: true }) as Toolbar<unknown>;
 
+  /** Directly projected items only: grouped items follow their group's slot. */
+  private readonly directItems = contentChildren(NAT_TOOLBAR_ITEM);
+
   /** Single touch point for Aria's private `_pattern` API — fix here if it ever renames. */
   private get pattern(): Toolbar<unknown>['_pattern'] {
     const { _pattern: pattern } = this.ariaToolbar;
@@ -146,6 +151,7 @@ export class NatTableToolbar<TData extends RowData = RowData> {
 
   public constructor() {
     this.patchAriaToolbarPattern();
+    warnOnUnprojectedToolbarItemPositions(this.directItems);
 
     // Registered widgets would still receive Aria's roving item tabindex
     // (active `0`, rest `-1`) even in `focusManagement="none"`, splitting the

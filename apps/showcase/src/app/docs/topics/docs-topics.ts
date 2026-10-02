@@ -1429,6 +1429,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     id: 'toolbar-actions',
     contents: [
       { label: 'Toolbar shell', path: '#toolbar-shell' },
+      { label: 'Slot positions', path: '#slot-positions' },
       { label: 'Table actions', path: '#table-actions' },
       { label: 'Keyboard order', path: '#keyboard-order' }
     ],
