@@ -187,6 +187,14 @@ export type NatTableAccessibilitySelectionAnnouncementContext = {
   readonly totalRowsText: string;
 };
 
+/** Context passed to custom keyboard-shortcut label formatters. */
+export type NatTableAccessibilityShortcutLabelContext = {
+  /** The control's own accessible name (its `aria-label`, or its text). */
+  readonly label: string;
+  /** Serialized shortcut, as written to `aria-keyshortcuts` (for example `Shift+ArrowLeft`). */
+  readonly shortcutText: string;
+};
+
 /** Optional overrides for built-in screen-reader summaries and announcements. */
 export type NatTableAccessibilityText = {
   /**
@@ -278,6 +286,11 @@ export type NatTableAccessibilityText = {
    * same context as `subHeaderRow`; the default phrases it as items.
    */
   readonly listSubHeaderRow?: (context: NatTableAccessibilitySubHeaderContext) => string;
+  /**
+   * Accessible name `natHotkeyA11y` writes for a control that has a keyboard
+   * shortcut, combining the control's own label with the shortcut text.
+   */
+  readonly shortcutLabel?: (context: NatTableAccessibilityShortcutLabelContext) => string;
 };
 
 /** Locale-specific defaults for generated `<nat-table>` accessibility copy. */

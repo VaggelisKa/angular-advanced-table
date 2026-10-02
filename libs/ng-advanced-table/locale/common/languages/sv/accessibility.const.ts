@@ -126,7 +126,8 @@ export const NAT_SV_LOCALE_LABELS: NatTableIntl = {
 
       return `${groupLabel}, ${rowCountText} ${rows(rowCountValue)}.`;
     },
-    placeholderRow: () => 'Läser in.'
+    placeholderRow: () => 'Läser in.',
+    shortcutLabel: ({ label, shortcutText }) => `${label} (Kortkommando: ${shortcutText})`
   },
   formatNumber: DEFAULT_NUMBER_FORMATTER
 };

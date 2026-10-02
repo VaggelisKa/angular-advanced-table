@@ -1,4 +1,5 @@
-import { Component, DestroyRef, computed, inject, input } from '@angular/core';
+import type { ElementRef } from '@angular/core';
+import { Component, DestroyRef, Injector, computed, inject, input, viewChild } from '@angular/core';
 
 import type { RowData } from '@tanstack/angular-table';
 
@@ -6,6 +7,7 @@ import { NatTableService } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, mergePagerLabels, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 import type { NatTableAccessibilityPagerLabels } from 'ng-advanced-table/locale';
 
+import { keepNatPagerFocusOnBoundary } from '../../domain-logic/pager-boundary-focus';
 import { formatNatTableAccessibilityNumber } from '../../utils/accessibility-number.util';
 
 @Component({
@@ -20,6 +22,9 @@ export class NatTablePager<TData extends RowData = RowData> {
 
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly previousButton = viewChild<ElementRef<HTMLButtonElement>>('previousButton');
+  private readonly nextButton = viewChild<ElementRef<HTMLButtonElement>>('nextButton');
 
   protected readonly controller = computed(() => this.natTableService.controller());
 
@@ -83,6 +88,7 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
+    keepNatPagerFocusOnBoundary(this.previousButton()?.nativeElement, () => this.nextButton()?.nativeElement, this.injector);
     this.table()?.previousPage();
   }
 
@@ -91,6 +97,7 @@ export class NatTablePager<TData extends RowData = RowData> {
       return;
     }
 
+    keepNatPagerFocusOnBoundary(this.nextButton()?.nativeElement, () => this.previousButton()?.nativeElement, this.injector);
     this.table()?.nextPage();
   }
 }
