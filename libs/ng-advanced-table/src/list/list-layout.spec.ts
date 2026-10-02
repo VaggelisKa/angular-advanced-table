@@ -37,8 +37,8 @@ describe('FEATURE: NatList item layouts (grid areas vs. wrapping flow slots)', (
       host.itemLayout.set('flow');
     });
 
-    describe('WHEN: the columns carry no listFieldSpan', () => {
-      it('THEN: it marks the items as flow and gives every field an equal share of the line', async () => {
+    describe('WHEN: the list renders', () => {
+      it('THEN: it marks the items as flow and points every field at its width token with an equal-split default', async () => {
         await render();
 
         const listHost = queryAll(fixture, 'nat-list')[0];
@@ -46,63 +46,32 @@ describe('FEATURE: NatList item layouts (grid areas vs. wrapping flow slots)', (
         const fields = Array.from(items[0].querySelectorAll<HTMLElement>('.list-field'));
 
         expect(listHost.dataset['itemLayout']).toBe('flow');
-        expect(listHost.style.getPropertyValue('--sys-nat-table-list-field-slots')).toBe('4');
         expect(items.every((item) => item.classList.contains('list-item--flow'))).toBe(true);
-        expect(fields.map((field) => field.style.getPropertyValue('--sys-nat-table-list-field-share'))).toStrictEqual([
-          '0.25',
-          '0.25',
-          '0.25',
-          '0.25'
+        expect(fields.map((field) => field.style.getPropertyValue('--sys-nat-table-list-field-width'))).toStrictEqual([
+          'var(--nat-list-field-width-name, calc(100% / 4))',
+          'var(--nat-list-field-width-region, calc(100% / 4))',
+          'var(--nat-list-field-width-status, calc(100% / 4))',
+          'var(--nat-list-field-width-throughput, calc(100% / 4))'
         ]);
-        expect(fields.some((field) => field.hasAttribute('data-nat-list-field-span'))).toBe(false);
-      });
-    });
-
-    describe('WHEN: columns weight their fields and one takes a full line', () => {
-      it('THEN: it writes weighted shares, flags the full field, and excludes it from the line slots', async () => {
-        const spans: Partial<Record<string, number | 'full'>> = { name: 2, status: 'full' };
-
-        host.columns.set(
-          host.columns().map((column) => {
-            const listFieldSpan = spans['accessorKey' in column ? String(column.accessorKey) : ''];
-
-            return listFieldSpan === undefined ? column : { ...column, meta: { ...column.meta, listFieldSpan } };
-          })
-        );
-        await render();
-
-        const listHost = queryAll(fixture, 'nat-list')[0];
-        const firstItem = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
-        const share = (columnId: string): string =>
-          firstItem
-            .querySelector<HTMLElement>(`[data-column-id="${columnId}"]`)
-            ?.style.getPropertyValue('--sys-nat-table-list-field-share') ?? '';
-
-        expect(listHost.style.getPropertyValue('--sys-nat-table-list-field-slots')).toBe('3');
-        expect(share('name')).toBe('0.5');
-        expect(share('region')).toBe('0.25');
-        expect(share('throughput')).toBe('0.25');
-        expect(share('status')).toBe('');
-        expect(firstItem.querySelector('[data-column-id="status"]')?.getAttribute('data-nat-list-field-span')).toBe('full');
       });
     });
 
     describe('WHEN: a column is hidden through column visibility state', () => {
-      it('THEN: it re-splits the line between the remaining fields', async () => {
+      it('THEN: it re-splits the default width between the remaining fields', async () => {
         await render();
         getList().patchState({ columnVisibility: { region: false } });
         await render();
 
-        const listHost = queryAll(fixture, 'nat-list')[0];
         const firstField = queryAll(fixture, '[data-testid="nat-list-item"]')[0].querySelector<HTMLElement>('.list-field');
 
-        expect(listHost.style.getPropertyValue('--sys-nat-table-list-field-slots')).toBe('3');
-        expect(firstField?.style.getPropertyValue('--sys-nat-table-list-field-share')).toBe('0.3333');
+        expect(firstField?.style.getPropertyValue('--sys-nat-table-list-field-width')).toBe(
+          'var(--nat-list-field-width-name, calc(100% / 3))'
+        );
       });
     });
 
     describe('WHEN: the layout is switched back to grid', () => {
-      it('THEN: it drops the flow class, shares, and slot count so the grid areas take over again', async () => {
+      it('THEN: it drops the flow class and width bridges so the grid areas take over again', async () => {
         await render();
         host.itemLayout.set('grid');
         await render();
@@ -112,9 +81,8 @@ describe('FEATURE: NatList item layouts (grid areas vs. wrapping flow slots)', (
         const firstField = firstItem.querySelector<HTMLElement>('.list-field');
 
         expect(listHost.dataset['itemLayout']).toBe('grid');
-        expect(listHost.style.getPropertyValue('--sys-nat-table-list-field-slots')).toBe('');
         expect(firstItem.classList.contains('list-item--flow')).toBe(false);
-        expect(firstField?.style.getPropertyValue('--sys-nat-table-list-field-share')).toBe('');
+        expect(firstField?.style.getPropertyValue('--sys-nat-table-list-field-width')).toBe('');
         expect(firstField?.style.getPropertyValue('grid-area')).toBe('name');
       });
     });

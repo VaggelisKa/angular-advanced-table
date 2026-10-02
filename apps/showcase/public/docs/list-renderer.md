@@ -106,7 +106,7 @@ Grid tracks cannot wrap per item: when one value is wider than its track (a larg
 - Fields whose values fit their slot stay on one line and keep the same width in every item, so columns still align across the list.
 - A field whose value is wider than its slot widens to fit it, and the fields that no longer fit the line wrap to the next line **in that item only**. Every other item keeps its single line.
 - A value that fits its slot wraps internally first, so a secondary part such as `(+4%)` drops to a second line before the field widens or anything moves down.
-- Values never break mid-word, so a long number stays whole. Keep values that must stay on one line free of breakable spaces.
+- Values never break mid-word, so a long number stays whole; only a word wider than the whole item breaks, as a last resort, so it stays readable instead of overflowing. Keep values that must stay on one line free of breakable spaces.
 
 ```html
 <nat-table-surface>
@@ -114,15 +114,15 @@ Grid tracks cannot wrap per item: when one value is wider than its track (a larg
 </nat-table-surface>
 ```
 
-Slots come from `meta.listFieldSpan` on each column: a number is a relative weight (`2` takes twice the width of a `1`, which is the default), and `'full'` gives the field a whole line of its own. The weighted fields share one line, so a `2 / 1 / 1` list splits the line into 50% / 25% / 25%, minus the column gaps between them (`--nat-list-flow-column-gap`, `1rem` by default). Shares are recalculated when column visibility or order changes.
+Slot widths are CSS, one token per column id, exactly like the grid area names: `--nat-list-field-width-<column-id>` is a percentage of the line (`100%` gives the field a whole line of its own), and columns without a token share the line equally. The gap between slots is `--nat-list-flow-column-gap` (`1rem`), carried as a gutter inside each slot so the percentages add up exactly. Column ids must be valid CSS identifiers, or escaped the way the token is written below.
 
-```ts
-const columns: ColumnDef<Order, unknown>[] = [
-  { accessorKey: 'customer', header: 'Customer', meta: { label: 'Customer', listFieldSpan: 2 } },
-  { accessorKey: 'total', header: 'Total', meta: { label: 'Total' } },
-  { accessorKey: 'change', header: 'Change', meta: { label: 'Change' } },
-  { accessorKey: 'note', header: 'Note', meta: { label: 'Note', listFieldSpan: 'full' } }
-];
+```css
+nat-list {
+  --nat-list-field-width-customer: 50%;
+  --nat-list-field-width-total: 25%;
+  --nat-list-field-width-change: 25%;
+  --nat-list-field-width-note: 100%;
+}
 ```
 
 A field's minimum width is its own minimum content width, label included. With the default row direction that is the label plus the value's longest word, so stack the two (`--nat-list-field-flex-direction: column`) when values should wrap internally as early as possible. `--nat-list-item-areas` and `--nat-list-item-columns` are ignored while the flow layout is active; the `grid` layout stays the default and is unchanged. Both layouts are the same markup, so `enableRowActivation`, `enableItemNavigation`, selection, and sub-headers behave identically. Bind `itemLayout` to a signal to switch layouts with a consumer-owned breakpoint.

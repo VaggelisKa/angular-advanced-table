@@ -214,6 +214,24 @@ test.describe('FEATURE: Table to list', () => {
           expect(valueBox?.height ?? 0).toBeLessThanOrEqual((customerBox?.height ?? 0) + 1);
         });
 
+        await test.step('THEN: a breakable value wraps inside its slot before its field moves', async () => {
+          const first = items.nth(0);
+          const firstTotal = await fieldBox(first, 'total');
+          const firstChange = await fieldBox(first, 'change');
+          const changeValue = first.locator('[data-column-id="change"] .list-field-value');
+          const totalValue = first.locator('[data-column-id="total"] .list-field-value');
+
+          // "+12.5% (vs. last month)" is wider than its slot but its longest word is not:
+          // the field keeps its slot on the first line and the secondary part drops inside it.
+          expect(firstChange.y).toBeCloseTo(firstTotal.y, 0);
+          expect(firstChange.x).toBeGreaterThan(firstTotal.x);
+
+          const changeBox = await changeValue.boundingBox();
+          const totalBox = await totalValue.boundingBox();
+
+          expect(changeBox?.height ?? 0).toBeGreaterThan((totalBox?.height ?? 0) * 1.5);
+        });
+
         await test.step('THEN: the full-width note takes a line of its own in every item', async () => {
           const first = items.nth(0);
           const firstTotal = await fieldBox(first, 'total');

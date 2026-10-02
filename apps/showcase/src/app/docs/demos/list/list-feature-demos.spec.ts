@@ -123,9 +123,10 @@ describe('FEATURE: List companion controls docs demo', () => {
 const flowItemLayout = (fixture: ComponentFixture<unknown>): string | undefined =>
   host(fixture).querySelector<HTMLElement>('nat-list')?.dataset['itemLayout'];
 
-const flowNoteSpan = (fixture: ComponentFixture<unknown>): string | null =>
-  host(fixture).querySelector('[data-testid="nat-list-item"] [data-column-id="note"]')?.getAttribute('data-nat-list-field-span') ??
-  null;
+const flowNoteWidth = (fixture: ComponentFixture<unknown>): string =>
+  host(fixture)
+    .querySelector<HTMLElement>('[data-testid="nat-list-item"] [data-column-id="note"]')
+    ?.style.getPropertyValue('--sys-nat-table-list-field-width') ?? '';
 
 describe('FEATURE: List flow layout docs demo', () => {
   describe('GIVEN: the demo renders in the flow layout', () => {
@@ -135,7 +136,7 @@ describe('FEATURE: List flow layout docs demo', () => {
 
         expect(host(fixture).querySelectorAll('[data-testid="nat-list-item"]')).toHaveLength(6);
         expect(flowItemLayout(fixture)).toBe('flow');
-        expect(flowNoteSpan(fixture)).toBe('full');
+        expect(flowNoteWidth(fixture)).toBe('var(--nat-list-field-width-note, calc(100% / 4))');
 
         const gridButton = Array.from(host(fixture).querySelectorAll('button')).find(
           (candidate) => candidate.textContent.trim() === 'Grid'
@@ -145,7 +146,7 @@ describe('FEATURE: List flow layout docs demo', () => {
         await render(fixture);
 
         expect(flowItemLayout(fixture)).toBe('grid');
-        expect(flowNoteSpan(fixture)).toBeNull();
+        expect(flowNoteWidth(fixture)).toBe('');
       });
     });
   });

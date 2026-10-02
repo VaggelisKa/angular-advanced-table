@@ -646,29 +646,21 @@ const listFlowLayoutSnippets = [
 `
   ),
   snippet(
-    'ts',
-    'TS',
-    'typescript',
-    `
-// meta.listFieldSpan sizes each slot: a relative weight, or 'full' for a whole line.
-protected readonly columns: ColumnDef<Order, unknown>[] = [
-  { accessorKey: 'customer', header: 'Customer', meta: { label: 'Customer', listFieldSpan: 2 } },
-  { accessorKey: 'total', header: 'Total', meta: { label: 'Total', listFieldSpan: 1 }, cell: (info) => currency.format(info.getValue()) },
-  { accessorKey: 'change', header: 'Change', meta: { label: 'Change', listFieldSpan: 1 } },
-  { accessorKey: 'note', header: 'Note', meta: { label: 'Note', listFieldSpan: 'full' } }
-];
-`
-  ),
-  snippet(
     'css',
     'CSS',
     'css',
     `
-/* Stack label over value so a field's minimum width is its longest word;
-   a value that fits its slot wraps internally before the field moves down. */
+/* One width token per column id: a percentage of the line, 100% for a whole
+   line. Unset columns share the line equally. Stacking label over value keeps
+   a field's minimum width at its longest word, so a value that fits its slot
+   wraps internally before the field moves down. */
 nat-list {
-  --nat-list-field-flex-direction: column;
+  --nat-list-field-width-customer: 50%;
+  --nat-list-field-width-total: 25%;
+  --nat-list-field-width-change: 25%;
+  --nat-list-field-width-note: 100%;
   --nat-list-flow-column-gap: 1rem;
+  --nat-list-field-flex-direction: column;
 }
 `
   )

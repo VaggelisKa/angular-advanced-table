@@ -38,20 +38,17 @@ const FLOW_DEMO_ROWS: FlowDemoOrder[] = [
   { id: 'ORD-206', customer: 'Fjord Trading', total: 5150, change: '+6.2% (vs. last month)', note: 'Second attempt.' }
 ];
 
-/**
- * Weighted slots: the customer field takes two shares of the line, total and
- * change one each, and the note always takes a line of its own.
- */
+/** Plain column defs: the slot widths live in the demo CSS (`--nat-list-field-width-<id>`). */
 const FLOW_DEMO_COLUMNS: ColumnDef<FlowDemoOrder, unknown>[] = [
-  { accessorKey: 'customer', header: 'Customer', meta: { label: 'Customer', listFieldSpan: 2 } },
+  { accessorKey: 'customer', header: 'Customer', meta: { label: 'Customer' } },
   {
     accessorKey: 'total',
     header: 'Total',
-    meta: { label: 'Total', listFieldSpan: 1 },
+    meta: { label: 'Total' },
     cell: (info) => listDemoTotalFormatter.format(info.getValue<number>())
   },
-  { accessorKey: 'change', header: 'Change', meta: { label: 'Change', listFieldSpan: 1 } },
-  { accessorKey: 'note', header: 'Note', meta: { label: 'Note', listFieldSpan: 'full' } }
+  { accessorKey: 'change', header: 'Change', meta: { label: 'Change' } },
+  { accessorKey: 'note', header: 'Note', meta: { label: 'Note' } }
 ];
 
 /**

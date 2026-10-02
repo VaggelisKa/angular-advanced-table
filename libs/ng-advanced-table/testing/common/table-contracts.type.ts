@@ -84,7 +84,6 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly headerMinSize?: number | string;
   readonly headerMaxSize?: number | string;
   readonly export?: NatTableColumnExportOptions<TData, TValue>;
-  readonly listFieldSpan?: number | 'full';
 };
 
 /**

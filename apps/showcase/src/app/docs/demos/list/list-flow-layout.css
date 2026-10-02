@@ -15,10 +15,16 @@
   max-width: 420px;
 }
 
-/* Stacked label/value fields: the field's minimum width is then its longest
-   word, so a value wraps internally before the whole field moves down. The
-   grid fallback mirrors the flow slots (2 : 1 : 1 plus a full-width note). */
+/* Flow slots per column id: half the line for the customer, a quarter each
+   for total and change, and a whole line for the note. Stacked label/value
+   fields keep a field's minimum width at its longest word, so a value wraps
+   internally before the whole field moves down. The grid tokens mirror the
+   same shape for the grid toggle. */
 .list-flow-demo-list {
+  --nat-list-field-width-customer: 50%;
+  --nat-list-field-width-total: 25%;
+  --nat-list-field-width-change: 25%;
+  --nat-list-field-width-note: 100%;
   --nat-list-field-flex-direction: column;
   --nat-list-field-gap: 0.125rem;
   --nat-list-item-gap: 0.5rem 1rem;

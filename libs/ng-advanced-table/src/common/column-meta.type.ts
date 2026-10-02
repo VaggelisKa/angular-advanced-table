@@ -67,12 +67,6 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly headerMaxSize?: number | string;
   /** Optional table export behavior for this column. */
   readonly export?: NatTableColumnExportOptions<TData, TValue>;
-  /**
-   * Width share of this column's field in the `<nat-list>` `flow` item layout. A number is a
-   * relative weight (`2` takes twice the width of a `1` column; defaults to `1`); `'full'` gives the
-   * field a whole line of its own. Ignored by the default `grid` layout and by `<nat-table>`.
-   */
-  readonly listFieldSpan?: number | 'full';
 };
 
 declare module '@tanstack/table-core' {
