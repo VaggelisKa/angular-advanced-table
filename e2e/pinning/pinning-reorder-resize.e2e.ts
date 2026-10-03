@@ -115,6 +115,9 @@ const configureBuilder = async (page: Page): Promise<Locator> => {
 
   await grid.getByTestId('nat-table-header-actions-menu-category').click();
   await page.getByTestId('nat-table-header-pin-left-category').click();
+  // Menu dismissal restores focus asynchronously; finish it before sending
+  // a keyboard shortcut to another header.
+  await expect(grid.getByTestId('nat-table-header-actions-menu-category')).toBeFocused();
   await expect.poll(async () => documentColumnOrder(grid)).toEqual(DEFAULT_BUILDER_COLUMN_ORDER);
 
   return grid;
@@ -156,12 +159,11 @@ test.describe('FEATURE: Pinned column reorder then resize (issue #273)', () => {
     test.describe('WHEN: they are swapped with the keyboard and the new leftmost column is resized', () => {
       test('THEN: it resizes the reordered leftmost column instead of its neighbor', async ({ page }) => {
         const grid = await configureBuilder(page);
-        const categoryCell = grid.locator('thead th[data-column-id="category"]');
-        const nameCell = grid.locator('thead th[data-column-id="name"]');
+        const categoryCell = grid.getByTestId('nat-table-header-category');
+        const nameCell = grid.getByTestId('nat-table-header-name');
 
         await test.step('THEN: the keyboard swap moves category ahead of name', async () => {
-          await nameCell.focus();
-          await page.keyboard.press('ControlOrMeta+Shift+ArrowRight');
+          await nameCell.press('ControlOrMeta+Shift+ArrowRight');
 
           await expect.poll(async () => documentColumnOrder(grid)).toEqual(SWAPPED_PINNED_BUILDER_COLUMN_ORDER);
         });
