@@ -3,16 +3,39 @@ import { getMemoOptions, getSortedRowModel, memo } from '@tanstack/angular-table
 
 import { resolveKeyedSortingFn } from './sort-key.util';
 
-/** A resolved sort entry: raw values, optional keys, and the comparator for one column. */
+/**
+ * A resolved sort entry for one column. Values and keys are read lazily per
+ * row index, so a row's accessor only runs when a comparison needs it (as in
+ * TanStack): never for consumer sorting functions without `sortUndefined`,
+ * and never for secondary columns when earlier columns break every tie.
+ */
 type ResolvedSortEntry<TData extends RowData> = {
   readonly id: string;
   readonly desc: boolean;
   readonly invertSorting: boolean;
   readonly sortUndefined: ColumnDefBase<TData>['sortUndefined'];
-  readonly values: readonly unknown[];
-  readonly keys: readonly unknown[] | null;
+  readonly value: (index: number) => unknown;
+  readonly key: ((index: number) => unknown) | null;
   readonly compareKeys: ((a: unknown, b: unknown) => number) | null;
   readonly sortingFn: SortingFn<TData>;
+};
+
+const NOT_READ: unique symbol = Symbol('notRead');
+
+/** Memoizes `read(index)` per row index, calling it at most once per index. */
+const lazyByIndex = (length: number, read: (index: number) => unknown): ((index: number) => unknown) => {
+  const cache: unknown[] = new Array<unknown>(length).fill(NOT_READ);
+
+  return (index) => {
+    let value = cache[index];
+
+    if (value === NOT_READ) {
+      value = read(index);
+      cache[index] = value;
+    }
+
+    return value;
+  };
 };
 
 const resolveSortEntries = <TData extends RowData>(
@@ -31,15 +54,15 @@ const resolveSortEntries = <TData extends RowData>(
 
     const sortingFn = column.getSortingFn();
     const keyed = resolveKeyedSortingFn(sortingFn);
-    const values = rows.map((row) => row.getValue(sort.id));
+    const value = lazyByIndex(rows.length, (index) => rows[index].getValue(sort.id));
 
     entries.push({
       id: sort.id,
       desc: sort.desc,
       invertSorting: column.columnDef.invertSorting ?? false,
       sortUndefined: column.columnDef.sortUndefined,
-      values,
-      keys: keyed ? values.map(keyed.toKey) : null,
+      value,
+      key: keyed ? lazyByIndex(rows.length, (index) => keyed.toKey(value(index))) : null,
       compareKeys: keyed?.compare ?? null,
       sortingFn
     });
@@ -79,7 +102,7 @@ const compareValues = <TData extends RowData>(
   a: number,
   b: number
 ): number =>
-  entry.keys && entry.compareKeys ? entry.compareKeys(entry.keys[a], entry.keys[b]) : entry.sortingFn(rows[a], rows[b], entry.id);
+  entry.key && entry.compareKeys ? entry.compareKeys(entry.key(a), entry.key(b)) : entry.sortingFn(rows[a], rows[b], entry.id);
 
 const compareEntry = <TData extends RowData>(
   entry: ResolvedSortEntry<TData>,
@@ -87,7 +110,9 @@ const compareEntry = <TData extends RowData>(
   a: number,
   b: number
 ): number => {
-  const undefinedOrder = compareUndefined(entry.sortUndefined, entry.values[a] === undefined, entry.values[b] === undefined);
+  const undefinedOrder = entry.sortUndefined
+    ? compareUndefined(entry.sortUndefined, entry.value(a) === undefined, entry.value(b) === undefined)
+    : null;
 
   if (undefinedOrder?.placement) {
     return undefinedOrder.order;

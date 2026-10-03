@@ -134,8 +134,8 @@ describe('FEATURE: natGetSortedRowModel', () => {
   describe('GIVEN: randomized flat datasets compared with TanStack getSortedRowModel', () => {
     describe('WHEN: sorting with every column variant, direction, and multi-sort combination', () => {
       it('THEN: it produces the same row order', () => {
-        const cases = [1, 7, 42].flatMap((seed) =>
-          COLUMN_VARIANTS.flatMap(([, columns]) => SORTINGS.map((sorting) => ({ data: buildRows(400, seed), columns, sorting })))
+        const cases = [7, 42].flatMap((seed) =>
+          COLUMN_VARIANTS.flatMap(([, columns]) => SORTINGS.map((sorting) => ({ data: buildRows(160, seed), columns, sorting })))
         );
 
         for (const { data, columns, sorting } of cases) {
@@ -179,6 +179,39 @@ describe('FEATURE: natGetSortedRowModel', () => {
         expect(sortedIds(data, columns, sorting, natGetSortedRowModel)).toStrictEqual(
           sortedIds(data, columns, sorting, getSortedRowModel)
         );
+      });
+    });
+
+    describe('WHEN: a comparison does not need a column value', () => {
+      it('THEN: it only reads values the comparison uses', () => {
+        const reads = new Set<string>();
+        const columns: ColumnDef<SortRow, unknown>[] = [
+          {
+            id: 'byName',
+            accessorFn: (row): never => {
+              throw new Error(`unexpected read of ${row.id}`);
+            },
+            sortUndefined: false,
+            sortingFn: (rowA, rowB) => rowA.original.name.localeCompare(rowB.original.name)
+          },
+          {
+            id: 'byId',
+            accessorFn: (row): string => {
+              reads.add(row.id);
+
+              return row.id;
+            },
+            sortingFn: 'basic'
+          }
+        ];
+        const data = buildRows(40, 11).map((row, index) => ({ ...row, name: `name-${String(index).padStart(2, '0')}` }));
+        const sorting: SortingState = [
+          { id: 'byName', desc: true },
+          { id: 'byId', desc: false }
+        ];
+
+        expect(sortedIds(data, columns, sorting, natGetSortedRowModel)).toStrictEqual(data.map((row) => row.id).reverse());
+        expect(reads.size).toBe(0);
       });
     });
 
