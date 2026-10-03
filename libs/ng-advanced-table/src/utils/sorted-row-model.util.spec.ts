@@ -24,10 +24,10 @@ const createRandom = (seed: number): (() => number) => {
 
 const NAMES = ['alpha', 'Alpha', 'beta', 'Beta 2', 'beta 10', 'gamma', 'item 9', 'item 10', 'Item 010', 'x-1', '', '42'];
 
-const buildRows = (count: number, seed: number): SortRow[] => {
+const buildRows = (count: number, seed: number, withMissing = true): SortRow[] => {
   const random = createRandom(seed);
   const pick = <T>(values: readonly T[]): T => values[Math.floor(random() * values.length)];
-  const maybe = <T>(chance: number, value: () => T): T | undefined => (random() < chance ? undefined : value());
+  const maybe = <T>(chance: number, value: () => T): T | undefined => (random() < chance && withMissing ? undefined : value());
 
   return Array.from({ length: count }, (_, index) => ({
     id: `row-${index}`,
@@ -134,8 +134,10 @@ describe('FEATURE: natGetSortedRowModel', () => {
   describe('GIVEN: randomized flat datasets compared with TanStack getSortedRowModel', () => {
     describe('WHEN: sorting with every column variant, direction, and multi-sort combination', () => {
       it('THEN: it produces the same row order', () => {
-        const cases = [7, 42].flatMap((seed) =>
-          COLUMN_VARIANTS.flatMap(([, columns]) => SORTINGS.map((sorting) => ({ data: buildRows(160, seed), columns, sorting })))
+        // One dataset has no missing values, so every date column compares as times only.
+        const datasets = [buildRows(160, 7), buildRows(160, 42), buildRows(160, 13, false)];
+        const cases = datasets.flatMap((data) =>
+          COLUMN_VARIANTS.flatMap(([, columns]) => SORTINGS.map((sorting) => ({ data, columns, sorting })))
         );
 
         for (const { data, columns, sorting } of cases) {

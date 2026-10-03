@@ -81,13 +81,15 @@ const compareAlphanumericChunks = (a: unknown, b: unknown): number => {
 };
 
 const toValue = (value: unknown): unknown => value;
+// Relational comparison reads a Date through `valueOf()`, so its time compares the same.
+const toTime = (value: unknown): unknown => (value instanceof Date ? value.getTime() : value);
 const toLowerText = (value: unknown): string => toSortString(value).toLowerCase();
 const toLowerChunks = (value: unknown): readonly AlphanumericChunk[] => toAlphanumericChunks(toLowerText(value));
 const toChunks = (value: unknown): readonly AlphanumericChunk[] => toAlphanumericChunks(toSortString(value));
 
 const KEYED_SORTING_FNS = new Map<SortingFn<RowData>, KeyedSortingFn>([
   [sortingFns.basic, { toKey: toValue, compare: compareBasic }],
-  [sortingFns.datetime, { toKey: toValue, compare: compareDatetime }],
+  [sortingFns.datetime, { toKey: toTime, compare: compareDatetime }],
   [sortingFns.text, { toKey: toLowerText, compare: compareBasic }],
   [sortingFns.textCaseSensitive, { toKey: toSortString, compare: compareBasic }],
   [sortingFns.alphanumeric, { toKey: toLowerChunks, compare: compareAlphanumericChunks }],

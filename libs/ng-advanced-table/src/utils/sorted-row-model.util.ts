@@ -2,12 +2,15 @@ import type { ColumnDefBase, Row, RowData, RowModel, SortingFn, SortingState, Ta
 import { getMemoOptions, getSortedRowModel, memo } from '@tanstack/angular-table';
 
 import { resolveKeyedSortingFn } from './sort-key.util';
+import { lazyByIndex, readValues } from './sort-values.util';
 
 /**
- * A resolved sort entry for one column. Values and keys are read lazily per
- * row index, so a row's accessor only runs when a comparison needs it (as in
- * TanStack): never for consumer sorting functions without `sortUndefined`,
- * and never for secondary columns when earlier columns break every tie.
+ * A resolved sort entry for one column. Secondary values and keys are read
+ * lazily per row index, so a row's accessor only runs when a comparison needs
+ * it (as in TanStack): never for consumer sorting functions without
+ * `sortUndefined`, and never for secondary columns when earlier columns break
+ * every tie. The first built-in column compares every row anyway, so its keys
+ * are read up front into `keys`.
  */
 type ResolvedSortEntry<TData extends RowData> = {
   readonly id: string;
@@ -16,26 +19,29 @@ type ResolvedSortEntry<TData extends RowData> = {
   readonly sortUndefined: ColumnDefBase<TData>['sortUndefined'];
   readonly value: (index: number) => unknown;
   readonly key: ((index: number) => unknown) | null;
+  readonly keys: ArrayLike<unknown> | null;
   readonly compareKeys: ((a: unknown, b: unknown) => number) | null;
   readonly sortingFn: SortingFn<TData>;
 };
 
-const NOT_READ: unique symbol = Symbol('notRead');
+type ValueAccess = Pick<ResolvedSortEntry<RowData>, 'value' | 'key' | 'keys'>;
 
-/** Memoizes `read(index)` per row index, calling it at most once per index. */
-const lazyByIndex = (length: number, read: (index: number) => unknown): ((index: number) => unknown) => {
-  const cache: unknown[] = new Array<unknown>(length).fill(NOT_READ);
+/** Up-front values and keys for an eagerly read built-in column, lazy reads otherwise. */
+const resolveValueAccess = <TData extends RowData>(
+  rows: readonly Row<TData>[],
+  id: string,
+  keyed: ReturnType<typeof resolveKeyedSortingFn>,
+  eager: boolean
+): ValueAccess => {
+  if (keyed && eager) {
+    const values = readValues(rows, id);
 
-  return (index) => {
-    let value = cache[index];
+    return { value: (index) => values[index], key: null, keys: values.map((value) => keyed.toKey(value)) };
+  }
 
-    if (value === NOT_READ) {
-      value = read(index);
-      cache[index] = value;
-    }
+  const value = lazyByIndex(rows.length, (index) => rows[index].getValue(id));
 
-    return value;
-  };
+  return { value, key: keyed ? lazyByIndex(rows.length, (index) => keyed.toKey(value(index))) : null, keys: null };
 };
 
 const resolveSortEntries = <TData extends RowData>(
@@ -54,15 +60,13 @@ const resolveSortEntries = <TData extends RowData>(
 
     const sortingFn = column.getSortingFn();
     const keyed = resolveKeyedSortingFn(sortingFn);
-    const value = lazyByIndex(rows.length, (index) => rows[index].getValue(sort.id));
 
     entries.push({
       id: sort.id,
       desc: sort.desc,
       invertSorting: column.columnDef.invertSorting ?? false,
       sortUndefined: column.columnDef.sortUndefined,
-      value,
-      key: keyed ? lazyByIndex(rows.length, (index) => keyed.toKey(value(index))) : null,
+      ...resolveValueAccess(rows, sort.id, keyed, entries.length === 0),
       compareKeys: keyed?.compare ?? null,
       sortingFn
     });
@@ -101,8 +105,13 @@ const compareValues = <TData extends RowData>(
   rows: readonly Row<TData>[],
   a: number,
   b: number
-): number =>
-  entry.key && entry.compareKeys ? entry.compareKeys(entry.key(a), entry.key(b)) : entry.sortingFn(rows[a], rows[b], entry.id);
+): number => {
+  if (entry.keys && entry.compareKeys) {
+    return entry.compareKeys(entry.keys[a], entry.keys[b]);
+  }
+
+  return entry.key && entry.compareKeys ? entry.compareKeys(entry.key(a), entry.key(b)) : entry.sortingFn(rows[a], rows[b], entry.id);
+};
 
 const compareEntry = <TData extends RowData>(
   entry: ResolvedSortEntry<TData>,
