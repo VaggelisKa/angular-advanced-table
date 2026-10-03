@@ -52,11 +52,11 @@ class ToolbarShellHost {
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button class="item-alpha" natToolbarItem="alpha" natToolbarItemPosition="start" type="button">Alpha</button>
+      <button class="item-alpha" natToolbarItem natToolbarItemPosition="start" type="button">Alpha</button>
       @if (showBeta()) {
-        <button class="item-beta" natToolbarItem="beta" type="button">Beta</button>
+        <button class="item-beta" natToolbarItem type="button">Beta</button>
       }
-      <button class="item-gamma" natToolbarItem="gamma" type="button">Gamma</button>
+      <button class="item-gamma" natToolbarItem type="button">Gamma</button>
     </nat-table-toolbar>
   `
 })
@@ -69,10 +69,10 @@ class ToolbarItemsHost {
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar>
-      <button class="slot-end" natToolbarItem="end" natToolbarItemPosition="end" type="button">End</button>
-      <button class="slot-bare" natToolbarItem="bare" type="button">Bare</button>
-      <button class="slot-center" natToolbarItem="center" natToolbarItemPosition="center" type="button">Center</button>
-      <button class="slot-start" natToolbarItem="start" natToolbarItemPosition="start" type="button">Start</button>
+      <button class="slot-end" natToolbarItem natToolbarItemPosition="end" type="button">End</button>
+      <button class="slot-bare" natToolbarItem type="button">Bare</button>
+      <button class="slot-center" natToolbarItem natToolbarItemPosition="center" type="button">Center</button>
+      <button class="slot-start" natToolbarItem natToolbarItemPosition="start" type="button">Start</button>
     </nat-table-toolbar>
   `
 })
@@ -97,8 +97,8 @@ class ToolbarNativeFocusHost {
   imports: [NatTableToolbar, NatToolbarItem],
   template: `
     <nat-table-toolbar focusManagement="none">
-      <button class="marked-a" natToolbarItem="a" type="button">A</button>
-      <button class="marked-b" natToolbarItem="b" type="button">B</button>
+      <button class="marked-a" natToolbarItem type="button">A</button>
+      <button class="marked-b" natToolbarItem type="button">B</button>
     </nat-table-toolbar>
   `
 })

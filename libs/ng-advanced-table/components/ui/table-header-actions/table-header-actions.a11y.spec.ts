@@ -83,5 +83,62 @@ describe('FEATURE: NatTable UI - Header Actions A11y', () => {
         hiddenFixture.destroy();
       });
     });
+
+    describe('WHEN: the header actions stylesheet is registered', () => {
+      // Emulated encapsulation appends `[_ngcontent-…]` to each selector, so
+      // match the authored class at the start of the rule text instead.
+      const cssRuleTexts = (): string[] =>
+        Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .map((rule) => rule.cssText.replaceAll(/\s+/gu, ' '));
+
+      it('THEN: it keeps the sort control at the 24px minimum target size', () => {
+        fixture.detectChanges();
+
+        const sortButtonRule = cssRuleTexts().find((cssText) => /^\.sort-button\[[^\]]+\] \{/u.test(cssText)) ?? '';
+
+        // WCAG 2.5.8 (AA) target size: 24 x 24 CSS px.
+        expect(sortButtonRule).toContain('min-inline-size: min(24px, 100%)');
+        expect(sortButtonRule).toContain('min-block-size: 24px');
+      });
+
+      it('THEN: it aligns end labels and menu items with logical values that follow the table direction', () => {
+        fixture.detectChanges();
+
+        const rules = cssRuleTexts();
+        const endLabelRule =
+          rules.find((cssText) => cssText.startsWith('.header-content.is-align-end') && cssText.includes('.header-label')) ?? '';
+        const menuItemRule = rules.find((cssText) => /^\.column-menu-item\[[^\]]+\] \{/u.test(cssText)) ?? '';
+
+        expect(endLabelRule).toContain('text-align: end');
+        expect(menuItemRule).toContain('text-align: start');
+      });
+
+      it('THEN: it drops the menu enter animation and control transitions under reduced motion', () => {
+        fixture.detectChanges();
+
+        const reducedMotionCss = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .filter(
+            (rule): rule is CSSMediaRule => rule instanceof CSSMediaRule && rule.media.mediaText.includes('prefers-reduced-motion')
+          )
+          .map((rule) => rule.cssText.replaceAll(/\s+/gu, ' '))
+          .join('\n');
+
+        expect(reducedMotionCss).toMatch(/\.column-menu\[[^\]]+\] \{ animation: none;/u);
+
+        for (const selector of [
+          '.sort-button',
+          '.menu-button',
+          '.nat-default-sort__up',
+          '.column-menu-item',
+          '.column-menu-item__check'
+        ]) {
+          expect(reducedMotionCss).toContain(selector);
+        }
+
+        expect(reducedMotionCss).toMatch(/\.column-menu-item__check\[[^\]]+\] \{ transition: none;/u);
+      });
+    });
   });
 });

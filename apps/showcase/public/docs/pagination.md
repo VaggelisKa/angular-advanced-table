@@ -53,7 +53,7 @@ Compose it **beside** `<nat-table-toolbar>`, never inside it. Projecting it into
 ```html
 <nat-table-surface [(state)]="tableState">
   <nat-table-toolbar accessibleName="Table actions">
-    <button natToolbarItem="export" type="button">Export</button>
+    <button natToolbarItem type="button">Export</button>
   </nat-table-toolbar>
 
   <nat-table-pagination [pageSizeOptions]="[10, 25, 50]" />

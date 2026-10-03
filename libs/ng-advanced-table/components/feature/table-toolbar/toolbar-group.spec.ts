@@ -11,12 +11,12 @@ import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
   imports: [NatTableToolbar, NatToolbarItem, NatToolbarGroup],
   template: `
     <nat-table-toolbar>
-      <button id="solo-start" natToolbarItem="solo-start" natToolbarItemPosition="start" type="button">Solo start</button>
+      <button id="solo-start" natToolbarItem natToolbarItemPosition="start" type="button">Solo start</button>
       <div [disabled]="groupDisabled()" accessibleName="View density" id="density-group" natToolbarGroup="center">
-        <button id="compact" natToolbarItem="compact" type="button">Compact</button>
-        <button id="comfortable" natToolbarItem="comfortable" type="button">Comfortable</button>
+        <button id="compact" natToolbarItem type="button">Compact</button>
+        <button id="comfortable" natToolbarItem type="button">Comfortable</button>
       </div>
-      <button id="solo-end" natToolbarItem="solo-end" natToolbarItemPosition="end" type="button">Solo end</button>
+      <button id="solo-end" natToolbarItem natToolbarItemPosition="end" type="button">Solo end</button>
     </nat-table-toolbar>
   `
 })

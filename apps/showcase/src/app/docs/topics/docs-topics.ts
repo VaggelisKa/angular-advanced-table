@@ -1230,7 +1230,8 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Layout responsibilities', path: '#layout-responsibilities' },
       { label: 'Pinning and visibility', path: '#pinning-and-visibility' },
       { label: 'Reordering and resizing', path: '#reordering-and-resizing' },
-      { label: 'Horizontal scroll controls', path: '#horizontal-scroll-controls' }
+      { label: 'Horizontal scroll controls', path: '#horizontal-scroll-controls' },
+      { label: 'Right-to-left layout', path: '#right-to-left-layout' }
     ],
     blocks: [
       { kind: 'markdown', id: 'column-layout-prose', markdownPath: '/docs/column-layout.md' },

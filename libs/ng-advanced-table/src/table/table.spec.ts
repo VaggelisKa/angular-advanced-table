@@ -305,6 +305,52 @@ describe('FEATURE: NatTable', () => {
         expect(dataRowRule?.style.transition).toBe('');
       });
 
+      it('THEN: it aligns end columns and pins state and sub-header content with logical properties', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const alignEndRule = tableStyles.find(
+          (rule) => rule.selectorText.includes('.data-cell.is-align-end') && rule.style.getPropertyValue('text-align') !== ''
+        );
+        const stickyRuleCss = (selector: string): string =>
+          requireStyleRule(
+            tableStyles.filter((rule) => rule.style.getPropertyValue('position') === 'sticky'),
+            selector
+          ).cssText.replaceAll(/\s+/gu, ' ');
+        const stateContentCss = stickyRuleCss('.table-state-content');
+        const subHeaderContentCss = stickyRuleCss('.sub-header-content');
+
+        // Logical values follow the table `direction`, so RTL mirrors them.
+        expect(alignEndRule?.style.getPropertyValue('text-align')).toBe('end');
+        expect(stateContentCss).toContain('inset-inline-start: 0');
+        expect(stateContentCss).not.toMatch(/(^|[ ;{])left:/u);
+        expect(subHeaderContentCss).toContain('inset-inline-start: 0');
+        expect(subHeaderContentCss).not.toMatch(/(^|[ ;{])left:/u);
+      });
+
+      it('THEN: it drops the state animation and drag, resize, and hover transitions under reduced motion', () => {
+        fixture.detectChanges();
+
+        const reducedMotionRules = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules)
+            .filter(
+              (rule): rule is CSSMediaRule => rule instanceof CSSMediaRule && rule.media.mediaText.includes('prefers-reduced-motion')
+            )
+            .flatMap((rule) =>
+              Array.from(rule.cssRules).filter((nestedRule): nestedRule is CSSStyleRule => nestedRule instanceof CSSStyleRule)
+            )
+        );
+        const transitionRule = reducedMotionRules.find((rule) => rule.style.getPropertyValue('transition') === 'none');
+
+        expect(requireStyleRule(reducedMotionRules, '.table-state').style.getPropertyValue('animation')).toBe('none');
+        expect(transitionRule?.selectorText).toContain('.column-resize-handle');
+        expect(transitionRule?.selectorText).toContain('.is-reorderable');
+        expect(transitionRule?.selectorText).toContain('.cdk-drag-animating');
+        expect(transitionRule?.selectorText).toContain('.data-cell');
+      });
+
       it('THEN: it moves the pinned-edge shadow class to the outermost cell of whichever zone the column is pinned to', async () => {
         fixture.detectChanges();
 

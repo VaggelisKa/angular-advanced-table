@@ -10,9 +10,9 @@ pnpm add ng-advanced-table @angular/aria @angular/cdk
 # or: yarn add ng-advanced-table @angular/aria @angular/cdk
 ```
 
-Keep `@angular/core` and `@angular/common` in your Angular app dependencies. This installs the stable release; see [Release Channels](#release-channels) for the nightly channel.
+Keep `@angular/core` and `@angular/common` (plus `@angular/forms` and `@angular/platform-browser`, which `@angular/cdk` peers on) in your Angular app dependencies, all on the same Angular 22 release, 22.2 or newer. This installs the stable release; see [Release Channels](#release-channels) for the nightly channel.
 
-Install `@angular/aria` and `@angular/cdk` at the same exact version (for example both `22.1.2`): `@angular/aria` pins `@angular/cdk` to its own exact version, so mismatched versions produce peer-dependency conflicts.
+Install `@angular/aria` and `@angular/cdk` at the same exact version (for example both `22.2.1`): `@angular/aria` pins `@angular/cdk` to its own exact version, so mismatched versions produce peer-dependency conflicts.
 
 **Versioning is not SemVer.** The library is still experimental, so there are no major releases yet: breaking changes ship in minor releases (for example `2.16.x` to `2.17.0`), and patch releases carry fixes, refactors, and docs. Depend on a tilde range such as `~2.16.0`, or pin an exact version, rather than a caret range, and read the [`CHANGELOG`](https://github.com/VaggelisKa/angular-advanced-table/blob/main/libs/ng-advanced-table/CHANGELOG.md) before moving to a new minor.
 
@@ -84,7 +84,7 @@ export class PositionsTable {
 
 Rows with a string or number `id` property get stable table identity automatically. Use `getRowId` when identity lives somewhere else.
 
-The table above is visually headless: it inherits page colors and system defaults. For the polished stock look, `import 'ng-advanced-table/components/theme.css'` once (see `/docs/theming`), or theme it yourself with `--nat-table-*` tokens.
+The table above is visually headless: it inherits page colors and system defaults. For the polished stock look, `import 'ng-advanced-table/components/theme.css'` once (see `/docs/theming`), or theme it yourself with `--nat-table-*` tokens. The stock theme palette uses CSS `light-dark()` to follow the system color scheme, with a light/dark fallback for browsers without `light-dark()` support.
 
 ## Core-Only Scope
 

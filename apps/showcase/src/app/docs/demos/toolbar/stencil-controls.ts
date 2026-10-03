@@ -112,7 +112,7 @@ const STENCIL_DEMO_DATA: StencilDemoItem[] = [
           <demo-stencil-button
             data-testid="stencil-plain-host"
             inner-testid="stencil-plain-inner-button"
-            natToolbarItem="stencil-plain"
+            natToolbarItem
             (activate)="recordStencilAction('stencil-plain')">
             Archive
           </demo-stencil-button>
@@ -121,7 +121,7 @@ const STENCIL_DEMO_DATA: StencilDemoItem[] = [
             data-testid="stencil-delegating-host"
             delegates-focus
             inner-testid="stencil-delegating-inner-button"
-            natToolbarItem="stencil-delegating"
+            natToolbarItem
             (activate)="recordStencilAction('stencil-delegating')">
             Duplicate
           </demo-stencil-button>
@@ -129,7 +129,7 @@ const STENCIL_DEMO_DATA: StencilDemoItem[] = [
           <button
             class="toolbar-button"
             data-testid="stencil-native-button"
-            natToolbarItem="stencil-native"
+            natToolbarItem
             natToolbarItemPosition="end"
             type="button"
             (click)="recordStencilAction('stencil-native')">

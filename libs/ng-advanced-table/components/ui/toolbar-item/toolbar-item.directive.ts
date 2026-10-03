@@ -17,16 +17,9 @@ import {
  * so it joins the toolbar's roving keyboard focus (Left/Right, Home/End) and
  * matches screen-reader order.
  *
- * Plain action buttons need nothing more than the bare attribute:
+ * Any interactive element needs nothing more than the bare attribute:
  * ```html
  * <button natToolbarItem natToolbarItemPosition="start">Export</button>
- * ```
- *
- * For toggle or otherwise selectable items, give each one a unique `value` as a
- * stable identity — one string per item, unique within the toolbar:
- * ```html
- * <button natToolbarItem="bold">Bold</button>
- * <button natToolbarItem="italic">Italic</button>
  * ```
  *
  * `natToolbarItemPosition="start" | "center" | "end"` (default `start`) picks
@@ -40,14 +33,14 @@ import {
  * is forwarded to the first focusable descendant (an open shadow root is
  * searched before light DOM), so a bare marker is enough:
  * ```html
- * <my-button natToolbarItem="filters">Filters</my-button>
+ * <my-button natToolbarItem>Filters</my-button>
  * ```
  *
  * `natToolbarItemFocusTarget` overrides that choice with a CSS selector when a
  * wrapper renders more than one control, or the first one is not the one that
  * should own focus:
  * ```html
- * <my-split-button natToolbarItem="filters" natToolbarItemFocusTarget=".primary">Filters</my-split-button>
+ * <my-split-button natToolbarItem natToolbarItemFocusTarget=".primary">Filters</my-split-button>
  * ```
  *
  * Items only work inside a `<nat-table-toolbar>`.
@@ -63,11 +56,7 @@ import {
 @Directive({
   selector: '[natToolbarItem]',
   providers: [{ provide: NAT_TOOLBAR_ITEM, useExisting: NatToolbarItem }],
-  // Aria's `value` is required; aliasing it to the always-present
-  // selector attribute lets a bare `natToolbarItem` satisfy it with `''`. Bare
-  // items then share value `''` (non-unique) — harmless while selection is
-  // disabled; pass a string per item if Aria selection is ever re-enabled.
-  hostDirectives: [{ directive: ToolbarWidget, inputs: ['value: natToolbarItem', 'disabled', 'id'] }],
+  hostDirectives: [{ directive: ToolbarWidget, inputs: ['disabled', 'id'] }],
   host: {
     '(focus)': 'redirectFocusToTarget($event)'
   }
