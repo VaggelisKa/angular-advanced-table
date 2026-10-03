@@ -110,6 +110,15 @@ test.describe('FEATURE: Table to list accessibility', () => {
 
         await expect(panel.locator(listItems)).toHaveCount(6);
         await expectNoAxeViolations(page, '[data-testid="docs-example-list-flow-layout-preview-panel"]');
+
+        await test.step('THEN: a word wider than the item stays accessible after wrapping', async () => {
+          const value = panel.getByTestId('nat-list-item').first().getByTestId('nat-list-field-value').first();
+
+          await value.evaluate((element) => {
+            element.textContent = '1234567890'.repeat(15);
+          });
+          await expectNoAxeViolations(page, '[data-testid="docs-example-list-flow-layout-preview-panel"]');
+        });
       });
     });
   });

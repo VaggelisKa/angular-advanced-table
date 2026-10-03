@@ -155,6 +155,73 @@ test.describe('FEATURE: Table to list', () => {
     });
   });
   test.describe('GIVEN: the flow item layout docs example', () => {
+    test.describe('WHEN: a value is wider than the whole item', () => {
+      test('THEN: it wraps oversized text and template content within the item', async ({ page }) => {
+        await page.goto('/docs/list-renderer');
+        await loadDocsExamplePreview(page, 'list-flow-layout', 'Flow item layout');
+
+        const panel = page.getByTestId('docs-example-list-flow-layout-preview-panel');
+        const item = panel.getByTestId('nat-list-item').first();
+        const field = item
+          .getByTestId('nat-list-field')
+          .filter({ has: page.getByTestId('nat-list-field-label').filter({ hasText: 'Total' }) });
+        const value = field.getByTestId('nat-list-field-value');
+        const label = field.getByTestId('nat-list-field-label');
+        const longValue = '1234567890'.repeat(15);
+
+        const expectContained = async (): Promise<void> => {
+          await expect(value).toHaveText(longValue);
+          const bounds = await value.evaluate((element) => {
+            const range = document.createRange();
+
+            range.selectNodeContents(element);
+
+            const text = range.getBoundingClientRect();
+            const box = element.getBoundingClientRect();
+
+            return { textLeft: text.left, textRight: text.right, left: box.left, right: box.right, height: box.height };
+          });
+
+          expect(bounds.textLeft).toBeGreaterThanOrEqual(bounds.left - 1);
+          expect(bounds.textRight).toBeLessThanOrEqual(bounds.right + 1);
+          expect(bounds.height).toBeGreaterThan(30);
+          expect(await item.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+        };
+
+        await test.step('THEN: a visible-label value breaks only when it exceeds the entire item', async () => {
+          await value.evaluate((element, text) => {
+            element.textContent = text;
+          }, longValue);
+          await expectContained();
+        });
+
+        await test.step('THEN: custom template markup also stays inside the item', async () => {
+          await value.evaluate((element, text) => {
+            const content = document.createElement('span');
+
+            content.textContent = text;
+            element.replaceChildren(content);
+          }, longValue);
+          await expectContained();
+        });
+
+        await test.step('THEN: hidden-label template and plain values remain contained', async () => {
+          // Exercise the renderer markup produced by meta.hiddenHeaderLabel,
+          // retaining the real component stylesheet and the consumer's slot widths.
+          await label.evaluate((element) => element.classList.add('sr-only'));
+          await value.evaluate((element) => element.classList.add('list-field-value--fill'));
+          await expectContained();
+          await value.evaluate((element, text) => {
+            const content = document.createElement('span');
+
+            content.dataset['testid'] = 'nat-list-field-text';
+            content.textContent = text;
+            element.replaceChildren(content);
+          }, longValue);
+          await expectContained();
+        });
+      });
+    });
     test.describe('WHEN: the narrow container makes one total wider than its slot', () => {
       test('THEN: only that item wraps its total while the other items stay aligned', async ({ page }) => {
         await page.goto('/docs/list-renderer');

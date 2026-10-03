@@ -106,7 +106,19 @@
    wider than the whole item (which no slot can hold) breaks, as a last
    resort, instead of running past the item edge. */
 .list-item--flow > .list-item-fields > .list-field > .list-field-value {
+  /* A baseline-aligned child in a column flexbox otherwise keeps its
+     max-content width even after the outer field hits its width cap. */
+  max-width: 100%;
   overflow-wrap: break-word;
+}
+
+/* Hidden-label values are themselves flex containers. Constrain their direct
+   content too, including consumer templates/components with another Angular
+   scope. Keep the deep selector behind the scoped flow field/value chain so
+   it cannot affect a nested list or arbitrary descendants of a custom cell. */
+.list-item--flow > .list-item-fields > .list-field > .list-field-value--fill ::ng-deep > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* The final item's bottom edge. Off by default so a divider-style list

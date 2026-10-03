@@ -36,7 +36,7 @@
             [natListFieldWidth]="fieldWidth(column.id)"
             class="list-field"
             data-testid="nat-list-field">
-            <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
+            <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label" data-testid="nat-list-field-label">
               @let headerDef = column.columnDef.header;
               @let headerContext = headerContexts.get(column.id);
               @if (!hasStaticLabel(column) && headerDef && headerContext) {
@@ -49,7 +49,12 @@
             </span>
             <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value" data-testid="nat-list-field-value">
               <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
-                {{ rendered }}
+                @if (isFlowLayout() && isSrOnlyLabel(column)) {
+                  <!-- A real flex item lets oversized plain text shrink too. -->
+                  <span data-testid="nat-list-field-text">{{ rendered }}</span>
+                } @else {
+                  {{ rendered }}
+                }
               </ng-container>
             </span>
           </div>

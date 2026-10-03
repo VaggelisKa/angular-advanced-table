@@ -8,6 +8,7 @@
  *   Fields that fit stay on one line and align across items; a field whose
  *   value is wider than its slot widens to fit it, the fields after it on
  *   that line shift along, and the ones that no longer fit wrap to the next
- *   line in that item only. Values never break mid-word.
+ *   line in that item only. Values break mid-word only when a word is wider
+ *   than the whole item.
  */
 export type NatListItemLayout = 'grid' | 'flow';

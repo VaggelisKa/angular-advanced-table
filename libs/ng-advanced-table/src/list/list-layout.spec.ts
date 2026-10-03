@@ -72,6 +72,26 @@ describe('FEATURE: NatList item layouts (grid areas vs. wrapping flow slots)', (
       });
     });
 
+    describe('WHEN: a plain value has a screen-reader-only label', () => {
+      it('THEN: it gives the text a shrinkable flex item only in flow mode', async () => {
+        host.columns.set([{ accessorKey: 'name', meta: { hiddenHeaderLabel: 'Service name' } }]);
+        await render();
+
+        const firstItem = queryAll(fixture, '[data-testid="nat-list-item"]')[0];
+        const content = (testId: string): string | undefined =>
+          firstItem.querySelector<HTMLElement>(`[data-testid="${testId}"]`)?.textContent.trim();
+
+        expect(content('nat-list-field-text')).toBe(host.rows()[0].name);
+        expect(content('nat-list-field-label')).toBe('Service name');
+
+        host.itemLayout.set('grid');
+        await render();
+
+        expect(firstItem.querySelector('[data-testid="nat-list-field-text"]')).toBeNull();
+        expect(content('nat-list-field-value')).toBe(host.rows()[0].name);
+      });
+    });
+
     describe('WHEN: the layout is switched back to grid', () => {
       it('THEN: it drops the width bridges so the grid areas take over again', async () => {
         await render();
