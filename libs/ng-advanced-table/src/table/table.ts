@@ -57,6 +57,7 @@ import {
 import { NatTableRowPlaceholderTemplate } from '../ui/table-row-placeholder-template.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
+import { getNatTableBodyRowIdentity } from '../utils/body-row-slot.util';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import {
   canResizeColumn,
@@ -68,12 +69,11 @@ import {
 import { requireNatTableService } from '../utils/table-service.util';
 
 /**
- * Track expression for the body plan: loaded rows keep their stable TanStack
- * row id, placeholder slots key on their logical index. The prefix keeps a
- * placeholder key from colliding with a consumer row id.
+ * Track expression for the body plan: the reusable view slot key when the
+ * plan carries one (a windowed body), else the row's own identity.
  */
 const trackNatTableBodyRow = <TData extends RowData>(renderedRow: NatTableRenderedBodyRow<TData>): string =>
-  renderedRow.kind === 'row' ? renderedRow.row.id : `nat-table-placeholder:${renderedRow.logicalIndex}`;
+  renderedRow.trackKey ?? getNatTableBodyRowIdentity(renderedRow);
 
 /**
  * Signals-first Angular table primitive built on TanStack Table.
