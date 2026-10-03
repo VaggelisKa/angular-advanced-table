@@ -2,13 +2,8 @@ import type { FilterFn, RowData } from '@tanstack/angular-table';
 
 import { matchesFilterQuery } from './row-state.util';
 
-// TanStack calls the global filter once per column of every row with the same
-// filter value, and walks one row's columns consecutively. These one-entry
-// memos keep that hot loop from re-normalizing the query on every call and
-// from re-matching the row id once per column. Both memos are keyed on plain
-// values only, so they never change what the filter returns or retain rows;
-// an object filter value is normalized on every call, because the same
-// reference can stringify differently after the consumer mutates it.
+// One-entry memos for TanStack's per-column calls: the query and the row-id
+// match. Object filter values are not memoized since they can be mutated.
 let lastFilterValue: unknown = undefined;
 let lastQuery = '';
 let lastRowId: string | null = null;
