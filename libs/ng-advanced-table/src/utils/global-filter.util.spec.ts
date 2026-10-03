@@ -79,5 +79,41 @@ describe('FEATURE: NatTable global filter utility', () => {
         expect(genericGlobalFilter(row, 'active', 'tru', ignoreMeta)).toBe(true);
       });
     });
+    describe('WHEN: the same row is filtered across columns and changing queries', () => {
+      it('THEN: it answers each call for its own query and row id, never a stale one', () => {
+        const row = buildRow('service-42', { name: 'Alpha', region: 'North' });
+        const other = buildRow('service-7', { name: 'Beta', region: 'South' });
+
+        expect(genericGlobalFilter(row, 'name', 'service-42', ignoreMeta)).toBe(true);
+        expect(genericGlobalFilter(row, 'region', 'service-42', ignoreMeta)).toBe(true);
+        expect(genericGlobalFilter(other, 'name', 'service-42', ignoreMeta)).toBe(false);
+        expect(genericGlobalFilter(other, 'name', 'SERVICE-7', ignoreMeta)).toBe(true);
+        expect(genericGlobalFilter(row, 'region', 'north', ignoreMeta)).toBe(true);
+        expect(genericGlobalFilter(row, 'region', 'south', ignoreMeta)).toBe(false);
+        expect(genericGlobalFilter(row, 'region', '', ignoreMeta)).toBe(true);
+      });
+    });
+
+    describe('WHEN: an object filter value is mutated in place between calls', () => {
+      it('THEN: it matches against the current string form, not a memoized one', () => {
+        const row = buildRow('row-1', { name: 'Beta' });
+        const filterValue = ['alpha'];
+
+        expect(genericGlobalFilter(row, 'name', filterValue, ignoreMeta)).toBe(false);
+
+        filterValue[0] = 'beta';
+
+        expect(genericGlobalFilter(row, 'name', filterValue, ignoreMeta)).toBe(true);
+      });
+    });
+
+    describe('WHEN: the column value is an array', () => {
+      it('THEN: it still matches nested items', () => {
+        const row = buildRow('row-1', { tags: ['red', ['deep blue']] });
+
+        expect(genericGlobalFilter(row, 'tags', 'blue', ignoreMeta)).toBe(true);
+        expect(genericGlobalFilter(row, 'tags', 'green', ignoreMeta)).toBe(false);
+      });
+    });
   });
 });

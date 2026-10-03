@@ -20,6 +20,9 @@ const dateMatchesFilterQuery = (value: unknown, normalizedQuery: string): boolea
 
 const isNullish = (value: unknown): value is null | undefined => value === null || value === undefined;
 
+const scalarMatchesFilterQuery = (value: unknown, normalizedQuery: string): boolean =>
+  primitiveMatchesFilterQuery(value, normalizedQuery) || dateMatchesFilterQuery(value, normalizedQuery);
+
 const shouldSkipArrayTraversal = (value: unknown, visitedArrays: WeakSet<unknown[]>): boolean =>
   !Array.isArray(value) || visitedArrays.has(value);
 
@@ -69,6 +72,12 @@ export const normalizeDataStatus = (status: NatTableDataStatus): NatTableDataSta
 
 export const matchesFilterQuery = (value: unknown, query: string): boolean => {
   const normalizedQuery = query.toLowerCase();
+
+  // Fast path: non-array values need no traversal.
+  if (!Array.isArray(value)) {
+    return scalarMatchesFilterQuery(value, normalizedQuery);
+  }
+
   const pendingValues: unknown[] = [value];
   const visitedArrays = new WeakSet<unknown[]>();
   let examinedNodes = 0;
@@ -82,7 +91,7 @@ export const matchesFilterQuery = (value: unknown, query: string): boolean => {
       continue;
     }
 
-    if (primitiveMatchesFilterQuery(currentValue, normalizedQuery) || dateMatchesFilterQuery(currentValue, normalizedQuery)) {
+    if (scalarMatchesFilterQuery(currentValue, normalizedQuery)) {
       return true;
     }
 
