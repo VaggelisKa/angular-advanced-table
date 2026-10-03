@@ -1,8 +1,12 @@
 import type { RowData, SortingFn } from '@tanstack/angular-table';
 import { reSplitAlphaNumeric, sortingFns } from '@tanstack/angular-table';
 
-/** One alphanumeric chunk: the raw text plus its `parseInt` value (NaN for text). */
-type AlphanumericChunk = { readonly text: string; readonly number: number };
+/**
+ * One alphanumeric chunk: its `parseInt` value for a run of digits, the raw
+ * text otherwise. TanStack only compares the number of a digit run and the
+ * text of anything else, so one primitive per chunk carries the whole key.
+ */
+type AlphanumericChunk = string | number;
 
 /** Key builder plus key comparator reproducing one built-in TanStack sorting function. */
 type KeyedSortingFn = {
@@ -39,7 +43,11 @@ const toAlphanumericChunks = (value: string): readonly AlphanumericChunk[] =>
   value
     .split(reSplitAlphaNumeric)
     .filter(Boolean)
-    .map((text) => ({ text, number: Number.parseInt(text, 10) }));
+    .map((text) => {
+      const number = Number.parseInt(text, 10);
+
+      return Number.isNaN(number) ? text : number;
+    });
 
 const compareText = (a: string, b: string): number => {
   if (a > b) return 1;
@@ -48,11 +56,11 @@ const compareText = (a: string, b: string): number => {
 };
 
 const compareAlphanumericChunk = (a: AlphanumericChunk, b: AlphanumericChunk): number => {
-  const aIsText = Number.isNaN(a.number);
-  const bIsText = Number.isNaN(b.number);
+  const aIsText = typeof a === 'string';
+  const bIsText = typeof b === 'string';
 
   if (aIsText && bIsText) {
-    return compareText(a.text, b.text);
+    return compareText(a, b);
   }
 
   // One is text, one is a number: text sorts first (as in TanStack).
@@ -60,7 +68,7 @@ const compareAlphanumericChunk = (a: AlphanumericChunk, b: AlphanumericChunk): n
     return aIsText ? -1 : 1;
   }
 
-  return compareBasic(a.number, b.number);
+  return compareBasic(a, b);
 };
 
 // Same result as TanStack's `compareAlphanumeric`, over chunks split once per row.
