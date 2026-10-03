@@ -55,7 +55,7 @@ const compareAlphanumericChunk = (a: AlphanumericChunk, b: AlphanumericChunk): n
     return compareText(a.text, b.text);
   }
 
-  // One is text, one is a number: numbers sort first.
+  // One is text, one is a number: text sorts first (as in TanStack).
   if (aIsText || bIsText) {
     return aIsText ? -1 : 1;
   }

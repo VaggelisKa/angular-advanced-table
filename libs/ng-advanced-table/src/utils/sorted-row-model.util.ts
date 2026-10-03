@@ -165,10 +165,8 @@ const sortFlatRows = <TData extends RowData>(
  */
 export const natGetSortedRowModel =
   <TData extends RowData>(): ((table: Table<TData>) => () => RowModel<TData>) =>
-  (table) => {
-    const fallback = getSortedRowModel<TData>()(table);
-
-    return memo(
+  (table) =>
+    memo(
       () => [table.getState().sorting, table.getPreSortedRowModel()],
       (sorting: SortingState, rowModel: RowModel<TData>) => {
         if (!rowModel.rows.length || !sorting.length) {
@@ -176,7 +174,10 @@ export const natGetSortedRowModel =
         }
 
         if (rowModel.rows.some((row) => row.subRows.length > 0)) {
-          return fallback();
+          // A fresh TanStack model per recompute: a long-lived one keeps its own
+          // memo, which misses dependency changes made while this one short-
+          // circuited (cleared sorting) and would serve stale rows.
+          return getSortedRowModel<TData>()(table)();
         }
 
         return sortFlatRows(table, sorting, rowModel);
@@ -184,4 +185,3 @@ export const natGetSortedRowModel =
       // eslint-disable-next-line no-underscore-dangle -- TanStack's own page-index reset hook, called exactly as its sorted row model does.
       getMemoOptions(table.options, 'debugTable', 'getSortedRowModel', () => table._autoResetPageIndex())
     );
-  };

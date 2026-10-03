@@ -247,5 +247,38 @@ describe('FEATURE: natGetSortedRowModel', () => {
         expect(sorted.rows[1].subRows.map((row) => row.id)).toStrictEqual(['b1', 'b2']);
       });
     });
+
+    describe('WHEN: sub-row sorting is cleared, then restored after the sorting function changed', () => {
+      it('THEN: it sorts with the new sorting function like TanStack does', () => {
+        type TreeRow = { readonly id: string; readonly name: string; readonly children?: TreeRow[] };
+        const data: TreeRow[] = [
+          { id: 'b', name: 'b', children: [{ id: 'b1', name: 'x' }] },
+          { id: 'a', name: 'a' },
+          { id: 'c', name: 'c' }
+        ];
+        const sorting: SortingState = [{ id: 'name', desc: false }];
+        const descendingColumns: ColumnDef<TreeRow, unknown>[] = [
+          { accessorKey: 'name', sortingFn: (rowA, rowB) => rowB.original.name.localeCompare(rowA.original.name) }
+        ];
+        const table = createTable<TreeRow>({
+          data,
+          columns: [{ accessorKey: 'name', sortingFn: 'text' }],
+          state: { sorting },
+          onStateChange: () => undefined,
+          renderFallbackValue: null,
+          getRowId: (row) => row.id,
+          getSubRows: (row) => row.children,
+          getCoreRowModel: getCoreRowModel(),
+          getSortedRowModel: natGetSortedRowModel()
+        });
+
+        expect(table.getSortedRowModel().rows.map((row) => row.id)).toStrictEqual(['a', 'b', 'c']);
+        table.setOptions((options) => ({ ...options, state: { sorting: [] } }));
+        table.getSortedRowModel();
+        table.setOptions((options) => ({ ...options, columns: descendingColumns, state: { sorting } }));
+
+        expect(table.getSortedRowModel().rows.map((row) => row.id)).toStrictEqual(['c', 'b', 'a']);
+      });
+    });
   });
 });
