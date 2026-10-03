@@ -5,6 +5,7 @@ import { KeyboardInteraction } from '../demos/keyboard-interaction/keyboard-inte
 import { ListControls } from '../demos/list/list-controls';
 import { ListCustomCells } from '../demos/list/list-custom-cells';
 import { ListDataStates } from '../demos/list/list-data-states';
+import { ListFlowLayout } from '../demos/list/list-flow-layout';
 import { ListRenderer } from '../demos/list/list-renderer';
 import { ListSelection } from '../demos/list/list-selection';
 import { Pagination } from '../demos/pagination/pagination';
@@ -628,6 +629,39 @@ protected readonly columns = computed<ColumnDef<Order, unknown>[]>(() => [
   // 3. Template: return a TemplateRef; the cell context is the template's $implicit.
   { accessorKey: 'total', header: 'Total', meta: { label: 'Total' }, cell: () => this.totalTemplate() }
 ]);
+`
+  )
+];
+
+const listFlowLayoutSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<!-- Flow layout: wrapping slots instead of fixed grid tracks. -->
+<nat-table-surface>
+  <nat-list [columns]="columns" [data]="rows" accessibleName="Orders" itemLayout="flow" />
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'css',
+    'CSS',
+    'css',
+    `
+/* One width token per visible column id: a percentage of the line, 100% for a
+   whole line. With no tokens set, the fields share the line equally.
+   Stacking label over value keeps a field's minimum width at its longest
+   word, so a value that fits its slot wraps internally before the field
+   moves down. */
+nat-list {
+  --nat-list-field-width-customer: 50%;
+  --nat-list-field-width-total: 25%;
+  --nat-list-field-width-change: 25%;
+  --nat-list-field-width-note: 100%;
+  --nat-list-field-flex-direction: column;
+}
 `
   )
 ];
@@ -1319,6 +1353,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'Item navigation', path: '#item-navigation' },
       { label: 'Data lifecycle', path: '#data-lifecycle' },
       { label: 'Item layout and theming', path: '#item-layout-and-theming' },
+      { label: 'Flow item layout', path: '#flow-item-layout' },
       { label: 'Accessibility', path: '#accessibility' },
       { label: 'Limitations', path: '#limitations' }
     ],
@@ -1339,6 +1374,15 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         description: 'Text, component, and template cells all render through the same flexRender pipeline the table uses.',
         component: ListCustomCells,
         snippets: listCustomCellsSnippets
+      },
+      {
+        kind: 'example',
+        id: 'list-flow-layout',
+        title: 'Flow item layout',
+        description:
+          'itemLayout="flow" keeps fitting fields aligned across items and reflows the line only in the item whose value does not fit its slot.',
+        component: ListFlowLayout,
+        snippets: listFlowLayoutSnippets
       },
       {
         kind: 'example',

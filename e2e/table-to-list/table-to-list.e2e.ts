@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { loadDocsExamplePreview } from '../support/docs-example';
+
 const listItems = '[data-testid="nat-list-item"]';
 
 test.describe('FEATURE: Table to list', () => {
@@ -148,6 +150,182 @@ test.describe('FEATURE: Table to list', () => {
 
           await expect(items).toHaveCount(10);
           await expect(items.first()).not.toHaveText(firstPageText);
+        });
+      });
+    });
+  });
+  test.describe('GIVEN: the flow item layout docs example', () => {
+    test.describe('WHEN: a value is wider than the whole item', () => {
+      test('THEN: it wraps oversized text and template content within the item', async ({ page }) => {
+        await page.goto('/docs/list-renderer');
+        await loadDocsExamplePreview(page, 'list-flow-layout', 'Flow item layout');
+
+        const panel = page.getByTestId('docs-example-list-flow-layout-preview-panel');
+        const item = panel.getByTestId('nat-list-item').first();
+        const field = item
+          .getByTestId('nat-list-field')
+          .filter({ has: page.getByTestId('nat-list-field-label').filter({ hasText: 'Total' }) });
+        const value = field.getByTestId('nat-list-field-value');
+        const label = field.getByTestId('nat-list-field-label');
+        const longValue = '1234567890'.repeat(15);
+
+        const expectContained = async (): Promise<void> => {
+          await expect(value).toHaveText(longValue);
+          const bounds = await value.evaluate((element) => {
+            const range = document.createRange();
+
+            range.selectNodeContents(element);
+
+            const text = range.getBoundingClientRect();
+            const box = element.getBoundingClientRect();
+
+            return { textLeft: text.left, textRight: text.right, left: box.left, right: box.right, height: box.height };
+          });
+
+          expect(bounds.textLeft).toBeGreaterThanOrEqual(bounds.left - 1);
+          expect(bounds.textRight).toBeLessThanOrEqual(bounds.right + 1);
+          expect(bounds.height).toBeGreaterThan(30);
+          expect(await item.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+        };
+
+        await test.step('THEN: a visible-label value breaks only when it exceeds the entire item', async () => {
+          await value.evaluate((element, text) => {
+            element.textContent = text;
+          }, longValue);
+          await expectContained();
+        });
+
+        await test.step('THEN: custom template markup also stays inside the item', async () => {
+          await value.evaluate((element, text) => {
+            const content = document.createElement('span');
+
+            content.textContent = text;
+            element.replaceChildren(content);
+          }, longValue);
+          await expectContained();
+        });
+
+        await test.step('THEN: hidden-label template and plain values remain contained', async () => {
+          // Exercise the renderer markup produced by meta.hiddenHeaderLabel,
+          // retaining the real component stylesheet and the consumer's slot widths.
+          await label.evaluate((element) => element.classList.add('sr-only'));
+          await value.evaluate((element) => element.classList.add('list-field-value--fill'));
+          await expectContained();
+          await value.evaluate((element, text) => {
+            const content = document.createElement('span');
+
+            content.dataset['testid'] = 'nat-list-field-text';
+            content.textContent = text;
+            element.replaceChildren(content);
+          }, longValue);
+          await expectContained();
+        });
+      });
+    });
+    test.describe('WHEN: the narrow container makes one total wider than its slot', () => {
+      test('THEN: only that item wraps its total while the other items stay aligned', async ({ page }) => {
+        await page.goto('/docs/list-renderer');
+        await loadDocsExamplePreview(page, 'list-flow-layout', 'Flow item layout');
+
+        const panel = page.getByTestId('docs-example-list-flow-layout-preview-panel');
+        const items = panel.locator(listItems);
+        const fieldBox = async (
+          item: ReturnType<typeof items.nth>,
+          columnId: string
+        ): Promise<{ x: number; y: number; width: number }> => {
+          const box = await item.locator(`[data-column-id="${columnId}"]`).boundingBox();
+
+          expect(box).not.toBeNull();
+
+          return { x: box?.x ?? 0, y: box?.y ?? 0, width: box?.width ?? 0 };
+        };
+
+        await test.step('THEN: fitting items keep the total on the first line, at the same x in every item', async () => {
+          await expect(items).toHaveCount(6);
+
+          const first = items.nth(0);
+          const second = items.nth(1);
+          const firstCustomer = await fieldBox(first, 'customer');
+          const firstTotal = await fieldBox(first, 'total');
+          const secondTotal = await fieldBox(second, 'total');
+
+          expect(firstTotal.y).toBeCloseTo(firstCustomer.y, 0);
+          expect(firstTotal.x).toBeGreaterThan(firstCustomer.x);
+          expect(secondTotal.x).toBeCloseTo(firstTotal.x, 0);
+        });
+
+        await test.step('THEN: the item with the oversized total widens that field and wraps the next one, unbroken', async () => {
+          const first = items.nth(0);
+          const wide = items.nth(2);
+          const firstTotal = await fieldBox(first, 'total');
+          const firstChange = await fieldBox(first, 'change');
+          const wideCustomer = await fieldBox(wide, 'customer');
+          const wideTotal = await fieldBox(wide, 'total');
+          const wideChange = await fieldBox(wide, 'change');
+          const totalValue = wide.locator('[data-column-id="total"] [data-testid="nat-list-field-value"]');
+
+          // The fitting fields before it keep their slot, so the total still starts where it does in every other item.
+          expect(wideTotal.x).toBeCloseTo(firstTotal.x, 0);
+          expect(wideTotal.y).toBeCloseTo(wideCustomer.y, 0);
+          expect(wideTotal.width).toBeGreaterThan(firstTotal.width);
+          // The change field no longer fits the line and wraps in this item only.
+          expect(firstChange.y).toBeCloseTo(firstTotal.y, 0);
+          expect(wideChange.y).toBeGreaterThan(wideCustomer.y);
+          expect(wideChange.x).toBeCloseTo(wideCustomer.x, 0);
+          await expect(totalValue).toHaveText('$1,234,567,890.50');
+
+          const valueBox = await totalValue.boundingBox();
+          const customerBox = await wide.locator('[data-column-id="customer"] [data-testid="nat-list-field-value"]').boundingBox();
+
+          // One line of text: an unbroken number is no taller than the customer value.
+          expect(valueBox?.height ?? 0).toBeLessThanOrEqual((customerBox?.height ?? 0) + 1);
+        });
+
+        await test.step('THEN: a breakable value wraps inside its slot before its field moves', async () => {
+          const first = items.nth(0);
+          const firstTotal = await fieldBox(first, 'total');
+          const firstChange = await fieldBox(first, 'change');
+          const changeValue = first.locator('[data-column-id="change"] [data-testid="nat-list-field-value"]');
+          const totalValue = first.locator('[data-column-id="total"] [data-testid="nat-list-field-value"]');
+
+          // "+12.5% (vs. last month)" is wider than its slot but its longest word is not:
+          // the field keeps its slot on the first line and the secondary part drops inside it.
+          expect(firstChange.y).toBeCloseTo(firstTotal.y, 0);
+          expect(firstChange.x).toBeGreaterThan(firstTotal.x);
+
+          const changeBox = await changeValue.boundingBox();
+          const totalBox = await totalValue.boundingBox();
+
+          expect(changeBox?.height ?? 0).toBeGreaterThan((totalBox?.height ?? 0) * 1.5);
+        });
+
+        await test.step('THEN: the full-width note takes a line of its own in every item', async () => {
+          const first = items.nth(0);
+          const firstTotal = await fieldBox(first, 'total');
+          const firstNote = await fieldBox(first, 'note');
+          const firstCustomer = await fieldBox(first, 'customer');
+
+          expect(firstNote.y).toBeGreaterThan(firstTotal.y);
+          expect(firstNote.x).toBeCloseTo(firstCustomer.x, 0);
+        });
+
+        await test.step('THEN: switching to the grid layout keeps every field in its fixed track instead', async () => {
+          const gridToggle = panel.getByTestId('list-flow-demo-layout-grid');
+
+          await gridToggle.click();
+          // Retrying assertion: on the prerendered page the click may replay after hydration.
+          await expect(gridToggle).toHaveAttribute('aria-pressed', 'true');
+
+          const first = items.nth(0);
+          const wide = items.nth(2);
+          const firstTotal = await fieldBox(first, 'total');
+          const wideCustomer = await fieldBox(wide, 'customer');
+          const wideTotal = await fieldBox(wide, 'total');
+          const wideChange = await fieldBox(wide, 'change');
+
+          expect(wideTotal.y).toBeCloseTo(wideCustomer.y, 0);
+          expect(wideChange.y).toBeCloseTo(wideCustomer.y, 0);
+          expect(wideTotal.width).toBeCloseTo(firstTotal.width, 0);
         });
       });
     });

@@ -1,0 +1,26 @@
+<div class="list-demo-controls">
+  <app-demo-toggle-group
+    [options]="layoutOptions"
+    [value]="layout()"
+    accessibleName="Item layout"
+    (valueChange)="layout.set($event)" />
+  <app-demo-toggle-group
+    [options]="widthOptions"
+    [value]="width()"
+    accessibleName="Container width"
+    (valueChange)="width.set($event)" />
+</div>
+
+<div
+  [class.list-flow-demo-container--narrow]="width() === 'narrow'"
+  class="list-flow-demo-container"
+  data-testid="list-flow-demo-container">
+  <nat-table-surface>
+    <nat-list
+      [columns]="columns"
+      [data]="rows"
+      [itemLayout]="layout()"
+      accessibleName="Orders with wrapping flow fields"
+      class="sc-demo-list list-flow-demo-list" />
+  </nat-table-surface>
+</div>

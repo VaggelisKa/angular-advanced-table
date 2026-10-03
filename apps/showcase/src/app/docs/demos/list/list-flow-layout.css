@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+
+.list-demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-2);
+  align-items: center;
+  margin-block-end: var(--sc-space-4);
+}
+
+/* The narrow container is what makes the widest total overflow its slot. */
+.list-flow-demo-container--narrow {
+  max-width: 420px;
+}
+
+/* Flow slots per column id: half the line for the customer, a quarter each
+   for total and change, and a whole line for the note. Stacked label/value
+   fields keep a field's minimum width at its longest word, so a value wraps
+   internally before the whole field moves down. The grid tokens mirror the
+   same shape for the grid toggle. */
+.list-flow-demo-list {
+  --nat-list-field-width-customer: 50%;
+  --nat-list-field-width-total: 25%;
+  --nat-list-field-width-change: 25%;
+  --nat-list-field-width-note: 100%;
+  --nat-list-field-flex-direction: column;
+  --nat-list-field-gap: 0.125rem;
+  --nat-list-item-gap: 0.5rem 1rem;
+  --nat-list-item-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  --nat-list-item-areas: 'customer total change' 'note note note';
+
+  /* Inherited by the field values; the list's internals are not styled directly. */
+  font-variant-numeric: tabular-nums;
+}

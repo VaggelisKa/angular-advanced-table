@@ -21,34 +21,46 @@
     let-listColumns="listColumns"
     let-row="row"
     let-withActivator="withActivator">
-    @for (column of listColumns; track column.id) {
-      @let cell = cellForColumn(row, column.id);
-      @if (cell) {
-        <div
-          [attr.data-column-id]="column.id"
-          [attr.data-nat-row-activation]="column.columnDef.meta?.rowActivation === false ? 'false' : null"
-          [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
-          [natListFieldArea]="column.id"
-          class="list-field">
-          <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label">
-            @let headerDef = column.columnDef.header;
-            @let headerContext = headerContexts.get(column.id);
-            @if (!hasStaticLabel(column) && headerDef && headerContext) {
-              <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
-                {{ renderedLabel }}
+    <!-- The fields' own layout box (grid areas, or wrapping flow slots), kept
+         separate from the item so the item's padding, border, and the
+         stretched activator stay out of the layout maths. -->
+    <div class="list-item-fields">
+      @for (column of listColumns; track column.id) {
+        @let cell = cellForColumn(row, column.id);
+        @if (cell) {
+          <div
+            [attr.data-column-id]="column.id"
+            [attr.data-nat-row-activation]="column.columnDef.meta?.rowActivation === false ? 'false' : null"
+            [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
+            [natListFieldArea]="column.id"
+            [natListFieldWidth]="fieldWidth(column.id)"
+            class="list-field"
+            data-testid="nat-list-field">
+            <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label" data-testid="nat-list-field-label">
+              @let headerDef = column.columnDef.header;
+              @let headerContext = headerContexts.get(column.id);
+              @if (!hasStaticLabel(column) && headerDef && headerContext) {
+                <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
+                  {{ renderedLabel }}
+                </ng-container>
+              } @else {
+                {{ resolveColumnLabel(column) }}
+              }
+            </span>
+            <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value" data-testid="nat-list-field-value">
+              <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
+                @if (isFlowLayout() && isSrOnlyLabel(column)) {
+                  <!-- A real flex item lets oversized plain text shrink too. -->
+                  <span data-testid="nat-list-field-text">{{ rendered }}</span>
+                } @else {
+                  {{ rendered }}
+                }
               </ng-container>
-            } @else {
-              {{ resolveColumnLabel(column) }}
-            }
-          </span>
-          <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value">
-            <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
-              {{ rendered }}
-            </ng-container>
-          </span>
-        </div>
+            </span>
+          </div>
+        }
       }
-    }
+    </div>
   </ng-template>
 
   <!-- One group's sub-header content (sr-only announcement + template or value),
@@ -123,7 +135,7 @@
               ngGridRow
               (click)="onItemClick($event, row)"
               (keydown)="onItemKeydown($event, row)">
-              <div class="list-item" data-testid="nat-list-item-cell" natTableCell ngGridCell>
+              <div [class.list-item--flow]="isFlowLayout()" class="list-item" data-testid="nat-list-item-cell" natTableCell ngGridCell>
                 <ng-container
                   [ngTemplateOutlet]="itemFields"
                   [ngTemplateOutletContext]="{ row, itemIndex: $index, listColumns, headerContexts, withActivator: false }" />
@@ -171,6 +183,7 @@
               [attr.data-row-id]="row.id"
               [attr.data-selected]="rowSelectedAttribute(row)"
               [class.is-activatable]="rendersActivator()"
+              [class.list-item--flow]="isFlowLayout()"
               class="list-item"
               data-testid="nat-list-item">
               @if (rendersActivator()) {

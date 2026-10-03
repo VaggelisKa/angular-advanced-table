@@ -6,6 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { ListControls } from './list-controls';
 import { ListCustomCells } from './list-custom-cells';
 import { ListDataStates } from './list-data-states';
+import { ListFlowLayout } from './list-flow-layout';
 import { ListSelection } from './list-selection';
 
 const createFixture = async <T>(component: Type<T>): Promise<ComponentFixture<T>> => {
@@ -114,6 +115,36 @@ describe('FEATURE: List companion controls docs demo', () => {
         await render(fixture);
 
         expect(host(fixture).querySelector('[data-testid="nat-list-item"] [data-column-id="customer"]')).toBeNull();
+      });
+    });
+  });
+});
+
+const flowItemLayout = (fixture: ComponentFixture<unknown>): string | undefined =>
+  host(fixture).querySelector<HTMLElement>('nat-list')?.dataset['itemLayout'];
+
+const flowNoteField = (fixture: ComponentFixture<unknown>): HTMLElement | null =>
+  host(fixture).querySelector<HTMLElement>('[data-testid="nat-list-item"] [data-column-id="note"]');
+
+const flowNoteWidth = (fixture: ComponentFixture<unknown>): string =>
+  flowNoteField(fixture)?.style.getPropertyValue('--sys-nat-table-list-field-width') ?? '';
+
+describe('FEATURE: List flow layout docs demo', () => {
+  describe('GIVEN: the demo renders in the flow layout', () => {
+    describe('WHEN: the layout toggle switches to grid', () => {
+      it('THEN: it drops the flow slots and falls back to the named grid areas', async () => {
+        const fixture = await createFixture(ListFlowLayout);
+
+        expect(host(fixture).querySelectorAll('[data-testid="nat-list-item"]')).toHaveLength(6);
+        expect(flowItemLayout(fixture)).toBe('flow');
+        expect(flowNoteWidth(fixture)).toBe('var(--nat-list-field-width-note, calc(100% / 4))');
+
+        host(fixture).querySelector<HTMLButtonElement>('[data-testid="list-flow-demo-layout-grid"]')?.click();
+        await render(fixture);
+
+        expect(flowItemLayout(fixture)).toBe('grid');
+        expect(flowNoteWidth(fixture)).toBe('');
+        expect(flowNoteField(fixture)?.style.getPropertyValue('grid-area')).toBe('note');
       });
     });
   });
