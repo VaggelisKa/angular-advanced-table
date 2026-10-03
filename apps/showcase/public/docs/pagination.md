@@ -4,7 +4,7 @@ Use pagination when the user needs a smaller visible working set or when data is
 
 ## Client Pagination
 
-`NatTablePagination` enables the pagination row model and patches the `pagination` state slice. Provide page-size options that match the density and workflow of the table.
+`NatTablePagination` enables the pagination row model and patches the `pagination` state slice. A `pagination` value in `[state]` or `[initialState]` has no effect on rows until a pagination control (`NatTablePagination`, `NatTablePager`, or `NatTablePageSize`) is mounted in the same surface. Provide page-size options that match the density and workflow of the table.
 
 ```html
 <nat-table-surface [(state)]="tableState">

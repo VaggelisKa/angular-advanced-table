@@ -4,6 +4,18 @@ Use `<nat-table-toolbar>` for generic command rows near a table. Projected contr
 
 Keep DOM order aligned with screen-reader and roving-keyboard order. Visual placement should not make keyboard navigation surprising.
 
+## Slot Positions
+
+`natToolbarItemPosition="start" | "center" | "end"` on an item, and `natToolbarGroup="start" | "center" | "end"` on a group, pick the toolbar slot. The toolbar picks slots by the static attribute when the template compiles, so write the position as a plain attribute. A binding such as `[natToolbarItemPosition]="position()"` never moves the item: it always renders in the start slot. To move an item at runtime, render one copy per position with `@if`.
+
+```html
+<nat-table-toolbar>
+  <button natToolbarItem natToolbarItemPosition="end" type="button">Export</button>
+</nat-table-toolbar>
+```
+
+Items inside a `natToolbarGroup` render in the group's slot, so their own position is ignored.
+
 ## Table Actions
 
 A Table Action is a user-triggered operation that acts on table rows or table presentation state. Toolbar placement is optional; the behavior is not defined by where the control is rendered.

@@ -65,6 +65,7 @@ import {
   originatesFromInteractiveDescendant,
   scrollCellIntoUnobscuredView
 } from '../utils/interaction.util';
+import { requireNatTableService } from '../utils/table-service.util';
 
 /**
  * Track expression for the body plan: loaded rows keep their stable TanStack
@@ -180,7 +181,12 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   // ─── Injected services and directives ───
 
-  private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
+  // Optional so a missing provider fails with an actionable message, not a raw NG0201.
+  private readonly natTableService = requireNatTableService(
+    inject<NatTableService<TData>>(NatTableService, { optional: true }),
+    'nat-table'
+  );
+
   private readonly state = inject<NatTableState<TData>>(NatTableState);
   private readonly a11yService = inject<NatTableA11yService<TData>>(NatTableA11yService);
   private readonly resizeService = inject<NatTableResizeService<TData>>(NatTableResizeService);

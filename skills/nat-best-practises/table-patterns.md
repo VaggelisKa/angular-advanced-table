@@ -171,6 +171,7 @@ Never map a mobile/compact opt-out to TanStack table-level `enableSorting`. Sett
 - Store controlled table state as `Partial<NatTableUserState>`.
 - Preserve unrelated slices on every update.
 - Reset pagination when search or filters change the visible data set.
+- Mount the control that applies a slice: a pagination companion for `pagination`, a `registerSearch()` search control for `globalFilter`. Without one, the table keeps the value in emitted state but ignores it for rows.
 - Keep server fetching, errors, retries, and query construction in the app.
 
 ## Data Lifecycle Rows

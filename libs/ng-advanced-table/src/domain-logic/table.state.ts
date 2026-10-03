@@ -304,9 +304,17 @@ export class NatTableState<TData extends RowData = RowData> {
 
   // ─── Merged state ───
 
+  /**
+   * The consumer's global filter, kept even while no search control is
+   * registered. Only the effective `mergedState` gates it to `''`; reported
+   * state carries this value so a two-way `[(state)]` binding never has its
+   * controlled `globalFilter` overwritten.
+   */
+  private readonly userGlobalFilter = computed(() => this.state().globalFilter ?? this.internalGlobalFilter());
+
   public readonly mergedState = computed<NatTableUserState>(() => ({
     sorting: normalizeSortingState(this.state().sorting ?? this.internalSorting(), this.enableMultiSort()),
-    globalFilter: this.enableGlobalFilter() ? (this.state().globalFilter ?? this.internalGlobalFilter()) : '',
+    globalFilter: this.enableGlobalFilter() ? this.userGlobalFilter() : '',
     columnFilters: this.state().columnFilters ?? this.internalColumnFilters(),
     columnVisibility: this.state().columnVisibility ?? this.internalColumnVisibility(),
     columnOrder: this.resolvedColumnOrder(),
@@ -1010,7 +1018,8 @@ export class NatTableState<TData extends RowData = RowData> {
     const seed = resolveSeedState(initialState, DEFAULT_TABLE_STATE);
 
     this.internalSorting.set(normalizeSortingState(seed.sorting, this.enableMultiSort()));
-    this.internalGlobalFilter.set(this.enableGlobalFilter() ? seed.globalFilter : '');
+    // Kept ungated: `mergedState` applies the search gate, reported state keeps the value.
+    this.internalGlobalFilter.set(seed.globalFilter);
     this.internalColumnFilters.set(seed.columnFilters);
     this.internalColumnVisibility.set(seed.columnVisibility);
     this.internalColumnOrder.set(seed.columnOrder);
@@ -1020,7 +1029,7 @@ export class NatTableState<TData extends RowData = RowData> {
     this.internalPagination.set(seed.pagination);
     this.hasSeededInitialState.set(true);
 
-    this.natTableService.notifyStateChange(this.mergedState());
+    this.natTableService.notifyStateChange({ ...this.mergedState(), globalFilter: this.userGlobalFilter() });
   }
 
   public patchState(
@@ -1050,7 +1059,8 @@ export class NatTableState<TData extends RowData = RowData> {
     const currentState = this.mergedState();
     const nextState: NatTableUserState = {
       sorting: normalizeSortingState(resolveUpdater(currentState.sorting, updaters.sorting), this.enableMultiSort()),
-      globalFilter: resolveUpdater(currentState.globalFilter, updaters.globalFilter),
+      // Resolved against the ungated value so reported state keeps the consumer's filter.
+      globalFilter: resolveUpdater(this.userGlobalFilter(), updaters.globalFilter),
       columnFilters: resolveUpdater(currentState.columnFilters, updaters.columnFilters),
       columnVisibility: resolveUpdater(currentState.columnVisibility, updaters.columnVisibility),
       columnOrder: retainColumnOrder(resolveUpdater(currentState.columnOrder, updaters.columnOrder), this.allLeafColumnIds()),

@@ -32,5 +32,8 @@ Use this skill to generate consumer code that uses the public `ng-advanced-table
 
 - Keep app-specific fetching, actions, dialogs, routing, and analytics outside the table primitives.
 - Patch the intended state slice and preserve unrelated slices.
+- Give every `<nat-table>`, `<nat-table-static>`, and `<nat-list>` a `NatTableService` from an ancestor: wrap it in `<nat-table-surface>`, or add `providers: [NatTableService]` to the host component. A bare renderer throws.
+- Client-side `pagination` and `globalFilter` change rows only while a matching control is mounted in the same surface. Pagination needs `<nat-table-pagination>`, `<nat-table-pager>`, or `<nat-table-page-size>`; `globalFilter` needs a search control that calls `NatTableService.registerSearch()`. Setting the state slice alone does nothing to the rows. When the server pages or filters, use manual mode instead.
+- Write `natToolbarItemPosition` and `natToolbarGroup` positions as static attributes. A binding such as `[natToolbarItemPosition]="pos()"` always lands in the start slot; use `@if` with one copy per position to move an item. `natToolbarItem` is a bare marker attribute with no value.
 - Always include table names, column labels, keyboard-reachable controls, and WCAG AA contrast.
 - The core table is headless by default. The stock theme is opt-in — `import 'ng-advanced-table/components/theme.css'`. Style through `--nat-table-*` custom properties set on a wrapper ancestor — these always win over the opt-in stock theme. Never target library elements from outside (`nat-table-surface { ... }`), private classes, `::ng-deep`, or removed shorthand tokens.

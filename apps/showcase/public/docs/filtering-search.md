@@ -4,7 +4,7 @@ Search copy, matching rules, filter menus, and request timing are product concer
 
 ## Global Filters
 
-Use `globalFilter` when one input should narrow rows across the table. Reset `pagination.pageIndex` when a filter changes so users do not stay on an empty later page.
+Use `globalFilter` when one input should narrow rows across the table. The filter applies to rows only while your search control is registered with `NatTableService.registerSearch()`; see [Consumer-Owned Search](/docs/composition#consumer-owned-search) for the full control. Reset `pagination.pageIndex` when a filter changes so users do not stay on an empty later page.
 
 ```ts
 this.tableState.update((state) => ({
