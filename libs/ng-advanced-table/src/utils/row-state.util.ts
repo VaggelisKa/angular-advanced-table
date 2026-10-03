@@ -20,6 +20,10 @@ const dateMatchesFilterQuery = (value: unknown, normalizedQuery: string): boolea
 
 const isNullish = (value: unknown): value is null | undefined => value === null || value === undefined;
 
+/** A single (non-array) value: primitives by their string form, valid dates by their ISO string. */
+const scalarMatchesFilterQuery = (value: unknown, normalizedQuery: string): boolean =>
+  primitiveMatchesFilterQuery(value, normalizedQuery) || dateMatchesFilterQuery(value, normalizedQuery);
+
 const shouldSkipArrayTraversal = (value: unknown, visitedArrays: WeakSet<unknown[]>): boolean =>
   !Array.isArray(value) || visitedArrays.has(value);
 
@@ -69,6 +73,13 @@ export const normalizeDataStatus = (status: NatTableDataStatus): NatTableDataSta
 
 export const matchesFilterQuery = (value: unknown, query: string): boolean => {
   const normalizedQuery = query.toLowerCase();
+
+  // Fast path for the common non-array cell value: the global filter runs this
+  // for every column of every row, so skip the traversal allocations.
+  if (!Array.isArray(value)) {
+    return scalarMatchesFilterQuery(value, normalizedQuery);
+  }
+
   const pendingValues: unknown[] = [value];
   const visitedArrays = new WeakSet<unknown[]>();
   let examinedNodes = 0;
@@ -82,7 +93,7 @@ export const matchesFilterQuery = (value: unknown, query: string): boolean => {
       continue;
     }
 
-    if (primitiveMatchesFilterQuery(currentValue, normalizedQuery) || dateMatchesFilterQuery(currentValue, normalizedQuery)) {
+    if (scalarMatchesFilterQuery(currentValue, normalizedQuery)) {
       return true;
     }
 
