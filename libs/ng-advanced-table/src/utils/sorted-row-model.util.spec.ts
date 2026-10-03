@@ -168,6 +168,23 @@ describe('FEATURE: natGetSortedRowModel', () => {
       });
     });
 
+    describe('WHEN: a datetime column holds Date subclasses that override valueOf', () => {
+      it('THEN: it sorts by the overridden value like TanStack does', () => {
+        class ReversedDate extends Date {
+          public override valueOf(): number {
+            return -this.getTime();
+          }
+        }
+        const data = buildRows(60, 5, false).map((row) => ({ ...row, createdAt: new ReversedDate(row.createdAt ?? 0) }));
+        const columns = createColumns({ createdAt: { sortingFn: 'datetime' } });
+        const sorting: SortingState = [{ id: 'createdAt', desc: false }];
+
+        expect(sortedIds(data, columns, sorting, natGetSortedRowModel)).toStrictEqual(
+          sortedIds(data, columns, sorting, getSortedRowModel)
+        );
+      });
+    });
+
     describe('WHEN: sorting by an unknown or unsortable column', () => {
       it('THEN: it ignores that entry like TanStack does', () => {
         const data = buildRows(80, 9);

@@ -89,8 +89,10 @@ const compareAlphanumericChunks = (a: unknown, b: unknown): number => {
 };
 
 const toValue = (value: unknown): unknown => value;
-// Relational comparison reads a Date through `valueOf()`, so its time compares the same.
-const toTime = (value: unknown): unknown => (value instanceof Date ? value.getTime() : value);
+// Relational comparison reads a plain Date through `valueOf()`, so its time
+// compares the same; subclasses keep the object, since they may override it.
+const toTime = (value: unknown): unknown =>
+  value instanceof Date && Object.getPrototypeOf(value) === Date.prototype ? value.getTime() : value;
 const toLowerText = (value: unknown): string => toSortString(value).toLowerCase();
 const toLowerChunks = (value: unknown): readonly AlphanumericChunk[] => toAlphanumericChunks(toLowerText(value));
 const toChunks = (value: unknown): readonly AlphanumericChunk[] => toAlphanumericChunks(toSortString(value));
