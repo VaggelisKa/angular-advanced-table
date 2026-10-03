@@ -5,7 +5,8 @@ import { loadDocsExamplePreview } from '../support/docs-example';
 
 type HeaderFrame = { order: string; shifted: boolean; dragging: boolean };
 
-const HEADER_FRAME_COUNT = 120;
+/** Frames recorded after the drag preview disappears. */
+const SETTLED_FRAME_COUNT = 30;
 
 /** Bounding box of `locator`, throwing if it is not laid out. */
 const boxOf = async (locator: Locator): Promise<{ x: number; y: number; width: number; height: number }> => {
@@ -18,11 +19,14 @@ const boxOf = async (locator: Locator): Promise<{ x: number; y: number; width: n
 
 /**
  * Records, once per animation frame, the leaf header order, whether any header
- * is still offset by a transform, and whether a drag preview is showing.
+ * is still offset by a transform, and whether a drag preview is showing. It
+ * keeps recording through the drag and stops a fixed number of frames after the
+ * preview is gone, however long the drag and drop animation take.
  */
 const recordHeaderFrames = async (table: Locator): Promise<void> =>
-  table.evaluate((element, frameCount) => {
+  table.evaluate((element, settledFrameCount) => {
     const frames: HeaderFrame[] = [];
+    const state = { frames, done: false };
     const record = (): void => {
       const headers = Array.from(element.querySelectorAll<HTMLElement>('thead th[data-column-id]:not(.cdk-drag-preview)'));
 
@@ -32,15 +36,19 @@ const recordHeaderFrames = async (table: Locator): Promise<void> =>
         dragging: element.querySelector('.cdk-drag-preview') !== null
       });
 
-      if (frames.length < frameCount) requestAnimationFrame(record);
+      const lastDragFrame = frames.findLastIndex((frame) => frame.dragging);
+
+      state.done = lastDragFrame !== -1 && frames.length - 1 - lastDragFrame >= settledFrameCount;
+
+      if (!state.done) requestAnimationFrame(record);
     };
 
-    Object.assign(window, { natHeaderFrames: frames });
+    Object.assign(window, { natHeaderFrames: state });
     requestAnimationFrame(record);
-  }, HEADER_FRAME_COUNT);
+  }, SETTLED_FRAME_COUNT);
 
-const readHeaderFrames = async (page: Page): Promise<HeaderFrame[]> =>
-  page.evaluate(() => (window as unknown as { natHeaderFrames: HeaderFrame[] }).natHeaderFrames);
+const readHeaderFrames = async (page: Page): Promise<{ frames: HeaderFrame[]; done: boolean }> =>
+  page.evaluate(() => (window as unknown as { natHeaderFrames: { frames: HeaderFrame[]; done: boolean } }).natHeaderFrames);
 
 test.describe('FEATURE: Column reordering', () => {
   test.beforeEach(async ({ page }) => {
@@ -174,9 +182,9 @@ test.describe('FEATURE: Column reordering', () => {
           }
 
           await page.mouse.up();
-          await expect.poll(async () => (await readHeaderFrames(page)).length).toBe(HEADER_FRAME_COUNT);
+          await expect.poll(async () => (await readHeaderFrames(page)).done).toBe(true);
 
-          const frames = await readHeaderFrames(page);
+          const { frames } = await readHeaderFrames(page);
           const settled = frames.slice(frames.findLastIndex((frame) => frame.dragging) + 1);
 
           expect(settled.length).toBeGreaterThan(0);

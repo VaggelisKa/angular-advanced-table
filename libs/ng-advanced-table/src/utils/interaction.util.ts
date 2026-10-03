@@ -81,12 +81,14 @@ export const renderWithoutTransitions = (elements: Iterable<HTMLElement>, render
 
   for (const element of targets) element.style.transition = 'none';
 
-  render();
-
-  for (const element of targets) {
-    // Reading layout flushes styles while transitions are still off.
-    void element.offsetWidth;
-    element.style.transition = '';
+  try {
+    render();
+  } finally {
+    for (const element of targets) {
+      // Reading layout flushes styles while transitions are still off.
+      void element.offsetWidth;
+      element.style.transition = '';
+    }
   }
 };
 

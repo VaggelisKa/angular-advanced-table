@@ -17,5 +17,20 @@ describe('FEATURE: renderWithoutTransitions', () => {
         expect(elements.map((element) => element.style.transition)).toStrictEqual(['', '']);
       });
     });
+
+    describe('WHEN: the render throws', () => {
+      it('THEN: it still restores their transitions and rethrows', () => {
+        const element = document.createElement('th');
+
+        element.style.transition = 'transform 180ms ease';
+
+        expect(() =>
+          renderWithoutTransitions([element], () => {
+            throw new Error('render failed');
+          })
+        ).toThrow('render failed');
+        expect(element.style.transition).toBe('');
+      });
+    });
   });
 });
