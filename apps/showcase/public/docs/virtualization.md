@@ -57,6 +57,8 @@ Virtualization is a body-row rendering strategy, not table state. It composes wi
 - selection remains keyed by stable row id; and
 - row activation and render metrics use the real mounted TanStack rows.
 
+Scrolling reuses row views instead of rebuilding them. A row that stays in the window keeps its DOM, and a row entering the window takes over the `<tr>`, cells, and cell renderers of a row that left, with the new row's context. Write cell components and templates so everything they show derives from their inputs or context, and keep per-row UI state (an open menu, a draft value) in the row data or keyed by row id instead of in component fields. A component cell receives the new row through its inputs; it is not destroyed and created again. The focused row is never handed to another row, so keyboard focus stays on the row the reader is on.
+
 Virtualized layout uses the existing authoritative `<colgroup>` path so column widths do not shift when a different row window mounts. Provide stable, unique string row ids, or use `getRowId` when identity lives somewhere other than `row.id`.
 
 A nested `<nat-table>` or `<nat-list>` rendered inside a virtualized table's cells is never windowed by the outer table: each renderer resolves its own row-render strategy, and a nested renderer that does not opt in renders every one of its rows. Keyboard events, retained-row tracking, and focus recovery are scoped to the renderer that owns the focused cell, so navigation inside a nested grid cannot move the outer window or recover focus into a same-index nested row.

@@ -111,6 +111,8 @@ export type NatTableRenderedDataRow<TData extends RowData> = {
   readonly row: Row<TData>;
   readonly logicalIndex: number;
   readonly beforeSize: number;
+  /** Reusable view key while a strategy windows the body; see `NatTableState.bodyRenderPlan`. */
+  readonly trackKey?: string;
 };
 
 /**
@@ -123,6 +125,8 @@ export type NatTableRenderedPlaceholderRow = {
   readonly kind: 'placeholder';
   readonly logicalIndex: number;
   readonly beforeSize: number;
+  /** Reusable view key while a strategy windows the body; see `NatTableState.bodyRenderPlan`. */
+  readonly trackKey?: string;
 };
 
 /**

@@ -224,7 +224,7 @@
                          natTableBodyCellLayout, so the pinned zones run unbroken
                          through the sub-header row. The group label renders once,
                          inside the first cell; the rest stay empty. -->
-                    @for (cell of visibleCells; track cell.id; let first = $first) {
+                    @for (cell of visibleCells; track cell.column.id; let first = $first) {
                       @let columnState = columnStates[cell.column.id];
                       <td
                         [attr.data-column-id]="cell.column.id"
@@ -256,7 +256,7 @@
                 (click)="onRowClick($event, row)"
                 (keydown)="onRowKeydown($event, row)"
                 (natTableRowRendered)="onRowRendered($event)">
-                @for (cell of visibleCells; track cell.id) {
+                @for (cell of visibleCells; track cell.column.id) {
                   @let columnState = columnStates[cell.column.id]; @let cellContext = cell.getContext();
                   @let cellTone = getCellTone(cell.column, cellContext);
                   @if (columnState?.rowHeader) {
