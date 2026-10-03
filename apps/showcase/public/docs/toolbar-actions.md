@@ -6,11 +6,11 @@ Keep DOM order aligned with screen-reader and roving-keyboard order. Visual plac
 
 ## Slot Positions
 
-`natToolbarItemPosition="start" | "center" | "end"` on an item, and `natToolbarGroup="start" | "center" | "end"` on a group, pick the toolbar slot. The toolbar picks slots by the static attribute when the template compiles, so write the position as a plain attribute. A binding such as `[natToolbarItemPosition]="position()"` never moves the item: it always renders in the start slot, and development builds warn once when the bound value names another slot. To move an item at runtime, render one copy per position with `@if`.
+`natToolbarItemPosition="start" | "center" | "end"` on an item, and `natToolbarGroup="start" | "center" | "end"` on a group, pick the toolbar slot. The toolbar picks slots by the static attribute when the template compiles, so write the position as a plain attribute. A binding such as `[natToolbarItemPosition]="position()"` never moves the item: it always renders in the start slot. To move an item at runtime, render one copy per position with `@if`.
 
 ```html
 <nat-table-toolbar>
-  <button natToolbarItem="export" natToolbarItemPosition="end" type="button">Export</button>
+  <button natToolbarItem natToolbarItemPosition="end" type="button">Export</button>
 </nat-table-toolbar>
 ```
 

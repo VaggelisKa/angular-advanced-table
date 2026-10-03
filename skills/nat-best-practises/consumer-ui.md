@@ -7,7 +7,8 @@ Put product controls in the app: search, filters, bulk actions, density, refresh
 - Put controls inside `<nat-table-surface>` when they need the active table controller through dependency injection.
 - Inject the public `NatTableService` from `ng-advanced-table` in descendant controls that need table state.
 - Use `controller()?.patchState(...)` to update table slices from consumer controls.
-- Use `natToolbarItem` or `NatToolbarGroup` for controls inside `<nat-table-toolbar>`.
+- Use `natToolbarItem` or `NatToolbarGroup` for controls inside `<nat-table-toolbar>`. Positions (`natToolbarItemPosition="end"`, `natToolbarGroup="end"`) must be static attributes, never bindings.
+- A search control must call `registerSearch()` while it is alive (and `unregisterSearch()` on destroy). Until one registers, `globalFilter` does not filter rows.
 - Pass `[for]` to companion controls that support it when a control lives outside the surface or needs an explicit table controller.
 - Keep unrelated controls as ordinary Angular components with inputs and outputs.
 

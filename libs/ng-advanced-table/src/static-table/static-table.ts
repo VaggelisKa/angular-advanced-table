@@ -301,7 +301,6 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
     this.state.registerSeedEffect();
     this.state.registerSubHeaderValidationEffect();
     this.state.registerLocaleValidationEffect();
-    this.state.registerControlRegistrationWarning('nat-table-static');
 
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);

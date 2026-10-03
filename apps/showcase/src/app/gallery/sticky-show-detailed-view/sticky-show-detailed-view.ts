@@ -52,6 +52,10 @@ export class StickyShowDetailedView {
   ];
 
   public readonly tableState = signal<Partial<NatTableUserState>>({
+    pagination: {
+      pageIndex: 0,
+      pageSize: 5
+    },
     columnVisibility: {
       customer: false,
       owner: false,
@@ -64,6 +68,10 @@ export class StickyShowDetailedView {
   });
 
   public readonly detailedTableState = signal<Partial<NatTableUserState>>({
+    pagination: {
+      pageIndex: 0,
+      pageSize: 25
+    },
     columnVisibility: {
       customer: true,
       owner: true,

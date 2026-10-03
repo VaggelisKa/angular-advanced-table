@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- irreducible per-instance reactive store: a single @Injectable owns the signal graph + TanStack table instance; further splitting only relocates coupling into cross-service signal reads and Injector.get() cycles. Pure arithmetic (widths, resize math, const defaults) already extracted to utils/common. */
 import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
-import { Injectable, afterRenderEffect, computed, effect, inject, isDevMode, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, isDevMode, signal } from '@angular/core';
 
 import type {
   Column,
@@ -98,7 +98,6 @@ import {
   resolveSubHeaderValueText,
   stripNatTableSubHeaderSorting
 } from '../utils/sub-header.util';
-import { hasNatTableStateValueChanged } from '../utils/table-state-value-equality.util';
 
 // ─── Constants ───
 
@@ -1253,71 +1252,6 @@ export class NatTableState<TData extends RowData = RowData> {
         console.warn('[ng-advanced-table] subHeaderOrder is set but subHeaderColumn is not; the order has no effect.');
       }
     });
-  }
-
-  /**
-   * Dev-mode warning, once per table, for a `pagination` or `globalFilter`
-   * value the consumer supplied through `initialState` or controlled `state`
-   * while no pagination or search control is registered, so the table ignores
-   * it. Re-checked after every render that changes the state or the control
-   * registrations, so a value supplied later still warns, and a control that
-   * renders in the same pass has already registered. Each slice warns at most
-   * once. Default-equal pagination, an empty filter, and manual
-   * pagination/filtering (the consumer owns those) never warn. Must be called
-   * in the injection context.
-   */
-  public registerControlRegistrationWarning(renderer: string): void {
-    if (!isDevMode()) {
-      return;
-    }
-
-    let paginationWarned = false;
-    let globalFilterWarned = false;
-
-    afterRenderEffect({
-      read: () => {
-        paginationWarned ||= this.warnIfPaginationIgnored(renderer);
-        globalFilterWarned ||= this.warnIfGlobalFilterIgnored(renderer);
-      }
-    });
-  }
-
-  /** Returns whether it warned. */
-  private warnIfPaginationIgnored(renderer: string): boolean {
-    const pagination = this.state().pagination ?? this.initialState().pagination;
-
-    if (
-      pagination === undefined ||
-      this.enablePagination() ||
-      this.manualPagination() ||
-      !hasNatTableStateValueChanged(pagination, DEFAULT_TABLE_STATE.pagination)
-    ) {
-      return false;
-    }
-
-    console.warn(
-      `[ng-advanced-table] <${renderer}> received a pagination state, but no pagination control is registered, so ` +
-        `all rows render unpaginated. Add <nat-table-pagination>, <nat-table-pager>, or <nat-table-page-size> ` +
-        `(ng-advanced-table/components) inside the surface, or set pagination to manual mode.`
-    );
-
-    return true;
-  }
-
-  private warnIfGlobalFilterIgnored(renderer: string): boolean {
-    const globalFilter = this.state().globalFilter ?? this.initialState().globalFilter ?? '';
-
-    if (globalFilter.trim() === '' || this.enableGlobalFilter() || this.manualFiltering()) {
-      return false;
-    }
-
-    console.warn(
-      `[ng-advanced-table] <${renderer}> received a globalFilter, but no search control is registered, so rows ` +
-        `are not filtered by it. Register one with NatTableService.registerSearch() from your search control, ` +
-        `or set filtering to manual mode.`
-    );
-
-    return true;
   }
 
   /**

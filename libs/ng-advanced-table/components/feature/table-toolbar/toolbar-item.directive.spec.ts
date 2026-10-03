@@ -6,7 +6,6 @@ import { By } from '@angular/platform-browser';
 import { NatTableToolbar } from './table-toolbar';
 import { NAT_TOOLBAR_ITEM } from '../../common/toolbar.const';
 import type { NatToolbarItemPosition, NatToolbarItemRef } from '../../common/toolbar.type';
-import { NatToolbarGroup } from '../../ui/toolbar-group/toolbar-group';
 import { NatToolbarItem } from '../../ui/toolbar-item/toolbar-item.directive';
 
 @Component({
@@ -301,82 +300,6 @@ describe('FEATURE: NatToolbarItem', () => {
         expect(document.activeElement).toBe(native);
         // No bookkeeping ran on a control that is its own target.
         expect(decoy.getAttribute('tabindex')).toBe('0');
-      });
-    });
-  });
-});
-
-@Component({
-  selector: 'nat-toolbar-position-warning-host',
-  imports: [NatTableToolbar, NatToolbarGroup, NatToolbarItem],
-  template: `
-    <nat-table-toolbar>
-      <button [natToolbarItemPosition]="boundPosition()" data-testid="bound-item" natToolbarItem="bound" type="button">Bound</button>
-      <button data-testid="static-end-item" natToolbarItem="static" natToolbarItemPosition="end" type="button">Static end</button>
-      <div accessibleName="Grouped" natToolbarGroup="end">
-        <button [natToolbarItemPosition]="groupedPosition()" data-testid="grouped-item" natToolbarItem="grouped" type="button">
-          Grouped
-        </button>
-      </div>
-    </nat-table-toolbar>
-  `
-})
-class PositionWarningHost {
-  public readonly boundPosition = signal<NatToolbarItemPosition>('start');
-  protected readonly groupedPosition = signal<NatToolbarItemPosition>('center');
-}
-
-describe('FEATURE: NatToolbarItem position projection warning', () => {
-  let fixture: ComponentFixture<PositionWarningHost>;
-  let warnings: string[];
-
-  const positionWarnings = (): string[] => warnings.filter((message) => message.includes('natToolbarItemPosition='));
-
-  const render = async (position: NatToolbarItemPosition): Promise<void> => {
-    fixture = TestBed.createComponent(PositionWarningHost);
-    fixture.componentInstance.boundPosition.set(position);
-    await fixture.whenStable();
-  };
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()]
-    });
-
-    warnings = [];
-    vi.spyOn(console, 'warn').mockImplementation((message: unknown) => {
-      warnings.push(String(message));
-    });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  describe('GIVEN: a directly projected item with a bound position naming another slot', () => {
-    describe('WHEN: the toolbar renders and the bound position changes again', () => {
-      it('THEN: it warns once that the item renders in the start slot', async () => {
-        await render('center');
-
-        fixture.componentInstance.boundPosition.set('end');
-        await fixture.whenStable();
-
-        expect(positionWarnings()).toStrictEqual([
-          '[ng-advanced-table/components] natToolbarItemPosition="center" on <button>: <nat-table-toolbar> projects items ' +
-            'by the static attribute, so this item renders in the start slot. Write the position as a static attribute ' +
-            '(natToolbarItemPosition="center"), not a binding, or render one item per position with @if.'
-        ]);
-      });
-    });
-  });
-
-  describe('GIVEN: a bound start position, a static end attribute, and a bound position inside a group', () => {
-    describe('WHEN: the toolbar renders', () => {
-      it('THEN: it does not warn, because each item lands where its position says or follows its group', async () => {
-        await render('start');
-
-        expect(positionWarnings()).toStrictEqual([]);
-        expect((fixture.nativeElement as HTMLElement).querySelector('[data-testid="grouped-item"]')).not.toBeNull();
       });
     });
   });

@@ -18,7 +18,7 @@ The table can own all of its state, or your app can control only the slices it c
 
 The `pagination` slice always exists in emitted state. Pagination affects rendered rows only when pagination is enabled by a pagination companion control or a table setup that registers pagination.
 
-`globalFilter` works the same way: it filters rows only while a search control is registered with `NatTableService.registerSearch()`. Without one, the table ignores the filter for rows but keeps your value in emitted state, so a `[(state)]` binding never has its `globalFilter` cleared. In development builds, the table warns once after its first render when you pass a non-default `pagination` or a non-empty `globalFilter` that no registered control will apply. Manual pagination and manual filtering never warn, because your app owns those slices.
+`globalFilter` works the same way: it filters rows only while a search control is registered with `NatTableService.registerSearch()`. Without one, the table ignores the filter for rows but keeps your value in emitted state, so a `[(state)]` binding never has its `globalFilter` cleared.
 
 ## Start Uncontrolled
 
