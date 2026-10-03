@@ -1,7 +1,46 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { loadDocsExamplePreview } from '../support/docs-example';
+
+type HeaderFrame = { order: string; shifted: boolean; dragging: boolean };
+
+const HEADER_FRAME_COUNT = 120;
+
+/** Bounding box of `locator`, throwing if it is not laid out. */
+const boxOf = async (locator: Locator): Promise<{ x: number; y: number; width: number; height: number }> => {
+  const box = await locator.boundingBox();
+
+  if (!box) throw new Error('Locator has no bounding box.');
+
+  return box;
+};
+
+/**
+ * Records, once per animation frame, the leaf header order, whether any header
+ * is still offset by a transform, and whether a drag preview is showing.
+ */
+const recordHeaderFrames = async (table: Locator): Promise<void> =>
+  table.evaluate((element, frameCount) => {
+    const frames: HeaderFrame[] = [];
+    const record = (): void => {
+      const headers = Array.from(element.querySelectorAll<HTMLElement>('thead th[data-column-id]:not(.cdk-drag-preview)'));
+
+      frames.push({
+        order: headers.map((header) => header.dataset['columnId']).join(','),
+        shifted: headers.some((header) => getComputedStyle(header).transform !== 'none'),
+        dragging: element.querySelector('.cdk-drag-preview') !== null
+      });
+
+      if (frames.length < frameCount) requestAnimationFrame(record);
+    };
+
+    Object.assign(window, { natHeaderFrames: frames });
+    requestAnimationFrame(record);
+  }, HEADER_FRAME_COUNT);
+
+const readHeaderFrames = async (page: Page): Promise<HeaderFrame[]> =>
+  page.evaluate(() => (window as unknown as { natHeaderFrames: HeaderFrame[] }).natHeaderFrames);
 
 test.describe('FEATURE: Column reordering', () => {
   test.beforeEach(async ({ page }) => {
@@ -108,6 +147,40 @@ test.describe('FEATURE: Column reordering', () => {
           await expect(page.getByTestId('reordering-demo-table').getByTestId('nat-table-live-region')).toContainText(
             'Category column moved to position 3 of 4, unpinned.'
           );
+        });
+      });
+    });
+
+    test.describe('WHEN: a column header is dragged past its neighbor and dropped', () => {
+      test('THEN: it settles the headers in their new order on the first frame after the drop', async ({ page }) => {
+        const reorderingTable = page.getByTestId('reordering-demo-table');
+
+        await test.step('THEN: the demo renders with the default column order', async () => {
+          await expect(reorderingTable).toBeVisible();
+          await expect.poll(async () => headerColumnIds(page)).toEqual(['name', 'category', 'status', 'value']);
+        });
+
+        await test.step('THEN: no header shows the old order or slides after the drop', async () => {
+          const from = await boxOf(reorderingTable.getByTestId('nat-table-header-category'));
+          const to = await boxOf(reorderingTable.getByTestId('nat-table-header-status'));
+          const y = from.y + from.height / 2;
+
+          await recordHeaderFrames(reorderingTable);
+          await page.mouse.move(from.x + from.width / 2, y);
+          await page.mouse.down();
+
+          for (let step = 1; step <= 20; step += 1) {
+            await page.mouse.move(from.x + from.width / 2 + (step * (to.x + to.width * 0.8 - from.x - from.width / 2)) / 20, y);
+          }
+
+          await page.mouse.up();
+          await expect.poll(async () => (await readHeaderFrames(page)).length).toBe(HEADER_FRAME_COUNT);
+
+          const frames = await readHeaderFrames(page);
+          const settled = frames.slice(frames.findLastIndex((frame) => frame.dragging) + 1);
+
+          expect(settled.length).toBeGreaterThan(0);
+          expect(settled).toEqual(settled.map(() => ({ order: 'name,status,category,value', shifted: false, dragging: false })));
         });
       });
     });

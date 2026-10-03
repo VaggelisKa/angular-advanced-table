@@ -1,5 +1,5 @@
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Injectable, Injector, afterNextRender, inject } from '@angular/core';
+import { ApplicationRef, Injectable, Injector, afterNextRender, inject } from '@angular/core';
 
 import type { Column, HeaderGroup, RowData } from '@tanstack/angular-table';
 
@@ -9,7 +9,12 @@ import { NatTableState } from '../domain-logic/table.state';
 import { readColumnEntry } from '../utils/column-def.util';
 import { getHeaderRowColumnIds } from '../utils/column-label.util';
 import { getColumnZone, moveItemInArrayCopy } from '../utils/column-order.util';
-import { isColumnReorderable, resolveDraggedColumnId, scrollElementHorizontallyIntoView } from '../utils/interaction.util';
+import {
+  isColumnReorderable,
+  renderWithoutTransitions,
+  resolveDraggedColumnId,
+  scrollElementHorizontallyIntoView
+} from '../utils/interaction.util';
 
 /**
  * Per-table service that manages column-reorder logic and scroll-into-view behavior.
@@ -24,6 +29,7 @@ import { isColumnReorderable, resolveDraggedColumnId, scrollElementHorizontallyI
 @Injectable()
 export class NatTableReorderService<TData extends RowData = RowData> {
   private readonly injector = inject(Injector);
+  private readonly appRef = inject(ApplicationRef);
   private readonly state = inject<NatTableState<TData>>(NatTableState);
   private readonly a11yService = inject<NatTableA11yService<TData>>(NatTableA11yService);
 
@@ -84,6 +90,10 @@ export class NatTableReorderService<TData extends RowData = RowData> {
 
       this.a11yService.announceColumnReorder(result.movingColumnId, result.zone, result.nextVisibleZoneOrder);
       this.scrollHeaderIntoView(movingColumnId);
+      // CDK clears the shifted headers' transforms (still under their transition)
+      // and leaves the dragged header in its old slot until change detection
+      // runs, so render the new order now or the row flashes and slides back.
+      renderWithoutTransitions(this.getHeaderElements(), () => this.appRef.tick());
     } finally {
       this.restoreDraggedHeaderPinnedOffset(event);
     }
@@ -219,16 +229,12 @@ export class NatTableReorderService<TData extends RowData = RowData> {
     );
   }
 
+  private getHeaderElements(): readonly HTMLElement[] {
+    return Array.from(this.state.tableRegionRef()?.nativeElement.querySelectorAll<HTMLElement>('thead th[data-column-id]') ?? []);
+  }
+
   private getHeaderElement(columnId: string): HTMLElement | null {
-    const tableRegion = this.state.tableRegionRef()?.nativeElement;
-
-    if (!tableRegion) {
-      return null;
-    }
-
-    const headers = tableRegion.querySelectorAll<HTMLElement>('thead th[data-column-id]');
-
-    for (const header of headers) {
+    for (const header of this.getHeaderElements()) {
       if (header.getAttribute('data-column-id') === columnId) {
         return header;
       }
