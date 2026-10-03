@@ -94,6 +94,19 @@ describe('FEATURE: NatTable global filter utility', () => {
       });
     });
 
+    describe('WHEN: an object filter value is mutated in place between calls', () => {
+      it('THEN: it matches against the current string form, not a memoized one', () => {
+        const row = buildRow('row-1', { name: 'Beta' });
+        const filterValue = ['alpha'];
+
+        expect(genericGlobalFilter(row, 'name', filterValue, ignoreMeta)).toBe(false);
+
+        filterValue[0] = 'beta';
+
+        expect(genericGlobalFilter(row, 'name', filterValue, ignoreMeta)).toBe(true);
+      });
+    });
+
     describe('WHEN: the column value is an array', () => {
       it('THEN: it still matches nested items', () => {
         const row = buildRow('row-1', { tags: ['red', ['deep blue']] });
