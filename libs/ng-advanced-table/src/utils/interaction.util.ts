@@ -72,6 +72,26 @@ export const originatesFromInteractiveDescendant = (event: Event): boolean => {
   return guarded !== currentTarget && currentTarget.contains(guarded);
 };
 
+/**
+ * Runs `render` with CSS transitions off on `elements`, then flushes styles
+ * before restoring them, so the changes `render` makes apply without animating.
+ */
+export const renderWithoutTransitions = (elements: Iterable<HTMLElement>, render: () => void): void => {
+  const targets = Array.from(elements);
+
+  for (const element of targets) element.style.transition = 'none';
+
+  try {
+    render();
+  } finally {
+    for (const element of targets) {
+      // Reading layout flushes styles while transitions are still off.
+      void element.offsetWidth;
+      element.style.transition = '';
+    }
+  }
+};
+
 /** Scrolls `element` just into view horizontally within `scrollContainer`. */
 export const scrollElementHorizontallyIntoView = (scrollContainer: HTMLElement, element: HTMLElement): void => {
   const containerRect = scrollContainer.getBoundingClientRect();
