@@ -521,7 +521,17 @@ describe('FEATURE: NatTable', () => {
     describe('WHEN: a pointer resize drag moves the column edge', () => {
       it('THEN: it moves the guide with the pointer and removes it on release', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
-        await recreateHost({ columns: resizableColumns });
+        let cellRenders = 0;
+        const countedColumns = resizableColumns.map((column) => ({
+          ...column,
+          cell: (): string => {
+            cellRenders += 1;
+
+            return 'cell';
+          }
+        }));
+
+        await recreateHost({ columns: countedColumns });
         fixture.detectChanges();
         await fixture.whenStable();
         fixture.detectChanges();
@@ -537,6 +547,9 @@ describe('FEATURE: NatTable', () => {
 
         const visibleColumns = store.visibleColumns();
         const columnRenderStates = store.columnRenderStates();
+        const cellRendersBeforeMove = cellRenders;
+
+        expect(cellRendersBeforeMove).toBeGreaterThan(0);
 
         document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 112 }));
         fixture.detectChanges();
@@ -549,6 +562,8 @@ describe('FEATURE: NatTable', () => {
         expect(guide()?.style.transform).toBe('translateX(12px)');
         expect(store.visibleColumns()).toBe(visibleColumns);
         expect(store.columnRenderStates()).toBe(columnRenderStates);
+        // Moving the guide must not re-check the body: no cell renders again.
+        expect(cellRenders).toBe(cellRendersBeforeMove);
 
         // when:
         document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 112 }));
