@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- irreducible per-instance reactive store: a single @Injectable owns the signal graph + TanStack table instance; further splitting only relocates coupling into cross-service signal reads and Injector.get() cycles. Pure arithmetic (widths, resize math, const defaults) already extracted to utils/common. */
 import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
-import { Injectable, computed, effect, inject, isDevMode, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, isDevMode, linkedSignal, signal } from '@angular/core';
 
 import type {
   Column,
@@ -44,6 +44,7 @@ import type {
   TableColumnRenderState
 } from '../common/column-render.type';
 import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeholder.type';
+import type { NatTableBodyRenderPlan } from '../common/row-render-strategy.type';
 import type { NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import { DEFAULT_TABLE_STATE } from '../common/table-state.const';
@@ -57,6 +58,7 @@ import {
   getColumnResizeBounds
 } from '../resize/utils/column-resize.util';
 import { buildNatTableBodyRenderPlan } from '../utils/body-render-plan.util';
+import { assignNatTableBodyPlanTrackKeys } from '../utils/body-row-slot.util';
 import {
   getColumnDefLeafIds,
   getUserColumnSizing,
@@ -412,7 +414,19 @@ export class NatTableState<TData extends RowData = RowData> {
 
   public readonly headerGroups = computed(() => this.table.getHeaderGroups());
   public readonly bodyRows = computed(() => this.table.getRowModel().rows);
-  public readonly bodyRenderPlan = computed(() => buildNatTableBodyRenderPlan(this.bodyRows(), this.rowRenderStrategy()));
+  /**
+   * Body plan for the template. While a row-render strategy windows the body,
+   * every row carries the track key of a reusable view slot: rows that stay
+   * mounted keep their slot (the focused row included), and rows entering the
+   * window take over the views of rows that left, so a scroll frame updates a
+   * few row views in place instead of destroying and rebuilding them and every
+   * cell inside. Without a strategy rows track by their own identity.
+   */
+  public readonly bodyRenderPlan = linkedSignal<NatTableBodyRenderPlan<TData>, NatTableBodyRenderPlan<TData>>({
+    source: () => buildNatTableBodyRenderPlan(this.bodyRows(), this.rowRenderStrategy()),
+    computation: (plan, previous) => (this.rowRenderStrategy() ? assignNatTableBodyPlanTrackKeys(plan, previous?.value) : plan)
+  }).asReadonly();
+
   public readonly allLeafColumns = computed(() => this.table.getAllLeafColumns());
   public readonly hasResizableColumns = computed(() =>
     this.allLeafColumns().some((column) => isColumnResizable(column, this.resizingEnabled()))

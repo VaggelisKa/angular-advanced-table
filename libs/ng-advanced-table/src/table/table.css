@@ -351,6 +351,14 @@ tbody .data-row:last-child .data-cell {
   max-height: var(--sys-nat-table-virtual-row-height);
 }
 
+/* Windowed rows reuse their views: a row node leaving the top is moved to the
+   bottom with new content. Chromium's scroll anchoring would pick such a node
+   as the anchor and shift scrollTop to follow it, undoing programmatic scrolls,
+   so the body opts out of anchor selection. Safari has no scroll anchoring. */
+.data-table.is-virtualized > tbody {
+  overflow-anchor: none;
+}
+
 :is(.virtual-spacer-row, .virtual-spacer-cell) {
   padding: 0;
   line-height: 0;
