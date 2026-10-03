@@ -537,7 +537,7 @@ describe('FEATURE: NatTable', () => {
         fixture.detectChanges();
 
         const store = getInternalStore(fixture);
-        const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
+        const regionHandle = queryRequired<HTMLElement>(fixture, '[data-testid="nat-table-resize-handle-region"]');
         const guide = (): HTMLElement | null => query<HTMLElement>(fixture, '[data-testid="nat-table-resize-guide"]');
 
         // when:
