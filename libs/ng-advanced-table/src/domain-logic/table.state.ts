@@ -20,13 +20,7 @@ import type {
   Updater,
   VisibilityState
 } from '@tanstack/angular-table';
-import {
-  createAngularTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel
-} from '@tanstack/angular-table';
+import { createAngularTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel } from '@tanstack/angular-table';
 
 import {
   NAT_EN_LOCALE_ID,
@@ -88,6 +82,7 @@ import { computeFillFlexWidths, computeIntrinsicWidths } from '../utils/column-w
 import { genericGlobalFilter } from '../utils/global-filter.util';
 import { isColumnReorderable, isColumnResizable } from '../utils/interaction.util';
 import { normalizeDataStatus, normalizeRowSelection, resolveDefaultRowId } from '../utils/row-state.util';
+import { natGetSortedRowModel } from '../utils/sorted-row-model.util';
 import { normalizeSortingState } from '../utils/sorting.util';
 import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
 import {
@@ -388,7 +383,7 @@ export class NatTableState<TData extends RowData = RowData> {
     getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
-    getSortedRowModel: this.manualSorting() ? undefined : getSortedRowModel(),
+    getSortedRowModel: this.manualSorting() ? undefined : natGetSortedRowModel(),
     getPaginationRowModel: !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
     onSortingChange: (updater) => this.applySortingChange(updater),
     onGlobalFilterChange: (updater: Updater<string>) => this.updateState({ globalFilter: updater, pagination: firstPageUpdater }),
