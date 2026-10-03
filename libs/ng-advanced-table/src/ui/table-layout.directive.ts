@@ -1,4 +1,5 @@
-import { Directive, computed, input } from '@angular/core';
+import type { Signal } from '@angular/core';
+import { Directive, ElementRef, Renderer2, afterRenderEffect, inject, input } from '@angular/core';
 
 import type { TableColumnRenderState } from '../common/column-render.type';
 
@@ -80,20 +81,41 @@ export class NatTablePxHeight {
 }
 
 /**
- * Host-styles the column-resize drag guide: its left anchor plus the live
- * `translateX` that follows the pointer during a drag.
+ * Positions the column-resize drag guide: its left anchor plus the live
+ * `translateX` that follows the pointer during a drag, hidden while the
+ * geometry is `null`.
+ *
+ * Takes the geometry *signal* and applies it from an `afterRenderEffect`, so a
+ * pointer move only restyles this element. Reading the geometry in the table
+ * template (or in host bindings, which run in the parent view) would re-check
+ * every rendered row and cell on every pointer move.
  */
 @Directive({
-  selector: '[natTableResizeGuide]',
-  host: {
-    '[style.left.px]': 'guide().left',
-    '[style.transform]': 'transform()'
-  }
+  selector: '[natTableResizeGuide]'
 })
 export class NatTableResizeGuide {
-  public readonly guide = input.required<NatTableResizeGuideGeometry>({
+  public readonly guide = input.required<Signal<NatTableResizeGuideGeometry | null>>({
     alias: 'natTableResizeGuide'
   });
 
-  protected readonly transform = computed(() => `translateX(${this.guide().offset}px)`);
+  public constructor() {
+    const element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const renderer = inject(Renderer2);
+
+    afterRenderEffect({
+      write: () => {
+        const guide = this.guide()();
+
+        if (guide === null) {
+          renderer.setAttribute(element, 'hidden', '');
+
+          return;
+        }
+
+        renderer.removeAttribute(element, 'hidden');
+        renderer.setStyle(element, 'left', `${guide.left}px`);
+        renderer.setStyle(element, 'transform', `translateX(${guide.offset}px)`);
+      }
+    });
+  }
 }

@@ -349,8 +349,13 @@
     </tbody>
   </table>
 
-  @if (columnResizeGuide(); as guide) {
-    <div [natTableResizeGuide]="guide" aria-hidden="true" class="column-resize-guide"></div>
+  @if (isColumnResizing()) {
+    <div
+      [natTableResizeGuide]="columnResizeGuide"
+      aria-hidden="true"
+      class="column-resize-guide"
+      data-testid="nat-table-resize-guide"
+      hidden></div>
   }
 
   <p aria-atomic="true" aria-live="polite" class="sr-only" data-testid="nat-table-live-region">{{ liveMessage() }}</p>

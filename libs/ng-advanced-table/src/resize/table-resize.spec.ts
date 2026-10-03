@@ -518,6 +518,49 @@ describe('FEATURE: NatTable', () => {
       });
     });
 
+    describe('WHEN: a pointer resize drag moves the column edge', () => {
+      it('THEN: it moves the guide with the pointer and removes it on release', async () => {
+        // sequential flow kept whole — splitting re-runs setup and risks ordering
+        await recreateHost({ columns: resizableColumns });
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const store = getInternalStore(fixture);
+        const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
+        const guide = (): HTMLElement | null => query<HTMLElement>(fixture, '[data-testid="nat-table-resize-guide"]');
+
+        // when:
+        regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100 }));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const visibleColumns = store.visibleColumns();
+        const columnRenderStates = store.columnRenderStates();
+
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 112 }));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // then:
+        // The guide is positioned from the geometry signal; the drag delta alone
+        // leaves the column list and render states untouched.
+        expect(guide()?.hidden).toBe(false);
+        expect(guide()?.style.transform).toBe('translateX(12px)');
+        expect(store.visibleColumns()).toBe(visibleColumns);
+        expect(store.columnRenderStates()).toBe(columnRenderStates);
+
+        // when:
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 112 }));
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        // then:
+        expect(guide()).toBeNull();
+      });
+    });
+
     describe('WHEN: a fill-flex column is resized from the keyboard', () => {
       it('THEN: it keeps the table filled in fill flex by reflowing the other columns on resize', async () => {
         // sequential flow kept whole — splitting re-runs setup and risks ordering
