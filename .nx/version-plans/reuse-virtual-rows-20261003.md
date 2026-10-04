@@ -1,0 +1,5 @@
+---
+ng-advanced-table: minor
+---
+
+**Breaking:** Virtualized tables now reuse row views while scrolling instead of destroying the rows that leave the window and building new ones for the rows that enter. A row entering the window takes over the `<tr>`, cells, and cell renderers of a row that left, and a component cell receives the new row through its inputs instead of being created again, so cell components and templates must derive everything they show from their inputs or context and keep per-row UI state in the row data or keyed by row id. Pass the same component input keys for every row: an input a row leaves out becomes `undefined` on the reused component instead of its default. Rows that stay mounted, including the focused row, keep their DOM nodes and are never handed to another row. Scroll frames on a 10,000 × 20 virtualized table drop from about 33 ms to 17 ms (60 fps) in either direction, and from about 50–67 ms to 33 ms on 100,000 × 40 with selection and pinned columns. Non-virtualized tables are unchanged.
