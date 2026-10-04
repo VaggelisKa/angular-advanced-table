@@ -67,6 +67,10 @@ const bodyRows = (fixture: ComponentFixture<MovableRowWindowHost>): HTMLTableRow
   ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLTableRowElement>('[data-testid="nat-table-row"]')
 ];
 
+const bodyCells = (fixture: ComponentFixture<MovableRowWindowHost>, columnId: string): HTMLElement[] => [
+  ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(`[data-testid="nat-table-cell-${columnId}"]`)
+];
+
 const rowIdsOf = (indexes: readonly number[]): string[] => indexes.map((index) => `row-${index}`);
 
 /** Row nodes removed from the body while `render` runs, including moves. */
@@ -74,7 +78,9 @@ const removedRowsDuring = async (fixture: ComponentFixture<MovableRowWindowHost>
   const removedNodes: Node[] = [];
   const observer = new MutationObserver((records) => records.forEach((record) => removedNodes.push(...record.removedNodes)));
 
-  observer.observe((fixture.nativeElement as HTMLElement).querySelector('tbody') as HTMLElement, { childList: true });
+  observer.observe((fixture.nativeElement as HTMLElement).querySelector('[data-testid="nat-table-body"]') as HTMLElement, {
+    childList: true
+  });
   await render();
   removedNodes.push(...observer.takeRecords().flatMap((record) => [...record.removedNodes]));
   observer.disconnect();
@@ -92,6 +98,7 @@ describe('FEATURE: windowed body row reuse', () => {
 
   beforeEach(async () => {
     nameCells.length = 0;
+    windowItems.set([]);
     await TestBed.configureTestingModule({
       imports: [MovableRowWindowHost],
       providers: [provideZonelessChangeDetection()]
@@ -106,7 +113,7 @@ describe('FEATURE: windowed body row reuse', () => {
     describe('WHEN: the window moves down by two rows', () => {
       it('THEN: it reuses the row and cell nodes of the rows that left for the rows that entered', async () => {
         const rowsBefore = bodyRows(fixture);
-        const cellsBefore = new Set((fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr.data-row td'));
+        const cellsBefore = new Set([...bodyCells(fixture, 'name'), ...bodyCells(fixture, 'id')]);
 
         await renderWindow(fixture, [2, 3, 4, 5]);
 
@@ -114,15 +121,8 @@ describe('FEATURE: windowed body row reuse', () => {
 
         expect(rowsAfter.map((row) => row.dataset['rowId'])).toStrictEqual(['row-2', 'row-3', 'row-4', 'row-5']);
         expect(rowsAfter.every((row) => rowsBefore.includes(row))).toBe(true);
-        expect(
-          [...(fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr.data-row td')].every((cell) => cellsBefore.has(cell))
-        ).toBe(true);
-        expect(rowsAfter.map((row) => row.querySelector('[data-column-id="id"]')?.textContent.trim())).toStrictEqual([
-          'row-2',
-          'row-3',
-          'row-4',
-          'row-5'
-        ]);
+        expect([...bodyCells(fixture, 'name'), ...bodyCells(fixture, 'id')].every((cell) => cellsBefore.has(cell))).toBe(true);
+        expect(bodyCells(fixture, 'id').map((cell) => cell.textContent.trim())).toStrictEqual(['row-2', 'row-3', 'row-4', 'row-5']);
       });
     });
 
@@ -182,22 +182,17 @@ describe('FEATURE: windowed body row reuse', () => {
       });
     });
 
-    describe('WHEN: rows enter before a row that stays mounted', () => {
-      it('THEN: it never detaches the row that stays', async () => {
-        await renderWindow(fixture, [3, 4, 5, 6]);
+    describe('WHEN: the window moves past a focused row that stays mounted', () => {
+      it('THEN: it never detaches the focused row', async () => {
+        const focusedRow = bodyRows(fixture)[2];
 
-        const keptRow = bodyRows(fixture).find((row) => row.dataset['rowId'] === 'row-5');
-        const removedNodes: Node[] = [];
-        const observer = new MutationObserver((records) => records.forEach((record) => removedNodes.push(...record.removedNodes)));
+        // Handing the freed slots out first-come would give row-4 the slot freed
+        // before row-2, which makes `@for` detach row-2 to reach it.
+        const removedNodes = await removedRowsDuring(fixture, async () => renderWindow(fixture, [2, 4, 5, 6]));
 
-        observer.observe(keptRow?.parentElement as HTMLElement, { childList: true });
-        await renderWindow(fixture, [0, 1, 2, 5]);
-        removedNodes.push(...observer.takeRecords().flatMap((record) => [...record.removedNodes]));
-        observer.disconnect();
-
-        expect(bodyRows(fixture).map((row) => row.dataset['rowId'])).toStrictEqual(['row-0', 'row-1', 'row-2', 'row-5']);
-        expect(bodyRows(fixture).at(-1)).toBe(keptRow);
-        expect(removedNodes).not.toContain(keptRow);
+        expect(bodyRows(fixture).map((row) => row.dataset['rowId'])).toStrictEqual(rowIdsOf([2, 4, 5, 6]));
+        expect(bodyRows(fixture)[0]).toBe(focusedRow);
+        expect(removedNodes).not.toContain(focusedRow);
       });
     });
   });

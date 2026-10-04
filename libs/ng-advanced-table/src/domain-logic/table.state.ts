@@ -1327,8 +1327,8 @@ export class NatTableState<TData extends RowData = RowData> {
 
       const rows = this.bodyRows();
 
-      // Tracked, not read: the plan is a plain computed, so a moved window
-      // hands out a new object and restamps the clock below.
+      // Tracked, not read: a moved window hands out a new plan object and
+      // restamps the clock below.
       this.bodyRenderPlan();
 
       this.renderCycleStartedAt.set(performance.now());

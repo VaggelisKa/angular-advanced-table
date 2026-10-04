@@ -42,7 +42,7 @@ describe('FEATURE: body row view slots', () => {
     describe('WHEN: more rows enter before it than left before it', () => {
       it('THEN: it never hands an entering row a slot from after the kept row', () => {
         // r5 stays mounted (a focused row). r6's slot (3) comes after it, so
-        // reusing it for a row placed before r5 would make Angular detach r5.
+        // rows placed before r5 leave it alone and take a new slot instead.
         const previous = asPrevious(['r3', 'r4', 'r5', 'r6'], [0, 1, 2, 3]);
 
         expect(slotsOf(['r0', 'r1', 'r2', 'r5'], previous)).toStrictEqual([0, 1, 4, 2]);
