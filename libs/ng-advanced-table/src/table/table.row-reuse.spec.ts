@@ -195,5 +195,20 @@ describe('FEATURE: windowed body row reuse', () => {
         expect(removedNodes).not.toContain(focusedRow);
       });
     });
+
+    describe('WHEN: the window moves up past the one row that stays mounted', () => {
+      it('THEN: it never detaches that row', async () => {
+        await renderWindow(fixture, [5, 6, 7, 8]);
+        const keptRow = bodyRows(fixture)[0];
+
+        // Freed slots handed out first-come, or the bottom slots borrowed last
+        // first, would make `@for` detach or swap row-5 to put rows above it.
+        const removedNodes = await removedRowsDuring(fixture, async () => renderWindow(fixture, [2, 3, 4, 5]));
+
+        expect(bodyRows(fixture).map((row) => row.dataset['rowId'])).toStrictEqual(rowIdsOf([2, 3, 4, 5]));
+        expect(bodyRows(fixture).at(-1)).toBe(keptRow);
+        expect(removedNodes).not.toContain(keptRow);
+      });
+    });
   });
 });
