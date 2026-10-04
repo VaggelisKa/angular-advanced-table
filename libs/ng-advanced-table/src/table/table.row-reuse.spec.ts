@@ -1,8 +1,9 @@
-import { Component, DestroyRef, Directive, inject, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, DestroyRef, Directive, inject, input, provideZonelessChangeDetection, signal } from '@angular/core';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
 import type { ColumnDef } from '@tanstack/angular-table';
+import { flexRenderComponent } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
 import type { NatTableRowRenderStrategy, NatTableVirtualItem } from '../common/row-render-strategy.type';
@@ -30,6 +31,20 @@ class TestMovableRowWindow {
   }
 }
 
+const nameCells: TestNameCell[] = [];
+
+@Component({
+  selector: 'test-name-cell',
+  template: `<span data-testid="test-name-cell">{{ value() }}</span>`
+})
+class TestNameCell {
+  public readonly value = input.required<string>();
+
+  public constructor() {
+    nameCells.push(this);
+  }
+}
+
 @Component({
   selector: 'test-movable-row-window-host',
   imports: [NatTable, TestMovableRowWindow],
@@ -39,7 +54,11 @@ class TestMovableRowWindow {
 class MovableRowWindowHost {
   protected readonly rows: TestRow[] = Array.from({ length: 20 }, (_, index) => ({ id: `row-${index}`, name: `Row ${index}` }));
   protected readonly columns: ColumnDef<TestRow, unknown>[] = [
-    { accessorKey: 'name', header: 'Name' },
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: (info) => flexRenderComponent(TestNameCell, { inputs: { value: info.getValue<string>() } })
+    },
     { accessorKey: 'id', header: 'Id' }
   ];
 }
@@ -72,6 +91,7 @@ describe('FEATURE: windowed body row reuse', () => {
   let fixture: ComponentFixture<MovableRowWindowHost>;
 
   beforeEach(async () => {
+    nameCells.length = 0;
     await TestBed.configureTestingModule({
       imports: [MovableRowWindowHost],
       providers: [provideZonelessChangeDetection()]
@@ -103,6 +123,21 @@ describe('FEATURE: windowed body row reuse', () => {
           'row-4',
           'row-5'
         ]);
+      });
+    });
+
+    describe('WHEN: the window moves down past rows rendered by a component cell', () => {
+      it('THEN: it hands the entering rows to the existing component instances through their inputs', async () => {
+        const instancesBefore = [...nameCells];
+
+        await renderWindow(fixture, [2, 3, 4, 5]);
+
+        expect(nameCells).toStrictEqual(instancesBefore);
+        expect(
+          [...(fixture.nativeElement as HTMLElement).querySelectorAll('[data-testid="test-name-cell"]')].map((cell) =>
+            cell.textContent.trim()
+          )
+        ).toStrictEqual(['Row 2', 'Row 3', 'Row 4', 'Row 5']);
       });
     });
 
