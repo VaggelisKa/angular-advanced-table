@@ -2,6 +2,8 @@
 
 Use row virtualization when a client-side table contains thousands of rows and rendering every row would create unnecessary DOM and change-detection work. Prefer pagination when users work naturally in pages, when the data is remote, or when a smaller working set is easier to understand.
 
+The cost of rendering every row grows with the number of rendered cells, not just rows. A sort reorders every row, so the browser lays out every cell again and each grid cell updates its row position: on a fully rendered 1,000-row × 20-column table (20,000 cells) a single sort takes over a second in Chromium, while a virtualized table only redraws the rows in view. Reach for virtualization or pagination once a table renders more than a few thousand cells.
+
 Virtualization changes rendering only. Sorting, filtering, selection, pagination, export, column layout, and the TanStack row model continue to describe the complete logical dataset.
 
 ## Install

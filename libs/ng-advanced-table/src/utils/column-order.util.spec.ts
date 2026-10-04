@@ -4,6 +4,7 @@ import {
   accumulatePinnedOffsets,
   getColumnMoveTargetIndex,
   getColumnZone,
+  hasSameColumnPinning,
   hasSameStringOrder,
   moveItemInArrayCopy,
   normalizeColumnOrder,
@@ -217,6 +218,21 @@ describe('FEATURE: Column order utilities', () => {
 
     it('THEN: it returns true when both arrays are empty', () => {
       expect(hasSameStringOrder([], [])).toBe(true);
+    });
+  });
+
+  describe('GIVEN: hasSameColumnPinning', () => {
+    it('THEN: it returns true for distinct objects holding the same zones in the same order', () => {
+      expect(hasSameColumnPinning({ left: ['a'], right: ['b', 'c'] }, { left: ['a'], right: ['b', 'c'] })).toBe(true);
+    });
+
+    it('THEN: it treats a missing zone as an empty one', () => {
+      expect(hasSameColumnPinning({ left: ['a'] }, { left: ['a'], right: [] })).toBe(true);
+    });
+
+    it('THEN: it returns false when a zone differs in order or membership', () => {
+      expect(hasSameColumnPinning({ left: ['a', 'b'], right: [] }, { left: ['b', 'a'], right: [] })).toBe(false);
+      expect(hasSameColumnPinning({ left: ['a'], right: [] }, { left: [], right: ['a'] })).toBe(false);
     });
   });
 

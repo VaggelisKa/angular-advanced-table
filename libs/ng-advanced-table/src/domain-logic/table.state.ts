@@ -68,6 +68,7 @@ import {
   accumulatePinnedOffsets,
   getColumnMoveTargetIndex,
   getColumnZone,
+  hasSameColumnPinning,
   hasSameStringOrder,
   moveItemInArrayCopy,
   normalizeColumnOrder,
@@ -268,18 +269,29 @@ export class NatTableState<TData extends RowData = RowData> {
   // User-facing order/pinning retain ids unknown to this renderer's columns, so
   // shared surface state survives a renderer swap (e.g. table <-> list with
   // different column sets). Only the TanStack-facing state below filters them.
-  private readonly resolvedColumnOrder = computed(() =>
-    retainColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds())
+  // All four keep their previous array while the ids are unchanged: they rerun
+  // on every `state()` write (a sort, a selection toggle), and TanStack memoizes
+  // each row's cells on these arrays by reference, so a fresh-but-equal array
+  // makes every rendered row rebuild every cell and re-render its content.
+  private readonly resolvedColumnOrder = computed(
+    () => retainColumnOrder(this.state().columnOrder ?? this.internalColumnOrder(), this.allLeafColumnIds()),
+    { equal: hasSameStringOrder }
   );
 
-  private readonly resolvedColumnPinning = computed(() =>
-    retainColumnPinning(this.state().columnPinning ?? this.internalColumnPinning())
+  private readonly resolvedColumnPinning = computed(
+    () => retainColumnPinning(this.state().columnPinning ?? this.internalColumnPinning()),
+    {
+      equal: hasSameColumnPinning
+    }
   );
 
-  private readonly tanstackColumnOrder = computed(() => normalizeColumnOrder(this.resolvedColumnOrder(), this.allLeafColumnIds()));
+  private readonly tanstackColumnOrder = computed(() => normalizeColumnOrder(this.resolvedColumnOrder(), this.allLeafColumnIds()), {
+    equal: hasSameStringOrder
+  });
 
-  private readonly tanstackColumnPinning = computed(() =>
-    normalizeColumnPinning(this.resolvedColumnPinning(), this.allLeafColumnIds())
+  private readonly tanstackColumnPinning = computed(
+    () => normalizeColumnPinning(this.resolvedColumnPinning(), this.allLeafColumnIds()),
+    { equal: hasSameColumnPinning }
   );
 
   private readonly resolvedColumnSizing = computed<ColumnSizingState>(() => {
