@@ -54,6 +54,23 @@ describe('FEATURE: TanStack cell identity across table state changes', () => {
       });
     });
 
+    describe('WHEN: a row is selected', () => {
+      it('THEN: it keeps every row cell by reference', async () => {
+        const store = getInternalStore(fixture);
+        const cellsBefore = getVisibleCellsById(fixture);
+        const [firstRowId] = cellsBefore.keys();
+
+        store.table.setRowSelection({ [firstRowId]: true });
+        await fixture.whenStable();
+
+        expect(store.table.getState().rowSelection).toStrictEqual({ [firstRowId]: true });
+
+        for (const [rowId, cells] of getVisibleCellsById(fixture)) {
+          expect(cells).toBe(cellsBefore.get(rowId));
+        }
+      });
+    });
+
     describe('WHEN: the column pinning changes to a different value', () => {
       it('THEN: it hands TanStack the new pinning and rebuilds the row cells in the new order', async () => {
         const store = getInternalStore(fixture);

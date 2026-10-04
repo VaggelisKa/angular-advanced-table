@@ -234,6 +234,11 @@ describe('FEATURE: Column order utilities', () => {
       expect(hasSameColumnPinning({ left: ['a', 'b'], right: [] }, { left: ['b', 'a'], right: [] })).toBe(false);
       expect(hasSameColumnPinning({ left: ['a'], right: [] }, { left: [], right: ['a'] })).toBe(false);
     });
+
+    it('THEN: it returns false when one zone extends the other with extra ids', () => {
+      expect(hasSameColumnPinning({ left: ['a'] }, { left: ['a', 'b'] })).toBe(false);
+      expect(hasSameColumnPinning({ left: ['a', 'b'] }, { left: ['a'] })).toBe(false);
+    });
   });
 
   describe('GIVEN: accumulatePinnedOffsets', () => {
