@@ -28,6 +28,16 @@ describe('FEATURE: body row view slots', () => {
     });
   });
 
+  describe('GIVEN: a window scrolls up by two rows', () => {
+    describe('WHEN: the next window renders', () => {
+      it('THEN: it hands the slots freed at the bottom to the entering rows, last slot first', () => {
+        const previous = asPrevious(['r2', 'r3', 'r4', 'r5'], [0, 1, 2, 3]);
+
+        expect(slotsOf(['r0', 'r1', 'r2', 'r3'], previous)).toStrictEqual([3, 2, 0, 1]);
+      });
+    });
+  });
+
   describe('GIVEN: a kept row sits between rows that leave', () => {
     describe('WHEN: more rows enter before it than left before it', () => {
       it('THEN: it never hands an entering row a slot from after the kept row', () => {

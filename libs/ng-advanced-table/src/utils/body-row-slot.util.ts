@@ -12,16 +12,26 @@ const SLOT_KEY_PREFIX = 'nat-table-slot:';
 export const getNatTableBodyRowIdentity = <TData extends RowData>(renderedRow: NatTableRenderedBodyRow<TData>): string =>
   renderedRow.kind === 'row' ? renderedRow.row.id : `nat-table-placeholder:${renderedRow.logicalIndex}`;
 
-/** Freed slots in render order, consumed front to back without reindexing. */
-type SlotQueue = { readonly slots: number[]; next: number };
+/**
+ * Freed slots in render order, consumed from the front (`next`) and, for rows
+ * entering above every kept row, from the back (`end`) without reindexing.
+ */
+type SlotQueue = { readonly slots: number[]; next: number; end: number };
 
-const takeSlot = (queue: SlotQueue): number | undefined => (queue.next < queue.slots.length ? queue.slots[queue.next++] : undefined);
+const createQueue = (): SlotQueue => ({ slots: [], next: 0, end: 0 });
+
+const takeSlot = (queue: SlotQueue): number | undefined => (queue.next < queue.end ? queue.slots[queue.next++] : undefined);
+
+const takeLastSlot = (queue: SlotQueue | undefined): number | undefined =>
+  queue && queue.next < queue.end ? queue.slots[--queue.end] : undefined;
 
 /** Moves a gap's unclaimed slots to the shared queue of slots freed in earlier gaps. */
 const releaseGap = (gap: SlotQueue, earlierGaps: SlotQueue): void => {
-  for (let index = gap.next; index < gap.slots.length; index += 1) {
+  for (let index = gap.next; index < gap.end; index += 1) {
     earlierGaps.slots.push(gap.slots[index]);
   }
+
+  earlierGaps.end = earlierGaps.slots.length;
 };
 
 /**
@@ -32,13 +42,16 @@ const collectFreedSlotsByGap = (
   previous: readonly (readonly [identity: string, slot: number])[],
   kept: ReadonlySet<string>
 ): SlotQueue[] => {
-  const gaps: SlotQueue[] = [{ slots: [], next: 0 }];
+  const gaps: SlotQueue[] = [createQueue()];
 
   for (const [identity, slot] of previous) {
     if (kept.has(identity)) {
-      gaps.push({ slots: [], next: 0 });
+      gaps.push(createQueue());
     } else {
-      gaps[gaps.length - 1].slots.push(slot);
+      const gap = gaps[gaps.length - 1];
+
+      gap.slots.push(slot);
+      gap.end = gap.slots.length;
     }
   }
 
@@ -56,6 +69,11 @@ const collectFreedSlotsByGap = (
  * updates those views in place or re-attaches views it already detached, so
  * it never has to detach a kept row (which would blur a focused cell) to
  * reach a slot further down.
+ *
+ * Rows entering above every kept row (scrolling up) also take the slots freed
+ * after the last kept row, last slot first: Angular moves each of those views
+ * from the end of the list to the front on its own. With a single kept row
+ * Angular would swap that row instead, so they get new slots then.
  */
 export const assignNatTableBodyRowSlots = (
   identities: readonly string[],
@@ -64,7 +82,8 @@ export const assignNatTableBodyRowSlots = (
   const previousSlots = new Map(previous);
   const kept = new Set(identities.filter((identity) => previousSlots.has(identity)));
   const gaps = collectFreedSlotsByGap(previous, kept);
-  const earlierGaps: SlotQueue = { slots: [], next: 0 };
+  const earlierGaps = createQueue();
+  const trailingGap = kept.size > 1 ? gaps[gaps.length - 1] : undefined;
   const slots = new Map<string, number>();
   let nextSlot = previous.reduce((highest, [, slot]) => Math.max(highest, slot + 1), 0);
   let gapIndex = 0;
@@ -77,7 +96,9 @@ export const assignNatTableBodyRowSlots = (
     }
 
     if (keptSlot === undefined) {
-      slots.set(identity, takeSlot(gaps[gapIndex]) ?? takeSlot(earlierGaps) ?? nextSlot++);
+      const borrowFrom = gapIndex === 0 ? trailingGap : undefined;
+
+      slots.set(identity, takeSlot(gaps[gapIndex]) ?? takeLastSlot(borrowFrom) ?? takeSlot(earlierGaps) ?? nextSlot++);
       continue;
     }
 
