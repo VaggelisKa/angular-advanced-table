@@ -117,6 +117,9 @@ export const hasSameStringOrder = (left: readonly string[], right: readonly stri
   return left.every((value, index) => value === right[index]);
 };
 
+export const hasSameColumnPinning = (left: ColumnPinningState, right: ColumnPinningState): boolean =>
+  hasSameStringOrder(left.left ?? [], right.left ?? []) && hasSameStringOrder(left.right ?? [], right.right ?? []);
+
 /** Accumulates sticky pinned offsets in iteration order: each column's offset is the running width sum before it. */
 export const accumulatePinnedOffsets = <TData extends RowData>(
   columns: readonly Column<TData, unknown>[],
