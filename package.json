@@ -55,6 +55,7 @@
     "nx": "catalog:shared-dev",
     "nx-stylelint": "catalog:shared-dev",
     "prettier": "catalog:shared-dev",
+    "storybook": "catalog:shared-dev",
     "typescript": "catalog:shared-dev",
     "typescript-eslint": "catalog:shared-dev",
     "vitest": "catalog:shared-dev"
