@@ -106,6 +106,7 @@ catalogs:
     nx: '23.2.1'
     nx-stylelint: '^19.0.0'
     prettier: '^3.8.4'
+    storybook: '^10.6.2'
     typescript: '6.0.3'
     typescript-eslint: '^8.61.1'
     # `@vitest/coverage-v8` declares an EXACT peer on `vitest` (not a range), so
