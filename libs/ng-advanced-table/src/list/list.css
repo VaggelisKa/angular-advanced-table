@@ -21,8 +21,28 @@
   border-width: var(--nat-list-sub-header-border-width, var(--sys-nat-table-sub-header-border-width, 0));
 }
 
+/* Fills the sub-header row so a template can put a title at the start and a
+   total at the end. `display` stays `block` by default; set the display token
+   to `flex` or `grid` and the other content-* tokens lay out the template's
+   root nodes. As a grid it follows the item columns unless
+   --nat-list-sub-header-columns overrides them, so sub-header parts can line
+   up with the item fields below. */
 .list-sub-header-content {
   position: relative;
+  box-sizing: border-box;
+  display: var(--nat-list-sub-header-content-display, var(--sys-nat-table-list-sub-header-content-display, block));
+  flex: 1 1 auto;
+  grid-template-columns: var(
+    --nat-list-sub-header-columns,
+    var(--sys-nat-table-list-sub-header-columns, var(--nat-list-item-columns, var(--sys-nat-table-list-item-columns, 1fr)))
+  );
+  gap: var(
+    --nat-list-sub-header-content-gap,
+    var(--sys-nat-table-list-sub-header-content-gap, var(--nat-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem)))
+  );
+  align-items: var(--nat-list-sub-header-content-align, var(--sys-nat-table-list-sub-header-content-align, normal));
+  justify-content: var(--nat-list-sub-header-content-justify, var(--sys-nat-table-list-sub-header-content-justify, normal));
+  min-width: 0;
   padding: var(--nat-list-space-sub-header, var(--sys-nat-table-space-sub-header, 8px 0));
 }
 
@@ -56,6 +76,11 @@
   grid-template-areas: var(--nat-list-item-areas, var(--sys-nat-table-list-item-areas, none));
   grid-template-columns: var(--nat-list-item-columns, var(--sys-nat-table-list-item-columns, 1fr));
   gap: var(--nat-list-item-gap, var(--sys-nat-table-list-item-gap, 0.25rem));
+
+  /* `stretch` (the grid default) makes every field as tall as its row; `start`
+     keeps fields content-sized, for projected components that size themselves
+     with `height: 100%`. Also applies to the flow layout's flex lines. */
+  align-items: var(--nat-list-item-align, var(--sys-nat-table-list-item-align, stretch));
 }
 
 /* ─── Flow item layout (`itemLayout="flow"`) ───
@@ -136,6 +161,22 @@
     )
   );
   border-bottom-width: var(--nat-list-last-item-border-width, var(--sys-nat-table-list-last-item-border-width, 0));
+}
+
+/* The last item of each group: the item directly before a sub-header. Unlike
+   the last-item token this takes the full 1-4 value `border-width` shorthand,
+   which is what lets it fall back to the regular item border and leave groups
+   unchanged until it is set (e.g. `1px 1px 0` to drop the bottom edge).
+   `:has()` is Safari 15.4+, inside the 16.5 support floor. */
+.nat-list > .list-item:has(+ .list-sub-header),
+.nat-list > .list-row:has(+ .list-sub-header) > .list-item {
+  border-width: var(
+    --nat-list-group-last-item-border-width,
+    var(
+      --sys-nat-table-list-group-last-item-border-width,
+      var(--nat-list-item-border-width, var(--sys-nat-table-list-item-border-width, 1px))
+    )
+  );
 }
 
 /* The activation affordance: a real button stretched over the whole item.

@@ -1,4 +1,7 @@
 :host {
+  /* Pairs with sortButtonFill: the whole header reads as the sort target. */
+  --nat-table-header-background-hover: color-mix(in srgb, currentcolor 6%, transparent);
+
   display: block;
 }
 

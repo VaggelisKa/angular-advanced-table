@@ -1,4 +1,10 @@
 :host {
+  /* Title at the start, count at the end, laid out by the library tokens. */
+  --nat-table-sub-header-content-justify: space-between;
+  --nat-table-sub-header-content-gap: var(--sc-space-2);
+  --nat-list-sub-header-content-display: flex;
+  --nat-list-sub-header-content-justify: space-between;
+
   display: block;
 }
 

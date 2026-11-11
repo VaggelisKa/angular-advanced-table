@@ -115,6 +115,23 @@
   flex: 1 1 auto;
 }
 
+/* `sortButtonFill`: a stretched hit area over the whole header cell, which is
+   the nearest positioned ancestor (relative, or sticky when the header sticks
+   or the column is pinned). A pseudo-element rather than a wider button, so
+   the label, focus ring, and header layout stay exactly as they are. The
+   table's resize handle carries its own z-index and stays above it. */
+.sort-button.is-fill::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+}
+
+/* Positioned, so the menu button paints above the stretched sort hit area
+   that precedes it in the DOM and stays clickable. */
+.header-controls {
+  position: relative;
+}
+
 .sort-button.is-sorted {
   color: var(--nat-table-sort-button-color-sorted, var(--sys-nat-table-sort-button-color-sorted, inherit));
 }
@@ -146,6 +163,26 @@
   justify-content: center;
   min-width: var(--nat-table-sort-icon-min-width, var(--sys-nat-table-sort-icon-min-width, 1.05rem));
   line-height: 0;
+}
+
+/* A custom `sortIndicator` follows the same colour tokens as the built-in
+   icon, through `color`, so content drawn with `currentColor` picks them up.
+   Every chain ends in `inherit`: with no token set the indicator keeps the
+   header's own colour. */
+.sort-icon--custom {
+  color: var(--nat-table-sort-icon-color-idle, var(--sys-nat-table-sort-icon-color-idle, inherit));
+  transition: color var(--nat-table-transition-fast, var(--sys-nat-table-transition-fast, 120ms ease));
+}
+
+.sort-button.is-sorted .sort-icon--custom {
+  color: var(
+    --nat-table-sort-icon-color-active,
+    var(--sys-nat-table-sort-icon-color-active, var(--nat-table-sort-icon-color, var(--sys-nat-table-sort-icon-color, inherit)))
+  );
+}
+
+.sort-button[disabled] .sort-icon--custom {
+  color: var(--nat-table-sort-icon-color-disabled, var(--sys-nat-table-sort-icon-color-disabled, inherit));
 }
 
 /* Multi-sort priority badge (1-based order; only shown when >1 column is sorted). */
@@ -311,6 +348,10 @@
       --nat-table-sort-icon-color-hover,
       var(--sys-nat-table-sort-icon-color-hover, color-mix(in srgb, currentColor 78%, transparent))
     );
+  }
+
+  .sort-button:hover:not([disabled], .is-sorted) .sort-icon--custom {
+    color: var(--nat-table-sort-icon-color-hover, var(--sys-nat-table-sort-icon-color-hover, inherit));
   }
 
   .column-menu-item:hover:not([disabled]) {

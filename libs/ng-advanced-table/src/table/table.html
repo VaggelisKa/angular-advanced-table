@@ -99,6 +99,7 @@
                 [cdkDragDisabled]="!canReorderHeader(header)"
                 [class]="columnState?.headerClassMap"
                 [class.is-reorderable]="canReorderHeader(header)"
+                [class.is-sortable]="canSortHeader(header)"
                 [natTableHeaderCellLayout]="columnState"
                 cdkDrag
                 cdkDragLockAxis="x"
@@ -124,6 +125,7 @@
                 [attr.data-column-id]="header.column.id"
                 [attr.data-testid]="`nat-table-header-${header.column.id}`"
                 [class]="columnState?.headerClassMap"
+                [class.is-sortable]="canSortHeader(header)"
                 [natTableHeaderCellLayout]="columnState"
                 natTableCell
                 ngGridCell

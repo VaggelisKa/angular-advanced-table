@@ -12,11 +12,13 @@
       @if (canSort()) {
         <button
           [attr.aria-label]="getSortLabel()"
+          [attr.data-testid]="`nat-table-header-sort-${column().id}`"
+          [class.is-fill]="sortButtonFill()"
           [class.is-sorted]="!!sortState()"
           class="sort-button"
           type="button"
           (click)="onSortClick($event)"
-          (pointerdown)="$event.stopPropagation()">
+          (pointerdown)="onSortPointerDown($event)">
           <span [class.sr-only]="hideLabel()" class="header-label">
             @if (hideLabel()) {
               {{ label() }}
@@ -24,7 +26,7 @@
               <ng-container *flexRender="content(); props: context(); let rendered"> {{ rendered }} </ng-container>
             }
           </span>
-          <span aria-hidden="true" class="sort-icon">
+          <span [class.sort-icon--custom]="hasCustomSortIndicator()" aria-hidden="true" class="sort-icon">
             @if (hasCustomSortIndicator()) {
               <ng-container *flexRender="sortIndicator(); props: sortIndicatorContext(); let rendered"> {{ rendered }} </ng-container>
             } @else {

@@ -125,6 +125,7 @@
   --sys-nat-table-region-border-color: var(--nat-table-region-border-color);
   --sys-nat-table-region-border-width: var(--nat-table-region-border-width);
   --sys-nat-table-header-background: var(--nat-table-header-background);
+  --sys-nat-table-header-background-hover: var(--nat-table-header-background-hover);
   --sys-nat-table-header-color: var(--nat-table-header-color);
   --sys-nat-table-header-border-color: var(--nat-table-header-border-color);
   --sys-nat-table-header-border-width: var(--nat-table-header-border-width);

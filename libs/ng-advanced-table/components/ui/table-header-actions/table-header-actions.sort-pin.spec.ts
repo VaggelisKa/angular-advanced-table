@@ -18,7 +18,8 @@ import {
 import {
   PinOnlyHeaderActionsHost,
   SortActionsOverrideDisabledHost,
-  SortActionsOverrideEnabledHost
+  SortActionsOverrideEnabledHost,
+  SortButtonFillHost
 } from '../../test-helpers/table-header-hosts-sort-actions.helper';
 import {
   CustomSortIndicatorHost,
@@ -40,7 +41,8 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
         HiddenHeaderActionLabelHost,
         PinOnlyHeaderActionsHost,
         SortActionsOverrideDisabledHost,
-        SortActionsOverrideEnabledHost
+        SortActionsOverrideEnabledHost,
+        SortButtonFillHost
       ],
       providers: [provideZonelessChangeDetection()]
     }).compileComponents();
@@ -211,6 +213,29 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
 
         expect(sortIcon.textContent.trim()).toBe('A');
       });
+
+      it('THEN: it marks the custom indicator so it follows the sort icon colour tokens', () => {
+        const customFixture = TestBed.createComponent(CustomSortIndicatorHost);
+
+        customFixture.detectChanges();
+        fixture.detectChanges();
+
+        const customIcon = root(customFixture).querySelector('[data-testid="nat-table-header-sort-name"] .sort-icon') as HTMLElement;
+        const builtInIcon = root(fixture).querySelector('[data-testid="nat-table-header-sort-name"] .sort-icon') as HTMLElement;
+        const customRules = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .flatMap((rule) => (rule instanceof CSSMediaRule ? Array.from(rule.cssRules) : [rule]))
+          .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule && rule.selectorText.includes('.sort-icon--custom'))
+          .map((rule) => rule.cssText)
+          .join(' ');
+
+        expect(customIcon.classList.contains('sort-icon--custom')).toBe(true);
+        expect(builtInIcon.classList.contains('sort-icon--custom')).toBe(false);
+        expect(customRules).toContain('var(--nat-table-sort-icon-color-idle, var(--sys-nat-table-sort-icon-color-idle, inherit))');
+        expect(customRules).toContain('--nat-table-sort-icon-color-active');
+        expect(customRules).toContain('--nat-table-sort-icon-color-hover');
+        expect(customRules).toContain('--nat-table-sort-icon-color-disabled');
+      });
     });
 
     describe('WHEN: enableSortActions is not set', () => {
@@ -303,6 +328,55 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
 
         expect(nameSortButton).toBeTruthy();
         expect(regionSortButton).toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN: a table whose sort buttons fill the header cell', () => {
+    const pointerDownReachesHeader = (target: ComponentFixture<unknown>, columnId: string): boolean => {
+      const header = root(target).querySelector(`[data-testid="nat-table-header-${columnId}"]`) as HTMLTableCellElement;
+      const sortButton = root(target).querySelector(`[data-testid="nat-table-header-sort-${columnId}"]`) as HTMLButtonElement;
+      let reached = false;
+      const listener = (): void => {
+        reached = true;
+      };
+
+      header.addEventListener('pointerdown', listener);
+      sortButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      header.removeEventListener('pointerdown', listener);
+
+      return reached;
+    };
+
+    describe('WHEN: the table renders', () => {
+      it('THEN: it stretches the hit area for filled columns only and still sorts on click', () => {
+        const fillFixture = TestBed.createComponent(SortButtonFillHost);
+
+        fillFixture.detectChanges();
+
+        const nameSortButton = root(fillFixture).querySelector('[data-testid="nat-table-header-sort-name"]') as HTMLButtonElement;
+        const regionSortButton = root(fillFixture).querySelector('[data-testid="nat-table-header-sort-region"]') as HTMLButtonElement;
+
+        expect(nameSortButton.classList.contains('is-fill')).toBe(true);
+        expect(regionSortButton.classList.contains('is-fill')).toBe(false);
+
+        nameSortButton.click();
+        fillFixture.detectChanges();
+
+        expect(attrOf(root(fillFixture), '[data-testid="nat-table-header-name"]', 'aria-sort')).toBe('ascending');
+      });
+    });
+
+    describe('WHEN: a pointer is pressed on a sort button', () => {
+      it('THEN: it lets the press reach the header for filled columns so the header can still be dragged', () => {
+        const fillFixture = TestBed.createComponent(SortButtonFillHost);
+
+        fillFixture.detectChanges();
+        fixture.detectChanges();
+
+        expect(pointerDownReachesHeader(fillFixture, 'name')).toBe(true);
+        expect(pointerDownReachesHeader(fillFixture, 'region')).toBe(false);
+        expect(pointerDownReachesHeader(fixture, 'name')).toBe(false);
       });
     });
   });

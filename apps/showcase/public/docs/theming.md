@@ -113,49 +113,55 @@ The live example below scopes `--nat-table-*` tokens on `NatTableSurface`, with 
 
 These are the most common stable `ng-advanced-table` tokens to override directly.
 
-| Token                                     | Purpose                                                                                                          |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `--nat-table-color-text`                  | Base table text color                                                                                            |
-| `--nat-table-color-border`                | Shared surface and control border                                                                                |
-| `--nat-table-color-divider`               | Shared row and cell divider                                                                                      |
-| `--nat-table-font-family`                 | Table font family                                                                                                |
-| `--nat-table-region-background`           | Scrollable table region background                                                                               |
-| `--nat-table-region-border-color`         | Scrollable table region border                                                                                   |
-| `--nat-table-region-border-width`         | Scrollable table region border width                                                                             |
-| `--nat-table-radius-region`               | Scrollable table region radius                                                                                   |
-| `--nat-table-header-background`           | Header background                                                                                                |
-| `--nat-table-header-color`                | Header text color                                                                                                |
-| `--nat-table-font-weight-header`          | Header text font weight                                                                                          |
-| `--nat-table-header-border-color`         | Header divider                                                                                                   |
-| `--nat-table-header-border-width`         | Header divider width                                                                                             |
-| `--nat-table-row-background`              | Default body row background                                                                                      |
-| `--nat-table-row-min-height`              | Minimum body row height; `auto` by default. Ignored by virtualized tables, whose rows use the `rowHeight` option |
-| `--nat-table-row-background-hover`        | Hovered row background                                                                                           |
-| `--nat-table-row-background-focus`        | Focus-within row background                                                                                      |
-| `--nat-table-pinned-background`           | Pinned cell background                                                                                           |
-| `--nat-table-pinned-header-background`    | Pinned header cell background (falls back to `--nat-table-pinned-background`)                                    |
-| `--nat-table-pinned-divider-color`        | Pinned edge divider                                                                                              |
-| `--nat-table-pinned-divider-shadow-color` | Shared opt-in shadow color for both pinned-zone boundaries                                                       |
-| `--nat-table-pinned-edge-shadow-size`     | Shared size of the pinned-zone fade; the library mirrors its direction per zone                                  |
-| `--nat-table-cell-border-color`           | Body cell divider                                                                                                |
-| `--nat-table-cell-border-width`           | Body cell divider width                                                                                          |
-| `--nat-table-last-row-border-width`       | Bottom border of the final rendered body row; `0` by default                                                     |
-| `--nat-table-last-row-border-color`       | Bottom border color of the final body row (falls back to the cell divider)                                       |
-| `--nat-table-cell-color-positive`         | Positive semantic cell tone                                                                                      |
-| `--nat-table-cell-color-negative`         | Negative semantic cell tone                                                                                      |
-| `--nat-table-cell-color-warning`          | Warning semantic cell tone                                                                                       |
-| `--nat-table-cell-color-neutral`          | Neutral semantic cell tone                                                                                       |
-| `--nat-table-empty-state-color`           | Empty, loading, and error row text                                                                               |
-| `--nat-table-focus-ring-color`            | Keyboard focus indicator                                                                                         |
-| `--nat-table-focus-ring-width`            | Keyboard focus indicator width                                                                                   |
-| `--nat-table-space-cell-y`                | Cell block padding                                                                                               |
-| `--nat-table-space-cell-x`                | Cell inline padding (shared base)                                                                                |
-| `--nat-table-space-header-cell-x`         | Header cell inline padding (falls back to `--nat-table-space-cell-x`)                                            |
-| `--nat-table-space-data-cell-x`           | Data cell inline padding (falls back to `--nat-table-space-cell-x`)                                              |
-| `--nat-table-sub-header-background`       | Sub-header (group) row background (table and list)                                                               |
-| `--nat-table-sub-header-color`            | Sub-header (group) row text color (table and list)                                                               |
-| `--nat-table-space-sub-header`            | Sub-header (group) row padding (table and list)                                                                  |
-| `--nat-table-font-weight-sub-header`      | Sub-header (group) row font weight (table and list)                                                              |
+| Token                                     | Purpose                                                                                                                             |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `--nat-table-color-text`                  | Base table text color                                                                                                               |
+| `--nat-table-color-border`                | Shared surface and control border                                                                                                   |
+| `--nat-table-color-divider`               | Shared row and cell divider                                                                                                         |
+| `--nat-table-font-family`                 | Table font family                                                                                                                   |
+| `--nat-table-region-background`           | Scrollable table region background                                                                                                  |
+| `--nat-table-region-border-color`         | Scrollable table region border                                                                                                      |
+| `--nat-table-region-border-width`         | Scrollable table region border width                                                                                                |
+| `--nat-table-radius-region`               | Scrollable table region radius                                                                                                      |
+| `--nat-table-header-background`           | Header background                                                                                                                   |
+| `--nat-table-header-background-hover`     | Tint painted over the header background while a sortable column's header is hovered; `transparent` by default                       |
+| `--nat-table-header-color`                | Header text color                                                                                                                   |
+| `--nat-table-font-weight-header`          | Header text font weight                                                                                                             |
+| `--nat-table-header-border-color`         | Header divider                                                                                                                      |
+| `--nat-table-header-border-width`         | Header divider width                                                                                                                |
+| `--nat-table-row-background`              | Default body row background                                                                                                         |
+| `--nat-table-row-min-height`              | Minimum body row height; `auto` by default. Ignored by virtualized tables, whose rows use the `rowHeight` option                    |
+| `--nat-table-row-background-hover`        | Hovered row background                                                                                                              |
+| `--nat-table-row-background-focus`        | Focus-within row background                                                                                                         |
+| `--nat-table-pinned-background`           | Pinned cell background                                                                                                              |
+| `--nat-table-pinned-header-background`    | Pinned header cell background (falls back to `--nat-table-pinned-background`)                                                       |
+| `--nat-table-pinned-divider-color`        | Pinned edge divider                                                                                                                 |
+| `--nat-table-pinned-divider-shadow-color` | Shared opt-in shadow color for both pinned-zone boundaries                                                                          |
+| `--nat-table-pinned-edge-shadow-size`     | Shared size of the pinned-zone fade; the library mirrors its direction per zone                                                     |
+| `--nat-table-cell-border-color`           | Body cell divider                                                                                                                   |
+| `--nat-table-cell-border-width`           | Body cell divider width                                                                                                             |
+| `--nat-table-last-row-border-width`       | Bottom border of the final rendered body row; `0` by default                                                                        |
+| `--nat-table-last-row-border-color`       | Bottom border color of the final body row (falls back to the cell divider)                                                          |
+| `--nat-table-group-last-row-border-width` | Bottom border width of the last row in each group, the row before a sub-header row (falls back to the cell divider width)           |
+| `--nat-table-cell-color-positive`         | Positive semantic cell tone                                                                                                         |
+| `--nat-table-cell-color-negative`         | Negative semantic cell tone                                                                                                         |
+| `--nat-table-cell-color-warning`          | Warning semantic cell tone                                                                                                          |
+| `--nat-table-cell-color-neutral`          | Neutral semantic cell tone                                                                                                          |
+| `--nat-table-empty-state-color`           | Empty, loading, and error row text                                                                                                  |
+| `--nat-table-focus-ring-color`            | Keyboard focus indicator                                                                                                            |
+| `--nat-table-focus-ring-width`            | Keyboard focus indicator width                                                                                                      |
+| `--nat-table-space-cell-y`                | Cell block padding                                                                                                                  |
+| `--nat-table-space-cell-x`                | Cell inline padding (shared base)                                                                                                   |
+| `--nat-table-space-header-cell-x`         | Header cell inline padding (falls back to `--nat-table-space-cell-x`)                                                               |
+| `--nat-table-space-data-cell-x`           | Data cell inline padding (falls back to `--nat-table-space-cell-x`)                                                                 |
+| `--nat-table-sub-header-background`       | Sub-header (group) row background (table and list)                                                                                  |
+| `--nat-table-sub-header-color`            | Sub-header (group) row text color (table and list)                                                                                  |
+| `--nat-table-space-sub-header`            | Sub-header (group) row padding (table and list)                                                                                     |
+| `--nat-table-font-weight-sub-header`      | Sub-header (group) row font weight (table and list)                                                                                 |
+| `--nat-table-sub-header-content-display`  | `display` of the table sub-header content box (`inline-flex`); it always fills the row up to the visible region width               |
+| `--nat-table-sub-header-content-gap`      | Gap between the root nodes of a table sub-header template (`0`)                                                                     |
+| `--nat-table-sub-header-content-align`    | `align-items` for the table sub-header content (`center`)                                                                           |
+| `--nat-table-sub-header-content-justify`  | `justify-content` for the table sub-header content (`flex-start`); `space-between` puts a title at the start and a total at the end |
 
 Set the border-width tokens to `0` when a design needs to remove the outer table boundary or internal dividers.
 
@@ -163,35 +169,42 @@ Set the border-width tokens to `0` when a design needs to remove the outer table
 
 By default the `nat-list` spike renderer lays every item out as a CSS grid whose field areas are named by column id, so consumers can position each column's field freely. These tokens are spike API and may change or be removed with the `NatList` spike.
 
-| Token                                 | Purpose                                                                                                                                               |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--nat-list-gap`                      | Gap between list items                                                                                                                                |
-| `--nat-list-item-areas`               | `grid-template-areas` for one item; area names are column ids (default stacks each visible column)                                                    |
-| `--nat-list-item-columns`             | `grid-template-columns` for one item                                                                                                                  |
-| `--nat-list-item-gap`                 | Gap between fields inside one item                                                                                                                    |
-| `--nat-list-flow-column-gap`          | Gap between slots on one line in the `flow` item layout (`1rem`); the row gap stays `--nat-list-item-gap`                                             |
-| `--nat-list-field-width-<column-id>`  | `flow` item layout: the column's slot as a percentage of the line (`100%` for a whole line); set one per visible column, equal split when none is set |
-| `--nat-list-item-padding`             | Item padding                                                                                                                                          |
-| `--nat-list-item-background`          | Item background; transparent by default, so items inherit the page background                                                                         |
-| `--nat-list-item-background-selected` | Item background while the row is selected (`data-selected="true"`)                                                                                    |
-| `--nat-list-item-border-width`        | Item border width; accepts 1-4 value shorthand (e.g. `1px 0` for divider-only items)                                                                  |
-| `--nat-list-item-border-color`        | Item border color; a currentcolor mix by default, so it follows the page text color                                                                   |
-| `--nat-list-item-radius`              | Item corner radius                                                                                                                                    |
-| `--nat-list-last-item-border-width`   | Bottom border width of the final item; `0` by default (the stock theme restores it for cards)                                                         |
-| `--nat-list-last-item-border-color`   | Bottom border color of the final item (falls back to the item border color)                                                                           |
-| `--nat-list-field-gap`                | Gap between one field's label and value                                                                                                               |
-| `--nat-list-field-align`              | `align-items` for one field (defaults to `baseline`)                                                                                                  |
-| `--nat-list-field-flex-direction`     | `flex-direction` for one field (defaults to `row`)                                                                                                    |
-| `--nat-list-field-justify`            | `justify-content` for one field (defaults to `flex-start`)                                                                                            |
-| `--nat-list-label-font-weight`        | Field label weight                                                                                                                                    |
-| `--nat-list-label-font-size`          | Field label font size                                                                                                                                 |
-| `--nat-list-label-color`              | Field label color (defaults to `currentColor`)                                                                                                        |
-| `--nat-list-space-sub-header`         | Sub-header row padding for lists                                                                                                                      |
-| `--nat-list-sub-header-background`    | Sub-header row background for lists                                                                                                                   |
-| `--nat-list-sub-header-color`         | Sub-header row text color for lists                                                                                                                   |
-| `--nat-list-font-weight-sub-header`   | Sub-header row font weight for lists                                                                                                                  |
-| `--nat-list-sub-header-border`        | Sub-header row border style for lists                                                                                                                 |
-| `--nat-list-sub-header-border-width`  | Sub-header row border width for lists                                                                                                                 |
+| Token                                     | Purpose                                                                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--nat-list-gap`                          | Gap between list items                                                                                                                                              |
+| `--nat-list-item-areas`                   | `grid-template-areas` for one item; area names are column ids (default stacks each visible column)                                                                  |
+| `--nat-list-item-columns`                 | `grid-template-columns` for one item                                                                                                                                |
+| `--nat-list-item-gap`                     | Gap between fields inside one item                                                                                                                                  |
+| `--nat-list-item-align`                   | `align-items` for the fields of one item (`stretch`); `start` keeps each field content-sized instead of as tall as its row                                          |
+| `--nat-list-flow-column-gap`              | Gap between slots on one line in the `flow` item layout (`1rem`); the row gap stays `--nat-list-item-gap`                                                           |
+| `--nat-list-field-width-<column-id>`      | `flow` item layout: the column's slot as a percentage of the line (`100%` for a whole line); set one per visible column, equal split when none is set               |
+| `--nat-list-item-padding`                 | Item padding                                                                                                                                                        |
+| `--nat-list-item-background`              | Item background; transparent by default, so items inherit the page background                                                                                       |
+| `--nat-list-item-background-selected`     | Item background while the row is selected (`data-selected="true"`)                                                                                                  |
+| `--nat-list-item-border-width`            | Item border width; accepts 1-4 value shorthand (e.g. `1px 0` for divider-only items)                                                                                |
+| `--nat-list-item-border-color`            | Item border color; a currentcolor mix by default, so it follows the page text color                                                                                 |
+| `--nat-list-item-radius`                  | Item corner radius                                                                                                                                                  |
+| `--nat-list-last-item-border-width`       | Bottom border width of the final item; `0` by default (the stock theme restores it for cards)                                                                       |
+| `--nat-list-last-item-border-color`       | Bottom border color of the final item (falls back to the item border color)                                                                                         |
+| `--nat-list-group-last-item-border-width` | Border width of the last item in each group, the item before a sub-header; takes the 1-4 value shorthand (e.g. `1px 1px 0`) and falls back to the item border width |
+| `--nat-list-field-gap`                    | Gap between one field's label and value                                                                                                                             |
+| `--nat-list-field-align`                  | `align-items` for one field (defaults to `baseline`)                                                                                                                |
+| `--nat-list-field-flex-direction`         | `flex-direction` for one field (defaults to `row`)                                                                                                                  |
+| `--nat-list-field-justify`                | `justify-content` for one field (defaults to `flex-start`)                                                                                                          |
+| `--nat-list-label-font-weight`            | Field label weight                                                                                                                                                  |
+| `--nat-list-label-font-size`              | Field label font size                                                                                                                                               |
+| `--nat-list-label-color`                  | Field label color (defaults to `currentColor`)                                                                                                                      |
+| `--nat-list-space-sub-header`             | Sub-header row padding for lists                                                                                                                                    |
+| `--nat-list-sub-header-background`        | Sub-header row background for lists                                                                                                                                 |
+| `--nat-list-sub-header-color`             | Sub-header row text color for lists                                                                                                                                 |
+| `--nat-list-font-weight-sub-header`       | Sub-header row font weight for lists                                                                                                                                |
+| `--nat-list-sub-header-border`            | Sub-header row border style for lists                                                                                                                               |
+| `--nat-list-sub-header-border-width`      | Sub-header row border width for lists                                                                                                                               |
+| `--nat-list-sub-header-content-display`   | `display` of the list sub-header content box (`block`); it always fills the sub-header row. Set `flex` or `grid` to lay out a template's root nodes                 |
+| `--nat-list-sub-header-content-gap`       | Gap between the root nodes of a list sub-header template when the content is `flex` or `grid` (falls back to `--nat-list-item-gap`)                                 |
+| `--nat-list-sub-header-content-align`     | `align-items` for the list sub-header content                                                                                                                       |
+| `--nat-list-sub-header-content-justify`   | `justify-content` for the list sub-header content                                                                                                                   |
+| `--nat-list-sub-header-columns`           | `grid-template-columns` for the list sub-header content when it is a `grid` (falls back to `--nat-list-item-columns`, so it follows the item columns)               |
 
 When overriding `--nat-list-item-areas`, name every visible column in the template (or hide the rest via column visibility) — a field whose column id is missing from the areas template falls back to implicit grid placement.
 
@@ -221,15 +234,15 @@ Each state item also carries a `data-state` attribute (`loading`, `empty`, or `e
 
 `ng-advanced-table/components` controls consume the same theme. Common groups include:
 
-| Group          | Common tokens                                                                                                                                                                                                                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Surface        | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-shadow`, `--nat-table-radius-card`, `--nat-table-space-card`, `--nat-table-space-card-list` (padding when a list renderer is projected; defaults to `0`) |
-| Controls       | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-space-control-block-gap`                                                                                                                                       |
-| Chips          | `--nat-table-chip-background`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-radius-chip`                                                                                                            |
-| Pager          | `--nat-table-pager-background`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-min-height`                                                                                                                |
-| Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-pin-color-pinned`                                                                                                                                   |
-| Motion         | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-disabled-opacity`                                                                                                                                             |
-| Stacking       | `--nat-table-z-index-sticky-header`, `--nat-table-z-index-pinned-cell`, `--nat-table-z-index-drag-preview`                                                                                                                                 |
+| Group          | Common tokens                                                                                                                                                                                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Surface        | `--nat-table-card-background`, `--nat-table-card-border-color`, `--nat-table-card-shadow`, `--nat-table-radius-card`, `--nat-table-space-card`, `--nat-table-space-card-list` (padding when a list renderer is projected; defaults to `0`)                       |
+| Controls       | `--nat-table-color-text-muted`, `--nat-table-font-size-label`, `--nat-table-space-control-block-gap`                                                                                                                                                             |
+| Chips          | `--nat-table-chip-background`, `--nat-table-chip-background-active`, `--nat-table-chip-border-color`, `--nat-table-radius-chip`                                                                                                                                  |
+| Pager          | `--nat-table-pager-background`, `--nat-table-pager-border-color`, `--nat-table-pager-color`, `--nat-table-pager-min-height`                                                                                                                                      |
+| Header actions | `--nat-table-sort-icon-color-active`, `--nat-table-sort-icon-color-idle`, `--nat-table-sort-icon-color-hover`, `--nat-table-sort-icon-color-disabled` (the sort icon colors also set the text color of a custom `sortIndicator`), `--nat-table-pin-color-pinned` |
+| Motion         | `--nat-table-transition-fast`, `--nat-table-transition-medium`, `--nat-table-disabled-opacity`                                                                                                                                                                   |
+| Stacking       | `--nat-table-z-index-sticky-header`, `--nat-table-z-index-pinned-cell`, `--nat-table-z-index-drag-preview`                                                                                                                                                       |
 
 Reach for these direct tokens when a table control needs a local exception.
 

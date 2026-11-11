@@ -21,6 +21,11 @@ type NatTableHeaderActionsColumnOptions = {
   readonly enableColumnPinActions?: boolean;
   /** Enables Move left / Move right menu items for this column when the table can reorder it. */
   readonly enableColumnReorderActions?: boolean;
+  /**
+   * Stretches this column's sort button hit area over the whole header cell, so a click
+   * anywhere in the header sorts. Purely an affordance. Defaults to `false`.
+   */
+  readonly sortButtonFill?: boolean;
 };
 
 /**

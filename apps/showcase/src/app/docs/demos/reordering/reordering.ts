@@ -20,7 +20,8 @@ export class Reordering {
 
   protected readonly columns: ColumnDef<DemoItem, unknown>[] = withNatTableHeaderActions(demoItemBaseColumns, {
     enableColumnPinActions: false,
-    enableColumnReorderActions: true
+    enableColumnReorderActions: true,
+    sortButtonFill: true
   });
 
   protected readonly tableState = signal<Partial<NatTableUserState>>({

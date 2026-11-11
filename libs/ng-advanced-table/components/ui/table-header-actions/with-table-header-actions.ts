@@ -79,6 +79,7 @@ const resolveHeaderActionsOptions = <TData extends RowData>(
       options.enableColumnReorderActions,
       false
     ),
+    sortButtonFill: resolveBooleanOption(columnOptions?.sortButtonFill, options.sortButtonFill, false),
     accessibilityLabels: mergeAccessibilityLabels(options.accessibilityLabels, columnOptions?.accessibilityLabels)
   };
 };
@@ -164,7 +165,8 @@ const wrapColumnHeader = <TData extends RowData>(
         sortIndicator: actionOptions.sortIndicator,
         enableSortActions: actionOptions.enableSortActions,
         enableColumnPinActions: actionOptions.enableColumnPinActions,
-        enableColumnReorderActions: actionOptions.enableColumnReorderActions
+        enableColumnReorderActions: actionOptions.enableColumnReorderActions,
+        sortButtonFill: actionOptions.sortButtonFill
       }
     });
   }) as NatTableHeaderActionsRenderer<TData>;
@@ -195,7 +197,7 @@ const wrapColumnHeader = <TData extends RowData>(
  *
  * Set `column.meta.headerActions` to `false` to opt a column out, or provide an
  * object to override `sortIndicator`, `enableSortActions`, `enableColumnPinActions`,
- * `enableColumnReorderActions`, or `accessibilityLabels` for that column.
+ * `enableColumnReorderActions`, `sortButtonFill`, or `accessibilityLabels` for that column.
  *
  * For Angular sort indicator components, return `flexRenderComponent(...)`
  * from `sortIndicator`; the generated sort button keeps ownership of sorting,
