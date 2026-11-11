@@ -46,7 +46,7 @@ protected sortByTotal(): void {
 
 ## Sub-Header Rows
 
-`subHeaderColumn` groups list items under sub-header items exactly as it groups table rows: the shared engine forces a hidden primary sort so groups stay contiguous, user sorting applies within groups, and each group renders an `<li class="list-sub-header">` announced with item-flavored copy. `subHeaderOrder`, the `natTableSubHeader` template, and the per-renderer `enableSubHeaders` gate all work identically. See Sub-header rows for the full semantics.
+`subHeaderColumn` groups list items under sub-header items exactly as it groups table rows: the shared engine forces a hidden primary sort so groups stay contiguous, user sorting applies within groups, and each group renders an `<li class="list-sub-header">` announced with item-flavored copy. `subHeaderOrder`, the `natTableSubHeader` template, and the per-renderer `enableSubHeaders` gate all work identically. See Sub-header rows for the full semantics, including the tokens that lay out a sub-header template and align it with the item columns.
 
 ## Selection And Activation
 

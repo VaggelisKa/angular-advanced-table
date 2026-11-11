@@ -230,6 +230,59 @@ describe('FEATURE: NatTable', () => {
         expect(rowRule?.style.getPropertyValue('min-height')).toBe('');
       });
 
+      it('THEN: it drives the last row of each group from the group-last-row token, falling back to the cell divider', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const groupLastRule = tableStyles.find((rule) => rule.cssText.includes('--nat-table-group-last-row-border-width'));
+
+        const cssText = groupLastRule?.cssText.replaceAll(/\s+/gu, ' ') ?? '';
+
+        expect(groupLastRule?.selectorText).toContain(':has(+ .sub-header-row');
+        expect(cssText).toContain('border-bottom-width: var( --nat-table-group-last-row-border-width');
+        expect(cssText).toContain('var(--nat-table-cell-border-width, var(--sys-nat-table-cell-border-width, 1px))');
+      });
+
+      it('THEN: it fills the sub-header cell and lays the content out from the sub-header content tokens', () => {
+        fixture.detectChanges();
+
+        const tableStyles = Array.from(document.styleSheets).flatMap((styleSheet) =>
+          Array.from(styleSheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+        );
+        const contentRule = tableStyles.find((rule) => rule.cssText.includes('--nat-table-sub-header-content-display'));
+
+        const cssText = contentRule?.cssText.replaceAll(/\s+/gu, ' ') ?? '';
+
+        expect(cssText).toContain('min-width: min(100%, 100cqi)');
+        expect(cssText).toContain(
+          'display: var(--nat-table-sub-header-content-display, var(--sys-nat-table-sub-header-content-display, inline-flex))'
+        );
+        expect(cssText).toContain('var(--nat-table-sub-header-content-gap, var(--sys-nat-table-sub-header-content-gap, 0))');
+        expect(cssText).toContain('var(--nat-table-sub-header-content-align, var(--sys-nat-table-sub-header-content-align, center))');
+        expect(cssText).toContain(
+          'var(--nat-table-sub-header-content-justify, var(--sys-nat-table-sub-header-content-justify, flex-start))'
+        );
+      });
+
+      it('THEN: it tints hovered sortable headers from the header hover token, transparent by default', () => {
+        fixture.detectChanges();
+
+        const hoverRule = Array.from(document.styleSheets)
+          .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+          .flatMap((rule) => (rule instanceof CSSMediaRule ? Array.from(rule.cssRules) : [rule]))
+          .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+          .find((rule) => rule.cssText.includes('--nat-table-header-background-hover'));
+
+        expect(hoverRule?.selectorText).toContain('.header-cell');
+        expect(hoverRule?.selectorText).toContain('.is-sortable');
+        expect(hoverRule?.selectorText).toContain(':hover');
+        expect(hoverRule?.cssText).toContain(
+          'var(--nat-table-header-background-hover, var(--sys-nat-table-header-background-hover, transparent))'
+        );
+      });
+
       it('THEN: it keeps constrained pinned content clipped without enabling pinned-edge shadows by default', () => {
         fixture.detectChanges();
 

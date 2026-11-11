@@ -88,6 +88,20 @@ Override individual columns through `column.meta.headerActions` when one column 
 
 Set `meta.headerActions` to `false` for action columns or utility columns that should keep their original header instead of receiving sort, pin, or move controls.
 
+A custom indicator inherits the same color tokens as the built-in icon through its text color: `--nat-table-sort-icon-color-idle` while unsorted, `--nat-table-sort-icon-color-hover` on hover, `--nat-table-sort-icon-color-active` (or `--nat-table-sort-icon-color`) while sorted, and `--nat-table-sort-icon-color-disabled` when disabled. Draw the indicator with `currentColor` and it follows the theme with no extra styles; with none of the tokens set it keeps the header color.
+
+## Sorting From The Whole Header
+
+By default only the label and indicator are the sort button. Set `sortButtonFill: true` to stretch the button's hit area over the whole header cell, so a click anywhere in the header sorts:
+
+```ts
+const columns = withNatTableHeaderActions(baseColumns, {
+  sortButtonFill: true
+});
+```
+
+The option is also accepted per column in `meta.headerActions`. It changes the pointer target only: the column menu button and the resize handle stay on top and keep working, the header can still be dragged to reorder, and the keyboard model, accessible name, and `aria-sort` are unchanged. Pair it with `--nat-table-header-background-hover` to tint the header of a sortable column on hover.
+
 ## Pinned Columns Variant
 
 Sorting and pinning can coexist. Pinning affects where columns render; sorting still uses column ids and row data. Keep pinned columns stable when they carry row identity or row actions.

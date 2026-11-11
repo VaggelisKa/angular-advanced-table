@@ -82,3 +82,20 @@ Each sub-header row carries screen-reader text such as "Ready group, 3 rows." (t
 ## Styling
 
 Sub-header rows read the public tokens `--nat-table-sub-header-background`, `--nat-table-sub-header-color`, `--nat-table-space-sub-header`, and `--nat-table-font-weight-sub-header` in both renderers. The list's sub-header defaults to no horizontal padding so it aligns with the list items; set `--nat-table-space-sub-header` to change it. See Theming for the full token contract.
+
+The sub-header content fills its row in both renderers (in the table, up to the visible region width, so it stays in view while the grid scrolls sideways). A `natTableSubHeader` template can therefore place a title at the start and a total at the end with tokens alone:
+
+```css
+.orders {
+  --nat-table-sub-header-content-justify: space-between;
+  --nat-table-sub-header-content-gap: 1rem;
+
+  /* The list content is a block by default; opt in to flex or grid. */
+  --nat-list-sub-header-content-display: flex;
+  --nat-list-sub-header-content-justify: space-between;
+}
+```
+
+The tokens lay out the template's root nodes, so give the title and the total one root element each. In the list, `--nat-list-sub-header-content-display: grid` makes the content follow the item's columns (`--nat-list-item-columns`), which lines sub-header parts up with the fields below; `--nat-list-sub-header-columns` overrides the tracks. The sub-header has no inline padding by default while items do, so match `--nat-list-space-sub-header` to the item padding when the columns should align exactly.
+
+`--nat-table-group-last-row-border-width` and `--nat-list-group-last-item-border-width` style the last row or item of each group, the one directly before the next sub-header, for example to drop its divider so the sub-header closes the group. The existing last-row and last-item tokens still only reach the final row of the whole table or list.

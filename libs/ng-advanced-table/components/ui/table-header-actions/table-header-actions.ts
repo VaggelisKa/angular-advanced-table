@@ -80,6 +80,7 @@ export class NatTableHeaderActions {
   public readonly enableSortActions = input(true);
   public readonly enableColumnPinActions = input(true);
   public readonly enableColumnReorderActions = input(false);
+  public readonly sortButtonFill = input(false);
 
   // `!= null` (not `!== null`) so an unset (`undefined`) indicator falls through to the default arrow.
   protected readonly hasCustomSortIndicator = computed(() => this.sortIndicator() != null);
@@ -172,6 +173,19 @@ export class NatTableHeaderActions {
 
   protected togglePin(side: NatTablePinSide): void {
     this.column().pin(this.isPinned(side) ? false : side);
+  }
+
+  /**
+   * The label-sized button keeps pointer presses to itself so they never start
+   * a header drag. A filled button covers the whole header cell, so there the
+   * press must reach the cell or the column could no longer be dragged to
+   * reorder; a completed drag ends on the drag preview, not this button, so it
+   * never produces a sorting click.
+   */
+  protected onSortPointerDown(event: PointerEvent): void {
+    if (!this.sortButtonFill()) {
+      event.stopPropagation();
+    }
   }
 
   protected onSortClick(event: MouseEvent): void {

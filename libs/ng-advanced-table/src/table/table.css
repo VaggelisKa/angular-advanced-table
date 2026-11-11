@@ -118,6 +118,21 @@
     );
 }
 
+/* Hover tint for headers of sortable columns. Painted as an image layer over
+   the cell's own background colour, so it composes with the plain, sticky, and
+   pinned header backgrounds instead of replacing each of them; a translucent
+   value tints, an opaque one replaces. Off (`transparent`) by default. The
+   `.data-table` prefix lifts specificity above the pinned-header rules, whose
+   `background` shorthand would otherwise reset the layer. */
+@media (hover: hover) and (pointer: fine) {
+  .data-table .header-cell.is-sortable:hover {
+    background-image: linear-gradient(
+      var(--nat-table-header-background-hover, var(--sys-nat-table-header-background-hover, transparent)),
+      var(--nat-table-header-background-hover, var(--sys-nat-table-header-background-hover, transparent))
+    );
+  }
+}
+
 .header-cell-content {
   display: flex;
   gap: var(--nat-table-space-header-content-gap, var(--sys-nat-table-space-header-content-gap, 8px));
@@ -333,6 +348,17 @@ tbody .data-row:last-child .data-cell {
 
 .header-cell.cdk-drag-animating {
   transition: transform 180ms ease;
+}
+
+/* The last row of each group: the data row directly before a sub-header row.
+   Falls back to the regular cell divider, so groups look unchanged until the
+   token is set (e.g. `0` to let the sub-header's own border close the group).
+   `:has()` is Safari 15.4+, inside the 16.5 support floor. */
+tbody .data-row:has(+ .sub-header-row) .data-cell {
+  border-bottom-width: var(
+    --nat-table-group-last-row-border-width,
+    var(--sys-nat-table-group-last-row-border-width, var(--nat-table-cell-border-width, var(--sys-nat-table-cell-border-width, 1px)))
+  );
 }
 
 /* `height` on a table row is a floor, not a cap: content taller than the value
@@ -626,17 +652,23 @@ tbody .data-row:last-child .data-cell {
 }
 
 /*
- * Sticky-start, shrink-to-fit content (state-row pattern): the group label
- * stays inside the visible scroll viewport while the full-width cell scrolls
- * horizontally under pinned columns.
+ * Sticky-start content (state-row pattern): the group label stays inside the
+ * visible scroll viewport while the full-width cell scrolls horizontally under
+ * pinned columns. It fills its cell, capped at the region's inline size, so a
+ * template can put a title at the start and a total at the end; content wider
+ * than the cell (the first column in the `cells` layout) still overflows it.
+ * The content-* tokens lay out the template's root nodes.
  */
 .sub-header-content {
   position: sticky;
   inset-inline-start: 0;
   z-index: 1;
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
+  display: var(--nat-table-sub-header-content-display, var(--sys-nat-table-sub-header-content-display, inline-flex));
+  gap: var(--nat-table-sub-header-content-gap, var(--sys-nat-table-sub-header-content-gap, 0));
+  align-items: var(--nat-table-sub-header-content-align, var(--sys-nat-table-sub-header-content-align, center));
+  justify-content: var(--nat-table-sub-header-content-justify, var(--sys-nat-table-sub-header-content-justify, flex-start));
+  min-width: min(100%, 100cqi);
   max-width: 100cqi;
   padding: var(--nat-table-space-sub-header, var(--sys-nat-table-space-sub-header, 8px 12px));
 }

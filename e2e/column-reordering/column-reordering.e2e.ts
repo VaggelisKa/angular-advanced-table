@@ -190,6 +190,37 @@ test.describe('FEATURE: Column reordering', () => {
           expect(settled.length).toBeGreaterThan(0);
           expect(settled).toEqual(settled.map(() => ({ order: 'name,status,category,value', shifted: false, dragging: false })));
         });
+
+        await test.step('THEN: the drag through the filled sort button does not sort the column', async () => {
+          await expect(reorderingTable.getByTestId('nat-table-header-category')).not.toHaveAttribute('aria-sort');
+        });
+      });
+    });
+
+    test.describe('WHEN: a header is clicked outside its label', () => {
+      test('THEN: it sorts from anywhere in the header while the column menu keeps working', async ({ page }) => {
+        const reorderingTable = page.getByTestId('reordering-demo-table');
+        const statusHeader = reorderingTable.getByTestId('nat-table-header-status');
+
+        await test.step('THEN: the sort button is smaller than the header it fills', async () => {
+          const headerBox = await boxOf(statusHeader);
+          const buttonBox = await boxOf(reorderingTable.getByTestId('nat-table-header-sort-status'));
+
+          expect(buttonBox.height).toBeLessThan(headerBox.height);
+
+          await page.mouse.click(headerBox.x + headerBox.width / 2, headerBox.y + 2);
+        });
+
+        await test.step('THEN: a click on the header edge sorts the column', async () => {
+          await expect(statusHeader).toHaveAttribute('aria-sort', 'ascending');
+
+          await reorderingTable.getByTestId('nat-table-header-actions-menu-status').click();
+        });
+
+        await test.step('THEN: the column menu opens instead of sorting again', async () => {
+          await expect(reorderingTable.getByTestId('nat-table-header-move-right-status')).toBeVisible();
+          await expect(statusHeader).toHaveAttribute('aria-sort', 'ascending');
+        });
       });
     });
   });

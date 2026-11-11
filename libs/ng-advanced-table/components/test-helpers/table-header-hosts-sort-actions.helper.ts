@@ -74,3 +74,30 @@ export class SortActionsOverrideEnabledHost {
     this.tableState.set(state);
   }
 }
+
+@Component({
+  selector: 'nat-sort-button-fill-host',
+  imports: [NatTable, NatTableSurface],
+  template: `
+    <nat-table-surface [enablePinning]="true" [enableSorting]="true" [state]="tableState()" (stateChange)="onTableStateChange($event)">
+      <nat-table [columns]="columns" [data]="rows()" accessibleName="Operations table" />
+    </nat-table-surface>
+  `
+})
+export class SortButtonFillHost {
+  protected readonly rows = signal<Row[]>(buildRows(6));
+  protected readonly columns = withNatTableHeaderActions(
+    baseColumns.map((column) =>
+      'accessorKey' in column && column.accessorKey === 'region'
+        ? { ...column, meta: { ...column.meta, headerActions: { sortButtonFill: false } } }
+        : column
+    ),
+    { sortButtonFill: true }
+  );
+
+  public readonly tableState = signal<Partial<NatTableUserState>>({});
+
+  protected onTableStateChange(state: Partial<NatTableUserState>): void {
+    this.tableState.set(state);
+  }
+}

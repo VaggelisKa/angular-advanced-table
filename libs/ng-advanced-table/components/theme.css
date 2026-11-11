@@ -128,6 +128,7 @@
 
   /* Header */
   --nat-table-header-background: var(--nat-table-color-surface-sticky);
+  --nat-table-header-background-hover: transparent;
   --nat-table-header-color: var(--nat-table-color-text-muted);
   --nat-table-header-border-color: var(--nat-table-color-border);
   --nat-table-header-border-width: 1px;
@@ -231,6 +232,10 @@
   --nat-table-font-weight-sub-header: 600;
   --nat-table-sub-header-border: none;
   --nat-table-sub-header-border-width: 0;
+  --nat-table-sub-header-content-display: inline-flex;
+  --nat-table-sub-header-content-gap: 0;
+  --nat-table-sub-header-content-align: center;
+  --nat-table-sub-header-content-justify: flex-start;
 
   /* Cells & semantic tones */
   --nat-table-cell-border-color: var(--nat-table-color-divider);
@@ -261,6 +266,7 @@
      would be invalid for the border-bottom-width longhand this feeds. */
   --nat-list-last-item-border-width: 1px;
   --nat-list-last-item-border-color: var(--nat-list-item-border-color);
+  --nat-list-item-align: stretch;
   --nat-list-field-gap: 8px;
   --nat-list-label-font-weight: 600;
 
@@ -271,6 +277,9 @@
   --nat-list-font-weight-sub-header: 600;
   --nat-list-sub-header-border: none;
   --nat-list-sub-header-border-width: 0;
+  --nat-list-sub-header-content-display: block;
+  --nat-list-sub-header-content-align: normal;
+  --nat-list-sub-header-content-justify: normal;
 
   /* List body states */
   --nat-list-state-color: var(--nat-table-color-text-muted);

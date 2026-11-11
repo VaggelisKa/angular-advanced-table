@@ -66,4 +66,11 @@ export type NatTableHeaderActionsOptions = {
   readonly enableColumnPinActions?: boolean;
   /** Enables Move left / Move right menu items when the controlled table can reorder this column. */
   readonly enableColumnReorderActions?: boolean;
+  /**
+   * Stretches the sort button's hit area over the whole header cell, so a click anywhere in
+   * the header sorts. The column menu button and the resize handle stay on top and keep
+   * working, and the header can still be dragged to reorder. Purely an affordance: it changes
+   * no sorting state or behavior. Defaults to `false`.
+   */
+  readonly sortButtonFill?: boolean;
 };
