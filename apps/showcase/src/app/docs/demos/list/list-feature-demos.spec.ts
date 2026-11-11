@@ -7,6 +7,7 @@ import { ListControls } from './list-controls';
 import { ListCustomCells } from './list-custom-cells';
 import { ListDataStates } from './list-data-states';
 import { ListFlowLayout } from './list-flow-layout';
+import { ListItemTemplate } from './list-item-template';
 import { ListSelection } from './list-selection';
 
 const createFixture = async <T>(component: Type<T>): Promise<ComponentFixture<T>> => {
@@ -65,6 +66,28 @@ describe('FEATURE: List data states docs demo', () => {
         expect(host(fixture).querySelector('[data-state="error"]')).not.toBeNull();
         expect(errorButton?.classList.contains('active')).toBe(true);
         expect(errorButton?.getAttribute('aria-pressed')).toBe('true');
+      });
+    });
+  });
+});
+
+describe('FEATURE: List item template docs demo', () => {
+  describe('GIVEN: the demo renders', () => {
+    describe('WHEN: a card action is clicked', () => {
+      it('THEN: every item renders the card and the host updates the row', async () => {
+        const fixture = await createFixture(ListItemTemplate);
+
+        expect(host(fixture).querySelectorAll('[data-testid="nat-list-item"] [data-testid="list-item-template-card"]')).toHaveLength(
+          6
+        );
+        expect(host(fixture).querySelectorAll('[data-testid="nat-list-field"]')).toHaveLength(0);
+
+        const action = host(fixture).querySelector<HTMLButtonElement>('[aria-label="Mark ORD-202 ready"]');
+
+        action?.click();
+        await render(fixture);
+
+        expect(host(fixture).querySelector('[aria-label="Mark ORD-202 ready"]')).toBeNull();
       });
     });
   });

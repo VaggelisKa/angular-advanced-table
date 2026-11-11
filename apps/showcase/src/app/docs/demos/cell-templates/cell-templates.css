@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.cell-templates-demo-controls {
+  display: flex;
+  margin-block-end: var(--sc-space-4);
+}
+
+.cell-templates-demo-status {
+  display: inline-flex;
+  gap: var(--sc-space-2);
+  align-items: center;
+}
+
+.cell-templates-demo-badge {
+  font-weight: var(--sc-weight-semibold);
+}
+
+.cell-templates-demo-badge:not([data-status='Active']) {
+  color: var(--sc-text-soft);
+}

@@ -1,0 +1,7 @@
+---
+ng-advanced-table: minor
+---
+
+Add projected cell templates. `<ng-template natTableCell="<column id>">` (`NatTableCellTemplate`, exported from `ng-advanced-table`) declares a column's cell content in the host template instead of the column definition's `cell`. It works in `<nat-table>`, `<nat-table-static>`, and as the field value in `<nat-list>`; a projected template wins over the column definition, and removing it falls back to the column definition. The template context (`NatTableCellTemplateContext`) carries the value, row, column, cell, row index, renderer, and table, typed through the new `NatTableRow`, `NatTableColumn`, and `NatTableCellRef` aliases; `[natTableCellOf]="columns"` types `row` with the consumer's row type. `ngGridCellWidget` controls inside a projected template register with the grid in `<nat-table>`. A template whose id matches no column warns once in development.
+
+Add a projected list item template. `<ng-template natListItem>` (`NatListItemTemplate`) replaces the fields, labels, and field layout of every `<nat-list>` item with consumer markup, while the list keeps the item element, selection, item navigation, and row activation. The context (`NatListItemTemplateContext`) carries the row object, row, row index, selected flag, visible column ids, and table; `[natListItemOf]="columns"` types the row. With `enableRowActivation`, the element marked `natListItemLabel` (`NatListItemLabel`) names the item's activator button; without one the list warns once in development and names the button with the row's first visible value.

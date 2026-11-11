@@ -24,43 +24,69 @@
     <!-- The fields' own layout box (grid areas, or wrapping flow slots), kept
          separate from the item so the item's padding, border, and the
          stretched activator stay out of the layout maths. -->
-    <div class="list-item-fields">
-      @for (column of listColumns; track column.id) {
-        @let cell = cellForColumn(row, column.id);
-        @if (cell) {
-          <div
-            [attr.data-column-id]="column.id"
-            [attr.data-nat-row-activation]="column.columnDef.meta?.rowActivation === false ? 'false' : null"
-            [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
-            [natListFieldArea]="column.id"
-            [natListFieldWidth]="fieldWidth(column.id)"
-            class="list-field"
-            data-testid="nat-list-field">
-            <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label" data-testid="nat-list-field-label">
-              @let headerDef = column.columnDef.header;
-              @let headerContext = headerContexts.get(column.id);
-              @if (!hasStaticLabel(column) && headerDef && headerContext) {
-                <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
-                  {{ renderedLabel }}
-                </ng-container>
-              } @else {
-                {{ resolveColumnLabel(column) }}
-              }
-            </span>
-            <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value" data-testid="nat-list-field-value">
-              <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
-                @if (isFlowLayout() && isSrOnlyLabel(column)) {
-                  <!-- A real flex item lets oversized plain text shrink too. -->
-                  <span data-testid="nat-list-field-text">{{ rendered }}</span>
+    @if (itemTemplateRef(); as itemTemplate) {
+      <!-- A projected `natListItem` template replaces the fields outright. The
+           outlet hands the template its element injector, so a
+           `natListItemLabel` inside it can name the activator. -->
+      <div
+        #itemOutlet="natListItemOutlet"
+        [itemIndex]="itemIndex"
+        [natListItemOutlet]="withActivator ? activatorLabelId(itemIndex) : null"
+        class="list-item-content"
+        data-testid="nat-list-item-content">
+        <ng-container
+          [ngTemplateOutlet]="itemTemplate"
+          [ngTemplateOutletContext]="getItemTemplateContext(row, itemIndex)"
+          [ngTemplateOutletInjector]="itemOutlet.injector" />
+      </div>
+    } @else {
+      <div class="list-item-fields">
+        @for (column of listColumns; track column.id) {
+          @let cell = cellForColumn(row, column.id);
+          @if (cell) {
+            <div
+              [attr.data-column-id]="column.id"
+              [attr.data-nat-row-activation]="column.columnDef.meta?.rowActivation === false ? 'false' : null"
+              [attr.id]="withActivator && $first ? activatorLabelId(itemIndex) : null"
+              [natListFieldArea]="column.id"
+              [natListFieldWidth]="fieldWidth(column.id)"
+              class="list-field"
+              data-testid="nat-list-field">
+              <span [class.sr-only]="isSrOnlyLabel(column)" class="list-field-label" data-testid="nat-list-field-label">
+                @let headerDef = column.columnDef.header;
+                @let headerContext = headerContexts.get(column.id);
+                @if (!hasStaticLabel(column) && headerDef && headerContext) {
+                  <ng-container *flexRender="headerDef; props: headerContext; let renderedLabel">
+                    {{ renderedLabel }}
+                  </ng-container>
                 } @else {
-                  {{ rendered }}
+                  {{ resolveColumnLabel(column) }}
                 }
-              </ng-container>
-            </span>
-          </div>
+              </span>
+              <span [class.list-field-value--fill]="isSrOnlyLabel(column)" class="list-field-value" data-testid="nat-list-field-value">
+                @if (cellTemplates().get(column.id); as cellTemplate) {
+                  <ng-container
+                    #cellInjector="natTableCellTemplateInjector"
+                    [ngTemplateOutlet]="cellTemplate"
+                    [ngTemplateOutletContext]="getCellTemplateContext(cell, itemIndex)"
+                    [ngTemplateOutletInjector]="cellInjector.injector"
+                    natTableCellTemplateInjector />
+                } @else {
+                  <ng-container *flexRender="cell.column.columnDef.cell; props: cell.getContext(); let rendered">
+                    @if (isFlowLayout() && isSrOnlyLabel(column)) {
+                      <!-- A real flex item lets oversized plain text shrink too. -->
+                      <span data-testid="nat-list-field-text">{{ rendered }}</span>
+                    } @else {
+                      {{ rendered }}
+                    }
+                  </ng-container>
+                }
+              </span>
+            </div>
+          }
         }
-      }
-    </div>
+      </div>
+    }
   </ng-template>
 
   <!-- One group's sub-header content (sr-only announcement + template or value),
@@ -116,7 +142,7 @@
                    like the table's sub-header rows, so arrow navigation passes
                    through them instead of skipping the group boundary. -->
               <li class="list-sub-header" data-testid="nat-list-sub-header" ngGridRow>
-                <div class="list-sub-header-content" natTableCell ngGridCell>
+                <div class="list-sub-header-content" natTableCellInteraction ngGridCell>
                   <ng-container [ngTemplateOutlet]="subHeaderContent" [ngTemplateOutletContext]="{ subHeader }" />
                 </div>
               </li>
@@ -135,7 +161,12 @@
               ngGridRow
               (click)="onItemClick($event, row)"
               (keydown)="onItemKeydown($event, row)">
-              <div [class.list-item--flow]="isFlowLayout()" class="list-item" data-testid="nat-list-item-cell" natTableCell ngGridCell>
+              <div
+                [class.list-item--flow]="isFlowLayout()"
+                class="list-item"
+                data-testid="nat-list-item-cell"
+                natTableCellInteraction
+                ngGridCell>
                 <ng-container
                   [ngTemplateOutlet]="itemFields"
                   [ngTemplateOutletContext]="{ row, itemIndex: $index, listColumns, headerContexts, withActivator: false }" />
@@ -201,9 +232,10 @@
                      Trade-off, documented in the docs topic: the stretched
                      overlay owns mousedown, so field text cannot be mouse-
                      selected while activation is enabled. -->
-                <!-- eslint-disable-next-line @angular-eslint/template/elements-content -- named via aria-labelledby from the item's first field; visible content would duplicate it. -->
+
                 <button
-                  [attr.aria-labelledby]="activatorLabelId($index)"
+                  [attr.aria-label]="usesFallbackActivatorName($index) ? fallbackActivatorName(row) : null"
+                  [attr.aria-labelledby]="usesFallbackActivatorName($index) ? null : activatorLabelId($index)"
                   class="list-item-activator"
                   data-testid="nat-list-item-activator"
                   type="button"

@@ -1,0 +1,37 @@
+<div class="cell-templates-demo-controls">
+  <app-demo-toggle-group [options]="rendererOptions" [value]="view()" accessibleName="Renderer" (valueChange)="view.set($event)" />
+</div>
+
+<nat-table-surface>
+  @if (view() === 'table') {
+    <nat-table [columns]="columns" [data]="rows()" accessibleName="Resources with a templated status column" class="sc-demo-table">
+      <ng-template [natTableCellOf]="columns" let-row="row" let-status natTableCell="status">
+        <span class="cell-templates-demo-status" data-testid="cell-templates-status">
+          <span [attr.data-status]="status" class="cell-templates-demo-badge">{{ status }}</span>
+          <button
+            [attr.aria-label]="(status === 'Active' ? 'Pause ' : 'Activate ') + row.original.name"
+            class="btn btn-outline cell-templates-demo-action"
+            type="button"
+            (click)="toggle(row.original)">
+            {{ status === 'Active' ? 'Pause' : 'Activate' }}
+          </button>
+        </span>
+      </ng-template>
+    </nat-table>
+  } @else {
+    <nat-list [columns]="columns" [data]="rows()" accessibleName="Resources list with a templated status field" class="sc-demo-list">
+      <ng-template [natTableCellOf]="columns" let-row="row" let-status natTableCell="status">
+        <span class="cell-templates-demo-status" data-testid="cell-templates-status">
+          <span [attr.data-status]="status" class="cell-templates-demo-badge">{{ status }}</span>
+          <button
+            [attr.aria-label]="(status === 'Active' ? 'Pause ' : 'Activate ') + row.original.name"
+            class="btn btn-outline cell-templates-demo-action"
+            type="button"
+            (click)="toggle(row.original)">
+            {{ status === 'Active' ? 'Pause' : 'Activate' }}
+          </button>
+        </span>
+      </ng-template>
+    </nat-list>
+  }
+</nat-table-surface>

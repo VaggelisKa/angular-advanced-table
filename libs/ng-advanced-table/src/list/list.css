@@ -205,9 +205,37 @@
    activator, which is what guards activation against e.g. checkbox clicks.
    Mirrors ROW_ACTIVATE_INTERACTIVE_SELECTOR (src/common/interaction.const.ts)
    plus `label` and `[tabindex]`, which matter for pointer reachability here;
-   a spec asserts the const's selectors all appear in this rule. */
+   a spec asserts the const's selectors all appear in this rule.
+   The same controls inside a projected `natListItem` template carry the
+   consumer's style scope, so that branch reaches them through `::ng-deep`,
+   kept behind the scoped item/content chain. */
 .list-item.is-activatable
   .list-field
+  :is(
+    a[href],
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [contenteditable='true'],
+    [role='button'],
+    [role='link'],
+    [role='checkbox'],
+    [role='menuitem'],
+    [role='menuitemcheckbox'],
+    [role='menuitemradio'],
+    [role='tab'],
+    [role='switch'],
+    [role='combobox'],
+    [role='textbox'],
+    [role='searchbox'],
+    label,
+    [tabindex]
+  ),
+.list-item.is-activatable
+  > .list-item-content
+  ::ng-deep
   :is(
     a[href],
     button,

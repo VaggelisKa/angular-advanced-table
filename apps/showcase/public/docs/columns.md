@@ -157,9 +157,46 @@ Use the surface flag for table-wide reordering.
 </nat-table-surface>
 ```
 
+## Cell Templates
+
+Declare a column's cell markup in the host template with `natTableCell`, keyed by column id. The column definition keeps the data concerns (accessor, sorting, filtering, export, `meta`); the template owns what the cell shows and can use the host component's state and methods directly.
+
+```html
+<nat-table [columns]="columns" [data]="positions()" accessibleName="Open positions">
+  <ng-template natTableCell="status" [natTableCellOf]="columns" let-status let-row="row">
+    <app-status-badge [status]="status" (retry)="retry(row.original.id)" />
+  </ng-template>
+</nat-table>
+```
+
+```ts
+import { NatTable, NatTableCellTemplate } from 'ng-advanced-table';
+```
+
+- The column id is the definition's `id`, or its `accessorKey` when no `id` is set. A template whose id matches no column is never rendered and logs a warning in development.
+- A projected template wins over the column's `cell`. Remove the template and the column definition renders again, so a shared column file can keep a fallback.
+- The template replaces the cell content only. The cell element, alignment, tone, `cellMaxLines`, pinning, and row-activation attributes still come from the column definition and `meta`.
+- `<nat-table>`, `<nat-table-static>`, and `<nat-list>` all accept it. In a list the template renders as the field's value. Templates are projected per renderer, so a host that swaps renderers declares them inside each one.
+- `[natTableCellOf]="columns"` is a typing hint: it types `row` with your row type. `value` is the accessor value and stays `unknown`, so narrow or format it in the template.
+
+The template context:
+
+| Name        | Value                                                            |
+| ----------- | ---------------------------------------------------------------- |
+| `$implicit` | The cell's accessor value (`let-status`)                         |
+| `value`     | Same as `$implicit`                                              |
+| `row`       | The row; `row.original` is your row object                       |
+| `column`    | The column                                                       |
+| `cell`      | The cell, for advanced reads                                     |
+| `rowIndex`  | Zero-based position among the rows of the current page or window |
+| `renderer`  | `'table'` or `'list'`                                            |
+| `table`     | The table instance, for advanced reads                           |
+
+Interactive controls follow the same rules as component cells: inside `<nat-table>`, `ngGridCellWidget` works on a control in a projected template, and plain native controls are managed by the cell-interaction keys. A template shared with `<nat-table-static>` or `<nat-list>` should use plain controls, because `ngGridCellWidget` needs the grid.
+
 ## Custom Cell Components
 
-Use `flexRenderComponent(...)` when a cell should render an Angular component. Keep data loading, mutations, and dialogs in the container; the cell component should emit intent.
+Use `flexRenderComponent(...)` when the column definition itself should render an Angular component, for example in column files shared between tables. Keep data loading, mutations, and dialogs in the container; the cell component should emit intent.
 
 ```ts
 import { Component, input, output } from '@angular/core';

@@ -12,6 +12,43 @@ Use custom cells for formatting, links, controls, status indicators, menus, and 
 - Pass only the row/context data the cell needs.
 - Emit events to the host for navigation, dialogs, API calls, and state changes.
 
+## Cell Templates
+
+Prefer a projected `natTableCell` template when the cell markup belongs to one screen and needs the host component's state or methods. Import `NatTableCellTemplate` from `ng-advanced-table`.
+
+```html
+<nat-table [columns]="columns" [data]="invoices()" accessibleName="Invoices">
+  <ng-template natTableCell="status" [natTableCellOf]="columns" let-status let-row="row">
+    <app-invoice-status [status]="status" (retry)="retry(row.original.id)" />
+  </ng-template>
+</nat-table>
+```
+
+- Key the template by column id (`id`, or `accessorKey` when no `id` is set).
+- Keep accessor, sorting, filtering, export, and `meta` on the column definition; the template only replaces the cell content.
+- The template wins over the column's `cell`.
+- The same directive works in `<nat-table-static>` and `<nat-list>`; declare it inside each renderer.
+- Use `flexRenderComponent(...)` instead when the column definitions are shared across screens.
+
+## List Item Templates
+
+Use a projected `natListItem` template when a `<nat-list>` item should be a custom card instead of labelled fields. Import `NatListItemTemplate` and `NatListItemLabel` from `ng-advanced-table`.
+
+```html
+<nat-list [columns]="columns" [data]="invoices()" accessibleName="Invoices" enableRowActivation (rowActivate)="open($event.rowData)">
+  <ng-template natListItem [natListItemOf]="columns" let-invoice>
+    <app-invoice-card [invoice]="invoice">
+      <span natListItemLabel>{{ invoice.number }}</span>
+    </app-invoice-card>
+  </ng-template>
+</nat-list>
+```
+
+- The template replaces the fields, labels, and field layout; the list keeps the item element, selection, navigation, and activation.
+- Mark the identifying element with `natListItemLabel` whenever `enableRowActivation` is on.
+- Column visibility and order do not apply inside the template; read `visibleColumnIds` from the context when they should.
+- To change one field only, use a `natTableCell` template and keep the built-in item.
+
 ## Pure Formatting Cells
 
 Use simple callbacks for pure formatting.

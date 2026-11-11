@@ -32,7 +32,43 @@ Each item renders one field per visible column, label first, value second:
 - `meta.hiddenHeaderLabel` renders the label screen-reader-only — same contract as the table's hidden headers. Use it when the value is self-describing.
 - A non-string `header` def (component, template, or function) renders through `flexRender` as the field label.
 
-Values render through the same `flexRender` pipeline as table cells: strings, `flexRenderComponent`, and `TemplateRef` cells all work unchanged — the live example renders its status field with the same badge component the table cells use. Grid-coupled cell widgets (`ngGridCellWidget`) require the table's Aria grid context and cannot render inside a list.
+A `natTableCell` template projected into `<nat-list>` renders as that column's field value, exactly as it renders a table cell (see Columns). Without one, values render through the same `flexRender` pipeline as table cells: strings, `flexRenderComponent`, and `TemplateRef` cells all work unchanged — the live example renders its status field with the same badge component the table cells use. Grid-coupled cell widgets (`ngGridCellWidget`) require the table's Aria grid context and cannot render inside a list.
+
+## Item Templates
+
+Project an `ng-template natListItem` into `<nat-list>` to replace the whole body of every item with your own markup, for example a card component. Import `NatListItemTemplate` (and `NatListItemLabel` when items are activatable) from `ng-advanced-table`.
+
+```html
+<nat-list [columns]="columns" [data]="orders()" accessibleName="Orders" enableRowActivation (rowActivate)="open($event.rowData)">
+  <ng-template natListItem [natListItemOf]="columns" let-order let-row="row">
+    <app-order-card [order]="order" [selected]="row.getIsSelected()">
+      <span natListItemLabel>{{ order.customer }}</span>
+    </app-order-card>
+  </ng-template>
+</nat-list>
+```
+
+The list keeps the item element, selection attributes, item navigation, row activation, sub-header items, the loading, empty, and error items, and the item's padding, border, radius, and background tokens. The template replaces the fields, their labels, and their layout.
+
+| Context field      | Value                                                   |
+| ------------------ | ------------------------------------------------------- |
+| `$implicit`        | The row object (`row.original`)                         |
+| `row`              | The row, for selection and other row state              |
+| `rowIndex`         | Zero-based position among the items of the current page |
+| `selected`         | Whether the row is selected                             |
+| `visibleColumnIds` | Ids of the visible columns in display order             |
+| `table`            | The table instance                                      |
+
+`[natListItemOf]="columns"` is a typing hint that types the row with your row type; it is never read at runtime.
+
+What changes with an item template:
+
+- Column visibility and column order no longer change what an item shows, because the template owns its content. Read `visibleColumnIds` when a template should follow them. Sorting, filtering, pagination, and selection keep working through the columns and the shared state.
+- The field layout tokens (`--nat-list-item-areas`, `--nat-list-item-columns`, `--nat-list-item-gap`, `--nat-list-item-align`, the `--nat-list-field-*` tokens, and the flow tokens) style the built-in fields only. `itemLayout` has no effect.
+- `natTableCell` templates and column `cell` renderers are not rendered inside a templated item.
+- With `enableRowActivation`, mark the element that identifies the item with `natListItemLabel`; it names the activator button. Without one, the list warns in development and names the button with the row's first visible value. Interactive controls inside the template stack above the activator, so clicking them never activates the item.
+
+To change a single field, keep the built-in item and use a `natTableCell` template instead.
 
 ## Shared State And Companion Controls
 

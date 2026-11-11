@@ -5,17 +5,21 @@ import type { ElementRef, TemplateRef } from '@angular/core';
 import {
   Component,
   DestroyRef,
+  afterRenderEffect,
   booleanAttribute,
   computed,
   contentChild,
+  contentChildren,
   effect,
   inject,
   input,
+  isDevMode,
   output,
-  viewChild
+  viewChild,
+  viewChildren
 } from '@angular/core';
 
-import type { ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
+import type { Cell, ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import { NAT_LIST_ITEM_LAYOUT } from './common/list-layout.const';
@@ -26,7 +30,9 @@ import { findRowCell, hasStaticLabel, isSrOnlyLabel } from './utils/list-column.
 import { resolveListFieldWidth } from './utils/list-flow-layout.util';
 import { buildListStateTemplateContext, resolveListStateView } from './utils/list-state.util';
 import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
-import { NatTableCell } from '../cell-interaction/table-cell.directive';
+import { NatTableCellInteraction } from '../cell-interaction/table-cell-interaction.directive';
+import type { NatTableCellTemplateContext } from '../common/cell-template.type';
+import type { NatListItemTemplateContext } from '../common/list-item-template.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
@@ -37,8 +43,13 @@ import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
 import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
+import { NatListItemOutlet } from '../ui/list-item-outlet.directive';
+import { NatListItemTemplate } from '../ui/list-item-template.directive';
+import { NatTableCellTemplateInjector } from '../ui/table-cell-template-injector.directive';
+import { NatTableCellTemplate } from '../ui/table-cell-template.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
+import { indexCellTemplates } from '../utils/cell-template.util';
 import { resolveColumnLabel } from '../utils/column-label.util';
 import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
 import { requireNatTableService } from '../utils/table-service.util';
@@ -69,7 +80,17 @@ import { requireNatTableService } from '../utils/table-service.util';
     '[attr.data-item-layout]': 'itemLayout()',
     '[style.--sys-nat-table-list-item-areas]': 'defaultItemAreas()'
   },
-  imports: [FlexRender, Grid, GridCell, GridRow, NatListFieldArea, NatTableCell, NgTemplateOutlet],
+  imports: [
+    FlexRender,
+    Grid,
+    GridCell,
+    GridRow,
+    NatListFieldArea,
+    NatListItemOutlet,
+    NatTableCellTemplateInjector,
+    NatTableCellInteraction,
+    NgTemplateOutlet
+  ],
   providers: [NatTableState, NatTableA11yService, NatTableCellControlManager],
   templateUrl: './list.html',
   styleUrl: './list.css'
@@ -267,6 +288,8 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
   private readonly errorTemplate = contentChild(NatTableErrorTemplate);
   private readonly subHeaderTemplate = contentChild(NatTableSubHeaderTemplate);
+  private readonly cellTemplateDirectives = contentChildren(NatTableCellTemplate);
+  private readonly itemTemplate = contentChild(NatListItemTemplate);
 
   // ─── Sub-header groups (delegated to state) ───
 
@@ -277,6 +300,72 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
 
     return templateRef ? (templateRef as TemplateRef<NatTableSubHeaderTemplateContext<TData>>) : null;
   });
+
+  /** Projected `natTableCell` templates by column id; a column without one renders its column definition. */
+  protected readonly cellTemplates = computed(() =>
+    indexCellTemplates<NatTableCellTemplateContext<TData>>(this.cellTemplateDirectives())
+  );
+
+  /**
+   * Template ids to check against the columns. Reads the column definitions so
+   * the check re-runs when they change.
+   */
+  private readonly knownCellTemplateIds = computed(() => {
+    this.columns();
+
+    return [...this.cellTemplates().keys()];
+  });
+
+  protected getCellTemplateContext(cell: Cell<TData, unknown>, rowIndex: number): NatTableCellTemplateContext<TData> {
+    return this.state.getCellTemplateContext(cell, rowIndex, 'list');
+  }
+
+  // ─── Item template (`natListItem`) ───
+
+  /** Projected `natListItem` template, or `null` to render the built-in fields. */
+  protected readonly itemTemplateRef = computed<TemplateRef<NatListItemTemplateContext<TData>> | null>(() => {
+    const templateRef = this.itemTemplate()?.templateRef;
+
+    return templateRef ? (templateRef as TemplateRef<NatListItemTemplateContext<TData>>) : null;
+  });
+
+  /** Visible column ids in display order; one stable array per column change, so item contexts stay cached. */
+  private readonly visibleColumnIds = computed<readonly string[]>(() => this.visibleColumns().map((column) => column.id));
+
+  private readonly itemOutlets = viewChildren(NatListItemOutlet);
+
+  /** Render indexes of templated items that hold no `natListItemLabel` element. */
+  private readonly unlabelledItemIndexes = computed(
+    () =>
+      new Set(
+        this.itemOutlets()
+          .filter((outlet) => !outlet.hasLabel())
+          .map((outlet) => outlet.itemIndex())
+      )
+  );
+
+  private warnedMissingItemLabel = false;
+
+  protected getItemTemplateContext(row: Row<TData>, rowIndex: number): NatListItemTemplateContext<TData> {
+    return this.state.getListItemTemplateContext(row, rowIndex, this.visibleColumnIds());
+  }
+
+  /**
+   * Whether the activator falls back to a generated name: the item renders a
+   * `natListItem` template that marked no `natListItemLabel` element.
+   */
+  protected usesFallbackActivatorName(index: number): boolean {
+    return this.itemTemplateRef() !== null && this.unlabelledItemIndexes().has(index);
+  }
+
+  /** Fallback activator name for a templated item without a label: the row's first visible value. */
+  protected fallbackActivatorName(row: Row<TData>): string {
+    const firstColumn = this.visibleColumns().at(0);
+    const value = firstColumn ? this.cellForColumn(row, firstColumn.id)?.getValue() : undefined;
+    const name = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+
+    return name || row.id;
+  }
 
   protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
     return this.state.getSubHeaderTemplateContext(group);
@@ -384,9 +473,9 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   // ─── Constructor ───
 
   public constructor() {
-    // Prepares native controls inside `[natTableCell]` gridcells (roving
+    // Prepares native controls inside `[natTableCellInteraction]` gridcells (roving
     // `tabindex="-1"` + managed-widget marker). Inert in plain list mode:
-    // only the composite branch renders `[natTableCell]` elements, so the
+    // only the composite branch renders `[natTableCellInteraction]` elements, so the
     // manager finds no owned cells until item navigation is enabled.
     inject(NatTableCellControlManager).startCellControlPreparation();
 
@@ -414,8 +503,23 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
     effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
     effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
+    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
 
     effect(() => this.state.tableRegionRef.set(this.listRegionRef()));
+
+    // After render, so every item's template (and the labels inside it) exists
+    // before the check runs.
+    afterRenderEffect(() => {
+      if (!isDevMode() || this.warnedMissingItemLabel || !this.rendersActivator() || this.unlabelledItemIndexes().size === 0) {
+        return;
+      }
+
+      this.warnedMissingItemLabel = true;
+      console.warn(
+        '[ng-advanced-table] A natListItem template with enableRowActivation needs an element marked natListItemLabel ' +
+          "to name each item's activator button. Falling back to the row's first visible value."
+      );
+    });
 
     this.state.registerSeedEffect();
     this.state.registerSubHeaderValidationEffect();
