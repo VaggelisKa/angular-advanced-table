@@ -43,6 +43,9 @@ import { NatListItemTemplate } from '../ui/list-item-template.directive';
               } @else {
                 <h3 data-testid="item-card-title">{{ item.name }}</h3>
               }
+              @if (showSecondLabel()) {
+                <span data-testid="item-card-second-label" natListItemLabel>{{ item.region }}</span>
+              }
               <p data-testid="item-card-status">{{ item.status }}</p>
               <button data-testid="item-card-select" type="button" (click)="row.toggleSelected()">Select</button>
             </article>
@@ -57,6 +60,7 @@ class ListItemTemplateHost {
   public readonly columns = columns;
   public readonly showItemTemplate = signal(true);
   public readonly showLabel = signal(true);
+  public readonly showSecondLabel = signal(false);
   public readonly enableRowActivation = signal(false);
   public readonly enableRowSelection = signal(false);
   public readonly enableItemNavigation = signal(false);
@@ -175,6 +179,37 @@ describe('FEATURE: projected list item template', () => {
         expect(labelWarnings(warn)).toHaveLength(0);
 
         warn.mockRestore();
+      });
+    });
+
+    describe('WHEN: the template marks two natListItemLabel elements', () => {
+      it('THEN: it puts the referenced id on the first label only', async () => {
+        host.showSecondLabel.set(true);
+        await fixture.whenStable();
+
+        const [item] = queryAll(fixture, '[data-testid="nat-list-item"]');
+        const labelledby = item.querySelector('[data-testid="nat-list-item-activator"]')?.getAttribute('aria-labelledby');
+
+        expect(item.querySelectorAll(`[id="${labelledby}"]`)).toHaveLength(1);
+        expect(item.querySelector(`[id="${labelledby}"]`)?.textContent.trim()).toBe('Alpha');
+        expect(item.querySelector('[data-testid="item-card-second-label"]')?.hasAttribute('id')).toBe(false);
+      });
+    });
+
+    describe('WHEN: the naming label is removed while another label stays', () => {
+      it('THEN: it names the activator by the remaining label', async () => {
+        host.showSecondLabel.set(true);
+        await fixture.whenStable();
+        host.showLabel.set(false);
+        await fixture.whenStable();
+
+        const names = queryAll(fixture, '[data-testid="nat-list-item"]').map((item) => {
+          const labelledby = item.querySelector('[data-testid="nat-list-item-activator"]')?.getAttribute('aria-labelledby');
+
+          return labelledby ? item.querySelector(`[id="${labelledby}"]`)?.textContent.trim() : null;
+        });
+
+        expect(names).toEqual(host.rows().map((row) => row.region));
       });
     });
 

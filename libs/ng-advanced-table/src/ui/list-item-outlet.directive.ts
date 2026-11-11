@@ -3,7 +3,7 @@ import { Directive, Injector, computed, inject, input, signal } from '@angular/c
 /**
  * Insertion point of a projected `natListItem` template inside one list item.
  * Exposes its element injector so the template's directives can reach it, and
- * tracks whether the template marked a naming element with `natListItemLabel`.
+ * tracks which `natListItemLabel` element names the item.
  */
 @Directive({
   selector: '[natListItemOutlet]',
@@ -17,21 +17,23 @@ export class NatListItemOutlet {
 
   public readonly injector = inject(Injector);
 
-  private readonly labelCount = signal(0);
+  // Registration order, so the earliest label still rendered names the item.
+  private readonly labels = signal<readonly object[]>([]);
 
   /** Whether the projected template holds at least one `natListItemLabel` element. */
-  public readonly hasLabel = computed(() => this.labelCount() > 0);
+  public readonly hasLabel = computed(() => this.labels().length > 0);
 
-  /** Registers a label and reports whether it is the item's first, which carries the id. */
-  public registerLabel(): boolean {
-    const isFirst = this.labelCount() === 0;
-
-    this.labelCount.update((count) => count + 1);
-
-    return isFirst;
+  public registerLabel(label: object): void {
+    this.labels.update((labels) => [...labels, label]);
   }
 
-  public unregisterLabel(): void {
-    this.labelCount.update((count) => Math.max(0, count - 1));
+  /** Removes a label; the next one registered, if any, takes over naming the item. */
+  public unregisterLabel(label: object): void {
+    this.labels.update((labels) => labels.filter((candidate) => candidate !== label));
+  }
+
+  /** Whether `label` is the one carrying the id the activator references. */
+  public namesItem(label: object): boolean {
+    return this.labels().at(0) === label;
   }
 }

@@ -88,7 +88,7 @@ protected sortByTotal(): void {
 
 `enableRowSelection` and `selectionMode` bridge the shared selection state. Pair them with `withNatTableSelectionColumn(...)` to render a real checkbox per item; selected items expose `data-selected` for styling. `aria-selected` is intentionally absent — it is invalid on `role="listitem"`, and the checkbox conveys the state.
 
-`enableRowActivation` (opt-in) renders a stretched activator button per item and emits `rowActivate` on click and Enter/Space. It is a real `<button>` because a focusable `<li>` exposes no interactive role to assistive technology; interactive controls inside fields stack above the activator, so a selection checkbox never triggers activation.
+`enableRowActivation` (opt-in) renders a stretched activator button per item and emits `rowActivate` on click and Enter/Space. It is a real `<button>` because a focusable `<li>` exposes no interactive role to assistive technology; interactive controls inside fields stack above the activator, including controls rendered by a component or a `natTableCell` template, so a selection checkbox or a cell button never triggers activation.
 
 Two deliberate consequences of the stretched-button design:
 
