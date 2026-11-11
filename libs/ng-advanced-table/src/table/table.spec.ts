@@ -532,6 +532,21 @@ describe('FEATURE: NatTable', () => {
       });
     });
 
+    describe('WHEN: one column opts out of sorting', () => {
+      it('THEN: it marks only the headers of sortable columns as sortable', async () => {
+        await recreateHost({
+          columns: [
+            { accessorKey: 'name', header: 'Service' },
+            { accessorKey: 'region', header: 'Region', enableSorting: false }
+          ]
+        });
+        fixture.detectChanges();
+
+        expect(queryRequired(fixture, '[data-testid="nat-table-header-name"]').classList.contains('is-sortable')).toBe(true);
+        expect(queryRequired(fixture, '[data-testid="nat-table-header-region"]').classList.contains('is-sortable')).toBe(false);
+      });
+    });
+
     describe('WHEN: column reordering is enabled', () => {
       it('THEN: it renders reorder handles on movable headers', async () => {
         await recreateHost({ enableReordering: true });

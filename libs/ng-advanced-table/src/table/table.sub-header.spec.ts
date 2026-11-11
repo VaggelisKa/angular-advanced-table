@@ -143,6 +143,11 @@ describe('FEATURE: NatTable sub-headers', () => {
         expect(queryRequired(fixture, '[data-testid="nat-table-header-status"]').hasAttribute('aria-sort')).toBe(false);
       });
 
+      it('THEN: the sub-header column header is not marked sortable while the other headers are', () => {
+        expect(queryRequired(fixture, '[data-testid="nat-table-header-status"]').classList.contains('is-sortable')).toBe(false);
+        expect(queryRequired(fixture, '[data-testid="nat-table-header-name"]').classList.contains('is-sortable')).toBe(true);
+      });
+
       it('THEN: aria row indexes run unbroken across sub-header and data rows', () => {
         // One header row, then 3 groups of 2 rows: group, row, row, group, …
         expect(bodyRowIndexes(fixture)).toStrictEqual(['2', '3', '4', '5', '6', '7', '8', '9', '10']);

@@ -377,6 +377,20 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     !header.isPlaceholder && this.reorderService.canReorderHeader(header.column);
 
   /**
+   * Whether a header's column is user-sortable, for the `is-sortable` styling
+   * hook. Mirrors the header-actions gate rather than bare `getCanSort()`:
+   * TanStack sorting is always on at table level so programmatic sorting keeps
+   * working, so availability resolves as `column.enableSorting ?? surface`,
+   * and the active sub-header column is excluded because its forced sort is
+   * hidden and its sort button is never rendered.
+   */
+  protected readonly canSortHeader = (header: Header<TData, unknown>): boolean =>
+    !header.isPlaceholder &&
+    header.column.id !== this.state.resolvedSubHeaderColumnId() &&
+    (header.column.columnDef.enableSorting ?? this.state.enableSorting()) &&
+    header.column.getCanSort();
+
+  /**
    * Region focusin: when keyboard focus lands on a body/header cell (or a
    * control inside one) that a sticky pinned zone covers, center it in the
    * unobscured span. Runs after the browser's own focus scroll, which only
