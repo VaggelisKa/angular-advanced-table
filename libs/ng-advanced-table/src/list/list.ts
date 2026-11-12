@@ -220,8 +220,10 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
    * no activatable surface at all: composite Enter/Space and item-padding
    * clicks stop emitting, and plain mode renders no activator button.
    */
-  protected readonly hasActivatableField = computed(() =>
-    this.visibleColumns().some((column) => column.columnDef.meta?.rowActivation !== false)
+  protected readonly hasActivatableField = computed(
+    () =>
+      // A `natListItem` template shows no fields, so column `meta` cannot switch its activation off.
+      this.itemTemplateRef() !== null || this.visibleColumns().some((column) => column.columnDef.meta?.rowActivation !== false)
   );
 
   /** Plain-mode activator gate: the consumer opt-in plus at least one activatable field. */
@@ -358,13 +360,22 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     return this.itemTemplateRef() !== null && this.unlabelledItemIndexes().has(index);
   }
 
-  /** Fallback activator name for a templated item without a label: the row's first visible value. */
+  /**
+   * Fallback activator name for a templated item without a label: the first
+   * visible column holding text or a number, so a leading selection or action
+   * column does not turn the name into the row id.
+   */
   protected fallbackActivatorName(row: Row<TData>): string {
-    const firstColumn = this.visibleColumns().at(0);
-    const value = firstColumn ? this.cellForColumn(row, firstColumn.id)?.getValue() : undefined;
-    const name = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+    for (const column of this.visibleColumns()) {
+      const value = this.cellForColumn(row, column.id)?.getValue();
+      const name = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
 
-    return name || row.id;
+      if (name) {
+        return name;
+      }
+    }
+
+    return row.id;
   }
 
   protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {

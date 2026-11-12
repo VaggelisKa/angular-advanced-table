@@ -249,7 +249,12 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         const field = queryAll(fixture, '[data-testid="nat-list-item"] .list-field[data-column-id="region"]')[0];
 
         expect(field.getAttribute('data-nat-row-activation')).toBe('false');
-        expect(getComputedStyle(field).zIndex).toBe('1');
+        // The activator sits one layer up so positioned consumer content cannot
+        // cover it; opted-out fields and controls sit one layer above that.
+        const activator = queryAll(fixture, '[data-testid="nat-list-item-activator"]')[0];
+
+        expect(getComputedStyle(activator).zIndex).toBe('1');
+        expect(getComputedStyle(field).zIndex).toBe('2');
         field.querySelector<HTMLElement>('.list-field-value')?.click();
         await render();
         expect(host.activated()).toHaveLength(0);

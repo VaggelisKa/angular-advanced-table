@@ -1241,16 +1241,23 @@ export class NatTableState<TData extends RowData = RowData> {
       return;
     }
 
+    const leafColumns = this.table.getAllLeafColumns();
+
+    // Columns that arrive later (async, feature-flagged) are not a mismatch yet.
+    if (leafColumns.length === 0) {
+      return;
+    }
+
     for (const columnId of columnIds) {
       // Not `table.getColumn()`: TanStack logs its own error for an unknown id.
-      if (this.warnedCellTemplateIds.has(columnId) || this.table.getAllLeafColumns().some((column) => column.id === columnId)) {
+      if (this.warnedCellTemplateIds.has(columnId) || leafColumns.some((column) => column.id === columnId)) {
         continue;
       }
 
       this.warnedCellTemplateIds.add(columnId);
       console.warn(
         `[ng-advanced-table] natTableCell="${columnId}" matches no column id, so the template is never rendered. ` +
-          `Use the column's id (or its accessorKey when no id is set).`
+          `Use the column's id, or its accessorKey when no id is set (dots become underscores: 'owner.name' is 'owner_name').`
       );
     }
   }

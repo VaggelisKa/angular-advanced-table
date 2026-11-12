@@ -163,8 +163,8 @@ Declare a column's cell markup in the host template with `natTableCell`, keyed b
 
 ```html
 <nat-table [columns]="columns" [data]="positions()" accessibleName="Open positions">
-  <ng-template natTableCell="status" [natTableCellOf]="columns" let-status let-row="row">
-    <app-status-badge [status]="status" (retry)="retry(row.original.id)" />
+  <ng-template natTableCell="status" [natTableCellOf]="columns" let-row="row">
+    <app-status-badge [status]="row.original.status" (retry)="retry(row.original.id)" />
   </ng-template>
 </nat-table>
 ```
@@ -173,7 +173,7 @@ Declare a column's cell markup in the host template with `natTableCell`, keyed b
 import { NatTable, NatTableCellTemplate } from 'ng-advanced-table';
 ```
 
-- The column id is the definition's `id`, or its `accessorKey` when no `id` is set. A template whose id matches no column is never rendered and logs a warning in development.
+- The column id is the definition's `id`, or its `accessorKey` when no `id` is set. Dots in an `accessorKey` become underscores, so `owner.name` is keyed as `owner_name`. A template whose id matches no column is never rendered and logs a warning in development.
 - A projected template wins over the column's `cell`. Remove the template and the column definition renders again, so a shared column file can keep a fallback.
 - The template replaces the cell content only. The cell element, alignment, tone, `cellMaxLines`, pinning, and row-activation attributes still come from the column definition and `meta`.
 - `<nat-table>`, `<nat-table-static>`, and `<nat-list>` all accept it. In a list the template renders as the field's value. Templates are projected per renderer, so a host that swaps renderers declares them inside each one.
@@ -181,16 +181,16 @@ import { NatTable, NatTableCellTemplate } from 'ng-advanced-table';
 
 The template context:
 
-| Name        | Value                                                            |
-| ----------- | ---------------------------------------------------------------- |
-| `$implicit` | The cell's accessor value (`let-status`)                         |
-| `value`     | Same as `$implicit`                                              |
-| `row`       | The row; `row.original` is your row object                       |
-| `column`    | The column                                                       |
-| `cell`      | The cell, for advanced reads                                     |
-| `rowIndex`  | Zero-based position among the rows of the current page or window |
-| `renderer`  | `'table'` or `'list'`                                            |
-| `table`     | The table instance, for advanced reads                           |
+| Name        | Value                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------- |
+| `$implicit` | The cell's accessor value (`let-status`)                                              |
+| `value`     | Same as `$implicit`                                                                   |
+| `row`       | The row; `row.original` is your row object                                            |
+| `column`    | The column                                                                            |
+| `cell`      | The cell, for advanced reads                                                          |
+| `rowIndex`  | Zero-based row index on the current page; the dataset position under remote windowing |
+| `renderer`  | `'table'` or `'list'`                                                                 |
+| `table`     | The table instance, for advanced reads                                                |
 
 Interactive controls follow the same rules as component cells: inside `<nat-table>`, `ngGridCellWidget` works on a control in a projected template, and plain native controls are managed by the cell-interaction keys. A template shared with `<nat-table-static>` or `<nat-list>` should use plain controls, because `ngGridCellWidget` needs the grid.
 

@@ -18,13 +18,14 @@ Prefer a projected `natTableCell` template when the cell markup belongs to one s
 
 ```html
 <nat-table [columns]="columns" [data]="invoices()" accessibleName="Invoices">
-  <ng-template natTableCell="status" [natTableCellOf]="columns" let-status let-row="row">
-    <app-invoice-status [status]="status" (retry)="retry(row.original.id)" />
+  <ng-template natTableCell="status" [natTableCellOf]="columns" let-row="row">
+    <app-invoice-status [status]="row.original.status" (retry)="retry(row.original.id)" />
   </ng-template>
 </nat-table>
 ```
 
-- Key the template by column id (`id`, or `accessorKey` when no `id` is set).
+- Key the template by column id (`id`, or `accessorKey` when no `id` is set; dots become underscores, `owner.name` → `owner_name`).
+- The implicit value is `unknown`; bind typed inputs from `row.original`.
 - Keep accessor, sorting, filtering, export, and `meta` on the column definition; the template only replaces the cell content.
 - The template wins over the column's `cell`.
 - The same directive works in `<nat-table-static>` and `<nat-list>`; declare it inside each renderer.

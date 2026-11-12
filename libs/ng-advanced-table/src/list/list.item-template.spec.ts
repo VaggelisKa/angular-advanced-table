@@ -2,6 +2,8 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
+import type { ColumnDef } from '@tanstack/angular-table';
+
 import { NatList } from './list';
 import type { NatTableRowActivateEvent } from '../common/row.type';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
@@ -17,7 +19,7 @@ import { NatListItemTemplate } from '../ui/list-item-template.directive';
   template: `
     <nat-table-surface>
       <nat-list
-        [columns]="columns"
+        [columns]="listColumns()"
         [data]="rows()"
         [enableItemNavigation]="enableItemNavigation()"
         [enableRowActivation]="enableRowActivation()"
@@ -58,6 +60,7 @@ import { NatListItemTemplate } from '../ui/list-item-template.directive';
 class ListItemTemplateHost {
   public readonly rows = signal<Row[]>(buildRows(3));
   public readonly columns = columns;
+  public readonly listColumns = signal<ColumnDef<Row, unknown>[]>(columns);
   public readonly showItemTemplate = signal(true);
   public readonly showLabel = signal(true);
   public readonly showSecondLabel = signal(false);
@@ -229,6 +232,31 @@ describe('FEATURE: projected list item template', () => {
         expect(labelWarnings(warn)).toHaveLength(1);
 
         warn.mockRestore();
+      });
+    });
+
+    describe('WHEN: no label is marked and the first visible column holds no text', () => {
+      it('THEN: it names each activator by the first column that holds text', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        host.showLabel.set(false);
+        host.listColumns.set([{ id: 'actions', header: 'Actions', cell: (): string => '' }, ...columns]);
+        await fixture.whenStable();
+
+        const activators = queryAll(fixture, '[data-testid="nat-list-item-activator"]');
+
+        expect(activators.map((activator) => activator.getAttribute('aria-label'))).toEqual(['Alpha', 'Beta', 'Gamma']);
+
+        warn.mockRestore();
+      });
+    });
+
+    describe('WHEN: every column opts out of row activation', () => {
+      it('THEN: it still renders an activator for each templated item', async () => {
+        host.listColumns.set(columns.map((column) => ({ ...column, meta: { ...column.meta, rowActivation: false } })));
+        await fixture.whenStable();
+
+        expect(queryAll(fixture, '[data-testid="nat-list-item-activator"]')).toHaveLength(3);
       });
     });
 

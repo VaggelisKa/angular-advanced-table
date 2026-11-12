@@ -3,6 +3,8 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
+import type { ColumnDef } from '@tanstack/angular-table';
+
 import { NatTable } from './table';
 import { NatList } from '../list/list';
 import { NatTableStatic } from '../static-table/static-table';
@@ -43,6 +45,24 @@ class TableCellTemplateHost {
   public readonly columns = columns;
   public readonly showStatusTemplate = signal(true);
   public readonly showUnknownTemplate = signal(false);
+}
+
+@Component({
+  selector: 'test-table-late-columns-template-host',
+  imports: [NatTable, NatTableCellTemplate, TestTableSurface],
+  template: `
+    <nat-table-surface>
+      <nat-table [columns]="lateColumns()" [data]="rows()" accessibleName="Operations">
+        <ng-template let-status natTableCell="status">
+          <span data-testid="status-template">late {{ status }}</span>
+        </ng-template>
+      </nat-table>
+    </nat-table-surface>
+  `
+})
+class TableLateColumnsTemplateHost {
+  public readonly rows = signal<Row[]>(buildRows(2));
+  public readonly lateColumns = signal<ColumnDef<Row, unknown>[]>([]);
 }
 
 @Component({
@@ -178,6 +198,26 @@ describe('FEATURE: projected cell templates', () => {
 
         expect(warnings).toHaveLength(1);
         expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('never rendered');
+
+        warn.mockRestore();
+      });
+    });
+  });
+
+  describe('GIVEN: a table with a natTableCell template and no columns yet', () => {
+    describe('WHEN: the columns arrive after the first render', () => {
+      it('THEN: it renders the template without an unknown-id warning', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const fixture = TestBed.createComponent(TableLateColumnsTemplateHost);
+
+        await fixture.whenStable();
+        fixture.componentInstance.lateColumns.set(columns);
+        await fixture.whenStable();
+
+        const warnings = warn.mock.calls.filter(([message]) => String(message).includes('natTableCell="status"'));
+
+        expect(warnings).toHaveLength(0);
+        expect(queryAll(fixture, '[data-testid="status-template"]')).toHaveLength(2);
 
         warn.mockRestore();
       });

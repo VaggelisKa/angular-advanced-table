@@ -27,7 +27,7 @@ export type NatTableCellTemplateContext<TData extends RowData = RowData, TValue 
   readonly column: NatTableColumn<TData, TValue>;
   /** The cell itself, for advanced reads. */
   readonly cell: NatTableCellRef<TData, TValue>;
-  /** Zero-based position of the row among the rows of the current page or logical window. */
+  /** Zero-based logical row index: the position on the current page, or in the whole dataset under remote windowing. */
   readonly rowIndex: number;
   /** Which renderer is drawing the cell. */
   readonly renderer: NatTableCellTemplateRenderer;

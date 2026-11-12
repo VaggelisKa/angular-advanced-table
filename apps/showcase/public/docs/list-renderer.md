@@ -66,7 +66,7 @@ What changes with an item template:
 - Column visibility and column order no longer change what an item shows, because the template owns its content. Read `visibleColumnIds` when a template should follow them. Sorting, filtering, pagination, and selection keep working through the columns and the shared state.
 - The field layout tokens (`--nat-list-item-areas`, `--nat-list-item-columns`, `--nat-list-item-gap`, `--nat-list-item-align`, the `--nat-list-field-*` tokens, and the flow tokens) style the built-in fields only. `itemLayout` has no effect.
 - `natTableCell` templates and column `cell` renderers are not rendered inside a templated item.
-- With `enableRowActivation`, mark the element that identifies the item with `natListItemLabel`; it names the activator button. Without one, the list warns in development and names the button with the row's first visible value. Interactive controls inside the template stack above the activator, so clicking them never activates the item.
+- With `enableRowActivation`, mark the element that identifies the item with `natListItemLabel`; it names the activator button. Without one, the list warns in development and names the button with the first visible column value that is text or a number. A templated item shows no fields, so column `meta.rowActivation` does not switch its activator off. Interactive controls inside the template stack above the activator, so clicking them never activates the item.
 
 To change a single field, keep the built-in item and use a `natTableCell` template instead.
 
