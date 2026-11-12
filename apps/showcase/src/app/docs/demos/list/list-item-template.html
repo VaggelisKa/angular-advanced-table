@@ -21,6 +21,7 @@
           <button
             [attr.aria-label]="`Mark ${order.id} ready`"
             class="btn btn-outline list-item-template-action"
+            data-testid="list-item-template-action"
             type="button"
             (click)="markReady(order)">
             Mark ready

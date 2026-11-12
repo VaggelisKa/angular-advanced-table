@@ -82,12 +82,16 @@ describe('FEATURE: List item template docs demo', () => {
         );
         expect(host(fixture).querySelectorAll('[data-testid="nat-list-field"]')).toHaveLength(0);
 
-        const action = host(fixture).querySelector<HTMLButtonElement>('[aria-label="Mark ORD-202 ready"]');
+        const secondCard = (): Element | undefined =>
+          host(fixture).querySelectorAll('[data-testid="list-item-template-card"]').item(1);
+        const action = secondCard()?.querySelector<HTMLButtonElement>('[data-testid="list-item-template-action"]');
+
+        expect(action?.getAttribute('aria-label')).toBe('Mark ORD-202 ready');
 
         action?.click();
         await render(fixture);
 
-        expect(host(fixture).querySelector('[aria-label="Mark ORD-202 ready"]')).toBeNull();
+        expect(secondCard()?.querySelector('[data-testid="list-item-template-action"]')).toBeNull();
       });
     });
   });
