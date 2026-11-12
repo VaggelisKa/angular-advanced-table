@@ -34,14 +34,15 @@
         [natListItemOutlet]="withActivator ? activatorLabelId(itemIndex) : null"
         class="list-item-content"
         data-testid="nat-list-item-content"
-        (contentClick)="onItemContentClick($event, row, withActivator)">
+        natListPointerSurface
+        (surfaceClick)="onItemSurfaceClick($event, row, withActivator)">
         <ng-container
           [ngTemplateOutlet]="itemTemplate"
           [ngTemplateOutletContext]="getItemTemplateContext(row, itemIndex)"
           [ngTemplateOutletInjector]="itemOutlet.injector" />
       </div>
     } @else {
-      <div class="list-item-fields">
+      <div class="list-item-fields" natListPointerSurface (surfaceClick)="onItemSurfaceClick($event, row, withActivator)">
         @for (column of listColumns; track column.id) {
           @let cell = cellForColumn(row, column.id);
           @if (cell) {

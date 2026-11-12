@@ -45,13 +45,14 @@ import { NatTableState } from '../domain-logic/table.state';
 import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatListItemOutlet } from '../ui/list-item-outlet.directive';
 import { NatListItemTemplate } from '../ui/list-item-template.directive';
+import { NatListPointerSurface } from '../ui/list-pointer-surface.directive';
 import { NatTableCellTemplateInjector } from '../ui/table-cell-template-injector.directive';
 import { NatTableCellTemplate } from '../ui/table-cell-template.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { indexCellTemplates } from '../utils/cell-template.util';
 import { resolveColumnLabel } from '../utils/column-label.util';
-import { originatesFromInteractiveDescendant } from '../utils/interaction.util';
+import { originatesFromInteractiveDescendant, originatesFromRaisedControl } from '../utils/interaction.util';
 import { requireNatTableService } from '../utils/table-service.util';
 
 /**
@@ -87,6 +88,7 @@ import { requireNatTableService } from '../utils/table-service.util';
     GridRow,
     NatListFieldArea,
     NatListItemOutlet,
+    NatListPointerSurface,
     NatTableCellTemplateInjector,
     NatTableCellInteraction,
     NgTemplateOutlet
@@ -598,13 +600,18 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
   }
 
   /**
-   * Plain mode: projected item content that forms its own layer paints over
-   * the stretched activator, so a click on it never reaches the button. The
-   * button stays the keyboard and assistive-technology affordance; this only
-   * keeps pointer activation working. Composite mode already listens on the item.
+   * Plain mode: item content that forms its own layer (a projected template, a
+   * cell component with a positioned or transformed wrapper) paints over the
+   * stretched activator, so a click on it never reaches the button. The button
+   * stays the keyboard and assistive-technology affordance; this only keeps
+   * pointer activation working. Fields that opt out through
+   * `meta.rowActivation: false` and interactive controls are skipped by
+   * `onItemClick`; labels and focusable elements are skipped here, matching the
+   * controls the stylesheet raises above the activator. Composite mode already
+   * listens on the item.
    */
-  protected onItemContentClick(event: MouseEvent, row: Row<TData>, withActivator: boolean): void {
-    if (withActivator) {
+  protected onItemSurfaceClick(event: MouseEvent, row: Row<TData>, withActivator: boolean): void {
+    if (withActivator && !originatesFromRaisedControl(event)) {
       this.onItemClick(event, row);
     }
   }

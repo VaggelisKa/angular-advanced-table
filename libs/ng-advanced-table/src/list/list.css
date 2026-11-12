@@ -256,11 +256,13 @@
 .list-item.is-activatable .list-field[data-nat-row-activation='false'] {
   position: relative;
   z-index: 1;
+  cursor: auto;
 }
 
-/* Projected item content that paints over the activator still activates on
-   click, so it shows the same pointer affordance. */
-.list-item.is-activatable .list-item-content {
+/* Item content that paints over the activator still activates on click, so it
+   shows the same pointer affordance. Declared before the opt-out rule's
+   specificity can lose: that rule is more specific and resets the cursor. */
+.list-item.is-activatable :is(.list-item-content, .list-item-fields) {
   cursor: pointer;
 }
 

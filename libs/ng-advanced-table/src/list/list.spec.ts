@@ -372,10 +372,13 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(field).toBeTruthy();
         expect(activator?.contains(field)).toBe(false);
 
+        // A click that lands on a field (only possible when its content forms a
+        // layer over the activator) activates once through the field fallback,
+        // never a second time through the sibling button.
         field?.click();
         await render();
 
-        expect(host.activated()).toHaveLength(0);
+        expect(host.activated()).toHaveLength(1);
       });
     });
 

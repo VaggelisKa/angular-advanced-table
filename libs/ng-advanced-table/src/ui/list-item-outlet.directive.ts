@@ -1,4 +1,4 @@
-import { Directive, Injector, computed, inject, input, output, signal } from '@angular/core';
+import { Directive, Injector, computed, inject, input, signal } from '@angular/core';
 
 /**
  * Insertion point of a projected `natListItem` template inside one list item.
@@ -7,23 +7,13 @@ import { Directive, Injector, computed, inject, input, output, signal } from '@a
  */
 @Directive({
   selector: '[natListItemOutlet]',
-  exportAs: 'natListItemOutlet',
-  host: {
-    '(click)': 'contentClick.emit($event)'
-  }
+  exportAs: 'natListItemOutlet'
 })
 export class NatListItemOutlet {
   /** Id the item's activator button references, or `null` while the item renders no activator. */
   public readonly labelId = input<string | null>(null, { alias: 'natListItemOutlet' });
   /** Render index of the item. */
   public readonly itemIndex = input.required<number>();
-
-  /**
-   * Pointer clicks on the projected content. The list uses them to activate an
-   * item whose content paints over the stretched activator button; the button
-   * itself remains the keyboard and assistive-technology affordance.
-   */
-  public readonly contentClick = output<MouseEvent>();
 
   public readonly injector = inject(Injector);
 

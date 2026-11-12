@@ -158,3 +158,21 @@ export const scrollCellIntoUnobscuredView = (scrollContainer: HTMLElement, cell:
 
   scrollContainer.scrollLeft += (cellRect.left + cellRect.right) / 2 - (span.left + span.right) / 2;
 };
+
+/**
+ * Whether the event originated from a `label` or a focusable (`[tabindex]`) descendant of the
+ * current target. The list raises both above its stretched activator next to the interactive
+ * controls, so a click on them belongs to the control (a label toggles its checkbox), not the row.
+ */
+export const originatesFromRaisedControl = (event: Event): boolean => {
+  const target = event.target;
+  const currentTarget = event.currentTarget;
+
+  if (!(target instanceof Element) || !(currentTarget instanceof Element)) {
+    return false;
+  }
+
+  const raised = target.closest('label, [tabindex]');
+
+  return raised !== null && raised !== currentTarget && currentTarget.contains(raised);
+};
