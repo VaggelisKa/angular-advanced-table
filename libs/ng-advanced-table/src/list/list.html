@@ -33,7 +33,8 @@
         [itemIndex]="itemIndex"
         [natListItemOutlet]="withActivator ? activatorLabelId(itemIndex) : null"
         class="list-item-content"
-        data-testid="nat-list-item-content">
+        data-testid="nat-list-item-content"
+        (contentClick)="onItemContentClick($event, row, withActivator)">
         <ng-container
           [ngTemplateOutlet]="itemTemplate"
           [ngTemplateOutletContext]="getItemTemplateContext(row, itemIndex)"

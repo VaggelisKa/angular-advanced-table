@@ -597,6 +597,18 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     this.rowActivate.emit({ rowData: row.original, row, originalEvent: event });
   }
 
+  /**
+   * Plain mode: projected item content that forms its own layer paints over
+   * the stretched activator, so a click on it never reaches the button. The
+   * button stays the keyboard and assistive-technology affordance; this only
+   * keeps pointer activation working. Composite mode already listens on the item.
+   */
+  protected onItemContentClick(event: MouseEvent, row: Row<TData>, withActivator: boolean): void {
+    if (withActivator) {
+      this.onItemClick(event, row);
+    }
+  }
+
   protected onItemKeydown(event: KeyboardEvent, row: Row<TData>): void {
     if (event.defaultPrevented || !this.hasActivatableField()) {
       return;

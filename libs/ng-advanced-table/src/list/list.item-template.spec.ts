@@ -260,6 +260,19 @@ describe('FEATURE: projected list item template', () => {
       });
     });
 
+    describe('WHEN: the item content and then a control inside it are clicked', () => {
+      it('THEN: it emits rowActivate for the content click only', async () => {
+        await fixture.whenStable();
+
+        // Content that forms its own layer paints over the activator, so the
+        // click lands on the content instead of the button.
+        queryAll(fixture, '[data-testid="item-card-status"]')[1].click();
+        queryAll<HTMLButtonElement>(fixture, '[data-testid="item-card-select"]')[2].click();
+
+        expect(host.activated().map((event) => event.rowData.name)).toEqual(['Beta']);
+      });
+    });
+
     describe('WHEN: an activator is clicked', () => {
       it('THEN: it emits rowActivate for that row', async () => {
         await fixture.whenStable();

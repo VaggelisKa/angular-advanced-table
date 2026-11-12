@@ -27,9 +27,17 @@ test.describe('FEATURE: List item template', () => {
         });
 
         await test.step('THEN: clicking the item activates it', async () => {
-          // The stretched activator covers the card, so the click targets the item.
+          // Clicking the item padding hits the stretched activator.
           await list.getByTestId('nat-list-item').nth(2).click();
           await expect(opened).toHaveText('Opened ORD-203');
+        });
+
+        await test.step('THEN: clicking a card that forms its own layer activates its item', async () => {
+          await list
+            .getByTestId('list-item-template-card')
+            .nth(3)
+            .click({ position: { x: 4, y: 4 } });
+          await expect(opened).toHaveText('Opened ORD-204');
         });
       });
     });

@@ -8,7 +8,11 @@
   color: var(--sc-text-soft);
 }
 
+/* The card forms its own layer, as cards with badges or transforms do; its
+   controls stay clickable and a click on the card still opens the item. */
 .list-item-template-card {
+  position: relative;
+  z-index: 0;
   display: grid;
   gap: var(--sc-space-2);
   justify-items: start;
