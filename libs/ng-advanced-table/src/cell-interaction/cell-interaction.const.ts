@@ -1,6 +1,6 @@
 export const NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE = 'data-nat-table-managed-cell-widget';
 
-export const NAT_TABLE_CELL_SELECTOR = '[natTableCell]';
+export const NAT_TABLE_CELL_SELECTOR = '[natTableCellInteraction]';
 
 /** Renderer host elements, used to tell cells owned by one renderer from nested or foreign ones. */
 export const NAT_TABLE_HOST_SELECTOR = 'nat-table, nat-list';

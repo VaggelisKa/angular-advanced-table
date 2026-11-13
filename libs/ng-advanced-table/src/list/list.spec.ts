@@ -315,6 +315,25 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         }
       });
 
+      it('THEN: the z-index guard reaches controls that carry another style scope', async () => {
+        host.enableRowActivation.set(true);
+        await render();
+
+        // Projected templates and rendered components carry the consumer's
+        // style scope, so the control list must stay unscoped (`::ng-deep`):
+        // a scoped `button[_ngcontent-…]` would never match them.
+        const guardRule = Array.from(globalThis.document.querySelectorAll('style'))
+          .map((style) => style.textContent)
+          .join('\n')
+          .split('}')
+          .find((rule) => rule.includes('.list-field') && rule.includes('z-index') && rule.includes('summary'));
+        const controls = guardRule?.slice(guardRule.lastIndexOf(':where('), guardRule.lastIndexOf('{'));
+
+        expect(controls).toContain('button');
+        expect(controls).not.toContain('_ngcontent');
+        expect(controls).toContain(':not(.list-item-activator)');
+      });
+
       it('THEN: it emits rowActivate on Enter and Space and prevents their native default', async () => {
         host.enableRowActivation.set(true);
         await render();
@@ -353,10 +372,13 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
         expect(field).toBeTruthy();
         expect(activator?.contains(field)).toBe(false);
 
+        // A click that lands on a field (only possible when its content forms a
+        // layer over the activator) activates once through the field fallback,
+        // never a second time through the sibling button.
         field?.click();
         await render();
 
-        expect(host.activated()).toHaveLength(0);
+        expect(host.activated()).toHaveLength(1);
       });
     });
 

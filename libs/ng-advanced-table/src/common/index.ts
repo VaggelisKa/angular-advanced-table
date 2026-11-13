@@ -12,6 +12,16 @@ export type {
   NatTableLoadingTemplateContext
 } from './table-status.type';
 
+export type {
+  NatTableCellRef,
+  NatTableCellTemplateContext,
+  NatTableCellTemplateRenderer,
+  NatTableColumn,
+  NatTableRow
+} from './cell-template.type';
+
+export type { NatListItemTemplateContext } from './list-item-template.type';
+
 export type { NatTableCellTone, NatTableColumnMeta, NatTableColumnMoveDirection } from './column-meta.type';
 
 export type { NatTableColumnReorderResult } from './column-render.type';

@@ -4,13 +4,13 @@ import { handleCellInteractionFocusIn, handleCellInteractionKeydown } from './ut
 import { NatTableService } from '../domain-logic/table.service';
 
 @Directive({
-  selector: '[natTableCell]',
+  selector: '[natTableCellInteraction]',
   host: {
     '(keydown)': 'onKeydown($event)',
     '(focusin)': 'onFocusIn($event)'
   }
 })
-export class NatTableCell {
+export class NatTableCellInteraction {
   private readonly natTableService = inject(NatTableService);
 
   protected onKeydown(event: KeyboardEvent): void {

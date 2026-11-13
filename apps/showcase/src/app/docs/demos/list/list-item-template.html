@@ -1,0 +1,33 @@
+<p aria-live="polite" class="list-item-template-opened" data-testid="list-item-template-opened">
+  {{ opened() ? `Opened ${opened()}` : 'Select an order to open it' }}
+</p>
+
+<nat-table-surface>
+  <nat-list
+    [columns]="columns"
+    [data]="rows()"
+    accessibleName="Orders as cards"
+    class="sc-demo-list"
+    enableRowActivation
+    (rowActivate)="opened.set($event.rowData.id)">
+    <ng-template [natListItemOf]="columns" let-order natListItem>
+      <article class="list-item-template-card" data-testid="list-item-template-card">
+        <div class="list-item-template-heading">
+          <p class="list-item-template-customer" natListItemLabel>{{ order.customer }}</p>
+          <app-order-status-badge [status]="order.status" />
+        </div>
+        <p class="list-item-template-meta">{{ order.id }} · {{ totalFormatter.format(order.total) }}</p>
+        @if (order.status !== 'Ready') {
+          <button
+            [attr.aria-label]="`Mark ${order.id} ready`"
+            class="btn btn-outline list-item-template-action"
+            data-testid="list-item-template-action"
+            type="button"
+            (click)="markReady(order)">
+            Mark ready
+          </button>
+        }
+      </article>
+    </ng-template>
+  </nat-list>
+</nat-table-surface>

@@ -1,0 +1,39 @@
+:host {
+  display: block;
+}
+
+.list-item-template-opened {
+  margin: 0 0 var(--sc-space-4);
+  font-size: var(--sc-text-base);
+  color: var(--sc-text-soft);
+}
+
+/* The card forms its own layer, as cards with badges or transforms do; its
+   controls stay clickable and a click on the card still opens the item. */
+.list-item-template-card {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  gap: var(--sc-space-2);
+  justify-items: start;
+}
+
+.list-item-template-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-2);
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.list-item-template-customer {
+  margin: 0;
+  font-size: var(--sc-text-base);
+  font-weight: var(--sc-weight-semibold);
+}
+
+.list-item-template-meta {
+  margin: 0;
+  color: var(--sc-text-soft);
+}

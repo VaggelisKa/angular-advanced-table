@@ -73,7 +73,7 @@
       @switch (bodyState()) {
         @case ('rows') {
           @let groups = subHeaderGroups();
-          @for (row of bodyRows(); track row.id) {
+          @for (row of bodyRows(); track row.id; let rowIndex = $index) {
             @let visibleCells = row.getVisibleCells();
             @let subHeader = groups.get(row.id);
             @if (subHeader) {
@@ -130,9 +130,18 @@
                     [natTableBodyCellLayout]="columnState"
                     scope="row">
                     <span class="data-cell-content">
-                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
-                        {{ rendered }}
-                      </ng-container>
+                      @if (cellTemplates().get(cell.column.id); as cellTemplate) {
+                        <ng-container
+                          #cellInjector="natTableCellTemplateInjector"
+                          [ngTemplateOutlet]="cellTemplate"
+                          [ngTemplateOutletContext]="getCellTemplateContext(cell, rowIndex)"
+                          [ngTemplateOutletInjector]="cellInjector.injector"
+                          natTableCellTemplateInjector />
+                      } @else {
+                        <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                          {{ rendered }}
+                        </ng-container>
+                      }
                     </span>
                   </th>
                 } @else {
@@ -143,9 +152,18 @@
                     [class]="columnState?.cellClassMap"
                     [natTableBodyCellLayout]="columnState">
                     <span class="data-cell-content">
-                      <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
-                        {{ rendered }}
-                      </ng-container>
+                      @if (cellTemplates().get(cell.column.id); as cellTemplate) {
+                        <ng-container
+                          #cellInjector="natTableCellTemplateInjector"
+                          [ngTemplateOutlet]="cellTemplate"
+                          [ngTemplateOutletContext]="getCellTemplateContext(cell, rowIndex)"
+                          [ngTemplateOutletInjector]="cellInjector.injector"
+                          natTableCellTemplateInjector />
+                      } @else {
+                        <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                          {{ rendered }}
+                        </ng-container>
+                      }
                     </span>
                   </td>
                 }

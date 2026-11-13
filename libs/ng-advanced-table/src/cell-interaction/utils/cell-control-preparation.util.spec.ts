@@ -107,8 +107,8 @@ describe('FEATURE: NatTable cell-control preparation utilities', () => {
         const root = document.createElement('td');
         const nestedCell = document.createElement('td');
 
-        root.setAttribute('natTableCell', '');
-        nestedCell.setAttribute('natTableCell', '');
+        root.setAttribute('natTableCellInteraction', '');
+        nestedCell.setAttribute('natTableCellInteraction', '');
         root.appendChild(nestedCell);
 
         expect(getNatTableCellsWithin(root)).toStrictEqual([root, nestedCell]);
