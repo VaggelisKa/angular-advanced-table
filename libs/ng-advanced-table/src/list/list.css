@@ -218,36 +218,40 @@
    scoped form of this rule would never match. It stays behind the scoped
    item and field/content chain, and excludes the activator of a list nested
    inside the content, which must keep its own stretched positioning.
-   The control list sits in `:where()` so it adds no specificity: a control
-   that positions itself (a visually hidden input, say) keeps its own
-   `position` and is still raised by the z-index. */
-.list-item.is-activatable
-  :is(.list-field, .list-item-content)
-  ::ng-deep
-  :where(
-    a[href],
-    button,
-    input,
-    select,
-    textarea,
-    summary,
-    [contenteditable='true'],
-    [role='button'],
-    [role='link'],
-    [role='checkbox'],
-    [role='menuitem'],
-    [role='menuitemcheckbox'],
-    [role='menuitemradio'],
-    [role='tab'],
-    [role='switch'],
-    [role='combobox'],
-    [role='textbox'],
-    [role='searchbox'],
-    label,
-    [tabindex]
-  ):not(.list-item-activator) {
-  position: relative;
-  z-index: 1;
+   The declarations live in a cascade layer because the rule reaches consumer
+   elements: layered rules lose to any unlayered rule whatever its
+   specificity, so a control that positions itself (an absolutely placed menu
+   button, a visually hidden input) keeps its own `position` and `z-index`.
+   Only controls with no positioning of their own get the raise. */
+@layer nat-list-guard {
+  .list-item.is-activatable
+    :is(.list-field, .list-item-content)
+    ::ng-deep
+    :where(
+      a[href],
+      button,
+      input,
+      select,
+      textarea,
+      summary,
+      [contenteditable='true'],
+      [role='button'],
+      [role='link'],
+      [role='checkbox'],
+      [role='menuitem'],
+      [role='menuitemcheckbox'],
+      [role='menuitemradio'],
+      [role='tab'],
+      [role='switch'],
+      [role='combobox'],
+      [role='textbox'],
+      [role='searchbox'],
+      label,
+      [tabindex]
+    ):not(.list-item-activator) {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* A field whose column sets `meta.rowActivation: false` stacks above the

@@ -41,5 +41,32 @@ test.describe('FEATURE: List item template', () => {
         });
       });
     });
+
+    test.describe('WHEN: a control inside the card positions itself with its own styles', () => {
+      test('THEN: it raises unpositioned controls and leaves self-positioned ones alone', async ({ page }) => {
+        const preview = page.getByTestId('docs-example-list-item-template-preview-panel');
+        const action = preview.getByTestId('list-item-template-action').first();
+        const computed = async (): Promise<{ position: string; zIndex: string }> =>
+          action.evaluate((element) => {
+            const style = getComputedStyle(element);
+
+            return { position: style.position, zIndex: style.zIndex };
+          });
+
+        await test.step('THEN: a control without its own positioning is raised above the activator', async () => {
+          expect(await computed()).toEqual({ position: 'relative', zIndex: '1' });
+        });
+
+        await test.step('THEN: a low-specificity consumer rule keeps its own position and z-index', async () => {
+          // One attribute selector: far below the guard rule's specificity, so
+          // this only wins because the guard lives in a cascade layer.
+          await page.addStyleTag({
+            content: '[data-testid="list-item-template-action"] { position: absolute; z-index: 5; }'
+          });
+
+          expect(await computed()).toEqual({ position: 'absolute', zIndex: '5' });
+        });
+      });
+    });
   });
 });

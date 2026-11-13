@@ -327,7 +327,7 @@ describe('FEATURE: NatList (spike: list renderer on the shared table engine)', (
           .join('\n')
           .split('}')
           .find((rule) => rule.includes('.list-field') && rule.includes('z-index') && rule.includes('summary'));
-        const controls = guardRule?.slice(guardRule.lastIndexOf(':where('), guardRule.indexOf('{'));
+        const controls = guardRule?.slice(guardRule.lastIndexOf(':where('), guardRule.lastIndexOf('{'));
 
         expect(controls).toContain('button');
         expect(controls).not.toContain('_ngcontent');

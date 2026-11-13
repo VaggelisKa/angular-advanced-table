@@ -523,7 +523,12 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     // After render, so every item's template (and the labels inside it) exists
     // before the check runs.
     afterRenderEffect(() => {
-      if (!isDevMode() || this.warnedMissingItemLabel || !this.rendersActivator() || this.unlabelledItemIndexes().size === 0) {
+      // Item navigation renders no activator button, so there is nothing to name.
+      if (!isDevMode() || this.warnedMissingItemLabel || this.enableItemNavigation() || !this.rendersActivator()) {
+        return;
+      }
+
+      if (this.unlabelledItemIndexes().size === 0) {
         return;
       }
 
