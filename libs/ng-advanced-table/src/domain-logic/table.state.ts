@@ -4,6 +4,7 @@ import type { ElementRef } from '@angular/core';
 import { Injectable, computed, effect, inject, isDevMode, linkedSignal, signal } from '@angular/core';
 
 import type {
+  Cell,
   Column,
   ColumnDef,
   ColumnFiltersState,
@@ -35,6 +36,7 @@ import { NatTableLocaleWarningState } from './table-locale-warning.service';
 import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
 import { NatTableService } from './table.service';
 import { isNatTableDelegatedCellControl } from '../cell-interaction/utils/cell-interaction.util';
+import type { NatTableCellTemplateContext, NatTableCellTemplateRenderer } from '../common/cell-template.type';
 import type { NatTableColumnMoveDirection } from '../common/column-meta.type';
 import type {
   ColumnRenderStateContext,
@@ -43,6 +45,7 @@ import type {
   NatTableColumnReorderResult,
   TableColumnRenderState
 } from '../common/column-render.type';
+import type { NatListItemTemplateContext } from '../common/list-item-template.type';
 import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeholder.type';
 import type { NatTableBodyRenderPlan } from '../common/row-render-strategy.type';
 import type { NatTableRowIdGetter } from '../common/row.type';
@@ -114,6 +117,9 @@ let nextTableId = 0;
 export class NatTableState<TData extends RowData = RowData> {
   private readonly natTableService = inject<NatTableService<TData>>(NatTableService);
   private readonly localeWarnings = inject(NatTableLocaleWarningState);
+  private readonly cellTemplateContexts = new WeakMap<Cell<TData, unknown>, NatTableCellTemplateContext<TData>>();
+  private readonly warnedCellTemplateIds = new Set<string>();
+  private readonly listItemTemplateContexts = new WeakMap<Row<TData>, NatListItemTemplateContext<TData>>();
   private readonly directionality = inject(Directionality, { optional: true });
   // `self` keeps a nested renderer from inheriting the outer table's window;
   // `optional` covers renderers that provide no registry (NatList).
@@ -1165,6 +1171,95 @@ export class NatTableState<TData extends RowData = RowData> {
       row: group.row,
       table: this.table
     };
+  }
+
+  /**
+   * Template context for a projected `natTableCell` template. Cached per cell
+   * so an unchanged cell hands the outlet the same object on every pass.
+   */
+  public getCellTemplateContext(
+    cell: Cell<TData, unknown>,
+    rowIndex: number,
+    renderer: NatTableCellTemplateRenderer
+  ): NatTableCellTemplateContext<TData> {
+    const value = cell.getValue();
+    const cached = this.cellTemplateContexts.get(cell);
+
+    if (cached && Object.is(cached.value, value) && cached.rowIndex === rowIndex && cached.renderer === renderer) {
+      return cached;
+    }
+
+    const context: NatTableCellTemplateContext<TData> = {
+      $implicit: value,
+      value,
+      row: cell.row,
+      column: cell.column,
+      cell,
+      rowIndex,
+      renderer,
+      table: this.table
+    };
+
+    this.cellTemplateContexts.set(cell, context);
+
+    return context;
+  }
+
+  /**
+   * Template context for a projected `natListItem` template. Cached per row so
+   * an unchanged item hands the outlet the same object on every pass.
+   */
+  public getListItemTemplateContext(
+    row: Row<TData>,
+    rowIndex: number,
+    visibleColumnIds: readonly string[]
+  ): NatListItemTemplateContext<TData> {
+    const selected = row.getIsSelected();
+    const cached = this.listItemTemplateContexts.get(row);
+
+    if (cached?.rowIndex === rowIndex && cached.selected === selected && cached.visibleColumnIds === visibleColumnIds) {
+      return cached;
+    }
+
+    const context: NatListItemTemplateContext<TData> = {
+      $implicit: row.original,
+      row,
+      rowIndex,
+      selected,
+      visibleColumnIds,
+      table: this.table
+    };
+
+    this.listItemTemplateContexts.set(row, context);
+
+    return context;
+  }
+
+  /** Dev-mode warning, once per id, for projected cell templates whose id matches no column. */
+  public warnUnknownCellTemplateIds(columnIds: Iterable<string>): void {
+    if (!isDevMode()) {
+      return;
+    }
+
+    const leafColumns = this.table.getAllLeafColumns();
+
+    // Columns that arrive later (async, feature-flagged) are not a mismatch yet.
+    if (leafColumns.length === 0) {
+      return;
+    }
+
+    for (const columnId of columnIds) {
+      // Not `table.getColumn()`: TanStack logs its own error for an unknown id.
+      if (this.warnedCellTemplateIds.has(columnId) || leafColumns.some((column) => column.id === columnId)) {
+        continue;
+      }
+
+      this.warnedCellTemplateIds.add(columnId);
+      console.warn(
+        `[ng-advanced-table] natTableCell="${columnId}" matches no column id, so the template is never rendered. ` +
+          `Use the column's id, or its accessorKey when no id is set (dots become underscores: 'owner.name' is 'owner_name').`
+      );
+    }
   }
 
   /** Template context for one placeholder cell of an unfetched logical row slot. */

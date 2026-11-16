@@ -182,7 +182,13 @@
 /* The activation affordance: a real button stretched over the whole item.
    A sibling of the fields, not a wrapper — nested interactive content inside
    a button is invalid HTML and can hide e.g. a selection checkbox from
-   assistive technology. */
+   assistive technology.
+   It takes no z-index on purpose: consumer content that forms its own layer
+   (`position: relative`, `transform`, `isolation`) then paints over it, which
+   keeps the controls inside that layer reachable. Raising the activator would
+   trap them underneath, since their z-index cannot leave the wrapper's layer.
+   Pointer activation on such content is handled by a click listener on the
+   projected item content instead. */
 .list-item-activator {
   position: absolute;
   inset: 0;
@@ -200,38 +206,52 @@
   outline-offset: -2px;
 }
 
-/* Interactive controls inside fields stack above the stretched activator so
-   they stay clickable and hoverable; events from them never reach the
-   activator, which is what guards activation against e.g. checkbox clicks.
+/* Interactive controls inside fields, or inside a projected `natListItem`
+   template, stack above the stretched activator so they stay clickable and
+   hoverable; events from them never reach the activator, which is what guards
+   activation against e.g. checkbox clicks.
    Mirrors ROW_ACTIVATE_INTERACTIVE_SELECTOR (src/common/interaction.const.ts)
    plus `label` and `[tabindex]`, which matter for pointer reachability here;
-   a spec asserts the const's selectors all appear in this rule. */
-.list-item.is-activatable
-  .list-field
-  :is(
-    a[href],
-    button,
-    input,
-    select,
-    textarea,
-    summary,
-    [contenteditable='true'],
-    [role='button'],
-    [role='link'],
-    [role='checkbox'],
-    [role='menuitem'],
-    [role='menuitemcheckbox'],
-    [role='menuitemradio'],
-    [role='tab'],
-    [role='switch'],
-    [role='combobox'],
-    [role='textbox'],
-    [role='searchbox'],
-    label,
-    [tabindex]
-  ) {
-  position: relative;
-  z-index: 1;
+   a spec asserts the const's selectors all appear in this rule.
+   `::ng-deep` because those controls are consumer content: a projected
+   template or a rendered component carries another style scope, which the
+   scoped form of this rule would never match. It stays behind the scoped
+   item and field/content chain, and excludes the activator of a list nested
+   inside the content, which must keep its own stretched positioning.
+   The declarations live in a cascade layer because the rule reaches consumer
+   elements: layered rules lose to any unlayered rule whatever its
+   specificity, so a control that positions itself (an absolutely placed menu
+   button, a visually hidden input) keeps its own `position` and `z-index`.
+   Only controls with no positioning of their own get the raise. */
+@layer nat-list-guard {
+  .list-item.is-activatable
+    :is(.list-field, .list-item-content)
+    ::ng-deep
+    :where(
+      a[href],
+      button,
+      input,
+      select,
+      textarea,
+      summary,
+      [contenteditable='true'],
+      [role='button'],
+      [role='link'],
+      [role='checkbox'],
+      [role='menuitem'],
+      [role='menuitemcheckbox'],
+      [role='menuitemradio'],
+      [role='tab'],
+      [role='switch'],
+      [role='combobox'],
+      [role='textbox'],
+      [role='searchbox'],
+      label,
+      [tabindex]
+    ):not(.list-item-activator) {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* A field whose column sets `meta.rowActivation: false` stacks above the
@@ -240,6 +260,14 @@
 .list-item.is-activatable .list-field[data-nat-row-activation='false'] {
   position: relative;
   z-index: 1;
+  cursor: auto;
+}
+
+/* Item content that paints over the activator still activates on click, so it
+   shows the same pointer affordance. Declared before the opt-out rule's
+   specificity can lose: that rule is more specific and resets the cursor. */
+.list-item.is-activatable :is(.list-item-content, .list-item-fields) {
+  cursor: pointer;
 }
 
 /* Plain mode carries data-selected on the .list-item li; composite mode

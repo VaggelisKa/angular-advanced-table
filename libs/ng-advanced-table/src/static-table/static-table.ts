@@ -7,6 +7,7 @@ import {
   booleanAttribute,
   computed,
   contentChild,
+  contentChildren,
   effect,
   inject,
   input,
@@ -14,9 +15,10 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { ColumnDef, FilterFn, RowData, Row as TanstackRow, Updater } from '@tanstack/angular-table';
+import type { Cell, ColumnDef, FilterFn, RowData, Row as TanstackRow, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
+import type { NatTableCellTemplateContext } from '../common/cell-template.type';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
 import type { NatTableUserState } from '../common/table-state.type';
@@ -31,9 +33,12 @@ import type { NatTableUiController } from '../common/ui-controller.type';
 import { NatTableA11yService } from '../domain-logic/table-a11y.service';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatTableState } from '../domain-logic/table.state';
+import { NatTableCellTemplateInjector } from '../ui/table-cell-template-injector.directive';
+import { NatTableCellTemplate } from '../ui/table-cell-template.directive';
 import { NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth } from '../ui/table-layout.directive';
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
+import { indexCellTemplates } from '../utils/cell-template.util';
 import { shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import { getCellTone, originatesFromInteractiveDescendant } from '../utils/interaction.util';
 import { requireNatTableService } from '../utils/table-service.util';
@@ -58,7 +63,14 @@ import { requireNatTableService } from '../utils/table-service.util';
 @Component({
   selector: 'nat-table-static',
   exportAs: 'natTableStatic',
-  imports: [FlexRender, NatTableBodyCellLayout, NatTableHeaderCellLayout, NatTablePxWidth, NgTemplateOutlet],
+  imports: [
+    FlexRender,
+    NatTableBodyCellLayout,
+    NatTableCellTemplateInjector,
+    NatTableHeaderCellLayout,
+    NatTablePxWidth,
+    NgTemplateOutlet
+  ],
   providers: [NatTableState, NatTableA11yService],
   templateUrl: './static-table.html',
   // Shares the table skeleton's stylesheet: the static renderer produces the
@@ -192,6 +204,7 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
   private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
   private readonly errorTemplate = contentChild(NatTableErrorTemplate);
   private readonly subHeaderTemplate = contentChild(NatTableSubHeaderTemplate);
+  private readonly cellTemplateDirectives = contentChildren(NatTableCellTemplate);
 
   protected readonly loadingTemplateRef = computed<TemplateRef<NatTableLoadingTemplateContext<TData>> | null>(() => {
     const templateRef = this.loadingTemplate()?.templateRef;
@@ -244,6 +257,25 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
 
   protected readonly subHeaderGroups = this.state.subHeaderGroups;
 
+  /** Projected `natTableCell` templates by column id; a column without one renders its column definition. */
+  protected readonly cellTemplates = computed(() =>
+    indexCellTemplates<NatTableCellTemplateContext<TData>>(this.cellTemplateDirectives())
+  );
+
+  /**
+   * Template ids to check against the columns. Reads the column definitions so
+   * the check re-runs when they change.
+   */
+  private readonly knownCellTemplateIds = computed(() => {
+    this.columns();
+
+    return [...this.cellTemplates().keys()];
+  });
+
+  protected getCellTemplateContext(cell: Cell<TData, unknown>, rowIndex: number): NatTableCellTemplateContext<TData> {
+    return this.state.getCellTemplateContext(cell, rowIndex, 'table');
+  }
+
   protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
     return this.state.getSubHeaderTemplateContext(group);
   }
@@ -295,6 +327,7 @@ export class NatTableStatic<TData extends RowData = RowData> implements NatTable
     effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
     effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
     effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
+    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
 
     effect(() => this.state.tableRegionRef.set(this.tableRegionRef()));
 

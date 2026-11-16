@@ -10,6 +10,7 @@ import {
   booleanAttribute,
   computed,
   contentChild,
+  contentChildren,
   effect,
   inject,
   input,
@@ -17,12 +18,13 @@ import {
   viewChild
 } from '@angular/core';
 
-import type { Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, Updater } from '@tanstack/angular-table';
+import type { Cell, Column, ColumnDef, FilterFn, Header, HeaderGroup, Row, RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
 import { NatTableCellControlManager } from '../cell-interaction/table-cell-control-manager.service';
-import { NatTableCell } from '../cell-interaction/table-cell.directive';
+import { NatTableCellInteraction } from '../cell-interaction/table-cell-interaction.directive';
 import { handleCellInteractionKeydown } from '../cell-interaction/utils/cell-interaction.util';
+import type { NatTableCellTemplateContext } from '../common/cell-template.type';
 import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeholder.type';
 import type { NatTableRenderedBodyRow } from '../common/row-render-strategy.type';
 import type { NatTableRowRenderedEvent } from '../common/row-render.type';
@@ -47,6 +49,8 @@ import { isSpaceShortcutKey } from '../hotkey-a11y/utils/shortcut-parsing.util';
 import { NatTableReorderService } from '../reorder/table-reorder.service';
 import { NatTableResizeService } from '../resize/table-resize.service';
 import { NatTableRowRenderEmitter } from '../ui/row-render-emitter.directive';
+import { NatTableCellTemplateInjector } from '../ui/table-cell-template-injector.directive';
+import { NatTableCellTemplate } from '../ui/table-cell-template.directive';
 import {
   NatTableBodyCellLayout,
   NatTableHeaderCellLayout,
@@ -58,6 +62,7 @@ import { NatTableRowPlaceholderTemplate } from '../ui/table-row-placeholder-temp
 import { NatTableEmptyTemplate, NatTableErrorTemplate, NatTableLoadingTemplate } from '../ui/table-status-templates.directive';
 import { NatTableSubHeaderTemplate } from '../ui/table-sub-header-template.directive';
 import { getNatTableBodyRowIdentity } from '../utils/body-row-slot.util';
+import { indexCellTemplates } from '../utils/cell-template.util';
 import { getHeaderRowColumnIds, shouldHidePrimitiveHeaderLabel } from '../utils/column-label.util';
 import {
   canResizeColumn,
@@ -100,9 +105,10 @@ const trackNatTableBodyRow = <TData extends RowData>(renderedRow: NatTableRender
     CdkDrag,
     FlexRender,
     NatTableRowRenderEmitter,
-    NatTableCell,
+    NatTableCellInteraction,
     NatTableHeaderCellLayout,
     NatTableBodyCellLayout,
+    NatTableCellTemplateInjector,
     NatTablePxHeight,
     NatTablePxWidth,
     NatTableResizeGuide
@@ -267,6 +273,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   private readonly emptyTemplate = contentChild(NatTableEmptyTemplate);
   private readonly errorTemplate = contentChild(NatTableErrorTemplate);
   private readonly subHeaderTemplate = contentChild(NatTableSubHeaderTemplate);
+  private readonly cellTemplateDirectives = contentChildren(NatTableCellTemplate);
   private readonly rowPlaceholderTemplate = contentChild(NatTableRowPlaceholderTemplate);
 
   protected readonly loadingTemplateRef = computed<TemplateRef<NatTableLoadingTemplateContext<TData>> | null>(() => {
@@ -303,6 +310,25 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
 
   protected readonly subHeaderGroups = this.state.subHeaderGroups;
   protected readonly subHeaderRowOffsets = this.state.subHeaderRowOffsets;
+
+  /** Projected `natTableCell` templates by column id; a column without one renders its column definition. */
+  protected readonly cellTemplates = computed(() =>
+    indexCellTemplates<NatTableCellTemplateContext<TData>>(this.cellTemplateDirectives())
+  );
+
+  /**
+   * Template ids to check against the columns. Reads the column definitions so
+   * the check re-runs when they change.
+   */
+  private readonly knownCellTemplateIds = computed(() => {
+    this.columns();
+
+    return [...this.cellTemplates().keys()];
+  });
+
+  protected getCellTemplateContext(cell: Cell<TData, unknown>, rowIndex: number): NatTableCellTemplateContext<TData> {
+    return this.state.getCellTemplateContext(cell, rowIndex, 'table');
+  }
 
   protected getSubHeaderContext(group: NatTableSubHeaderGroup<TData>): NatTableSubHeaderTemplateContext<TData> {
     return this.state.getSubHeaderTemplateContext(group);
@@ -438,6 +464,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
     effect(() => this.state.subHeaderColumn.set(this.subHeaderColumn()));
     effect(() => this.state.subHeaderOrder.set(this.subHeaderOrder()));
     effect(() => this.state.enableSubHeaders.set(this.enableSubHeaders()));
+    effect(() => this.state.warnUnknownCellTemplateIds(this.knownCellTemplateIds()));
 
     // ── Wire table region ref to state (read by all services) ──
     effect(() => this.state.tableRegionRef.set(this.tableRegionRef()));
@@ -472,7 +499,7 @@ export class NatTable<TData extends RowData = RowData> implements NatTableUiCont
   protected onHeaderKeydown(event: KeyboardEvent, column: Column<TData, unknown>): void {
     const keyboard = this.natTableService.keyboard();
 
-    // `defaultPrevented` also covers the NatTableCell host listener on the same
+    // `defaultPrevented` also covers the NatTableCellInteraction host listener on the same
     // header cell, so a key it consumed can never fall through to resize/reorder.
     if (event.defaultPrevented) return;
 

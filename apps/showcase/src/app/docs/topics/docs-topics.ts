@@ -1,11 +1,13 @@
 /* eslint-disable max-lines -- topic registry intentionally keeps docs IA, snippets, and embedded examples together */
 import type { DocsCodeSnippet, DocsTopicContent } from './docs-topic.type';
 import { ThemingShowcase } from './theming-showcase';
+import { CellTemplates } from '../demos/cell-templates/cell-templates';
 import { KeyboardInteraction } from '../demos/keyboard-interaction/keyboard-interaction';
 import { ListControls } from '../demos/list/list-controls';
 import { ListCustomCells } from '../demos/list/list-custom-cells';
 import { ListDataStates } from '../demos/list/list-data-states';
 import { ListFlowLayout } from '../demos/list/list-flow-layout';
+import { ListItemTemplate } from '../demos/list/list-item-template';
 import { ListRenderer } from '../demos/list/list-renderer';
 import { ListSelection } from '../demos/list/list-selection';
 import { Pagination } from '../demos/pagination/pagination';
@@ -531,6 +533,49 @@ nat-list {
   )
 ];
 
+const cellTemplatesSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface>
+  <nat-table [columns]="columns" [data]="rows()" accessibleName="Resources">
+    <ng-template [natTableCellOf]="columns" let-row="row" let-status natTableCell="status">
+      <span class="status-badge">{{ status }}</span>
+      <button type="button" (click)="toggle(row.original)">
+        {{ status === 'Active' ? 'Pause' : 'Activate' }}
+      </button>
+    </ng-template>
+  </nat-table>
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+import { NatTable, NatTableCellTemplate, type ColumnDef } from 'ng-advanced-table';
+import { NatTableSurface } from 'ng-advanced-table/components';
+
+// The column definition keeps the data concerns; the template owns the markup.
+protected readonly columns: ColumnDef<Resource, unknown>[] = [
+  { accessorKey: 'name', header: 'Name', meta: { label: 'Name', rowHeader: true } },
+  { accessorKey: 'status', header: 'Status', meta: { label: 'Status' } }
+];
+
+protected readonly rows = signal<readonly Resource[]>(RESOURCES);
+
+protected toggle(resource: Resource): void {
+  const status = resource.status === 'Active' ? 'Paused' : 'Active';
+
+  this.rows.update((rows) => rows.map((row) => (row.id === resource.id ? { ...row, status } : row)));
+}
+`
+  )
+];
+
 const subHeaderRowsSnippets = [
   snippet(
     'html',
@@ -709,6 +754,58 @@ private async load(): Promise<void> {
 nat-list {
   --nat-list-state-justify: center;
   --nat-list-state-min-height: 8rem;
+}
+`
+  )
+];
+
+const listItemTemplateSnippets = [
+  snippet(
+    'html',
+    'HTML',
+    'html',
+    `
+<nat-table-surface>
+  <nat-list
+    [columns]="columns"
+    [data]="rows()"
+    accessibleName="Orders"
+    enableRowActivation
+    (rowActivate)="open($event.rowData)">
+    <!-- Replaces the built-in fields; the list keeps the item element. -->
+    <ng-template [natListItemOf]="columns" let-order natListItem>
+      <article class="order-card">
+        <!-- Names the item's activator button. -->
+        <p class="order-card-customer" natListItemLabel>{{ order.customer }}</p>
+        <app-order-status-badge [status]="order.status" />
+        <p>{{ order.id }} · {{ order.total | currency }}</p>
+        <button type="button" (click)="markReady(order)">Mark ready</button>
+      </article>
+    </ng-template>
+  </nat-list>
+</nat-table-surface>
+`
+  ),
+  snippet(
+    'ts',
+    'TS',
+    'typescript',
+    `
+import { NatList, NatListItemLabel, NatListItemTemplate, type ColumnDef } from 'ng-advanced-table';
+import { NatTableSurface } from 'ng-advanced-table/components';
+
+@Component({
+  imports: [CurrencyPipe, NatList, NatListItemLabel, NatListItemTemplate, NatTableSurface, OrderStatusBadge],
+  templateUrl: './orders.html'
+})
+export class Orders {
+  // Columns still drive sorting, filtering, and the shared surface state.
+  protected readonly columns: ColumnDef<Order, unknown>[] = orderColumns;
+  protected readonly rows = signal<readonly Order[]>(ORDERS);
+
+  protected markReady(order: Order): void {
+    this.rows.update((rows) => rows.map((row) => (row.id === order.id ? { ...row, status: 'Ready' } : row)));
+  }
 }
 `
   )
@@ -1081,9 +1178,20 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
     contents: [
       { label: 'Basic shape', path: '#basic-column-shape' },
       { label: 'Metadata', path: '#column-metadata' },
+      { label: 'Cell templates', path: '#cell-templates' },
       { label: 'Custom cells', path: '#custom-cell-components' }
     ],
-    blocks: [{ kind: 'markdown', id: 'columns-prose', markdownPath: '/docs/columns.md' }],
+    blocks: [
+      { kind: 'markdown', id: 'columns-prose', markdownPath: '/docs/columns.md' },
+      {
+        kind: 'example',
+        id: 'cell-templates',
+        title: 'Cell templates in the host template',
+        description: 'The status column renders a projected template, so its button calls a host method directly.',
+        component: CellTemplates,
+        snippets: cellTemplatesSnippets
+      }
+    ],
     related: [
       { label: 'Column layout', path: '/docs/column-layout' },
       { label: 'Export', path: '/docs/export' }
@@ -1347,6 +1455,7 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
       { label: 'When to use the list', path: '#when-to-use-the-list' },
       { label: 'Composition', path: '#composition' },
       { label: 'Field labels', path: '#field-labels' },
+      { label: 'Item templates', path: '#item-templates' },
       { label: 'Shared state and companion controls', path: '#shared-state-and-companion-controls' },
       { label: 'Sub-header rows', path: '#sub-header-rows' },
       { label: 'Selection and activation', path: '#selection-and-activation' },
@@ -1374,6 +1483,15 @@ const TOPIC_CONTENT: readonly DocsTopicContent[] = [
         description: 'Text, component, and template cells all render through the same flexRender pipeline the table uses.',
         component: ListCustomCells,
         snippets: listCustomCellsSnippets
+      },
+      {
+        kind: 'example',
+        id: 'list-item-template',
+        title: 'Item template',
+        description:
+          'A natListItem template replaces the built-in fields with a card; the list keeps the item, activation, and selection.',
+        component: ListItemTemplate,
+        snippets: listItemTemplateSnippets
       },
       {
         kind: 'example',

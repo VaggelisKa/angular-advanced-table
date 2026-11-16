@@ -140,7 +140,7 @@ describe('FEATURE: NatTableStatic', () => {
       it('THEN: it leaves no cell-interaction anchors for the control manager', () => {
         const table = queryTable(fixture);
 
-        expect(table.querySelectorAll('[natTableCell]')).toHaveLength(0);
+        expect(table.querySelectorAll('[natTableCellInteraction]')).toHaveLength(0);
         expect(table.querySelectorAll('[data-nat-table-managed-cell-widget]')).toHaveLength(0);
       });
     });

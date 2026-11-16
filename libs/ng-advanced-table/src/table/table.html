@@ -104,7 +104,7 @@
                 cdkDrag
                 cdkDragLockAxis="x"
                 cdkDragPreviewContainer="parent"
-                natTableCell
+                natTableCellInteraction
                 ngGridCell
                 role="columnheader"
                 scope="col"
@@ -127,7 +127,7 @@
                 [class]="columnState?.headerClassMap"
                 [class.is-sortable]="canSortHeader(header)"
                 [natTableHeaderCellLayout]="columnState"
-                natTableCell
+                natTableCellInteraction
                 ngGridCell
                 role="columnheader"
                 scope="col"
@@ -177,7 +177,7 @@
                     [attr.data-column-id]="column.id"
                     [class]="columnState?.cellClassMap"
                     [natTableBodyCellLayout]="columnState"
-                    natTableCell
+                    natTableCellInteraction
                     ngGridCell>
                     <span class="data-cell-content">
                       @if (columnIndex === 0) {
@@ -213,7 +213,7 @@
                 </ng-template>
                 <tr [rowIndex]="dataRowIndex - 1" class="sub-header-row" data-testid="nat-table-sub-header-row" ngGridRow>
                   @if (subHeaderLayout() === 'colspan') {
-                    <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCell ngGridCell>
+                    <td [colSpan]="emptyStateColSpan()" class="sub-header-cell" natTableCellInteraction ngGridCell>
                       <ng-container [ngTemplateOutlet]="subHeaderInnerContent" />
                     </td>
                   } @else {
@@ -233,7 +233,7 @@
                         [class]="columnState?.cellClassMap"
                         [class.sub-header-cell]="true"
                         [natTableBodyCellLayout]="columnState"
-                        natTableCell
+                        natTableCellInteraction
                         ngGridCell>
                         @if (first) {
                           <ng-container [ngTemplateOutlet]="subHeaderInnerContent" />
@@ -269,14 +269,23 @@
                       [attr.data-tone]="cellTone"
                       [class]="columnState?.cellClassMap"
                       [natTableBodyCellLayout]="columnState"
-                      natTableCell
+                      natTableCellInteraction
                       ngGridCell
                       role="rowheader"
                       scope="row">
                       <span class="data-cell-content">
-                        <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
-                          {{ rendered }}
-                        </ng-container>
+                        @if (cellTemplates().get(cell.column.id); as cellTemplate) {
+                          <ng-container
+                            #cellInjector="natTableCellTemplateInjector"
+                            [ngTemplateOutlet]="cellTemplate"
+                            [ngTemplateOutletContext]="getCellTemplateContext(cell, renderedRow.logicalIndex)"
+                            [ngTemplateOutletInjector]="cellInjector.injector"
+                            natTableCellTemplateInjector />
+                        } @else {
+                          <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                            {{ rendered }}
+                          </ng-container>
+                        }
                       </span>
                     </th>
                   } @else {
@@ -287,12 +296,21 @@
                       [attr.data-tone]="cellTone"
                       [class]="columnState?.cellClassMap"
                       [natTableBodyCellLayout]="columnState"
-                      natTableCell
+                      natTableCellInteraction
                       ngGridCell>
                       <span class="data-cell-content">
-                        <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
-                          {{ rendered }}
-                        </ng-container>
+                        @if (cellTemplates().get(cell.column.id); as cellTemplate) {
+                          <ng-container
+                            #cellInjector="natTableCellTemplateInjector"
+                            [ngTemplateOutlet]="cellTemplate"
+                            [ngTemplateOutletContext]="getCellTemplateContext(cell, renderedRow.logicalIndex)"
+                            [ngTemplateOutletInjector]="cellInjector.injector"
+                            natTableCellTemplateInjector />
+                        } @else {
+                          <ng-container *flexRender="cell.column.columnDef.cell; props: cellContext; let rendered">
+                            {{ rendered }}
+                          </ng-container>
+                        }
                       </span>
                     </td>
                   }
@@ -312,7 +330,7 @@
         }
         @case ('loading') {
           <tr [rowIndex]="headerRowCount() + 1" ngGridRow>
-            <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableCell ngGridCell>
+            <td [colSpan]="emptyStateColSpan()" class="table-state loading-state" natTableCellInteraction ngGridCell>
               <div class="table-state-content">
                 @if (loadingTemplateRef(); as templateRef) {
                   <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="loadingTemplateContext()" />
@@ -325,7 +343,7 @@
         }
         @case ('error') {
           <tr [rowIndex]="headerRowCount() + 1" ngGridRow>
-            <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableCell ngGridCell>
+            <td [colSpan]="emptyStateColSpan()" class="table-state error-state" natTableCellInteraction ngGridCell>
               <div class="table-state-content">
                 @if (errorTemplateRef(); as templateRef) {
                   <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="errorTemplateContext()" />
@@ -338,7 +356,7 @@
         }
         @case ('empty') {
           <tr [rowIndex]="headerRowCount() + 1" ngGridRow>
-            <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableCell ngGridCell>
+            <td [colSpan]="emptyStateColSpan()" class="table-state empty-state" natTableCellInteraction ngGridCell>
               <div class="table-state-content">
                 @if (emptyTemplateRef(); as templateRef) {
                   <ng-container [ngTemplateOutlet]="templateRef" [ngTemplateOutletContext]="emptyTemplateContext()" />
