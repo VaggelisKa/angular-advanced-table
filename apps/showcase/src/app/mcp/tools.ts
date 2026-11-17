@@ -1,3 +1,8 @@
+import { DOCUMENT } from '@angular/common';
+import { inject, provideExperimentalWebMcpTools } from '@angular/core';
+import type { EnvironmentProviders } from '@angular/core';
+import { Router } from '@angular/router';
+
 import {
   CURRENT_PAGE_INPUT_SCHEMA,
   NAVIGATE_INPUT_SCHEMA,
@@ -14,12 +19,7 @@ import {
   readStringInput,
   toRouteResult
 } from './route-utils';
-import type { WebMcpTool, WebMcpToolInput, WebMcpToolResult } from './types';
-
-type ShowcaseWebMcpToolDependencies = {
-  readonly document: Document;
-  readonly navigateByUrl: (url: string) => Promise<boolean>;
-};
+import type { WebMcpToolInput, WebMcpToolResult } from './types';
 
 const createEmptySearchResult = (): WebMcpToolResult => ({
   query: '',
@@ -53,83 +53,89 @@ const searchRoutes = (
     .map((match) => toRouteResult(document, match.route));
 };
 
-const createCurrentPageTool = (document: Document): WebMcpTool => ({
-  name: 'angular_advanced_table.get_current_page',
-  title: 'Get current page',
-  description: 'Return the current Angular Advanced Table showcase page URL, title, heading, and matching route metadata.',
-  inputSchema: CURRENT_PAGE_INPUT_SCHEMA,
-  annotations: {
-    readOnlyHint: true
+/*
+ * Tool `execute` callbacks run in the providing injector's context (Angular
+ * wraps them in `runInInjectionContext`), so they resolve `DOCUMENT` and
+ * `Router` lazily per call instead of capturing them at registration time.
+ */
+export const showcaseWebMcpTools = [
+  {
+    name: 'angular_advanced_table.get_current_page',
+    description: 'Return the current Angular Advanced Table showcase page URL, title, heading, and matching route metadata.',
+    inputSchema: CURRENT_PAGE_INPUT_SCHEMA,
+    annotations: {
+      readOnlyHint: true
+    },
+    execute: (): WebMcpToolResult => {
+      const document = inject(DOCUMENT);
+      const path = normalizeRoutePath(document.location.pathname);
+      const route = findRouteDescriptor(path);
+
+      return {
+        url: document.location.href,
+        path: `/${path}`,
+        title: document.title,
+        heading: getCurrentHeading(document),
+        route: route ? toRouteResult(document, route) : null
+      };
+    }
   },
-  execute: (): WebMcpToolResult => {
-    const path = normalizeRoutePath(document.location.pathname);
-    const route = findRouteDescriptor(path);
+  {
+    name: 'angular_advanced_table.search_showcase',
+    description: 'Search the Angular Advanced Table documentation and examples by title, description, id, and route path.',
+    inputSchema: SEARCH_INPUT_SCHEMA,
+    annotations: {
+      readOnlyHint: true
+    },
+    execute: (input: WebMcpToolInput): WebMcpToolResult => {
+      const query = readStringInput(input, 'query');
 
-    return {
-      url: document.location.href,
-      path: `/${path}`,
-      title: document.title,
-      heading: getCurrentHeading(document),
-      route: route ? toRouteResult(document, route) : null
-    };
-  }
-});
+      if (!query) {
+        return createEmptySearchResult();
+      }
 
-const createSearchTool = (document: Document): WebMcpTool => ({
-  name: 'angular_advanced_table.search_showcase',
-  title: 'Search showcase',
-  description: 'Search the Angular Advanced Table documentation and examples by title, description, id, and route path.',
-  inputSchema: SEARCH_INPUT_SCHEMA,
-  annotations: {
-    readOnlyHint: true
+      const kind = readSearchKind(input);
+      const results = searchRoutes(inject(DOCUMENT), query, kind, readSearchLimit(input));
+
+      return {
+        query,
+        kind,
+        count: results.length,
+        results
+      };
+    }
   },
-  execute: (input: WebMcpToolInput): WebMcpToolResult => {
-    const query = readStringInput(input, 'query');
+  {
+    name: 'angular_advanced_table.navigate',
+    description: 'Navigate the browser to a known Angular Advanced Table documentation or example route.',
+    inputSchema: NAVIGATE_INPUT_SCHEMA,
+    execute: async (input: WebMcpToolInput): Promise<WebMcpToolResult> => {
+      const document = inject(DOCUMENT);
+      const router = inject(Router);
+      const rawPath = readStringInput(input, 'path');
 
-    if (!query) {
-      return createEmptySearchResult();
+      if (!rawPath) {
+        return createInvalidNavigationResult('Provide a route path.', undefined);
+      }
+
+      const routePath = normalizeRoutePath(rawPath);
+      const route = findRouteDescriptor(routePath);
+
+      if (!route) {
+        return createInvalidNavigationResult('Unknown showcase route path.', rawPath);
+      }
+
+      return {
+        ok: await router.navigateByUrl(`/${route.path}`),
+        route: toRouteResult(document, route)
+      };
     }
-
-    const kind = readSearchKind(input);
-    const results = searchRoutes(document, query, kind, readSearchLimit(input));
-
-    return {
-      query,
-      kind,
-      count: results.length,
-      results
-    };
   }
-});
-
-const createNavigateTool = ({ document, navigateByUrl }: ShowcaseWebMcpToolDependencies): WebMcpTool => ({
-  name: 'angular_advanced_table.navigate',
-  title: 'Navigate showcase',
-  description: 'Navigate the browser to a known Angular Advanced Table documentation or example route.',
-  inputSchema: NAVIGATE_INPUT_SCHEMA,
-  execute: async (input: WebMcpToolInput): Promise<WebMcpToolResult> => {
-    const rawPath = readStringInput(input, 'path');
-
-    if (!rawPath) {
-      return createInvalidNavigationResult('Provide a route path.', undefined);
-    }
-
-    const routePath = normalizeRoutePath(rawPath);
-    const route = findRouteDescriptor(routePath);
-
-    if (!route) {
-      return createInvalidNavigationResult('Unknown showcase route path.', rawPath);
-    }
-
-    return {
-      ok: await navigateByUrl(`/${route.path}`),
-      route: toRouteResult(document, route)
-    };
-  }
-});
-
-export const createShowcaseWebMcpTools = (dependencies: ShowcaseWebMcpToolDependencies): readonly WebMcpTool[] => [
-  createCurrentPageTool(dependencies.document),
-  createSearchTool(dependencies.document),
-  createNavigateTool(dependencies)
 ];
+
+/**
+ * Registers the showcase WebMCP tools through Angular's experimental WebMCP
+ * support. Angular skips registration during SSR and in browsers without a
+ * `modelContext`, and unregisters the tools when the app injector is destroyed.
+ */
+export const provideShowcaseWebMcpTools = (): EnvironmentProviders => provideExperimentalWebMcpTools(showcaseWebMcpTools);

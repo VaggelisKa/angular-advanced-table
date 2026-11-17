@@ -23,7 +23,7 @@ export const CURRENT_PAGE_INPUT_SCHEMA = {
   type: 'object',
   properties: {},
   additionalProperties: false
-} satisfies JsonSchema;
+} as const satisfies JsonSchema;
 
 export const SEARCH_INPUT_SCHEMA = {
   type: 'object',
@@ -49,7 +49,7 @@ export const SEARCH_INPUT_SCHEMA = {
   },
   required: ['query'],
   additionalProperties: false
-} satisfies JsonSchema;
+} as const satisfies JsonSchema;
 
 export const NAVIGATE_INPUT_SCHEMA = {
   type: 'object',
@@ -62,7 +62,7 @@ export const NAVIGATE_INPUT_SCHEMA = {
   },
   required: ['path'],
   additionalProperties: false
-} satisfies JsonSchema;
+} as const satisfies JsonSchema;
 
 export const readStringInput = (input: WebMcpToolInput, key: string): string | undefined => {
   const value = input[key];
