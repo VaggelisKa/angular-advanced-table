@@ -7,7 +7,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 
 import { isApplePlatform, resolveDialogOpener } from './app.util';
-import { ShowcaseWebMcp } from '../mcp/webmcp';
 import { DocsSearchDialog } from '../search/docs-search-dialog';
 import { DocsSearchStore } from '../search/docs-search.store';
 import { ShowcaseThemeStore } from '../theme/showcase-theme';
@@ -38,7 +37,6 @@ export class App {
   private readonly injector = inject(Injector);
   private readonly searchStore = inject(DocsSearchStore);
   private readonly themeStore = inject(ShowcaseThemeStore);
-  private readonly webMcp = inject(ShowcaseWebMcp);
   private readonly mobileMenuButton = viewChild<ElementRef<HTMLButtonElement>>('mobileMenuButton');
   private readonly mobileNavDialog = viewChild.required<TemplateRef<unknown>>('mobileNavDialog');
   private readonly searchTriggerDesktop = viewChild<ElementRef<HTMLButtonElement>>('searchTriggerDesktop');
@@ -54,8 +52,6 @@ export class App {
   protected readonly theme = this.themeStore.theme;
 
   public constructor() {
-    this.webMcp.initialize();
-
     afterNextRender(() => {
       if (isApplePlatform(this.document.defaultView?.navigator)) {
         this.searchShortcutHint.set('⌘ K');

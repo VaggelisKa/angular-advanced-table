@@ -9,6 +9,7 @@ import {
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { TitleStrategy, provideRouter, withInMemoryScrolling } from '@angular/router';
 
+import { provideShowcaseWebMcpTools } from '../../mcp/tools';
 import { AppTitleStrategy } from '../app.title-strategy';
 import { routes } from '../routing/app.routes';
 
@@ -36,6 +37,7 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled',
         scrollPositionRestoration: 'enabled'
       })
-    )
+    ),
+    provideShowcaseWebMcpTools()
   ]
 };
