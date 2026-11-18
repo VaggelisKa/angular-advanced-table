@@ -11,13 +11,16 @@ import {
   SEARCH_INPUT_SCHEMA,
   findRouteDescriptor,
   getCurrentHeading,
+  getDocumentOrigin,
   getSearchScore,
   matchesSearchKind,
   normalizeRoutePath,
   readSearchKind,
   readSearchLimit,
+  readSearchQuery,
   readStringInput,
-  toRouteResult
+  toRouteResult,
+  toSearchTerms
 } from './route-utils';
 import type { WebMcpToolInput, WebMcpToolResult } from './types';
 
@@ -41,11 +44,11 @@ const searchRoutes = (
   kind: 'all' | 'docs' | 'examples',
   limit: number
 ): readonly WebMcpToolResult[] => {
-  const normalizedQuery = query.toLowerCase();
+  const terms = toSearchTerms(query);
 
   return ROUTE_DESCRIPTORS.map((route) => ({
     route,
-    score: matchesSearchKind(route, kind) ? getSearchScore(route, normalizedQuery) : 0
+    score: matchesSearchKind(route, kind) ? getSearchScore(route, terms) : 0
   }))
     .filter((match) => match.score > 0)
     .sort((left, right) => right.score - left.score || left.route.title.localeCompare(right.route.title))
@@ -68,7 +71,7 @@ export const showcaseWebMcpTools = [
     },
     execute: (): WebMcpToolResult => {
       const document = inject(DOCUMENT);
-      const path = normalizeRoutePath(document.location.pathname);
+      const path = normalizeRoutePath(document.location.pathname) ?? '';
       const route = findRouteDescriptor(path);
 
       return {
@@ -88,7 +91,7 @@ export const showcaseWebMcpTools = [
       readOnlyHint: true
     },
     execute: (input: WebMcpToolInput): WebMcpToolResult => {
-      const query = readStringInput(input, 'query');
+      const query = readSearchQuery(input);
 
       if (!query) {
         return createEmptySearchResult();
@@ -118,17 +121,23 @@ export const showcaseWebMcpTools = [
         return createInvalidNavigationResult('Provide a route path.', undefined);
       }
 
-      const routePath = normalizeRoutePath(rawPath);
-      const route = findRouteDescriptor(routePath);
+      const routePath = normalizeRoutePath(rawPath, getDocumentOrigin(document));
+      const route = routePath === undefined ? undefined : findRouteDescriptor(routePath);
 
       if (!route) {
         return createInvalidNavigationResult('Unknown showcase route path.', rawPath);
       }
 
-      return {
-        ok: await router.navigateByUrl(`/${route.path}`),
-        route: toRouteResult(document, route)
-      };
+      try {
+        return {
+          ok: await router.navigateByUrl(`/${route.path}`),
+          route: toRouteResult(document, route)
+        };
+      } catch {
+        /* A failed navigation is reported to the agent instead of surfacing
+           as an unhandled tool error. */
+        return { ok: false, error: 'Navigation failed.', route: toRouteResult(document, route) };
+      }
     }
   }
 ];

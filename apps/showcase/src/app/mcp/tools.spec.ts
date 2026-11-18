@@ -38,6 +38,7 @@ const createClient = (): WebMcpClient => ({ signal: new AbortController().signal
 
 describe('FEATURE: Showcase WebMCP tools', () => {
   let navigatedUrls: string[];
+  let navigationError: Error | undefined;
 
   /* Tool callbacks resolve their dependencies with `inject()`, which Angular
      makes available by running them in the providing injector's context. */
@@ -51,6 +52,7 @@ describe('FEATURE: Showcase WebMCP tools', () => {
     document.title = 'Quick start | Angular Advanced Table Docs';
     document.body.innerHTML = '<main><h1>Quick start</h1></main>';
     navigatedUrls = [];
+    navigationError = undefined;
 
     TestBed.configureTestingModule({
       providers: [
@@ -61,6 +63,10 @@ describe('FEATURE: Showcase WebMCP tools', () => {
             navigateByUrl: async (url: string): Promise<boolean> => {
               navigatedUrls.push(url);
               await Promise.resolve();
+
+              if (navigationError) {
+                throw navigationError;
+              }
 
               return true;
             }
@@ -169,6 +175,54 @@ describe('FEATURE: Showcase WebMCP tools', () => {
             path: '/docs/sorting'
           })
         );
+      });
+    });
+  });
+
+  describe('GIVEN: an agent searches with several words or generic text', () => {
+    describe('WHEN: it queries the search tool', () => {
+      it('THEN: it matches words individually, ignores the site name in titles, and bounds the query', async () => {
+        const multiWord = await executeTool('angular_advanced_table.search_showcase', { query: 'column pinning' });
+        const multiWordResults = multiWord['results'] as readonly Record<string, unknown>[];
+
+        expect(multiWordResults[0]).toStrictEqual(expect.objectContaining({ id: 'column-layout' }));
+
+        const siteName = await executeTool('angular_advanced_table.search_showcase', { query: 'Angular Advanced' });
+
+        expect(siteName['count']).toBe(0);
+
+        const longQuery = await executeTool('angular_advanced_table.search_showcase', { query: 'x'.repeat(5000) });
+
+        expect(longQuery['query'] as string).toHaveLength(200);
+      });
+    });
+  });
+
+  describe('GIVEN: an agent passes an unsafe or unknown navigation target', () => {
+    describe('WHEN: it calls the navigate tool', () => {
+      it('THEN: it rejects foreign and malformed URLs without navigating, and reports router failures', async () => {
+        for (const path of ['https://evil.example/docs/sorting', '//evil.example/docs/sorting', 'http://[', '/docs/missing']) {
+          const result = await executeTool('angular_advanced_table.navigate', { path });
+
+          expect(result).toStrictEqual(
+            expect.objectContaining({ ok: false, error: 'Unknown showcase route path.', requestedPath: path })
+          );
+        }
+
+        expect(navigatedUrls).toStrictEqual([]);
+
+        const sameOrigin = await executeTool('angular_advanced_table.navigate', {
+          path: `${document.location.origin}/docs/sorting`
+        });
+
+        expect(sameOrigin['ok']).toBe(true);
+
+        navigationError = new Error('Navigation cancelled');
+
+        const failed = await executeTool('angular_advanced_table.navigate', { path: '/docs/sorting' });
+
+        expect(failed).toStrictEqual(expect.objectContaining({ ok: false, error: 'Navigation failed.' }));
+        expect(navigatedUrls).toStrictEqual(['/docs/sorting', '/docs/sorting']);
       });
     });
   });
