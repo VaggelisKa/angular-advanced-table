@@ -8,6 +8,12 @@ export const showcaseDocs: readonly ShowcaseDoc[] = [
     path: '/docs/quick-start'
   },
   {
+    id: 'tanstack-v9-migration',
+    label: 'TanStack v9 migration',
+    description: 'Consumer changes for TanStack Table v9',
+    path: '/docs/tanstack-v9-migration'
+  },
+  {
     id: 'composition',
     label: 'Composition',
     description: 'Core table and companion controls',

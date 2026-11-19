@@ -70,7 +70,12 @@ const showcaseDocGroups: readonly ShowcaseNavGroup[] = [
     id: 'docs-advanced',
     label: 'Advanced',
     ariaLabel: 'Advanced table documentation',
-    items: [getShowcaseDoc('virtualization'), getShowcaseDoc('export'), getShowcaseDoc('render-metrics')]
+    items: [
+      getShowcaseDoc('virtualization'),
+      getShowcaseDoc('export'),
+      getShowcaseDoc('render-metrics'),
+      getShowcaseDoc('tanstack-v9-migration')
+    ]
   }
 ];
 

@@ -1,8 +1,9 @@
 import { Directive, TemplateRef, inject, input } from '@angular/core';
 
-import type { ColumnDef, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import type { NatTableCellTemplateContext } from '../common/cell-template.type';
+import type { ColumnDef } from '../common/table-features.type';
 
 /**
  * Captures the content template for one column's body cells, keyed by column

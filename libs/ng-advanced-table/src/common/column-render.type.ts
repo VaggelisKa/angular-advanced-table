@@ -1,5 +1,6 @@
-import type { Column, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { Column } from './table-features.type';
 import type { NatTableUserState } from './table-state.type';
 
 /** Column zones used for reordering and pinned-offset bookkeeping. */

@@ -1,4 +1,6 @@
-import type { Column, Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Column, Row } from 'ng-advanced-table';
 
 import type {
   NatTableColumnExportOptions,

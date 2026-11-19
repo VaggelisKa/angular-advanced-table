@@ -1,7 +1,8 @@
-import type { Column, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { normalizeColumnDimension } from './column-def.util';
 import type { TableColumnSizingState } from '../common/column-render.type';
+import type { Column } from '../common/table-features.type';
 
 /**
  * The rendered body/header width for a column: a resized width wins (falling back to the

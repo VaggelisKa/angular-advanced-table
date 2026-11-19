@@ -1,12 +1,12 @@
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
 import { afterEach, vi } from 'vitest';
 
 import { NAT_TABLE_CELL_SELECTOR, NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from './cell-interaction.const';
 import { natTableCellControlPreparation } from './utils/cell-control-preparation.util';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR } from '../common/interaction.const';
+import type { ColumnDef } from '../common/table-features.type';
 import { NatTable } from '../table/table';
 import { waitForControlPrepared, waitForMutation } from '../test-helpers/cell-control-dom.helper';
 import { buildRows } from '../test-helpers/table-data.helper';

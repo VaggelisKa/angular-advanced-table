@@ -1,4 +1,6 @@
-import type { Column, RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Column, Table } from './table-features.type';
 
 /**
  * Context passed to `ng-template[natTableRowPlaceholder]`, rendered once per

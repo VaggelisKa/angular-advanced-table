@@ -1,7 +1,8 @@
-import type { Column, ColumnSizingState } from '@tanstack/angular-table';
+import type { ColumnSizingState } from '@tanstack/angular-table';
 
 import { clampColumnSizingWidths, clampWidth, computeKeyboardResizeWidth, getColumnResizeBounds } from './column-resize.util';
 import type { TableColumnSizingState } from '../../common/column-render.type';
+import type { Column } from '../../common/table-features.type';
 import { DEFAULT_MIN_COLUMN_WIDTH, RESIZE_KEYBOARD_STEP, RESIZE_KEYBOARD_STEP_LARGE } from '../column-resize.const';
 
 type FixtureRow = Record<string, unknown>;

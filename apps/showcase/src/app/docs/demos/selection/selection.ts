@@ -70,7 +70,7 @@ export class Selection {
     const selection = this.rowSelection();
 
     return this.data()
-      .filter((item) => selection[item.id])
+      .filter((item) => Object.hasOwn(selection, item.id))
       .map((item) => item.name);
   });
 
@@ -115,7 +115,8 @@ export class Selection {
 
   protected deleteSelected(): void {
     const selection = this.rowSelection();
-    const selectedIds = new Set(Object.keys(selection).filter((id) => selection[id]));
+    // v9 selection maps hold selected ids only (`Record<string, true>`).
+    const selectedIds = new Set(Object.keys(selection));
 
     if (selectedIds.size === 0) {
       return;

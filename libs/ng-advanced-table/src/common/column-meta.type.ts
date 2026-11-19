@@ -1,6 +1,7 @@
-import type { CellContext, Column, Row, RowData } from '@tanstack/angular-table';
+import type { CellData, RowData, TableFeatures } from '@tanstack/angular-table';
 
 import type { NatTableColumnReorderResult } from './column-render.type';
+import type { CellContext, Column, Row } from './table-features.type';
 
 /** Semantic tone that can be applied to a rendered body cell. */
 export type NatTableCellTone = 'positive' | 'negative' | 'neutral' | 'warning';
@@ -69,16 +70,22 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly export?: NatTableColumnExportOptions<TData, TValue>;
 };
 
+// TFeatures is unused but must match TanStack's v9 meta signatures to merge.
+/* eslint-disable @typescript-eslint/no-unused-vars */
 declare module '@tanstack/table-core' {
   // Module augmentation must use `interface` (declaration merging); the empty
   // body intentionally inherits every NatTableColumnMeta field.
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
-  interface ColumnMeta<TData extends RowData, TValue> extends NatTableColumnMeta<TData, TValue> {}
+  interface ColumnMeta<
+    in out TFeatures extends TableFeatures,
+    in out TData extends RowData,
+    TValue extends CellData = CellData
+  > extends NatTableColumnMeta<TData, TValue> {}
 
   // Module augmentation must use `interface`; `TData` is required to match the
   // upstream signature even though this augmentation does not reference it.
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars
-  interface TableMeta<TData extends RowData> {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  interface TableMeta<in out TFeatures extends TableFeatures, in out TData extends RowData> {
     /** Current table locale id exposed to companion header controls. */
     readonly natTableLocaleId?: string;
     /** Returns whether a visible column can move within its current pinned region. */
@@ -99,3 +106,4 @@ declare module '@tanstack/table-core' {
     readonly natTableRemoteRowCount?: number | null;
   }
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */

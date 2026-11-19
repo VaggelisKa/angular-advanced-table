@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 
-import type { ColumnFiltersState } from '@tanstack/angular-table';
+import type { ColumnFiltersState, RowData } from '@tanstack/angular-table';
 
 import {
   NAT_EN_LOCALE_ID,
@@ -37,7 +37,7 @@ const upsertColumnFilter = (currentFilters: ColumnFiltersState, columnId: string
   templateUrl: './filter.html',
   styleUrl: './filter.css'
 })
-export class NatRenderMetricsFilter<TData = unknown> {
+export class NatRenderMetricsFilter<TData extends RowData = RowData> {
   /** Shared store — used only so the panel/filter can react to measurement changes. */
   public readonly store = input.required<NatTableRenderMetricsStore>();
   /** Controlled table controller. Pass the `NatTable` instance or a structural controller. */
@@ -69,7 +69,7 @@ export class NatRenderMetricsFilter<TData = unknown> {
       return 'all';
     }
     const columnId = this.columnId();
-    const filters = controller.table.getState().columnFilters as ColumnFiltersState;
+    const filters = controller.table.atoms.columnFilters.get() as ColumnFiltersState;
     const activeFilter = filters.find((entry) => entry.id === columnId);
 
     return isRenderFilterValue(activeFilter?.value) ? activeFilter.value : 'all';

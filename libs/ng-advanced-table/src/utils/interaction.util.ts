@@ -1,9 +1,10 @@
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 
-import type { CellContext, Column, Header, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import type { NatTableCellTone } from '../common/column-meta.type';
 import { ROW_ACTIVATE_INTERACTIVE_SELECTOR, ROW_ACTIVATE_OPT_OUT_SELECTOR } from '../common/interaction.const';
+import type { CellContext, Column, Header } from '../common/table-features.type';
 
 /** Keyboard keys that drive a column resize (Alt+Arrow steps; Alt+Home/End jump to bounds). */
 const RESIZE_KEYS: ReadonlySet<string> = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End']);

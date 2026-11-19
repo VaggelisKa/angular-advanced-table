@@ -216,6 +216,17 @@ Use `next` to try an unreleased fix or feature, or to check a change against you
 
 Nightlies have no changelog of their own — a snapshot is a single commit, and the same prose becomes a changelog entry when a stable release is cut. To see what a nightly contains ahead of that, the Nightly workflow run summarises it: it lists the pending release notes and links a full comparison against the last stable tag. The [`CHANGELOG`](https://github.com/VaggelisKa/angular-advanced-table/blob/main/libs/ng-advanced-table/CHANGELOG.md) remains the record for released versions.
 
+## Upgrading From TanStack v8
+
+The table now runs on TanStack Table v9. If your app was written against an earlier release built on v8, update `ng-advanced-table`, then preview the codemod's changes from your project root and apply them:
+
+```bash
+npx -p ng-advanced-table ng-advanced-table-migrate-v9 --dry-run src
+npx -p ng-advanced-table ng-advanced-table-migrate-v9 src
+```
+
+See [TanStack v9 Migration](/docs/tanstack-v9-migration) for every change and what the codemod leaves for you.
+
 ## Next Steps
 
 - Use `/docs/composition` for how the core table, the surface, and companion controls fit together, and which element owns which input.

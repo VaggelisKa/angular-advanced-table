@@ -104,8 +104,8 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
         fixture.detectChanges();
 
         expect(host.tableState().columnPinning).toStrictEqual({
-          left: ['name'],
-          right: []
+          start: ['name'],
+          end: []
         });
 
         menuButton.click();
@@ -125,8 +125,8 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
         fixture.detectChanges();
 
         expect(host.tableState().columnPinning).toStrictEqual({
-          left: [],
-          right: ['name']
+          start: [],
+          end: ['name']
         });
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['region', 'status', 'throughput', 'name']);
       });
@@ -167,8 +167,8 @@ describe('FEATURE: NatTable UI - Header Actions Sort & Pin', () => {
         fixture.detectChanges();
 
         expect(host.tableState().columnPinning).toStrictEqual({
-          left: [],
-          right: ['throughput']
+          start: [],
+          end: ['throughput']
         });
 
         const rightPinnedEndAlignedHeaderActions = root(fixture).querySelector(

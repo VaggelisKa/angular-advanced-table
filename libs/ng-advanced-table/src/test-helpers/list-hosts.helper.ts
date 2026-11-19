@@ -1,11 +1,10 @@
 import { Component, signal } from '@angular/core';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
 import { buildRows, columns } from './table-data.helper';
 import type { Row } from './table-data.helper';
 import { TestTableSurface } from './table-hosts.helper';
 import type { NatTableRowActivateEvent, NatTableRowIdGetter } from '../common/row.type';
+import type { ColumnDef } from '../common/table-features.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';

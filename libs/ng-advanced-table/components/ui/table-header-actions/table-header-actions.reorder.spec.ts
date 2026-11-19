@@ -64,8 +64,8 @@ describe('FEATURE: NatTable UI - Header Actions Reorder', () => {
       it('THEN: it moves pinned columns through the header actions menu inside the pinned region', async () => {
         host.tableState.set({
           columnPinning: {
-            left: ['name', 'region'],
-            right: []
+            start: ['name', 'region'],
+            end: []
           }
         });
         fixture.detectChanges();
@@ -84,8 +84,8 @@ describe('FEATURE: NatTable UI - Header Actions Reorder', () => {
 
         expect(getHeaderColumnIds(fixture)).toStrictEqual(['region', 'name', 'status', 'throughput']);
         expect(host.tableState().columnPinning).toStrictEqual({
-          left: ['region', 'name'],
-          right: []
+          start: ['region', 'name'],
+          end: []
         });
       });
     });

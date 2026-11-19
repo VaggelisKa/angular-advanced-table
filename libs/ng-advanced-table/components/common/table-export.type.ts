@@ -1,4 +1,6 @@
-import type { Column, Row, RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Column, Row, Table } from 'ng-advanced-table';
 
 /** Normalized value exposed to table export handlers before format-specific serialization. */
 export type NatTableExportCellValue = string | number | boolean | Date | null;

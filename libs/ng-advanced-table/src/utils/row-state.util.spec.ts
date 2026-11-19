@@ -22,6 +22,16 @@ describe('FEATURE: row-state utilities', () => {
       });
     });
 
+    describe('WHEN: TanStack hands over a null-prototype selection map', () => {
+      it('THEN: it returns a plain object with the same entries', () => {
+        const selection = Object.assign(Object.create(null) as RowSelectionState, { a: true });
+        const normalized = normalizeRowSelection(selection, true);
+
+        expect(Object.getPrototypeOf(normalized)).toBe(Object.prototype);
+        expect(normalized).toStrictEqual({ a: true });
+      });
+    });
+
     describe('WHEN: multi-select is disabled and only one row is selected', () => {
       it('THEN: it preserves the selection unchanged', () => {
         const selection: RowSelectionState = { a: true };
@@ -32,7 +42,9 @@ describe('FEATURE: row-state utilities', () => {
 
     describe('WHEN: multi-select is disabled and multiple rows are selected', () => {
       it('THEN: it collapses the selection to the alphabetically first selected id', () => {
-        const selection: RowSelectionState = { c: true, a: true, b: false };
+        // v9 types RowSelectionState as `Record<string, true>`; stored `false` entries
+        // can still arrive from consumer state, so the normalizer keeps handling them.
+        const selection = { c: true, a: true, b: false } as unknown as RowSelectionState;
 
         expect(normalizeRowSelection(selection, false)).toStrictEqual({ a: true });
       });
@@ -42,7 +54,9 @@ describe('FEATURE: row-state utilities', () => {
   describe('GIVEN: serializeRowSelection', () => {
     describe('WHEN: multiple rows are selected', () => {
       it('THEN: it joins the selected ids in sorted order', () => {
-        const selection: RowSelectionState = { c: true, a: true, b: false };
+        // v9 types RowSelectionState as `Record<string, true>`; stored `false` entries
+        // can still arrive from consumer state, so the normalizer keeps handling them.
+        const selection = { c: true, a: true, b: false } as unknown as RowSelectionState;
 
         expect(serializeRowSelection(selection)).toBe('a|c');
       });

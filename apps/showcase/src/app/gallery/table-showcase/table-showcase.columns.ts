@@ -35,7 +35,7 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
     size: 120,
     minSize: 100,
     meta: { label: 'Symbol', rowHeader: true },
-    sortingFn: (left, right) => compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
+    sortFn: (left, right) => compareSortKeys(left.original.symbolSortKey, right.original.symbolSortKey),
     cell: (info) =>
       flexRenderComponent(NatTickerMark, {
         inputs: { symbol: info.getValue<string>() }
@@ -51,7 +51,7 @@ const rawSimulationColumns: ColumnDef<SimulationRow, unknown>[] = [
       cellHeight: 72,
       cellMaxLines: 2
     },
-    sortingFn: (left, right) => compareSortKeys(left.original.companySortKey, right.original.companySortKey),
+    sortFn: (left, right) => compareSortKeys(left.original.companySortKey, right.original.companySortKey),
     cell: (info) => `${info.getValue<string>()} liquidity review with multi-venue routing notes for ${info.row.original.symbol}`
   },
   {

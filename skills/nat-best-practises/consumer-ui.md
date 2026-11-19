@@ -46,7 +46,7 @@ export class TableSearch<TData extends RowData = RowData> {
 
   protected readonly controller = computed(() => this.natTableService.controller());
   protected readonly table = computed(() => this.controller()?.table);
-  protected readonly value = computed(() => String(this.table()?.getState().globalFilter ?? ''));
+  protected readonly value = computed(() => String(this.table()?.atoms.globalFilter.get() ?? ''));
 
   constructor() {
     this.natTableService.registerSearch();

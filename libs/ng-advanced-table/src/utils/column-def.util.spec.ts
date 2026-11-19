@@ -1,5 +1,3 @@
-import type { ColumnDef } from '@tanstack/angular-table';
-
 import {
   getColumnDefLeafIds,
   getNumericColumnWidth,
@@ -10,6 +8,7 @@ import {
   readColumnEntry
 } from './column-def.util';
 import { DEFAULT_CELL_MAX_LINES } from '../common/column-meta.const';
+import type { ColumnDef } from '../common/table-features.type';
 
 type FixtureRow = { readonly id: string };
 
@@ -108,7 +107,7 @@ describe('FEATURE: Column definition utilities', () => {
       const patched = patchLeafColumnDefSorting(columns, 'account_status', sortingFn);
 
       expect(patched).not.toBe(columns);
-      expect(patched[0]?.sortingFn).toBe(sortingFn);
+      expect(patched[0]?.sortFn).toBe(sortingFn);
     });
   });
 

@@ -47,7 +47,7 @@ export class SubHeaderRows {
   protected readonly subHeaderLayout = signal<'colspan' | 'cells'>('colspan');
   protected readonly useStatusOrder = signal(false);
   protected readonly state = signal<Partial<NatTableUserState>>({
-    columnPinning: { left: ['id'], right: ['total'] }
+    columnPinning: { start: ['id'], end: ['total'] }
   });
 
   protected sortDirection(): 'asc' | 'desc' | null {

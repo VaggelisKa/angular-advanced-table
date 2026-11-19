@@ -7,8 +7,7 @@ import type {
   ColumnSizingState,
   PaginationState,
   RowSelectionState,
-  SortingState,
-  VisibilityState
+  SortingState
 } from '@tanstack/angular-table';
 
 import type {
@@ -16,7 +15,8 @@ import type {
   NatTableKeybindings,
   NatTableMode,
   NatTableModeConfiguration,
-  NatTableUserState
+  NatTableUserState,
+  VisibilityState
 } from 'ng-advanced-table';
 import { NatTableService } from 'ng-advanced-table';
 
@@ -93,7 +93,7 @@ export class NatTableSurface {
     columnFilters: [],
     columnVisibility: {},
     columnOrder: [],
-    columnPinning: { left: [], right: [] },
+    columnPinning: { start: [], end: [] },
     columnSizing: {},
     rowSelection: {},
     pagination: { pageIndex: 0, pageSize: 0 }

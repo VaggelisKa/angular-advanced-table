@@ -1,9 +1,7 @@
 import { Component, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
-import type { NatTableUserState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableUserState } from 'ng-advanced-table';
 import { NatList, NatTable } from 'ng-advanced-table';
 
 import { NatTableSurface } from './table-surface';
@@ -84,7 +82,7 @@ describe('FEATURE: table surface renderer swap state retention', () => {
         const seeded: Partial<NatTableUserState> = {
           sorting: [{ id: 'name', desc: false }],
           columnOrder: ['status', 'id', 'name'],
-          columnPinning: { left: ['id'], right: [] },
+          columnPinning: { start: ['id'], end: [] },
           columnSizing: { name: 240 },
           columnVisibility: { status: true },
           columnFilters: [{ id: 'status', value: 'ok' }],
@@ -106,8 +104,8 @@ describe('FEATURE: table surface renderer swap state retention', () => {
 
         const afterReturn = fixture.componentInstance.state();
 
-        expect(afterListSwap.columnPinning).toStrictEqual({ left: ['id'], right: [] });
-        expect(afterReturn.columnPinning).toStrictEqual({ left: ['id'], right: [] });
+        expect(afterListSwap.columnPinning).toStrictEqual({ start: ['id'], end: [] });
+        expect(afterReturn.columnPinning).toStrictEqual({ start: ['id'], end: [] });
         expect(afterReturn.sorting).toStrictEqual([{ id: 'name', desc: false }]);
         expect(afterReturn.columnOrder).toStrictEqual(['status', 'id', 'name']);
         expect(afterReturn.columnSizing).toStrictEqual({ name: 240 });
@@ -125,7 +123,7 @@ describe('FEATURE: table surface renderer swap state retention', () => {
         await fixture.whenStable();
 
         fixture.componentInstance.state.set({
-          columnPinning: { left: ['id'], right: [] },
+          columnPinning: { start: ['id'], end: [] },
           sorting: [{ id: 'id', desc: true }],
           columnSizing: { id: 180 }
         });
@@ -139,7 +137,7 @@ describe('FEATURE: table surface renderer swap state retention', () => {
 
         const afterReturn = fixture.componentInstance.state();
 
-        expect(afterReturn.columnPinning).toStrictEqual({ left: ['id'], right: [] });
+        expect(afterReturn.columnPinning).toStrictEqual({ start: ['id'], end: [] });
         expect(afterReturn.sorting).toStrictEqual([{ id: 'id', desc: true }]);
         expect(afterReturn.columnSizing).toStrictEqual({ id: 180 });
       });

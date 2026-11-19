@@ -1,7 +1,6 @@
-import type { Column } from '@tanstack/angular-table';
-
 import { buildColumnWidths, buildHeaderWidths, normalizeMetaDimension } from './column-render-width.util';
 import type { TableColumnSizingState } from '../common/column-render.type';
+import type { Column } from '../common/table-features.type';
 
 type FixtureRow = Record<string, unknown>;
 
