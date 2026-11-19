@@ -64,7 +64,7 @@ export const buildColumns = (flags: TableBuilderFlags, headerOptions: string): s
       accessorKey: 'value',
       header: '${headers.value}',
       ${buildColumnPropsBlock(150, flags)}meta: { label: '${headers.value}', align: 'end' },
-      cell: (context: CellContext<DemoItem, number>) => \`$\${context.getValue().toLocaleString()}\`,
+      cell: (context: CellContext<DemoItem, unknown>) => \`$\${context.getValue<number>().toLocaleString()}\`,
     },
   ]${selectionClose}${headerOptions});`;
 };

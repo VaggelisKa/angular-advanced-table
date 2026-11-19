@@ -4,9 +4,9 @@ import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import type { Table } from '@tanstack/angular-table';
 import type { NatTableUiController } from 'ng-advanced-table/testing';
 
+import type { Table } from 'ng-advanced-table';
 import { provideNatTableRenderMetricsIntl } from 'ng-advanced-table/locale';
 import type {
   NatTableRenderMetricsFilterIntl,
@@ -132,7 +132,7 @@ class RenderMetricsIntlHost {
   public readonly controllerLocale = signal('en');
   public readonly controller: NatTableUiController<Row> = {
     table: {
-      getState: () => ({ columnFilters: [] })
+      atoms: { columnFilters: { get: () => [] } }
     } as unknown as Table<Row>,
     localeId: this.controllerLocale,
     tableElementId: signal('nat-table-mock'),

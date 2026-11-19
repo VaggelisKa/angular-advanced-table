@@ -60,7 +60,7 @@ describe('FEATURE: NatTable state-seed utilities', () => {
       columnFilters: [{ id: 'status', value: 'active' }],
       columnVisibility: { email: true },
       columnOrder: ['name', 'email'],
-      columnPinning: { left: ['name'] },
+      columnPinning: { start: ['name'], end: [] },
       columnSizing: { name: 120 },
       rowSelection: { 'row-1': true },
       pagination: { pageIndex: 2, pageSize: 25 }

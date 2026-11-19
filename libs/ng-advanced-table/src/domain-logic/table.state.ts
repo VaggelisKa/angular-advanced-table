@@ -1,27 +1,21 @@
 /* eslint-disable max-lines -- irreducible per-instance reactive store: a single @Injectable owns the signal graph + TanStack table instance; further splitting only relocates coupling into cross-service signal reads and Injector.get() cycles. Pure arithmetic (widths, resize math, const defaults) already extracted to utils/common. */
 import { Directionality } from '@angular/cdk/bidi';
 import type { ElementRef } from '@angular/core';
-import { Injectable, computed, effect, inject, isDevMode, linkedSignal, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, isDevMode, linkedSignal, signal, untracked } from '@angular/core';
 
 import type {
-  Cell,
-  Column,
-  ColumnDef,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
   ColumnSizingState,
-  FilterFn,
   PaginationState,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
-  Table,
-  Updater,
-  VisibilityState
+  TableOptions,
+  Updater
 } from '@tanstack/angular-table';
-import { createAngularTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel } from '@tanstack/angular-table';
+import { injectTable } from '@tanstack/angular-table';
 
 import {
   NAT_EN_LOCALE_ID,
@@ -32,6 +26,7 @@ import {
   resolveNatTableIntl
 } from 'ng-advanced-table/locale';
 
+import { NAT_TABLE_FEATURES } from './table-features.const';
 import { NatTableLocaleWarningState } from './table-locale-warning.service';
 import { NatTableRowRenderStrategyRegistry } from './table-row-render-strategy.service';
 import { NatTableService } from './table.service';
@@ -50,6 +45,7 @@ import type { NatTableRowPlaceholderTemplateContext } from '../common/row-placeh
 import type { NatTableBodyRenderPlan } from '../common/row-render-strategy.type';
 import type { NatTableRowIdGetter } from '../common/row.type';
 import type { NatTableSubHeaderGroup, NatTableSubHeaderTemplateContext } from '../common/sub-header.type';
+import type { Cell, Column, ColumnDef, FilterFn, NatTableFeatures, Row, Table, VisibilityState } from '../common/table-features.type';
 import { DEFAULT_TABLE_STATE } from '../common/table-state.const';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NAT_TABLE_BODY_STATE, NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
@@ -88,7 +84,6 @@ import { computeFillFlexWidths, computeIntrinsicWidths } from '../utils/column-w
 import { genericGlobalFilter } from '../utils/global-filter.util';
 import { isColumnReorderable, isColumnResizable } from '../utils/interaction.util';
 import { normalizeDataStatus, normalizeRowSelection, resolveDefaultRowId } from '../utils/row-state.util';
-import { natGetSortedRowModel } from '../utils/sorted-row-model.util';
 import { normalizeSortingState } from '../utils/sorting.util';
 import { firstPageUpdater, resolveSeedState, resolveUpdater } from '../utils/state-seed.util';
 import {
@@ -366,55 +361,71 @@ export class NatTableState<TData extends RowData = RowData> {
 
   // ─── TanStack table instance ───
 
-  public readonly table: Table<TData> = createAngularTable<TData>(() => ({
-    data: this.data() as TData[],
-    columns: this.resolvedColumnDefs() as ColumnDef<TData, unknown>[],
-    state: {
-      ...this.mergedState(),
-      sorting: this.tanstackSortingState(),
-      columnOrder: this.tanstackColumnOrder(),
-      columnPinning: this.tanstackColumnPinning()
-    },
-    pageCount: this.manualPagination() ? this.manualPageCount() : undefined,
-    manualPagination: this.manualPagination(),
-    manualSorting: this.manualSorting(),
-    manualFiltering: this.manualFiltering(),
-    enableMultiSort: this.enableMultiSort(),
-    isMultiSortEvent: (event) => this.enableMultiSort() && (event as { readonly shiftKey?: boolean }).shiftKey === true,
-    enableSorting: true,
-    enableColumnPinning: true,
-    enableColumnOrdering: this.hasReorderableColumns(),
-    enableColumnResizing: true,
-    columnResizeMode: this.columnResizeMode(),
-    columnResizeDirection: this.resolvedDirection(),
-    enableRowSelection: this.enableRowSelection(),
-    enableMultiRowSelection: this.selectionMode() === 'multiple',
-    meta: {
-      natTableLocaleId: this.localeId(),
-      natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
-      natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
-      natTableSortingEnabled: this.enableSorting(),
-      natTablePinningEnabled: this.enablePinning(),
-      natTableSubHeaderColumnId: this.resolvedSubHeaderColumnId(),
-      natTableRemoteRowCount: this.strategyLogicalRowCount()
-    },
-    autoResetPageIndex: false,
-    globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
-    getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: this.manualFiltering() ? undefined : getFilteredRowModel(),
-    getSortedRowModel: this.manualSorting() ? undefined : natGetSortedRowModel(),
-    getPaginationRowModel: !this.manualPagination() && this.enablePagination() ? getPaginationRowModel() : undefined,
-    onSortingChange: (updater) => this.applySortingChange(updater),
-    onGlobalFilterChange: (updater: Updater<string>) => this.updateState({ globalFilter: updater, pagination: firstPageUpdater }),
-    onColumnFiltersChange: (updater) => this.updateState({ columnFilters: updater, pagination: firstPageUpdater }),
-    onColumnVisibilityChange: (updater: Updater<VisibilityState>) => this.updateState({ columnVisibility: updater }),
-    onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
-    onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
-    onColumnSizingChange: (updater) => this.applyColumnSizingChange(updater),
-    onRowSelectionChange: (updater) => this.updateState({ rowSelection: updater }),
-    onPaginationChange: (updater) => this.updateState({ pagination: updater })
-  })) as Table<TData>;
+  /**
+   * Options handed to TanStack. A computed of its own so code that needs the
+   * table to see a state change before the next change-detection pass can
+   * apply it synchronously (see `flushTableOptions`): v9's `injectTable`
+   * forwards option changes from an effect, where v8 applied them on read.
+   */
+  private readonly tableOptions = computed(() => this.buildTableOptions());
+
+  public readonly table: Table<TData> = injectTable<NatTableFeatures, TData>(() => this.tableOptions());
+
+  private buildTableOptions(): TableOptions<NatTableFeatures, TData> {
+    return {
+      features: NAT_TABLE_FEATURES,
+      data: this.data() as TData[],
+      columns: this.resolvedColumnDefs() as ColumnDef<TData, unknown>[],
+      state: {
+        ...this.mergedState(),
+        sorting: this.tanstackSortingState(),
+        columnOrder: this.tanstackColumnOrder(),
+        columnPinning: this.tanstackColumnPinning()
+      },
+      pageCount: this.manualPagination() ? this.manualPageCount() : undefined,
+      // v9 registers the paginated row model once in the fixed feature set; a
+      // table without pagination runs it in manual mode, which passes every row
+      // through, instead of omitting the factory as v8 did.
+      manualPagination: this.manualPagination() || !this.enablePagination(),
+      manualSorting: this.manualSorting(),
+      manualFiltering: this.manualFiltering(),
+      enableMultiSort: this.enableMultiSort(),
+      isMultiSortEvent: (event) => this.enableMultiSort() && (event as { readonly shiftKey?: boolean }).shiftKey === true,
+      enableSorting: true,
+      enableColumnPinning: true,
+      enableColumnResizing: true,
+      columnResizeMode: this.columnResizeMode(),
+      columnResizeDirection: this.resolvedDirection(),
+      enableRowSelection: this.enableRowSelection(),
+      enableMultiRowSelection: this.selectionMode() === 'multiple',
+      meta: {
+        natTableLocaleId: this.localeId(),
+        natTableCanMoveColumn: (columnId, direction) => this.canMoveColumn(columnId, direction),
+        natTableMoveColumn: (columnId, direction) => this.moveColumn(columnId, direction),
+        natTableSortingEnabled: this.enableSorting(),
+        natTablePinningEnabled: this.enablePinning(),
+        natTableSubHeaderColumnId: this.resolvedSubHeaderColumnId(),
+        natTableRemoteRowCount: this.strategyLogicalRowCount()
+      },
+      autoResetPageIndex: false,
+      globalFilterFn: (this.globalFilterFn() ?? genericGlobalFilter) as FilterFn<TData>,
+      getRowId: (row, index, parent) => this.resolveRowId(row, index, parent),
+      onSortingChange: (updater) => this.applySortingChange(updater),
+      onGlobalFilterChange: (updater: Updater<string>) => this.updateState({ globalFilter: updater, pagination: firstPageUpdater }),
+      onColumnFiltersChange: (updater) => this.updateState({ columnFilters: updater, pagination: firstPageUpdater }),
+      onColumnVisibilityChange: (updater: Updater<VisibilityState>) => this.updateState({ columnVisibility: updater }),
+      onColumnOrderChange: (updater) => this.updateState({ columnOrder: updater }),
+      onColumnPinningChange: (updater) => this.updateState({ columnPinning: updater }),
+      onColumnSizingChange: (updater) => this.applyColumnSizingChange(updater),
+      onRowSelectionChange: (updater) => this.updateState({ rowSelection: updater }),
+      onPaginationChange: (updater) => this.updateState({ pagination: updater })
+    };
+  }
+
+  /** Applies the current options to the table now instead of on the next effect flush. */
+  public flushTableOptions(): void {
+    this.table.setOptions((previous) => ({ ...previous, ...this.tableOptions() }));
+  }
 
   // ─── Derived TanStack computeds ───
 
@@ -447,9 +458,9 @@ export class NatTableState<TData extends RowData = RowData> {
   // The `<colgroup>` maps `<col>` widths to columns by position, so it must match the
   // header/body order or a reordered pinned column resizes its neighbor (issue #273).
   public readonly visibleColumns = computed(() => [
-    ...this.table.getLeftVisibleLeafColumns(),
+    ...this.table.getStartVisibleLeafColumns(),
     ...this.table.getCenterVisibleLeafColumns(),
-    ...this.table.getRightVisibleLeafColumns()
+    ...this.table.getEndVisibleLeafColumns()
   ]);
 
   public readonly leafHeaderRowId = computed(() => this.table.getHeaderGroups().at(-1)?.id ?? null);
@@ -516,7 +527,7 @@ export class NatTableState<TData extends RowData = RowData> {
       return new Map<string, NatTableSubHeaderGroup<TData>>();
     }
 
-    return buildSubHeaderRowGroups(this.bodyRows(), this.table.getPrePaginationRowModel().rows, columnId);
+    return buildSubHeaderRowGroups(this.bodyRows(), this.table.getPrePaginatedRowModel().rows, columnId);
   });
 
   /** See `NatTableRowWindowHost.subHeaderRowOffsets`; empty when no sub-header renders. */
@@ -682,8 +693,8 @@ export class NatTableState<TData extends RowData = RowData> {
     const widths = this.resolvedColumnWidths();
     const state = this.mergedState();
     const visibleColumnsById = new Map(visibleColumns.map((column) => [column.id, column] as const));
-    const leftVisibleColumns = resolvePinnedZoneColumns(state.columnPinning.left, visibleColumnsById);
-    const rightVisibleColumns = resolvePinnedZoneColumns(state.columnPinning.right, visibleColumnsById);
+    const leftVisibleColumns = resolvePinnedZoneColumns(state.columnPinning.start, visibleColumnsById);
+    const rightVisibleColumns = resolvePinnedZoneColumns(state.columnPinning.end, visibleColumnsById);
     const context: ColumnRenderStateContext<TData> = {
       widths,
       state,
@@ -843,7 +854,7 @@ export class NatTableState<TData extends RowData = RowData> {
     this.resizeSeedSizing.set({ [column.id]: measuredWidth });
 
     // Flush the seed synchronously so the TanStack resize handler reads it.
-    this.table.getState();
+    this.flushTableOptions();
   }
 
   /**
@@ -888,7 +899,7 @@ export class NatTableState<TData extends RowData = RowData> {
    * Commit a column-sizing change from TanStack's pointer/touch resize handler.
    */
   public applyColumnSizingChange(updater: Updater<ColumnSizingState>): void {
-    const resizingColumnId = this.table.getState().columnSizingInfo.isResizingColumn;
+    const resizingColumnId = this.table.atoms.columnResizing.get().isResizingColumn;
 
     if (typeof resizingColumnId !== 'string') {
       this.updateState({ columnSizing: updater });
@@ -989,8 +1000,10 @@ export class NatTableState<TData extends RowData = RowData> {
       return result;
     }
 
-    // `zone` narrows to 'left' | 'right' here because the center branch above returns.
-    const currentPinnedZoneOrder = currentState.columnPinning[zone] ?? [];
+    // `zone` narrows to 'left' | 'right' here because the center branch above returns;
+    // TanStack v9 stores those zones under the logical `start`/`end` keys.
+    const pinningKey = zone === 'left' ? 'start' : 'end';
+    const currentPinnedZoneOrder = currentState.columnPinning[pinningKey];
     const nextPinnedZoneOrder = replaceIdsInSlots(currentPinnedZoneOrder, nextVisibleZoneOrder, new Set(currentVisibleZoneColumnIds));
 
     if (hasSameStringOrder(currentPinnedZoneOrder, nextPinnedZoneOrder)) {
@@ -1000,7 +1013,7 @@ export class NatTableState<TData extends RowData = RowData> {
     this.updateState({
       columnPinning: {
         ...currentState.columnPinning,
-        [zone]: nextPinnedZoneOrder
+        [pinningKey]: nextPinnedZoneOrder
       }
     });
 
@@ -1101,6 +1114,10 @@ export class NatTableState<TData extends RowData = RowData> {
     };
 
     this.commitInternalState(nextState);
+    // v9 forwards option changes from an effect; without this the next read of
+    // `table.atoms.<slice>` (a companion control, a TanStack handler) still sees
+    // the old state, and controls that correct it write again and can loop.
+    this.flushTableOptions();
     this.natTableService.notifyStateChange(nextState);
   }
 
@@ -1335,6 +1352,21 @@ export class NatTableState<TData extends RowData = RowData> {
    * Self-seeding effect: applies the initial state when it becomes available.
    * Must be called in the injection context (constructor or field initializer).
    */
+  /**
+   * Applies the table options in the renderer's own change-detection pass.
+   * Register it after the renderer's input-bridging effects: those are view
+   * effects, while `injectTable`'s own options effect is a root effect that has
+   * already run by then, so without this the first render reads the table with
+   * the previous options (v8 applied options whenever the table was read).
+   */
+  public registerOptionsSyncEffect(): void {
+    effect(() => {
+      const options = this.tableOptions();
+
+      untracked(() => this.table.setOptions((previous) => ({ ...previous, ...options })));
+    });
+  }
+
   public registerSeedEffect(): void {
     effect(() => {
       if (this.hasSeededInitialState()) {

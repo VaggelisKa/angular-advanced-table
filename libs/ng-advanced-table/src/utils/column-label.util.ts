@@ -1,4 +1,6 @@
-import type { Column, ColumnDef, Header, HeaderGroup, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Column, ColumnDef, Header, HeaderGroup } from '../common/table-features.type';
 
 export const normalizeColumnLabel = (label: string | undefined): string | null => {
   const normalized = label?.trim() ?? '';

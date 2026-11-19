@@ -3,8 +3,7 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
+import type { ColumnDef } from '../common/table-features.type';
 import type { NatTableUserState } from '../common/table-state.type';
 import { NatTable } from '../table/table';
 import { columns, resizableColumns } from '../test-helpers/table-data.helper';
@@ -289,7 +288,7 @@ describe('FEATURE: NatTable', () => {
         // when:
         regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
-        const start = internal.table.getState().columnSizingInfo.columnSizingStart.find(([id]) => id === 'region');
+        const start = internal.table.atoms.columnResizing.get().columnSizingStart.find(([id]) => id === 'region');
 
         // then:
         // Captured start size must be the seeded 222px, not the stale 150px default.
@@ -494,7 +493,7 @@ describe('FEATURE: NatTable', () => {
 
         const store = getInternalStore(fixture);
         const internal = getInternalTable(fixture) as unknown as {
-          readonly table: { getState(): { readonly columnSizingInfo: { readonly isResizingColumn: string | false } } };
+          readonly table: { readonly atoms: { readonly columnResizing: { get(): { readonly isResizingColumn: string | false } } } };
           columnResizeGuide(): { readonly left: number; readonly offset: number } | null;
         };
         const otherColumnsWidth = (store.visibleColumns().length - 1) * 100;
@@ -505,7 +504,7 @@ describe('FEATURE: NatTable', () => {
         const regionHandle = queryRequired<HTMLElement>(fixture, 'thead th[data-column-id="region"] .column-resize-handle');
 
         regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
-        expect(internal.table.getState().columnSizingInfo.isResizingColumn).toBe('region');
+        expect(internal.table.atoms.columnResizing.get().isResizingColumn).toBe('region');
         document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1000 }));
 
         // Offset clamps to the fit budget: region's max (region 550 - other mins 150 = 400)
@@ -963,9 +962,9 @@ describe('FEATURE: NatTable', () => {
 
         // Begin the drag at region's start width (140), then drag far past maxSize (200).
         regionHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 }));
-        expect(internal.table.getState().columnSizingInfo.isResizingColumn).toBe('region');
+        expect(internal.table.atoms.columnResizing.get().isResizingColumn).toBe('region');
         document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 1000 }));
-        expect(internal.table.getState().columnSizingInfo.deltaOffset).toBe(1000);
+        expect(internal.table.atoms.columnResizing.get().deltaOffset).toBe(1000);
 
         const guide = internal.columnResizeGuide();
 
@@ -983,8 +982,8 @@ describe('FEATURE: NatTable', () => {
       it('THEN: it renders TanStack size hints and uses them for initial pin offsets', () => {
         host.state.set({
           columnPinning: {
-            left: ['name', 'region'],
-            right: []
+            start: ['name', 'region'],
+            end: []
           }
         });
         fixture.detectChanges();
@@ -1005,9 +1004,9 @@ describe('FEATURE: NatTable', () => {
         expect(secondHeader.style.maxWidth).toBe('');
         expect(firstBodyCell.style.width).toBe('180px');
         expect(firstBodyCell.style.minWidth).toBe('120px');
-        expect(firstHeader.style.left).toBe('0px');
-        expect(secondHeader.style.left).toBe('180px');
-        expect(secondBodyCell.style.left).toBe('180px');
+        expect(firstHeader.style.insetInlineStart).toBe('0px');
+        expect(secondHeader.style.insetInlineStart).toBe('180px');
+        expect(secondBodyCell.style.insetInlineStart).toBe('180px');
         expect(firstHeader.dataset['columnId']).toBe('name');
       });
     });
@@ -1093,8 +1092,8 @@ describe('FEATURE: NatTable', () => {
 
           protected readonly initialState: Partial<NatTableUserState> = {
             columnPinning: {
-              left: ['name', 'region', 'status'],
-              right: []
+              start: ['name', 'region', 'status'],
+              end: []
             }
           };
 
@@ -1142,7 +1141,7 @@ describe('FEATURE: NatTable', () => {
         expect(fixedHeader.style.minWidth).toBe('');
         expect(fixedHeader.style.maxWidth).toBe('');
         expect(fixedHeader.classList.contains('is-width-constrained')).toBe(false);
-        expect(cappedHeader.style.left).toBe('96px');
+        expect(cappedHeader.style.insetInlineStart).toBe('96px');
         expect(fixedCell.style.width).toBe('96px');
         expect(fixedCell.style.minWidth).toBe('80px');
         expect(fixedCell.style.maxWidth).toBe('96px');

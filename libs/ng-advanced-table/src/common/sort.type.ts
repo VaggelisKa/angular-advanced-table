@@ -1,4 +1,6 @@
-import type { Column, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Column } from './table-features.type';
 
 /** Current sort direction for a header cell. */
 type NatTableSortDirection = 'asc' | 'desc' | false;

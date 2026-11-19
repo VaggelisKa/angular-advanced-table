@@ -1,21 +1,18 @@
 import type { Signal } from '@angular/core';
 
 import type {
-  CellContext,
-  Column,
   ColumnFiltersState,
   ColumnOrderState,
   ColumnPinningState,
   ColumnSizingState,
   PaginationState,
-  Row,
   RowData,
   RowSelectionState,
   SortingState,
-  Table,
-  Updater,
-  VisibilityState
+  Updater
 } from '@tanstack/angular-table';
+
+import type { CellContext, Column, Row, Table, VisibilityState } from 'ng-advanced-table';
 
 /**
  * Internal source of truth for normalized table state shared by the published

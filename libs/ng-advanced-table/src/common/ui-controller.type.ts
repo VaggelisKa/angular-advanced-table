@@ -1,7 +1,8 @@
 import type { Signal } from '@angular/core';
 
-import type { RowData, Table, Updater } from '@tanstack/angular-table';
+import type { RowData, Updater } from '@tanstack/angular-table';
 
+import type { Table } from './table-features.type';
 import type { NatTableUiState } from './table-state.type';
 
 /**

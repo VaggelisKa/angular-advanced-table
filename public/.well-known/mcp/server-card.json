@@ -42,6 +42,13 @@
       "mimeType": "text/markdown"
     },
     {
+      "uri": "https://angular-advanced-table.vercel.app/docs/tanstack-v9-migration",
+      "name": "docs-tanstack-v9-migration",
+      "title": "TanStack v9 migration | Angular Advanced Table Docs",
+      "description": "Consumer changes for TanStack Table v9",
+      "mimeType": "text/markdown"
+    },
+    {
       "uri": "https://angular-advanced-table.vercel.app/docs/composition",
       "name": "docs-composition",
       "title": "Composition | Angular Advanced Table Docs",

@@ -19,9 +19,10 @@ import {
   viewChildren
 } from '@angular/core';
 
-import type { Cell, ColumnDef, FilterFn, HeaderContext, Row, RowData, Updater } from '@tanstack/angular-table';
+import type { RowData, Updater } from '@tanstack/angular-table';
 import { FlexRender } from '@tanstack/angular-table';
 
+import type { Cell, ColumnDef, FilterFn, HeaderContext, Row } from '../common/table-features.type';
 import { NAT_LIST_ITEM_LAYOUT } from './common/list-layout.const';
 import type { NatListItemLayout } from './common/list-layout.type';
 import type { NatListStateKey } from './common/list-state.type';
@@ -542,6 +543,7 @@ export class NatList<TData extends RowData = RowData> implements NatTableUiContr
     this.state.registerSeedEffect();
     this.state.registerSubHeaderValidationEffect();
     this.state.registerLocaleValidationEffect();
+    this.state.registerOptionsSyncEffect();
 
     this.destroyRef.onDestroy(() => {
       this.natTableService.clearController(this);

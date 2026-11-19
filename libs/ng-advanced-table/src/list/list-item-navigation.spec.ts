@@ -3,9 +3,8 @@ import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
 import { NatList } from './list';
+import type { ColumnDef } from '../common/table-features.type';
 import { ListHost } from '../test-helpers/list-hosts.helper';
 import type { Row } from '../test-helpers/table-data.helper';
 

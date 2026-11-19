@@ -1,4 +1,4 @@
-import type { ColumnDef, FilterFn } from '@tanstack/angular-table';
+import type { ColumnDef, FilterFn } from 'ng-advanced-table';
 
 export type Row = {
   readonly id: string;

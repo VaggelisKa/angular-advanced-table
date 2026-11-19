@@ -1,7 +1,8 @@
 import { Component, computed, inject, input } from '@angular/core';
 
-import type { Column, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { Column } from 'ng-advanced-table';
 import { NatTableService } from 'ng-advanced-table';
 import {
   NAT_EN_LOCALE_ID,

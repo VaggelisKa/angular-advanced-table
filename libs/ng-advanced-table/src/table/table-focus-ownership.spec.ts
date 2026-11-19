@@ -2,9 +2,9 @@ import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { flexRenderComponent } from '@tanstack/angular-table';
-import type { ColumnDef } from '@tanstack/angular-table';
 
 import { NatTable } from './table';
+import type { ColumnDef } from '../common/table-features.type';
 import { NatTableService } from '../domain-logic/table.service';
 import { buildRows, columns } from '../test-helpers/table-data.helper';
 import type { Row } from '../test-helpers/table-data.helper';

@@ -1,4 +1,4 @@
-import type { Column, ColumnPinningState } from '@tanstack/angular-table';
+import type { ColumnPinningState } from '@tanstack/angular-table';
 
 import {
   accumulatePinnedOffsets,
@@ -14,15 +14,20 @@ import {
   retainColumnOrder,
   retainColumnPinning
 } from './column-order.util';
+import type { Column } from '../common/table-features.type';
 
 type FixtureRow = { readonly id: string };
 
 /** Minimal Column stub: only `.id` and `.getIsPinned()` are read by this file's functions. */
-const createColumn = (id: string, pinned: false | 'left' | 'right' = false): Column<FixtureRow, unknown> =>
+const createColumn = (id: string, pinned: false | 'start' | 'end' = false): Column<FixtureRow, unknown> =>
   ({
     id,
     getIsPinned: () => pinned
   }) as unknown as Column<FixtureRow, unknown>;
+
+// v9 makes both pinning zones required; consumer state can still arrive partial,
+// so the normalizers keep accepting it.
+const partialPinning = (pinning: Partial<ColumnPinningState>): ColumnPinningState => pinning as ColumnPinningState;
 
 describe('FEATURE: Column order utilities', () => {
   describe('GIVEN: normalizeColumnOrder', () => {
@@ -53,32 +58,32 @@ describe('FEATURE: Column order utilities', () => {
 
   describe('GIVEN: normalizeColumnPinning', () => {
     it('THEN: it keeps left and right ids unchanged when all are valid leaf ids', () => {
-      const pinning: ColumnPinningState = { left: ['a'], right: ['c'] };
+      const pinning: ColumnPinningState = { start: ['a'], end: ['c'] };
 
-      expect(normalizeColumnPinning(pinning, ['a', 'b', 'c'])).toStrictEqual({ left: ['a'], right: ['c'] });
+      expect(normalizeColumnPinning(pinning, ['a', 'b', 'c'])).toStrictEqual({ start: ['a'], end: ['c'] });
     });
 
     it('THEN: it filters out ids that are not part of the leaf column ids', () => {
-      const pinning: ColumnPinningState = { left: ['a', 'ghost'], right: ['ghost'] };
+      const pinning: ColumnPinningState = { start: ['a', 'ghost'], end: ['ghost'] };
 
-      expect(normalizeColumnPinning(pinning, ['a', 'b'])).toStrictEqual({ left: ['a'], right: [] });
+      expect(normalizeColumnPinning(pinning, ['a', 'b'])).toStrictEqual({ start: ['a'], end: [] });
     });
 
     it('THEN: it deduplicates repeated ids within each zone', () => {
-      const pinning: ColumnPinningState = { left: ['a', 'a'], right: ['b', 'b'] };
+      const pinning: ColumnPinningState = { start: ['a', 'a'], end: ['b', 'b'] };
 
-      expect(normalizeColumnPinning(pinning, ['a', 'b'])).toStrictEqual({ left: ['a'], right: ['b'] });
+      expect(normalizeColumnPinning(pinning, ['a', 'b'])).toStrictEqual({ start: ['a'], end: ['b'] });
     });
 
     it('THEN: it defaults to empty arrays when left and right are omitted', () => {
-      expect(normalizeColumnPinning({}, ['a', 'b'])).toStrictEqual({ left: [], right: [] });
+      expect(normalizeColumnPinning(partialPinning({}), ['a', 'b'])).toStrictEqual({ start: [], end: [] });
     });
 
     it('THEN: it keeps a shared id in both zones without cross-zone deduplication', () => {
       // Locks current behavior: left/right are validated independently, no mutual-exclusion check.
-      const pinning: ColumnPinningState = { left: ['a'], right: ['a'] };
+      const pinning: ColumnPinningState = { start: ['a'], end: ['a'] };
 
-      expect(normalizeColumnPinning(pinning, ['a'])).toStrictEqual({ left: ['a'], right: ['a'] });
+      expect(normalizeColumnPinning(pinning, ['a'])).toStrictEqual({ start: ['a'], end: ['a'] });
     });
   });
 
@@ -98,19 +103,19 @@ describe('FEATURE: Column order utilities', () => {
 
   describe('GIVEN: retainColumnPinning', () => {
     it('THEN: it keeps ids unknown to the current leaf columns in both zones', () => {
-      const pinning: ColumnPinningState = { left: ['ghost', 'a'], right: ['phantom'] };
+      const pinning: ColumnPinningState = { start: ['ghost', 'a'], end: ['phantom'] };
 
-      expect(retainColumnPinning(pinning)).toStrictEqual({ left: ['ghost', 'a'], right: ['phantom'] });
+      expect(retainColumnPinning(pinning)).toStrictEqual({ start: ['ghost', 'a'], end: ['phantom'] });
     });
 
     it('THEN: it deduplicates repeated ids within each zone', () => {
-      const pinning: ColumnPinningState = { left: ['a', 'a'], right: ['b', 'b'] };
+      const pinning: ColumnPinningState = { start: ['a', 'a'], end: ['b', 'b'] };
 
-      expect(retainColumnPinning(pinning)).toStrictEqual({ left: ['a'], right: ['b'] });
+      expect(retainColumnPinning(pinning)).toStrictEqual({ start: ['a'], end: ['b'] });
     });
 
     it('THEN: it defaults to empty arrays when left and right are omitted', () => {
-      expect(retainColumnPinning({})).toStrictEqual({ left: [], right: [] });
+      expect(retainColumnPinning(partialPinning({}))).toStrictEqual({ start: [], end: [] });
     });
   });
 
@@ -223,21 +228,21 @@ describe('FEATURE: Column order utilities', () => {
 
   describe('GIVEN: hasSameColumnPinning', () => {
     it('THEN: it returns true for distinct objects holding the same zones in the same order', () => {
-      expect(hasSameColumnPinning({ left: ['a'], right: ['b', 'c'] }, { left: ['a'], right: ['b', 'c'] })).toBe(true);
+      expect(hasSameColumnPinning({ start: ['a'], end: ['b', 'c'] }, { start: ['a'], end: ['b', 'c'] })).toBe(true);
     });
 
     it('THEN: it treats a missing zone as an empty one', () => {
-      expect(hasSameColumnPinning({ left: ['a'] }, { left: ['a'], right: [] })).toBe(true);
+      expect(hasSameColumnPinning(partialPinning({ start: ['a'] }), { start: ['a'], end: [] })).toBe(true);
     });
 
     it('THEN: it returns false when a zone differs in order or membership', () => {
-      expect(hasSameColumnPinning({ left: ['a', 'b'], right: [] }, { left: ['b', 'a'], right: [] })).toBe(false);
-      expect(hasSameColumnPinning({ left: ['a'], right: [] }, { left: [], right: ['a'] })).toBe(false);
+      expect(hasSameColumnPinning({ start: ['a', 'b'], end: [] }, { start: ['b', 'a'], end: [] })).toBe(false);
+      expect(hasSameColumnPinning({ start: ['a'], end: [] }, { start: [], end: ['a'] })).toBe(false);
     });
 
     it('THEN: it returns false when one zone extends the other with extra ids', () => {
-      expect(hasSameColumnPinning({ left: ['a'] }, { left: ['a', 'b'] })).toBe(false);
-      expect(hasSameColumnPinning({ left: ['a', 'b'] }, { left: ['a'] })).toBe(false);
+      expect(hasSameColumnPinning(partialPinning({ start: ['a'] }), partialPinning({ start: ['a', 'b'] }))).toBe(false);
+      expect(hasSameColumnPinning(partialPinning({ start: ['a', 'b'] }), partialPinning({ start: ['a'] }))).toBe(false);
     });
   });
 
@@ -285,11 +290,11 @@ describe('FEATURE: Column order utilities', () => {
 
   describe('GIVEN: getColumnZone', () => {
     it('THEN: it returns left for a column pinned left', () => {
-      expect(getColumnZone(createColumn('a', 'left'))).toBe('left');
+      expect(getColumnZone(createColumn('a', 'start'))).toBe('left');
     });
 
     it('THEN: it returns right for a column pinned right', () => {
-      expect(getColumnZone(createColumn('a', 'right'))).toBe('right');
+      expect(getColumnZone(createColumn('a', 'end'))).toBe('right');
     });
 
     it('THEN: it returns center for a column that is not pinned', () => {

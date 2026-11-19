@@ -1,6 +1,28 @@
 /* eslint-disable import-x/export -- TypeScript keeps the type-only TanStack surface separate from the supported runtime helper export. */
 export type * from '@tanstack/angular-table';
 
+// TanStack v9 types with the library's feature set applied. Explicit exports
+// shadow the same names from the star export above, so consumers keep writing
+// `ColumnDef<Order>` instead of `ColumnDef<typeof features, Order>`.
+export type {
+  Cell,
+  CellContext,
+  Column,
+  ColumnDef,
+  ColumnDefBase,
+  FilterFn,
+  Header,
+  HeaderContext,
+  HeaderGroup,
+  NatTableFeatures,
+  Row,
+  RowModel,
+  SortFn,
+  SortingFn,
+  Table,
+  VisibilityState
+} from './common/table-features.type';
+
 export { flexRenderComponent } from '@tanstack/angular-table';
 
 export * from './ui';
