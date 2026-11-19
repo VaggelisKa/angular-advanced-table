@@ -1,4 +1,6 @@
-import type { RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Table } from './table-features.type';
 
 /** Data lifecycle state rendered by `<nat-table>` when rows are unavailable. */
 export type NatTableDataStatus = 'loading' | 'error' | 'success';

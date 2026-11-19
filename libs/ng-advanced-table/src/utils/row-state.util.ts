@@ -27,7 +27,8 @@ const shouldSkipArrayTraversal = (value: unknown, visitedArrays: WeakSet<unknown
   !Array.isArray(value) || visitedArrays.has(value);
 
 export const resolveDefaultRowId = <TData extends RowData>(row: TData, index: number, parent?: { readonly id: string }): string => {
-  const id = typeof row === 'object' && row !== null ? (row as { readonly id?: unknown }).id : undefined;
+  // v9 constrains RowData to records and arrays; `?.` still guards a null row from untyped callers.
+  const id: unknown = (row as { readonly id?: unknown } | null)?.id;
 
   if (typeof id === 'string' && id.trim()) {
     return id;
@@ -42,10 +43,21 @@ export const resolveDefaultRowId = <TData extends RowData>(row: TData, index: nu
   return parent ? `${parent.id}.${fallbackId}` : fallbackId;
 };
 
+/**
+ * Selection map as it may arrive from consumer state: v9 types selected ids as
+ * `true` only, but v8-era state can still carry `false` entries.
+ */
+type LooseRowSelection = Readonly<Record<string, boolean>>;
+
 /** Collapses a multi-row selection map to its first selected key by sort order in single mode. */
-export const normalizeRowSelection = (selection: RowSelectionState, allowMulti: boolean): RowSelectionState => {
+export const normalizeRowSelection = (selection: LooseRowSelection, allowMulti: boolean): RowSelectionState => {
+  // TanStack v9 builds selection maps with `Object.create(null)`; the public
+  // state stays a plain object so consumers can deep-compare it and call
+  // `Object.prototype` methods on it.
+  const plainSelection = (Object.getPrototypeOf(selection) === null ? { ...selection } : selection) as RowSelectionState;
+
   if (allowMulti) {
-    return selection;
+    return plainSelection;
   }
 
   const selectedIds = Object.keys(selection)
@@ -53,13 +65,13 @@ export const normalizeRowSelection = (selection: RowSelectionState, allowMulti: 
     .sort();
 
   if (selectedIds.length <= 1) {
-    return selection;
+    return plainSelection;
   }
 
   return { [selectedIds[0]]: true };
 };
 
-export const serializeRowSelection = (selection: RowSelectionState): string => {
+export const serializeRowSelection = (selection: LooseRowSelection): string => {
   return Object.keys(selection)
     .filter((id) => selection[id])
     .sort()

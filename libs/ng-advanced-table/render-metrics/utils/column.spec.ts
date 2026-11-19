@@ -2,8 +2,7 @@ import { Component, InjectionToken, computed, inject, provideZonelessChangeDetec
 import type { WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { CellContext, ColumnDef } from '@tanstack/angular-table';
-
+import type { CellContext, ColumnDef } from 'ng-advanced-table';
 import { injectNatTableRenderMetricsIntl, provideNatTableRenderMetricsIntl } from 'ng-advanced-table/locale';
 import type { NatTableRenderMetricsIntlStaticProviderConfig } from 'ng-advanced-table/locale';
 

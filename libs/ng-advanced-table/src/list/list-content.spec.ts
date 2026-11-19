@@ -3,10 +3,11 @@ import { Component, computed, input, provideZonelessChangeDetection, signal, vie
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef, FlexRenderComponent } from '@tanstack/angular-table';
+import type { FlexRenderComponent } from '@tanstack/angular-table';
 import { flexRenderComponent } from '@tanstack/angular-table';
 
 import { NatList } from './list';
+import type { ColumnDef } from '../common/table-features.type';
 import { NAT_TABLE_DATA_STATUS } from '../common/table-status.const';
 import type { NatTableDataStatus } from '../common/table-status.type';
 import { buildRows, columns } from '../test-helpers/table-data.helper';

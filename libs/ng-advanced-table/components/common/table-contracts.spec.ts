@@ -1,11 +1,10 @@
-import type { ColumnDef } from '@tanstack/angular-table';
 import type {
   NatTableColumnMeta as InternalNatTableColumnMeta,
   NatTableSortIndicatorContext as InternalNatTableSortIndicatorContext,
   NatTableUserState
 } from 'ng-advanced-table/testing';
 
-import type { NatTableColumnMoveDirection, NatTableUiState } from 'ng-advanced-table';
+import type { ColumnDef, NatTableColumnMoveDirection, NatTableUiState } from 'ng-advanced-table';
 
 import type { NatTableColumnMeta } from './column-meta.type';
 import type { NatTableSortIndicatorContext } from './header-actions.type';

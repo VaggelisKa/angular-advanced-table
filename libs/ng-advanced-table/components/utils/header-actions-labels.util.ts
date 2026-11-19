@@ -1,5 +1,6 @@
-import type { Column, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { Column } from 'ng-advanced-table';
 import type {
   NatTableAccessibilityHeaderActionLabels,
   NatTableAccessibilityHeaderActionMenuContext,

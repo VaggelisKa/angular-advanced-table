@@ -43,7 +43,7 @@ const VIRTUAL_ROWS = generateMockOrderRows(10_000);
 export class Virtualization {
   protected readonly rows = VIRTUAL_ROWS;
   protected readonly tableState = signal<Partial<NatTableUserState>>({
-    columnPinning: { left: ['customer'], right: ['total'] }
+    columnPinning: { start: ['customer'], end: ['total'] }
   });
 
   protected readonly columns: ColumnDef<MockOrderRow, unknown>[] = withNatTableHeaderActions(
@@ -83,21 +83,21 @@ export class Virtualization {
         header: 'Items',
         size: 110,
         meta: { label: 'Items', align: 'end', cellMaxLines: 1 },
-        cell: (context: CellContext<MockOrderRow, number>) => integerFormatter.format(context.getValue())
+        cell: (context: CellContext<MockOrderRow, unknown>) => integerFormatter.format(context.getValue<number>())
       },
       {
         accessorKey: 'updatedAt',
         header: 'Updated',
         size: 140,
         meta: { label: 'Updated', cellMaxLines: 1 },
-        cell: (context: CellContext<MockOrderRow, number>) => dateFormatter.format(context.getValue())
+        cell: (context: CellContext<MockOrderRow, unknown>) => dateFormatter.format(context.getValue<number>())
       },
       {
         accessorKey: 'total',
         header: 'Total',
         size: 150,
         meta: { label: 'Total', align: 'end', cellMaxLines: 1 },
-        cell: (context: CellContext<MockOrderRow, number>) => currencyFormatter.format(context.getValue())
+        cell: (context: CellContext<MockOrderRow, unknown>) => currencyFormatter.format(context.getValue<number>())
       }
     ],
     { enableColumnReorderActions: true }

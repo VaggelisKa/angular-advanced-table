@@ -12,7 +12,7 @@ The table can own all of its state, or your app can control only the slices it c
 | `pagination`       | `pageIndex` and `pageSize`                                                            |
 | `columnVisibility` | Hideable column visibility map                                                        |
 | `columnOrder`      | Leaf-column order                                                                     |
-| `columnPinning`    | Left and right pinned column ids                                                      |
+| `columnPinning`    | Pinned column ids in the `start` and `end` zones                                      |
 | `columnSizing`     | Resized column widths in pixels                                                       |
 | `rowSelection`     | Selected row ids keyed by `getRowId`, `row.id`, or the namespaced positional fallback |
 
@@ -28,7 +28,7 @@ Most tables should start uncontrolled. Pass `[initialState]` for defaults and le
 readonly initialState: Partial<NatTableUserState> = {
   pagination: { pageIndex: 0, pageSize: 25 },
   sorting: [{ id: 'symbol', desc: false }],
-  columnPinning: { left: ['symbol'], right: [] },
+  columnPinning: { start: ['symbol'], end: [] },
 };
 ```
 

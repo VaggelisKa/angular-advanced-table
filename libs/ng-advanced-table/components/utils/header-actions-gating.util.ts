@@ -1,5 +1,6 @@
-import type { Column, RowData, SortingState, Table } from '@tanstack/angular-table';
+import type { RowData, SortingState } from '@tanstack/angular-table';
 
+import type { Column, Table } from 'ng-advanced-table';
 import { stripNatTableSubHeaderSorting } from 'ng-advanced-table';
 
 // Header-control availability follows the surface-enabler + per-column override model:
@@ -37,7 +38,7 @@ export const canSortHeaderColumn = <TData extends RowData>(
 
 /** User-visible sorting for header controls: TanStack state minus the hidden forced sub-header entry. */
 export const getVisibleSorting = <TData extends RowData>(table: Table<TData>): SortingState =>
-  stripNatTableSubHeaderSorting(table.getState().sorting, table.options.meta?.natTableSubHeaderColumnId ?? null);
+  stripNatTableSubHeaderSorting(table.atoms.sorting.get(), table.options.meta?.natTableSubHeaderColumnId ?? null);
 
 /** One-based visible multi-sort priority for a column, or `null` when at most one user sort is active. */
 export const getVisibleSortPriority = (sorting: SortingState, columnId: string): number | null => {

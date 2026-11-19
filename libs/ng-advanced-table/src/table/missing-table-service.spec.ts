@@ -1,9 +1,8 @@
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
 import { NatTable } from './table';
+import type { ColumnDef } from '../common/table-features.type';
 import { NatTableService } from '../domain-logic/table.service';
 import { NatList } from '../list/list';
 import { NatTableStatic } from '../static-table/static-table';

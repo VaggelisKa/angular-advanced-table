@@ -1,7 +1,8 @@
-import type { Column, ColumnSizingState, RowData } from '@tanstack/angular-table';
+import type { ColumnSizingState, RowData } from '@tanstack/angular-table';
 
 import { getNumericColumnWidth, readColumnEntry } from './column-def.util';
 import type { TableColumnSizingState } from '../common/column-render.type';
+import type { Column } from '../common/table-features.type';
 
 type ClampWidthFn<TData extends RowData> = (column: Column<TData, unknown>, width: number) => number;
 

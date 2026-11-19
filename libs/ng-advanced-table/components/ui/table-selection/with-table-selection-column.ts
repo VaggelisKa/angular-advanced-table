@@ -1,5 +1,7 @@
 import { flexRenderComponent } from '@tanstack/angular-table';
-import type { ColumnDef, Row, RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { ColumnDef, Row, Table } from 'ng-advanced-table';
 
 import { NatTableSelectionCheckbox } from './table-selection';
 import { SELECTION_COLUMN_ID } from '../../common/selection.const';

@@ -1,7 +1,8 @@
 import { Component, inject, input } from '@angular/core';
 
-import type { Row, RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
+import type { Row, Table } from 'ng-advanced-table';
 import { NAT_EN_LOCALE_ID, NAT_TABLE_CONTROLS_INTL, resolveNatTableControlsIntl } from 'ng-advanced-table/locale';
 import type { NatTableAccessibilitySelectionLabels } from 'ng-advanced-table/locale';
 

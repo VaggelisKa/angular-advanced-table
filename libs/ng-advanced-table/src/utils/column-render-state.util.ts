@@ -1,10 +1,11 @@
-import type { Column, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { normalizeCellMaxLines, readColumnEntry } from './column-def.util';
 import { normalizeColumnLabel, resolveColumnLabel } from './column-label.util';
 import { buildColumnWidths, buildHeaderWidths, normalizeMetaDimension } from './column-render-width.util';
 import { DEFAULT_CELL_MAX_LINES } from '../common/column-meta.const';
 import type { ColumnRenderStateContext, TableColumnRenderState } from '../common/column-render.type';
+import type { Column } from '../common/table-features.type';
 
 /** Resizable column sort entry (the `desc` flag is all the aria mapping needs). */
 type ColumnSortEntry = { readonly desc: boolean };

@@ -1,4 +1,6 @@
-import type { Row, RowData, Table } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Row, Table } from './table-features.type';
 
 /**
  * One rendered sub-header group segment: the group value, the group's total

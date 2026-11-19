@@ -1,5 +1,6 @@
-import type { CellContext, RowData } from '@tanstack/angular-table';
+import type { CellData, RowData, TableFeatures } from '@tanstack/angular-table';
 
+import type { CellContext } from 'ng-advanced-table';
 import type { NatTableAccessibilityHeaderActionLabels } from 'ng-advanced-table/locale';
 
 import type { NatTableSortIndicatorContent } from './header-actions.type';
@@ -65,9 +66,15 @@ export type NatTableColumnMeta<TData extends RowData = RowData, TValue = unknown
   readonly export?: NatTableColumnExportOptions<TData, TValue>;
 };
 
+// TFeatures is unused but must match TanStack's v9 meta signatures to merge.
+/* eslint-disable @typescript-eslint/no-unused-vars */
 declare module '@tanstack/table-core' {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- module augmentation requires interface merging, not a type alias
-  interface ColumnMeta<TData extends RowData, TValue> extends NatTableColumnMeta<TData, TValue> {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- module augmentation requires interface merging, not a type alias; TFeatures matches the upstream signature
+  interface ColumnMeta<
+    in out TFeatures extends TableFeatures,
+    in out TData extends RowData,
+    TValue extends CellData = CellData
+  > extends NatTableColumnMeta<TData, TValue> {
     /**
      * Controls the shared header action wrapper for this column.
      *
@@ -78,3 +85,4 @@ declare module '@tanstack/table-core' {
     readonly headerActions?: false | NatTableHeaderActionsColumnOptions;
   }
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */

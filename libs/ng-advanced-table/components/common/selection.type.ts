@@ -1,4 +1,6 @@
-import type { Row, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
+
+import type { Row } from 'ng-advanced-table';
 
 /** Options for {@link withNatTableSelectionColumn}. */
 export type NatTableSelectionColumnOptions<TData extends RowData = RowData> = {

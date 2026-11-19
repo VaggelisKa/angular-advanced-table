@@ -1,7 +1,10 @@
-import type { ColumnDef, RowData, SortingState, Table, TableOptionsResolved } from '@tanstack/angular-table';
-import { createTable, getCoreRowModel, getSortedRowModel } from '@tanstack/angular-table';
+import { TestBed } from '@angular/core/testing';
+
+import type { RowData, SortingState, TableOptions } from '@tanstack/angular-table';
+import { createSortedRowModel, injectTable, rowSortingFeature, sortFns, tableFeatures } from '@tanstack/angular-table';
 
 import { natGetSortedRowModel } from './sorted-row-model.util';
+import type { ColumnDef, NatTableFeatures, Table } from '../common/table-features.type';
 
 type SortRow = {
   readonly id: string;
@@ -47,31 +50,43 @@ const createColumns = (
     ...overrides[key]
   })) as ColumnDef<SortRow, unknown>[];
 
+type SortedRowModelFactory = typeof natGetSortedRowModel;
+
+/** Sorting-only feature set with the row model under test in the `sortedRowModel` slot. */
+const sortingFeatures = (sortedRowModel: SortedRowModelFactory): NatTableFeatures =>
+  tableFeatures({ rowSortingFeature, sortedRowModel: sortedRowModel(), sortFns }) as unknown as NatTableFeatures;
+
+/** TanStack's own sorted row model, the reference the custom one must match. */
+const tanStackSortedRowModel: SortedRowModelFactory = createSortedRowModel as unknown as SortedRowModelFactory;
+
+const constructSortedTable = <TData extends RowData>(
+  sortedRowModel: SortedRowModelFactory,
+  options: Omit<TableOptions<NatTableFeatures, TData>, 'features'>
+): Table<TData> =>
+  // Through the Angular adapter, as the library builds its tables: a bare
+  // `constructTable` has no reactivity layer to back the state atoms.
+  TestBed.runInInjectionContext(() =>
+    injectTable<NatTableFeatures, TData>(() => ({ ...options, features: sortingFeatures(sortedRowModel) }))
+  );
+
 const createSortedTable = <TData extends RowData>(
   data: TData[],
   columns: ColumnDef<TData, unknown>[],
   sorting: SortingState,
-  sortedRowModel: typeof getSortedRowModel
-): Table<TData> => {
-  const options: TableOptionsResolved<TData> = {
+  sortedRowModel: SortedRowModelFactory
+): Table<TData> =>
+  constructSortedTable(sortedRowModel, {
     data,
     columns,
     state: { sorting },
-    onStateChange: () => undefined,
-    renderFallbackValue: null,
-    getRowId: (row) => (row as { id: string }).id,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: sortedRowModel()
-  };
-
-  return createTable(options);
-};
+    getRowId: (row) => (row as { id: string }).id
+  });
 
 const sortedIds = <TData extends RowData>(
   data: TData[],
   columns: ColumnDef<TData, unknown>[],
   sorting: SortingState,
-  sortedRowModel: typeof getSortedRowModel
+  sortedRowModel: SortedRowModelFactory
 ): string[] =>
   createSortedTable(data, columns, sorting, sortedRowModel)
     .getSortedRowModel()
@@ -101,16 +116,16 @@ const COLUMN_VARIANTS: readonly (readonly [string, ColumnDef<SortRow, unknown>[]
   [
     'explicit built-in sorting functions',
     createColumns({
-      code: { sortingFn: 'alphanumericCaseSensitive' },
-      name: { sortingFn: 'textCaseSensitive' },
-      amount: { sortingFn: 'basic' },
-      createdAt: { sortingFn: 'datetime' },
-      group: { sortingFn: 'text' }
+      code: { sortFn: 'alphanumericCaseSensitive' },
+      name: { sortFn: 'textCaseSensitive' },
+      amount: { sortFn: 'basic' },
+      createdAt: { sortFn: 'datetime' },
+      group: { sortFn: 'text' }
     })
   ],
   [
     'alphanumeric and text sorting on every string column',
-    createColumns({ code: { sortingFn: 'alphanumeric' }, name: { sortingFn: 'alphanumeric' }, group: { sortingFn: 'text' } })
+    createColumns({ code: { sortFn: 'alphanumeric' }, name: { sortFn: 'alphanumeric' }, group: { sortFn: 'text' } })
   ],
   [
     'sortUndefined and invertSorting options',
@@ -124,14 +139,14 @@ const COLUMN_VARIANTS: readonly (readonly [string, ColumnDef<SortRow, unknown>[]
   [
     'a consumer sorting function',
     createColumns({
-      name: { sortingFn: (rowA, rowB) => rowA.original.name.length - rowB.original.name.length },
-      amount: { sortingFn: (rowA, rowB) => (rowA.original.amount ?? -1) - (rowB.original.amount ?? -1), sortUndefined: -1 }
+      name: { sortFn: (rowA, rowB) => rowA.original.name.length - rowB.original.name.length },
+      amount: { sortFn: (rowA, rowB) => (rowA.original.amount ?? -1) - (rowB.original.amount ?? -1), sortUndefined: -1 }
     })
   ]
 ];
 
 describe('FEATURE: natGetSortedRowModel', () => {
-  describe('GIVEN: randomized flat datasets compared with TanStack getSortedRowModel', () => {
+  describe('GIVEN: randomized flat datasets compared with TanStack createSortedRowModel', () => {
     describe('WHEN: sorting with every column variant, direction, and multi-sort combination', () => {
       it('THEN: it produces the same row order', () => {
         // One dataset has no missing values, so every date column compares as times only.
@@ -142,7 +157,7 @@ describe('FEATURE: natGetSortedRowModel', () => {
 
         for (const { data, columns, sorting } of cases) {
           expect(sortedIds(data, columns, sorting, natGetSortedRowModel)).toStrictEqual(
-            sortedIds(data, columns, sorting, getSortedRowModel)
+            sortedIds(data, columns, sorting, tanStackSortedRowModel)
           );
         }
       });
@@ -169,18 +184,18 @@ describe('FEATURE: natGetSortedRowModel', () => {
     });
 
     describe('WHEN: a datetime column holds Date subclasses that override valueOf', () => {
-      it('THEN: it sorts by the overridden value like TanStack does', () => {
+      it('THEN: it sorts by getTime like TanStack v9 does', () => {
         class ReversedDate extends Date {
           public override valueOf(): number {
             return -this.getTime();
           }
         }
         const data = buildRows(60, 5, false).map((row) => ({ ...row, createdAt: new ReversedDate(row.createdAt ?? 0) }));
-        const columns = createColumns({ createdAt: { sortingFn: 'datetime' } });
+        const columns = createColumns({ createdAt: { sortFn: 'datetime' } });
         const sorting: SortingState = [{ id: 'createdAt', desc: false }];
 
         expect(sortedIds(data, columns, sorting, natGetSortedRowModel)).toStrictEqual(
-          sortedIds(data, columns, sorting, getSortedRowModel)
+          sortedIds(data, columns, sorting, tanStackSortedRowModel)
         );
       });
     });
@@ -196,7 +211,7 @@ describe('FEATURE: natGetSortedRowModel', () => {
         ];
 
         expect(sortedIds(data, columns, sorting, natGetSortedRowModel)).toStrictEqual(
-          sortedIds(data, columns, sorting, getSortedRowModel)
+          sortedIds(data, columns, sorting, tanStackSortedRowModel)
         );
       });
     });
@@ -211,7 +226,7 @@ describe('FEATURE: natGetSortedRowModel', () => {
               throw new Error(`unexpected read of ${row.id}`);
             },
             sortUndefined: false,
-            sortingFn: (rowA, rowB) => rowA.original.name.localeCompare(rowB.original.name)
+            sortFn: (rowA, rowB) => rowA.original.name.localeCompare(rowB.original.name)
           },
           {
             id: 'byId',
@@ -220,7 +235,7 @@ describe('FEATURE: natGetSortedRowModel', () => {
 
               return row.id;
             },
-            sortingFn: 'basic'
+            sortFn: 'basic'
           }
         ];
         const data = buildRows(40, 11).map((row, index) => ({ ...row, name: `name-${String(index).padStart(2, '0')}` }));
@@ -249,16 +264,12 @@ describe('FEATURE: natGetSortedRowModel', () => {
           { id: 'a', name: 'a' }
         ];
         const columns: ColumnDef<TreeRow, unknown>[] = [{ accessorKey: 'name' }];
-        const table = createTable<TreeRow>({
+        const table = constructSortedTable<TreeRow>(natGetSortedRowModel, {
           data,
           columns,
           state: { sorting: [{ id: 'name', desc: false }] },
-          onStateChange: () => undefined,
-          renderFallbackValue: null,
           getRowId: (row) => row.id,
-          getSubRows: (row) => row.children,
-          getCoreRowModel: getCoreRowModel(),
-          getSortedRowModel: natGetSortedRowModel()
+          getSubRows: (row) => row.children
         });
         const sorted = table.getSortedRowModel();
 
@@ -277,18 +288,14 @@ describe('FEATURE: natGetSortedRowModel', () => {
         ];
         const sorting: SortingState = [{ id: 'name', desc: false }];
         const descendingColumns: ColumnDef<TreeRow, unknown>[] = [
-          { accessorKey: 'name', sortingFn: (rowA, rowB) => rowB.original.name.localeCompare(rowA.original.name) }
+          { accessorKey: 'name', sortFn: (rowA, rowB) => rowB.original.name.localeCompare(rowA.original.name) }
         ];
-        const table = createTable<TreeRow>({
+        const table = constructSortedTable<TreeRow>(natGetSortedRowModel, {
           data,
-          columns: [{ accessorKey: 'name', sortingFn: 'text' }],
+          columns: [{ accessorKey: 'name', sortFn: 'text' }],
           state: { sorting },
-          onStateChange: () => undefined,
-          renderFallbackValue: null,
           getRowId: (row) => row.id,
-          getSubRows: (row) => row.children,
-          getCoreRowModel: getCoreRowModel(),
-          getSortedRowModel: natGetSortedRowModel()
+          getSubRows: (row) => row.children
         });
 
         expect(table.getSortedRowModel().rows.map((row) => row.id)).toStrictEqual(['a', 'b', 'c']);

@@ -34,7 +34,7 @@ protected readonly view = signal<'grid' | 'static'>('grid');
 // The actions column starts right-pinned; pinning is engine state, so it
 // renders sticky in both interaction models.
 protected readonly state = signal<Partial<NatTableUserState>>({
-  columnPinning: { left: [], right: ['actions'] }
+  columnPinning: { start: [], end: ['actions'] }
 });
 
 // A plain-button actions column renders in both interaction models. (Cells
@@ -105,7 +105,7 @@ export class TableToStatic {
 
   protected readonly view = signal<DemoViewMode>('grid');
   /** The actions column starts right-pinned so it stays visible while the region scrolls. */
-  protected readonly state = signal<Partial<NatTableUserState>>({ columnPinning: { left: [], right: ['actions'] } });
+  protected readonly state = signal<Partial<NatTableUserState>>({ columnPinning: { start: [], end: ['actions'] } });
   protected readonly exampleMarkup = EXAMPLE_MARKUP;
   protected readonly exampleTs = EXAMPLE_TS;
 
@@ -122,7 +122,7 @@ export class TableToStatic {
   }
 
   protected isOrderColumnPinned(): boolean {
-    return (this.state().columnPinning?.left ?? []).includes('id');
+    return (this.state().columnPinning?.start ?? []).includes('id');
   }
 
   protected togglePinOrderColumn(): void {
@@ -130,7 +130,7 @@ export class TableToStatic {
 
     this.state.update((current) => ({
       ...current,
-      columnPinning: { left, right: current.columnPinning?.right ?? [] }
+      columnPinning: { start: left, end: current.columnPinning?.end ?? [] }
     }));
   }
 }

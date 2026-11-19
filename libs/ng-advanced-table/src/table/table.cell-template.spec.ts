@@ -3,9 +3,8 @@ import { Component, provideZonelessChangeDetection, signal } from '@angular/core
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 
-import type { ColumnDef } from '@tanstack/angular-table';
-
 import { NatTable } from './table';
+import type { ColumnDef } from '../common/table-features.type';
 import { NatList } from '../list/list';
 import { NatTableStatic } from '../static-table/static-table';
 import { buildRows, columns } from '../test-helpers/table-data.helper';

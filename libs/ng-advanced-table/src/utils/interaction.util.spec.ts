@@ -1,7 +1,5 @@
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
 
-import type { CellContext, Column, Header } from '@tanstack/angular-table';
-
 import {
   canResizeColumn,
   getCellTone,
@@ -14,6 +12,7 @@ import {
 } from './interaction.util';
 import { NAT_TABLE_MANAGED_CELL_WIDGET_ATTRIBUTE } from '../cell-interaction/cell-interaction.const';
 import type { NatTableCellTone } from '../common/column-meta.type';
+import type { CellContext, Column, Header } from '../common/table-features.type';
 
 /** Minimal row shape shared by the column/header stubs below. */
 type Row = { readonly id: string; readonly amount: number };

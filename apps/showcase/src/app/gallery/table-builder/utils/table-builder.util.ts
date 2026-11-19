@@ -16,7 +16,7 @@ export const buildSeedState = (flags: TableBuilderFlags): Partial<NatTableUserSt
   columnVisibility: { ...DEFAULT_COLUMN_VISIBILITY },
   ...(flags.withPagination ? { pagination: { pageIndex: 0, pageSize: 3 } } : {}),
   ...(flags.withSorting ? { sorting: [{ id: 'name', desc: false }] } : {}),
-  ...(flags.withColumnPinning ? { columnPinning: { left: ['name'], right: [] } } : {}),
+  ...(flags.withColumnPinning ? { columnPinning: { start: ['name'], end: [] } } : {}),
   ...(flags.withColumnReorder ? { columnOrder: [...DEFAULT_COLUMN_ORDER] } : {}),
   ...(flags.withColumnResizing ? { columnSizing: {} } : {}),
   ...(flags.withRowSelection ? { rowSelection: {} } : {})
@@ -83,7 +83,7 @@ const omitRowSelection = (state: Partial<NatTableUserState>): Partial<NatTableUs
 
 const seedToggleState = (state: Partial<NatTableUserState>, key: TableBuilderFlagKey): Partial<NatTableUserState> => {
   if (key === 'withColumnPinning') {
-    return { ...state, columnPinning: { left: ['name'], right: [] } };
+    return { ...state, columnPinning: { start: ['name'], end: [] } };
   }
 
   if (key === 'withColumnReorder') {
@@ -107,7 +107,7 @@ const seedToggleState = (state: Partial<NatTableUserState>, key: TableBuilderFla
 
 const clearToggleState = (state: Partial<NatTableUserState>, key: TableBuilderFlagKey): Partial<NatTableUserState> => {
   if (key === 'withColumnPinning') {
-    return { ...state, columnPinning: { left: [], right: [] } };
+    return { ...state, columnPinning: { start: [], end: [] } };
   }
 
   if (key === 'withColumnReorder') {

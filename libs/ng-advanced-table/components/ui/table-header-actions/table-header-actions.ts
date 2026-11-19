@@ -5,10 +5,10 @@ import type { ElementRef } from '@angular/core';
 import { ChangeDetectorRef, Component, Injector, afterNextRender, computed, inject, input, viewChild } from '@angular/core';
 
 import { FlexRender } from '@tanstack/angular-table';
-import type { HeaderContext, RowData } from '@tanstack/angular-table';
+import type { RowData } from '@tanstack/angular-table';
 
 import { NatTableA11yService } from 'ng-advanced-table';
-import type { NatTableColumnMoveDirection } from 'ng-advanced-table';
+import type { HeaderContext, NatTableColumnMoveDirection } from 'ng-advanced-table';
 import {
   NAT_EN_LOCALE_ID,
   NAT_TABLE_CONTROLS_INTL,
@@ -115,9 +115,14 @@ export class NatTableHeaderActions {
     return getVisibleSortState(getVisibleSorting(this.context().table), this.column().id);
   }
 
-  protected sortIndicatorContext(): NatTableSortIndicatorContext<RowData> {
-    return buildSortIndicatorContext(this.sortState(), toAriaSort(this.sortState()), this.column(), this.label());
-  }
+  /**
+   * A computed, not a method: FlexRender in TanStack v9 re-renders whenever its
+   * `props` object changes identity, so a fresh object per change-detection
+   * pass re-rendered a component indicator every pass and never settled (NG0103).
+   */
+  protected readonly sortIndicatorContext = computed<NatTableSortIndicatorContext<RowData>>(() =>
+    buildSortIndicatorContext(this.sortState(), toAriaSort(this.sortState()), this.column(), this.label())
+  );
 
   /**
    * Single activation path for menu items. @angular/aria menus activate items
@@ -172,7 +177,11 @@ export class NatTableHeaderActions {
   }
 
   protected togglePin(side: NatTablePinSide): void {
-    this.column().pin(this.isPinned(side) ? false : side);
+    // The menu keeps physical "Pin left/right" copy; TanStack v9 pins to the
+    // logical start/end regions, which match left/right in a left-to-right table.
+    const position = side === 'left' ? 'start' : 'end';
+
+    this.column().pin(this.isPinned(side) ? false : position);
   }
 
   /**
@@ -249,7 +258,11 @@ export class NatTableHeaderActions {
   private pinnedSide(): NatTablePinSide | null {
     const pinState = this.column().getIsPinned();
 
-    return pinState === 'left' || pinState === 'right' ? pinState : null;
+    if (pinState === 'start') {
+      return 'left';
+    }
+
+    return pinState === 'end' ? 'right' : null;
   }
 
   private resolveAccessibilityLabels(): NatTableAccessibilityHeaderActionLabels {

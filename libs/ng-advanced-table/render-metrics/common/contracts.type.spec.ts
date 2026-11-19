@@ -1,9 +1,10 @@
-import type { ColumnDef } from '@tanstack/angular-table';
 import type {
   NatTableColumnMeta as InternalNatTableColumnMeta,
   NatTableRenderMetricsController as InternalNatTableRenderMetricsController,
   NatTableUserState
 } from 'ng-advanced-table/testing';
+
+import type { ColumnDef } from 'ng-advanced-table';
 
 import type { NatTableColumnMeta, NatTableRenderMetricsController, NatTableRenderMetricsState } from './contracts.type';
 
